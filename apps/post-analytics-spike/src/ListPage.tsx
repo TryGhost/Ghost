@@ -1,4 +1,4 @@
-import {Avatar, Button, ButtonGroup, DynamicTable, DynamicTableColumn, DynamicTableRow, Heading, Hint, Page, SortMenu, Tooltip, ViewContainer, showToast} from '@tryghost/admin-x-design-system';
+import {Avatar, Button, ButtonGroup, DynamicTable, DynamicTableColumn, DynamicTableRow, Heading, Hint, Page, SortMenu, Tooltip, ViewContainer, showToast} from '@tryghost/phantom';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 import {useState} from 'react';
 

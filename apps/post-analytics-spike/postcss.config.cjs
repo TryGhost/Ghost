@@ -1,1 +1,1 @@
-module.exports = require('@tryghost/admin-x-design-system/postcss.config.cjs');
+module.exports = require('@tryghost/phantom/postcss.config.cjs');

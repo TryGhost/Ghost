@@ -1,4 +1,4 @@
-import {Avatar, Breadcrumbs, Button, Heading, Page, Toggle, ViewContainer} from '@tryghost/admin-x-design-system';
+import {Avatar, Breadcrumbs, Button, Heading, Page, Toggle, ViewContainer} from '@tryghost/phantom';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 const DetailPage: React.FC = () => {

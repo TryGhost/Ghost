@@ -159,20 +159,6 @@ export type {SettingValueProps} from './settings/SettingValue';
 export {default as StripeButton} from './settings/StripeButton';
 export type {StripeButtonProps} from './settings/StripeButton';
 
-/**
- * Ghost Design System 1.0
- */
-export {Heading as GHDSHeading, headingVariants} from './components/typography/heading';
-export {
-    Breadcrumb as GHDSBreadcrumb,
-    BreadcrumbItem as GHDSBreadcrumbItem,
-    BreadcrumbLink as GHDSBreadcrumbLink,
-    BreadcrumbList as GHDSBreadcrumbList,
-    BreadcrumbPage as GHDSBreadcrumbPage,
-    BreadcrumbSeparator as GHDSBreadcrumbSeparator
-} from './components/ui/breadcrumb';
-export {Button as GHDSButton} from './components/ui/button';
-
 export {default as useGlobalDirtyState} from './hooks/useGlobalDirtyState';
 export {usePagination} from './hooks/usePagination';
 export type {PaginationData} from './hooks/usePagination';

@@ -20,8 +20,6 @@ const config: StorybookConfig = {
 	},
     async viteFinal(config, options) {
 		config.resolve!.alias = {
-			...config.resolve!.alias,
-			'@': path.resolve(__dirname, '../src'),
 			crypto: require.resolve('rollup-plugin-node-builtins')
 		}
 		return config;

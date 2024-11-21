@@ -1,4 +1,4 @@
-import { GHDSHeading } from "@tryghost/admin-x-design-system";
+import { GHDSHeading } from "@tryghost/phantom";
 
 const MainContent = () => {
 

@@ -1,4 +1,3 @@
-import path from 'path';
 import react from '@vitejs/plugin-react';
 import glob from 'glob';
 import {resolve} from 'path';
@@ -13,11 +12,6 @@ export default (function viteConfig() {
             svgr(),
             react()
         ],
-        resolve: {
-            alias: {
-                '@': path.resolve(__dirname, './src')
-            }
-        },
         define: {
             'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
             'process.env.VITEST_SEGFAULT_RETRY': 3

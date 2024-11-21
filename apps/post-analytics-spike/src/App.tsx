@@ -1,11 +1,11 @@
-import {DesignSystemApp, DesignSystemAppProps} from '@tryghost/admin-x-design-system';
+import {PhantomApp, PhantomAppProps} from '@tryghost/phantom';
 import {FrameworkProvider, TopLevelFrameworkProps} from '@tryghost/admin-x-framework';
 import {RoutingProvider} from '@tryghost/admin-x-framework/routing';
 import PostAnalytics from './PostAnalytics';
 
 interface AppProps {
     framework: TopLevelFrameworkProps;
-    designSystem: DesignSystemAppProps;
+    designSystem: PhantomAppProps;
 }
 
 const modals = {
@@ -19,9 +19,9 @@ const App: React.FC<AppProps> = ({framework, designSystem}) => {
     return (
         <FrameworkProvider {...framework}>
             <RoutingProvider basePath='post-analytics-spike' modals={modals}>
-                <DesignSystemApp className='post-analytics-spike' {...designSystem}>
+                <PhantomApp className='post-analytics-spike' {...designSystem}>
                     <PostAnalytics />
-                </DesignSystemApp>
+                </PhantomApp>
             </RoutingProvider>
         </FrameworkProvider>
     );

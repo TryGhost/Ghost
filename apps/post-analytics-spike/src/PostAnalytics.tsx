@@ -1,4 +1,4 @@
-import { GHDSBreadcrumb, GHDSBreadcrumbItem, GHDSBreadcrumbList, GHDSBreadcrumbLink, GHDSHeading, GHDSBreadcrumbPage, GHDSBreadcrumbSeparator, GHDSButton } from "@tryghost/admin-x-design-system";
+import { GHDSBreadcrumb, GHDSBreadcrumbItem, GHDSBreadcrumbList, GHDSBreadcrumbLink, GHDSHeading, GHDSBreadcrumbPage, GHDSBreadcrumbSeparator, GHDSButton, Icon } from "@tryghost/phantom";
 
 const PostAnalytics = () => {
     return (
@@ -21,9 +21,9 @@ const PostAnalytics = () => {
                 <div className="flex items-start justify-between">
                     <GHDSHeading size="pagetitle">Post analytics</GHDSHeading>
                     <div className="flex items-center mt-1 gap-2">
-                        <GHDSButton variant='outline'>Refresh</GHDSButton>
-                        <GHDSButton variant='outline'>Share</GHDSButton>
-                        <GHDSButton variant='outline'>•••</GHDSButton>
+                        <GHDSButton variant='outline'><Icon name="reload" /> Refresh</GHDSButton>
+                        <GHDSButton variant='outline'><Icon name="share" /> Share</GHDSButton>
+                        <GHDSButton variant='outline'><Icon name="ellipsis" /></GHDSButton>
                     </div>
                 </div>
             </header>
