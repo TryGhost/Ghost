@@ -5,6 +5,7 @@ export * from './components/typography/heading';
 export * from './components/ui/breadcrumb';
 export * from './components/ui/button';
 export * from './components/ui/dropdown-menu';
+export * from './components/ui/tabs';
 
 export {default as useGlobalDirtyState} from './hooks/useGlobalDirtyState';
 export {usePagination} from './hooks/usePagination';

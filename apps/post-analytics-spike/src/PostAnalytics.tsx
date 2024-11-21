@@ -1,4 +1,4 @@
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuTrigger, Heading, Icon } from "@tryghost/shade";
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuTrigger, Heading, Icon, Tabs, TabsContent, TabsList, TabsTrigger } from "@tryghost/shade";
 
 const PostAnalytics = () => {
     return (
@@ -42,9 +42,40 @@ const PostAnalytics = () => {
                     </div>
                 </div>
             </header>
-            <div className="mt-8 border rounded-lg border-grey-300 min-h-[500px] flex items-center justify-center text-grey-500">
-                TK
-            </div>
+            <Tabs className="mt-8" defaultValue="overview">
+                <TabsList className="grid w-full grid-cols-5">
+                    <TabsTrigger value="overview">
+                        Overview
+                    </TabsTrigger>
+                    <TabsTrigger value="email">
+                        Email
+                    </TabsTrigger>
+                    <TabsTrigger value="web">
+                        Web
+                    </TabsTrigger>
+                    <TabsTrigger value="comments">
+                        Comments
+                    </TabsTrigger>
+                    <TabsTrigger value="growth">
+                        Growth
+                    </TabsTrigger>
+                </TabsList>
+                <TabsContent value="overview">
+                    Overview
+                </TabsContent>
+                <TabsContent value="email">
+                    Email
+                </TabsContent>
+                <TabsContent value="web">
+                    Web
+                </TabsContent>
+                <TabsContent value="comments">
+                    Comments
+                </TabsContent>
+                <TabsContent value="growth">
+                    Growth
+                </TabsContent>
+            </Tabs>
         </div>
     );
 }
