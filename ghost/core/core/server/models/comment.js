@@ -333,8 +333,7 @@ const Comment = ghostBookshelf.Model.extend({
      */
     permittedOptions: function permittedOptions(methodName) {
         let options = ghostBookshelf.Model.permittedOptions.call(this, methodName);
-
-        // The comment model additionally supports having a parentId option
+        // The comment model additionally supports having a parentId and isAdmin option
         options.push('parentId');
         options.push('isAdmin');
 

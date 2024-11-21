@@ -85,6 +85,14 @@ module.exports = class CommentsController {
     /**
      * @param {Frame} frame
      */
+    async adminReplies(frame) {
+        frame.options.isAdmin = true;
+        return this.service.getReplies(frame.options.id, _.omit(frame.options, 'id'));
+    }
+
+    /**
+     * @param {Frame} frame
+     */
     async read(frame) {
         return await this.service.getCommentByID(frame.data.id, frame.options);
     }

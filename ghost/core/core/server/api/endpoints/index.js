@@ -197,6 +197,10 @@ module.exports = {
         return apiFramework.pipeline(require('./comments'), localUtils);
     },
 
+    get commentReplies() {
+        return apiFramework.pipeline(require('./comment-replies'), localUtils);
+    },
+
     get links() {
         return apiFramework.pipeline(require('./links'), localUtils);
     },

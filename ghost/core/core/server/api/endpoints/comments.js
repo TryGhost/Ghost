@@ -1,6 +1,5 @@
 const models = require('../../models');
 const commentsService = require('../../services/comments');
-
 function handleCacheHeaders(model, frame) {
     if (model) {
         const postId = model.get('post_id');

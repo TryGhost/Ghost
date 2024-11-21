@@ -51,6 +51,7 @@ module.exports = function apiRoutes() {
 
     router.get('/mentions', mw.authAdminApi, http(api.mentions.browse));
 
+    router.get('/comments/:id/replies', mw.authAdminApi, http(api.commentReplies.browse));
     router.get('/comments/post/:post_id', mw.authAdminApi, http(api.comments.browse));
     router.put('/comments/:id', mw.authAdminApi, http(api.comments.edit));
 
