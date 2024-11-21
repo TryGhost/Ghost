@@ -1,28 +1,54 @@
 import * as React from 'react';
 import * as TabsPrimitive from '@radix-ui/react-tabs';
-
 import {cn} from '@/lib/utils';
 
-const Tabs = TabsPrimitive.Root;
+// Add variant types
+type TabsVariant = 'default' | 'outline';
+
+const TabsVariantContext = React.createContext<TabsVariant>('default');
+
+interface TabsProps extends React.ComponentPropsWithoutRef<typeof TabsPrimitive.Root> {
+    variant?: TabsVariant;
+}
+
+// const Tabs = TabsPrimitive.Root;
+const Tabs = React.forwardRef<
+    React.ElementRef<typeof TabsPrimitive.Root>,
+    TabsProps
+>(({variant = 'default', ...props}, ref) => (
+    <TabsVariantContext.Provider value={variant}>
+        <TabsPrimitive.Root ref={ref} {...props} />
+    </TabsVariantContext.Provider>
+));
+Tabs.displayName = TabsPrimitive.Root.displayName;
+
+const tabsListVariants: Record<TabsVariant, string> = {
+    default: 'bg-neutral-100 dark:bg-neutral-800',
+    outline: 'border border-neutral-200 dark:border-neutral-800 bg-transparent'
+};
 
 const TabsList = React.forwardRef<
-  React.ElementRef<typeof TabsPrimitive.List>,
-  React.ComponentPropsWithoutRef<typeof TabsPrimitive.List>
->(({className, ...props}, ref) => (
-    <TabsPrimitive.List
-        ref={ref}
-        className={cn(
-            'inline-flex h-10 items-center justify-center rounded-md bg-neutral-100 p-1 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400',
-            className
-        )}
-        {...props}
-    />
-));
+    React.ElementRef<typeof TabsPrimitive.List>,
+    React.ComponentPropsWithoutRef<typeof TabsPrimitive.List>
+>(({className, ...props}, ref) => {
+    const variant = React.useContext(TabsVariantContext);
+    return (
+        <TabsPrimitive.List
+            ref={ref}
+            className={cn(
+                'inline-flex h-10 items-center justify-center rounded-md bg-neutral-100 p-1 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400',
+                tabsListVariants[variant],
+                className
+            )}
+            {...props}
+        />
+    );
+});
 TabsList.displayName = TabsPrimitive.List.displayName;
 
 const TabsTrigger = React.forwardRef<
-  React.ElementRef<typeof TabsPrimitive.Trigger>,
-  React.ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger>
+    React.ElementRef<typeof TabsPrimitive.Trigger>,
+    React.ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger>
 >(({className, ...props}, ref) => (
     <TabsPrimitive.Trigger
         ref={ref}
@@ -36,8 +62,8 @@ const TabsTrigger = React.forwardRef<
 TabsTrigger.displayName = TabsPrimitive.Trigger.displayName;
 
 const TabsContent = React.forwardRef<
-  React.ElementRef<typeof TabsPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof TabsPrimitive.Content>
+    React.ElementRef<typeof TabsPrimitive.Content>,
+    React.ComponentPropsWithoutRef<typeof TabsPrimitive.Content>
 >(({className, ...props}, ref) => (
     <TabsPrimitive.Content
         ref={ref}

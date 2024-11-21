@@ -1,4 +1,4 @@
-import {ShadeApp, ShadeAppProps} from '@tryghost/shade';
+import {ShadeApp, ShadeAppProps, SidebarProvider} from '@tryghost/shade';
 import {FrameworkProvider, TopLevelFrameworkProps} from '@tryghost/admin-x-framework';
 import {RoutingProvider} from '@tryghost/admin-x-framework/routing';
 import PostAnalytics from './PostAnalytics';
@@ -20,11 +20,12 @@ const App: React.FC<AppProps> = ({framework, designSystem}) => {
         <FrameworkProvider {...framework}>
             <RoutingProvider basePath='post-analytics-spike' modals={modals}>
                 <ShadeApp className='post-analytics-spike' {...designSystem}>
-
+                    <SidebarProvider>
                     {/* @TODO: should be a component */}
                     <div className='max-w-[1280px] w-full mx-auto'>
                         <PostAnalytics />
                     </div>
+                    </SidebarProvider>
                 </ShadeApp>
             </RoutingProvider>
         </FrameworkProvider>
