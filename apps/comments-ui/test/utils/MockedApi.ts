@@ -1,25 +1,48 @@
 import nql from '@tryghost/nql';
 import {buildComment, buildMember, buildReply, buildSettings} from './fixtures';
 
+// The test file doesn't run in the browser, so we can't use the DOM API.
+// We can use a simple regex to strip HTML tags from a string for test purposes.
+const htmlToPlaintext = (html) => {
+    return html.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+};
+
 export class MockedApi {
     comments: any[];
     postId: string;
     member: any;
     settings: any;
+    members: any[];
+    delay: number;
 
     #lastCommentDate = new Date('2021-01-01T00:00:00.000Z');
 
-    constructor({postId = 'ABC', comments = [], member = undefined, settings = {}}: {postId?: string, comments?: any[], member?: any, settings?: any}) {
+    #findReplyById(id: string) {
+        return this.comments.flatMap(c => c.replies).find(r => r.id === id);
+    }
+
+    constructor({postId = 'ABC', comments = [], member = undefined, settings = {}, members = []}: {postId?: string, comments?: any[], member?: any, settings?: any, members?: any[]}) {
         this.postId = postId;
         this.comments = comments;
         this.member = member;
         this.settings = settings;
+        this.members = [];
+        this.delay = 0;
+    }
+
+    setDelay(delay: number) {
+        this.delay = delay;
     }
 
     addComment(overrides: any = {}) {
         if (!overrides.created_at) {
             overrides.created_at = this.#lastCommentDate.toISOString();
             this.#lastCommentDate = new Date(this.#lastCommentDate.getTime() + 1);
+        }
+
+        const inReplyTo = overrides.in_reply_to_id && this.#findReplyById(overrides.in_reply_to_id);
+        if (inReplyTo) {
+            overrides.in_reply_to_snippet = htmlToPlaintext(inReplyTo.html);
         }
 
         const fixture = buildComment({
@@ -47,8 +70,18 @@ export class MockedApi {
         }
     }
 
+    createMember(overrides) {
+        const newMember = buildMember(overrides);
+        this.members.push(newMember);
+        return newMember;
+    }
+
     setMember(overrides) {
         this.member = buildMember(overrides);
+    }
+
+    logoutMember() {
+        this.member = null;
     }
 
     setSettings(overrides) {
@@ -95,7 +128,7 @@ export class MockedApi {
                 const bDate = new Date(b.created_at).getTime();
                 return aDate - bDate; // Oldest first
             });
-        } 
+        }
 
         if (setOrder === 'default') {
             this.comments.sort((a, b) => {
@@ -193,8 +226,15 @@ export class MockedApi {
         };
     }
 
+    async #delayResponse() {
+        await new Promise((resolve) => {
+            (setTimeout(resolve, this.delay));
+        });
+    }
+
     async listen({page, path}: {page: any, path: string}) {
         await page.route(`${path}/members/api/member/`, async (route) => {
+            await this.#delayResponse();
             if (!this.member) {
                 return await route.fulfill({
                     status: 401,
@@ -217,6 +257,7 @@ export class MockedApi {
         });
 
         await page.route(`${path}/members/api/comments/*`, async (route) => {
+            await this.#delayResponse();
             const payload = JSON.parse(route.request().postData());
 
             this.#lastCommentDate = new Date();
@@ -235,6 +276,7 @@ export class MockedApi {
         });
 
         await page.route(`${path}/members/api/comments/post/*/*`, async (route) => {
+            await this.#delayResponse();
             const url = new URL(route.request().url());
 
             const p = parseInt(url.searchParams.get('page') ?? '1');
@@ -254,6 +296,7 @@ export class MockedApi {
 
         // LIKE a single comment
         await page.route(`${path}/members/api/comments/*/like/`, async (route) => {
+            await this.#delayResponse();
             const url = new URL(route.request().url());
             const commentId = url.pathname.split('/').reverse()[2];
 
@@ -288,6 +331,7 @@ export class MockedApi {
 
         // GET a single comment
         await page.route(`${path}/members/api/comments/*/`, async (route) => {
+            await this.#delayResponse();
             const url = new URL(route.request().url());
             const commentId = url.pathname.split('/').reverse()[1];
 
@@ -303,6 +347,7 @@ export class MockedApi {
         });
 
         await page.route(`${path}/members/api/comments/*/replies/*`, async (route) => {
+            await this.#delayResponse();
             const url = new URL(route.request().url());
 
             const limit = parseInt(url.searchParams.get('limit') ?? '5');
@@ -320,6 +365,7 @@ export class MockedApi {
         });
 
         await page.route(`${path}/members/api/comments/counts/*`, async (route) => {
+            await this.#delayResponse();
             await route.fulfill({
                 status: 200,
                 body: JSON.stringify(
@@ -331,6 +377,7 @@ export class MockedApi {
         // get settings from content api
 
         await page.route(`${path}/settings/*`, async (route) => {
+            await this.#delayResponse();
             await route.fulfill({
                 status: 200,
                 body: JSON.stringify(this.settings)

@@ -12,8 +12,10 @@ const {EmailAddressParser} = require('@tryghost/email-addresses');
 const {registerHelpers} = require('./helpers/register-helpers');
 const crypto = require('crypto');
 
+const DEFAULT_LOCALE = 'en-gb';
+
 // Wrapper function so that i18next-parser can find these strings
-const t = (x) => { 
+const t = (x) => {
     return x;
 };
 
@@ -38,10 +40,17 @@ function escapeHtml(unsafe) {
         .replace(/'/g, '&#039;');
 }
 
-function formatDateLong(date, timezone, locale = 'en-gb') {
-    if (locale === 'en') { 
-        locale = 'en-gb'; 
+function isValidLocale(locale) {
+    try {
+        // Attempt to create a DateTimeFormat with the locale
+        new Intl.DateTimeFormat(locale);
+        return true; // No error means it's a valid locale
+    } catch (e) {
+        return false; // RangeError means invalid locale
     }
+}
+
+function formatDateLong(date, timezone, locale = DEFAULT_LOCALE) {
     return DateTime.fromJSDate(date).setZone(timezone).setLocale(locale).toLocaleString({
         year: 'numeric',
         month: 'long',
@@ -185,7 +194,7 @@ class EmailRenderer {
         this.#models = models;
         this.#t = t;
     }
-    
+
     getSubject(post, isTestEmail = false) {
         const subject = post.related('posts_meta')?.get('email_subject') || post.get('title');
         return isTestEmail ? `[TEST] ${subject}` : subject;
@@ -214,6 +223,25 @@ class EmailRenderer {
             address: fromAddress,
             name: senderName || undefined
         };
+    }
+
+    // Locale is user-input, so we need to ensure it's valid
+    #getValidLocale() {
+        let locale = this.#settingsCache.get('locale') || DEFAULT_LOCALE;
+
+        if (!this.#labs.isSet('i18n')) {
+            locale = DEFAULT_LOCALE;
+        }
+
+        // Remove any trailing whitespace
+        locale = locale.trim();
+
+        // If the locale is just "en", or is not valid, revert to default
+        if (locale === 'en' || !isValidLocale(locale)) {
+            locale = DEFAULT_LOCALE;
+        }
+
+        return locale;
     }
 
     getFromAddress(post, newsletter) {
@@ -561,8 +589,8 @@ class EmailRenderer {
      * @returns {string}
      */
     getMemberStatusText(member) {
-        const t = this.#t; 
-        const locale = this.#settingsCache.get('locale');
+        const t = this.#t;
+        const locale = this.#getValidLocale();
 
         if (member.status === 'free') {
             // Not really used, but as a backup
@@ -625,7 +653,7 @@ class EmailRenderer {
      */
     buildReplacementDefinitions({html, newsletterUuid}) {
         const t = this.#t; // es-lint-disable-line no-shadow
-        const locale = this.#settingsCache.get('locale');
+        const locale = this.#getValidLocale();
 
         const baseDefinitions = [
             {

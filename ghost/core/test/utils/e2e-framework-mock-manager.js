@@ -19,6 +19,7 @@ const originalMailServiceSendMail = mailService.GhostMailer.prototype.sendMail;
 const labs = require('../../core/shared/labs');
 const events = require('../../core/server/lib/common/events');
 const settingsCache = require('../../core/shared/settings-cache');
+const limitService = require('../../core/server/services/limits');
 const dns = require('dns');
 const dnsPromises = dns.promises;
 const StripeMocker = require('./stripe-mocker');
@@ -283,6 +284,15 @@ const mockLabsDisabled = (flag, alpha = true) => {
     fakedLabsFlags[flag] = false;
 };
 
+const mockLimitService = (limit, options) => {
+    if (!mocks.limitService) {
+        mocks.limitService = sinon.stub(limitService);
+    }
+
+    mocks.limitService.isLimited.withArgs(limit).returns(options.isLimited);
+    mocks.limitService.checkWouldGoOverLimit.withArgs(limit).resolves(options.wouldGoOverLimit);
+};
+
 const restore = () => {
     // eslint-disable-next-line no-console
     configUtils.restore().catch(console.error);
@@ -319,6 +329,7 @@ module.exports = {
     mockLabsDisabled,
     mockWebhookRequests,
     mockSetting,
+    mockLimitService,
     disableNetwork,
     restore,
     stripeMocker,

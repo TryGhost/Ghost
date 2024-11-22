@@ -10,6 +10,9 @@ export type Theme = {
         name?: string;
         description?: string;
         version?: string;
+        author?: {
+            name?: string;
+        }
     };
     templates?: string[];
 }

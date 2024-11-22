@@ -7,14 +7,13 @@ import {LoadingIndicator, NoValueLabel} from '@tryghost/admin-x-design-system';
 import APAvatar, {AvatarBadge} from './global/APAvatar';
 import ActivityItem, {type Activity} from './activities/ActivityItem';
 import ArticleModal from './feed/ArticleModal';
-// import FollowButton from './global/FollowButton';
 import MainNavigation from './navigation/MainNavigation';
+import Separator from './global/Separator';
 import ViewProfileModal from './global/ViewProfileModal';
 
 import getUsername from '../utils/get-username';
 import stripHtml from '../utils/strip-html';
 import {useActivitiesForUser} from '../hooks/useActivityPubQueries';
-// import {useFollowersForUser} from '../MainContent';
 
 interface ActivitiesProps {}
 
@@ -29,7 +28,7 @@ const getActivityDescription = (activity: Activity): string => {
     switch (activity.type) {
     case ACTVITY_TYPE.CREATE:
         if (activity.object?.inReplyTo && typeof activity.object?.inReplyTo !== 'string') {
-            return `Commented on your article "${activity.object.inReplyTo.name}"`;
+            return `Replied to your article "${activity.object.inReplyTo.name}"`;
         }
 
         return '';
@@ -141,14 +140,17 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
             NiceModal.show(ArticleModal, {
                 activityId: activity.id,
                 object: activity.object,
-                actor: activity.actor
+                actor: activity.actor,
+                focusReplies: true,
+                width: typeof activity.object?.inReplyTo === 'object' && activity.object?.inReplyTo?.type === 'Article' ? 'wide' : 'narrow'
             });
             break;
         case ACTVITY_TYPE.LIKE:
             NiceModal.show(ArticleModal, {
                 activityId: activity.id,
                 object: activity.object,
-                actor: activity.object.attributedTo as ActorProperties
+                actor: activity.object.attributedTo as ActorProperties,
+                width: 'wide'
             });
             break;
         case ACTVITY_TYPE.FOLLOW:
@@ -184,28 +186,24 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
                     (isLoading === false && activities.length > 0) && (
                         <>
                             <div className='mt-8 flex w-full max-w-[560px] flex-col'>
-                                {activities?.map(activity => (
-                                    <ActivityItem
-                                        key={activity.id}
-                                        url={getActivityUrl(activity) || getActorUrl(activity)}
-                                        onClick={() => handleActivityClick(activity)}
-                                    >
-                                        <APAvatar author={activity.actor} badge={getActivityBadge(activity)} />
-                                        <div className='min-w-0'>
-                                            <div className='truncate text-grey-600'>
-                                                <span className='mr-1 font-bold text-black'>{activity.actor.name}</span>
-                                                {getUsername(activity.actor)}
+                                {activities?.map((activity, index) => (
+                                    <React.Fragment key={activity.id}>
+                                        <ActivityItem
+                                            url={getActivityUrl(activity) || getActorUrl(activity)}
+                                            onClick={() => handleActivityClick(activity)}
+                                        >
+                                            <APAvatar author={activity.actor} badge={getActivityBadge(activity)} />
+                                            <div className='min-w-0'>
+                                                <div className='truncate text-grey-600'>
+                                                    <span className='mr-1 font-bold text-black'>{activity.actor.name}</span>
+                                                    {getUsername(activity.actor)}
+                                                </div>
+                                                <div className=''>{getActivityDescription(activity)}</div>
+                                                {getExtendedDescription(activity)}
                                             </div>
-                                            <div className=''>{getActivityDescription(activity)}</div>
-                                            {getExtendedDescription(activity)}
-                                        </div>
-                                        {/* <FollowButton
-                                            className='ml-auto'
-                                            following={isFollower(activity.actor.id)}
-                                            handle={getUsername(activity.actor)}
-                                            type='link'
-                                        /> */}
-                                    </ActivityItem>
+                                        </ActivityItem>
+                                        {index < activities.length - 1 && <Separator />}
+                                    </React.Fragment>
                                 ))}
                             </div>
                             <div ref={loadMoreRef} className='h-1'></div>

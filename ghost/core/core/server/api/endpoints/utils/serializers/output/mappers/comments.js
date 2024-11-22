@@ -1,9 +1,13 @@
 const _ = require('lodash');
 const utils = require('../../..');
 const url = require('../utils/url');
+const htmlToPlaintext = require('@tryghost/html-to-plaintext');
+const labs = require('../../../../../../../shared/labs');
 
 const commentFields = [
     'id',
+    'in_reply_to_id',
+    'in_reply_to_snippet',
     'status',
     'html',
     'created_at',
@@ -42,6 +46,17 @@ const countFields = [
 const commentMapper = (model, frame) => {
     const jsonModel = model.toJSON ? model.toJSON(frame.options) : model;
 
+    if (labs.isSet('commentImprovements')) {
+        if (jsonModel.inReplyTo && jsonModel.inReplyTo.status === 'published') {
+            jsonModel.in_reply_to_snippet = htmlToPlaintext.commentSnippet(jsonModel.inReplyTo.html);
+        } else {
+            jsonModel.in_reply_to_id = null;
+            jsonModel.in_reply_to_snippet = null;
+        }
+    } else {
+        delete jsonModel.in_reply_to_id;
+    }
+
     const response = _.pick(jsonModel, commentFields);
 
     if (jsonModel.member) {
@@ -59,7 +74,7 @@ const commentMapper = (model, frame) => {
     }
 
     if (jsonModel.post) {
-        // We could use the post mapper here, but we need less field + don't need al the async behavior support
+        // We could use the post mapper here, but we need less field + don't need all the async behavior support
         url.forPost(jsonModel.post.id, jsonModel.post, frame);
         response.post = _.pick(jsonModel.post, postFields);
     }
@@ -77,7 +92,7 @@ const commentMapper = (model, frame) => {
             response.html = null;
         }
     }
-    
+
     return response;
 };
 
