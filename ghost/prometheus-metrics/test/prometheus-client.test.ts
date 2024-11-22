@@ -308,6 +308,22 @@ describe('Prometheus Client', function () {
             clock.restore();
         }
 
+        function simulateCreate(duration: number) {
+            const clock = sinon.useFakeTimers();
+            poolEventEmitter.emit('createRequest');
+            clock.tick(duration);
+            poolEventEmitter.emit('createSuccess');
+            clock.restore();
+        }
+
+        function simulateCreateFail(duration: number) {
+            const clock = sinon.useFakeTimers();
+            poolEventEmitter.emit('createRequest');
+            clock.tick(duration);
+            poolEventEmitter.emit('createFail');
+            clock.restore();
+        }
+
         beforeEach(function () {
             knexEventEmitter = new EventEmitter();
             poolEventEmitter = new EventEmitter();
@@ -437,6 +453,24 @@ describe('Prometheus Client', function () {
             instance.instrumentKnex(knexMock);
             simulateAcquireFail(500);
             const metricValues = await instance.getMetricValues('db_connection_acquire_duration_seconds');
+            assert.equal(metricValues?.[0].value, 0.5);
+        });
+
+        it('should collect the db connection create duration metrics when a connection is created', async function () {
+            instance = new PrometheusClient();
+            instance.init();
+            instance.instrumentKnex(knexMock);
+            simulateCreate(500);
+            const metricValues = await instance.getMetricValues('db_connection_create_duration_seconds');
+            assert.equal(metricValues?.[0].value, 0.5);
+        });
+
+        it('should collect the db connection create duration metrics when a connection fails to be created', async function () {
+            instance = new PrometheusClient();
+            instance.init();
+            instance.instrumentKnex(knexMock);
+            simulateCreateFail(500);
+            const metricValues = await instance.getMetricValues('db_connection_create_duration_seconds');
             assert.equal(metricValues?.[0].value, 0.5);
         });
     });
