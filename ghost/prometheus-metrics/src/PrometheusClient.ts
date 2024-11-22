@@ -34,6 +34,7 @@ export class PrometheusClient {
     public gateway: client.Pushgateway<client.RegistryContentType> | undefined; // public for testing
     public queries: Map<string, () => void> = new Map();
     public acquires: Map<number, () => void> = new Map();
+    public creates: Map<number, () => void> = new Map();
 
     private config: PrometheusClientConfig;
     private prefix;
@@ -339,6 +340,15 @@ export class PrometheusClient {
             pruneAgedBuckets: false
         });
 
+        const createDurationSummary = this.registerSummary({
+            name: `db_connection_create_duration_seconds`,
+            help: 'Summary of the duration of creating a connection in seconds',
+            percentiles: [0.5, 0.9, 0.99],
+            maxAgeSeconds: 60,
+            ageBuckets: 6,
+            pruneAgedBuckets: false
+        });
+
         knexInstance.on('query', (query) => {
             // Add the query to the map
             this.queries.set(query.__knexQueryUid, queryDurationSummary.startTimer());
@@ -347,6 +357,20 @@ export class PrometheusClient {
         knexInstance.on('query-response', (err, query) => {
             this.queries.get(query.__knexQueryUid)?.();
             this.queries.delete(query.__knexQueryUid);
+        });
+
+        knexInstance.client.pool.on('createRequest', (eventId: number) => {
+            this.creates.set(eventId, createDurationSummary.startTimer());
+        });
+
+        knexInstance.client.pool.on('createSuccess', (eventId: number) => {
+            this.creates.get(eventId)?.();
+            this.creates.delete(eventId);
+        });
+
+        knexInstance.client.pool.on('createFail', (eventId: number) => {
+            this.creates.get(eventId)?.();
+            this.creates.delete(eventId);
         });
 
         knexInstance.client.pool.on('acquireRequest', (eventId: number) => {
