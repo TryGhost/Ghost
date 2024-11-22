@@ -32,7 +32,8 @@ class EmailAnalyticsServiceWrapper {
                 EmailRecipientFailure,
                 EmailSpamComplaintEvent
             },
-            emailSuppressionList
+            emailSuppressionList,
+            prometheusClient
         });
 
         // Since this is running in a worker thread, we cant dispatch directly
@@ -40,7 +41,8 @@ class EmailAnalyticsServiceWrapper {
         const eventProcessor = new EmailEventProcessor({
             domainEvents,
             db,
-            eventStorage: this.eventStorage
+            eventStorage: this.eventStorage,
+            prometheusClient
         });
 
         this.service = new EmailAnalyticsService({
