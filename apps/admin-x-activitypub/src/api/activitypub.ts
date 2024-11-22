@@ -325,6 +325,12 @@ export class ActivityPubAPI {
         return response;
     }
 
+    async note(content: string) {
+        const url = new URL('.ghost/activitypub/actions/note', this.apiUrl);
+        const response = await this.fetchJSON(url, 'POST', {content});
+        return response;
+    }
+
     get userApiUrl() {
         return new URL(`.ghost/activitypub/users/${this.handle}`, this.apiUrl);
     }

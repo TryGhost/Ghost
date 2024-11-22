@@ -3,6 +3,7 @@ const _ = require('lodash');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const {ValidationError} = require('@tryghost/errors');
+const labs = require('../../shared/labs');
 
 const messages = {
     emptyComment: 'The body of a comment cannot be empty',
@@ -59,6 +60,45 @@ const Comment = ghostBookshelf.Model.extend({
             .query('orderBy', 'created_at', 'ASC')
             // Note: this limit is not working
             .query('limit', 3);
+    },
+
+    customQuery(qb) {
+        qb.where(function () {
+            this.whereNotIn('comments.status', ['hidden', 'deleted'])
+                .orWhereExists(function () {
+                    this.select(1)
+                        .from('comments as replies')
+                        .whereRaw('replies.parent_id = comments.id')
+                        .whereNotIn('replies.status', ['hidden', 'deleted']);
+                });
+        });
+    },
+
+    adminCustomQuery(qb) {
+        qb.where(function () {
+            this.whereNotIn('comments.status', ['deleted'])
+                .orWhereExists(function () {
+                    this.select(1)
+                        .from('comments as replies')
+                        .whereRaw('replies.parent_id = comments.id')
+                        .whereNotIn('replies.status', ['deleted']);
+                });
+        });
+    },
+
+    applyCustomQuery(options) {
+        if (labs.isSet('commentImprovements')) {
+            if (!options.isAdmin) { // if it's an admin request, we don't need to apply the custom query
+                this.query((qb) => {
+                    this.customQuery(qb, options);
+                });
+            }
+            if (options.isAdmin) {
+                this.query((qb) => {
+                    this.adminCustomQuery(qb, options);
+                });
+            }
+        }
     },
 
     emitChange: function emitChange(event, options) {
@@ -122,6 +162,7 @@ const Comment = ghostBookshelf.Model.extend({
         return null;
     }
 }, {
+
     destroy: function destroy(unfilteredOptions) {
         let options = this.filterOptions(unfilteredOptions, 'destroy', {extraAllowedProperties: ['id']});
 
@@ -218,27 +259,45 @@ const Comment = ghostBookshelf.Model.extend({
         const relationsToLoadIndividually = [
             'replies',
             'replies.member',
+            'replies.inReplyTo',
             'replies.count.likes',
             'replies.count.liked'
         ].filter(relation => withRelated.includes(relation));
         const result = await ghostBookshelf.Model.findPage.call(this, options);
-
         for (const model of result.data) {
             await model.load(relationsToLoadIndividually, _.omit(options, 'withRelated'));
         }
-
         return result;
     },
 
     countRelations() {
         return {
-            replies(modelOrCollection) {
-                modelOrCollection.query('columns', 'comments.*', (qb) => {
-                    qb.count('replies.id')
-                        .from('comments AS replies')
-                        .whereRaw('replies.parent_id = comments.id')
-                        .as('count__replies');
-                });
+            replies(modelOrCollection, options) {
+                if (labs.isSet('commentImprovements') && !options.isAdmin) {
+                    modelOrCollection.query('columns', 'comments.*', (qb) => {
+                        qb.count('replies.id')
+                            .from('comments AS replies')
+                            .whereRaw('replies.parent_id = comments.id')
+                            .whereNotIn('replies.status', ['hidden', 'deleted'])
+                            .as('count__replies');
+                    });
+                } else {
+                    modelOrCollection.query('columns', 'comments.*', (qb) => {
+                        qb.count('replies.id')
+                            .from('comments AS replies')
+                            .whereRaw('replies.parent_id = comments.id')
+                            .as('count__replies');
+                    });
+                }
+                if (options.isAdmin && labs.isSet('commentImprovements')) {
+                    modelOrCollection.query('columns', 'comments.*', (qb) => {
+                        qb.count('replies.id')
+                            .from('comments AS replies')
+                            .whereRaw('replies.parent_id = comments.id')
+                            .whereNotIn('replies.status', ['deleted'])
+                            .as('count__replies');
+                    });
+                }
             },
             likes(modelOrCollection) {
                 modelOrCollection.query('columns', 'comments.*', (qb) => {
@@ -273,9 +332,9 @@ const Comment = ghostBookshelf.Model.extend({
      */
     permittedOptions: function permittedOptions(methodName) {
         let options = ghostBookshelf.Model.permittedOptions.call(this, methodName);
-
-        // The comment model additionally supports having a parentId option
+        // The comment model additionally supports having a parentId and isAdmin option
         options.push('parentId');
+        options.push('isAdmin');
 
         return options;
     }

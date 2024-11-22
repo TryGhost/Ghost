@@ -36,7 +36,7 @@
   "gnetId": 14058,
   "graphTooltip": 0,
   "id": 1,
-  "iteration": 1731033697061,
+  "iteration": 1731634781920,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -773,7 +773,7 @@
             "axisPlacement": "auto",
             "barAlignment": 0,
             "drawStyle": "line",
-            "fillOpacity": 0,
+            "fillOpacity": 10,
             "gradientMode": "none",
             "hideFrom": {
               "legend": false,
@@ -786,7 +786,7 @@
             "scaleDistribution": {
               "type": "linear"
             },
-            "showPoints": "auto",
+            "showPoints": "never",
             "spanNulls": false,
             "stacking": {
               "group": "A",
@@ -803,10 +803,6 @@
               {
                 "color": "green",
                 "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
               }
             ]
           }
@@ -824,7 +820,7 @@
       "options": {
         "legend": {
           "calcs": [],
-          "displayMode": "list",
+          "displayMode": "table",
           "placement": "bottom"
         },
         "tooltip": {
@@ -868,11 +864,11 @@
           "refId": "C"
         }
       ],
-      "title": "Active Connections",
+      "title": "Connections",
       "type": "timeseries"
     },
     {
-      "description": "The number of connections in the pool in active use (i.e. to run a query).",
+      "description": "The number of active connections as a percentage of the maximum allowed by the pool.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -883,7 +879,7 @@
             "axisPlacement": "auto",
             "barAlignment": 0,
             "drawStyle": "line",
-            "fillOpacity": 0,
+            "fillOpacity": 10,
             "gradientMode": "none",
             "hideFrom": {
               "legend": false,
@@ -896,105 +892,7 @@
             "scaleDistribution": {
               "type": "linear"
             },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 8,
-        "x": 8,
-        "y": 23
-      },
-      "id": 23,
-      "interval": "1s",
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom"
-        },
-        "tooltip": {
-          "mode": "single"
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
-          },
-          "exemplar": true,
-          "expr": "ghost_db_connection_pool_max{job=\"$job\"}",
-          "interval": "",
-          "legendFormat": "Max - {{job}}",
-          "refId": "A"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
-          },
-          "exemplar": true,
-          "expr": "ghost_db_connection_pool_used{job=\"$job\"}",
-          "hide": false,
-          "interval": "",
-          "legendFormat": "Used - {{job}}",
-          "refId": "B"
-        }
-      ],
-      "title": "Used Connections",
-      "type": "timeseries"
-    },
-    {
-      "description": "The percent of active or used connections out of the pool max.",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
+            "showPoints": "never",
             "spanNulls": false,
             "stacking": {
               "group": "A",
@@ -1025,7 +923,7 @@
       "gridPos": {
         "h": 8,
         "w": 8,
-        "x": 16,
+        "x": 8,
         "y": 23
       },
       "id": 25,
@@ -1033,7 +931,7 @@
       "options": {
         "legend": {
           "calcs": [],
-          "displayMode": "list",
+          "displayMode": "table",
           "placement": "bottom"
         },
         "tooltip": {
@@ -1047,17 +945,6 @@
             "uid": "PBFA97CFB590B2093"
           },
           "exemplar": true,
-          "expr": "ghost_db_connection_pool_used{job=~\"$job\"} / ghost_db_connection_pool_max{job=~\"$job\"}",
-          "interval": "",
-          "legendFormat": "Used - {{job}}",
-          "refId": "A"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
-          },
-          "exemplar": true,
           "expr": "ghost_db_connection_pool_active{job=~\"$job\"} / ghost_db_connection_pool_max{job=~\"$job\"}",
           "hide": false,
           "interval": "",
@@ -1065,11 +952,11 @@
           "refId": "B"
         }
       ],
-      "title": "Utilization",
+      "title": "Pool Utilization",
       "type": "timeseries"
     },
     {
-      "description": "The number of queries that are currently waiting for a free connection.",
+      "description": "The elapsed time a transaction spends waiting for an available connection in the connection pool.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1080,7 +967,7 @@
             "axisPlacement": "auto",
             "barAlignment": 0,
             "drawStyle": "line",
-            "fillOpacity": 0,
+            "fillOpacity": 10,
             "gradientMode": "none",
             "hideFrom": {
               "legend": false,
@@ -1093,7 +980,118 @@
             "scaleDistribution": {
               "type": "linear"
             },
-            "showPoints": "auto",
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "dtdurations"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 23
+      },
+      "id": 32,
+      "interval": "1s",
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "table",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "exemplar": true,
+          "expr": "ghost_db_connection_acquire_duration_seconds{quantile=\"0.5\", job=~\"$job\"}",
+          "interval": "",
+          "legendFormat": "P50 - {{job}}",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "exemplar": true,
+          "expr": "ghost_db_connection_acquire_duration_seconds{quantile=\"0.9\", job=~\"$job\"}",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "P90 - {{job}}",
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "exemplar": true,
+          "expr": "ghost_db_connection_acquire_duration_seconds{quantile=\"0.99\", job=~\"$job\"}",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "P99 - {{job}}",
+          "refId": "C"
+        }
+      ],
+      "title": "Time to Acquire Connection",
+      "type": "timeseries"
+    },
+    {
+      "description": "The number of transactions that are currently in the queue waiting to acquire a free connection",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
             "spanNulls": false,
             "stacking": {
               "group": "A",
@@ -1166,7 +1164,7 @@
             "axisPlacement": "auto",
             "barAlignment": 0,
             "drawStyle": "line",
-            "fillOpacity": 0,
+            "fillOpacity": 10,
             "gradientMode": "none",
             "hideFrom": {
               "legend": false,
@@ -1179,7 +1177,7 @@
             "scaleDistribution": {
               "type": "linear"
             },
-            "showPoints": "auto",
+            "showPoints": "never",
             "spanNulls": false,
             "stacking": {
               "group": "A",
@@ -1217,7 +1215,7 @@
       "options": {
         "legend": {
           "calcs": [],
-          "displayMode": "list",
+          "displayMode": "table",
           "placement": "bottom"
         },
         "tooltip": {
@@ -1265,7 +1263,7 @@
             "axisPlacement": "auto",
             "barAlignment": 0,
             "drawStyle": "line",
-            "fillOpacity": 0,
+            "fillOpacity": 10,
             "gradientMode": "none",
             "hideFrom": {
               "legend": false,
@@ -1278,7 +1276,7 @@
             "scaleDistribution": {
               "type": "linear"
             },
-            "showPoints": "auto",
+            "showPoints": "never",
             "spanNulls": false,
             "stacking": {
               "group": "A",
@@ -1302,7 +1300,7 @@
               }
             ]
           },
-          "unit": "dtdurationms"
+          "unit": "dtdurations"
         },
         "overrides": []
       },
@@ -1317,7 +1315,7 @@
       "options": {
         "legend": {
           "calcs": [],
-          "displayMode": "list",
+          "displayMode": "table",
           "placement": "bottom"
         },
         "tooltip": {
@@ -1331,7 +1329,7 @@
             "uid": "PBFA97CFB590B2093"
           },
           "exemplar": true,
-          "expr": "ghost_db_query_duration_milliseconds{quantile=\"0.5\", job=~\"$job\"}",
+          "expr": "ghost_db_query_duration_seconds{quantile=\"0.5\", job=~\"$job\"}",
           "interval": "",
           "legendFormat": "P50 - {{job}}",
           "refId": "A"
@@ -1342,7 +1340,7 @@
             "uid": "PBFA97CFB590B2093"
           },
           "exemplar": true,
-          "expr": "ghost_db_query_duration_milliseconds{quantile=\"0.9\", job=~\"$job\"}",
+          "expr": "ghost_db_query_duration_seconds{quantile=\"0.9\", job=~\"$job\"}",
           "hide": false,
           "interval": "",
           "legendFormat": "P90 - {{job}}",
@@ -1354,7 +1352,7 @@
             "uid": "PBFA97CFB590B2093"
           },
           "exemplar": true,
-          "expr": "ghost_db_query_duration_milliseconds{quantile=\"0.99\", job=~\"$job\"}",
+          "expr": "ghost_db_query_duration_seconds{quantile=\"0.99\", job=~\"$job\"}",
           "hide": false,
           "interval": "",
           "legendFormat": "P99 - {{job}}",
@@ -1376,7 +1374,7 @@
             "axisPlacement": "auto",
             "barAlignment": 0,
             "drawStyle": "line",
-            "fillOpacity": 0,
+            "fillOpacity": 10,
             "gradientMode": "none",
             "hideFrom": {
               "legend": false,
@@ -1389,7 +1387,7 @@
             "scaleDistribution": {
               "type": "linear"
             },
-            "showPoints": "auto",
+            "showPoints": "never",
             "spanNulls": false,
             "stacking": {
               "group": "A",
@@ -1428,7 +1426,7 @@
       "options": {
         "legend": {
           "calcs": [],
-          "displayMode": "list",
+          "displayMode": "table",
           "placement": "bottom"
         },
         "tooltip": {
@@ -1442,7 +1440,7 @@
             "uid": "PBFA97CFB590B2093"
           },
           "exemplar": true,
-          "expr": "rate(ghost_db_query_count{job=~\"$job\"}[1m])",
+          "expr": "rate(ghost_db_query_duration_seconds_count{job=~\"$job\"}[1m])",
           "interval": "",
           "legendFormat": "{{job}}",
           "refId": "A"
@@ -2082,7 +2080,7 @@
       },
       {
         "current": {
-          "selected": false,
+          "selected": true,
           "text": [
             "ghost-chris-local"
           ],
@@ -2115,7 +2113,7 @@
       },
       {
         "current": {
-          "selected": false,
+          "selected": true,
           "text": [
             "All"
           ],
@@ -2239,6 +2237,6 @@
   "timezone": "",
   "title": "Ghost Dashboard",
   "uid": "yX2d7k1Gk",
-  "version": 12,
+  "version": 4,
   "weekStart": ""
 }

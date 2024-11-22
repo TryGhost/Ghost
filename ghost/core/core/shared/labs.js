@@ -31,7 +31,8 @@ const BETA_FEATURES = [
     'stripeAutomaticTax',
     'webmentions',
     'editorExcerpt',
-    'ActivityPub'
+    'ActivityPub',
+    'customFonts'
 ];
 
 const ALPHA_FEATURES = [
@@ -46,8 +47,7 @@ const ALPHA_FEATURES = [
     'adminXDemo',
     'contentVisibility',
     'commentImprovements',
-    'staff2fa',
-    'customFonts'
+    'staff2fa'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

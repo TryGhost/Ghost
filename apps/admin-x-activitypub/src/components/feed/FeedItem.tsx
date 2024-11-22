@@ -5,6 +5,7 @@ import {Button, Heading, Icon, Menu, MenuItem, showToast} from '@tryghost/admin-
 import APAvatar from '../global/APAvatar';
 
 import FeedItemStats from './FeedItemStats';
+import clsx from 'clsx';
 import getRelativeTimestamp from '../../utils/get-relative-timestamp';
 import getUsername from '../../utils/get-username';
 import stripHtml from '../../utils/strip-html';
@@ -83,7 +84,7 @@ export function renderFeedAttachment(object: ObjectProperties, layout: string) {
         </div>;
     default:
         if (object.image) {
-            return <img alt='attachment' className='my-3 max-h-[280px] w-full rounded-md object-cover outline outline-1 -outline-offset-1 outline-black/10' src={object.image} />;
+            return <img alt='attachment' className='my-3 max-h-[280px] w-full rounded-md object-cover outline outline-1 -outline-offset-1 outline-black/[0.05]' src={object.image} />;
         }
         return null;
     }
@@ -92,20 +93,16 @@ export function renderFeedAttachment(object: ObjectProperties, layout: string) {
 function renderInboxAttachment(object: ObjectProperties) {
     const attachment = getAttachment(object);
 
+    const videoAttachmentStyles = 'ml-8 shrink-0 rounded-md h-[80px] w-[120px] relative';
+    const imageAttachmentStyles = clsx('object-cover outline outline-1 -outline-offset-1 outline-black/[0.05]', videoAttachmentStyles);
+
     if (!attachment) {
         return null;
     }
 
     if (Array.isArray(attachment)) {
-        const attachmentCount = attachment.length;
-
         return (
-            <div className='min-w-[120px]'>
-                <div className='relative'>
-                    <img className={`h-[80px] w-[120px] rounded-md object-cover outline outline-1 -outline-offset-1 outline-black/10`} src={attachment[0].url} />
-                    <div className='absolute bottom-1 right-1 z-10 rounded-full border border-[rgba(255,255,255,0.25)] bg-black px-2 py-0.5 font-semibold text-white'>+ {attachmentCount - 1}</div>
-                </div>
-            </div>
+            <img className={imageAttachmentStyles} src={attachment[0].url} />
         );
     }
 
@@ -114,14 +111,12 @@ function renderInboxAttachment(object: ObjectProperties) {
     case 'image/png':
     case 'image/gif':
         return (
-            <div className='min-w-[120px]'>
-                <img className={`h-[80px] w-[120px] rounded-md object-cover outline outline-1 -outline-offset-1 outline-black/10`} src={attachment.url} />
-            </div>
+            <img className={imageAttachmentStyles} src={attachment.url} />
         );
     case 'video/mp4':
     case 'video/webm':
         return (
-            <div className='relative h-[80px]'>
+            <div className={videoAttachmentStyles}>
                 <video className='h-[80px] w-full rounded object-cover' src={attachment.url} />
                 <div className='absolute inset-0 rounded bg-grey-900 opacity-50'></div>
                 <div className='absolute inset-0 flex items-center justify-center'>
@@ -133,7 +128,7 @@ function renderInboxAttachment(object: ObjectProperties) {
     case 'audio/mpeg':
     case 'audio/ogg':
         return (
-            <div className='min-w-[160px]'>
+            <div className='ml-8 w-[120px]'>
                 <div className='relative mb-4 mt-2 w-full'>
                     <audio className='w-full' src={attachment.url} controls/>
                 </div>
@@ -141,9 +136,7 @@ function renderInboxAttachment(object: ObjectProperties) {
         );
     default:
         if (object.image) {
-            return <div className='min-h-[80px] min-w-[120px]'>
-                <img className={`h-[80px] w-[120px] rounded-md object-cover outline outline-1 -outline-offset-1 outline-black/10`} src={object.image} />
-            </div>;
+            return <img className={imageAttachmentStyles} src={object.image} />;
         }
         return null;
     }
@@ -163,7 +156,7 @@ interface FeedItemProps {
 
 const noop = () => {};
 
-const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, commentCount = 0, showHeader = true, last, onClick = noop, onCommentClick}) => {
+const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, commentCount = 0, showHeader = true, last, onClick: onClickHandler = noop, onCommentClick}) => {
     const timestamp =
         new Date(object?.published ?? new Date()).toLocaleDateString('default', {year: 'numeric', month: 'short', day: '2-digit'}) + ', ' + new Date(object?.published ?? new Date()).toLocaleTimeString('default', {hour: '2-digit', minute: '2-digit'});
 
@@ -174,6 +167,15 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
     const onLikeClick = () => {
         // Do API req or smth
         // Don't need to know about setting timeouts or anything like that
+    };
+
+    const [menuIsOpen, setMenuIsOpen] = useState(false);
+
+    const onClick = () => {
+        if (menuIsOpen) {
+            return;
+        }
+        onClickHandler();
     };
 
     // const handleDelete = () => {
@@ -218,7 +220,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
             className={`relative z-[9998] ml-auto flex h-5 w-5 items-center justify-center self-start hover:opacity-60 ${isCopied ? 'bump' : ''}`}
             hideLabel={true}
             icon='dotdotdot'
-            iconColorClass={`(${layout === 'inbox' ? 'text-grey-900' : 'text-grey-600'}`}
+            iconColorClass={`${layout === 'inbox' ? 'text-grey-900' : 'text-grey-500'}`}
             id='more'
             size='sm'
             unstyled={true}
@@ -229,27 +231,25 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
         return (
             <>
                 {object && (
-                    <div className={`group/article relative cursor-pointer pt-6`} data-layout='feed' data-object-id={object.id} onClick={onClick}>
+                    <div className={`group/article relative cursor-pointer py-6`} data-layout='feed' data-object-id={object.id} onClick={onClick}>
                         {(type === 'Announce' && object.type === 'Note') && <div className='z-10 mb-2 flex items-center gap-3 text-grey-700'>
                             <div className='z-10 flex w-10 justify-end'><Icon colorClass='text-grey-700' name='reload' size={'sm'}></Icon></div>
                             <span className='z-10'>{actor.name} reposted</span>
                         </div>}
-                        <div className={`border-1 -my-1 grid grid-cols-[auto_1fr] grid-rows-[auto_1fr] gap-x-3 gap-y-2 pb-6`} data-test-activity>
-                            <APAvatar author={author}/>
-                            <div className='flex min-w-0 justify-between'>
-                                <div className='relative z-10 flex w-full flex-col overflow-visible text-md'>
-                                    <div className='flex justify-between'>
-                                        <div className='flex w-full'>
-                                            <span className='min-w-0 truncate break-all font-semibold' data-test-activity-heading>{author.name}</span>
-                                            <span className='ml-1 truncate text-grey-700'>{getUsername(author)}</span>
-                                        </div>
-                                        <div className='ml-2'>{renderTimestamp(object)}</div>
+                        <div className={`border-1 flex flex-col gap-2.5`} data-test-activity>
+                            <div className='flex min-w-0 items-center gap-3'>
+                                <APAvatar author={author}/>
+                                <div className='flex min-w-0 flex-col gap-0.5'>
+                                    <span className='min-w-0 truncate break-all font-semibold leading-[normal]' data-test-activity-heading>{author.name}</span>
+                                    <div className='flex w-full text-grey-700'>
+                                        <span className='truncate leading-tight'>{getUsername(author)}</span>
+                                        <div className='ml-1 leading-tight before:mr-1 before:content-["·"]' title={`${timestamp}`}>{renderTimestamp(object)}</div>
                                     </div>
                                 </div>
                             </div>
                             <div className={`relative col-start-2 col-end-3 w-full gap-4`}>
                                 <div className='flex flex-col'>
-                                    <div className='mt-[-24px]'>
+                                    <div className=''>
                                         {(object.type === 'Article') && renderFeedAttachment(object, layout)}
                                         {object.name && <Heading className='my-1 text-pretty leading-tight' level={5} data-test-activity-heading>{object.name}</Heading>}
                                         {(object.preview && object.type === 'Article') ? <div className='line-clamp-3 leading-tight'>{object.preview.content}</div> : <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content text-pretty text-[1.5rem] text-grey-900'></div>}
@@ -272,7 +272,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                             onCommentClick={onCommentClick}
                                             onLikeClick={onLikeClick}
                                         />
-                                        <Menu items={menuItems} position='end' trigger={UserMenuTrigger}/>
+                                        <Menu items={menuItems} open={menuIsOpen} position='end' setOpen={setMenuIsOpen} trigger={UserMenuTrigger}/>
                                     </div>
                                 </div>
                             </div>
@@ -318,7 +318,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                                 onCommentClick={onCommentClick}
                                                 onLikeClick={onLikeClick}
                                             />
-                                            <Menu items={menuItems} position='end' trigger={UserMenuTrigger}/>
+                                            <Menu items={menuItems} open={menuIsOpen} position='end' setOpen={setMenuIsOpen} trigger={UserMenuTrigger}/>
                                         </div>
                                     </div>
                                 </div>
@@ -376,7 +376,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                             onCommentClick={onCommentClick}
                                             onLikeClick={onLikeClick}
                                         />
-                                        <Menu items={menuItems} position='end' trigger={UserMenuTrigger}/>
+                                        <Menu items={menuItems} open={menuIsOpen} position='end' setOpen={setMenuIsOpen} trigger={UserMenuTrigger}/>
                                     </div>
                                 </div>
                             </div>
@@ -391,31 +391,25 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
         return (
             <>
                 {object && (
-                    <div className='group/article relative -mx-4 -my-px flex min-w-0 cursor-pointer justify-between rounded-md p-4 hover:bg-grey-75' data-layout='inbox' data-object-id={object.id} onClick={onClick}>
-                        <div className='flex w-full min-w-0 flex-col items-start justify-between gap-1 pr-4'>
-                            <div className='z-10 flex w-full min-w-0 items-start gap-2 group-hover/article:border-transparent'>
-                                <APAvatar author={author} size='xs'/>
-                                <span className='min-w-0 truncate break-all font-semibold' data-test-activity-heading>{author.name}</span>
-                                <span className='min-w-0 truncate text-grey-700'>{getUsername(author)}</span>
-                                {/* <div className='flex gap-2'>
-                                    <span className='truncate min-w-0 break-all font-semibold' data-test-activity-heading>{author.name}</span>
-                                    <span className='min-w-0 truncate text-grey-700'>{getUsername(author)}</span>
-                                </div> */}
-                                <span className='shrink-0 whitespace-nowrap text-grey-700 before:mr-1 before:content-["·"]' title={`${timestamp}`}>{getRelativeTimestamp(date)}</span>
+                    <div className='group/article relative -mx-4 -my-px flex min-h-[112px] min-w-0 cursor-pointer items-center justify-between rounded-md p-4 hover:bg-grey-75' data-layout='inbox' data-object-id={object.id} onClick={onClick}>
+                        <div className='flex min-h-[73px] w-full min-w-0 flex-col items-start justify-start'>
+                            <div className='z-10 mb-1 flex w-full min-w-0 items-center gap-1.5 text-base text-grey-700 group-hover/article:border-transparent'>
+                                <APAvatar author={author} size='2xs'/>
+                                <span className='min-w-0 truncate break-all font-medium text-grey-900' data-test-activity-heading>{author.name}</span>
+                                <span className='min-w-0 truncate'>{getUsername(author)}</span>
+                                <span className='shrink-0 whitespace-nowrap before:mr-1 before:content-["·"]' title={`${timestamp}`}>{getRelativeTimestamp(date)}</span>
                             </div>
-                            <Heading className='line-clamp-1 font-semibold leading-normal' level={5} data-test-activity-heading>
+                            <Heading className='mb-1 line-clamp-1 w-full max-w-[600px] text-[1.6rem] font-semibold leading-snug' level={5} data-test-activity-heading>
                                 {object.name ? object.name : (
                                     <span dangerouslySetInnerHTML={{
-                                        __html: object.content.length > 30
-                                            ? stripHtml(object.content).substring(0, 50) + '...'
-                                            : stripHtml(object.content)
+                                        __html: stripHtml(object.content)
                                     }}></span>
                                 )}
                             </Heading>
-                            <div dangerouslySetInnerHTML={({__html: stripHtml(object.content)})} className='ap-note-content w-full truncate text-[1.5rem] text-grey-700'></div>
+                            <div dangerouslySetInnerHTML={({__html: stripHtml(object.content)})} className='ap-note-content w-full max-w-[600px] truncate text-base leading-normal text-grey-700'></div>
                         </div>
                         {renderInboxAttachment(object)}
-                        <div className='invisible absolute right-2 top-[9px] z-[49] flex flex-col gap-2 rounded-lg bg-white p-2 shadow-md-heavy group-hover/article:visible'>
+                        <div className='invisible absolute right-4 top-[9px] z-[49] flex flex-col gap-2 rounded-lg bg-white p-2 shadow-md-heavy group-hover/article:visible'>
                             <FeedItemStats
                                 commentCount={commentCount}
                                 layout={layout}
@@ -424,7 +418,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                 onCommentClick={onCommentClick}
                                 onLikeClick={onLikeClick}
                             />
-                            <Menu items={menuItems} position='end' trigger={UserMenuTrigger}/>
+                            <Menu items={menuItems} open={menuIsOpen} position='end' setOpen={setMenuIsOpen} trigger={UserMenuTrigger}/>
                         </div>
                     </div>
                 )}
