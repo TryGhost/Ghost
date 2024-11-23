@@ -734,26 +734,19 @@ export default class LexicalEditorController extends Controller {
     }
 
     @task
-    *beforeSaveTask(options = {}) {
+    *beforeSaveTask() {
         if (this.post?.isDestroyed || this.post?.isDestroying) {
             return;
         }
 
-        // ensure we remove any blank cards when performing a full save
-        if (!options.backgroundSave) {
-            // TODO: not yet implemented in react editor
-            // if (this._koenig) {
-            //     this._koenig.cleanup();
-            //     this.set('hasDirtyAttributes', true);
-            // }
+        if (this.post.status === 'draft') {
+            if (this.post.titleScratch !== this.post.title) {
+                yield this.generateSlugTask.perform();
+            }
         }
 
-        // Set the properties that are indirected
-
-        // Set lexical equal to what's in the editor
         this.set('post.lexical', this.post.lexicalScratch || null);
 
-        // Set a default title
         if (!this.post.titleScratch?.trim()) {
             this.set('post.titleScratch', DEFAULT_TITLE);
         }
@@ -774,7 +767,6 @@ export default class LexicalEditorController extends Controller {
 
         if (!this.get('post.slug')) {
             this.saveTitleTask.cancelAll();
-
             yield this.generateSlugTask.perform();
         }
     }
