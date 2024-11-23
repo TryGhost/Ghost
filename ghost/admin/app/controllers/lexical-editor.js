@@ -790,7 +790,6 @@ export default class LexicalEditorController extends Controller {
         }
 
         serverSlug = yield this.slugGenerator.generateSlug('post', newSlug);
-
         // If after getting the sanitized and unique slug back from the API
         // we end up with a slug that matches the existing slug, abort the change
         if (serverSlug === slug) {
@@ -1226,6 +1225,25 @@ export default class LexicalEditorController extends Controller {
             } else {
                 this._leaveConfirmed = true;
                 return transition.retry();
+            }
+        }
+
+        // Capture posts with untitled slugs and a title set; ref https://linear.app/ghost/issue/ONC-548/
+        if (this.post) {
+            const slug = this.post.get('slug');
+            const title = this.post.get('title');
+            const isDraft = this.post.get('status') === 'draft';
+            const slugContainsUntitled = slug.includes('untitled');
+            const isTitleSet = title && title.trim() !== '' && title !== DEFAULT_TITLE;
+    
+            if (isDraft && slugContainsUntitled && isTitleSet) {
+                Sentry.captureException(new Error('Draft post has title set with untitled slug'), {
+                    extra: {
+                        slug: slug,
+                        title: title,
+                        titleScratch: this.post.get('titleScratch')
+                    }
+                });
             }
         }
 
