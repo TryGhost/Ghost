@@ -593,10 +593,6 @@ export default class LexicalEditorController extends Controller {
     // _xSave tasks  that will also cancel the autosave task
     @task({group: 'saveTasks'})
     *saveTask(options = {}) {
-        if (this.post.status === 'draft' && this.post.titleScratch !== this.post.title) {
-            yield this.generateSlugTask.perform();
-        }
-
         if (this.post.isDestroyed || this.post.isDestroying) {
             return;
         }
@@ -743,29 +739,16 @@ export default class LexicalEditorController extends Controller {
             return;
         }
 
-        // ensure we remove any blank cards when performing a full save
-        if (!options.backgroundSave) {
-            // TODO: not yet implemented in react editor
-            // if (this._koenig) {
-            //     this._koenig.cleanup();
-            //     this.set('hasDirtyAttributes', true);
-            // }
+        if (this.post.status === 'draft') {
+            if (this.post.titleScratch !== this.post.title) {
+                yield this.generateSlugTask.perform();
+            }
         }
 
-        // Set the properties that are indirected
-
-        // Set lexical equal to what's in the editor
         this.set('post.lexical', this.post.lexicalScratch || null);
 
-        // Set a default title
         if (!this.post.titleScratch?.trim()) {
             this.set('post.titleScratch', DEFAULT_TITLE);
-        }
-
-        // Generate a slug if we don't have one or if the title has changed
-        if (!this.get('post.slug') || (this.post.status === 'draft' && this.post.titleScratch !== this.post.title)) {
-            this.saveTitleTask.cancelAll();
-            yield this.generateSlugTask.perform();
         }
 
         // TODO: There's no need for most of these scratch values.
@@ -781,6 +764,11 @@ export default class LexicalEditorController extends Controller {
         this.set('post.twitterTitle', this.get('post.twitterTitleScratch'));
         this.set('post.twitterDescription', this.get('post.twitterDescriptionScratch'));
         this.set('post.emailSubject', this.get('post.emailSubjectScratch'));
+
+        if (!this.get('post.slug')) {
+            this.saveTitleTask.cancelAll();
+            yield this.generateSlugTask.perform();
+        }
     }
 
     /*
@@ -972,9 +960,8 @@ export default class LexicalEditorController extends Controller {
 
         // Update the slug unless the slug looks to be a custom slug or the title is a default/has been cleared out
         if (
-            ((currentSlug && slugify(currentTitle) !== currentSlug)
-            && !(currentTitle === DEFAULT_TITLE || currentTitle?.endsWith(DUPLICATED_POST_TITLE_SUFFIX)))
-            // && !(currentSlug.startsWith('untitled'))
+            (currentSlug && slugify(currentTitle) !== currentSlug)
+            && !(currentTitle === DEFAULT_TITLE || currentTitle?.endsWith(DUPLICATED_POST_TITLE_SUFFIX))
         ) {
             return;
         }
