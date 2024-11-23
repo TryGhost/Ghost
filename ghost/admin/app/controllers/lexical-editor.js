@@ -335,7 +335,6 @@ export default class LexicalEditorController extends Controller {
 
     @action
     updateTitleScratch(title) {
-        console.log(`updateTitleScratch`, title);
         this.set('post.titleScratch', title);
         try {
             this.localRevisions.scheduleSave(this.post.displayName, {...this.post.serialize({includeId: true}), title: title});
@@ -773,7 +772,6 @@ export default class LexicalEditorController extends Controller {
         this.set('post.twitterDescription', this.get('post.twitterDescriptionScratch'));
         this.set('post.emailSubject', this.get('post.emailSubjectScratch'));
 
-        console.log(`beforeSaveTask slug:`, this.get('post.slug'));
         if (!this.get('post.slug')) {
             this.saveTitleTask.cancelAll();
 
@@ -786,9 +784,7 @@ export default class LexicalEditorController extends Controller {
      */
     @task({group: 'saveTasks'})
     *updateSlugTask(_newSlug) {
-        console.log(`updateSlugTask`, _newSlug);
         let slug = this.get('post.slug');
-        console.log(`>slug`, slug);
         let newSlug, serverSlug;
 
         newSlug = _newSlug || slug;
@@ -802,7 +798,6 @@ export default class LexicalEditorController extends Controller {
         }
 
         serverSlug = yield this.slugGenerator.generateSlug('post', newSlug);
-        console.log(`>serverSlug`, serverSlug);
         // If after getting the sanitized and unique slug back from the API
         // we end up with a slug that matches the existing slug, abort the change
         if (serverSlug === slug) {
@@ -947,7 +942,6 @@ export default class LexicalEditorController extends Controller {
 
         // always save updates automatically for drafts
         if (this.get('post.isDraft')) {
-            console.log(`saveTitleTask draft... generating slug`);
             yield this.generateSlugTask.perform();
             yield this.autosaveTask.perform();
         }
@@ -962,7 +956,6 @@ export default class LexicalEditorController extends Controller {
     */
     @enqueueTask
     *generateSlugTask() {
-        console.log(`generateSlugTask`);
         const currentTitle = this.get('post.title');
         const newTitle = this.get('post.titleScratch');
         const currentSlug = this.get('post.slug');
