@@ -142,16 +142,7 @@ test.describe('Actions', async () => {
         expect(replyComment.getByTestId('reply-button')).not.toBeVisible();
     });
 
-    test('Can reply to a reply', async ({page}) => {
-        mockedApi.addComment({
-            html: '<p>This is comment 1</p>',
-            replies: [
-                mockedApi.buildReply({
-                    html: '<p>This is a reply to 1</p>'
-                })
-            ]
-        });
-
+    async function testReplyToReply(mockedApi, page) {
         const {frame} = await initialize({
             mockedApi,
             page,
@@ -177,8 +168,15 @@ test.describe('Actions', async () => {
 
         await page.keyboard.type('This is a reply to a reply');
 
+        // give time for spinner to show
+        mockedApi.setDelay(100);
+
         const submitButton = parentComment.getByTestId('submit-form-button');
         await submitButton.click();
+
+        // Spinner is shown
+        await expect(frame.getByTestId('button-spinner')).toBeVisible();
+        await expect(frame.getByTestId('button-spinner')).not.toBeVisible();
 
         // Comment gets added and has correct contents
         await expect(frame.getByTestId('comment-component')).toHaveCount(3);
@@ -186,6 +184,33 @@ test.describe('Actions', async () => {
 
         // Should indicate this was a reply to a reply
         await expect(frame.getByTestId('comment-in-reply-to')).toHaveText('This is a reply to 1');
+    }
+
+    test('Can reply to a reply', async ({page}) => {
+        mockedApi.addComment({
+            html: '<p>This is comment 1</p>',
+            replies: [
+                mockedApi.buildReply({
+                    html: '<p>This is a reply to 1</p>'
+                })
+            ]
+        });
+
+        await testReplyToReply(mockedApi, page);
+    });
+
+    test('Can reply to a reply with a deleted parent comment', async function ({page}) {
+        mockedApi.addComment({
+            html: '<p>This is comment 1</p>',
+            status: 'deleted',
+            replies: [
+                mockedApi.buildReply({
+                    html: '<p>This is a reply to 1</p>'
+                })
+            ]
+        });
+
+        await testReplyToReply(mockedApi, page);
     });
 
     test('Can add expertise', async ({page}) => {

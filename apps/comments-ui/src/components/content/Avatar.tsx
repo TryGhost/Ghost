@@ -21,6 +21,7 @@ type AvatarProps = {
     comment?: Comment;
 };
 export const Avatar: React.FC<AvatarProps> = ({comment}) => {
+    // #TODO greyscale the avatar image when it's hidden
     const {member, avatarSaturation, t} = useAppContext();
     const dimensionClasses = getDimensionClasses();
 
