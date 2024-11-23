@@ -734,7 +734,7 @@ export default class LexicalEditorController extends Controller {
     }
 
     @task
-    *beforeSaveTask(options = {}) {
+    *beforeSaveTask() {
         if (this.post?.isDestroyed || this.post?.isDestroying) {
             return;
         }
