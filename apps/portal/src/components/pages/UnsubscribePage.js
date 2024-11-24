@@ -87,7 +87,7 @@ export default function UnsubscribePage() {
             updatedMember.newsletters = [];
             updatedMember.enable_comment_notifications = false;
         } else {
-            updatedMember = await api.member.updateNewsletters({uuid: pageData.uuid, newsletters: [], enableCommentNotifications: false});
+            updatedMember = await api.member.updateNewsletters({uuid: pageData.uuid, key: pageData.key, newsletters: [], enableCommentNotifications: false});
         }
         setSubscribedNewsletters([]);
         setMember(updatedMember);
