@@ -21,10 +21,10 @@ const App: React.FC<AppProps> = ({framework, designSystem}) => {
             <RoutingProvider basePath='post-analytics-spike' modals={modals}>
                 <ShadeApp className='post-analytics-spike' {...designSystem}>
                     <SidebarProvider>
-                    {/* @TODO: should be a component */}
-                    <div className='max-w-[1280px] w-full mx-auto'>
-                        <PostAnalytics />
-                    </div>
+                        {/* @TODO: should be a component */}
+                        <div className='mx-auto w-full max-w-[1280px]'>
+                            <PostAnalytics />
+                        </div>
                     </SidebarProvider>
                 </ShadeApp>
             </RoutingProvider>

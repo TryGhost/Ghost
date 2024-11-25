@@ -1,8 +1,8 @@
 // The main Email stats component that encapsulates the breakdown
-import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarMenu, SidebarMenuBadge, SidebarMenuButton, SidebarMenuItem, SidebarSeparator } from "@tryghost/shade";
-import SentStats from "./SentStats";
-import { useState } from "react";
-import OpenedStats from "./OpenedStats";
+import {Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarMenu, SidebarMenuBadge, SidebarMenuButton, SidebarMenuItem, SidebarSeparator} from '@tryghost/shade';
+import SentStats from './SentStats';
+import {useState} from 'react';
+import OpenedStats from './OpenedStats';
 
 type TabType = 'sent' | 'opened' | 'clicked' | 'unsubscribed' | 'feedback' | 'spam' | 'bounced';
 
@@ -11,19 +11,19 @@ const EmailStats = () => {
 
     const renderContent = () => {
         switch (activeTab) {
-            case 'sent':
-                return <SentStats />
-            default:
-                return <OpenedStats />
+        case 'sent':
+            return <SentStats />;
+        default:
+            return <OpenedStats />;
         }
-    }
+    };
 
     return (
-        <div className="w-full grid grid-cols-5">
+        <div className="grid w-full grid-cols-5">
             <div className="col-span-4 py-2">
                 {renderContent()}
             </div>
-            <Sidebar collapsible="none" className="bg-transparent w-full">
+            <Sidebar className="w-full bg-transparent" collapsible="none">
                 <SidebarContent>
                     <SidebarGroup className="border-b last:border-none">
                         <SidebarGroupContent className="gap-0">
@@ -84,6 +84,6 @@ const EmailStats = () => {
             </Sidebar>
         </div>
     );
-}
+};
 
 export default EmailStats;

@@ -14255,9 +14255,9 @@ const zv = (e, t, n, r) => {
     /* @__PURE__ */ M.jsx(ya, {}),
     /* @__PURE__ */ M.jsx(ja, { children: "Analytics" })
   ] }) }),
-  /* @__PURE__ */ M.jsxs("div", { className: "flex items-start justify-between mt-2", children: [
+  /* @__PURE__ */ M.jsxs("div", { className: "mt-2 flex items-start justify-between", children: [
     /* @__PURE__ */ M.jsx(Ma, { size: "pagetitle", children: "Post analytics" }),
-    /* @__PURE__ */ M.jsxs("div", { className: "flex items-center mt-1 gap-2", children: [
+    /* @__PURE__ */ M.jsxs("div", { className: "mt-1 flex items-center gap-2", children: [
       /* @__PURE__ */ M.jsxs(Rn, { variant: "outline", children: [
         /* @__PURE__ */ M.jsx(Un, { name: "share" }),
         " Share"
@@ -14288,9 +14288,9 @@ const zv = (e, t, n, r) => {
         return /* @__PURE__ */ M.jsx(_v, {});
     }
   };
-  return /* @__PURE__ */ M.jsxs("div", { className: "w-full grid grid-cols-5", children: [
+  return /* @__PURE__ */ M.jsxs("div", { className: "grid w-full grid-cols-5", children: [
     /* @__PURE__ */ M.jsx("div", { className: "col-span-4 py-2", children: n() }),
-    /* @__PURE__ */ M.jsx(Mu, { collapsible: "none", className: "bg-transparent w-full", children: /* @__PURE__ */ M.jsx(mu, { children: /* @__PURE__ */ M.jsx(pu, { className: "border-b last:border-none", children: /* @__PURE__ */ M.jsx(fu, { className: "gap-0", children: /* @__PURE__ */ M.jsxs(bu, { children: [
+    /* @__PURE__ */ M.jsx(Mu, { className: "w-full bg-transparent", collapsible: "none", children: /* @__PURE__ */ M.jsx(mu, { children: /* @__PURE__ */ M.jsx(pu, { className: "border-b last:border-none", children: /* @__PURE__ */ M.jsx(fu, { className: "gap-0", children: /* @__PURE__ */ M.jsxs(bu, { children: [
       /* @__PURE__ */ M.jsxs(Ve, { children: [
         /* @__PURE__ */ M.jsx(
           Xe,
@@ -14342,11 +14342,11 @@ const zv = (e, t, n, r) => {
     /* @__PURE__ */ M.jsx(Pv, {}),
     /* @__PURE__ */ M.jsxs(Al, { className: "mt-8", defaultValue: "email", variant: "bordered", children: [
       /* @__PURE__ */ M.jsxs(Ll, { className: "grid w-full grid-cols-5", children: [
-        /* @__PURE__ */ M.jsxs(fo, { value: "email", className: "flex items-center gap-1", children: [
+        /* @__PURE__ */ M.jsxs(fo, { className: "flex items-center gap-1", value: "email", children: [
           /* @__PURE__ */ M.jsx(Un, { name: "email", size: "sm" }),
           " Email"
         ] }),
-        /* @__PURE__ */ M.jsxs(fo, { value: "web", className: "flex items-center gap-1", children: [
+        /* @__PURE__ */ M.jsxs(fo, { className: "flex items-center gap-1", value: "web", children: [
           /* @__PURE__ */ M.jsx(Un, { name: "world-clock", size: "sm" }),
           " Web"
         ] })
@@ -14359,11 +14359,11 @@ const zv = (e, t, n, r) => {
   paths: {
     "demo-modal": "DemoModal"
   },
-  load: async () => import("./modals-6b2120b4.mjs")
-}, Xv = ({ framework: e, designSystem: t }) => /* @__PURE__ */ M.jsx(Lv, { ...e, children: /* @__PURE__ */ M.jsx(Ev, { basePath: "post-analytics-spike", modals: Rv, children: /* @__PURE__ */ M.jsx(xy, { className: "post-analytics-spike", ...t, children: /* @__PURE__ */ M.jsx(gu, { children: /* @__PURE__ */ M.jsx("div", { className: "max-w-[1280px] w-full mx-auto", children: /* @__PURE__ */ M.jsx(Uv, {}) }) }) }) }) });
+  load: async () => import("./modals-64418007.mjs")
+}, Xv = ({ framework: e, designSystem: t }) => /* @__PURE__ */ M.jsx(Lv, { ...e, children: /* @__PURE__ */ M.jsx(Ev, { basePath: "post-analytics-spike", modals: Rv, children: /* @__PURE__ */ M.jsx(xy, { className: "post-analytics-spike", ...t, children: /* @__PURE__ */ M.jsx(gu, { children: /* @__PURE__ */ M.jsx("div", { className: "mx-auto w-full max-w-[1280px]", children: /* @__PURE__ */ M.jsx(Uv, {}) }) }) }) }) });
 export {
   Xv as A,
   xu as N,
   M as j
 };
-//# sourceMappingURL=index-4a609890.mjs.map
+//# sourceMappingURL=index-f5c113d4.mjs.map
