@@ -227,8 +227,8 @@ const FormHeader: React.FC<FormHeaderProps> = ({show, name, expertise, replyingT
                 </div>
             </div>
             {isReplyingToReply && (
-                <div className="line-clamp-1 font-sans text-base leading-snug text-neutral-900/50 sm:text-sm dark:text-white/60" data-testid="replying-to">
-                    <span>{t('Reply to')}:</span>&nbsp;<span className="font-semibold">{replyingToText}</span>
+                <div className="mt-0.5 line-clamp-1 font-sans text-base leading-snug text-neutral-900/50 sm:text-sm dark:text-white/60" data-testid="replying-to">
+                    <span>{t('Reply to')}:</span>&nbsp;<span className="font-semibold text-neutral-900/60 dark:text-white/70">{replyingToText}</span>
                 </div>
             )}
         </Transition>
@@ -329,7 +329,7 @@ const Form: React.FC<FormProps> = ({comment, submit, submitText, submitSize, clo
     return (
         <form
             ref={formEl}
-            className={`-mx-3 mb-7 mt-[-10px] rounded-md transition duration-200 ${isOpen ? 'cursor-default' : 'cursor-pointer'}`}
+            className={`-mx-2 mb-7 mt-[-10px] rounded-md transition duration-200 ${isOpen ? 'cursor-default' : 'cursor-pointer'}`}
             data-testid="form"
             onClick={focusEditor}
             onMouseDown={preventIfFocused}
