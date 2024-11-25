@@ -46,7 +46,7 @@ const ReplyForm: React.FC<Props> = ({openForm, parent}) => {
 
     return (
         <div ref={setForm}>
-            <div className='mt-[-16px] pr-3'>
+            <div className='mt-[-16px] pr-2'>
                 <Form
                     close={close}
                     editor={editor}
