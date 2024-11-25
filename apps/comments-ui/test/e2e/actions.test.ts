@@ -156,7 +156,7 @@ test.describe('Actions', async () => {
 
         // Should indicate we're replying to a reply
         await expect(frame.getByTestId('replying-to')).toBeVisible();
-        await expect(frame.getByTestId('replying-to')).toHaveText('reply to comment: This is a reply to 1');
+        await expect(frame.getByTestId('replying-to')).toHaveText('Reply to: This is a reply to 1');
 
         await page.keyboard.type('This is a reply to a reply');
 

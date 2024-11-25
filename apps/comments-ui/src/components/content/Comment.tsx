@@ -316,7 +316,7 @@ const CommentHeader: React.FC<CommentHeaderProps> = ({comment, className = ''}) 
             </div>
             {(isReplyToReply &&
                 <a className="mb-2 line-clamp-1 font-sans text-base leading-snug text-neutral-900/50 sm:text-sm dark:text-white/60" href={`#${comment.in_reply_to_id}`} onClick={scrollRepliedToCommentIntoView}>
-                    <span>{t('replied to comment')}</span>:<span className="ml-0.5 font-semibold text-[#8B8B8B]" data-testid="comment-in-reply-to">{comment.in_reply_to_snippet}</span>
+                    <span>{t('Replied to')}</span>:<span className="ml-0.5 font-semibold text-[#8B8B8B]" data-testid="comment-in-reply-to">{comment.in_reply_to_snippet}</span>
                 </a>
             )}
         </>
