@@ -220,7 +220,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
             className={`relative z-[9998] ml-auto flex h-5 w-5 items-center justify-center self-start hover:opacity-60 ${isCopied ? 'bump' : ''}`}
             hideLabel={true}
             icon='dotdotdot'
-            iconColorClass={`(${layout === 'inbox' ? 'text-grey-900' : 'text-grey-600'}`}
+            iconColorClass={`${layout === 'inbox' ? 'text-grey-900' : 'text-grey-500'}`}
             id='more'
             size='sm'
             unstyled={true}
@@ -237,7 +237,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                             <span className='z-10'>{actor.name} reposted</span>
                         </div>}
                         <div className={`border-1 flex flex-col gap-2.5`} data-test-activity>
-                            <div className='flex min-w-0 items-center gap-2.5'>
+                            <div className='flex min-w-0 items-center gap-3'>
                                 <APAvatar author={author}/>
                                 <div className='flex min-w-0 flex-col gap-0.5'>
                                     <span className='min-w-0 truncate break-all font-semibold leading-[normal]' data-test-activity-heading>{author.name}</span>

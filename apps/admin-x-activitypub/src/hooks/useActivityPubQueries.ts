@@ -436,3 +436,43 @@ export function useThreadForUser(handle: string, id: string) {
 
     return {threadQuery, addToThread};
 }
+
+export function useNoteMutationForUser(handle: string) {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        async mutationFn({content}: {content: string}) {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI(handle, siteUrl);
+            return await api.note(content) as Activity;
+        },
+        onSuccess: (activity: Activity) => {
+            queryClient.setQueryData([`outbox:${handle}`], (current?: Activity[]) => {
+                if (current === undefined) {
+                    return current;
+                }
+
+                return [activity, ...current];
+            });
+
+            queryClient.setQueriesData([`activities:${handle}`], (current?: {pages: {data: Activity[]}[]}) => {
+                if (current === undefined) {
+                    return current;
+                }
+
+                return {
+                    ...current,
+                    pages: current.pages.map((page: {data: Activity[]}, index: number) => {
+                        if (index === 0) {
+                            return {
+                                ...page,
+                                data: [activity, ...page.data]
+                            };
+                        }
+                        return page;
+                    })
+                };
+            });
+        }
+    });
+}

@@ -3,6 +3,7 @@ import ActivityItem from './activities/ActivityItem';
 import ActivityPubWelcomeImage from '../assets/images/ap-welcome.png';
 import FeedItem from './feed/FeedItem';
 import MainNavigation from './navigation/MainNavigation';
+import NewPostModal from './modals/NewPostModal';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useRef} from 'react';
 import Separator from './global/Separator';
@@ -10,9 +11,10 @@ import ViewProfileModal from './global/ViewProfileModal';
 import getName from '../utils/get-name';
 import getUsername from '../utils/get-username';
 import useSuggestedProfiles from '../hooks/useSuggestedProfiles';
+import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, Heading, LoadingIndicator} from '@tryghost/admin-x-design-system';
 import {handleViewContent} from '../utils/content-handlers';
-import {useActivitiesForUser} from '../hooks/useActivityPubQueries';
+import {useActivitiesForUser, useUserDataForUser} from '../hooks/useActivityPubQueries';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 type Layout = 'inbox' | 'feed';
@@ -71,10 +73,12 @@ const Inbox: React.FC<InboxProps> = ({layout}) => {
         };
     }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
+    const {data: user} = useUserDataForUser('index');
+
     return (
         <>
             <MainNavigation page={layout}/>
-            <div className='z-0 my-5 flex w-full flex-col'>
+            <div className='z-0 mb-5 flex w-full flex-col'>
                 <div className='w-full px-8'>
                     {isLoading ? (
                         <div className='flex flex-col items-center justify-center space-y-4 text-center'>
@@ -83,36 +87,45 @@ const Inbox: React.FC<InboxProps> = ({layout}) => {
                     ) : activities.length > 0 ? (
                         <>
                             <div className={`mx-auto flex items-start gap-8`}>
-                                <div className='flex w-full min-w-0 items-start'>
-                                    <ul className={`mx-auto flex w-full flex-col ${layout === 'inbox' ? 'xxxl:max-w-[800px]' : 'max-w-[500px]'}`}>
-                                        {activities.map((activity, index) => (
-                                            <li
-                                                key={activity.id}
-                                                data-test-view-article
-                                            >
-                                                <FeedItem
-                                                    actor={activity.actor}
-                                                    commentCount={activity.object.replyCount ?? 0}
-                                                    layout={layout}
-                                                    object={activity.object}
-                                                    type={activity.type}
-                                                    onClick={() => handleViewContent(activity, false, updateActivity)}
-                                                    onCommentClick={() => handleViewContent(activity, true, updateActivity)}
-                                                />
-                                                {index < activities.length - 1 && (
-                                                    <Separator />
-                                                )}
-                                            </li>
-                                        ))}
-                                        <div ref={loadMoreRef} className='h-1'></div>
-                                        {isFetchingNextPage && (
-                                            <div className='flex flex-col items-center justify-center space-y-4 text-center'>
-                                                <LoadingIndicator size='md' />
+                                <div className='flex w-full min-w-0 flex-col items-center'>
+                                    <div className={`flex w-full min-w-0 flex-col items-start ${layout === 'inbox' ? 'xxxl:max-w-[800px]' : 'max-w-[500px]'}`}>
+                                        {layout === 'feed' && <div className='relative mx-[-12px] mb-4 mt-10 flex w-[calc(100%+24px)] items-center p-3'>
+                                            <div className=''>
+                                                <APAvatar author={user as ActorProperties} />
                                             </div>
-                                        )}
-                                    </ul>
+                                            <Button aria-label='New post' className='text absolute inset-0 w-full rounded-lg bg-white pl-[64px] text-left text-[1.5rem] tracking-normal text-grey-500 shadow-[0_0_1px_rgba(0,0,0,.32),0_1px_6px_rgba(0,0,0,.03),0_8px_10px_-8px_rgba(0,0,0,.16)] transition-all hover:shadow-[0_0_1px_rgba(0,0,0,.32),0_1px_6px_rgba(0,0,0,.03),0_8px_10px_-8px_rgba(0,0,0,.26)]' label='What&apos;s new?' unstyled onClick={() => NiceModal.show(NewPostModal)} />
+                                        </div>}
+                                        <ul className={`mx-auto flex w-full flex-col ${layout === 'inbox' && 'mt-3'}`}>
+                                            {activities.map((activity, index) => (
+                                                <li
+                                                    key={activity.id}
+                                                    data-test-view-article
+                                                >
+                                                    <FeedItem
+                                                        actor={activity.actor}
+                                                        commentCount={activity.object.replyCount ?? 0}
+                                                        layout={layout}
+                                                        object={activity.object}
+                                                        type={activity.type}
+                                                        onClick={() => handleViewContent(activity, false, updateActivity)}
+                                                        onCommentClick={() => handleViewContent(activity, true, updateActivity)}
+                                                    />
+                                                    {index < activities.length - 1 && (
+                                                        <Separator />
+                                                    )}
+                                                </li>
+                                            ))}
+                                            <div ref={loadMoreRef} className='h-1'></div>
+                                            {isFetchingNextPage && (
+                                                <div className='flex flex-col items-center justify-center space-y-4 text-center'>
+                                                    <LoadingIndicator size='md' />
+                                                </div>
+                                            )}
+                                        </ul>
+                                    </div>
                                 </div>
-                                <div className='sticky top-[135px] ml-auto w-full max-w-[300px] max-lg:hidden xxxl:sticky xxxl:right-[40px]'>
+                                <div className='sticky top-[133px] ml-auto w-full max-w-[300px] max-lg:hidden xxxl:sticky xxxl:right-[40px]'>
+                                    {/* <Icon className='mb-2' colorClass='text-blue-500' name='comment' size='md' /> */}
                                     <h2 className='mb-2 text-lg font-semibold'>This is your {layout === 'inbox' ? 'inbox' : 'feed'}</h2>
                                     <p className='mb-6 border-b border-grey-200 pb-6 text-grey-700'>You&apos;ll find {layout === 'inbox' ? 'long-form content' : 'short posts and updates'} from the accounts you follow here.</p>
                                     <h2 className='mb-2 text-lg font-semibold'>You might also like</h2>

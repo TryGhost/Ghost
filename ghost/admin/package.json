@@ -1,6 +1,6 @@
 {
   "name": "ghost-admin",
-  "version": "5.101.3",
+  "version": "5.101.4",
   "description": "Ember.js admin client for Ghost",
   "author": "Ghost Foundation",
   "homepage": "http://ghost.org",
@@ -56,7 +56,7 @@
     "@tryghost/nql": "0.12.7",
     "@tryghost/nql-lang": "0.6.3",
     "@tryghost/string": "0.2.12",
-    "@tryghost/timezone-data": "0.4.3",
+    "@tryghost/timezone-data": "0.4.4",
     "animejs": "3.2.2",
     "autoprefixer": "9.8.6",
     "babel-eslint": "10.1.0",

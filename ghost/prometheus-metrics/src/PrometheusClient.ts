@@ -1,4 +1,5 @@
 import {Request, Response} from 'express';
+import http from 'http';
 import client from 'prom-client';
 import type {Metric, MetricObjectWithValues, MetricValue} from 'prom-client';
 import type {Knex} from 'knex';
@@ -33,10 +34,12 @@ export class PrometheusClient {
     public gateway: client.Pushgateway<client.RegistryContentType> | undefined; // public for testing
     public queries: Map<string, () => void> = new Map();
     public acquires: Map<number, () => void> = new Map();
+    public creates: Map<number, () => void> = new Map();
 
     private config: PrometheusClientConfig;
     private prefix;
     private pushInterval: ReturnType<typeof setInterval> | undefined;
+    private pushRetries: number = 0;
     private logger: any;
 
     /**
@@ -46,8 +49,14 @@ export class PrometheusClient {
         this.collectDefaultMetrics();
         if (this.config.pushgateway?.enabled) {
             const gatewayUrl = this.config.pushgateway.url || 'http://localhost:9091';
-            const interval = this.config.pushgateway.interval || 5000;
-            this.gateway = new client.Pushgateway(gatewayUrl);
+            const interval = this.config.pushgateway.interval || 15000;
+            this.gateway = new client.Pushgateway(gatewayUrl, {
+                timeout: 5000,
+                agent: new http.Agent({
+                    keepAlive: true,
+                    maxSockets: 1
+                })
+            });
             this.pushMetrics();
             this.pushInterval = setInterval(() => {
                 this.pushMetrics();
@@ -59,11 +68,17 @@ export class PrometheusClient {
      * Pushes metrics to the pushgateway, if enabled
      */
     async pushMetrics() {
+        if (this.pushRetries >= 3) {
+            this.logger.error('Failed to push metrics to pushgateway 3 times in a row, giving up');
+            this.stop();
+            return;
+        }
         if (this.config.pushgateway?.enabled && this.gateway) {
             const jobName = this.config.pushgateway?.jobName || 'ghost';
             try {
                 await this.gateway.pushAdd({jobName});
                 this.logger.debug('Metrics pushed to pushgateway - jobName: ', jobName);
+                this.pushRetries = 0;
             } catch (err) {
                 let error;
                 if (typeof err === 'object' && err !== null && 'code' in err) {
@@ -72,6 +87,7 @@ export class PrometheusClient {
                     error = 'Error pushing metrics to pushgateway: Unknown error';
                 }
                 this.logger.error(error);
+                this.pushRetries = this.pushRetries + 1;
             }
         }
     }
@@ -324,6 +340,15 @@ export class PrometheusClient {
             pruneAgedBuckets: false
         });
 
+        const createDurationSummary = this.registerSummary({
+            name: `db_connection_create_duration_seconds`,
+            help: 'Summary of the duration of creating a connection in seconds',
+            percentiles: [0.5, 0.9, 0.99],
+            maxAgeSeconds: 60,
+            ageBuckets: 6,
+            pruneAgedBuckets: false
+        });
+
         knexInstance.on('query', (query) => {
             // Add the query to the map
             this.queries.set(query.__knexQueryUid, queryDurationSummary.startTimer());
@@ -332,6 +357,20 @@ export class PrometheusClient {
         knexInstance.on('query-response', (err, query) => {
             this.queries.get(query.__knexQueryUid)?.();
             this.queries.delete(query.__knexQueryUid);
+        });
+
+        knexInstance.client.pool.on('createRequest', (eventId: number) => {
+            this.creates.set(eventId, createDurationSummary.startTimer());
+        });
+
+        knexInstance.client.pool.on('createSuccess', (eventId: number) => {
+            this.creates.get(eventId)?.();
+            this.creates.delete(eventId);
+        });
+
+        knexInstance.client.pool.on('createFail', (eventId: number) => {
+            this.creates.get(eventId)?.();
+            this.creates.delete(eventId);
         });
 
         knexInstance.client.pool.on('acquireRequest', (eventId: number) => {

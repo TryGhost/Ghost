@@ -734,26 +734,19 @@ export default class LexicalEditorController extends Controller {
     }
 
     @task
-    *beforeSaveTask(options = {}) {
+    *beforeSaveTask() {
         if (this.post?.isDestroyed || this.post?.isDestroying) {
             return;
         }
 
-        // ensure we remove any blank cards when performing a full save
-        if (!options.backgroundSave) {
-            // TODO: not yet implemented in react editor
-            // if (this._koenig) {
-            //     this._koenig.cleanup();
-            //     this.set('hasDirtyAttributes', true);
-            // }
+        if (this.post.status === 'draft') {
+            if (this.post.titleScratch !== this.post.title) {
+                yield this.generateSlugTask.perform();
+            }
         }
 
-        // Set the properties that are indirected
-
-        // Set lexical equal to what's in the editor
         this.set('post.lexical', this.post.lexicalScratch || null);
 
-        // Set a default title
         if (!this.post.titleScratch?.trim()) {
             this.set('post.titleScratch', DEFAULT_TITLE);
         }
@@ -774,7 +767,6 @@ export default class LexicalEditorController extends Controller {
 
         if (!this.get('post.slug')) {
             this.saveTitleTask.cancelAll();
-
             yield this.generateSlugTask.perform();
         }
     }
@@ -798,7 +790,6 @@ export default class LexicalEditorController extends Controller {
         }
 
         serverSlug = yield this.slugGenerator.generateSlug('post', newSlug);
-
         // If after getting the sanitized and unique slug back from the API
         // we end up with a slug that matches the existing slug, abort the change
         if (serverSlug === slug) {
@@ -1234,6 +1225,25 @@ export default class LexicalEditorController extends Controller {
             } else {
                 this._leaveConfirmed = true;
                 return transition.retry();
+            }
+        }
+
+        // Capture posts with untitled slugs and a title set; ref https://linear.app/ghost/issue/ONC-548/
+        if (this.post) {
+            const slug = this.post.get('slug');
+            const title = this.post.get('title');
+            const isDraft = this.post.get('status') === 'draft';
+            const slugContainsUntitled = slug.includes('untitled');
+            const isTitleSet = title && title.trim() !== '' && title !== DEFAULT_TITLE;
+    
+            if (isDraft && slugContainsUntitled && isTitleSet) {
+                Sentry.captureException(new Error('Draft post has title set with untitled slug'), {
+                    extra: {
+                        slug: slug,
+                        title: title,
+                        titleScratch: this.post.get('titleScratch')
+                    }
+                });
             }
         }
 
