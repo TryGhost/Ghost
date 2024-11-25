@@ -1,4 +1,4 @@
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@tryghost/shade";
+import { Icon, Tabs, TabsContent, TabsList, TabsTrigger } from "@tryghost/shade";
 import Header from "./components/layout/Header";
 import EmailStats from "./components/email/EmailStats";
 import WebStats from "./components/web/WebStats";
@@ -10,13 +10,13 @@ const PostAnalytics = () => {
 
             <Header />
 
-            <Tabs className="mt-8" defaultValue="email" variant="outline">
+            <Tabs className="mt-8" defaultValue="email" variant="bordered">
                 <TabsList className="grid w-full grid-cols-5">
-                    <TabsTrigger value="email" className="justify-start">
-                        Email
+                    <TabsTrigger value="email" className="flex items-center gap-1">
+                        <Icon name="email" size={'sm'} /> Email
                     </TabsTrigger>
-                    <TabsTrigger value="web" className="justify-start">
-                        Web
+                    <TabsTrigger value="web" className="flex items-center gap-1">
+                        <Icon name="world-clock" size={'sm'} /> Web
                     </TabsTrigger>
                 </TabsList>
                 <TabsContent value="email">
