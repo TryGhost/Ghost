@@ -57,6 +57,8 @@ describe('Session controller', function () {
             const fakeUser = models.User.forge({});
             sinon.stub(models.User, 'check')
                 .resolves(fakeUser);
+            sinon.stub(models.User, 'getByEmail')
+                .resolves(fakeUser);
 
             const createSessionStub = sinon.stub(sessionServiceMiddleware, 'createSession');
 
@@ -88,6 +90,8 @@ describe('Session controller', function () {
             const fakeUser = models.User.forge({});
             sinon.stub(models.User, 'check')
                 .resolves(fakeUser);
+            sinon.stub(models.User, 'getByEmail')
+                .resolves(fakeUser);
 
             sinon.stub(sessionServiceMiddleware, 'createSession');
 
@@ -100,6 +104,74 @@ describe('Session controller', function () {
                 should.equal(fakeReq.brute.reset.callCount, 1);
                 should.equal(fakeNext.callCount, 1);
                 should.equal(fakeNext.args[0][0], resetError);
+            });
+        });
+
+        it('it creates a verified session when the user has not logged in before', function () {
+            const fakeReq = {
+                brute: {
+                    reset: sinon.stub().callsArg(0)
+                }
+            };
+            const fakeRes = {};
+            const fakeNext = () => {};
+            const fakeUser = models.User.forge({});
+            sinon.stub(models.User, 'check')
+                .resolves(fakeUser);
+            sinon.stub(models.User, 'getByEmail')
+                .resolves(fakeUser);
+
+            const createSessionStub = sinon.stub(sessionServiceMiddleware, 'createSession');
+
+            return sessionController.add({data: {
+                username: 'freddy@vodafone.com',
+                password: 'qu33nRul35'
+            }}).then((fn) => {
+                fn(fakeReq, fakeRes, fakeNext);
+            }).then(function () {
+                should.equal(fakeReq.brute.reset.callCount, 1);
+
+                const createSessionStubCall = createSessionStub.getCall(0);
+                should.equal(fakeReq.user, fakeUser);
+                should.equal(createSessionStubCall.args[0], fakeReq);
+                should.equal(createSessionStubCall.args[1], fakeRes);
+                should.equal(createSessionStubCall.args[2], fakeNext);
+
+                should.equal(fakeReq.skipVerification, true);
+            });
+        });
+
+        it('it creates a non-verified session when the user has logged in before', function () {
+            const fakeReq = {
+                brute: {
+                    reset: sinon.stub().callsArg(0)
+                }
+            };
+            const fakeRes = {};
+            const fakeNext = () => {};
+            const fakeUser = models.User.forge({last_seen: new Date()});
+            sinon.stub(models.User, 'check')
+                .resolves(fakeUser);
+            sinon.stub(models.User, 'getByEmail')
+                .resolves(fakeUser);
+
+            const createSessionStub = sinon.stub(sessionServiceMiddleware, 'createSession');
+
+            return sessionController.add({data: {
+                username: 'freddy@vodafone.com',
+                password: 'qu33nRul35'
+            }}).then((fn) => {
+                fn(fakeReq, fakeRes, fakeNext);
+            }).then(function () {
+                should.equal(fakeReq.brute.reset.callCount, 1);
+
+                const createSessionStubCall = createSessionStub.getCall(0);
+                should.equal(fakeReq.user, fakeUser);
+                should.equal(createSessionStubCall.args[0], fakeReq);
+                should.equal(createSessionStubCall.args[1], fakeRes);
+                should.equal(createSessionStubCall.args[2], fakeNext);
+
+                should.equal(fakeReq.skipVerification, false);
             });
         });
     });

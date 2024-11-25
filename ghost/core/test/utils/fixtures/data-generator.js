@@ -134,7 +134,8 @@ DataGenerator.Content = {
             email: 'jbloggs@example.com',
             password: 'Sl1m3rson99',
             profile_image: 'https://example.com/super_photo.jpg',
-            paid_subscription_canceled_notification: true
+            paid_subscription_canceled_notification: true,
+            last_seen: moment().subtract(1, 'hour').toDate()
         },
         {
             // admin
