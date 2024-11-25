@@ -455,5 +455,80 @@ describe('Admin Comments API', function () {
             assert.equal(res2.body.comments.length, 1);
             assert.equal(res2.body.comments[0].html, 'Reply 4');
         });
+
+        it('Does not return deleted replies', async function () {
+            const post = fixtureManager.get('posts', 1);
+            await mockManager.mockLabsEnabled('commentImprovements');
+            const {parent} = await dbFns.addCommentWithReplies({
+                post_id: post.id,
+                member_id: fixtureManager.get('members', 0).id,
+                replies: [{
+                    member_id: fixtureManager.get('members', 1).id,
+                    status: 'hidden'
+                }, {
+                    member_id: fixtureManager.get('members', 2).id,
+                    status: 'deleted'
+                },
+                {
+                    member_id: fixtureManager.get('members', 3).id,
+                    status: 'hidden'
+                },
+                {
+                    member_id: fixtureManager.get('members', 4).id,
+                    status: 'published'
+                }
+                ]
+            });
+
+            const res = await adminApi.get(`/comments/${parent.get('id')}/`);
+            res.body.comments[0].replies.length.should.eql(3);
+        });
+
+        it('Does return published replies', async function () {
+            const post = fixtureManager.get('posts', 1);
+            await mockManager.mockLabsEnabled('commentImprovements');
+            const {parent} = await dbFns.addCommentWithReplies({
+                post_id: post.id,
+                member_id: fixtureManager.get('members', 0).id,
+                replies: [{
+                    member_id: fixtureManager.get('members', 1).id,
+                    status: 'published'
+                }, {
+                    member_id: fixtureManager.get('members', 2).id,
+                    status: 'published'
+                },
+                {
+                    member_id: fixtureManager.get('members', 3).id,
+                    status: 'published'
+                }
+                ]
+            });
+
+            const res = await adminApi.get(`/comments/${parent.get('id')}/`);
+            res.body.comments[0].replies.length.should.eql(3);
+        });
+
+        it('Does return published and hidden replies', async function () {
+            const post = fixtureManager.get('posts', 1);
+            await mockManager.mockLabsEnabled('commentImprovements');
+            const {parent} = await dbFns.addCommentWithReplies({
+                post_id: post.id,
+                member_id: fixtureManager.get('members', 0).id,
+                replies: [{
+                    member_id: fixtureManager.get('members', 1).id,
+                    status: 'published'
+                }, {
+                    member_id: fixtureManager.get('members', 2).id,
+                    status: 'published'
+                },
+                {
+                    member_id: fixtureManager.get('members', 3).id,
+                    status: 'published'
+                }
+                ]
+            });
+            const res = await adminApi.get(`/comments/${parent.get('id')}/`);
+            res.body.comments[0].replies.length.should.eql(3);
+        });
     });
 });
