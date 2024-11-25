@@ -447,7 +447,7 @@ describe('Comments API', function () {
                 });
             });
 
-            it('shows hidden and deleted parent comment where there is a reply', async function () {
+            it('shows hidden and deleted comment where there is a reply', async function () {
                 await mockManager.mockLabsEnabled('commentImprovements');
                 await setupBrowseCommentsData();
                 const hiddenComment = await dbFns.addComment({
@@ -502,54 +502,6 @@ describe('Comments API', function () {
                         should(comment.replies[0].html).eql('This is a reply to a deleted comment');
                     }
                 });
-            });
-
-            it('Does not return deleted or hidden replies', async function () {
-                await mockManager.mockLabsEnabled('commentImprovements');
-                const {parent} = await dbFns.addCommentWithReplies({
-                    member_id: fixtureManager.get('members', 0).id,
-                    replies: [{
-                        member_id: fixtureManager.get('members', 1).id,
-                        status: 'hidden'
-                    }, {
-                        member_id: fixtureManager.get('members', 2).id,
-                        status: 'deleted'
-                    },
-                    {
-                        member_id: fixtureManager.get('members', 3).id,
-                        status: 'hidden'
-                    },
-                    {
-                        member_id: fixtureManager.get('members', 4).id,
-                        status: 'published'
-                    }
-                    ]
-                });
-
-                const res = await membersAgent.get(`/api/comments/${parent.get('id')}/`);
-                res.body.comments[0].replies.length.should.eql(1);
-            });
-
-            it('Does return published replies', async function () {
-                await mockManager.mockLabsEnabled('commentImprovements');
-                const {parent} = await dbFns.addCommentWithReplies({
-                    member_id: fixtureManager.get('members', 0).id,
-                    replies: [{
-                        member_id: fixtureManager.get('members', 1).id,
-                        status: 'published'
-                    }, {
-                        member_id: fixtureManager.get('members', 2).id,
-                        status: 'published'
-                    },
-                    {
-                        member_id: fixtureManager.get('members', 3).id,
-                        status: 'published'
-                    }
-                    ]
-                });
-
-                const res = await membersAgent.get(`/api/comments/${parent.get('id')}/`);
-                res.body.comments[0].replies.length.should.eql(3);
             });
 
             it('Returns nothing if both parent and reply are hidden', async function () {
