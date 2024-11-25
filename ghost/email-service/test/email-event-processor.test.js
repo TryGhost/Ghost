@@ -1,6 +1,6 @@
 const assert = require('assert/strict');
 const EmailEventProcessor = require('../lib/EmailEventProcessor');
-const {createDb} = require('./utils');
+const {createDb, createPrometheusClient} = require('./utils');
 const sinon = require('sinon');
 
 describe('Email Event Processor', function () {
@@ -8,14 +8,14 @@ describe('Email Event Processor', function () {
     let eventStorage;
     let db;
     let domainEvents;
-
+    let prometheusClient;
     beforeEach(function () {
         db = createDb({first: {
             emailId: 'fetched-email-id',
             member_id: 'member-id',
             id: 'email-recipient-id'
         }});
-
+        prometheusClient = createPrometheusClient();
         domainEvents = {
             dispatch: sinon.stub()
         };
@@ -32,7 +32,8 @@ describe('Email Event Processor', function () {
         eventProcessor = new EmailEventProcessor({
             db,
             domainEvents,
-            eventStorage
+            eventStorage,
+            prometheusClient
         });
     });
 
@@ -169,6 +170,32 @@ describe('Email Event Processor', function () {
             const event = eventStorage.handleComplained.firstCall.args[0];
             assert.equal(event.email, 'example@example.com');
             assert.equal(event.constructor.name, 'SpamComplaintEvent');
+        });
+    });
+
+    describe('recordEventProcessed', function () {
+        it('records the event processed metric', function () {
+            const incStub = sinon.stub();
+            prometheusClient = createPrometheusClient({incStub});
+            eventProcessor = new EmailEventProcessor({
+                db,
+                domainEvents,
+                eventStorage,
+                prometheusClient
+            });
+            eventProcessor.recordEventProcessed('delivered');
+            assert(incStub.calledOnce);
+        });
+
+        it('does not throw if recording the event metric fails', function () {
+            prometheusClient = createPrometheusClient({incStub: sinon.stub().throws()});
+            eventProcessor = new EmailEventProcessor({
+                db,
+                domainEvents,
+                eventStorage,
+                prometheusClient
+            });
+            assert.doesNotThrow(() => eventProcessor.recordEventProcessed('delivered'));
         });
     });
 });
