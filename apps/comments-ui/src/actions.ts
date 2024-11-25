@@ -135,7 +135,7 @@ async function hideComment({state, data: comment}: {state: EditableAppContext, a
 
 async function showComment({state, api, data: comment}: {state: EditableAppContext, api: GhostApi, adminApi: any, data: {id: string}}) {
     if (state.adminApi) {
-        await state.adminApi.showComment(comment.id);
+        await state.adminApi.read({commentId: comment.id});
     }
     // We need to refetch the comment, to make sure we have an up to date HTML content
     // + all relations are loaded as the current member (not the admin)

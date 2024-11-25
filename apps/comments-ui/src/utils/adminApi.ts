@@ -106,6 +106,11 @@ export function setupAdminAPI({adminUrl}: {adminUrl: string}) {
             const response = await callApi('getReplies', {commentId, params: params.toString()});
 
             return response;
+        },
+
+        async read({commentId}: {commentId: string}) {
+            const response = await callApi('readComment', {commentId});
+            return response;
         }
     };
 
