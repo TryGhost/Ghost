@@ -508,7 +508,7 @@ describe('Admin Comments API', function () {
             res.body.comments[0].replies.length.should.eql(3);
         });
 
-        it('Does return published and hidden replies', async function () {
+        it('Does return published and hidden replies but not deleted', async function () {
             const post = fixtureManager.get('posts', 1);
             await mockManager.mockLabsEnabled('commentImprovements');
             const {parent} = await dbFns.addCommentWithReplies({
@@ -524,11 +524,19 @@ describe('Admin Comments API', function () {
                 {
                     member_id: fixtureManager.get('members', 3).id,
                     status: 'published'
+                },
+                {
+                    member_id: fixtureManager.get('members', 4).id,
+                    status: 'hidden'
+                },
+                {
+                    member_id: fixtureManager.get('members', 5).id,
+                    status: 'deleted'
                 }
                 ]
             });
             const res = await adminApi.get(`/comments/${parent.get('id')}/`);
-            res.body.comments[0].replies.length.should.eql(3);
+            res.body.comments[0].replies.length.should.eql(4);
         });
     });
 });
