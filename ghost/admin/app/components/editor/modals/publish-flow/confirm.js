@@ -92,7 +92,10 @@ export default class PublishFlowOptions extends Component {
         this.errorMessage = null;
 
         try {
-            yield this.args.saveTask.perform();
+            const response = yield this.args.saveTask.perform();
+            if (response && typeof response === 'string') {
+                return;
+            }
 
             if (this.args.publishOptions.isScheduled) {
                 try {
