@@ -80,13 +80,13 @@ const CommentContextMenu: React.FC<Props> = ({comment, close, toggleEdit, isLast
     return (
         labs.commentImprovements ? (
             <div ref={element} className="relative" onClick={stopPropagation}>
-                <div className={`absolute z-10 min-w-min whitespace-nowrap rounded bg-white py-3 pl-4 pr-8 font-sans text-sm shadow-lg outline-0 sm:min-w-36 dark:bg-neutral-800 dark:text-white ${isLastComment ? 'bottom-full mb-6' : 'top-0'}`}>
+                <div className={`absolute z-10 min-w-min whitespace-nowrap rounded bg-white p-1 font-sans text-sm shadow-lg outline-0 sm:min-w-[80px] dark:bg-neutral-800 dark:text-white ${isLastComment ? 'bottom-full mb-6' : 'top-0'}`}>
                     {contextMenu}
                 </div>
             </div>
         ) : (
             <div ref={element} onClick={stopPropagation}>
-                <div className="absolute z-10 min-w-min whitespace-nowrap rounded bg-white py-3 pl-4 pr-8 font-sans text-sm shadow-lg outline-0 sm:min-w-36 dark:bg-neutral-800 dark:text-white">
+                <div className="absolute z-10 min-w-min whitespace-nowrap rounded bg-white p-1 font-sans text-sm shadow-lg outline-0 sm:min-w-[80px] dark:bg-neutral-800 dark:text-white">
                     {contextMenu}
                 </div>
             </div>
