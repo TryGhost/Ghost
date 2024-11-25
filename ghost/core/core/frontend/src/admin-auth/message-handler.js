@@ -52,9 +52,7 @@ window.addEventListener('message', async function (event) {
     if (data.action === 'readComment') {
         try {
             const {commentId} = data;
-            const res = await fetch(
-                adminUrl + `/comments/${commentId}/}`
-            );
+            const res = await fetch(adminUrl + '/comments/' + commentId + '/');
             const json = await res.json();
             respond(null, json);
         } catch (err) {

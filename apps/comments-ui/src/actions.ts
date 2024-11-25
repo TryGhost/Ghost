@@ -100,7 +100,7 @@ async function addReply({state, api, data: {reply, parent}}: {state: EditableApp
 }
 
 async function hideComment({state, data: comment}: {state: EditableAppContext, adminApi: any, data: {id: string}}) {
-    if (state.admin && state.adminApi && state.labs.commentImprovements) {
+    if (state.adminApi) {
         await state.adminApi.hideComment(comment.id);
     }
     return {
@@ -134,12 +134,19 @@ async function hideComment({state, data: comment}: {state: EditableAppContext, a
 }
 
 async function showComment({state, api, data: comment}: {state: EditableAppContext, api: GhostApi, adminApi: any, data: {id: string}}) {
-    if (state.admin && state.adminApi && state.labs.commentImprovements) {
-        await state.adminApi.read({commentId: comment.id});
+    if (state.adminApi) {
+        await state.adminApi.showComment(comment.id);
     }
     // We need to refetch the comment, to make sure we have an up to date HTML content
     // + all relations are loaded as the current member (not the admin)
-    const data = await api.comments.read(comment.id);
+    let data;
+    if (state.admin && state.adminApi && state.labs.commentImprovements) {
+        data = await state.adminApi.read({commentId: comment.id});
+        console.log(data);
+    } else {
+        data = await api.comments.read(comment.id);
+    }
+
     const updatedComment = data.comments[0];
 
     return {
