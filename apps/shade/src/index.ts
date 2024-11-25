@@ -1,5 +1,5 @@
-export {default as Icon} from './components/ui/icon';
-export type {IconProps} from './components/ui/icon';
+export {default as Icon} from './components/ui/Icon';
+export type {IconProps} from './components/ui/Icon';
 
 export * from './components/typography/heading';
 export * from './components/ui/breadcrumb';
