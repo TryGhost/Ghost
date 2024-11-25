@@ -82,8 +82,6 @@ module.exports = class CardAssets extends AssetsMinificationBase {
 
         debug('loading with config', this.config);
 
-        await this.clearFiles();
-
         const globs = this.generateGlobs();
 
         debug('globs', globs);

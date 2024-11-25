@@ -27,7 +27,6 @@ module.exports = class CommentCountsAssets extends AssetsMinificationBase {
      * @override
      */
     async load() {
-        await this.clearFiles();
         const globs = this.generateGlobs();
         this.files = await this.minify(globs);
     }
