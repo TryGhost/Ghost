@@ -2,7 +2,7 @@
 
 const WebStats = () => {
     return (
-        <>Email stats</>
+        <>Web stats</>
     );
 }
 
