@@ -1,5 +1,5 @@
 // The main Email stats component that encapsulates the breakdown
-import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@tryghost/shade";
+import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarMenu, SidebarMenuBadge, SidebarMenuButton, SidebarMenuItem, SidebarSeparator } from "@tryghost/shade";
 import SentStats from "./SentStats";
 import { useState } from "react";
 import OpenedStats from "./OpenedStats";
@@ -35,27 +35,47 @@ const EmailStats = () => {
                                     >
                                         <span>Sent</span>
                                     </SidebarMenuButton>
+                                    <SidebarMenuBadge>6,197</SidebarMenuBadge>
+                                </SidebarMenuItem>
+                                <SidebarMenuItem>
                                     <SidebarMenuButton
                                         isActive={activeTab === 'opened'}
                                         onClick={() => setActiveTab('opened')}
                                     >
                                         <span>Opened</span>
                                     </SidebarMenuButton>
+                                    <SidebarMenuBadge>1,004</SidebarMenuBadge>
+                                </SidebarMenuItem>
+                                <SidebarMenuItem>
                                     <SidebarMenuButton>
                                         <span>Clicked</span>
                                     </SidebarMenuButton>
+                                    <SidebarMenuBadge>348</SidebarMenuBadge>
+                                </SidebarMenuItem>
+                                <SidebarSeparator />
+                                <SidebarMenuItem>
                                     <SidebarMenuButton>
                                         <span>Unsubscribed</span>
                                     </SidebarMenuButton>
+                                    <SidebarMenuBadge>29</SidebarMenuBadge>
+                                </SidebarMenuItem>
+                                <SidebarMenuItem>
                                     <SidebarMenuButton>
                                         <span>Feedback</span>
                                     </SidebarMenuButton>
+                                    <SidebarMenuBadge>129</SidebarMenuBadge>
+                                </SidebarMenuItem>
+                                <SidebarMenuItem>
                                     <SidebarMenuButton>
                                         <span>Marked as spam</span>
                                     </SidebarMenuButton>
+                                    <SidebarMenuBadge>85</SidebarMenuBadge>
+                                </SidebarMenuItem>
+                                <SidebarMenuItem>
                                     <SidebarMenuButton>
                                         <span>Bounced</span>
                                     </SidebarMenuButton>
+                                    <SidebarMenuBadge>163</SidebarMenuBadge>
                                 </SidebarMenuItem>
                             </SidebarMenu>
                         </SidebarGroupContent>
