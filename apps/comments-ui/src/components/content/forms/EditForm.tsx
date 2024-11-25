@@ -60,7 +60,7 @@ const EditForm: React.FC<Props> = ({comment, openForm, parent}) => {
     }, [dispatchAction, openForm]);
 
     return (
-        <div className='px-3 pb-2 pt-3'>
+        <div className='px-2 pb-2 pt-3'>
             <div className='mt-[-16px] pr-3'>
                 <Form
                     close={close}
