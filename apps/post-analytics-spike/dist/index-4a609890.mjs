@@ -14289,7 +14289,7 @@ const zv = (e, t, n, r) => {
     }
   };
   return /* @__PURE__ */ M.jsxs("div", { className: "w-full grid grid-cols-5", children: [
-    /* @__PURE__ */ M.jsx("div", { className: "col-span-4", children: n() }),
+    /* @__PURE__ */ M.jsx("div", { className: "col-span-4 py-2", children: n() }),
     /* @__PURE__ */ M.jsx(Mu, { collapsible: "none", className: "bg-transparent w-full", children: /* @__PURE__ */ M.jsx(mu, { children: /* @__PURE__ */ M.jsx(pu, { className: "border-b last:border-none", children: /* @__PURE__ */ M.jsx(fu, { className: "gap-0", children: /* @__PURE__ */ M.jsxs(bu, { children: [
       /* @__PURE__ */ M.jsxs(Ve, { children: [
         /* @__PURE__ */ M.jsx(
@@ -14359,11 +14359,11 @@ const zv = (e, t, n, r) => {
   paths: {
     "demo-modal": "DemoModal"
   },
-  load: async () => import("./modals-732e2328.mjs")
+  load: async () => import("./modals-6b2120b4.mjs")
 }, Xv = ({ framework: e, designSystem: t }) => /* @__PURE__ */ M.jsx(Lv, { ...e, children: /* @__PURE__ */ M.jsx(Ev, { basePath: "post-analytics-spike", modals: Rv, children: /* @__PURE__ */ M.jsx(xy, { className: "post-analytics-spike", ...t, children: /* @__PURE__ */ M.jsx(gu, { children: /* @__PURE__ */ M.jsx("div", { className: "max-w-[1280px] w-full mx-auto", children: /* @__PURE__ */ M.jsx(Uv, {}) }) }) }) }) });
 export {
   Xv as A,
   xu as N,
   M as j
 };
-//# sourceMappingURL=index-4365c390.mjs.map
+//# sourceMappingURL=index-4a609890.mjs.map

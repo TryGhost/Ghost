@@ -20,7 +20,7 @@ const EmailStats = () => {
 
     return (
         <div className="w-full grid grid-cols-5">
-            <div className="col-span-4">
+            <div className="col-span-4 py-2">
                 {renderContent()}
             </div>
             <Sidebar collapsible="none" className="bg-transparent w-full">
