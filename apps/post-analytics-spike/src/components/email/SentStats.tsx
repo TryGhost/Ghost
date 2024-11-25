@@ -91,7 +91,7 @@ export function TableDemo() {
 }
 
 const SentStats = () => {
-    return <>Hello sent stats</>;
+    return <TableDemo />;
 };
 
 export default SentStats;
