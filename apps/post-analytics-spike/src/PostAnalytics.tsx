@@ -2,6 +2,7 @@ import {Icon, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade';
 import Header from './components/layout/Header';
 import EmailStats from './components/email/EmailStats';
 import WebStats from './components/web/WebStats';
+import OverviewStats from './components/overview/OverviewStats';
 
 const PostAnalytics = () => {
     return (
@@ -10,19 +11,26 @@ const PostAnalytics = () => {
 
             <Header />
 
-            <Tabs className="mt-8" defaultValue="email" variant="bordered">
-                <TabsList className="grid w-full grid-cols-5">
-                    <TabsTrigger className="flex items-center gap-1" value="email">
+            <Tabs className="mt-8" defaultValue="overview" variant="bordered">
+                <TabsList className="grid w-full grid-cols-8 gap-3">
+                    <TabsTrigger className="flex items-center gap-2" value="overview">
+                        <Icon name="layout-2-col" size={'sm'} /> Overview
+                    </TabsTrigger>
+                    <TabsTrigger className="flex items-center gap-2" value="email">
                         <Icon name="email" size={'sm'} /> Email
                     </TabsTrigger>
-                    <TabsTrigger className="flex items-center gap-1" value="web">
+                    <TabsTrigger className="flex items-center gap-2" value="web">
                         <Icon name="world-clock" size={'sm'} /> Web
                     </TabsTrigger>
                 </TabsList>
-                <TabsContent value="email">
+
+                <TabsContent className='mt-0' value="overview">
+                    <OverviewStats />
+                </TabsContent>
+                <TabsContent className='mt-0' value="email">
                     <EmailStats />
                 </TabsContent>
-                <TabsContent value="web">
+                <TabsContent className='mt-0' value="web">
                     <WebStats />
                 </TabsContent>
             </Tabs>

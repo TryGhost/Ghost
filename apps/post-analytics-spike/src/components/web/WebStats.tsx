@@ -2,8 +2,8 @@
 
 const WebStats = () => {
     return (
-        <>Web stats</>
+        <div className="flex h-20 w-full items-center justify-center text-grey-600">Web stats</div>
     );
-}
+};
 
 export default WebStats;

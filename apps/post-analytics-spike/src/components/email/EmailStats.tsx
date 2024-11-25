@@ -20,12 +20,12 @@ const EmailStats = () => {
 
     return (
         <div className="grid w-full grid-cols-5">
-            <div className="col-span-4">
+            <div className="col-span-4 border-r border-grey-100 pr-3 pt-1">
                 {renderContent()}
             </div>
-            <Sidebar className="w-full bg-transparent" collapsible="none">
+            <Sidebar className="w-full bg-transparent pl-3 pt-1" collapsible="none">
                 <SidebarContent>
-                    <SidebarGroup className="border-b last:border-none">
+                    <SidebarGroup className="border-b px-0 last:border-none">
                         <SidebarGroupContent className="gap-0">
                             <SidebarMenu>
                                 <SidebarMenuItem>
