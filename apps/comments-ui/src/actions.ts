@@ -100,7 +100,7 @@ async function addReply({state, api, data: {reply, parent}}: {state: EditableApp
 }
 
 async function hideComment({state, data: comment}: {state: EditableAppContext, adminApi: any, data: {id: string}}) {
-    if (state.adminApi) {
+    if (state.admin && state.adminApi && state.labs.commentImprovements) {
         await state.adminApi.hideComment(comment.id);
     }
     return {
@@ -134,7 +134,7 @@ async function hideComment({state, data: comment}: {state: EditableAppContext, a
 }
 
 async function showComment({state, api, data: comment}: {state: EditableAppContext, api: GhostApi, adminApi: any, data: {id: string}}) {
-    if (state.adminApi) {
+    if (state.admin && state.adminApi && state.labs.commentImprovements) {
         await state.adminApi.read({commentId: comment.id});
     }
     // We need to refetch the comment, to make sure we have an up to date HTML content
