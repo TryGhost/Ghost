@@ -1,5 +1,5 @@
 import React from 'react';
-import {Comment, useAppContext} from '../../../AppContext';
+import {Comment, useAppContext, useLabs} from '../../../AppContext';
 
 type Props = {
     comment: Comment;
@@ -8,9 +8,17 @@ type Props = {
 };
 const AuthorContextMenu: React.FC<Props> = ({comment, close, toggleEdit}) => {
     const {dispatchAction, t} = useAppContext();
+    const labs = useLabs();
 
     const deleteComment = () => {
-        dispatchAction('deleteComment', comment);
+        if (labs.commentImprovements) {
+            dispatchAction('openPopup', {
+                type: 'deletePopup',
+                comment
+            });
+        } else {
+            dispatchAction('deleteComment', comment);
+        }
         close();
     };
 
