@@ -57,8 +57,7 @@ const FormEditor: React.FC<FormEditorProps> = ({comment, submit, progress, setPr
     }, [editor, comment, openForm, dispatchAction]);
 
     if (progress === 'sending') {
-        submitText = null;
-        buttonIcon = <SpinnerIcon className="h-[24px] w-[24px] fill-white dark:fill-black" data-testid="button-spinner" />;
+        buttonIcon = <SpinnerIcon className={`h-[24px] w-[24px] fill-white ${labs.commentImprovements ? '' : 'dark:fill-black'}`} data-testid="button-spinner" />;
     }
 
     const stopIfFocused = useCallback((event) => {
@@ -156,16 +155,13 @@ const FormEditor: React.FC<FormEditorProps> = ({comment, submit, progress, setPr
                 }
                 {labs.commentImprovements ? (
                     <button
-                        className={`flex w-auto items-center justify-center ${submitSize === 'medium' && 'sm:min-w-[100px]'} ${submitSize === 'small' && 'sm:min-w-[64px]'} h-[40px] rounded-md px-3 py-2 text-center font-sans text-base font-medium outline-0 transition-all duration-200 sm:text-sm ${
-                            hasContent
-                                ? 'bg-[var(--gh-accent-color)] text-white hover:brightness-105'
-                                : 'bg-black/5 text-neutral-900 dark:bg-white/15 dark:text-neutral-300'
-                        }`}
+                        className={`flex w-auto items-center justify-center ${submitSize === 'medium' && 'sm:min-w-[100px]'} ${submitSize === 'small' && 'sm:min-w-[64px]'} h-[40px] rounded-md bg-[var(--gh-accent-color)] px-3 py-2 text-center font-sans text-base font-medium text-white outline-0 transition-colors duration-200 hover:brightness-105 disabled:bg-black/5 disabled:text-neutral-900/30 sm:text-sm dark:disabled:bg-white/15 dark:disabled:text-white/35`}
                         data-testid="submit-form-button"
+                        disabled={!hasContent}
                         type="button"
                         onClick={submitForm}
                     >
-                        <span>{buttonIcon}</span>
+                        {buttonIcon && <span className="mr-1">{buttonIcon}</span>}
                         {submitText && <span>{submitText}</span>}
                     </button>
                 ) : (
@@ -231,8 +227,8 @@ const FormHeader: React.FC<FormHeaderProps> = ({show, name, expertise, replyingT
                 </div>
             </div>
             {isReplyingToReply && (
-                <div className="line-clamp-1 font-sans text-base leading-snug text-neutral-900/50 sm:text-sm dark:text-white/60" data-testid="replying-to">
-                    <span>{t('reply to comment')}:</span>&nbsp;<span className="font-semibold">{replyingToText}</span>
+                <div className="mt-0.5 line-clamp-1 font-sans text-base leading-snug text-neutral-900/50 sm:text-sm dark:text-white/60" data-testid="replying-to">
+                    <span>{t('Reply to')}:</span>&nbsp;<span className="font-semibold text-neutral-900/60 dark:text-white/70">{replyingToText}</span>
                 </div>
             )}
         </Transition>
@@ -333,7 +329,7 @@ const Form: React.FC<FormProps> = ({comment, submit, submitText, submitSize, clo
     return (
         <form
             ref={formEl}
-            className={`-mx-3 mb-7 mt-[-10px] rounded-md transition duration-200 ${isOpen ? 'cursor-default' : 'cursor-pointer'}`}
+            className={`-mx-2 mb-7 mt-[-10px] rounded-md transition duration-200 ${isOpen ? 'cursor-default' : 'cursor-pointer'}`}
             data-testid="form"
             onClick={focusEditor}
             onMouseDown={preventIfFocused}
