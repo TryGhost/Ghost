@@ -1,5 +1,6 @@
 import nql from '@tryghost/nql';
 import {buildComment, buildMember, buildReply, buildSettings} from './fixtures';
+import {findCommentById, flattenComments} from '../../src/utils/helpers';
 
 // The test file doesn't run in the browser, so we can't use the DOM API.
 // We can use a simple regex to strip HTML tags from a string for test purposes.
@@ -171,6 +172,13 @@ export class MockedApi {
         // Parse NQL filter
         if (filter) {
             const parsed = nql(filter);
+
+            // When fetching a comment by ID, we need to include all replies so
+            // the quick way to do that is to flatten the comment+replies array
+            if (filter.includes('id:')) {
+                filteredComments = flattenComments(filteredComments);
+            }
+
             filteredComments = filteredComments.filter((comment) => {
                 return parsed.queryJSON(comment);
             });
@@ -182,14 +190,13 @@ export class MockedApi {
         const comments = filteredComments.slice(startIndex, endIndex);
 
         return {
-
             comments: comments.map((comment) => {
                 return {
                     ...comment,
-                    replies: comment.replies.slice(0, 3),
+                    replies: comment.replies ? comment.replies?.slice(0, 3) : [],
                     count: {
                         ...comment.count,
-                        replies: comment.replies.length
+                        replies: comment.replies ? comment.replies?.length : 0
                     }
                 };
             }),
@@ -341,7 +348,7 @@ export class MockedApi {
             const url = new URL(route.request().url());
             const commentId = url.pathname.split('/').reverse()[2];
 
-            const comment = this.comments.find(c => c.id === commentId);
+            const comment = flattenComments(this.comments).find(c => c.id === commentId);
             if (!comment) {
                 return await route.fulfill({
                     status: 404,
@@ -441,14 +448,33 @@ export class MockedApi {
             });
         },
 
-        async updateComment(route) {
+        async getOrUpdateComment(route) {
             await this.#delayResponse();
             const url = new URL(route.request().url());
+
+            if (route.request().method() === 'GET') {
+                const commentId = url.pathname.split('/').reverse()[1];
+                await route.fulfill({
+                    status: 200,
+                    body: JSON.stringify(this.browseComments({
+                        limit: 1,
+                        filter: `id:'${commentId}'`,
+                        page: 1,
+                        order: '',
+                        admin: true
+                    }))
+                });
+            }
 
             if (route.request().method() === 'PUT') {
                 const commentId = url.pathname.split('/').reverse()[1];
                 const payload = JSON.parse(route.request().postData());
-                const comment = this.comments.find(c => c.id === commentId);
+                const comment = findCommentById(this.comments, commentId);
+
+                if (!comment) {
+                    await route.fulfill({status: 404});
+                    return;
+                }
 
                 comment.status = payload.status;
 
@@ -458,7 +484,8 @@ export class MockedApi {
                         limit: 1,
                         filter: `id:'${commentId}'`,
                         page: 1,
-                        order: ''
+                        order: '',
+                        admin: true
                     }))
                 });
             }
@@ -479,6 +506,6 @@ export class MockedApi {
         // Admin API -----------------------------------------------------------
         await page.route(`${path}/ghost/api/admin/users/me/`, this.adminRequestHandlers.getUser.bind(this));
         await page.route(`${path}/ghost/api/admin/comments/post/*/*`, this.adminRequestHandlers.browseComments.bind(this));
-        await page.route(`${path}/ghost/api/admin/comments/*/`, this.adminRequestHandlers.updateComment.bind(this));
+        await page.route(`${path}/ghost/api/admin/comments/*/`, this.adminRequestHandlers.getOrUpdateComment.bind(this));
     }
 }
