@@ -168,10 +168,10 @@ type UnpublishedCommentProps = {
     openEditMode: () => void;
 }
 const UnpublishedComment: React.FC<UnpublishedCommentProps> = ({comment, openEditMode}) => {
-    const {t, labs, admin} = useAppContext();
+    const {openCommentForms, t, labs, admin} = useAppContext();
 
     const avatar = (labs.commentImprovements && admin && comment.status !== 'deleted') ?
-        <Avatar comment={comment} isHidden={true} /> :
+        <Avatar comment={comment} /> :
         <BlankAvatar />;
     const hasReplies = comment.replies && comment.replies.length > 0;
 
@@ -180,6 +180,12 @@ const UnpublishedComment: React.FC<UnpublishedCommentProps> = ({comment, openEdi
         comment.status === 'deleted' ?
             t('This comment has been removed.') :
             '';
+
+    // currently a reply-to-reply form is displayed inside the top-level PublishedComment component
+    // so we need to check for a match of either the comment id or the parent id
+    const openForm = openCommentForms.find(f => (f.id === comment.id || f.parent_id === comment.id) && f.type === 'reply');
+    // avoid displaying the reply form inside RepliesContainer
+    const displayReplyForm = openForm && (!openForm.parent_id || openForm.parent_id === comment.id);
 
     // Only show MoreButton for hidden (not deleted) comments when admin
     const showMoreButton = admin && comment.status === 'hidden';
@@ -199,6 +205,7 @@ const UnpublishedComment: React.FC<UnpublishedCommentProps> = ({comment, openEdi
                 </div>
             </div>
             <RepliesContainer comment={comment} />
+            {displayReplyForm && <ReplyFormBox comment={comment} openForm={openForm} />}
         </CommentLayout>
     );
 };
@@ -237,7 +244,7 @@ const RepliesContainer: React.FC<RepliesProps & {className?: string}> = ({commen
     }
 
     return (
-        <div className={`mb-4 ml-[-1.4rem] mt-7 sm:mb-0 sm:mt-8 ${className}`}>
+        <div className={`-ml-2 mb-4 mt-7 sm:mb-0 sm:mt-8 ${className}`}>
             <Replies comment={comment} />
         </div>
     );
@@ -308,9 +315,9 @@ const CommentHeader: React.FC<CommentHeaderProps> = ({comment, className = ''}) 
                 </div>
             </div>
             {(isReplyToReply &&
-                <a className="mb-2 line-clamp-1 font-sans text-base leading-snug text-neutral-900/50 sm:text-sm dark:text-white/60" href={`#${comment.in_reply_to_id}`} onClick={scrollRepliedToCommentIntoView}>
-                    <span>{t('replied to comment')}</span>:<span className="ml-0.5 font-semibold text-[#8B8B8B]" data-testid="comment-in-reply-to">{comment.in_reply_to_snippet}</span>
-                </a>
+                <div className="mb-2 line-clamp-1 font-sans text-base leading-snug text-neutral-900/50 sm:text-sm dark:text-white/60">
+                    <span>{t('Replied to')}</span>:&nbsp;<a className="font-semibold text-neutral-900/60 transition-colors hover:text-neutral-900/70 dark:text-white/70 dark:hover:text-white/80" data-testid="comment-in-reply-to" href={`#${comment.in_reply_to_id}`} onClick={scrollRepliedToCommentIntoView}>{comment.in_reply_to_snippet}</a>
+                </div>
             )}
         </>
     );

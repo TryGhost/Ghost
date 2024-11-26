@@ -4,6 +4,17 @@ import {expect, test} from '@playwright/test';
 test.describe('Actions', async () => {
     let mockedApi: MockedApi;
 
+    async function initializeTest(page, {labs = false} = {}) {
+        return await initialize({
+            mockedApi,
+            page,
+            publication: 'Publisher Weekly',
+            labs: {
+                commentImprovements: labs
+            }
+        });
+    }
+
     test.beforeEach(async () => {
         mockedApi = new MockedApi({});
         mockedApi.setMember({
@@ -28,11 +39,7 @@ test.describe('Actions', async () => {
             html: '<p>This is comment 3</p>'
         });
 
-        const {frame} = await initialize({
-            mockedApi,
-            page,
-            publication: 'Publisher Weekly'
-        });
+        const {frame} = await initializeTest(page);
 
         // Check like button is not filled yet
         const comment = frame.getByTestId('comment-component').nth(0);
@@ -80,11 +87,7 @@ test.describe('Actions', async () => {
             html: '<p>This is comment 3</p>'
         });
 
-        const {frame} = await initialize({
-            mockedApi,
-            page,
-            publication: 'Publisher Weekly'
-        });
+        const {frame} = await initializeTest(page);
 
         // Check like button is not filled yet
         const comment = frame.getByTestId('comment-component').nth(0);
@@ -130,11 +133,7 @@ test.describe('Actions', async () => {
             ]
         });
 
-        const {frame} = await initialize({
-            mockedApi,
-            page,
-            publication: 'Publisher Weekly'
-        });
+        const {frame} = await initializeTest(page);
 
         const parentComment = frame.getByTestId('comment-component').nth(0);
         const replyComment = parentComment.getByTestId('comment-component').nth(0);
@@ -142,24 +141,8 @@ test.describe('Actions', async () => {
         expect(replyComment.getByTestId('reply-button')).not.toBeVisible();
     });
 
-    test('Can reply to a reply', async ({page}) => {
-        mockedApi.addComment({
-            html: '<p>This is comment 1</p>',
-            replies: [
-                mockedApi.buildReply({
-                    html: '<p>This is a reply to 1</p>'
-                })
-            ]
-        });
-
-        const {frame} = await initialize({
-            mockedApi,
-            page,
-            publication: 'Publisher Weekly',
-            labs: {
-                commentImprovements: true
-            }
-        });
+    async function testReplyToReply(page) {
+        const {frame} = await initializeTest(page, {labs: true});
 
         const parentComment = frame.getByTestId('comment-component').nth(0);
         const replyComment = parentComment.getByTestId('comment-component').nth(0);
@@ -173,12 +156,19 @@ test.describe('Actions', async () => {
 
         // Should indicate we're replying to a reply
         await expect(frame.getByTestId('replying-to')).toBeVisible();
-        await expect(frame.getByTestId('replying-to')).toHaveText('reply to comment: This is a reply to 1');
+        await expect(frame.getByTestId('replying-to')).toHaveText('Reply to: This is a reply to 1');
 
         await page.keyboard.type('This is a reply to a reply');
 
+        // give time for spinner to show
+        mockedApi.setDelay(100);
+
         const submitButton = parentComment.getByTestId('submit-form-button');
         await submitButton.click();
+
+        // Spinner is shown
+        await expect(frame.getByTestId('button-spinner')).toBeVisible();
+        await expect(frame.getByTestId('button-spinner')).not.toBeVisible();
 
         // Comment gets added and has correct contents
         await expect(frame.getByTestId('comment-component')).toHaveCount(3);
@@ -186,6 +176,33 @@ test.describe('Actions', async () => {
 
         // Should indicate this was a reply to a reply
         await expect(frame.getByTestId('comment-in-reply-to')).toHaveText('This is a reply to 1');
+    }
+
+    test('Can reply to a reply', async ({page}) => {
+        mockedApi.addComment({
+            html: '<p>This is comment 1</p>',
+            replies: [
+                mockedApi.buildReply({
+                    html: '<p>This is a reply to 1</p>'
+                })
+            ]
+        });
+
+        await testReplyToReply(page);
+    });
+
+    test('Can reply to a reply with a deleted parent comment', async function ({page}) {
+        mockedApi.addComment({
+            html: '<p>This is comment 1</p>',
+            status: 'deleted',
+            replies: [
+                mockedApi.buildReply({
+                    html: '<p>This is a reply to 1</p>'
+                })
+            ]
+        });
+
+        await testReplyToReply(page);
     });
 
     test('Can add expertise', async ({page}) => {
@@ -195,11 +212,7 @@ test.describe('Actions', async () => {
             html: '<p>This is comment 1</p>'
         });
 
-        const {frame} = await initialize({
-            mockedApi,
-            page,
-            publication: 'Publisher Weekly'
-        });
+        const {frame} = await initializeTest(page);
 
         const editor = frame.getByTestId('form-editor');
         await editor.click({force: true});
@@ -263,14 +276,7 @@ test.describe('Actions', async () => {
                 html: '<p>This is comment 6</p>'
             });
 
-            const {frame} = await initialize({
-                mockedApi,
-                page,
-                publication: 'Publisher Weekly',
-                labs: {
-                    commentImprovements: true
-                }
-            });
+            const {frame} = await initializeTest(page, {labs: true});
 
             const sortingForm = frame.getByTestId('comments-sorting-form');
 
@@ -300,14 +306,7 @@ test.describe('Actions', async () => {
                 created_at: new Date('2022-02-01T00:00:00Z')
             });
 
-            const {frame} = await initialize({
-                mockedApi,
-                page,
-                publication: 'Publisher Weekly',
-                labs: {
-                    commentImprovements: true
-                }
-            });
+            const {frame} = await initializeTest(page, {labs: true});
 
             const sortingForm = frame.getByTestId('comments-sorting-form');
 
@@ -344,14 +343,7 @@ test.describe('Actions', async () => {
                 html: '<p>This is comment 6</p>'
             });
 
-            const {frame} = await initialize({
-                mockedApi,
-                page,
-                publication: 'Publisher Weekly',
-                labs: {
-                    commentImprovements: true
-                }
-            });
+            const {frame} = await initializeTest(page, {labs: true});
 
             const sortingForm = frame.getByTestId('comments-sorting-form');
 
@@ -388,14 +380,7 @@ test.describe('Actions', async () => {
                 created_at: new Date('2024-04-03T00:00:00Z')
             });
 
-            const {frame} = await initialize({
-                mockedApi,
-                page,
-                publication: 'Publisher Weekly',
-                labs: {
-                    commentImprovements: true
-                }
-            });
+            const {frame} = await initializeTest(page, {labs: true});
 
             const sortingForm = await frame.getByTestId('comments-sorting-form');
 
@@ -427,14 +412,7 @@ test.describe('Actions', async () => {
                 created_at: new Date('2024-04-03T00:00:00Z')
             });
 
-            const {frame} = await initialize({
-                mockedApi,
-                page,
-                publication: 'Publisher Weekly',
-                labs: {
-                    commentImprovements: true
-                }
-            });
+            const {frame} = await initializeTest(page, {labs: true});
 
             const sortingForm = await frame.getByTestId('comments-sorting-form');
 

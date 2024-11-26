@@ -3,7 +3,11 @@ const errors = require('@tryghost/errors');
 function SessionMiddleware({sessionService}) {
     async function createSession(req, res, next) {
         try {
-            await sessionService.createSessionForUser(req, res, req.user);
+            if (req.skipVerification) {
+                await sessionService.createVerifiedSessionForUser(req, res, req.user);
+            } else {
+                await sessionService.createSessionForUser(req, res, req.user);
+            }
 
             const isVerified = await sessionService.isVerifiedSession(req, res);
             if (isVerified) {

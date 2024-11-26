@@ -70,13 +70,20 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
         // This is a bit a ugly hack, but only reliable way to make sure we can get the latest state asynchronously
         // without creating infinite rerenders because dispatchAction needs to change on every state change
         // So state shouldn't be a dependency of dispatchAction
-        setState((state) => {
-            ActionHandler({action, data, state, api, adminApi: state.adminApi!, options}).then((updatedState) => {
-                setState({...updatedState});
-            }).catch(console.error); // eslint-disable-line no-console
+        //
+        // Wrapped in a Promise so that callers of `dispatchAction` can await the action completion. setState doesn't
+        // allow for async actions within it's updater function so this is the best option.
+        return new Promise((resolve) => {
+            setState((state) => {
+                ActionHandler({action, data, state, api, adminApi: state.adminApi!, options}).then((updatedState) => {
+                    const newState = {...updatedState};
+                    resolve(newState);
+                    setState(newState);
+                }).catch(console.error); // eslint-disable-line no-console
 
-            // No immediate changes
-            return {};
+                // No immediate changes
+                return {};
+            });
         });
     }, [api, options]); // Do not add state or context as a dependency here -> infinite render loop
 
@@ -119,11 +126,11 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
             } catch (e) {
                 // Loading of admin failed. Could be not signed in, or a different error (not important)
                 // eslint-disable-next-line no-console
-                console.warn(`[Comments] Failed to fetch current admin user:`, e);
+                console.warn(`[Comments] Failed to fetch admin endpoint:`, e);
             }
 
             setState({
-                adminApi: adminApi,
+                adminApi,
                 admin
             });
         } catch (e) {
