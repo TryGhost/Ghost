@@ -86,7 +86,7 @@ const Inbox: React.FC<InboxProps> = ({layout}) => {
                         </div>
                     ) : activities.length > 0 ? (
                         <>
-                            <div className={`mx-auto flex items-start gap-8`}>
+                            <div className={`mx-auto flex min-h-[calc(100dvh_-_117px)] items-start gap-8`}>
                                 <div className='flex w-full min-w-0 flex-col items-center'>
                                     <div className={`flex w-full min-w-0 flex-col items-start ${layout === 'inbox' ? 'xxxl:max-w-[800px]' : 'max-w-[500px]'}`}>
                                         {layout === 'feed' && <div className='relative mx-[-12px] mb-4 mt-10 flex w-[calc(100%+24px)] items-center p-3'>
