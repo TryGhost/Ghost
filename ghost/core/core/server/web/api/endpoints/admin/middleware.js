@@ -53,12 +53,9 @@ const notImplemented = function notImplemented(req, res, next) {
     };
 
     const match = req.url.match(/^\/(\w+)\/?/);
-    console.log('mw match?')
     if (match) {
         const entity = match[1];
-        
         if (allowlisted[entity] && allowlisted[entity].includes(req.method)) {
-            console.log('acceptable')
             return next();
         }
     }

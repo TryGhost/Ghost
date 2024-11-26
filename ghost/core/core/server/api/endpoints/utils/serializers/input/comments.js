@@ -28,6 +28,5 @@ module.exports = {
         if (!frame.options.order) {
             frame.options.order = 'created_at ASC, id ASC';
         }
-    },
-
+    }
 };

@@ -32,7 +32,6 @@ const controller = {
         },
         permissions: true,
         async query(frame) {
-            console.log('doing an edit, frame is now', frame)
             const result = await models.Comment.edit({
                 id: frame.data.comments[0].id,
                 status: frame.data.comments[0].status
@@ -47,7 +46,7 @@ const controller = {
         headers: {
             cacheInvalidate: false
         },
-        options: [,
+        options: [
             'id',
             'post_id',
             'include',
@@ -67,8 +66,6 @@ const controller = {
         },
         permissions: true,
         async query(frame) {
-            console.log('should be importing comments - but not really')
-            console.log('now the frame is', frame)
             const result = await commentsService.controller.adminAdd(frame);
             return result;
         }        
