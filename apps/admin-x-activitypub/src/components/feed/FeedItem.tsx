@@ -6,6 +6,7 @@ import APAvatar from '../global/APAvatar';
 
 import FeedItemStats from './FeedItemStats';
 import clsx from 'clsx';
+import getReadingTime from '../../utils/get-reading-time';
 import getRelativeTimestamp from '../../utils/get-relative-timestamp';
 import getUsername from '../../utils/get-username';
 import stripHtml from '../../utils/strip-html';
@@ -93,7 +94,7 @@ export function renderFeedAttachment(object: ObjectProperties, layout: string) {
 function renderInboxAttachment(object: ObjectProperties) {
     const attachment = getAttachment(object);
 
-    const videoAttachmentStyles = 'ml-8 shrink-0 rounded-md h-[80px] w-[120px] relative';
+    const videoAttachmentStyles = 'ml-8 shrink-0 rounded-md h-[91px] w-[121px] relative';
     const imageAttachmentStyles = clsx('object-cover outline outline-1 -outline-offset-1 outline-black/[0.05]', videoAttachmentStyles);
 
     if (!attachment) {
@@ -391,34 +392,36 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
         return (
             <>
                 {object && (
-                    <div className='group/article relative -mx-4 -my-px flex min-h-[112px] min-w-0 cursor-pointer items-center justify-between rounded-md p-4 hover:bg-grey-75' data-layout='inbox' data-object-id={object.id} onClick={onClick}>
-                        <div className='flex min-h-[73px] w-full min-w-0 flex-col items-start justify-start'>
-                            <div className='z-10 mb-1 flex w-full min-w-0 items-center gap-1.5 text-base text-grey-700 group-hover/article:border-transparent'>
-                                <APAvatar author={author} size='2xs'/>
-                                <span className='min-w-0 truncate break-all font-medium text-grey-900' data-test-activity-heading>{author.name}</span>
-                                <span className='min-w-0 truncate'>{getUsername(author)}</span>
-                                <span className='shrink-0 whitespace-nowrap before:mr-1 before:content-["·"]' title={`${timestamp}`}>{getRelativeTimestamp(date)}</span>
-                            </div>
-                            <Heading className='mb-1 line-clamp-1 w-full max-w-[600px] text-[1.6rem] font-semibold leading-snug' level={5} data-test-activity-heading>
-                                {object.name ? object.name : (
-                                    <span dangerouslySetInnerHTML={{
-                                        __html: stripHtml(object.content)
-                                    }}></span>
-                                )}
-                            </Heading>
-                            <div dangerouslySetInnerHTML={({__html: stripHtml(object.content)})} className='ap-note-content w-full max-w-[600px] truncate text-base leading-normal text-grey-700'></div>
+                    <div className='group/article relative -mx-4 -my-px flex min-h-[112px] min-w-0 cursor-pointer flex-col justify-between rounded-md px-4 py-7 hover:bg-grey-75' data-layout='inbox' data-object-id={object.id} onClick={onClick}>
+                        <div className='z-10 mb-1.5 flex w-full min-w-0 items-center gap-1.5 text-base text-grey-700 group-hover/article:border-transparent'>
+                            <APAvatar author={author} size='2xs'/>
+                            <span className='min-w-0 truncate break-all font-medium text-grey-900' title={getUsername(author)} data-test-activity-heading>{author.name}</span>
+                            <span className='ml-auto shrink-0 whitespace-nowrap' title={`${timestamp}`}>{getRelativeTimestamp(date)}</span>
                         </div>
-                        {renderInboxAttachment(object)}
-                        <div className='invisible absolute right-4 top-[9px] z-[49] flex flex-col gap-2 rounded-lg bg-white p-2 shadow-md-heavy group-hover/article:visible'>
-                            <FeedItemStats
-                                commentCount={commentCount}
-                                layout={layout}
-                                likeCount={1}
-                                object={object}
-                                onCommentClick={onCommentClick}
-                                onLikeClick={onLikeClick}
-                            />
-                            <Menu items={menuItems} open={menuIsOpen} position='end' setOpen={setMenuIsOpen} trigger={UserMenuTrigger}/>
+                        <div className='flex'>
+                            <div className='flex min-h-[73px] w-full min-w-0 flex-col items-start justify-start gap-1'>
+                                <Heading className='w-full max-w-[600px] text-pretty text-[1.6rem] font-semibold leading-tight' level={5} data-test-activity-heading>
+                                    {object.name ? object.name : (
+                                        <span dangerouslySetInnerHTML={{
+                                            __html: stripHtml(object.content)
+                                        }}></span>
+                                    )}
+                                </Heading>
+                                <div dangerouslySetInnerHTML={({__html: stripHtml(object.preview?.content ?? object.content)})} className='ap-note-content line-clamp-2 w-full max-w-[600px] text-pretty text-base leading-normal text-grey-700'></div>
+                                <span className='mt-1 shrink-0 whitespace-nowrap leading-none text-grey-700'>{object.content && `${getReadingTime(object.content)}`}</span>
+                            </div>
+                            {renderInboxAttachment(object)}
+                            <div className='invisible absolute right-4 top-[22px] z-[49] flex gap-3 rounded-full bg-white px-3 py-2 shadow-md-heavy group-hover/article:visible'>
+                                <FeedItemStats
+                                    commentCount={commentCount}
+                                    layout={layout}
+                                    likeCount={1}
+                                    object={object}
+                                    onCommentClick={onCommentClick}
+                                    onLikeClick={onLikeClick}
+                                />
+                                <Menu items={menuItems} open={menuIsOpen} position='end' setOpen={setMenuIsOpen} trigger={UserMenuTrigger}/>
+                            </div>
                         </div>
                     </div>
                 )}
