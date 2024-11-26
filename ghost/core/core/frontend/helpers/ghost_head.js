@@ -353,6 +353,10 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
                 head.push(getTinybirdTrackerScript(dataRoot));
             }
 
+            if (labs.isSet('captcha') && config.get('hcaptcha:enabled')) {
+                head.push(getHCaptchaScript());
+            }
+
             if (labs.isSet('customFonts')) {
                 // Check if if the request is for a site preview, in which case we **always** use the custom font values
                 // from the passed in data, even when they're empty strings or settings cache has values.
