@@ -2,7 +2,6 @@ const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const {MemberCommentEvent} = require('@tryghost/member-events');
 const DomainEvents = require('@tryghost/domain-events');
-const labs = require('../../../shared/labs');
 
 const messages = {
     commentNotFound: 'Comment could not be found',
@@ -231,7 +230,6 @@ class CommentsService {
         }
 
         // this route does not need to handle pagination, so we can remove hidden/deleted replies here
-
         return model;
     }
 

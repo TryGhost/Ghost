@@ -20,15 +20,15 @@ const AdminContextMenu: React.FC<Props> = ({comment, close}) => {
     const isHidden = comment.status !== 'published';
 
     return (
-        <div className="flex flex-col">
+        <div className="flex w-full flex-col gap-0.5">
             {
                 isHidden ?
-                    <button className="w-full text-left text-[14px]" type="button" onClick={showComment}>
+                    <button className="w-full rounded px-2.5 py-1.5 text-left text-[14px] transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-700" type="button" onClick={showComment}>
                         <span className="hidden sm:inline">{t('Show comment')}</span><span className="sm:hidden">{t('Show')}</span>
                     </button>
                     :
-                    <button className="w-full text-left text-[14px]" type="button" onClick={hideComment}>
-                        <span className="hidden text-red-600 sm:inline">{t('Hide comment')}</span><span className="text-red-600 sm:hidden">{t('Hide')}</span>
+                    <button className="w-full rounded px-2.5 py-1.5 text-left text-[14px] text-red-600 transition-colors hover:bg-neutral-100 dark:text-red-500 dark:hover:bg-neutral-700" type="button" onClick={hideComment}>
+                        <span className="hidden sm:inline">{t('Hide comment')}</span><span className="sm:hidden">{t('Hide')}</span>
                     </button>
             }
         </div>

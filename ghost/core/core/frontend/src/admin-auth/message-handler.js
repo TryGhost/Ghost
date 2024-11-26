@@ -59,7 +59,7 @@ window.addEventListener('message', async function (event) {
             respond(err, null);
         }
     }
-
+ 
     if (data.action === 'getUser') {
         try {
             const res = await fetch(

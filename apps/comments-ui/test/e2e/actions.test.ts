@@ -4,6 +4,17 @@ import {expect, test} from '@playwright/test';
 test.describe('Actions', async () => {
     let mockedApi: MockedApi;
 
+    async function initializeTest(page, {labs = false} = {}) {
+        return await initialize({
+            mockedApi,
+            page,
+            publication: 'Publisher Weekly',
+            labs: {
+                commentImprovements: labs
+            }
+        });
+    }
+
     test.beforeEach(async () => {
         mockedApi = new MockedApi({});
         mockedApi.setMember({
@@ -28,11 +39,7 @@ test.describe('Actions', async () => {
             html: '<p>This is comment 3</p>'
         });
 
-        const {frame} = await initialize({
-            mockedApi,
-            page,
-            publication: 'Publisher Weekly'
-        });
+        const {frame} = await initializeTest(page);
 
         // Check like button is not filled yet
         const comment = frame.getByTestId('comment-component').nth(0);
@@ -80,11 +87,7 @@ test.describe('Actions', async () => {
             html: '<p>This is comment 3</p>'
         });
 
-        const {frame} = await initialize({
-            mockedApi,
-            page,
-            publication: 'Publisher Weekly'
-        });
+        const {frame} = await initializeTest(page);
 
         // Check like button is not filled yet
         const comment = frame.getByTestId('comment-component').nth(0);
@@ -130,11 +133,7 @@ test.describe('Actions', async () => {
             ]
         });
 
-        const {frame} = await initialize({
-            mockedApi,
-            page,
-            publication: 'Publisher Weekly'
-        });
+        const {frame} = await initializeTest(page);
 
         const parentComment = frame.getByTestId('comment-component').nth(0);
         const replyComment = parentComment.getByTestId('comment-component').nth(0);
@@ -142,15 +141,8 @@ test.describe('Actions', async () => {
         expect(replyComment.getByTestId('reply-button')).not.toBeVisible();
     });
 
-    async function testReplyToReply(mockedApi, page) {
-        const {frame} = await initialize({
-            mockedApi,
-            page,
-            publication: 'Publisher Weekly',
-            labs: {
-                commentImprovements: true
-            }
-        });
+    async function testReplyToReply(page) {
+        const {frame} = await initializeTest(page, {labs: true});
 
         const parentComment = frame.getByTestId('comment-component').nth(0);
         const replyComment = parentComment.getByTestId('comment-component').nth(0);
@@ -164,7 +156,7 @@ test.describe('Actions', async () => {
 
         // Should indicate we're replying to a reply
         await expect(frame.getByTestId('replying-to')).toBeVisible();
-        await expect(frame.getByTestId('replying-to')).toHaveText('reply to comment: This is a reply to 1');
+        await expect(frame.getByTestId('replying-to')).toHaveText('Reply to: This is a reply to 1');
 
         await page.keyboard.type('This is a reply to a reply');
 
@@ -196,7 +188,7 @@ test.describe('Actions', async () => {
             ]
         });
 
-        await testReplyToReply(mockedApi, page);
+        await testReplyToReply(page);
     });
 
     test('Can reply to a reply with a deleted parent comment', async function ({page}) {
@@ -210,7 +202,7 @@ test.describe('Actions', async () => {
             ]
         });
 
-        await testReplyToReply(mockedApi, page);
+        await testReplyToReply(page);
     });
 
     test('Can add expertise', async ({page}) => {
@@ -220,11 +212,7 @@ test.describe('Actions', async () => {
             html: '<p>This is comment 1</p>'
         });
 
-        const {frame} = await initialize({
-            mockedApi,
-            page,
-            publication: 'Publisher Weekly'
-        });
+        const {frame} = await initializeTest(page);
 
         const editor = frame.getByTestId('form-editor');
         await editor.click({force: true});
@@ -288,14 +276,7 @@ test.describe('Actions', async () => {
                 html: '<p>This is comment 6</p>'
             });
 
-            const {frame} = await initialize({
-                mockedApi,
-                page,
-                publication: 'Publisher Weekly',
-                labs: {
-                    commentImprovements: true
-                }
-            });
+            const {frame} = await initializeTest(page, {labs: true});
 
             const sortingForm = frame.getByTestId('comments-sorting-form');
 
@@ -325,14 +306,7 @@ test.describe('Actions', async () => {
                 created_at: new Date('2022-02-01T00:00:00Z')
             });
 
-            const {frame} = await initialize({
-                mockedApi,
-                page,
-                publication: 'Publisher Weekly',
-                labs: {
-                    commentImprovements: true
-                }
-            });
+            const {frame} = await initializeTest(page, {labs: true});
 
             const sortingForm = frame.getByTestId('comments-sorting-form');
 
@@ -369,14 +343,7 @@ test.describe('Actions', async () => {
                 html: '<p>This is comment 6</p>'
             });
 
-            const {frame} = await initialize({
-                mockedApi,
-                page,
-                publication: 'Publisher Weekly',
-                labs: {
-                    commentImprovements: true
-                }
-            });
+            const {frame} = await initializeTest(page, {labs: true});
 
             const sortingForm = frame.getByTestId('comments-sorting-form');
 
@@ -413,14 +380,7 @@ test.describe('Actions', async () => {
                 created_at: new Date('2024-04-03T00:00:00Z')
             });
 
-            const {frame} = await initialize({
-                mockedApi,
-                page,
-                publication: 'Publisher Weekly',
-                labs: {
-                    commentImprovements: true
-                }
-            });
+            const {frame} = await initializeTest(page, {labs: true});
 
             const sortingForm = await frame.getByTestId('comments-sorting-form');
 
@@ -452,14 +412,7 @@ test.describe('Actions', async () => {
                 created_at: new Date('2024-04-03T00:00:00Z')
             });
 
-            const {frame} = await initialize({
-                mockedApi,
-                page,
-                publication: 'Publisher Weekly',
-                labs: {
-                    commentImprovements: true
-                }
-            });
+            const {frame} = await initializeTest(page, {labs: true});
 
             const sortingForm = await frame.getByTestId('comments-sorting-form');
 
