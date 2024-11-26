@@ -217,7 +217,7 @@ class CommentsService {
      * @param {string} comment - The HTML content of the Comment
      * @param {any} options
      */
-    async commentOnPost(post, member, comment, options, existingId = null) {
+    async commentOnPost(post, member, comment, options) {
         this.checkEnabled();
         const memberModel = await this.models.Member.findOne({
             id: member
@@ -236,7 +236,6 @@ class CommentsService {
         });
         this.checkPostAccess(postModel, memberModel);
         const model = await this.models.Comment.add({
-            id: existingId,
             post_id: post,
             member_id: member,
             parent_id: null,

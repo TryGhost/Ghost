@@ -86,6 +86,7 @@ module.exports = {
      */
     handle(apiConfig, frame) {
         debug('handle');
+
         // @TODO: https://github.com/TryGhost/Ghost/issues/10099
         frame.options.context = permissions.parseContext(frame.options.context);
 
