@@ -4,6 +4,8 @@ const useCustomFonts = () => {
     const activeThemes = useActiveTheme();
     const activeTheme = activeThemes.data?.themes[0];
 
+    console.log(activeTheme);
+
     const supportsCustomFonts = !activeTheme?.warnings?.some(warning => warning.code === 'GS051-CUSTOM-FONTS');
     return {supportsCustomFonts, themeName: activeTheme?.name};
 };

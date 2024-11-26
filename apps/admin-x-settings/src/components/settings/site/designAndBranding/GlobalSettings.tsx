@@ -2,6 +2,7 @@ import BehindFeatureFlag from '../../../BehindFeatureFlag';
 import React, {useState} from 'react';
 import UnsplashSelector from '../../../selectors/UnsplashSelector';
 import clsx from 'clsx';
+import useCustomFonts from '../../../../hooks/useCustomFonts';
 import usePinturaEditor from '../../../../hooks/usePinturaEditor';
 import {APIError} from '@tryghost/admin-x-framework/errors';
 import {CUSTOM_FONTS} from '@tryghost/custom-fonts';
@@ -100,6 +101,7 @@ const GlobalSettings: React.FC<{ values: GlobalSettingValues, updateSetting: (ke
     const {data: themesData} = useBrowseThemes();
     const activeTheme = themesData?.themes.find((theme: Theme) => theme.active);
     const themeNameVersion = activeTheme ? `${capitalizeWords(activeTheme.name)} (v${activeTheme.package?.version || '1.0'})` : 'Loading...';
+    const {supportsCustomFonts} = useCustomFonts();
 
     const [headingFont, setHeadingFont] = useState(CUSTOM_FONTS.heading.find(f => f.name === values.headingFont) || {name: DEFAULT_FONT, creator: themeNameVersion});
     const [bodyFont, setBodyFont] = useState(CUSTOM_FONTS.heading.find(f => f.name === values.bodyFont) || {name: DEFAULT_FONT, creator: themeNameVersion});
@@ -325,7 +327,7 @@ const GlobalSettings: React.FC<{ values: GlobalSettingValues, updateSetting: (ke
                         className={selectFont(selectedHeadingFont.label, true)}
                         components={{Option, SingleValue}}
                         controlClasses={{control: '!min-h-16 !pl-2', option: '!pl-2'}}
-                        hint={''}
+                        hint={`${supportsCustomFonts ? '' : 'The current theme doesn\'t support custom fonts'}`}
                         menuShouldScrollIntoView={true}
                         options={customHeadingFonts}
                         selectedOption={selectedHeadingFont}
