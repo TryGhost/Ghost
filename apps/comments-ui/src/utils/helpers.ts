@@ -1,5 +1,14 @@
 import {Comment, Member, TranslationFunction} from '../AppContext';
 
+export function flattenComments(comments: Comment[]): Comment[] {
+    return comments.flatMap(comment => [comment, ...(comment.replies || [])]);
+}
+
+export function findCommentById(comments: Comment[], id: string): Comment | undefined {
+    return comments.find(comment => comment?.id === id)
+        || comments.flatMap(comment => comment.replies || []).find(reply => reply?.id === id);
+}
+
 export function formatNumber(number: number): string {
     if (number !== 0 && !number) {
         return '';

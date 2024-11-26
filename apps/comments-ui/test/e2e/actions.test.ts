@@ -1,4 +1,5 @@
 import {MockedApi, initialize, waitEditorFocused} from '../utils/e2e';
+import {buildReply} from '../utils/fixtures';
 import {expect, test} from '@playwright/test';
 
 test.describe('Actions', async () => {
@@ -70,6 +71,29 @@ test.describe('Actions', async () => {
         const icon2 = likeButton2.locator('svg');
         await expect(icon2).toHaveClass(/fill/);
         await expect(likeButton2).toHaveText('52');
+    });
+
+    test('Can like and unlike a reply', async ({page}) => {
+        mockedApi.addComment({
+            id: '1',
+            html: '<p>This is comment 1</p>',
+            replies: [
+                buildReply({id: '2', html: '<p>This is reply 1</p>'}),
+                buildReply({id: '3', html: '<p>This is reply 2</p>', in_reply_to_id: '2', in_reply_to_snippet: 'This is reply 1'}),
+                buildReply({id: '4', html: '<p>This is reply 3</p>'})
+            ]
+        });
+
+        const {frame} = await initializeTest(page);
+
+        const reply = frame.getByTestId('comment-component').nth(1);
+        const likeButton = reply.getByTestId('like-button');
+
+        await expect(likeButton).toHaveText('0');
+        await likeButton.click();
+        await expect(likeButton).toHaveText('1');
+        await likeButton.click();
+        await expect(likeButton).toHaveText('0');
     });
 
     test('Can reply to a comment', async ({page}) => {
