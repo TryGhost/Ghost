@@ -39,7 +39,7 @@ const FeedItemStats: React.FC<FeedItemStatsProps> = ({
         setTimeout(() => setIsClicked(false), 300);
     };
 
-    return (<div className={`flex ${(layout === 'inbox') ? 'flex-col gap-2' : 'gap-5'}`}>
+    return (<div className={`flex ${(layout === 'inbox') ? 'gap-3' : 'gap-5'}`}>
         <div className='flex gap-1'>
             <Button
                 className={`self-start text-grey-900 transition-opacity hover:opacity-60 ${isClicked ? 'bump' : ''} ${isLiked ? 'ap-red-heart text-red *:!fill-red hover:text-red' : ''}`}
@@ -77,4 +77,4 @@ const FeedItemStats: React.FC<FeedItemStatsProps> = ({
     </div>);
 };
 
-export default FeedItemStats; 
+export default FeedItemStats;
