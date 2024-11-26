@@ -16,7 +16,6 @@ const messages = {
  * @return {Promise}
  */
 const nonePublicAuth = (apiConfig, frame) => {
-    console.log('nonePublicAuth called, frame is', frame)
     debug('check admin permissions');
 
     let singular;
@@ -90,9 +89,6 @@ module.exports = {
         debug('handle');
         // @TODO: https://github.com/TryGhost/Ghost/issues/10099
         frame.options.context = permissions.parseContext(frame.options.context);
-        // TODO this vv causes permissions to always succeed.
-        return Promise.resolve(frame.options);
-        // next up, fix the permissions problem. :) 
         
         // CASE: Content API access
         if (frame.options.context.public && frame.apiType !== 'comments') {
