@@ -50,7 +50,8 @@ module.exports = function apiRoutes() {
     router.post('/posts/:id/copy', mw.authAdminApi, http(api.posts.copy));
 
     router.get('/mentions', mw.authAdminApi, http(api.mentions.browse));
-
+    
+    router.post('/comments/import/:post_id/', mw.authAdminApi, http(api.comments.import));
     router.get('/comments/:id/replies', mw.authAdminApi, http(api.commentReplies.browse));
     router.get('/comments/post/:post_id', mw.authAdminApi, http(api.comments.browse));
     router.put('/comments/:id', mw.authAdminApi, http(api.comments.edit));

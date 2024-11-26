@@ -217,7 +217,7 @@ class CommentsService {
      * @param {string} comment - The HTML content of the Comment
      * @param {any} options
      */
-    async commentOnPost(post, member, comment, options) {
+    async commentOnPost(post, member, comment, options, existingId = null) {
         this.checkEnabled();
         const memberModel = await this.models.Member.findOne({
             id: member
@@ -226,9 +226,7 @@ class CommentsService {
             ...options,
             withRelated: ['products']
         });
-
         this.checkCommentAccess(memberModel);
-
         const postModel = await this.models.Post.findOne({
             id: post
         }, {
@@ -236,17 +234,15 @@ class CommentsService {
             ...options,
             withRelated: ['tiers']
         });
-
         this.checkPostAccess(postModel, memberModel);
-
         const model = await this.models.Comment.add({
+            id: existingId,
             post_id: post,
             member_id: member,
             parent_id: null,
             html: comment,
             status: 'published'
         }, options);
-
         if (!options.context.internal) {
             await this.sendNewCommentNotifications(model);
         }

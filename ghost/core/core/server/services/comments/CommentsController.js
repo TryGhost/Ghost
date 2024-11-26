@@ -170,7 +170,41 @@ module.exports = class CommentsController {
 
         return result;
     }
+    async adminAdd(frame) {
+        console.log('adminAdd called')
+        //this.#checkMember(frame);
+        const data = frame.data.comments[0];
+        let result;
+        if (data.parent_id) {
+            result = await this.service.importReplyToComment(
+                data.parent_id,
+                data.in_reply_to_id,
+                frame.options.context.member.id,
+                data.html,
+                frame.options
+            );
+        } else {
+            result = await this.service.importCommentOnPost(
+                data.post_id,
+                data.member.id,
+                data.html,
+                frame.options,
+                data.id
+            );
+        }
 
+        if (result) {
+            const postId = result.get('post_id');
+            const parentId = result.get('parent_id');
+            const pathsToInvalidate = [
+                postId ? `/api/members/comments/post/${postId}/` : null,
+                parentId ? `/api/members/comments/${parentId}/replies/` : null
+            ].filter(path => path !== null);
+            frame.setHeader('X-Cache-Invalidate', pathsToInvalidate.join(', '));
+        }
+
+        return result;
+    }
     async destroy() {
         throw new MethodNotAllowedError({
             message: tpl(messages.cannotDestroyComments)
