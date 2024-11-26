@@ -126,11 +126,11 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
             } catch (e) {
                 // Loading of admin failed. Could be not signed in, or a different error (not important)
                 // eslint-disable-next-line no-console
-                console.warn(`[Comments] Failed to fetch current admin user:`, e);
+                console.warn(`[Comments] Failed to fetch admin endpoint:`, e);
             }
 
             setState({
-                adminApi: adminApi,
+                adminApi,
                 admin
             });
         } catch (e) {

@@ -27,7 +27,8 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
         return fetch(url, options);
     }
 
-    // To fix pagination when we create new comments (or people post comments after you loaded the page, we need to only load comments creatd AFTER the page load)
+    // To fix pagination when we create new comments (or people post comments
+    // after you loaded the page), we need to only load comments created AFTER the page load
     let firstCommentCreatedAt: null | string = null;
 
     const api = {
