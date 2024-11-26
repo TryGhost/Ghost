@@ -39,12 +39,13 @@ const FeedItemStats: React.FC<FeedItemStatsProps> = ({
         setTimeout(() => setIsClicked(false), 300);
     };
 
-    return (<div className={`flex ${(layout === 'inbox') ? 'flex-col gap-2' : 'gap-5'}`}>
-        <div className='flex gap-1'>
+    return (<div className={`flex ${(layout === 'inbox') ? 'flex-col gap-2' : 'gap-3'}`}>
+        <div className='flex items-center gap-1 rounded-full bg-white p-1.5 transition-all hover:bg-grey-100'>
             <Button
-                className={`self-start text-grey-900 transition-opacity hover:opacity-60 ${isClicked ? 'bump' : ''} ${isLiked ? 'ap-red-heart text-red *:!fill-red hover:text-red' : ''}`}
+                className={`text-grey-900 ${isClicked ? 'bump' : ''} ${isLiked ? 'ap-red-heart text-red *:!fill-red hover:text-red' : ''}`}
                 hideLabel={true}
                 icon='heart'
+                iconColorClass='w-[18px] h-[18px]'
                 id='like'
                 size='md'
                 unstyled={true}
@@ -55,13 +56,14 @@ const FeedItemStats: React.FC<FeedItemStatsProps> = ({
                     }
                 }}
             />
-            {isLiked && (layout !== 'inbox') && <span className={`text-grey-900`}>{new Intl.NumberFormat().format(likeCount)}</span>}
+            {isLiked && (layout !== 'inbox') && <span className={`leading-none text-grey-900`}>{new Intl.NumberFormat().format(likeCount)}</span>}
         </div>
-        <div className='flex gap-1'>
+        <div className='flex items-center gap-1 rounded-full bg-white p-1.5 transition-all hover:bg-grey-100'>
             <Button
-                className={`self-start text-grey-900 hover:opacity-60 ${isClicked ? 'bump' : ''}`}
+                className={`text-grey-900 ${isClicked ? 'bump' : ''}`}
                 hideLabel={true}
                 icon='comment'
+                iconColorClass='w-[18px] h-[18px]'
                 id='comment'
                 size='md'
                 unstyled={true}
@@ -71,10 +73,10 @@ const FeedItemStats: React.FC<FeedItemStatsProps> = ({
                 }}
             />
             {commentCount > 0 && (layout !== 'inbox') && (
-                <span className={`text-grey-900`}>{new Intl.NumberFormat().format(commentCount)}</span>
+                <span className={`leading-none text-grey-900`}>{new Intl.NumberFormat().format(commentCount)}</span>
             )}
         </div>
     </div>);
 };
 
-export default FeedItemStats; 
+export default FeedItemStats;
