@@ -2,6 +2,7 @@ const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const {MemberCommentEvent} = require('@tryghost/member-events');
 const DomainEvents = require('@tryghost/domain-events');
+const labs = require('../../../shared/labs');
 
 const messages = {
     commentNotFound: 'Comment could not be found',
