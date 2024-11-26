@@ -1,6 +1,6 @@
 import {E2E_PORT} from '../../playwright.config';
-import {LabsType, MockedApi} from './MockedApi';
 import {Locator, Page} from '@playwright/test';
+import {MockedApi} from './MockedApi';
 import {expect} from '@playwright/test';
 
 export const MOCKED_SITE_URL = 'https://localhost:1234';
@@ -19,6 +19,12 @@ function escapeHtml(unsafe: string) {
         .replace(/'/g, '&#039;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;');
+}
+
+declare global {
+    interface Window {
+        __testHelper?: (action: string) => void;
+    }
 }
 
 function authFrameMain() {
@@ -44,6 +50,9 @@ function authFrameMain() {
         }
 
         if (data.action === 'getUser') {
+            if (window.__testHelper) {
+                window.__testHelper('getUser');
+            }
             try {
                 respond(null, {
                     users: [
@@ -51,6 +60,23 @@ function authFrameMain() {
                             id: 'someone'
                         }
                     ]
+                });
+            } catch (err) {
+                respond(err, null);
+            }
+            return;
+        }
+
+        if (data.action === 'readComment') {
+            if (window.__testHelper) {
+                window.__testHelper('readComment');
+            }
+            try {
+                respond(null, {
+                    comment: {
+                        id: 'comment-id',
+                        html: '<p>This is a comment</p>'
+                    }
                 });
             } catch (err) {
                 respond(err, null);

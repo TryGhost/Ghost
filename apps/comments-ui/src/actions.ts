@@ -139,7 +139,13 @@ async function showComment({state, api, data: comment}: {state: EditableAppConte
     }
     // We need to refetch the comment, to make sure we have an up to date HTML content
     // + all relations are loaded as the current member (not the admin)
-    const data = await api.comments.read(comment.id);
+    let data;
+    if (state.admin && state.adminApi && state.labs.commentImprovements) {
+        data = await state.adminApi.read({commentId: comment.id});
+    } else {
+        data = await api.comments.read(comment.id);
+    }
+
     const updatedComment = data.comments[0];
 
     return {

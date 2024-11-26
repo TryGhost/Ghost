@@ -240,5 +240,105 @@ test.describe('Auth Frame', async () => {
         await moreButtons.nth(1).getByText('Show comment').click();
         await expect(secondComment).toContainText('This is comment 2');
     });
-});
 
+    test('authFrameMain fires getUser (exposed function)', async ({page}) => {
+        const mockedApi = new MockedApi({});
+        mockedApi.addComment({
+            html: '<p>This is comment 1</p>'
+        });
+        mockedApi.addComment({
+            html: '<p>This is comment 2</p>'
+        });
+        mockedApi.addComment({
+            html: '<p>This is comment 3</p>'
+        });
+        mockedApi.addComment({
+            html: '<p>This is comment 4</p>'
+        });
+        mockedApi.addComment({
+            html: '<p>This is comment 5</p>'
+        });
+
+        const actions: string[] = [];
+    
+        await page.exposeFunction('__testHelper', (action: string) => {
+            actions.push(action);
+        });
+    
+        await mockAdminAuthFrame({
+            admin,
+            page
+        });
+
+        await initialize({
+            mockedApi,
+            page,
+            publication: 'Publisher Weekly',
+            admin,
+            labs: {
+                commentImprovements: true
+            }
+        });
+    
+        // Trigger the message event
+        await page.evaluate(() => {
+            const event = new MessageEvent('message', {
+                data: JSON.stringify({uid: 'test', action: 'getUser'}),
+                origin: 'https://localhost:1234'
+            });
+            window.dispatchEvent(event);
+        });
+    
+        // Validate that "getUser" was captured
+        expect(actions).toContain('getUser');
+    });
+
+    test('fires admin read when making a hidden comment visible', async ({page}) => {
+        const mockedApi = new MockedApi({});
+
+        mockedApi.addComment({
+            html: '<p>This is comment 1</p>'
+        });
+        mockedApi.addComment({
+            html: '<p>This is comment 2</p>',
+            status: 'hidden'
+        });
+
+        const actions: string[] = [];
+
+        await page.exposeFunction('__testHelper', (action: string) => {
+            actions.push(action);
+        });
+    
+        await mockAdminAuthFrame({
+            admin,
+            page
+        });
+
+        const {frame} = await initialize({
+            mockedApi,
+            page,
+            publication: 'Publisher Weekly',
+            admin,
+            labs: {
+                commentImprovements: true
+            }
+        });
+
+        const iframeElement = await page.locator('iframe[data-frame="admin-auth"]');
+        await expect(iframeElement).toHaveCount(1);
+
+        // Check if more actions button is visible on each comment
+        const comments = await frame.getByTestId('comment-component');
+        await expect(comments).toHaveCount(2);
+
+        const moreButtons = await frame.getByTestId('more-button');
+        await expect(moreButtons).toHaveCount(2);
+
+        // Click the 2nd button
+        await moreButtons.nth(1).click();
+        await moreButtons.nth(1).getByText('Show comment').click();
+
+        await expect(actions).toContain('readComment');
+    });
+});
