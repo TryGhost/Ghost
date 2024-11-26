@@ -179,17 +179,20 @@ module.exports = class CommentsController {
             result = await this.service.importReplyToComment(
                 data.parent_id,
                 data.in_reply_to_id,
-                frame.options.context.member.id,
+                data.member,
                 data.html,
+                data.id,
+                data.created_at,
                 frame.options
             );
         } else {
             result = await this.service.importCommentOnPost(
                 data.post_id,
-                data.member.id,
+                data.member,
                 data.html,
-                frame.options,
-                data.id
+                data.id,
+                data.created_at,
+                frame.options
             );
         }
 
