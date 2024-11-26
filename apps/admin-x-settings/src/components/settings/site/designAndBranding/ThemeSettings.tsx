@@ -1,5 +1,6 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import ThemeSetting from './ThemeSetting';
+import useCustomFonts from '../../../../hooks/useCustomFonts';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import {CustomThemeSetting} from '@tryghost/admin-x-framework/api/customThemeSettings';
 import {Form} from '@tryghost/admin-x-design-system';
@@ -43,9 +44,16 @@ const themeSettingsMap: ThemeSettingsMap = {
 const ThemeSettings: React.FC<ThemeSettingsProps> = ({sections, updateSetting}) => {
     const {data: themesData} = useBrowseThemes();
     const activeTheme = themesData?.themes.find((theme: Theme) => theme.active);
+    // const activeThemes = useActiveTheme();
+    // const activeTheme = activeThemes.data?.themes[0];
     const activeThemeName = activeTheme?.package.name?.toLowerCase() || '';
     const activeThemeAuthor = activeTheme?.package.author?.name || '';
     const hasCustomFonts = useFeatureFlag('customFonts');
+    const {themeName} = useCustomFonts();
+
+    useEffect(() => {
+        console.log(themeName);
+    }, [themeName]);
 
     return (
         <>

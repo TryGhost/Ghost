@@ -52,6 +52,11 @@ export const useBrowseThemes = createQuery<ThemesResponseType>({
     path: '/themes/'
 });
 
+export const useActiveTheme = createQuery<ThemesInstallResponseType>({
+    dataType,
+    path: '/themes/active/'
+});
+
 export const useActivateTheme = createMutation<ThemesResponseType, string>({
     method: 'PUT',
     path: name => `/themes/${name}/activate/`,
@@ -72,7 +77,7 @@ export const useActivateTheme = createMutation<ThemesResponseType, string>({
         })
     },
     invalidateQueries: {
-        dataType: customThemeSettingsDataType
+        dataType: [customThemeSettingsDataType, 'ThemesInstallResponseType']
     }
 });
 
