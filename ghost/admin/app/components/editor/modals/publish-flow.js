@@ -65,7 +65,8 @@ export default class PublishModalComponent extends Component {
             this.isComplete = true;
         } catch (e) {
             if (e?.name === 'EmailFailedError') {
-                return this.emailErrorMessage = e.message;
+                this.emailErrorMessage = e.message;
+                throw e.message;
             }
 
             throw e;
