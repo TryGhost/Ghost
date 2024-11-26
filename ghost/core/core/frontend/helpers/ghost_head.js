@@ -165,6 +165,11 @@ function getTinybirdTrackerScript(dataRoot) {
     return `<script defer src="${scriptUrl}" data-storage="localStorage" data-host="${endpoint}" data-token="${token}" ${tbParams}></script>`;
 }
 
+function gethCaptchaScript() {
+    const scriptUrl = config.get('hcaptcha:scriptUrl');
+    return `<script defer async src="${scriptUrl}"></script>`;
+}
+
 /**
  * **NOTE**
  * Express adds `_locals`, see https://github.com/expressjs/express/blob/4.15.4/lib/response.js#L962.
@@ -353,8 +358,8 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
                 head.push(getTinybirdTrackerScript(dataRoot));
             }
 
-            if (labs.isSet('captcha') && config.get('hcaptcha:enabled')) {
-                head.push(getHCaptchaScript());
+            if (labs.isSet('captcha') && config.get('hcaptcha') && config.get('hcaptcha:enabled')) {
+                head.push(gethCaptchaScript());
             }
 
             if (labs.isSet('customFonts')) {
