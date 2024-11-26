@@ -48,14 +48,7 @@ const controller = {
         },
         options: [
             'id',
-            'post_id',
-            'include',
-            'page',
-            'limit',
-            'fields',
-            'filter',
-            'order',
-            'debug'
+            'post_id'
         ],
         validation: {
             options: {

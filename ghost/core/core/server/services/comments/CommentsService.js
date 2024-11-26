@@ -11,7 +11,8 @@ const messages = {
     replyToReply: 'Can not reply to a reply',
     commentsNotEnabled: 'Comments are not enabled for this site.',
     cannotCommentOnPost: 'You do not have permission to comment on this post.',
-    cannotEditComment: 'You do not have permission to edit comments'
+    cannotEditComment: 'You do not have permission to edit comments',
+    postNotFound: 'Post not found. Cannot attach comment to non-existent post.'
 };
 
 class CommentsService {
@@ -226,7 +227,9 @@ class CommentsService {
             ...options,
             withRelated: ['products']
         });
+
         this.checkCommentAccess(memberModel);
+
         const postModel = await this.models.Post.findOne({
             id: post
         }, {
@@ -234,7 +237,9 @@ class CommentsService {
             ...options,
             withRelated: ['tiers']
         });
+
         this.checkPostAccess(postModel, memberModel);
+
         const model = await this.models.Comment.add({
             post_id: post,
             member_id: member,
@@ -242,6 +247,7 @@ class CommentsService {
             html: comment,
             status: 'published'
         }, options);
+
         if (!options.context.internal) {
             await this.sendNewCommentNotifications(model);
         }
@@ -398,8 +404,10 @@ class CommentsService {
 
     /**
      * @param {string} post - The ID of the Post to comment on
-     * @param {string} member - The ID of the Member to comment as
+     * @param {string} member - The member object. May contain id, uuid, email, etc for matching.
      * @param {string} comment - The HTML content of the Comment
+     * @param {string} actualCommentId - The ID of the comment.  Not to be confused with the comment_id column of the post!
+     * @param {string} date - The date of the comment creation
      * @param {any} options
      */
 
@@ -436,11 +444,13 @@ class CommentsService {
         return await this.models.Comment.findOne({id: model.id}, {...options, require: true});
     }
     
-    /**  TODO - update below
+    /** 
      * @param {string} parent - The ID of the Comment to reply to
      * @param {string} inReplyTo - The ID of the Reply to reply to
-     * @param {string} member - The ID of the Member to comment as
+     * @param {string} member - The member object. May contain id, uuid, email, etc for matching.
      * @param {string} comment - The HTML content of the Comment
+     * @param {string} actualCommentId - The ID of the comment.  Not to be confused with the comment_id column of the post!
+     * @param {string} date - The date of the comment creation
      * @param {any} options
      */
 

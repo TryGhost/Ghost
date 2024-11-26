@@ -171,7 +171,6 @@ module.exports = class CommentsController {
         return result;
     }
     async adminAdd(frame) {
-        //this.#checkMember(frame);
         const data = frame.data.comments[0];
         let result;
         if (data.parent_id) {
