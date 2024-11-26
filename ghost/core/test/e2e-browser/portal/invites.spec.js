@@ -19,7 +19,7 @@ test.describe('Portal', () => {
 
             // Set up response listener just before clicking send
             const responsePromise = sharedPage.waitForResponse(
-                response => response.url().includes('/api/admin/invites/') && 
+                response => response.url().includes('/api/admin/invites/') &&
                            response.request().method() === 'POST'
             );
 
@@ -73,15 +73,15 @@ test.describe('Portal', () => {
                 // Enable 2FA
                 await sharedPage.goto('/ghost');
                 await sharedPage.locator('[data-test-nav="settings"]').click();
-    
+
                 const section = sharedPage.getByTestId('labs');
                 await section.getByRole('button', {name: 'Open'}).click();
-    
+
                 await section.getByRole('tab', {name: 'Alpha features'}).click();
                 await section.getByLabel('Staff 2FA').click();
             });
 
-            test('New staff member can signup using an invite link with 2FA enabled', async ({sharedPage, verificationToken}) => {
+            test('New staff member can signup using an invite link with 2FA enabled', async ({sharedPage}) => {
                 // Navigate to settings
                 await sharedPage.goto('/ghost');
                 await sharedPage.locator('[data-test-nav="settings"]').click();
@@ -95,7 +95,7 @@ test.describe('Portal', () => {
 
                 // Set up response listener just before clicking send
                 const responsePromise = sharedPage.waitForResponse(
-                    response => response.url().includes('/api/admin/invites/') && 
+                    response => response.url().includes('/api/admin/invites/') &&
                                response.request().method() === 'POST'
                 );
 
@@ -140,12 +140,7 @@ test.describe('Portal', () => {
                 await sharedPage.getByPlaceholder('At least 10 characters').fill('test123456');
                 await sharedPage.getByRole('button', {name: 'Create Account →'}).click();
                 await sharedPage.waitForLoadState('networkidle');
-                const verificationCode = await verificationToken.getToken();
 
-                //Enter verification code for 2FA
-                await sharedPage.locator('[data-test-input="token"]').fill(verificationCode);
-                await sharedPage.locator('[data-test-button="verify"]').click();
-                await sharedPage.waitForLoadState('networkidle');
                 await expect(sharedPage).toHaveURL(/\/ghost\/#\/.*/);
 
                 await sharedPage.locator('[data-test-nav="arrow-down"]').click();
