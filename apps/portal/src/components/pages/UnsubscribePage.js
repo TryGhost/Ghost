@@ -65,6 +65,10 @@ export default function UnsubscribePage() {
             await updateMemberNewsletters({api, memberUuid: pageData.uuid, key: pageData.key, newsletters});
         }
         setSubscribedNewsletters(newsletters);
+        onAction('showPopupNotification', {
+            action: 'updated:success',
+            message: t('Email preferences updated.')
+        });
     };
 
     const updateCommentNotifications = async (enabled) => {
