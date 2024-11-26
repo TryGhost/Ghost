@@ -6,7 +6,7 @@
   "tailwind": {
     "config": "tailwind.config.cjs",
     "css": "styles.css",
-    "baseColor": "grey",
+    "baseColor": "neutral",
     "cssVariables": false,
     "prefix": ""
   },

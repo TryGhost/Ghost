@@ -1,11 +1,8 @@
 @import "./preflight.css";
 
-/* @import "tailwindcss/base";
+@import "tailwindcss/base";
 @import "tailwindcss/components";
-@import "tailwindcss/utilities"; */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss/utilities";
 
 @import url(https://fonts.bunny.net/css?family=cardo:400,700);
 @import url(https://fonts.bunny.net/css?family=manrope:300,500,700);

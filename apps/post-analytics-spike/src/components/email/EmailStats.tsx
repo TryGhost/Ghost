@@ -52,18 +52,14 @@ const EmailStats = () => {
                                     </SidebarMenuButton>
                                     <SidebarMenuBadge>348</SidebarMenuBadge>
                                 </SidebarMenuItem>
+
                                 <SidebarSeparator />
+
                                 <SidebarMenuItem>
                                     <SidebarMenuButton>
                                         <span>Unsubscribed</span>
                                     </SidebarMenuButton>
                                     <SidebarMenuBadge>29</SidebarMenuBadge>
-                                </SidebarMenuItem>
-                                <SidebarMenuItem>
-                                    <SidebarMenuButton>
-                                        <span>Feedback</span>
-                                    </SidebarMenuButton>
-                                    <SidebarMenuBadge>129</SidebarMenuBadge>
                                 </SidebarMenuItem>
                                 <SidebarMenuItem>
                                     <SidebarMenuButton>
@@ -76,6 +72,21 @@ const EmailStats = () => {
                                         <span>Bounced</span>
                                     </SidebarMenuButton>
                                     <SidebarMenuBadge>163</SidebarMenuBadge>
+                                </SidebarMenuItem>
+
+                                <SidebarSeparator />
+
+                                <SidebarMenuItem>
+                                    <SidebarMenuButton>
+                                        <span>Links</span>
+                                    </SidebarMenuButton>
+                                    <SidebarMenuBadge>5</SidebarMenuBadge>
+                                </SidebarMenuItem>
+                                <SidebarMenuItem>
+                                    <SidebarMenuButton>
+                                        <span>Feedback</span>
+                                    </SidebarMenuButton>
+                                    <SidebarMenuBadge>411</SidebarMenuBadge>
                                 </SidebarMenuItem>
                             </SidebarMenu>
                         </SidebarGroupContent>

@@ -1,91 +1,98 @@
 import {
+    Avatar,
+    AvatarFallback,
+    AvatarImage,
     Table,
     TableBody,
     TableCaption,
     TableCell,
-    TableFooter,
     TableHead,
     TableHeader,
     TableRow
 } from '@tryghost/shade';
 
-const invoices = [
+const members = [
     {
-        invoice: 'INV001',
-        paymentStatus: 'Paid',
-        totalAmount: '$250.00',
-        paymentMethod: 'Credit Card'
+        name: 'Gustavo Kenter',
+        tier: 'Gold',
+        avatarImage: 'https://i.pravatar.cc/150?img=1',
+        avatarFallback: 'GK',
+        receiveDate: 'A month ago'
     },
     {
-        invoice: 'INV002',
-        paymentStatus: 'Pending',
-        totalAmount: '$150.00',
-        paymentMethod: 'PayPal'
+        name: 'Kadin Botosh',
+        tier: 'Free',
+        avatarImage: '',
+        avatarFallback: 'KB',
+        receiveDate: 'A month ago'
     },
     {
-        invoice: 'INV003',
-        paymentStatus: 'Unpaid',
-        totalAmount: '$350.00',
-        paymentMethod: 'Bank Transfer'
+        name: 'Skylar Lipshutz',
+        tier: 'Free',
+        avatarImage: 'https://i.pravatar.cc/150?img=2',
+        avatarFallback: 'SL',
+        receiveDate: 'A month ago'
     },
     {
-        invoice: 'INV004',
-        paymentStatus: 'Paid',
-        totalAmount: '$450.00',
-        paymentMethod: 'Credit Card'
+        name: 'Kaylynn Torff',
+        tier: 'Silver',
+        avatarImage: 'https://i.pravatar.cc/150?img=3',
+        avatarFallback: 'KT',
+        receiveDate: 'A month ago'
     },
     {
-        invoice: 'INV005',
-        paymentStatus: 'Paid',
-        totalAmount: '$550.00',
-        paymentMethod: 'PayPal'
+        name: 'Abram Vaccaro',
+        tier: 'Gold',
+        avatarImage: 'https://i.pravatar.cc/150?img=4',
+        avatarFallback: 'AV',
+        receiveDate: 'A month ago'
     },
     {
-        invoice: 'INV006',
-        paymentStatus: 'Pending',
-        totalAmount: '$200.00',
-        paymentMethod: 'Bank Transfer'
+        name: 'Jaxson Westervelt',
+        tier: 'Free',
+        avatarImage: '',
+        avatarFallback: 'JW',
+        receiveDate: 'A month ago'
     },
     {
-        invoice: 'INV007',
-        paymentStatus: 'Unpaid',
-        totalAmount: '$300.00',
-        paymentMethod: 'Credit Card'
+        name: 'Kierra Bergson',
+        tier: 'Gold',
+        avatarImage: 'https://i.pravatar.cc/150?img=5',
+        avatarFallback: 'KB',
+        receiveDate: 'A month ago'
     }
 ];
 
 export function TableDemo() {
     return (
         <Table>
-            <TableCaption>A list of your recent invoices.</TableCaption>
+            <TableCaption>Sent to 6,197 members.</TableCaption>
             <TableHeader>
-                <TableRow>
-                    <TableHead className="w-[100px]">Invoice</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Method</TableHead>
-                    <TableHead className="text-right">Amount</TableHead>
+                <TableRow className='hover:bg-transparent'>
+                    <TableHead className="w-1/3">Member</TableHead>
+                    <TableHead>Tier</TableHead>
+                    <TableHead>Received</TableHead>
                 </TableRow>
             </TableHeader>
             <TableBody>
-                {invoices.map(invoice => (
-                    <TableRow key={invoice.invoice}>
+                {members.map(member => (
+                    <TableRow key={member.name}>
                         <TableCell className="font-medium">
-                            {invoice.invoice}
+                            <div className="flex items-center gap-3">
+                                <Avatar>
+                                    <AvatarImage src={member.avatarImage} />
+                                    <AvatarFallback>{member.avatarFallback}</AvatarFallback>
+                                </Avatar>
+                                <span className='whitespace-nowrap'>{member.name}</span>
+                            </div>
                         </TableCell>
-                        <TableCell>{invoice.paymentStatus}</TableCell>
-                        <TableCell>{invoice.paymentMethod}</TableCell>
-                        <TableCell className="text-right">
-                            {invoice.totalAmount}
+                        <TableCell className='text-grey-700'>{member.tier}</TableCell>
+                        <TableCell className='text-grey-700'>
+                            {member.receiveDate}
                         </TableCell>
                     </TableRow>
                 ))}
             </TableBody>
-            <TableFooter>
-                <TableRow>
-                    <TableCell colSpan={3}>Total</TableCell>
-                    <TableCell className="text-right">$2,500.00</TableCell>
-                </TableRow>
-            </TableFooter>
         </Table>
     );
 }

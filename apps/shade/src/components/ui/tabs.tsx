@@ -59,12 +59,12 @@ TabsList.displayName = TabsPrimitive.List.displayName;
 // Tabs Trigger
 // -----------------------------------------------------------------------------
 const tabsTriggerVariants = cva(
-    'inline-flex items-center whitespace-nowrap py-1.5 font-medium ring-offset-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:font-semibold data-[state=active]:text-neutral-950',
+    'inline-flex items-center whitespace-nowrap font-medium ring-offset-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:font-semibold data-[state=active]:text-neutral-950',
     {
         variants: {
             variant: {
-                default: 'justify-center rounded-sm px-3 data-[state=active]:bg-white data-[state=active]:shadow-sm dark:ring-offset-neutral-950 dark:focus-visible:ring-neutral-300 dark:data-[state=active]:bg-neutral-950 dark:data-[state=active]:text-neutral-50',
-                bordered: '-mb-px justify-start border-b-2 border-transparent data-[state=active]:border-b-2 data-[state=active]:border-neutral-950'
+                default: 'justify-center rounded-sm px-3 py-1.5 data-[state=active]:bg-white data-[state=active]:shadow-sm dark:ring-offset-neutral-950 dark:focus-visible:ring-neutral-300 dark:data-[state=active]:bg-neutral-950 dark:data-[state=active]:text-neutral-50',
+                bordered: '-mb-px justify-start border-b-2 border-transparent p-2 data-[state=active]:border-neutral-950'
             }
         },
         defaultVariants: {

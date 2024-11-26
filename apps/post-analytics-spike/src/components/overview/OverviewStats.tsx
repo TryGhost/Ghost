@@ -2,7 +2,12 @@
 
 const OverviewStats = () => {
     return (
-        <div className="flex h-20 w-full items-center justify-center text-grey-600">Overview</div>
+        <div className="flex w-full flex-col py-10 text-grey-600">
+            <h4 className="mb-3">Overview</h4>
+            <p>[Funnel: Sent &rarr; Opened &rarr; Clicked]</p>
+            <p>[Misc email: Unsubscribed | Spam | Bounced]</p>
+            <p>[Top links] [Feedback]</p>
+        </div>
     );
 };
 
