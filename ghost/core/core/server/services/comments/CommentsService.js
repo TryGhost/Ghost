@@ -211,8 +211,8 @@ class CommentsService {
 
         if (labs.isSet('commentImprovements')) {
             const replies = model.related('replies'); // Get the loaded replies relation
-            await replies.fetch(); // Ensure all replies are loaded
-        
+            await replies.fetch({withRelated: ['member', 'count.likes']}); // Fetch all replies
+
             if (replies && replies.length > 0) {
                 // Filter out deleted replies for all, and hidden replies for non-admins
                 replies.remove(
@@ -230,7 +230,7 @@ class CommentsService {
             }
         }
 
-        // this route does not need need to handle pagination, so we can remove hidden/deleted replies here
+        // this route does not need to handle pagination, so we can remove hidden/deleted replies here
 
         return model;
     }

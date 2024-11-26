@@ -18,9 +18,9 @@ describe('setupAdminAPI', () => {
 
         document.body.appendChild(frame);
 
-        // Mock window.addEventListener - in production this gets injected into the theme.
+        // Mock window.addEventListener - at runtime this gets injected into the theme.
         // from here https://github.com/TryGhost/Ghost/blob/main/ghost/core/core/frontend/src/admin-auth/message-handler.js
-        // do we have to mock it.
+        // In which case, we have to mock it in order to test it.
         addEventListenerSpy = vi.vitest.spyOn(window, 'addEventListener');
         postMessageMock = frame.contentWindow!.postMessage as vi.Mock;
     });

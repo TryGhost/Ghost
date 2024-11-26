@@ -142,7 +142,6 @@ async function showComment({state, api, data: comment}: {state: EditableAppConte
     let data;
     if (state.admin && state.adminApi && state.labs.commentImprovements) {
         data = await state.adminApi.read({commentId: comment.id});
-        console.log(data);
     } else {
         data = await api.comments.read(comment.id);
     }

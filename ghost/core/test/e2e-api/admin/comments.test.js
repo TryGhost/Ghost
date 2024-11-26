@@ -484,6 +484,10 @@ describe('Admin Comments API', function () {
 
             const res = await adminApi.get(`/comments/${parent.get('id')}/`);
             res.body.comments[0].replies.length.should.eql(3);
+
+            res.body.comments[0].replies[0].member.should.be.an.Object().with.properties('id', 'uuid', 'name', 'avatar_image');
+
+            res.body.comments[0].replies[0].should.be.an.Object().with.properties('id', 'html', 'status', 'created_at', 'member', 'count');
         });
 
         it('Does return published replies', async function () {
@@ -508,6 +512,8 @@ describe('Admin Comments API', function () {
 
             const res = await adminApi.get(`/comments/${parent.get('id')}/`);
             res.body.comments[0].replies.length.should.eql(3);
+            res.body.comments[0].replies[0].member.should.be.an.Object().with.properties('id', 'uuid', 'name', 'avatar_image');
+            res.body.comments[0].replies[0].should.be.an.Object().with.properties('id', 'html', 'status', 'created_at', 'member', 'count');
         });
 
         it('Does return published and hidden replies but not deleted', async function () {
@@ -539,6 +545,8 @@ describe('Admin Comments API', function () {
             });
             const res = await adminApi.get(`/comments/${parent.get('id')}/`);
             res.body.comments[0].replies.length.should.eql(4);
+            res.body.comments[0].replies[0].member.should.be.an.Object().with.properties('id', 'uuid', 'name', 'avatar_image');
+            res.body.comments[0].replies[0].should.be.an.Object().with.properties('id', 'html', 'status', 'created_at', 'member', 'count');
         });
 
         it('ensure replies are always ordered from oldest to newest', async function () {
