@@ -1,5 +1,6 @@
 import sinon from 'sinon';
 import {MOCKED_SITE_URL, MockedApi, initialize, mockAdminAuthFrame, mockAdminAuthFrame204} from '../utils/e2e';
+import {buildReply} from '../utils/fixtures';
 import {expect, test} from '@playwright/test';
 
 const admin = MOCKED_SITE_URL + '/ghost/';
@@ -168,6 +169,33 @@ test.describe('Admin moderation', async () => {
             await moreButtons.nth(1).click();
             await moreButtons.nth(1).getByText('Show comment').click();
             await expect(secondComment).toContainText('This is comment 2');
+        });
+
+        test('can hide and show replies', async ({page}) => {
+            mockedApi.addComment({
+                id: '1',
+                html: '<p>This is comment 1</p>',
+                replies: [
+                    buildReply({id: '2', html: '<p>This is reply 1</p>'}),
+                    buildReply({id: '3', html: '<p>This is reply 2</p>'})
+                ]
+            });
+
+            const {frame} = await initializeTest(page, {labs: true});
+            const comments = await frame.getByTestId('comment-component');
+            const replyToHide = comments.nth(1);
+
+            // Hide the 1st reply
+            await replyToHide.getByTestId('more-button').click();
+            await replyToHide.getByTestId('hide-button').click();
+
+            await expect(replyToHide).toContainText('Hidden for members');
+
+            // Show it again
+            await replyToHide.getByTestId('more-button').click();
+            await replyToHide.getByTestId('show-button').click();
+
+            await expect(replyToHide).not.toContainText('Hidden for members');
         });
     });
 });
