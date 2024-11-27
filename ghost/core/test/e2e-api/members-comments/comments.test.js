@@ -8,98 +8,13 @@ const settingsCache = require('../../../core/shared/settings-cache');
 const sinon = require('sinon');
 const DomainEvents = require('@tryghost/domain-events');
 const {mockLabsEnabled, mockLabsDisabled} = require('../../utils/e2e-framework-mock-manager');
+const dbFns = require('../../utils/db-fns/comments');
 
 let membersAgent, membersAgent2, postId, postAuthorEmail, postTitle;
 
 async function getPaidProduct() {
     return await models.Product.findOne({type: 'paid'});
 }
-
-const dbFns = {
-    /**
-     * @typedef {Object} AddCommentData
-     * @property {string} [post_id=postId]
-     * @property {string} member_id
-     * @property {string} [parent_id]
-     * @property {string} [in_reply_to_id]
-     * @property {string} [html='This is a comment']
-     * @property {string} [status]
-     * @property {Date} [created_at]
-     */
-    /**
-     * @typedef {Object} AddCommentReplyData
-     * @property {string} member_id
-     * @property {string} [html='This is a reply']
-     * @property {Date} [created_at]
-     * @property {string} [status]
-     */
-    /**
-     * @typedef {AddCommentData & {replies: AddCommentReplyData[]}} AddCommentWithRepliesData
-     */
-
-    /**
-     * @param {AddCommentData} data
-     * @returns {Promise<any>}
-     */
-    addComment: async (data) => {
-        return await models.Comment.add({
-            post_id: data.post_id || postId,
-            member_id: data.member_id,
-            parent_id: data.parent_id,
-            html: data.html || '<p>This is a comment</p>',
-            created_at: data.created_at,
-            in_reply_to_id: data.in_reply_to_id,
-            status: data.status || 'published'
-        });
-    },
-    /**
-     * @param {AddCommentWithRepliesData}  data
-     * @returns {Promise<any>}
-     */
-    addCommentWithReplies: async (data) => {
-        const {replies, ...commentData} = data;
-
-        const parent = await dbFns.addComment(commentData);
-        const createdReplies = [];
-
-        for (const reply of replies) {
-            const createdReply = await dbFns.addComment({
-                post_id: parent.get('post_id'),
-                member_id: reply.member_id,
-                parent_id: parent.get('id'),
-                html: reply.html || '<p>This is a reply</p>',
-                status: reply.status
-            });
-            createdReplies.push(createdReply);
-        }
-
-        return {parent, replies: createdReplies};
-    },
-    /**
-     * @param {Object} data
-     * @param {string} data.comment_id
-     * @param {string} data.member_id
-     * @returns {Promise<any>}
-     */
-    addLike: async (data) => {
-        return await models.CommentLike.add({
-            comment_id: data.comment_id,
-            member_id: data.member_id
-        });
-    },
-    /**
-     * @param {Object} data
-     * @param {string} data.comment_id
-     * @param {string} data.member_id
-     * @returns {Promise<any>}
-     */
-    addReport: async (data) => {
-        return await models.CommentReport.add({
-            comment_id: data.comment_id,
-            member_id: data.member_id
-        });
-    }
-};
 
 const commentMatcher = {
     id: anyObjectId,
@@ -265,6 +180,7 @@ async function testCanCommentOnPost(member) {
 
 async function testCanReply(member, emailMatchers = {}) {
     const parentComment = await dbFns.addComment({
+        post_id: postId,
         member_id: fixtureManager.get('members', 2).id
     });
 
@@ -382,6 +298,7 @@ describe('Comments API', function () {
 
             async function setupBrowseCommentsData() {
                 await dbFns.addCommentWithReplies({
+                    post_id: postId,
                     member_id: fixtureManager.get('members', 0).id,
                     replies: [{
                         member_id: fixtureManager.get('members', 1).id
@@ -534,6 +451,7 @@ describe('Comments API', function () {
 
             it('cannot reply on a post', async function () {
                 const comment = await dbFns.addComment({
+                    post_id: postId,
                     member_id: fixtureManager.get('members', 0).id
                 });
                 await testCannotReply(comment.get('id'), 401);
@@ -541,6 +459,7 @@ describe('Comments API', function () {
 
             it('cannot report a comment', async function () {
                 const comment = await dbFns.addComment({
+                    post_id: postId,
                     member_id: fixtureManager.get('members', 2).id
                 });
 
@@ -559,6 +478,7 @@ describe('Comments API', function () {
 
             it('cannot like a comment', async function () {
                 const comment = await dbFns.addComment({
+                    post_id: postId,
                     member_id: fixtureManager.get('members', 2).id
                 });
 
@@ -567,6 +487,7 @@ describe('Comments API', function () {
 
             it('cannot unlike a comment', async function () {
                 const comment = await dbFns.addComment({
+                    post_id: postId,
                     member_id: fixtureManager.get('members', 2).id
                 });
                 await dbFns.addLike({
@@ -607,12 +528,14 @@ describe('Comments API', function () {
 
             async function setupBrowseCommentsData() {
                 await dbFns.addCommentWithReplies({
+                    post_id: postId,
                     member_id: fixtureManager.get('members', 0).id,
                     replies: [{
                         member_id: fixtureManager.get('members', 1).id
                     }]
                 });
                 await dbFns.addComment({
+                    post_id: postId,
                     member_id: fixtureManager.get('members', 2).id
                 });
             }
@@ -655,29 +578,34 @@ describe('Comments API', function () {
             it('can show most liked comment first when order param = best followed by most recent', async function () {
                 await setupBrowseCommentsData();
                 await dbFns.addComment({
+                    post_id: postId,
                     html: 'This is the newest comment',
                     member_id: fixtureManager.get('members', 2).id,
                     created_at: new Date('2024-08-18')
                 });
 
                 const secondBest = await dbFns.addComment({
+                    post_id: postId,
                     member_id: fixtureManager.get('members', 0).id,
                     html: 'This will be the second best comment',
                     created_at: new Date('2022-01-01')
                 });
 
                 await dbFns.addComment({
+                    post_id: postId,
                     member_id: fixtureManager.get('members', 1).id,
                     created_at: new Date('2023-01-01')
                 });
 
                 const bestComment = await dbFns.addComment({
+                    post_id: postId,
                     member_id: fixtureManager.get('members', 2).id,
                     html: 'This will be the best comment',
                     created_at: new Date('2021-01-01')
                 });
 
                 const oldestComment = await dbFns.addComment({
+                    post_id: postId,
                     member_id: fixtureManager.get('members', 1).id,
                     html: 'ancient comment',
                     created_at: new Date('2019-01-01')
@@ -720,6 +648,7 @@ describe('Comments API', function () {
                 await models.Member.edit({last_seen_at: date, last_commented_at: date}, {id: loggedInMember.get('id')});
 
                 const parentComment = await dbFns.addComment({
+                    post_id: postId,
                     member_id: loggedInMember.id
                 });
 
@@ -750,6 +679,7 @@ describe('Comments API', function () {
 
             it('Limits returned replies to 3', async function () {
                 const {parent} = await dbFns.addCommentWithReplies({
+                    post_id: postId,
                     member_id: fixtureManager.get('members', 0).id,
                     replies: new Array(5).fill({
                         member_id: fixtureManager.get('members', 1).id
@@ -766,6 +696,7 @@ describe('Comments API', function () {
             it('hidden replies are not included in the count', async function () {
                 await mockManager.mockLabsEnabled('commentImprovements');
                 const {parent} = await dbFns.addCommentWithReplies({
+                    post_id: postId,
                     member_id: fixtureManager.get('members', 0).id,
                     replies: new Array(5).fill({
                         member_id: fixtureManager.get('members', 1).id,
@@ -781,6 +712,7 @@ describe('Comments API', function () {
             it('deleted replies are not included in the count', async function () {
                 await mockManager.mockLabsEnabled('commentImprovements');
                 const {parent} = await dbFns.addCommentWithReplies({
+                    post_id: postId,
                     member_id: fixtureManager.get('members', 0).id,
                     replies: new Array(5).fill({
                         member_id: fixtureManager.get('members', 1).id,
@@ -815,6 +747,7 @@ describe('Comments API', function () {
 
             it('Can like a comment', async function () {
                 const comment = await dbFns.addComment({
+                    post_id: postId,
                     member_id: fixtureManager.get('members', 2).id
                 });
 
@@ -837,6 +770,7 @@ describe('Comments API', function () {
 
             it('Cannot like a comment multiple times', async function () {
                 const comment = await dbFns.addComment({
+                    post_id: postId,
                     member_id: fixtureManager.get('members', 2).id
                 });
                 await dbFns.addLike({
@@ -850,9 +784,11 @@ describe('Comments API', function () {
 
             it('Can like a reply', async function () {
                 const comment = await dbFns.addComment({
+                    post_id: postId,
                     member_id: fixtureManager.get('members', 2).id
                 });
                 const reply = await dbFns.addComment({
+                    post_id: postId,
                     member_id: fixtureManager.get('members', 1).id,
                     parent_id: comment.get('id')
                 });
@@ -879,6 +815,7 @@ describe('Comments API', function () {
 
             it('Can return replies', async function () {
                 const {parent, replies} = await dbFns.addCommentWithReplies({
+                    post_id: postId,
                     member_id: fixtureManager.get('members', 0).id,
                     replies: new Array(7).fill({
                         member_id: fixtureManager.get('members', 1).id
@@ -904,6 +841,7 @@ describe('Comments API', function () {
 
             it('Can request last page of replies', async function () {
                 const {parent} = await dbFns.addCommentWithReplies({
+                    post_id: postId,
                     member_id: fixtureManager.get('members', 0).id,
                     replies: new Array(7).fill({
                         member_id: fixtureManager.get('members', 1).id
@@ -920,6 +858,7 @@ describe('Comments API', function () {
 
             it('Can remove a like (unlike)', async function () {
                 const comment = await dbFns.addComment({
+                    post_id: postId,
                     member_id: loggedInMember.id
                 });
                 await dbFns.addLike({
@@ -940,6 +879,7 @@ describe('Comments API', function () {
 
             it('Cannot unlike a comment if it has not been liked', async function () {
                 const comment = await dbFns.addComment({
+                    post_id: postId,
                     member_id: loggedInMember.id
                 });
 
@@ -948,6 +888,7 @@ describe('Comments API', function () {
 
             it('Can report a comment', async function () {
                 const comment = await dbFns.addComment({
+                    post_id: postId,
                     member_id: fixtureManager.get('members', 2).id,
                     html: '<p>This is a message</p><p></p><p>New line</p>'
                 });
@@ -971,6 +912,7 @@ describe('Comments API', function () {
 
             it('Cannot report a comment twice', async function () {
                 const comment = await dbFns.addComment({
+                    post_id: postId,
                     member_id: fixtureManager.get('members', 2).id
                 });
                 await dbFns.addReport({
@@ -992,6 +934,7 @@ describe('Comments API', function () {
 
             it('Can edit a comment on a post', async function () {
                 const comment = await dbFns.addComment({
+                    post_id: postId,
                     member_id: loggedInMember.id
                 });
 
@@ -1016,6 +959,7 @@ describe('Comments API', function () {
 
             it('Can not edit a comment post_id', async function () {
                 const comment = await dbFns.addComment({
+                    post_id: postId,
                     member_id: loggedInMember.id
                 });
 
@@ -1035,6 +979,7 @@ describe('Comments API', function () {
 
             it('Can not edit a comment which does not belong to you', async function () {
                 const comment = await dbFns.addComment({
+                    post_id: postId,
                     member_id: fixtureManager.get('members', 2).id
                 });
 
@@ -1057,6 +1002,7 @@ describe('Comments API', function () {
 
             it('Can not edit a comment as a member who is not you', async function () {
                 const comment = await dbFns.addComment({
+                    post_id: postId,
                     member_id: loggedInMember.id
                 });
                 const memberId = fixtureManager.get('members', 1).id;
@@ -1083,6 +1029,7 @@ describe('Comments API', function () {
 
             it('Can not reply to a reply', async function () {
                 const {replies} = await dbFns.addCommentWithReplies({
+                    post_id: postId,
                     member_id: fixtureManager.get('members', 1).id,
                     html: 'Parent',
                     replies: [{
@@ -1112,16 +1059,19 @@ describe('Comments API', function () {
 
             it('Can not edit a replies parent', async function () {
                 const parentId = (await dbFns.addComment({
+                    post_id: postId,
                     member_id: loggedInMember.id,
                     html: 'Parent'
                 })).get('id');
 
                 const newParentId = (await dbFns.addComment({
+                    post_id: postId,
                     member_id: loggedInMember.id,
                     html: 'New Parent'
                 })).get('id');
 
                 const replyId = (await dbFns.addComment({
+                    post_id: postId,
                     member_id: loggedInMember.id,
                     parent_id: parentId,
                     html: 'Reply'
@@ -1168,6 +1118,7 @@ describe('Comments API', function () {
 
             it('Can delete a comment, and it is redacted from', async function () {
                 const commentToDeleteId = (await dbFns.addComment({
+                    post_id: postId,
                     member_id: loggedInMember.id,
                     html: 'Comment to delete'
                 })).get('id');
@@ -1192,6 +1143,7 @@ describe('Comments API', function () {
 
                 it('can browse comments with replies to replies', async function () {
                     const {replies: [reply]} = await dbFns.addCommentWithReplies({
+                        post_id: postId,
                         member_id: fixtureManager.get('members', 1).id,
                         replies: [{
                             member_id: fixtureManager.get('members', 2).id,
@@ -1200,6 +1152,7 @@ describe('Comments API', function () {
                     });
 
                     await dbFns.addComment({
+                        post_id: postId,
                         member_id: fixtureManager.get('members', 1).id,
                         parent_id: reply.get('parent_id'),
                         in_reply_to_id: reply.get('id'),
@@ -1211,6 +1164,7 @@ describe('Comments API', function () {
 
                 it('can set in_reply_to_id when creating a reply', async function () {
                     const {replies: [reply]} = await dbFns.addCommentWithReplies({
+                        post_id: postId,
                         member_id: fixtureManager.get('members', 1).id,
                         replies: [{
                             member_id: fixtureManager.get('members', 2).id
@@ -1249,6 +1203,7 @@ describe('Comments API', function () {
                 ['deleted', 'hidden'].forEach((status) => {
                     it(`cannot set in_reply_to_id to a ${status} comment`, async function () {
                         const {replies: [reply]} = await dbFns.addCommentWithReplies({
+                            post_id: postId,
                             member_id: fixtureManager.get('members', 1).id,
                             replies: [{
                                 member_id: fixtureManager.get('members', 2).id,
@@ -1274,6 +1229,7 @@ describe('Comments API', function () {
 
                 it('in_reply_to_id is ignored when no parent specified', async function () {
                     const {replies: [reply]} = await dbFns.addCommentWithReplies({
+                        post_id: postId,
                         member_id: fixtureManager.get('members', 1).id,
                         replies: [{
                             member_id: fixtureManager.get('members', 2).id
@@ -1296,8 +1252,9 @@ describe('Comments API', function () {
                     mockManager.assert.sentEmailCount(1);
                 });
 
-                it('in_reply_to_id is ignored id in_reply_to_id has a different parent', async function () {
+                it('in_reply_to_id is ignored if in_reply_to_id has a different parent', async function () {
                     const {replies: [reply]} = await dbFns.addCommentWithReplies({
+                        post_id: postId,
                         member_id: fixtureManager.get('members', 1).id,
                         replies: [{
                             member_id: fixtureManager.get('members', 2).id
@@ -1305,6 +1262,7 @@ describe('Comments API', function () {
                     });
 
                     const diffParentComment = await dbFns.addComment({
+                        post_id: postId,
                         member_id: fixtureManager.get('members', 1).id
                     });
 
@@ -1326,6 +1284,7 @@ describe('Comments API', function () {
 
                 it('includes in_reply_to_snippet in response', async function () {
                     const {replies: [reply]} = await dbFns.addCommentWithReplies({
+                        post_id: postId,
                         member_id: fixtureManager.get('members', 1).id,
                         replies: [{
                             member_id: fixtureManager.get('members', 2).id,
@@ -1353,6 +1312,7 @@ describe('Comments API', function () {
                 ['deleted', 'hidden'].forEach((status) => {
                     it(`does not include in_reply_to_snippet for ${status} comments`, async function () {
                         const {replies: [reply]} = await dbFns.addCommentWithReplies({
+                            post_id: postId,
                             member_id: fixtureManager.get('members', 1).id,
                             replies: [{
                                 member_id: fixtureManager.get('members', 2).id,
@@ -1362,6 +1322,7 @@ describe('Comments API', function () {
                         });
 
                         const newComment = await dbFns.addComment({
+                            post_id: postId,
                             member_id: loggedInMember.id,
                             parent_id: reply.get('parent_id'),
                             in_reply_to_id: reply.get('id')

@@ -4,67 +4,7 @@ const {
     fixtureManager,
     mockManager
 } = require('../../utils/e2e-framework');
-const models = require('../../../core/server/models');
-let postId;
-const dbFns = {
-    /**
-     * @typedef {Object} AddCommentData
-     * @property {string} [post_id=post_id]
-     * @property {string} member_id
-     * @property {string} [parent_id]
-     * @property {string} [html='This is a comment']
-     * @property {string} [status='published']
-     * @property {date} [created_at]
-     */
-    /**
-     * @typedef {Object} AddCommentReplyData
-     * @property {string} member_id
-     * @property {string} [html='This is a reply']
-     * @property {date} [created_at]
-     */
-    /**
-     * @typedef {AddCommentData & {replies: AddCommentReplyData[]}} AddCommentWithRepliesData
-     */
-
-    /**
-     * @param {AddCommentData} data
-     * @returns {Promise<any>}
-     */
-    addComment: async (data) => {
-        return await models.Comment.add({
-            post_id: data.post_id || postId,
-            member_id: data.member_id,
-            parent_id: data.parent_id,
-            html: data.html || '<p>This is a comment</p>',
-            created_at: data.created_at,
-            status: data.status || 'published'
-        });
-    },
-    /**
-     * @param {AddCommentWithRepliesData}  data
-     * @returns {Promise<any>}
-     */
-    addCommentWithReplies: async (data) => {
-        const {replies, ...commentData} = data;
-
-        const parent = await dbFns.addComment(commentData);
-        const createdReplies = [];
-
-        for (const reply of replies) {
-            const createdReply = await dbFns.addComment({
-                post_id: parent.get('post_id'),
-                member_id: reply.member_id,
-                parent_id: parent.get('id'),
-                html: reply.html || '<p>This is a reply</p>',
-                status: reply.status || 'published',
-                created_at: reply.created_at || new Date()
-            });
-            createdReplies.push(createdReply);
-        }
-
-        return {parent, replies: createdReplies};
-    }
-};
+const dbFns = require('../../utils/db-fns/comments');
 
 describe('Admin Comments API', function () {
     let adminApi;
