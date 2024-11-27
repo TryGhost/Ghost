@@ -32,12 +32,12 @@ export const PopupNotificationStyles = `
 
     .gh-portal-popupnotification p {
         color: var(--white);
-        margin: 0;
+        margin: 0 0 0 8px;
         padding: 0 20px;
         font-size: 1.5rem;
         line-height: 1.5em;
         letter-spacing: 0.2px;
-        text-align: center;
+        text-align: left;
     }
 
     .gh-portal-popupnotification a {
