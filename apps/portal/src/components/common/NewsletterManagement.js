@@ -43,8 +43,6 @@ function NewsletterPrefSection({newsletter, subscribedNewsletters, setSubscribed
         return d.id === newsletter?.id;
     });
 
-    const [showUpdated, setShowUpdated] = useState(false);
-    const [timeoutId, setTimeoutId] = useState(null);
     return (
         <section className='gh-portal-list-toggle-wrapper' data-testid="toggle-wrapper">
             <div className='gh-portal-list-detail'>
@@ -52,29 +50,16 @@ function NewsletterPrefSection({newsletter, subscribedNewsletters, setSubscribed
                 <p>{newsletter?.description}</p>
             </div>
             <div style={{display: 'flex', alignItems: 'center'}}>
-                <SuccessIcon show={showUpdated} checked={isChecked} />
                 <Switch id={newsletter.id} onToggle={(e, checked) => {
                     let updatedNewsletters = [];
                     if (!checked) {
                         updatedNewsletters = subscribedNewsletters.filter((d) => {
                             return d.id !== newsletter.id;
                         });
-                        setShowUpdated(true);
-                        clearTimeout(timeoutId);
-                        let newTimeoutId = setTimeout(() => {
-                            setShowUpdated(false);
-                        }, 2000);
-                        setTimeoutId(newTimeoutId);
                     } else {
                         updatedNewsletters = subscribedNewsletters.filter((d) => {
                             return d.id !== newsletter.id;
                         }).concat(newsletter);
-                        setShowUpdated(true);
-                        clearTimeout(timeoutId);
-                        let newTimeoutId = setTimeout(() => {
-                            setShowUpdated(false);
-                        }, 2000);
-                        setTimeoutId(newTimeoutId);
                     }
                     setSubscribedNewsletters(updatedNewsletters);
                 }} checked={isChecked} />
