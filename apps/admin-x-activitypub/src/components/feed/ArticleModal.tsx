@@ -136,7 +136,7 @@ const ArticleBody: React.FC<{heading: string, image: string|undefined, excerpt: 
     }, [htmlContent]);
 
     return (
-        <div className='w-full pb-10'>
+        <div className='w-full pb-6'>
             <iframe
                 ref={iframeRef}
                 id='gh-ap-article-iframe'

@@ -265,7 +265,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                             size='md'
                                         />}
                                     </div>
-                                    <div className='space-between relative z-[30] ml-[-7px] mt-2 flex'>
+                                    <div className='space-between relative z-[30] ml-[-7px] mt-1 flex'>
                                         <FeedItemStats
                                             commentCount={commentCount}
                                             layout={layout}
