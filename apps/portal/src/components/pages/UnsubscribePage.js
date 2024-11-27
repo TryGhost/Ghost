@@ -65,10 +65,9 @@ export default function UnsubscribePage() {
         }
         setSubscribedNewsletters(newsletters);
         const notification = {
-            action: `updated:success:${Date.now()}`,
+            action: `updated:success`,
             message: t('Email preferences updated.')
         };
-        console.log('Showing notification:', notification);
         onAction('showPopupNotification', notification);
     };
 
@@ -82,6 +81,10 @@ export default function UnsubscribePage() {
             updatedData = await updateMemberNewsletters({api, memberUuid: pageData.uuid, key: pageData.key, enableCommentNotifications: enabled});
         }
         setMember(updatedData);
+        onAction('showPopupNotification', {
+            action: 'updated:success',
+            message: t('Comment preferences updated.')
+        });
     };
 
     const unsubscribeAll = async () => {

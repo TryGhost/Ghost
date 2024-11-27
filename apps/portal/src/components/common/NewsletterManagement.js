@@ -1,11 +1,11 @@
 import AppContext from '../../AppContext';
 import CloseButton from '../common/CloseButton';
 import BackButton from '../common/BackButton';
-import {useContext, useState} from 'react';
+import {useContext} from 'react';
 import Switch from '../common/Switch';
 import {getSiteNewsletters, hasMemberGotEmailSuppression} from '../../utils/helpers';
 import ActionButton from '../common/ActionButton';
-import {ReactComponent as CheckmarkIcon} from '../../images/icons/check-circle.svg';
+// import {ReactComponent as CheckmarkIcon} from '../../images/icons/check-circle.svg';
 
 function AccountHeader() {
     const {brandColor, lastPage, onAction, t} = useContext(AppContext);
@@ -16,25 +16,6 @@ function AccountHeader() {
             }} />
             <h3 className='gh-portal-main-title'>{t('Email preferences')}</h3>
         </header>
-    );
-}
-
-function SuccessIcon({show, checked}) {
-    let classNames = [];
-    if (show) {
-        classNames.push('gh-portal-checkmark-show');
-    }
-
-    if (checked) {
-        classNames.push('gh-portal-toggle-checked');
-    }
-
-    classNames.push('gh-portal-checkmark-container');
-
-    return (
-        <div className={classNames.join(' ')} data-testid='checkmark-container'>
-            <CheckmarkIcon className='gh-portal-checkmark-icon' alt='' />
-        </div>
     );
 }
 
@@ -72,9 +53,6 @@ function CommentsSection({updateCommentNotifications, isCommentsEnabled, enableC
     const {t} = useContext(AppContext);
     const isChecked = !!enableCommentNotifications;
 
-    const [showUpdated, setShowUpdated] = useState(false);
-    const [timeoutId, setTimeoutId] = useState(null);
-
     if (!isCommentsEnabled) {
         return null;
     }
@@ -86,14 +64,7 @@ function CommentsSection({updateCommentNotifications, isCommentsEnabled, enableC
                 <p>{t('Get notified when someone replies to your comment')}</p>
             </div>
             <div style={{display: 'flex', alignItems: 'center'}}>
-                <SuccessIcon show={showUpdated} checked={isChecked} />
                 <Switch id="comments" onToggle={(e, checked) => {
-                    setShowUpdated(true);
-                    clearTimeout(timeoutId);
-                    let newTimeoutId = setTimeout(() => {
-                        setShowUpdated(false);
-                    }, 2000);
-                    setTimeoutId(newTimeoutId);
                     updateCommentNotifications(checked);
                 }} checked={isChecked} />
             </div>
@@ -116,10 +87,10 @@ function NewsletterPrefs({subscribedNewsletters, setSubscribedNewsletters}) {
     });
 }
 
-function ShowPaidMemberMessage({site, isPaid}) {
+function ShowPaidMemberMessage({site, isPaid, subscribedNewsletters}) {
     const {t} = useContext(AppContext);
 
-    if (isPaid) {
+    if (isPaid && subscribedNewsletters?.length === 0) {
         return (
             <p style={{textAlign: 'center', marginTop: '12px', marginBottom: '0', color: 'var(--grey6)'}}>{t('Unsubscribing from emails will not cancel your paid subscription to {{title}}', {title: site?.title})}</p>
         );
@@ -185,7 +156,11 @@ export default function NewsletterManagement({
             </div>
             <footer className={'gh-portal-action-footer' + (hasMemberGotEmailSuppression({member}) ? ' gh-feature-suppressions' : '')}>
                 <div style={{width: '100%'}}>
-                    <ShowPaidMemberMessage isPaid={isPaidMember} site={site} />
+                    <ShowPaidMemberMessage 
+                        isPaid={isPaidMember} 
+                        site={site}
+                        subscribedNewsletters={subscribedNewsletters}
+                    />
                 </div>
                 {hasMemberGotEmailSuppression({member}) && !isDisabled &&
                     <div className="gh-portal-footer-secondary">
