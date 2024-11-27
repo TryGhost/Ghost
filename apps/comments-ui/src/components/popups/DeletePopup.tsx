@@ -8,6 +8,7 @@ import {useState} from 'react';
 const DeletePopup = ({comment}: {comment: Comment}) => {
     const {dispatchAction, t} = useAppContext();
     const [progress, setProgress] = useState('default');
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     let buttonColor = 'bg-red-600';
     if (progress === 'sent') {
@@ -44,6 +45,12 @@ const DeletePopup = ({comment}: {comment: Comment}) => {
     const submit = (event: React.MouseEvent) => {
         event.stopPropagation();
 
+        // Prevent multiple submissions
+        if (isSubmitting) {
+            return;
+        }
+
+        setIsSubmitting(true);
         setProgress('sending');
 
         setTimeout(() => {
@@ -66,6 +73,7 @@ const DeletePopup = ({comment}: {comment: Comment}) => {
                 <div className="mt-auto flex flex-col items-center justify-start gap-4 sm:mt-8 sm:flex-row">
                     <button
                         className={`text-md flex h-[44px] w-full items-center justify-center rounded-md px-4 font-sans font-medium text-white transition duration-200 ease-linear sm:w-fit ${buttonColor} opacity-100 hover:opacity-90`}
+                        disabled={isSubmitting}
                         type="button"
                         onClick={submit}
                     >
