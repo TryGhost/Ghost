@@ -87,10 +87,10 @@ function NewsletterPrefs({subscribedNewsletters, setSubscribedNewsletters}) {
     });
 }
 
-function ShowPaidMemberMessage({site, isPaid, subscribedNewsletters}) {
+function ShowPaidMemberMessage({site, isPaid}) {
     const {t} = useContext(AppContext);
 
-    if (isPaid && subscribedNewsletters?.length === 0) {
+    if (isPaid) {
         return (
             <p style={{textAlign: 'center', marginTop: '12px', marginBottom: '0', color: 'var(--grey6)'}}>{t('Unsubscribing from emails will not cancel your paid subscription to {{title}}', {title: site?.title})}</p>
         );
