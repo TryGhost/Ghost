@@ -1,4 +1,4 @@
-export * from './components/ui/icon';
+export {default as Icon} from './components/ui/icon';
 export * from './components/typography/heading';
 export * from './components/ui/breadcrumb';
 export * from './components/ui/button';
