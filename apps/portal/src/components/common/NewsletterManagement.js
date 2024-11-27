@@ -42,7 +42,7 @@ function NewsletterPrefSection({newsletter, subscribedNewsletters, setSubscribed
                         }).concat(newsletter);
                     }
                     setSubscribedNewsletters(updatedNewsletters);
-                }} checked={isChecked} />
+                }} checked={isChecked} dataTestId="switch-input" />
             </div>
         </section>
     );
@@ -71,7 +71,7 @@ function CommentsSection({updateCommentNotifications, isCommentsEnabled, enableC
                 <p>{t('Get notified when someone replies to your comment')}</p>
             </div>
             <div style={{display: 'flex', alignItems: 'center'}}>
-                <Switch id="comments" onToggle={handleToggle} checked={isChecked} />
+                <Switch id="comments" onToggle={handleToggle} checked={isChecked} dataTestId="switch-input" />
             </div>
         </section>
     );

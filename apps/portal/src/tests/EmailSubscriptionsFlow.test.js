@@ -131,16 +131,17 @@ describe('Newsletter Subscriptions', () => {
         expect(ghostApi.member.update).toHaveBeenLastCalledWith(
             {newsletters: expectedSubscriptions}
         );
-
-        // Verify toggle states using Switch component's checked state
-        const toggleWrappers = within(popupIframeDocument).getAllByTestId('toggle-wrapper');
-        expect(toggleWrappers[0]).toBeInTheDocument();
-        expect(subscriptionToggles[0]).not.toBeChecked();
-        expect(subscriptionToggles[1]).toBeChecked();
+        const subscriptionToggleContainers = within(popupIframeDocument).getAllByTestId('checkmark-container');
+        const newsletter1ToggleContainer = subscriptionToggleContainers[0];
+        expect(newsletter1ToggleContainer).toBeInTheDocument();
+        expect(newsletter1ToggleContainer).not.toHaveClass('gh-portal-toggle-checked');
+        const newsletter2ToggleContainer = subscriptionToggleContainers[1];
+        expect(newsletter2ToggleContainer).toBeInTheDocument();
+        expect(newsletter2ToggleContainer).toHaveClass('gh-portal-toggle-checked');
 
         // resubscribe to Newsletter 1
         await userEvent.click(newsletter1Toggle);
-        expect(subscriptionToggles[0]).toBeChecked();
+        expect(newsletter1ToggleContainer).toHaveClass('gh-portal-toggle-checked');
         expect(ghostApi.member.update).toHaveBeenLastCalledWith(
             {newsletters: Newsletters.reverse().map(n => ({id: n.id}))}
         );
@@ -163,11 +164,15 @@ describe('Newsletter Subscriptions', () => {
         fireEvent.click(unsubscribeAllButton);
 
         expect(ghostApi.member.update).toHaveBeenCalledWith({newsletters: [], enableCommentNotifications: false});
-        
-        // Verify the local state shows the newsletters as unsubscribed
-        const subscriptionToggles = within(popupIframeDocument).getAllByTestId('switch-input');
-        expect(subscriptionToggles[0]).not.toBeChecked();
-        expect(subscriptionToggles[1]).not.toBeChecked();
+        // Verify the local state shows the newsletter as unsubscribed
+        let newsletterToggles = within(popupIframeDocument).queryAllByTestId('checkmark-container');
+        let newsletter1Toggle = newsletterToggles[0];
+        let newsletter2Toggle = newsletterToggles[1];
+
+        expect(newsletter1Toggle).toBeInTheDocument();
+        expect(newsletter2Toggle).toBeInTheDocument();
+        expect(newsletter1Toggle).not.toHaveClass('gh-portal-toggle-checked');
+        expect(newsletter2Toggle).not.toHaveClass('gh-portal-toggle-checked');
     });
 
     describe('from the unsubscribe link > UnsubscribePage', () => {
@@ -194,11 +199,15 @@ describe('Newsletter Subscriptions', () => {
             expect(popupFrame).toBeInTheDocument();
             
             expect(within(popupIframeDocument).getByText(/will no longer receive/)).toBeInTheDocument();
-            
             // Verify the local state shows the newsletter as unsubscribed
-            const subscriptionToggles = within(popupIframeDocument).getAllByTestId('switch-input');
-            expect(subscriptionToggles[0]).not.toBeChecked();
-            expect(subscriptionToggles[1]).toBeChecked();
+            let newsletterToggles = within(popupIframeDocument).queryAllByTestId('checkmark-container');
+            let newsletter1Toggle = newsletterToggles[0];
+            let newsletter2Toggle = newsletterToggles[1];
+
+            expect(newsletter1Toggle).toBeInTheDocument();
+            expect(newsletter2Toggle).toBeInTheDocument();
+            expect(newsletter1Toggle).not.toHaveClass('gh-portal-toggle-checked');
+            expect(newsletter2Toggle).toHaveClass('gh-portal-toggle-checked');
         });
 
         test('unsubscribe via email link while logged in', async () => {
@@ -222,9 +231,16 @@ describe('Newsletter Subscriptions', () => {
                 }
             );
             // Verify the local state shows the newsletter as unsubscribed
-            let subscriptionToggles = within(popupIframeDocument).getAllByTestId('switch-input');
-            expect(subscriptionToggles[0]).not.toBeChecked();
-            expect(subscriptionToggles[1]).toBeChecked();
+            let newsletterToggles = within(popupIframeDocument).queryAllByTestId('checkmark-container');
+            let newsletter1Toggle = newsletterToggles[0];
+            let newsletter2Toggle = newsletterToggles[1];
+
+            expect(within(popupIframeDocument).getByText(/will no longer receive/)).toBeInTheDocument();
+
+            expect(newsletter1Toggle).toBeInTheDocument();
+            expect(newsletter2Toggle).toBeInTheDocument();
+            expect(newsletter1Toggle).not.toHaveClass('gh-portal-toggle-checked');
+            expect(newsletter2Toggle).toHaveClass('gh-portal-toggle-checked');
 
             // Close the UnsubscribePage popup frame
             const popupCloseButton = within(popupIframeDocument).queryByTestId('close-popup');
@@ -243,9 +259,13 @@ describe('Newsletter Subscriptions', () => {
             await userEvent.click(manageSubscriptionsButton);
 
             // Verify that the unsubscribed newsletter is shown as unsubscribed in the new popup
-            subscriptionToggles = within(newPopupIframeDocument).getAllByTestId('switch-input');
-            expect(subscriptionToggles[0]).not.toBeChecked();
-            expect(subscriptionToggles[1]).toBeChecked();
+            newsletterToggles = within(newPopupIframeDocument).queryAllByTestId('checkmark-container');
+            newsletter1Toggle = newsletterToggles[0];
+            newsletter2Toggle = newsletterToggles[1];
+            expect(newsletter1Toggle).toBeInTheDocument();
+            expect(newsletter2Toggle).toBeInTheDocument();
+            expect(newsletter1Toggle).not.toHaveClass('gh-portal-toggle-checked');
+            expect(newsletter2Toggle).toHaveClass('gh-portal-toggle-checked');
         });
 
         test('unsubscribe link without a key param', async () => {
