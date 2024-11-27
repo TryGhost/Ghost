@@ -64,7 +64,7 @@ describe('Account Email Page', () => {
 
     test('unsubscribe all is disabled when no newsletters are subscribed to', async () => {
         const siteData = getSiteData({
-            newsletters: getNewslettersData({numOfNewsletters: 2})
+            newsletters: getNewslettersData({numOfNewsletters: 3})
         });
         const {unsubscribeAllBtn} = setup({site: siteData, member: getMemberData()});
         expect(unsubscribeAllBtn).toBeDisabled();
@@ -113,5 +113,22 @@ describe('Account Email Page', () => {
         });
         const {mockOnActionFn} = setup({site: siteData, member: null});
         expect(mockOnActionFn).toHaveBeenCalledWith('switchPage', {page: 'signin'});
+    });
+
+    test('newsletters are not visible when newsletters are disabled on the site ', async () => {
+        const newsletterData = getNewslettersData({numOfNewsletters: 2});
+        const siteData = getSiteData({
+            newsletters: newsletterData,
+            editorDefaultEmailRecipients: 'disabled',
+            member: getMemberData({newsletters: newsletterData})
+        });
+        
+        const {getAllByTestId, getByText} = setup({site: siteData});
+        const unsubscribeBtns = getAllByTestId(`toggle-wrapper`);
+
+        expect(getByText('Email preferences')).toBeInTheDocument();
+
+        // one for comments unsubscribe button
+        expect(unsubscribeBtns).toHaveLength(1);
     });
 });

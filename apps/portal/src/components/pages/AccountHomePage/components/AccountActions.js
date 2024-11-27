@@ -17,9 +17,7 @@ const AccountActions = () => {
         });
     };
 
-    const showEmailPreferences = hasMultipleNewsletters({site}) || hasCommentsEnabled({site}) || isEmailSuppressed({member});
-
-    const showEmailUnsubscribe = hasNewsletterSendingEnabled({site});
+    const showEmailPreferences = hasMultipleNewsletters({site}) && hasNewsletterSendingEnabled({site}) || hasCommentsEnabled({site}) || isEmailSuppressed({member});
 
     return (
         <div>
@@ -46,13 +44,13 @@ const AccountActions = () => {
                 }
 
                 {
-                    showEmailUnsubscribe && !showEmailPreferences
+                    !hasMultipleNewsletters({site}) && hasNewsletterSendingEnabled({site}) && !hasCommentsEnabled({site})
                         ? <EmailNewsletterAction />
                         : <></>
                 }
 
             </div>
-            {/* <ProductList openUpdatePlan={openUpdatePlan}></ProductList> */}
+
         </div>
     );
 };
