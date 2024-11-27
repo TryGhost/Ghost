@@ -2,20 +2,17 @@
 import NiceModal from '@ebay/nice-modal-react';
 import React, {createContext, useContext, useState} from 'react';
 import {Toaster} from 'react-hot-toast';
-import {FetchKoenigLexical} from '../components/ui/HtmlEditor';
 import {GlobalDirtyStateProvider} from '../hooks/useGlobalDirtyState';
 
 interface DesignSystemContextType {
     isAnyTextFieldFocused: boolean;
     setFocusState: (value: boolean) => void;
-    fetchKoenigLexical: FetchKoenigLexical;
     darkMode: boolean;
 }
 
 const DesignSystemContext = createContext<DesignSystemContextType>({
     isAnyTextFieldFocused: false,
     setFocusState: () => {},
-    fetchKoenigLexical: async () => {},
     darkMode: false
 });
 
@@ -30,12 +27,11 @@ export const useFocusContext = () => {
 };
 
 interface DesignSystemProviderProps {
-    fetchKoenigLexical: FetchKoenigLexical;
     darkMode: boolean;
     children: React.ReactNode;
 }
 
-const DesignSystemProvider: React.FC<DesignSystemProviderProps> = ({fetchKoenigLexical, darkMode, children}) => {
+const DesignSystemProvider: React.FC<DesignSystemProviderProps> = ({darkMode, children}) => {
     const [isAnyTextFieldFocused, setIsAnyTextFieldFocused] = useState(false);
 
     const setFocusState = (value: boolean) => {
@@ -43,7 +39,7 @@ const DesignSystemProvider: React.FC<DesignSystemProviderProps> = ({fetchKoenigL
     };
 
     return (
-        <DesignSystemContext.Provider value={{isAnyTextFieldFocused, setFocusState, fetchKoenigLexical, darkMode}}>
+        <DesignSystemContext.Provider value={{isAnyTextFieldFocused, setFocusState, darkMode}}>
             <GlobalDirtyStateProvider>
                 <Toaster />
                 <NiceModal.Provider>

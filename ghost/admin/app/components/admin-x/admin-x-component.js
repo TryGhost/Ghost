@@ -51,9 +51,6 @@ export const importComponent = async (packageName) => {
     }
 
     const relativePath = packageName.replace('@tryghost/', '');
-
-    console.log('Relative path: ', relativePath);
-
     const configKey = camelize(relativePath);
 
     if (!config[`${configKey}Filename`] || !config[`${configKey}Hash`]) {
@@ -61,30 +58,18 @@ export const importComponent = async (packageName) => {
     }
 
     const baseUrl = (config.cdnUrl ? `${config.cdnUrl}assets/` : ghostPaths().assetRootWithHost);
-
-    console.log('Base URL: ', baseUrl);
-
     let url = new URL(`${baseUrl}${relativePath}/${config[`${configKey}Filename`]}?v=${config[`${configKey}Hash`]}`);
-
-    console.log('url: ', url);
-
     const customUrl = config[`${configKey}CustomUrl`];
 
-    console.log('customUrl: ', customUrl);
     if (customUrl) {
         url = new URL(customUrl);
     }
-
-    console.log('url: ', url);
 
     if (url.protocol === 'http:') {
         window[packageName] = await import(`http://${url.host}${url.pathname}${url.search}`);
     } else {
         window[packageName] = await import(`https://${url.host}${url.pathname}${url.search}`);
     }
-
-    // e.g. http://localhost:2368/ghost/assets/post-analytics-spike/post-analytics-spike.js?v=development
-    console.log('import URL: ', `http://${url.host}${url.pathname}${url.search}`);
 
     return window[packageName];
 };
