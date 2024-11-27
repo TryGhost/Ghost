@@ -5,7 +5,6 @@ import {useContext} from 'react';
 import Switch from '../common/Switch';
 import {getSiteNewsletters, hasMemberGotEmailSuppression} from '../../utils/helpers';
 import ActionButton from '../common/ActionButton';
-// import {ReactComponent as CheckmarkIcon} from '../../images/icons/check-circle.svg';
 
 function AccountHeader() {
     const {brandColor, lastPage, onAction, t} = useContext(AppContext);
@@ -50,12 +49,20 @@ function NewsletterPrefSection({newsletter, subscribedNewsletters, setSubscribed
 }
 
 function CommentsSection({updateCommentNotifications, isCommentsEnabled, enableCommentNotifications}) {
-    const {t} = useContext(AppContext);
+    const {t, onAction} = useContext(AppContext);
     const isChecked = !!enableCommentNotifications;
 
     if (!isCommentsEnabled) {
         return null;
     }
+
+    const handleToggle = async (e, checked) => {
+        await updateCommentNotifications(checked);
+        onAction('showPopupNotification', {
+            action: 'updated:success',
+            message: t('Comment preferences updated.')
+        });
+    };
 
     return (
         <section className='gh-portal-list-toggle-wrapper' data-testid="toggle-wrapper">
@@ -64,9 +71,7 @@ function CommentsSection({updateCommentNotifications, isCommentsEnabled, enableC
                 <p>{t('Get notified when someone replies to your comment')}</p>
             </div>
             <div style={{display: 'flex', alignItems: 'center'}}>
-                <Switch id="comments" onToggle={(e, checked) => {
-                    updateCommentNotifications(checked);
-                }} checked={isChecked} />
+                <Switch id="comments" onToggle={handleToggle} checked={isChecked} />
             </div>
         </section>
     );
