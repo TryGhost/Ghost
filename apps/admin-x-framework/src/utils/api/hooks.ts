@@ -150,7 +150,7 @@ interface MutationOptions<ResponseData, Payload> extends Omit<QueryOptions<Respo
     headers?: Record<string, string>;
     body?: (payload: Payload) => FormData | object;
     searchParams?: (payload: Payload) => { [key: string]: string; };
-    invalidateQueries?: { dataType: string | string[]; };
+    invalidateQueries?: { dataType: string; };
     updateQueries?: { dataType: string; emberUpdateType: 'createOrUpdate' | 'delete' | 'skip'; update: (newData: ResponseData, currentData: unknown, payload: Payload) => unknown };
 }
 

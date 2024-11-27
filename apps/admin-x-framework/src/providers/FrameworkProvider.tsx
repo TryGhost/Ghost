@@ -16,7 +16,7 @@ export interface FrameworkProviderProps {
     };
     sentryDSN: string | null;
     onUpdate: (dataType: string, response: unknown) => void;
-    onInvalidate: (dataType: string | string[]) => void;
+    onInvalidate: (dataType: string) => void;
     onDelete: (dataType: string, id: string) => void;
 
     children: ReactNode;

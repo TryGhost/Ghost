@@ -77,7 +77,7 @@ export const useActivateTheme = createMutation<ThemesResponseType, string>({
         })
     },
     invalidateQueries: {
-        dataType: [customThemeSettingsDataType, 'ThemesInstallResponseType']
+        dataType: customThemeSettingsDataType
     }
 });
 
