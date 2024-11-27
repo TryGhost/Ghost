@@ -298,11 +298,11 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                         <div className='col-[2/3] flex grow items-center justify-center px-8 text-center'>
                         </div>
                         <div className='col-[3/4] flex items-center justify-end space-x-6'>
-                            <Button className='flex w-10 items-center justify-center' icon='close' size='sm' unstyled onClick={() => modal.remove()}/>
+                            <Button className='transition-color flex h-10 w-10 items-center justify-center rounded-full bg-white hover:bg-grey-100' icon='close' size='sm' unstyled onClick={() => modal.remove()}/>
                         </div>
                     </div>
                 </div>
-                
+
                 <div className='grow overflow-y-auto'>
                     <div className='mx-auto max-w-[580px] pb-10 pt-5'>
                         {activityThreadParents.map((item) => {
@@ -351,19 +351,21 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                     html={object.content}
                                     image={object?.image}
                                 />
-                                <FeedItemStats
-                                    commentCount={object.replyCount ?? 0}
-                                    layout={'modal'}
-                                    likeCount={1}
-                                    object={object}
-                                    onCommentClick={() => {
-                                        repliesRef.current?.scrollIntoView({
-                                            behavior: 'smooth',
-                                            block: 'center'
-                                        });
-                                    }}
-                                    onLikeClick={onLikeClick}
-                                />
+                                <div className='ml-[-7px]'>
+                                    <FeedItemStats
+                                        commentCount={object.replyCount ?? 0}
+                                        layout={'modal'}
+                                        likeCount={1}
+                                        object={object}
+                                        onCommentClick={() => {
+                                            repliesRef.current?.scrollIntoView({
+                                                behavior: 'smooth',
+                                                block: 'center'
+                                            });
+                                        }}
+                                        onLikeClick={onLikeClick}
+                                    />
+                                </div>
                             </div>
                         )}
 
