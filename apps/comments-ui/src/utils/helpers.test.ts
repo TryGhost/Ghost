@@ -3,6 +3,34 @@ import moment, {DurationInputObject} from 'moment';
 import sinon from 'sinon';
 import {buildAnonymousMember, buildComment, buildDeletedMember} from '../../test/utils/fixtures';
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+describe('flattenComments', function () {
+    it('flattens comments and replies', function () {
+        const comments: any[] = [
+            {id: '1', replies: [{id: '2'}]},
+            {id: '3', replies: []}
+        ];
+        expect(helpers.flattenComments(comments)).toEqual([
+            {id: '1', replies: [{id: '2'}]},
+            {id: '2'},
+            {id: '3', replies: []}
+        ]);
+    });
+});
+
+describe('findCommentById', function () {
+    it('finds a top-level comment', function () {
+        const comments: any[] = [{id: '1'}, {id: '2'}, {id: '3'}];
+        expect(helpers.findCommentById(comments, '2')).toEqual({id: '2'});
+    });
+
+    it('finds a reply', function () {
+        const comments: any[] = [{id: '1', replies: [{id: '2'}]}, {id: '3'}];
+        expect(helpers.findCommentById(comments, '2')).toEqual({id: '2'});
+    });
+});
+
 describe('formatNumber', function () {
     it('adds commas to large numbers', function () {
         expect(helpers.formatNumber(1234567)).toEqual('1,234,567');
