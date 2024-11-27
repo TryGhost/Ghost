@@ -105,7 +105,7 @@ export const PopupNotificationStyles = `
         }
         40% { transform: translateY(2px); }
         100% {
-            transform: translateY(10px);
+            transform: translateY(-10px);
             opacity: 0;
         }
     }
