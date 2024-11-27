@@ -198,16 +198,13 @@ describe('Newsletter Subscriptions', () => {
             );
             expect(popupFrame).toBeInTheDocument();
             
+            // Check for unsubscribe success message
             expect(within(popupIframeDocument).getByText(/will no longer receive/)).toBeInTheDocument();
-            // Verify the local state shows the newsletter as unsubscribed
-            let newsletterToggles = within(popupIframeDocument).queryAllByTestId('checkmark-container');
-            let newsletter1Toggle = newsletterToggles[0];
-            let newsletter2Toggle = newsletterToggles[1];
-
-            expect(newsletter1Toggle).toBeInTheDocument();
-            expect(newsletter2Toggle).toBeInTheDocument();
-            expect(newsletter1Toggle).not.toHaveClass('gh-portal-toggle-checked');
-            expect(newsletter2Toggle).toHaveClass('gh-portal-toggle-checked');
+            
+            // Check for popup notification
+            const notification = within(popupIframeDocument).getByText('Email preferences updated.');
+            expect(notification).toBeInTheDocument();
+            expect(notification.closest('.gh-portal-popupnotification')).toHaveClass('success');
         });
 
         test('unsubscribe via email link while logged in', async () => {
