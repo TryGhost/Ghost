@@ -59,16 +59,17 @@ export default function UnsubscribePage() {
 
     const updateNewsletters = async (newsletters) => {
         if (loggedInMember) {
-            // when we have a member logged in, we need to update the newsletters in the context
             onAction('updateNewsletterPreference', {newsletters});
         } else {
             await updateMemberNewsletters({api, memberUuid: pageData.uuid, key: pageData.key, newsletters});
         }
         setSubscribedNewsletters(newsletters);
-        onAction('showPopupNotification', {
-            action: 'updated:success',
+        const notification = {
+            action: `updated:success:${Date.now()}`,
             message: t('Email preferences updated.')
-        });
+        };
+        console.log('Showing notification:', notification);
+        onAction('showPopupNotification', notification);
     };
 
     const updateCommentNotifications = async (enabled) => {
