@@ -31,9 +31,9 @@ const BETA_FEATURES = [
     'webmentions',
     'editorExcerpt',
     'ActivityPub',
+    'importMemberTier',
     'customFonts',
     'staff2fa'
-    'importMemberTier'
 ];
 
 const ALPHA_FEATURES = [
