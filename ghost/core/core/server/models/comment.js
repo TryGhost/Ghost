@@ -256,6 +256,7 @@ const Comment = ghostBookshelf.Model.extend({
 
     async findPage(options) {
         const {withRelated} = this.defaultRelations('findPage', options);
+
         const relationsToLoadIndividually = [
             'replies',
             'replies.member',
@@ -263,9 +264,35 @@ const Comment = ghostBookshelf.Model.extend({
             'replies.count.likes',
             'replies.count.liked'
         ].filter(relation => withRelated.includes(relation));
+
+        /** @type any */
+        let modelLoadArgument = relationsToLoadIndividually;
+
+        if (labs.isSet('commentImprovements')) {
+            // we want to apply filters when fetching replies
+            // - public requests never return hidden or deleted comments
+            // - admin requests never return deleted comments but do return hidden comments
+            const repliesQb = (qb) => {
+                if (options.isAdmin) {
+                    qb.where('status', '!=', 'deleted');
+                } else {
+                    qb.where('status', 'published');
+                }
+            };
+
+            // when we want to apply a custom query to a relation bookshelf wants
+            // an object of {relation: qbCallback} as an argument to .load()
+            // (normally its just [...relationNames])
+            modelLoadArgument = relationsToLoadIndividually.reduce((relationsObj, relation) => {
+                return Object.assign(relationsObj, {
+                    [relation]: relation === 'replies' ? repliesQb : () => {}
+                });
+            }, {});
+        }
+
         const result = await ghostBookshelf.Model.findPage.call(this, options);
         for (const model of result.data) {
-            await model.load(relationsToLoadIndividually, _.omit(options, 'withRelated'));
+            await model.load(modelLoadArgument, _.omit(options, 'withRelated'));
         }
         return result;
     },
