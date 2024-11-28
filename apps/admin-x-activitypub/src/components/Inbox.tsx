@@ -86,7 +86,7 @@ const Inbox: React.FC<InboxProps> = ({layout}) => {
                         </div>
                     ) : activities.length > 0 ? (
                         <>
-                            <div className={`mx-auto flex min-h-[calc(100dvh_-_117px)] items-start gap-9`}>
+                            <div className={`mx-auto flex min-h-[calc(100dvh_-_117px)] items-start gap-11`}>
                                 <div className='flex w-full min-w-0 flex-col items-center'>
                                     <div className={`flex w-full min-w-0 flex-col items-start ${layout === 'inbox' ? 'xxxl:max-w-[800px]' : 'max-w-[500px]'}`}>
                                         {layout === 'feed' && <div className='relative mx-[-12px] mb-4 mt-10 flex w-[calc(100%+24px)] items-center p-3'>
@@ -124,8 +124,7 @@ const Inbox: React.FC<InboxProps> = ({layout}) => {
                                         </ul>
                                     </div>
                                 </div>
-                                <div className='sticky top-[133px] ml-auto w-full max-w-[300px] max-lg:hidden xxxl:sticky xxxl:right-[40px]'>
-                                    {/* <Icon className='mb-2' colorClass='text-blue-500' name='comment' size='md' /> */}
+                                <div className={`sticky top-[133px] ml-auto w-full max-w-[300px] max-lg:hidden xxxl:sticky xxxl:right-[40px]`}>
                                     <h2 className='mb-2 text-lg font-semibold'>This is your {layout === 'inbox' ? 'inbox' : 'feed'}</h2>
                                     <p className='mb-6 border-b border-grey-200 pb-6 text-grey-700'>You&apos;ll find {layout === 'inbox' ? 'long-form content' : 'short posts and updates'} from the accounts you follow here.</p>
                                     <h2 className='mb-2 text-lg font-semibold'>You might also like</h2>
@@ -135,7 +134,6 @@ const Inbox: React.FC<InboxProps> = ({layout}) => {
                                         <ul className='grow'>
                                             {suggested.map((profile, index) => {
                                                 const actor = profile.actor;
-                                                // const isFollowing = profile.isFollowing;
                                                 return (
                                                     <React.Fragment key={actor.id}>
                                                         <li key={actor.id}>
@@ -149,14 +147,6 @@ const Inbox: React.FC<InboxProps> = ({layout}) => {
                                                                     <span className='block w-full truncate font-bold text-black'>{getName(actor)}</span>
                                                                     <span className='block w-full truncate text-sm text-grey-600'>{getUsername(actor)}</span>
                                                                 </div>
-                                                                {/* <FollowButton
-                                                                className='ml-auto'
-                                                                following={isFollowing}
-                                                                handle={getUsername(actor)}
-                                                                type='link'
-                                                                onFollow={() => updateSuggestedProfile(actor.id!, {isFollowing: true})}
-                                                                onUnfollow={() => updateSuggestedProfile(actor.id!, {isFollowing: false})}
-                                                            /> */}
                                                             </ActivityItem>
                                                         </li>
                                                         {index < suggested.length - 1 && <Separator />}

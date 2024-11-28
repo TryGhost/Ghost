@@ -18,7 +18,7 @@
   }
 }
 
-.bump {
+button:active svg {
   animation: bump 0.3s ease-in-out;
 }
 
@@ -50,7 +50,7 @@
 }
 
 .ap-note-content p+p {
-  margin-top: 1.5rem !important;
+  margin-top: 1.2rem !important;
 }
 
 .ap-likes .invisible {

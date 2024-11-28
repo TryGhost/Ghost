@@ -20,60 +20,54 @@ const FeedItemStats: React.FC<FeedItemStatsProps> = ({
     onLikeClick,
     onCommentClick
 }) => {
-    const [isClicked, setIsClicked] = useState(false);
     const [isLiked, setIsLiked] = useState(object.liked);
     const likeMutation = useLikeMutationForUser('index');
     const unlikeMutation = useUnlikeMutationForUser('index');
 
     const handleLikeClick = async (e: React.MouseEvent<HTMLElement>) => {
         e.stopPropagation();
-        setIsClicked(true);
         if (!isLiked) {
             likeMutation.mutate(object.id);
         } else {
             unlikeMutation.mutate(object.id);
         }
-
         setIsLiked(!isLiked);
         onLikeClick();
-        setTimeout(() => setIsClicked(false), 300);
     };
 
-    return (<div className={`flex ${(layout === 'inbox') ? 'flex-col gap-3' : 'gap-5'}`}>
-        <div className='flex gap-1'>
-            <Button
-                className={`self-start text-grey-900 transition-opacity hover:opacity-60 ${isClicked ? 'bump' : ''} ${isLiked ? 'ap-red-heart text-red *:!fill-red hover:text-red' : ''}`}
-                hideLabel={true}
-                icon='heart'
-                id='like'
-                size='md'
-                unstyled={true}
-                onClick={(e?: React.MouseEvent<HTMLElement>) => {
-                    e?.stopPropagation();
-                    if (e) {
-                        handleLikeClick(e);
-                    }
-                }}
-            />
-            {isLiked && (layout !== 'inbox') && <span className={`text-grey-900`}>{new Intl.NumberFormat().format(likeCount)}</span>}
-        </div>
-        <div className='flex gap-1'>
-            <Button
-                className={`self-start text-grey-900 hover:opacity-60 ${isClicked ? 'bump' : ''}`}
-                hideLabel={true}
-                icon='comment'
-                id='comment'
-                size='md'
-                unstyled={true}
-                onClick={(e?: React.MouseEvent<HTMLElement>) => {
-                    e?.stopPropagation();
-                    onCommentClick();
-                }}
-            />
-            {commentCount > 0 && (layout !== 'inbox') && (
-                <span className={`text-grey-900`}>{new Intl.NumberFormat().format(commentCount)}</span>
-            )}
-        </div>
+    const buttonClassName = `transition-color flex p-2 items-center justify-center rounded-full bg-white leading-none text-grey-900 hover:bg-grey-100`;
+
+    return (<div className={`flex ${(layout === 'inbox') ? 'flex-col' : 'gap-1'}`}>
+        <Button
+            className={buttonClassName}
+            hideLabel={!isLiked || (layout === 'inbox')}
+            icon='heart'
+            iconColorClass={`w-[18px] h-[18px] ${isLiked && 'ap-red-heart text-red *:!fill-red hover:text-red'}`}
+            id='like'
+            label={new Intl.NumberFormat().format(likeCount)}
+            size='md'
+            unstyled={true}
+            onClick={(e?: React.MouseEvent<HTMLElement>) => {
+                e?.stopPropagation();
+                if (e) {
+                    handleLikeClick(e);
+                }
+            }}
+        />
+        <Button
+            className={buttonClassName}
+            hideLabel={commentCount === 0 || (layout === 'inbox')}
+            icon='comment'
+            iconColorClass='w-[18px] h-[18px]'
+            id='comment'
+            label={new Intl.NumberFormat().format(commentCount)}
+            size='md'
+            unstyled={true}
+            onClick={(e?: React.MouseEvent<HTMLElement>) => {
+                e?.stopPropagation();
+                onCommentClick();
+            }}
+        />
     </div>);
 };
 
