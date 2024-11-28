@@ -276,24 +276,6 @@ export default class KoenigLexicalEditor extends Component {
             return response;
         };
 
-        const fetchCollectionPosts = async (collectionSlug) => {
-            if (!this.contentKey) {
-                const integrations = await this.store.findAll('integration');
-                const contentIntegration = integrations.findBy('slug', 'ghost-core-content');
-                this.contentKey = contentIntegration?.contentKey.secret;
-            }
-
-            const postsUrl = new URL(this.ghostPaths.url.admin('/api/content/posts/'), window.location.origin);
-            postsUrl.searchParams.append('key', this.contentKey);
-            postsUrl.searchParams.append('collection', collectionSlug);
-            postsUrl.searchParams.append('limit', 12);
-
-            const response = await fetch(postsUrl.toString());
-            const {posts} = await response.json();
-
-            return posts;
-        };
-
         const fetchAutocompleteLinks = async () => {
             const defaults = [
                 {label: 'Homepage', value: window.location.origin + '/'},
@@ -455,13 +437,11 @@ export default class KoenigLexicalEditor extends Component {
             unsplash: this.settings.unsplash ? unsplashConfig.defaultHeaders : null,
             tenor: this.config.tenor?.googleApiKey ? this.config.tenor : null,
             fetchAutocompleteLinks,
-            fetchCollectionPosts,
             fetchEmbed,
             fetchLabels,
             renderLabels: !this.session.user.isContributor,
             feature: {
                 collectionsCard: this.feature.collectionsCard,
-                collections: this.feature.collections,
                 contentVisibility: this.feature.contentVisibility
             },
             deprecated: { // todo fix typo

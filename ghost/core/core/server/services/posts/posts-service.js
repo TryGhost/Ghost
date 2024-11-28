@@ -12,7 +12,6 @@ const getPostServiceInstance = () => {
     const emailService = require('../email-service');
     const settingsCache = require('../../../shared/settings-cache');
     const settingsHelpers = require('../settings-helpers');
-    const collectionsService = require('../collections');
 
     const postStats = new PostStats();
 
@@ -39,7 +38,6 @@ const getPostServiceInstance = () => {
         stats: postStats,
         emailService: emailService.service,
         postsExporter,
-        collectionsService: collectionsService.api
     });
 };
 
