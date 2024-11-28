@@ -24,6 +24,7 @@ interface ArticleModalProps {
     focusReply: boolean;
     focusReplies: boolean;
     width?: 'narrow' | 'wide';
+    backDrop?: boolean;
     updateActivity: (id: string, updated: Partial<Activity>) => void;
     history: {
         activityId: string;
@@ -163,11 +164,12 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
     focusReply,
     focusReplies,
     width = 'narrow',
+    backDrop = false,
     updateActivity = () => {},
     history = []
 }) => {
     const MODAL_SIZE_SM = 640;
-    const MODAL_SIZE_LG = 840;
+    const MODAL_SIZE_LG = 1420;
     const [isFocused] = useState(focusReply ? 1 : 0);
 
     const {threadQuery, addToThread} = useThreadForUser('index', activityId);
@@ -268,15 +270,17 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
         <Modal
             align='right'
             animate={true}
+            backDrop={backDrop}
+            backDropClick={true}
             footer={<></>}
             height={'full'}
             padding={false}
             size='bleed'
-            width={modalSize}
+            width={modalSize === MODAL_SIZE_LG ? 'toSidebar' : modalSize}
         >
             <div className='flex h-full flex-col'>
                 <div className='sticky top-0 z-50 border-b border-grey-200 bg-white py-8'>
-                    <div className={`flex h-8 ${modalSize === MODAL_SIZE_LG ? 'mx-auto w-full max-w-[580px]' : 'px-8'}`}>
+                    <div className={`flex h-8 ${modalSize === MODAL_SIZE_LG ? 'mx-auto w-full max-w-[644px] px-8' : 'px-8'}`}>
                         {(canNavigateBack || (activityThreadParents.length > 0)) ? (
                             <div className='col-[1/2] flex items-center justify-between'>
                                 <Button className='transition-color flex h-10 w-10 items-center justify-center rounded-full bg-white hover:bg-grey-100' icon='chevron-left' size='sm' unstyled onClick={navigateBack}/>
@@ -304,7 +308,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                 </div>
 
                 <div className='grow overflow-y-auto'>
-                    <div className='mx-auto max-w-[580px] pb-10 pt-5'>
+                    <div className='mx-auto max-w-[644px] px-8 pb-10 pt-5'>
                         {activityThreadParents.map((item) => {
                             return (
                                 <>
