@@ -574,7 +574,7 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
         if (prometheusClient) {
             prometheusClient.instrumentKnex(connection);
         }
-        
+
         const {dataService} = await initServicesForFrontend({bootLogger});
 
         if (frontend) {
@@ -585,13 +585,6 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
         if (frontend) {
             await initDynamicRouting();
             await initAppService();
-        }
-
-        // TODO: move this to the correct place once we figure out where that is
-        if (ghostServer) {
-            const lexicalMultiplayer = require('./server/services/lexical-multiplayer');
-            await lexicalMultiplayer.init(ghostServer);
-            await lexicalMultiplayer.enable();
         }
 
         await initServices({config});

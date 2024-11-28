@@ -668,28 +668,14 @@ export default class KoenigLexicalEditor extends Component {
             return {progress, isLoading, upload, errors, filesNumber};
         };
 
-        // TODO: react component isn't re-rendered when its props are changed meaning we don't transition
-        // to enabling multiplayer when a new post is saved and it gets an ID we can use for a YJS doc
-        // - figure out how to re-render the component when its props change
-        // - figure out some other mechanism for handling posts that don't really exist yet with multiplayer
-        const enableMultiplayer = this.feature.lexicalMultiplayer && !cardConfig.post.isNew;
-        const multiplayerWsProtocol = window.location.protocol === 'https:' ? `wss:` : `ws:`;
-        const multiplayerEndpoint = multiplayerWsProtocol + window.location.host + this.ghostPaths.url.api('posts', 'multiplayer');
-        const multiplayerDocId = cardConfig.post.id;
-        const multiplayerUsername = this.session.user.name;
-
         const KGEditorComponent = ({isInitInstance}) => {
             return (
                 <div data-secondary-instance={isInitInstance ? true : false} style={isInitInstance ? {display: 'none'} : {}}>
                     <KoenigComposer
                         editorResource={this.editorResource}
                         cardConfig={cardConfig}
-                        enableMultiplayer={enableMultiplayer}
                         fileUploader={{useFileUpload, fileTypes}}
                         initialEditorState={this.args.lexical}
-                        multiplayerUsername={multiplayerUsername}
-                        multiplayerDocId={multiplayerDocId}
-                        multiplayerEndpoint={multiplayerEndpoint}
                         onError={this.onError}
                         darkMode={this.feature.nightShift}
                         isTKEnabled={true}

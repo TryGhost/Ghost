@@ -8,10 +8,6 @@ const features = [{
     description: 'Enable URL Caching',
     flag: 'urlCache'
 },{
-    title: 'Lexical multiplayer',
-    description: 'Enables multiplayer editing in the lexical editor.',
-    flag: 'lexicalMultiplayer'
-},{
     title: 'Webmentions',
     description: 'Allows viewing received mentions on the dashboard.',
     flag: 'webmentions'
