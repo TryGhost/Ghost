@@ -25,7 +25,6 @@ Object {
       "i18n": true,
       "importMemberTier": true,
       "lexicalIndicators": true,
-      "lexicalMultiplayer": true,
       "mailEvents": true,
       "members": true,
       "newEmailAddresses": true,
