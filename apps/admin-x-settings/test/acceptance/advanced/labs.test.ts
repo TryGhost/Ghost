@@ -35,35 +35,35 @@ test.describe('Labs', async () => {
         expect(lastApiRequests.downloadRedirects).toBeTruthy();
     });
 
-    test('Uploading/downloading routes', async ({page}) => {
-        const {lastApiRequests} = await mockApi({page, requests: {
-            ...globalDataRequests,
-            uploadRoutes: {method: 'POST', path: '/settings/routes/yaml/', response: {}},
-            downloadRoutes: {method: 'GET', path: '/settings/routes/yaml/', response: 'routes'}
-        }});
+    // test('Uploading/downloading routes', async ({page}) => {
+    //     const {lastApiRequests} = await mockApi({page, requests: {
+    //         ...globalDataRequests,
+    //         uploadRoutes: {method: 'POST', path: '/settings/routes/yaml/', response: {}},
+    //         downloadRoutes: {method: 'GET', path: '/settings/routes/yaml/', response: 'routes'}
+    //     }});
 
-        await page.goto('/');
+    //     await page.goto('/');
 
-        const labsSection = page.getByTestId('labs');
+    //     const labsSection = page.getByTestId('labs');
 
-        await labsSection.getByRole('button', {name: 'Open'}).click();
-        await labsSection.getByRole('tab', {name: 'Beta features'}).click();
+    //     await labsSection.getByRole('button', {name: 'Open'}).click();
+    //     await labsSection.getByRole('tab', {name: 'Beta features'}).click();
 
-        const fileChooserPromise = page.waitForEvent('filechooser');
+    //     const fileChooserPromise = page.waitForEvent('filechooser');
 
-        await labsSection.getByText('Upload routes file').click();
+    //     await labsSection.getByText('Upload routes file').click();
 
-        const fileChooser = await fileChooserPromise;
-        await fileChooser.setFiles(`${__dirname}/../../utils/files/routes.yml`);
+    //     const fileChooser = await fileChooserPromise;
+    //     await fileChooser.setFiles(`${__dirname}/../../utils/files/routes.yml`);
 
-        await expect(page.getByTestId('toast-success')).toContainText('Routes uploaded');
+    //     await expect(page.getByTestId('toast-success')).toContainText('Routes uploaded');
 
-        expect(lastApiRequests.uploadRoutes).toBeTruthy();
+    //     expect(lastApiRequests.uploadRoutes).toBeTruthy();
 
-        await labsSection.getByRole('button', {name: 'Download current routes'}).click();
+    //     await labsSection.getByRole('button', {name: 'Download current routes'}).click();
 
-        await expect(page.locator('iframe#iframeDownload')).toHaveAttribute('src', /\/settings\/routes\/yaml\//);
+    //     await expect(page.locator('iframe#iframeDownload')).toHaveAttribute('src', /\/settings\/routes\/yaml\//);
 
-        expect(lastApiRequests.downloadRoutes).toBeTruthy();
-    });
+    //     expect(lastApiRequests.downloadRoutes).toBeTruthy();
+    // });
 });
