@@ -13,7 +13,7 @@ const setup = (overrides) => {
     );
     const unsubscribeAllBtn = utils.getByText('Unsubscribe from all emails');
     const closeBtn = utils.getByTestId('close-popup');
-    
+
     return {
         unsubscribeAllBtn,
         closeBtn,
@@ -34,7 +34,7 @@ describe('Account Email Page', () => {
         const unsubscribeBtns = getAllByTestId(`toggle-wrapper`);
         expect(getByText('Email preferences')).toBeInTheDocument();
         // one for each newsletter and one for comments
-        expect(unsubscribeBtns).toHaveLength(3); 
+        expect(unsubscribeBtns).toHaveLength(3);
         expect(unsubscribeAllBtn).toBeInTheDocument();
     });
 
@@ -43,22 +43,24 @@ describe('Account Email Page', () => {
         const siteData = getSiteData({
             newsletters: newsletterData
         });
-        const {mockOnActionFn, unsubscribeAllBtn, getAllByTestId} = setup({site: siteData, member: getMemberData({newsletters: newsletterData})});
-        let checkmarkContainers = getAllByTestId('checkmark-container');
+        const {mockOnActionFn, unsubscribeAllBtn, getAllByRole} = setup({site: siteData, member: getMemberData({newsletters: newsletterData})});
+        let checkboxes = getAllByRole('checkbox');
+        let newsletter1Checkbox = checkboxes[0];
+        let newsletter2Checkbox = checkboxes[1];
         // each newsletter should have the checked class (this is how we know they're enabled/subscribed to)
-        expect(checkmarkContainers[0]).toHaveClass('gh-portal-toggle-checked');
-        expect(checkmarkContainers[1]).toHaveClass('gh-portal-toggle-checked');
-        
+        expect(newsletter1Checkbox).toBeChecked();
+        expect(newsletter2Checkbox).toBeChecked();
+
         fireEvent.click(unsubscribeAllBtn);
         expect(mockOnActionFn).toHaveBeenCalledTimes(2);
         expect(mockOnActionFn).toHaveBeenCalledWith('showPopupNotification', {action: 'updated:success', message: 'Unsubscribed from all emails.'});
         expect(mockOnActionFn).toHaveBeenLastCalledWith('updateNewsletterPreference', {newsletters: [], enableCommentNotifications: false});
 
-        checkmarkContainers = getAllByTestId('checkmark-container');
-        expect(checkmarkContainers).toHaveLength(3);
-        checkmarkContainers.forEach((newsletter) => {
+        checkboxes = getAllByRole('checkbox');
+        expect(checkboxes).toHaveLength(3);
+        checkboxes.forEach((checkbox) => {
             // each newsletter htmlElement should not have the checked class
-            expect(newsletter).not.toHaveClass('gh-portal-toggle-checked');
+            expect(checkbox).not.toBeChecked();
         });
     });
 
@@ -75,10 +77,11 @@ describe('Account Email Page', () => {
         const siteData = getSiteData({
             newsletters: newsletterData
         });
-        const {mockOnActionFn, getAllByTestId} = setup({site: siteData, member: getMemberData({newsletters: newsletterData})});
-        let checkmarkContainers = getAllByTestId('checkmark-container');
+        const {mockOnActionFn, getAllByTestId, getAllByRole} = setup({site: siteData, member: getMemberData({newsletters: newsletterData})});
+        let checkboxes = getAllByRole('checkbox');
+        let newsletter1Checkbox = checkboxes[0];
         // each newsletter should have the checked class (this is how we know they're enabled/subscribed to)
-        expect(checkmarkContainers[0]).toHaveClass('gh-portal-toggle-checked');
+        expect(newsletter1Checkbox).toBeChecked();
         let subscriptionToggles = getAllByTestId('switch-input');
         fireEvent.click(subscriptionToggles[0]);
         expect(mockOnActionFn).toHaveBeenCalledWith('updateNewsletterPreference', {newsletters: [{id: newsletterData[1].id}]});

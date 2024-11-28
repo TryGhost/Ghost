@@ -11,9 +11,9 @@ import {SYNTAX_I18NEXT} from '@doist/react-interpolate';
 export const PopupNotificationStyles = `
     .gh-portal-popupnotification {
         position: absolute;
-        top: 8px;
-        left: 8px;
-        right: 8px;
+        top: 16px;
+        right: 16px;
+        left: 16px;
         padding: 12px;
         background: var(--grey2);
         z-index: 11000;
@@ -32,12 +32,12 @@ export const PopupNotificationStyles = `
 
     .gh-portal-popupnotification p {
         color: var(--white);
-        margin: 0;
+        margin: 0 0 0 8px;
         padding: 0 20px;
         font-size: 1.5rem;
         line-height: 1.5em;
         letter-spacing: 0.2px;
-        text-align: center;
+        text-align: left;
     }
 
     .gh-portal-popupnotification a {
