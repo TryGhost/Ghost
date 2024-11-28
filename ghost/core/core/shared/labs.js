@@ -31,6 +31,7 @@ const BETA_FEATURES = [
     'webmentions',
     'editorExcerpt',
     'ActivityPub',
+    'importMemberTier',
     'customFonts'
 ];
 
@@ -41,7 +42,6 @@ const ALPHA_FEATURES = [
     'emailCustomization',
     'mailEvents',
     'collectionsCard',
-    'importMemberTier',
     'lexicalIndicators',
     'adminXDemo',
     'contentVisibility',
