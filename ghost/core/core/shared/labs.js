@@ -27,12 +27,13 @@ const GA_FEATURES = [
 //       input for the "labs" setting value
 const BETA_FEATURES = [
     'additionalPaymentMethods',
-    'activitypub',
     'stripeAutomaticTax',
     'webmentions',
     'editorExcerpt',
     'ActivityPub',
-    'customFonts'
+    'importMemberTier',
+    'customFonts',
+    'staff2fa'
 ];
 
 const ALPHA_FEATURES = [
@@ -42,12 +43,10 @@ const ALPHA_FEATURES = [
     'emailCustomization',
     'mailEvents',
     'collectionsCard',
-    'importMemberTier',
     'lexicalIndicators',
     'adminXDemo',
     'contentVisibility',
-    'commentImprovements',
-    'staff2fa'
+    'commentImprovements'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
