@@ -25,7 +25,7 @@ export type FormEditorProps = {
     initialHasContent?: boolean;
 };
 
-export const FormEditor: React.FC<FormEditorProps> = ({comment, submit, progress, setProgress, close, reduced, isOpen, editor, submitText, submitSize, openForm, initialHasContent}) => {
+export const FormEditor: React.FC<FormEditorProps> = ({comment, submit, progress, setProgress, close, isOpen, editor, submitText, submitSize, openForm, initialHasContent}) => {
     const labs = useLabs();
     const {dispatchAction, t} = useAppContext();
     let buttonIcon = null;
