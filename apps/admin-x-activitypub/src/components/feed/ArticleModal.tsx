@@ -279,7 +279,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                     <div className={`flex h-8 ${modalSize === MODAL_SIZE_LG ? 'mx-auto w-full max-w-[580px]' : 'px-8'}`}>
                         {(canNavigateBack || (activityThreadParents.length > 0)) ? (
                             <div className='col-[1/2] flex items-center justify-between'>
-                                <Button className='flex w-10 items-center justify-center' icon='chevron-left' size='sm' unstyled onClick={navigateBack}/>
+                                <Button className='transition-color flex h-10 w-10 items-center justify-center rounded-full bg-white hover:bg-grey-100' icon='chevron-left' size='sm' unstyled onClick={navigateBack}/>
                             </div>
                         ) : <div className='flex items-center gap-3'>
                             <div className='relative z-10 pt-[3px]'>
