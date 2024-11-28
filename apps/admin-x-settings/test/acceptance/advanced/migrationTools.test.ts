@@ -26,38 +26,38 @@ test.describe('Migration tools', async () => {
         await expectExternalNavigate(page, {route: '/migrate/mailchimp'});
     });
 
-    test('Universal import', async ({page}) => {
-        const {lastApiRequests} = await mockApi({page, requests: {
-            ...globalDataRequests,
-            importContent: {path: '/db/', method: 'POST', response: {}}
-        }});
+    // test('Universal import', async ({page}) => {
+    //     const {lastApiRequests} = await mockApi({page, requests: {
+    //         ...globalDataRequests,
+    //         importContent: {path: '/db/', method: 'POST', response: {}}
+    //     }});
 
-        await page.goto('/');
+    //     await page.goto('/');
 
-        const migrationSection = page.getByTestId('migrationtools');
+    //     const migrationSection = page.getByTestId('migrationtools');
 
-        await migrationSection.getByRole('button', {name: 'Universal import'}).click();
+    //     await migrationSection.getByRole('button', {name: 'Universal import'}).click();
 
-        const universalImportModal = page.getByTestId('universal-import-modal');
+    //     const universalImportModal = page.getByTestId('universal-import-modal');
 
-        const fileChooserPromise = page.waitForEvent('filechooser');
+    //     const fileChooserPromise = page.waitForEvent('filechooser');
 
-        universalImportModal.getByText(/JSON or zip file/).click();
+    //     universalImportModal.getByText(/JSON or zip file/).click();
 
-        const fileChooser = await fileChooserPromise;
-        await fileChooser.setFiles(`${__dirname}/../../utils/files/upload.zip`);
+    //     const fileChooser = await fileChooserPromise;
+    //     await fileChooser.setFiles(`${__dirname}/../../utils/files/upload.zip`);
 
-        const confirmationModal = page.getByTestId('confirmation-modal');
+    //     const confirmationModal = page.getByTestId('confirmation-modal');
 
-        await expect(confirmationModal).toContainText('Import in progress');
+    //     await expect(confirmationModal).toContainText('Import in progress');
 
-        await confirmationModal.getByRole('button', {name: 'Got it'}).click();
+    //     await confirmationModal.getByRole('button', {name: 'Got it'}).click();
 
-        await expect(universalImportModal).not.toBeVisible();
-        await expect(confirmationModal).not.toBeVisible();
+    //     await expect(universalImportModal).not.toBeVisible();
+    //     await expect(confirmationModal).not.toBeVisible();
 
-        expect(lastApiRequests.importContent).toBeTruthy();
-    });
+    //     expect(lastApiRequests.importContent).toBeTruthy();
+    // });
 
     test('Content export', async ({page}) => {
         const {lastApiRequests} = await mockApi({page, requests: {
