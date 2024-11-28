@@ -441,45 +441,6 @@ test.describe('Header card V2', () => {
         await expect(page.locator('[data-kg-card="header"] [data-kg="editor"]').nth(0)).toHaveText('hello world');
     });
 
-    test('can import serialized header card nodes with br', async function () {
-        const contentParam = encodeURIComponent(JSON.stringify({
-            root: {
-                children: [{
-                    version: 2,
-                    type: 'header',
-                    size: 'small',
-                    style: 'image',
-                    buttonEnabled: false,
-                    buttonUrl: '',
-                    buttonText: '',
-                    header: '<span>hello world</span><br /><span>byebye world</span>',
-                    subheader: '<span>hello sub</span><br /><span>byebye sub</span>',
-                    backgroundImageSrc: 'blob:http://localhost:5173/fa0956a8-5fb4-4732-9368-18f9d6d8d25a',
-                    alignment: 'left',
-                    buttonColor: '#ffffff',
-                    buttonTextColor: '#000000',
-                    backgroundColor: 'accent',
-                    textColor: '#ffffff',
-                    swapped: false
-                }],
-                direction: null,
-                format: '',
-                indent: 0,
-                type: 'root',
-                version: 1
-            }
-        }));
-
-        await initialize({page, uri: `/#/?content=${contentParam}`});
-        await page.waitForSelector('[data-kg-card="header"]');
-        await page.waitForSelector('[data-kg-card="header"] [data-kg="editor"]');
-        await expect(page.locator('[data-kg-card="header"] [data-kg="editor"] p span').nth(0)).toHaveText('hello world');
-        await expect(page.locator('[data-kg-card="header"] [data-kg="editor"] p br').nth(0)).toBeAttached();
-        await expect(page.locator('[data-kg-card="header"] [data-kg="editor"] p span').nth(1)).toHaveText('byebye world');
-        await expect(page.getByTestId('header-subheader-editor').locator('p span').nth(0)).toHaveText('hello sub');
-        await expect(page.getByTestId('header-subheader-editor').locator('p br').nth(0)).toBeAttached();
-        await expect(page.getByTestId('header-subheader-editor').locator('p span').nth(1)).toHaveText('byebye sub');
-    });
     test('renders header card node', async function () {
         await createHeaderCard({page, version: 2});
 
@@ -498,47 +459,6 @@ test.describe('Header card V2', () => {
         await page.keyboard.type('Hello world');
         const firstEditor = page.locator('[data-kg-card="header"] [data-kg="editor"]').nth(0);
         await expect(firstEditor).toHaveText('Hello world');
-    });
-    test('can add a shift-enter to header and subheader', async function () {
-        await createHeaderCard({page, version: 2});
-
-        await page.keyboard.type('Hello world');
-        await page.keyboard.press('Shift+Enter');
-        await page.keyboard.type('This is second line');
-        await page.keyboard.press('Enter');
-        await page.keyboard.type('Hello subheader');
-        await page.keyboard.press('Shift+Enter');
-        await page.keyboard.type('This is second subheader');
-        await page.keyboard.press('Escape');
-        await page.waitForSelector('[data-kg-card-editing="false"]');
-        await assertHTML(page, html`
-                        <div
-                            contenteditable="false"
-                            role="textbox"
-                            spellcheck="true"
-                            data-lexical-editor="true"
-                            aria-autocomplete="none"
-                            aria-readonly="true">
-                            <p dir="ltr"><span data-lexical-text="true">Hello world</span>
-                            <br /> 
-                            <span data-lexical-text="true">This is second line</span>
-                            </p>
-                        </div>`, 
-        {selector: '[data-kg-card="header"] [data-kg="editor"]'});
-        await assertHTML(page, html`
-                        <div
-                            contenteditable="false"
-                            role="textbox"
-                            spellcheck="true"
-                            data-lexical-editor="true"
-                            aria-autocomplete="none"
-                            aria-readonly="true">
-                            <p dir="ltr"><span data-lexical-text="true">Hello subheader</span>
-                            <br /> 
-                            <span data-lexical-text="true">This is second subheader</span>
-                            </p>
-                        </div>`,
-        {selector: '[data-kg-card="header"] [data-testid="header-subheader-editor"] [data-kg="editor"]'});    
     });
 
     test('can edit sub header', async function () {

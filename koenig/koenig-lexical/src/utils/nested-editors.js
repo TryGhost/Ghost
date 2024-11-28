@@ -42,7 +42,7 @@ export function populateNestedEditor(node, editorProperty, html) {
     const nestedEditor = node[editorProperty];
     const editorState = generateEditorState({
         editor: nestedEditor,
-        initialHtml: `<p>${html}</p>`
+        initialHtml: html
     });
     
     nestedEditor.setEditorState(editorState, {tag: 'history-merge'}); // use history merge to prevent undo clearing the initial state
