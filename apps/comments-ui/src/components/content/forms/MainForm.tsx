@@ -1,5 +1,5 @@
-import Form from './Form';
 import React, {useCallback, useEffect, useRef} from 'react';
+import {Form, FormWrapper} from './Form';
 import {getEditorConfig} from '../../../utils/editor';
 import {scrollToElement} from '../../../utils/helpers';
 import {useAppContext} from '../../../AppContext';
@@ -8,6 +8,7 @@ import {useEditor} from '@tiptap/react';
 type Props = {
     commentsCount: number
 };
+
 const MainForm: React.FC<Props> = ({commentsCount}) => {
     const {postId, dispatchAction, t} = useAppContext();
 
@@ -97,7 +98,14 @@ const MainForm: React.FC<Props> = ({commentsCount}) => {
 
     return (
         <div ref={formEl} className='px-3 pb-2 pt-3' data-testid="main-form">
-            <Form editor={editor} isOpen={isOpen} reduced={false} {...submitProps} />
+            <FormWrapper editor={editor} isOpen={isOpen} reduced={false}>
+                <Form 
+                    editor={editor} 
+                    isOpen={isOpen} 
+                    reduced={false} 
+                    {...submitProps} 
+                />
+            </FormWrapper>
         </div>
     );
 };

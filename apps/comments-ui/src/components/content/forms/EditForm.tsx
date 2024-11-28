@@ -1,5 +1,5 @@
-import Form from './Form';
 import {Comment, OpenCommentForm, useAppContext} from '../../../AppContext';
+import {Form} from './Form';
 import {getEditorConfig} from '../../../utils/editor';
 import {isMobile} from '../../../utils/helpers';
 import {useCallback, useEffect} from 'react';
@@ -60,20 +60,18 @@ const EditForm: React.FC<Props> = ({comment, openForm, parent}) => {
     }, [dispatchAction, openForm]);
 
     return (
-        <div className='px-2 pb-2 pt-3'>
-            <div className='mt-[-16px] pr-3'>
-                <Form
-                    close={close}
-                    comment={comment}
-                    editor={editor}
-                    isOpen={true}
-                    openForm={openForm}
-                    reduced={isMobile()}
-                    submit={submit}
-                    submitSize={'small'}
-                    submitText={t('Save')}
-                />
-            </div>
+        <div className="relative w-full">
+            <Form
+                close={close}
+                comment={comment}
+                editor={editor}
+                isOpen={true}
+                openForm={openForm}
+                reduced={isMobile()}
+                submit={submit}
+                submitSize={'small'}
+                submitText={t('Save')}
+            />
         </div>
     );
 };
