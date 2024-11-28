@@ -69,23 +69,29 @@ test.describe('Portal', () => {
         });
 
         test.describe('2FA invite test', () => {
-            test.beforeEach(async ({sharedPage}) => {
-                // Enable 2FA
-                await sharedPage.goto('/ghost');
-                await sharedPage.locator('[data-test-nav="settings"]').click();
-
-                const section = sharedPage.getByTestId('labs');
-                await section.getByRole('button', {name: 'Open'}).click();
-
-                await section.getByRole('tab', {name: 'Alpha features'}).click();
-                await section.getByLabel('Staff 2FA').click();
-            });
-
             test('New staff member can signup using an invite link with 2FA enabled', async ({sharedPage}) => {
                 // Navigate to settings
                 await sharedPage.goto('/ghost');
                 await sharedPage.locator('[data-test-nav="settings"]').click();
                 await sharedPage.waitForLoadState('networkidle');
+
+                // Make an API call to get settings
+                const adminUrl = new URL(sharedPage.url()).origin + '/ghost';
+                const settingsResponse = await sharedPage.request.get(`${adminUrl}/api/admin/settings/`);
+                const settingsData = await settingsResponse.json();
+                // Add staff2fa flag to labs settings
+                const settings = settingsData.settings;
+                const labsSetting = settings.find(s => s.key === 'labs');
+                const labsValue = JSON.parse(labsSetting.value);
+                labsValue.staff2fa = true;
+                labsSetting.value = JSON.stringify(labsValue);
+
+                // Update settings
+                await sharedPage.request.put(`${adminUrl}/api/admin/settings/`, {
+                    data: {
+                        settings
+                    }
+                });
 
                 const testEmail = 'test@gmail.com';
 
@@ -115,7 +121,6 @@ test.describe('Portal', () => {
                 const token = invite.get('token');
 
                 // Construct the invite URL
-                const adminUrl = new URL(sharedPage.url()).origin + '/ghost';
                 const encodedToken = security.url.encodeBase64(token);
                 const inviteUrl = `${adminUrl}/signup/${encodedToken}/`;
                 const context = await sharedPage.context();
