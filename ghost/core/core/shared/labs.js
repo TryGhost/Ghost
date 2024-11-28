@@ -33,6 +33,7 @@ const BETA_FEATURES = [
     'ActivityPub',
     'customFonts',
     'staff2fa'
+    'importMemberTier'
 ];
 
 const ALPHA_FEATURES = [
@@ -42,7 +43,6 @@ const ALPHA_FEATURES = [
     'emailCustomization',
     'mailEvents',
     'collectionsCard',
-    'importMemberTier',
     'lexicalIndicators',
     'adminXDemo',
     'contentVisibility',
