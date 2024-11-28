@@ -2015,9 +2015,9 @@ Search                         LOGO                    Login Subscribe
 
 .gh-article-excerpt {
     margin-top: 16px;
-    font-size: 2.1rem;
-    line-height: 1.3;
-    letter-spacing: -0.63px;
+    font-size: 2rem;
+    line-height: 1.4;
+    letter-spacing: -0.017em;
     text-wrap: pretty;
 }
 
@@ -2120,9 +2120,10 @@ created within the Ghost editor. The main content handles
 headings, text, images and lists. We deal with cards lower down. */
 
 .gh-content {
-    font-size: var(--content-font-size, 1.7rem);
-    letter-spacing: -0.01em;
+    font-size: 17px;
     overflow-x: hidden;
+    letter-spacing: -0.013em;
+    line-height: 1.4117647059;
 }
 
 /* Default vertical spacing */
@@ -2580,7 +2581,9 @@ figcaption a {
 }
 
 .author-template .gh-article-title {
-    font-size: 2.9rem;
+    font-size: 3rem;
+    letter-spacing: -0.021em;
+    line-height: 1.4;
 }
 
 .gh-author-meta {
