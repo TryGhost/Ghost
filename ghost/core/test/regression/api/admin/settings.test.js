@@ -79,11 +79,11 @@ describe('Settings API', function () {
         it('Can edit only allowed labs keys', async function () {
             await checkCanEdit('labs',
                 JSON.stringify({
-                    activitypub: true,
+                    additionalPaymentMethods: true,
                     gibberish: true
                 }),
                 {
-                    activitypub: true
+                    additionalPaymentMethods: true
                 }
             );
         });
