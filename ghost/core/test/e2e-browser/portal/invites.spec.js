@@ -69,7 +69,6 @@ test.describe('Portal', () => {
         });
 
         test.describe('2FA invite test', () => {
-
             test('New staff member can signup using an invite link with 2FA enabled', async ({sharedPage}) => {
                 // Navigate to settings
                 await sharedPage.goto('/ghost');
