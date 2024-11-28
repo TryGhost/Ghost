@@ -4,7 +4,7 @@ import {cn} from '@/lib/utils';
 import {cva} from 'class-variance-authority';
 
 // Add variant types
-type TabsVariant = 'default' | 'bordered';
+type TabsVariant = 'default' | 'bordered' | 'outline';
 
 const TabsVariantContext = React.createContext<TabsVariant>('default');
 
@@ -32,6 +32,7 @@ const tabsListVariants = cva(
         variants: {
             variant: {
                 default: 'h-10 rounded-md bg-neutral-100 p-1 text-sm dark:bg-neutral-800',
+                outline: 'border-b border-neutral-200 bg-transparent py-2 text-sm dark:bg-neutral-800',
                 bordered: 'border-b border-neutral-200 bg-transparent text-[15px] dark:border-neutral-800'
             }
         },
@@ -64,6 +65,7 @@ const tabsTriggerVariants = cva(
         variants: {
             variant: {
                 default: 'justify-center rounded-sm px-3 py-1.5 data-[state=active]:bg-white data-[state=active]:shadow-sm dark:ring-offset-neutral-950 dark:focus-visible:ring-neutral-300 dark:data-[state=active]:bg-neutral-950 dark:data-[state=active]:text-neutral-50',
+                outline: 'justify-center rounded-md px-2 py-1.5 hover:bg-neutral-50 data-[state=active]:bg-neutral-100 dark:ring-offset-neutral-950 dark:focus-visible:ring-neutral-300 dark:data-[state=active]:bg-neutral-950 dark:data-[state=active]:text-neutral-50',
                 bordered: '-mb-px justify-start border-b-2 border-transparent p-2 data-[state=active]:border-neutral-950'
             }
         },
@@ -96,6 +98,7 @@ const tabsContentVariants = cva(
         variants: {
             variant: {
                 default: '',
+                outline: '',
                 bordered: ''
             }
         },

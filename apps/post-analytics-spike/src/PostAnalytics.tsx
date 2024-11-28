@@ -11,22 +11,13 @@ const PostAnalytics = () => {
 
             <Header />
 
-            <Tabs className="mt-8" defaultValue="overview" variant="bordered">
-                <TabsList className="flex w-full justify-start gap-5">
+            <Tabs className="mt-8" defaultValue="overview" variant="outline">
+                <TabsList className="flex w-full justify-start gap-2">
                     <TabsTrigger className="flex items-center gap-2" value="overview">
                         Overview
                     </TabsTrigger>
                     <TabsTrigger className="flex items-center gap-2" value="email">
                         Newsletter
-                    </TabsTrigger>
-                    <TabsTrigger className="flex items-center gap-2" value="web">
-                        Website
-                    </TabsTrigger>
-                    <TabsTrigger className="flex items-center gap-2" value="comments">
-                        Comments
-                    </TabsTrigger>
-                    <TabsTrigger className="flex items-center gap-2" value="growth">
-                        Growth
                     </TabsTrigger>
                 </TabsList>
 

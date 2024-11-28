@@ -4,7 +4,6 @@ import {
     AvatarImage,
     Table,
     TableBody,
-    TableCaption,
     TableCell,
     TableHead,
     TableHeader,
