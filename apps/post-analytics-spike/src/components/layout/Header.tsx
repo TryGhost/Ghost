@@ -16,7 +16,7 @@ const Header = () => {
                 </BreadcrumbList>
             </Breadcrumb>
             <div className="mt-2 flex items-start justify-between">
-                <Heading size="pagetitle">Post analytics</Heading>
+                <Heading size="pagetitle">The billionaires hedge their bets</Heading>
                 <div className="mt-1 flex items-center gap-2">
                     <Button variant='outline'><Icon name="share" /> Share</Button>
                     <DropdownMenu>

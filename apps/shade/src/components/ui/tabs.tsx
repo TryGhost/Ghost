@@ -27,12 +27,12 @@ Tabs.displayName = TabsPrimitive.Root.displayName;
 // Tabs List
 // -----------------------------------------------------------------------------
 const tabsListVariants = cva(
-    'inline-flex items-center justify-center bg-neutral-100 text-sm text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400',
+    'inline-flex items-center justify-center bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400',
     {
         variants: {
             variant: {
-                default: 'h-10 rounded-md bg-neutral-100 p-1 dark:bg-neutral-800',
-                bordered: 'border-b border-neutral-200 bg-transparent dark:border-neutral-800'
+                default: 'h-10 rounded-md bg-neutral-100 p-1 text-sm dark:bg-neutral-800',
+                bordered: 'border-b border-neutral-200 bg-transparent text-[15px] dark:border-neutral-800'
             }
         },
         defaultVariants: {

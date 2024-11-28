@@ -66,10 +66,9 @@ const members = [
 export function TableDemo() {
     return (
         <Table>
-            <TableCaption>Sent to 6,197 members.</TableCaption>
             <TableHeader>
                 <TableRow className='hover:bg-transparent'>
-                    <TableHead className="w-1/3">Member</TableHead>
+                    <TableHead className="w-1/3">Sent to 6,197 members</TableHead>
                     <TableHead>Tier</TableHead>
                     <TableHead>Received</TableHead>
                 </TableRow>
