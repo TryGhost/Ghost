@@ -76,9 +76,9 @@ test.describe('Portal', () => {
                 await sharedPage.locator('[data-test-nav="settings"]').click();
                 await sharedPage.waitForLoadState('networkidle');
 
-                // Make a direct API call to get settings
-                const adminUrl1 = new URL(sharedPage.url()).origin + '/ghost';
-                const settingsResponse = await sharedPage.request.get(`${adminUrl1}/api/admin/settings/`);
+                // Make an API call to get settings
+                const adminUrl = new URL(sharedPage.url()).origin + '/ghost';
+                const settingsResponse = await sharedPage.request.get(`${adminUrl}/api/admin/settings/`);
                 const settingsData = await settingsResponse.json();
                 // Add staff2fa flag to labs settings
                 const settings = settingsData.settings;
@@ -87,8 +87,8 @@ test.describe('Portal', () => {
                 labsValue.staff2fa = true;
                 labsSetting.value = JSON.stringify(labsValue);
 
-                // Update settings via API
-                await sharedPage.request.put(`${adminUrl1}/api/admin/settings/`, {
+                // Update settings
+                await sharedPage.request.put(`${adminUrl}/api/admin/settings/`, {
                     data: {
                         settings
                     }
@@ -122,7 +122,6 @@ test.describe('Portal', () => {
                 const token = invite.get('token');
 
                 // Construct the invite URL
-                const adminUrl = new URL(sharedPage.url()).origin + '/ghost';
                 const encodedToken = security.url.encodeBase64(token);
                 const inviteUrl = `${adminUrl}/signup/${encodedToken}/`;
                 const context = await sharedPage.context();
