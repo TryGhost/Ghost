@@ -285,6 +285,36 @@ describe('Admin Comments API', function () {
             assert.equal(publishedReply.html, 'Reply 1');
         });
 
+        it('does not return deleted comments without replies', async function () {
+            await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: 'Comment 1',
+                status: 'deleted'
+            });
+
+            const res = await adminApi.get('/comments/post/' + postId + '/');
+            assert.equal(res.body.comments.length, 0);
+        });
+
+        it('returns hidden comments and hidden replies', async function () {
+            await dbFns.addCommentWithReplies({
+                status: 'hidden',
+                member_id: fixtureManager.get('members', 0).id,
+                replies: [{
+                    member_id: fixtureManager.get('members', 1).id,
+                    status: 'hidden'
+                }]
+            });
+
+            const res = await adminApi.get('/comments/post/' + postId + '/');
+
+            const hiddenComment = res.body.comments[0];
+            assert.equal(hiddenComment.status, 'hidden');
+
+            const hiddenReply = res.body.comments[0].replies[0];
+            assert.equal(hiddenReply.status, 'hidden');
+        });
+
         it('includes hidden replies but not deleted replies in count', async function () {
             await dbFns.addCommentWithReplies({
                 member_id: fixtureManager.get('members', 0).id,
