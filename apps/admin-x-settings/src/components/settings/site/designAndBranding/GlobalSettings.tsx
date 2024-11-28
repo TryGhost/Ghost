@@ -322,52 +322,50 @@ const GlobalSettings: React.FC<{ values: GlobalSettingValues, updateSetting: (ke
                 </div>
             </Form>
             <BehindFeatureFlag flag="customFonts">
-                {supportsCustomFonts &&
-                    <Form className='-mt-4' gap='sm' margins='lg' title='Typography'>
-                        <Select
-                            className={selectFont(selectedHeadingFont.label, true)}
-                            components={{Option, SingleValue}}
-                            controlClasses={{control: '!min-h-16 !pl-2', option: '!pl-2'}}
-                            hint={''}
-                            menuShouldScrollIntoView={true}
-                            options={customHeadingFonts}
-                            selectedOption={selectedHeadingFont}
-                            testId='heading-font-select'
-                            title={'Heading font'}
-                            onSelect={(option) => {
-                                if (option?.value === DEFAULT_FONT) {
-                                    setHeadingFont({name: DEFAULT_FONT, creator: themeNameVersion});
-                                    updateSetting('heading_font', '');
-                                } else {
-                                    setHeadingFont({name: option?.value || '', creator: CUSTOM_FONTS.heading.find(f => f.name === option?.value)?.creator || ''});
-                                    updateSetting('heading_font', option?.value || '');
-                                }
-                            }}
-                        />
-                        <Select
-                            className={selectFont(selectedBodyFont.label, false)}
-                            components={{Option, SingleValue}}
-                            controlClasses={{control: '!min-h-16 !pl-2', option: '!pl-2'}}
-                            hint={`${supportsCustomFonts ? '' : 'Note: The current theme doesn\'t support custom fonts. Switch to a compatible theme to use this feature.'}`}
-                            maxMenuHeight={200}
-                            menuPosition='fixed'
-                            menuShouldScrollIntoView={true}
-                            options={customBodyFonts}
-                            selectedOption={selectedBodyFont}
-                            testId='body-font-select'
-                            title={'Body font'}
-                            onSelect={(option) => {
-                                if (option?.value === DEFAULT_FONT) {
-                                    setBodyFont({name: DEFAULT_FONT, creator: themeNameVersion});
-                                    updateSetting('body_font', '');
-                                } else {
-                                    setBodyFont({name: option?.value || '', creator: CUSTOM_FONTS.body.find(f => f.name === option?.value)?.creator || ''});
-                                    updateSetting('body_font', option?.value || '');
-                                }
-                            }}
-                        />
-                    </Form>
-                }
+                <Form className='-mt-4' gap='sm' margins='lg' title='Typography'>
+                    <Select
+                        className={selectFont(selectedHeadingFont.label, true)}
+                        components={{Option, SingleValue}}
+                        controlClasses={{control: '!min-h-16 !pl-2', option: '!pl-2'}}
+                        hint={''}
+                        menuShouldScrollIntoView={true}
+                        options={customHeadingFonts}
+                        selectedOption={selectedHeadingFont}
+                        testId='heading-font-select'
+                        title={'Heading font'}
+                        onSelect={(option) => {
+                            if (option?.value === DEFAULT_FONT) {
+                                setHeadingFont({name: DEFAULT_FONT, creator: themeNameVersion});
+                                updateSetting('heading_font', '');
+                            } else {
+                                setHeadingFont({name: option?.value || '', creator: CUSTOM_FONTS.heading.find(f => f.name === option?.value)?.creator || ''});
+                                updateSetting('heading_font', option?.value || '');
+                            }
+                        }}
+                    />
+                    <Select
+                        className={selectFont(selectedBodyFont.label, false)}
+                        components={{Option, SingleValue}}
+                        controlClasses={{control: '!min-h-16 !pl-2', option: '!pl-2'}}
+                        hint={''}
+                        maxMenuHeight={200}
+                        menuPosition='fixed'
+                        menuShouldScrollIntoView={true}
+                        options={customBodyFonts}
+                        selectedOption={selectedBodyFont}
+                        testId='body-font-select'
+                        title={'Body font'}
+                        onSelect={(option) => {
+                            if (option?.value === DEFAULT_FONT) {
+                                setBodyFont({name: DEFAULT_FONT, creator: themeNameVersion});
+                                updateSetting('body_font', '');
+                            } else {
+                                setBodyFont({name: option?.value || '', creator: CUSTOM_FONTS.body.find(f => f.name === option?.value)?.creator || ''});
+                                updateSetting('body_font', option?.value || '');
+                            }
+                        }}
+                    />
+                </Form>
             </BehindFeatureFlag>
         </>
     );
