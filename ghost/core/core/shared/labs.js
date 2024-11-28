@@ -32,7 +32,8 @@ const BETA_FEATURES = [
     'editorExcerpt',
     'ActivityPub',
     'importMemberTier',
-    'customFonts'
+    'customFonts',
+    'staff2fa'
 ];
 
 const ALPHA_FEATURES = [
@@ -45,8 +46,7 @@ const ALPHA_FEATURES = [
     'lexicalIndicators',
     'adminXDemo',
     'contentVisibility',
-    'commentImprovements',
-    'staff2fa'
+    'commentImprovements'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
