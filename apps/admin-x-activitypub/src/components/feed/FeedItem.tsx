@@ -396,12 +396,12 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
         return (
             <>
                 {object && (
-                    <div className='group/article relative -mx-6 -my-px flex min-h-[112px] min-w-0 cursor-pointer items-center justify-between rounded-md p-6 hover:bg-grey-75' data-layout='inbox' data-object-id={object.id} onClick={onClick}>
+                    <div className='group/article relative -mx-6 -my-px flex min-h-[112px] min-w-0 cursor-pointer items-center justify-between rounded-lg p-6 hover:bg-grey-75' data-layout='inbox' data-object-id={object.id} onClick={onClick}>
                         <div className='min-w-0'>
-                            <div className='z-10 mb-1.5 flex w-full min-w-0 items-center gap-1.5 text-base group-hover/article:border-transparent'>
+                            <div className='z-10 mb-1.5 flex w-full min-w-0 items-center gap-1.5 text-sm group-hover/article:border-transparent'>
                                 <APAvatar author={author} size='2xs'/>
-                                <span className='min-w-0 truncate break-all font-medium text-grey-900' title={getUsername(author)} data-test-activity-heading>{author.name}</span>
-                                <span className='shrink-0 whitespace-nowrap text-grey-700 before:mr-1 before:content-["·"]' title={`${timestamp}`}>{getRelativeTimestamp(date)}</span>
+                                <span className='min-w-0 truncate break-all font-semibold text-grey-900' title={getUsername(author)} data-test-activity-heading>{author.name}</span>
+                                <span className='shrink-0 whitespace-nowrap text-grey-600 before:mr-1 before:content-["·"]' title={`${timestamp}`}>{getRelativeTimestamp(date)}</span>
                             </div>
                             <div className='flex'>
                                 <div className='flex min-h-[73px] w-full min-w-0 flex-col items-start justify-start gap-1'>
@@ -412,10 +412,10 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                             }}></span>
                                         )}
                                     </Heading>
-                                    <div dangerouslySetInnerHTML={({__html: stripHtml(object.preview?.content ?? object.content)})} className='ap-note-content line-clamp-2 w-full max-w-[600px] text-pretty text-base leading-normal text-grey-700'></div>
-                                    <span className='mt-1 shrink-0 whitespace-nowrap leading-none text-grey-700'>{object.content && `${getReadingTime(object.content)}`}</span>
+                                    <div dangerouslySetInnerHTML={({__html: stripHtml(object.preview?.content ?? object.content)})} className='ap-note-content line-clamp-2 w-full max-w-[600px] text-pretty text-base leading-normal text-grey-800'></div>
+                                    <span className='mt-1 shrink-0 whitespace-nowrap text-sm leading-none text-grey-600'>{object.content && `${getReadingTime(object.content)}`}</span>
                                 </div>
-                                <div className='invisible absolute right-4 top-1/2 z-[49] flex -translate-y-1/2 flex-col rounded-full bg-white px-1 py-2 shadow-md group-hover/article:visible'>
+                                <div className='invisible absolute right-4 top-1/2 z-[49] flex -translate-y-1/2 flex-col rounded-full bg-white p-1 shadow-md group-hover/article:visible'>
                                     <FeedItemStats
                                         commentCount={commentCount}
                                         layout={layout}
