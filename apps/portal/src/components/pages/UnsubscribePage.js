@@ -59,12 +59,16 @@ export default function UnsubscribePage() {
 
     const updateNewsletters = async (newsletters) => {
         if (loggedInMember) {
-            // when we have a member logged in, we need to update the newsletters in the context
             onAction('updateNewsletterPreference', {newsletters});
         } else {
             await updateMemberNewsletters({api, memberUuid: pageData.uuid, key: pageData.key, newsletters});
         }
         setSubscribedNewsletters(newsletters);
+        const notification = {
+            action: `updated:success`,
+            message: t('Email preferences updated.')
+        };
+        onAction('showPopupNotification', notification);
     };
 
     const updateCommentNotifications = async (enabled) => {
@@ -77,6 +81,10 @@ export default function UnsubscribePage() {
             updatedData = await updateMemberNewsletters({api, memberUuid: pageData.uuid, key: pageData.key, enableCommentNotifications: enabled});
         }
         setMember(updatedData);
+        onAction('showPopupNotification', {
+            action: 'updated:success',
+            message: t('Comment preferences updated.')
+        });
     };
 
     const unsubscribeAll = async () => {

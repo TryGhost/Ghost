@@ -27,7 +27,6 @@ const GA_FEATURES = [
 //       input for the "labs" setting value
 const BETA_FEATURES = [
     'additionalPaymentMethods',
-    'activitypub',
     'stripeAutomaticTax',
     'webmentions',
     'editorExcerpt',
