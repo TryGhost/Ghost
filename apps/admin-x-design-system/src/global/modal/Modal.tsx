@@ -16,7 +16,7 @@ export interface ModalProps {
      * Possible values are: `sm`, `md`, `lg`, `xl, `full`, `bleed`. Yu can also use any number to set an arbitrary width.
      */
     size?: ModalSize;
-    width?: 'full' | number;
+    width?: 'full' | 'toSidebar' | number;
     height?: 'full' | number;
     align?: 'center' | 'left' | 'right';
 
@@ -374,6 +374,11 @@ const Modal: React.FC<ModalProps> = ({
         modalClasses = clsx(
             modalClasses,
             'w-full'
+        );
+    } else if (width === 'toSidebar') {
+        modalClasses = clsx(
+            modalClasses,
+            'w-full max-w-[calc(100dvw_-_280px)] lg:max-w-full lgPlus:max-w-[calc(100dvw_-_320px)]'
         );
     }
 
