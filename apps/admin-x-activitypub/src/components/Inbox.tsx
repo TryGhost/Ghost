@@ -46,8 +46,6 @@ const Inbox: React.FC<InboxProps> = ({layout}) => {
         return !activity.object.inReplyTo;
     });
 
-    // Intersection observer to fetch more activities when the user scrolls
-    // to the bottom of the page
     const observerRef = useRef<IntersectionObserver | null>(null);
     const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
