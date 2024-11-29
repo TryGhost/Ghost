@@ -1,3 +1,4 @@
+const config = require('../../../shared/config');
 const stripeService = require('../stripe');
 const settingsCache = require('../../../shared/settings-cache');
 const settingsHelpers = require('../../services/settings-helpers');
@@ -18,6 +19,7 @@ const tiersService = require('../tiers');
 const newslettersService = require('../newsletters');
 const memberAttributionService = require('../member-attribution');
 const emailSuppressionList = require('../email-suppression-list');
+const CaptchaService = require('@tryghost/captcha-service');
 const {t} = require('../i18n');
 const sentry = require('../../../shared/sentry');
 
@@ -47,12 +49,12 @@ function trimLeadingWhitespace(strings, ...values) {
     }).join('\n').trim();
 }
 
-function createApiInstance(config) {
+function createApiInstance(membersConfig) {
     const membersApiInstance = MembersApi({
-        tokenConfig: config.getTokenConfig(),
+        tokenConfig: membersConfig.getTokenConfig(),
         auth: {
-            getSigninURL: config.getSigninURL.bind(config),
-            allowSelfSignup: config.getAllowSelfSignup.bind(config),
+            getSigninURL: membersConfig.getSigninURL.bind(membersConfig),
+            allowSelfSignup: membersConfig.getAllowSelfSignup.bind(membersConfig),
             tokenProvider: new SingleUseTokenProvider({
                 SingleUseTokenModel: models.SingleUseToken,
                 validityPeriod: MAGIC_LINK_TOKEN_VALIDITY,
@@ -67,7 +69,7 @@ function createApiInstance(config) {
                         logging.warn(message.text);
                     }
                     let msg = Object.assign({
-                        from: config.getEmailSupportAddress(),
+                        from: membersConfig.getEmailSupportAddress(),
                         subject: 'Signin',
                         forceTextContent: true
                     }, message);
@@ -238,7 +240,11 @@ function createApiInstance(config) {
         emailSuppressionList,
         settingsCache,
         sentry,
-        settingsHelpers
+        settingsHelpers,
+        captchaService: new CaptchaService({
+            enabled: labsService.isSet('captcha') && config.get('captcha:enabled'),
+            secretKey: config.get('captcha:secretKey')
+        })
     });
 
     return membersApiInstance;
