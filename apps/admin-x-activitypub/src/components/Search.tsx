@@ -1,6 +1,6 @@
 import React, {useEffect, useRef, useState} from 'react';
 
-import {Activity, ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
+import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, Icon, LoadingIndicator, NoValueLabel, TextField} from '@tryghost/admin-x-design-system';
 import {useDebounce} from 'use-debounce';
 
@@ -22,7 +22,6 @@ interface SearchResultItem {
     followerCount: number;
     followingCount: number;
     isFollowing: boolean;
-    posts: Activity[];
 }
 
 interface SearchResultProps {

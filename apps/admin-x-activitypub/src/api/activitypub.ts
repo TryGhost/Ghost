@@ -9,7 +9,6 @@ export interface Profile {
     followerCount: number;
     followingCount: number;
     isFollowing: boolean;
-    posts: Activity[];
 }
 
 export interface SearchResults {
@@ -29,6 +28,11 @@ export interface GetFollowingForProfileResponse {
         actor: Actor;
         isFollowing: boolean;
     }[];
+    next: string | null;
+}
+
+export interface GetPostsForProfileResponse {
+    posts: Activity[];
     next: string | null;
 }
 
@@ -230,6 +234,37 @@ export class ActivityPubAPI {
 
         return {
             following,
+            next: nextPage
+        };
+    }
+
+    async getPostsForProfile(handle: string, next?: string): Promise<GetPostsForProfileResponse> {
+        const url = new URL(`.ghost/activitypub/profile/${handle}/posts`, this.apiUrl);
+        if (next) {
+            url.searchParams.set('next', next);
+        }
+
+        const json = await this.fetchJSON(url);
+
+        if (json === null) {
+            return {
+                posts: [],
+                next: null
+            };
+        }
+
+        if (!('posts' in json)) {
+            return {
+                posts: [],
+                next: null
+            };
+        }
+
+        const posts = Array.isArray(json.posts) ? json.posts : [];
+        const nextPage = 'next' in json && typeof json.next === 'string' ? json.next : null;
+
+        return {
+            posts,
             next: nextPage
         };
     }
