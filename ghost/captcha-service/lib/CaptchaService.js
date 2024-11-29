@@ -1,21 +1,26 @@
-const hCaptcha = require('express-hcaptcha');
-const {BadRequestError} = require('@tryghost/errors');
+const hcaptchaMiddleware = require('./hcaptcha-middleware');
+const logging = require('@tryghost/logging');
+const {InternalServerError} = require('@tryghost/errors');
 
 class CaptchaService {
     #enabled;
-    #middleware;
+    #scoreThreshold;
+    #secretKey;
 
     /**
      * @param {Object} options
      * @param {boolean} [options.enabled] Whether hCaptcha is enabled
+     * @param {number} [options.scoreThreshold] Score threshold for bot detection
      * @param {string} [options.secretKey] hCaptcha secret key
      */
     constructor({
         enabled,
+        scoreThreshold,
         secretKey
     }) {
         this.#enabled = enabled;
-        this.#middleware = hCaptcha.middleware.validate(secretKey);
+        this.#secretKey = secretKey;
+        this.#scoreThreshold = scoreThreshold;
     }
 
     isEnabled() {
@@ -24,7 +29,7 @@ class CaptchaService {
 
     getTokenMiddleware() {
         if (this.#enabled) {
-            return this.#middleware;
+            return hcaptchaMiddleware(this.#secretKey);
         } else {
             return (req, res, next) => next();
         }
@@ -33,12 +38,13 @@ class CaptchaService {
     getEvaluationMiddleware() {
         if (this.#enabled) {
             return (req, res, next) => {
-                if (req.hcaptcha.success === true) {
+                if (req.hcaptcha.score < this.#scoreThreshold) {
                     next();
                 } else {
-                    next(new BadRequestError({
-                        message: 'Unsuccessful verification'
-                    }));
+                    logging.error(`Blocking request due to high score (${req.hcaptcha.score})`);
+
+                    // Intentionally left sparse to avoid leaking information
+                    next(new InternalServerError());
                 }
             };
         } else {

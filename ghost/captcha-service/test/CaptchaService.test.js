@@ -28,9 +28,10 @@ describe('CaptchaService', function () {
         assert.equal(tokenMiddleware.length, 3);
     });
 
-    it('No-ops if CAPTCHA result is successful', function (done) {
+    it('No-ops if CAPTCHA score is safe', function (done) {
         const captchaService = new CaptchaService({
             enabled: true,
+            scoreThreshold: 0.8,
             secretKey: 'test-secret'
         });
 
@@ -38,7 +39,7 @@ describe('CaptchaService', function () {
 
         const req = {
             hcaptcha: {
-                success: true
+                score: 0.6
             }
         };
 
@@ -48,9 +49,10 @@ describe('CaptchaService', function () {
         });
     });
 
-    it('Errors when CAPTCHA result is unsuccessful', function (done) {
+    it('Errors when CAPTCHA score is suspicious', function (done) {
         const captchaService = new CaptchaService({
             enabled: true,
+            scoreThreshold: 0.8,
             secretKey: 'test-secret'
         });
 
@@ -58,12 +60,12 @@ describe('CaptchaService', function () {
 
         const req = {
             hcaptcha: {
-                success: false
+                score: 0.8
             }
         };
 
         evaluationMiddleware(req, null, (err) => {
-            assert.equal(err.message, 'Unsuccessful verification');
+            assert.equal(err.message, 'The server has encountered an error.');
             done();
         });
     });

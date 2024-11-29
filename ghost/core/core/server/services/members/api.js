@@ -243,6 +243,7 @@ function createApiInstance(membersConfig) {
         settingsHelpers,
         captchaService: new CaptchaService({
             enabled: labsService.isSet('captcha') && config.get('captcha:enabled'),
+            scoreThreshold: config.get('captcha:scoreThreshold'),
             secretKey: config.get('captcha:secretKey')
         })
     });
