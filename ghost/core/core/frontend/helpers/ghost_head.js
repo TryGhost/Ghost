@@ -26,6 +26,29 @@ function writeMetaTag(property, content, type) {
     return '<meta ' + type + '="' + property + '" content="' + content + '">';
 }
 
+function getPWAMetaTags() {
+    const head = [];
+    head.push('<link rel="manifest" href="/manifest.json">');
+    head.push('<meta name="theme-color" content="#15171A">');
+    head.push('<meta name="apple-mobile-web-app-capable" content="yes">');
+    head.push('<meta name="apple-mobile-web-app-status-bar-style" content="black">');
+    head.push('<meta name="apple-mobile-web-app-title" content="' + escapeExpression(settingsCache.get('title')) + '">');
+    head.push(`<script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => {
+                        console.log('Service Worker registered with scope:', registration.scope);
+                    })
+                    .catch(error => {
+                        console.error('Service Worker registration failed:', error);
+                    });
+            });
+        }
+    </script>`);
+    return head;
+}
+
 function finaliseStructuredData(meta) {
     const head = [];
 
@@ -257,6 +280,12 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
                     head.push(writeMetaTag('referrer', referrerPolicy, 'name'));
                 }
             }
+
+            // Add PWA meta tags
+            if (!excludeList.has('pwa')) {
+                head.push.apply(head, getPWAMetaTags());
+            }
+
             // show amp link in post when 1. we are not on the amp page and 2. amp is enabled
             if (_.includes(context, 'post') && !_.includes(context, 'amp') && settingsCache.get('amp')) {
                 head.push('<link rel="amphtml" href="' +

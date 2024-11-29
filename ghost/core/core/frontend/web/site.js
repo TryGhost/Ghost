@@ -68,6 +68,12 @@ module.exports = function setupSiteApp(routerConfig) {
     // Serve sitemap.xsl file
     siteApp.use(mw.servePublicFile('static', 'sitemap.xsl', 'text/xsl', config.get('caching:sitemapXSL:maxAge')));
 
+    // Serve PWA manifest.json
+    siteApp.use(mw.servePublicFile('static', 'manifest.json', 'application/json', config.get('caching:publicAssets:maxAge')));
+
+    // Serve service worker
+    siteApp.use(mw.servePublicFile('static', 'sw.js', 'application/javascript', config.get('caching:publicAssets:maxAge')));
+
     // Serve stylesheets for default templates
     siteApp.use(mw.servePublicFile('static', 'public/ghost.css', 'text/css', config.get('caching:publicAssets:maxAge')));
     siteApp.use(mw.servePublicFile('static', 'public/ghost.min.css', 'text/css', config.get('caching:publicAssets:maxAge')));
@@ -88,6 +94,14 @@ module.exports = function setupSiteApp(routerConfig) {
     siteApp.use(STATIC_MEDIA_URL_PREFIX, storage.getStorage('media').serve());
     // Serve site files using the storage adapter
     siteApp.use(STATIC_FILES_URL_PREFIX, storage.getStorage('files').serve());
+
+    // Serve PWA icons
+    siteApp.use('/public/icons', express.static(path.join(__dirname, '..', 'public', 'icons')));
+
+    // Register offline route - serve static HTML
+    siteApp.get('/offline', (req, res) => {
+        res.sendFile(path.join(__dirname, '..', 'public', 'offline.html'));
+    });
 
     // /member/.well-known/* serves files (e.g. jwks.json) so it needs to be mounted before the prettyUrl mw to avoid trailing slashes
     siteApp.use(
@@ -121,6 +135,9 @@ module.exports = function setupSiteApp(routerConfig) {
 
     // site map - this should probably be refactored to be an internal app
     sitemapHandler(siteApp);
+
+    // Add PWA middleware before theme middleware
+    siteApp.use(mw.pwa);
 
     // Global handling for member session, ensures a member is logged in to the frontend
     siteApp.use(membersService.middleware.loadMemberSession);

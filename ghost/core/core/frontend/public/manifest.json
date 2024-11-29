@@ -1,0 +1,37 @@
+{
+    "name": "Ghost",
+    "short_name": "Ghost",
+    "theme_color": "#ffffff",
+    "background_color": "#000000",
+    "display": "standalone",
+    "scope": "/",
+    "start_url": "/",
+    "icons": [
+      {
+        "src": "/public/icons/maskable.png",
+        "sizes": "196x196",
+        "type": "image/png",
+        "purpose": "any maskable"
+      },
+      {
+        "src": "/public/icons/logo192.png",
+        "type": "image/png",
+        "sizes": "192x192"
+      },
+      {
+        "src": "/public/icons/logo256.png",
+        "type": "image/png",
+        "sizes": "256x256"
+      },
+      {
+        "src": "/public/icons/logo384.png",
+        "type": "image/png",
+        "sizes": "384x384"
+      },
+      {
+        "src": "/public/icons/logo512.png",
+        "type": "image/png",
+        "sizes": "512x512"
+      }
+    ]
+  }
