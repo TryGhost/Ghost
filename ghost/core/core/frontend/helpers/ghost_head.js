@@ -165,9 +165,8 @@ function getTinybirdTrackerScript(dataRoot) {
     return `<script defer src="${scriptUrl}" data-storage="localStorage" data-host="${endpoint}" data-token="${token}" ${tbParams}></script>`;
 }
 
-function gethCaptchaScript() {
-    const scriptUrl = config.get('hcaptcha:scriptUrl');
-    return `<script defer async src="${scriptUrl}"></script>`;
+function getHCaptchaScript() {
+    return `<script defer async src="https://js.hcaptcha.com/1/api.js"></script>`;
 }
 
 /**
@@ -358,8 +357,8 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
                 head.push(getTinybirdTrackerScript(dataRoot));
             }
 
-            if (labs.isSet('captcha') && config.get('hcaptcha') && config.get('hcaptcha:enabled')) {
-                head.push(gethCaptchaScript());
+            if (labs.isSet('captcha') && config.get('captcha:enabled')) {
+                head.push(getHCaptchaScript());
             }
 
             if (labs.isSet('customFonts')) {
