@@ -348,6 +348,20 @@ export function useFollowingForProfile(handle: string) {
     });
 }
 
+export function usePostsForProfile(handle: string) {
+    return useInfiniteQuery({
+        queryKey: [`posts:${handle}`],
+        async queryFn({pageParam}: {pageParam?: string}) {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI(handle, siteUrl);
+            return api.getPostsForProfile(handle, pageParam);
+        },
+        getNextPageParam(prevPage) {
+            return prevPage.next;
+        }
+    });
+}
+
 export function useSuggestedProfiles(handle: string, handles: string[]) {
     const queryClient = useQueryClient();
     const queryKey = ['profiles', {handles}];
