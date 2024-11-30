@@ -346,9 +346,19 @@ export function useSearchForUser(handle: string, query: string) {
     return {searchQuery, updateProfileSearchResult};
 }
 
-export function useSuggestedProfiles(handle: string, handles: string[]) {
+export function useSuggestedProfiles(handle: string, limit = 3) {
     const queryClient = useQueryClient();
-    const queryKey = ['profiles', {handles}];
+    const queryKey = ['profiles', limit];
+
+    const suggestedHandles = [
+        '@index@activitypub.ghost.org',
+        '@index@john.onolan.org',
+        '@index@www.coffeeandcomplexity.com',
+        '@index@ghost.codenamejimmy.com',
+        '@index@www.syphoncontinuity.com',
+        '@index@www.cosmico.org',
+        '@index@silverhuang.com'
+    ];
 
     const suggestedProfilesQuery = useQuery({
         queryKey,
@@ -357,7 +367,10 @@ export function useSuggestedProfiles(handle: string, handles: string[]) {
             const api = createActivityPubAPI(handle, siteUrl);
 
             return Promise.allSettled(
-                handles.map(h => api.getProfile(h))
+                suggestedHandles
+                    .sort(() => Math.random() - 0.5)
+                    .slice(0, limit)
+                    .map(suggestedHandle => api.getProfile(suggestedHandle))
             ).then((results) => {
                 return results
                     .filter((result): result is PromiseFulfilledResult<Profile> => result.status === 'fulfilled')

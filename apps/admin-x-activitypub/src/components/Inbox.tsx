@@ -10,11 +10,10 @@ import Separator from './global/Separator';
 import ViewProfileModal from './modals/ViewProfileModal';
 import getName from '../utils/get-name';
 import getUsername from '../utils/get-username';
-import useSuggestedProfiles from '../hooks/useSuggestedProfiles';
 import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, Heading, LoadingIndicator} from '@tryghost/admin-x-design-system';
 import {handleViewContent} from '../utils/content-handlers';
-import {useActivitiesForUser, useUserDataForUser} from '../hooks/useActivityPubQueries';
+import {useActivitiesForUser, useSuggestedProfiles, useUserDataForUser} from '../hooks/useActivityPubQueries';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 type Layout = 'inbox' | 'feed';
@@ -24,6 +23,9 @@ interface InboxProps {
 }
 
 const Inbox: React.FC<InboxProps> = ({layout}) => {
+    const {updateRoute} = useRouting();
+
+    // Initialise activities for the inbox or feed
     const typeFilter = layout === 'inbox'
         ? ['Create:Article']
         : ['Create:Note', 'Announce:Note'];
@@ -38,13 +40,14 @@ const Inbox: React.FC<InboxProps> = ({layout}) => {
     });
     const {data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading} = getActivitiesQuery;
 
-    const {updateRoute} = useRouting();
-
-    const {suggested, isLoadingSuggested} = useSuggestedProfiles();
-
     const activities = (data?.pages.flatMap(page => page.data) ?? []).filter((activity) => {
         return !activity.object.inReplyTo;
     });
+
+    // Initialise suggested profiles
+    const {suggestedProfilesQuery} = useSuggestedProfiles('index', 3);
+    const {data: suggestedData, isLoading: isLoadingSuggested} = suggestedProfilesQuery;
+    const suggested = suggestedData || [];
 
     const observerRef = useRef<IntersectionObserver | null>(null);
     const loadMoreRef = useRef<HTMLDivElement | null>(null);
