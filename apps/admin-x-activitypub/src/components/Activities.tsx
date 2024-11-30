@@ -155,9 +155,7 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
             break;
         case ACTVITY_TYPE.FOLLOW:
             NiceModal.show(ViewProfileModal, {
-                profile: getUsername(activity.actor),
-                onFollow: () => {},
-                onUnfollow: () => {}
+                profile: getUsername(activity.actor)
             });
             break;
         default:
