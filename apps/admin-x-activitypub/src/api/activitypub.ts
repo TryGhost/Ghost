@@ -184,11 +184,6 @@ export class ActivityPubAPI {
         return json as Actor;
     }
 
-    async getActor(url: string): Promise<Actor> {
-        const json = await this.fetchJSON(new URL(url));
-        return json as Actor;
-    }
-
     get likedApiUrl() {
         return new URL(`.ghost/activitypub/liked/${this.handle}`, this.apiUrl);
     }
