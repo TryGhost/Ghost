@@ -13,7 +13,7 @@ import APAvatar from '../global/APAvatar';
 import ActivityItem from '../activities/ActivityItem';
 import FeedItem from '../feed/FeedItem';
 import FollowButton from '../global/FollowButton';
-import Separator from './Separator';
+import Separator from '../global/Separator';
 import getName from '../../utils/get-name';
 import getUsername from '../../utils/get-username';
 
@@ -21,7 +21,7 @@ const noop = () => {};
 
 type QueryPageData = GetFollowersForProfileResponse | GetFollowingForProfileResponse;
 
-type QueryFn = (handle: string) => UseInfiniteQueryResult<QueryPageData, unknown>;
+type QueryFn = (handle: string) => UseInfiniteQueryResult<QueryPageData>;
 
 type ActorListProps = {
     handle: string,
@@ -44,7 +44,7 @@ const ActorList: React.FC<ActorListProps> = ({
         isLoading
     } = queryFn(handle);
 
-    const actorData = (data?.pages.flatMap(resolveDataFn) ?? []);
+    const actors = (data?.pages.flatMap(resolveDataFn) ?? []);
 
     const observerRef = useRef<IntersectionObserver | null>(null);
     const loadMoreRef = useRef<HTMLDivElement | null>(null);
@@ -74,13 +74,13 @@ const ActorList: React.FC<ActorListProps> = ({
     return (
         <div>
             {
-                actorData.length === 0 && !isLoading ? (
+                hasNextPage === false && actors.length === 0 ? (
                     <NoValueLabel icon='user-add'>
                         {noResultsMessage}
                     </NoValueLabel>
                 ) : (
                     <List>
-                        {actorData.map(({actor, isFollowing}, index) => {
+                        {actors.map(({actor, isFollowing}, index) => {
                             return (
                                 <React.Fragment key={actor.id}>
                                     <ActivityItem key={actor.id} url={actor.url}>
@@ -98,7 +98,7 @@ const ActorList: React.FC<ActorListProps> = ({
                                             type='link'
                                         />
                                     </ActivityItem>
-                                    {index < actorData.length - 1 && <Separator />}
+                                    {index < actors.length - 1 && <Separator />}
                                 </React.Fragment>
                             );
                         })}
@@ -114,28 +114,6 @@ const ActorList: React.FC<ActorListProps> = ({
                 )
             }
         </div>
-    );
-};
-
-const FollowersTab: React.FC<{handle: string}> = ({handle}) => {
-    return (
-        <ActorList
-            handle={handle}
-            noResultsMessage={`${handle} has no followers yet`}
-            queryFn={useFollowersForProfile}
-            resolveDataFn={page => ('followers' in page ? page.followers : [])}
-        />
-    );
-};
-
-const FollowingTab: React.FC<{handle: string}> = ({handle}) => {
-    return (
-        <ActorList
-            handle={handle}
-            noResultsMessage={`${handle} is not following anyone yet`}
-            queryFn={useFollowingForProfile}
-            resolveDataFn={page => ('following' in page ? page.following : [])}
-        />
     );
 };
 
@@ -178,21 +156,29 @@ const PostsTab: React.FC<{handle: string}> = ({handle}) => {
 
     return (
         <div>
-            {posts.map((post, index) => (
-                <div>
-                    <FeedItem
-                        actor={post.actor}
-                        commentCount={post.object.replyCount}
-                        layout='feed'
-                        object={post.object}
-                        type={post.type}
-                        onCommentClick={() => {}}
-                    />
-                    {index < posts.length - 1 && (
-                        <Separator />
-                    )}
-                </div>
-            ))}
+            {
+                hasNextPage === false && posts.length === 0 ? (
+                    <NoValueLabel icon='pen'>
+                        {handle} has not posted anything yet
+                    </NoValueLabel>
+                ) : (
+                    <>
+                        {posts.map((post, index) => (
+                            <div>
+                                <FeedItem
+                                    actor={post.actor}
+                                    commentCount={post.object.replyCount}
+                                    layout='feed'
+                                    object={post.object}
+                                    type={post.type}
+                                    onCommentClick={() => {}}
+                                />
+                                {index < posts.length - 1 && <Separator />}
+                            </div>
+                        ))}
+                    </>
+                )
+            }
             <div ref={loadMoreRef} className='h-1'></div>
             {
                 (isFetchingNextPage || isLoading) && (
@@ -202,6 +188,28 @@ const PostsTab: React.FC<{handle: string}> = ({handle}) => {
                 )
             }
         </div>
+    );
+};
+
+const FollowingTab: React.FC<{handle: string}> = ({handle}) => {
+    return (
+        <ActorList
+            handle={handle}
+            noResultsMessage={`${handle} is not following anyone yet`}
+            queryFn={useFollowingForProfile}
+            resolveDataFn={page => ('following' in page ? page.following : [])}
+        />
+    );
+};
+
+const FollowersTab: React.FC<{handle: string}> = ({handle}) => {
+    return (
+        <ActorList
+            handle={handle}
+            noResultsMessage={`${handle} has no followers yet`}
+            queryFn={useFollowersForProfile}
+            resolveDataFn={page => ('followers' in page ? page.followers : [])}
+        />
     );
 };
 

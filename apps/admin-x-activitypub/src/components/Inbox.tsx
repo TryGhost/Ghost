@@ -7,7 +7,7 @@ import NewPostModal from './modals/NewPostModal';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useRef} from 'react';
 import Separator from './global/Separator';
-import ViewProfileModal from './global/ViewProfileModal';
+import ViewProfileModal from './modals/ViewProfileModal';
 import getName from '../utils/get-name';
 import getUsername from '../utils/get-username';
 import useSuggestedProfiles from '../hooks/useSuggestedProfiles';

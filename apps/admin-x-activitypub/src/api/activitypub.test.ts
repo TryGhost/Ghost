@@ -807,6 +807,35 @@ describe('ActivityPubAPI', function () {
         });
     });
 
+    describe('note', function () {
+        test('It creates a note and returns it', async function () {
+            const fakeFetch = Fetch({
+                [`https://activitypub.api/.ghost/activitypub/actions/note`]: {
+                    async assert(_resource, init) {
+                        expect(init?.method).toEqual('POST');
+                        expect(init?.body).toEqual('{"content":"Hello, world!"}');
+                    },
+                    response: JSONResponse({
+                        id: 'https://example.com/note/abc123'
+                    })
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const result = await api.note('Hello, world!');
+
+            expect(result).toEqual({
+                id: 'https://example.com/note/abc123'
+            });
+        });
+    });
+
     describe('search', function () {
         test('It returns the results of the search', async function () {
             const handle = '@foo@bar.baz';
@@ -877,6 +906,43 @@ describe('ActivityPubAPI', function () {
             const actual = await api.search(handle);
             const expected = {
                 profiles: []
+            };
+
+            expect(actual).toEqual(expected);
+        });
+    });
+
+    describe('getProfile', function () {
+        test('It returns a profile', async function () {
+            const handle = '@foo@bar.baz';
+
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                [`https://activitypub.api/.ghost/activitypub/profile/${handle}`]: {
+                    response: JSONResponse({
+                        handle,
+                        name: 'Foo Bar'
+                    })
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const actual = await api.getProfile(handle);
+            const expected = {
+                handle,
+                name: 'Foo Bar'
             };
 
             expect(actual).toEqual(expected);
@@ -1597,43 +1663,6 @@ describe('ActivityPubAPI', function () {
         });
     });
 
-    describe('getProfile', function () {
-        test('It returns a profile', async function () {
-            const handle = '@foo@bar.baz';
-
-            const fakeFetch = Fetch({
-                'https://auth.api/': {
-                    response: JSONResponse({
-                        identities: [{
-                            token: 'fake-token'
-                        }]
-                    })
-                },
-                [`https://activitypub.api/.ghost/activitypub/profile/${handle}`]: {
-                    response: JSONResponse({
-                        handle,
-                        name: 'Foo Bar'
-                    })
-                }
-            });
-
-            const api = new ActivityPubAPI(
-                new URL('https://activitypub.api'),
-                new URL('https://auth.api'),
-                'index',
-                fakeFetch
-            );
-
-            const actual = await api.getProfile(handle);
-            const expected = {
-                handle,
-                name: 'Foo Bar'
-            };
-
-            expect(actual).toEqual(expected);
-        });
-    });
-
     describe('getThread', function () {
         test('It returns a thread', async function () {
             const activityId = 'https://example.com/thread/abc123';
@@ -1668,35 +1697,6 @@ describe('ActivityPubAPI', function () {
             };
 
             expect(actual).toEqual(expected);
-        });
-    });
-
-    describe('note', function () {
-        test('It creates a note and returns it', async function () {
-            const fakeFetch = Fetch({
-                [`https://activitypub.api/.ghost/activitypub/actions/note`]: {
-                    async assert(_resource, init) {
-                        expect(init?.method).toEqual('POST');
-                        expect(init?.body).toEqual('{"content":"Hello, world!"}');
-                    },
-                    response: JSONResponse({
-                        id: 'https://example.com/note/abc123'
-                    })
-                }
-            });
-
-            const api = new ActivityPubAPI(
-                new URL('https://activitypub.api'),
-                new URL('https://auth.api'),
-                'index',
-                fakeFetch
-            );
-
-            const result = await api.note('Hello, world!');
-
-            expect(result).toEqual({
-                id: 'https://example.com/note/abc123'
-            });
         });
     });
 });

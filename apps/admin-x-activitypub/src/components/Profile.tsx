@@ -24,7 +24,7 @@ import ActivityItem from './activities/ActivityItem';
 import FeedItem from './feed/FeedItem';
 import MainNavigation from './navigation/MainNavigation';
 import Separator from './global/Separator';
-import ViewProfileModal from './global/ViewProfileModal';
+import ViewProfileModal from './modals/ViewProfileModal';
 import {type Activity} from '../components/activities/ActivityItem';
 
 interface UseInfiniteScrollTabProps<TData> {
@@ -83,11 +83,13 @@ const useInfiniteScrollTab = <TData,>({useDataHook, emptyStateLabel, emptyStateI
     const LoadingState = () => (
         <>
             <div ref={loadMoreRef} className='h-1'></div>
-            {(isLoading || isFetchingNextPage) && (
-                <div className='mt-6 flex flex-col items-center justify-center space-y-4 text-center'>
-                    <LoadingIndicator size='md' />
-                </div>
-            )}
+            {
+                (isLoading || isFetchingNextPage) && (
+                    <div className='mt-6 flex flex-col items-center justify-center space-y-4 text-center'>
+                        <LoadingIndicator size='md' />
+                    </div>
+                )
+            }
         </>
     );
 
@@ -272,8 +274,7 @@ const Profile: React.FC<ProfileProps> = ({}) => {
                 <div className='ap-posts'>
                     <PostsTab />
                 </div>
-            ),
-            counter: null
+            )
         },
         {
             id: 'likes',
