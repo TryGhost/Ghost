@@ -13,7 +13,7 @@ import ViewProfileModal from './modals/ViewProfileModal';
 
 import getUsername from '../utils/get-username';
 import stripHtml from '../utils/strip-html';
-import {useActivitiesForUser} from '../hooks/useActivityPubQueries';
+import {GET_ACTIVITIES_QUERY_KEY_NOTIFICATIONS, useActivitiesForUser} from '../hooks/useActivityPubQueries';
 
 interface ActivitiesProps {}
 
@@ -97,10 +97,13 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
         includeReplies: true,
         filter: {
             type: ['Follow', 'Like', `Create:Note:isReplyToOwn`]
-        }
+        },
+        key: GET_ACTIVITIES_QUERY_KEY_NOTIFICATIONS
     });
     const {data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading} = getActivitiesQuery;
-    const activities = (data?.pages.flatMap(page => page.data) ?? []);
+    const activities = (data?.pages.flatMap(page => page.data) ?? [])
+        // If there somehow are duplicate activities, filter them out so the list rendering doesn't break
+        .filter((activity, index, self) => index === self.findIndex(a => a.id === activity.id));
 
     const observerRef = useRef<IntersectionObserver | null>(null);
     const loadMoreRef = useRef<HTMLDivElement | null>(null);
