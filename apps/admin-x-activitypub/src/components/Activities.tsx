@@ -127,13 +127,6 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
         };
     }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-    // Retrieve followers for the user
-    // const {data: followers = []} = useFollowersForUser(user);
-
-    // const isFollower = (id: string): boolean => {
-    //     return followers.includes(id);
-    // };
-
     const handleActivityClick = (activity: Activity) => {
         switch (activity.type) {
         case ACTVITY_TYPE.CREATE:
