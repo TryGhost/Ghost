@@ -136,9 +136,7 @@ const Inbox: React.FC<InboxProps> = ({layout}) => {
                                                     <React.Fragment key={actor.id}>
                                                         <li key={actor.id}>
                                                             <ActivityItem url={actor.url} onClick={() => NiceModal.show(ViewProfileModal, {
-                                                                profile: getUsername(actor),
-                                                                onFollow: () => {},
-                                                                onUnfollow: () => {}
+                                                                profile: getUsername(actor)
                                                             })}>
                                                                 <APAvatar author={actor} />
                                                                 <div className='flex min-w-0 flex-col'>
