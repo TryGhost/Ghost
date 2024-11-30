@@ -10,17 +10,14 @@ const MainContent = () => {
     switch (mainRoute) {
     case 'search':
         return <Search />;
-        break;
     case 'activity':
         return <Activities />;
-        break;
     case 'profile':
         return <Profile />;
-        break;
     default:
         const layout = (mainRoute === 'inbox' || mainRoute === '') ? 'inbox' : 'feed';
+
         return <Inbox layout={layout} />;
-        break;
     }
 };
 
