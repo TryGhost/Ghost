@@ -258,20 +258,24 @@ export function useFollow(handle: string, onSuccess: () => void, onError: () => 
     });
 }
 
+export const GET_ACTIVITIES_QUERY_KEY_INBOX = 'inbox';
+export const GET_ACTIVITIES_QUERY_KEY_FEED = 'feed';
+export const GET_ACTIVITIES_QUERY_KEY_NOTIFICATIONS = 'notifications';
+
 export function useActivitiesForUser({
     handle,
     includeOwn = false,
     includeReplies = false,
-    excludeNonFollowers = false,
-    filter = null
+    filter = null,
+    key = null
 }: {
     handle: string;
     includeOwn?: boolean;
     includeReplies?: boolean;
-    excludeNonFollowers?: boolean;
     filter?: {type?: string[]} | null;
+    key?: string | null;
 }) {
-    const queryKey = [`activities:${handle}`, {includeOwn, includeReplies, filterTypes: filter?.type}];
+    const queryKey = [`activities:${handle}`, key, {includeOwn, includeReplies, filter}];
     const queryClient = useQueryClient();
 
     const getActivitiesQuery = useInfiniteQuery({
@@ -279,7 +283,7 @@ export function useActivitiesForUser({
         async queryFn({pageParam}: {pageParam?: string}) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
-            return api.getActivities(includeOwn, includeReplies, excludeNonFollowers, filter, pageParam);
+            return api.getActivities(includeOwn, includeReplies, filter, pageParam);
         },
         getNextPageParam(prevPage) {
             return prevPage.next;
@@ -507,7 +511,7 @@ export function useNoteMutationForUser(handle: string) {
                 return [activity, ...current];
             });
 
-            queryClient.setQueriesData([`activities:${handle}`], (current?: {pages: {data: Activity[]}[]}) => {
+            queryClient.setQueriesData([`activities:${handle}`, GET_ACTIVITIES_QUERY_KEY_FEED], (current?: {pages: {data: Activity[]}[]}) => {
                 if (current === undefined) {
                     return current;
                 }
