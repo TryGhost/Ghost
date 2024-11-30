@@ -9,7 +9,7 @@ import ActivityItem, {type Activity} from './activities/ActivityItem';
 import ArticleModal from './feed/ArticleModal';
 import MainNavigation from './navigation/MainNavigation';
 import Separator from './global/Separator';
-import ViewProfileModal from './global/ViewProfileModal';
+import ViewProfileModal from './modals/ViewProfileModal';
 
 import getUsername from '../utils/get-username';
 import stripHtml from '../utils/strip-html';
@@ -126,13 +126,6 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
             }
         };
     }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
-
-    // Retrieve followers for the user
-    // const {data: followers = []} = useFollowersForUser(user);
-
-    // const isFollower = (id: string): boolean => {
-    //     return followers.includes(id);
-    // };
 
     const handleActivityClick = (activity: Activity) => {
         switch (activity.type) {

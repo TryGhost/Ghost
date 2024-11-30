@@ -10,7 +10,7 @@ import FollowButton from './global/FollowButton';
 import MainNavigation from './navigation/MainNavigation';
 
 import NiceModal from '@ebay/nice-modal-react';
-import ViewProfileModal from './global/ViewProfileModal';
+import ViewProfileModal from './modals/ViewProfileModal';
 
 import Separator from './global/Separator';
 import useSuggestedProfiles from '../hooks/useSuggestedProfiles';
@@ -28,8 +28,6 @@ interface SearchResultProps {
     result: SearchResultItem;
     update: (id: string, updated: Partial<SearchResultItem>) => void;
 }
-
-interface SearchProps {}
 
 const SearchResult: React.FC<SearchResultProps> = ({result, update}) => {
     const onFollow = () => {
@@ -119,6 +117,8 @@ const SuggestedAccounts: React.FC<{
         </>
     );
 };
+
+interface SearchProps {}
 
 const Search: React.FC<SearchProps> = ({}) => {
     // Initialise suggested profiles
