@@ -213,8 +213,8 @@ interface ViewProfileModalProps {
         followingCount: number;
         isFollowing: boolean;
     } | string;
-    onFollow: () => void;
-    onUnfollow: () => void;
+    onFollow?: () => void;
+    onUnfollow?: () => void;
 }
 
 type ProfileTab = 'posts' | 'following' | 'followers';

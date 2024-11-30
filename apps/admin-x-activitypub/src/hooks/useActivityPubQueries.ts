@@ -1,8 +1,10 @@
 import {Activity} from '../components/activities/ActivityItem';
-import {ActivityPubAPI, ActivityThread, type Profile, type SearchResults} from '../api/activitypub';
-import {useInfiniteQuery, useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
+import {ActivityPubAPI, ActivityPubCollectionResponse, ActivityThread, type Profile, type SearchResults} from '../api/activitypub';
+import {type UseInfiniteQueryResult, useInfiniteQuery, useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
 
 let SITE_URL: string;
+
+export type ActivityPubCollectionQueryResult<TData> = UseInfiniteQueryResult<ActivityPubCollectionResponse<TData>>;
 
 async function getSiteUrl() {
     if (!SITE_URL) {
@@ -23,12 +25,15 @@ function createActivityPubAPI(handle: string, siteUrl: string) {
 }
 
 export function useLikedForUser(handle: string) {
-    return useQuery({
+    return useInfiniteQuery({
         queryKey: [`liked:${handle}`],
-        async queryFn() {
+        async queryFn({pageParam}: {pageParam?: string}) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
-            return api.getLiked();
+            return api.getLiked(pageParam);
+        },
+        getNextPageParam(prevPage) {
+            return prevPage.next;
         }
     });
 }
@@ -171,24 +176,41 @@ export function useFollowingCountForUser(handle: string) {
     });
 }
 
-export function useFollowingForUser(handle: string) {
+export function useLikedCountForUser(handle: string) {
     return useQuery({
-        queryKey: [`following:${handle}`],
+        queryKey: [`likedCount:${handle}`],
         async queryFn() {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
-            return api.getFollowing();
+            return api.getLikedCount();
+        }
+    });
+}
+
+export function useFollowingForUser(handle: string) {
+    return useInfiniteQuery({
+        queryKey: [`following:${handle}`],
+        async queryFn({pageParam}: {pageParam?: string}) {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI(handle, siteUrl);
+            return api.getFollowing(pageParam);
+        },
+        getNextPageParam(prevPage) {
+            return prevPage.next;
         }
     });
 }
 
 export function useFollowersForUser(handle: string) {
-    return useQuery({
+    return useInfiniteQuery({
         queryKey: [`followers:${handle}`],
-        async queryFn() {
+        async queryFn({pageParam}: {pageParam?: string}) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
-            return api.getFollowers();
+            return api.getFollowers(pageParam);
+        },
+        getNextPageParam(prevPage) {
+            return prevPage.next;
         }
     });
 }
@@ -413,12 +435,15 @@ export function useProfileForUser(handle: string, fullHandle: string, enabled: b
 }
 
 export function useOutboxForUser(handle: string) {
-    return useQuery({
+    return useInfiniteQuery({
         queryKey: [`outbox:${handle}`],
-        async queryFn() {
+        async queryFn({pageParam}: {pageParam?: string}) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
-            return api.getOutbox();
+            return api.getOutbox(pageParam);
+        },
+        getNextPageParam(prevPage) {
+            return prevPage.next;
         }
     });
 }
