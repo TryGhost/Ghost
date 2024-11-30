@@ -24,7 +24,7 @@ import ActivityItem from './activities/ActivityItem';
 import FeedItem from './feed/FeedItem';
 import MainNavigation from './navigation/MainNavigation';
 import Separator from './global/Separator';
-import ViewProfileModal from './global/ViewProfileModal';
+import ViewProfileModal from './modals/ViewProfileModal';
 import {type Activity} from '../components/activities/ActivityItem';
 
 interface UseInfiniteScrollTabProps<TData> {

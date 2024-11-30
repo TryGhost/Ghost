@@ -13,7 +13,7 @@ import APAvatar from '../global/APAvatar';
 import ActivityItem from '../activities/ActivityItem';
 import FeedItem from '../feed/FeedItem';
 import FollowButton from '../global/FollowButton';
-import Separator from './Separator';
+import Separator from '../global/Separator';
 import getName from '../../utils/get-name';
 import getUsername from '../../utils/get-username';
 

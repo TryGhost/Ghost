@@ -10,7 +10,7 @@ import FollowButton from './global/FollowButton';
 import MainNavigation from './navigation/MainNavigation';
 
 import NiceModal from '@ebay/nice-modal-react';
-import ViewProfileModal from './global/ViewProfileModal';
+import ViewProfileModal from './modals/ViewProfileModal';
 
 import Separator from './global/Separator';
 import useSuggestedProfiles from '../hooks/useSuggestedProfiles';
