@@ -29,8 +29,6 @@ interface SearchResultProps {
     update: (id: string, updated: Partial<SearchResultItem>) => void;
 }
 
-interface SearchProps {}
-
 const SearchResult: React.FC<SearchResultProps> = ({result, update}) => {
     const onFollow = () => {
         update(result.actor.id!, {
@@ -119,6 +117,8 @@ const SuggestedAccounts: React.FC<{
         </>
     );
 };
+
+interface SearchProps {}
 
 const Search: React.FC<SearchProps> = ({}) => {
     // Initialise suggested profiles
