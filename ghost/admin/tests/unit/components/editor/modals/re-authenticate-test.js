@@ -3,7 +3,7 @@ import sinon from 'sinon';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
 import {hbs} from 'ember-cli-htmlbars';
-import {render} from '@ember/test-helpers';
+import {render, click, fillIn} from '@ember/test-helpers';
 import {setupRenderingTest} from 'ember-mocha';
 
 // Create stub services
@@ -50,8 +50,11 @@ describe('Integration | Component | editor/modals/re-authenticate', function () 
             />
         `);
 
-        // Trigger re-authentication (you'll need to simulate user input and form submission)
-        // This will depend on your actual component implementation
+        // Fill in the form fields (adjust selectors as needed)
+        await fillIn('[data-test-input="identification"]', 'test@example.com');
+        await fillIn('[data-test-input="password"]', 'password123');
+
+        // Trigger re-authentication
         await click('[data-test-button="auth-submit"]');
 
         // Verify expectations
