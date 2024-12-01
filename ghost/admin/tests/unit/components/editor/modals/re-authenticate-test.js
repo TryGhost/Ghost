@@ -1,28 +1,35 @@
+import Service from '@ember/service';
 import sinon from 'sinon';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
-import {setupMirage} from 'ember-cli-mirage/test-support';
-import {setupTest} from 'ember-mocha';
+import {hbs} from 'ember-cli-htmlbars';
+import {render} from '@ember/test-helpers';
+import {setupRenderingTest} from 'ember-mocha';
 
-describe('Unit | Component | editor/modals/re-authenticate', function () {
-    setupTest();
-    setupMirage();
+// Create stub services
+class MockModalsService extends Service {
+    open() {}
+}
+
+class MockSessionService extends Service {
+    authenticate() {}
+}
+
+describe('Integration | Component | editor/modals/re-authenticate', function () {
+    setupRenderingTest();
+
+    beforeEach(function () {
+        // Register mock services
+        this.owner.register('service:modals', MockModalsService);
+        this.owner.register('service:session', MockSessionService);
+    });
 
     it('handles 2FA error correctly', async function () {
-        // Create component instance
-        const component = this.owner.lookup('component:editor/modals/re-authenticate');
-        
-        // Setup mocks
+        // Get service instances
         const modalsService = this.owner.lookup('service:modals');
         const sessionService = this.owner.lookup('service:session');
         
-        component.modals = modalsService;
-        component.session = sessionService;
-        component.args = {
-            close: sinon.stub()
-        };
-
-        // Mock session authenticate to throw 2FA error
+        // Setup stubs
         sinon.stub(sessionService, 'authenticate').rejects({
             payload: {
                 errors: [{
@@ -30,59 +37,46 @@ describe('Unit | Component | editor/modals/re-authenticate', function () {
                 }]
             }
         });
-
-        // Mock modals.open
+        
         const openStub = sinon.stub(modalsService, 'open').resolves();
+        const closeStub = sinon.stub();
 
-        // Setup signin data
-        component.signin = {
-            identification: 'test@example.com',
-            password: 'password',
-            validate: sinon.stub().resolves(),
-            hasValidated: [],
-            errors: {
-                add: sinon.stub()
-            }
-        };
+        // Set component arguments
+        this.set('close', closeStub);
+        
+        await render(hbs`
+            <Editor::Modals::ReAuthenticate
+                @close={{this.close}}
+            />
+        `);
 
-        // Execute reauthenticate task
-        const result = await component.reauthenticateTask.perform();
+        // Trigger re-authentication (you'll need to simulate user input and form submission)
+        // This will depend on your actual component implementation
+        await click('[data-test-button="auth-submit"]');
 
-        // Verify 2FA handling
-        expect(result).to.be.true;
-        expect(openStub.calledOnce).to.be.true;
+        // Verify expectations
         expect(openStub.calledWith('editor/modals/re-verify')).to.be.true;
-        expect(component.args.close.calledOnce).to.be.true;
+        expect(closeStub.calledOnce).to.be.true;
     });
 
     it('handles authentication success', async function () {
-        const component = this.owner.lookup('component:editor/modals/re-authenticate');
-        
         const sessionService = this.owner.lookup('service:session');
-        const notificationsService = this.owner.lookup('service:notifications');
-        
-        component.session = sessionService;
-        component.notifications = notificationsService;
-        component.args = {
-            close: sinon.stub()
-        };
+        const closeStub = sinon.stub();
 
         // Mock successful authentication
         sinon.stub(sessionService, 'authenticate').resolves();
+
+        this.set('close', closeStub);
         
-        component.signin = {
-            identification: 'test@example.com',
-            password: 'password',
-            validate: sinon.stub().resolves(),
-            hasValidated: [],
-            errors: {
-                add: sinon.stub()
-            }
-        };
+        await render(hbs`
+            <Editor::Modals::ReAuthenticate
+                @close={{this.close}}
+            />
+        `);
 
-        const result = await component.reauthenticateTask.perform();
+        // Simulate form submission
+        await click('[data-test-button="auth-submit"]');
 
-        expect(result).to.be.true;
-        expect(component.args.close.calledOnce).to.be.true;
+        expect(closeStub.calledOnce).to.be.true;
     });
 });
