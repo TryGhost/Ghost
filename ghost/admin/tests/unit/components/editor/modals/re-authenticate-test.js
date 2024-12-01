@@ -1,9 +1,8 @@
+import sinon from 'sinon';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
-import {setupTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
-import {isTwoFactorTokenRequiredError} from 'ghost-admin/services/ajax';
-import sinon from 'sinon';
+import {setupTest} from 'ember-mocha';
 
 describe('Unit | Component | editor/modals/re-authenticate', function () {
     setupTest();
@@ -86,4 +85,4 @@ describe('Unit | Component | editor/modals/re-authenticate', function () {
         expect(result).to.be.true;
         expect(component.args.close.calledOnce).to.be.true;
     });
-}); 
+});
