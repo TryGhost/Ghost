@@ -1,19 +1,19 @@
 import React, {useEffect, useRef, useState} from 'react';
 
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
-import {Activity, ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
+import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 
 import {Button, Heading, Icon, List, LoadingIndicator, Modal, NoValueLabel, Tab,TabView} from '@tryghost/admin-x-design-system';
 import {UseInfiniteQueryResult} from '@tanstack/react-query';
 
 import {type GetFollowersForProfileResponse, type GetFollowingForProfileResponse} from '../../api/activitypub';
-import {useFollowersForProfile, useFollowingForProfile, useProfileForUser} from '../../hooks/useActivityPubQueries';
+import {useFollowersForProfile, useFollowingForProfile, usePostsForProfile, useProfileForUser} from '../../hooks/useActivityPubQueries';
 
 import APAvatar from '../global/APAvatar';
 import ActivityItem from '../activities/ActivityItem';
 import FeedItem from '../feed/FeedItem';
 import FollowButton from '../global/FollowButton';
-import Separator from './Separator';
+import Separator from '../global/Separator';
 import getName from '../../utils/get-name';
 import getUsername from '../../utils/get-username';
 
@@ -21,7 +21,7 @@ const noop = () => {};
 
 type QueryPageData = GetFollowersForProfileResponse | GetFollowingForProfileResponse;
 
-type QueryFn = (handle: string) => UseInfiniteQueryResult<QueryPageData, unknown>;
+type QueryFn = (handle: string) => UseInfiniteQueryResult<QueryPageData>;
 
 type ActorListProps = {
     handle: string,
@@ -44,10 +44,8 @@ const ActorList: React.FC<ActorListProps> = ({
         isLoading
     } = queryFn(handle);
 
-    const actorData = (data?.pages.flatMap(resolveDataFn) ?? []);
+    const actors = (data?.pages.flatMap(resolveDataFn) ?? []);
 
-    // Intersection observer to fetch more data when the user scrolls
-    // to the bottom of the list
     const observerRef = useRef<IntersectionObserver | null>(null);
     const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
@@ -76,13 +74,13 @@ const ActorList: React.FC<ActorListProps> = ({
     return (
         <div>
             {
-                actorData.length === 0 && !isLoading ? (
+                hasNextPage === false && actors.length === 0 ? (
                     <NoValueLabel icon='user-add'>
                         {noResultsMessage}
                     </NoValueLabel>
                 ) : (
                     <List>
-                        {actorData.map(({actor, isFollowing}, index) => {
+                        {actors.map(({actor, isFollowing}, index) => {
                             return (
                                 <React.Fragment key={actor.id}>
                                     <ActivityItem key={actor.id} url={actor.url}>
@@ -100,7 +98,7 @@ const ActorList: React.FC<ActorListProps> = ({
                                             type='link'
                                         />
                                     </ActivityItem>
-                                    {index < actorData.length - 1 && <Separator />}
+                                    {index < actors.length - 1 && <Separator />}
                                 </React.Fragment>
                             );
                         })}
@@ -119,14 +117,77 @@ const ActorList: React.FC<ActorListProps> = ({
     );
 };
 
-const FollowersTab: React.FC<{handle: string}> = ({handle}) => {
+const PostsTab: React.FC<{handle: string}> = ({handle}) => {
+    const {
+        data,
+        fetchNextPage,
+        hasNextPage,
+        isFetchingNextPage,
+        isLoading
+    } = usePostsForProfile(handle);
+
+    const observerRef = useRef<IntersectionObserver | null>(null);
+    const loadMoreRef = useRef<HTMLDivElement | null>(null);
+
+    useEffect(() => {
+        if (observerRef.current) {
+            observerRef.current.disconnect();
+        }
+
+        observerRef.current = new IntersectionObserver((entries) => {
+            if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+                fetchNextPage();
+            }
+        });
+
+        if (loadMoreRef.current) {
+            observerRef.current.observe(loadMoreRef.current);
+        }
+
+        return () => {
+            if (observerRef.current) {
+                observerRef.current.disconnect();
+            }
+        };
+    }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+    const posts = (data?.pages.flatMap(page => page.posts) ?? [])
+        .filter(post => post.type === 'Create' && !post.object.inReplyTo);
+
     return (
-        <ActorList
-            handle={handle}
-            noResultsMessage={`${handle} has no followers yet`}
-            queryFn={useFollowersForProfile}
-            resolveDataFn={page => ('followers' in page ? page.followers : [])}
-        />
+        <div>
+            {
+                hasNextPage === false && posts.length === 0 ? (
+                    <NoValueLabel icon='pen'>
+                        {handle} has not posted anything yet
+                    </NoValueLabel>
+                ) : (
+                    <>
+                        {posts.map((post, index) => (
+                            <div>
+                                <FeedItem
+                                    actor={post.actor}
+                                    commentCount={post.object.replyCount}
+                                    layout='feed'
+                                    object={post.object}
+                                    type={post.type}
+                                    onCommentClick={() => {}}
+                                />
+                                {index < posts.length - 1 && <Separator />}
+                            </div>
+                        ))}
+                    </>
+                )
+            }
+            <div ref={loadMoreRef} className='h-1'></div>
+            {
+                (isFetchingNextPage || isLoading) && (
+                    <div className='mt-6 flex flex-col items-center justify-center space-y-4 text-center'>
+                        <LoadingIndicator size='md' />
+                    </div>
+                )
+            }
+        </div>
     );
 };
 
@@ -141,6 +202,17 @@ const FollowingTab: React.FC<{handle: string}> = ({handle}) => {
     );
 };
 
+const FollowersTab: React.FC<{handle: string}> = ({handle}) => {
+    return (
+        <ActorList
+            handle={handle}
+            noResultsMessage={`${handle} has no followers yet`}
+            queryFn={useFollowersForProfile}
+            resolveDataFn={page => ('followers' in page ? page.followers : [])}
+        />
+    );
+};
+
 interface ViewProfileModalProps {
     profile: {
         actor: ActorProperties;
@@ -148,10 +220,9 @@ interface ViewProfileModalProps {
         followerCount: number;
         followingCount: number;
         isFollowing: boolean;
-        posts: Activity[];
     } | string;
-    onFollow: () => void;
-    onUnfollow: () => void;
+    onFollow?: () => void;
+    onUnfollow?: () => void;
 }
 
 type ProfileTab = 'posts' | 'following' | 'followers';
@@ -173,30 +244,13 @@ const ViewProfileModal: React.FC<ViewProfileModalProps> = ({
     }
 
     const attachments = (profile?.actor.attachment || []);
-    const posts = (profile?.posts || []).filter(post => post.type !== 'Announce');
 
     const tabs = isLoading === false && typeof profile !== 'string' && profile ? [
         {
             id: 'posts',
             title: 'Posts',
             contents: (
-                <div>
-                    {posts.map((post, index) => (
-                        <div>
-                            <FeedItem
-                                actor={profile.actor}
-                                commentCount={post.object.replyCount}
-                                layout='feed'
-                                object={post.object}
-                                type={post.type}
-                                onCommentClick={() => {}}
-                            />
-                            {index < posts.length - 1 && (
-                                <Separator />
-                            )}
-                        </div>
-                    ))}
-                </div>
+                <PostsTab handle={profile.handle} />
             )
         },
         {

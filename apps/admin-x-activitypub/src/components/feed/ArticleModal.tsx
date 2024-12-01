@@ -24,6 +24,7 @@ interface ArticleModalProps {
     focusReply: boolean;
     focusReplies: boolean;
     width?: 'narrow' | 'wide';
+    backDrop?: boolean;
     updateActivity: (id: string, updated: Partial<Activity>) => void;
     history: {
         activityId: string;
@@ -136,7 +137,7 @@ const ArticleBody: React.FC<{heading: string, image: string|undefined, excerpt: 
     }, [htmlContent]);
 
     return (
-        <div className='w-full pb-10'>
+        <div className='w-full pb-6'>
             <iframe
                 ref={iframeRef}
                 id='gh-ap-article-iframe'
@@ -163,11 +164,12 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
     focusReply,
     focusReplies,
     width = 'narrow',
+    backDrop = false,
     updateActivity = () => {},
     history = []
 }) => {
     const MODAL_SIZE_SM = 640;
-    const MODAL_SIZE_LG = 840;
+    const MODAL_SIZE_LG = 1420;
     const [isFocused] = useState(focusReply ? 1 : 0);
 
     const {threadQuery, addToThread} = useThreadForUser('index', activityId);
@@ -268,18 +270,20 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
         <Modal
             align='right'
             animate={true}
+            backDrop={backDrop}
+            backDropClick={true}
             footer={<></>}
             height={'full'}
             padding={false}
             size='bleed'
-            width={modalSize}
+            width={modalSize === MODAL_SIZE_LG ? 'toSidebar' : modalSize}
         >
             <div className='flex h-full flex-col'>
                 <div className='sticky top-0 z-50 border-b border-grey-200 bg-white py-8'>
-                    <div className={`flex h-8 ${modalSize === MODAL_SIZE_LG ? 'mx-auto w-full max-w-[580px]' : 'px-8'}`}>
+                    <div className={`flex h-8 ${modalSize === MODAL_SIZE_LG ? 'mx-auto w-full max-w-[644px] px-8' : 'px-8'}`}>
                         {(canNavigateBack || (activityThreadParents.length > 0)) ? (
                             <div className='col-[1/2] flex items-center justify-between'>
-                                <Button className='flex w-10 items-center justify-center' icon='chevron-left' size='sm' unstyled onClick={navigateBack}/>
+                                <Button className='transition-color flex h-10 w-10 items-center justify-center rounded-full bg-white hover:bg-grey-100' icon='chevron-left' size='sm' unstyled onClick={navigateBack}/>
                             </div>
                         ) : <div className='flex items-center gap-3'>
                             <div className='relative z-10 pt-[3px]'>
@@ -298,13 +302,13 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                         <div className='col-[2/3] flex grow items-center justify-center px-8 text-center'>
                         </div>
                         <div className='col-[3/4] flex items-center justify-end space-x-6'>
-                            <Button className='flex w-10 items-center justify-center' icon='close' size='sm' unstyled onClick={() => modal.remove()}/>
+                            <Button className='transition-color flex h-10 w-10 items-center justify-center rounded-full bg-white hover:bg-grey-100' icon='close' size='sm' unstyled onClick={() => modal.remove()}/>
                         </div>
                     </div>
                 </div>
-                
+
                 <div className='grow overflow-y-auto'>
-                    <div className='mx-auto max-w-[580px] pb-10 pt-5'>
+                    <div className='mx-auto max-w-[644px] px-8 pb-10 pt-5'>
                         {activityThreadParents.map((item) => {
                             return (
                                 <>
@@ -351,19 +355,21 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                     html={object.content}
                                     image={object?.image}
                                 />
-                                <FeedItemStats
-                                    commentCount={object.replyCount ?? 0}
-                                    layout={'modal'}
-                                    likeCount={1}
-                                    object={object}
-                                    onCommentClick={() => {
-                                        repliesRef.current?.scrollIntoView({
-                                            behavior: 'smooth',
-                                            block: 'center'
-                                        });
-                                    }}
-                                    onLikeClick={onLikeClick}
-                                />
+                                <div className='ml-[-7px]'>
+                                    <FeedItemStats
+                                        commentCount={object.replyCount ?? 0}
+                                        layout={'modal'}
+                                        likeCount={1}
+                                        object={object}
+                                        onCommentClick={() => {
+                                            repliesRef.current?.scrollIntoView({
+                                                behavior: 'smooth',
+                                                block: 'center'
+                                            });
+                                        }}
+                                        onLikeClick={onLikeClick}
+                                    />
+                                </div>
                             </div>
                         )}
 

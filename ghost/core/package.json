@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "5.101.4",
+  "version": "5.101.6",
   "description": "The professional publishing platform",
   "author": "Ghost Foundation",
   "homepage": "https://ghost.org",
@@ -204,13 +204,12 @@
     "keypair": "1.0.4",
     "knex": "2.4.2",
     "knex-migrator": "5.2.1",
-    "lib0": "0.2.94",
     "lodash": "4.17.21",
     "luxon": "3.5.0",
     "moment": "2.24.0",
     "moment-timezone": "0.5.45",
     "multer": "1.4.4",
-    "mysql2": "3.11.4",
+    "mysql2": "3.11.5",
     "nconf": "0.12.1",
     "node-jose": "2.2.0",
     "path-match": "1.2.4",
@@ -221,10 +220,7 @@
     "stoppable": "1.1.0",
     "superagent": "5.1.0",
     "superagent-throttle": "1.0.1",
-    "ws": "8.18.0",
-    "xml": "1.0.1",
-    "y-protocols": "1.0.6",
-    "yjs": "13.6.20"
+    "xml": "1.0.1"
   },
   "optionalDependencies": {
     "@sentry/profiling-node": "7.119.2",
