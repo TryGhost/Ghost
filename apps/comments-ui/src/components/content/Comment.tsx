@@ -298,6 +298,32 @@ const CommentHeader: React.FC<CommentHeaderProps> = ({comment, className = ''}) 
 
         const element = (e.target as HTMLElement).ownerDocument.getElementById(comment.in_reply_to_id);
         if (element) {
+            const contentElement = element.querySelector('[data-testid="comment-content"]');
+            if (contentElement) {
+                // Find all paragraph elements
+                const paragraphs = contentElement.getElementsByTagName('p');
+                
+                Array.from(paragraphs).forEach((p) => {
+                    // Create a mark element for each paragraph
+                    const mark = document.createElement('mark');
+                    mark.className = 'animate-[highlight_2.5s_ease-out] [animation-delay:1s] bg-yellow-300/40 -my-0.5 py-0.5 dark:text-white/85 dark:bg-yellow-500/40';
+                    
+                    // Move the paragraph's content inside the mark
+                    while (p.firstChild) {
+                        mark.appendChild(p.firstChild);
+                    }
+                    p.appendChild(mark);
+
+                    // Remove the mark and restore original structure after animation
+                    mark.addEventListener('animationend', () => {
+                        while (mark.firstChild) {
+                            p.appendChild(mark.firstChild);
+                        }
+                        mark.remove();
+                    }, {once: true});
+                });
+            }
+
             element.scrollIntoView({behavior: 'smooth', block: 'center'});
         }
     };
@@ -316,7 +342,7 @@ const CommentHeader: React.FC<CommentHeaderProps> = ({comment, className = ''}) 
             </div>
             {(isReplyToReply &&
                 <div className="mb-2 line-clamp-1 font-sans text-base leading-snug text-neutral-900/50 sm:text-sm dark:text-white/60">
-                    <span>{t('Replied to')}</span>:&nbsp;<a className="font-semibold text-neutral-900/60 transition-colors hover:text-neutral-900/70 dark:text-white/70 dark:hover:text-white/80" data-testid="comment-in-reply-to" href={`#${comment.in_reply_to_id}`} onClick={scrollRepliedToCommentIntoView}>{comment.in_reply_to_snippet}</a>
+                    <span>{t('Replied to')}</span>:&nbsp;<a className="font-semibold text-neutral-900/60 transition-colors hover:text-neutral-900/75 dark:text-white/70 dark:hover:text-white/85" data-testid="comment-in-reply-to" href={`#${comment.in_reply_to_id}`} onClick={scrollRepliedToCommentIntoView}>{comment.in_reply_to_snippet}</a>
                 </div>
             )}
         </>
@@ -332,7 +358,7 @@ const CommentBody: React.FC<CommentBodyProps> = ({html, className = ''}) => {
     const dangerouslySetInnerHTML = {__html: html};
     return (
         <div className={`mt mb-2 flex flex-row items-center gap-4 pr-4 ${className}`}>
-            <p dangerouslySetInnerHTML={dangerouslySetInnerHTML} className="gh-comment-content text-md text-pretty font-sans leading-normal text-neutral-900 [overflow-wrap:anywhere] sm:text-lg dark:text-white/85" data-testid="comment-content"/>
+            <p dangerouslySetInnerHTML={dangerouslySetInnerHTML} className="gh-comment-content text-md -mx-1 text-pretty rounded-md px-1 font-sans leading-normal text-neutral-900 [overflow-wrap:anywhere] sm:text-lg dark:text-white/85" data-testid="comment-content"/>
         </div>
     );
 };

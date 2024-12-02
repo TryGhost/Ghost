@@ -158,12 +158,16 @@ module.exports = {
             ]
         },
         animation: {
-            heartbeat: 'heartbeat 0.35s ease-in-out forwards'
+            heartbeat: 'heartbeat 0.35s ease-in-out forwards',
+            highlight: 'highlight 1s steps(1) forwards'
         },
         keyframes: {
             heartbeat: {
                 '0%, 100%': {transform: 'scale(1)'},
                 '50%': {transform: 'scale(1.3)'}
+            },
+            highlight: {
+                '100%': {backgroundColor: 'transparent'}
             }
         }
     },
