@@ -103,6 +103,7 @@ jobs:
             admin-x-settings:
               - *shared
               - 'apps/admin-x-settings/**'
+              - 'apps/admin-x-design-system/**'
             announcement-bar:
               - *shared
               - 'apps/announcement-bar/**'
