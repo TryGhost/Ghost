@@ -197,19 +197,6 @@ describe('getCommentInReplyToSnippet', function () {
 });
 
 describe('getLastComments', function () {
-    it('returns the last comment', function () {
-        const comments = [{id: '1'}, {id: '2'}, {id: '3'}];
-        expect(helpers.getLastComment(comments as any)).to.deep.equal({id: '3'});
-    });
-
-    it('returns null for empty comments', function () {
-        expect(helpers.getLastComment([])).to.equal(null);
-    });
-
-    it('returns null for list with 0 comments', function () {
-        expect(helpers.getLastComment([])).to.equal(null);
-    });
-
     it('returns the last reply', function () {
         const comment = {id: '1', replies: [{id: '2'}, {id: '3'}]};
         expect(helpers.getLastReply(comment as any)).to.deep.equal({id: '3'});
@@ -225,5 +212,12 @@ describe('getLastComments', function () {
         const commentList = [{id: '1'}, {id: '2'}, {id: '3'}];
         const comment = {id: '3'};
         expect(helpers.isLastComment(pagination as any, commentList as any, comment as any)).to.equal(true);
+    });
+
+    it('can check if a comment is not the last in the list', function () {
+        const pagination = {page: 1, limit: 10, total: 3};
+        const commentList = [{id: '1'}, {id: '2'}, {id: '3'}];
+        const comment = {id: '2'};
+        expect(helpers.isLastComment(pagination as any, commentList as any, comment as any)).to.equal(false);
     });
 });

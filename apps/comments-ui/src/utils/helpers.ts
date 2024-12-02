@@ -219,16 +219,7 @@ export function getCommentInReplyToSnippet(comment: { html?: string }): string {
     return text.substring(0, 100);
 }
 
-// Get the last comment from the list of comments
-export function getLastComment(comments: Comment[]): Comment | null {
-    if (comments.length === 0) {
-        return null;
-    }
-
-    return comments[comments.length - 1];
-}
-
-// get last reply from last comment
+// get last reply from a comment object
 export function getLastReply(comment: Comment): Comment | null {
     if (!comment.replies || comment.replies.length === 0) {
         return null;

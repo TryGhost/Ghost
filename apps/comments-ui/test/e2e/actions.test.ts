@@ -559,7 +559,7 @@ test.describe('Actions', async () => {
         });
 
         // this tests https://linear.app/ghost/issue/PLG-273/fix-cut-off-dropdown-if-last-comment-is-a-reply
-        test('Last reply different css classes to change position', async ({page}) => {
+        test('Last reply different css classes to move the dropdown up to avoid cutting off on iframe', async ({page}) => {
             mockedApi.addComment({
                 html: '<p>This is comment 1</p>',
                 member: {
