@@ -10,6 +10,9 @@ export * from './components/ui/avatar';
 export * from './components/ui/card';
 export * from './components/ui/separator';
 export * from './components/ui/badge';
+export * from './components/ui/chart';
+
+export * from 'recharts';
 
 export {default as useGlobalDirtyState} from './hooks/useGlobalDirtyState';
 export {usePagination} from './hooks/usePagination';
