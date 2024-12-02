@@ -32,6 +32,7 @@ const dbFns = {
      * @property {string} [post_id=post_id]
      * @property {string} member_id
      * @property {string} [parent_id]
+     * @property {string} [in_reply_to_id]
      * @property {string} [html='This is a comment']
      * @property {string} [status='published']
      * @property {Date} [created_at]
@@ -39,6 +40,7 @@ const dbFns = {
     /**
      * @typedef {Object} AddCommentReplyData
      * @property {string} member_id
+     * @property {string} [in_reply_to_id]
      * @property {string} [html='This is a reply']
      * @property {Date} [created_at]
      * @property {string} [status]
@@ -54,6 +56,7 @@ const dbFns = {
     addComment: async (data) => {
         return await models.Comment.add({
             post_id: data.post_id || postId,
+            in_reply_to_id: data.in_reply_to_id,
             member_id: data.member_id,
             parent_id: data.parent_id,
             html: data.html || '<p>This is a comment</p>',
@@ -179,7 +182,7 @@ async function getMemberComments(url, commentsMatcher = [membersCommentMatcher])
             });
         });
 
-        describe('browse', function () {
+        describe('browse by post', function () {
             it('returns comments', async function () {
                 await dbFns.addComment({
                     member_id: fixtureManager.get('members', 0).id,
@@ -584,6 +587,37 @@ async function getMemberComments(url, commentsMatcher = [membersCommentMatcher])
                     const res = await adminApi.get('/comments/post/' + postId + '/');
                     const comment = res.body.comments[0];
                     assert.equal(comment.count.replies, 3);
+                });
+            }
+
+            if (enableCommentImprovements) {
+                it('includes in_reply_to_snippet for hidden replies', async function () {
+                    const post = fixtureManager.get('posts', 1);
+                    const {parent, replies: [inReplyTo]} = await dbFns.addCommentWithReplies({
+                        member_id: fixtureManager.get('members', 0).id,
+                        post_id: post.id,
+                        html: 'Comment 1',
+                        status: 'published',
+                        replies: [{
+                            member_id: fixtureManager.get('members', 0).id,
+                            html: 'Reply 1',
+                            status: 'hidden'
+                        }]
+                    });
+
+                    await dbFns.addComment({
+                        member_id: fixtureManager.get('members', 0).id,
+                        post_id: post.id,
+                        parent_id: parent.id,
+                        in_reply_to_id: inReplyTo.id,
+                        html: 'Reply 2',
+                        status: 'published'
+                    });
+
+                    const res = await adminApi.get('/comments/post/' + post.id + '/');
+                    const comment = res.body.comments[0];
+                    const reply = comment.replies[1];
+                    assert.equal(reply.in_reply_to_snippet, 'Reply 1');
                 });
             }
         });

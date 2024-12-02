@@ -7,7 +7,7 @@ import ReplyForm from './forms/ReplyForm';
 import {Avatar, BlankAvatar} from './Avatar';
 import {Comment, OpenCommentForm, useAppContext, useLabs} from '../../AppContext';
 import {Transition} from '@headlessui/react';
-import {formatExplicitTime, getCommentInReplyToSnippet, getMemberNameFromComment} from '../../utils/helpers';
+import {findCommentById, formatExplicitTime, getCommentInReplyToSnippet, getMemberNameFromComment} from '../../utils/helpers';
 import {useCallback} from 'react';
 import {useRelativeTime} from '../../utils/hooks';
 
@@ -283,12 +283,21 @@ type CommentHeaderProps = {
 }
 
 const CommentHeader: React.FC<CommentHeaderProps> = ({comment, className = ''}) => {
-    const {t} = useAppContext();
+    const {comments, t} = useAppContext();
     const labs = useLabs();
     const createdAtRelative = useRelativeTime(comment.created_at);
     const {member} = useAppContext();
     const memberExpertise = member && comment.member && comment.member.uuid === member.uuid ? member.expertise : comment?.member?.expertise;
     const isReplyToReply = labs.commentImprovements && comment.in_reply_to_id && comment.in_reply_to_snippet;
+
+    let inReplyToSnippet = comment.in_reply_to_snippet;
+
+    if (isReplyToReply) {
+        const inReplyToComment = findCommentById(comments, comment.in_reply_to_id);
+        if (inReplyToComment && inReplyToComment.status !== 'published') {
+            inReplyToSnippet = `[${t('hidden/removed')}]`;
+        }
+    }
 
     const scrollRepliedToCommentIntoView = (e: React.MouseEvent<HTMLAnchorElement>) => {
         e.preventDefault();
@@ -317,7 +326,7 @@ const CommentHeader: React.FC<CommentHeaderProps> = ({comment, className = ''}) 
             </div>
             {(isReplyToReply &&
                 <div className="mb-2 line-clamp-1 font-sans text-base leading-snug text-neutral-900/50 sm:text-sm dark:text-white/60">
-                    <span>{t('Replied to')}</span>:&nbsp;<a className="font-semibold text-neutral-900/60 transition-colors hover:text-neutral-900/70 dark:text-white/70 dark:hover:text-white/80" data-testid="comment-in-reply-to" href={`#${comment.in_reply_to_id}`} onClick={scrollRepliedToCommentIntoView}>{comment.in_reply_to_snippet}</a>
+                    <span>{t('Replied to')}</span>:&nbsp;<a className="font-semibold text-neutral-900/60 transition-colors hover:text-neutral-900/70 dark:text-white/70 dark:hover:text-white/80" data-testid="comment-in-reply-to" href={`#${comment.in_reply_to_id}`} onClick={scrollRepliedToCommentIntoView}>{inReplyToSnippet}</a>
                 </div>
             )}
         </>
