@@ -322,10 +322,7 @@ table.body .footer a {
   }
 
   table.body .feedback-button-text {
-    display: block !important;
-    padding-top: 4px !important;
-    padding-left: 0px !important;
-    font-size: 13px !important;
+    display: none!important;
   }
 
   table.body .latest-posts-header {
@@ -782,7 +779,7 @@ exports[`Email Preview API Read can read post email preview with email card and 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "24870",
+  "content-length": "24766",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1018,10 +1015,7 @@ table.body .footer a {
   }
 
   table.body .feedback-button-text {
-    display: block !important;
-    padding-top: 4px !important;
-    padding-left: 0px !important;
-    font-size: 13px !important;
+    display: none!important;
   }
 
   table.body .latest-posts-header {
@@ -1500,7 +1494,7 @@ exports[`Email Preview API Read can read post email preview with fields 4: [head
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "29650",
+  "content-length": "29546",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1767,10 +1761,7 @@ table.body .footer a {
   }
 
   table.body .feedback-button-text {
-    display: block !important;
-    padding-top: 4px !important;
-    padding-left: 0px !important;
-    font-size: 13px !important;
+    display: none!important;
   }
 
   table.body .latest-posts-header {
@@ -2234,7 +2225,7 @@ exports[`Email Preview API Read has custom content transformations for email com
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "24624",
+  "content-length": "24520",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -2830,10 +2821,7 @@ table.body .footer a {
   }
 
   table.body .feedback-button-text {
-    display: block !important;
-    padding-top: 4px !important;
-    padding-left: 0px !important;
-    font-size: 13px !important;
+    display: none!important;
   }
 
   table.body .latest-posts-header {
@@ -3311,7 +3299,7 @@ exports[`Email Preview API Read uses the newsletter provided through ?newsletter
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "25407",
+  "content-length": "25303",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -3933,10 +3921,7 @@ table.body .footer a {
   }
 
   table.body .feedback-button-text {
-    display: block !important;
-    padding-top: 4px !important;
-    padding-left: 0px !important;
-    font-size: 13px !important;
+    display: none!important;
   }
 
   table.body .latest-posts-header {
@@ -4414,7 +4399,7 @@ exports[`Email Preview API Read uses the posts newsletter by default 4: [headers
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "25407",
+  "content-length": "25303",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,

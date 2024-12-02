@@ -215,10 +215,7 @@ table.body .footer a {
   }
 
   table.body .feedback-button-text {
-    display: block !important;
-    padding-top: 4px !important;
-    padding-left: 0px !important;
-    font-size: 13px !important;
+    display: none!important;
   }
 
   table.body .latest-posts-header {
@@ -876,10 +873,7 @@ table.body .footer a {
   }
 
   table.body .feedback-button-text {
-    display: block !important;
-    padding-top: 4px !important;
-    padding-left: 0px !important;
-    font-size: 13px !important;
+    display: none!important;
   }
 
   table.body .latest-posts-header {
@@ -1537,10 +1531,7 @@ table.body .footer a {
   }
 
   table.body .feedback-button-text {
-    display: block !important;
-    padding-top: 4px !important;
-    padding-left: 0px !important;
-    font-size: 13px !important;
+    display: none!important;
   }
 
   table.body .latest-posts-header {
@@ -2733,10 +2724,7 @@ table.body .footer a {
   }
 
   table.body .feedback-button-text {
-    display: block !important;
-    padding-top: 4px !important;
-    padding-left: 0px !important;
-    font-size: 13px !important;
+    display: none!important;
   }
 
   table.body .latest-posts-header {
