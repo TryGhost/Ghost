@@ -1,5 +1,5 @@
-import Form from './Form';
 import {Comment, OpenCommentForm, useAppContext} from '../../../AppContext';
+import {Form, FormWrapper} from './Form';
 import {getEditorConfig} from '../../../utils/editor';
 import {isMobile, scrollToElement} from '../../../utils/helpers';
 import {useCallback} from 'react';
@@ -10,6 +10,7 @@ type Props = {
     openForm: OpenCommentForm;
     parent: Comment;
 }
+
 const ReplyForm: React.FC<Props> = ({openForm, parent}) => {
     const {postId, dispatchAction, t} = useAppContext();
     const [, setForm] = useRefCallback<HTMLDivElement>(scrollToElement);
@@ -45,18 +46,20 @@ const ReplyForm: React.FC<Props> = ({openForm, parent}) => {
     </>);
 
     return (
-        <div ref={setForm}>
+        <div ref={setForm} data-testid="reply-form">
             <div className='mt-[-16px] pr-2'>
-                <Form
-                    close={close}
-                    editor={editor}
-                    isOpen={true}
-                    openForm={openForm}
-                    reduced={isMobile()}
-                    submit={submit}
-                    submitSize={'medium'}
-                    submitText={SubmitText}
-                />
+                <FormWrapper comment={parent} editor={editor} isOpen={true} openForm={openForm} reduced={isMobile()}>
+                    <Form
+                        close={close}
+                        editor={editor}
+                        isOpen={true}
+                        openForm={openForm}
+                        reduced={isMobile()}
+                        submit={submit}
+                        submitSize={'medium'}
+                        submitText={SubmitText}
+                    />
+                </FormWrapper>
             </div>
         </div>
     );

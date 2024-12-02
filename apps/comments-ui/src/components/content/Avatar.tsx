@@ -1,5 +1,5 @@
 import {ReactComponent as AvatarIcon} from '../../images/icons/avatar.svg';
-import {Comment, useAppContext} from '../../AppContext';
+import {Comment, Member, useAppContext} from '../../AppContext';
 import {getInitials, getMemberInitialsFromComment} from '../../utils/helpers';
 
 function getDimensionClasses() {
@@ -19,13 +19,15 @@ export const BlankAvatar = () => {
 
 type AvatarProps = {
     comment?: Comment;
+    member?: Member;
 };
-export const Avatar: React.FC<AvatarProps> = ({comment}) => {
-    // #TODO greyscale the avatar image when it's hidden
-    const {member, avatarSaturation, t} = useAppContext();
+
+export const Avatar: React.FC<AvatarProps> = ({comment, member: propMember}) => {
+    const {member: contextMember, avatarSaturation, t} = useAppContext();
     const dimensionClasses = getDimensionClasses();
 
-    const memberName = member?.name ?? comment?.member?.name;
+    const activeMember = propMember || comment?.member || contextMember;
+    const memberName = activeMember?.name;
 
     const getHashOfString = (str: string) => {
         let hash = 0;
@@ -41,9 +43,7 @@ export const Avatar: React.FC<AvatarProps> = ({comment}) => {
     };
 
     const generateHSL = (): [number, number, number] => {
-        const commentMember = (comment ? comment.member : member);
-
-        if (!commentMember || !commentMember.name) {
+        if (!activeMember || !activeMember.name) {
             return [0,0,10];
         }
 
@@ -54,7 +54,7 @@ export const Avatar: React.FC<AvatarProps> = ({comment}) => {
         const lRangeBottom = lRangeTop - 20;
         const lRange = [lRangeBottom, lRangeTop];
 
-        const hash = getHashOfString(commentMember.name);
+        const hash = getHashOfString(activeMember.name);
         const h = normalizeHash(hash, hRange[0], hRange[1]);
         const l = normalizeHash(hash, lRange[0], lRange[1]);
 
@@ -66,8 +66,7 @@ export const Avatar: React.FC<AvatarProps> = ({comment}) => {
     };
 
     const memberInitials = (comment && getMemberInitialsFromComment(comment, t)) ||
-        (member && getInitials(member.name || '')) || '';
-    const commentMember = (comment ? comment.member : member);
+        (activeMember && getInitials(activeMember.name || '')) || '';
 
     const bgColor = HSLtoString(generateHSL());
     const avatarStyle = {
@@ -83,7 +82,7 @@ export const Avatar: React.FC<AvatarProps> = ({comment}) => {
                 (<div className={`flex items-center justify-center rounded-full bg-neutral-900 dark:bg-white/70 ${dimensionClasses}`} data-testid="avatar-background">
                     <AvatarIcon className="stroke-white dark:stroke-black/60" />
                 </div>)}
-            {commentMember && <img alt="Avatar" className={`absolute left-0 top-0 rounded-full ${dimensionClasses}`} data-testid="avatar-image" src={commentMember.avatar_image} />}
+            {activeMember?.avatar_image && <img alt="Avatar" className={`absolute left-0 top-0 rounded-full ${dimensionClasses}`} data-testid="avatar-image" src={activeMember.avatar_image} />}
         </>
     );
 

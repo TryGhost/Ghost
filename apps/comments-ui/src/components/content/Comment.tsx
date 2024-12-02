@@ -30,48 +30,9 @@ const AnimatedComment: React.FC<AnimatedCommentProps> = ({comment, parent}) => {
             show={true}
             appear
         >
-            <EditableComment comment={comment} parent={parent} />
+            <CommentComponent comment={comment} parent={parent} />
         </Transition>
     );
-};
-
-type EditableCommentProps = AnimatedCommentProps;
-const EditableComment: React.FC<EditableCommentProps> = ({comment, parent}) => {
-    const {openCommentForms} = useAppContext();
-
-    const form = openCommentForms.find(openForm => openForm.id === comment.id && openForm.type === 'edit');
-    const isInEditMode = !!form;
-
-    if (isInEditMode) {
-        return (<EditForm comment={comment} openForm={form} parent={parent} />);
-    } else {
-        return (<CommentComponent comment={comment} parent={parent} />);
-    }
-};
-
-type CommentProps = AnimatedCommentProps;
-const useCommentVisibility = (comment: Comment, admin: boolean, labs: {commentImprovements?: boolean}) => {
-    const hasReplies = comment.replies && comment.replies.length > 0;
-    const isDeleted = comment.status === 'deleted';
-    const isHidden = comment.status === 'hidden';
-
-    if (labs?.commentImprovements) {
-        return {
-            // Show deleted message only when comment has replies (regardless of admin status)
-            showDeletedMessage: isDeleted && hasReplies,
-            // Show hidden message for non-admins when comment has replies
-            showHiddenMessage: hasReplies && isHidden && !admin,
-            // Show comment content if not deleted AND (is published OR admin viewing hidden)
-            showCommentContent: !isDeleted && (admin || comment.status === 'published')
-        };
-    }
-
-    // Original behavior when labs is false
-    return {
-        showDeletedMessage: false,
-        showHiddenMessage: false,
-        showCommentContent: comment.status === 'published'
-    };
 };
 
 export const CommentComponent: React.FC<CommentProps> = ({comment, parent}) => {
@@ -101,6 +62,31 @@ export const CommentComponent: React.FC<CommentProps> = ({comment, parent}) => {
     return null;
 };
 
+type CommentProps = AnimatedCommentProps;
+const useCommentVisibility = (comment: Comment, admin: boolean, labs: {commentImprovements?: boolean}) => {
+    const hasReplies = comment.replies && comment.replies.length > 0;
+    const isDeleted = comment.status === 'deleted';
+    const isHidden = comment.status === 'hidden';
+
+    if (labs?.commentImprovements) {
+        return {
+            // Show deleted message only when comment has replies (regardless of admin status)
+            showDeletedMessage: isDeleted && hasReplies,
+            // Show hidden message for non-admins when comment has replies
+            showHiddenMessage: hasReplies && isHidden && !admin,
+            // Show comment content if not deleted AND (is published OR admin viewing hidden)
+            showCommentContent: !isDeleted && (admin || comment.status === 'published')
+        };
+    }
+
+    // Original behavior when labs is false
+    return {
+        showDeletedMessage: false,
+        showHiddenMessage: false,
+        showCommentContent: comment.status === 'published'
+    };
+};
+
 type PublishedCommentProps = CommentProps & {
     openEditMode: () => void;
 }
@@ -111,6 +97,10 @@ const PublishedComment: React.FC<PublishedCommentProps> = ({comment, parent, ope
     // Determine if the comment should be displayed with reduced opacity
     const isHidden = labs.commentImprovements && admin && comment.status === 'hidden';
     const hiddenClass = isHidden ? 'opacity-30' : '';
+
+    // Check if this comment is being edited
+    const editForm = openCommentForms.find(openForm => openForm.id === comment.id && openForm.type === 'edit');
+    const isInEditMode = !!editForm;
 
     // currently a reply-to-reply form is displayed inside the top-level PublishedComment component
     // so we need to check for a match of either the comment id or the parent id
@@ -148,15 +138,26 @@ const PublishedComment: React.FC<PublishedCommentProps> = ({comment, parent, ope
 
     return (
         <CommentLayout avatar={avatar} className={hiddenClass} hasReplies={hasReplies}>
-            <CommentHeader className={hiddenClass} comment={comment} />
-            <CommentBody className={hiddenClass} html={comment.html} />
-            <CommentMenu
-                comment={comment}
-                highlightReplyButton={highlightReplyButton}
-                openEditMode={openEditMode}
-                openReplyForm={openReplyForm}
-                parent={parent}
-            />
+            <div>
+                {isInEditMode ? (
+                    <>
+                        <CommentHeader className={hiddenClass} comment={comment} />
+                        <EditForm comment={comment} openForm={editForm} parent={parent} />
+                    </>
+                ) : (
+                    <>
+                        <CommentHeader className={hiddenClass} comment={comment} />
+                        <CommentBody className={hiddenClass} html={comment.html} />
+                        <CommentMenu
+                            comment={comment}
+                            highlightReplyButton={highlightReplyButton}
+                            openEditMode={openEditMode}
+                            openReplyForm={openReplyForm}
+                            parent={parent}
+                        />
+                    </>
+                )}
+            </div>
             <RepliesContainer comment={comment} />
             {displayReplyForm && <ReplyFormBox comment={comment} openForm={openForm} />}
         </CommentLayout>
