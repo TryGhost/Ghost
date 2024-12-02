@@ -197,5 +197,36 @@ test.describe('Admin moderation', async () => {
 
             await expect(replyToHide).not.toContainText('Hidden for members');
         });
+
+        test('updates in-reply-to snippets when hiding', async ({page}) => {
+            mockedApi.addComment({
+                id: '1',
+                html: '<p>This is comment 1</p>',
+                replies: [
+                    buildReply({id: '2', html: '<p>This is reply 1</p>'}),
+                    buildReply({id: '3', html: '<p>This is reply 2</p>', in_reply_to_id: '2', in_reply_to_snippet: 'This is reply 1'}),
+                    buildReply({id: '4', html: '<p>This is reply 3</p>'})
+                ]
+            });
+
+            const {frame} = await initializeTest(page, {labs: true});
+            const comments = await frame.getByTestId('comment-component');
+            const replyToHide = comments.nth(1);
+            const inReplyToComment = comments.nth(2);
+
+            // Hide the 1st reply
+            await replyToHide.getByTestId('more-button').click();
+            await replyToHide.getByTestId('hide-button').click();
+
+            await expect(inReplyToComment).toContainText('[hidden/removed]');
+            await expect(inReplyToComment).not.toContainText('This is reply 1');
+
+            // Show it again
+            await replyToHide.getByTestId('more-button').click();
+            await replyToHide.getByTestId('show-button').click();
+
+            await expect(inReplyToComment).not.toContainText('[hidden/removed]');
+            await expect(inReplyToComment).toContainText('This is reply 1');
+        });
     });
 });

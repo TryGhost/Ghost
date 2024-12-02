@@ -1500,7 +1500,7 @@ describe('Comments API', function () {
                 });
 
                 ['deleted', 'hidden'].forEach((status) => {
-                    it(`does not include in_reply_to_snippet for ${status} comments`, async function () {
+                    it(`has redacted in_reply_to_snippet when referenced comment is ${status}`, async function () {
                         const {replies: [reply]} = await dbFns.addCommentWithReplies({
                             member_id: fixtureManager.get('members', 1).id,
                             replies: [{
@@ -1518,7 +1518,7 @@ describe('Comments API', function () {
 
                         const {body: {comments: [comment]}} = await testGetComments(`/api/comments/${newComment.id}`, [labsCommentMatcher]);
 
-                        should.not.exist(comment.in_reply_to_snippet);
+                        comment.in_reply_to_snippet.should.eql('[hidden/removed]');
                     });
                 });
             });

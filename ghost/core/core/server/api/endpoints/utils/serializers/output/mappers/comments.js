@@ -46,12 +46,19 @@ const countFields = [
 const commentMapper = (model, frame) => {
     const jsonModel = model.toJSON ? model.toJSON(frame.options) : model;
 
+    const isPublicRequest = utils.isMembersAPI(frame);
+
     if (labs.isSet('commentImprovements')) {
-        if (jsonModel.inReplyTo && jsonModel.inReplyTo.status === 'published') {
+        if (jsonModel.inReplyTo && (jsonModel.inReplyTo.status === 'published' || (!isPublicRequest && jsonModel.inReplyTo.status === 'hidden'))) {
             jsonModel.in_reply_to_snippet = htmlToPlaintext.commentSnippet(jsonModel.inReplyTo.html);
+        } else if (jsonModel.inReplyTo && jsonModel.inReplyTo.status !== 'published') {
+            jsonModel.in_reply_to_snippet = '[hidden/removed]';
         } else {
-            jsonModel.in_reply_to_id = null;
             jsonModel.in_reply_to_snippet = null;
+        }
+
+        if (!jsonModel.inReplyTo) {
+            jsonModel.in_reply_to_id = null;
         }
     } else {
         delete jsonModel.in_reply_to_id;
@@ -60,7 +67,7 @@ const commentMapper = (model, frame) => {
     const response = _.pick(jsonModel, commentFields);
 
     if (jsonModel.member) {
-        response.member = _.pick(jsonModel.member, utils.isMembersAPI(frame) ? memberFields : memberFieldsAdmin);
+        response.member = _.pick(jsonModel.member, isPublicRequest ? memberFields : memberFieldsAdmin);
     } else {
         response.member = null;
     }
@@ -87,7 +94,7 @@ const commentMapper = (model, frame) => {
         response.count = _.pick(jsonModel.count, countFields);
     }
 
-    if (utils.isMembersAPI(frame)) {
+    if (isPublicRequest) {
         if (jsonModel.status !== 'published') {
             response.html = null;
         }
