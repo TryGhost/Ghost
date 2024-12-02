@@ -223,6 +223,24 @@ const Comment = ghostBookshelf.Model.extend({
         return hasMemberPermission;
     },
 
+    applyRepliesWithRelatedOption(withRelated, isAdmin) {
+        // we want to apply filters when fetching replies so we don't expose data that should be hidden
+        // - public requests never return hidden or deleted replies
+        // - admin requests never return deleted replies but do return hidden replies
+        const repliesOptionIndex = withRelated.indexOf('replies');
+        if (labs.isSet('commentImprovements') && repliesOptionIndex > -1) {
+            withRelated[repliesOptionIndex] = {
+                replies: (qb) => {
+                    if (isAdmin) {
+                        qb.where('status', '!=', 'deleted');
+                    } else {
+                        qb.where('status', 'published');
+                    }
+                }
+            };
+        }
+    },
+
     /**
      * We have to ensure consistency. If you listen on model events (e.g. `member.added`), you can expect that you always
      * receive all fields including relations. Otherwise you can't rely on a consistent flow. And we want to avoid
@@ -249,6 +267,8 @@ const Comment = ghostBookshelf.Model.extend({
                     ];
                 }
             }
+
+            this.applyRepliesWithRelatedOption(options.withRelated, options.isAdmin);
         }
 
         return options;
@@ -263,36 +283,13 @@ const Comment = ghostBookshelf.Model.extend({
             'replies.inReplyTo',
             'replies.count.likes',
             'replies.count.liked'
-        ].filter(relation => withRelated.includes(relation));
+        ].filter(relation => (withRelated.includes(relation) || withRelated.some(r => typeof r === 'object' && r[relation])));
 
-        /** @type any */
-        let modelLoadArgument = relationsToLoadIndividually;
-
-        if (labs.isSet('commentImprovements')) {
-            // we want to apply filters when fetching replies
-            // - public requests never return hidden or deleted comments
-            // - admin requests never return deleted comments but do return hidden comments
-            const repliesQb = (qb) => {
-                if (options.isAdmin) {
-                    qb.where('status', '!=', 'deleted');
-                } else {
-                    qb.where('status', 'published');
-                }
-            };
-
-            // when we want to apply a custom query to a relation bookshelf wants
-            // an object of {relation: qbCallback} as an argument to .load()
-            // (normally its just [...relationNames])
-            modelLoadArgument = relationsToLoadIndividually.reduce((relationsObj, relation) => {
-                return Object.assign(relationsObj, {
-                    [relation]: relation === 'replies' ? repliesQb : () => {}
-                });
-            }, {});
-        }
+        this.applyRepliesWithRelatedOption(relationsToLoadIndividually, options.isAdmin);
 
         const result = await ghostBookshelf.Model.findPage.call(this, options);
         for (const model of result.data) {
-            await model.load(modelLoadArgument, _.omit(options, 'withRelated'));
+            await model.load(relationsToLoadIndividually, _.omit(options, 'withRelated'));
         }
         return result;
     },
