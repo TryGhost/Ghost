@@ -1,4 +1,4 @@
-import {Comment, Member, TranslationFunction} from '../AppContext';
+import {Comment, Member, Pagination, TranslationFunction} from '../AppContext';
 
 export function flattenComments(comments: Comment[]): Comment[] {
     return comments.flatMap(comment => [comment, ...(comment.replies || [])]);
@@ -194,7 +194,7 @@ export const scrollToElement = (element: HTMLElement) => {
     }
 };
 
-export function getCommentInReplyToSnippet(comment: {html?: string}): string {
+export function getCommentInReplyToSnippet(comment: { html?: string }): string {
     const {html = ''} = comment;
 
     // It would be nicer to use DOMParser here so we can use `innerText` instead
@@ -217,4 +217,39 @@ export function getCommentInReplyToSnippet(comment: {html?: string}): string {
     text = text.trim();
 
     return text.substring(0, 100);
+}
+
+// Get the last comment from the list of comments
+export function getLastComment(comments: Comment[]): Comment | null {
+    if (comments.length === 0) {
+        return null;
+    }
+
+    return comments[comments.length - 1];
+}
+
+// get last reply from last comment
+export function getLastReply(comment: Comment): Comment | null {
+    if (!comment.replies || comment.replies.length === 0) {
+        return null;
+    }
+
+    return comment.replies[comment.replies.length - 1];
+}
+
+export function isLastComment(
+    pagination: Pagination | null | undefined,
+    comments: Comment[],
+    comment: Comment
+): boolean {
+    if (!comments.length) {
+        return false; // If there are no comments, it cannot be the last comment
+    }
+
+    const isPaginationComplete =
+        !pagination || pagination.total <= pagination.page * pagination.limit;
+    const isLastCommentInArray =
+        comments[comments.length - 1]?.id === comment.id;
+
+    return isPaginationComplete && isLastCommentInArray;
 }

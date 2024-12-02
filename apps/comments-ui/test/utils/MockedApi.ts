@@ -308,6 +308,23 @@ export class MockedApi {
             });
         },
 
+        async editComment(route) {
+            await this.#delayResponse();
+            const payload = JSON.parse(route.request().postData());
+
+            const commentId = route.request().url().split('/').reverse()[1];
+            const comment = findCommentById(this.comments, commentId);
+            if (route.request().method() === 'PUT' && comment) {
+                comment.html = payload.comments[0].html;
+                return await route.fulfill({
+                    status: 200,
+                    body: JSON.stringify({
+                        comments: [comment]
+                    })
+                });
+            }
+        },
+
         async browseComments(route) {
             await this.#delayResponse();
             const url = new URL(route.request().url());
@@ -498,6 +515,7 @@ export class MockedApi {
         await page.route(`${path}/members/api/comments/*`, this.requestHandlers.addComment.bind(this));
         await page.route(`${path}/members/api/comments/post/*/*`, this.requestHandlers.browseComments.bind(this));
         await page.route(`${path}/members/api/comments/*/`, this.requestHandlers.getComment.bind(this));
+        await page.route(`${path}/members/api/comments/*/`, this.requestHandlers.editComment.bind(this));
         await page.route(`${path}/members/api/comments/*/like/`, this.requestHandlers.likeComment.bind(this));
         await page.route(`${path}/members/api/comments/*/replies/*`, this.requestHandlers.getReplies.bind(this));
         await page.route(`${path}/members/api/comments/counts/*`, this.requestHandlers.getCommentCounts.bind(this));
