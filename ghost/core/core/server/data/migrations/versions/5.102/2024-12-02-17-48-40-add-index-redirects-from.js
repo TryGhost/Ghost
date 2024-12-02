@@ -10,7 +10,8 @@ module.exports = createNonTransactionalMigration(
         logging.info('Adding index to redirects.from');
 
         const columnInfo = await knex('redirects').columnInfo('from');
-        if (columnInfo.maxLength !== 191) {
+        // knex is wrong; it's returning a string not a number so we re-cast it to satisfy the type checker
+        if (columnInfo.maxLength.toString() !== '191') {
             logging.error(`Column length is not 191. Ensure the previous migration has been applied successfully. Column info: ${JSON.stringify(columnInfo)}`);
             throw new errors.MigrationError({
                 message: 'Column length is not 191. Ensure the previous migration has been applied successfully.',
