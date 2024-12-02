@@ -1,6 +1,6 @@
 // The main Web stats component that encapsulates the breakdown
 
-import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from '@tryghost/shade';
+import {Badge, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, Separator} from '@tryghost/shade';
 
 const OverviewStats = () => {
     return (
@@ -8,9 +8,10 @@ const OverviewStats = () => {
             <Card className='col-span-2'>
                 <CardHeader>
                     <CardTitle>Newsletter performance</CardTitle>
-                    <CardDescription>Sent — September 19 2024</CardDescription>
+                    <CardDescription><Badge>Sent</Badge> — September 19 2024</CardDescription>
                 </CardHeader>
                 <CardContent>
+                    <Separator />
                     <p>Card Content</p>
                 </CardContent>
                 <CardFooter>

@@ -8,6 +8,8 @@ export * from './components/ui/sidebar';
 export * from './components/ui/table';
 export * from './components/ui/avatar';
 export * from './components/ui/card';
+export * from './components/ui/separator';
+export * from './components/ui/badge';
 
 export {default as useGlobalDirtyState} from './hooks/useGlobalDirtyState';
 export {usePagination} from './hooks/usePagination';
