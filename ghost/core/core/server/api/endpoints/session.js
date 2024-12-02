@@ -31,7 +31,7 @@ const controller = {
         let skipVerification = false;
 
         return models.User.getByEmail(object.username).then((user) => {
-            if (!user.hasLoggedIn()) {
+            if (user && !user.hasLoggedIn()) {
                 skipVerification = true;
             }
 
