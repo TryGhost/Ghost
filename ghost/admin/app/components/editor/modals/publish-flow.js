@@ -12,6 +12,7 @@ export default class PublishModalComponent extends Component {
     };
 
     @service store;
+    @service router;
 
     @tracked emailErrorMessage = this.args.data.publishOptions.post.didEmailFail ? (this.args.data.publishOptions.post.email.error ?? 'Unknown error') : undefined;
     @tracked isConfirming = false;
@@ -52,20 +53,51 @@ export default class PublishModalComponent extends Component {
     @action
     setCompleted() {
         this.emailErrorMessage = undefined;
-        this.isConfirming = false;
         this.isComplete = true;
+
+        if (this.args.data.publishOptions.isScheduled) {
+            try {
+                localStorage.setItem('ghost-last-scheduled-post', JSON.stringify({
+                    id: this.args.data.publishOptions.post.id,
+                    type: this.args.data.publishOptions.post.displayName
+                }));
+            } catch (e) {
+                // ignore localStorage errors
+            }
+            if (this.args.data.publishOptions.post.displayName !== 'page') {
+                this.router.transitionTo('posts');
+            } else {
+                this.router.transitionTo('pages');
+            }
+        } else {
+            try {
+                localStorage.setItem('ghost-last-published-post', JSON.stringify({
+                    id: this.args.data.publishOptions.post.id,
+                    type: this.args.data.publishOptions.post.displayName
+                }));
+            } catch (e) {
+                // ignore localStorage errors
+            }
+            if (this.args.data.publishOptions.post.displayName !== 'page') {
+                if (this.args.data.publishOptions.post.hasEmail) {
+                    this.router.transitionTo('posts.analytics', this.args.data.publishOptions.post.id);
+                } else {
+                    this.router.transitionTo('posts');
+                }
+            } else {
+                this.router.transitionTo('pages');
+            }
+        }
     }
 
     @task
     *saveTask() {
         try {
             yield this.args.data.saveTask.perform();
-
-            this.isConfirming = false;
             this.isComplete = true;
         } catch (e) {
             if (e?.name === 'EmailFailedError') {
-                return this.emailErrorMessage = e.message;
+                this.emailErrorMessage = e.message;
             }
 
             throw e;

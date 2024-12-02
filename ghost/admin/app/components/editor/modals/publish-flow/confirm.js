@@ -93,40 +93,7 @@ export default class PublishFlowOptions extends Component {
 
         try {
             yield this.args.saveTask.perform();
-
-            if (this.args.publishOptions.isScheduled) {
-                try {
-                    localStorage.setItem('ghost-last-scheduled-post', JSON.stringify({
-                        id: this.args.publishOptions.post.id,
-                        type: this.args.publishOptions.post.displayName
-                    }));
-                } catch (e) {
-                    // ignore localStorage errors
-                }
-                if (this.args.publishOptions.post.displayName !== 'page') {
-                    this.router.transitionTo('posts');
-                } else {
-                    this.router.transitionTo('pages');
-                }
-            } else {
-                try {
-                    localStorage.setItem('ghost-last-published-post', JSON.stringify({
-                        id: this.args.publishOptions.post.id,
-                        type: this.args.publishOptions.post.displayName
-                    }));
-                } catch (e) {
-                    // ignore localStorage errors
-                }
-                if (this.args.publishOptions.post.displayName !== 'page') {
-                    if (this.args.publishOptions.post.hasEmail) {
-                        this.router.transitionTo('posts.analytics', this.args.publishOptions.post.id);
-                    } else {
-                        this.router.transitionTo('posts');
-                    }
-                } else {
-                    this.router.transitionTo('pages');
-                }
-            }
+            this.args.setCompleted();
         } catch (e) {
             if (e === undefined && this.args.publishOptions.post.errors.length !== 0) {
                 // validation error
