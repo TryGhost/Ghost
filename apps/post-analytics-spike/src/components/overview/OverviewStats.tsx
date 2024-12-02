@@ -1,7 +1,7 @@
 // The main Web stats component that encapsulates the breakdown
 'use client';
 
-import {Badge, Bar, BarChart, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, ChartConfig, ChartContainer, Separator} from '@tryghost/shade';
+import {Badge, Bar, BarChart, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, CartesianGrid, ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, Separator} from '@tryghost/shade';
 
 const OverviewStats = () => {
     const chartData = [
@@ -35,6 +35,8 @@ const OverviewStats = () => {
                     <Separator />
                     <ChartContainer config={chartConfig}>
                         <BarChart data={chartData} accessibilityLayer>
+                            <CartesianGrid vertical={false} />
+                            <ChartTooltip content={<ChartTooltipContent />} />
                             <Bar dataKey="desktop" fill="var(--color-desktop)" radius={4} />
                             <Bar dataKey="mobile" fill="var(--color-mobile)" radius={4} />
                         </BarChart>
