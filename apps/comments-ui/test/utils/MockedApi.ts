@@ -308,23 +308,6 @@ export class MockedApi {
             });
         },
 
-        async editComment(route) {
-            await this.#delayResponse();
-            const payload = JSON.parse(route.request().postData());
-
-            const commentId = route.request().url().split('/').reverse()[1];
-            const comment = findCommentById(this.comments, commentId);
-            if (route.request().method() === 'PUT' && comment) {
-                comment.html = payload.comments[0].html;
-                return await route.fulfill({
-                    status: 200,
-                    body: JSON.stringify({
-                        comments: [comment]
-                    })
-                });
-            }
-        },
-
         async browseComments(route) {
             await this.#delayResponse();
             const url = new URL(route.request().url());
@@ -348,6 +331,24 @@ export class MockedApi {
             await this.#delayResponse();
             const url = new URL(route.request().url());
             const commentId = url.pathname.split('/').reverse()[1];
+
+            if (route.request().method() === 'PUT' && commentId) {
+                const comment = findCommentById(this.comments, commentId);
+                if (!comment) {
+                    return await route.fulfill({
+                        status: 404,
+                        body: 'Comment not found'
+                    });
+                }
+                const payload = JSON.parse(route.request().postData());
+                comment.html = payload.comments[0].html;
+                return await route.fulfill({
+                    status: 200,
+                    body: JSON.stringify({
+                        comments: [comment]
+                    })
+                });
+            }
 
             await route.fulfill({
                 status: 200,
@@ -487,7 +488,6 @@ export class MockedApi {
                 const commentId = url.pathname.split('/').reverse()[1];
                 const payload = JSON.parse(route.request().postData());
                 const comment = findCommentById(this.comments, commentId);
-
                 if (!comment) {
                     await route.fulfill({status: 404});
                     return;
@@ -511,7 +511,6 @@ export class MockedApi {
 
     async listen({page, path}: {page: any, path: string}) {
         // Public API ----------------------------------------------------------
-        await page.route(`${path}/members/api/comments/*/`, this.requestHandlers.editComment.bind(this));
         await page.route(`${path}/members/api/member/`, this.requestHandlers.getMember.bind(this));
         await page.route(`${path}/members/api/comments/*`, this.requestHandlers.addComment.bind(this));
         await page.route(`${path}/members/api/comments/post/*/*`, this.requestHandlers.browseComments.bind(this));
