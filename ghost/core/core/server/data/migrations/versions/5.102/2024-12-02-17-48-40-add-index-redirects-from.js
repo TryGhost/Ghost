@@ -14,7 +14,7 @@ module.exports = createNonTransactionalMigration(
         if (columnInfo.maxLength.toString() !== '191') {
             logging.error(`Column length is not 191. Ensure the previous migration has been applied successfully. Column info: ${JSON.stringify(columnInfo)}`);
             throw new errors.MigrationError({
-                message: 'Column length is not 191. Ensure the previous migration has been applied successfully.',
+                message: 'Column length is not 191. Ensure the previous migration has been applied successfully.'
             });
         }
 
