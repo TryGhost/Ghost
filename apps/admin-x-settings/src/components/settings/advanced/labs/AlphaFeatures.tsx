@@ -8,10 +8,6 @@ const features = [{
     description: 'Enable URL Caching',
     flag: 'urlCache'
 },{
-    title: 'Lexical multiplayer',
-    description: 'Enables multiplayer editing in the lexical editor.',
-    flag: 'lexicalMultiplayer'
-},{
     title: 'Webmentions',
     description: 'Allows viewing received mentions on the dashboard.',
     flag: 'webmentions'
@@ -59,10 +55,6 @@ const features = [{
     title: 'Comment Improvements',
     description: 'Enables new comment features',
     flag: 'commentImprovements'
-}, {
-    title: 'Staff 2FA',
-    description: 'Enables email verification for staff logins',
-    flag: 'staff2fa'
 }];
 
 const AlphaFeatures: React.FC = () => {

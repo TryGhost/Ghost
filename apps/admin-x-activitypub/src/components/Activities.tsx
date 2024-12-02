@@ -9,11 +9,11 @@ import ActivityItem, {type Activity} from './activities/ActivityItem';
 import ArticleModal from './feed/ArticleModal';
 import MainNavigation from './navigation/MainNavigation';
 import Separator from './global/Separator';
-import ViewProfileModal from './global/ViewProfileModal';
+import ViewProfileModal from './modals/ViewProfileModal';
 
 import getUsername from '../utils/get-username';
 import stripHtml from '../utils/strip-html';
-import {useActivitiesForUser} from '../hooks/useActivityPubQueries';
+import {GET_ACTIVITIES_QUERY_KEY_NOTIFICATIONS, useActivitiesForUser} from '../hooks/useActivityPubQueries';
 
 interface ActivitiesProps {}
 
@@ -97,10 +97,13 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
         includeReplies: true,
         filter: {
             type: ['Follow', 'Like', `Create:Note:isReplyToOwn`]
-        }
+        },
+        key: GET_ACTIVITIES_QUERY_KEY_NOTIFICATIONS
     });
     const {data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading} = getActivitiesQuery;
-    const activities = (data?.pages.flatMap(page => page.data) ?? []);
+    const activities = (data?.pages.flatMap(page => page.data) ?? [])
+        // If there somehow are duplicate activities, filter them out so the list rendering doesn't break
+        .filter((activity, index, self) => index === self.findIndex(a => a.id === activity.id));
 
     const observerRef = useRef<IntersectionObserver | null>(null);
     const loadMoreRef = useRef<HTMLDivElement | null>(null);
@@ -127,13 +130,6 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
         };
     }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-    // Retrieve followers for the user
-    // const {data: followers = []} = useFollowersForUser(user);
-
-    // const isFollower = (id: string): boolean => {
-    //     return followers.includes(id);
-    // };
-
     const handleActivityClick = (activity: Activity) => {
         switch (activity.type) {
         case ACTVITY_TYPE.CREATE:
@@ -155,9 +151,7 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
             break;
         case ACTVITY_TYPE.FOLLOW:
             NiceModal.show(ViewProfileModal, {
-                profile: getUsername(activity.actor),
-                onFollow: () => {},
-                onUnfollow: () => {}
+                profile: getUsername(activity.actor)
             });
             break;
         default:

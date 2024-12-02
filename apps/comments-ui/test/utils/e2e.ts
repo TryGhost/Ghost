@@ -1,6 +1,6 @@
 import {E2E_PORT} from '../../playwright.config';
-import {LabsType, MockedApi} from './MockedApi';
 import {Locator, Page} from '@playwright/test';
+import {MockedApi} from './MockedApi';
 import {expect} from '@playwright/test';
 
 export const MOCKED_SITE_URL = 'https://localhost:1234';
@@ -22,47 +22,56 @@ function escapeHtml(unsafe: string) {
 }
 
 function authFrameMain() {
-    window.addEventListener('message', function (event) {
-        let d = null;
+    const endpoints = {
+        browseComments: ['GET', ['postId'], '/comments/post/$1/'],
+        getReplies: ['GET', ['commentId'], '/comments/$1/replies/'],
+        readComment: ['GET', ['commentId'], '/comments/$1/'],
+        getUser: ['GET', [], '/users/me/'],
+        hideComment: ['PUT', ['id'], '/comments/$1/', data => ({id: data.id, status: 'hidden'})],
+        showComment: ['PUT', ['id'], '/comments/$1/', data => ({id: data.id, status: 'published'})]
+    };
+
+    window.addEventListener('message', async function (event) {
+        let data: any = null; // eslint-disable-line @typescript-eslint/no-explicit-any
         try {
-            d = JSON.parse(event.data);
+            data = JSON.parse(event.data) || {};
         } catch (err) {
-            console.error(err);
+            console.error(err); // eslint-disable-line no-console
         }
 
-        if (!d) {
+        if (!data) {
             return;
         }
-        const data: {uid: string, action: string} = d;
 
         function respond(error, result) {
             event.source!.postMessage(JSON.stringify({
                 uid: data.uid,
-                error: error,
-                result: result
+                error: error?.message,
+                result
             }));
         }
 
-        if (data.action === 'getUser') {
+        if (endpoints[data.action]) {
             try {
-                respond(null, {
-                    users: [
-                        {
-                            id: 'someone'
-                        }
-                    ]
-                });
+                const [method, routeParams, route, bodyFn] = endpoints[data.action];
+                const paramData = routeParams.map(param => data[param]);
+                const path = route.replace(/\$(\d+)/g, (_, index) => paramData[index - 1]);
+                const url = new URL(`/ghost/api/admin${path}`, MOCKED_SITE_URL);
+                if (data.params) {
+                    url.search = new URLSearchParams(data.params).toString();
+                }
+                let body, headers;
+                if (method === 'PUT' || method === 'POST') {
+                    body = JSON.stringify(bodyFn(data));
+                    headers = {'Content-Type': 'application/json'};
+                }
+                const res = await fetch(url, {method, body, headers});
+                const json = await res.json();
+                respond(null, json);
             } catch (err) {
+                console.log('e2e Admin endpoint error:', err); // eslint-disable-line no-console
                 respond(err, null);
             }
-            return;
-        }
-
-        // Other actions: return empty object
-        try {
-            respond(null, {});
-        } catch (err) {
-            respond(err, null);
         }
     });
 }
@@ -71,7 +80,7 @@ export async function mockAdminAuthFrame({admin, page}) {
     await page.route(admin + 'auth-frame/', async (route) => {
         await route.fulfill({
             status: 200,
-            body: `<html><head><meta charset="UTF-8" /></head><body><script>${authFrameMain.toString()}; authFrameMain();</script></body></html>`
+            body: `<html><head><meta charset="UTF-8" /></head><body><script>${authFrameMain.toString().replaceAll('MOCKED_SITE_URL', `'${MOCKED_SITE_URL}'`)}; authFrameMain();</script></body></html>`
         });
     });
 }
