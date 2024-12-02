@@ -354,7 +354,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                     excerpt={object?.preview?.content}
                                     heading={object.name}
                                     html={object.content}
-                                    image={object?.image}
+                                    image={typeof object.image === 'string' ? object.image : object.image?.url}
                                 />
                                 <div className='ml-[-7px]'>
                                     <FeedItemStats
