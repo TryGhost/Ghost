@@ -85,7 +85,7 @@ export function renderFeedAttachment(object: ObjectProperties, layout: string) {
         </div>;
     default:
         if (object.image) {
-            return <img alt='attachment' className='my-3 max-h-[280px] w-full rounded-md object-cover outline outline-1 -outline-offset-1 outline-black/[0.05]' src={object.image} />;
+            return <img alt='attachment' className='my-3 max-h-[280px] w-full rounded-md object-cover outline outline-1 -outline-offset-1 outline-black/[0.05]' src={typeof object.image === 'string' ? object.image : object.image?.url} />;
         }
         return null;
     }
@@ -137,7 +137,7 @@ function renderInboxAttachment(object: ObjectProperties) {
         );
     default:
         if (object.image) {
-            return <img className={imageAttachmentStyles} src={object.image} />;
+            return <img className={imageAttachmentStyles} src={typeof object.image === 'string' ? object.image : object.image?.url} />;
         }
         return null;
     }
