@@ -92,4 +92,4 @@ SQL >
     HAVING b.source != current_domain
 
 TYPE MATERIALIZED
-DATASOURCE analytics_sources_mv
+DATASOURCE analytics_sources_mv__v0
