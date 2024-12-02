@@ -22,7 +22,19 @@ test.describe('Theme settings', async () => {
                     active: true,
                     templates: []
                 }]
-            }}
+            }},
+            activeTheme: {
+                method: 'GET',
+                path: '/themes/active/',
+                response: {
+                    themes: [{
+                        name: 'casper',
+                        package: {},
+                        active: true,
+                        templates: []
+                    }]
+                }
+            }
         }});
 
         await page.goto('/');
