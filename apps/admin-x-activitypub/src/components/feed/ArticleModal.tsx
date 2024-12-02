@@ -269,6 +269,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
     return (
         <Modal
             align='right'
+            allowBackgroundInteraction={true}
             animate={true}
             backDrop={backDrop}
             backDropClick={true}

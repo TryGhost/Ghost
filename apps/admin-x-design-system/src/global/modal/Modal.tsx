@@ -47,6 +47,7 @@ export interface ModalProps {
     animate?: boolean;
     formSheet?: boolean;
     enableCMDS?: boolean;
+    allowBackgroundInteraction?: boolean;
 }
 
 export const topLevelBackdropClasses = 'bg-[rgba(98,109,121,0.2)] backdrop-blur-[3px]';
@@ -82,7 +83,8 @@ const Modal: React.FC<ModalProps> = ({
     dirty = false,
     animate = true,
     formSheet = false,
-    enableCMDS = true
+    enableCMDS = true,
+    allowBackgroundInteraction = false
 }) => {
     const modal = useModal();
     const {setGlobalDirtyState} = useGlobalDirtyState();
@@ -203,7 +205,8 @@ const Modal: React.FC<ModalProps> = ({
     );
 
     let backdropClasses = clsx(
-        'fixed inset-0 z-[1000] h-[100vh] w-[100vw]'
+        'fixed inset-0 z-[1000] h-[100vh] w-[100vw]',
+        allowBackgroundInteraction && 'pointer-events-none'
     );
 
     let paddingClasses = '';
@@ -378,7 +381,7 @@ const Modal: React.FC<ModalProps> = ({
     } else if (width === 'toSidebar') {
         modalClasses = clsx(
             modalClasses,
-            'w-full max-w-[calc(100dvw_-_280px)] lg:max-w-full lgPlus:max-w-[calc(100dvw_-_320px)]'
+            'w-full max-w-[calc(100dvw_-_280px)] lg:max-w-full min-[1280px]:max-w-[calc(100dvw_-_320px)]'
         );
     }
 
@@ -427,7 +430,10 @@ const Modal: React.FC<ModalProps> = ({
                 (backDrop && !formSheet) && topLevelBackdropClasses,
                 formSheet && 'bg-[rgba(98,109,121,0.08)]'
             )}></div>
-            <section className={modalClasses} data-testid={testId} style={modalStyles}>
+            <section className={clsx(
+                modalClasses,
+                allowBackgroundInteraction && 'pointer-events-auto'
+            )} data-testid={testId} style={modalStyles}>
                 {header === false ? '' : (!topRightContent || topRightContent === 'close' ?
                     (<header className={headerClasses}>
                         {title && <Heading level={3}>{title}</Heading>}
