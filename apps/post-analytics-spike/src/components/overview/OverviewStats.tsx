@@ -1,64 +1,15 @@
 // The main Web stats component that encapsulates the breakdown
 'use client';
 
-import {Badge, Bar, BarChart, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, CartesianGrid, ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, Separator} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from '@tryghost/shade';
+import NewsletterPerformance from './NewsletterPerformance';
+import Feedback from './FeedBack';
 
 const OverviewStats = () => {
-    const chartData = [
-        {month: 'January', desktop: 186, mobile: 80},
-        {month: 'February', desktop: 305, mobile: 200},
-        {month: 'March', desktop: 237, mobile: 120},
-        {month: 'April', desktop: 73, mobile: 190},
-        {month: 'May', desktop: 209, mobile: 130},
-        {month: 'June', desktop: 214, mobile: 140}
-    ];
-
-    const chartConfig = {
-        desktop: {
-            label: 'Desktop',
-            color: '#2563eb'
-        },
-        mobile: {
-            label: 'Mobile',
-            color: '#60a5fa'
-        }
-    } satisfies ChartConfig;
-
     return (
         <div className="grid w-full grid-cols-3 gap-6 py-6">
-            <Card className='col-span-2'>
-                <CardHeader>
-                    <CardTitle>Newsletter performance</CardTitle>
-                    <CardDescription><Badge>Sent</Badge> — September 19 2024</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <Separator />
-                    <ChartContainer config={chartConfig}>
-                        <BarChart data={chartData} accessibilityLayer>
-                            <CartesianGrid vertical={false} />
-                            <ChartTooltip content={<ChartTooltipContent />} />
-                            <Bar dataKey="desktop" fill="var(--color-desktop)" radius={4} />
-                            <Bar dataKey="mobile" fill="var(--color-mobile)" radius={4} />
-                        </BarChart>
-                    </ChartContainer>
-                </CardContent>
-                <CardFooter>
-                    <p>Card Footer</p>
-                </CardFooter>
-            </Card>
-
-            <Card>
-                <CardHeader>
-                    <CardTitle>Feedback</CardTitle>
-                    <CardDescription>17 reactions</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <p>Card Content</p>
-                </CardContent>
-                <CardFooter>
-                    <p>Card Footer</p>
-                </CardFooter>
-            </Card>
+            <NewsletterPerformance />
+            <Feedback />
 
             <Card className='col-span-2'>
                 <CardHeader>
@@ -66,10 +17,12 @@ const OverviewStats = () => {
                     <CardDescription>Top links in email newsletter</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <p>Card Content</p>
+                    <div className='py-5'>
+                        Card content
+                    </div>
                 </CardContent>
                 <CardFooter>
-                    <p>Card Footer</p>
+                    <Button className='h-auto p-0' variant='link'>Details &rarr;</Button>
                 </CardFooter>
             </Card>
 
@@ -79,10 +32,12 @@ const OverviewStats = () => {
                     <CardDescription>3 members signed up on this post</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <p>Card Content</p>
+                    <div className='py-5'>
+                        Card content
+                    </div>
                 </CardContent>
                 <CardFooter>
-                    <p>Card Footer</p>
+                    <Button className='h-auto p-0' variant='link'>Details &rarr;</Button>
                 </CardFooter>
             </Card>
         </div>
