@@ -511,11 +511,11 @@ export class MockedApi {
 
     async listen({page, path}: {page: any, path: string}) {
         // Public API ----------------------------------------------------------
+        await page.route(`${path}/members/api/comments/*/`, this.requestHandlers.editComment.bind(this));
         await page.route(`${path}/members/api/member/`, this.requestHandlers.getMember.bind(this));
         await page.route(`${path}/members/api/comments/*`, this.requestHandlers.addComment.bind(this));
         await page.route(`${path}/members/api/comments/post/*/*`, this.requestHandlers.browseComments.bind(this));
         await page.route(`${path}/members/api/comments/*/`, this.requestHandlers.getComment.bind(this));
-        await page.route(`${path}/members/api/comments/*/`, this.requestHandlers.editComment.bind(this));
         await page.route(`${path}/members/api/comments/*/like/`, this.requestHandlers.likeComment.bind(this));
         await page.route(`${path}/members/api/comments/*/replies/*`, this.requestHandlers.getReplies.bind(this));
         await page.route(`${path}/members/api/comments/counts/*`, this.requestHandlers.getCommentCounts.bind(this));
