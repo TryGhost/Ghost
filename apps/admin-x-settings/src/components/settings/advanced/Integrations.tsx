@@ -2,7 +2,6 @@ import NiceModal from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
 import TopLevelGroup from '../../TopLevelGroup';
 import usePinturaEditor from '../../../hooks/usePinturaEditor';
-import {ReactComponent as AmpIcon} from '../../../assets/icons/amp.svg';
 import {Button, ConfirmationModal, Icon, List, ListItem, NoValueLabel, TabView, showToast, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {ReactComponent as FirstPromoterIcon} from '../../../assets/icons/firstpromoter.svg';
 import {Integration, useBrowseIntegrations, useDeleteIntegration} from '@tryghost/admin-x-framework/api/integrations';
@@ -43,7 +42,7 @@ const IntegrationItem: React.FC<IntegrationItemProps> = ({
     const handleClick = (e?: React.MouseEvent<HTMLElement>) => {
         // Prevent the click event from bubbling up when clicking the delete button
         e?.stopPropagation();
-        
+
         if (disabled) {
             updateRoute({route: 'pro', isExternal: true});
         } else {
@@ -52,7 +51,7 @@ const IntegrationItem: React.FC<IntegrationItemProps> = ({
     };
 
     const handleDelete = (e?: React.MouseEvent<HTMLElement>) => {
-        e?.stopPropagation(); 
+        e?.stopPropagation();
         onDelete?.();
     };
 
@@ -89,8 +88,7 @@ const BuiltInIntegrations: React.FC = () => {
     const pinturaEditor = usePinturaEditor();
 
     const {settings} = useGlobalData();
-    const [ampEnabled, unsplashEnabled, firstPromoterEnabled, slackUrl, slackUsername] = getSettingValues<boolean>(settings, [
-        'amp',
+    const [unsplashEnabled, firstPromoterEnabled, slackUrl, slackUsername] = getSettingValues<boolean>(settings, [
         'unsplash',
         'firstpromoter',
         'slack_url',
@@ -118,16 +116,6 @@ const BuiltInIntegrations: React.FC = () => {
                 icon={<SlackIcon className='h-8 w-8' />}
                 testId='slack-integration'
                 title='Slack' />
-
-            <IntegrationItem
-                action={() => {
-                    openModal('integrations/amp');
-                }}
-                active={ampEnabled}
-                detail='Google AMP will be removed in Ghost 6.0'
-                icon={<AmpIcon className='h-8 w-8' />}
-                testId='amp-integration'
-                title='AMP' />
 
             <IntegrationItem
                 action={() => {
