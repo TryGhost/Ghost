@@ -7,6 +7,7 @@ export * from './components/ui/tabs';
 export * from './components/ui/sidebar';
 export * from './components/ui/table';
 export * from './components/ui/avatar';
+export * from './components/ui/card';
 
 export {default as useGlobalDirtyState} from './hooks/useGlobalDirtyState';
 export {usePagination} from './hooks/usePagination';
