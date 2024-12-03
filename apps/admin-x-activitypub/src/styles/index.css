@@ -1,67 +1,160 @@
 @import '@tryghost/admin-x-design-system/styles.css';
 
 .admin-x-base.admin-x-activitypub {
-  animation-name: none;
+    animation-name: none;
 }
 
 @keyframes bump {
-  0% {
-    transform: scale(1);
-  }
+    0% {
+        transform: scale(1);
+    }
 
-  50% {
-    transform: scale(1.1);
-  }
+    50% {
+        transform: scale(1.1);
+    }
 
-  100% {
-    transform: scale(1);
-  }
+    100% {
+        transform: scale(1);
+    }
 }
 
 button:active svg {
-  animation: bump 0.3s ease-in-out;
+    animation: bump 0.3s ease-in-out;
 }
 
 .ap-red-heart path {
-  fill: #F50B23;
+    fill: #F50B23;
 }
 
+/* Note and profile content */
+
 .ap-note-content a,
-.ap-profile-content a {
-  color: #2563eb !important;
-  word-break: break-all;
+.ap-profile-content a,
+.ap-note-content-large a {
+    color: #2563eb !important;
+    word-break: break-all;
 }
 
 .ap-note-content a:hover,
-.ap-profile-content a:hover {
-  color: #1d4ed8 !important;
-  text-decoration: underline !important;
+.ap-profile-content a:hover,
+.ap-note-content-large a:hover {
+    color: #1d4ed8 !important;
+    text-decoration: underline !important;
 }
 
 .ap-note-content span.invisible,
-.ap-profile-content span.invisible {
-  display: none;
+.ap-profile-content span.invisible,
+.ap-note-content-large span.invisible {
+    display: none;
 }
 
 .ap-note-content a:not(.hashtag) span.ellipsis:after,
 .ap-profile-content a:not(.hashtag) span.ellipsis:after,
+.ap-note-content-large a:not(.hashtag) span.ellipsis:after,
 .ap-likes .ellipsis::after {
-  content: "…";
+    content: "…";
 }
 
-.ap-note-content p+p {
-  margin-top: 1.2rem !important;
+.ap-note-content > * + * {
+    margin-top: 1.2rem !important;
+}
+
+.ap-note-content-large > * + * {
+    margin-top: 1.6rem !important;
+}
+
+.ap-note-content > h1 + *,
+.ap-note-content > h2 + *,
+.ap-note-content > h3 + * {
+    margin-top: 0.6rem !important;
+}
+
+.ap-note-content-large > h1 + *,
+.ap-note-content-large > h2 + *,
+.ap-note-content-large > h3 + * {
+    margin-top: 0.8rem !important;
+}
+
+.ap-note-content figure,
+.ap-note-content-large figure {
+    display: none;
+}
+
+.ap-note-content ul,
+.ap-note-content-large ul {
+    list-style-type: '-' !important;
+    padding-left: 1rem !important;
+}
+
+.ap-note-content ol,
+.ap-note-content-large ol {
+    list-style: auto !important;
+    padding-left: 1.7rem !important;
+}
+
+.ap-note-content li {
+    font-size: 1.4rem !important;
+    padding-left: 0.4rem !important;
+}
+
+.ap-note-content-large li {
+    font-size: 1.6rem !important;
+    padding-left: 0.4rem !important;
+}
+
+.ap-note-content h2, .ap-note-content h3, .ap-note-content h4, .ap-note-content h5 {
+    font-size: 1.4rem !important;
+    font-weight: 600 !important;
+    line-height: 1.375 !important;
+}
+
+.ap-note-content-large h2, .ap-note-content-large h3, .ap-note-content-large h4, .ap-note-content-large h5 {
+    font-size: 1.6rem !important;
+}
+
+.ap-note-content blockquote,
+.ap-note-content-large blockquote {
+    border-left: 2px solid #E5E9ED;
+    padding-left: 0.8rem;
+    margin: 0.6rem 0 !important;
+}
+
+.ap-note-content blockquote p {
+    font-weight: 400;
+    font-size: 1.4rem;
+}
+
+.ap-note-content-large blockquote p {
+    font-weight: 400;
+    font-size: 1.6rem;
+}
+
+.ap-note-content code,
+.ap-note-content-large code {
+    background-color: #F9FAFB !important;
+    font-size: 1.3rem !important;
+    color: #15171a;
+}
+
+.ap-note-content-large code {
+    font-size: 1.5rem !important;
+}
+
+.ap-note-content mark,
+.ap-note-content-large mark {
+    background-color: transparent !important;
+    color: #15171a;
 }
 
 .ap-likes .invisible {
-  display: inline-block;
-  font-size: 0;
-  height: 0;
-  line-height: 0;
-  position: absolute;
-  width: 0;
+    display: inline-block;
+    font-size: 0;
+    height: 0;
+    line-height: 0;
+    position: absolute;
+    width: 0;
 }
 
 .ap-textarea {
-  field-sizing: content;
+    field-sizing: content;
 }
