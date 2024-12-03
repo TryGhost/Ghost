@@ -453,6 +453,41 @@ test.describe('Actions', async () => {
 
             await expect(comments.nth(0)).toContainText('This is the oldest');
         });
+
+        test('has loading state when changing sorting', async ({page}) => {
+            mockedApi.addComment({
+                html: '<p>This is the oldest</p>',
+                created_at: new Date('2024-02-01T00:00:00Z')
+            });
+            mockedApi.addComment({
+                html: '<p>This is comment 2</p>',
+                created_at: new Date('2024-03-02T00:00:00Z')
+            });
+            mockedApi.addComment({
+                html: '<p>This is the newest comment</p>',
+                created_at: new Date('2024-04-03T00:00:00Z')
+            });
+
+            const {frame} = await initializeTest(page, {labs: true});
+
+            const sortingForm = await frame.getByTestId('comments-sorting-form');
+
+            await sortingForm.click();
+
+            const sortingDropdown = await frame.getByTestId(
+                'comments-sorting-form-dropdown'
+            );
+
+            const newestOption = await sortingDropdown.getByText('Newest');
+            await newestOption.click();
+
+            // wait for  loader to be visible
+            await expect(frame.getByTestId('order-comment-loader')).toBeVisible();
+
+            // const comments = await frame.getByTestId('comment-component');
+
+            // await expect(comments.nth(0)).toContainText('This is the oldest');
+        });
     });
 
     test('Can edit their own comment', async ({page}) => {

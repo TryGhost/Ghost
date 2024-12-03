@@ -24,7 +24,7 @@ async function loadMoreComments({state, api, options, order}: {state: EditableAp
 
 async function setOrder({state, data: {order}, options, api}: {state: EditableAppContext, data: {order: string}, options: CommentsOptions, api: GhostApi}) {
     let data;
-
+    state.commentsIsLoading = true;
     if (state.admin && state.adminApi && state.labs.commentImprovements) {
         data = await state.adminApi.browse({page: 1, postId: options.postId, order});
     }
@@ -33,7 +33,8 @@ async function setOrder({state, data: {order}, options, api}: {state: EditableAp
     return {
         comments: [...data.comments],
         pagination: data.meta.pagination,
-        order
+        order,
+        commentsIsLoading: false
     };
 }
 

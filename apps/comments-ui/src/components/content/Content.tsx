@@ -4,18 +4,30 @@ import ContentTitle from './ContentTitle';
 import MainForm from './forms/MainForm';
 import Pagination from './Pagination';
 import {ROOT_DIV_ID} from '../../utils/constants';
+import {SkeletonComment} from './SkeletonComment';
 import {SortingForm} from './forms/SortingForm';
 import {useAppContext, useLabs} from '../../AppContext';
 import {useEffect} from 'react';
 
 const Content = () => {
     const labs = useLabs();
-    const {pagination, member, comments, commentCount, commentsEnabled, title, showCount, openFormCount, t} = useAppContext();
+    const {pagination, member, comments, commentCount, commentsEnabled, title, showCount, openFormCount, commentsIsLoading, t} = useAppContext();
 
     let commentsElements;
     const commentsDataset = comments;
+    console.log(commentsIsLoading);
+    const SkeletonLoader = () => {
+        return (
+            <div data-testid="order-comment-loader">
+                <SkeletonComment/>
+                <SkeletonComment/>
+                <SkeletonComment/>
+                <SkeletonComment/>
+            </div>
+        );
+    };
 
-    if (labs && labs.commentImprovements) {
+    if (labs && labs.commentImprovements && !commentsIsLoading) {
         commentsElements = commentsDataset.slice().map(comment => <Comment key={comment.id} comment={comment} />);
     } else {
         commentsElements = commentsDataset.slice().reverse().map(comment => <Comment key={comment.id} comment={comment} />);
@@ -63,11 +75,14 @@ const Content = () => {
                             {t('Sort by')}: <SortingForm/>
                         </span>
                     </div>
-                )}
-                <div className="z-10" data-test="comment-elements">
-                    {commentsElements}
-                </div>
-                <Pagination />
+                )}{
+                    commentsIsLoading ? <SkeletonLoader /> : <><div className="z-10 animate-pulse" data-test="comment-elements">
+                        {commentsElements}
+                    </div>
+                    <Pagination />
+                    </>
+                }
+    
                 {
                     labs?.testFlag ? <div data-testid="this-comes-from-a-flag" style={{display: 'none'}}></div> : null
                 }
@@ -92,7 +107,7 @@ const Content = () => {
                     }
                 </div>
                 {
-                    labs?.testFlag ? <div data-testid="this-comes-from-a-flag" style={{display: 'none'}}></div> : null
+                    labs?.testFlag ? <div data-testid="this-comes-from-a-flag" style={{display: 'none'}}></div> : null // do not remove
                 }
             </>
         )
