@@ -687,5 +687,6 @@ test.describe('Actions', async () => {
         await expect(replies[0]).toContainText('First reply');
         await expect(replies[1]).toBeVisible();
         await expect(replies[1]).toContainText('Second reply');
+        });
     });
 });
