@@ -1,4 +1,5 @@
-import React, {useCallback, useEffect, useMemo, useRef} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {Editor} from '@tiptap/react';
 import {formatRelativeTime} from './helpers';
 import {useAppContext} from '../AppContext';
 
@@ -56,4 +57,32 @@ export function useRelativeTime(dateString: string) {
     return useMemo(() => {
         return formatRelativeTime(dateString, t);
     }, [dateString]);
+}
+
+export function useEditorState(editor: Editor | null, initialHasContent = false) {
+    const [hasContent, setHasContent] = useState(initialHasContent);
+
+    useEffect(() => {
+        if (editor) {
+            const checkContent = () => {
+                const editorHasContent = !editor.isEmpty;
+                setHasContent(editorHasContent);
+            };
+            
+            editor.on('update', checkContent);
+            editor.on('transaction', checkContent);
+
+            checkContent();
+
+            return () => {
+                editor.off('update', checkContent);
+                editor.off('transaction', checkContent);
+            };
+        }
+    }, [editor]);
+
+    return {
+        editor,
+        hasContent
+    };
 }
