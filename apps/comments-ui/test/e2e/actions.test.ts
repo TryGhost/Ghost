@@ -479,14 +479,9 @@ test.describe('Actions', async () => {
             );
 
             const newestOption = await sortingDropdown.getByText('Newest');
+            mockedApi.setDelay(100);
             await newestOption.click();
-
-            // wait for  loader to be visible
             await expect(frame.getByTestId('order-comment-loader')).toBeVisible();
-
-            // const comments = await frame.getByTestId('comment-component');
-
-            // await expect(comments.nth(0)).toContainText('This is the oldest');
         });
     });
 

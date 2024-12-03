@@ -15,7 +15,6 @@ const Content = () => {
 
     let commentsElements;
     const commentsDataset = comments;
-    console.log(commentsIsLoading);
     const SkeletonLoader = () => {
         return (
             <div data-testid="order-comment-loader">
