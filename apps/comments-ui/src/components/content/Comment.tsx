@@ -295,7 +295,7 @@ const CommentHeader: React.FC<CommentHeaderProps> = ({comment, className = ''}) 
     if (isReplyToReply) {
         const inReplyToComment = findCommentById(comments, comment.in_reply_to_id);
         if (inReplyToComment && inReplyToComment.status !== 'published') {
-            inReplyToSnippet = `[${t('hidden/removed')}]`;
+            inReplyToSnippet = `[${t('removed')}]`;
         }
     }
 
