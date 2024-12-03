@@ -1,10 +1,3 @@
-/**
- * If we enable bluebird debug logs we see a huge memory usage.
- * You can reproduce by removing this line and import a big database export into Ghost.
- * `NODE_ENV=development node index.js`
- */
-process.env.BLUEBIRD_DEBUG = 0;
-
 const luxon = require('luxon');
 const moment = require('moment-timezone');
 
