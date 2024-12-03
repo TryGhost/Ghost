@@ -993,7 +993,7 @@ module.exports = {
     },
     redirects: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
-        from: {type: 'string', maxlength: 2000, nullable: false},
+        from: {type: 'string', maxlength: 191, nullable: false, index: true},
         to: {type: 'string', maxlength: 2000, nullable: false},
         post_id: {type: 'string', maxlength: 24, nullable: true, unique: false, references: 'posts.id', setNullDelete: true},
         created_at: {type: 'dateTime', nullable: false},
