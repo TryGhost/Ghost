@@ -218,14 +218,14 @@ test.describe('Admin moderation', async () => {
             await replyToHide.getByTestId('more-button').click();
             await replyToHide.getByTestId('hide-button').click();
 
-            await expect(inReplyToComment).toContainText('[hidden/removed]');
+            await expect(inReplyToComment).toContainText('[removed]');
             await expect(inReplyToComment).not.toContainText('This is reply 1');
 
             // Show it again
             await replyToHide.getByTestId('more-button').click();
             await replyToHide.getByTestId('show-button').click();
 
-            await expect(inReplyToComment).not.toContainText('[hidden/removed]');
+            await expect(inReplyToComment).not.toContainText('[removed]');
             await expect(inReplyToComment).toContainText('This is reply 1');
         });
     });
