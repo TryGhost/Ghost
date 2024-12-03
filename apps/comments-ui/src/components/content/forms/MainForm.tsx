@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useRef} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {Form, FormWrapper} from './Form';
 import {getEditorConfig} from '../../../utils/editor';
 import {scrollToElement} from '../../../utils/helpers';
@@ -11,6 +11,7 @@ type Props = {
 
 const MainForm: React.FC<Props> = ({commentsCount}) => {
     const {postId, dispatchAction, t} = useAppContext();
+    const [hasContent, setHasContent] = useState(false);
 
     const config = {
         placeholder: (commentsCount === 0 ? t('Start the conversation') : t('Join the discussion')),
@@ -20,6 +21,22 @@ const MainForm: React.FC<Props> = ({commentsCount}) => {
     const editor = useEditor({
         ...getEditorConfig(config)
     }, [commentsCount]);
+
+    useEffect(() => {
+        if (editor) {
+            const checkContent = () => {
+                setHasContent(!editor.isEmpty);
+            };
+            
+            editor.on('update', checkContent);
+            editor.on('transaction', checkContent);
+
+            return () => {
+                editor.off('update', checkContent);
+                editor.off('transaction', checkContent);
+            };
+        }
+    }, [editor]);
 
     const submit = useCallback(async ({html}) => {
         // Send comment to server
@@ -94,7 +111,7 @@ const MainForm: React.FC<Props> = ({commentsCount}) => {
         submit
     };
 
-    const isOpen = editor?.isFocused ?? false;
+    const isOpen = editor?.isFocused || hasContent;
 
     return (
         <div ref={formEl} className='px-3 pb-2 pt-3' data-testid="main-form">
