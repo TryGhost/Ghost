@@ -17,8 +17,10 @@ type AnimatedCommentProps = {
 };
 
 const AnimatedComment: React.FC<AnimatedCommentProps> = ({comment, parent}) => {
+    const {commentsIsLoading} = useAppContext();
     return (
         <Transition
+            className={`${commentsIsLoading ? 'animate-pulse' : ''}`}
             data-testid="animated-comment"
             enter="transition-opacity duration-300 ease-out"
             enterFrom="opacity-0"

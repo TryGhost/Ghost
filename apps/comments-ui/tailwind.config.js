@@ -3,7 +3,14 @@ module.exports = {
     theme: {
         extend: {
             animation: {
-                pulse: 'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+                heartbeat: 'heartbeat 0.35s ease-in-out forwards',
+                pulse: 'pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+            },
+            keyframes: {
+                heartbeat: {
+                    '0%, 100%': {transform: 'scale(1)'},
+                    '50%': {transform: 'scale(1.3)'}
+                }
             }
         },
         screens: {
@@ -161,15 +168,6 @@ module.exports = {
                 '0 57.7px 33.4px rgba(0, 0, 0, 0.072)',
                 '0 138px 80px rgba(0, 0, 0, 0.1)'
             ]
-        },
-        animation: {
-            heartbeat: 'heartbeat 0.35s ease-in-out forwards'
-        },
-        keyframes: {
-            heartbeat: {
-                '0%, 100%': {transform: 'scale(1)'},
-                '50%': {transform: 'scale(1.3)'}
-            }
         }
     },
     content: [
