@@ -1,5 +1,3 @@
-VERSION 0
-
 NODE parsed_hits
 DESCRIPTION >
     Parse raw page_hit events

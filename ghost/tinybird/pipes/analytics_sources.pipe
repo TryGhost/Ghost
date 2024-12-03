@@ -1,5 +1,3 @@
-VERSION 0
-
 NODE parsed_hits
 DESCRIPTION >
     Parse raw page_hit events
@@ -70,7 +68,7 @@ SQL >
     WITH (SELECT domainWithoutWWW(href) FROM analytics_hits_data LIMIT 1) AS current_domain,
     sessions AS (
         SELECT
-            session_id, argMin(source, timestamp) AS source, 
+            session_id, argMin(source, timestamp) AS source,
             maxIf(member_status, member_status IN ('paid', 'free', 'undefined')) AS member_status
         FROM analytics_hits_data
         GROUP BY session_id
