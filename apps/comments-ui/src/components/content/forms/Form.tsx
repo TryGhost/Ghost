@@ -8,9 +8,9 @@ import {Transition} from '@headlessui/react';
 import {useCallback, useEffect, useRef, useState} from 'react';
 import {usePopupOpen} from '../../../utils/hooks';
 
-type Progress = 'default' | 'sending' | 'sent' | 'error';
+export type Progress = 'default' | 'sending' | 'sent' | 'error';
 export type SubmitSize = 'small' | 'medium' | 'large';
-type FormEditorProps = {
+export type FormEditorProps = {
     comment?: Comment;
     submit: (data: {html: string}) => Promise<void>;
     progress: Progress;
@@ -22,12 +22,14 @@ type FormEditorProps = {
     submitText: React.ReactNode;
     submitSize: SubmitSize;
     openForm?: OpenCommentForm;
+    initialHasContent?: boolean;
 };
-const FormEditor: React.FC<FormEditorProps> = ({comment, submit, progress, setProgress, close, reduced, isOpen, editor, submitText, submitSize, openForm}) => {
+
+export const FormEditor: React.FC<FormEditorProps> = ({comment, submit, progress, setProgress, close, isOpen, editor, submitText, submitSize, openForm, initialHasContent}) => {
     const labs = useLabs();
     const {dispatchAction, t} = useAppContext();
     let buttonIcon = null;
-    const [hasContent, setHasContent] = useState(false);
+    const [hasContent, setHasContent] = useState(initialHasContent || false);
 
     useEffect(() => {
         if (editor) {
@@ -132,17 +134,10 @@ const FormEditor: React.FC<FormEditorProps> = ({comment, submit, progress, setPr
         };
     }, [editor, close, submitForm]);
 
-    let openStyles = '';
-    if (isOpen) {
-        const isReplyToReply = labs.commentImprovements && !!openForm?.in_reply_to_snippet;
-        openStyles = isReplyToReply ? 'pl-[1px] pt-[68px] sm:pl-[44px] sm:pt-[56px]' : 'pl-[1px] pt-[48px] sm:pl-[44px] sm:pt-[40px]';
-    }
-
     return (
-        <div className={`relative w-full pl-[40px] transition-[padding] delay-100 duration-150 sm:pl-[44px] ${reduced && 'pl-0'} ${openStyles}`}>
+        <>
             <div
-                className={`text-md min-h-[120px] w-full rounded-lg border border-black/10 bg-white/75 p-2 pb-[68px] font-sans leading-normal transition-all delay-100 duration-150 focus:outline-0 sm:px-3 sm:text-lg dark:bg-white/10 dark:text-neutral-300 ${isOpen ? 'cursor-text' : 'cursor-pointer'}
-            `}
+                className={`text-md min-h-[120px] w-full rounded-lg border border-black/10 bg-white/75 p-2 pb-[68px] font-sans leading-normal transition-all delay-100 duration-150 focus:outline-0 sm:px-3 sm:text-lg dark:bg-white/10 dark:text-neutral-300 ${isOpen ? 'cursor-text' : 'cursor-pointer'}`}
                 data-testid="form-editor">
                 <EditorContent
                     editor={editor} onMouseDown={stopIfFocused}
@@ -176,7 +171,7 @@ const FormEditor: React.FC<FormEditorProps> = ({comment, submit, progress, setPr
                     </button>
                 )}
             </div>
-        </div>
+        </>
     );
 };
 
@@ -236,7 +231,6 @@ const FormHeader: React.FC<FormHeaderProps> = ({show, name, expertise, replyingT
 };
 
 type FormProps = {
-    openForm: OpenCommentForm;
     comment?: Comment;
     editor: Editor | null;
     submit: (data: {html: string}) => Promise<void>;
@@ -245,16 +239,29 @@ type FormProps = {
     close?: () => void;
     isOpen: boolean;
     reduced: boolean;
+    openForm?: OpenCommentForm;
 };
 
-const Form: React.FC<FormProps> = ({comment, submit, submitText, submitSize, close, editor, reduced, isOpen, openForm}) => {
-    const {member, dispatchAction} = useAppContext();
+const Form: React.FC<FormProps> = ({
+    comment,
+    submit,
+    submitText,
+    submitSize,
+    close,
+    editor,
+    reduced,
+    isOpen,
+    openForm
+}) => {
+    const {member} = useAppContext();
     const isAskingDetails = usePopupOpen('addDetailsPopup');
     const [progress, setProgress] = useState<Progress>('default');
     const formEl = useRef(null);
 
+    // Initialize hasContent to true if we're editing an existing comment
+    const initialHasContent = openForm?.type === 'edit' && !!comment?.html;
+
     const memberName = member?.name ?? comment?.member?.name;
-    const memberExpertise = member?.expertise ?? comment?.member?.expertise;
 
     if (progress === 'sending' || (memberName && isAskingDetails)) {
         // Force open
@@ -268,6 +275,69 @@ const Form: React.FC<FormProps> = ({comment, submit, submitText, submitSize, clo
         }
     };
 
+    useEffect(() => {
+        if (!editor) {
+            return;
+        }
+
+        // Disable editing if the member doesn't have a name or when we are submitting the form
+        editor.setEditable(!!memberName && progress !== 'sending');
+    }, [editor, memberName, progress]);
+
+    return (
+        <form
+            ref={formEl}
+            data-testid="form"
+            onMouseDown={preventIfFocused}
+            onTouchStart={preventIfFocused}
+        >
+            <FormEditor
+                close={close}
+                comment={comment}
+                editor={editor}
+                initialHasContent={initialHasContent}
+                isOpen={isOpen}
+                openForm={openForm}
+                progress={progress}
+                reduced={reduced}
+                setProgress={setProgress}
+                submit={submit}
+                submitSize={submitSize}
+                submitText={submitText}
+            />
+        </form>
+    );
+};
+
+type FormWrapperProps = {
+    comment?: Comment;
+    editor: Editor | null;
+    isOpen: boolean;
+    reduced: boolean;
+    openForm?: OpenCommentForm;
+    children: React.ReactNode;
+};
+
+const FormWrapper: React.FC<FormWrapperProps> = ({
+    comment,
+    editor,
+    isOpen,
+    reduced,
+    openForm,
+    children
+}) => {
+    const {member, dispatchAction} = useAppContext();
+    const labs = useLabs();
+    
+    const memberName = member?.name ?? comment?.member?.name;
+    const memberExpertise = member?.expertise ?? comment?.member?.expertise;
+
+    let openStyles = '';
+    if (isOpen) {
+        const isReplyToReply = labs.commentImprovements && !!openForm?.in_reply_to_snippet;
+        openStyles = isReplyToReply ? 'pl-[1px] pt-[68px] sm:pl-[44px] sm:pt-[56px]' : 'pl-[1px] pt-[48px] sm:pl-[44px] sm:pt-[40px]';
+    }
+
     const openEditDetails = useCallback((options) => {
         editor?.commands?.blur();
 
@@ -275,21 +345,19 @@ const Form: React.FC<FormProps> = ({comment, submit, submitText, submitSize, clo
             type: 'addDetailsPopup',
             expertiseAutofocus: options.expertiseAutofocus ?? false,
             callback: function (succeeded: boolean) {
-                if (!editor || !formEl.current) {
+                if (!editor) {
                     return;
                 }
 
-                // Don't use focusEditor to avoid loop
                 if (!succeeded) {
                     return;
                 }
 
-                // useEffect is not fast enought to enable it
                 editor.setEditable(true);
                 editor.commands.focus();
             }
         });
-    }, [editor, dispatchAction, formEl]);
+    }, [editor, dispatchAction]);
 
     const editName = useCallback(() => {
         openEditDetails({expertiseAutofocus: false});
@@ -317,43 +385,17 @@ const Form: React.FC<FormProps> = ({comment, submit, submitText, submitSize, clo
         editor.commands.focus();
     }, [editor, editName, memberName]);
 
-    useEffect(() => {
-        if (!editor) {
-            return;
-        }
-
-        // Disable editing if the member doesn't have a name or when we are submitting the form
-        editor.setEditable(!!memberName && progress !== 'sending');
-    }, [editor, memberName, progress]);
-
     return (
-        <form
-            ref={formEl}
-            className={`-mx-2 mb-7 mt-[-10px] rounded-md transition duration-200 ${isOpen ? 'cursor-default' : 'cursor-pointer'}`}
-            data-testid="form"
-            onClick={focusEditor}
-            onMouseDown={preventIfFocused}
-            onTouchStart={preventIfFocused}
-        >
-            <div className="relative w-full">
+        <div className={`-mx-2 mt-[-10px] rounded-md transition duration-200 ${isOpen ? 'cursor-default' : 'cursor-pointer'}`}>
+            <div className="relative w-full" onClick={focusEditor}>
                 <div className="pr-[1px] font-sans leading-normal dark:text-neutral-300">
-                    <FormEditor
-                        close={close}
-                        comment={comment}
-                        editor={editor}
-                        isOpen={isOpen}
-                        openForm={openForm}
-                        progress={progress}
-                        reduced={reduced}
-                        setProgress={setProgress}
-                        submit={submit}
-                        submitSize={submitSize}
-                        submitText={submitText}
-                    />
+                    <div className={`relative mb-7 w-full pl-[40px] transition-[padding] delay-100 duration-150 sm:pl-[44px] ${reduced && 'pl-0'} ${openStyles}`}>
+                        {children}
+                    </div>
                 </div>
                 <div className='absolute left-0 top-1 flex h-11 w-full items-start justify-start sm:h-12'>
                     <div className="pointer-events-none mr-2 grow-0 sm:mr-3">
-                        <Avatar comment={comment} />
+                        <Avatar member={member} />
                     </div>
                     <div className="grow-1 mt-0.5 w-full">
                         <FormHeader
@@ -368,8 +410,9 @@ const Form: React.FC<FormProps> = ({comment, submit, submitText, submitSize, clo
                     </div>
                 </div>
             </div>
-        </form>
+        </div>
     );
 };
 
+export {Form, FormWrapper};
 export default Form;

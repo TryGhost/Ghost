@@ -1379,7 +1379,7 @@ Object {
 }
 `;
 
-exports[`Comments API when commenting enabled for all when authenticated hidden and deleted replies are not included in the count 1: [body] 1`] = `
+exports[`Comments API when commenting enabled for all when authenticated browse by post when commentImprovements flag is enabled doesn't count deleted or hidden comments in replies count 1: [body] 1`] = `
 Object {
   "comments": Array [
     Object {
@@ -1389,7 +1389,7 @@ Object {
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "edited_at": null,
-      "html": "<p>This is a comment</p>",
+      "html": null,
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "in_reply_to_id": null,
       "in_reply_to_snippet": null,
@@ -1422,26 +1422,272 @@ Object {
           },
           "status": "published",
         },
-        Object {
-          "count": Object {
-            "likes": Any<Number>,
-          },
-          "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-          "edited_at": null,
-          "html": "<p>This is a reply</p>",
-          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "in_reply_to_id": null,
-          "in_reply_to_snippet": null,
-          "liked": Any<Boolean>,
-          "member": Object {
-            "avatar_image": null,
-            "expertise": null,
-            "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-            "name": null,
-            "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-          },
-          "status": "published",
-        },
+      ],
+      "status": "deleted",
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": 15,
+      "next": null,
+      "page": 1,
+      "pages": 1,
+      "prev": null,
+      "total": 1,
+    },
+  },
+}
+`;
+
+exports[`Comments API when commenting enabled for all when authenticated browse by post when commentImprovements flag is enabled doesn't count deleted or hidden comments in replies count 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "838",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Comments API when commenting enabled for all when authenticated browse by post when commentImprovements flag is enabled excludes deleted comments 1: [body] 1`] = `
+Object {
+  "comments": Array [],
+  "meta": Object {
+    "pagination": Object {
+      "limit": 15,
+      "next": null,
+      "page": 1,
+      "pages": 1,
+      "prev": null,
+      "total": 0,
+    },
+  },
+}
+`;
+
+exports[`Comments API when commenting enabled for all when authenticated browse by post when commentImprovements flag is enabled excludes deleted comments 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "103",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Comments API when commenting enabled for all when authenticated browse by post when commentImprovements flag is enabled excludes deleted comments if all replies are hidden or deleted 1: [body] 1`] = `
+Object {
+  "comments": Array [],
+  "meta": Object {
+    "pagination": Object {
+      "limit": 15,
+      "next": null,
+      "page": 1,
+      "pages": 1,
+      "prev": null,
+      "total": 0,
+    },
+  },
+}
+`;
+
+exports[`Comments API when commenting enabled for all when authenticated browse by post when commentImprovements flag is enabled excludes deleted comments if all replies are hidden or deleted 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "103",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Comments API when commenting enabled for all when authenticated browse by post when commentImprovements flag is enabled excludes deleted replies 1: [body] 1`] = `
+Object {
+  "comments": Array [
+    Object {
+      "count": Object {
+        "likes": Any<Number>,
+        "replies": Any<Number>,
+      },
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "edited_at": null,
+      "html": "<p>This is a comment</p>",
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "in_reply_to_id": null,
+      "in_reply_to_snippet": null,
+      "liked": Any<Boolean>,
+      "member": Object {
+        "avatar_image": null,
+        "expertise": null,
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "name": "Mr Egg",
+        "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      },
+      "replies": Array [],
+      "status": "published",
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": 15,
+      "next": null,
+      "page": 1,
+      "pages": 1,
+      "prev": null,
+      "total": 1,
+    },
+  },
+}
+`;
+
+exports[`Comments API when commenting enabled for all when authenticated browse by post when commentImprovements flag is enabled excludes deleted replies 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "498",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Comments API when commenting enabled for all when authenticated browse by post when commentImprovements flag is enabled excludes hidden comments 1: [body] 1`] = `
+Object {
+  "comments": Array [],
+  "meta": Object {
+    "pagination": Object {
+      "limit": 15,
+      "next": null,
+      "page": 1,
+      "pages": 1,
+      "prev": null,
+      "total": 0,
+    },
+  },
+}
+`;
+
+exports[`Comments API when commenting enabled for all when authenticated browse by post when commentImprovements flag is enabled excludes hidden comments 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "103",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Comments API when commenting enabled for all when authenticated browse by post when commentImprovements flag is enabled excludes hidden comments if all replies are hidden or deleted 1: [body] 1`] = `
+Object {
+  "comments": Array [],
+  "meta": Object {
+    "pagination": Object {
+      "limit": 15,
+      "next": null,
+      "page": 1,
+      "pages": 1,
+      "prev": null,
+      "total": 0,
+    },
+  },
+}
+`;
+
+exports[`Comments API when commenting enabled for all when authenticated browse by post when commentImprovements flag is enabled excludes hidden comments if all replies are hidden or deleted 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "103",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Comments API when commenting enabled for all when authenticated browse by post when commentImprovements flag is enabled excludes hidden replies 1: [body] 1`] = `
+Object {
+  "comments": Array [
+    Object {
+      "count": Object {
+        "likes": Any<Number>,
+        "replies": Any<Number>,
+      },
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "edited_at": null,
+      "html": "<p>This is a comment</p>",
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "in_reply_to_id": null,
+      "in_reply_to_snippet": null,
+      "liked": Any<Boolean>,
+      "member": Object {
+        "avatar_image": null,
+        "expertise": null,
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "name": "Mr Egg",
+        "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      },
+      "replies": Array [],
+      "status": "published",
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": 15,
+      "next": null,
+      "page": 1,
+      "pages": 1,
+      "prev": null,
+      "total": 1,
+    },
+  },
+}
+`;
+
+exports[`Comments API when commenting enabled for all when authenticated browse by post when commentImprovements flag is enabled excludes hidden replies 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "498",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Comments API when commenting enabled for all when authenticated browse by post when commentImprovements flag is enabled includes deleted comments if they have published replies 1: [body] 1`] = `
+Object {
+  "comments": Array [
+    Object {
+      "count": Object {
+        "likes": Any<Number>,
+        "replies": Any<Number>,
+      },
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "edited_at": null,
+      "html": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "in_reply_to_id": null,
+      "in_reply_to_snippet": null,
+      "liked": Any<Boolean>,
+      "member": Object {
+        "avatar_image": null,
+        "expertise": null,
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "name": "Mr Egg",
+        "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      },
+      "replies": Array [
         Object {
           "count": Object {
             "likes": Any<Number>,
@@ -1463,17 +1709,99 @@ Object {
           "status": "published",
         },
       ],
-      "status": "published",
+      "status": "deleted",
     },
   ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": 15,
+      "next": null,
+      "page": 1,
+      "pages": 1,
+      "prev": null,
+      "total": 1,
+    },
+  },
 }
 `;
 
-exports[`Comments API when commenting enabled for all when authenticated hidden and deleted replies are not included in the count 2: [headers] 1`] = `
+exports[`Comments API when commenting enabled for all when authenticated browse by post when commentImprovements flag is enabled includes deleted comments if they have published replies 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1504",
+  "content-length": "838",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Comments API when commenting enabled for all when authenticated browse by post when commentImprovements flag is enabled includes hidden comments if they have published replies 1: [body] 1`] = `
+Object {
+  "comments": Array [
+    Object {
+      "count": Object {
+        "likes": Any<Number>,
+        "replies": Any<Number>,
+      },
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "edited_at": null,
+      "html": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "in_reply_to_id": null,
+      "in_reply_to_snippet": null,
+      "liked": Any<Boolean>,
+      "member": Object {
+        "avatar_image": null,
+        "expertise": null,
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "name": "Mr Egg",
+        "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      },
+      "replies": Array [
+        Object {
+          "count": Object {
+            "likes": Any<Number>,
+          },
+          "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "edited_at": null,
+          "html": "<p>This is a reply</p>",
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "in_reply_to_id": null,
+          "in_reply_to_snippet": null,
+          "liked": Any<Boolean>,
+          "member": Object {
+            "avatar_image": null,
+            "expertise": null,
+            "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+            "name": null,
+            "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+          },
+          "status": "published",
+        },
+      ],
+      "status": "hidden",
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": 15,
+      "next": null,
+      "page": 1,
+      "pages": 1,
+      "prev": null,
+      "total": 1,
+    },
+  },
+}
+`;
+
+exports[`Comments API when commenting enabled for all when authenticated browse by post when commentImprovements flag is enabled includes hidden comments if they have published replies 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "837",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Encoding",
@@ -1777,6 +2105,88 @@ Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": "406",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Comments API when commenting enabled for all when authenticated replies to replies has redacted in_reply_to_snippet when referenced comment is deleted 1: [body] 1`] = `
+Object {
+  "comments": Array [
+    Object {
+      "count": Object {
+        "likes": Any<Number>,
+        "replies": 0,
+      },
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "edited_at": null,
+      "html": "<p>This is a comment</p>",
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "in_reply_to_id": Nullable<StringMatching>,
+      "in_reply_to_snippet": "[hidden/removed]",
+      "liked": Any<Boolean>,
+      "member": Object {
+        "avatar_image": null,
+        "expertise": null,
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "name": null,
+        "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      },
+      "replies": Array [],
+      "status": "published",
+    },
+  ],
+}
+`;
+
+exports[`Comments API when commenting enabled for all when authenticated replies to replies has redacted in_reply_to_snippet when referenced comment is deleted 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "442",
+  "content-type": "application/json; charset=utf-8",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Comments API when commenting enabled for all when authenticated replies to replies has redacted in_reply_to_snippet when referenced comment is hidden 1: [body] 1`] = `
+Object {
+  "comments": Array [
+    Object {
+      "count": Object {
+        "likes": Any<Number>,
+        "replies": 0,
+      },
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "edited_at": null,
+      "html": "<p>This is a comment</p>",
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "in_reply_to_id": Nullable<StringMatching>,
+      "in_reply_to_snippet": "[hidden/removed]",
+      "liked": Any<Boolean>,
+      "member": Object {
+        "avatar_image": null,
+        "expertise": null,
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "name": null,
+        "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      },
+      "replies": Array [],
+      "status": "published",
+    },
+  ],
+}
+`;
+
+exports[`Comments API when commenting enabled for all when authenticated replies to replies has redacted in_reply_to_snippet when referenced comment is hidden 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "442",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Encoding",
