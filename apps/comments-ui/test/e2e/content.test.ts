@@ -41,7 +41,7 @@ test.describe('Deleted and Hidden Content', async () => {
         await expect(comments).toHaveCount(3);
     });
 
-    test('hide and deleted comment shows with hidden/deleted text when it has replies', async ({page}) => {
+    test('hide and deleted comment shows with removed text when it has replies', async ({page}) => {
         const mockedApi = new MockedApi({});
         mockedApi.addComment({
             html: '<p>This is comment 1</p>'
