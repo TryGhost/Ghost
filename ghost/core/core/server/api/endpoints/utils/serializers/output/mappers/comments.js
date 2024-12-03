@@ -52,7 +52,7 @@ const commentMapper = (model, frame) => {
         if (jsonModel.inReplyTo && (jsonModel.inReplyTo.status === 'published' || (!isPublicRequest && jsonModel.inReplyTo.status === 'hidden'))) {
             jsonModel.in_reply_to_snippet = htmlToPlaintext.commentSnippet(jsonModel.inReplyTo.html);
         } else if (jsonModel.inReplyTo && jsonModel.inReplyTo.status !== 'published') {
-            jsonModel.in_reply_to_snippet = '[hidden/removed]';
+            jsonModel.in_reply_to_snippet = '[removed]';
         } else {
             jsonModel.in_reply_to_snippet = null;
         }

@@ -1518,7 +1518,7 @@ describe('Comments API', function () {
 
                         const {body: {comments: [comment]}} = await testGetComments(`/api/comments/${newComment.id}`, [labsCommentMatcher]);
 
-                        comment.in_reply_to_snippet.should.eql('[hidden/removed]');
+                        comment.in_reply_to_snippet.should.eql('[removed]');
                     });
                 });
             });
