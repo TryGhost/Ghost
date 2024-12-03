@@ -417,22 +417,30 @@ test.describe('Actions', async () => {
             const optionSelect = await sortingDropdown.getByText('Newest');
             mockedApi.setDelay(100);
             await optionSelect.click();
-            await expect(frame.getByTestId('order-comment-loader')).toBeVisible();
-            await expect(frame.getByTestId('order-comment-loader')).not.toBeVisible();
+            const commentsElement = await frame.getByTestId('comment-elements');
+            const hasOpacity50 = await commentsElement.evaluate(el => el.classList.contains('opacity-50'));
+            expect(hasOpacity50).toBe(true);
 
             const comments = await frame.getByTestId('comment-component');
 
             await expect(comments.nth(0)).toContainText('This is the newest comment');
+
+            const hasNoOpacity50 = await commentsElement.evaluate(el => el.classList.contains('opacity-50'));
+            expect(hasNoOpacity50).toBe(false);
         });
 
         test('Sorts by oldest', async ({page}) => {
             mockedApi.addComment({
-                html: '<p>This is the oldest</p>',
-                created_at: new Date('2024-02-01T00:00:00Z')
+                html: '<p>This is comment 2</p>',
+                created_at: new Date('2024-03-02T00:00:00Z'),
+                liked: true,
+                count: {
+                    likes: 52
+                }
             });
             mockedApi.addComment({
-                html: '<p>This is comment 2</p>',
-                created_at: new Date('2024-03-02T00:00:00Z')
+                html: '<p>This is the oldest</p>',
+                created_at: new Date('2024-02-01T00:00:00Z')
             });
             mockedApi.addComment({
                 html: '<p>This is the newest comment</p>',
@@ -452,12 +460,16 @@ test.describe('Actions', async () => {
             const optionSelect = await sortingDropdown.getByText('Oldest');
             mockedApi.setDelay(100);
             await optionSelect.click();
-            await expect(frame.getByTestId('order-comment-loader')).toBeVisible();
-            await expect(frame.getByTestId('order-comment-loader')).not.toBeVisible();
+            const commentsElement = await frame.getByTestId('comment-elements');
+            const hasOpacity50 = await commentsElement.evaluate(el => el.classList.contains('opacity-50'));
+            expect(hasOpacity50).toBe(true);
 
             const comments = await frame.getByTestId('comment-component');
 
             await expect(comments.nth(0)).toContainText('This is the oldest');
+
+            const hasNoOpacity50 = await commentsElement.evaluate(el => el.classList.contains('opacity-50'));
+            expect(hasNoOpacity50).toBe(false);
         });
 
         test('has loading state when changing sorting', async ({page}) => {
@@ -487,8 +499,16 @@ test.describe('Actions', async () => {
             const optionSelect = await sortingDropdown.getByText('Newest');
             mockedApi.setDelay(100);
             await optionSelect.click();
-            await expect(frame.getByTestId('order-comment-loader')).toBeVisible();
-            await expect(frame.getByTestId('order-comment-loader')).not.toBeVisible();
+            const commentsElement = await frame.getByTestId('comment-elements');
+            const hasOpacity50 = await commentsElement.evaluate(el => el.classList.contains('opacity-50'));
+            expect(hasOpacity50).toBe(true);
+
+            const comments = await frame.getByTestId('comment-component');
+
+            await expect(comments.nth(0)).toContainText('This is the newest comment');
+
+            const hasNoOpacity50 = await commentsElement.evaluate(el => el.classList.contains('opacity-50'));
+            expect(hasNoOpacity50).toBe(false);
         });
     });
 

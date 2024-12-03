@@ -64,7 +64,7 @@ const Content = () => {
                         </span>
                     </div>
                 )}
-                <div className={`z-10 transition-opacity duration-100 ${commentsIsLoading ? 'opacity-50' : ''}`} data-test="comment-elements">
+                <div className={`z-10 transition-opacity duration-100 ${commentsIsLoading ? 'opacity-50' : ''}`} data-testid="comment-elements">
                     {commentsElements}
                 </div>
                 <Pagination />
@@ -76,7 +76,7 @@ const Content = () => {
             <>
                 <ContentTitle count={commentCount} showCount={showCount} title={title}/>
                 <Pagination />
-                <div className={!pagination ? 'mt-4' : ''} data-test="comment-elements">
+                <div className={!pagination ? 'mt-4' : ''} data-testid="comment-elements">
                     {commentsElements}
                 </div>
                 <div>
