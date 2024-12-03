@@ -414,8 +414,11 @@ test.describe('Actions', async () => {
                 'comments-sorting-form-dropdown'
             );
 
-            const newestOption = await sortingDropdown.getByText('Newest');
-            await newestOption.click();
+            const optionSelect = await sortingDropdown.getByText('Newest');
+            mockedApi.setDelay(100);
+            await optionSelect.click();
+            await expect(frame.getByTestId('order-comment-loader')).toBeVisible();
+            await expect(frame.getByTestId('order-comment-loader')).not.toBeVisible();
 
             const comments = await frame.getByTestId('comment-component');
 
@@ -446,8 +449,11 @@ test.describe('Actions', async () => {
                 'comments-sorting-form-dropdown'
             );
 
-            const newestOption = await sortingDropdown.getByText('Oldest');
-            await newestOption.click();
+            const optionSelect = await sortingDropdown.getByText('Oldest');
+            mockedApi.setDelay(100);
+            await optionSelect.click();
+            await expect(frame.getByTestId('order-comment-loader')).toBeVisible();
+            await expect(frame.getByTestId('order-comment-loader')).not.toBeVisible();
 
             const comments = await frame.getByTestId('comment-component');
 
@@ -478,10 +484,11 @@ test.describe('Actions', async () => {
                 'comments-sorting-form-dropdown'
             );
 
-            const newestOption = await sortingDropdown.getByText('Newest');
+            const optionSelect = await sortingDropdown.getByText('Newest');
             mockedApi.setDelay(100);
-            await newestOption.click();
+            await optionSelect.click();
             await expect(frame.getByTestId('order-comment-loader')).toBeVisible();
+            await expect(frame.getByTestId('order-comment-loader')).not.toBeVisible();
         });
     });
 
