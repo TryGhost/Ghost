@@ -1,3 +1,5 @@
+VERSION 0
+
 SCHEMA >
     `site_uuid` String,
     `post_uuid` String,

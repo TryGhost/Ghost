@@ -1,12 +1,10 @@
-
+VERSION 0
 DESCRIPTION >
     Visits trend over time for the last 30 minutes, filling the blanks.
     Works great for the realtime chart.
 
 TOKEN "dashboard" READ
 TOKEN "stats page" READ
-
-VERSION 0
 
 NODE parsed_hits
 DESCRIPTION >

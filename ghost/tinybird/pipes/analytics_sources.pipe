@@ -1,3 +1,5 @@
+VERSION 0
+
 NODE parsed_hits
 DESCRIPTION >
     Parse raw page_hit events
@@ -90,4 +92,4 @@ SQL >
     HAVING b.source != current_domain
 
 TYPE MATERIALIZED
-DATASOURCE analytics_sources_mv
+DATASOURCE analytics_sources_mv__v0

@@ -1,3 +1,5 @@
+VERSION 0
+
 NODE parsed_hits
 DESCRIPTION >
     Parse raw page_hit events
@@ -84,4 +86,4 @@ SQL >
     GROUP BY date, device, browser, location, source, pathname, post_uuid,site_uuid
 
 TYPE MATERIALIZED
-DATASOURCE analytics_pages_mv
+DATASOURCE analytics_pages_mv__v0

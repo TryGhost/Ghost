@@ -1,3 +1,5 @@
+VERSION 0
+
 DESCRIPTION >
     Most visited pages for a given period.
     Accepts `date_from` and `date_to` date filter. Defaults to last 7 days.
