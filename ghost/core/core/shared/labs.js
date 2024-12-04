@@ -45,7 +45,8 @@ const ALPHA_FEATURES = [
     'lexicalIndicators',
     'adminXDemo',
     'contentVisibility',
-    'commentImprovements'
+    'commentImprovements',
+    'captcha'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

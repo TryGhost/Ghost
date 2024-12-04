@@ -7,9 +7,10 @@ import NewsletterSelectionPage from './NewsletterSelectionPage';
 import ProductsSection from '../common/ProductsSection';
 import InputForm from '../common/InputForm';
 import {ValidateInputForm} from '../../utils/form';
-import {getSiteProducts, getSitePrices, hasOnlyFreePlan, isInviteOnlySite, freeHasBenefitsOrDescription, hasOnlyFreeProduct, hasMultipleNewsletters, hasFreeTrialTier, isSignupAllowed} from '../../utils/helpers';
+import {getSiteProducts, getSitePrices, hasOnlyFreePlan, isInviteOnlySite, freeHasBenefitsOrDescription, hasOnlyFreeProduct, hasMultipleNewsletters, hasFreeTrialTier, isSignupAllowed, hasCaptchaEnabled, getCaptchaSitekey} from '../../utils/helpers';
 import {ReactComponent as InvitationIcon} from '../../images/icons/invitation.svg';
 import {interceptAnchorClicks} from '../../utils/links';
+import HCaptcha from '@hcaptcha/react-hcaptcha';
 
 export const SignupPageStyles = `
 .gh-portal-back-sitetitle {
@@ -352,10 +353,13 @@ class SignupPage extends React.Component {
             email: '',
             plan: 'free',
             showNewsletterSelection: false,
-            termsCheckboxChecked: false
+            termsCheckboxChecked: false,
+            captchaLoaded: false,
+            token: undefined
         };
-    
+
         this.termsRef = React.createRef();
+        this.captchaRef = React.createRef();
     }
 
     componentDidMount() {
@@ -407,14 +411,15 @@ class SignupPage extends React.Component {
             };
         }, () => {
             const {site, onAction} = this.context;
-            const {name, email, plan, phonenumber, errors} = this.state;
+            const {name, email, plan, phonenumber, token, errors} = this.state;
+
             const hasFormErrors = (errors && Object.values(errors).filter(d => !!d).length > 0);
-            
+
             // Only scroll checkbox into view if it's the only error
             const otherErrors = {...errors};
             delete otherErrors.checkbox;
             const hasOnlyCheckboxError = errors?.checkbox && Object.values(otherErrors).every(error => !error);
-            
+
             if (hasOnlyCheckboxError && this.termsRef.current) {
                 this.termsRef.current.scrollIntoView({behavior: 'smooth', block: 'center'});
             }
@@ -423,14 +428,14 @@ class SignupPage extends React.Component {
                 if (hasMultipleNewsletters({site})) {
                     this.setState({
                         showNewsletterSelection: true,
-                        pageData: {name, email, plan, phonenumber},
+                        pageData: {name, email, plan, phonenumber, token},
                         errors: {}
                     });
                 } else {
                     this.setState({
                         errors: {}
                     });
-                    onAction('signup', {name, email, phonenumber, plan});
+                    onAction('signup', {name, email, phonenumber, plan, token});
                 }
             }
         });
@@ -438,6 +443,10 @@ class SignupPage extends React.Component {
 
     handleSignup(e) {
         e.preventDefault();
+        const {site} = this.context;
+        if (hasCaptchaEnabled({site})) {
+            return this.captchaRef.current.execute();
+        }
         this.doSignup();
     }
 
@@ -743,6 +752,18 @@ class SignupPage extends React.Component {
                             onChange={(e, field) => this.handleInputChange(e, field)}
                             onKeyDown={e => this.onKeyDown(e)}
                         />
+                        {(hasCaptchaEnabled({site}) &&
+                            <HCaptcha
+                                size="invisible"
+                                sitekey={getCaptchaSitekey({site})}
+                                onLoad={() => this.setState({captchaLoaded: true})}
+                                onVerify={(token) => {
+                                    this.setState({token: token});
+                                    this.doSignup();
+                                }}
+                                ref={this.captchaRef}
+                            />
+                        )}
                     </div>
                     <div>
                         {(hasOnlyFree ?

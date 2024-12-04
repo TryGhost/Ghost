@@ -255,6 +255,14 @@ export function isSignupAllowed({site}) {
     return site?.members_signup_access === 'all' && (site?.is_stripe_configured || hasOnlyFreePlan({site}));
 }
 
+export function hasCaptchaEnabled({site}) {
+    return site?.captcha_enabled === true;
+}
+
+export function getCaptchaSitekey({site}) {
+    return site?.captcha_sitekey || '';
+}
+
 export function hasMultipleProducts({site}) {
     const products = getAvailableProducts({site});
 
