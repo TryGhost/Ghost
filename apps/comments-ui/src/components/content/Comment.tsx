@@ -149,7 +149,7 @@ const PublishedComment: React.FC<PublishedCommentProps> = ({comment, parent, ope
     return (
         <CommentLayout avatar={avatar} className={hiddenClass} hasReplies={hasReplies}>
             <CommentHeader className={hiddenClass} comment={comment} />
-            <CommentBody className={hiddenClass} html={comment.html} />
+            <CommentBody className={hiddenClass} html={comment.html} isHighlighted={comment.isHighlighted} />
             <CommentMenu
                 comment={comment}
                 highlightReplyButton={highlightReplyButton}
@@ -282,7 +282,7 @@ type CommentHeaderProps = {
 }
 
 const CommentHeader: React.FC<CommentHeaderProps> = ({comment, className = ''}) => {
-    const {t} = useAppContext();
+    const {t, dispatchAction} = useAppContext();
     const labs = useLabs();
     const createdAtRelative = useRelativeTime(comment.created_at);
     const {member} = useAppContext();
@@ -297,34 +297,16 @@ const CommentHeader: React.FC<CommentHeaderProps> = ({comment, className = ''}) 
         }
 
         const element = (e.target as HTMLElement).ownerDocument.getElementById(comment.in_reply_to_id);
-        if (element) {
-            const contentElement = element.querySelector('[data-testid="comment-content"]');
-            if (contentElement) {
-                // Find all paragraph elements
-                const paragraphs = contentElement.getElementsByTagName('p');
-                
-                Array.from(paragraphs).forEach((p) => {
-                    // Create a mark element for each paragraph
-                    const mark = document.createElement('mark');
-                    mark.className = 'animate-[highlight_2.5s_ease-out] [animation-delay:1s] bg-yellow-300/40 -my-0.5 py-0.5 dark:text-white/85 dark:bg-yellow-500/40';
-                    
-                    // Move the paragraph's content inside the mark
-                    while (p.firstChild) {
-                        mark.appendChild(p.firstChild);
-                    }
-                    p.appendChild(mark);
-
-                    // Remove the mark and restore original structure after animation
-                    mark.addEventListener('animationend', () => {
-                        while (mark.firstChild) {
-                            p.appendChild(mark.firstChild);
-                        }
-                        mark.remove();
-                    }, {once: true});
-                });
-            }
-
+        if (element && comment.parent_id) {
+            const payload = {
+                replyToId: comment.in_reply_to_id,
+                parentCommentId: comment.parent_id
+            };
+            dispatchAction('setHighlightedRepliedToComment', payload);
             element.scrollIntoView({behavior: 'smooth', block: 'center'});
+            setTimeout(() => {
+                dispatchAction('removeHighlightedRepliedToComment', null);
+            }, 2500);
         }
     };
 
@@ -352,10 +334,35 @@ const CommentHeader: React.FC<CommentHeaderProps> = ({comment, className = ''}) 
 type CommentBodyProps = {
     html: string;
     className?: string;
+    isHighlighted?: boolean;
 }
 
-const CommentBody: React.FC<CommentBodyProps> = ({html, className = ''}) => {
-    const dangerouslySetInnerHTML = {__html: html};
+const CommentBody: React.FC<CommentBodyProps> = ({html, className = '', isHighlighted}) => {
+    let commentHtml = html;
+
+    if (isHighlighted) {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+
+        const paragraphs = doc.querySelectorAll('p');
+
+        paragraphs.forEach((p) => {
+            const mark = doc.createElement('mark');
+            mark.className =
+                'animate-[highlight_2.5s_ease-out] [animation-delay:1s] bg-yellow-300/40 -my-0.5 py-0.5 dark:text-white/85 dark:bg-yellow-500/40';
+
+            while (p.firstChild) {
+                mark.appendChild(p.firstChild);
+            }
+            p.appendChild(mark);
+        });
+
+        // Serialize the modified html back to a string
+        commentHtml = doc.body.innerHTML;
+    }
+
+    const dangerouslySetInnerHTML = {__html: commentHtml};
+
     return (
         <div className={`mt mb-2 flex flex-row items-center gap-4 pr-4 ${className}`}>
             <p dangerouslySetInnerHTML={dangerouslySetInnerHTML} className="gh-comment-content text-md -mx-1 text-pretty rounded-md px-1 font-sans leading-normal text-neutral-900 [overflow-wrap:anywhere] sm:text-lg dark:text-white/85" data-testid="comment-content"/>

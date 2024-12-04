@@ -399,6 +399,39 @@ async function openCommentForm({data: newForm, api, state}: {data: OpenCommentFo
     };
 }
 
+function setHighlightedRepliedToComment({
+    data: {replyToId, parentCommentId},
+    state
+}: {
+    data: { replyToId: string; parentCommentId: string };
+    state: EditableAppContext;
+}) {
+    return {
+        comments: state.comments.map(comment => (comment.id === parentCommentId
+            ? {
+                ...comment,
+                replies: comment.replies.map(reply => ({
+                    ...reply,
+                    isHighlighted: reply.id === replyToId
+                }))
+            }
+            : comment)
+        )
+    };
+}
+
+function removeHighlightedRepliedToComment({state}: { state: EditableAppContext }) {
+    return {
+        comments: state.comments.map(comment => ({
+            ...comment,
+            replies: comment.replies.map(reply => ({
+                ...reply,
+                isHighlighted: false
+            }))
+        }))
+    };
+}
+
 function setCommentFormHasUnsavedChanges({data: {id, hasUnsavedChanges}, state}: {data: {id: string, hasUnsavedChanges: boolean}, state: EditableAppContext}) {
     const updatedForms = state.openCommentForms.map((f) => {
         if (f.id === id) {
@@ -440,7 +473,9 @@ export const Actions = {
     loadMoreReplies,
     updateMember,
     setOrder,
-    openCommentForm
+    openCommentForm,
+    setHighlightedRepliedToComment,
+    removeHighlightedRepliedToComment
 };
 
 export type ActionType = keyof typeof Actions;

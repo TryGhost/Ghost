@@ -200,9 +200,26 @@ test.describe('Actions', async () => {
 
         // Should indicate this was a reply to a reply
         await expect(frame.getByTestId('comment-in-reply-to')).toHaveText('This is a reply to 1');
+
+        return {frame};
     }
 
     test('Can reply to a reply', async ({page}) => {
+        mockedApi.addComment({
+            id: '1',
+            html: '<p>This is comment 1</p>',
+            replies: [
+                mockedApi.buildReply({
+                    html: '<p>This is a reply to 1</p>',
+                    parent_id: '1'
+                })
+            ]
+        });
+
+        await testReplyToReply(page);
+    });
+
+    test('can highlight reply when clicking on reply to: message', async ({page}) => {
         mockedApi.addComment({
             html: '<p>This is comment 1</p>',
             replies: [
@@ -212,7 +229,26 @@ test.describe('Actions', async () => {
             ]
         });
 
-        await testReplyToReply(page);
+        const {frame} = await testReplyToReply(page);
+
+        await frame.getByTestId('comment-in-reply-to').click();
+
+        // get the first reply which contains This is a reply to 1
+        const commentComponent = frame.getByTestId('comment-component').nth(1);
+
+        const replyComment = commentComponent.getByTestId('comment-content').nth(0);
+
+        // check that replyComment contains the text This is a reply to 1
+        await expect(replyComment).toHaveText('This is a reply to 1');
+
+        const markElement = await replyComment.locator('mark');
+        await expect(markElement).toBeVisible();
+
+        // Check that the mark element has the expected classes
+        await expect(markElement).toHaveClass(/animate-\[highlight_2\.5s_ease-out\]/);
+        await expect(markElement).toHaveClass(/\[animation-delay:1s\]/);
+        await expect(markElement).toHaveClass(/bg-yellow-300\/40/);
+        await expect(markElement).toHaveClass(/dark:bg-yellow-500\/40/);
     });
 
     test('Can reply to a reply with a deleted parent comment', async function ({page}) {

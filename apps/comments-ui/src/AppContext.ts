@@ -17,6 +17,7 @@ export type Comment = {
     post_id: string,
     in_reply_to_id: string,
     in_reply_to_snippet: string,
+    parent_id: string | null,
     replies: Comment[],
     status: string,
     liked: boolean,
@@ -27,7 +28,8 @@ export type Comment = {
     member: Member | null,
     edited_at: string,
     created_at: string,
-    html: string
+    html: string,
+    isHighlighted?: boolean,
 }
 
 export type OpenCommentForm = {
