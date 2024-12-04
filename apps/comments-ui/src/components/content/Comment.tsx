@@ -306,11 +306,11 @@ export const RepliedToSnippet: React.FC<{comment: Comment}> = ({comment}) => {
 
     const linkToReply = inReplyToComment && inReplyToComment.status === 'published';
 
-    const className = 'font-semibold text-neutral-900/60 transition-colors hover:text-neutral-900/70 dark:text-white/70 dark:hover:text-white/80';
+    const className = 'font-medium text-neutral-900/60 transition-colors dark:text-white/70';
 
     return (
         linkToReply
-            ? <a className={className} data-testid="comment-in-reply-to" href={`#${comment.in_reply_to_id}`} onClick={scrollRepliedToCommentIntoView}>{inReplyToSnippet}</a>
+            ? <a className={`${className} hover:text-neutral-900/75 dark:hover:text-white/85`} data-testid="comment-in-reply-to" href={`#${comment.in_reply_to_id}`} onClick={scrollRepliedToCommentIntoView}>{inReplyToSnippet}</a>
             : <span className={className} data-testid="comment-in-reply-to">{inReplyToSnippet}</span>
     );
 };
