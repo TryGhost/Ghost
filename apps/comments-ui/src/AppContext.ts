@@ -17,7 +17,6 @@ export type Comment = {
     post_id: string,
     in_reply_to_id: string,
     in_reply_to_snippet: string,
-    parent_id: string | null,
     replies: Comment[],
     status: string,
     liked: boolean,
