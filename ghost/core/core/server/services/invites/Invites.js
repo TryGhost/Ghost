@@ -52,7 +52,7 @@ class Invites {
                 } else {
                     emailData = {
                         blogName: this.settingsCache.get('title'),
-                        invitedByEmail: `ghost@${this.settingsHelpers.getDefaultEmailDomain()}`,
+                        invitedByEmail: `noreply@${this.settingsHelpers.getDefaultEmailDomain()}`,
                         resetLink: this.urlUtils.urlJoin(adminUrl, 'signup', security.url.encodeBase64(invite.get('token')), '/'),
                         recipientEmail: invite.get('email')
                     };
