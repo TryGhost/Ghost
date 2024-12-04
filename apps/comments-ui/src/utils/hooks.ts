@@ -57,3 +57,18 @@ export function useRelativeTime(dateString: string) {
         return formatRelativeTime(dateString, t);
     }, [dateString]);
 }
+
+export const useHighlightComment = () => {
+    const {dispatchAction} = useAppContext();
+
+    const highlightComment = (commentId: string) => {
+        dispatchAction('highlightComment', {commentId});
+
+        // clears the highlight after 2.5 seconds
+        setTimeout(() => {
+            dispatchAction('highlightComment', {commentId: null});
+        }, 2500);
+    };
+
+    return highlightComment;
+};

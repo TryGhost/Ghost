@@ -408,20 +408,17 @@ async function openCommentForm({data: newForm, api, state}: {data: OpenCommentFo
     };
 }
 
-function setHighlightedRepliedToComment({
-    data: {replyToId}
+function highlightComment({
+    data: {commentId},
+    state
 }: {
-    data: { replyToId: string};
+    data: { commentId: string | null };
     state: EditableAppContext;
 }) {
-    return {
-        replyIdToHighlight: replyToId
-    };
-}
+    state.commentIdToHighlight = commentId;
 
-function removeHighlightedRepliedToComment() {
     return {
-        replyIdToHighlight: null
+        commentIdToHighlight: commentId
     };
 }
 
@@ -467,8 +464,7 @@ export const Actions = {
     updateMember,
     setOrder,
     openCommentForm,
-    setHighlightedRepliedToComment,
-    removeHighlightedRepliedToComment
+    highlightComment
 };
 
 export type ActionType = keyof typeof Actions;

@@ -9,7 +9,7 @@ import {Comment, OpenCommentForm, useAppContext, useLabs} from '../../AppContext
 import {Transition} from '@headlessui/react';
 import {findCommentById, formatExplicitTime, getCommentInReplyToSnippet, getMemberNameFromComment} from '../../utils/helpers';
 import {useCallback} from 'react';
-import {useRelativeTime} from '../../utils/hooks';
+import {useHighlightComment, useRelativeTime} from '../../utils/hooks';
 
 type AnimatedCommentProps = {
     comment: Comment;
@@ -93,7 +93,7 @@ type PublishedCommentProps = CommentProps & {
     openEditMode: () => void;
 }
 const PublishedComment: React.FC<PublishedCommentProps> = ({comment, parent, openEditMode}) => {
-    const {dispatchAction, openCommentForms, admin, replyIdToHighlight} = useAppContext();
+    const {dispatchAction, openCommentForms, admin, commentIdToHighlight} = useAppContext();
     const labs = useLabs();
 
     // Determine if the comment should be displayed with reduced opacity
@@ -149,7 +149,7 @@ const PublishedComment: React.FC<PublishedCommentProps> = ({comment, parent, ope
                 ) : (
                     <>
                         <CommentHeader className={hiddenClass} comment={comment} />
-                        <CommentBody className={hiddenClass} html={comment.html} isHighlighted={comment.id === replyIdToHighlight} />
+                        <CommentBody className={hiddenClass} html={comment.html} isHighlighted={comment.id === commentIdToHighlight} />
                         <CommentMenu
                             comment={comment}
                             highlightReplyButton={highlightReplyButton}
@@ -285,7 +285,8 @@ type CommentHeaderProps = {
 }
 
 const CommentHeader: React.FC<CommentHeaderProps> = ({comment, className = ''}) => {
-    const {comments, t, dispatchAction} = useAppContext();
+    const {comments, t} = useAppContext();
+    const highlightComment = useHighlightComment();
     const labs = useLabs();
     const createdAtRelative = useRelativeTime(comment.created_at);
     const {member} = useAppContext();
@@ -310,13 +311,8 @@ const CommentHeader: React.FC<CommentHeaderProps> = ({comment, className = ''}) 
 
         const element = (e.target as HTMLElement).ownerDocument.getElementById(comment.in_reply_to_id);
         if (element) {
-            dispatchAction('setHighlightedRepliedToComment', {
-                replyToId: comment.in_reply_to_id
-            });
+            highlightComment(comment.in_reply_to_id);
             element.scrollIntoView({behavior: 'smooth', block: 'center'});
-            setTimeout(() => {
-                dispatchAction('removeHighlightedRepliedToComment', null);
-            }, 2500);
         }
     };
 
