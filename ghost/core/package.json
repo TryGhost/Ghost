@@ -238,7 +238,7 @@
     "cssnano": "7.0.4",
     "detect-indent": "6.1.0",
     "detect-newline": "3.1.0",
-    "expect": "29.3.1",
+    "expect": "29.7.0",
     "find-root": "1.1.0",
     "form-data": "4.0.0",
     "inquirer": "8.2.6",
