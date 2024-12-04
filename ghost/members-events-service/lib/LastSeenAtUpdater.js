@@ -1,4 +1,4 @@
-const {MemberPageViewEvent, MemberCommentEvent, MemberLinkClickEvent} = require('@tryghost/member-events');
+const {MemberPageViewEvent, MemberCommentEvent, MemberLinkClickEvent, MemberLastSeenAtJobEvent} = require('@tryghost/member-events');
 const moment = require('moment-timezone');
 const {IncorrectUsageError} = require('@tryghost/errors');
 const {EmailOpenedEvent} = require('@tryghost/email-events');
@@ -18,6 +18,7 @@ class LastSeenAtUpdater {
      * @param {any} deps.db Database connection
      * @param {any} deps.events The event emitter
      * @param {any} deps.lastSeenAtCache An instance of the last seen at cache
+     * @param {any} deps.DomainEvents The DomainEvents service
      */
     constructor({
         services: {
@@ -26,7 +27,8 @@ class LastSeenAtUpdater {
         getMembersApi,
         db,
         events,
-        lastSeenAtCache
+        lastSeenAtCache,
+        DomainEvents
     }) {
         if (!getMembersApi) {
             throw new IncorrectUsageError({message: 'Missing option getMembersApi'});
@@ -37,6 +39,7 @@ class LastSeenAtUpdater {
         this._db = db;
         this._events = events;
         this._lastSeenAtCache = lastSeenAtCache || new LastSeenAtCache({services: {settingsCache}});
+        this._DomainEvents = DomainEvents;
     }
     /**
      * Subscribe to events of this domainEvents service
@@ -131,20 +134,13 @@ class LastSeenAtUpdater {
             try {
                 // Pre-emptively update local cache so we don't update the same member again in the same day
                 this._lastSeenAtCache.add(memberId);
-                const membersApi = this._getMembersApi();
-                await this._db.knex.transaction(async (trx) => {
-                    // To avoid a race condition, we lock the member row for update, then the last_seen_at field again to prevent simultaneous updates
-                    const currentMember = await membersApi.members.get({id: memberId}, {require: true, transacting: trx, forUpdate: true});
-                    const currentMemberLastSeenAt = currentMember.get('last_seen_at');
-                    if (currentMemberLastSeenAt === null || moment(moment.utc(timestamp).tz(timezone).startOf('day')).isAfter(currentMemberLastSeenAt)) {
-                        const memberToUpdate = await currentMember.refresh({transacting: trx, forUpdate: false, withRelated: ['labels', 'newsletters']});
-                        const updatedMember = await memberToUpdate.save({last_seen_at: moment.utc(timestamp).format('YYYY-MM-DD HH:mm:ss')}, {transacting: trx, patch: true, method: 'update'});
-                        // The standard event doesn't get emitted inside the transaction, so we do it manually
-                        this._events.emit('member.edited', updatedMember);
-                        return Promise.resolve(updatedMember);
-                    }
-                    return Promise.resolve(undefined);
-                });
+
+                // TODO: Emit domain event that the core service can listen to and submit the job... but let's try injecting it here first
+                this._DomainEvents.dispatch(MemberLastSeenAtJobEvent.create({
+                    memberId,
+                    timestamp,
+                    timezone
+                }));
             } catch (err) {
                 // Remove the member from the cache if an error occurs
                 // This is to ensure that the member is updated on the next event if this one fails
