@@ -9,7 +9,7 @@ import {Comment, OpenCommentForm, useAppContext, useLabs} from '../../AppContext
 import {Transition} from '@headlessui/react';
 import {findCommentById, formatExplicitTime, getCommentInReplyToSnippet, getMemberNameFromComment} from '../../utils/helpers';
 import {useCallback} from 'react';
-import {useHighlightComment, useRelativeTime} from '../../utils/hooks';
+import {useRelativeTime} from '../../utils/hooks';
 
 type AnimatedCommentProps = {
     comment: Comment;
@@ -285,8 +285,7 @@ type CommentHeaderProps = {
 }
 
 const CommentHeader: React.FC<CommentHeaderProps> = ({comment, className = ''}) => {
-    const {comments, t} = useAppContext();
-    const highlightComment = useHighlightComment();
+    const {comments, t, dispatchAction} = useAppContext();
     const labs = useLabs();
     const createdAtRelative = useRelativeTime(comment.created_at);
     const {member} = useAppContext();
@@ -311,7 +310,7 @@ const CommentHeader: React.FC<CommentHeaderProps> = ({comment, className = ''}) 
 
         const element = (e.target as HTMLElement).ownerDocument.getElementById(comment.in_reply_to_id);
         if (element) {
-            highlightComment(comment.in_reply_to_id);
+            dispatchAction('highlightComment', {commentId: comment.in_reply_to_id});
             element.scrollIntoView({behavior: 'smooth', block: 'center'});
         }
     };

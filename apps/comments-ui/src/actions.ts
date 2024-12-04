@@ -409,14 +409,31 @@ async function openCommentForm({data: newForm, api, state}: {data: OpenCommentFo
 }
 
 function highlightComment({
-    data: {commentId}
+    data: {commentId},
+    state,
+    setState
 }: {
     data: { commentId: string | null };
     state: EditableAppContext;
+    setState: (newState: Partial<EditableAppContext>) => void;
 }) {
-    return {
+    const newState = {
+        ...state,
         commentIdToHighlight: commentId
     };
+    setState(newState);
+
+    // If `commentId` is not null, schedule the clear action
+    if (commentId) {
+        setTimeout(() => {
+            setState({
+                ...state,
+                commentIdToHighlight: null
+            });
+        }, 3000);
+    }
+
+    return {}; // No additional state updates returned directly
 }
 
 function setCommentFormHasUnsavedChanges({data: {id, hasUnsavedChanges}, state}: {data: {id: string, hasUnsavedChanges: boolean}, state: EditableAppContext}) {
@@ -440,7 +457,8 @@ export const SyncActions = {
     openPopup,
     closePopup,
     closeCommentForm,
-    setCommentFormHasUnsavedChanges
+    setCommentFormHasUnsavedChanges,
+    highlightComment
 };
 
 export type SyncActionType = keyof typeof SyncActions;
@@ -460,8 +478,8 @@ export const Actions = {
     loadMoreReplies,
     updateMember,
     setOrder,
-    openCommentForm,
-    highlightComment
+    openCommentForm
+    // highlightComment
 };
 
 export type ActionType = keyof typeof Actions;
@@ -480,11 +498,11 @@ export async function ActionHandler({action, data, state, api, adminApi, options
 }
 
 /** Handle actions in the App, returns updated state */
-export function SyncActionHandler({action, data, state, api, adminApi, options}: {action: SyncActionType, data: any, state: EditableAppContext, options: CommentsOptions, api: GhostApi, adminApi: AdminApi}): Partial<EditableAppContext> {
+export function SyncActionHandler({action, data, state, api, adminApi, options, setState}: {action: SyncActionType, data: any, state: EditableAppContext, options: CommentsOptions, api: GhostApi, adminApi: AdminApi, setState: (newState: Partial<EditableAppContext>) => void;}): Partial<EditableAppContext> {
     const handler = SyncActions[action];
     if (handler) {
         // Do not await here
-        return handler({data, state, api, adminApi, options} as any) || {};
+        return handler({data, state, api, adminApi, options, setState} as any) || {};
     }
     return {};
 }

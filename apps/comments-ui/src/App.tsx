@@ -30,7 +30,8 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
         labs: {},
         order: 'count__likes desc, created_at desc',
         adminApi: null,
-        commentsIsLoading: false
+        commentsIsLoading: false,
+        commentIdToHighlight: null
     });
 
     const iframeRef = React.createRef<HTMLIFrameElement>();
@@ -63,7 +64,7 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
             // because updates to state may be asynchronous
             // so calling dispatchAction('counterUp') multiple times, may yield unexpected results if we don't use a callback function
             setState((state) => {
-                return SyncActionHandler({action, data, state, api, adminApi: state.adminApi!, options});
+                return SyncActionHandler({action, data, state, setState, api, adminApi: state.adminApi!, options});
             });
             return;
         }
@@ -175,7 +176,8 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
                 commentCount: count,
                 order,
                 labs: labs,
-                commentsIsLoading: false
+                commentsIsLoading: false,
+                commentIdToHighlight: null
             };
 
             setState(state);
