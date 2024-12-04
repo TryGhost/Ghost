@@ -294,7 +294,7 @@ describe('LastSeenAtUpdater', function () {
                 const settingsCache = sinon.stub();
                 settingsCache.returns('Europe/Brussels'); // Default return for other settings
                 const configStub = sinon.stub();
-                configStub.withArgs('clickTracking:lastSeenAtUpdater:disabled').returns(true);
+                configStub.withArgs('backgroundJobs:clickTrackingLastSeenAtUpdater').returns(false);
     
                 const updater = new LastSeenAtUpdater({
                     services: {
@@ -328,23 +328,18 @@ describe('LastSeenAtUpdater', function () {
                 assert(updater.updateLastSeenAt.notCalled, 'The LastSeenAtUpdater should not attempt a member update when disabled');
             });
     
-            it('MemberLinkClickEvent should be fired when disabled is false/empty', async function () {
+            it('MemberLinkClickEvent should be fired when enabled/empty', async function () {
                 const now = moment.utc('2022-02-28T18:00:00Z');
                 const previousLastSeen = moment.utc('2022-02-27T22:59:00Z').toDate();
                 const stub = sinon.stub().resolves();
                 const settingsCache = sinon.stub();
                 settingsCache.returns('Europe/Brussels'); // Default return for other settings
-                const configStub = sinon.stub();
-                configStub.withArgs('clickTracking:lastSeenAtUpdater:disabled').returns(false);
     
                 const updater = new LastSeenAtUpdater({
                     services: {
                         settingsCache: {
                             get: settingsCache
                         }
-                    },
-                    config: {
-                        get: configStub
                     },
                     getMembersApi() {
                         return {

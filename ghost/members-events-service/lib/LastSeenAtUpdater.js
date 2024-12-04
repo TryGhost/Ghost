@@ -55,7 +55,7 @@ class LastSeenAtUpdater {
             }
         });
 
-        if (this._config?.get('clickTracking:lastSeenAtUpdater:disabled') !== true) {
+        if (this._config?.get('backgroundJobs:clickTrackingLastSeenAtUpdater') !== false) {
             domainEvents.subscribe(MemberLinkClickEvent, async (event) => {
                 try {
                     await this.cachedUpdateLastSeenAt(event.data.memberId, event.data.memberLastSeenAt, event.timestamp);

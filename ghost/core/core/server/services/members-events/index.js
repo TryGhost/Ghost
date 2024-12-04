@@ -45,7 +45,7 @@ class MembersEventsServiceWrapper {
             db,
             events,
             lastSeenAtCache: this.lastSeenAtCache,
-            config: config.get('services')
+            config
         });
 
         // Subscribe to domain events
