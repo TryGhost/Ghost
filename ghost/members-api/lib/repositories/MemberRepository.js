@@ -1160,34 +1160,9 @@ module.exports = class MemberRepository {
                 }
             }
         } else {
-            eventData.created_at = new Date(subscription.start_date * 1000);
-            const subscriptionModel = await this._StripeCustomerSubscription.add(subscriptionData, options);
-            await this._MemberPaidSubscriptionEvent.add({
-                member_id: member.id,
-                subscription_id: subscriptionModel.id,
-                type: 'created',
-                source: 'stripe',
-                from_plan: null,
-                to_plan: subscriptionPriceData.id,
-                currency: subscriptionPriceData.currency,
-                mrr_delta: subscriptionModel.get('mrr'),
-                ...eventData
-            }, options);
-
             const context = options?.context || {};
             const source = this._resolveContextSource(context);
-
-            const subscriptionCreatedEvent = SubscriptionCreatedEvent.create({
-                source,
-                tierId: ghostProduct?.get('id'),
-                memberId: member.id,
-                subscriptionId: subscriptionModel.get('id'),
-                offerId: offerId,
-                attribution: data.attribution,
-                batchId: options.batch_id
-            });
-
-            this.dispatchEvent(subscriptionCreatedEvent, options);
+            const subscriptionModel = await this.createStripeCustomerSubscription(eventData, subscription, subscriptionData, source, options, member, subscriptionPriceData, ghostProduct, offerId, data);
 
             if (offerId) {
                 const offerRedemptionEvent = OfferRedemptionEvent.create({
@@ -1352,6 +1327,36 @@ module.exports = class MemberRepository {
                 ...eventData
             }, options);
         }
+    }
+
+    async createStripeCustomerSubscription(eventData, subscription, subscriptionData, subscriptionCreatedEventSource, options, member, subscriptionPriceData, ghostProduct, offerId, data) {
+        eventData.created_at = new Date(subscription.start_date * 1000);
+        const subscriptionModel = await this._StripeCustomerSubscription.add(subscriptionData, options);
+        await this._MemberPaidSubscriptionEvent.add({
+            member_id: member.id,
+            subscription_id: subscriptionModel.id,
+            type: 'created',
+            source: 'stripe',
+            from_plan: null,
+            to_plan: subscriptionPriceData.id,
+            currency: subscriptionPriceData.currency,
+            mrr_delta: subscriptionModel.get('mrr'),
+            ...eventData
+        }, options);
+
+        const subscriptionCreatedPayload = {
+            source: subscriptionCreatedEventSource,
+            tierId: ghostProduct?.get('id'),
+            memberId: member.id,
+            subscriptionId: subscriptionModel.get('id'),
+            offerId: offerId,
+            attribution: data.attribution,
+            batchId: options.batch_id
+        };
+        const subscriptionCreatedEvent = SubscriptionCreatedEvent.create(subscriptionCreatedPayload);
+
+        this.dispatchEvent(subscriptionCreatedEvent, options);
+        return subscriptionModel;
     }
 
     getCancellationReason(subscription) {
