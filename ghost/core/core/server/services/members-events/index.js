@@ -3,6 +3,9 @@ const DomainEvents = require('@tryghost/domain-events');
 const events = require('../../lib/common/events');
 const settingsCache = require('../../../shared/settings-cache');
 const members = require('../members');
+const {MemberLastSeenAtJobEvent} = require('@tryghost/member-events');
+const path = require('path');
+const JobManager = require('../jobs');
 
 class MembersEventsServiceWrapper {
     init() {
@@ -43,12 +46,29 @@ class MembersEventsServiceWrapper {
             },
             db,
             events,
-            lastSeenAtCache: this.lastSeenAtCache
+            lastSeenAtCache: this.lastSeenAtCache,
+            DomainEvents
         });
 
         // Subscribe to domain events
         this.eventStorage.subscribe(DomainEvents);
         this.lastSeenAtUpdater.subscribe(DomainEvents);
+
+        DomainEvents.subscribe(MemberLastSeenAtJobEvent, async function (event) {
+            const {memberId, timestamp, timezone} = event.data;
+            JobManager.addQueuedJob({
+                name: `update-member-last-seen-at-${memberId}`,
+                metadata: {
+                    job: path.resolve(__dirname, path.join('jobs', 'update-member-last-seen-at')),
+                    name: 'update-member-last-seen-at',
+                    data: {
+                        memberId,
+                        timestamp,
+                        timezone
+                    }
+                }
+            });
+        });
     }
 
     // Clear the last seen at cache
