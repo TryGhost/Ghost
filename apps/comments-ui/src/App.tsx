@@ -29,7 +29,8 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
         popup: null,
         labs: {},
         order: 'count__likes desc, created_at desc',
-        adminApi: null
+        adminApi: null,
+        commentsIsLoading: false
     });
 
     const iframeRef = React.createRef<HTMLIFrameElement>();
@@ -173,7 +174,8 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
                 pagination,
                 commentCount: count,
                 order,
-                labs: labs
+                labs: labs,
+                commentsIsLoading: false
             };
 
             setState(state);

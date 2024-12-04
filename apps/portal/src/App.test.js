@@ -10,7 +10,8 @@ const setup = async () => {
         brandColor: site.accent_color,
         page: 'signup',
         initStatus: 'success',
-        showPopup: true
+        showPopup: true,
+        commentsIsLoading: false
     };
     const {...utils} = render(
         <App testState={testState} />

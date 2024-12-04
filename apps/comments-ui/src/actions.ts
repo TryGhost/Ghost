@@ -23,18 +23,27 @@ async function loadMoreComments({state, api, options, order}: {state: EditableAp
 }
 
 async function setOrder({state, data: {order}, options, api}: {state: EditableAppContext, data: {order: string}, options: CommentsOptions, api: GhostApi}) {
-    let data;
+    state.commentsIsLoading = true;
 
-    if (state.admin && state.adminApi && state.labs.commentImprovements) {
-        data = await state.adminApi.browse({page: 1, postId: options.postId, order});
+    try {
+        let data;
+        if (state.admin && state.adminApi && state.labs.commentImprovements) {
+            data = await state.adminApi.browse({page: 1, postId: options.postId, order});
+        } else {
+            data = await api.comments.browse({page: 1, postId: options.postId, order});
+        }
+
+        return {
+            comments: [...data.comments],
+            pagination: data.meta.pagination,
+            order,
+            commentsIsLoading: false
+        };
+    } catch (error) {
+        console.error('Failed to set order:', error); // eslint-disable-line no-console
+        state.commentsIsLoading = false;
+        throw error; // Rethrow the error to allow upstream handling
     }
-    data = await api.comments.browse({page: 1, postId: options.postId, order: order});
-
-    return {
-        comments: [...data.comments],
-        pagination: data.meta.pagination,
-        order
-    };
 }
 
 async function loadMoreReplies({state, api, data: {comment, limit}, isReply}: {state: EditableAppContext, api: GhostApi, data: {comment: any, limit?: number | 'all'}, isReply: boolean}): Promise<Partial<EditableAppContext>> {
