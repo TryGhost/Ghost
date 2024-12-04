@@ -1,10 +1,9 @@
-// The main Web stats component that encapsulates the breakdown
 'use client';
 
-import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from '@tryghost/shade';
 import NewsletterPerformance from './NewsletterPerformance';
 import Feedback from './FeedBack';
 import ClickPerformance from './ClickPerformance';
+import Conversions from './Conversions';
 
 const OverviewStats = () => {
     return (
@@ -12,21 +11,7 @@ const OverviewStats = () => {
             <NewsletterPerformance />
             <Feedback />
             <ClickPerformance />
-
-            <Card>
-                <CardHeader>
-                    <CardTitle>Conversion</CardTitle>
-                    <CardDescription>3 members signed up on this post</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <div className='py-5'>
-
-                    </div>
-                </CardContent>
-                <CardFooter>
-                    <Button className='h-auto p-0' variant='link'>Details &rarr;</Button>
-                </CardFooter>
-            </Card>
+            <Conversions />
         </div>
     );
 };
