@@ -409,14 +409,11 @@ async function openCommentForm({data: newForm, api, state}: {data: OpenCommentFo
 }
 
 function highlightComment({
-    data: {commentId},
-    state
+    data: {commentId}
 }: {
     data: { commentId: string | null };
     state: EditableAppContext;
 }) {
-    state.commentIdToHighlight = commentId;
-
     return {
         commentIdToHighlight: commentId
     };
