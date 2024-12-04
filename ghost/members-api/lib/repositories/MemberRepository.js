@@ -944,7 +944,7 @@ module.exports = class MemberRepository {
         const subscriptionPriceData = _.get(subscription, 'items.data[0].price');
         let ghostProduct;
         try {
-            ghostProduct = await this._productRepository.get({stripe_product_id: subscriptionPriceData.product}, {...options, forUpdate: true});
+            ghostProduct = await this._productRepository.get({stripe_product_id: subscriptionPriceData.product}, options);
             // Use first Ghost product as default product in case of missing link
             if (!ghostProduct) {
                 ghostProduct = await this._productRepository.getDefaultProduct({
