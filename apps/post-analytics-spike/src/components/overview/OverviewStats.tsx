@@ -4,27 +4,14 @@
 import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from '@tryghost/shade';
 import NewsletterPerformance from './NewsletterPerformance';
 import Feedback from './FeedBack';
+import ClickPerformance from './ClickPerformance';
 
 const OverviewStats = () => {
     return (
         <div className="grid w-full grid-cols-3 gap-6 py-6">
             <NewsletterPerformance />
             <Feedback />
-
-            <Card className='col-span-2'>
-                <CardHeader>
-                    <CardTitle>Click performance</CardTitle>
-                    <CardDescription>Top links in email newsletter</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <div className='py-5'>
-                        Card content
-                    </div>
-                </CardContent>
-                <CardFooter>
-                    <Button className='h-auto p-0' variant='link'>Details &rarr;</Button>
-                </CardFooter>
-            </Card>
+            <ClickPerformance />
 
             <Card>
                 <CardHeader>
@@ -33,7 +20,7 @@ const OverviewStats = () => {
                 </CardHeader>
                 <CardContent>
                     <div className='py-5'>
-                        Card content
+
                     </div>
                 </CardContent>
                 <CardFooter>
