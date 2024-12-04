@@ -27,15 +27,16 @@ module.exports = async function updateMemberLastSeenAt(data) {
                 .first();
 
             // Return data for the job manager to emit the event
-            const events = [{
-                name: 'member.edited',
-                data: updatedMember
-            }];
+            const eventData = {
+                nodeEvents: [{
+                    name: 'member.edited',
+                    data: updatedMember
+                }]
+            };
 
-            return {result: updatedMember, events};
+            return {result: updatedMember, eventData};
         }
         return undefined;
     });
-    console.log(`result of updateMemberLastSeenAt:`, result);
     return result;
 };
