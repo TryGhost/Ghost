@@ -1,5 +1,6 @@
 import NiceModal from '@ebay/nice-modal-react';
 import React, {ReactNode, useState} from 'react';
+import useCustomFonts from '../../../../hooks/useCustomFonts';
 import {Button, ConfirmationModalContent, Heading, List, ListItem, showToast} from '@tryghost/admin-x-design-system';
 import {InstalledTheme, ThemeProblem, useActivateTheme} from '@tryghost/admin-x-framework/api/themes';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -42,6 +43,7 @@ const ThemeInstalledModal: React.FC<{
     onActivate?: () => void;
 }> = ({title, prompt, installedTheme, onActivate}) => {
     const {mutateAsync: activateTheme} = useActivateTheme();
+    const {refreshActiveThemeData} = useCustomFonts();
     const handleError = useHandleError();
 
     let errorPrompt = null;
@@ -85,6 +87,7 @@ const ThemeInstalledModal: React.FC<{
                 try {
                     const resData = await activateTheme(installedTheme.name);
                     const updatedTheme = resData.themes[0];
+                    refreshActiveThemeData();
 
                     showToast({
                         title: 'Theme activated',
