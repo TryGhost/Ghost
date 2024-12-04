@@ -42,26 +42,28 @@ class JobManager {
     #jobQueueManager = null;
     #config;
     #JobModel;
+    #eventEmitter;
 
     /**
      * @param {Object} options
      * @param {Function} [options.errorHandler] - custom job error handler
      * @param {Function} [options.workerMessageHandler] - custom message handler coming from workers
      * @param {Object} [options.JobModel] - a model which can persist job data in the storage
-     * @param {Object} [options.domainEvents] - domain events emitter
+     * @param {Object} [options.domainEvents] - domain eventEmitter emitter
+     * @param {Object} [options.eventEmitter] - eventEmitter emitter
      * @param {Object} [options.config] - config
      * @param {boolean} [options.isDuplicate] - if true, the job manager will not initialize the job queue
      * @param {JobQueueManager} [options.jobQueueManager] - job queue manager instance (for testing)
      * @param {Object} [options.prometheusClient] - prometheus client instance (for testing)
      */
-    constructor({errorHandler, workerMessageHandler, JobModel, domainEvents, config, isDuplicate = false, jobQueueManager = null, prometheusClient = null}) {
+    constructor({errorHandler, workerMessageHandler, JobModel, domainEvents, eventEmitter, config, isDuplicate = false, jobQueueManager = null, prometheusClient = null}) {
         this.inlineQueue = fastq(this, worker, 3);
         this._jobMessageHandler = this._jobMessageHandler.bind(this);
         this._jobErrorHandler = this._jobErrorHandler.bind(this);
         this.#domainEvents = domainEvents;
         this.#config = config;
         this.#JobModel = JobModel;
-
+        this.#eventEmitter = eventEmitter;
         const combinedMessageHandler = workerMessageHandler
             ? ({name, message}) => {
                 workerMessageHandler({name, message});
@@ -104,7 +106,13 @@ class JobManager {
 
     #initializeJobQueueManager() {
         if (this.#config?.get('services:jobs:queue:enabled') === true && !this.#jobQueueManager) {
-            this.#jobQueueManager = new JobQueueManager({JobModel: this.#JobModel, config: this.#config, prometheusClient: this.prometheusClient});
+            this.#jobQueueManager = new JobQueueManager({
+                JobModel: this.#JobModel,
+                config: this.#config,
+                prometheusClient: this.prometheusClient,
+                domainEvents: this.#domainEvents,
+                eventEmitter: this.#eventEmitter
+            });
             this.#jobQueueManager.init();
         }
     }

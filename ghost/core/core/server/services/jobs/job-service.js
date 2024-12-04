@@ -8,6 +8,7 @@ const logging = require('@tryghost/logging');
 const models = require('../../models');
 const sentry = require('../../../shared/sentry');
 const domainEvents = require('@tryghost/domain-events');
+const eventEmitter = require('../../lib/common/events');
 const config = require('../../../shared/config');
 const prometheusClient = require('../../../shared/prometheus-client');
 const errorHandler = (error, workerMeta) => {
@@ -43,7 +44,7 @@ const initTestMode = () => {
     }, 5000);
 };
 
-const jobManager = new JobManager({errorHandler, workerMessageHandler, JobModel: models.Job, domainEvents, config, prometheusClient});
+const jobManager = new JobManager({errorHandler, workerMessageHandler, JobModel: models.Job, domainEvents, config, prometheusClient, eventEmitter});
 
 module.exports = jobManager;
 module.exports.initTestMode = initTestMode;

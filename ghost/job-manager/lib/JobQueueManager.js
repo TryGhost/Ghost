@@ -5,7 +5,7 @@ const debug = require('@tryghost/debug')('job-manager:JobQueueManager');
 const logging = require('@tryghost/logging');
 
 class JobQueueManager {
-    constructor({JobModel, config, logger = logging, WorkerPool = workerpool, prometheusClient}) {
+    constructor({JobModel, config, logger = logging, WorkerPool = workerpool, prometheusClient, domainEvents, eventEmitter}) {
         this.jobsRepository = new JobsRepository({JobModel});
         this.config = this.initializeConfig(config?.get('services:jobs:queue') || {});
         this.logger = this.createLogger(logger, this.config.logLevel);
@@ -13,7 +13,8 @@ class JobQueueManager {
         this.pool = this.createWorkerPool();
         this.state = this.initializeState();
         this.prometheusClient = prometheusClient;
-
+        this.domainEvents = domainEvents;
+        this.eventEmitter = eventEmitter;
         if (prometheusClient) {
             this.prometheusClient.registerCounter({
                 name: 'job_manager_queue_job_completion_count',
@@ -100,7 +101,7 @@ class JobQueueManager {
             }
         };
 
-        poll(); // Initial poll
+        poll();
     }
 
     async processPendingJobs() {
@@ -127,6 +128,33 @@ class JobQueueManager {
         }
     }
 
+    handleMetrics(jobName) {
+        this.prometheusClient?.getMetric('job_manager_queue_job_completion_count')?.inc({jobName});
+        if (jobName === 'update-member-email-analytics') {
+            this.prometheusClient?.getMetric('email_analytics_aggregate_member_stats_count')?.inc();
+        }
+    }
+
+    emitDomainEvents(events) {
+        // TODO: Implement this
+        //  not entirely sure how to handle this; I think we could pass the events in the job metadata field as objects, as they should be lightweight
+        //  we just won't know the type of event without deserializing the object, and we'd have to know the type of event in advance, which is not ideal
+        this.domainEvents.emit(events);
+    }
+
+    // Emits node events
+    /**
+     * Emits events using the event emitter
+     * @param {Array<{name: string, data: any}>} events - Array of event objects with name and data
+     */
+    emitEvents(events) {
+        console.log(`emitting events`);
+        events.forEach((e) => {
+            console.log(`emitting event: ${e.name}`);
+            this.eventEmitter.emit(e.name, e.data);
+        });
+    }
+
     async processJobs(jobs) {
         for (const job of jobs) {
             const jobMetadata = JSON.parse(job.get('metadata'));
@@ -141,13 +169,24 @@ class JobQueueManager {
     async executeJob(job, jobName, jobMetadata) {
         this.state.queuedJobs.add(jobName);
         try {
-            await this.pool.exec('executeJob', [jobMetadata.job, jobMetadata.data]);
+            const result = await this.pool.exec('executeJob', [jobMetadata.job, jobMetadata.data]);
             await this.jobsRepository.delete(job.id);
-            this.prometheusClient?.getMetric('job_manager_queue_job_completion_count')?.inc({jobName});
-            if (jobName === 'update-member-email-analytics') {
-                this.prometheusClient?.getMetric('email_analytics_aggregate_member_stats_count')?.inc();
+            this.handleMetrics(jobName);
+
+            console.log(`result for job ${jobName}:`, result);
+            if (result && result.eventData) {
+                // Emits domain events
+                // if (result.eventData.domainEvents && result.eventData.domainEvents.length > 0) {
+                //     this.emitDomainEvents(result.eventData.domainEvents);
+                // }
+                // Emits node events
+                console.log(`result.eventData.events:`, result.eventData.events);
+                if (result.eventData.events && result.eventData.events.length > 0) {
+                    this.emitEvents(result.eventData.events);
+                }
             }
         } catch (error) {
+            console.log(`Error in executeJob: ${error}`);
             await this.handleJobError(job, jobMetadata, error);
         } finally {
             this.state.queuedJobs.delete(jobName);
