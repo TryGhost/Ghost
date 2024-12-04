@@ -1,6 +1,18 @@
 module.exports = {
     darkMode: 'class',
     theme: {
+        extend: {
+            animation: {
+                heartbeat: 'heartbeat 0.35s ease-in-out forwards',
+                pulse: 'pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+            },
+            keyframes: {
+                heartbeat: {
+                    '0%, 100%': {transform: 'scale(1)'},
+                    '50%': {transform: 'scale(1.3)'}
+                }
+            }
+        },
         screens: {
             sm: '481px',
             md: '768px',

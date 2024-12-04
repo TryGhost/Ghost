@@ -10,7 +10,7 @@ import {useEffect} from 'react';
 
 const Content = () => {
     const labs = useLabs();
-    const {pagination, member, comments, commentCount, commentsEnabled, title, showCount, openFormCount, t} = useAppContext();
+    const {pagination, member, comments, commentCount, commentsEnabled, title, showCount, openFormCount, commentsIsLoading, t} = useAppContext();
 
     let commentsElements;
     const commentsDataset = comments;
@@ -64,7 +64,7 @@ const Content = () => {
                         </span>
                     </div>
                 )}
-                <div className="z-10" data-test="comment-elements">
+                <div className={`z-10 transition-opacity duration-100 ${commentsIsLoading ? 'opacity-50' : ''}`} data-testid="comment-elements">
                     {commentsElements}
                 </div>
                 <Pagination />
@@ -76,7 +76,7 @@ const Content = () => {
             <>
                 <ContentTitle count={commentCount} showCount={showCount} title={title}/>
                 <Pagination />
-                <div className={!pagination ? 'mt-4' : ''} data-test="comment-elements">
+                <div className={!pagination ? 'mt-4' : ''} data-testid="comment-elements">
                     {commentsElements}
                 </div>
                 <div>
@@ -92,7 +92,7 @@ const Content = () => {
                     }
                 </div>
                 {
-                    labs?.testFlag ? <div data-testid="this-comes-from-a-flag" style={{display: 'none'}}></div> : null
+                    labs?.testFlag ? <div data-testid="this-comes-from-a-flag" style={{display: 'none'}}></div> : null // do not remove
                 }
             </>
         )

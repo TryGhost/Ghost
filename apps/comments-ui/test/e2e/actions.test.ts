@@ -1,5 +1,5 @@
 import {MockedApi, initialize, waitEditorFocused} from '../utils/e2e';
-import {buildReply} from '../utils/fixtures';
+import {buildMember, buildReply} from '../utils/fixtures';
 import {expect, test} from '@playwright/test';
 
 test.describe('Actions', async () => {
@@ -126,8 +126,8 @@ test.describe('Actions', async () => {
         await waitEditorFocused(editor);
 
         // Ensure form data is correct
-        const form = frame.getByTestId('form');
-        await expect(form.getByTestId('avatar-image')).toHaveAttribute('src', 'https://example.com/avatar.jpg');
+        const replyForm = frame.getByTestId('reply-form');
+        await expect(replyForm.getByTestId('avatar-image')).toHaveAttribute('src', 'https://example.com/avatar.jpg');
 
         // Should not include the replying-to-reply indicator
         await expect(frame.getByTestId('replying-to')).not.toBeVisible();
@@ -450,15 +450,65 @@ test.describe('Actions', async () => {
                 'comments-sorting-form-dropdown'
             );
 
-            const newestOption = await sortingDropdown.getByText('Newest');
-            await newestOption.click();
+            const optionSelect = await sortingDropdown.getByText('Newest');
+            mockedApi.setDelay(100);
+            await optionSelect.click();
+            const commentsElement = await frame.getByTestId('comment-elements');
+            const hasOpacity50 = await commentsElement.evaluate(el => el.classList.contains('opacity-50'));
+            expect(hasOpacity50).toBe(true);
 
             const comments = await frame.getByTestId('comment-component');
 
             await expect(comments.nth(0)).toContainText('This is the newest comment');
+
+            const hasNoOpacity50 = await commentsElement.evaluate(el => el.classList.contains('opacity-50'));
+            expect(hasNoOpacity50).toBe(false);
         });
 
         test('Sorts by oldest', async ({page}) => {
+            mockedApi.addComment({
+                html: '<p>This is comment 2</p>',
+                created_at: new Date('2024-03-02T00:00:00Z'),
+                liked: true,
+                count: {
+                    likes: 52
+                }
+            });
+            mockedApi.addComment({
+                html: '<p>This is the oldest</p>',
+                created_at: new Date('2024-02-01T00:00:00Z')
+            });
+            mockedApi.addComment({
+                html: '<p>This is the newest comment</p>',
+                created_at: new Date('2024-04-03T00:00:00Z')
+            });
+
+            const {frame} = await initializeTest(page, {labs: true});
+
+            const sortingForm = await frame.getByTestId('comments-sorting-form');
+
+            await sortingForm.click();
+
+            const sortingDropdown = await frame.getByTestId(
+                'comments-sorting-form-dropdown'
+            );
+
+            const optionSelect = await sortingDropdown.getByText('Oldest');
+            mockedApi.setDelay(100);
+            await optionSelect.click();
+            const commentsElement = await frame.getByTestId('comment-elements');
+            const hasOpacity50 = await commentsElement.evaluate(el => el.classList.contains('opacity-50'));
+            expect(hasOpacity50).toBe(true);
+
+            const comments = await frame.getByTestId('comment-component');
+
+            await expect(comments.nth(0)).toContainText('This is the oldest');
+
+            const hasNoOpacity50 = await commentsElement.evaluate(el => el.classList.contains('opacity-50'));
+            expect(hasNoOpacity50).toBe(false);
+        });
+
+        test('has loading state when changing sorting', async ({page}) => {
             mockedApi.addComment({
                 html: '<p>This is the oldest</p>',
                 created_at: new Date('2024-02-01T00:00:00Z')
@@ -482,12 +532,65 @@ test.describe('Actions', async () => {
                 'comments-sorting-form-dropdown'
             );
 
-            const newestOption = await sortingDropdown.getByText('Oldest');
-            await newestOption.click();
+            const optionSelect = await sortingDropdown.getByText('Newest');
+            mockedApi.setDelay(100);
+            await optionSelect.click();
+            const commentsElement = await frame.getByTestId('comment-elements');
+            const hasOpacity50 = await commentsElement.evaluate(el => el.classList.contains('opacity-50'));
+            expect(hasOpacity50).toBe(true);
 
             const comments = await frame.getByTestId('comment-component');
 
-            await expect(comments.nth(0)).toContainText('This is the oldest');
+            await expect(comments.nth(0)).toContainText('This is the newest comment');
+
+            const hasNoOpacity50 = await commentsElement.evaluate(el => el.classList.contains('opacity-50'));
+            expect(hasNoOpacity50).toBe(false);
         });
+    });
+
+    test('Can edit their own comment', async ({page}) => {
+        const loggedInMember = buildMember();
+        mockedApi.setMember(loggedInMember);
+
+        // Add a comment with replies
+        mockedApi.addComment({
+            html: '<p>Parent comment</p>',
+            member: loggedInMember,
+            replies: [
+                mockedApi.buildReply({
+                    html: '<p>First reply</p>'
+                }),
+                mockedApi.buildReply({
+                    html: '<p>Second reply</p>'
+                })
+            ]
+        });
+
+        const {frame} = await initializeTest(page);
+
+        // Get the parent comment and verify initial state
+        const parentComment = frame.getByTestId('comment-component').nth(0);
+        const replies = await parentComment.getByTestId('comment-component').all();
+        
+        // Verify initial state shows parent and replies
+        await expect(parentComment).toContainText('Parent comment');
+        await expect(replies[0]).toBeVisible();
+        await expect(replies[0]).toContainText('First reply');
+        await expect(replies[1]).toBeVisible();
+        await expect(replies[1]).toContainText('Second reply');
+
+        // Open edit mode for parent comment
+        const moreButton = parentComment.getByTestId('more-button').first();
+        await moreButton.click();
+        await frame.getByTestId('edit').click();
+
+        // Verify the edit form is visible
+        await expect(frame.getByTestId('form-editor')).toBeVisible();
+        
+        // Verify replies are still visible while editing
+        await expect(replies[0]).toBeVisible();
+        await expect(replies[0]).toContainText('First reply');
+        await expect(replies[1]).toBeVisible();
+        await expect(replies[1]).toContainText('Second reply');
     });
 });
