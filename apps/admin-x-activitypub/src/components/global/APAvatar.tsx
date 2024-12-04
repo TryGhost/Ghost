@@ -1,5 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import clsx from 'clsx';
+import getUsername from '../../utils/get-username';
 import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Icon} from '@tryghost/admin-x-design-system';
 
@@ -44,8 +45,8 @@ const APAvatar: React.FC<APAvatarProps> = ({author, size, badge}) => {
         break;
     case 'xs':
         iconSize = 12;
-        containerClass = clsx('h-5 w-5 rounded-md ', containerClass);
-        imageClass = 'z-10 rounded-md w-5 h-5 object-cover';
+        containerClass = clsx('h-6 w-6 rounded-md ', containerClass);
+        imageClass = 'z-10 rounded-md w-6 h-6 object-cover';
         break;
     case 'sm':
         containerClass = clsx('h-10 w-10 rounded-md', containerClass);
@@ -75,7 +76,7 @@ const APAvatar: React.FC<APAvatarProps> = ({author, size, badge}) => {
 
     if (iconUrl) {
         return (
-            <a className={containerClass} href={author?.url} rel='noopener noreferrer' target='_blank'>
+            <a className={containerClass} href={author?.url} rel='noopener noreferrer' target='_blank' title={`${author?.name} ${getUsername(author as ActorProperties)}`}>
                 <img
                     className={imageClass}
                     src={iconUrl}
@@ -87,7 +88,7 @@ const APAvatar: React.FC<APAvatarProps> = ({author, size, badge}) => {
     }
 
     return (
-        <div className={containerClass}>
+        <div className={containerClass} title={author?.name}>
             <Icon
                 colorClass='text-grey-600'
                 name='user'
