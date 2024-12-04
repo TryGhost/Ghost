@@ -17,8 +17,10 @@ type AnimatedCommentProps = {
 };
 
 const AnimatedComment: React.FC<AnimatedCommentProps> = ({comment, parent}) => {
+    const {commentsIsLoading} = useAppContext();
     return (
         <Transition
+            className={`${commentsIsLoading ? 'animate-pulse' : ''}`}
             data-testid="animated-comment"
             enter="transition-opacity duration-300 ease-out"
             enterFrom="opacity-0"
@@ -295,7 +297,7 @@ const CommentHeader: React.FC<CommentHeaderProps> = ({comment, className = ''}) 
     if (isReplyToReply) {
         const inReplyToComment = findCommentById(comments, comment.in_reply_to_id);
         if (inReplyToComment && inReplyToComment.status !== 'published') {
-            inReplyToSnippet = `[${t('hidden/removed')}]`;
+            inReplyToSnippet = `[${t('removed')}]`;
         }
     }
 
