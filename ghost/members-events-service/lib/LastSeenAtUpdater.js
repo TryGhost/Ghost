@@ -18,6 +18,7 @@ class LastSeenAtUpdater {
      * @param {any} deps.db Database connection
      * @param {any} deps.events The event emitter
      * @param {any} deps.lastSeenAtCache An instance of the last seen at cache
+     * @param {any} deps.config Ghost config for click tracking
      */
     constructor({
         services: {
@@ -26,7 +27,8 @@ class LastSeenAtUpdater {
         getMembersApi,
         db,
         events,
-        lastSeenAtCache
+        lastSeenAtCache,
+        config
     }) {
         if (!getMembersApi) {
             throw new IncorrectUsageError({message: 'Missing option getMembersApi'});
@@ -37,6 +39,7 @@ class LastSeenAtUpdater {
         this._db = db;
         this._events = events;
         this._lastSeenAtCache = lastSeenAtCache || new LastSeenAtCache({services: {settingsCache}});
+        this._config = config;
     }
     /**
      * Subscribe to events of this domainEvents service
@@ -52,14 +55,18 @@ class LastSeenAtUpdater {
             }
         });
 
-        domainEvents.subscribe(MemberLinkClickEvent, async (event) => {
-            try {
-                await this.cachedUpdateLastSeenAt(event.data.memberId, event.data.memberLastSeenAt, event.timestamp);
-            } catch (err) {
-                logging.error(`Error in LastSeenAtUpdater.MemberLinkClickEvent listener for member ${event.data.memberId}`);
-                logging.error(err);
-            }
-        });
+        // Only disable if explicitly set to false in config
+        const shouldUpdateForClickTracking = !this._config || this._config.get('backgroundJobs:clickTrackingLastSeenAtUpdater') !== false;
+        if (shouldUpdateForClickTracking) {
+            domainEvents.subscribe(MemberLinkClickEvent, async (event) => {
+                try {
+                    await this.cachedUpdateLastSeenAt(event.data.memberId, event.data.memberLastSeenAt, event.timestamp);
+                } catch (err) {
+                    logging.error(`Error in LastSeenAtUpdater.MemberLinkClickEvent listener for member ${event.data.memberId}`);
+                    logging.error(err);
+                }
+            });
+        }
 
         domainEvents.subscribe(MemberCommentEvent, async (event) => {
             try {
