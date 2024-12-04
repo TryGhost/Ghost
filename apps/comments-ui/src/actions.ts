@@ -400,35 +400,19 @@ async function openCommentForm({data: newForm, api, state}: {data: OpenCommentFo
 }
 
 function setHighlightedRepliedToComment({
-    data: {replyToId, parentCommentId},
-    state
+    data: {replyToId}
 }: {
-    data: { replyToId: string; parentCommentId: string };
+    data: { replyToId: string};
     state: EditableAppContext;
 }) {
     return {
-        comments: state.comments.map(comment => (comment.id === parentCommentId
-            ? {
-                ...comment,
-                replies: comment.replies.map(reply => ({
-                    ...reply,
-                    isHighlighted: reply.id === replyToId
-                }))
-            }
-            : comment)
-        )
+        replyIdToHighlight: replyToId
     };
 }
 
-function removeHighlightedRepliedToComment({state}: { state: EditableAppContext }) {
+function removeHighlightedRepliedToComment() {
     return {
-        comments: state.comments.map(comment => ({
-            ...comment,
-            replies: comment.replies.map(reply => ({
-                ...reply,
-                isHighlighted: false
-            }))
-        }))
+        replyIdToHighlight: null
     };
 }
 

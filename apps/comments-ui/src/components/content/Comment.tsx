@@ -105,7 +105,7 @@ type PublishedCommentProps = CommentProps & {
     openEditMode: () => void;
 }
 const PublishedComment: React.FC<PublishedCommentProps> = ({comment, parent, openEditMode}) => {
-    const {dispatchAction, openCommentForms, admin} = useAppContext();
+    const {dispatchAction, openCommentForms, admin, replyIdToHighlight} = useAppContext();
     const labs = useLabs();
 
     // Determine if the comment should be displayed with reduced opacity
@@ -149,7 +149,7 @@ const PublishedComment: React.FC<PublishedCommentProps> = ({comment, parent, ope
     return (
         <CommentLayout avatar={avatar} className={hiddenClass} hasReplies={hasReplies}>
             <CommentHeader className={hiddenClass} comment={comment} />
-            <CommentBody className={hiddenClass} html={comment.html} isHighlighted={comment.isHighlighted} />
+            <CommentBody className={hiddenClass} html={comment.html} isHighlighted={comment.id === replyIdToHighlight} />
             <CommentMenu
                 comment={comment}
                 highlightReplyButton={highlightReplyButton}
@@ -298,11 +298,9 @@ const CommentHeader: React.FC<CommentHeaderProps> = ({comment, className = ''}) 
 
         const element = (e.target as HTMLElement).ownerDocument.getElementById(comment.in_reply_to_id);
         if (element && comment.parent_id) {
-            const payload = {
-                replyToId: comment.in_reply_to_id,
-                parentCommentId: comment.parent_id
-            };
-            dispatchAction('setHighlightedRepliedToComment', payload);
+            dispatchAction('setHighlightedRepliedToComment', {
+                replyToId: comment.in_reply_to_id
+            });
             element.scrollIntoView({behavior: 'smooth', block: 'center'});
             setTimeout(() => {
                 dispatchAction('removeHighlightedRepliedToComment', null);

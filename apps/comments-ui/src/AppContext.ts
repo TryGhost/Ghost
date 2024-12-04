@@ -28,8 +28,7 @@ export type Comment = {
     member: Member | null,
     edited_at: string,
     created_at: string,
-    html: string,
-    isHighlighted?: boolean,
+    html: string
 }
 
 export type OpenCommentForm = {
@@ -83,7 +82,8 @@ export type EditableAppContext = {
     popup: Page | null,
     labs: LabsContextType,
     order: string,
-    adminApi: AdminApi | null
+    adminApi: AdminApi | null,
+    replyToHighlight: string | null
 }
 
 export type TranslationFunction = (key: string, replacements?: Record<string, string | number>) => string;
