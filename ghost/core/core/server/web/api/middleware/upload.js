@@ -32,6 +32,10 @@ const messages = {
         missingFile: 'Please select an image.',
         invalidFile: 'Please select a valid image.'
     },
+    svg: {
+        missingFile: 'Please select a SVG image.',
+        invalidFile: 'Please select a valid SVG image'
+    },
     icons: {
         missingFile: 'Please select an icon.',
         invalidFile: 'Icon must be a square .ico or .png file between 60px – 1,000px, under 100kb.'
@@ -144,37 +148,61 @@ const checkFileExists = (fileData) => {
 
 const checkFileIsValid = (fileData, types, extensions) => {
     const type = fileData.mimetype;
+
     if (types.includes(type) && extensions.includes(fileData.ext)) {
         return true;
     }
+
     return false;
 };
 
 /**
  *
- * @param {String} filepath
- * @returns {Boolean}
+ * @param {String} content
+ * @returns {String | null}
  *
- * Checks for the presence of <script> tags or 'on' attributes in an SVG file
+ * Returns sanitized SVG content, or null if the content is invalid.
  *
  */
-const isSvgSafe = (filepath) => {
+const sanitizeSvgContent = (content) => {
     const {JSDOM} = require('jsdom');
+    const createDOMPurify = require('dompurify');
+    const window = new JSDOM('').window;
+    const DOMPurify = createDOMPurify(window);
 
-    const fileContent = fs.readFileSync(filepath, 'utf8');
-    const document = new JSDOM(fileContent).window.document;
-    document.body.innerHTML = fileContent;
-    const svgEl = document.body.firstElementChild;
+    const cleaned = DOMPurify.sanitize(content, {USE_PROFILES: {svg: true, svgFilters: true}});
 
-    if (!svgEl) {
-        return false;
+    if (!cleaned || !cleaned.trim().startsWith('<svg')) {
+        return null;
     }
 
-    const attributes = Array.from(svgEl.attributes).map(({name}) => name);
-    const hasScriptAttr = !!attributes.find(attr => attr.startsWith('on'));
-    const scripts = svgEl.getElementsByTagName('script');
+    return cleaned;
+};
 
-    return scripts.length === 0 && !hasScriptAttr ? true : false;
+/**
+ *
+ * @param {String} filepath
+ * @returns {String | null}
+ *
+ * Reads the SVG file, sanitizes it, and writes the sanitized content back to the file.
+ * Returns the sanitized content or null if the SVG could not be sanitized.
+ */
+
+const sanitizeSvg = (filepath) => {
+    try {
+        const original = fs.readFileSync(filepath, 'utf8');
+        const sanitized = sanitizeSvgContent(original);
+
+        if (!sanitized) {
+            return null;
+        }
+
+        fs.writeFileSync(filepath, sanitized);
+        return sanitized;
+    } catch (error) {
+        logging.error('Error sanitizing SVG:', error);
+        return null;
+    }
 };
 
 /**
@@ -215,10 +243,13 @@ const validation = function ({type}) {
             }));
         }
 
+        // Sanitize SVG files
         if (req.file.ext === '.svg') {
-            if (!isSvgSafe(req.file.path)) {
+            const sanitized = sanitizeSvg(req.file.path);
+
+            if (!sanitized) {
                 return next(new errors.UnsupportedMediaTypeError({
-                    message: 'SVG files cannot contain <script> tags or "on" attributes.'
+                    message: tpl(messages.svg.invalidFile)
                 }));
             }
         }
@@ -295,5 +326,5 @@ module.exports = {
 module.exports._test = {
     checkFileExists,
     checkFileIsValid,
-    isSvgSafe
+    sanitizeSvgContent
 };
