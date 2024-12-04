@@ -37,6 +37,6 @@ describe('<CommentComponent>', function () {
 
         contextualRender(<CommentComponent comment={comment} parent={parent} />, {appContext});
 
-        expect(screen.queryByText('First reply')).toBeInTheDocument();
+        expect(screen.getByText('First reply')).toBeInTheDocument();
     });
 });

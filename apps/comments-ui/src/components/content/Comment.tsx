@@ -279,27 +279,9 @@ const AuthorName: React.FC<{comment: Comment}> = ({comment}) => {
     );
 };
 
-type CommentHeaderProps = {
-    comment: Comment;
-    className?: string;
-}
-
-const CommentHeader: React.FC<CommentHeaderProps> = ({comment, className = ''}) => {
-    const {comments, t, dispatchAction} = useAppContext();
-    const labs = useLabs();
-    const createdAtRelative = useRelativeTime(comment.created_at);
-    const {member} = useAppContext();
-    const memberExpertise = member && comment.member && comment.member.uuid === member.uuid ? member.expertise : comment?.member?.expertise;
-    const isReplyToReply = labs.commentImprovements && comment.in_reply_to_id && comment.in_reply_to_snippet;
-
-    let inReplyToSnippet = comment.in_reply_to_snippet;
-
-    if (isReplyToReply) {
-        const inReplyToComment = findCommentById(comments, comment.in_reply_to_id);
-        if (inReplyToComment && inReplyToComment.status !== 'published') {
-            inReplyToSnippet = `[${t('removed')}]`;
-        }
-    }
+const RepliedToSnippet: React.FC<{comment: Comment}> = ({comment}) => {
+    const {comments, dispatchAction, t} = useAppContext();
+    const inReplyToComment = findCommentById(comments, comment.in_reply_to_id);
 
     const scrollRepliedToCommentIntoView = (e: React.MouseEvent<HTMLAnchorElement>) => {
         e.preventDefault();
@@ -315,6 +297,35 @@ const CommentHeader: React.FC<CommentHeaderProps> = ({comment, className = ''}) 
         }
     };
 
+    let inReplyToSnippet = comment.in_reply_to_snippet;
+    if (inReplyToComment && inReplyToComment.status !== 'published') {
+        inReplyToSnippet = `[${t('removed')}]`;
+    }
+
+    return (
+        <a
+            className="font-semibold text-neutral-900/60 transition-colors hover:text-neutral-900/70 dark:text-white/70 dark:hover:text-white/80"
+            data-testid="comment-in-reply-to"
+            href={`#${comment.in_reply_to_id}`}
+            onClick={scrollRepliedToCommentIntoView}
+        >
+            {inReplyToSnippet}
+        </a>
+    );
+};
+
+type CommentHeaderProps = {
+    comment: Comment;
+    className?: string;
+}
+
+const CommentHeader: React.FC<CommentHeaderProps> = ({comment, className = ''}) => {
+    const {member, t} = useAppContext();
+    const labs = useLabs();
+    const createdAtRelative = useRelativeTime(comment.created_at);
+    const memberExpertise = member && comment.member && comment.member.uuid === member.uuid ? member.expertise : comment?.member?.expertise;
+    const isReplyToReply = labs.commentImprovements && comment.in_reply_to_id && comment.in_reply_to_snippet;
+
     return (
         <>
             <div className={`mt-0.5 flex flex-wrap items-start sm:flex-row ${memberExpertise ? 'flex-col' : 'flex-row'} ${isReplyToReply ? 'mb-0.5' : 'mb-2'} ${className}`}>
@@ -329,7 +340,7 @@ const CommentHeader: React.FC<CommentHeaderProps> = ({comment, className = ''}) 
             </div>
             {(isReplyToReply &&
                 <div className="mb-2 line-clamp-1 font-sans text-base leading-snug text-neutral-900/50 sm:text-sm dark:text-white/60">
-                    <span>{t('Replied to')}</span>:&nbsp;<a className="font-semibold text-neutral-900/60 transition-colors hover:text-neutral-900/75 dark:text-white/70 dark:hover:text-white/85" data-testid="comment-in-reply-to" href={`#${comment.in_reply_to_id}`} onClick={scrollRepliedToCommentIntoView}>{inReplyToSnippet}</a>
+                    <span>{t('Replied to')}</span>:&nbsp;<RepliedToSnippet comment={comment} />
                 </div>
             )}
         </>
