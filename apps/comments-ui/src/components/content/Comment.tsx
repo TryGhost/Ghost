@@ -309,7 +309,7 @@ const CommentHeader: React.FC<CommentHeaderProps> = ({comment, className = ''}) 
         }
 
         const element = (e.target as HTMLElement).ownerDocument.getElementById(comment.in_reply_to_id);
-        if (element && comment.parent_id) {
+        if (element) {
             dispatchAction('setHighlightedRepliedToComment', {
                 replyToId: comment.in_reply_to_id
             });

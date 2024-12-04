@@ -210,8 +210,7 @@ test.describe('Actions', async () => {
             html: '<p>This is comment 1</p>',
             replies: [
                 mockedApi.buildReply({
-                    html: '<p>This is a reply to 1</p>',
-                    parent_id: '1'
+                    html: '<p>This is a reply to 1</p>'
                 })
             ]
         });
