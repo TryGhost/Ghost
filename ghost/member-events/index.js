@@ -13,5 +13,6 @@ module.exports = {
     SubscriptionCancelledEvent: require('./lib/SubscriptionCancelledEvent'),
     OfferRedemptionEvent: require('./lib/OfferRedemptionEvent'),
     MemberLinkClickEvent: require('./lib/MemberLinkClickEvent'),
-    MemberEmailAnalyticsUpdateEvent: require('./lib/MemberEmailAnalyticsUpdateEvent')
+    MemberEmailAnalyticsUpdateEvent: require('./lib/MemberEmailAnalyticsUpdateEvent'),
+    MemberLastSeenAtJobEvent: require('./lib/MemberLastSeenAtJobEvent')
 };
