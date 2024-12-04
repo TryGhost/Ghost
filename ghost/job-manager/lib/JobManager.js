@@ -49,7 +49,7 @@ class JobManager {
      * @param {Function} [options.errorHandler] - custom job error handler
      * @param {Function} [options.workerMessageHandler] - custom message handler coming from workers
      * @param {Object} [options.JobModel] - a model which can persist job data in the storage
-     * @param {Object} [options.domainEvents] - domain eventEmitter emitter
+     * @param {Object} [options.domainEvents] - domain events emitter
      * @param {Object} [options.eventEmitter] - eventEmitter emitter
      * @param {Object} [options.config] - config
      * @param {boolean} [options.isDuplicate] - if true, the job manager will not initialize the job queue
