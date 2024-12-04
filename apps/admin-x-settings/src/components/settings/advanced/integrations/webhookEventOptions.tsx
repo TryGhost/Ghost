@@ -48,6 +48,14 @@ const webhookEventOptions: SelectOptionGroup[] = [
             {value: 'member.edited', label: 'Member updated'},
             {value: 'member.deleted', label: 'Member deleted'}
         ]
+    },
+    {
+        label: 'Users',
+        options: [
+            {value: 'user.added', label: 'User added'},
+            {value: 'user.edited', label: 'User edited'},
+            {value: 'user.deleted', label: 'User deleted'}
+        ]
     }
 ];
 
