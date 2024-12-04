@@ -11,7 +11,8 @@ const commentFields = [
     'status',
     'html',
     'created_at',
-    'edited_at'
+    'edited_at',
+    'parent_id'
 ];
 
 const memberFields = [
