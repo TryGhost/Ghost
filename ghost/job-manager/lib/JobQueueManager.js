@@ -148,9 +148,9 @@ class JobQueueManager {
      * @param {Array<{name: string, data: any}>} events - Array of event objects with name and data
      */
     emitEvents(events) {
-        console.log(`emitting events`);
+        debug(`[emitEvents] Emitting events`);
         events.forEach((e) => {
-            console.log(`emitting event: ${e.name}`);
+            debug(`[emitEvents] Emitting event: ${e.name}`);
             this.eventEmitter.emit(e.name, e.data);
         });
     }
@@ -173,20 +173,20 @@ class JobQueueManager {
             await this.jobsRepository.delete(job.id);
             this.handleMetrics(jobName);
 
-            console.log(`result for job ${jobName}:`, result);
+            debug(`[executeJob] Result for job ${jobName}:`, result);
             if (result && result.eventData) {
                 // Emits domain events
                 // if (result.eventData.domainEvents && result.eventData.domainEvents.length > 0) {
                 //     this.emitDomainEvents(result.eventData.domainEvents);
                 // }
                 // Emits node events
-                console.log(`result.eventData.events:`, result.eventData.events);
-                if (result.eventData.events && result.eventData.events.length > 0) {
-                    this.emitEvents(result.eventData.events);
+                debug(`[executeJob] Emitting node events:`, result.eventData.nodeEvents);
+                if (result.eventData.nodeEvents && result.eventData.nodeEvents.length > 0) {
+                    this.emitEvents(result.eventData.nodeEvents);
                 }
             }
         } catch (error) {
-            console.log(`Error in executeJob: ${error}`);
+            debug(`[executeJob] Error in executeJob: ${error}`);
             await this.handleJobError(job, jobMetadata, error);
         } finally {
             this.state.queuedJobs.delete(jobName);
