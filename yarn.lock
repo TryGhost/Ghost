@@ -10159,6 +10159,7 @@ __metadata:
     validator: "npm:13.12.0"
     vite: "npm:4.5.3"
     vite-plugin-svgr: "npm:3.3.0"
+    vitest: "npm:0.34.3"
   peerDependencies:
     react: ^18.2.0
     react-dom: ^18.2.0
