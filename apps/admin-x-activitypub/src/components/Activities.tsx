@@ -1,95 +1,185 @@
 import React, {useEffect, useRef} from 'react';
 
 import NiceModal from '@ebay/nice-modal-react';
-import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
-import {LoadingIndicator, NoValueLabel} from '@tryghost/admin-x-design-system';
+import {Activity, ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
+import {Button, LoadingIndicator, NoValueLabel} from '@tryghost/admin-x-design-system';
 
-import APAvatar, {AvatarBadge} from './global/APAvatar';
-import ActivityItem, {type Activity} from './activities/ActivityItem';
+import APAvatar from './global/APAvatar';
 import ArticleModal from './feed/ArticleModal';
 import MainNavigation from './navigation/MainNavigation';
+import NotificationItem from './activities/NotificationItem';
 import Separator from './global/Separator';
 import ViewProfileModal from './modals/ViewProfileModal';
 
 import getUsername from '../utils/get-username';
 import stripHtml from '../utils/strip-html';
+import truncate from '../utils/truncate';
 import {GET_ACTIVITIES_QUERY_KEY_NOTIFICATIONS, useActivitiesForUser} from '../hooks/useActivityPubQueries';
+import {type NotificationType} from './activities/NotificationIcon';
+import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 interface ActivitiesProps {}
 
 // eslint-disable-next-line no-shadow
-enum ACTVITY_TYPE {
+enum ACTIVITY_TYPE {
     CREATE = 'Create',
     LIKE = 'Like',
     FOLLOW = 'Follow'
 }
 
-const getActivityDescription = (activity: Activity): string => {
-    switch (activity.type) {
-    case ACTVITY_TYPE.CREATE:
-        if (activity.object?.inReplyTo && typeof activity.object?.inReplyTo !== 'string') {
-            return `Replied to your article "${activity.object.inReplyTo.name}"`;
-        }
+interface GroupedActivity {
+    type: ACTIVITY_TYPE;
+    actors: ActorProperties[];
+    object: ObjectProperties;
+    id?: string;
+}
 
-        return '';
-    case ACTVITY_TYPE.FOLLOW:
-        return 'Followed you';
-    case ACTVITY_TYPE.LIKE:
-        if (activity.object && activity.object.type === 'Article') {
-            return `Liked your article "${activity.object.name}"`;
-        } else if (activity.object && activity.object.type === 'Note') {
-            return `${stripHtml(activity.object.content)}`;
-        }
-    }
-
-    return '';
-};
-
-const getExtendedDescription = (activity: Activity): JSX.Element | null => {
+const getExtendedDescription = (activity: GroupedActivity): JSX.Element | null => {
     // If the activity is a reply
-    if (Boolean(activity.type === ACTVITY_TYPE.CREATE && activity.object?.inReplyTo)) {
+    if (Boolean(activity.type === ACTIVITY_TYPE.CREATE && activity.object?.inReplyTo)) {
         return (
             <div
                 dangerouslySetInnerHTML={{__html: activity.object?.content || ''}}
-                className='mt-2'
+                className='mt-1 line-clamp-2 text-pretty text-grey-700'
             />
+        );
+    } else if (activity.type === ACTIVITY_TYPE.LIKE && !activity.object?.name && activity.object?.content) {
+        return (
+            <div
+                dangerouslySetInnerHTML={{__html: activity.object?.content || ''}}
+                className='mt-1 line-clamp-2 text-pretty text-grey-700'
+            ></div>
         );
     }
 
     return null;
 };
 
-const getActivityUrl = (activity: Activity): string | null => {
-    if (activity.object) {
-        return activity.object.url || null;
-    }
-
-    return null;
-};
-
-const getActorUrl = (activity: Activity): string | null => {
-    if (activity.actor) {
-        return activity.actor.url;
-    }
-
-    return null;
-};
-
-const getActivityBadge = (activity: Activity): AvatarBadge => {
+const getActivityBadge = (activity: GroupedActivity): NotificationType => {
     switch (activity.type) {
-    case ACTVITY_TYPE.CREATE:
-        return 'comment-fill';
-    case ACTVITY_TYPE.FOLLOW:
-        return 'user-fill';
-    case ACTVITY_TYPE.LIKE:
+    case ACTIVITY_TYPE.CREATE:
+        return 'reply';
+    case ACTIVITY_TYPE.FOLLOW:
+        return 'follow';
+    case ACTIVITY_TYPE.LIKE:
         if (activity.object) {
-            return 'heart-fill';
+            return 'like';
         }
     }
+
+    return 'like';
+};
+
+const groupActivities = (activities: Activity[]): GroupedActivity[] => {
+    const groups: {[key: string]: GroupedActivity} = {};
+
+    // Activities are already sorted by time from the API
+    activities.forEach((activity) => {
+        let groupKey = '';
+
+        switch (activity.type) {
+        case ACTIVITY_TYPE.FOLLOW:
+            // Group follows that are next to each other in the array
+            groupKey = `follow_${activity.type}`;
+            break;
+        case ACTIVITY_TYPE.LIKE:
+            if (activity.object?.id) {
+                // Group likes by the target object
+                groupKey = `like_${activity.object.id}`;
+            }
+            break;
+        case ACTIVITY_TYPE.CREATE:
+            // Don't group creates/replies
+            groupKey = `create_${activity.id}`;
+            break;
+        }
+
+        if (!groups[groupKey]) {
+            groups[groupKey] = {
+                type: activity.type as ACTIVITY_TYPE,
+                actors: [],
+                object: activity.object,
+                id: activity.id
+            };
+        }
+
+        // Add actor if not already in the group
+        if (!groups[groupKey].actors.find(a => a.id === activity.actor.id)) {
+            groups[groupKey].actors.push(activity.actor);
+        }
+    });
+
+    // Return in same order as original activities
+    return Object.values(groups);
+};
+
+const getGroupDescription = (group: GroupedActivity): JSX.Element => {
+    const actorNames = group.actors.map(actor => actor.name);
+    const [firstActor, secondActor, ...otherActors] = actorNames;
+    const hasOthers = otherActors.length > 0;
+
+    let actorText = <></>;
+
+    switch (group.type) {
+    case ACTIVITY_TYPE.FOLLOW:
+        actorText = (
+            <>
+                <span className='font-semibold'>{firstActor}</span>
+                {secondActor && ` and `}
+                {secondActor && <span className='font-semibold'>{secondActor}</span>}
+                {hasOthers && ' and others'}
+            </>
+        );
+
+        return (
+            <>
+                {actorText} started following you
+            </>
+        );
+    case ACTIVITY_TYPE.LIKE:
+        const postType = group.object?.type === 'Article' ? 'post' : 'note';
+        actorText = (
+            <>
+                <span className='font-semibold'>{firstActor}</span>
+                {secondActor && (
+                    <>
+                        {hasOthers ? ', ' : ' and '}
+                        <span className='font-semibold'>{secondActor}</span>
+                    </>
+                )}
+                {hasOthers && ' and others'}
+            </>
+        );
+
+        return (
+            <>
+                {actorText} liked your {postType}{' '}
+                <span className='font-semibold'>{group.object?.name || ''}</span>
+            </>
+        );
+    case ACTIVITY_TYPE.CREATE:
+        if (group.object?.inReplyTo && typeof group.object?.inReplyTo !== 'string') {
+            const content = stripHtml(group.object.inReplyTo.name);
+            return <><span className='font-semibold'>{group.actors[0].name}</span> replied to your post <span className='font-semibold'>{truncate(content, 80)}</span></>;
+        }
+    }
+    return <></>;
 };
 
 const Activities: React.FC<ActivitiesProps> = ({}) => {
     const user = 'index';
+    const [openStates, setOpenStates] = React.useState<{[key: string]: boolean}>({});
+
+    const toggleOpen = (groupId: string) => {
+        setOpenStates(prev => ({
+            ...prev,
+            [groupId]: !prev[groupId]
+        }));
+    };
+
+    const maxAvatars = 5;
+
+    const {updateRoute} = useRouting();
 
     const {getActivitiesQuery} = useActivitiesForUser({
         handle: user,
@@ -101,9 +191,11 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
         key: GET_ACTIVITIES_QUERY_KEY_NOTIFICATIONS
     });
     const {data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading} = getActivitiesQuery;
-    const activities = (data?.pages.flatMap(page => page.data) ?? [])
-        // If there somehow are duplicate activities, filter them out so the list rendering doesn't break
-        .filter((activity, index, self) => index === self.findIndex(a => a.id === activity.id));
+    const groupedActivities = (data?.pages.flatMap((page) => {
+        const filtered = page.data.filter((activity, index, self) => index === self.findIndex(a => a.id === activity.id));
+
+        return groupActivities(filtered);
+    }) ?? []);
 
     const observerRef = useRef<IntersectionObserver | null>(null);
     const loadMoreRef = useRef<HTMLDivElement | null>(null);
@@ -130,34 +222,36 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
         };
     }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-    const handleActivityClick = (activity: Activity) => {
-        switch (activity.type) {
-        case ACTVITY_TYPE.CREATE:
+    const handleActivityClick = (group: GroupedActivity) => {
+        switch (group.type) {
+        case ACTIVITY_TYPE.CREATE:
             NiceModal.show(ArticleModal, {
-                activityId: activity.id,
-                object: activity.object,
-                actor: activity.actor,
+                activityId: group.id,
+                object: group.object,
+                actor: group.actors[0],
                 focusReplies: true,
-                width: typeof activity.object?.inReplyTo === 'object' && activity.object?.inReplyTo?.type === 'Article' ? 'wide' : 'narrow'
+                width: typeof group.object?.inReplyTo === 'object' && group.object?.inReplyTo?.type === 'Article' ? 'wide' : 'narrow'
             });
             break;
-        case ACTVITY_TYPE.LIKE:
+        case ACTIVITY_TYPE.LIKE:
             NiceModal.show(ArticleModal, {
-                activityId: activity.id,
-                object: activity.object,
-                actor: activity.object.attributedTo as ActorProperties,
+                activityId: group.id,
+                object: group.object,
+                actor: group.object.attributedTo as ActorProperties,
                 width: 'wide'
             });
             break;
-        case ACTVITY_TYPE.FOLLOW:
-            NiceModal.show(ViewProfileModal, {
-                profile: getUsername(activity.actor)
-            });
+        case ACTIVITY_TYPE.FOLLOW:
+            if (group.actors.length > 1) {
+                updateRoute('profile');
+            } else {
+                NiceModal.show(ViewProfileModal, {
+                    profile: getUsername(group.actors[0])
+                });
+            }
             break;
-        default:
         }
     };
-
     return (
         <>
             <MainNavigation page='activities'/>
@@ -168,7 +262,7 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
                     </div>)
                 }
                 {
-                    isLoading === false && activities.length === 0 && (
+                    isLoading === false && groupedActivities.length === 0 && (
                         <div className='mt-8'>
                             <NoValueLabel icon='bell'>
                                 When other Fediverse users interact with you, you&apos;ll see it here.
@@ -177,26 +271,71 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
                     )
                 }
                 {
-                    (isLoading === false && activities.length > 0) && (
+                    (isLoading === false && groupedActivities.length > 0) && (
                         <>
-                            <div className='mt-8 flex w-full max-w-[560px] flex-col'>
-                                {activities?.map((activity, index) => (
-                                    <React.Fragment key={activity.id}>
-                                        <ActivityItem
-                                            url={getActivityUrl(activity) || getActorUrl(activity)}
-                                            onClick={() => handleActivityClick(activity)}
+                            <div className='my-8 flex w-full max-w-[560px] flex-col'>
+                                {groupedActivities.map((group, index) => (
+                                    <React.Fragment key={group.id || `${group.type}_${index}`}>
+                                        <NotificationItem
+                                            className='hover:bg-gray-100'
+                                            onClick={() => handleActivityClick(group)}
                                         >
-                                            <APAvatar author={activity.actor} badge={getActivityBadge(activity)} />
-                                            <div className='min-w-0'>
-                                                <div className='truncate text-grey-600'>
-                                                    <span className='mr-1 font-bold text-black'>{activity.actor.name}</span>
-                                                    {getUsername(activity.actor)}
+                                            <NotificationItem.Icon type={getActivityBadge(group)} />
+                                            <NotificationItem.Avatars>
+                                                <div className='flex flex-col'>
+                                                    <div className='flex gap-2'>
+                                                        {!openStates[group.id || `${group.type}_${index}`] && group.actors.slice(0, maxAvatars).map(actor => (
+                                                            <APAvatar
+                                                                key={actor.id}
+                                                                author={actor}
+                                                                size='sm'
+                                                            />
+                                                        ))}
+                                                        {group.actors.length > maxAvatars && (!openStates[group.id || `${group.type}_${index}`]) && (
+                                                            <div
+                                                                className='flex h-10 w-5 items-center justify-center text-sm text-grey-700'
+                                                            >
+                                                                {`+${group.actors.length - maxAvatars}`}
+                                                            </div>
+                                                        )}
+
+                                                        {group.actors.length > 1 && (
+                                                            <Button
+                                                                className={`transition-color flex h-10 items-center rounded-full bg-transparent text-grey-700 ${openStates[group.id || `${group.type}_${index}`] ? 'w-full justify-start pl-0' : 'w-10 justify-center'}`}
+                                                                hideLabel={!openStates[group.id || `${group.type}_${index}`]}
+                                                                icon='chevron-down'
+                                                                iconColorClass={`w-[12px] h-[12px] ${openStates[group.id || `${group.type}_${index}`] ? 'rotate-180' : ''}`}
+                                                                label={`${openStates[group.id || `${group.type}_${index}`] ? 'Hide' : 'Show all'}`}
+                                                                unstyled
+                                                                onClick={(event) => {
+                                                                    event?.stopPropagation();
+                                                                    toggleOpen(group.id || `${group.type}_${index}`);
+                                                                }}/>
+                                                        )}
+                                                    </div>
+                                                    <div className={`overflow-hidden transition-all duration-300 ease-in-out  ${openStates[group.id || `${group.type}_${index}`] ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}>
+                                                        {openStates[group.id || `${group.type}_${index}`] && group.actors.length > 1 && (
+                                                            <div className='flex flex-col gap-2 pt-4'>
+                                                                {group.actors.map(actor => (
+                                                                    <div key={actor.id} className='flex items-center'>
+                                                                        <APAvatar author={actor} size='xs' />
+                                                                        <span className='ml-2 text-base font-semibold'>{actor.name}</span>
+                                                                        <span className='ml-1 text-base text-grey-700'>{getUsername(actor)}</span>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        )}
+                                                    </div>
                                                 </div>
-                                                <div className=''>{getActivityDescription(activity)}</div>
-                                                {getExtendedDescription(activity)}
-                                            </div>
-                                        </ActivityItem>
-                                        {index < activities.length - 1 && <Separator />}
+                                            </NotificationItem.Avatars>
+                                            <NotificationItem.Content>
+                                                <div className='line-clamp-2 text-pretty text-black'>
+                                                    {getGroupDescription(group)}
+                                                </div>
+                                                {getExtendedDescription(group)}
+                                            </NotificationItem.Content>
+                                        </NotificationItem>
+                                        {index < groupedActivities.length - 1 && <Separator />}
                                     </React.Fragment>
                                 ))}
                             </div>

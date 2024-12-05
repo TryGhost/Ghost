@@ -18,7 +18,7 @@
     }
 }
 
-button:active svg {
+button.ap-like-button:active svg {
     animation: bump 0.3s ease-in-out;
 }
 
