@@ -61,33 +61,6 @@ module.exports = {
             serializePosts = require('../api/endpoints/utils/serializers/output/posts').all;
         }
 
-        const getCollectionPosts = async (collectionSlug, postCount) => {
-            const frame = {
-                options: {
-                    columns: ['url','excerpt','reading_time']
-                },
-                original: {
-                    context: {
-                        member: {
-                            status: 'paid'
-                        }
-                    }
-                },
-                apiType: 'content',
-                response: {}
-            };
-
-            const transacting = userOptions.transacting;
-            const response = await postsService.browsePosts({
-                context: {public: true}, // mimic Content API request
-                collection: collectionSlug,
-                limit: postCount,
-                transacting
-            });
-            await serializePosts(response, null, frame);
-            return frame.response.posts;
-        };
-
         const options = Object.assign({
             siteUrl: config.get('url'),
             imageOptimization: config.get('imageOptimization'),
@@ -100,7 +73,6 @@ module.exports = {
                     && imageTransform.shouldResizeFileExtension(ext)
                     && typeof storage.getStorage('images').saveRaw === 'function';
             },
-            getCollectionPosts,
             feature: {
                 contentVisibility: labs.isSet('contentVisibility')
             }

@@ -48,8 +48,6 @@ describe('Posts Content API', function () {
     let agent;
 
     before(async function () {
-        // NOTE: can be removed after collections -> GA
-        mockManager.mockLabsEnabled('collections');
         agent = await agentProvider.getContentAPIAgent();
         await fixtureManager.init('owner:post', 'users', 'user:inactive', 'posts', 'tags:extra', 'api_keys', 'newsletters', 'members:newsletters');
         await agent.authenticate();
@@ -195,36 +193,6 @@ describe('Posts Content API', function () {
 
         assert.equal(ghostPrimaryAuthors.length, 7, `Each post must either have the author 'joe-bloggs' or 'ghost', 'pat' is non existing author`);
         assert.equal(joePrimaryAuthors.length, 4, `Each post must either have the author 'joe-bloggs' or 'ghost', 'pat' is non existing author`);
-    });
-
-    it('Can browse filtering by collection', async function () {
-        await agent
-            .get(`posts/?collection=latest`)
-            .expectStatus(200)
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            })
-            .matchBodySnapshot({
-                posts: Array(11).fill(postMatcher)
-            });
-    });
-
-    it('Can browse filtering by collection and using paging parameters', async function () {
-        await agent
-            .get(`posts/?collection=latest&limit=1&page=2`)
-            .expectStatus(200)
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            })
-            .matchBodySnapshot({
-                posts: Array(1).fill(postMatcher)
-            })
-            .expect((res) => {
-                // there are total of 11 published posts
-                assert.equal(res.body.meta.pagination.total, 11);
-            });
     });
 
     it('Can request fields of posts', async function () {
