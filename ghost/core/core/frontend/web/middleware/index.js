@@ -7,5 +7,5 @@ module.exports = {
     serveFavicon: require('./serve-favicon'),
     servePublicFile: require('./serve-public-file'),
     staticTheme: require('./static-theme'),
-    pwa: require('./pwa')
+    // pwa: require('./pwa')
 };

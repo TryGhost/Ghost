@@ -1,17 +1,18 @@
 {
     "url": "http://localhost:2368",
     "mail": {
-        "from": "test@example.com",
         "transport": "SMTP",
         "options": {
-            "host": "127.0.0.1",
-            "port": 1025,
-            "auth": {
-                "user": "user",
-                "pass": "unsecure"
-            }
+          "service": "Mailgun",
+          "host": "smtp.mailgun.org",
+          "port": 465,
+          "secure": true,
+          "auth": {
+            "user": "postmaster@sandbox5a1cbb82a00f43f796339e3f26b13a47.mailgun.org",
+            "pass": "68b8c8a18a3dea4dc94aa67ccf4e62b6-c02fd0ba-6f34999b"
+          }
         }
-    },
+      },
     "database": {
         "client": "sqlite3",
         "connection": {

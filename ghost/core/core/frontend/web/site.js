@@ -137,7 +137,7 @@ module.exports = function setupSiteApp(routerConfig) {
     sitemapHandler(siteApp);
 
     // Add PWA middleware before theme middleware
-    siteApp.use(mw.pwa);
+    // siteApp.use(mw.pwa);
 
     // Global handling for member session, ensures a member is logged in to the frontend
     siteApp.use(membersService.middleware.loadMemberSession);

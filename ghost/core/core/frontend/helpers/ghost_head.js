@@ -26,7 +26,13 @@ function writeMetaTag(property, content, type) {
     return '<meta ' + type + '="' + property + '" content="' + content + '">';
 }
 
-function getPWAMetaTags() {
+function getPWAMetaTags(dataRoot) {
+    const isUserSignedIn = dataRoot.member;
+    const isAdmin = _.includes(dataRoot._locals.context, 'admin');
+
+    if(_.isEmpty(isUserSignedIn) || isAdmin){
+        return []
+    }
     const head = [];
     head.push('<link rel="manifest" href="/manifest.json">');
     head.push('<meta name="theme-color" content="#15171A">');
@@ -283,7 +289,9 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
 
             // Add PWA meta tags
             if (!excludeList.has('pwa')) {
-                head.push.apply(head, getPWAMetaTags());
+                head.push.apply(head, getPWAMetaTags(dataRoot));
+                //head.push(...getPWAMetaTags(dataRoot));
+
             }
 
             // show amp link in post when 1. we are not on the amp page and 2. amp is enabled
