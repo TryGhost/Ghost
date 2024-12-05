@@ -50,7 +50,9 @@
     "@tryghost/logging": "2.4.18",
     "jackspeak": "2.1.1",
     "moment": "2.24.0",
-    "moment-timezone": "0.5.45"
+    "moment-timezone": "0.5.45",
+    "cheerio@^1.0.0-rc.2": "1.0.0-rc.12",
+    "cheerio@^1.0.0-rc.12": "1.0.0-rc.12"
   },
   "renovate": {
     "extends": [
