@@ -31,7 +31,8 @@ describe('{{body_class}} helper', function () {
                     context: [],
                     settings: {active_theme: 'casper'}
                 }
-            }
+            },
+            site: {}
         };
     });
 
