@@ -32,7 +32,6 @@ const BETA_FEATURES = [
     'editorExcerpt',
     'ActivityPub',
     'importMemberTier',
-    'customFonts',
     'staff2fa',
     'contentVisibility'
 ];
