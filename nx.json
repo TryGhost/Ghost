@@ -35,7 +35,8 @@
             "cache": true
         },
         "test:unit": {
-            "cache": true
+            "cache": true,
+            "dependsOn": ["^build"]
         }
     },
     "cacheDirectory": ".nxcache"
