@@ -19,7 +19,7 @@ interface NotificationItemProps {
 
 const NotificationItem = ({children, onClick, url, className}: NotificationItemProps) => {
     const content = (
-        <div className={`grid grid-cols-[auto_1fr] gap-2 py-4 hover:bg-grey-50 ${className}`}>
+        <div className={`-mx-4 -my-px grid grid-cols-[auto_1fr] gap-2 rounded-lg p-4 hover:bg-grey-50 ${className}`}>
             {children}
         </div>
     );
