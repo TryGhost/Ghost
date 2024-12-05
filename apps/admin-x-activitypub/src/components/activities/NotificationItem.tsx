@@ -18,25 +18,11 @@ interface NotificationItemProps {
 }
 
 const NotificationItem = ({children, onClick, url, className}: NotificationItemProps) => {
-    const content = (
-        <div className={`-mx-4 -my-px grid grid-cols-[auto_1fr] gap-2 rounded-lg p-4 hover:bg-grey-50 ${className}`}>
-            {children}
-        </div>
-    );
-
     return (
         <NotificationContext.Provider value={{onClick, url}}>
-            {url ? (
-                <a className='block' href={url}>
-                    {content}
-                </a>
-            ) : onClick ? (
-                <button className='w-full text-left' type='button' onClick={onClick}>
-                    {content}
-                </button>
-            ) : (
-                content
-            )}
+            <button className={`relative -mx-4 -my-px grid grid-cols-[auto_1fr] gap-3 rounded-lg p-4 text-left hover:bg-grey-75 ${className}`} type='button' onClick={onClick}>
+                {children}
+            </button>
         </NotificationContext.Provider>
     );
 };
