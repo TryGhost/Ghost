@@ -76,7 +76,7 @@ const preview: Preview = {
 			let {scheme} = context.globals;
 
 			return (
-			<div className={`shade admin-x-base ${scheme === 'dark' ? 'dark' : ''}`} style={{
+			<div className={`shade shade-base ${scheme === 'dark' ? 'dark' : ''}`} style={{
 				// padding: '24px',
 				// width: 'unset',
 				height: 'unset',

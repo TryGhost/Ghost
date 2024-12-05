@@ -10,7 +10,7 @@ export interface ShadeAppProps extends React.HTMLProps<HTMLDivElement> {
 
 const ShadeApp: React.FC<ShadeAppProps> = ({darkMode, className, children, ...props}) => {
     const appClassName = clsx(
-        'admin-x-base',
+        'shade-base',
         darkMode && 'dark',
         className
     );
