@@ -1,4 +1,4 @@
-import {AddComment, Comment, CommentsOptions, EditableAppContext, OpenCommentForm} from './AppContext';
+import {AddComment, Comment, CommentsOptions, DispatchActionType, EditableAppContext, OpenCommentForm} from './AppContext';
 import {AdminApi} from './utils/adminApi';
 import {GhostApi} from './utils/api';
 import {Page} from './pages';
@@ -408,32 +408,27 @@ async function openCommentForm({data: newForm, api, state}: {data: OpenCommentFo
     };
 }
 
+function setHighlightComment({data: commentId}: {data: string | null}) {
+    return {
+        commentIdToHighlight: commentId
+    };
+}
+
 function highlightComment({
     data: {commentId},
-    state,
-    setState
+    dispatchAction
+
 }: {
     data: { commentId: string | null };
     state: EditableAppContext;
-    setState: (newState: Partial<EditableAppContext>) => void;
+    dispatchAction: DispatchActionType;
 }) {
-    const newState = {
-        ...state,
+    setTimeout(() => {
+        dispatchAction('setHighlightComment', null);
+    }, 3000);
+    return {
         commentIdToHighlight: commentId
     };
-    setState(newState);
-
-    // If `commentId` is not null, schedule the clear action
-    if (commentId) {
-        setTimeout(() => {
-            setState({
-                ...state,
-                commentIdToHighlight: null
-            });
-        }, 3000);
-    }
-
-    return {}; // No additional state updates returned directly
 }
 
 function setCommentFormHasUnsavedChanges({data: {id, hasUnsavedChanges}, state}: {data: {id: string, hasUnsavedChanges: boolean}, state: EditableAppContext}) {
@@ -457,8 +452,7 @@ export const SyncActions = {
     openPopup,
     closePopup,
     closeCommentForm,
-    setCommentFormHasUnsavedChanges,
-    highlightComment
+    setCommentFormHasUnsavedChanges
 };
 
 export type SyncActionType = keyof typeof SyncActions;
@@ -478,8 +472,9 @@ export const Actions = {
     loadMoreReplies,
     updateMember,
     setOrder,
-    openCommentForm
-    // highlightComment
+    openCommentForm,
+    highlightComment,
+    setHighlightComment
 };
 
 export type ActionType = keyof typeof Actions;
@@ -489,10 +484,10 @@ export function isSyncAction(action: string): action is SyncActionType {
 }
 
 /** Handle actions in the App, returns updated state */
-export async function ActionHandler({action, data, state, api, adminApi, options}: {action: ActionType, data: any, state: EditableAppContext, options: CommentsOptions, api: GhostApi, adminApi: AdminApi}): Promise<Partial<EditableAppContext>> {
+export async function ActionHandler({action, data, state, api, adminApi, options, dispatchAction}: {action: ActionType, data: any, state: EditableAppContext, options: CommentsOptions, api: GhostApi, adminApi: AdminApi, dispatchAction: DispatchActionType}): Promise<Partial<EditableAppContext>> {
     const handler = Actions[action];
     if (handler) {
-        return await handler({data, state, api, adminApi, options} as any) || {};
+        return await handler({data, state, api, adminApi, options, dispatchAction} as any) || {};
     }
     return {};
 }
