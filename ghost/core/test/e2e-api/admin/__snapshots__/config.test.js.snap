@@ -16,7 +16,6 @@ Object {
       "announcementBar": true,
       "audienceFeedback": true,
       "captcha": true,
-      "collections": true,
       "collectionsCard": true,
       "contentVisibility": true,
       "customFonts": true,
