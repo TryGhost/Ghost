@@ -1,8 +1,8 @@
 import React, {useEffect, useRef} from 'react';
 
 import NiceModal from '@ebay/nice-modal-react';
-import {Activity, ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
-import {LoadingIndicator, NoValueLabel} from '@tryghost/admin-x-design-system';
+import {Activity, ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
+import {LoadingIndicator, NoValueLabel, Popover} from '@tryghost/admin-x-design-system';
 
 import APAvatar from './global/APAvatar';
 import ArticleModal from './feed/ArticleModal';
@@ -29,11 +29,11 @@ enum ACTIVITY_TYPE {
 interface GroupedActivity {
     type: ACTIVITY_TYPE;
     actors: ActorProperties[];
-    object?: any;
+    object: ObjectProperties;
     id?: string;
 }
 
-const getExtendedDescription = (activity: Activity): JSX.Element | null => {
+const getExtendedDescription = (activity: GroupedActivity): JSX.Element | null => {
     // If the activity is a reply
     if (Boolean(activity.type === ACTIVITY_TYPE.CREATE && activity.object?.inReplyTo)) {
         return (
@@ -47,23 +47,7 @@ const getExtendedDescription = (activity: Activity): JSX.Element | null => {
     return null;
 };
 
-const getActivityUrl = (activity: Activity): string | null => {
-    if (activity.object) {
-        return activity.object.url || null;
-    }
-
-    return null;
-};
-
-// const getActorUrl = (activity: Activity): string | null => {
-//     if (activity.actor) {
-//         return activity.actor.url;
-//     }
-
-//     return null;
-// };
-
-const getActivityBadge = (activity: Activity): NotificationType => {
+const getActivityBadge = (activity: GroupedActivity): NotificationType => {
     switch (activity.type) {
     case ACTIVITY_TYPE.CREATE:
         return 'reply';
@@ -104,7 +88,7 @@ const groupActivities = (activities: Activity[]): GroupedActivity[] => {
 
         if (!groups[groupKey]) {
             groups[groupKey] = {
-                type: activity.type,
+                type: activity.type as ACTIVITY_TYPE,
                 actors: [],
                 object: activity.object,
                 id: activity.id
@@ -151,7 +135,7 @@ const getGroupDescription = (group: GroupedActivity): JSX.Element => {
             </>
         );
     case ACTIVITY_TYPE.LIKE:
-        const articleName = group.object?.name || truncate(stripHtml(group.object?.content), 50) || 'a post';
+        const articleName = group.object?.name || truncate(stripHtml(group.object?.content || ''), 200) || 'a post';
         if (!secondActor) {
             return (
                 <>
@@ -229,35 +213,27 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
     }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
     const handleActivityClick = (group: GroupedActivity) => {
-        // Create a synthetic activity for the click handler
-        const activity: Notification = {
-            type: group.type,
-            id: group.id!,
-            actor: group.actors[0], // Use first actor for single-actor actions
-            object: group.object
-        };
-
         switch (group.type) {
         case ACTIVITY_TYPE.CREATE:
             NiceModal.show(ArticleModal, {
-                activityId: activity.id,
-                object: activity.object,
-                actor: activity.actor,
+                activityId: group.id,
+                object: group.object,
+                actor: group.actors[0],
                 focusReplies: true,
-                width: typeof activity.object?.inReplyTo === 'object' && activity.object?.inReplyTo?.type === 'Article' ? 'wide' : 'narrow'
+                width: typeof group.object?.inReplyTo === 'object' && group.object?.inReplyTo?.type === 'Article' ? 'wide' : 'narrow'
             });
             break;
         case ACTIVITY_TYPE.LIKE:
             NiceModal.show(ArticleModal, {
-                activityId: activity.id,
-                object: activity.object,
-                actor: activity.object.attributedTo as ActorProperties,
+                activityId: group.id,
+                object: group.object,
+                actor: group.object.attributedTo as ActorProperties,
                 width: 'wide'
             });
             break;
         case ACTIVITY_TYPE.FOLLOW:
             NiceModal.show(ViewProfileModal, {
-                profile: getUsername(activity.actor)
+                profile: getUsername(group.actors[0])
             });
             break;
         }
@@ -293,25 +269,42 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
 
                                             <NotificationItem
                                                 className="hover:bg-gray-100"
-                                                url={group.type === ACTIVITY_TYPE.CREATE ? getActivityUrl(group as unknown as Notification) : undefined}
                                                 onClick={() => handleActivityClick(group)}
                                             >
-                                                <NotificationItem.Icon type={getActivityBadge(group as unknown as Activity)} />
+                                                <NotificationItem.Icon type={getActivityBadge(group)} />
                                                 <NotificationItem.Avatars>
-                                                    {group.actors.map(actor => (
+                                                    {group.actors.slice(0, 3).map(actor => (
                                                         <APAvatar
                                                             key={actor.id}
                                                             author={actor}
-                                                            size="xs"
+                                                            size="sm"
                                                         />
                                                     ))}
+                                                    {group.actors.length > 3 && (
+                                                        <Popover
+                                                            trigger={
+                                                                <div className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-md bg-grey-100 text-sm text-grey-700 hover:bg-grey-200">
+                                                                    +{group.actors.length - 3}
+                                                                </div>
+                                                            }
+                                                        >
+                                                            <div className="flex max-h-[300px] min-w-[200px] flex-col gap-2 overflow-y-auto p-4">
+                                                                {group.actors.slice(3).map(actor => (
+                                                                    <div key={actor.id} className="flex items-center gap-2">
+                                                                        <APAvatar author={actor} size="xs" />
+                                                                        <span className="text-base font-semibold">{actor.name}</span>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </Popover>
+                                                    )}
                                                 </NotificationItem.Avatars>
                                                 <NotificationItem.Content>
-                                                    <div className="text-pretty text-black">
+                                                    <div className="line-clamp-2 text-pretty text-black">
                                                         {getGroupDescription(group)}
                                                     </div>
                                                     {group.type === ACTIVITY_TYPE.CREATE &&
-                                                        getExtendedDescription(group as unknown as Notification)}
+                                                        getExtendedDescription(group)}
                                                 </NotificationItem.Content>
                                             </NotificationItem>
 
