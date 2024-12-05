@@ -8,7 +8,6 @@ export {ReactComponent as XLogo} from './assets/images/x-logo.svg';
 export {default as useGlobalDirtyState} from './hooks/useGlobalDirtyState';
 
 export {debounce} from './utils/debounce';
-export {confirmIfDirty} from './utils/modals';
 export {formatUrl} from './utils/formatUrl';
 
 export {default as ShadeApp} from './ShadeApp';
