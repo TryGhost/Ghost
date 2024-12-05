@@ -11,7 +11,8 @@ const messages = {
     replyToReply: 'Can not reply to a reply',
     commentsNotEnabled: 'Comments are not enabled for this site.',
     cannotCommentOnPost: 'You do not have permission to comment on this post.',
-    cannotEditComment: 'You do not have permission to edit comments'
+    cannotEditComment: 'You do not have permission to edit comments',
+    postNotFound: 'Post not found. Cannot attach comment to non-existent post.'
 };
 
 class CommentsService {
@@ -399,6 +400,120 @@ class CommentsService {
         });
 
         return model;
+    }
+
+    /**
+     * @param {string} post - The ID of the Post to comment on
+     * @param {string} member - The member object. May contain id, uuid, email, etc for matching.
+     * @param {string} comment - The HTML content of the Comment
+     * @param {string} actualCommentId - The ID of the comment.  Not to be confused with the comment_id column of the post!
+     * @param {string} date - The date of the comment creation
+     * @param {any} options
+     */
+
+    async importCommentOnPost(post, member, comment, actualCommentId, date, options) {    
+        this.checkEnabled();
+        const memberModel = await this.models.Member.findOne(member, {
+            require: true,
+            ...options
+        });
+        const postModel = await this.models.Post.findOne({
+            comment_id: post
+            // we're using the post's comment_id field to get the right post, because it will contain the old 
+            // (imported) post ID.
+        }, {
+            require: true,
+            ...options
+        });
+        if (!postModel) {
+            throw new errors.NotFoundError({
+                message: tpl(messages.postNotFound)
+            });
+        }
+        const model = await this.models.Comment.add({
+            id: actualCommentId,
+            post_id: post,
+            member_id: memberModel.id,
+            parent_id: null,
+            html: comment,
+            status: 'published',
+            created_at: date
+        }, options);
+
+        // Instead of returning the model, fetch it again, so we have all the relations properly fetched
+        return await this.models.Comment.findOne({id: model.id}, {...options, require: true});
+    }
+    
+    /** 
+     * @param {string} parent - The ID of the Comment to reply to
+     * @param {string} inReplyTo - The ID of the Reply to reply to
+     * @param {string} member - The member object. May contain id, uuid, email, etc for matching.
+     * @param {string} comment - The HTML content of the Comment
+     * @param {string} actualCommentId - The ID of the comment.  Not to be confused with the comment_id column of the post!
+     * @param {string} date - The date of the comment creation
+     * @param {any} options
+     */
+
+    async importReplyToComment(parent, inReplyTo, member, comment, actualCommentId, date, options) {
+        this.checkEnabled();
+        const memberModel = await this.models.Member.findOne(member, {
+            require: true,
+            ...options
+        });
+    
+        const parentComment = await this.getCommentByID(parent, options);
+        if (!parentComment) {
+            throw new errors.BadRequestError({
+                message: tpl(messages.commentNotFound)
+            });
+        }
+
+        if (parentComment.get('parent_id') !== null) {
+            throw new errors.BadRequestError({
+                message: tpl(messages.replyToReply)
+            });
+        }
+
+        const postModel = await this.models.Post.findOne({
+            id: parentComment.get('post_id')
+        }, {
+            require: true,
+            ...options
+        });
+        if (!postModel) {
+            throw new errors.NotFoundError({
+                message: tpl(messages.postNotFound)
+            });
+        }
+        let inReplyToComment;
+        if (parent && inReplyTo) {
+            inReplyToComment = await this.getCommentByID(inReplyTo, options);
+
+            // we only allow references to published comments to avoid leaking
+            // hidden data via the snippet included in API responses
+            if (inReplyToComment && inReplyToComment.get('status') !== 'published') {
+                inReplyToComment = null;
+            }
+
+            // we don't allow in_reply_to references across different parents
+            if (inReplyToComment && inReplyToComment.get('parent_id') !== parent) {
+                inReplyToComment = null;
+            }
+        }
+
+        const model = await this.models.Comment.add({
+            post_id: parentComment.get('post_id'),
+            member_id: memberModel.id,
+            parent_id: parentComment.id,
+            in_reply_to_id: inReplyToComment && inReplyToComment.get('id'),
+            html: comment,
+            status: 'published',
+            id: actualCommentId,
+            created_at: date
+        }, options);
+
+        // Instead of returning the model, fetch it again, so we have all the relations properly fetched
+        return await this.models.Comment.findOne({id: model.id}, {...options, require: true});
     }
 }
 
