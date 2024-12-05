@@ -10082,6 +10082,7 @@ __metadata:
     react-dom: "npm:18.3.1"
     ts-jest: "npm:29.1.5"
     use-debounce: "npm:10.0.4"
+    vitest: "npm:0.34.3"
   languageName: unknown
   linkType: soft
 
