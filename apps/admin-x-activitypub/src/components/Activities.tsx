@@ -239,6 +239,8 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
         }
     };
 
+    const groupedActivities = groupActivities(activities);
+
     return (
         <>
             <MainNavigation page='activities'/>
