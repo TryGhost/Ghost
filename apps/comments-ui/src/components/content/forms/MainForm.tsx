@@ -4,6 +4,7 @@ import {getEditorConfig} from '../../../utils/editor';
 import {scrollToElement} from '../../../utils/helpers';
 import {useAppContext} from '../../../AppContext';
 import {useEditor} from '@tiptap/react';
+import {useEditorState} from '../../../utils/hooks';
 
 type Props = {
     commentsCount: number
@@ -17,9 +18,11 @@ const MainForm: React.FC<Props> = ({commentsCount}) => {
         autofocus: false
     };
 
-    const editor = useEditor({
+    const baseEditor = useEditor({
         ...getEditorConfig(config)
     }, [commentsCount]);
+
+    const {editor, hasContent} = useEditorState(baseEditor);
 
     const submit = useCallback(async ({html}) => {
         // Send comment to server
@@ -94,7 +97,7 @@ const MainForm: React.FC<Props> = ({commentsCount}) => {
         submit
     };
 
-    const isOpen = editor?.isFocused ?? false;
+    const isOpen = editor?.isFocused || hasContent;
 
     return (
         <div ref={formEl} className='px-3 pb-2 pt-3' data-testid="main-form">
