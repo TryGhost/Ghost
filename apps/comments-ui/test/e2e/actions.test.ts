@@ -200,10 +200,13 @@ test.describe('Actions', async () => {
 
         // Should indicate this was a reply to a reply
         await expect(frame.getByTestId('comment-in-reply-to')).toHaveText('This is a reply to 1');
+
+        return {frame};
     }
 
     test('Can reply to a reply', async ({page}) => {
         mockedApi.addComment({
+            id: '1',
             html: '<p>This is comment 1</p>',
             replies: [
                 mockedApi.buildReply({
@@ -213,6 +216,88 @@ test.describe('Actions', async () => {
         });
 
         await testReplyToReply(page);
+    });
+
+    test('Can highlight reply when clicking on reply to: snippet', async ({page}) => {
+        mockedApi.addComment({
+            html: '<p>This is comment 1</p>',
+            replies: [
+                mockedApi.buildReply({
+                    id: '2',
+                    html: '<p>This is a reply to 1</p>'
+                }),
+                mockedApi.buildReply({
+                    id: '3',
+                    html: '<p>This is a reply to a reply</p>',
+                    in_reply_to_id: '2',
+                    in_reply_to_snippet: 'This is a reply to 1'
+                })
+            ]
+        });
+
+        const {frame} = await initializeTest(page, {labs: true});
+
+        await frame.getByTestId('comment-in-reply-to').click();
+
+        // get the first reply which contains This is a reply to 1
+        const commentComponent = frame.getByTestId('comment-component').nth(1);
+
+        const replyComment = commentComponent.getByTestId('comment-content').nth(0);
+
+        // check that replyComment contains the text This is a reply to 1
+        await expect(replyComment).toHaveText('This is a reply to 1');
+
+        const markElement = await replyComment.locator('mark');
+        await expect(markElement).toBeVisible();
+
+        // Check that the mark element has the expected classes
+        await expect(markElement).toHaveClass(/animate-\[highlight_2\.5s_ease-out\]/);
+        await expect(markElement).toHaveClass(/\[animation-delay:1s\]/);
+        await expect(markElement).toHaveClass(/bg-yellow-300\/40/);
+        await expect(markElement).toHaveClass(/dark:bg-yellow-500\/40/);
+    });
+
+    test('Reply highlight disappears after a bit', async ({page}) => {
+        mockedApi.addComment({
+            html: '<p>This is comment 1</p>',
+            replies: [
+                mockedApi.buildReply({
+                    id: '2',
+                    html: '<p>This is a reply to 1</p>'
+                }),
+                mockedApi.buildReply({
+                    id: '3',
+                    html: '<p>This is a reply to a reply</p>',
+                    in_reply_to_id: '2',
+                    in_reply_to_snippet: 'This is a reply to 1'
+                })
+            ]
+        });
+
+        const {frame} = await initializeTest(page, {labs: true});
+
+        await frame.getByTestId('comment-in-reply-to').click();
+
+        // get the first reply which contains This is a reply to 1
+        const commentComponent = frame.getByTestId('comment-component').nth(1);
+
+        const replyComment = commentComponent.getByTestId('comment-content').nth(0);
+
+        // check that replyComment contains the text This is a reply to 1
+        await expect(replyComment).toHaveText('This is a reply to 1');
+
+        const markElement = await replyComment.locator('mark');
+        await expect(markElement).toBeVisible();
+
+        // Check that the mark element has the expected classes
+        await expect(markElement).toHaveClass(/animate-\[highlight_2\.5s_ease-out\]/);
+        await expect(markElement).toHaveClass(/\[animation-delay:1s\]/);
+        await expect(markElement).toHaveClass(/bg-yellow-300\/40/);
+        await expect(markElement).toHaveClass(/dark:bg-yellow-500\/40/);
+
+        const timeout = 3000;
+        await page.waitForTimeout(timeout);
+        await expect(markElement).not.toBeVisible();
     });
 
     test('Can reply to a reply with a deleted parent comment', async function ({page}) {
