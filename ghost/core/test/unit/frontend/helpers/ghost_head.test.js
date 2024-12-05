@@ -1170,6 +1170,25 @@ describe('{{ghost_head}} helper', function () {
             }));
         });
 
+        it('does not include custom font when not set', async function () {
+            settingsCache.get.withArgs('heading_font').returns(null);
+            settingsCache.get.withArgs('body_font').returns('');
+
+            const renderObject = {
+                post: posts[1]
+            };
+
+            await testGhostHead(testUtils.createHbsResponse({
+                templateOptions: {site: {}},
+                renderObject,
+                locals: {
+                    relativeUrl: '/post/',
+                    context: ['post'],
+                    safeVersion: '0.3'
+                }
+            }));
+        });
+
         it('does not include custom font when invalid', async function () {
             settingsCache.get.withArgs('heading_font').returns(null);
             settingsCache.get.withArgs('body_font').returns('Wendy Sans');
