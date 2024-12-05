@@ -4,7 +4,7 @@ import '../styles.css';
 import './storybook.css';
 
 import type { Preview } from "@storybook/react";
-import DesignSystemProvider from '../src/providers/DesignSystemProvider';
+import ShadeProvider from '../src/providers/ShadeProvider';
 import shadeTheme from './shade-theme';
 
 // import { MINIMAL_VIEWPORTS } from '@storybook/addon-viewport';
@@ -84,9 +84,9 @@ const preview: Preview = {
 				background: (scheme === 'dark' ? '#131416' : '')
 			}}>
 				{/* 👇 Decorators in Storybook also accept a function. Replace <Story/> with Story() to enable it  */}
-				<DesignSystemProvider darkMode={scheme === ''}>
+				<ShadeProvider darkMode={scheme === ''}>
 					<Story />
-				</DesignSystemProvider>
+				</ShadeProvider>
 			</div>);
 	},
 	],
