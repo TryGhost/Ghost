@@ -33,7 +33,8 @@ const BETA_FEATURES = [
     'ActivityPub',
     'importMemberTier',
     'customFonts',
-    'staff2fa'
+    'staff2fa',
+    'contentVisibility'
 ];
 
 const ALPHA_FEATURES = [
