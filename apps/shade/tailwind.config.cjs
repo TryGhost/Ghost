@@ -6,7 +6,7 @@ module.exports = {
     corePlugins: {
         preflight: false // we're providing our own scoped CSS reset
     },
-    darkMode: 'class',
+    darkMode: ['class', 'class'],
     theme: {
         screens: {
             sm: '480px',
@@ -24,7 +24,6 @@ module.exports = {
             white: '#FFF',
             black: '#15171A',
             gray: {
-                DEFAULT: '#ABB4BE',
                 50: '#FAFAFB',
                 75: '#F9FAFB',
                 100: '#F4F5F6',
@@ -40,49 +39,50 @@ module.exports = {
                 900: '#394047',
                 925: '#2E3338',
                 950: '#222427',
-                975: '#191B1E'
+                975: '#191B1E',
+                DEFAULT: '#ABB4BE'
             },
             green: {
-                DEFAULT: '#30CF43',
                 100: '#E1F9E4',
                 400: '#58DA67',
                 500: '#30CF43',
-                600: '#2AB23A'
+                600: '#2AB23A',
+                DEFAULT: '#30CF43'
             },
             blue: {
-                DEFAULT: '#14B8FF',
                 100: '#DBF4FF',
                 400: '#42C6FF',
                 500: '#14B8FF',
-                600: '#00A4EB'
+                600: '#00A4EB',
+                DEFAULT: '#14B8FF'
             },
             purple: {
-                DEFAULT: '#8E42FF',
                 100: '#EDE0FF',
                 400: '#A366FF',
                 500: '#8E42FF',
-                600: '7B1FFF'
+                600: '7B1FFF',
+                DEFAULT: '#8E42FF'
             },
             pink: {
-                DEFAULT: '#FB2D8D',
                 100: '#FFDFEE',
                 400: '#FF5CA8',
                 500: '#FB2D8D',
-                600: '#F70878'
+                600: '#F70878',
+                DEFAULT: '#FB2D8D'
             },
             red: {
-                DEFAULT: '#F50B23',
                 100: '#FFE0E0',
                 400: '#F9394C',
                 500: '#F50B23',
-                600: '#DC091E'
+                600: '#DC091E',
+                DEFAULT: '#F50B23'
             },
             yellow: {
-                DEFAULT: '#FFB41F',
                 100: '#FFF1D6',
                 400: '#FFC247',
                 500: '#FFB41F',
-                600: '#F0A000'
+                600: '#F0A000',
+                DEFAULT: '#FFB41F'
             },
             lime: {
                 DEFAULT: '#B5FF18'
@@ -229,15 +229,10 @@ module.exports = {
                 spin: 'spin 1s linear infinite'
             },
             spacing: {
-                px: '1px',
                 0: '0px',
-                0.5: '0.2rem',
                 1: '0.4rem',
-                1.5: '0.6rem',
                 2: '0.8rem',
-                2.5: '1rem',
                 3: '1.2rem',
-                3.5: '1.4rem',
                 4: '1.6rem',
                 5: '2rem',
                 6: '2.4rem',
@@ -265,11 +260,16 @@ module.exports = {
                 64: '25.6rem',
                 72: '28.8rem',
                 80: '32rem',
-                96: '38.4rem'
+                96: '38.4rem',
+                px: '1px',
+                0.5: '0.2rem',
+                1.5: '0.6rem',
+                2.5: '1rem',
+                3.5: '1.4rem'
             },
             maxWidth: {
-                none: 'none',
                 0: '0rem',
+                none: 'none',
                 xs: '32rem',
                 sm: '38.4rem',
                 md: '44.8rem',
@@ -290,10 +290,10 @@ module.exports = {
                 prose: '65ch'
             },
             borderRadius: {
-                sm: '0.3rem',
+                sm: 'calc(var(--radius) - 4px)',
                 DEFAULT: '0.4rem',
-                md: '0.6rem',
-                lg: '0.8rem',
+                md: 'calc(var(--radius) - 2px)',
+                lg: 'var(--radius)',
                 xl: '1.2rem',
                 '2xl': '1.6rem',
                 '3xl': '2.4rem',
@@ -322,7 +322,50 @@ module.exports = {
                 tight: '1.35em',
                 tighter: '1.25em',
                 supertight: '1.1em'
+            },
+            colors: {
+                background: 'hsl(var(--background))',
+                foreground: 'hsl(var(--foreground))',
+                card: {
+                    DEFAULT: 'hsl(var(--card))',
+                    foreground: 'hsl(var(--card-foreground))'
+                },
+                popover: {
+                    DEFAULT: 'hsl(var(--popover))',
+                    foreground: 'hsl(var(--popover-foreground))'
+                },
+                primary: {
+                    DEFAULT: 'hsl(var(--primary))',
+                    foreground: 'hsl(var(--primary-foreground))'
+                },
+                secondary: {
+                    DEFAULT: 'hsl(var(--secondary))',
+                    foreground: 'hsl(var(--secondary-foreground))'
+                },
+                muted: {
+                    DEFAULT: 'hsl(var(--muted))',
+                    foreground: 'hsl(var(--muted-foreground))'
+                },
+                accent: {
+                    DEFAULT: 'hsl(var(--accent))',
+                    foreground: 'hsl(var(--accent-foreground))'
+                },
+                destructive: {
+                    DEFAULT: 'hsl(var(--destructive))',
+                    foreground: 'hsl(var(--destructive-foreground))'
+                },
+                border: 'hsl(var(--border))',
+                input: 'hsl(var(--input))',
+                ring: 'hsl(var(--ring))',
+                chart: {
+                    1: 'hsl(var(--chart-1))',
+                    2: 'hsl(var(--chart-2))',
+                    3: 'hsl(var(--chart-3))',
+                    4: 'hsl(var(--chart-4))',
+                    5: 'hsl(var(--chart-5))'
+                }
             }
         }
-    }
+    },
+    plugins: [require('tailwindcss-animate')]
 };
