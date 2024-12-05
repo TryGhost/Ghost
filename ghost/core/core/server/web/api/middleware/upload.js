@@ -2,10 +2,15 @@ const path = require('path');
 const os = require('os');
 const multer = require('multer');
 const fs = require('fs-extra');
+const zlib = require('zlib');
+const util = require('util');
 const errors = require('@tryghost/errors');
 const config = require('../../../../shared/config');
 const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
+
+const gunzip = util.promisify(zlib.gunzip);
+const gzip = util.promisify(zlib.gzip);
 
 const messages = {
     db: {
@@ -158,6 +163,32 @@ const checkFileIsValid = (fileData, types, extensions) => {
 
 /**
  *
+ * @param {String} filepath
+ * @returns {String | null}
+ *
+ * Reads the SVG file, sanitizes it, and writes the sanitized content back to the file.
+ * Returns the sanitized content or null if the SVG could not be sanitized.
+ */
+
+const sanitizeSvg = async (filepath, isZipped = false) => {
+    try {
+        const original = await readSvg(filepath, isZipped);
+        const sanitized = sanitizeSvgContent(original);
+
+        if (!sanitized) {
+            return null;
+        }
+
+        await writeSvg(filepath, sanitized, isZipped);
+        return sanitized;
+    } catch (error) {
+        logging.error('Error sanitizing SVG:', error);
+        return null;
+    }
+};
+
+/**
+ *
  * @param {String} content
  * @returns {String | null}
  *
@@ -184,29 +215,37 @@ const sanitizeSvgContent = (content) => {
 /**
  *
  * @param {String} filepath
+ * @param {Boolean} isZipped
  * @returns {String | null}
  *
- * Reads the SVG file, sanitizes it, and writes the sanitized content back to the file.
- * Returns the sanitized content or null if the SVG could not be sanitized.
+ * Reads .svg or .svgz files and returns the content as a string.
+ *
  */
-
-const sanitizeSvg = async (filepath) => {
-    try {
-        const original = await fs.readFile(filepath, 'utf8');
-        const sanitized = sanitizeSvgContent(original);
-
-        if (!sanitized) {
-            return null;
-        }
-
-        await fs.writeFile(filepath, sanitized);
-        return sanitized;
-    } catch (error) {
-        logging.error('Error sanitizing SVG:', error);
-        return null;
+const readSvg = async (filepath, isZipped = false) => {
+    if (isZipped) {
+        const compressed = await fs.readFile(filepath);
+        return (await gunzip(compressed)).toString();
     }
+
+    return await fs.readFile(filepath, 'utf8');
 };
 
+/**
+ *
+ * @param {String} filepath
+ * @param {String} content
+ * @param {Boolean} isZipped
+ *
+ * Writes SVG content to a .svg or .svgz file.
+ */
+const writeSvg = async (filepath, content, isZipped = false) => {
+    if (isZipped) {
+        const compressed = await gzip(content);
+        return await fs.writeFile(filepath, compressed);
+    }
+
+    return await fs.writeFile(filepath, content);
+};
 /**
  *
  * @param {Object} options
@@ -246,8 +285,8 @@ const validation = function ({type}) {
         }
 
         // Sanitize SVG files
-        if (req.file.ext === '.svg') {
-            const sanitized = await sanitizeSvg(req.file.path);
+        if (req.file.ext === '.svg' || req.file.ext === '.svgz') {
+            const sanitized = await sanitizeSvg(req.file.path, req.file.ext === '.svgz');
 
             if (!sanitized) {
                 return next(new errors.UnsupportedMediaTypeError({

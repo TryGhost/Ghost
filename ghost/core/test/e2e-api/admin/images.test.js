@@ -214,6 +214,29 @@ describe('Images API', function () {
             });
     });
 
+    it('Can upload a valid zipped SVG', async function () {
+        const originalFilePath = p.join(__dirname, '/../../utils/fixtures/images/ghost-logo.svgz');
+        await uploadImageCheck({path: originalFilePath, filename: 'ghost-logo.svgz', contentType: 'image/svg+xml', skipOriginal: true});
+    });
+
+    it('Can upload a zipped svg that needs sanitization', async function () {
+        const originalFilePath = p.join(__dirname, '/../../utils/fixtures/images/svgz-with-unsafe-script.svgz');
+        await uploadImageCheck({path: originalFilePath, filename: 'svg-with-unsafe-script.svgz', contentType: 'image/svg+xml', skipOriginal: true});
+    });
+
+    it('Errors when uploading an invalid zipped SVG', async function () {
+        const originalFilePath = p.join(__dirname, '/../../utils/fixtures/images/svgz-malformed.svgz');
+        const fileContents = await fs.readFile(originalFilePath);
+        await uploadImageRequest({fileContents, filename: 'svgz-malformed.svgz', contentType: 'image/svg+xml'})
+            .expectStatus(415)
+            .matchBodySnapshot({
+                errors: [{
+                    id: anyErrorId,
+                    message: 'Please select a valid SVG image'
+                }]
+            });
+    });
+
     it('Can upload a square profile image', async function () {
         const originalFilePath = p.join(__dirname, '/../../utils/fixtures/images/loadingcat_square.gif');
         await uploadImageCheck({path: originalFilePath, filename: 'loadingcat_square.gif', contentType: 'image/gif'});

@@ -48,80 +48,80 @@ describe('web utils', function () {
     describe('sanitizeSvgContent', function () {
         it('it removes <script> tags from SVGs', async function () {
             const filepath = path.join(__dirname, imageFixturePath, 'svg-with-unsafe-script.svg');
-            const dirty = fs.readFileSync(filepath, 'utf8');
+            const original = fs.readFileSync(filepath, 'utf8');
 
-            assert.ok(dirty.includes('<script'));
+            assert.ok(original.includes('<script'));
 
-            const sanitized = validation.sanitizeSvgContent(dirty);
+            const sanitized = validation.sanitizeSvgContent(original);
             assert.ok(!sanitized.includes('<script'), 'Sanitized SVG should not contain a <script> tag');
         });
 
         it('it removes <foreignObject> tags from SVGs', async function () {
             const filepath = path.join(__dirname, imageFixturePath, 'svg-with-unsafe-foreign-object.svg');
-            const dirty = fs.readFileSync(filepath, 'utf8');
+            const original = fs.readFileSync(filepath, 'utf8');
 
-            assert.ok(dirty.includes('<foreignObject'));
+            assert.ok(original.includes('<foreignObject'));
 
-            const sanitized = validation.sanitizeSvgContent(dirty);
+            const sanitized = validation.sanitizeSvgContent(original);
             assert.ok(!sanitized.includes('<foreignObject'), 'Sanitized SVG should not contain a <foreignObject> tag');
         });
 
         it('it removes <embed> tags from SVGs', async function () {
             const filepath = path.join(__dirname, imageFixturePath, 'svg-with-unsafe-embed.svg');
-            const dirty = fs.readFileSync(filepath, 'utf8');
+            const original = fs.readFileSync(filepath, 'utf8');
 
-            assert.ok(dirty.includes('<embed'));
+            assert.ok(original.includes('<embed'));
 
-            const sanitized = validation.sanitizeSvgContent(dirty);
+            const sanitized = validation.sanitizeSvgContent(original);
             assert.ok(!sanitized.includes('<embed'), 'Sanitized SVG should not contain a <embed> tag');
         });
 
         it('it removes on* attributes from SVGs', async function () {
             const filepath = path.join(__dirname, imageFixturePath, 'svg-with-unsafe-onclick.svg');
-            const dirty = fs.readFileSync(filepath, 'utf8');
+            const original = fs.readFileSync(filepath, 'utf8');
 
-            assert.ok(dirty.includes('onclick'));
+            assert.ok(original.includes('onclick'));
 
-            const sanitized = validation.sanitizeSvgContent(dirty);
+            const sanitized = validation.sanitizeSvgContent(original);
             assert.ok(!sanitized.includes('onclick'), 'Sanitized SVG should not contain an onclick attribute');
         });
 
         it('it removes href attributes from SVGs', async function () {
             const filepath = path.join(__dirname, imageFixturePath, 'svg-with-unsafe-href.svg');
-            const dirty = fs.readFileSync(filepath, 'utf8');
+            const original = fs.readFileSync(filepath, 'utf8');
 
-            assert.ok(dirty.includes('href'));
+            assert.ok(original.includes('href'));
 
-            const sanitized = validation.sanitizeSvgContent(dirty);
+            const sanitized = validation.sanitizeSvgContent(original);
             assert.ok(!sanitized.includes('href'), 'Sanitized SVG should not contain an href attribute');
         });
 
         it('it removes xlink:href attributes from SVGs', async function () {
             const filepath = path.join(__dirname, imageFixturePath, 'svg-with-unsafe-xlink-href.svg');
-            const dirty = fs.readFileSync(filepath, 'utf8');
+            const original = fs.readFileSync(filepath, 'utf8');
 
-            assert.ok(dirty.includes('xlink:href'));
+            assert.ok(original.includes('xlink:href'));
 
-            const sanitized = validation.sanitizeSvgContent(dirty);
+            const sanitized = validation.sanitizeSvgContent(original);
             assert.ok(!sanitized.includes('xlink:href'), 'Sanitized SVG should not contain an xlink:href attribute');
         });
 
         it('it returns null for malformed SVGs', async function () {
             const filepath = path.join(__dirname, imageFixturePath, 'svg-malformed.svg');
-            const dirty = fs.readFileSync(filepath, 'utf8');
+            const original = fs.readFileSync(filepath, 'utf8');
 
-            const sanitized = validation.sanitizeSvgContent(dirty);
+            const sanitized = validation.sanitizeSvgContent(original);
             assert.equal(sanitized, null, 'Malformed SVG should return null after sanitization');
         });
 
         it('returns true for a safe svg file', async function () {
             const filepath = path.join(__dirname, imageFixturePath, 'ghost-logo.svg');
-            const clean = fs.readFileSync(filepath, 'utf8');
+            const original = fs.readFileSync(filepath, 'utf8');
 
-            assert.ok(!clean.includes('<script'));
-            assert.ok(!clean.includes('onclick'));
+            assert.ok(!original.includes('<script'));
+            assert.ok(!original.includes('onclick'));
 
-            const sanitized = validation.sanitizeSvgContent(clean);
+            const sanitized = validation.sanitizeSvgContent(original);
             assert.ok(sanitized, 'Safe SVG should return a string after sanitization');
         });
     });
