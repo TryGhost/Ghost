@@ -770,6 +770,13 @@
     padding: 8px 0 8px 12px;
 }
 
+.pwa-toggle-container {
+    display: flex;
+    padding: 8px 0 8px 35px;
+    align-items: center;
+    gap: 10px;
+}
+
 .nightshift-toggle-container[data-tooltip]:before {
     left: -10px;
 }
