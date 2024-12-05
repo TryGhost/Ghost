@@ -115,22 +115,22 @@ const getGroupDescription = (group: GroupedActivity): JSX.Element => {
         if (!secondActor) {
             return (
                 <>
-                    <span className="font-semibold">{firstActor}</span> started following you
+                    <span className='font-semibold'>{firstActor}</span> started following you
                 </>
             );
         }
         if (!hasOthers) {
             return (
                 <>
-                    <span className="font-semibold">{firstActor}</span> and{' '}
-                    <span className="font-semibold">{secondActor}</span> started following you
+                    <span className='font-semibold'>{firstActor}</span> and{' '}
+                    <span className='font-semibold'>{secondActor}</span> started following you
                 </>
             );
         }
         return (
             <>
-                <span className="font-semibold">{firstActor}</span>,{' '}
-                <span className="font-semibold">{secondActor}</span>
+                <span className='font-semibold'>{firstActor}</span>,{' '}
+                <span className='font-semibold'>{secondActor}</span>
                 {hasOthers ? ' and others' : ''} started following you
             </>
         );
@@ -139,32 +139,32 @@ const getGroupDescription = (group: GroupedActivity): JSX.Element => {
         if (!secondActor) {
             return (
                 <>
-                    <span className="font-semibold">{firstActor}</span> liked your post{' '}
-                    <span className="font-semibold">{articleName}</span>
+                    <span className='font-semibold'>{firstActor}</span> liked your post{' '}
+                    <span className='font-semibold'>{articleName}</span>
                 </>
             );
         }
         if (!hasOthers) {
             return (
                 <>
-                    <span className="font-semibold">{firstActor}</span> and{' '}
-                    <span className="font-semibold">{secondActor}</span> liked your post{' '}
-                    <span className="font-semibold">{articleName}</span>
+                    <span className='font-semibold'>{firstActor}</span> and{' '}
+                    <span className='font-semibold'>{secondActor}</span> liked your post{' '}
+                    <span className='font-semibold'>{articleName}</span>
                 </>
             );
         }
         return (
             <>
-                <span className="font-semibold">{firstActor}</span>,{' '}
-                <span className="font-semibold">{secondActor}</span>
+                <span className='font-semibold'>{firstActor}</span>,{' '}
+                <span className='font-semibold'>{secondActor}</span>
                 {hasOthers ? ' and others' : ''} liked your post{' '}
-                <span className="font-semibold">{articleName}</span>
+                <span className='font-semibold'>{articleName}</span>
             </>
         );
     case ACTIVITY_TYPE.CREATE:
         if (group.object?.inReplyTo && typeof group.object?.inReplyTo !== 'string') {
             const content = stripHtml(group.object.inReplyTo.content);
-            return <>{group.actors[0].name} replied to your post <span className='font-semibold'>{truncate(content)}</span></>;
+            return <><span className='font-semibold'>{group.actors[0].name}</span> replied to your post <span className='font-semibold'>{truncate(content, 200)}</span></>;
         }
     }
     return <></>;
@@ -239,8 +239,6 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
         }
     };
 
-    const groupedActivities = groupActivities(activities);
-
     return (
         <>
             <MainNavigation page='activities'/>
@@ -268,7 +266,7 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
                                         <div className=''>
 
                                             <NotificationItem
-                                                className="hover:bg-gray-100"
+                                                className='hover:bg-gray-100'
                                                 onClick={() => handleActivityClick(group)}
                                             >
                                                 <NotificationItem.Icon type={getActivityBadge(group)} />
@@ -277,22 +275,22 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
                                                         <APAvatar
                                                             key={actor.id}
                                                             author={actor}
-                                                            size="sm"
+                                                            size='sm'
                                                         />
                                                     ))}
                                                     {group.actors.length > 3 && (
                                                         <Popover
                                                             trigger={
-                                                                <div className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-md bg-grey-100 text-sm text-grey-700 hover:bg-grey-200">
+                                                                <div className='flex h-10 w-10 cursor-pointer items-center justify-center rounded-md bg-grey-100 text-sm text-grey-700 hover:bg-grey-200'>
                                                                     +{group.actors.length - 3}
                                                                 </div>
                                                             }
                                                         >
-                                                            <div className="flex max-h-[300px] min-w-[200px] flex-col gap-2 overflow-y-auto p-4">
+                                                            <div className='flex max-h-[300px] min-w-[200px] flex-col gap-2 overflow-y-auto p-4'>
                                                                 {group.actors.slice(3).map(actor => (
-                                                                    <div key={actor.id} className="flex items-center gap-2">
-                                                                        <APAvatar author={actor} size="xs" />
-                                                                        <span className="text-base font-semibold">{actor.name}</span>
+                                                                    <div key={actor.id} className='flex items-center gap-2'>
+                                                                        <APAvatar author={actor} size='xs' />
+                                                                        <span className='text-base font-semibold'>{actor.name}</span>
                                                                     </div>
                                                                 ))}
                                                             </div>
@@ -300,7 +298,7 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
                                                     )}
                                                 </NotificationItem.Avatars>
                                                 <NotificationItem.Content>
-                                                    <div className="line-clamp-2 text-pretty text-black">
+                                                    <div className='line-clamp-2 text-pretty text-black'>
                                                         {getGroupDescription(group)}
                                                     </div>
                                                     {group.type === ACTIVITY_TYPE.CREATE &&
