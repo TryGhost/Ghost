@@ -48,10 +48,6 @@ Router.map(function () {
     this.route('tag.new', {path: '/tags/new'});
     this.route('tag', {path: '/tags/:tag_slug'});
 
-    this.route('collections');
-    this.route('collection.new', {path: '/collections/new'});
-    this.route('collection', {path: '/collections/:collection_slug'});
-
     this.route('demo-x', function () {
         this.route('demo-x', {path: '/*sub'});
     });
