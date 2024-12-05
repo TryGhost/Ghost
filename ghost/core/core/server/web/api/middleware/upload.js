@@ -170,13 +170,15 @@ const sanitizeSvgContent = (content) => {
     const window = new JSDOM('').window;
     const DOMPurify = createDOMPurify(window);
 
-    const cleaned = DOMPurify.sanitize(content, {USE_PROFILES: {svg: true, svgFilters: true}});
+    const sanitized = DOMPurify.sanitize(content, {USE_PROFILES: {svg: true, svgFilters: true}});
 
-    if (!cleaned || !cleaned.trim().startsWith('<svg')) {
+    // Check whether the sanitized content still contains a non-empty <svg> tag
+    const validSvgTag = sanitized?.match(/<svg[^>]*>\s*[\S]+[\S\s]*<\/svg>/);
+    if (!sanitized || sanitized.trim() === '' || !validSvgTag) {
         return null;
     }
 
-    return cleaned;
+    return sanitized;
 };
 
 /**
@@ -188,16 +190,16 @@ const sanitizeSvgContent = (content) => {
  * Returns the sanitized content or null if the SVG could not be sanitized.
  */
 
-const sanitizeSvg = (filepath) => {
+const sanitizeSvg = async (filepath) => {
     try {
-        const original = fs.readFileSync(filepath, 'utf8');
+        const original = await fs.readFile(filepath, 'utf8');
         const sanitized = sanitizeSvgContent(original);
 
         if (!sanitized) {
             return null;
         }
 
-        fs.writeFileSync(filepath, sanitized);
+        await fs.writeFile(filepath, sanitized);
         return sanitized;
     } catch (error) {
         logging.error('Error sanitizing SVG:', error);
@@ -219,7 +221,7 @@ const validation = function ({type}) {
      * @param {import('express').Response} res
      * @param {import('express').NextFunction} next
      */
-    return function uploadValidation(req, res, next) {
+    return async function uploadValidation(req, res, next) {
         const extensions = (config.get('uploads')[type] && config.get('uploads')[type].extensions) || [];
         const contentTypes = (config.get('uploads')[type] && config.get('uploads')[type].contentTypes) || [];
 
@@ -245,7 +247,7 @@ const validation = function ({type}) {
 
         // Sanitize SVG files
         if (req.file.ext === '.svg') {
-            const sanitized = sanitizeSvg(req.file.path);
+            const sanitized = await sanitizeSvg(req.file.path);
 
             if (!sanitized) {
                 return next(new errors.UnsupportedMediaTypeError({

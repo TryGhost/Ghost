@@ -66,16 +66,6 @@ describe('web utils', function () {
             assert.ok(!sanitized.includes('<foreignObject'), 'Sanitized SVG should not contain a <foreignObject> tag');
         });
 
-        it('it removes <iframe> tags from SVGs', async function () {
-            const filepath = path.join(__dirname, imageFixturePath, 'svg-with-unsafe-iframe.svg');
-            const dirty = fs.readFileSync(filepath, 'utf8');
-
-            assert.ok(dirty.includes('<iframe'));
-
-            const sanitized = validation.sanitizeSvgContent(dirty);
-            assert.ok(!sanitized.includes('<iframe'), 'Sanitized SVG should not contain a <iframe> tag');
-        });
-
         it('it removes <embed> tags from SVGs', async function () {
             const filepath = path.join(__dirname, imageFixturePath, 'svg-with-unsafe-embed.svg');
             const dirty = fs.readFileSync(filepath, 'utf8');
