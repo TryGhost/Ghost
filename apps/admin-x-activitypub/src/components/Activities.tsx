@@ -2,7 +2,7 @@ import React, {useEffect, useRef} from 'react';
 
 import NiceModal from '@ebay/nice-modal-react';
 import {Activity, ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
-import {LoadingIndicator, NoValueLabel, Popover} from '@tryghost/admin-x-design-system';
+import {Button, LoadingIndicator, NoValueLabel} from '@tryghost/admin-x-design-system';
 
 import APAvatar from './global/APAvatar';
 import ArticleModal from './feed/ArticleModal';
@@ -16,6 +16,7 @@ import stripHtml from '../utils/strip-html';
 import truncate from '../utils/truncate';
 import {GET_ACTIVITIES_QUERY_KEY_NOTIFICATIONS, useActivitiesForUser} from '../hooks/useActivityPubQueries';
 import {type NotificationType} from './activities/NotificationIcon';
+import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 interface ActivitiesProps {}
 
@@ -41,6 +42,13 @@ const getExtendedDescription = (activity: GroupedActivity): JSX.Element | null =
                 dangerouslySetInnerHTML={{__html: activity.object?.content || ''}}
                 className='mt-1 line-clamp-2 text-pretty text-grey-700'
             />
+        );
+    } else if (activity.type === ACTIVITY_TYPE.LIKE && !activity.object?.name && activity.object?.content) {
+        return (
+            <div
+                dangerouslySetInnerHTML={{__html: activity.object?.content || ''}}
+                className='mt-1 line-clamp-2 text-pretty text-grey-700'
+            ></div>
         );
     }
 
@@ -110,61 +118,49 @@ const getGroupDescription = (group: GroupedActivity): JSX.Element => {
     const [firstActor, secondActor, ...otherActors] = actorNames;
     const hasOthers = otherActors.length > 0;
 
+    let actorText = <></>;
+
     switch (group.type) {
     case ACTIVITY_TYPE.FOLLOW:
-        if (!secondActor) {
-            return (
-                <>
-                    <span className='font-semibold'>{firstActor}</span> started following you
-                </>
-            );
-        }
-        if (!hasOthers) {
-            return (
-                <>
-                    <span className='font-semibold'>{firstActor}</span> and{' '}
-                    <span className='font-semibold'>{secondActor}</span> started following you
-                </>
-            );
-        }
+        actorText = (
+            <>
+                <span className='font-semibold'>{firstActor}</span>
+                {secondActor && ` and `}
+                {secondActor && <span className='font-semibold'>{secondActor}</span>}
+                {hasOthers && ' and others'}
+            </>
+        );
+
         return (
             <>
-                <span className='font-semibold'>{firstActor}</span>,{' '}
-                <span className='font-semibold'>{secondActor}</span>
-                {hasOthers ? ' and others' : ''} started following you
+                {actorText} started following you
             </>
         );
     case ACTIVITY_TYPE.LIKE:
-        const articleName = group.object?.name || truncate(stripHtml(group.object?.content || ''), 200) || 'a post';
-        if (!secondActor) {
-            return (
-                <>
-                    <span className='font-semibold'>{firstActor}</span> liked your post{' '}
-                    <span className='font-semibold'>{articleName}</span>
-                </>
-            );
-        }
-        if (!hasOthers) {
-            return (
-                <>
-                    <span className='font-semibold'>{firstActor}</span> and{' '}
-                    <span className='font-semibold'>{secondActor}</span> liked your post{' '}
-                    <span className='font-semibold'>{articleName}</span>
-                </>
-            );
-        }
+        const postType = group.object?.type === 'Article' ? 'post' : 'note';
+        actorText = (
+            <>
+                <span className='font-semibold'>{firstActor}</span>
+                {secondActor && (
+                    <>
+                        {hasOthers ? ', ' : ' and '}
+                        <span className='font-semibold'>{secondActor}</span>
+                    </>
+                )}
+                {hasOthers && ' and others'}
+            </>
+        );
+
         return (
             <>
-                <span className='font-semibold'>{firstActor}</span>,{' '}
-                <span className='font-semibold'>{secondActor}</span>
-                {hasOthers ? ' and others' : ''} liked your post{' '}
-                <span className='font-semibold'>{articleName}</span>
+                {actorText} liked your {postType}{' '}
+                <span className='font-semibold'>{group.object?.name || ''}</span>
             </>
         );
     case ACTIVITY_TYPE.CREATE:
         if (group.object?.inReplyTo && typeof group.object?.inReplyTo !== 'string') {
-            const content = stripHtml(group.object.inReplyTo.content);
-            return <><span className='font-semibold'>{group.actors[0].name}</span> replied to your post <span className='font-semibold'>{truncate(content, 200)}</span></>;
+            const content = stripHtml(group.object.inReplyTo.name);
+            return <><span className='font-semibold'>{group.actors[0].name}</span> replied to your post <span className='font-semibold'>{truncate(content, 80)}</span></>;
         }
     }
     return <></>;
@@ -172,6 +168,18 @@ const getGroupDescription = (group: GroupedActivity): JSX.Element => {
 
 const Activities: React.FC<ActivitiesProps> = ({}) => {
     const user = 'index';
+    const [openStates, setOpenStates] = React.useState<{[key: string]: boolean}>({});
+
+    const toggleOpen = (groupId: string) => {
+        setOpenStates(prev => ({
+            ...prev,
+            [groupId]: !prev[groupId]
+        }));
+    };
+
+    const maxAvatars = 5;
+
+    const {updateRoute} = useRouting();
 
     const {getActivitiesQuery} = useActivitiesForUser({
         handle: user,
@@ -183,9 +191,11 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
         key: GET_ACTIVITIES_QUERY_KEY_NOTIFICATIONS
     });
     const {data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading} = getActivitiesQuery;
-    const activities = (data?.pages.flatMap(page => page.data) ?? [])
-        // If there somehow are duplicate activities, filter them out so the list rendering doesn't break
-        .filter((activity, index, self) => index === self.findIndex(a => a.id === activity.id));
+    const groupedActivities = (data?.pages.flatMap((page) => {
+        const filtered = page.data.filter((activity, index, self) => index === self.findIndex(a => a.id === activity.id));
+
+        return groupActivities(filtered);
+    }) ?? []);
 
     const observerRef = useRef<IntersectionObserver | null>(null);
     const loadMoreRef = useRef<HTMLDivElement | null>(null);
@@ -232,15 +242,16 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
             });
             break;
         case ACTIVITY_TYPE.FOLLOW:
-            NiceModal.show(ViewProfileModal, {
-                profile: getUsername(group.actors[0])
-            });
+            if (group.actors.length > 1) {
+                updateRoute('profile');
+            } else {
+                NiceModal.show(ViewProfileModal, {
+                    profile: getUsername(group.actors[0])
+                });
+            }
             break;
         }
     };
-
-    const groupedActivities = groupActivities(activities);
-
     return (
         <>
             <MainNavigation page='activities'/>
@@ -251,7 +262,7 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
                     </div>)
                 }
                 {
-                    isLoading === false && activities.length === 0 && (
+                    isLoading === false && groupedActivities.length === 0 && (
                         <div className='mt-8'>
                             <NoValueLabel icon='bell'>
                                 When other Fediverse users interact with you, you&apos;ll see it here.
@@ -260,55 +271,70 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
                     )
                 }
                 {
-                    (isLoading === false && activities.length > 0) && (
+                    (isLoading === false && groupedActivities.length > 0) && (
                         <>
-                            <div className='mt-8 flex w-full max-w-[560px] flex-col'>
+                            <div className='my-8 flex w-full max-w-[560px] flex-col'>
                                 {groupedActivities.map((group, index) => (
                                     <React.Fragment key={group.id || `${group.type}_${index}`}>
-                                        <div className=''>
+                                        <NotificationItem
+                                            className='hover:bg-gray-100'
+                                            onClick={() => handleActivityClick(group)}
+                                        >
+                                            <NotificationItem.Icon type={getActivityBadge(group)} />
+                                            <NotificationItem.Avatars>
+                                                <div className='flex flex-col'>
+                                                    <div className='flex gap-2'>
+                                                        {!openStates[group.id || `${group.type}_${index}`] && group.actors.slice(0, maxAvatars).map(actor => (
+                                                            <APAvatar
+                                                                key={actor.id}
+                                                                author={actor}
+                                                                size='sm'
+                                                            />
+                                                        ))}
+                                                        {group.actors.length > maxAvatars && (!openStates[group.id || `${group.type}_${index}`]) && (
+                                                            <div
+                                                                className='flex h-10 w-5 items-center justify-center text-sm text-grey-700'
+                                                            >
+                                                                {`+${group.actors.length - maxAvatars}`}
+                                                            </div>
+                                                        )}
 
-                                            <NotificationItem
-                                                className='hover:bg-gray-100'
-                                                onClick={() => handleActivityClick(group)}
-                                            >
-                                                <NotificationItem.Icon type={getActivityBadge(group)} />
-                                                <NotificationItem.Avatars>
-                                                    {group.actors.slice(0, 3).map(actor => (
-                                                        <APAvatar
-                                                            key={actor.id}
-                                                            author={actor}
-                                                            size='sm'
-                                                        />
-                                                    ))}
-                                                    {group.actors.length > 3 && (
-                                                        <Popover
-                                                            trigger={
-                                                                <div className='flex h-10 w-10 cursor-pointer items-center justify-center rounded-md bg-grey-100 text-sm text-grey-700 hover:bg-grey-200'>
-                                                                    +{group.actors.length - 3}
-                                                                </div>
-                                                            }
-                                                        >
-                                                            <div className='flex max-h-[300px] min-w-[200px] flex-col gap-2 overflow-y-auto p-4'>
-                                                                {group.actors.slice(3).map(actor => (
-                                                                    <div key={actor.id} className='flex items-center gap-2'>
+                                                        {group.actors.length > 1 && (
+                                                            <Button
+                                                                className={`transition-color flex h-10 items-center rounded-full bg-transparent text-grey-700 ${openStates[group.id || `${group.type}_${index}`] ? 'w-full justify-start pl-0' : 'w-10 justify-center'}`}
+                                                                hideLabel={!openStates[group.id || `${group.type}_${index}`]}
+                                                                icon='chevron-down'
+                                                                iconColorClass={`w-[12px] h-[12px] ${openStates[group.id || `${group.type}_${index}`] ? 'rotate-180' : ''}`}
+                                                                label={`${openStates[group.id || `${group.type}_${index}`] ? 'Hide' : 'Show all'}`}
+                                                                unstyled
+                                                                onClick={(event) => {
+                                                                    event?.stopPropagation();
+                                                                    toggleOpen(group.id || `${group.type}_${index}`);
+                                                                }}/>
+                                                        )}
+                                                    </div>
+                                                    <div className={`overflow-hidden transition-all duration-300 ease-in-out  ${openStates[group.id || `${group.type}_${index}`] ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}>
+                                                        {openStates[group.id || `${group.type}_${index}`] && group.actors.length > 1 && (
+                                                            <div className='flex flex-col gap-2 pt-4'>
+                                                                {group.actors.map(actor => (
+                                                                    <div key={actor.id} className='flex items-center'>
                                                                         <APAvatar author={actor} size='xs' />
-                                                                        <span className='text-base font-semibold'>{actor.name}</span>
+                                                                        <span className='ml-2 text-base font-semibold'>{actor.name}</span>
+                                                                        <span className='ml-1 text-base text-grey-700'>{getUsername(actor)}</span>
                                                                     </div>
                                                                 ))}
                                                             </div>
-                                                        </Popover>
-                                                    )}
-                                                </NotificationItem.Avatars>
-                                                <NotificationItem.Content>
-                                                    <div className='line-clamp-2 text-pretty text-black'>
-                                                        {getGroupDescription(group)}
+                                                        )}
                                                     </div>
-                                                    {group.type === ACTIVITY_TYPE.CREATE &&
-                                                        getExtendedDescription(group)}
-                                                </NotificationItem.Content>
-                                            </NotificationItem>
-
-                                        </div>
+                                                </div>
+                                            </NotificationItem.Avatars>
+                                            <NotificationItem.Content>
+                                                <div className='line-clamp-2 text-pretty text-black'>
+                                                    {getGroupDescription(group)}
+                                                </div>
+                                                {getExtendedDescription(group)}
+                                            </NotificationItem.Content>
+                                        </NotificationItem>
                                         {index < groupedActivities.length - 1 && <Separator />}
                                     </React.Fragment>
                                 ))}
