@@ -493,11 +493,11 @@ export async function ActionHandler({action, data, state, api, adminApi, options
 }
 
 /** Handle actions in the App, returns updated state */
-export function SyncActionHandler({action, data, state, api, adminApi, options, setState}: {action: SyncActionType, data: any, state: EditableAppContext, options: CommentsOptions, api: GhostApi, adminApi: AdminApi, setState: (newState: Partial<EditableAppContext>) => void;}): Partial<EditableAppContext> {
+export function SyncActionHandler({action, data, state, api, adminApi, options}: {action: SyncActionType, data: any, state: EditableAppContext, options: CommentsOptions, api: GhostApi, adminApi: AdminApi}): Partial<EditableAppContext> {
     const handler = SyncActions[action];
     if (handler) {
         // Do not await here
-        return handler({data, state, api, adminApi, options, setState} as any) || {};
+        return handler({data, state, api, adminApi, options} as any) || {};
     }
     return {};
 }

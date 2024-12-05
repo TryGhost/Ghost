@@ -64,7 +64,7 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
             // because updates to state may be asynchronous
             // so calling dispatchAction('counterUp') multiple times, may yield unexpected results if we don't use a callback function
             setState((state) => {
-                return SyncActionHandler({action, data, state, setState, api, adminApi: state.adminApi!, options});
+                return SyncActionHandler({action, data, state, api, adminApi: state.adminApi!, options});
             });
             return;
         }
