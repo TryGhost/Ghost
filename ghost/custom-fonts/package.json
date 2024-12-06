@@ -21,7 +21,7 @@
     "build:cjs": "tsc -p tsconfig.json --outDir ./build/cjs --module CommonJS",
     "build:esm": "tsc -p tsconfig.esm.json --outDir ./build/esm --module ES2020",
     "build:ts": "yarn build",
-    "prepare": "yarn build",
+    "postinstall": "yarn build",
     "test:unit": "NODE_ENV=testing c8 --src src --all --check-coverage --100 --reporter text --reporter cobertura mocha -r ts-node/register './test/**/*.test.ts'",
     "test": "yarn test:ts && yarn test:unit",
     "test:ts": "tsc --noEmit",

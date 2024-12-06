@@ -10,7 +10,7 @@
     "dev": "tsc --watch --preserveWatchOutput --sourceMap",
     "build": "yarn build:ts",
     "build:ts": "tsc",
-    "prepare": "tsc",
+    "postinstall": "tsc",
     "test:unit": "NODE_ENV=testing c8 --src src --all --reporter text --reporter cobertura -- mocha --reporter dot -r ts-node/register './test/**/*.test.ts'",
     "test": "yarn test:types && yarn test:unit",
     "test:types": "tsc --noEmit",
