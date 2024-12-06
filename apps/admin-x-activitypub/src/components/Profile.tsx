@@ -194,7 +194,6 @@ const FollowingTab: React.FC = () => {
                         <React.Fragment key={item.id}>
                             <ActivityItem
                                 key={item.id}
-                                url={item.url}
                                 onClick={() => handleUserClick(item)}
                             >
                                 <APAvatar author={item} />
@@ -231,7 +230,6 @@ const FollowersTab: React.FC = () => {
                         <React.Fragment key={item.id}>
                             <ActivityItem
                                 key={item.id}
-                                url={item.url}
                                 onClick={() => handleUserClick(item)}
                             >
                                 <APAvatar author={item} />

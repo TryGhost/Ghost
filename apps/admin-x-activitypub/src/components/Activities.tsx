@@ -9,14 +9,13 @@ import ArticleModal from './feed/ArticleModal';
 import MainNavigation from './navigation/MainNavigation';
 import NotificationItem from './activities/NotificationItem';
 import Separator from './global/Separator';
-import ViewProfileModal from './modals/ViewProfileModal';
 
 import getUsername from '../utils/get-username';
 import stripHtml from '../utils/strip-html';
 import truncate from '../utils/truncate';
 import {GET_ACTIVITIES_QUERY_KEY_NOTIFICATIONS, useActivitiesForUser} from '../hooks/useActivityPubQueries';
 import {type NotificationType} from './activities/NotificationIcon';
-import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {handleProfileClick} from '../utils/handle-profile-click';
 
 interface ActivitiesProps {}
 
@@ -39,15 +38,15 @@ const getExtendedDescription = (activity: GroupedActivity): JSX.Element | null =
     if (Boolean(activity.type === ACTIVITY_TYPE.CREATE && activity.object?.inReplyTo)) {
         return (
             <div
-                dangerouslySetInnerHTML={{__html: activity.object?.content || ''}}
-                className='mt-1 line-clamp-2 text-pretty text-grey-700'
+                dangerouslySetInnerHTML={{__html: stripHtml(activity.object?.content || '')}}
+                className='ap-note-content mt-1 line-clamp-2 text-pretty text-grey-700'
             />
         );
     } else if (activity.type === ACTIVITY_TYPE.LIKE && !activity.object?.name && activity.object?.content) {
         return (
             <div
-                dangerouslySetInnerHTML={{__html: activity.object?.content || ''}}
-                className='mt-1 line-clamp-2 text-pretty text-grey-700'
+                dangerouslySetInnerHTML={{__html: stripHtml(activity.object?.content || '')}}
+                className='ap-note-content mt-1 line-clamp-2 text-pretty text-grey-700'
             ></div>
         );
     }
@@ -114,53 +113,39 @@ const groupActivities = (activities: Activity[]): GroupedActivity[] => {
 };
 
 const getGroupDescription = (group: GroupedActivity): JSX.Element => {
-    const actorNames = group.actors.map(actor => actor.name);
-    const [firstActor, secondActor, ...otherActors] = actorNames;
+    const [firstActor, secondActor, ...otherActors] = group.actors;
     const hasOthers = otherActors.length > 0;
 
-    let actorText = <></>;
+    const actorClass = 'cursor-pointer font-semibold hover:underline';
+
+    const actorText = (
+        <>
+            <span
+                className={actorClass}
+                onClick={e => handleProfileClick(firstActor, e)}
+            >{firstActor.name}</span>
+            {secondActor && (
+                <>
+                    {hasOthers ? ', ' : ' and '}
+                    <span
+                        className={actorClass}
+                        onClick={e => handleProfileClick(secondActor, e)}
+                    >{secondActor.name}</span>
+                </>
+            )}
+            {hasOthers && ' and others'}
+        </>
+    );
 
     switch (group.type) {
     case ACTIVITY_TYPE.FOLLOW:
-        actorText = (
-            <>
-                <span className='font-semibold'>{firstActor}</span>
-                {secondActor && ` and `}
-                {secondActor && <span className='font-semibold'>{secondActor}</span>}
-                {hasOthers && ' and others'}
-            </>
-        );
-
-        return (
-            <>
-                {actorText} started following you
-            </>
-        );
+        return <>{actorText} started following you</>;
     case ACTIVITY_TYPE.LIKE:
-        const postType = group.object?.type === 'Article' ? 'post' : 'note';
-        actorText = (
-            <>
-                <span className='font-semibold'>{firstActor}</span>
-                {secondActor && (
-                    <>
-                        {hasOthers ? ', ' : ' and '}
-                        <span className='font-semibold'>{secondActor}</span>
-                    </>
-                )}
-                {hasOthers && ' and others'}
-            </>
-        );
-
-        return (
-            <>
-                {actorText} liked your {postType}{' '}
-                <span className='font-semibold'>{group.object?.name || ''}</span>
-            </>
-        );
+        return <>{actorText} liked your post <span className='font-semibold'>{group.object?.name || ''}</span></>;
     case ACTIVITY_TYPE.CREATE:
         if (group.object?.inReplyTo && typeof group.object?.inReplyTo !== 'string') {
             const content = stripHtml(group.object.inReplyTo.name);
-            return <><span className='font-semibold'>{group.actors[0].name}</span> replied to your post <span className='font-semibold'>{truncate(content, 80)}</span></>;
+            return <>{actorText} replied to your post <span className='font-semibold'>{truncate(content, 80)}</span></>;
         }
     }
     return <></>;
@@ -179,8 +164,6 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
 
     const maxAvatars = 5;
 
-    const {updateRoute} = useRouting();
-
     const {getActivitiesQuery} = useActivitiesForUser({
         handle: user,
         includeOwn: true,
@@ -190,6 +173,7 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
         },
         key: GET_ACTIVITIES_QUERY_KEY_NOTIFICATIONS
     });
+
     const {data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading} = getActivitiesQuery;
     const groupedActivities = (data?.pages.flatMap((page) => {
         const filtered = page.data.filter((activity, index, self) => index === self.findIndex(a => a.id === activity.id));
@@ -222,7 +206,7 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
         };
     }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-    const handleActivityClick = (group: GroupedActivity) => {
+    const handleActivityClick = (group: GroupedActivity, index: number) => {
         switch (group.type) {
         case ACTIVITY_TYPE.CREATE:
             NiceModal.show(ArticleModal, {
@@ -238,16 +222,14 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
                 activityId: group.id,
                 object: group.object,
                 actor: group.object.attributedTo as ActorProperties,
-                width: 'wide'
+                width: group.object?.type === 'Article' ? 'wide' : 'narrow'
             });
             break;
         case ACTIVITY_TYPE.FOLLOW:
             if (group.actors.length > 1) {
-                updateRoute('profile');
+                toggleOpen(group.id || `${group.type}_${index}`);
             } else {
-                NiceModal.show(ViewProfileModal, {
-                    profile: getUsername(group.actors[0])
-                });
+                handleProfileClick(group.actors[0]);
             }
             break;
         }
@@ -278,7 +260,7 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
                                     <React.Fragment key={group.id || `${group.type}_${index}`}>
                                         <NotificationItem
                                             className='hover:bg-gray-100'
-                                            onClick={() => handleActivityClick(group)}
+                                            onClick={() => handleActivityClick(group, index)}
                                         >
                                             <NotificationItem.Icon type={getActivityBadge(group)} />
                                             <NotificationItem.Avatars>
@@ -301,7 +283,7 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
 
                                                         {group.actors.length > 1 && (
                                                             <Button
-                                                                className={`transition-color flex h-9 items-center rounded-full bg-transparent text-grey-700 ${openStates[group.id || `${group.type}_${index}`] ? 'w-full justify-start pl-1' : '-ml-2 w-9 justify-center'}`}
+                                                                className={`transition-color flex h-9 items-center rounded-full bg-transparent text-grey-700 hover:opacity-60 ${openStates[group.id || `${group.type}_${index}`] ? 'w-full justify-start pl-1' : '-ml-2 w-9 justify-center'}`}
                                                                 hideLabel={!openStates[group.id || `${group.type}_${index}`]}
                                                                 icon='chevron-down'
                                                                 iconColorClass={`w-[12px] h-[12px] ${openStates[group.id || `${group.type}_${index}`] ? 'rotate-180' : ''}`}
@@ -313,11 +295,15 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
                                                                 }}/>
                                                         )}
                                                     </div>
-                                                    <div className={`overflow-hidden transition-all duration-300 ease-in-out  ${openStates[group.id || `${group.type}_${index}`] ? 'mb-2 max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}>
+                                                    <div className={`overflow-hidden transition-all duration-300 ease-in-out  ${openStates[group.id || `${group.type}_${index}`] ? 'mb-2 max-h-[1384px] opacity-100' : 'max-h-0 opacity-0'}`}>
                                                         {openStates[group.id || `${group.type}_${index}`] && group.actors.length > 1 && (
                                                             <div className='flex flex-col gap-2 pt-4'>
                                                                 {group.actors.map(actor => (
-                                                                    <div key={actor.id} className='flex items-center'>
+                                                                    <div
+                                                                        key={actor.id}
+                                                                        className='flex items-center hover:opacity-80'
+                                                                        onClick={e => handleProfileClick(actor, e)}
+                                                                    >
                                                                         <APAvatar author={actor} size='xs' />
                                                                         <span className='ml-2 text-base font-semibold'>{actor.name}</span>
                                                                         <span className='ml-1 text-base text-grey-700'>{getUsername(actor)}</span>

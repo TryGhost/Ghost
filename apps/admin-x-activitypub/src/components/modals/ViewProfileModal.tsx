@@ -16,6 +16,7 @@ import FollowButton from '../global/FollowButton';
 import Separator from '../global/Separator';
 import getName from '../../utils/get-name';
 import getUsername from '../../utils/get-username';
+import {handleProfileClick} from '../../utils/handle-profile-click';
 
 const noop = () => {};
 
@@ -83,7 +84,9 @@ const ActorList: React.FC<ActorListProps> = ({
                         {actors.map(({actor, isFollowing}, index) => {
                             return (
                                 <React.Fragment key={actor.id}>
-                                    <ActivityItem key={actor.id} url={actor.url}>
+                                    <ActivityItem key={actor.id}
+                                        onClick={() => handleProfileClick(actor)}
+                                    >
                                         <APAvatar author={actor} />
                                         <div>
                                             <div className='text-grey-600'>

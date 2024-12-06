@@ -7,7 +7,6 @@ import NewPostModal from './modals/NewPostModal';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useRef} from 'react';
 import Separator from './global/Separator';
-import ViewProfileModal from './modals/ViewProfileModal';
 import getName from '../utils/get-name';
 import getUsername from '../utils/get-username';
 import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
@@ -19,6 +18,7 @@ import {
     useSuggestedProfiles,
     useUserDataForUser
 } from '../hooks/useActivityPubQueries';
+import {handleProfileClick} from '../utils/handle-profile-click';
 import {handleViewContent} from '../utils/content-handlers';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
@@ -149,9 +149,9 @@ const Inbox: React.FC<InboxProps> = ({layout}) => {
                                                 return (
                                                     <React.Fragment key={actor.id}>
                                                         <li key={actor.id}>
-                                                            <ActivityItem url={actor.url} onClick={() => NiceModal.show(ViewProfileModal, {
-                                                                profile: getUsername(actor)
-                                                            })}>
+                                                            <ActivityItem
+                                                                onClick={() => handleProfileClick(actor)}
+                                                            >
                                                                 <APAvatar author={actor} />
                                                                 <div className='flex min-w-0 flex-col'>
                                                                     <span className='block w-full truncate font-bold text-black'>{getName(actor)}</span>
