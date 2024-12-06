@@ -85,6 +85,7 @@
     "@sentry/react": "7.119.2",
     "@tanstack/react-query": "4.36.1",
     "@tryghost/admin-x-design-system": "0.0.0",
+    "@tryghost/shade": "0.0.0",
     "@types/react": "18.3.3",
     "@types/react-dom": "18.3.0",
     "@vitejs/plugin-react": "4.2.1",
