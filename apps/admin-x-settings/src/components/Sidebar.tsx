@@ -170,7 +170,7 @@ const Sidebar: React.FC = () => {
                     <NavItem icon='layout-2-col' keywords={siteSearchKeywords.theme} navid='theme' title="Theme" onClick={handleSectionClick} />
                     <NavItem icon='navigation' keywords={siteSearchKeywords.navigation} navid='navigation' title="Navigation" onClick={handleSectionClick} />
                     <NavItem icon='megaphone' keywords={siteSearchKeywords.announcementBar} navid='announcement-bar' title="Announcement bar" onClick={handleSectionClick} />
-                    <NavItem icon="download" keywords={siteSearchKeywords.announcementBar} navid="pwa" title="Progressive web app" onClick={handleSectionClick} />
+                    <NavItem icon="download" keywords={siteSearchKeywords.pwa} navid="pwa" title="Progressive web app" onClick={handleSectionClick} />
                 </SettingNavSection>
 
                 <SettingNavSection isVisible={checkVisible(Object.values(membershipSearchKeywords).flat())} title="Membership">
