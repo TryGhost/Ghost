@@ -16,35 +16,35 @@ const messages = {
 const GA_FEATURES = [
     'audienceFeedback',
     'collections',
+    'i18n',
     'themeErrorsNotification',
     'outboundLinkTagging',
     'announcementBar',
-    'newEmailAddresses'
+    'newEmailAddresses',
+    'customFonts'
 ];
 
 // NOTE: this allowlist is meant to be used to filter out any unexpected
 //       input for the "labs" setting value
 const BETA_FEATURES = [
     'additionalPaymentMethods',
-    'i18n',
-    'activitypub',
     'stripeAutomaticTax',
     'webmentions',
-    'editorExcerpt'
+    'editorExcerpt',
+    'ActivityPub',
+    'importMemberTier',
+    'staff2fa',
+    'contentVisibility'
 ];
 
 const ALPHA_FEATURES = [
-    'ActivityPub',
     'NestPlayground',
     'urlCache',
-    'lexicalMultiplayer',
     'emailCustomization',
     'mailEvents',
     'collectionsCard',
-    'importMemberTier',
     'lexicalIndicators',
     'adminXDemo',
-    'contentVisibility',
     'commentImprovements'
 ];
 

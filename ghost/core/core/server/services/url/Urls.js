@@ -37,11 +37,8 @@ class Urls {
      * @param {string} options.url
      */
     add(options) {
-        const url = options.url;
-        const generatorId = options.generatorId;
-        const resource = options.resource;
-
-        debug('cache', url);
+        const {url, generatorId, resource} = options;
+        debug('add', resource.data.id, url);
 
         if (this.urls[resource.data.id]) {
             const error = new errors.InternalServerError({
@@ -131,7 +128,7 @@ class Urls {
             return;
         }
 
-        debug('removed', this.urls[id].url, this.urls[id].generatorId);
+        debug('removeResourceId', this.urls[id].url, this.urls[id].generatorId);
 
         events.emit('url.removed', {
             url: this.urls[id].url,

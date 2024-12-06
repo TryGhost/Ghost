@@ -60,7 +60,6 @@ export default class FeatureService extends Service {
 
     // labs flags
     @feature('urlCache') urlCache;
-    @feature('lexicalMultiplayer') lexicalMultiplayer;
     @feature('audienceFeedback') audienceFeedback;
     @feature('webmentions') webmentions;
     @feature('stripeAutomaticTax') stripeAutomaticTax;
@@ -68,7 +67,6 @@ export default class FeatureService extends Service {
     @feature('i18n') i18n;
     @feature('announcementBar') announcementBar;
     @feature('signupCard') signupCard;
-    @feature('collections') collections;
     @feature('mailEvents') mailEvents;
     @feature('collectionsCard') collectionsCard;
     @feature('importMemberTier') importMemberTier;

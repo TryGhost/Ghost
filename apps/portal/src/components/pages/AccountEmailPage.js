@@ -95,6 +95,10 @@ export default function AccountEmailPage() {
             updateSubscribedNewsletters={(updatedNewsletters) => {
                 setSubscribedNewsletters(updatedNewsletters);
                 onAction('updateNewsletterPreference', {newsletters: updatedNewsletters});
+                onAction('showPopupNotification', {
+                    action: 'updated:success',
+                    message: t('Email preferences updated.')
+                });
             }}
             updateCommentNotifications={async (enabled) => {
                 onAction('updateNewsletterPreference', {enableCommentNotifications: enabled});

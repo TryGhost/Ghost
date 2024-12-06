@@ -20,7 +20,7 @@
     "build"
   ],
   "devDependencies": {
-    "@tryghost/nql": "0.12.6",
+    "@tryghost/nql": "0.12.7",
     "c8": "7.14.0",
     "mocha": "10.2.0",
     "sinon": "15.2.0"

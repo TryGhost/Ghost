@@ -41,10 +41,10 @@
                 @publishOptions={{@data.publishOptions}}
                 @recipientType={{this.recipientType}}
                 @saveTask={{this.saveTask}}
+                @setCompleted={{this.setCompleted}}
                 @cancel={{this.toggleConfirm}}
                 @close={{@close}}
             />
-        {{else if this.isComplete}}
         {{else}}
             <Editor::Modals::PublishFlow::Options
                 @publishOptions={{@data.publishOptions}}

@@ -51,6 +51,28 @@ module.exports = {
         })(req, res, next);
     },
     /**
+     * block per IP
+    */
+    sendVerificationCode(req, res, next) {
+        return spamPrevention.sendVerificationCode().getMiddleware({
+            ignoreIP: false,
+            key(_req, _res, _next) {
+                return _next('send_verification_code');
+            }
+        })(req, res, next);
+    },
+    /**
+     * block per IP
+     */
+    userVerification(req, res, next) {
+        return spamPrevention.userVerification().getMiddleware({
+            ignoreIP: false,
+            key(_req, _res, _next) {
+                return _next('user_verification');
+            }
+        })(req, res, next);
+    },
+    /**
      * block per ip
      */
     privateBlog(req, res, next) {

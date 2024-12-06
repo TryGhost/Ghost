@@ -23,7 +23,7 @@
                         <div class="gh-user-avatar relative" style={{background-image-style this.session.user.profileImageUrl}}>
                             {{#if (and this.whatsNew.hasNew (not this.whatsNew.hasNewFeatured))}}<span class="absolute dib ba b--white br-100 gh-whats-new-badge-account"></span>{{/if}}
                         </div>
-                        {{svg-jar "arrow-down" class="w3 mr1 fill-darkgrey"}}
+                        {{svg-jar "arrow-down" class="w3 mr1 fill-darkgrey" data-test-nav="arrow-down"}}
                     </div>
                 </dropdown.Trigger>
 

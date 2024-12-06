@@ -1071,6 +1071,7 @@
                     "webhook": "all",
                     "action": "all",
                     "member": "all",
+                    "member_signin_url": "read",
                     "label": "all",
                     "email_preview": "all",
                     "email": "all",

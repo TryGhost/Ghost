@@ -1,16 +1,17 @@
-import SecundaryForm from './SecundaryForm';
-import {Comment, useAppContext} from '../../../AppContext';
+import {Comment, OpenCommentForm, useAppContext} from '../../../AppContext';
+import {Form, FormWrapper} from './Form';
 import {getEditorConfig} from '../../../utils/editor';
-import {scrollToElement} from '../../../utils/helpers';
+import {isMobile, scrollToElement} from '../../../utils/helpers';
 import {useCallback} from 'react';
 import {useEditor} from '@tiptap/react';
 import {useRefCallback} from '../../../utils/hooks';
 
 type Props = {
+    openForm: OpenCommentForm;
     parent: Comment;
-    close: () => void;
 }
-const ReplyForm: React.FC<Props> = ({parent, close}) => {
+
+const ReplyForm: React.FC<Props> = ({openForm, parent}) => {
     const {postId, dispatchAction, t} = useAppContext();
     const [, setForm] = useRefCallback<HTMLDivElement>(scrollToElement);
 
@@ -29,31 +30,37 @@ const ReplyForm: React.FC<Props> = ({parent, close}) => {
             parent: parent,
             reply: {
                 post_id: postId,
+                in_reply_to_id: openForm.in_reply_to_id,
                 status: 'published',
                 html
             }
         });
-    }, [parent, postId, dispatchAction]);
+    }, [parent, postId, openForm, dispatchAction]);
 
-    const submitProps = {
-        submitText: (
-            <>
-                <span className="hidden sm:inline">{t('Add reply')}</span><span className="sm:hidden">{t('Reply')}</span>
-            </>
-        ),
-        submitSize: 'medium',
-        submit
-    };
+    const close = useCallback(() => {
+        dispatchAction('closeCommentForm', openForm.id);
+    }, [dispatchAction, openForm]);
 
-    const closeIfNotChanged = useCallback(() => {
-        if (editor?.isEmpty) {
-            close();
-        }
-    }, [editor, close]);
+    const SubmitText = (<>
+        <span className="hidden sm:inline">{t('Add reply')}</span><span className="sm:hidden">{t('Reply')}</span>
+    </>);
 
     return (
-        <div ref={setForm}>
-            <SecundaryForm close={close} closeIfNotChanged={closeIfNotChanged} editor={editor} {...submitProps} />
+        <div ref={setForm} data-testid="reply-form">
+            <div className='mt-[-16px] pr-2'>
+                <FormWrapper comment={parent} editor={editor} isOpen={true} openForm={openForm} reduced={isMobile()}>
+                    <Form
+                        close={close}
+                        editor={editor}
+                        isOpen={true}
+                        openForm={openForm}
+                        reduced={isMobile()}
+                        submit={submit}
+                        submitSize={'medium'}
+                        submitText={SubmitText}
+                    />
+                </FormWrapper>
+            </div>
         </div>
     );
 };

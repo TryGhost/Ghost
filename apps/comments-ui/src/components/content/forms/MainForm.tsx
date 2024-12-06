@@ -1,5 +1,5 @@
-import Form from './Form';
 import React, {useCallback, useEffect, useRef} from 'react';
+import {Form, FormWrapper} from './Form';
 import {getEditorConfig} from '../../../utils/editor';
 import {scrollToElement} from '../../../utils/helpers';
 import {useAppContext} from '../../../AppContext';
@@ -8,6 +8,7 @@ import {useEditor} from '@tiptap/react';
 type Props = {
     commentsCount: number
 };
+
 const MainForm: React.FC<Props> = ({commentsCount}) => {
     const {postId, dispatchAction, t} = useAppContext();
 
@@ -18,7 +19,7 @@ const MainForm: React.FC<Props> = ({commentsCount}) => {
 
     const editor = useEditor({
         ...getEditorConfig(config)
-    });
+    }, [commentsCount]);
 
     const submit = useCallback(async ({html}) => {
         // Send comment to server
@@ -27,7 +28,9 @@ const MainForm: React.FC<Props> = ({commentsCount}) => {
             status: 'published',
             html
         });
-    }, [postId, dispatchAction]);
+    
+        editor?.commands.clearContent();
+    }, [postId, dispatchAction, editor]);
 
     // C keyboard shortcut to focus main form
     const formEl = useRef(null);
@@ -87,15 +90,22 @@ const MainForm: React.FC<Props> = ({commentsCount}) => {
                 <span className="hidden sm:inline">{t('Add comment')} </span><span className="sm:hidden">{t('Comment')}</span>
             </>
         ),
-        submitSize: 'large',
+        submitSize: 'large' as const,
         submit
     };
 
     const isOpen = editor?.isFocused ?? false;
 
     return (
-        <div ref={formEl} className='mt-[-4px] px-3 pb-2 pt-3' data-testid="main-form">
-            <Form editor={editor} isOpen={isOpen} reduced={false} {...submitProps} />
+        <div ref={formEl} className='px-3 pb-2 pt-3' data-testid="main-form">
+            <FormWrapper editor={editor} isOpen={isOpen} reduced={false}>
+                <Form 
+                    editor={editor} 
+                    isOpen={isOpen} 
+                    reduced={false} 
+                    {...submitProps} 
+                />
+            </FormWrapper>
         </div>
     );
 };

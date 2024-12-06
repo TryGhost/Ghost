@@ -15,6 +15,7 @@ Router.map(function () {
     this.route('setup.done', {path: '/setup/done'});
 
     this.route('signin');
+    this.route('signin-verify', {path: '/signin/verify'});
     this.route('signout');
     this.route('signup', {path: '/signup/:token'});
     this.route('reset', {path: '/reset/:token'});
@@ -33,7 +34,7 @@ Router.map(function () {
     this.route('posts.analytics', {path: '/posts/analytics/:post_id'});
     this.route('posts.mentions', {path: '/posts/analytics/:post_id/mentions'});
     this.route('posts.debug', {path: '/posts/analytics/:post_id/debug'});
-    
+
     this.route('restore-posts', {path: '/restore'});
 
     this.route('pages');
@@ -46,10 +47,6 @@ Router.map(function () {
     this.route('tags');
     this.route('tag.new', {path: '/tags/new'});
     this.route('tag', {path: '/tags/:tag_slug'});
-
-    this.route('collections');
-    this.route('collection.new', {path: '/collections/new'});
-    this.route('collection', {path: '/collections/:collection_slug'});
 
     this.route('demo-x', function () {
         this.route('demo-x', {path: '/*sub'});
