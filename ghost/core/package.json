@@ -181,7 +181,7 @@
     "cors": "2.8.5",
     "dompurify": "3.2.3",
     "downsize": "0.0.8",
-    "express": "4.21.1",
+    "express": "4.21.2",
     "express-brute": "1.0.1",
     "express-hbs": "2.5.0",
     "express-jwt": "8.5.1",
