@@ -143,8 +143,8 @@ export function getMemberData({
 }
 
 export function getNewsletterData({
-    id = `${objectId()}`,
-    uuid = `${objectId()}`,
+    id = `id_${objectId()}`,
+    uuid = `uuid_${objectId()}`,
     name = 'Newsletter',
     description = 'Newsletter description',
     slug = 'newsletter',
