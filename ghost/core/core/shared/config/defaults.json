@@ -243,7 +243,8 @@
             "minDaysSinceLastEmail": 14
         },
     "bulkEmail": {
-        "batchSize": 1000
+        "batchSize": 1000,
+        "captureLinkClickBadMemberUuid": false
     },
     "disableJSBackups": false
 }

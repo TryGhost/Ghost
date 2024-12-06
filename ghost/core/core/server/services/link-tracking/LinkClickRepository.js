@@ -1,5 +1,7 @@
 const {LinkClick} = require('@tryghost/link-tracking');
 const ObjectID = require('bson-objectid').default;
+const sentry = require('../../../shared/sentry');
+const config = require('../../../shared/config');
 
 module.exports = class LinkClickRepository {
     /** @type {Object} */
@@ -52,6 +54,9 @@ module.exports = class LinkClickRepository {
         // Convert uuid to id
         const member = await this.#Member.findOne({uuid: linkClick.member_uuid});
         if (!member) {
+            if (config.get('captureLinkClickBadMemberUuid')) {
+                sentry.captureMessage('LinkClickTrackingService > Member not found', {extra: {member_uuid: linkClick.member_uuid}});
+            }
             return;
         }
 
