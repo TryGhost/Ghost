@@ -283,17 +283,17 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
                                             <NotificationItem.Icon type={getActivityBadge(group)} />
                                             <NotificationItem.Avatars>
                                                 <div className='flex flex-col'>
-                                                    <div className='flex gap-2'>
+                                                    <div className='mt-0.5 flex items-center gap-1.5'>
                                                         {!openStates[group.id || `${group.type}_${index}`] && group.actors.slice(0, maxAvatars).map(actor => (
                                                             <APAvatar
                                                                 key={actor.id}
                                                                 author={actor}
-                                                                size='sm'
+                                                                size='notification'
                                                             />
                                                         ))}
                                                         {group.actors.length > maxAvatars && (!openStates[group.id || `${group.type}_${index}`]) && (
                                                             <div
-                                                                className='flex h-10 w-5 items-center justify-center text-sm text-grey-700'
+                                                                className='flex h-9 w-5 items-center justify-center text-sm text-grey-700'
                                                             >
                                                                 {`+${group.actors.length - maxAvatars}`}
                                                             </div>
@@ -301,7 +301,7 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
 
                                                         {group.actors.length > 1 && (
                                                             <Button
-                                                                className={`transition-color flex h-10 items-center rounded-full bg-transparent text-grey-700 ${openStates[group.id || `${group.type}_${index}`] ? 'w-full justify-start pl-0' : 'w-10 justify-center'}`}
+                                                                className={`transition-color flex h-9 items-center rounded-full bg-transparent text-grey-700 ${openStates[group.id || `${group.type}_${index}`] ? 'w-full justify-start pl-1' : '-ml-2 w-9 justify-center'}`}
                                                                 hideLabel={!openStates[group.id || `${group.type}_${index}`]}
                                                                 icon='chevron-down'
                                                                 iconColorClass={`w-[12px] h-[12px] ${openStates[group.id || `${group.type}_${index}`] ? 'rotate-180' : ''}`}
@@ -313,7 +313,7 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
                                                                 }}/>
                                                         )}
                                                     </div>
-                                                    <div className={`overflow-hidden transition-all duration-300 ease-in-out  ${openStates[group.id || `${group.type}_${index}`] ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}>
+                                                    <div className={`overflow-hidden transition-all duration-300 ease-in-out  ${openStates[group.id || `${group.type}_${index}`] ? 'mb-2 max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}>
                                                         {openStates[group.id || `${group.type}_${index}`] && group.actors.length > 1 && (
                                                             <div className='flex flex-col gap-2 pt-4'>
                                                                 {group.actors.map(actor => (

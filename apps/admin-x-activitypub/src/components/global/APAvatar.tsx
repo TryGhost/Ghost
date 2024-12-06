@@ -4,7 +4,7 @@ import getUsername from '../../utils/get-username';
 import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Icon} from '@tryghost/admin-x-design-system';
 
-type AvatarSize = '2xs' | 'xs' | 'sm' | 'lg';
+type AvatarSize = '2xs' | 'xs' | 'sm' | 'lg' | 'notification';
 export type AvatarBadge = 'user-fill' | 'heart-fill' | 'comment-fill' | undefined;
 
 interface APAvatarProps {
@@ -47,6 +47,11 @@ const APAvatar: React.FC<APAvatarProps> = ({author, size, badge}) => {
         iconSize = 12;
         containerClass = clsx('h-6 w-6 rounded-md ', containerClass);
         imageClass = 'z-10 rounded-md w-6 h-6 object-cover';
+        break;
+    case 'notification':
+        iconSize = 12;
+        containerClass = clsx('h-9 w-9 rounded-md', containerClass);
+        imageClass = 'z-10 rounded-xl w-9 h-9 object-cover';
         break;
     case 'sm':
         containerClass = clsx('h-10 w-10 rounded-md', containerClass);
