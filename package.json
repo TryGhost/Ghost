@@ -52,7 +52,9 @@
     "moment": "2.24.0",
     "moment-timezone": "0.5.45",
     "cheerio@^1.0.0-rc.2": "1.0.0-rc.12",
-    "cheerio@^1.0.0-rc.12": "1.0.0-rc.12"
+    "cheerio@^1.0.0-rc.12": "1.0.0-rc.12",
+    "vite": "4.5.3",
+    "vitest": "0.34.3"
   },
   "renovate": {
     "extends": [
