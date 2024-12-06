@@ -74,7 +74,8 @@ const EDITABLE_SETTINGS = [
     'donations_suggested_amount',
     'recommendations_enabled',
     'body_font',
-    'heading_font'
+    'heading_font',
+    'pwa'
 ];
 
 module.exports = {

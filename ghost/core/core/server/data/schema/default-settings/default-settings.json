@@ -220,6 +220,13 @@
                 }
             },
             "type": "string"
+        },
+        "pwa": {
+            "defaultValue": "false",
+            "validations": {
+                "isIn": [["true", "false"]]
+            },
+            "type": "boolean"
         }
     },
     "theme": {
