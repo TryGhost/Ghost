@@ -332,6 +332,24 @@ export class MockedApi {
             const url = new URL(route.request().url());
             const commentId = url.pathname.split('/').reverse()[1];
 
+            if (route.request().method() === 'PUT' && commentId) {
+                const comment = findCommentById(this.comments, commentId);
+                if (!comment) {
+                    return await route.fulfill({
+                        status: 404,
+                        body: 'Comment not found'
+                    });
+                }
+                const payload = JSON.parse(route.request().postData());
+                comment.html = payload.comments[0].html;
+                return await route.fulfill({
+                    status: 200,
+                    body: JSON.stringify({
+                        comments: [comment]
+                    })
+                });
+            }
+
             await route.fulfill({
                 status: 200,
                 body: JSON.stringify(this.browseComments({
@@ -470,7 +488,6 @@ export class MockedApi {
                 const commentId = url.pathname.split('/').reverse()[1];
                 const payload = JSON.parse(route.request().postData());
                 const comment = findCommentById(this.comments, commentId);
-
                 if (!comment) {
                     await route.fulfill({status: 404});
                     return;

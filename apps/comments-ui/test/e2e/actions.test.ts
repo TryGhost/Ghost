@@ -19,6 +19,8 @@ test.describe('Actions', async () => {
     test.beforeEach(async () => {
         mockedApi = new MockedApi({});
         mockedApi.setMember({
+            id: '1',
+            uuid: '1234',
             name: 'John Doe',
             expertise: 'Software development',
             avatar_image: 'https://example.com/avatar.jpg'
@@ -597,6 +599,192 @@ test.describe('Actions', async () => {
         });
     });
 
+    test.describe('Member Comment Actions', () => {
+        test('Can edit a comment', async ({page}) => {
+            mockedApi.addComment({
+                html: '<p>This is comment 1</p>',
+                member: {
+                    id: '1',
+                    uuid: '1234',
+                    name: 'John Doe',
+                    expertise: 'Software development',
+                    avatar_image: 'https://example.com/avatar.jpg'
+                }
+            });
+
+            const {frame} = await initializeTest(page);
+
+            const comment = frame.getByTestId('comment-component').nth(0);
+            const moreButton = comment.getByTestId('more-button');
+            await moreButton.click();
+
+            const editButton = comment.getByTestId('edit');
+
+            await editButton.click();
+
+            const editor = frame.getByTestId('form-editor');
+
+            await expect(editor).toBeVisible();
+
+            await waitEditorFocused(editor);
+
+            await page.keyboard.type(' Edited');
+
+            const submitButton = frame.getByText('Save');
+            await submitButton.click();
+            await expect(frame.getByText('This is comment 1 Edited')).toBeVisible();
+        });
+
+        test('Can delete a comment', async ({page}) => {
+            mockedApi.addComment({
+                html: '<p>This is comment 1</p>',
+                member: {
+                    id: '1',
+                    uuid: '1234',
+                    name: 'John Doe',
+                    expertise: 'Software development',
+                    avatar_image: 'https://example.com/avatar.jpg'
+                }
+            });
+
+            const {frame} = await initializeTest(page);
+
+            const comment = frame.getByTestId('comment-component').nth(0);
+            const moreButton = comment.getByTestId('more-button');
+            await moreButton.click();
+
+            const deleteButton = comment.getByTestId('delete');
+
+            await deleteButton.click();
+            // in practice there's a confirmation dialog here, but it comes from a different iframe
+            await expect(frame.getByText('This is comment 1')).not.toBeVisible();
+        });
+
+        test('Last reply gets identified by data attribute', async ({page}) => {
+            mockedApi.addComment({
+                html: '<p>This is comment 1</p>',
+                member: {
+                    id: '1',
+                    uuid: '1234',
+                    name: 'John Doe',
+                    expertise: 'Software development',
+                    avatar_image: 'https://example.com/avatar.jpg'
+                },
+                replies: [
+                    buildReply({html: '<p>This is a reply</p>'}),
+                    buildReply({html: '<p>This is the last reply</p>', member: {
+                        id: '1',
+                        uuid: '1234',
+                        name: 'John Doe',
+                        expertise: 'Software development',
+                        avatar_image: 'https://example.com/avatar.jpg'
+                    }})
+                ]
+            });
+
+            const {frame} = await initializeTest(page, {labs: true});
+
+            const comment = await frame.getByTestId('comment-component').nth(0);
+
+            const replies = await comment.getByTestId('comment-component');
+
+            await expect(replies).toHaveCount(2);
+
+            const moreButton = await replies.nth(1).getByTestId('more-button');
+
+            await moreButton.click();
+
+            const contextMenu = await frame.getByTestId('context-menu');
+
+            expect(contextMenu).toBeVisible();
+            await expect(contextMenu).toHaveAttribute('data-is-last-reply', 'true');
+        });
+
+        // this tests https://linear.app/ghost/issue/PLG-273/fix-cut-off-dropdown-if-last-comment-is-a-reply
+        test('Last reply different css classes to move the dropdown up to avoid cutting off on iframe', async ({page}) => {
+            mockedApi.addComment({
+                html: '<p>This is comment 1</p>',
+                member: {
+                    id: '1',
+                    uuid: '1234',
+                    name: 'John Doe',
+                    expertise: 'Software development',
+                    avatar_image: 'https://example.com/avatar.jpg'
+                },
+                replies: [
+                    buildReply({html: '<p>This is a reply</p>'}),
+                    buildReply({html: '<p>This is the last reply</p>', member: {
+                        id: '1',
+                        uuid: '1234',
+                        name: 'John Doe',
+                        expertise: 'Software development',
+                        avatar_image: 'https://example.com/avatar.jpg'
+                    }})
+                ]
+            });
+
+            const {frame} = await initializeTest(page, {labs: true});
+
+            const comment = await frame.getByTestId('comment-component').nth(0);
+
+            const replies = await comment.getByTestId('comment-component');
+
+            await expect(replies).toHaveCount(2);
+
+            const moreButton = await replies.nth(1).getByTestId('more-button');
+
+            await moreButton.click();
+
+            const contextMenu = await frame.getByTestId('context-menu');
+
+            // to include css classes, bottom-full mb-6
+            expect(contextMenu).toBeVisible();
+
+            const classList = await contextMenu.getAttribute('class');
+            expect(classList).toContain('bottom-full');
+            expect(classList).toContain('mb-6');
+        });
+
+        test('Not last reply returns false attribute', async ({page}) => {
+            mockedApi.addComment({
+                html: '<p>This is comment 1</p>',
+                member: {
+                    id: '1',
+                    uuid: '1234',
+                    name: 'John Doe',
+                    expertise: 'Software development',
+                    avatar_image: 'https://example.com/avatar.jpg'
+                },
+                replies: [
+                    buildReply({html: '<p>This is a reply</p>'}),
+                    buildReply({html: '<p>This is the last reply</p>', member: {
+                        id: '1',
+                        uuid: '1234',
+                        name: 'John Doe',
+                        expertise: 'Software development',
+                        avatar_image: 'https://example.com/avatar.jpg'
+                    }})
+                ]
+            });
+
+            const {frame} = await initializeTest(page, {labs: true});
+
+            const comment = await frame.getByTestId('comment-component').nth(0);
+
+            const replies = await comment.getByTestId('comment-component');
+
+            await expect(replies).toHaveCount(2);
+
+            const moreButton = await replies.nth(0).getByTestId('more-button');
+
+            await moreButton.click();
+
+            const contextMenu = await frame.getByTestId('context-menu');
+
+            expect(contextMenu).toBeVisible();
+            await expect(contextMenu).toHaveAttribute('data-is-last-reply', 'false');
+        });
+
     test('Can edit their own comment', async ({page}) => {
         const loggedInMember = buildMember();
         mockedApi.setMember(loggedInMember);
@@ -641,5 +829,6 @@ test.describe('Actions', async () => {
         await expect(replies[0]).toContainText('First reply');
         await expect(replies[1]).toBeVisible();
         await expect(replies[1]).toContainText('Second reply');
+        });
     });
 });
