@@ -1,4 +1,6 @@
-import React, {useCallback, useEffect, useMemo, useRef} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {CommentsEditorConfig, getEditorConfig} from './editor';
+import {Editor, useEditor as useTiptapEditor} from '@tiptap/react';
 import {formatRelativeTime} from './helpers';
 import {useAppContext} from '../AppContext';
 
@@ -56,4 +58,38 @@ export function useRelativeTime(dateString: string) {
     return useMemo(() => {
         return formatRelativeTime(dateString, t);
     }, [dateString]);
+}
+
+export function useEditor(editorConfig: CommentsEditorConfig, initialHasContent = false): {editor: Editor | null, hasContent: boolean} {
+    const [hasContent, setHasContent] = useState(initialHasContent);
+
+    const _editorConfig = useMemo(() => ({
+        ...getEditorConfig(editorConfig)
+    }), [editorConfig]);
+
+    const editor = useTiptapEditor(_editorConfig, [_editorConfig]);
+
+    useEffect(() => {
+        if (editor) {
+            const checkContent = () => {
+                const editorHasContent = !editor.isEmpty;
+                setHasContent(editorHasContent);
+            };
+
+            editor.on('update', checkContent);
+            editor.on('transaction', checkContent);
+
+            checkContent();
+
+            return () => {
+                editor.off('update', checkContent);
+                editor.off('transaction', checkContent);
+            };
+        }
+    }, [editor]);
+
+    return {
+        editor,
+        hasContent
+    };
 }

@@ -7,7 +7,12 @@ import Placeholder from '@tiptap/extension-placeholder';
 import Text from '@tiptap/extension-text';
 import {EditorOptions} from '@tiptap/core';
 
-export function getEditorConfig({placeholder, autofocus = false, content = ''}: {placeholder: string; autofocus?: boolean; content?: string}): Partial<EditorOptions> {
+export type CommentsEditorConfig = {
+    placeholder: string;
+    autofocus?: boolean;
+    content?: string;
+}
+export function getEditorConfig({placeholder, autofocus = false, content = ''}: CommentsEditorConfig): Partial<EditorOptions> {
     return {
         extensions: [
             Document,

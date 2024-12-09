@@ -1,9 +1,8 @@
-import React, {useCallback, useEffect, useRef} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef} from 'react';
 import {Form, FormWrapper} from './Form';
-import {getEditorConfig} from '../../../utils/editor';
 import {scrollToElement} from '../../../utils/helpers';
 import {useAppContext} from '../../../AppContext';
-import {useEditor} from '@tiptap/react';
+import {useEditor} from '../../../utils/hooks';
 
 type Props = {
     commentsCount: number
@@ -12,14 +11,12 @@ type Props = {
 const MainForm: React.FC<Props> = ({commentsCount}) => {
     const {postId, dispatchAction, t} = useAppContext();
 
-    const config = {
+    const editorConfig = useMemo(() => ({
         placeholder: (commentsCount === 0 ? t('Start the conversation') : t('Join the discussion')),
         autofocus: false
-    };
+    }), [commentsCount]);
 
-    const editor = useEditor({
-        ...getEditorConfig(config)
-    }, [commentsCount]);
+    const {editor, hasContent} = useEditor(editorConfig);
 
     const submit = useCallback(async ({html}) => {
         // Send comment to server
@@ -28,7 +25,7 @@ const MainForm: React.FC<Props> = ({commentsCount}) => {
             status: 'published',
             html
         });
-    
+
         editor?.commands.clearContent();
     }, [postId, dispatchAction, editor]);
 
@@ -94,16 +91,16 @@ const MainForm: React.FC<Props> = ({commentsCount}) => {
         submit
     };
 
-    const isOpen = editor?.isFocused ?? false;
+    const isOpen = editor?.isFocused || hasContent;
 
     return (
         <div ref={formEl} className='px-3 pb-2 pt-3' data-testid="main-form">
             <FormWrapper editor={editor} isOpen={isOpen} reduced={false}>
-                <Form 
-                    editor={editor} 
-                    isOpen={isOpen} 
-                    reduced={false} 
-                    {...submitProps} 
+                <Form
+                    editor={editor}
+                    isOpen={isOpen}
+                    reduced={false}
+                    {...submitProps}
                 />
             </FormWrapper>
         </div>

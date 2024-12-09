@@ -1,9 +1,8 @@
 import {Comment, OpenCommentForm, useAppContext} from '../../../AppContext';
 import {Form, FormWrapper} from './Form';
-import {getEditorConfig} from '../../../utils/editor';
 import {isMobile, scrollToElement} from '../../../utils/helpers';
-import {useCallback} from 'react';
-import {useEditor} from '@tiptap/react';
+import {useCallback, useMemo} from 'react';
+import {useEditor} from '../../../utils/hooks';
 import {useRefCallback} from '../../../utils/hooks';
 
 type Props = {
@@ -15,14 +14,12 @@ const ReplyForm: React.FC<Props> = ({openForm, parent}) => {
     const {postId, dispatchAction, t} = useAppContext();
     const [, setForm] = useRefCallback<HTMLDivElement>(scrollToElement);
 
-    const config = {
+    const config = useMemo(() => ({
         placeholder: t('Reply to comment'),
         autofocus: true
-    };
+    }), []);
 
-    const editor = useEditor({
-        ...getEditorConfig(config)
-    });
+    const {editor} = useEditor(config);
 
     const submit = useCallback(async ({html}) => {
         // Send comment to server

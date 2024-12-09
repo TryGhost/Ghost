@@ -17,6 +17,7 @@ test.describe('Editor', async () => {
         const placeholderElement = editor.locator('[data-placeholder="Start the conversation"]');
         await expect(placeholderElement).toBeVisible();
     });
+
     test('Can comment on a post', async ({page}) => {
         const mockedApi = new MockedApi({});
         mockedApi.setMember({});
