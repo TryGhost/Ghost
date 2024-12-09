@@ -22,8 +22,14 @@ async function loadMoreComments({state, api, options, order}: {state: EditableAp
     };
 }
 
-async function setOrder({state, data: {order}, options, api}: {state: EditableAppContext, data: {order: string}, options: CommentsOptions, api: GhostApi}) {
-    state.commentsIsLoading = true;
+function setCommentsIsLoading({data: isLoading}: {data: boolean | null}) {
+    return {
+        commentsIsLoading: isLoading
+    };
+}
+
+async function setOrder({state, data: {order}, options, api, dispatchAction}: {state: EditableAppContext, data: {order: string}, options: CommentsOptions, api: GhostApi, dispatchAction: DispatchActionType}) {
+    dispatchAction('setCommentsIsLoading', true);
 
     try {
         let data;
@@ -474,7 +480,8 @@ export const Actions = {
     setOrder,
     openCommentForm,
     highlightComment,
-    setHighlightComment
+    setHighlightComment,
+    setCommentsIsLoading
 };
 
 export type ActionType = keyof typeof Actions;
