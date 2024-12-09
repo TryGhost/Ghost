@@ -13,6 +13,14 @@ const messages = {
     memberNotFound: 'Unable to find member'
 };
 
+function setImpersonationContext(options) {
+    if (options.impersonate_member_id) {
+        options.context = options.context || {};
+        options.context.member = options.context.member || {};
+        options.context.member.id = options.impersonate_member_id;
+    }
+}
+
 module.exports = class CommentsController {
     /**
      * @param {import('./CommentsService')} service
@@ -80,11 +88,7 @@ module.exports = class CommentsController {
         // To resolve this, we retrieve the `impersonate_member_id` from the request params and
         // explicitly set it in the context options as the acting member's ID.
         // Note: This approach is applied to several admin routes where member context is required.
-        if (frame.options.impersonate_member_id) {
-            frame.options.context = frame.options.context || {};
-            frame.options.context.member = frame.options.context.member || {};
-            frame.options.context.member.id = frame.options.impersonate_member_id;
-        }
+        setImpersonationContext(frame.options);
         return await this.service.getAdminComments(frame.options);
     }
 
@@ -101,11 +105,7 @@ module.exports = class CommentsController {
     async adminReplies(frame) {
         frame.options.isAdmin = true;
         frame.options.order = 'created_at asc'; // we always want to load replies from oldest to newest
-        if (frame.options.impersonate_member_id && frame.options.isAdmin) {
-            frame.options.context = frame.options.context || {};
-            frame.options.context.member = frame.options.context.member || {};
-            frame.options.context.member.id = frame.options.impersonate_member_id;
-        }
+        setImpersonationContext(frame.options);
 
         return this.service.getReplies(frame.options.id, _.omit(frame.options, 'id'));
     }
@@ -114,11 +114,7 @@ module.exports = class CommentsController {
      * @param {Frame} frame
      */
     async read(frame) {
-        if (frame.options.impersonate_member_id && frame.options.isAdmin) {
-            frame.options.context = frame.options.context || {};
-            frame.options.context.member = frame.options.context.member || {};
-            frame.options.context.member.id = frame.options.impersonate_member_id;
-        }
+        setImpersonationContext(frame.options);
         return await this.service.getCommentByID(frame.data.id, frame.options);
     }
 
