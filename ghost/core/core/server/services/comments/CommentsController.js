@@ -74,9 +74,12 @@ module.exports = class CommentsController {
         }
 
         frame.options.isAdmin = true;
-        // so this route does not have the member context since it's cross domain whuch breaks
-        // in which case we need to get the member id from the params and then set it in the options
-        // we will have to do this for quite a couple of routes
+        // Admin routes lack member context due to cross-domain constraints (CORS), which prevents
+        // credentials from being passed. This causes issues like the inability to determine if a
+        // logged-in admin (acting on behalf of a member) has already liked a comment.
+        // To resolve this, we retrieve the `impersonate_member_id` from the request params and
+        // explicitly set it in the context options as the acting member's ID.
+        // Note: This approach is applied to several admin routes where member context is required.
         if (frame.options.impersonate_member_id) {
             frame.options.context = frame.options.context || {};
             frame.options.context.member = frame.options.context.member || {};
