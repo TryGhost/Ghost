@@ -817,6 +817,7 @@ describe('Front-end members behavior', function () {
 
                 // @NOTE: this should be a snapshot test not code
                 memberData.should.have.properties([
+                    'id',
                     'uuid',
                     'email',
                     'name',
@@ -832,8 +833,8 @@ describe('Front-end members behavior', function () {
                     'email_suppression',
                     'unsubscribe_url'
                 ]);
-                Object.keys(memberData).should.have.length(14);
-                memberData.should.not.have.property('id');
+                Object.keys(memberData).should.have.length(15);
+                // memberData.should.not.have.property('id');
                 memberData.newsletters.should.have.length(1);
 
                 // @NOTE: this should be a snapshot test not code

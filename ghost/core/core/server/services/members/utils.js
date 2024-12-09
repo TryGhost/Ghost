@@ -16,6 +16,7 @@ module.exports.formattedMemberResponse = function formattedMemberResponse(member
         return null;
     }
     const data = {
+        id: member.id,
         uuid: member.uuid,
         email: member.email,
         name: member.name,
