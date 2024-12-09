@@ -741,12 +741,12 @@ async function getMemberComments(url, commentsMatcher = [membersCommentMatcher])
                 });
                 it('can get comment liked status by impersonating member via admin browse route', async function () {
                     // Like the comment
-                    const res = await adminApi.get(`/comments/post/${post.id}/?impersonate_member_id=${fixtureManager.get('members', 1).id}`);
+                    const res = await adminApi.get(`/comments/post/${post.id}/?impersonate_member_uuid=${fixtureManager.get('members', 1).uuid}`);
                     res.body.comments[0].liked.should.eql(true);
                 });
 
                 it('can get comment liked status by impersonating member via admin get by comment id read route', async function () {
-                    const res = await adminApi.get(`/comments/${comment.get('id')}/?impersonate_member_id=${fixtureManager.get('members', 1).id}`);
+                    const res = await adminApi.get(`/comments/${comment.get('id')}/?impersonate_member_uuid=${fixtureManager.get('members', 1).uuid}`);
                     res.body.comments[0].liked.should.eql(true);
                 });
 
@@ -769,7 +769,7 @@ async function getMemberComments(url, commentsMatcher = [membersCommentMatcher])
                         .expectStatus(204)
                         .expectEmptyBody();
 
-                    const res = await adminApi.get(`/comments/${parent.get('id')}/replies/?impersonate_member_id=${fixtureManager.get('members', 1).id}`);
+                    const res = await adminApi.get(`/comments/${parent.get('id')}/replies/?impersonate_member_uuid=${fixtureManager.get('members', 1).uuid}`);
                     res.body.comments[0].liked.should.eql(true);
                 });
             });

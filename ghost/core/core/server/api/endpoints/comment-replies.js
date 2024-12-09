@@ -19,7 +19,7 @@ const controller = {
             'order',
             'debug',
             'id',
-            'impersonate_member_id'
+            'impersonate_member_uuid'
         ],
         validation: {
             options: {
@@ -39,7 +39,7 @@ const controller = {
         },
         options: [
             'include',
-            'impersonate_member_id'
+            'impersonate_member_uuid'
         ],
         data: [
             'id',
