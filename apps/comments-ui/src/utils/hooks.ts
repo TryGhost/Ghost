@@ -2,7 +2,7 @@ import {CommentsEditorConfig, getEditorConfig} from './editor';
 import {Editor, useEditor as useTiptapEditor} from '@tiptap/react';
 import {formatRelativeTime} from './helpers';
 import {useAppContext} from '../AppContext';
-import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState} from 'react';
 
 /**
  * Execute a callback when a ref is set and unset.
@@ -75,4 +75,82 @@ export function useEditor(editorConfig: CommentsEditorConfig, initialHasContent 
         editor,
         hasContent
     };
+}
+
+type OutOfViewport = {
+    top: boolean;
+    bottom: boolean;
+    left: boolean;
+    right: boolean;
+}
+type OutOfViewportClassOptions = {
+    default: string;
+    outOfViewport: string;
+}
+type OutOfViewportClasses = {
+    top?: OutOfViewportClassOptions;
+    bottom?: OutOfViewportClassOptions;
+    left?: OutOfViewportClassOptions;
+    right?: OutOfViewportClassOptions;
+};
+// TODO: This does not currently handle the case where the element is outOfViewport for both top&bottom or left&right
+export function useOutOfViewportClasses(ref: React.RefObject<HTMLElement>, classes: OutOfViewportClasses) {
+    // Add/Remove classes directly on the element based on whether it's out of the viewport
+    // Modifies element classes directly in DOM so it's compatible with useLayoutEffect
+    const applyDefaultClasses = useCallback(() => {
+        if (ref.current) {
+            for (const value of Object.values(classes)) {
+                ref.current.classList.add(...value.default.split(' '));
+                ref.current.classList.remove(...value.outOfViewport.split(' '));
+            }
+        }
+    }, [ref, classes]);
+
+    const applyOutOfViewportClasses = useCallback((outOfViewport: OutOfViewport) => {
+        if (ref.current) {
+            for (const [side, sideClasses] of Object.entries(classes)) {
+                if (outOfViewport[side as keyof OutOfViewport]) {
+                    ref.current.classList.add(...sideClasses.outOfViewport.split(' '));
+                    ref.current.classList.remove(...sideClasses.default.split(' '));
+                } else {
+                    ref.current.classList.add(...sideClasses.default.split(' '));
+                    ref.current.classList.remove(...sideClasses.outOfViewport.split(' '));
+                }
+            }
+        }
+    }, [ref, classes]);
+
+    const updateOutOfViewportClasses = useCallback(() => {
+        if (ref.current) {
+            // Handle element being inside an iframe
+            const _document = ref.current.ownerDocument;
+            const _window = _document.defaultView || window;
+
+            // Reset classes so we can re-calculate without any previous re-positioning affecting the calcs
+            applyDefaultClasses();
+
+            const bounding = ref.current.getBoundingClientRect();
+            const outOfViewport = {
+                top: bounding.top < 0,
+                bottom: bounding.bottom > (_window.innerHeight || _document.documentElement.clientHeight),
+                left: bounding.left < 0,
+                right: bounding.right > (_window.innerWidth || _document.documentElement.clientWidth)
+            };
+
+            applyOutOfViewportClasses(outOfViewport);
+        }
+    }, [ref]);
+
+    // Layout effect needed here to avoid flicker of the default position before
+    // repositioning the element
+    useLayoutEffect(() => {
+        updateOutOfViewportClasses();
+    }, [ref]);
+
+    useEffect(() => {
+        window.addEventListener('resize', updateOutOfViewportClasses);
+        return () => {
+            window.removeEventListener('resize', updateOutOfViewportClasses);
+        };
+    }, []);
 }

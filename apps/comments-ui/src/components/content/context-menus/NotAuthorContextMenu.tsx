@@ -1,5 +1,5 @@
 import React from 'react';
-import {useAppContext} from '../../../AppContext';
+import {Comment, useAppContext} from '../../../AppContext';
 
 type Props = {
     comment: Comment;
