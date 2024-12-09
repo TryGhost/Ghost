@@ -37,7 +37,8 @@ const controller = {
             cacheInvalidate: false
         },
         options: [
-            'include'
+            'include',
+            'impersonate_member_id'
         ],
         data: [
             'id',

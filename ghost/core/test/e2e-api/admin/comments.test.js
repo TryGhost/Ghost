@@ -720,18 +720,17 @@ async function getMemberComments(url, commentsMatcher = [membersCommentMatcher])
         });
 
         if (enableCommentImprovements) {
-            describe('Logged in member likes via admin api', function () {
+            describe('Logged in member gets own likes via admin api', function () {
+                let comment;
+                let post;
                 this.beforeEach(async function () {
-                    await membersApi.loginAs(fixtureManager.get('members', 1).email);
-                });
-                it('can get comment liked status by impersonating member', async function () {
-                    const post = fixtureManager.get('posts', 1);
-                    const comment = await dbFns.addComment({
+                    post = fixtureManager.get('posts', 1);
+                    comment = await dbFns.addComment({
                         post_id: post.id,
                         member_id: fixtureManager.get('members', 1).id
                     });
+                    await membersApi.loginAs(fixtureManager.get('members', 1).email);
 
-                    // Like the comment
                     await membersApi
                         .post(`/api/comments/${comment.get('id')}/like/`)
                         .expectStatus(204)
@@ -739,8 +738,15 @@ async function getMemberComments(url, commentsMatcher = [membersCommentMatcher])
                             etag: anyEtag
                         })
                         .expectEmptyBody();
-
+                });
+                it('can get comment liked status by impersonating member via admin browse route', async function () {
+                    // Like the comment
                     const res = await adminApi.get(`/comments/post/${post.id}/?impersonate_member_id=${fixtureManager.get('members', 1).id}`);
+                    res.body.comments[0].liked.should.eql(true);
+                });
+
+                it('can get comment liked status by impersonating member via admin get by comment read route', async function () {
+                    const res = await adminApi.get(`/comments/${comment.get('id')}/?impersonate_member_id=${fixtureManager.get('members', 1).id}`);
                     res.body.comments[0].liked.should.eql(true);
                 });
             });

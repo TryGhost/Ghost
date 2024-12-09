@@ -105,6 +105,11 @@ module.exports = class CommentsController {
      * @param {Frame} frame
      */
     async read(frame) {
+        if (frame.options.impersonate_member_id && frame.options.isAdmin) {
+            frame.options.context = frame.options.context || {};
+            frame.options.context.member = frame.options.context.member || {};
+            frame.options.context.member.id = frame.options.impersonate_member_id;
+        }
         return await this.service.getCommentByID(frame.data.id, frame.options);
     }
 
