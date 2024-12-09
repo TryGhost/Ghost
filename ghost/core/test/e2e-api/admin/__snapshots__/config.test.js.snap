@@ -15,7 +15,6 @@ Object {
       "adminXDemo": true,
       "announcementBar": true,
       "audienceFeedback": true,
-      "collections": true,
       "collectionsCard": true,
       "commentImprovements": true,
       "contentVisibility": true,
