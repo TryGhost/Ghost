@@ -98,6 +98,12 @@ module.exports = class CommentsController {
     async adminReplies(frame) {
         frame.options.isAdmin = true;
         frame.options.order = 'created_at asc'; // we always want to load replies from oldest to newest
+        if (frame.options.impersonate_member_id && frame.options.isAdmin) {
+            frame.options.context = frame.options.context || {};
+            frame.options.context.member = frame.options.context.member || {};
+            frame.options.context.member.id = frame.options.impersonate_member_id;
+        }
+
         return this.service.getReplies(frame.options.id, _.omit(frame.options, 'id'));
     }
 

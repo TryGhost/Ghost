@@ -18,7 +18,8 @@ const controller = {
             'filter',
             'order',
             'debug',
-            'id'
+            'id',
+            'impersonate_member_id'
         ],
         validation: {
             options: {
