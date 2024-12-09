@@ -32,8 +32,8 @@ export const FormEditor: React.FC<FormEditorProps> = ({comment, submit, progress
     useEffect(() => {
         if (editor && openForm) {
             const checkContent = () => {
-                const hasUnsavedChanges = comment && openForm.type === 'edit' ? 
-                    editor.getHTML() !== comment.html : 
+                const hasUnsavedChanges = comment && openForm.type === 'edit' ?
+                    editor.getHTML() !== comment.html :
                     !editor.isEmpty;
 
                 // avoid unnecessary state updates to prevent infinite loops
@@ -189,6 +189,7 @@ const FormHeader: React.FC<FormHeaderProps> = ({show, name, expertise, replyingT
 
     return (
         <Transition
+            data-testid="form-header"
             enter="transition duration-500 delay-100 ease-in-out"
             enterFrom="opacity-0 -translate-x-2"
             enterTo="opacity-100 translate-x-0"
@@ -320,7 +321,7 @@ const FormWrapper: React.FC<FormWrapperProps> = ({
 }) => {
     const {member, dispatchAction} = useAppContext();
     const labs = useLabs();
-    
+
     const memberName = member?.name ?? comment?.member?.name;
     const memberExpertise = member?.expertise ?? comment?.member?.expertise;
 
