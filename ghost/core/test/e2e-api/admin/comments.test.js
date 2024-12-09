@@ -759,12 +759,6 @@ async function getMemberComments(url, commentsMatcher = [membersCommentMatcher])
                     });
 
                     await membersApi
-                        .post(`/api/comments/${parent.get('id')}/like/`)
-                        .expectStatus(204)
-
-                        .expectEmptyBody();
-
-                    await membersApi
                         .post(`/api/comments/${replies[0].id}/like/`)
                         .expectStatus(204)
                         .expectEmptyBody();
