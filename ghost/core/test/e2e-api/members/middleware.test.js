@@ -10,7 +10,6 @@ let membersAgent;
 
 const memberMatcher = (newslettersCount) => {
     return {
-        id: anyObjectId,
         uuid: anyUuid,
         // @NOTE: check if this field is even needed? it differs to the output in the other matcher
         created_at: anyISODateTime,
