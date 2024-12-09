@@ -29,8 +29,8 @@ function writeMetaTag(property, content, type) {
 function getPWAMetaTags(dataRoot) {
     const isUserSignedIn = dataRoot.member;
     const isAdmin = _.includes(dataRoot._locals.context, 'admin');
-
-    if(_.isEmpty(isUserSignedIn) || isAdmin){
+    let pwa = settingsCache.get('pwa')
+    if(_.isEmpty(isUserSignedIn) || isAdmin || !pwa){
         return []
     }
     const head = [];
@@ -51,6 +51,60 @@ function getPWAMetaTags(dataRoot) {
                     });
             });
         }
+    </script>`);
+
+    // Add PWA installation modal script
+    head.push(`<script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Create modal container
+            const modal = document.createElement("div");
+            modal.id = "pwa-modal";
+            modal.style.cssText = "position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.5); display: flex; justify-content: center; align-items: center; z-index: 1000;";
+
+            // Modal content
+            const modalContent = document.createElement("div");
+            modalContent.style.cssText = "background: white; padding: 20px; border-radius: 10px; text-align: center; width: 300px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);";
+            modalContent.innerHTML = \`
+                <h2>Install PWA</h2>
+                <p>Would you like to install this app as a PWA?</p>
+                <button id="install-pwa" style="margin: 10px; padding: 10px 20px; background: #007BFF; color: white; border: none; border-radius: 5px; cursor: pointer;">Install</button>
+                <button id="cancel-modal" style="margin: 10px; padding: 10px 20px; background: #CCCCCC; color: black; border: none; border-radius: 5px; cursor: pointer;">Cancel</button>
+            \`;
+
+            // Append modal content to modal
+            modal.appendChild(modalContent);
+            document.body.appendChild(modal);
+
+            // Install PWA logic
+            let deferredPrompt;
+            window.addEventListener("beforeinstallprompt", (e) => {
+                // Prevent the mini-infobar from appearing
+                e.preventDefault();
+                deferredPrompt = e;
+            });
+
+            const installButton = document.getElementById("install-pwa");
+            installButton.addEventListener("click", function() {
+                if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    deferredPrompt.userChoice.then((choiceResult) => {
+                        if (choiceResult.outcome === "accepted") {
+                            console.log("PWA installed");
+                        } else {
+                            console.log("PWA installation dismissed");
+                        }
+                        deferredPrompt = null;
+                    });
+                }
+                modal.style.display = "none";
+            });
+
+            // Cancel modal
+            const cancelButton = document.getElementById("cancel-modal");
+            cancelButton.addEventListener("click", function() {
+                modal.style.display = "none";
+            });
+        });
     </script>`);
     return head;
 }
