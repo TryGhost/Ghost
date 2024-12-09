@@ -1,8 +1,8 @@
-import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {CommentsEditorConfig, getEditorConfig} from './editor';
 import {Editor, useEditor as useTiptapEditor} from '@tiptap/react';
 import {formatRelativeTime} from './helpers';
 import {useAppContext} from '../AppContext';
+import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 
 /**
  * Execute a callback when a ref is set and unset.
@@ -26,23 +26,6 @@ export function useRefCallback<T>(setup: (element: T) => void, clear?: (element:
         ref.current = node;
     }, [setup, clear]);
     return [ref, setRef];
-}
-
-/**
- * Sames as useEffect, but ignores the first mounted call and the first update (so first 2 calls ignored)
- * @param {Same} fn
- * @param {*} inputs
-*/
-export function useSecondUpdate(fn: () => void, inputs: React.DependencyList) {
-    const didMountRef = useRef(0);
-
-    useEffect(() => {
-        if (didMountRef.current >= 2) {
-            return fn();
-        }
-        didMountRef.current += 1;
-    // We shouldn't listen for fn changes, so ignore exhaustive-deps
-    }, inputs);
 }
 
 export function usePopupOpen(type: string) {
