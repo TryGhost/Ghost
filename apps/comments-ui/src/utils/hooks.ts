@@ -1,6 +1,6 @@
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {CommentsEditorConfig, getEditorConfig} from './editor';
-import {Editor, EditorOptions, useEditor as useTiptapEditor} from '@tiptap/react';
+import {Editor, useEditor as useTiptapEditor} from '@tiptap/react';
 import {formatRelativeTime} from './helpers';
 import {useAppContext} from '../AppContext';
 
