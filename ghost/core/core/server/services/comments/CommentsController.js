@@ -51,6 +51,7 @@ module.exports = class CommentsController {
                 frame.options.filter = `post_id:${frame.options.post_id}`;
             }
         }
+
         return await this.service.getComments(frame.options);
     }
 
@@ -71,7 +72,16 @@ module.exports = class CommentsController {
                 frame.options.filter = `post_id:${frame.options.post_id}`;
             }
         }
+
         frame.options.isAdmin = true;
+        // so this route does not have the member context since it's cross domain whuch breaks
+        // in which case we need to get the member id from the params and then set it in the options
+        // we will have to do this for quite a couple of routes
+        if (frame.options.impersonate_member_id) {
+            frame.options.context = frame.options.context || {};
+            frame.options.context.member = frame.options.context.member || {};
+            frame.options.context.member.id = frame.options.impersonate_member_id;
+        }
         return await this.service.getAdminComments(frame.options);
     }
 

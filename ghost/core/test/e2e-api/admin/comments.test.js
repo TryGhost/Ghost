@@ -718,5 +718,32 @@ async function getMemberComments(url, commentsMatcher = [membersCommentMatcher])
                 });
             }
         });
+
+        if (enableCommentImprovements) {
+            describe('Logged in member likes via admin api', function () {
+                this.beforeEach(async function () {
+                    await membersApi.loginAs(fixtureManager.get('members', 1).email);
+                });
+                it('can get comment liked status by impersonating member', async function () {
+                    const post = fixtureManager.get('posts', 1);
+                    const comment = await dbFns.addComment({
+                        post_id: post.id,
+                        member_id: fixtureManager.get('members', 1).id
+                    });
+
+                    // Like the comment
+                    await membersApi
+                        .post(`/api/comments/${comment.get('id')}/like/`)
+                        .expectStatus(204)
+                        .matchHeaderSnapshot({
+                            etag: anyEtag
+                        })
+                        .expectEmptyBody();
+
+                    const res = await adminApi.get(`/comments/post/${post.id}/?impersonate_member_id=${fixtureManager.get('members', 1).id}`);
+                    res.body.comments[0].liked.should.eql(true);
+                });
+            });
+        }
     });
 });
