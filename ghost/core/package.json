@@ -184,7 +184,7 @@
     "express": "4.21.1",
     "express-brute": "1.0.1",
     "express-hbs": "2.5.0",
-    "express-jwt": "8.4.1",
+    "express-jwt": "8.5.0",
     "express-lazy-router": "1.0.6",
     "express-query-boolean": "2.0.0",
     "express-queue": "0.0.13",
