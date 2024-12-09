@@ -2,6 +2,7 @@ import AdminContextMenu from './AdminContextMenu';
 import AuthorContextMenu from './AuthorContextMenu';
 import NotAuthorContextMenu from './NotAuthorContextMenu';
 import {Comment, useAppContext, useLabs} from '../../../AppContext';
+import {getLastReply} from '../../../utils/helpers';
 import {useEffect, useRef} from 'react';
 
 type Props = {
@@ -10,13 +11,17 @@ type Props = {
     toggleEdit: () => void;
     isLastComment?: boolean;
 };
+
 const CommentContextMenu: React.FC<Props> = ({comment, close, toggleEdit, isLastComment}) => {
-    const {member, admin} = useAppContext();
+    const {member, admin, comments} = useAppContext();
     const isAuthor = member && comment.member?.uuid === member?.uuid;
     const isAdmin = !!admin;
     const element = useRef<HTMLDivElement>(null);
     const labs = useLabs();
-    
+
+    const isLastLoadedReply = getLastReply(comments[comments.length - 1])?.id === comment.id;
+    const isParentWithReplies = comment?.replies && comment.replies.length > 0;
+
     useEffect(() => {
         const listener = () => {
             close();
@@ -80,7 +85,7 @@ const CommentContextMenu: React.FC<Props> = ({comment, close, toggleEdit, isLast
     return (
         labs.commentImprovements ? (
             <div ref={element} className="relative" onClick={stopPropagation}>
-                <div className={`absolute z-10 min-w-min whitespace-nowrap rounded bg-white p-1 font-sans text-sm shadow-lg outline-0 sm:min-w-[80px] dark:bg-neutral-800 dark:text-white ${isLastComment ? 'bottom-full mb-6' : 'top-0'}`}>
+                <div className={`absolute z-10 min-w-min whitespace-nowrap rounded bg-white p-1 font-sans text-sm shadow-lg outline-0 sm:min-w-[80px] dark:bg-neutral-800 dark:text-white ${!isParentWithReplies && isLastComment && !isLastLoadedReply || isLastLoadedReply ? 'bottom-full mb-6' : 'top-0'}`} data-is-last-reply={isLastLoadedReply} data-testid='context-menu'>
                     {contextMenu}
                 </div>
             </div>
