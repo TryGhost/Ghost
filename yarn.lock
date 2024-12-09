@@ -17179,10 +17179,10 @@ express-hbs@2.5.0, express-hbs@^2.4.2:
   optionalDependencies:
     js-beautify "^1.13.11"
 
-express-jwt@8.5.0:
-  version "8.5.0"
-  resolved "https://registry.yarnpkg.com/express-jwt/-/express-jwt-8.5.0.tgz#1bd09ae604af2bab085be111faf49c9b470d2f43"
-  integrity sha512-Oxfu13dcddvMgxgmzJDq6vA7k8DaaYnxZcsVIZb6LHfIV2/YgOQHrruTH2q4xxqXEQVNkgU8CgPOSe7p/1DCFQ==
+express-jwt@8.5.1:
+  version "8.5.1"
+  resolved "https://registry.yarnpkg.com/express-jwt/-/express-jwt-8.5.1.tgz#e167bb9d96eb6e8cf5aba28707e5ca6e142bd7d3"
+  integrity sha512-Dv6QjDLpR2jmdb8M6XQXiCcpEom7mK8TOqnr0/TngDKsG2DHVkO8+XnVxkJVN7BuS1I3OrGw6N8j5DaaGgkDRQ==
   dependencies:
     "@types/jsonwebtoken" "^9"
     express-unless "^2.1.3"
