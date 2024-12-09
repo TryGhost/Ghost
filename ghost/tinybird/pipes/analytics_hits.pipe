@@ -1,4 +1,8 @@
-VERSION 1
+DESCRIPTION >
+    Parsed `page_hit` events, implementing `browser` and `device` detection logic.
+
+TOKEN "dashboard" READ
+TOKEN "stats page" READ
 
 NODE parsed_hits
 DESCRIPTION >
@@ -24,7 +28,7 @@ SQL >
     FROM analytics_events
     where action = 'page_hit'
 
-NODE analytics_hits_data
+NODE endpoint
 SQL >
     SELECT
         site_uuid,
@@ -63,30 +67,3 @@ SQL >
             else 'Unknown'
         END as browser
     FROM parsed_hits
-
-NODE analytics_pages_1
-DESCRIPTION >
-    Aggregate by pathname and calculate session and views
-
-SQL >
-    SELECT
-        site_uuid,
-        toDate(timestamp) AS date,
-        post_uuid,
-        post_type,
-        device,
-        browser,
-        location,
-        source,
-        pathname,
-        maxIf(
-            member_status,
-            member_status IN ('paid', 'free', 'undefined')
-        ) AS member_status,
-        uniqState(session_id) AS visits,
-        countState() AS pageviews
-    FROM analytics_hits
-        GROUP BY date, device, browser, location, source, pathname, post_uuid, post_type, site_uuid
-
-TYPE MATERIALIZED
-DATASOURCE analytics_pages_mv__v1
