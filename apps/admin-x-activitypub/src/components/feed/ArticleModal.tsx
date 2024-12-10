@@ -164,6 +164,13 @@ const FeedItemDivider: React.FC = () => (
 const FONT_SIZES = ['14px', '17px', '19px', '21px', '24px'] as const;
 const LINE_HEIGHTS = ['1.3', '1.4', '1.5', '1.6', '1.7', '1.8'] as const;
 
+// Add constants for localStorage keys
+const STORAGE_KEYS = {
+    FONT_SIZE: 'ghost-ap-font-size',
+    LINE_HEIGHT: 'ghost-ap-line-height',
+    FONT_FAMILY: 'ghost-ap-font-family'
+} as const;
+
 const ArticleModal: React.FC<ArticleModalProps> = ({
     activityId,
     object,
@@ -275,9 +282,37 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
 
     const iframeRef = useRef<HTMLIFrameElement>(null);
 
-    const [currentFontSizeIndex, setCurrentFontSizeIndex] = useState(1); // Default to 17px
-    const [currentLineHeightIndex, setCurrentLineHeightIndex] = useState(3); // Default to 1.6
-    const [fontFamily, setFontFamily] = useState<SelectOption>({value: 'sans-serif', label: 'Clean sans-serif'});
+    // Initialize state with values from localStorage, falling back to defaults
+    const [currentFontSizeIndex, setCurrentFontSizeIndex] = useState(() => {
+        const saved = localStorage.getItem(STORAGE_KEYS.FONT_SIZE);
+        return saved ? parseInt(saved) : 1;
+    });
+
+    const [currentLineHeightIndex, setCurrentLineHeightIndex] = useState(() => {
+        const saved = localStorage.getItem(STORAGE_KEYS.LINE_HEIGHT);
+        return saved ? parseInt(saved) : 3;
+    });
+
+    const [fontFamily, setFontFamily] = useState<SelectOption>(() => {
+        const saved = localStorage.getItem(STORAGE_KEYS.FONT_FAMILY);
+        return saved ? JSON.parse(saved) : {
+            value: 'sans-serif',
+            label: 'Clean sans-serif'
+        };
+    });
+
+    // Update localStorage when values change
+    useEffect(() => {
+        localStorage.setItem(STORAGE_KEYS.FONT_SIZE, currentFontSizeIndex.toString());
+    }, [currentFontSizeIndex]);
+
+    useEffect(() => {
+        localStorage.setItem(STORAGE_KEYS.LINE_HEIGHT, currentLineHeightIndex.toString());
+    }, [currentLineHeightIndex]);
+
+    useEffect(() => {
+        localStorage.setItem(STORAGE_KEYS.FONT_FAMILY, JSON.stringify(fontFamily));
+    }, [fontFamily]);
 
     const increaseFontSize = () => {
         setCurrentFontSizeIndex(prevIndex => Math.min(prevIndex + 1, FONT_SIZES.length - 1));
@@ -344,33 +379,36 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                         <div className='col-[3/4] flex items-center justify-end space-x-6'>
                             {modalSize === MODAL_SIZE_LG && object.type === 'Article' && <Popover position='end' trigger={ <Button className='transition-color flex h-10 w-10 items-center justify-center rounded-full bg-white hover:bg-grey-100' icon='typography' size='sm' unstyled onClick={() => {}}/>
                             }>
-                                <div className='flex w-[220px] flex-col gap-3 p-5'>
+                                <div className='flex min-w-[240px] flex-col gap-3 p-5'>
                                     <Select
                                         options={[
                                             {value: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;', label: 'Clean sans-serif'},
                                             {value: 'Georgia, Times, serif', label: 'Elegant serif'}
                                         ]}
+                                        title='Typeface'
                                         value={fontFamily}
                                         onSelect={option => setFontFamily(option || {value: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;', label: 'Clean sans-serif'})}
                                     />
                                     <div className='flex items-center justify-between'>
-                                        <span className='font-medium'>Font size</span>
+                                        <span className='text-sm font-medium'>Font size</span>
                                         <div className='flex items-center gap-2'>
                                             <Button
-                                                className={`transition-color flex h-10 w-10 items-center justify-center rounded-full bg-white ${currentFontSizeIndex === 0 ? 'opacity-50 hover:bg-white' : 'hover:bg-grey-100'}`}
+                                                className={`transition-color flex h-8 w-8 items-center justify-center rounded-full bg-white ${currentFontSizeIndex === 0 ? 'opacity-20 hover:bg-white' : 'hover:bg-grey-100'}`}
                                                 disabled={currentFontSizeIndex === 0}
                                                 hideLabel={true}
                                                 icon='substract'
+                                                iconSize='xs'
                                                 label='Decrease font size'
                                                 unstyled={true}
                                                 onClick={decreaseFontSize}
                                             />
-                                            {/* <span className='text-grey-700'>{fontSizes[currentFontSizeIndex]}</span> */}
+                                            {/* <span className='text-grey-700'>{FONT_SIZES[currentFontSizeIndex]}</span> */}
                                             <Button
-                                                className={`transition-color flex h-10 w-10 items-center justify-center rounded-full bg-white hover:bg-grey-100 ${currentFontSizeIndex === FONT_SIZES.length - 1 ? 'opacity-50 hover:bg-white' : 'hover:bg-grey-100'}`}
+                                                className={`transition-color flex h-8 w-8 items-center justify-center rounded-full bg-white hover:bg-grey-100 ${currentFontSizeIndex === FONT_SIZES.length - 1 ? 'opacity-20 hover:bg-white' : 'hover:bg-grey-100'}`}
                                                 disabled={currentFontSizeIndex === FONT_SIZES.length - 1}
                                                 hideLabel={true}
                                                 icon='add'
+                                                iconSize='xs'
                                                 label='Increase font size'
                                                 unstyled={true}
                                                 onClick={increaseFontSize}
@@ -378,23 +416,25 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                         </div>
                                     </div>
                                     <div className='flex items-center justify-between'>
-                                        <span className='font-medium'>Line spacing</span>
+                                        <span className='text-sm font-medium'>Line spacing</span>
                                         <div className='flex items-center gap-2'>
                                             <Button
-                                                className={`transition-color flex h-10 w-10 items-center justify-center rounded-full bg-white hover:bg-grey-100 ${currentLineHeightIndex === 0 ? 'opacity-50 hover:bg-white' : 'hover:bg-grey-100'}`}
+                                                className={`transition-color flex h-8 w-8 items-center justify-center rounded-full bg-white hover:bg-grey-100 ${currentLineHeightIndex === 0 ? 'opacity-20 hover:bg-white' : 'hover:bg-grey-100'}`}
                                                 disabled={currentLineHeightIndex === 0}
                                                 hideLabel={true}
                                                 icon='substract'
+                                                iconSize='xs'
                                                 label='Decrease line spacing'
                                                 unstyled={true}
                                                 onClick={decreaseLineHeight}
                                             />
-                                            {/* <span className='text-grey-700'>{lineHeights[currentLineHeightIndex]}</span> */}
+                                            {/* <span className='text-grey-700'>{LINE_HEIGHTS[currentLineHeightIndex]}</span> */}
                                             <Button
-                                                className={`transition-color flex h-10 w-10 items-center justify-center rounded-full bg-white hover:bg-grey-100 ${currentLineHeightIndex === LINE_HEIGHTS.length - 1 ? 'opacity-50 hover:bg-white' : 'hover:bg-grey-100'}`}
+                                                className={`transition-color flex h-8 w-8 items-center justify-center rounded-full bg-white hover:bg-grey-100 ${currentLineHeightIndex === LINE_HEIGHTS.length - 1 ? 'opacity-20 hover:bg-white' : 'hover:bg-grey-100'}`}
                                                 disabled={currentLineHeightIndex === LINE_HEIGHTS.length - 1}
                                                 hideLabel={true}
                                                 icon='add'
+                                                iconSize='xs'
                                                 label='Increase line spacing'
                                                 unstyled={true}
                                                 onClick={increaseLineHeight}
