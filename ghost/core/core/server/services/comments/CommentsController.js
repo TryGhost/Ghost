@@ -82,7 +82,7 @@ module.exports = class CommentsController {
         }
 
         frame.options.isAdmin = true;
-        // Admin routes lack member context due to cross-domain constraints (CORS), which prevents
+        // Admin routes in Comments-UI lack member context due to cross-domain constraints (CORS), which prevents
         // credentials from being passed. This causes issues like the inability to determine if a
         // logged-in admin (acting on behalf of a member) has already liked a comment.
         // To resolve this, we retrieve the `impersonate_member_uuid` from the request params and
