@@ -112,9 +112,11 @@ class LinkRedirectsService {
                 return next();
             }
 
-            if (this.#config?.get('services:jobs:queue:enabled')) {
+            if (this.#config?.get('services:jobs:queue:enabled') && this.#config?.get('backgroundJobs:clickTracking')) {
                 const uuid = url.searchParams.get('m');
-                await this.#submitHandleRedirectJob({uuid, linkId: link.link_id, timestamp: Date.now()});
+                if (uuid) {
+                    await this.#submitHandleRedirectJob({uuid, linkId: link.link_id, timestamp: Date.now()});
+                }
             } else {
                 const event = RedirectEvent.create({
                     url,
