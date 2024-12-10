@@ -1,4 +1,8 @@
+const crypto = require('crypto');
+const os = require('os');
+const path = require('path');
 const should = require('should');
+
 const configUtils = require('../../../utils/configUtils');
 
 describe('vhost utils', function () {
@@ -50,5 +54,22 @@ describe('vhost utils', function () {
             configUtils.config.getBackendMountPath().should.eql(/.*/);
             configUtils.config.getFrontendMountPath().should.eql(/.*/);
         });
+    });
+});
+
+describe('getContentPath', function () {
+    it('should return the correct path for type: public', function () {
+        const tmpdir = os.tmpdir();
+        const siteUrl = configUtils.config.getSiteUrl();
+        const siteHash = crypto.createHash('md5')
+            .update(siteUrl)
+            .digest('hex');
+
+        const expectedPath = path.join(tmpdir, `ghost_${siteHash}_${process.pid}`, 'public/');
+
+        configUtils.config.getContentPath('public').should.eql(expectedPath);
+
+        // Call again to ensure the path is deterministic
+        configUtils.config.getContentPath('public').should.eql(expectedPath);
     });
 });
