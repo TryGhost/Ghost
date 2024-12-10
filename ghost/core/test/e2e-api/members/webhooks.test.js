@@ -1802,7 +1802,7 @@ describe('Members API', function () {
     });
 
     // Test if the session metadata is processed correctly
-    describe.only('Member attribution', function () {
+    describe('Member attribution', function () {
         before(async function () {
             const agents = await agentProvider.getAgentsForMembers();
             membersAgent = agents.membersAgent;
@@ -2362,10 +2362,10 @@ describe('Members API', function () {
 
         // Activity feed
         // This test is here because creating subscriptions is a PITA now, and we would need to essentially duplicate all above tests elsewhere
-        it.skip('Returns subscription created attributions in activity feed', async function () {
+        it('Returns subscription created attributions in activity feed', async function () {
             // Check activity feed
             await adminAgent
-                .get(`/members/events/?filter=type:subscription_event`)
+                .get(`/members/events/?filter=type:subscription_event&limit=100`)
                 .expectStatus(200)
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
@@ -2373,7 +2373,8 @@ describe('Members API', function () {
                 })
                 .matchBodySnapshot({
                     events: new Array(subscriptionAttributions.length).fill({
-                        data: anyObject
+                        data: anyObject,
+                        type: 'subscription_event'
                     })
                 })
                 .expect(({body}) => {
