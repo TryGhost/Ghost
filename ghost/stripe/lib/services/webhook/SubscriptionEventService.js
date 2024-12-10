@@ -19,9 +19,9 @@ module.exports = class SubscriptionEventService {
             customer_id: subscription.customer
         });
 
-        // During checkout, Stripe sends customer.subscription.created and customer.subscription.updated events before checkout.session.completed
-        // We use the checkout.session.completed event to create a member and the related subscription in the database, as checkout.session.completed contains additional information on the subscription (e.g. attribution data)
-        // Therefore, we ignore customer.subscription.* events until a member and its subscription are present in the database
+        // After checkout, Stripe sends `customer.subscription.created`, `customer.subscription.updated` and `checkout.session.completed` events
+        // We want to create a member and its related subscription in the database based on the `checkout.session.completed` event as it contains additional information on the subscription (e.g. attribution data)
+        // Therefore, if the member or the subscription does not exist in the database yet, we ignore `customer.subscription.*` events, to avoid creating subscriptions with missing data
         if (!member) {
             logging.info(`Ignoring customer.subscription.* event as member does not exist`);
             return;
