@@ -59,11 +59,11 @@ export function setupAdminAPI({adminUrl}: {adminUrl: string}) {
         async hideComment(id: string) {
             return await callApi('hideComment', {id});
         },
-        async showComment(id: string) {
+        async showComment({id} : {id: string}) {
             return await callApi('showComment', {id});
         },
 
-        async browse({page, postId, order}: {page: number, postId: string, order?: string}) {
+        async browse({page, postId, order, memberUuid}: {page: number, postId: string, order?: string, memberUuid?: string}) {
             let filter = null;
             if (firstCommentCreatedAt && !order) {
                 filter = `created_at:<=${firstCommentCreatedAt}`;
@@ -80,6 +80,10 @@ export function setupAdminAPI({adminUrl}: {adminUrl: string}) {
                 params.set('order', order);
             }
 
+            if (memberUuid) {
+                params.set('impersonate_member_uuid', memberUuid);
+            }
+
             const response = await callApi('browseComments', {postId, params: params.toString()});
             if (!firstCommentCreatedAt) {
                 const firstComment = response.comments[0];
@@ -90,7 +94,7 @@ export function setupAdminAPI({adminUrl}: {adminUrl: string}) {
 
             return response;
         },
-        async replies({commentId, afterReplyId, limit}: {commentId: string; afterReplyId: string; limit?: number | 'all'}) {
+        async replies({commentId, afterReplyId, limit, memberUuid}: {commentId: string; afterReplyId: string; limit?: number | 'all', memberUuid?: string}) {
             const filter = `id:>'${afterReplyId}'`;
 
             const params = new URLSearchParams();
@@ -103,14 +107,26 @@ export function setupAdminAPI({adminUrl}: {adminUrl: string}) {
                 params.set('filter', filter);
             }
 
+            if (memberUuid) {
+                params.set('impersonate_member_uuid', memberUuid);
+            }
+
             const response = await callApi('getReplies', {commentId, params: params.toString()});
 
             return response;
         },
 
-        async read({commentId}: {commentId: string}) {
-            const response = await callApi('readComment', {commentId});
-            return response;
+        async read({commentId, memberUuid}: {commentId: string, memberUuid?: string}) {
+            const params = new URLSearchParams();
+
+            if (memberUuid) {
+                params.set('impersonate_member_uuid', memberUuid);
+            }
+        
+            return await callApi('readComment', {
+                commentId,
+                ...(params.toString() && {params: params.toString()})
+            });
         }
     };
 
