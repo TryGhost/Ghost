@@ -204,7 +204,7 @@ test.describe('Admin moderation', async () => {
             expect(url.searchParams.get('impersonate_member_uuid')).toBe('12345');
         });
 
-        test('member uuid gets set when getting reading a comment', async ({page}) => {
+        test('member uuid gets set when reading a comment (after unhiding)', async ({page}) => {
             mockedApi.addComment({html: '<p>This is comment 1</p>'});
             mockedApi.addComment({html: '<p>This is comment 2</p>', status: 'hidden'});
             const adminReadSpy = sinon.spy(mockedApi.adminRequestHandlers, 'getOrUpdateComment');
@@ -215,10 +215,11 @@ test.describe('Admin moderation', async () => {
             const moreButtons = comments.nth(1).getByTestId('more-button');
             await moreButtons.click();
             await moreButtons.getByTestId('show-button').click();
+            await expect(comments.nth(1)).not.toContainText('Hidden for members');
 
-            expect(adminReadSpy.called).toBe(true);
             const lastCall = adminReadSpy.lastCall.args[0];
             const url = new URL(lastCall.request().url());
+
             expect(url.searchParams.get('impersonate_member_uuid')).toBe('12345');
         });
 

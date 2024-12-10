@@ -494,7 +494,6 @@ export class MockedApi {
                 const commentId = url.pathname.split('/').reverse()[1];
                 const payload = JSON.parse(route.request().postData());
                 const comment = findCommentById(this.comments, commentId);
-
                 if (!comment) {
                     await route.fulfill({status: 404});
                     return;
