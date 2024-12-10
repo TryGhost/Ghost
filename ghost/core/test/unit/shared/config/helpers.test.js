@@ -1,4 +1,8 @@
+const os = require('os');
+const path = require('path');
 const should = require('should');
+const sinon = require('sinon');
+
 const configUtils = require('../../../utils/configUtils');
 
 describe('vhost utils', function () {
@@ -50,5 +54,30 @@ describe('vhost utils', function () {
             configUtils.config.getBackendMountPath().should.eql(/.*/);
             configUtils.config.getFrontendMountPath().should.eql(/.*/);
         });
+    });
+});
+
+describe('getContentPath', function () {
+    let tmpdirStub;
+
+    beforeEach(function () {
+        tmpdirStub = sinon.stub(os, 'tmpdir');
+    });
+
+    afterEach(function () {
+        tmpdirStub.restore();
+    });
+
+    it('should return the correct path for type: public', function () {
+        const dir = '/some-tmp-dir';
+
+        tmpdirStub.returns(dir);
+
+        const expectedPath = path.join(dir, `ghost_${process.pid}`, 'public/');
+
+        configUtils.config.getContentPath('public').should.eql(expectedPath);
+
+        // Ensure the path is deterministic
+        configUtils.config.getContentPath('public').should.eql(expectedPath);
     });
 });

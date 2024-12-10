@@ -1,3 +1,4 @@
+const os = require('os');
 const path = require('path');
 const {URL} = require('url');
 
@@ -65,6 +66,13 @@ const isPrivacyDisabled = function isPrivacyDisabled(privacyFlag) {
 };
 
 /**
+ * @returns {string} - unique tmp dir path for the current process
+ */
+function getUniqTmpDirPath() {
+    return path.join(os.tmpdir(), `ghost_${process.pid}`);
+}
+
+/**
  * @callback getContentPathFn
  * @param {string} type - the type of context you want the path for
  * @returns {string}
@@ -88,7 +96,7 @@ const getContentPath = function getContentPath(type) {
     case 'settings':
         return path.join(this.get('paths:contentPath'), 'settings/');
     case 'public':
-        return path.join(this.get('paths:contentPath'), 'public/');
+        return path.join(getUniqTmpDirPath(), 'public/');
     default:
         // new Error is allowed here, as we do not want config to depend on @tryghost/error
         // @TODO: revisit this decision when @tryghost/error is no longer dependent on all of ghost-ignition
