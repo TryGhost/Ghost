@@ -3,9 +3,9 @@
 import Component from '@glimmer/component';
 import React from 'react';
 import {DonutChart, useQuery} from '@tinybirdco/charts';
+import {TB_VERSION, getStatsParams, statsStaticColors} from 'ghost-admin/utils/stats';
 import {action} from '@ember/object';
-import {formatNumber} from '../../../helpers/format-number';
-import {getStatsParams, statsStaticColors} from 'ghost-admin/utils/stats';
+import {formatNumber} from 'ghost-admin/helpers/format-number';
 import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 
@@ -42,12 +42,12 @@ export default class TechnicalComponent extends Component {
         let tableHead;
         switch (selected) {
         case 'browsers':
-            endpoint = `${this.config.stats.endpoint}/v0/pipes/top_browsers.json`;
+            endpoint = `${this.config.stats.endpoint}/v0/pipes/top_browsers__v${TB_VERSION}.json`;
             indexBy = 'browser';
             tableHead = 'Browser';
             break;
         default:
-            endpoint = `${this.config.stats.endpoint}/v0/pipes/top_devices.json`;
+            endpoint = `${this.config.stats.endpoint}/v0/pipes/top_devices__v${TB_VERSION}.json`;
             indexBy = 'device';
             tableHead = 'Device';
         }
