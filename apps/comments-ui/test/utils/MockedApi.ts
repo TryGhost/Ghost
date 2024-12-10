@@ -103,8 +103,11 @@ export class MockedApi {
     }
 
     commentsCounts() {
+        // get total number of published comments and replies in this.comments
+        const count = flattenComments(this.comments).filter(c => c.status === 'published').length;
+
         return {
-            [this.postId]: this.comments.length
+            [this.postId]: count
         };
     }
 
