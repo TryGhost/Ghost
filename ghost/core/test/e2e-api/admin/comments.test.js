@@ -718,5 +718,55 @@ async function getMemberComments(url, commentsMatcher = [membersCommentMatcher])
                 });
             }
         });
+
+        if (enableCommentImprovements) {
+            describe('Logged in member gets own likes via admin api', function () {
+                let comment;
+                let post;
+                this.beforeEach(async function () {
+                    post = fixtureManager.get('posts', 1);
+                    comment = await dbFns.addComment({
+                        post_id: post.id,
+                        member_id: fixtureManager.get('members', 1).id
+                    });
+                    await membersApi.loginAs(fixtureManager.get('members', 1).email);
+
+                    await membersApi
+                        .post(`/api/comments/${comment.get('id')}/like/`)
+                        .expectStatus(204)
+                        .matchHeaderSnapshot({
+                            etag: anyEtag
+                        })
+                        .expectEmptyBody();
+                });
+                it('can get comment liked status by impersonating member via admin browse route', async function () {
+                    // Like the comment
+                    const res = await adminApi.get(`/comments/post/${post.id}/?impersonate_member_uuid=${fixtureManager.get('members', 1).uuid}`);
+                    res.body.comments[0].liked.should.eql(true);
+                });
+
+                it('can get comment liked status by impersonating member via admin get by comment id read route', async function () {
+                    const res = await adminApi.get(`/comments/${comment.get('id')}/?impersonate_member_uuid=${fixtureManager.get('members', 1).uuid}`);
+                    res.body.comments[0].liked.should.eql(true);
+                });
+
+                it('can get comment liked status by impersonating member via admin get by comment replies route', async function () {
+                    const {parent, replies} = await dbFns.addCommentWithReplies({
+                        member_id: fixtureManager.get('members', 1).id,
+                        replies: [{
+                            member_id: fixtureManager.get('members', 1).id
+                        }]
+                    });
+
+                    await membersApi
+                        .post(`/api/comments/${replies[0].id}/like/`)
+                        .expectStatus(204)
+                        .expectEmptyBody();
+
+                    const res = await adminApi.get(`/comments/${parent.get('id')}/replies/?impersonate_member_uuid=${fixtureManager.get('members', 1).uuid}`);
+                    res.body.comments[0].liked.should.eql(true);
+                });
+            });
+        }
     });
 });

@@ -4,7 +4,7 @@ import AllStatsModal from '../modal-stats-all';
 import Component from '@glimmer/component';
 import React from 'react';
 import {BarList, useQuery} from '@tinybirdco/charts';
-import {CAMPAIGN_OPTIONS, barListColor, getStatsParams} from 'ghost-admin/utils/stats';
+import {CAMPAIGN_OPTIONS, TB_VERSION, barListColor, getStatsParams} from 'ghost-admin/utils/stats';
 import {action} from '@ember/object';
 import {formatNumber} from 'ghost-admin/helpers/format-number';
 import {inject} from 'ghost-admin/decorators/inject';
@@ -55,7 +55,7 @@ export default class TopSources extends Component {
 
     ReactComponent = (props) => {
         const {data, meta, error, loading} = useQuery({
-            endpoint: `${this.config.stats.endpoint}/v0/pipes/top_sources.json`,
+            endpoint: `${this.config.stats.endpoint}/v0/pipes/top_sources__v${TB_VERSION}.json`,
             token: this.config.stats.token,
             params: getStatsParams(
                 this.config,
