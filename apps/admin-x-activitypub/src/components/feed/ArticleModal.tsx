@@ -645,6 +645,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                     </div>
                 </div>
             </div>
+            <div className='sticky bottom-0 left-0 z-50 w-fit p-8 text-grey-600'>{getReadingTime(object.content)}</div>
         </Modal>
     );
 };
