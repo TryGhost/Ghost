@@ -2,6 +2,7 @@ const {LinkClick} = require('@tryghost/link-tracking');
 const ObjectID = require('bson-objectid').default;
 const sentry = require('../../../shared/sentry');
 const config = require('../../../shared/config');
+const _ = require('lodash');
 
 module.exports = class LinkClickRepository {
     /** @type {Object} */
@@ -28,6 +29,11 @@ module.exports = class LinkClickRepository {
         this.#Member = deps.Member;
         this.#MemberLinkClickEvent = deps.MemberLinkClickEvent;
         this.#DomainEvents = deps.DomainEvents;
+
+        // Memoize the findOne function
+        this.memoizedFindOne = _.memoize(async (uuid) => {
+            return await this.#Member.findOne({uuid});
+        });
     }
 
     async getAll(options) {
@@ -51,8 +57,14 @@ module.exports = class LinkClickRepository {
      * @returns {Promise<void>}
      */
     async save(linkClick) {
-        // Convert uuid to id
-        const member = await this.#Member.findOne({uuid: linkClick.member_uuid});
+        let member;
+
+        if (config && config.get('linkClickTrackingCacheMemberUuid')) {
+            member = await this.memoizedFindOne(linkClick.member_uuid);
+        } else {
+            member = await this.#Member.findOne({uuid: linkClick.member_uuid});
+        }
+
         if (!member) {
             if (config.get('bulkEmail:captureLinkClickBadMemberUuid')) {
                 sentry.captureMessage('LinkClickTrackingService > Member not found', {extra: {member_uuid: linkClick.member_uuid}});
