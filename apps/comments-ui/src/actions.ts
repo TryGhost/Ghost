@@ -279,34 +279,60 @@ async function deleteComment({state, api, data: comment}: {state: EditableAppCon
         }
     });
 
-    return {
-        comments: state.comments.map((c) => {
-            const replies = c.replies.map((r) => {
-                if (r.id === comment.id) {
+    if (state.labs.commentImprovements) {
+        return {
+            comments: state.comments.map((c) => {
+                // If the comment has replies we want to keep it so the replies are
+                // still visible, but mark the comment as deleted. Otherwise remove it.
+                if (c.id === comment.id) {
+                    if (c.replies.length > 0) {
+                        return {
+                            ...c,
+                            status: 'deleted'
+                        };
+                    } else {
+                        return null; // Will be filtered out later
+                    }
+                }
+
+                const updatedReplies = c.replies.filter(r => r.id !== comment.id);
+                return {
+                    ...c,
+                    replies: updatedReplies
+                };
+            }).filter(Boolean),
+            commentCount: state.commentCount - 1
+        };
+    } else {
+        return {
+            comments: state.comments.map((c) => {
+                const replies = c.replies.map((r) => {
+                    if (r.id === comment.id) {
+                        return {
+                            ...r,
+                            status: 'deleted'
+                        };
+                    }
+
+                    return r;
+                });
+
+                if (c.id === comment.id) {
                     return {
-                        ...r,
-                        status: 'deleted'
+                        ...c,
+                        status: 'deleted',
+                        replies
                     };
                 }
 
-                return r;
-            });
-
-            if (c.id === comment.id) {
                 return {
                     ...c,
-                    status: 'deleted',
                     replies
                 };
-            }
-
-            return {
-                ...c,
-                replies
-            };
-        }),
-        commentCount: state.commentCount - 1
-    };
+            }),
+            commentCount: state.commentCount - 1
+        };
+    }
 }
 
 async function editComment({state, api, data: {comment, parent}}: {state: EditableAppContext, api: GhostApi, data: {comment: Partial<Comment> & {id: string}, parent?: Comment}}) {
