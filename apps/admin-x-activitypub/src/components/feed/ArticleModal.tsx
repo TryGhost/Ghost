@@ -15,6 +15,7 @@ import {useThreadForUser} from '../../hooks/useActivityPubQueries';
 
 import APAvatar from '../global/APAvatar';
 import APReplyBox from '../global/APReplyBox';
+import getReadingTime from '../../utils/get-reading-time';
 
 interface ArticleModalProps {
     activityId: string;
@@ -32,10 +33,23 @@ interface ArticleModalProps {
     }[];
 }
 
-const ArticleBody: React.FC<{heading: string, image: string|undefined, excerpt: string|undefined, html: string, fontSize: string, lineHeight: string, fontFamily: string}> = ({heading, image, excerpt, html, fontSize, lineHeight, fontFamily}) => {
+interface IframeWindow extends Window {
+    resizeIframe?: () => void;
+}
+
+const ArticleBody: React.FC<{heading: string, image: string|undefined, excerpt: string|undefined, html: string, fontSize: string, lineHeight: string, fontFamily: SelectOption}> = ({
+    heading,
+    image,
+    excerpt,
+    html,
+    fontSize,
+    lineHeight,
+    fontFamily
+}) => {
     const site = useBrowseSite();
     const siteData = site.data?.site;
     const iframeRef = useRef<HTMLIFrameElement>(null);
+    const [isLoading, setIsLoading] = useState(true);
     const [iframeHeight, setIframeHeight] = useState('0px');
 
     const cssContent = articleBodyStyles(siteData?.url.replace(/\/$/, ''));
@@ -48,7 +62,7 @@ const ArticleBody: React.FC<{heading: string, image: string|undefined, excerpt: 
                 :root {
                     --gh-content-font-size: ${fontSize};
                     --gh-content-line-height: ${lineHeight};
-                    --gh-content-font-family: ${fontFamily};
+                    --gh-content-font-family: ${fontFamily.value};
                 }
                 body {
                     margin: 0;
@@ -60,11 +74,21 @@ const ArticleBody: React.FC<{heading: string, image: string|undefined, excerpt: 
                 let isFullyLoaded = false;
 
                 function resizeIframe() {
+                    // Temporarily set height to a small value
+                    document.body.style.height = '1px';
+                    document.documentElement.style.height = '1px';
+
+                    // Force a reflow
+                    document.body.offsetHeight;
+
                     const finalHeight = Math.max(
                         document.body.scrollHeight,
                         document.body.offsetHeight,
                         document.documentElement.scrollHeight
                     );
+
+                    console.log('Final calculated height:', finalHeight);
+
                     window.parent.postMessage({
                         type: 'resize',
                         height: finalHeight,
@@ -99,6 +123,15 @@ const ArticleBody: React.FC<{heading: string, image: string|undefined, excerpt: 
                 window.addEventListener('load', resizeIframe);
                 window.addEventListener('resize', resizeIframe);
                 new MutationObserver(resizeIframe).observe(document.body, { subtree: true, childList: true });
+
+                // Listen for custom event to trigger resize
+                window.addEventListener('message', (event) => {
+                    console.log('Received message:', event.data); // Debug log
+                    if (event.data.type === 'triggerResize') {
+                        console.log('Triggering resize'); // Debug log
+                        resizeIframe();
+                    }
+                });
             </script>
         </head>
         <body>
@@ -122,37 +155,89 @@ const ArticleBody: React.FC<{heading: string, image: string|undefined, excerpt: 
 
     useEffect(() => {
         const iframe = iframeRef.current;
-        if (iframe) {
-            iframe.srcdoc = htmlContent;
-
-            const handleMessage = (event: MessageEvent) => {
-                if (event.data.type === 'resize') {
-                    setIframeHeight(`${event.data.height}px`);
-                    iframe.style.height = `${event.data.height}px`;
-                }
-            };
-
-            window.addEventListener('message', handleMessage);
-
-            return () => {
-                window.removeEventListener('message', handleMessage);
-            };
+        if (!iframe) {
+            return;
         }
+
+        // Set initial content only once
+        if (!iframe.srcdoc) {
+            iframe.srcdoc = htmlContent;
+        }
+
+        const handleMessage = (event: MessageEvent) => {
+            if (event.data.type === 'resize') {
+                setIframeHeight(`${event.data.height}px`);
+                iframe.style.height = `${event.data.height}px`;
+
+                if (event.data.isLoaded) {
+                    setIsLoading(false);
+                }
+            }
+        };
+
+        window.addEventListener('message', handleMessage);
+
+        return () => {
+            window.removeEventListener('message', handleMessage);
+        };
     }, [htmlContent]);
+
+    // Separate effect for style updates
+    useEffect(() => {
+        const iframe = iframeRef.current;
+        if (!iframe) {
+            return;
+        }
+
+        const iframeDocument = iframe.contentDocument || iframe.contentWindow?.document;
+        if (!iframeDocument) {
+            return;
+        }
+
+        const root = iframeDocument.documentElement;
+        root.style.setProperty('--gh-content-font-size', fontSize);
+        root.style.setProperty('--gh-content-line-height', lineHeight);
+        root.style.setProperty('--gh-content-font-family', fontFamily.value);
+
+        // Give the iframe a moment to initialize its functions
+        setTimeout(() => {
+            try {
+                const iframeWindow = iframe.contentWindow as IframeWindow;
+                if (iframeWindow && typeof iframeWindow.resizeIframe === 'function') {
+                    iframeWindow.resizeIframe();
+                } else {
+                    // Fallback: trigger a resize event
+                    const resizeEvent = new Event('resize');
+                    iframeDocument.dispatchEvent(resizeEvent);
+                }
+            } catch (e) {
+                console.error('Failed to trigger resize:', e);
+            }
+        }, 100);
+    }, [fontSize, lineHeight, fontFamily]);
 
     return (
         <div className='w-full pb-6'>
-            <iframe
-                ref={iframeRef}
-                id='gh-ap-article-iframe'
-                style={{
-                    width: '100%',
-                    border: 'none',
-                    height: iframeHeight,
-                    overflow: 'hidden'
-                }}
-                title='Embedded Content'
-            />
+            <div className='relative'>
+                {isLoading && (
+                    <div className='absolute inset-0 flex items-center justify-center bg-white/60'>
+                        <LoadingIndicator />
+                    </div>
+                )}
+                <iframe
+                    ref={iframeRef}
+                    id='gh-ap-article-iframe'
+                    style={{
+                        width: '100%',
+                        border: 'none',
+                        height: iframeHeight,
+                        overflow: 'hidden',
+                        opacity: isLoading ? 0 : 1,
+                        transition: 'opacity 0.2s ease-in-out'
+                    }}
+                    title='Embedded Content'
+                />
+            </div>
         </div>
     );
 };
@@ -352,6 +437,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
             footer={<></>}
             height={'full'}
             padding={false}
+            scrolling={true}
             size='bleed'
             width={modalSize === MODAL_SIZE_LG ? 'toSidebar' : modalSize}
         >
@@ -379,17 +465,21 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                         <div className='col-[3/4] flex items-center justify-end space-x-6'>
                             {modalSize === MODAL_SIZE_LG && object.type === 'Article' && <Popover position='end' trigger={ <Button className='transition-color flex h-10 w-10 items-center justify-center rounded-full bg-white hover:bg-grey-100' icon='typography' size='sm' unstyled onClick={() => {}}/>
                             }>
-                                <div className='flex min-w-[240px] flex-col gap-3 p-5'>
+                                <div className='flex min-w-[240px] flex-col p-5'>
                                     <Select
+                                        className='mb-3'
                                         options={[
-                                            {value: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;', label: 'Clean sans-serif'},
+                                            {value: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif', label: 'Clean sans-serif'},
                                             {value: 'Georgia, Times, serif', label: 'Elegant serif'}
                                         ]}
                                         title='Typeface'
                                         value={fontFamily}
-                                        onSelect={option => setFontFamily(option || {value: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;', label: 'Clean sans-serif'})}
+                                        onSelect={option => setFontFamily(option || {
+                                            value: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif',
+                                            label: 'Clean sans-serif'
+                                        })}
                                     />
-                                    <div className='flex items-center justify-between'>
+                                    <div className='mb-2 flex items-center justify-between'>
                                         <span className='text-sm font-medium'>Font size</span>
                                         <div className='flex items-center gap-2'>
                                             <Button
@@ -447,7 +537,6 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                         </div>
                     </div>
                 </div>
-
                 <div className='grow overflow-y-auto'>
                     <div className='mx-auto max-w-[644px] px-8 pb-10 pt-5'>
                         {activityThreadParents.map((item) => {
@@ -492,7 +581,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                             <div className='border-b border-grey-200 pb-8'>
                                 <ArticleBody
                                     excerpt={object?.preview?.content}
-                                    fontFamily={fontFamily.value}
+                                    fontFamily={fontFamily}
                                     fontSize={FONT_SIZES[currentFontSizeIndex]}
                                     heading={object.name}
                                     html={object.content}
