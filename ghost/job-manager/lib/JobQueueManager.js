@@ -134,7 +134,6 @@ class JobQueueManager {
      */
     emitEvents(events) {
         events.forEach((e) => {
-            console.log('emitting event', e);
             this.eventEmitter.emit(e.name, e.data);
         });
     }
@@ -159,7 +158,6 @@ class JobQueueManager {
              * @returns {Promise<{success?: boolean, eventData?: {events: Array<{name: string, data: any}>}}>}
              */
             const result = await this.pool.exec('executeJob', [jobMetadata.job, jobMetadata.data]);
-            console.log('result', result);
             await this.jobsRepository.delete(job.id);
             this.prometheusClient?.getMetric('job_manager_queue_job_completion_count')?.inc({jobName});
             if (jobName === 'update-member-email-analytics') {
