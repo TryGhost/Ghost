@@ -18,7 +18,8 @@ const controller = {
             'filter',
             'order',
             'debug',
-            'id'
+            'id',
+            'impersonate_member_uuid'
         ],
         validation: {
             options: {
@@ -37,7 +38,8 @@ const controller = {
             cacheInvalidate: false
         },
         options: [
-            'include'
+            'include',
+            'impersonate_member_uuid'
         ],
         data: [
             'id',

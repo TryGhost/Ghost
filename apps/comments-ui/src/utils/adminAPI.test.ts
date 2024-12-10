@@ -97,7 +97,7 @@ describe('setupAdminAPI', () => {
         const adminUrl = 'https://example.com';
         const api = setupAdminAPI({adminUrl});
 
-        const apiPromise = api.showComment('123');
+        const apiPromise = api.showComment({id: '123'});
 
         const eventHandler = addEventListenerSpy.mock.calls.find(
             ([eventType]) => eventType === 'message'

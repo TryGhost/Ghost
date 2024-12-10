@@ -13,6 +13,10 @@ describe('LinkClickTrackingService', function () {
     });
 
     describe('init', function () {
+        afterEach(function () {
+            sinon.restore();
+        });
+
         it('initialises only once', function () {
             const subscribe = sinon.stub();
             const service = new LinkClickTrackingService({
@@ -24,6 +28,16 @@ describe('LinkClickTrackingService', function () {
             assert.ok(subscribe.calledOnce);
             service.init();
             assert.ok(subscribe.calledOnce);
+        });
+
+        it('does not subscribe if linkClickTracking is false', function () {
+            const subscribe = sinon.stub();
+            const service = new LinkClickTrackingService({
+                config: {get: sinon.stub().returns(false)},
+                DomainEvents: {subscribe}
+            });
+            service.init();
+            assert.ok(!subscribe.called);
         });
     });
 

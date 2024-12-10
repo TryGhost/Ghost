@@ -27,7 +27,9 @@
                     <div class="gh-editor-excerpt" data-test-post-history-preview-excerpt>
                         {{this.selectedRevision.custom_excerpt}}
                     </div>
-                    <hr class="gh-editor-title-divider">
+                    {{#if this.selectedRevision.custom_excerpt}}
+                        <hr class="gh-editor-title-divider">
+                    {{/if}}
                 {{/if}}
                 <KoenigLexicalEditor
                     @lexical={{this.selectedRevision.lexical}}

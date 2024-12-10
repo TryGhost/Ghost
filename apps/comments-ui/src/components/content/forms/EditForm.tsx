@@ -1,9 +1,8 @@
 import {Comment, OpenCommentForm, useAppContext} from '../../../AppContext';
 import {Form} from './Form';
-import {getEditorConfig} from '../../../utils/editor';
 import {isMobile} from '../../../utils/helpers';
-import {useCallback, useEffect} from 'react';
-import {useEditor} from '@tiptap/react';
+import {useCallback, useEffect, useMemo} from 'react';
+import {useEditor} from '../../../utils/hooks';
 
 type Props = {
     openForm: OpenCommentForm;
@@ -14,17 +13,15 @@ type Props = {
 const EditForm: React.FC<Props> = ({comment, openForm, parent}) => {
     const {dispatchAction, t} = useAppContext();
 
-    const config = {
+    const editorConfig = useMemo(() => ({
         placeholder: t('Edit this comment'),
         // warning: we cannot use autofocus on the edit field, because that sets
         // the cursor position at the beginning of the text field instead of the end
         autofocus: false,
         content: comment.html
-    };
+    }), [comment]);
 
-    const editor = useEditor({
-        ...getEditorConfig(config)
-    });
+    const {editor} = useEditor(editorConfig);
 
     // Instead of autofocusing, we focus and jump to end manually
     useEffect(() => {

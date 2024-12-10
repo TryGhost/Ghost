@@ -22,30 +22,26 @@ export type FormEditorProps = {
     submitText: React.ReactNode;
     submitSize: SubmitSize;
     openForm?: OpenCommentForm;
-    initialHasContent?: boolean;
 };
 
-export const FormEditor: React.FC<FormEditorProps> = ({comment, submit, progress, setProgress, close, isOpen, editor, submitText, submitSize, openForm, initialHasContent}) => {
+export const FormEditor: React.FC<FormEditorProps> = ({comment, submit, progress, setProgress, close, isOpen, editor, submitText, submitSize, openForm}) => {
     const labs = useLabs();
     const {dispatchAction, t} = useAppContext();
     let buttonIcon = null;
-    const [hasContent, setHasContent] = useState(initialHasContent || false);
 
     useEffect(() => {
-        if (editor) {
+        if (editor && openForm) {
             const checkContent = () => {
-                const editorHasContent = !editor.isEmpty;
-                setHasContent(editorHasContent);
+                const hasUnsavedChanges = comment && openForm.type === 'edit' ?
+                    editor.getHTML() !== comment.html :
+                    !editor.isEmpty;
 
-                if (openForm) {
-                    const hasUnsavedChanges = comment && openForm.type === 'edit' ? editor.getHTML() !== comment.html : editorHasContent;
-
-                    // avoid unnecessary state updates to prevent infinite loops
-                    if (openForm.hasUnsavedChanges !== hasUnsavedChanges) {
-                        dispatchAction('setCommentFormHasUnsavedChanges', {id: openForm.id, hasUnsavedChanges});
-                    }
+                // avoid unnecessary state updates to prevent infinite loops
+                if (openForm.hasUnsavedChanges !== hasUnsavedChanges) {
+                    dispatchAction('setCommentFormHasUnsavedChanges', {id: openForm.id, hasUnsavedChanges});
                 }
             };
+
             editor.on('update', checkContent);
             editor.on('transaction', checkContent);
 
@@ -152,7 +148,7 @@ export const FormEditor: React.FC<FormEditorProps> = ({comment, submit, progress
                     <button
                         className={`flex w-auto items-center justify-center ${submitSize === 'medium' && 'sm:min-w-[100px]'} ${submitSize === 'small' && 'sm:min-w-[64px]'} h-[40px] rounded-md bg-[var(--gh-accent-color)] px-3 py-2 text-center font-sans text-base font-medium text-white outline-0 transition-colors duration-200 hover:brightness-105 disabled:bg-black/5 disabled:text-neutral-900/30 sm:text-sm dark:disabled:bg-white/15 dark:disabled:text-white/35`}
                         data-testid="submit-form-button"
-                        disabled={!hasContent}
+                        disabled={!editor || editor.isEmpty}
                         type="button"
                         onClick={submitForm}
                     >
@@ -193,6 +189,7 @@ const FormHeader: React.FC<FormHeaderProps> = ({show, name, expertise, replyingT
 
     return (
         <Transition
+            data-testid="form-header"
             enter="transition duration-500 delay-100 ease-in-out"
             enterFrom="opacity-0 -translate-x-2"
             enterTo="opacity-100 translate-x-0"
@@ -258,9 +255,6 @@ const Form: React.FC<FormProps> = ({
     const [progress, setProgress] = useState<Progress>('default');
     const formEl = useRef(null);
 
-    // Initialize hasContent to true if we're editing an existing comment
-    const initialHasContent = openForm?.type === 'edit' && !!comment?.html;
-
     const memberName = member?.name ?? comment?.member?.name;
 
     if (progress === 'sending' || (memberName && isAskingDetails)) {
@@ -295,7 +289,6 @@ const Form: React.FC<FormProps> = ({
                 close={close}
                 comment={comment}
                 editor={editor}
-                initialHasContent={initialHasContent}
                 isOpen={isOpen}
                 openForm={openForm}
                 progress={progress}
@@ -328,7 +321,7 @@ const FormWrapper: React.FC<FormWrapperProps> = ({
 }) => {
     const {member, dispatchAction} = useAppContext();
     const labs = useLabs();
-    
+
     const memberName = member?.name ?? comment?.member?.name;
     const memberExpertise = member?.expertise ?? comment?.member?.expertise;
 

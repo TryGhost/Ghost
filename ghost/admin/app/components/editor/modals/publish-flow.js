@@ -53,6 +53,7 @@ export default class PublishModalComponent extends Component {
     @action
     setCompleted() {
         this.emailErrorMessage = undefined;
+        this.isConfirming = false;
         this.isComplete = true;
 
         if (this.args.data.publishOptions.isScheduled) {
@@ -94,6 +95,8 @@ export default class PublishModalComponent extends Component {
     *saveTask() {
         try {
             yield this.args.data.saveTask.perform();
+
+            this.isConfirming = false;
             this.isComplete = true;
         } catch (e) {
             if (e?.name === 'EmailFailedError') {
