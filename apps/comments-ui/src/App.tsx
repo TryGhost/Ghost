@@ -116,13 +116,12 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
                 admin = await adminApi.getUser();
                 if (admin && state.labs.commentImprovements) {
                     // this is a bit of a hack, but we need to fetch the comments fully populated if the user is an admin
-                    const adminComments = await adminApi.browse({page: 1, postId: options.postId, order: state.order});
+                    const adminComments = await adminApi.browse({page: 1, postId: options.postId, order: state.order, memberUuid: state.member?.uuid});
                     setState({
                         ...state,
                         adminApi: adminApi,
                         comments: adminComments.comments,
-                        pagination: adminComments.meta.pagination,
-                        commentCount: adminComments.meta.pagination.total
+                        pagination: adminComments.meta.pagination
                     });
                 }
             } catch (e) {
