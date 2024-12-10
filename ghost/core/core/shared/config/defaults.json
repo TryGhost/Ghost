@@ -192,6 +192,7 @@
     "stripeDirect": false,
     "enableStripePromoCodes": false,
     "emailAnalytics": true,
+    "linkClickTracking": true,
     "backgroundJobs": {
         "emailAnalytics": true,
         "clickTrackingLastSeenAtUpdater": true
