@@ -1835,9 +1835,17 @@
     .gh-canvas {
         padding: 0 4vw 4vw;
     }
+    
+    .gh-canvas-header.break.tablet .view-actions {
+        position: absolute;
+        left: 0;
+        width: 100%;
+    }
 
     .gh-canvas-header.break .view-actions-bottom-row {
         max-width: calc(100vw - 56px) !important;
+        min-width: 100%!important;
+        overflow-x: scroll;
     }
 }
 
