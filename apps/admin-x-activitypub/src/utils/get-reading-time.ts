@@ -1,6 +1,6 @@
 export default function getReadingTime(content: string): string {
     // Average reading speed (words per minute)
-    const wordsPerMinute = 238;
+    const wordsPerMinute = 275;
 
     const wordCount = content.replace(/<[^>]*>/g, '')
         .split(/\s+/)

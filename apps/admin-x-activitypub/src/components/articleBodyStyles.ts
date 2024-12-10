@@ -23,6 +23,7 @@ const articleBodyStyles = (siteUrl: string|undefined) => {
     --container-width: 1320px;
     --container-gap: clamp(24px, 1.7032rem + 1.9355vw, 48px);
     --grid-gap: 42px;
+    --gh-content-font-size: 17px; /* Default font size */
 }
 
 :root.has-light-text,
@@ -74,6 +75,7 @@ p, h1, h2, h3, h4, h5, h6 {
 }
 
 h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-sans);
     line-height: 1.2;
 }
 
@@ -340,10 +342,11 @@ created within the Ghost editor. The main content handles
 headings, text, images and lists. We deal with cards lower down. */
 
 .gh-content {
-    font-size: 17px;
+    font-size: var(--gh-content-font-size);
     overflow-x: hidden;
     letter-spacing: -0.013em;
-    line-height: 1.6;
+    line-height: var(--gh-content-line-height);
+    font-family: var(--gh-content-font-family);
 }
 
 /* Default vertical spacing */
