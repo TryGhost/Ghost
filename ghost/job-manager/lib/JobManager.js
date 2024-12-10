@@ -42,6 +42,7 @@ class JobManager {
     #jobQueueManager = null;
     #config;
     #JobModel;
+    #events;
 
     /**
      * @param {Object} options
@@ -53,14 +54,16 @@ class JobManager {
      * @param {boolean} [options.isDuplicate] - if true, the job manager will not initialize the job queue
      * @param {JobQueueManager} [options.jobQueueManager] - job queue manager instance (for testing)
      * @param {Object} [options.prometheusClient] - prometheus client instance (for testing)
+     * @param {Object} [options.events] - events instance (for testing)
      */
-    constructor({errorHandler, workerMessageHandler, JobModel, domainEvents, config, isDuplicate = false, jobQueueManager = null, prometheusClient = null}) {
+    constructor({errorHandler, workerMessageHandler, JobModel, domainEvents, config, isDuplicate = false, jobQueueManager = null, prometheusClient = null, events = null}) {
         this.inlineQueue = fastq(this, worker, 3);
         this._jobMessageHandler = this._jobMessageHandler.bind(this);
         this._jobErrorHandler = this._jobErrorHandler.bind(this);
         this.#domainEvents = domainEvents;
         this.#config = config;
         this.#JobModel = JobModel;
+        this.#events = events;
 
         const combinedMessageHandler = workerMessageHandler
             ? ({name, message}) => {
@@ -104,7 +107,7 @@ class JobManager {
 
     #initializeJobQueueManager() {
         if (this.#config?.get('services:jobs:queue:enabled') === true && !this.#jobQueueManager) {
-            this.#jobQueueManager = new JobQueueManager({JobModel: this.#JobModel, config: this.#config, prometheusClient: this.prometheusClient});
+            this.#jobQueueManager = new JobQueueManager({JobModel: this.#JobModel, config: this.#config, prometheusClient: this.prometheusClient, eventEmitter: this.#events});
             this.#jobQueueManager.init();
         }
     }
