@@ -400,6 +400,18 @@ class CommentsService {
 
         return model;
     }
+
+    async getMemberIdByUUID(uuid, options) {
+        const member = await this.models.Member.findOne({uuid}, options);
+
+        if (!member) {
+            throw new errors.NotFoundError({
+                message: tpl(messages.memberNotFound)
+            });
+        }
+
+        return member.id;
+    }
 }
 
 module.exports = CommentsService;
