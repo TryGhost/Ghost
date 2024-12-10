@@ -1842,10 +1842,29 @@
         width: 100%;
     }
 
-    .gh-canvas-header.break .view-actions-bottom-row {
+    .gh-canvas-header.break.tablet .view-actions-bottom-row {
+        position: relative;
         max-width: calc(100vw - 56px) !important;
-        min-width: 100%!important;
+        min-width: 100%;
         overflow-x: scroll;
+    }
+
+    .gh-canvas-header.break.tablet .view-actions-bottom-row::after {
+        content: '';
+        position: sticky;
+        top: 0;
+        right: 0;
+        height: 100%;
+        z-index: 1;
+        width: 40px;
+        background: linear-gradient(to right, transparent, var(--main-bg-color));
+        pointer-events: none;
+        float: right;
+        margin-left: -40px;
+    }
+
+    .gh-canvas-header.break .view-actions .gh-contentfilter {
+        border: none;
     }
 }
 
