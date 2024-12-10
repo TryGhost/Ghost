@@ -193,6 +193,7 @@
     "enableStripePromoCodes": false,
     "emailAnalytics": true,
     "linkClickTracking": true,
+    "linkClickTrackingCacheMemberUuid": false,
     "backgroundJobs": {
         "emailAnalytics": true,
         "clickTrackingLastSeenAtUpdater": true
