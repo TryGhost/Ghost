@@ -88,6 +88,7 @@ function getPostSchema(metaData, data) {
     schema = {
         '@context': 'https://schema.org',
         '@type': 'Article',
+        name: metaData.site.title,
         publisher: schemaPublisherObject(metaData),
         author: {
             '@type': 'Person',
@@ -117,6 +118,7 @@ function getHomeSchema(metaData) {
     const schema = {
         '@context': 'https://schema.org',
         '@type': 'WebSite',
+        name: metaData.site.title,
         publisher: schemaPublisherObject(metaData),
         url: metaData.url,
         name: metaData.site.title,
