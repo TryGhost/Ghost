@@ -35,6 +35,8 @@ test.describe('Admin moderation', async () => {
             mockedApi,
             page,
             publication: 'Publisher Weekly',
+            title: 'Member discussion',
+            count: true,
             admin,
             labs: {
                 commentImprovements: options.labs
@@ -326,6 +328,14 @@ test.describe('Admin moderation', async () => {
 
             await expect(inReplyToComment).not.toContainText('[removed]');
             await expect(inReplyToComment).toContainText('This is reply 1');
+        });
+
+        test('has correct comments count', async ({page}) => {
+            mockedApi.addComment({html: '<p>This is comment 1</p>', replies: [buildReply()]});
+            mockedApi.addComment({html: '<p>This is comment 2</p>'});
+
+            const {frame} = await initializeTest(page, {labs: true});
+            await expect(frame.getByTestId('count')).toContainText('3 comments');
         });
     });
 });
