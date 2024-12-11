@@ -186,9 +186,30 @@ async function showComment({state, api, data: comment}: {state: EditableAppConte
     };
 }
 
-async function likeComment({state, api, data: comment}: {state: EditableAppContext, api: GhostApi, data: {id: string}}) {
-    await api.comments.like({comment});
+async function sendLikeToApi({api, data: comment}: {api: GhostApi, data: {id: string, commentsState: Comment[]}}) {
+    const commentsState = comment.commentsState;
 
+    // remove commentsState from the comment object before sending it to the API
+    try {
+        await api.comments.like({comment: {id: comment.id}});
+        return {
+            commentLikeLoading: null
+        };
+    } catch (err) {
+        // if error we revert the state
+        return {
+            comments: commentsState,
+            commentLikeLoading: null
+        };
+    }
+}
+
+async function likeComment({state, data: comment, dispatchAction}: {state: EditableAppContext, api: GhostApi, data: {id: string}, dispatchAction: DispatchActionType}) {
+    const exisitngState = state.comments;
+
+    dispatchAction('sendLikeToApi', {id: comment.id, commentsState: exisitngState});
+
+    // optimistic update
     return {
         comments: state.comments.map((c) => {
             const replies = c.replies.map((r) => {
@@ -222,19 +243,34 @@ async function likeComment({state, api, data: comment}: {state: EditableAppConte
                 ...c,
                 replies
             };
-        })
+        }),
+        commentLikeLoading: comment.id
     };
 }
 
-async function reportComment({api, data: comment}: {api: GhostApi, data: {id: string}}) {
-    await api.comments.report({comment});
+async function sendUnlikeToApi({api, data: comment}: {api: GhostApi, data: {id: string, commentsState: Comment[]}}) {
+    const commentsState = comment.commentsState;
 
-    return {};
+    // Remove commentsState from the comment object before sending it to the API
+    try {
+        await api.comments.unlike({comment: {id: comment.id}});
+        return {
+            commentUnlikeLoading: null
+        };
+    } catch (err) {
+        // If error, revert the state
+        return {
+            comments: commentsState,
+            commentUnlikeLoading: null
+        };
+    }
 }
 
-async function unlikeComment({state, api, data: comment}: {state: EditableAppContext, api: GhostApi, data: {id: string}}) {
-    await api.comments.unlike({comment});
+async function unlikeComment({state, data: comment, dispatchAction}: {state: EditableAppContext, api: GhostApi, data: {id: string}, dispatchAction: DispatchActionType}) {
+    const existingState = state.comments;
 
+    dispatchAction('sendUnlikeToApi', {id: comment.id, commentsState: existingState});
+    // optimistic update
     return {
         comments: state.comments.map((c) => {
             const replies = c.replies.map((r) => {
@@ -263,12 +299,20 @@ async function unlikeComment({state, api, data: comment}: {state: EditableAppCon
                     }
                 };
             }
+
             return {
                 ...c,
                 replies
             };
-        })
+        }),
+        commentUnlikeLoading: comment.id
     };
+}
+
+async function reportComment({api, data: comment}: {api: GhostApi, data: {id: string}}) {
+    await api.comments.report({comment});
+
+    return {};
 }
 
 async function deleteComment({state, api, data: comment}: {state: EditableAppContext, api: GhostApi, data: {id: string}}) {
@@ -481,7 +525,9 @@ export const Actions = {
     openCommentForm,
     highlightComment,
     setHighlightComment,
-    setCommentsIsLoading
+    setCommentsIsLoading,
+    sendLikeToApi,
+    sendUnlikeToApi
 };
 
 export type ActionType = keyof typeof Actions;
