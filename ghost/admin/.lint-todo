@@ -192,3 +192,4 @@ remove|ember-template-lint|no-action|73|76|73|76|7d339c0f3d02ec863651697ad8e8105
 add|ember-template-lint|no-action|5|14|5|14|a90edd9a99596008f60bfcdbc6befe7fe8d26321|1730678400000|1741046400000|1746230400000|app/components/gh-psm-tags-input.hbs
 remove|ember-template-lint|no-action|5|14|5|14|88b11bf43be33d97824ebac071a563affac0b97d|1730678400000|1741046400000|1746230400000|app/components/gh-psm-tags-input.hbs
 add|ember-template-lint|no-action|80|92|80|92|f30d469e4ae668f05aca2f92a124a6b4748847a3|1730678400000|1741046400000|1746230400000|app/components/gh-post-settings-menu.hbs
+remove|ember-template-lint|no-action|8|50|8|50|de589665046a78748832e8f93d2e495d1d259265|1728345600000|1738717200000|1743897600000|app/components/gh-mobile-nav-bar.hbs
