@@ -77,9 +77,12 @@ function CommentsSection({updateCommentNotifications, isCommentsEnabled, enableC
     );
 }
 
-function NewsletterPrefs({subscribedNewsletters, setSubscribedNewsletters}) {
+function NewsletterPrefs({subscribedNewsletters, setSubscribedNewsletters, hasNewslettersEnabled}) {
     const {site} = useContext(AppContext);
     const newsletters = getSiteNewsletters({site});
+    if (!hasNewslettersEnabled) {
+        return null;
+    }
     return newsletters.map((newsletter) => {
         return (
             <NewsletterPrefSection
@@ -104,6 +107,7 @@ function ShowPaidMemberMessage({site, isPaid}) {
 }
 
 export default function NewsletterManagement({
+    hasNewslettersEnabled,
     notification,
     subscribedNewsletters,
     updateSubscribedNewsletters,
@@ -127,6 +131,7 @@ export default function NewsletterManagement({
             <div className='gh-portal-section flex'>
                 <div className='gh-portal-list'>
                     <NewsletterPrefs
+                        hasNewslettersEnabled={hasNewslettersEnabled}
                         subscribedNewsletters={subscribedNewsletters}
                         setSubscribedNewsletters={(updatedNewsletters) => {
                             let newsletters = updatedNewsletters.map((d) => {
