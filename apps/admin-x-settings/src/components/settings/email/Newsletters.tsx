@@ -150,6 +150,7 @@ const Newsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
     return (
         <TopLevelGroup
             customButtons={buttons}
+            description="Edit details and customize your design"
             keywords={keywords}
             navid='newsletters'
             testId='newsletters'
