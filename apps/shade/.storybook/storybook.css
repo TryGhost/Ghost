@@ -245,3 +245,26 @@ html, body, #root {
 .sbdocs-a {
     color: #30CF43 !important;
 }
+
+.sb-icon-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 16px;
+    padding: 16px;
+}
+
+.sb-icon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-items: center;
+    gap: 4px;
+    padding: 8px;
+    border: 1px solid #EFEFEF;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.sb-icon:hover {
+    background-color: #f9f9f9;
+}
