@@ -28,7 +28,7 @@ test.describe('Admin moderation', async () => {
         mockedApi.setMember(options.member);
 
         if (options.labs) {
-            mockedApi.setLabs({commentImprovements: true});
+            // enable specific labs flags here
         }
 
         return await initialize({
@@ -39,7 +39,7 @@ test.describe('Admin moderation', async () => {
             count: true,
             admin,
             labs: {
-                commentImprovements: options.labs
+                // enable specific labs flags here
             }
         });
     }
@@ -101,241 +101,216 @@ test.describe('Admin moderation', async () => {
         await expect(frame.getByTestId('hide-button')).toBeVisible();
     });
 
-    test('can hide and show comments', async ({page}) => {
+    test('member uuid are passed to admin browse api params', async ({page}) => {
         mockedApi.addComment({html: '<p>This is comment 1</p>'});
-        mockedApi.addComment({html: '<p>This is comment 2</p>'});
+        const adminBrowseSpy = sinon.spy(mockedApi.adminRequestHandlers, 'browseComments');
+        const {frame} = await initializeTest(page);
+        const comments = await frame.getByTestId('comment-component');
+        await expect(comments).toHaveCount(1);
+        expect(adminBrowseSpy.called).toBe(true);
+        const lastCall = adminBrowseSpy.lastCall.args[0];
+        const url = new URL(lastCall.request().url());
+        expect(url.searchParams.get('impersonate_member_uuid')).toBe('12345');
+    });
 
+    test('member uuid gets set when loading more comments', async ({page}) => {
+        // create 25 comments
+        for (let i = 0; i < 25; i++) {
+            mockedApi.addComment({html: `<p>This is comment ${i}</p>`});
+        }
+        const adminBrowseSpy = sinon.spy(mockedApi.adminRequestHandlers, 'browseComments');
+        const {frame} = await initializeTest(page);
+        await frame.getByTestId('pagination-component').click();
+        const lastCall = adminBrowseSpy.lastCall.args[0];
+        const url = new URL(lastCall.request().url());
+        expect(url.searchParams.get('impersonate_member_uuid')).toBe('12345');
+    });
+
+    test('member uuid gets set when changing order', async ({page}) => {
+        mockedApi.addComment({
+            html: '<p>This is the oldest</p>',
+            created_at: new Date('2024-02-01T00:00:00Z')
+        });
+        mockedApi.addComment({
+            html: '<p>This is comment 2</p>',
+            created_at: new Date('2024-03-02T00:00:00Z')
+        });
+        mockedApi.addComment({
+            html: '<p>This is the newest comment</p>',
+            created_at: new Date('2024-04-03T00:00:00Z')
+        });
+
+        const adminBrowseSpy = sinon.spy(mockedApi.adminRequestHandlers, 'browseComments');
         const {frame} = await initializeTest(page);
 
-        // Click the hide button for 2nd comment
+        const sortingForm = await frame.getByTestId('comments-sorting-form');
+
+        await sortingForm.click();
+
+        const sortingDropdown = await frame.getByTestId(
+            'comments-sorting-form-dropdown'
+        );
+
+        const optionSelect = await sortingDropdown.getByText('Newest');
+        mockedApi.setDelay(100);
+        await optionSelect.click();
+        const lastCall = adminBrowseSpy.lastCall.args[0];
+        const url = new URL(lastCall.request().url());
+        expect(url.searchParams.get('impersonate_member_uuid')).toBe('12345');
+    });
+
+    test('member uuid gets set when loading more replies', async ({page}) => {
+        mockedApi.addComment({
+            html: '<p>This is comment 1</p>',
+            replies: [
+                buildReply({html: '<p>This is reply 1</p>'}),
+                buildReply({html: '<p>This is reply 2</p>'}),
+                buildReply({html: '<p>This is reply 3</p>'}),
+                buildReply({html: '<p>This is reply 4</p>'}),
+                buildReply({html: '<p>This is reply 5</p>'}),
+                buildReply({html: '<p>This is reply 6</p>'})
+            ]
+        });
+
+        const adminBrowseSpy = sinon.spy(mockedApi.adminRequestHandlers, 'getReplies');
+        const {frame} = await initializeTest(page);
+        const comments = await frame.getByTestId('comment-component');
+        const comment = comments.nth(0);
+        await comment.getByTestId('reply-pagination-button').click();
+        const lastCall = adminBrowseSpy.lastCall.args[0];
+        const url = new URL(lastCall.request().url());
+        expect(url.searchParams.get('impersonate_member_uuid')).toBe('12345');
+    });
+
+    test('member uuid gets set when reading a comment (after unhiding)', async ({page}) => {
+        mockedApi.addComment({html: '<p>This is comment 1</p>'});
+        mockedApi.addComment({html: '<p>This is comment 2</p>', status: 'hidden'});
+        const adminReadSpy = sinon.spy(mockedApi.adminRequestHandlers, 'getOrUpdateComment');
+        const {frame} = await initializeTest(page);
+        const comments = await frame.getByTestId('comment-component');
+        await expect(comments).toHaveCount(2);
+        await expect(comments.nth(1)).toContainText('Hidden for members');
+        const moreButtons = comments.nth(1).getByTestId('more-button');
+        await moreButtons.click();
+        await moreButtons.getByTestId('show-button').click();
+        await expect(comments.nth(1)).not.toContainText('Hidden for members');
+
+        const lastCall = adminReadSpy.lastCall.args[0];
+        const url = new URL(lastCall.request().url());
+
+        expect(url.searchParams.get('impersonate_member_uuid')).toBe('12345');
+    });
+
+    test('hidden comments are not displayed for non-admins', async ({page}) => {
+        mockedApi.addComment({html: '<p>This is comment 1</p>'});
+        mockedApi.addComment({html: '<p>This is comment 2</p>', status: 'hidden'});
+
+        const adminBrowseSpy = sinon.spy(mockedApi.adminRequestHandlers, 'browseComments');
+
+        const {frame} = await initializeTest(page, {isAdmin: false});
+        const comments = await frame.getByTestId('comment-component');
+        await expect(comments).toHaveCount(1);
+
+        expect(adminBrowseSpy.called).toBe(false);
+    });
+
+    test('hidden comments are displayed for admins', async ({page}) => {
+        mockedApi.addComment({html: '<p>This is comment 1</p>'});
+        mockedApi.addComment({html: '<p>This is comment 2</p>', status: 'hidden'});
+
+        const adminBrowseSpy = sinon.spy(mockedApi.adminRequestHandlers, 'browseComments');
+
+        const {frame} = await initializeTest(page);
+        const comments = await frame.getByTestId('comment-component');
+        await expect(comments).toHaveCount(2);
+        await expect(comments.nth(1)).toContainText('Hidden for members');
+
+        expect(adminBrowseSpy.called).toBe(true);
+    });
+
+    test('can hide and show comments', async ({page}) => {
+        [1,2].forEach(i => mockedApi.addComment({html: `<p>This is comment ${i}</p>`}));
+
+        const {frame} = await initializeTest(page);
+        const comments = await frame.getByTestId('comment-component');
+
+        // Hide the 2nd comment
         const moreButtons = frame.getByTestId('more-button');
         await moreButtons.nth(1).click();
-        await moreButtons.nth(1).getByTestId('hide-button').click();
+        await moreButtons.nth(1).getByText('Hide comment').click();
 
-        // comment becomes hidden
-        const comments = frame.getByTestId('comment-component');
         const secondComment = comments.nth(1);
-        await expect(secondComment).toContainText('This comment has been hidden.');
-        await expect(secondComment).not.toContainText('This is comment 2');
+        await expect(secondComment).toContainText('Hidden for members');
 
-        // can show it again
+        // Check can show it again
         await moreButtons.nth(1).click();
-        await moreButtons.nth(1).getByTestId('show-button').click();
+        await moreButtons.nth(1).getByText('Show comment').click();
         await expect(secondComment).toContainText('This is comment 2');
     });
 
-    test.describe('commentImprovements', function () {
-        test('memeber uuid are passed to admin browse api params', async ({page}) => {
-            mockedApi.addComment({html: '<p>This is comment 1</p>'});
-            const adminBrowseSpy = sinon.spy(mockedApi.adminRequestHandlers, 'browseComments');
-            const {frame} = await initializeTest(page, {labs: true});
-            const comments = await frame.getByTestId('comment-component');
-            await expect(comments).toHaveCount(1);
-            expect(adminBrowseSpy.called).toBe(true);
-            const lastCall = adminBrowseSpy.lastCall.args[0];
-            const url = new URL(lastCall.request().url());
-            expect(url.searchParams.get('impersonate_member_uuid')).toBe('12345');
+    test('can hide and show replies', async ({page}) => {
+        mockedApi.addComment({
+            id: '1',
+            html: '<p>This is comment 1</p>',
+            replies: [
+                buildReply({id: '2', html: '<p>This is reply 1</p>'}),
+                buildReply({id: '3', html: '<p>This is reply 2</p>'})
+            ]
         });
 
-        test('member uuid gets set when loading more comments', async ({page}) => {
-            // create 25 comments
-            for (let i = 0; i < 25; i++) {
-                mockedApi.addComment({html: `<p>This is comment ${i}</p>`});
-            }
-            const adminBrowseSpy = sinon.spy(mockedApi.adminRequestHandlers, 'browseComments');
-            const {frame} = await initializeTest(page, {labs: true});
-            await frame.getByTestId('pagination-component').click();
-            const lastCall = adminBrowseSpy.lastCall.args[0];
-            const url = new URL(lastCall.request().url());
-            expect(url.searchParams.get('impersonate_member_uuid')).toBe('12345');
+        const {frame} = await initializeTest(page);
+        const comments = await frame.getByTestId('comment-component');
+        const replyToHide = comments.nth(1);
+
+        // Hide the 1st reply
+        await replyToHide.getByTestId('more-button').click();
+        await replyToHide.getByTestId('hide-button').click();
+
+        await expect(replyToHide).toContainText('Hidden for members');
+
+        // Show it again
+        await replyToHide.getByTestId('more-button').click();
+        await replyToHide.getByTestId('show-button').click();
+
+        await expect(replyToHide).not.toContainText('Hidden for members');
+    });
+
+    test('updates in-reply-to snippets when hiding', async ({page}) => {
+        mockedApi.addComment({
+            id: '1',
+            html: '<p>This is comment 1</p>',
+            replies: [
+                buildReply({id: '2', html: '<p>This is reply 1</p>'}),
+                buildReply({id: '3', html: '<p>This is reply 2</p>', in_reply_to_id: '2', in_reply_to_snippet: 'This is reply 1'}),
+                buildReply({id: '4', html: '<p>This is reply 3</p>'})
+            ]
         });
 
-        test('member uuid gets set when changing order', async ({page}) => {
-            mockedApi.addComment({
-                html: '<p>This is the oldest</p>',
-                created_at: new Date('2024-02-01T00:00:00Z')
-            });
-            mockedApi.addComment({
-                html: '<p>This is comment 2</p>',
-                created_at: new Date('2024-03-02T00:00:00Z')
-            });
-            mockedApi.addComment({
-                html: '<p>This is the newest comment</p>',
-                created_at: new Date('2024-04-03T00:00:00Z')
-            });
+        const {frame} = await initializeTest(page);
+        const comments = await frame.getByTestId('comment-component');
+        const replyToHide = comments.nth(1);
+        const inReplyToComment = comments.nth(2);
 
-            const adminBrowseSpy = sinon.spy(mockedApi.adminRequestHandlers, 'browseComments');
-            const {frame} = await initializeTest(page, {labs: true});
+        // Hide the 1st reply
+        await replyToHide.getByTestId('more-button').click();
+        await replyToHide.getByTestId('hide-button').click();
 
-            const sortingForm = await frame.getByTestId('comments-sorting-form');
+        await expect(inReplyToComment).toContainText('[removed]');
+        await expect(inReplyToComment).not.toContainText('This is reply 1');
 
-            await sortingForm.click();
+        // Show it again
+        await replyToHide.getByTestId('more-button').click();
+        await replyToHide.getByTestId('show-button').click();
 
-            const sortingDropdown = await frame.getByTestId(
-                'comments-sorting-form-dropdown'
-            );
+        await expect(inReplyToComment).not.toContainText('[removed]');
+        await expect(inReplyToComment).toContainText('This is reply 1');
+    });
 
-            const optionSelect = await sortingDropdown.getByText('Newest');
-            mockedApi.setDelay(100);
-            await optionSelect.click();
-            const lastCall = adminBrowseSpy.lastCall.args[0];
-            const url = new URL(lastCall.request().url());
-            expect(url.searchParams.get('impersonate_member_uuid')).toBe('12345');
-        });
+    test('has correct comments count', async ({page}) => {
+        mockedApi.addComment({html: '<p>This is comment 1</p>', replies: [buildReply()]});
+        mockedApi.addComment({html: '<p>This is comment 2</p>'});
 
-        test('member uuid gets set when loading more replies', async ({page}) => {
-            mockedApi.addComment({
-                html: '<p>This is comment 1</p>',
-                replies: [
-                    buildReply({html: '<p>This is reply 1</p>'}),
-                    buildReply({html: '<p>This is reply 2</p>'}),
-                    buildReply({html: '<p>This is reply 3</p>'}),
-                    buildReply({html: '<p>This is reply 4</p>'}),
-                    buildReply({html: '<p>This is reply 5</p>'}),
-                    buildReply({html: '<p>This is reply 6</p>'})
-                ]
-            });
-
-            const adminBrowseSpy = sinon.spy(mockedApi.adminRequestHandlers, 'getReplies');
-            const {frame} = await initializeTest(page, {labs: true});
-            const comments = await frame.getByTestId('comment-component');
-            const comment = comments.nth(0);
-            await comment.getByTestId('reply-pagination-button').click();
-            const lastCall = adminBrowseSpy.lastCall.args[0];
-            const url = new URL(lastCall.request().url());
-            expect(url.searchParams.get('impersonate_member_uuid')).toBe('12345');
-        });
-
-        test('member uuid gets set when reading a comment (after unhiding)', async ({page}) => {
-            mockedApi.addComment({html: '<p>This is comment 1</p>'});
-            mockedApi.addComment({html: '<p>This is comment 2</p>', status: 'hidden'});
-            const adminReadSpy = sinon.spy(mockedApi.adminRequestHandlers, 'getOrUpdateComment');
-            const {frame} = await initializeTest(page, {labs: true});
-            const comments = await frame.getByTestId('comment-component');
-            await expect(comments).toHaveCount(2);
-            await expect(comments.nth(1)).toContainText('Hidden for members');
-            const moreButtons = comments.nth(1).getByTestId('more-button');
-            await moreButtons.click();
-            await moreButtons.getByTestId('show-button').click();
-            await expect(comments.nth(1)).not.toContainText('Hidden for members');
-
-            const lastCall = adminReadSpy.lastCall.args[0];
-            const url = new URL(lastCall.request().url());
-
-            expect(url.searchParams.get('impersonate_member_uuid')).toBe('12345');
-        });
-
-        test('hidden comments are not displayed for non-admins', async ({page}) => {
-            mockedApi.addComment({html: '<p>This is comment 1</p>'});
-            mockedApi.addComment({html: '<p>This is comment 2</p>', status: 'hidden'});
-
-            const adminBrowseSpy = sinon.spy(mockedApi.adminRequestHandlers, 'browseComments');
-
-            const {frame} = await initializeTest(page, {isAdmin: false, labs: true});
-            const comments = await frame.getByTestId('comment-component');
-            await expect(comments).toHaveCount(1);
-
-            expect(adminBrowseSpy.called).toBe(false);
-        });
-
-        test('hidden comments are displayed for admins', async ({page}) => {
-            mockedApi.addComment({html: '<p>This is comment 1</p>'});
-            mockedApi.addComment({html: '<p>This is comment 2</p>', status: 'hidden'});
-
-            const adminBrowseSpy = sinon.spy(mockedApi.adminRequestHandlers, 'browseComments');
-
-            const {frame} = await initializeTest(page, {labs: true});
-            const comments = await frame.getByTestId('comment-component');
-            await expect(comments).toHaveCount(2);
-            await expect(comments.nth(1)).toContainText('Hidden for members');
-
-            expect(adminBrowseSpy.called).toBe(true);
-        });
-
-        test('can hide and show comments', async ({page}) => {
-            [1,2].forEach(i => mockedApi.addComment({html: `<p>This is comment ${i}</p>`}));
-
-            const {frame} = await initializeTest(page, {labs: true});
-            const comments = await frame.getByTestId('comment-component');
-
-            // Hide the 2nd comment
-            const moreButtons = frame.getByTestId('more-button');
-            await moreButtons.nth(1).click();
-            await moreButtons.nth(1).getByText('Hide comment').click();
-
-            const secondComment = comments.nth(1);
-            await expect(secondComment).toContainText('Hidden for members');
-
-            // Check can show it again
-            await moreButtons.nth(1).click();
-            await moreButtons.nth(1).getByText('Show comment').click();
-            await expect(secondComment).toContainText('This is comment 2');
-        });
-
-        test('can hide and show replies', async ({page}) => {
-            mockedApi.addComment({
-                id: '1',
-                html: '<p>This is comment 1</p>',
-                replies: [
-                    buildReply({id: '2', html: '<p>This is reply 1</p>'}),
-                    buildReply({id: '3', html: '<p>This is reply 2</p>'})
-                ]
-            });
-
-            const {frame} = await initializeTest(page, {labs: true});
-            const comments = await frame.getByTestId('comment-component');
-            const replyToHide = comments.nth(1);
-
-            // Hide the 1st reply
-            await replyToHide.getByTestId('more-button').click();
-            await replyToHide.getByTestId('hide-button').click();
-
-            await expect(replyToHide).toContainText('Hidden for members');
-
-            // Show it again
-            await replyToHide.getByTestId('more-button').click();
-            await replyToHide.getByTestId('show-button').click();
-
-            await expect(replyToHide).not.toContainText('Hidden for members');
-        });
-
-        test('updates in-reply-to snippets when hiding', async ({page}) => {
-            mockedApi.addComment({
-                id: '1',
-                html: '<p>This is comment 1</p>',
-                replies: [
-                    buildReply({id: '2', html: '<p>This is reply 1</p>'}),
-                    buildReply({id: '3', html: '<p>This is reply 2</p>', in_reply_to_id: '2', in_reply_to_snippet: 'This is reply 1'}),
-                    buildReply({id: '4', html: '<p>This is reply 3</p>'})
-                ]
-            });
-
-            const {frame} = await initializeTest(page, {labs: true});
-            const comments = await frame.getByTestId('comment-component');
-            const replyToHide = comments.nth(1);
-            const inReplyToComment = comments.nth(2);
-
-            // Hide the 1st reply
-            await replyToHide.getByTestId('more-button').click();
-            await replyToHide.getByTestId('hide-button').click();
-
-            await expect(inReplyToComment).toContainText('[removed]');
-            await expect(inReplyToComment).not.toContainText('This is reply 1');
-
-            // Show it again
-            await replyToHide.getByTestId('more-button').click();
-            await replyToHide.getByTestId('show-button').click();
-
-            await expect(inReplyToComment).not.toContainText('[removed]');
-            await expect(inReplyToComment).toContainText('This is reply 1');
-        });
-
-        test('has correct comments count', async ({page}) => {
-            mockedApi.addComment({html: '<p>This is comment 1</p>', replies: [buildReply()]});
-            mockedApi.addComment({html: '<p>This is comment 2</p>'});
-
-            const {frame} = await initializeTest(page, {labs: true});
-            await expect(frame.getByTestId('count')).toContainText('3 comments');
-        });
+        const {frame} = await initializeTest(page);
+        await expect(frame.getByTestId('count')).toContainText('3 comments');
     });
 });
