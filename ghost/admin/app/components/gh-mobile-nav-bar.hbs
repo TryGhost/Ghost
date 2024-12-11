@@ -8,7 +8,7 @@
 <div 
     role="button" 
     class="gh-mobile-nav-bar-more" 
-    {{on "click" (fn this.ui.toggleMobileMenu)}}
+    {{on "click" this.ui.toggleMobileMenu}}
     data-test-mobile-nav="more"
 >
     {{svg-jar "icon" class="icon-gh"}}More
