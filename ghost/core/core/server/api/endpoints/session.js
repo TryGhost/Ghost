@@ -20,7 +20,6 @@ const controller = {
         return models.User.findOne({id: frame.options.context.user});
     },
     add(frame) {
-        console.log('Are we here in add? frame: ', JSON.stringify(frame));
         const object = frame.data;
 
         if (!object || !object.username || !object.password) {
@@ -34,7 +33,7 @@ const controller = {
         return models.User.getByEmail(object.username).then((user) => {
             if (user && !user.hasLoggedIn()) {
                 skipVerification = true;
-            } else if (frame.data.key === 'password_reset') {
+            } else if (frame.data.skipEmailVerification) {
                 skipVerification = true;
             }
 

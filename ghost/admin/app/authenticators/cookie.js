@@ -19,7 +19,7 @@ export default Authenticator.extend({
         return RSVP.resolve();
     },
 
-    authenticate({identification, password, token, key}) {
+    authenticate({identification, password, token, skipEmailVerification}) {
         if (token) {
             const data = {token};
             const options = {
@@ -33,8 +33,8 @@ export default Authenticator.extend({
         }
 
         const data = {username: identification, password};
-        if(key) {
-            data.key = key;
+        if(skipEmailVerification) {
+            data.skipEmailVerification = true;
         }
         const options = {
             data,
