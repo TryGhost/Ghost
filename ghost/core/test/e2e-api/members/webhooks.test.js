@@ -1855,7 +1855,7 @@ describe('Members API', function () {
                 });
         });
 
-        async function testWithAttribution(attribution, attributionResource) {
+        async function testAttributionOnSignup(attribution, attributionResource) {
             const customer_id = createStripeID('cust');
             const subscription_id = createStripeID('sub');
 
@@ -1900,7 +1900,31 @@ describe('Members API', function () {
                 }
             });
 
-            let webhookPayload = JSON.stringify({
+            // Stripe first sends a customer.subscription.created webhook
+            const subscriptionWebhookPayload = JSON.stringify({
+                type: 'customer.subscription.created',
+                data: {
+                    object: subscription
+                }
+            });
+
+            const subscriptionWebhookSignature = stripe.webhooks.generateTestHeaderString({
+                payload: subscriptionWebhookPayload,
+                secret: process.env.WEBHOOK_SECRET
+            });
+
+            await membersAgent.post('/webhooks/stripe/')
+                .body(subscriptionWebhookPayload)
+                .header('content-type', 'application/json')
+                .header('stripe-signature', subscriptionWebhookSignature)
+                .expectStatus(200);
+
+            // This should not create a member in the database yet
+            const {body: bodyAfterSubscriptionWebhook} = await adminAgent.get(`/members/?search=${customer_id}@email.com`);
+            assert.equal(bodyAfterSubscriptionWebhook.members.length, 0, 'A member was created before the checkout.session.completed webhook was sent');
+
+            // Then it sends a checkout.session.completed webhook
+            const checkoutWebhookPayload = JSON.stringify({
                 type: 'checkout.session.completed',
                 data: {
                     object: {
@@ -1916,15 +1940,15 @@ describe('Members API', function () {
                 }
             });
 
-            let webhookSignature = stripe.webhooks.generateTestHeaderString({
-                payload: webhookPayload,
+            const checkoutWebhookSignature = stripe.webhooks.generateTestHeaderString({
+                payload: checkoutWebhookPayload,
                 secret: process.env.WEBHOOK_SECRET
             });
 
             await membersAgent.post('/webhooks/stripe/')
-                .body(webhookPayload)
+                .body(checkoutWebhookPayload)
                 .header('content-type', 'application/json')
-                .header('stripe-signature', webhookSignature)
+                .header('stripe-signature', checkoutWebhookSignature)
                 .expectStatus(200);
 
             const {body} = await adminAgent.get(`/members/?search=${customer_id}@email.com`);
@@ -1993,6 +2017,161 @@ describe('Members API', function () {
             return memberModel;
         }
 
+        async function testAttributionOnUpgrade(attribution, attributionResource) {
+            const customer_id = createStripeID('cust');
+            const subscription_id = createStripeID('sub');
+
+            const interval = 'month';
+            const unit_amount = 150;
+
+            // Create initial free member
+            const initialFreeMember = await models.Member.add({
+                email: `${customer_id}@email.com`,
+                status: 'free',
+                email_disabled: false
+            });
+
+            // Create a Stripe Customer too for the free member, as this is created during Stripe Checkout, i.e. before receiving Stripe webhooks
+            await models.MemberStripeCustomer.add({
+                member_id: initialFreeMember.id,
+                customer_id: customer_id,
+                email: initialFreeMember.get('email')
+            });
+
+            set(subscription, {
+                id: subscription_id,
+                customer: customer_id,
+                status: 'active',
+                items: {
+                    type: 'list',
+                    data: [{
+                        id: 'item_123',
+                        price: {
+                            id: 'price_123',
+                            product: 'product_123',
+                            active: true,
+                            nickname: interval,
+                            currency: 'usd',
+                            recurring: {
+                                interval
+                            },
+                            unit_amount,
+                            type: 'recurring'
+                        }
+                    }]
+                },
+                start_date: beforeNow / 1000,
+                current_period_end: Math.floor(beforeNow / 1000) + (60 * 60 * 24 * 31),
+                cancel_at_period_end: false,
+                metadata: {}
+            });
+
+            set(customer, {
+                id: customer_id,
+                name: 'Test Member',
+                email: `${customer_id}@email.com`,
+                subscriptions: {
+                    type: 'list',
+                    data: [subscription]
+                }
+            });
+
+            // Stripe first sends a customer.subscription.created webhook
+            const subscriptionWebhookPayload = JSON.stringify({
+                type: 'customer.subscription.created',
+                data: {
+                    object: subscription
+                }
+            });
+
+            const subscriptionWebhookSignature = stripe.webhooks.generateTestHeaderString({
+                payload: subscriptionWebhookPayload,
+                secret: process.env.WEBHOOK_SECRET
+            });
+
+            await membersAgent.post('/webhooks/stripe/')
+                .body(subscriptionWebhookPayload)
+                .header('content-type', 'application/json')
+                .header('stripe-signature', subscriptionWebhookSignature)
+                .expectStatus(200);
+
+            // This should not create a member subscription in the database yet
+            const {body: bodyAfterSubscriptionWebhook} = await adminAgent.get(`/members/?search=${customer_id}@email.com`);
+            const memberAfterSubscriptionWebhook = bodyAfterSubscriptionWebhook.members[0];
+
+            assert.equal(memberAfterSubscriptionWebhook.subscriptions.length, 0, 'The member should not have a subscription after customer.subscription.updated');
+            assert.equal(memberAfterSubscriptionWebhook.status, 'free', 'The member status should still be "free" after customer.subscription.updated');
+
+            // Then it sends a checkout.session.completed webhook
+            const checkoutWebhookPayload = JSON.stringify({
+                type: 'checkout.session.completed',
+                data: {
+                    object: {
+                        mode: 'subscription',
+                        customer: customer.id,
+                        subscription: subscription.id,
+                        metadata: attribution ? {
+                            attribution_id: attribution.id,
+                            attribution_url: attribution.url,
+                            attribution_type: attribution.type
+                        } : {}
+                    }
+                }
+            });
+
+            const checkoutWebhookSignature = stripe.webhooks.generateTestHeaderString({
+                payload: checkoutWebhookPayload,
+                secret: process.env.WEBHOOK_SECRET
+            });
+
+            await membersAgent.post('/webhooks/stripe/')
+                .body(checkoutWebhookPayload)
+                .header('content-type', 'application/json')
+                .header('stripe-signature', checkoutWebhookSignature)
+                .expectStatus(200);
+
+            const {body} = await adminAgent.get(`/members/?search=${customer_id}@email.com`);
+            assert.equal(body.members.length, 1, 'The member was not created');
+            const member = body.members[0];
+
+            assert.equal(member.status, 'paid', 'The member should be "paid" after checkout.session.completed');
+            assert.equal(member.subscriptions.length, 1, 'The member should have a single subscription after checkout.session.completed');
+
+            // Convert Stripe ID to internal model ID
+            const subscriptionModel = await getSubscription(member.subscriptions[0].id);
+
+            await assertMemberEvents({
+                eventType: 'SubscriptionCreatedEvent',
+                memberId: member.id,
+                asserts: [
+                    {
+                        member_id: member.id,
+                        subscription_id: subscriptionModel.id,
+
+                        // Defaults if attribution is not set
+                        attribution_id: attribution?.id ?? null,
+                        attribution_url: attribution?.url ?? null,
+                        attribution_type: attribution?.type ?? null
+                    }
+                ]
+            });
+
+            await adminAgent
+                .get(`/members/${member.id}/`)
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    members: new Array(1).fill(memberMatcherShallowIncludes)
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                })
+                .expect(({body: body3}) => {
+                    should(body3.members[0].subscriptions[0].attribution).eql(attributionResource);
+                    subscriptionAttributions.push(body3.members[0].subscriptions[0].attribution);
+                });
+        }
+
         const subscriptionAttributions = [];
 
         it('Creates a SubscriptionCreatedEvent with url attribution', async function () {
@@ -2005,7 +2184,7 @@ describe('Members API', function () {
 
             const absoluteUrl = urlUtils.createUrl('/', true);
 
-            await testWithAttribution(attribution, {
+            const attributionResource = {
                 id: null,
                 url: absoluteUrl,
                 type: 'url',
@@ -2013,7 +2192,10 @@ describe('Members API', function () {
                 referrer_source: null,
                 referrer_medium: null,
                 referrer_url: null
-            });
+            };
+
+            await testAttributionOnSignup(attribution, attributionResource);
+            await testAttributionOnUpgrade(attribution, attributionResource);
         });
 
         it('Creates a SubscriptionCreatedEvent with post attribution', async function () {
@@ -2028,7 +2210,7 @@ describe('Members API', function () {
 
             const absoluteUrl = urlService.getUrlByResourceId(post.id, {absolute: true});
 
-            await testWithAttribution(attribution, {
+            const attributionResource = {
                 id: post.id,
                 url: absoluteUrl,
                 type: 'post',
@@ -2036,7 +2218,10 @@ describe('Members API', function () {
                 referrer_source: null,
                 referrer_medium: null,
                 referrer_url: null
-            });
+            };
+
+            await testAttributionOnSignup(attribution, attributionResource);
+            await testAttributionOnUpgrade(attribution, attributionResource);
         });
 
         it('Creates a SubscriptionCreatedEvent with deleted post attribution', async function () {
@@ -2048,7 +2233,7 @@ describe('Members API', function () {
 
             const absoluteUrl = urlUtils.createUrl('/removed-blog-post/', true);
 
-            await testWithAttribution(attribution, {
+            const attributionResource = {
                 id: null,
                 url: absoluteUrl,
                 type: 'url',
@@ -2056,7 +2241,10 @@ describe('Members API', function () {
                 referrer_source: null,
                 referrer_medium: null,
                 referrer_url: null
-            });
+            };
+
+            await testAttributionOnSignup(attribution, attributionResource);
+            await testAttributionOnUpgrade(attribution, attributionResource);
         });
 
         it('Creates a SubscriptionCreatedEvent with page attribution', async function () {
@@ -2071,7 +2259,7 @@ describe('Members API', function () {
 
             const absoluteUrl = urlService.getUrlByResourceId(post.id, {absolute: true});
 
-            await testWithAttribution(attribution, {
+            const attributionResource = {
                 id: post.id,
                 url: absoluteUrl,
                 type: 'page',
@@ -2079,7 +2267,10 @@ describe('Members API', function () {
                 referrer_source: null,
                 referrer_medium: null,
                 referrer_url: null
-            });
+            };
+
+            await testAttributionOnSignup(attribution, attributionResource);
+            await testAttributionOnUpgrade(attribution, attributionResource);
         });
 
         it('Creates a SubscriptionCreatedEvent with tag attribution', async function () {
@@ -2094,7 +2285,7 @@ describe('Members API', function () {
 
             const absoluteUrl = urlService.getUrlByResourceId(tag.id, {absolute: true});
 
-            await testWithAttribution(attribution, {
+            const attributionResource = {
                 id: tag.id,
                 url: absoluteUrl,
                 type: 'tag',
@@ -2102,7 +2293,10 @@ describe('Members API', function () {
                 referrer_source: null,
                 referrer_medium: null,
                 referrer_url: null
-            });
+            };
+
+            await testAttributionOnSignup(attribution, attributionResource);
+            await testAttributionOnUpgrade(attribution, attributionResource);
         });
 
         it('Creates a SubscriptionCreatedEvent with author attribution', async function () {
@@ -2117,7 +2311,7 @@ describe('Members API', function () {
 
             const absoluteUrl = urlService.getUrlByResourceId(author.id, {absolute: true});
 
-            await testWithAttribution(attribution, {
+            const attributionResource = {
                 id: author.id,
                 url: absoluteUrl,
                 type: 'author',
@@ -2125,12 +2319,16 @@ describe('Members API', function () {
                 referrer_source: null,
                 referrer_medium: null,
                 referrer_url: null
-            });
+            };
+
+            await testAttributionOnSignup(attribution, attributionResource);
+            await testAttributionOnUpgrade(attribution, attributionResource);
         });
 
         it('Creates a SubscriptionCreatedEvent without attribution', async function () {
             const attribution = undefined;
-            await testWithAttribution(attribution, {
+
+            const attributionResource = {
                 id: null,
                 url: null,
                 type: null,
@@ -2138,13 +2336,17 @@ describe('Members API', function () {
                 referrer_source: null,
                 referrer_medium: null,
                 referrer_url: null
-            });
+            };
+
+            await testAttributionOnSignup(attribution, attributionResource);
+            await testAttributionOnUpgrade(attribution, attributionResource);
         });
 
         it('Creates a SubscriptionCreatedEvent with empty attribution object', async function () {
             // Shouldn't happen, but to make sure we handle it
             const attribution = {};
-            await testWithAttribution(attribution, {
+
+            const attributionResource = {
                 id: null,
                 url: null,
                 type: null,
@@ -2152,7 +2354,10 @@ describe('Members API', function () {
                 referrer_source: null,
                 referrer_medium: null,
                 referrer_url: null
-            });
+            };
+
+            await testAttributionOnSignup(attribution, attributionResource);
+            await testAttributionOnUpgrade(attribution, attributionResource);
         });
 
         // Activity feed
@@ -2160,7 +2365,7 @@ describe('Members API', function () {
         it('Returns subscription created attributions in activity feed', async function () {
             // Check activity feed
             await adminAgent
-                .get(`/members/events/?filter=type:subscription_event`)
+                .get(`/members/events/?filter=type:subscription_event&limit=100`)
                 .expectStatus(200)
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
@@ -2168,7 +2373,8 @@ describe('Members API', function () {
                 })
                 .matchBodySnapshot({
                     events: new Array(subscriptionAttributions.length).fill({
-                        data: anyObject
+                        data: anyObject,
+                        type: 'subscription_event'
                     })
                 })
                 .expect(({body}) => {
