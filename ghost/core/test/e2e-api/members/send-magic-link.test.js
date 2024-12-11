@@ -3,6 +3,7 @@ const should = require('should');
 const settingsCache = require('../../../core/shared/settings-cache');
 const DomainEvents = require('@tryghost/domain-events');
 const {anyErrorId} = matchers;
+const spamPrevention = require('../../../core/server/web/shared/middleware/api/spam-prevention');
 
 let membersAgent, membersService;
 
@@ -18,6 +19,9 @@ describe('sendMagicLink', function () {
 
     beforeEach(function () {
         mockManager.mockMail();
+
+        // Reset spam prevention middleware
+        spamPrevention.reset();
 
         // Reset settings
         settingsCache.set('members_signup_access', {value: 'all'});
