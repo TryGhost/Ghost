@@ -1550,16 +1550,24 @@ Post = ghostBookshelf.Model.extend({
 
     countRelations() {
         return {
-            signups(modelOrCollection) {
-                modelOrCollection.query('columns', 'posts.*', (qb) => {
+            signups(modelOrCollection, options) {
+                let columns = 'posts.*';
+                if (options?.columns) {
+                    columns = 'posts.id';
+                }
+                modelOrCollection.query('columns', columns, (qb) => {
                     qb.count('members_created_events.id')
                         .from('members_created_events')
                         .whereRaw('posts.id = members_created_events.attribution_id')
                         .as('count__signups');
                 });
             },
-            paid_conversions(modelOrCollection) {
-                modelOrCollection.query('columns', 'posts.*', (qb) => {
+            paid_conversions(modelOrCollection, options) {
+                let columns = 'posts.*';
+                if (options?.columns) {
+                    columns = 'posts.id';
+                }
+                modelOrCollection.query('columns', columns, (qb) => {
                     qb.count('members_subscription_created_events.id')
                         .from('members_subscription_created_events')
                         .whereRaw('posts.id = members_subscription_created_events.attribution_id')
@@ -1569,8 +1577,12 @@ Post = ghostBookshelf.Model.extend({
             /**
              * Combination of sigups and paid conversions, but unique per member
              */
-            conversions(modelOrCollection) {
-                modelOrCollection.query('columns', 'posts.*', (qb) => {
+            conversions(modelOrCollection, options) {
+                let columns = 'posts.*';
+                if (options?.columns) {
+                    columns = 'posts.id';
+                }
+                modelOrCollection.query('columns', columns, (qb) => {
                     qb.count('*')
                         .from('k')
                         .with('k', (q) => {
@@ -1586,8 +1598,12 @@ Post = ghostBookshelf.Model.extend({
                         .as('count__conversions');
                 });
             },
-            clicks(modelOrCollection) {
-                modelOrCollection.query('columns', 'posts.*', (qb) => {
+            clicks(modelOrCollection, options) {
+                let columns = 'posts.*';
+                if (options?.columns) {
+                    columns = 'posts.id';
+                }
+                modelOrCollection.query('columns', columns, (qb) => { //change this as per option
                     qb.countDistinct('members_click_events.member_id')
                         .from('members_click_events')
                         .join('redirects', 'members_click_events.redirect_id', 'redirects.id')
@@ -1595,24 +1611,36 @@ Post = ghostBookshelf.Model.extend({
                         .as('count__clicks');
                 });
             },
-            sentiment(modelOrCollection) {
-                modelOrCollection.query('columns', 'posts.*', (qb) => {
+            sentiment(modelOrCollection, options) {
+                let columns = 'posts.*';
+                if (options?.columns) {
+                    columns = 'posts.id';
+                }
+                modelOrCollection.query('columns', columns, (qb) => {
                     qb.select(qb.client.raw('COALESCE(ROUND(AVG(score) * 100), 0)'))
                         .from('members_feedback')
                         .whereRaw('posts.id = members_feedback.post_id')
                         .as('count__sentiment');
                 });
             },
-            negative_feedback(modelOrCollection) {
-                modelOrCollection.query('columns', 'posts.*', (qb) => {
+            negative_feedback(modelOrCollection, options) {
+                let columns = 'posts.*';
+                if (options?.columns) {
+                    columns = 'posts.id';
+                }
+                modelOrCollection.query('columns', columns, (qb) => {
                     qb.count('*')
                         .from('members_feedback')
                         .whereRaw('posts.id = members_feedback.post_id AND members_feedback.score = 0')
                         .as('count__negative_feedback');
                 });
             },
-            positive_feedback(modelOrCollection) {
-                modelOrCollection.query('columns', 'posts.*', (qb) => {
+            positive_feedback(modelOrCollection, options) {
+                let columns = 'posts.*';
+                if (options?.columns) {
+                    columns = 'posts.id';
+                }
+                modelOrCollection.query('columns', columns, (qb) => {
                     qb.sum('score')
                         .from('members_feedback')
                         .whereRaw('posts.id = members_feedback.post_id')

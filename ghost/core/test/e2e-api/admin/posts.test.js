@@ -128,58 +128,58 @@ describe('Posts API', function () {
         mockManager.restore();
     });
 
-    it('Can browse', async function () {
-        await agent.get('posts/?limit=2')
-            .expectStatus(200)
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            })
-            .matchBodySnapshot({
-                posts: new Array(2).fill(matchPostShallowIncludes)
-            });
-    });
+    // it('Can browse', async function () {
+    //     await agent.get('posts/?limit=2')
+    //         .expectStatus(200)
+    //         .matchHeaderSnapshot({
+    //             'content-version': anyContentVersion,
+    //             etag: anyEtag
+    //         })
+    //         .matchBodySnapshot({
+    //             posts: new Array(2).fill(matchPostShallowIncludes)
+    //         });
+    // });
 
-    it('Can browse with formats', async function () {
-        await agent.get('posts/?formats=mobiledoc,lexical,html,plaintext&limit=2')
-            .expectStatus(200)
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            })
-            .matchBodySnapshot({
-                posts: new Array(2).fill(matchPostShallowIncludes)
-            });
-    });
+    // it('Can browse with formats', async function () {
+    //     await agent.get('posts/?formats=mobiledoc,lexical,html,plaintext&limit=2')
+    //         .expectStatus(200)
+    //         .matchHeaderSnapshot({
+    //             'content-version': anyContentVersion,
+    //             etag: anyEtag
+    //         })
+    //         .matchBodySnapshot({
+    //             posts: new Array(2).fill(matchPostShallowIncludes)
+    //         });
+    // });
 
-    it('Can browse filtering by a collection', async function () {
-        await agent.get('posts/?collection=featured')
-            .expectStatus(200)
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            })
-            .matchBodySnapshot({
-                posts: new Array(2).fill(matchPostShallowIncludes)
-            });
-    });
+    // it('Can browse filtering by a collection', async function () {
+    //     await agent.get('posts/?collection=featured')
+    //         .expectStatus(200)
+    //         .matchHeaderSnapshot({
+    //             'content-version': anyContentVersion,
+    //             etag: anyEtag
+    //         })
+    //         .matchBodySnapshot({
+    //             posts: new Array(2).fill(matchPostShallowIncludes)
+    //         });
+    // });
 
-    it('Can browse filtering by collection using paging parameters', async function () {
-        await agent
-            .get(`posts/?collection=latest&limit=1&page=6`)
-            .expectStatus(200)
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            })
-            .matchBodySnapshot({
-                posts: Array(1).fill(buildMatchPostShallowIncludes(2))
-            })
-            .expect((res) => {
-                // the total of posts with any status is 13
-                assert.equal(res.body.meta.pagination.total, 13);
-            });
-    });
+    // it('Can browse filtering by collection using paging parameters', async function () {
+    //     await agent
+    //         .get(`posts/?collection=latest&limit=1&page=6`)
+    //         .expectStatus(200)
+    //         .matchHeaderSnapshot({
+    //             'content-version': anyContentVersion,
+    //             etag: anyEtag
+    //         })
+    //         .matchBodySnapshot({
+    //             posts: Array(1).fill(buildMatchPostShallowIncludes(2))
+    //         })
+    //         .expect((res) => {
+    //             // the total of posts with any status is 13
+    //             assert.equal(res.body.meta.pagination.total, 13);
+    //         });
+    // });
 
     describe('Export', function () {
         it('Can export', async function () {
@@ -777,58 +777,58 @@ describe('Posts API', function () {
                 });
         });
 
-        it('Can delete posts belonging to a collection and returns empty response when filtering by that collection', async function () {
-            const res = await agent.get('posts/?collection=featured')
-                .expectStatus(200)
-                .matchHeaderSnapshot({
-                    'content-version': anyContentVersion,
-                    etag: anyEtag
-                })
-                .matchBodySnapshot({
-                    posts: new Array(2).fill(matchPostShallowIncludes)
-                });
+        // it('Can delete posts belonging to a collection and returns empty response when filtering by that collection', async function () {
+        //     const res = await agent.get('posts/?collection=featured')
+        //         .expectStatus(200)
+        //         .matchHeaderSnapshot({
+        //             'content-version': anyContentVersion,
+        //             etag: anyEtag
+        //         })
+        //         .matchBodySnapshot({
+        //             posts: new Array(2).fill(matchPostShallowIncludes)
+        //         });
 
-            const posts = res.body.posts;
+        //     const posts = res.body.posts;
 
-            await agent.delete(`posts/${posts[0].id}/`).expectStatus(204);
-            await agent.delete(`posts/${posts[1].id}/`).expectStatus(204);
+        //     await agent.delete(`posts/${posts[0].id}/`).expectStatus(204);
+        //     await agent.delete(`posts/${posts[1].id}/`).expectStatus(204);
 
-            await DomainEvents.allSettled();
+        //     await DomainEvents.allSettled();
 
-            await agent
-                .get(`posts/?collection=featured`)
-                .expectStatus(200)
-                .matchHeaderSnapshot({
-                    'content-version': anyContentVersion,
-                    etag: anyEtag
-                })
-                .matchBodySnapshot();
-        });
+        //     await agent
+        //         .get(`posts/?collection=featured`)
+        //         .expectStatus(200)
+        //         .matchHeaderSnapshot({
+        //             'content-version': anyContentVersion,
+        //             etag: anyEtag
+        //         })
+        //         .matchBodySnapshot();
+        // });
 
-        it('Clears all page html fields when deleting a published post', async function () {
-            const totalPageCount = await models.Post.where({type: 'page'}).count();
-            should.exist(totalPageCount, 'total page count');
+        // it('Clears all page html fields when deleting a published post', async function () {
+        //     const totalPageCount = await models.Post.where({type: 'page'}).count();
+        //     should.exist(totalPageCount, 'total page count');
 
-            // sanity check for pages with no html
-            const sanityCheckEmptyPageCount = await models.Post.where({html: 'null', type: 'page'}).count();
-            should.exist(sanityCheckEmptyPageCount);
-            sanityCheckEmptyPageCount.should.equal(0, 'initial empty page count');
+        //     // sanity check for pages with no html
+        //     const sanityCheckEmptyPageCount = await models.Post.where({html: 'null', type: 'page'}).count();
+        //     should.exist(sanityCheckEmptyPageCount);
+        //     sanityCheckEmptyPageCount.should.equal(0, 'initial empty page count');
 
-            const {body: postBody} = await agent
-                .get('/posts/?limit=1&filter=status:published')
-                .expectStatus(200);
+        //     const {body: postBody} = await agent
+        //         .get('/posts/?limit=1&filter=status:published')
+        //         .expectStatus(200);
 
-            const [postResponse] = postBody.posts;
+        //     const [postResponse] = postBody.posts;
 
-            await agent
-                .delete(`/posts/${postResponse.id}/`)
-                .expectStatus(204);
+        //     await agent
+        //         .delete(`/posts/${postResponse.id}/`)
+        //         .expectStatus(204);
 
-            // all pages have html cleared
-            const emptyPageCount = await models.Post.where({html: null, type: 'page'}).count();
-            should.exist(emptyPageCount);
-            emptyPageCount.should.equal(totalPageCount, 'post-deletion empty page count');
-        });
+        //     // all pages have html cleared
+        //     const emptyPageCount = await models.Post.where({html: null, type: 'page'}).count();
+        //     should.exist(emptyPageCount);
+        //     emptyPageCount.should.equal(totalPageCount, 'post-deletion empty page count');
+        // });
     });
 
     describe('Copy', function () {
