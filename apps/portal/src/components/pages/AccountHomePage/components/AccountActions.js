@@ -42,13 +42,7 @@ const AccountActions = () => {
                 {
                     showEmailPreferences
                         ? <EmailPreferencesAction />
-                        : <></>
-                }
-
-                {
-                    showEmailUnsubscribe && !showEmailPreferences
-                        ? <EmailNewsletterAction />
-                        : <></>
+                        : showEmailUnsubscribe && <EmailNewsletterAction />
                 }
 
             </div>
