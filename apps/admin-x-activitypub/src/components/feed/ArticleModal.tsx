@@ -37,7 +37,7 @@ interface IframeWindow extends Window {
     resizeIframe?: () => void;
 }
 
-const ArticleBody: React.FC<{heading: string, image: string|undefined, excerpt: string|undefined, html: string, fontSize: string, lineHeight: string, fontFamily: SelectOption}> = ({
+const ArticleBody: React.FC<{heading: string, image: string|undefined, excerpt: string|undefined, html: string, fontSize: FontSize, lineHeight: string, fontFamily: SelectOption}> = ({
     heading,
     image,
     excerpt,
@@ -60,9 +60,10 @@ const ArticleBody: React.FC<{heading: string, image: string|undefined, excerpt: 
             ${cssContent}
             <style>
                 :root {
-                    --gh-content-font-size: ${fontSize};
-                    --gh-content-line-height: ${lineHeight};
-                    --gh-content-font-family: ${fontFamily.value};
+                    --font-size: ${fontSize};
+                    --line-height: ${lineHeight};
+                    --font-family: ${fontFamily.value};
+                    --content-spacing-factor: ${SPACING_FACTORS[FONT_SIZES.indexOf(fontSize)]};
                 }
                 body {
                     margin: 0;
@@ -74,25 +75,14 @@ const ArticleBody: React.FC<{heading: string, image: string|undefined, excerpt: 
                 let isFullyLoaded = false;
 
                 function resizeIframe() {
-                    // Temporarily set height to a small value
-                    document.body.style.height = '1px';
-                    document.documentElement.style.height = '1px';
-
-                    // Force a reflow
-                    document.body.offsetHeight;
-
-                    const finalHeight = Math.max(
-                        document.body.scrollHeight,
-                        document.body.offsetHeight,
-                        document.documentElement.scrollHeight
-                    );
-
-                    console.log('Final calculated height:', finalHeight);
+                    const bodyHeight = document.body.offsetHeight;
+                    console.log('Body height after style change:', bodyHeight);
 
                     window.parent.postMessage({
                         type: 'resize',
-                        height: finalHeight,
-                        isLoaded: isFullyLoaded
+                        height: bodyHeight,
+                        isLoaded: isFullyLoaded,
+                        bodyHeight: bodyHeight
                     }, '*');
                 }
 
@@ -124,11 +114,8 @@ const ArticleBody: React.FC<{heading: string, image: string|undefined, excerpt: 
                 window.addEventListener('resize', resizeIframe);
                 new MutationObserver(resizeIframe).observe(document.body, { subtree: true, childList: true });
 
-                // Listen for custom event to trigger resize
                 window.addEventListener('message', (event) => {
-                    console.log('Received message:', event.data); // Debug log
                     if (event.data.type === 'triggerResize') {
-                        console.log('Triggering resize'); // Debug log
                         resizeIframe();
                     }
                 });
@@ -159,15 +146,15 @@ const ArticleBody: React.FC<{heading: string, image: string|undefined, excerpt: 
             return;
         }
 
-        // Set initial content only once
         if (!iframe.srcdoc) {
             iframe.srcdoc = htmlContent;
         }
 
         const handleMessage = (event: MessageEvent) => {
             if (event.data.type === 'resize') {
-                setIframeHeight(`${event.data.height}px`);
-                iframe.style.height = `${event.data.height}px`;
+                const newHeight = `${event.data.bodyHeight + 24}px`;
+                setIframeHeight(newHeight);
+                iframe.style.height = newHeight;
 
                 if (event.data.isLoaded) {
                     setIsLoading(false);
@@ -195,25 +182,19 @@ const ArticleBody: React.FC<{heading: string, image: string|undefined, excerpt: 
         }
 
         const root = iframeDocument.documentElement;
-        root.style.setProperty('--gh-content-font-size', fontSize);
-        root.style.setProperty('--gh-content-line-height', lineHeight);
-        root.style.setProperty('--gh-content-font-family', fontFamily.value);
+        root.style.setProperty('--font-size', fontSize);
+        root.style.setProperty('--line-height', lineHeight);
+        root.style.setProperty('--font-family', fontFamily.value);
+        root.style.setProperty('--content-spacing-factor', SPACING_FACTORS[FONT_SIZES.indexOf(fontSize)]);
 
-        // Give the iframe a moment to initialize its functions
-        setTimeout(() => {
-            try {
-                const iframeWindow = iframe.contentWindow as IframeWindow;
-                if (iframeWindow && typeof iframeWindow.resizeIframe === 'function') {
-                    iframeWindow.resizeIframe();
-                } else {
-                    // Fallback: trigger a resize event
-                    const resizeEvent = new Event('resize');
-                    iframeDocument.dispatchEvent(resizeEvent);
-                }
-            } catch (e) {
-                console.error('Failed to trigger resize:', e);
-            }
-        }, 100);
+        const iframeWindow = iframe.contentWindow as IframeWindow;
+        if (iframeWindow && typeof iframeWindow.resizeIframe === 'function') {
+            iframeWindow.resizeIframe();
+        } else {
+            // Fallback: trigger a resize event
+            const resizeEvent = new Event('resize');
+            iframeDocument.dispatchEvent(resizeEvent);
+        }
     }, [fontSize, lineHeight, fontFamily]);
 
     return (
@@ -248,6 +229,9 @@ const FeedItemDivider: React.FC = () => (
 
 const FONT_SIZES = ['14px', '17px', '19px', '21px', '24px'] as const;
 const LINE_HEIGHTS = ['1.3', '1.4', '1.5', '1.6', '1.7', '1.8'] as const;
+const SPACING_FACTORS = ['0.6', '1', '1.1', '1.2', '1.3'] as const;
+
+type FontSize = typeof FONT_SIZES[number];
 
 // Add constants for localStorage keys
 const STORAGE_KEYS = {
@@ -420,9 +404,10 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
         if (iframe) {
             const iframeDocument = iframe.contentDocument || iframe.contentWindow?.document;
             if (iframeDocument) {
-                iframeDocument.documentElement.style.setProperty('--gh-content-font-size', FONT_SIZES[currentFontSizeIndex]);
-                iframeDocument.documentElement.style.setProperty('--gh-content-line-height', LINE_HEIGHTS[currentLineHeightIndex]);
-                iframeDocument.documentElement.style.setProperty('--gh-content-font-family', fontFamily.value);
+                iframeDocument.documentElement.style.setProperty('--font-size', FONT_SIZES[currentFontSizeIndex]);
+                iframeDocument.documentElement.style.setProperty('--line-height', LINE_HEIGHTS[currentLineHeightIndex]);
+                iframeDocument.documentElement.style.setProperty('--font-family', fontFamily.value);
+                iframeDocument.documentElement.style.setProperty('--content-spacing-factor', SPACING_FACTORS[FONT_SIZES.indexOf(FONT_SIZES[currentFontSizeIndex])]);
             }
         }
     }, [currentFontSizeIndex, currentLineHeightIndex, fontFamily]);
