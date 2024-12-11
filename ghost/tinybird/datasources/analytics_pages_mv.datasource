@@ -1,8 +1,9 @@
-VERSION 0
+VERSION 1
 
 SCHEMA >
     `site_uuid` String,
     `post_uuid` String,
+    `post_type` String,
     `date` Date,
     `device` String,
     `browser` String,

@@ -1,4 +1,4 @@
-VERSION 0
+VERSION 1
 
 NODE parsed_hits
 DESCRIPTION >
@@ -19,6 +19,7 @@ SQL >
         JSONExtractString(payload, 'member_uuid') as member_uuid,
         JSONExtractString(payload, 'member_status') as member_status,
         JSONExtractString(payload, 'post_uuid') as post_uuid,
+        JSONExtractString(payload, 'post_type') as post_type,
         lower(JSONExtractString(payload, 'user-agent')) as user_agent
     FROM analytics_events
     where action = 'page_hit'
@@ -34,6 +35,7 @@ SQL >
         member_uuid,
         member_status,
         post_uuid,
+        post_type,
         location,
         domainWithoutWWW(referrer) as source,
         pathname,
@@ -71,6 +73,7 @@ SQL >
         site_uuid,
         toDate(timestamp) AS date,
         post_uuid,
+        post_type,
         device,
         browser,
         location,
@@ -82,8 +85,8 @@ SQL >
         ) AS member_status,
         uniqState(session_id) AS visits,
         countState() AS pageviews
-    FROM analytics_hits_data
-    GROUP BY date, device, browser, location, source, pathname, post_uuid,site_uuid
+    FROM analytics_hits
+        GROUP BY date, device, browser, location, source, pathname, post_uuid, post_type, site_uuid
 
 TYPE MATERIALIZED
-DATASOURCE analytics_pages_mv__v0
+DATASOURCE analytics_pages_mv__v1
