@@ -425,6 +425,36 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
     // Calculate the grid column width by subtracting 64px from the current max width
     const currentGridWidth = `${parseInt(currentMaxWidth) - 64}px`;
 
+    const [readingProgress, setReadingProgress] = useState(0);
+
+    // Add the scroll handler
+    useEffect(() => {
+        const container = document.querySelector('.overflow-y-auto');
+        const article = document.getElementById('object-content');
+
+        const handleScroll = () => {
+            if (!container || !article) {
+                return;
+            }
+
+            const articleRect = article.getBoundingClientRect();
+            const containerRect = container.getBoundingClientRect();
+            const totalHeight = article.offsetHeight;
+
+            // Calculate how much of the article has been scrolled past the viewport
+            const scrolledPast = Math.max(0, containerRect.top - articleRect.top);
+
+            // Only add the visible portion if we've started scrolling
+            const visibleHeight = scrolledPast > 0 ? Math.min(containerRect.height, articleRect.height) : 0;
+            const progress = Math.round(Math.min(Math.max(((scrolledPast + visibleHeight) / totalHeight) * 100, 0), 100));
+
+            setReadingProgress(progress);
+        };
+
+        container?.addEventListener('scroll', handleScroll);
+        return () => container?.removeEventListener('scroll', handleScroll);
+    }, []);
+
     return (
         <Modal
             align='right'
@@ -581,7 +611,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                             />
                         )}
                         {object.type === 'Article' && (
-                            <div className='border-b border-grey-200 pb-8'>
+                            <div className='border-b border-grey-200 pb-8' id='object-content'>
                                 <ArticleBody
                                     excerpt={object?.preview?.content}
                                     fontFamily={fontFamily}
@@ -648,7 +678,16 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                     </div>
                 </div>
             </div>
-            {modalSize === MODAL_SIZE_LG && object.type === 'Article' && <div className='sticky bottom-0 left-0 z-50 w-fit p-8 text-grey-600'>{getReadingTime(object.content)}</div>}
+            {modalSize === MODAL_SIZE_LG && object.type === 'Article' && (
+                <div className='pointer-events-none sticky bottom-0 flex items-end justify-between p-8'>
+                    <div className='pointer-events-auto text-grey-600'>
+                        {getReadingTime(object.content)}
+                    </div>
+                    <div className='pointer-events-auto text-grey-600'>
+                        {readingProgress}%
+                    </div>
+                </div>
+            )}
         </Modal>
     );
 };
