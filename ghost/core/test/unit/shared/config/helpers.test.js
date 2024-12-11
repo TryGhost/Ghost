@@ -1,9 +1,9 @@
-const crypto = require('crypto');
 const os = require('os');
-const path = require('path');
 const should = require('should');
 
 const configUtils = require('../../../utils/configUtils');
+
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
 describe('vhost utils', function () {
     beforeEach(function () {
@@ -59,17 +59,26 @@ describe('vhost utils', function () {
 
 describe('getContentPath', function () {
     it('should return the correct path for type: public', function () {
+        const publicPath = configUtils.config.getContentPath('public');
+
+        // Path should be in the tmpdir
         const tmpdir = os.tmpdir();
-        const siteUrl = configUtils.config.getSiteUrl();
-        const siteHash = crypto.createHash('md5')
-            .update(siteUrl)
-            .digest('hex');
 
-        const expectedPath = path.join(tmpdir, `ghost_${siteHash}_${process.pid}`, 'public/');
+        publicPath.startsWith(tmpdir).should.be.true();
 
-        configUtils.config.getContentPath('public').should.eql(expectedPath);
+        // Path should end with /public/
+        publicPath.endsWith('/public/').should.be.true();
 
-        // Call again to ensure the path is deterministic
-        configUtils.config.getContentPath('public').should.eql(expectedPath);
+        // Path should include /ghost_
+        publicPath.includes('/ghost_').should.be.true();
+
+        // Path should contain a uuid at the correct location
+        const publicPathParts = publicPath.split('/');
+        const uuidPart = publicPathParts[publicPathParts.length - 3].replace('ghost_', '');
+
+        UUID_REGEX.test(uuidPart).should.be.true();
+
+        // Path should be memoized
+        configUtils.config.getContentPath('public').should.eql(publicPath);
     });
 });

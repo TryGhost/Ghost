@@ -74,15 +74,11 @@ let processTmpDirPath = null;
  *
  * @returns {string} - tmp dir path for the current process
  */
-function getProcessTmpDirPath(config) {
+function getProcessTmpDirPath() {
     // Memoize the computed path to avoid re-computing it on each call - The
     // value should not change during the lifetime of the process.
     if (processTmpDirPath === null) {
-        const siteHash = crypto.createHash('md5')
-            .update(config.getSiteUrl())
-            .digest('hex');
-
-        processTmpDirPath = path.join(os.tmpdir(), `ghost_${siteHash}_${process.pid}`);
+        processTmpDirPath = path.join(os.tmpdir(), `ghost_${crypto.randomUUID()}`);
     }
 
     return processTmpDirPath;
