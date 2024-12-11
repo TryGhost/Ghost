@@ -12,11 +12,9 @@ describe('SubscriptionEventService', function () {
     beforeEach(function () {
         member = {
             id: 'member_123',
-            related: sinon.stub().withArgs('stripeSubscriptions').returns({
-                fetch: sinon.stub().resolves({
-                    models: [{
-                        get: sinon.stub().withArgs('subscription_id').returns('sub_123')
-                    }]
+            related: sinon.stub().returns({
+                query: sinon.stub().returns({
+                    fetchOne: sinon.stub().resolves({subscription_id: 'sub_123'})
                 })
             })
         };
@@ -45,8 +43,10 @@ describe('SubscriptionEventService', function () {
     });
 
     it('should not call linkSubscription if member subscription does not exist', async function () {
-        member.related('stripeSubscriptions').fetch.resolves({
-            models: []
+        member.related.returns({
+            query: sinon.stub().returns({
+                fetchOne: sinon.stub().resolves(null)
+            })
         });
 
         await service.handleSubscriptionEvent(subscription);

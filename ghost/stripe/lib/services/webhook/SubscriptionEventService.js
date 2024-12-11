@@ -27,10 +27,11 @@ module.exports = class SubscriptionEventService {
             return;
         }
 
-        const memberSubscriptions = await member.related('stripeSubscriptions').fetch();
-        const memberSubscription = memberSubscriptions.models.find((sub) => {
-            return sub.get('subscription_id') === subscription.id;
-        });
+        const memberSubscription = await member.related('stripeSubscriptions').query({
+            where: {
+                subscription_id: subscription.id
+            }
+        }).fetchOne();
 
         if (!memberSubscription) {
             logging.info(`Ignoring customer.subscription.* event as member subscription does not exist`);
