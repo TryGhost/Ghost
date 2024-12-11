@@ -3,7 +3,6 @@ import {cva, type VariantProps} from 'class-variance-authority';
 import {cn} from '@/lib/utils';
 import {kebabToPascalCase} from '@/utils/formatText';
 
-// Define the icon styles using CVA
 const iconVariants = cva('', {
     variants: {
         size: {
@@ -18,7 +17,6 @@ const iconVariants = cva('', {
     }
 });
 
-// Define props interface for icons
 interface IconProps extends
     React.SVGProps<SVGSVGElement>,
     VariantProps<typeof iconVariants> {
@@ -26,12 +24,12 @@ interface IconProps extends
 }
 
 const iconModules = import.meta.glob<{ReactComponent: React.FC<IconProps> }>(
-    './*.svg',
+    '../../assets/icons/*.svg',
     {eager: true}
 );
 
 const Icon = Object.entries(iconModules).reduce((acc, [path, module]) => {
-    const kebabName = path.match(/\.\/(.+)\.svg/)?.[1] ?? '';
+    const kebabName = path.match(/[^/]+(?=\.svg$)/)?.[0] ?? '';
     const iconName = kebabToPascalCase(kebabName);
 
     const IconComponent = (props: IconProps) => {
