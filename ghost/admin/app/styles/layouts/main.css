@@ -1846,9 +1846,10 @@
         position: relative;
         max-width: calc(100vw - 56px) !important;
         min-width: 100%;
-        overflow-x: scroll;
         display: flex;
-        padding-right: 40px;
+        justify-content: space-between;
+        overflow-x: auto;
+
     }
 
     .gh-canvas-header.break .view-actions .gh-contentfilter {
