@@ -1,0 +1,27 @@
+import { Meta } from '@storybook/blocks';
+
+<Meta title="Icons" />
+
+<div className="sb-doc">
+
+# Icons
+
+In Shade we use Streamline icons. They are dynamically loaded from the `src/assets/icons` library, so to add a new icon you just need to create the corresponding SVG for it in this folder. Then you can use the Icon component like this:
+
+```
+<Icon.IconName size="md" />
+```
+
+If you check out the "Icons" component here in Storybook, you'll see a grid of all available icons in Shade. This list is dynamically loaded and if you click on an icon then the component code will be copied to your clipboard.
+
+We need to make sure we stay consistent when **adding new icons**, so here are some rules to follow when doing so:
+
+- Copy icons from the [Streamline Ultimate Regular collection](https://www.streamlinehq.com/icons/streamline-regular)
+- The SVG properties should be
+  - Size: 24px
+  - Stroke width: 1.5px
+  - Outline stroke: OFF
+  - Responsive size: OFF
+  - Currentcolor: ON
+
+</div>
