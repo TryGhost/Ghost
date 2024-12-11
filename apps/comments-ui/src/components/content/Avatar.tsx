@@ -10,8 +10,8 @@ export const BlankAvatar = () => {
     const dimensionClasses = getDimensionClasses();
     return (
         <figure className={`relative ${dimensionClasses}`}>
-            <div className={`flex items-center justify-center rounded-full bg-black/10 dark:bg-white/15 ${dimensionClasses}`}>
-                <AvatarIcon className="stroke-white opacity-80" />
+            <div className={`flex items-center justify-center rounded-full bg-black/5 text-neutral-900/25 dark:bg-white/15 dark:text-white/30 ${dimensionClasses}`}>
+                <AvatarIcon className="h-7 w-7 opacity-80" />
             </div>
         </figure>
     );
