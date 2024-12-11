@@ -76,7 +76,6 @@ const ArticleBody: React.FC<{heading: string, image: string|undefined, excerpt: 
 
                 function resizeIframe() {
                     const bodyHeight = document.body.offsetHeight;
-                    console.log('Body height after style change:', bodyHeight);
 
                     window.parent.postMessage({
                         type: 'resize',
@@ -227,9 +226,9 @@ const FeedItemDivider: React.FC = () => (
     <div className="h-px bg-grey-200"></div>
 );
 
-const FONT_SIZES = ['14px', '17px', '19px', '21px', '24px'] as const;
+const FONT_SIZES = ['1.4rem', '1.7rem', '1.9rem', '2.1rem', '2.4rem'] as const;
 const LINE_HEIGHTS = ['1.3', '1.4', '1.5', '1.6', '1.7', '1.8'] as const;
-const SPACING_FACTORS = ['0.6', '1', '1.1', '1.2', '1.3'] as const;
+const SPACING_FACTORS = ['0.7', '1', '1.1', '1.2', '1.3'] as const;
 
 type FontSize = typeof FONT_SIZES[number];
 
@@ -238,6 +237,15 @@ const STORAGE_KEYS = {
     FONT_SIZE: 'ghost-ap-font-size',
     LINE_HEIGHT: 'ghost-ap-line-height',
     FONT_FAMILY: 'ghost-ap-font-family'
+} as const;
+
+// Add this constant near your other constants
+const MAX_WIDTHS = {
+    '1.4rem': '544px',
+    '1.7rem': '644px',
+    '1.9rem': '684px',
+    '2.1rem': '724px',
+    '2.4rem': '764px'
 } as const;
 
 const ArticleModal: React.FC<ArticleModalProps> = ({
@@ -412,6 +420,11 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
         }
     }, [currentFontSizeIndex, currentLineHeightIndex, fontFamily]);
 
+    // Get the current max width based on font size
+    const currentMaxWidth = MAX_WIDTHS[FONT_SIZES[currentFontSizeIndex]];
+    // Calculate the grid column width by subtracting 64px from the current max width
+    const currentGridWidth = `${parseInt(currentMaxWidth) - 64}px`;
+
     return (
         <Modal
             align='right'
@@ -428,7 +441,12 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
         >
             <div className='flex h-full flex-col'>
                 <div className='sticky top-0 z-50 border-b border-grey-200 bg-white py-8'>
-                    <div className={`flex h-8 ${modalSize === MODAL_SIZE_LG ? 'grid grid-cols-[1fr_minmax(0,580px)_1fr] px-8' : 'justify-between gap-2 px-8'}`}>
+                    <div
+                        className={`flex h-8 ${modalSize === MODAL_SIZE_LG ? 'grid px-8' : 'justify-between gap-2 px-8'}`}
+                        style={modalSize === MODAL_SIZE_LG ? {
+                            gridTemplateColumns: `1fr minmax(0,${currentGridWidth}) 1fr`
+                        } : undefined}
+                    >
                         {(canNavigateBack || (activityThreadParents.length > 0)) ? (
                             <div className='col-[1/2] flex items-center justify-between'>
                                 <Button className='transition-color flex h-10 w-10 items-center justify-center rounded-full bg-white hover:bg-grey-100' icon='arrow-left' size='sm' unstyled onClick={navigateBack}/>
@@ -523,7 +541,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                     </div>
                 </div>
                 <div className='grow overflow-y-auto'>
-                    <div className='mx-auto max-w-[644px] px-8 pb-10 pt-5'>
+                    <div className={`mx-auto px-8 pb-10 pt-5`} style={{maxWidth: currentMaxWidth}}>
                         {activityThreadParents.map((item) => {
                             return (
                                 <>

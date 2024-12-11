@@ -312,14 +312,14 @@ button.gh-form-input {
 .gh-article-title {
     font-weight: 700;
     text-wrap: pretty;
-    font-size: 3rem;
+    font-size: calc(3rem * var(--content-spacing-factor, 1));
     letter-spacing: -0.021em;
     line-height: 1.4;
 }
 
 .gh-article-excerpt {
     margin-top: 16px;
-    font-size: 2rem;
+    font-size: calc(2rem * var(--content-spacing-factor, 1));
     line-height: 1.4;
     letter-spacing: -0.017em;
     text-wrap: pretty;
