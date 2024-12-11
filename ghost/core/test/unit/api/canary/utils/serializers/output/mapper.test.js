@@ -8,7 +8,6 @@ const extraAttrsUtils = require('../../../../../../../core/server/api/endpoints/
 const mappers = require('../../../../../../../core/server/api/endpoints/utils/serializers/output/mappers');
 const memberAttribution = require('../../../../../../../core/server/services/member-attribution');
 const htmlToPlaintext = require('@tryghost/html-to-plaintext');
-const labs = require('../../../../../../../core/shared/labs');
 
 function createJsonModel(data) {
     return Object.assign(data, {toJSON: sinon.stub().returns(data)});
@@ -414,6 +413,8 @@ describe('Unit: utils/serializers/output/mappers', function () {
                 data: {
                     // same except the remove foo keys
                     id: 'id1',
+                    in_reply_to_id: null,
+                    in_reply_to_snippet: null,
                     status: 'status1',
                     html: 'html1',
                     created_at: 'created_at1',
@@ -612,11 +613,7 @@ describe('Unit: utils/serializers/output/mappers', function () {
         });
     });
 
-    describe('Comment mapper (commentImprovements flag enabled)', function () {
-        beforeEach(function () {
-            sinon.stub(labs, 'isSet').returns(true);
-        });
-
+    describe('Comment mapper', function () {
         it('includes in_reply_to_snippet for published replies-to-replies', function () {
             const frame = {};
 

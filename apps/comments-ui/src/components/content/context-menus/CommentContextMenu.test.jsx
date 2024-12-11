@@ -26,7 +26,7 @@ describe('<CommentContextMenu>', () => {
 
     it('has display-below classes when in viewport', () => {
         const comment = buildComment();
-        contextualRender(<CommentContextMenu comment={comment} />, {appContext: {admin: true, labs: {commentImprovements: true}}});
+        contextualRender(<CommentContextMenu comment={comment} />, {appContext: {admin: true}});
         expect(screen.getByTestId('comment-context-menu-inner')).toHaveClass('top-0');
     });
 
@@ -34,7 +34,7 @@ describe('<CommentContextMenu>', () => {
         sinon.stub(HTMLElement.prototype, 'getBoundingClientRect').returns({bottom: 2000});
 
         const comment = buildComment();
-        contextualRender(<CommentContextMenu comment={comment} />, {appContext: {admin: true, labs: {commentImprovements: true}}});
+        contextualRender(<CommentContextMenu comment={comment} />, {appContext: {admin: true}});
         expect(screen.getByTestId('comment-context-menu-inner')).toHaveClass('bottom-full', 'mb-6');
     });
 });

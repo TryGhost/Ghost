@@ -2,7 +2,6 @@ const _ = require('lodash');
 const utils = require('../../..');
 const url = require('../utils/url');
 const htmlToPlaintext = require('@tryghost/html-to-plaintext');
-const labs = require('../../../../../../../shared/labs');
 
 const commentFields = [
     'id',
@@ -48,20 +47,16 @@ const commentMapper = (model, frame) => {
 
     const isPublicRequest = utils.isMembersAPI(frame);
 
-    if (labs.isSet('commentImprovements')) {
-        if (jsonModel.inReplyTo && (jsonModel.inReplyTo.status === 'published' || (!isPublicRequest && jsonModel.inReplyTo.status === 'hidden'))) {
-            jsonModel.in_reply_to_snippet = htmlToPlaintext.commentSnippet(jsonModel.inReplyTo.html);
-        } else if (jsonModel.inReplyTo && jsonModel.inReplyTo.status !== 'published') {
-            jsonModel.in_reply_to_snippet = '[removed]';
-        } else {
-            jsonModel.in_reply_to_snippet = null;
-        }
-
-        if (!jsonModel.inReplyTo) {
-            jsonModel.in_reply_to_id = null;
-        }
+    if (jsonModel.inReplyTo && (jsonModel.inReplyTo.status === 'published' || (!isPublicRequest && jsonModel.inReplyTo.status === 'hidden'))) {
+        jsonModel.in_reply_to_snippet = htmlToPlaintext.commentSnippet(jsonModel.inReplyTo.html);
+    } else if (jsonModel.inReplyTo && jsonModel.inReplyTo.status !== 'published') {
+        jsonModel.in_reply_to_snippet = '[removed]';
     } else {
-        delete jsonModel.in_reply_to_id;
+        jsonModel.in_reply_to_snippet = null;
+    }
+
+    if (!jsonModel.inReplyTo) {
+        jsonModel.in_reply_to_id = null;
     }
 
     const response = _.pick(jsonModel, commentFields);

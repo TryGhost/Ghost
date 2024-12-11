@@ -162,10 +162,10 @@ export class MockedApi {
 
         let filteredComments = this.comments;
 
-        if (this.labs.commentImprovements && !admin) {
+        if (!admin) {
             function filterPublishedComments(comments: any[] = []) {
                 return comments
-                    .filter(comment => comment.status === 'published')
+                    .filter(comment => (comment.status === 'published' || comment.replies?.some(r => r.status === 'published')))
                     .map(comment => ({...comment, replies: filterPublishedComments(comment.replies)}));
             }
 

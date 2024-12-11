@@ -28,9 +28,7 @@ test.describe('Deleted and Hidden Content', async () => {
             mockedApi,
             page,
             publication: 'Publisher Weekly',
-            labs: {
-                commentImprovements: true
-            }
+            labs: {}
         });
 
         const iframeElement = await page.locator('iframe[data-frame="admin-auth"]');
@@ -95,9 +93,7 @@ test.describe('Deleted and Hidden Content', async () => {
             mockedApi,
             page,
             publication: 'Publisher Weekly',
-            labs: {
-                commentImprovements: true
-            }
+            labs: {}
         });
 
         await expect (frame.getByText('This is comment 2')).not.toBeVisible();
@@ -131,9 +127,7 @@ test.describe('Deleted and Hidden Content', async () => {
             mockedApi,
             page,
             publication: 'Publisher Weekly',
-            labs: {
-                commentImprovements: true
-            }
+            labs: {}
         });
 
         await expect (frame.getByText('This is reply 1')).toBeVisible();

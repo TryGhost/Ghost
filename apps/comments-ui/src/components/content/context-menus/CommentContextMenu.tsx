@@ -1,7 +1,7 @@
 import AdminContextMenu from './AdminContextMenu';
 import AuthorContextMenu from './AuthorContextMenu';
 import NotAuthorContextMenu from './NotAuthorContextMenu';
-import {Comment, useAppContext, useLabs} from '../../../AppContext';
+import {Comment, useAppContext} from '../../../AppContext';
 import {useEffect, useRef} from 'react';
 import {useOutOfViewportClasses} from '../../../utils/hooks';
 
@@ -16,10 +16,8 @@ const CommentContextMenu: React.FC<Props> = ({comment, close, toggleEdit}) => {
     const isAdmin = !!admin;
     const element = useRef<HTMLDivElement>(null);
     const innerElement = useRef<HTMLDivElement>(null);
-    const labs = useLabs();
 
     // By default display dropdown below but move above if that renders off-screen
-    // NOTE: innerElement ref is only set when commentImprovements flag is enabled
     useOutOfViewportClasses(innerElement, {
         bottom: {
             default: 'top-0',
@@ -88,19 +86,11 @@ const CommentContextMenu: React.FC<Props> = ({comment, close, toggleEdit}) => {
     }
 
     return (
-        labs.commentImprovements ? (
-            <div ref={element} className="relative" data-testid="comment-context-menu" onClick={stopPropagation}>
-                <div ref={innerElement} className={`absolute z-10 min-w-min whitespace-nowrap rounded bg-white p-1 font-sans text-sm shadow-lg outline-0 sm:min-w-[80px] dark:bg-neutral-800 dark:text-white`} data-testid="comment-context-menu-inner">
-                    {contextMenu}
-                </div>
+        <div ref={element} className="relative" data-testid="comment-context-menu" onClick={stopPropagation}>
+            <div ref={innerElement} className={`absolute z-10 min-w-min whitespace-nowrap rounded bg-white p-1 font-sans text-sm shadow-lg outline-0 sm:min-w-[80px] dark:bg-neutral-800 dark:text-white`} data-testid="comment-context-menu-inner">
+                {contextMenu}
             </div>
-        ) : (
-            <div ref={element} onClick={stopPropagation}>
-                <div className="absolute z-10 min-w-min whitespace-nowrap rounded bg-white p-1 font-sans text-sm shadow-lg outline-0 sm:min-w-[80px] dark:bg-neutral-800 dark:text-white">
-                    {contextMenu}
-                </div>
-            </div>
-        )
+        </div>
     );
 };
 

@@ -32,7 +32,7 @@ describe('<CommentComponent>', function () {
         const parent = buildComment({
             replies: [reply1, reply2]
         });
-        const appContext = {comments: [parent], labs: {commentImprovements: true}};
+        const appContext = {comments: [parent]};
 
         contextualRender(<CommentComponent comment={reply2} parent={parent} />, {appContext});
 
@@ -53,7 +53,7 @@ describe('<RepliedToSnippet>', function () {
         const parent = buildComment({
             replies: [reply1, reply2]
         });
-        const appContext = {comments: [parent], labs: {commentImprovements: true}};
+        const appContext = {comments: [parent]};
 
         contextualRender(<RepliedToSnippet comment={reply2} />, {appContext});
 
@@ -74,7 +74,7 @@ describe('<RepliedToSnippet>', function () {
         const parent = buildComment({
             replies: [reply1, reply2]
         });
-        const appContext = {comments: [parent], labs: {commentImprovements: true}};
+        const appContext = {comments: [parent]};
 
         contextualRender(<RepliedToSnippet comment={reply2} />, {appContext});
 
@@ -91,7 +91,7 @@ describe('<RepliedToSnippet>', function () {
         const parent = buildComment({
             replies: [reply2]
         });
-        const appContext = {comments: [parent], labs: {commentImprovements: true}};
+        const appContext = {comments: [parent]};
 
         contextualRender(<RepliedToSnippet comment={reply2} />, {appContext});
 

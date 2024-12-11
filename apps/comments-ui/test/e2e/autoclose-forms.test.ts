@@ -26,9 +26,7 @@ test.describe('Autoclose forms', async () => {
             mockedApi,
             page,
             publication: 'Publisher weekly',
-            labs: {
-                commentImprovements: true
-            }
+            labs: {}
         }));
     });
 

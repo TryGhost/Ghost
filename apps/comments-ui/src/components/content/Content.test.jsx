@@ -44,10 +44,10 @@ describe('<Content>', function () {
             expect(screen.queryByTestId('main-form')).toBeInTheDocument();
         });
 
-        it('renders no CTA or form when a reply form is open', function () {
+        it('renders main form when a reply form is open', function () {
             contextualRender(<Content />, {appContext: {member: {}, openFormCount: 1}});
             expect(screen.queryByTestId('cta-box')).not.toBeInTheDocument();
-            expect(screen.queryByTestId('main-form')).not.toBeInTheDocument();
+            expect(screen.queryByTestId('main-form')).toBeInTheDocument();
         });
     });
 });
