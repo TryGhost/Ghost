@@ -39,6 +39,7 @@ export const IconGallery = {
                         <div
                             key={iconName}
                             className='sb-icon'
+                            title='Click to copy component code'
                             onClick={() => copyToClipboard(iconName)}>
                             <IconComponent {...args} />
                             <span className="mt-2 text-sm">{copiedIcon === iconName ? 'Copied!' : iconName}</span>
