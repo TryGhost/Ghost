@@ -187,6 +187,6 @@ describe('servePublicFile', function () {
         res.writeHead.called.should.be.true();
         res.writeHead.args[0][0].should.equal(200);
 
-        fileStub.firstCall.args[0].should.endWith('content/public/something.css');
+        fileStub.firstCall.args[0].should.endWith('/public/something.css');
     });
 });
