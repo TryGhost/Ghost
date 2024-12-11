@@ -57,13 +57,13 @@ class MembersConfigProvider {
     }
 
     getAllowSelfSignup() {
-        // 'invite' and 'none' members signup access disables all signup
-        if (this._settingsCache.get('members_signup_access') !== 'all') {
-            return false;
+        // Free signup is only allowed if member signup access is set to 'all'
+        if (this._settingsCache.get('members_signup_access') === 'all') {
+            return true;
         }
 
-        // Always allow free signup because the theme might have a form to signup regardless of the Portal settings
-        return true;
+        // "Paid", "Invite" and "None" member signup access do not allow free signup
+        return false;
     }
 
     getTokenConfig() {

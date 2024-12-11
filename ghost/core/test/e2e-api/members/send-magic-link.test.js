@@ -74,7 +74,7 @@ describe('sendMagicLink', function () {
             });
     });
 
-    it('Throws an error when trying to sign up on an invite only site', async function () {
+    it('Throws an error when trying to sign up on an invite-only site', async function () {
         settingsCache.set('members_signup_access', {value: 'invite'});
 
         const email = 'this-member-does-not-exist@test.com';
@@ -88,6 +88,36 @@ describe('sendMagicLink', function () {
                 errors: [{
                     id: anyErrorId
                 }]
+            });
+    });
+
+    it('Throws an error when trying to sign up on a paid-members only site', async function () {
+        settingsCache.set('members_signup_access', {value: 'paid'});
+
+        const email = 'this-member-does-not-exist@test.com';
+        await membersAgent.post('/api/send-magic-link')
+            .body({
+                email,
+                emailType: 'signup'
+            })
+            .expectStatus(400)
+            .matchBodySnapshot({
+                errors: [{id: anyErrorId}]
+            });
+    });
+
+    it('Throws an error when trying to sign up on a none-members site', async function () {
+        settingsCache.set('members_signup_access', {value: 'none'});
+
+        const email = 'this-member-does-not-exist@test.com';
+        await membersAgent.post('/api/send-magic-link')
+            .body({
+                email,
+                emailType: 'signup'
+            })
+            .expectStatus(400)
+            .matchBodySnapshot({
+                errors: [{id: anyErrorId}]
             });
     });
 
