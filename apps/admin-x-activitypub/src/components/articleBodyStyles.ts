@@ -312,14 +312,14 @@ button.gh-form-input {
 .gh-article-title {
     font-weight: 700;
     text-wrap: pretty;
-    font-size: calc(3rem * var(--content-spacing-factor, 1));
-    letter-spacing: -0.021em;
-    line-height: 1.4;
+    font-size: calc(3.6rem * var(--content-spacing-factor, 1));
+    letter-spacing: -0.025em;
+    line-height: 1.1;
 }
 
 .gh-article-excerpt {
     margin-top: 16px;
-    font-size: calc(2rem * var(--content-spacing-factor, 1));
+    font-size: calc(1.8rem * var(--content-spacing-factor, 1));
     line-height: 1.4;
     letter-spacing: -0.017em;
     text-wrap: pretty;
@@ -344,7 +344,7 @@ headings, text, images and lists. We deal with cards lower down. */
 .gh-content {
     font-size: var(--font-size);
     overflow-x: hidden;
-    letter-spacing: -0.013em;
+    letter-spacing: var(--letter-spacing);
     line-height: var(--line-height);
     font-family: var(--font-family);
 }
@@ -363,7 +363,7 @@ headings, text, images and lists. We deal with cards lower down. */
 /* Add back a top margin to all headings,
 unless a heading is the very first element in the post content */
 .gh-content > [id]:not(:first-child) {
-    margin-top: calc(56px * var(--content-spacing-factor, 1));
+    margin-top: calc(40px * var(--content-spacing-factor, 1));
 }
 
 /* Add drop cap setting */
