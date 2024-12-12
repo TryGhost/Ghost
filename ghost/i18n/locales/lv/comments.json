@@ -1,7 +1,7 @@
 {
     "{{amount}} characters left": "Atlikušas {{amount}} rakstzīmes",
     "{{amount}} comments": "{{amount}} komentāri",
-    "{{amount}} hrs ago": "pirms {{amount}} stundam",
+    "{{amount}} hrs ago": "pirms {{amount}} stundām",
     "{{amount}} mins ago": "Pirms {{amount}} minūtēm",
     "{{amount}} more": "Vēl {{amount}}",
     "1 comment": "1 komentārs",
@@ -14,7 +14,7 @@
     "Become a member of {{publication}} to start commenting.": "Kļūstiet par {{publication}} dalībnieku, lai sāktu komentēt.",
     "Become a paid member of {{publication}} to start commenting.": "Kļūstiet par apmaksātu {{publication}} dalībnieku, lai sāktu komentēt.",
     "Cancel": "Atcelt",
-    "Comment": "komentēt",
+    "Comment": "Komentēt",
     "Complete your profile": "Pabeidziet savu profilu",
     "Delete": "Dzēst",
     "Deleted": "Izdzēsts",
@@ -32,8 +32,8 @@
     "Hidden for members": "Paslēpts dalībniekiem",
     "Hide": "Slēpt",
     "Hide comment": "Slēpt komentāru",
-    "Jamie Larson": "Džeimijs Larsons",
-    "Join the discussion": "",
+    "Jamie Larson": "Jānis Reikulis",
+    "Join the discussion": "Pievienojieties diskusijai",
     "Just now": "Tikai tagad",
     "Local resident": "Vietējais iedzīvotājs",
     "Member discussion": "Biedru diskusija",
@@ -66,6 +66,6 @@
     "This comment has been hidden.": "Šis komentārs ir paslēpts.",
     "This comment has been removed.": "Šis komentārs ir noņemts.",
     "Upgrade now": "Jauniniet tūlīt",
-    "Yesterday": "vakar",
+    "Yesterday": "Vakar",
     "Your request will be sent to the owner of this site.": "Jūsu pieprasījums tiks nosūtīts šīs vietnes īpašniekam."
 }
