@@ -280,13 +280,13 @@ async function deleteComment({state, api, data: comment}: {state: EditableAppCon
     });
 
     return {
-        comments: state.comments.map((c) => {
+        comments: state.comments.map((topLevelComment) => {
             // If the comment has replies we want to keep it so the replies are
             // still visible, but mark the comment as deleted. Otherwise remove it.
-            if (c.id === comment.id) {
-                if (c.replies.length > 0) {
+            if (topLevelComment.id === comment.id) {
+                if (topLevelComment.replies.length > 0) {
                     return {
-                        ...c,
+                        ...topLevelComment,
                         status: 'deleted'
                     };
                 } else {
@@ -294,11 +294,22 @@ async function deleteComment({state, api, data: comment}: {state: EditableAppCon
                 }
             }
 
-            const updatedReplies = c.replies.filter(r => r.id !== comment.id);
-            return {
-                ...c,
+            const originalLength = topLevelComment.replies.length;
+            const updatedReplies = topLevelComment.replies.filter(reply => reply.id !== comment.id);
+            const hasDeletedReply = originalLength !== updatedReplies.length;
+
+            const updatedTopLevelComment = {
+                ...topLevelComment,
                 replies: updatedReplies
             };
+
+            // When a reply is deleted we need to update the parent's count so
+            // pagination displays the correct number of replies still to load
+            if (hasDeletedReply && topLevelComment.count?.replies) {
+                topLevelComment.count.replies = topLevelComment.count.replies - 1;
+            }
+
+            return updatedTopLevelComment;
         }).filter(Boolean),
         commentCount: state.commentCount - 1
     };
