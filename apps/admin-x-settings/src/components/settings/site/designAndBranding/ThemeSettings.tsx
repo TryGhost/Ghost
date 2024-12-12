@@ -1,6 +1,6 @@
 import React from 'react';
 import ThemeSetting from './ThemeSetting';
-import useCustomFonts from '../../../../hooks/useCustomFonts';
+import semver from 'semver';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import {CustomThemeSetting} from '@tryghost/admin-x-framework/api/customThemeSettings';
 import {Form} from '@tryghost/admin-x-design-system';
@@ -17,28 +17,31 @@ interface ThemeSettingsProps {
 }
 
 interface ThemeSettingsMap {
-    [key: string]: string[];
+    [key: string]: {
+        settings: string[];
+        version: string;
+    };
 }
 
 const themeSettingsMap: ThemeSettingsMap = {
-    source: ['title_font', 'body_font'],
-    casper: ['title_font', 'body_font'],
-    alto: ['title_font', 'body_font'],
-    bulletin: ['title_font', 'body_font'],
-    dawn: ['title_font', 'body_font'],
-    digest: ['title_font', 'body_font'],
-    dope: ['title_font', 'body_font'],
-    ease: ['title_font', 'body_font'],
-    edge: ['title_font', 'body_font'],
-    edition: ['title_font', 'body_font'],
-    episode: ['typography'],
-    headline: ['title_font', 'body_font'],
-    journal: ['title_font', 'body_font'],
-    london: ['title_font', 'body_font'],
-    ruby: ['title_font', 'body_font'],
-    solo: ['typography'],
-    taste: ['style'],
-    wave: ['title_font', 'body_font']
+    source: {settings: ['title_font', 'body_font'], version: '1.4.0'},
+    casper: {settings: ['title_font', 'body_font'], version: '5.8.0'},
+    alto: {settings: ['title_font', 'body_font'], version: '1.1.0'},
+    bulletin: {settings: ['title_font', 'body_font'], version: '1.1.0'},
+    dawn: {settings: ['title_font', 'body_font'], version: '1.1.0'},
+    digest: {settings: ['title_font', 'body_font'], version: '1.1.0'},
+    dope: {settings: ['title_font', 'body_font'], version: '1.1.0'},
+    ease: {settings: ['title_font', 'body_font'], version: '1.1.0'},
+    edge: {settings: ['title_font', 'body_font'], version: '1.1.0'},
+    edition: {settings: ['title_font', 'body_font'], version: '1.1.0'},
+    episode: {settings: ['typography'], version: '1.1.0'},
+    headline: {settings: ['title_font', 'body_font'], version: '1.1.0'},
+    journal: {settings: ['title_font', 'body_font'], version: '1.1.0'},
+    london: {settings: ['title_font', 'body_font'], version: '1.1.0'},
+    ruby: {settings: ['title_font', 'body_font'], version: '1.1.0'},
+    solo: {settings: ['typography'], version: '1.1.0'},
+    taste: {settings: ['style'], version: '1.1.0'},
+    wave: {settings: ['title_font', 'body_font'], version: '1.1.0'}
 };
 
 const ThemeSettings: React.FC<ThemeSettingsProps> = ({sections, updateSetting}) => {
@@ -46,8 +49,17 @@ const ThemeSettings: React.FC<ThemeSettingsProps> = ({sections, updateSetting}) 
     const activeTheme = themesData?.themes.find((theme: Theme) => theme.active);
     const activeThemeName = activeTheme?.package.name?.toLowerCase() || '';
     const activeThemeAuthor = activeTheme?.package.author?.name || '';
+    const activeThemeVersion = activeTheme?.package.version;
     const hasCustomFonts = useFeatureFlag('customFonts');
-    const {supportsCustomFonts} = useCustomFonts();
+    const supportsCustomFonts = (() => {
+        const themeConfig = themeSettingsMap[activeThemeName];
+
+        if (!themeConfig || !activeThemeVersion) {
+            return false;
+        }
+
+        return semver.gte(activeThemeVersion, themeConfig.version);
+    })();
 
     return (
         <>
@@ -71,7 +83,7 @@ const ThemeSettings: React.FC<ThemeSettingsProps> = ({sections, updateSetting}) 
                             // hides typography related theme settings from official themes
                             // should be removed once we remove the settings from the themes in 6.0
                             if (hasCustomFonts) {
-                                const hidingSettings = themeSettingsMap[activeThemeName];
+                                const hidingSettings = themeSettingsMap[activeThemeName].settings;
                                 if (hidingSettings && hidingSettings.includes(setting.key) && activeThemeAuthor === 'Ghost Foundation' && supportsCustomFonts) {
                                     spaceClass += ' hidden';
                                 }
