@@ -10,6 +10,7 @@ import getReadingTime from '../../utils/get-reading-time';
 import getRelativeTimestamp from '../../utils/get-relative-timestamp';
 import getUsername from '../../utils/get-username';
 import stripHtml from '../../utils/strip-html';
+import {handleProfileClick} from '../../utils/handle-profile-click';
 import {renderTimestamp} from '../../utils/render-timestamp';
 
 function getAttachment(object: ObjectProperties) {
@@ -241,9 +242,18 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                             <div className='relative z-30 flex min-w-0 items-center gap-3'>
                                 <APAvatar author={author}/>
                                 <div className='flex min-w-0 flex-col gap-0.5'>
-                                    <span className='min-w-0 truncate break-all font-semibold leading-[normal]' data-test-activity-heading>{author.name}</span>
+                                    <span className='min-w-0 truncate break-all font-semibold leading-[normal] hover:underline'
+                                        data-test-activity-heading
+                                        onClick={e => handleProfileClick(actor, e)}
+                                    >
+                                        {author.name}
+                                    </span>
                                     <div className='flex w-full text-grey-700'>
-                                        <span className='truncate leading-tight'>{getUsername(author)}</span>
+                                        <span className='truncate leading-tight hover:underline'
+                                            onClick={e => handleProfileClick(actor, e)}
+                                        >
+                                            {getUsername(author)}
+                                        </span>
                                         <div className='ml-1 leading-tight before:mr-1 before:content-["·"]' title={`${timestamp}`}>{renderTimestamp(object)}</div>
                                     </div>
                                 </div>
@@ -400,7 +410,12 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                         <div className='min-w-0'>
                             <div className='z-10 mb-1.5 flex w-full min-w-0 items-center gap-1.5 text-sm group-hover/article:border-transparent'>
                                 <APAvatar author={author} size='2xs'/>
-                                <span className='min-w-0 truncate break-all font-semibold text-grey-900' title={getUsername(author)} data-test-activity-heading>{author.name}</span>
+                                <span className='min-w-0 truncate break-all font-semibold text-grey-900 hover:underline'
+                                    title={getUsername(author)}
+                                    data-test-activity-heading
+                                    onClick={e => handleProfileClick(actor, e)}
+                                >{author.name}
+                                </span>
                                 <span className='shrink-0 whitespace-nowrap text-grey-600 before:mr-1 before:content-["·"]' title={`${timestamp}`}>{getRelativeTimestamp(date)}</span>
                             </div>
                             <div className='flex'>

@@ -156,6 +156,16 @@ Object {
 }
 `;
 
+exports[`Admin Comments API - commentImprovements off likes Can like a comment 1: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "x-cache-invalidate": "/api/members/comments/post/618ba1ffbe2896088840a6e1/",
+  "x-powered-by": "Express",
+}
+`;
+
 exports[`Admin Comments API - commentImprovements on Hide Can hide comments 1: [body] 1`] = `
 Object {
   "comments": Array [
@@ -316,6 +326,106 @@ Object {
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Admin Comments API - commentImprovements on Logged in member gets own likes via admin api can get comment liked status by impersonating member  1: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "x-cache-invalidate": "/api/members/comments/post/618ba1ffbe2896088840a6e1/",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Admin Comments API - commentImprovements on Logged in member gets own likes via admin api can get comment liked status by impersonating member via admin browse route 1: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "x-cache-invalidate": "/api/members/comments/post/618ba1ffbe2896088840a6e1/",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Admin Comments API - commentImprovements on Logged in member gets own likes via admin api can get comment liked status by impersonating member via admin get by comment id read route 1: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "x-cache-invalidate": "/api/members/comments/post/618ba1ffbe2896088840a6e1/",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Admin Comments API - commentImprovements on Logged in member gets own likes via admin api can get comment liked status by impersonating member via admin get by comment read route 1: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "x-cache-invalidate": "/api/members/comments/post/618ba1ffbe2896088840a6e1/",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Admin Comments API - commentImprovements on Logged in member gets own likes via admin api can get comment liked status by impersonating member via admin get by comment replies route 1: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "x-cache-invalidate": "/api/members/comments/post/618ba1ffbe2896088840a6e1/",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Admin Comments API - commentImprovements on Logged in member gets own likes via admin api can get comment liked status by impersonating member via admin get by comment replies route 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "x-cache-invalidate": "/api/members/comments/post/618ba1ffbe2896088840a6e1/",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Admin Comments API - commentImprovements on Logged in member gets own likes via admin api can get comment liked status by impersonating member via admin get by comment replies route 3: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "x-cache-invalidate": "/api/members/comments/post/618ba1ffbe2896088840a6e1/, /api/members/comments/67568ca99db975825f9772a5/replies/",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Admin Comments API - commentImprovements on Logged in member likes via admin api can get comment liked status by impersonating member 1: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "x-cache-invalidate": "/api/members/comments/post/618ba1ffbe2896088840a6e1/",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Admin Comments API - commentImprovements on can get logged in member likes via admin api Can like a comment 1: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "x-cache-invalidate": "/api/members/comments/post/618ba1ffbe2896088840a6e1/",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Admin Comments API - commentImprovements on likes Can like a comment 1: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "x-cache-invalidate": "/api/members/comments/post/618ba1ffbe2896088840a6e1/",
   "x-powered-by": "Express",
 }
 `;

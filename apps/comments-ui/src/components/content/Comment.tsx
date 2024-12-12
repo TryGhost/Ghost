@@ -439,7 +439,7 @@ const RepliesLine: React.FC<{hasReplies: boolean}> = ({hasReplies}) => {
         return null;
     }
 
-    return (<div className="mb-2 h-full w-px grow rounded bg-gradient-to-b from-neutral-900/10 via-neutral-900/10 to-transparent dark:from-white/10 dark:via-white/10" />);
+    return (<div className="mb-2 h-full w-px grow rounded bg-gradient-to-b from-neutral-900/10 via-neutral-900/10 to-transparent dark:from-white/10 dark:via-white/10" data-testid="replies-line" />);
 };
 
 type CommentLayoutProps = {

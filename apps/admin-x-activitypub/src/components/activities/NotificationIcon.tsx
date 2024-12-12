@@ -4,7 +4,7 @@ import {Icon} from '@tryghost/admin-x-design-system';
 export type NotificationType = 'like' | 'follow' | 'reply';
 
 interface NotificationIconProps {
-    notificationType: 'like' | 'follow' | 'reply';
+    notificationType: NotificationType;
     className?: string;
 }
 
@@ -32,7 +32,7 @@ const NotificationIcon: React.FC<NotificationIconProps> = ({notificationType, cl
     }
 
     return (
-        <div className={`flex h-10 w-10 items-center justify-center rounded-full ${badgeColor} ${className}`}>
+        <div className={`flex h-10 w-10 items-center justify-center rounded-full ${badgeColor} ${className && className}`}>
             <Icon colorClass={iconColor} name={icon} size='sm' />
         </div>
     );
