@@ -1,0 +1,31 @@
+import { Meta } from '@storybook/blocks';
+
+<Meta title="Conventions" />
+
+<div className="sb-doc">
+
+# Conventions
+
+## Composable vs. configurable components
+
+In Shade we favor **composable** components over configurable ones. Read about the differences and the pros and cons for each in this [article](https://blog.tomaszgil.me/choosing-the-right-path-composable-vs-configurable-components-in-react).
+
+## `className` prop
+
+In order to make the design system flexible, all components in Shade should have a `className` prop that is applied to the rendered HTML component. The `className` should be merged with the default classes using the `cn` util, for example:
+
+```
+className={cn('bg-gray-200', className)}
+```
+
+Another example if variants are used:
+
+```
+className={cn(buttonVariants({variant, size, className}))}
+```
+
+## TailwindCSS color naming
+
+[TK]
+
+</div>

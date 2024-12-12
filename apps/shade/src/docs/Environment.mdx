@@ -1,0 +1,40 @@
+import { Meta } from '@storybook/blocks';
+
+<Meta title="Code editor setup" />
+
+<div className="sb-doc">
+
+# VSCode/Cursor setup
+
+In order to make the proper TailwindCSS classes appear in code completion, you need to make sure that your code editor is set up correctly. First, make sure you have the Tailwind CSS IntelliSense extension installed:
+
+1. Open VSCode extensions
+2. Search for "Tailwind CSS IntelliSense" and install it
+
+Then, verify your VSCode settings:
+
+1. Open settings.json (Cmd+Shift+P, then "Preferences: Open Settings (JSON)")
+2. Add these settings:
+
+```
+{
+    "tailwindCSS.includeLanguages": {
+    "typescript": "javascript",
+    "typescriptreact": "javascript"
+    },
+    "tailwindCSS.experimental.configFile": "tailwind.config.cjs"
+}
+```
+
+Also, ensure your project has a postcss.config.js file:
+
+```
+module.exports = {
+    plugins: {
+        tailwindcss: {},
+        autoprefixer: {},
+    }
+}
+```
+
+</div>
