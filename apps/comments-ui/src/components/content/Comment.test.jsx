@@ -38,6 +38,28 @@ describe('<CommentComponent>', function () {
 
         expect(screen.getByText('First reply')).toBeInTheDocument();
     });
+
+    it('outputs member uuid data attribute for published comments', function () {
+        const comment = buildComment({
+            status: 'published',
+            member: {uuid: '123'}
+        });
+        const appContext = {comments: [comment]};
+
+        const {container} = contextualRender(<CommentComponent comment={comment} />, {appContext});
+        expect(container.querySelector('[data-member-uuid="123"]')).toBeInTheDocument();
+    });
+
+    it('does not output member uuid data attribute for unpublished comments', function () {
+        const comment = buildComment({
+            status: 'hidden',
+            member: {uuid: '123'}
+        });
+        const appContext = {comments: [comment]};
+
+        const {container} = contextualRender(<CommentComponent comment={comment} />, {appContext});
+        expect(container.querySelector('[data-member-uuid="123"]')).not.toBeInTheDocument();
+    });
 });
 
 describe('<RepliedToSnippet>', function () {
