@@ -6,7 +6,7 @@ type Props = {
     comment: Comment;
 };
 const LikeButton: React.FC<Props> = ({comment}) => {
-    const {dispatchAction, member, commentsEnabled, commentLikeLoading} = useAppContext();
+    const {dispatchAction, member, commentsEnabled, commentLikeLoadingId} = useAppContext();
     const labs = useLabs();
     const [animationClass, setAnimation] = useState('');
 
@@ -44,7 +44,7 @@ const LikeButton: React.FC<Props> = ({comment}) => {
     }
 
     if (labs && labs.commentImprovements) {
-        const likeIsinLoadingState = commentLikeLoading === comment.id;
+        const likeIsinLoadingState = commentLikeLoadingId === comment.id;
         return (
             <button 
                 className={`duration-50 group flex cursor-pointer items-center font-sans text-base outline-0 transition-all ease-linear sm:text-sm ${

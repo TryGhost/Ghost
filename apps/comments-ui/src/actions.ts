@@ -193,13 +193,13 @@ async function sendLikeToApi({api, data: comment}: {api: GhostApi, data: {id: st
     try {
         await api.comments.like({comment: {id: comment.id}});
         return {
-            commentLikeLoading: null
+            commentLikeLoadingId: null
         };
     } catch (err) {
         // if error we revert the state
         return {
             comments: commentsState,
-            commentLikeLoading: null
+            commentLikeLoadingId: null
         };
     }
 }
@@ -244,7 +244,7 @@ async function likeComment({state, data: comment, dispatchAction}: {state: Edita
                 replies
             };
         }),
-        commentLikeLoading: comment.id
+        commentLikeLoadingId: comment.id
     };
 }
 
