@@ -319,7 +319,7 @@ button.gh-form-input {
 
 .gh-article-excerpt {
     margin-top: 16px;
-    font-size: calc(2rem * var(--content-spacing-factor, 1));
+    font-size: calc(1.8rem * var(--content-spacing-factor, 1));
     line-height: 1.4;
     letter-spacing: -0.017em;
     text-wrap: pretty;

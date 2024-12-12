@@ -25,7 +25,6 @@ interface ArticleModalProps {
     focusReply: boolean;
     focusReplies: boolean;
     width?: 'narrow' | 'wide';
-    backDrop?: boolean;
     updateActivity: (id: string, updated: Partial<Activity>) => void;
     history: {
         activityId: string;
@@ -285,7 +284,6 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
     focusReply,
     focusReplies,
     width = 'narrow',
-    backDrop = false,
     updateActivity = () => {},
     history = []
 }) => {
@@ -485,9 +483,9 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
     return (
         <Modal
             align='right'
-            allowBackgroundInteraction={true}
+            allowBackgroundInteraction={false}
             animate={true}
-            backDrop={backDrop}
+            backDrop={false}
             backDropClick={true}
             footer={<></>}
             height={'full'}
