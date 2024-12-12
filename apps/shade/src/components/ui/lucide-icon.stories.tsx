@@ -3,7 +3,7 @@ import type {Meta, StoryObj} from '@storybook/react';
 import {Smile} from 'lucide-react';
 
 const meta = {
-    title: 'Components / Lucide icons',
+    title: 'Experimental / Lucide icons',
     component: Smile,
     tags: ['autodocs'],
     parameters: {
