@@ -33,7 +33,7 @@ export default Authenticator.extend({
         }
 
         const data = {username: identification, password};
-        if(skipEmailVerification) {
+        if (skipEmailVerification) {
             data.skipEmailVerification = true;
         }
         const options = {
