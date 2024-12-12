@@ -1,4 +1,4 @@
-import {chooseOptionInSelect, mockApi, responseFixtures, updatedSettingsResponse} from '@tryghost/admin-x-framework/test/acceptance';
+import {chooseOptionInSelect, getOptionsFromSelect, mockApi, responseFixtures, updatedSettingsResponse} from '@tryghost/admin-x-framework/test/acceptance';
 import {expect, test} from '@playwright/test';
 import {globalDataRequests} from '../../utils/acceptance';
 
@@ -17,21 +17,31 @@ test.describe('Access settings', async () => {
 
         const section = page.getByTestId('access');
 
+        // Check that the current values are displayed when in view mode
         await expect(section.getByText('Anyone can sign up')).toHaveCount(1);
         await expect(section.getByText('Public')).toHaveCount(1);
         await expect(section.getByText('Nobody')).toHaveCount(1);
 
+        // Check available options in access settings in edit mode
         await section.getByRole('button', {name: 'Edit'}).click();
+        const subscriptionAccessSelect = section.getByTestId('subscription-access-select');
+        const defaultPostAccessSelect = section.getByTestId('default-post-access-select');
+        const commentingSelect = section.getByTestId('commenting-select');
 
-        await chooseOptionInSelect(section.getByTestId('subscription-access-select'), 'Only people I invite');
-        await chooseOptionInSelect(section.getByTestId('default-post-access-select'), /^Members only$/);
-        await chooseOptionInSelect(section.getByTestId('commenting-select'), 'All members');
+        await expect(getOptionsFromSelect(subscriptionAccessSelect)).resolves.toEqual(['Anyone can sign up', 'Paid-members only', 'Invite-only', 'Nobody']);
+        await expect(getOptionsFromSelect(defaultPostAccessSelect)).resolves.toEqual(['Public', 'Members only', 'Paid-members only', 'Specific tiers']);
+        await expect(getOptionsFromSelect(commentingSelect)).resolves.toEqual(['All members', 'Paid-members only', 'Nobody']);
+
+        // Edit access settings to new values
+        await chooseOptionInSelect(subscriptionAccessSelect, 'Invite-only');
+        await chooseOptionInSelect(defaultPostAccessSelect, /^Members only$/);
+        await chooseOptionInSelect(commentingSelect, 'All members');
 
         await section.getByRole('button', {name: 'Save'}).click();
-
         await expect(section.getByTestId('subscription-access-select')).toHaveCount(0);
 
-        await expect(section.getByText('Only people I invite')).toHaveCount(1);
+        // Check that the new values are displayed when in view mode
+        await expect(section.getByText('Invite-only')).toHaveCount(1);
         await expect(section.getByText('Members only')).toHaveCount(1);
         await expect(section.getByText('All members')).toHaveCount(1);
 
