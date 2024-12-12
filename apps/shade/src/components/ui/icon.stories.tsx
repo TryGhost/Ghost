@@ -3,7 +3,7 @@ import type {Meta, StoryObj} from '@storybook/react';
 import {useState} from 'react';
 
 const meta = {
-    title: 'Components / Icons',
+    title: 'Components / Streamline icons',
     component: Icon.Close,
     tags: ['autodocs'],
     argTypes: {

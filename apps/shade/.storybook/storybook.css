@@ -60,8 +60,8 @@ body,
 }
 
 .sb-doc a {
-    color: #394047;
-    text-decoration: underline;
+    color: #394047 !important;
+    text-decoration: underline !important;
 }
 
 .sb-doc a:hover {
@@ -252,7 +252,7 @@ body,
 
 .sbdocs-a {
     color: #394047 !important;
-    text-decoration: underline;
+    text-decoration: underline !important;
 }
 
 .sb-icon-grid {
@@ -313,4 +313,8 @@ body,
 
 .sbdocs li > ul {
     padding-top: 10px;
+}
+
+.sbdocs hr {
+    margin: 40px 0;
 }
