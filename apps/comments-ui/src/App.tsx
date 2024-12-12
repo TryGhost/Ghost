@@ -121,8 +121,7 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
                         ...state,
                         adminApi: adminApi,
                         comments: adminComments.comments,
-                        pagination: adminComments.meta.pagination,
-                        commentCount: adminComments.meta.pagination.total
+                        pagination: adminComments.meta.pagination
                     });
                 }
             } catch (e) {
