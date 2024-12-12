@@ -7,8 +7,6 @@ type Props = {
 };
 const LikeButton: React.FC<Props> = ({comment}) => {
     const {dispatchAction, member, commentsEnabled, commentLikeLoading} = useAppContext();
-
-    console.log(commentLikeLoading);
     const labs = useLabs();
     const [animationClass, setAnimation] = useState('');
 
