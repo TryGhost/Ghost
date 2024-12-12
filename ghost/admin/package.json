@@ -190,7 +190,8 @@
             "projects": [
               "@tryghost/admin-x-demo",
               "@tryghost/admin-x-settings",
-              "@tryghost/admin-x-activitypub"
+              "@tryghost/admin-x-activitypub",
+              "@tryghost/posts"
             ],
             "target": "build"
           }
@@ -207,7 +208,8 @@
             "projects": [
               "@tryghost/admin-x-demo",
               "@tryghost/admin-x-settings",
-              "@tryghost/admin-x-activitypub"
+              "@tryghost/admin-x-activitypub",
+              "@tryghost/posts"
             ],
             "target": "build"
           }

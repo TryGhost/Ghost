@@ -12,7 +12,7 @@ const App: React.FC<AppProps> = ({framework, designSystem}) => {
         <FrameworkProvider {...framework}>
             <RoutingProvider basePath='posts-r'>
                 <ShadeApp className='posts' {...designSystem}>
-                    YOUR CONTENT HERE
+                    Posts
                 </ShadeApp>
             </RoutingProvider>
         </FrameworkProvider>

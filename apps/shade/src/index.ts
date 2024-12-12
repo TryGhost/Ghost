@@ -1,3 +1,8 @@
+// Exported components
+export * from '@/lib/utils';
+export * from './components/ui/button';
+export * from './components/ui/icon';
+
 export {ReactComponent as FacebookLogo} from './assets/images/facebook-logo.svg';
 export {ReactComponent as GhostLogo} from './assets/images/ghost-logo.svg';
 export {ReactComponent as GhostOrb} from './assets/images/ghost-orb.svg';

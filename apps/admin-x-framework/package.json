@@ -111,7 +111,8 @@
         "dependsOn": [
           "test:unit",
           "^build",
-          "@tryghost/admin-x-design-system:test:unit"
+          "@tryghost/admin-x-design-system:test:unit",
+          "@tryghost/shade:test:unit"
         ]
       }
     }
