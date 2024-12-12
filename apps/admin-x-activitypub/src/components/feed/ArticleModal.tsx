@@ -228,7 +228,7 @@ const FeedItemDivider: React.FC = () => (
 
 const FONT_SIZES = ['1.4rem', '1.7rem', '1.9rem', '2.1rem', '2.4rem'] as const;
 const LINE_HEIGHTS = ['1.3', '1.4', '1.5', '1.6', '1.7', '1.8'] as const;
-const SPACING_FACTORS = ['0.7', '1', '1.1', '1.2', '1.3'] as const;
+const SPACING_FACTORS = ['0.85', '1', '1.1', '1.2', '1.3'] as const;
 
 type FontSize = typeof FONT_SIZES[number];
 
@@ -427,7 +427,6 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
 
     const [readingProgress, setReadingProgress] = useState(0);
 
-    // Add the scroll handler
     useEffect(() => {
         const container = document.querySelector('.overflow-y-auto');
         const article = document.getElementById('object-content');
@@ -439,14 +438,11 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
 
             const articleRect = article.getBoundingClientRect();
             const containerRect = container.getBoundingClientRect();
-            const totalHeight = article.offsetHeight;
-
-            // Calculate how much of the article has been scrolled past the viewport
             const scrolledPast = Math.max(0, containerRect.top - articleRect.top);
+            const totalHeight = (article as HTMLElement).offsetHeight - (container as HTMLElement).offsetHeight;
 
-            // Only add the visible portion if we've started scrolling
-            const visibleHeight = scrolledPast > 0 ? Math.min(containerRect.height, articleRect.height) : 0;
-            const progress = Math.round(Math.min(Math.max(((scrolledPast + visibleHeight) / totalHeight) * 100, 0), 100));
+            const rawProgress = Math.min(Math.max((scrolledPast / totalHeight) * 100, 0), 100);
+            const progress = Math.round(rawProgress / 5) * 5;
 
             setReadingProgress(progress);
         };
@@ -470,9 +466,9 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
             width={modalSize === MODAL_SIZE_LG ? 'toSidebar' : modalSize}
         >
             <div className='flex h-full flex-col'>
-                <div className='sticky top-0 z-50 border-b border-grey-200 bg-white py-8'>
+                <div className='sticky top-0 z-50 flex h-[97px] items-center justify-center border-b border-grey-200 bg-white'>
                     <div
-                        className={`flex h-8 ${modalSize === MODAL_SIZE_LG ? 'grid px-8' : 'justify-between gap-2 px-8'}`}
+                        className={`w-full ${modalSize === MODAL_SIZE_LG ? 'grid px-8' : 'flex justify-between gap-2 px-8'}`}
                         style={modalSize === MODAL_SIZE_LG ? {
                             gridTemplateColumns: `1fr minmax(0,${currentGridWidth}) 1fr`
                         } : undefined}
@@ -495,10 +491,10 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                 </div>
                             </div>
                         </div>)}
-                        <div className='col-[3/4] flex items-center justify-end space-x-6'>
+                        <div className='col-[3/4] flex items-center justify-end gap-2'>
                             {modalSize === MODAL_SIZE_LG && object.type === 'Article' && <Popover position='end' trigger={ <Button className='transition-color flex h-10 w-10 items-center justify-center rounded-full bg-white hover:bg-grey-100' icon='typography' size='sm' unstyled onClick={() => {}}/>
                             }>
-                                <div className='flex min-w-[240px] flex-col p-5'>
+                                <div className='flex min-w-[260px] flex-col p-5'>
                                     <Select
                                         className='mb-3'
                                         options={[
@@ -513,8 +509,8 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                         })}
                                     />
                                     <div className='mb-2 flex items-center justify-between'>
-                                        <span className='text-sm font-medium'>Font size</span>
-                                        <div className='flex items-center gap-2'>
+                                        <span className='text-sm font-medium text-grey-900'>Font size</span>
+                                        <div className='flex items-center'>
                                             <Button
                                                 className={`transition-color flex h-8 w-8 items-center justify-center rounded-full bg-white ${currentFontSizeIndex === 0 ? 'opacity-20 hover:bg-white' : 'hover:bg-grey-100'}`}
                                                 disabled={currentFontSizeIndex === 0}
@@ -525,7 +521,6 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                                 unstyled={true}
                                                 onClick={decreaseFontSize}
                                             />
-                                            {/* <span className='text-grey-700'>{FONT_SIZES[currentFontSizeIndex]}</span> */}
                                             <Button
                                                 className={`transition-color flex h-8 w-8 items-center justify-center rounded-full bg-white hover:bg-grey-100 ${currentFontSizeIndex === FONT_SIZES.length - 1 ? 'opacity-20 hover:bg-white' : 'hover:bg-grey-100'}`}
                                                 disabled={currentFontSizeIndex === FONT_SIZES.length - 1}
@@ -539,8 +534,8 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                         </div>
                                     </div>
                                     <div className='flex items-center justify-between'>
-                                        <span className='text-sm font-medium'>Line spacing</span>
-                                        <div className='flex items-center gap-2'>
+                                        <span className='text-sm font-medium text-grey-900'>Line spacing</span>
+                                        <div className='flex items-center'>
                                             <Button
                                                 className={`transition-color flex h-8 w-8 items-center justify-center rounded-full bg-white hover:bg-grey-100 ${currentLineHeightIndex === 0 ? 'opacity-20 hover:bg-white' : 'hover:bg-grey-100'}`}
                                                 disabled={currentLineHeightIndex === 0}
@@ -551,7 +546,6 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                                 unstyled={true}
                                                 onClick={decreaseLineHeight}
                                             />
-                                            {/* <span className='text-grey-700'>{LINE_HEIGHTS[currentLineHeightIndex]}</span> */}
                                             <Button
                                                 className={`transition-color flex h-8 w-8 items-center justify-center rounded-full bg-white hover:bg-grey-100 ${currentLineHeightIndex === LINE_HEIGHTS.length - 1 ? 'opacity-20 hover:bg-white' : 'hover:bg-grey-100'}`}
                                                 disabled={currentLineHeightIndex === LINE_HEIGHTS.length - 1}
@@ -679,11 +673,11 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                 </div>
             </div>
             {modalSize === MODAL_SIZE_LG && object.type === 'Article' && (
-                <div className='pointer-events-none sticky bottom-0 flex items-end justify-between p-8'>
+                <div className='pointer-events-none sticky bottom-0 flex items-end justify-between px-10 pb-[42px]'>
                     <div className='pointer-events-auto text-grey-600'>
                         {getReadingTime(object.content)}
                     </div>
-                    <div className='pointer-events-auto text-grey-600'>
+                    <div className='pointer-events-auto text-grey-600 transition-all duration-200 ease-out'>
                         {readingProgress}%
                     </div>
                 </div>
