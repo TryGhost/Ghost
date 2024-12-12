@@ -219,6 +219,33 @@ test.describe('Actions', async () => {
         await expect(likeButton).toHaveText('52');
     });
 
+    test('Like state reverts when unlike api request is unsuccessful', async ({page}) => {
+        mockedApi.addComment({
+            html: '<p>This is comment 1</p>',
+            liked: true,
+            count: {
+                likes: 52
+            }
+        });
+
+        const {frame} = await initializeTest(page);
+
+        // Check like button is filled
+        const comment = frame.getByTestId('comment-component').nth(0);
+        const likeButton = comment.getByTestId('like-button');
+        await expect(likeButton).toHaveText('52');
+        const icon = likeButton.locator('svg');
+        await expect(icon).toHaveClass(/fill/);
+
+        mockedApi.setFailure('likeComment', {
+            status: 500,
+            body: {error: 'Internal Server Error'}
+        });
+        await likeButton.click();
+        mockedApi.setDelay(100); // give time for disabled state
+        await expect(likeButton).toHaveText('52');
+    });
+
     test('Can reply to a comment', async ({page}) => {
         mockedApi.addComment({
             html: '<p>This is comment 1</p>'

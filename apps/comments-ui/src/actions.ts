@@ -189,7 +189,6 @@ async function showComment({state, api, data: comment}: {state: EditableAppConte
 async function sendLikeToApi({api, data: comment}: {api: GhostApi, data: {id: string, commentsState: Comment[]}}) {
     const commentsState = comment.commentsState;
 
-    // remove commentsState from the comment object before sending it to the API
     try {
         await api.comments.like({comment: {id: comment.id}});
         return {
@@ -251,7 +250,6 @@ async function likeComment({state, data: comment, dispatchAction}: {state: Edita
 async function sendUnlikeToApi({api, data: comment}: {api: GhostApi, data: {id: string, commentsState: Comment[]}}) {
     const commentsState = comment.commentsState;
 
-    // Remove commentsState from the comment object before sending it to the API
     try {
         await api.comments.unlike({comment: {id: comment.id}});
         return {
