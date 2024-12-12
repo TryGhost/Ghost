@@ -433,6 +433,22 @@ test.describe('Actions', async () => {
         await expect(frame.getByTestId('replies-line')).toBeVisible();
     });
 
+    test('Resets comments list after deleting a top-level comment', async ({page}) => {
+        const loggedInMember = buildMember();
+        mockedApi.setMember(loggedInMember);
+        // We have a page limit of 20, this will show the load more button
+        mockedApi.addComments(21, {member: loggedInMember});
+
+        const {frame} = await initializeTest(page);
+        await expect(frame.getByTestId('pagination-component')).toBeVisible();
+
+        const commentToDelete = frame.getByTestId('comment-component').nth(0);
+        await deleteComment(page, frame, commentToDelete);
+
+        // more button should have disappeared because the list was reloaded
+        await expect(frame.getByTestId('pagination-component')).not.toBeVisible();
+    });
+
     test.describe('Sorting', () => {
         test('Renders Sorting Form dropdown', async ({page}) => {
             mockedApi.addComment({
