@@ -1835,7 +1835,8 @@ span.dropdown .gh-post-list-cta > span {
 }
 
 .gh-post-activity-feed .gh-member-list-avatar {
-    font-size: 1.25rem;
+    font-size: 1.1rem;
+    font-weight: 600;
 }
 
 .gh-post-activity-feed .gh-dashboard-list-item {

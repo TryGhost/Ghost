@@ -1576,6 +1576,30 @@ Dashboard Recents */
 
 
 /* ---------------------------------
+Dashboard Deleted Member */
+
+.gh-dashboard-list-item.deleted-member {
+    opacity: 0.4;
+}
+
+.gh-dashboard-list-item.deleted-member a {
+    pointer-events: none;
+    opacity: 0.6;
+}
+
+.gh-dashboard-list-item.deleted-member .gh-member-gravatar {
+    background-color: var(--lightgrey-l2);
+}
+
+.gh-dashboard-list-item.deleted-member .gh-member-gravatar svg {
+    margin: 1px 0 0 1px;
+    width: 23px;
+    min-width: 23px;
+    height: 23px;
+    opacity: 0.4;
+}
+
+/* ---------------------------------
 Dashboard Resources */
 
 .gh-dashboard-resources {
