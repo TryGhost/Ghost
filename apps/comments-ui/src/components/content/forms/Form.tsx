@@ -188,7 +188,7 @@ const FormHeader: React.FC<FormHeaderProps> = ({show, name, expertise, replyingT
                 <div
                     className="w-full font-sans text-base font-bold leading-snug text-neutral-900 sm:w-auto sm:text-sm dark:text-white/85"
                     data-testid="member-name"
-                    onClick={editName}
+                    onMouseDown={editName}
                 >
                     {name ? name : 'Anonymous'}
                 </div>
@@ -197,7 +197,7 @@ const FormHeader: React.FC<FormHeaderProps> = ({show, name, expertise, replyingT
                         className={`group flex items-center justify-start whitespace-nowrap text-left font-sans text-base leading-snug text-neutral-900/50 transition duration-150 hover:text-black/75 sm:text-sm dark:text-white/60 dark:hover:text-white/75 ${!expertise && 'text-black/30 hover:text-black/50 dark:text-white/30 dark:hover:text-white/50'}`}
                         data-testid="expertise-button"
                         type="button"
-                        onClick={editExpertise}
+                        onMouseDown={editExpertise}
                     >
                         <span><span className="mx-[0.3em] hidden sm:inline">·</span>{expertise ? expertise : 'Add your expertise'}</span>
                         {expertise && <EditIcon className="ml-1 h-[12px] w-[12px] translate-x-[-6px] stroke-black/50 opacity-0 transition-all duration-100 ease-out group-hover:translate-x-0 group-hover:stroke-black/75 group-hover:opacity-100 dark:stroke-white/60 dark:group-hover:stroke-white/75" />}
