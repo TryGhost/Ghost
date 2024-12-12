@@ -126,7 +126,7 @@ const PublishedComment: React.FC<PublishedCommentProps> = ({comment, parent, ope
     const avatar = (<Avatar comment={comment} />);
 
     return (
-        <CommentLayout avatar={avatar} className={hiddenClass} hasReplies={hasReplies}>
+        <CommentLayout avatar={avatar} className={hiddenClass} hasReplies={hasReplies} memberUuid={comment.member?.uuid}>
             <div>
                 {isInEditMode ? (
                     <>
@@ -419,10 +419,11 @@ type CommentLayoutProps = {
     avatar: React.ReactNode;
     hasReplies: boolean;
     className?: string;
+    memberUuid?: string;
 }
-const CommentLayout: React.FC<CommentLayoutProps> = ({children, avatar, hasReplies, className = ''}) => {
+const CommentLayout: React.FC<CommentLayoutProps> = ({children, avatar, hasReplies, className = '', memberUuid = ''}) => {
     return (
-        <div className={`flex w-full flex-row ${hasReplies === true ? 'mb-0' : 'mb-7'}`} data-testid="comment-component">
+        <div className={`flex w-full flex-row ${hasReplies === true ? 'mb-0' : 'mb-7'}`} data-member-uuid={memberUuid} data-testid="comment-component">
             <div className="mr-2 flex flex-col items-center justify-start sm:mr-3">
                 <div className={`flex-0 mb-3 sm:mb-4 ${className}`}>
                     {avatar}
