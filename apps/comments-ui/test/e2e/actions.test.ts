@@ -341,6 +341,13 @@ test.describe('Actions', async () => {
         );
     });
 
+    async function deleteComment(page, frame, commentComponent) {
+        await commentComponent.getByTestId('more-button').first().click();
+        await frame.getByTestId('delete').click();
+        const popupIframe = page.frameLocator('iframe[title="deletePopup"]');
+        await popupIframe.getByTestId('delete-popup-confirm').click();
+    }
+
     test('Can delete a comment', async ({page}) => {
         const loggedInMember = buildMember();
         mockedApi.setMember(loggedInMember);
@@ -352,15 +359,8 @@ test.describe('Actions', async () => {
 
         const {frame} = await initializeTest(page);
 
-        const comment = frame.getByTestId('comment-component').nth(0);
-        const moreButton = comment.getByTestId('more-button').first();
-        await moreButton.click();
-        await frame.getByTestId('delete').click();
-
-        const popupIframe = page.frameLocator('iframe[title="deletePopup"]');
-
-        await expect(popupIframe.getByTestId('delete-popup')).toBeVisible();
-        await popupIframe.getByTestId('delete-popup-confirm').click();
+        const commentToDelete = frame.getByTestId('comment-component').nth(0);
+        await deleteComment(page, frame, commentToDelete);
 
         await expect(frame.getByTestId('comment-component')).toHaveCount(0);
     });
@@ -382,18 +382,31 @@ test.describe('Actions', async () => {
         const {frame} = await initializeTest(page);
 
         const comment = frame.getByTestId('comment-component').nth(0);
-        const reply = comment.getByTestId('comment-component').nth(0);
-        const moreButton = reply.getByTestId('more-button').first();
-        await moreButton.click();
-        await frame.getByTestId('delete').click();
-
-        const popupIframe = page.frameLocator('iframe[title="deletePopup"]');
-
-        await expect(popupIframe.getByTestId('delete-popup')).toBeVisible();
-        await popupIframe.getByTestId('delete-popup-confirm').click();
+        const replyToDelete = comment.getByTestId('comment-component').nth(0);
+        await deleteComment(page, frame, replyToDelete);
 
         await expect(frame.getByTestId('comment-component')).toHaveCount(1);
         await expect(frame.getByTestId('replies-line')).not.toBeVisible();
+    });
+
+    test('Deleting a reply updates pagination', async ({page}) => {
+        const loggedInMember = buildMember();
+        mockedApi.setMember(loggedInMember);
+
+        mockedApi.addComment({
+            html: '<p>Parent comment</p>',
+            // 6 replies
+            replies: Array.from({length: 6}, (_, i) => buildReply({member: loggedInMember, html: `<p>Reply ${i + 1}</p>`}))
+        });
+
+        const {frame} = await initializeTest(page);
+        await expect(frame.getByTestId('replies-pagination')).toContainText('3');
+
+        const replyToDelete = frame.getByTestId('comment-component').nth(2);
+        await deleteComment(page, frame, replyToDelete);
+
+        // Replies count does not change - we still have 3 unloaded replies
+        await expect(frame.getByTestId('replies-pagination')).toContainText('3');
     });
 
     test('Can delete a comment with replies', async ({page}) => {
@@ -412,22 +425,15 @@ test.describe('Actions', async () => {
 
         const {frame} = await initializeTest(page);
 
-        const comment = frame.getByTestId('comment-component').nth(0);
-        const moreButton = comment.getByTestId('more-button').first();
-        await moreButton.click();
-        await frame.getByTestId('delete').click();
-
-        const popupIframe = page.frameLocator('iframe[title="deletePopup"]');
-
-        await expect(popupIframe.getByTestId('delete-popup')).toBeVisible();
-        await popupIframe.getByTestId('delete-popup-confirm').click();
+        const commentToDelete = frame.getByTestId('comment-component').nth(0);
+        await deleteComment(page, frame, commentToDelete);
 
         await expect(frame.getByTestId('comment-component')).toHaveCount(2);
         await expect(frame.getByText('This comment has been removed')).toBeVisible();
         await expect(frame.getByTestId('replies-line')).toBeVisible();
     });
 
-    test.describe('Sorting - flag needs to be enabled', () => {
+    test.describe('Sorting', () => {
         test('Renders Sorting Form dropdown', async ({page}) => {
             mockedApi.addComment({
                 html: '<p>This is comment 1</p>'
