@@ -36,7 +36,7 @@ export default function renderShadeApp<Props extends object>(
     ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
         <React.StrictMode>
             <App
-                designSystem={{darkMode: false, fetchKoenigLexical: async () => {}}}
+                designSystem={{darkMode: false}}
                 framework={{
                     externalNavigate: (link) => {
                         // Use the expectExternalNavigate helper to test this dummy external linking
