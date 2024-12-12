@@ -6,6 +6,8 @@ import {setupTest} from 'ember-mocha';
 describe('Unit: Controller: reset', function () {
     setupTest();
 
+    let sessionStub;
+
     beforeEach(function () {
         sessionStub = EmberObject.create({
             authenticate: function () {
@@ -150,4 +152,4 @@ describe('Unit: Controller: reset', function () {
         expect(controller.flowErrors).to.equal('Passwords do not match');
         expect(controller.hasValidated.addObjects.calledWith(['newPassword', 'ne2Password'])).to.be.true;
     });
-}); 
+});
