@@ -17,7 +17,7 @@ export type Config = {
     }
     enableDeveloperExperiments: boolean;
     database: string;
-    blogUrl: string;
+    blogUrl?: string;
     labs: Record<string, boolean>;
     stripeDirect: boolean;
     mail: string;
@@ -48,7 +48,11 @@ export type Config = {
         pintura?: {
             js?: string
             css?: string
-        }
+        },
+        managedEmail?: {
+            enabled?: boolean
+            sendingDomain?: string
+        },
     }
 
     // Config is relatively fluid, so we only type used properties above and still support arbitrary property access when needed
@@ -67,3 +71,18 @@ export const useBrowseConfig = createQuery<ConfigResponseType>({
     dataType,
     path: '/config/'
 });
+
+// Helpers
+
+export const isManagedEmail = (config: Config) => {
+    return !!config?.hostSettings?.managedEmail?.enabled;
+};
+
+export const hasSendingDomain = (config: Config) => {
+    const sendingDomain = config?.hostSettings?.managedEmail?.sendingDomain;
+    return typeof sendingDomain === 'string' && sendingDomain.length > 0;
+};
+
+export const sendingDomain = (config: Config) => {
+    return config?.hostSettings?.managedEmail?.sendingDomain;
+};

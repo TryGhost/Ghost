@@ -15,6 +15,7 @@ const logging = require('@tryghost/logging');
  * @typedef {object} IEmailProviderService
  * @prop {(emailData: EmailData, options: EmailSendingOptions) => Promise<EmailProviderSuccessResponse>} send
  * @prop {() => number} getMaximumRecipients
+ * @prop {() => number} getTargetDeliveryWindow
  *
  * @typedef {object} Post
  * @typedef {object} Newsletter
@@ -29,6 +30,7 @@ const logging = require('@tryghost/logging');
  * @typedef {object} EmailSendingOptions
  * @prop {boolean} clickTrackingEnabled
  * @prop {boolean} openTrackingEnabled
+ * @prop {Date} deliveryTime
  * @prop {{get(id: string): EmailBody | null, set(id: string, body: EmailBody): void}} [emailBodyCache]
  */
 
@@ -76,6 +78,15 @@ class SendingService {
     }
 
     /**
+     * Returns the configured target delivery window in seconds
+     * 
+     * @returns {number}
+     */
+    getTargetDeliveryWindow() {
+        return this.#emailProvider.getTargetDeliveryWindow();
+    }
+
+    /**
      * Send a given post, rendered for a given newsletter and segment to the members provided in the list
      * @param {object} data
      * @param {Post} data.post
@@ -88,6 +99,7 @@ class SendingService {
     */
     async send({post, newsletter, segment, members, emailId}, options) {
         const cacheId = emailId + '-' + (segment ?? 'null');
+        const isTestEmail = options.isTestEmail ?? false;
 
         /**
          * @type {EmailBody | null}
@@ -114,7 +126,7 @@ class SendingService {
 
         const recipients = this.buildRecipients(members, emailBody.replacements);
         return await this.#emailProvider.send({
-            subject: this.#emailRenderer.getSubject(post),
+            subject: this.#emailRenderer.getSubject(post, isTestEmail),
             from: this.#emailRenderer.getFromAddress(post, newsletter),
             replyTo: this.#emailRenderer.getReplyToAddress(post, newsletter) ?? undefined,
             html: emailBody.html,
@@ -124,7 +136,8 @@ class SendingService {
             replacementDefinitions: emailBody.replacements
         }, {
             clickTrackingEnabled: !!options.clickTrackingEnabled,
-            openTrackingEnabled: !!options.openTrackingEnabled
+            openTrackingEnabled: !!options.openTrackingEnabled,
+            ...(options.deliveryTime && {deliveryTime: options.deliveryTime})
         });
     }
 

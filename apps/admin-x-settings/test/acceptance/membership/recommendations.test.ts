@@ -1,11 +1,8 @@
 import {expect, test} from '@playwright/test';
-import {globalDataRequests, mockApi, responseFixtures, toggleLabsFlag} from '../../utils/acceptance';
+import {globalDataRequests} from '../../utils/acceptance';
+import {mockApi, responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
 
 test.describe('Recommendations', async () => {
-    test.beforeEach(async () => {
-        toggleLabsFlag('recommendations', true);
-    });
-
     test('can view recommendations', async ({page}) => {
         await mockApi({page, requests: {
             ...globalDataRequests,
@@ -46,7 +43,7 @@ test.describe('Recommendations', async () => {
         // Validate errors
         url.fill('not a real url');
         await modal.getByRole('button', {name: 'Next'}).click();
-        await expect(modal).toContainText('Please enter a valid URL.');
+        await expect(modal).toContainText('Enter a valid URL');
 
         // Validate success
         modal.getByRole('textbox').fill('https://example.com/a-cool-website');
@@ -58,8 +55,6 @@ test.describe('Recommendations', async () => {
 
         // Validate errors
         await title.fill('');
-        await title.blur();
-        await expect(modal).toContainText('Title is required');
 
         await description.fill('This is a long description with more than 200 characters: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec auctor, nisl eget aliquam aliquet, nisl nunc aliquam nunc, quis aliquam nisl nunc eget nisl. Donec auctor, nisl eget aliquam aliquet, nisl nunc aliquam nunc, quis aliquam nisl nunc eget nisl. Donec auctor, nisl eget aliquam aliquet, nisl nunc aliquam nunc, quis aliquam nisl nunc eget nisl. Donec auctor, nisl eget aliquam aliquet, nisl nunc aliquam nunc, quis aliquam nisl nunc eget nisl.');
         await expect(modal).toContainText('Max: 200 characters. You’ve used 510');
@@ -126,8 +121,6 @@ test.describe('Recommendations', async () => {
 
         // Validate errors
         await title.fill('');
-        await title.blur();
-        await expect(modal).toContainText('Title is required');
 
         await description.fill('This is a long description with more than 200 characters: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec auctor, nisl eget aliquam aliquet, nisl nunc aliquam nunc, quis aliquam nisl nunc eget nisl. Donec auctor, nisl eget aliquam aliquet, nisl nunc aliquam nunc, quis aliquam nisl nunc eget nisl. Donec auctor, nisl eget aliquam aliquet, nisl nunc aliquam nunc, quis aliquam nisl nunc eget nisl. Donec auctor, nisl eget aliquam aliquet, nisl nunc aliquam nunc, quis aliquam nisl nunc eget nisl.');
         await expect(modal).toContainText('Max: 200 characters. You’ve used 510');

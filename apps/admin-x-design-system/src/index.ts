@@ -50,7 +50,7 @@ export {default as Toggle} from './global/form/Toggle';
 export type {ToggleProps} from './global/form/Toggle';
 export {default as ToggleGroup} from './global/form/ToggleGroup';
 export type {ToggleGroupProps} from './global/form/ToggleGroup';
-export {default as URLTextField, formatUrl} from './global/form/URLTextField';
+export {default as URLTextField} from './global/form/URLTextField';
 export type {URLTextFieldProps} from './global/form/URLTextField';
 
 export {default as ConfirmationModal, ConfirmationModalContent} from './global/modal/ConfirmationModal';
@@ -128,6 +128,17 @@ export {default as Tooltip} from './global/Tooltip';
 export type {TooltipProps} from './global/Tooltip';
 export {default as PageHeader} from './global/layout/PageHeader';
 export type {PageHeaderProps} from './global/layout/PageHeader';
+export {default as Page} from './global/layout/Page';
+export type {PageTab} from './global/layout/Page';
+export type {CustomGlobalAction} from './global/layout/Page';
+export {default as ViewContainer} from './global/layout/ViewContainer';
+export type {View} from './global/layout/ViewContainer';
+export type {ViewTab} from './global/layout/ViewContainer';
+export type {PrimaryActionProps} from './global/layout/ViewContainer';
+export {default as DynamicTable} from './global/table/DynamicTable';
+export type {DynamicTableProps} from './global/table/DynamicTable';
+export type {DynamicTableColumn} from './global/table/DynamicTable';
+export type {DynamicTableRow} from './global/table/DynamicTable';
 
 export {default as SettingGroup} from './settings/SettingGroup';
 export type {SettingGroupProps} from './settings/SettingGroup';
@@ -155,8 +166,8 @@ export {default as useSortableIndexedList} from './hooks/useSortableIndexedList'
 
 export {debounce} from './utils/debounce';
 export {confirmIfDirty} from './utils/modals';
+export {formatUrl} from './utils/formatUrl';
 
 export {default as DesignSystemApp} from './DesignSystemApp';
 export type {DesignSystemAppProps} from './DesignSystemApp';
 export {useFocusContext} from './providers/DesignSystemProvider';
-

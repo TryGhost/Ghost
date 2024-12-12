@@ -390,6 +390,25 @@ describe('Posts API', function () {
                 });
         });
 
+        it('Errors if feature_image_alt is too long', async function () {
+            const post = {
+                title: 'Feature image alt too long',
+                feature_image_alt: 'a'.repeat(201)
+            };
+
+            await agent
+                .post('/posts/?formats=mobiledoc,lexical,html')
+                .body({posts: [post]})
+                .expectStatus(422)
+                .matchBodySnapshot({
+                    errors: [{
+                        id: anyErrorId,
+                        // TODO: this should be `posts.feature_image_alt` but we're hitting revision errors first
+                        context: stringMatching(/.*post_revisions\.feature_image_alt] exceeds maximum length of 191 characters.*/)
+                    }]
+                });
+        });
+
         it('Clears all page html fields when creating published post', async function () {
             const totalPageCount = await models.Post.where({type: 'page'}).count();
             should.exist(totalPageCount, 'total page count');
@@ -671,6 +690,62 @@ describe('Posts API', function () {
             should.exist(emptyPageCount);
             emptyPageCount.should.equal(totalPageCount, 'post-update empty page count');
         });
+
+        describe('Access', function () {
+            describe('Visibility is set to tiers', function () {
+                it('Saves only paid tiers', async function () {
+                    const post = {
+                        title: 'Test Page',
+                        status: 'draft'
+                    };
+
+                    // @ts-ignore
+                    const products = await models.Product.findAll();
+
+                    const freeTier = products.models[0];
+                    const paidTier = products.models[1];
+
+                    const {body: pageBody} = await agent
+                        .post('/posts/', {
+                            headers: {
+                                'content-type': 'application/json'
+                            }
+                        })
+                        .body({posts: [post]})
+                        .expectStatus(201);
+
+                    const [pageResponse] = pageBody.posts;
+
+                    await agent
+                        .put(`/posts/${pageResponse.id}`)
+                        .body({
+                            posts: [{
+                                id: pageResponse.id,
+                                updated_at: pageResponse.updated_at,
+                                visibility: 'tiers',
+                                tiers: [
+                                    {id: freeTier.id},
+                                    {id: paidTier.id}
+                                ]
+                            }]
+                        })
+                        .expectStatus(200)
+                        .matchHeaderSnapshot({
+                            'content-version': anyContentVersion,
+                            etag: anyEtag,
+                            'x-cache-invalidate': anyString
+                        })
+                        .matchBodySnapshot({
+                            posts: [Object.assign({}, matchPostShallowIncludes, {
+                                published_at: null,
+                                tiers: [
+                                    {type: paidTier.get('type'), ...tierSnapshot}
+                                ]
+                            })]
+                        });
+                });
+            });
+        });
     });
 
     describe('Delete', function () {
@@ -821,7 +896,7 @@ describe('Posts API', function () {
                     'content-version': anyContentVersion,
                     etag: anyEtag
                 });
-                
+
             const convertedPost = conversionResponse.body.posts[0];
             const expectedConvertedLexical = convertedPost.lexical;
             await agent

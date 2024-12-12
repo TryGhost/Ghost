@@ -9,7 +9,8 @@ import Button from '../Button';
 const meta = {
     title: 'Global / Table / Dynamic Table',
     component: DynamicTable,
-    tags: ['autodocs']
+    tags: ['autodocs'],
+    excludeStories: ['testColumns', 'testRows']
 } satisfies Meta<typeof DynamicTable>;
 
 export default meta;

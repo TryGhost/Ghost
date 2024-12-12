@@ -48,13 +48,13 @@ const ContentBox: React.FC<Props> = ({done}) => {
 
     const containerClass = darkMode() ? 'dark' : '';
     const style = {
-        '--gh-accent-color': accentColor ?? 'blue',
+        '--gh-accent-color': accentColor ?? 'black',
         paddingTop: 0,
         paddingBottom: 24 // remember to allow for bottom shadow on comment text box
     };
 
     return (
-        <section className={'ghost-display ' + containerClass} data-testid="content-box" style={style}>
+        <section className={'ghost-display ' + containerClass} data-loaded={done} data-testid="content-box" style={style}>
             {done ? <Content /> : <Loading />}
         </section>
     );

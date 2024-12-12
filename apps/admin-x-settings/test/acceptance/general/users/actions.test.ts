@@ -1,5 +1,6 @@
 import {expect, test} from '@playwright/test';
-import {globalDataRequests, limitRequests, mockApi, responseFixtures} from '../../../utils/acceptance';
+import {globalDataRequests} from '../../../utils/acceptance';
+import {limitRequests, mockApi, responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
 
 test.describe('User actions', async () => {
     test('Supports suspending a user', async ({page}) => {
@@ -127,7 +128,7 @@ test.describe('User actions', async () => {
         await confirmation.getByRole('button', {name: 'Delete user'}).click();
 
         await expect(page.getByTestId('toast-success')).toHaveText(/User deleted/);
-        await expect(activeTab.getByTestId('user-list-item')).toHaveCount(0);
+        await expect(activeTab.getByTestId('user-tabview')).toHaveCount(0);
 
         expect(lastApiRequests.deleteUser?.url).toMatch(new RegExp(`/users/${authorUser.id}`));
     });
@@ -172,7 +173,7 @@ test.describe('User actions', async () => {
 
         await modal.getByRole('button', {name: 'Actions'}).click();
         await expect(page.getByTestId('popover-content').getByRole('button', {name: 'Make owner'})).toHaveCount(0);
-        await page.getByTestId('popover-overlay').click();
+        await modal.getByRole('button', {name: 'Actions'}).click();
 
         await modal.getByRole('button', {name: 'Close'}).click();
 

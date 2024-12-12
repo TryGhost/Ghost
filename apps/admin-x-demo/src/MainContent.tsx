@@ -1,12 +1,15 @@
-import {Button} from '@tryghost/admin-x-design-system';
+import DetailPage from './DetailPage';
+import ListPage from './ListPage';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 const MainContent = () => {
-    const {updateRoute} = useRouting();
+    const {route} = useRouting();
 
-    return <div>
-        <Button label='Open modal' onClick={() => updateRoute('demo-modal')} />
-    </div>;
+    if (route === 'detail') {
+        return <DetailPage />;
+    } else {
+        return <ListPage />;
+    }
 };
 
 export default MainContent;

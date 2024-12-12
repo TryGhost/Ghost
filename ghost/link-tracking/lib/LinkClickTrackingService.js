@@ -61,6 +61,8 @@ class LinkClickTrackingService {
     #LinkRedirect;
     /** @type {Object} */
     #urlUtils;
+    /** @type {Object} */
+    #config;
 
     /**
      * @param {object} deps
@@ -69,6 +71,7 @@ class LinkClickTrackingService {
      * @param {IPostLinkRepository} deps.postLinkRepository
      * @param {DomainEvents} deps.DomainEvents
      * @param {urlUtils} deps.urlUtils
+     * @param {config} deps.config
      */
     constructor(deps) {
         this.#linkClickRepository = deps.linkClickRepository;
@@ -76,13 +79,17 @@ class LinkClickTrackingService {
         this.#postLinkRepository = deps.postLinkRepository;
         this.#DomainEvents = deps.DomainEvents;
         this.#urlUtils = deps.urlUtils;
+        this.#config = deps.config;
     }
 
     async init() {
         if (this.#initialised) {
             return;
         }
-        this.subscribe();
+
+        if (!this.#config || this.#config.get('linkClickTracking')) {
+            this.subscribe();
+        }
         this.#initialised = true;
     }
 
@@ -105,9 +112,6 @@ class LinkClickTrackingService {
    * @throws {errors.BadRequestError}
    */
     #parseLinkFilter(filter) {
-        // decode filter to manage any encoded uri components
-        filter = decodeURIComponent(filter);
-
         try {
             const filterJson = nql(filter).parse();
             const postId = filterJson?.$and?.[0]?.post_id;

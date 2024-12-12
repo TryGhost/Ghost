@@ -16,7 +16,7 @@ describe('Acceptance: Dashboard', function () {
         let role = this.server.create('role', {name: 'Administrator'});
         this.server.create('user', {roles: [role]});
 
-        return await authenticateSession();
+        await authenticateSession();
     });
 
     it('can visit /dashboard', async function () {

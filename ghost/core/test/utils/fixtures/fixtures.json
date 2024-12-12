@@ -1071,6 +1071,7 @@
                     "webhook": "all",
                     "action": "all",
                     "member": "all",
+                    "member_signin_url": "read",
                     "label": "all",
                     "email_preview": "all",
                     "email": "all",
@@ -1105,7 +1106,7 @@
                     "recommendation": ["browse", "read"]
                 },
                 "Author": {
-                    "post": ["browse", "read", "add"],
+                    "post": ["browse", "read", "edit", "add", "destroy"],
                     "setting": ["browse", "read"],
                     "slug": "all",
                     "tag": ["browse", "read", "add"],
@@ -1122,7 +1123,7 @@
                     "recommendation": ["browse", "read"]
                 },
                 "Contributor": {
-                    "post": ["browse", "read", "add"],
+                    "post": ["browse", "read", "edit", "add", "destroy"],
                     "setting": ["browse", "read"],
                     "slug": "all",
                     "tag": ["browse", "read"],

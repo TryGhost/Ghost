@@ -3,6 +3,7 @@ import {
     PostDeletedEvent,
     PostsBulkDestroyedEvent,
     PostsBulkUnpublishedEvent,
+    PostsBulkUnscheduledEvent,
     PostsBulkFeaturedEvent,
     PostsBulkUnfeaturedEvent,
     PostsBulkAddTagsEvent
@@ -23,6 +24,12 @@ describe('Post Events', function () {
 
     it('Can instantiate PostsBulkUnpublishedEvent', function () {
         const event = PostsBulkUnpublishedEvent.create(['1', '2', '3']);
+        assert.ok(event);
+        assert.equal(event.data.length, 3);
+    });
+
+    it('Can instantiate PostsBulkUnscheduledEvent', function () {
+        const event = PostsBulkUnscheduledEvent.create(['1', '2', '3']);
         assert.ok(event);
         assert.equal(event.data.length, 3);
     });

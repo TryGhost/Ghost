@@ -1,5 +1,6 @@
 import {expect, test} from '@playwright/test';
-import {globalDataRequests, mockApi, testUrlValidation, updatedSettingsResponse} from '../../utils/acceptance';
+import {globalDataRequests} from '../../utils/acceptance';
+import {mockApi, testUrlValidation, updatedSettingsResponse} from '@tryghost/admin-x-framework/test/acceptance';
 
 test.describe('Social account settings', async () => {
     test('Supports editing social URLs', async ({page}) => {
@@ -16,19 +17,19 @@ test.describe('Social account settings', async () => {
         const section = page.getByTestId('social-accounts');
 
         await expect(section.getByText('https://www.facebook.com/ghost')).toHaveCount(1);
-        await expect(section.getByText('https://twitter.com/ghost')).toHaveCount(1);
+        await expect(section.getByText('https://x.com/ghost')).toHaveCount(1);
 
         await section.getByRole('button', {name: 'Edit'}).click();
 
-        await section.getByLabel(`URL of your publication's Facebook Page`).fill('https://www.facebook.com/fb');
-        await section.getByLabel('URL of your X (formerly Twitter) profile').fill('https://twitter.com/tw');
+        await section.getByLabel(`URL of your publication’s Facebook Page`).fill('https://www.facebook.com/fb');
+        await section.getByLabel('URL of your X (formerly Twitter) profile').fill('https://x.com/tw');
 
         await section.getByRole('button', {name: 'Save'}).click();
 
         await expect(section.getByLabel('URL of your X (formerly Twitter) profile')).toHaveCount(0);
 
         await expect(section.getByText('https://www.facebook.com/fb')).toHaveCount(1);
-        await expect(section.getByText('https://twitter.com/tw')).toHaveCount(1);
+        await expect(section.getByText('https://x.com/tw')).toHaveCount(1);
 
         expect(lastApiRequests.editSettings?.body).toEqual({
             settings: [
@@ -48,7 +49,7 @@ test.describe('Social account settings', async () => {
         const section = page.getByTestId('social-accounts');
         await section.getByRole('button', {name: 'Edit'}).click();
 
-        const facebookInput = section.getByLabel(`URL of your publication's Facebook Page`);
+        const facebookInput = section.getByLabel(`URL of your publication’s Facebook Page`);
 
         await testUrlValidation(
             facebookInput,
@@ -111,26 +112,26 @@ test.describe('Social account settings', async () => {
         await testUrlValidation(
             twitterInput,
             'twitter.com/username',
-            'https://twitter.com/username'
+            'https://x.com/username'
         );
 
         await testUrlValidation(
             twitterInput,
             'testuser',
-            'https://twitter.com/testuser'
+            'https://x.com/testuser'
         );
 
         await testUrlValidation(
             twitterInput,
             'http://github.com/username',
-            'https://twitter.com/username'
+            'https://x.com/username'
         );
 
         await testUrlValidation(
             twitterInput,
             '*(&*(%%))',
             '*(&*(%%))',
-            'The URL must be in a format like https://twitter.com/yourUsername'
+            'The URL must be in a format like https://x.com/yourUsername'
         );
 
         await testUrlValidation(

@@ -63,4 +63,11 @@ export default function mockStats(server) {
             }
         };
     });
+
+    server.get('/stats/referrers/', function () {
+        return {
+            stats: [],
+            meta: {}
+        };
+    });
 }

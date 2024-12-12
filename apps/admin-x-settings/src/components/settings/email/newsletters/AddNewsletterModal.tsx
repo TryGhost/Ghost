@@ -1,9 +1,9 @@
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect} from 'react';
-import {Form, LimitModal, Modal, TextArea, TextField, Toggle, showToast} from '@tryghost/admin-x-design-system';
+import {Form, LimitModal, Modal, TextArea, TextField, Toggle} from '@tryghost/admin-x-design-system';
 import {HostLimitError, useLimiter} from '../../../../hooks/useLimiter';
 import {RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
-import {toast} from 'react-hot-toast';
+import {numberWithCommas} from '../../../../utils/helpers';
 import {useAddNewsletter} from '@tryghost/admin-x-framework/api/newsletters';
 import {useBrowseMembers} from '@tryghost/admin-x-framework/api/members';
 import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -18,7 +18,7 @@ const AddNewsletterModal: React.FC<RoutingModalProps> = () => {
     });
 
     const {mutateAsync: addNewsletter} = useAddNewsletter();
-    const {formState, updateForm, handleSave, errors, clearError} = useForm({
+    const {formState, updateForm, saveState, handleSave, errors, clearError} = useForm({
         initialState: {
             name: '',
             description: '',
@@ -39,7 +39,7 @@ const AddNewsletterModal: React.FC<RoutingModalProps> = () => {
             const newErrors: Record<string, string> = {};
 
             if (!formState.name) {
-                newErrors.name = 'Please enter a name';
+                newErrors.name = 'A name is required for your newsletter';
             }
 
             return newErrors;
@@ -52,7 +52,8 @@ const AddNewsletterModal: React.FC<RoutingModalProps> = () => {
         limiter?.errorIfWouldGoOverLimit('newsletters').catch((error) => {
             if (error instanceof HostLimitError) {
                 NiceModal.show(LimitModal, {
-                    prompt: error.message || `Your current plan doesn't support more newsletters.`
+                    prompt: error.message || `Your current plan doesn't support more newsletters.`,
+                    onOk: () => updateRoute({route: '/pro', isExternal: true})
                 });
                 modal.remove();
                 updateRoute('newsletters');
@@ -62,24 +63,22 @@ const AddNewsletterModal: React.FC<RoutingModalProps> = () => {
         });
     }, [limiter, modal, updateRoute]);
 
+    const subscriberCount = members?.meta?.pagination.total;
+
     return <Modal
         afterClose={() => {
             updateRoute('newsletters');
         }}
+        backDropClick={false}
         okColor='black'
         okLabel='Create'
+        okLoading={saveState === 'saving'}
         size='sm'
         testId='add-newsletter-modal'
         title='Create newsletter'
         onOk={async () => {
-            toast.remove();
             if (await handleSave()) {
                 modal.remove();
-            } else {
-                showToast({
-                    type: 'pageError',
-                    message: 'Can\'t save newsletter, please double check that you\'ve filled all mandatory fields.'
-                });
             }
         }}
     >
@@ -91,6 +90,7 @@ const AddNewsletterModal: React.FC<RoutingModalProps> = () => {
                 autoFocus={true}
                 error={Boolean(errors.name)}
                 hint={errors.name}
+                maxLength={191}
                 placeholder='Weekly roundup'
                 title='Name'
                 value={formState.name}
@@ -98,6 +98,7 @@ const AddNewsletterModal: React.FC<RoutingModalProps> = () => {
                 onKeyDown={() => clearError('name')}
             />
             <TextArea
+                maxLength={2000}
                 title='Description'
                 value={formState.description}
                 onChange={e => updateForm(state => ({...state, description: e.target.value}))}
@@ -106,7 +107,7 @@ const AddNewsletterModal: React.FC<RoutingModalProps> = () => {
                 checked={formState.optInExistingSubscribers}
                 direction='rtl'
                 hint={formState.optInExistingSubscribers ?
-                    `This newsletter will be available to all members. Your ${members?.meta?.pagination.total} existing subscriber${members?.meta?.pagination.total === 1 ? '' : 's'} will also be opted-in to receive it.` :
+                    `This newsletter will be available to all members. Your ${subscriberCount === undefined ? '' : numberWithCommas(subscriberCount)} existing subscriber${members?.meta?.pagination.total === 1 ? '' : 's'} will also be opted-in to receive it.` :
                     'The newsletter will be available to all new members. Existing members won’t be subscribed, but may visit their account area to opt-in to future emails.'
                 }
                 label='Opt-in existing subscribers'

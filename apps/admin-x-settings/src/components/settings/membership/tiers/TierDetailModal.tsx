@@ -1,4 +1,4 @@
-import NiceModal, {useModal} from '@ebay/nice-modal-react';
+import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useRef} from 'react';
 import TierDetailPreview from './TierDetailPreview';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
@@ -7,8 +7,7 @@ import {ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framewor
 import {RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {Tier, useAddTier, useBrowseTiers, useEditTier} from '@tryghost/admin-x-framework/api/tiers';
 import {currencies, currencySelectGroups, validateCurrencyAmount} from '../../../../utils/currency';
-import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
-import {toast} from 'react-hot-toast';
+import {getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 
 export type TierFormState = Partial<Omit<Tier, 'trial_days'>> & {
     trial_days: string;
@@ -17,22 +16,23 @@ export type TierFormState = Partial<Omit<Tier, 'trial_days'>> & {
 const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
     const isFreeTier = tier?.type === 'free';
 
-    const modal = useModal();
     const {updateRoute} = useRouting();
     const {mutateAsync: updateTier} = useEditTier();
     const {mutateAsync: createTier} = useAddTier();
+    const {mutateAsync: editSettings} = useEditSettings();
     const [hasFreeTrial, setHasFreeTrial] = React.useState(!!tier?.trial_days);
     const handleError = useHandleError();
     const {localSettings, siteData} = useSettingGroup();
-    const siteTitle = getSettingValues(localSettings, ['title']) as string[];
+    const [portalPlansJson] = getSettingValues(localSettings, ['portal_plans']) as string[];
+    const portalPlans = JSON.parse(portalPlansJson?.toString() || '[]') as string[];
 
     const validators: {[key in keyof Tier]?: () => string | undefined} = {
-        name: () => (formState.name ? undefined : 'You must specify a name'),
+        name: () => (formState.name ? undefined : 'Enter a name for the tier'),
         monthly_price: () => (formState.type !== 'free' ? validateCurrencyAmount(formState.monthly_price || 0, formState.currency, {allowZero: false}) : undefined),
         yearly_price: () => (formState.type !== 'free' ? validateCurrencyAmount(formState.yearly_price || 0, formState.currency, {allowZero: false}) : undefined)
     };
 
-    const {formState, saveState, updateForm, handleSave, errors, setErrors, clearError, okProps} = useForm<TierFormState>({
+    const {formState, saveState, updateForm, handleSave, errors, clearError, okProps} = useForm<TierFormState>({
         initialState: {
             ...(tier || {}),
             trial_days: tier?.trial_days?.toString() || '',
@@ -67,23 +67,34 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
             } else {
                 await createTier(values);
             }
-        },
-        onSavedStateReset: () => {
-            modal.remove();
-            updateRoute('tiers');
+            if (isFreeTier) {
+                // If we changed the visibility, we also need to update Portal settings in some situations
+                // Like the free tier is a special case, and should also be present/absent in portal_plans
+                const visible = formState.visibility === 'public';
+                let save = false;
+
+                if (portalPlans.includes('free') && !visible) {
+                    portalPlans.splice(portalPlans.indexOf('free'), 1);
+                    save = true;
+                }
+
+                if (!portalPlans.includes('free') && visible) {
+                    portalPlans.push('free');
+                    save = true;
+                }
+
+                if (save) {
+                    await editSettings([
+                        {
+                            key: 'portal_plans',
+                            value: JSON.stringify(portalPlans)
+                        }
+                    ]);
+                }
+            }
         },
         onSaveError: handleError
     });
-
-    const validateField = (key: string) => {
-        const error = validators[key as keyof Tier]?.();
-
-        if (error) {
-            setErrors({...errors, [key]: error});
-        } else {
-            clearError(key);
-        }
-    };
 
     const benefits = useSortableIndexedList({
         items: formState.benefits || [],
@@ -135,7 +146,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                     confirmModal?.remove();
                     showToast({
                         type: 'success',
-                        message: `Tier ${tier.active ? 'archived' : 'reactivated'} successfully`
+                        title: `Tier ${tier.active ? 'archived' : 'reactivated'}`
                     });
                 }
             });
@@ -166,44 +177,39 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
             updateRoute('tiers');
         }}
         buttonsDisabled={okProps.disabled}
+        cancelLabel='Close'
         dirty={saveState === 'unsaved'}
         leftButtonProps={leftButtonProps}
         okColor={okProps.color}
-        okLabel={okProps.label || 'Save & close'}
+        okLabel={okProps.label || 'Save'}
         size='lg'
         testId='tier-detail-modal'
         title={(tier ? (tier.active ? 'Edit tier' : 'Edit archived tier') : 'New tier')}
         stickyFooter
         onOk={async () => {
-            toast.remove();
-
-            if (!await handleSave({fakeWhenUnchanged: true})) {
-                showToast({
-                    type: 'pageError',
-                    message: 'Can\'t save tier, please double check that you\'ve filled all mandatory fields.'
-                });
-                return;
-            }
+            await handleSave({fakeWhenUnchanged: true});
         }}
     >
         <div className='-mb-8 mt-8 flex items-start gap-8'>
             <div className='flex grow flex-col gap-8'>
                 <Form marginBottom={false} title='Basic' grouped>
-                    {!isFreeTier && <TextField
+                    <TextField
                         autoComplete='off'
                         error={Boolean(errors.name)}
                         hint={errors.name}
-                        placeholder='Bronze'
+                        maxLength={191}
+                        placeholder={isFreeTier ? 'Free' : 'Bronze'}
                         title='Name'
                         value={formState.name || ''}
                         autoFocus
-                        onBlur={() => validateField('name')}
                         onChange={e => updateForm(state => ({...state, name: e.target.value}))}
-                    />}
+                        onKeyDown={() => clearError('name')}
+                    />
                     <TextField
                         autoComplete='off'
                         autoFocus={isFreeTier}
-                        placeholder={isFreeTier ? `Free preview of ${siteTitle}` : 'Full access to premium content'}
+                        maxLength={191}
+                        placeholder={isFreeTier ? `Free preview` : 'Full access to premium content'}
                         title='Description'
                         value={formState.description || ''}
                         onChange={e => updateForm(state => ({...state, description: e.target.value}))}
@@ -232,24 +238,26 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                                     <CurrencyField
                                         error={Boolean(errors.monthly_price)}
                                         hint={errors.monthly_price}
-                                        placeholder='1'
+                                        placeholder='5'
                                         rightPlaceholder={`${formState.currency}/month`}
                                         title='Monthly price'
                                         valueInCents={formState.monthly_price || ''}
                                         hideTitle
-                                        onBlur={() => validateField('monthly_price')}
+                                        onBlur={event => ((event.target.value === '') ? updateForm(state => ({...state, monthly_price: 0})) : null)}
                                         onChange={price => updateForm(state => ({...state, monthly_price: price}))}
+                                        onKeyDown={() => clearError('monthly_price')}
                                     />
                                     <CurrencyField
                                         error={Boolean(errors.yearly_price)}
                                         hint={errors.yearly_price}
-                                        placeholder='10'
+                                        placeholder='50'
                                         rightPlaceholder={`${formState.currency}/year`}
                                         title='Yearly price'
                                         valueInCents={formState.yearly_price || ''}
                                         hideTitle
-                                        onBlur={() => validateField('yearly_price')}
+                                        onBlur={event => ((event.target.value === '') ? updateForm(state => ({...state, yearly_price: 0})) : null)}
                                         onChange={price => updateForm(state => ({...state, yearly_price: price}))}
+                                        onKeyDown={() => clearError('yearly_price')}
                                     />
                                 </div>
                             </div>
@@ -274,7 +282,8 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                     </>)}
                     <URLTextField
                         baseUrl={siteData?.url}
-                        hint='Redirect to this URL after signup for premium membership'
+                        hint={`Redirect to this URL after signup ${isFreeTier ? '' : ' for premium membership'}`}
+                        maxLength={2000}
                         placeholder={siteData?.url}
                         title='Welcome page'
                         value={formState.welcome_page_url || null}
@@ -290,13 +299,14 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                             items={benefits.items}
                             itemSeparator={false}
                             renderItem={({id, item}) => <div className='relative flex w-full items-center gap-5'>
-                                <div className='absolute left-[-32px] top-[7px] flex h-6 w-6 items-center justify-center bg-white group-hover:hidden'><Icon name='check' size='sm' /></div>
+                                <div className='absolute left-[-32px] top-[7px] flex h-6 w-6 items-center justify-center bg-white group-hover:hidden dark:bg-black'><Icon name='check' size='sm' /></div>
                                 <TextField
                                     // className='grow border-b border-grey-500 py-2 focus:border-grey-800 group-hover:border-grey-600'
+                                    maxLength={191}
                                     value={item}
                                     onChange={e => benefits.updateItem(id, e.target.value)}
                                 />
-                                <Button className='absolute right-1 top-1 z-10' icon='trash' iconColorClass='opacity-0 group-hover:opacity-100' size='sm' onClick={() => benefits.removeItem(id)} />
+                                <Button className='absolute right-1 top-1 z-10 opacity-0 group-hover:opacity-100' color='grey' icon='trash' size='sm' onClick={() => benefits.removeItem(id)} />
                             </div>}
                             onMove={benefits.moveItem}
                         />
@@ -306,6 +316,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                         <TextField
                             className='grow'
                             containerClassName='w-100'
+                            maxLength={191}
                             placeholder='Expert analysis'
                             title='New benefit'
                             value={benefits.newItem}
@@ -318,7 +329,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                             }}
                         />
                         <Button
-                            className='absolute right-1 top-1 z-10'
+                            className='absolute right-[5px] top-[5px] z-10'
                             color='green'
                             icon='add'
                             iconColorClass='text-white'

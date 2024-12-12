@@ -1,6 +1,7 @@
 const membersService = require('../../services/members');
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'members_stripe_connect',
     auth: {
         headers: {
@@ -30,3 +31,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;

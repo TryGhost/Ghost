@@ -1,9 +1,9 @@
-import Icon from './Icon';
+import Icon, {IconSize} from './Icon';
 import React, {HTMLProps} from 'react';
 import clsx from 'clsx';
 import {LoadingIndicator, LoadingIndicatorColor, LoadingIndicatorSize} from './LoadingIndicator';
 
-export type ButtonColor = 'clear' | 'grey' | 'black' | 'green' | 'red' | 'white' | 'outline';
+export type ButtonColor = 'clear' | 'light-grey' | 'grey' | 'black' | 'green' | 'red' | 'white' | 'outline';
 export type ButtonSize = 'sm' | 'md';
 
 export interface ButtonProps extends Omit<HTMLProps<HTMLButtonElement>, 'label' | 'size' | 'children'> {
@@ -11,6 +11,7 @@ export interface ButtonProps extends Omit<HTMLProps<HTMLButtonElement>, 'label' 
     label?: React.ReactNode;
     hideLabel?: boolean;
     icon?: string;
+    iconSize?: IconSize;
     iconColorClass?: string;
     key?: string;
     color?: ButtonColor;
@@ -24,15 +25,19 @@ export interface ButtonProps extends Omit<HTMLProps<HTMLButtonElement>, 'label' 
     loading?: boolean;
     loadingIndicatorSize?: LoadingIndicatorSize;
     loadingIndicatorColor?: LoadingIndicatorColor;
+    outlineOnMobile?: boolean;
     onClick?: (e?:React.MouseEvent<HTMLElement>) => void;
+    testId?: string;
 }
 
-const Button: React.FC<ButtonProps> = ({
+const Button: React.FC<ButtonProps> = React.forwardRef(({
+    testId,
     size = 'md',
     label = '',
     hideLabel = false,
     icon = '',
-    iconColorClass = 'text-black',
+    iconSize,
+    iconColorClass,
     color = 'clear',
     fullWidth,
     link,
@@ -43,9 +48,10 @@ const Button: React.FC<ButtonProps> = ({
     tag = 'button',
     loading = false,
     loadingIndicatorColor,
+    outlineOnMobile = false,
     onClick,
     ...props
-}) => {
+}, ref) => {
     if (!color) {
         color = 'clear';
     }
@@ -67,6 +73,14 @@ const Button: React.FC<ButtonProps> = ({
                 className
             );
             loadingIndicatorColor = 'light';
+            iconColorClass = iconColorClass || 'text-white';
+            break;
+        case 'light-grey':
+            className = clsx(
+                link ? 'text-grey-800 hover:text-green-400 dark:text-white' : `bg-grey-200 text-black dark:bg-grey-900 dark:text-white ${!disabled && 'hover:!bg-grey-300 dark:hover:!bg-grey-800'}`,
+                className
+            );
+            loadingIndicatorColor = 'dark';
             break;
         case 'grey':
             className = clsx(
@@ -81,6 +95,7 @@ const Button: React.FC<ButtonProps> = ({
                 className
             );
             loadingIndicatorColor = 'light';
+            iconColorClass = iconColorClass || 'text-white';
             break;
         case 'red':
             className = clsx(
@@ -88,6 +103,7 @@ const Button: React.FC<ButtonProps> = ({
                 className
             );
             loadingIndicatorColor = 'light';
+            iconColorClass = iconColorClass || 'text-white';
             break;
         case 'white':
             className = clsx(
@@ -105,7 +121,8 @@ const Button: React.FC<ButtonProps> = ({
             break;
         default:
             className = clsx(
-                link ? ' text-black hover:text-grey-800 dark:text-white' : ` text-black dark:text-white dark:hover:bg-grey-900 ${!disabled && 'hover:bg-grey-200'}`,
+                link ? ' text-black hover:text-grey-800 dark:text-white' : `text-grey-900 dark:text-white dark:hover:bg-grey-900 ${!disabled && 'hover:bg-grey-200 hover:text-black'}`,
+                (outlineOnMobile && !link) && 'border border-grey-300 hover:border-transparent md:border-transparent',
                 className
             );
             loadingIndicatorColor = 'dark';
@@ -125,19 +142,25 @@ const Button: React.FC<ButtonProps> = ({
     labelClasses += (label && hideLabel) ? 'sr-only' : '';
     labelClasses += loading ? 'invisible' : '';
 
+    iconSize = iconSize || ((size === 'sm') || (label && icon) ? 'sm' : 'md');
+
     const buttonChildren = <>
-        {icon && <Icon className={iconClasses} colorClass={iconColorClass} name={icon} size={size === 'sm' || (label && icon) ? 'sm' : 'md'} />}
+        {icon && <Icon className={iconClasses} colorClass={iconColorClass} name={icon} size={iconSize} />}
         <span className={labelClasses}>{label}</span>
         {loading && <div className='absolute flex'><LoadingIndicator color={loadingIndicatorColor} size={size}/><span className='sr-only'>Loading...</span></div>}
     </>;
 
     const buttonElement = React.createElement(tag, {className: className,
+        'data-testid': testId,
         disabled: disabled,
         type: 'button',
         onClick: onClick,
+        ref: ref,
         ...props}, buttonChildren);
 
     return buttonElement;
-};
+});
+
+Button.displayName = 'Button';
 
 export default Button;

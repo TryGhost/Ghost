@@ -1,8 +1,8 @@
 import Component from '@glimmer/component';
-import trackEvent from '../utils/analytics';
 import {action} from '@ember/object';
 import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
+import {trackEvent} from '../utils/analytics';
 import {tracked} from '@glimmer/tracking';
 
 export default class KoenigImageEditor extends Component {

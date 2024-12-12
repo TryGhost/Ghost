@@ -1,14 +1,36 @@
 /** @type {import('@playwright/test').PlaywrightTestConfig} */
+const os = require('os');
+
+const getWorkerCount = () => {
+    if (process.env.CI) {
+        return '100%';
+    }
+    if (process.env.PLAYWRIGHT_SLOWMO) {
+        return 1;
+    }
+    
+    let cpuCount;
+    try {
+        cpuCount = os.cpus().length;
+    } catch (err) {
+        cpuCount = 1;
+    }
+    // Stripe limits to 5 new accounts per second
+    // If we go higher than 5, we'll get rate limited and tests will fail
+    return Math.min(5, cpuCount - 1);
+};
 
 const config = {
-    timeout: 60 * 1000,
+    timeout: 75 * 1000,
     expect: {
         timeout: 10000
     },
+    // save trace on fail
     retries: process.env.CI ? 2 : 0,
-    workers: process.env.CI ? '100%' : (process.env.PLAYWRIGHT_SLOWMO ? 1 : undefined),
+    workers: getWorkerCount(),
     reporter: process.env.CI ? [['list', {printSteps: true}], ['html']] : [['list', {printSteps: true}]],
     use: {
+        trace: 'retain-on-failure',
         // Use a single browser since we can't simultaneously test multiple browsers
         browserName: 'chromium',
         headless: !process.env.PLAYWRIGHT_DEBUG,

@@ -1,4 +1,5 @@
 import {createQuery} from '../utils/api/hooks';
+import {Config, hasSendingDomain, isManagedEmail, sendingDomain} from './config';
 
 // Types
 
@@ -35,7 +36,11 @@ export function getHomepageUrl(siteData: SiteData): string {
     return `${url.origin}${subdir}`;
 }
 
-export function getEmailDomain(siteData: SiteData): string {
+export function getEmailDomain(siteData: SiteData, config: Config): string {
+    if (isManagedEmail(config) && hasSendingDomain(config)) {
+        return sendingDomain(config) || '';
+    }
+
     const domain = new URL(siteData.url).hostname || '';
     if (domain.startsWith('www.')) {
         return domain.replace(/^(www)\.(?=[^/]*\..{2,5})/, '');
@@ -43,7 +48,7 @@ export function getEmailDomain(siteData: SiteData): string {
     return domain;
 }
 
-export function fullEmailAddress(value: 'noreply' | string, siteData: SiteData) {
-    const emailDomain = getEmailDomain(siteData);
+export function fullEmailAddress(value: 'noreply' | string, siteData: SiteData, config: Config) {
+    const emailDomain = getEmailDomain(siteData, config);
     return value === 'noreply' ? `noreply@${emailDomain}` : value;
 }

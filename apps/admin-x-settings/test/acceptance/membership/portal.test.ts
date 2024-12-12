@@ -1,6 +1,6 @@
 import {expect, test} from '@playwright/test';
-import {globalDataRequests, mockApi, mockSitePreview} from '../../utils/acceptance';
-import {responseFixtures} from '../../utils/acceptance';
+import {globalDataRequests} from '../../utils/acceptance';
+import {mockApi, mockSitePreview, responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
 
 test.describe('Portal Settings', async () => {
     test('Loads Portal Preview Modal', async ({page}) => {

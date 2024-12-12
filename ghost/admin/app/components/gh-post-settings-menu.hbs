@@ -70,14 +70,14 @@
                         {{#unless this.session.user.isContributor}}
                         <div class="form-group">
                             <label for="tag-input">Tags</label>
-                            <GhPsmTagsInput @post={{this.post}} @triggerId="tag-input" />
+                            <GhPsmTagsInput @post={{this.post}} @savePostOnChange={{action "savePost"}} @triggerId="tag-input" />
                         </div>
                         {{/unless}}
 
                         {{#if this.showVisibilityInput}}
                             <GhFormGroup @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="visibility">
                                 <label for="visibility-input">{{capitalize @post.displayName}} access</label>
-                                <GhPsmVisibilityInput @post={{this.post}} @triggerId="visibility-input" />
+                                <GhPsmVisibilityInput @post={{this.post}} @savePostOnChange={{action "savePost"}} @triggerId="visibility-input" />
                             </GhFormGroup>
 
                             {{#if (eq this.post.visibility "tiers")}}
@@ -93,7 +93,7 @@
                             {{/if}}
                         {{/if}}
 
-
+                        {{#unless (feature 'editorExcerpt')}}
                         <GhFormGroup @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="customExcerpt">
                             <label for="custom-excerpt">Excerpt</label>
                             <GhTextarea
@@ -108,6 +108,7 @@
                             />
                             <GhErrorMessage @errors={{this.post.errors}} @property="customExcerpt" data-test-error="custom-excerpt" />
                         </GhFormGroup>
+                        {{/unless}}
 
                         {{#unless this.session.user.isAuthorOrContributor}}
                             <GhFormGroup class="for-select mb8" @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="authors" data-test-input="authors">
@@ -125,7 +126,7 @@
                     <ul class="nav-list">
                         {{#if (and this.post.isPage this.post.lexical)}}
                             <li class="nav-list-item">
-                                <div class="for-switch x-small">
+                                <div class="for-switch xs">
                                     <label class="switch">
                                         <span>
                                             <Icons::EyeOpenClose class="feature" @closed={{not this.post.showTitleAndFeatureImage}} />
@@ -153,7 +154,7 @@
                         {{/if}}
                         {{#unless this.session.user.isAuthorOrContributor}}
                             <li class="nav-list-item">
-                                <div class="for-switch x-small">
+                                <div class="for-switch xs">
                                     <label class="switch" for="featured" {{action "toggleFeatured" bubbles="false"}}>
                                         <span>
                                             {{#if this.post.featured}}
@@ -219,7 +220,7 @@
                 </form>
                 {{#unless this.post.isNew}}
                     <div class="settings-menu-delete-button">
-                        <button type="button" class="gh-btn gh-btn-outline gh-btn-icon gh-btn-fullwidth" {{action "deletePostInternal"}}>
+                        <button type="button" class="gh-btn gh-btn-outline gh-btn-icon gh-btn-fullwidth" {{action "deletePostInternal"}} data-test-button="delete-post">
                             <span>{{svg-jar "trash"}} Delete {{this.post.displayName}}</span>
                         </button>
                     </div>
@@ -429,14 +430,12 @@
                                             <span class="gh-key" data-tooltip="Return">&#8617;</span>
                                         </div>
                                     </div>
-                                    {{#if (feature "editorEmojiPicker")}}
-                                        <div class="gh-shortcut">
-                                            <div>Emoji</div>
-                                            <div class="gh-keys">
-                                                <span class="gh-key mono">:emoji_name:</span>
-                                            </div>
+                                    <div class="gh-shortcut">
+                                        <div>Emoji</div>
+                                        <div class="gh-keys">
+                                            <span class="gh-key mono">:emoji_name:</span>
                                         </div>
-                                    {{/if}}
+                                    </div>
                                     <div class="gh-shortcut">
                                         <div>Image</div>
                                         <div class="gh-keys">
@@ -854,6 +853,7 @@
                     post=this.post
                     editorAPI=this.editorAPI
                     toggleSettingsMenu=this.toggleSettingsMenu
+                    secondaryEditorAPI=this.secondaryEditorAPI
                 }}
                 @close={{this.closePostHistory}}
                 @modifier="total-overlay post-history" />

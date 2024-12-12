@@ -44,6 +44,7 @@ export interface PreviewModalProps {
     sidebarPadding?: boolean;
     sidebarContentClasses?: string;
     enableCMDS?: boolean;
+    backDropClick?: boolean;
 
     onCancel?: () => void;
     onOk?: () => void;
@@ -83,6 +84,7 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
     sidebarPadding = true,
     sidebarContentClasses,
     enableCMDS = true,
+    backDropClick,
 
     onCancel,
     onOk,
@@ -203,7 +205,7 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
         }
 
         const containerClasses = clsx(
-            'min-w-100 absolute inset-y-0 left-0 right-[400px] flex grow flex-col overflow-y-auto',
+            'min-w-100 absolute inset-y-0 left-0 right-[400px] flex w-full grow flex-col overflow-y-auto',
             previewBgClass
         );
 
@@ -218,11 +220,11 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
 
         preview = (
             <div className={containerClasses}>
-                {previewToolbar && <header className="relative flex h-[74px] shrink-0 items-center justify-center px-3 py-5" data-testid="design-toolbar">
-                    {leftToolbar && <div className='absolute left-5 flex h-full items-center'>
+                {previewToolbar && <header className="relative flex h-[80px] shrink-0 items-center justify-center px-8 py-5" data-testid="design-toolbar">
+                    {leftToolbar && <div className='absolute left-8 flex h-full items-center'>
                         {toolbarLeft}
                     </div>}
-                    {rightToolbar && <div className='absolute right-5 flex h-full items-center'>
+                    {rightToolbar && <div className='absolute right-8 flex h-full items-center'>
                         {toolbarRight}
                         {viewSiteButton}
                     </div>}
@@ -262,6 +264,8 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
         <Modal
             afterClose={afterClose}
             animate={false}
+            backDropClick={backDropClick}
+            dirty={dirty}
             footer={false}
             height={height}
             padding={false}
@@ -272,18 +276,18 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
             hideXOnMobile
         >
             <div className='flex h-full grow'>
-                <div className={`hidden grow flex-col md:!visible md:!flex ${previewBgColor === 'grey' ? 'bg-grey-50' : 'bg-white'}`}>
+                <div className={`relative hidden grow flex-col [@media(min-width:801px)]:!visible [@media(min-width:801px)]:!flex ${previewBgColor === 'grey' ? 'bg-grey-50' : 'bg-white dark:bg-black'}`}>
                     {preview}
                 </div>
                 {sidebar &&
-                    <div className='relative flex h-full w-full flex-col border-l border-grey-100 dark:border-grey-900 md:w-auto md:basis-[400px]'>
+                    <div className='relative flex h-full w-full flex-col border-l border-grey-100 dark:border-grey-900 [@media(min-width:801px)]:w-auto [@media(min-width:801px)]:basis-[400px]'>
                         {sidebarHeader ? sidebarHeader : (
-                            <div className='flex max-h-[74px] items-center justify-between gap-3 px-7 py-5'>
+                            <div className='flex max-h-[82px] items-center justify-between gap-3 px-7 py-6'>
                                 <Heading level={titleHeadingLevel}>{title}</Heading>
                                 {sidebarButtons ? sidebarButtons : <ButtonGroup buttons={buttons} /> }
                             </div>
                         )}
-                        <div className={`${!sidebarHeader ? 'absolute inset-x-0 bottom-0 top-[74px] grow' : ''} ${sidebarPadding && 'p-7 pt-0'} flex flex-col justify-between overflow-y-auto ${sidebarContentClasses && sidebarContentClasses}`}>
+                        <div className={`${!sidebarHeader ? 'absolute inset-x-0 bottom-0 top-[80px] grow' : ''} ${sidebarPadding && 'p-7 pt-0'} flex flex-col justify-between overflow-y-auto ${sidebarContentClasses && sidebarContentClasses}`}>
                             {sidebar}
                         </div>
                     </div>

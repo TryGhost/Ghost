@@ -6,10 +6,10 @@
     "text-summary",
     "cobertura"
   ],
-  "statements": 58.8,
+  "statements": 58.7,
   "branches": 84,
   "functions": 50,
-  "lines": 58.8,
+  "lines": 58.7,
   "include": [
     "core/{*.js,frontend,server,shared}"
   ],

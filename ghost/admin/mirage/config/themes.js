@@ -5,6 +5,12 @@ let themeCount = 1;
 export default function mockThemes(server) {
     server.get('/themes');
 
+    server.get('/themes/active/', function ({themes}) {
+        const theme = themes.findBy({active: true});
+
+        return {themes: [theme]};
+    });
+
     server.post('/themes/upload/', function ({themes}) {
         // pretender/mirage doesn't currently process FormData so we can't use
         // any info passed in through the request

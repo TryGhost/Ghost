@@ -1,7 +1,8 @@
-const {faker} = require('@faker-js/faker');
+const TableImporter = require('../importers/TableImporter');
 
-class JsonImporter {
+class JsonImporter extends TableImporter {
     constructor(knex, transaction) {
+        super();
         this.knex = knex;
         this.transaction = transaction;
     }
@@ -25,7 +26,7 @@ class JsonImporter {
     }) {
         for (const obj of data) {
             if (!('id' in obj)) {
-                obj.id = faker.database.mongodbObjectId();
+                obj.id = this.fastFakeObjectId();
             }
         }
         if (rows.findIndex(row => row === 'id') === -1) {

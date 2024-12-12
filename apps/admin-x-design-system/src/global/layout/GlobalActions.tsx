@@ -3,7 +3,7 @@ import Button from '../Button';
 
 const GlobalActions: React.FC = () => {
     return (
-        <Button icon='magnifying-glass' iconColorClass='text-black' size='sm' link onClick={() => {}} />
+        <Button icon='magnifying-glass' iconColorClass='dark:text-white text-black' size='sm' link onClick={() => {}} />
     );
 };
 

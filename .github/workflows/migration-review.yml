@@ -30,6 +30,7 @@ jobs:
 
             ### General requirements
 
+            - [ ]  :warning: Tested on the staging database servers
             - [ ]  Satisfies idempotency requirement (both `up()` and `down()`)
             - [ ]  Does not reference models
             - [ ]  Filename is in the correct format (and correctly ordered)
@@ -38,6 +39,7 @@ jobs:
             - [ ]  Uses the correct utils
             - [ ]  Contains a minimal changeset
             - [ ]  Does not mix DDL/DML operations
+            - [ ]  Tested in MySQL and SQLite
 
             ### Schema changes
 

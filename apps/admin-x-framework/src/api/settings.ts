@@ -10,7 +10,12 @@ export type Setting = {
     value: SettingValue;
 }
 
-export type SettingsResponseMeta = Meta & { sent_email_verification?: boolean }
+export type SettingsResponseMeta = Meta & {
+    filters?: {
+        group?: string;
+    };
+    sent_email_verification?: boolean;
+}
 
 export interface SettingsResponseType {
     meta?: SettingsResponseMeta;

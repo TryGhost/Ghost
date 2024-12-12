@@ -5,18 +5,32 @@ const dateToDatabaseString = require('../utils/database-date');
 
 class MembersSubscribeEventsImporter extends TableImporter {
     static table = 'members_subscribe_events';
-    static dependencies = ['members', 'newsletters', 'subscriptions'];
+    static dependencies = ['members', 'newsletters'];
 
     constructor(knex, transaction) {
         super(MembersSubscribeEventsImporter.table, knex, transaction);
     }
 
     async import(quantity) {
-        const members = await this.transaction.select('id', 'created_at', 'status').from('members');
-        this.newsletters = await this.transaction.select('id').from('newsletters').orderBy('sort_order');
-        this.subscriptions = await this.transaction.select('member_id', 'created_at').from('subscriptions');
+        if (quantity === 0) {
+            return;
+        }
 
-        await this.importForEach(members, quantity ? quantity / members.length : 2);
+        let offset = 0;
+        let limit = 100000;
+        this.newsletters = await this.transaction.select('id').from('newsletters').orderBy('sort_order');
+
+        // eslint-disable-next-line no-constant-condition
+        while (true) {
+            const members = await this.transaction.select('id', 'created_at', 'status').from('members').limit(limit).offset(offset);
+
+            if (members.length === 0) {
+                break;
+            }
+
+            await this.importForEach(members, quantity ? quantity / members.length : this.newsletters.length);
+            offset += limit;
+        }
     }
 
     setReferencedModel(model) {
@@ -32,27 +46,20 @@ class MembersSubscribeEventsImporter extends TableImporter {
             return null;
         }
 
-        let createdAt = dateToDatabaseString(faker.date.between(new Date(this.model.created_at), new Date()));
         let subscribed = luck(80);
-
-        // Free newsletter by default
-        let newsletterId = this.newsletters[1].id;
-        if (this.model.status === 'paid' && count === 0) {
-            // Paid newsletter
-            newsletterId = this.newsletters[0].id;
-            createdAt = this.subscriptions.find(s => s.member_id === this.model.id).created_at;
-            subscribed = luck(98);
-        }
 
         if (!subscribed) {
             return null;
         }
 
+        const createdAt = dateToDatabaseString(faker.date.between(new Date(this.model.created_at), new Date()));
+        const newsletterId = this.newsletters[count % this.newsletters.length].id;
+
         return {
-            id: faker.database.mongodbObjectId(),
+            id: this.fastFakeObjectId(),
             member_id: this.model.id,
             newsletter_id: newsletterId,
-            subscribed: true,
+            subscribed: 1,
             created_at: createdAt,
             source: 'member'
         };

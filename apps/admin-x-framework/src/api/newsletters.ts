@@ -21,6 +21,7 @@ export type Newsletter = {
     show_header_title: boolean;
     title_font_category: string;
     title_alignment: string;
+    show_excerpt: boolean;
     show_feature_image: boolean;
     body_font_category: string;
     footer_content: string | null;
@@ -60,7 +61,7 @@ export const useBrowseNewsletters = createInfiniteQuery<NewslettersResponseType 
     returnData: (originalData) => {
         const {pages} = originalData as InfiniteData<NewslettersResponseType>;
         const newsletters = pages.flatMap(page => page.newsletters);
-        const meta = pages.at(-1)!.meta;
+        const meta = pages[pages.length - 1].meta;
 
         return {
             newsletters: newsletters,
@@ -87,6 +88,10 @@ export interface NewslettersEditResponseType extends NewslettersResponseType {
     meta?: Meta & {sent_email_verification: string[]}
 }
 
+export interface NewslettersVerifyResponseType extends NewslettersResponseType {
+    meta?: Meta & {email_verified: string}
+}
+
 export const useEditNewsletter = createMutation<NewslettersEditResponseType, Newsletter>({
     method: 'PUT',
     path: newsletter => `/newsletters/${newsletter.id}/`,
@@ -99,7 +104,7 @@ export const useEditNewsletter = createMutation<NewslettersEditResponseType, New
     }
 });
 
-export const useVerifyNewsletterEmail = createMutation<NewslettersResponseType, {token: string}>({
+export const useVerifyNewsletterEmail = createMutation<NewslettersVerifyResponseType, {token: string}>({
     method: 'PUT',
     path: () => '/newsletters/verifications/',
     body: ({token}) => ({token}),

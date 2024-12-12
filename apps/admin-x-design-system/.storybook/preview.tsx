@@ -7,6 +7,46 @@ import type { Preview } from "@storybook/react";
 import DesignSystemProvider from '../src/providers/DesignSystemProvider';
 import adminxTheme from './adminx-theme';
 
+// import { MINIMAL_VIEWPORTS } from '@storybook/addon-viewport';
+
+const customViewports = {
+	sm: {
+		name: 'sm',
+		styles: {
+		width: '480px',
+		height: '801px',
+		},
+	},
+	md: {
+		name: 'md',
+		styles: {
+		width: '640px',
+		height: '801px',
+		},
+	},
+	lg: {
+		name: 'lg',
+		styles: {
+		width: '1024px',
+		height: '801px',
+		},
+	},
+	xl: {
+		name: 'xl',
+		styles: {
+		width: '1320px',
+		height: '801px',
+		},
+	},
+	tablet: {
+		name: 'tablet',
+		styles: {
+		width: '860px',
+		height: '801px',
+		},
+	},
+};
+
 const preview: Preview = {
 	parameters: {
 		actions: { argTypesRegex: "^on[A-Z].*" },
@@ -19,11 +59,16 @@ const preview: Preview = {
 		options: {
 			storySort: {
 				method: 'alphabetical',
-				order: ['Welcome', 'Foundations', ['Style Guide', 'Colors', 'Icons', 'ErrorHandling'], 'Global', ['Form', 'Chrome', 'Modal', 'Layout', 'List', 'Table', '*'], 'Settings', ['Setting Section', 'Setting Group', '*'], 'Experimental'],
+				order: ['Welcome', 'Foundations', ['Style Guide', 'Colors', 'Icons', 'ErrorHandling'], 'Global', ['Form', 'Chrome', 'Modal', 'Layout', ['View Container', 'Page Header', 'Page'], 'List', 'Table', '*'], 'Settings', ['Setting Section', 'Setting Group', '*'], 'Experimental'],
 			},
 		},
 		docs: {
 			theme: adminxTheme,
+		},
+		viewport: {
+			viewports: {
+				...customViewports,
+			},
 		},
 	},
 	decorators: [

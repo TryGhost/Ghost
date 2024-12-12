@@ -11,22 +11,33 @@ class MembersStatusEventsImporter extends TableImporter {
     }
 
     async import(quantity) {
-        const members = await this.transaction.select('id', 'created_at', 'status').from('members');
+        let offset = 0;
+        let limit = 100000;
 
-        await this.importForEach(members, quantity ? quantity / members.length : 2);
+        // eslint-disable-next-line no-constant-condition
+        while (true) {
+            const members = await this.transaction.select('id', 'created_at', 'status').from('members').limit(limit).offset(offset);
+
+            if (members.length === 0) {
+                break;
+            }
+
+            await this.importForEach(members, quantity ? quantity / members.length : 2);
+            offset += limit;
+        }
     }
 
     setReferencedModel(model) {
         this.events = [{
-            id: faker.database.mongodbObjectId(),
+            id: this.fastFakeObjectId(),
             member_id: model.id,
             from_status: null,
             to_status: 'free',
-            created_at: model.created_at
+            created_at: dateToDatabaseString(model.created_at)
         }];
         if (model.status !== 'free') {
             this.events.push({
-                id: faker.database.mongodbObjectId(),
+                id: this.fastFakeObjectId(),
                 member_id: model.id,
                 from_status: 'free',
                 to_status: model.status,
@@ -36,7 +47,7 @@ class MembersStatusEventsImporter extends TableImporter {
     }
 
     generate() {
-        const event = this.events.shift();
+        const event = this.events.pop();
         if (!event) {
             return null;
         }

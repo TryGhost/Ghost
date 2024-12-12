@@ -263,7 +263,7 @@ describe('Unit: services/url/UrlGenerator', function () {
 
                 urlGenerator._try(resource);
 
-                urlGenerator._generateUrl.calledOnce.should.be.true();
+                urlGenerator._generateUrl.calledOnce.should.be.false();
                 urlGenerator._resourceListeners.called.should.be.false();
                 urls.add.called.should.be.false();
                 resource.reserve.called.should.be.false();

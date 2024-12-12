@@ -15,6 +15,7 @@ const urlUtils = require('../../../shared/url-utils');
 
 const ObjectId = require('bson-objectid').default;
 const settingsHelpers = require('../settings-helpers');
+const emailAddressService = require('../email-address');
 
 const MAGIC_LINK_TOKEN_VALIDITY = 24 * 60 * 60 * 1000;
 const MAGIC_LINK_TOKEN_VALIDITY_AFTER_USAGE = 10 * 60 * 1000;
@@ -35,7 +36,8 @@ const getSettingsBREADServiceInstance = () => {
             validityPeriodAfterUsage: MAGIC_LINK_TOKEN_VALIDITY_AFTER_USAGE,
             maxUsageCount: MAGIC_LINK_TOKEN_MAX_USAGE_COUNT
         }),
-        urlUtils
+        urlUtils,
+        emailAddressService: emailAddressService
     });
 };
 
@@ -91,6 +93,10 @@ module.exports = {
         fields.push(new CalculatedField({key: 'paid_members_enabled', type: 'boolean', group: 'members', fn: settingsHelpers.arePaidMembersEnabled.bind(settingsHelpers), dependents: ['members_signup_access', 'stripe_secret_key', 'stripe_publishable_key', 'stripe_connect_secret_key', 'stripe_connect_publishable_key']}));
         fields.push(new CalculatedField({key: 'firstpromoter_account', type: 'string', group: 'firstpromoter', fn: settingsHelpers.getFirstpromoterId.bind(settingsHelpers), dependents: ['firstpromoter', 'firstpromoter_id']}));
         fields.push(new CalculatedField({key: 'donations_enabled', type: 'boolean', group: 'donations', fn: settingsHelpers.areDonationsEnabled.bind(settingsHelpers), dependents: ['stripe_secret_key', 'stripe_publishable_key', 'stripe_connect_secret_key', 'stripe_connect_publishable_key']}));
+
+        // E-mail addresses
+        fields.push(new CalculatedField({key: 'default_email_address', type: 'string', group: 'email', fn: settingsHelpers.getDefaultEmailAddress.bind(settingsHelpers), dependents: ['labs']}));
+        fields.push(new CalculatedField({key: 'support_email_address', type: 'string', group: 'email', fn: settingsHelpers.getMembersSupportAddress.bind(settingsHelpers), dependents: ['labs', 'members_support_address']}));
 
         return fields;
     },

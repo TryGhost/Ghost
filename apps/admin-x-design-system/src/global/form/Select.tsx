@@ -1,6 +1,6 @@
 import clsx from 'clsx';
-import React, {useId, useMemo} from 'react';
-import ReactSelect, {ClearIndicatorProps, DropdownIndicatorProps, GroupBase, OptionProps, OptionsOrGroups, Props, components} from 'react-select';
+import React, {useId, useMemo, useEffect} from 'react';
+import ReactSelect, {ClearIndicatorProps, DropdownIndicatorProps, GroupBase, MenuPlacement, OptionProps, OptionsOrGroups, Props, components} from 'react-select';
 import AsyncSelect from 'react-select/async';
 import {useFocusContext} from '../../providers/DesignSystemProvider';
 import Heading from '../Heading';
@@ -69,7 +69,7 @@ export type SelectProps = Props<SelectOption, false> & SelectOptionProps & {
 
 const DropdownIndicator: React.FC<DropdownIndicatorProps<SelectOption, false> & {clearBg: boolean}> = ({clearBg, ...props}) => (
     <components.DropdownIndicator {...props}>
-        <div className={`absolute top-[11px] block h-2 w-2 rotate-45 border-[1px] border-l-0 border-t-0 border-grey-900 content-[''] dark:border-grey-400 ${clearBg ? 'right-2' : 'right-[14px]'} `}></div>
+        <div className={`absolute top-1/2 mt-[-5px] block h-2 w-2 rotate-45 border-[1px] border-l-0 border-t-0 border-grey-900 content-[''] dark:border-grey-400 ${clearBg ? 'right-2' : 'right-[14px]'} `}></div>
     </components.DropdownIndicator>
 );
 
@@ -82,7 +82,7 @@ const ClearIndicator: React.FC<ClearIndicatorProps<SelectOption, false>> = props
 
 const Option: React.FC<OptionProps<SelectOption, false>> = ({children, ...optionProps}) => (
     <components.Option {...optionProps}>
-        <span data-testid="select-option" data-value={optionProps.data.value}>{children}</span>
+        <span className={optionProps.isSelected ? 'relative flex w-full items-center justify-between gap-2' : ''} data-testid="select-option" data-value={optionProps.data.value}>{children}{optionProps.isSelected && <span><Icon name='check' size={14} /></span>}</span>
         {optionProps.data.hint && <span className="block text-xs text-grey-700 dark:text-grey-300">{optionProps.data.hint}</span>}
     </components.Option>
 );
@@ -118,12 +118,35 @@ const Select: React.FC<SelectProps> = ({
         setFocusState(false);
     };
 
+    useEffect(() => {
+        const handleEscapeKey = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') {
+                // Fix for Safari - if an element in the modal is focused, closing it will jump to
+                // the bottom of the page because Safari tries to focus the "next" element in the DOM
+                if (document.activeElement && document.activeElement instanceof HTMLElement) {
+                    document.activeElement.blur();
+                }
+                setFocusState(false);
+
+                // Prevent the event from bubbling up to the window level
+                event.stopPropagation();
+            }
+        };
+
+        document.addEventListener('keydown', handleEscapeKey);
+
+        // Clean up the event listener when the modal is closed
+        return () => {
+            document.removeEventListener('keydown', handleEscapeKey);
+        };
+    }, [setFocusState]);
+
     let containerClasses = '';
     if (!unstyled) {
         containerClasses = clsx(
             'dark:text-white',
             fullWidth && 'w-full',
-            disabled && 'opacity-40'
+            disabled && 'cursor-not-allowed opacity-40'
         );
     }
     containerClasses = clsx(
@@ -134,22 +157,23 @@ const Select: React.FC<SelectProps> = ({
     const customClasses = {
         control: clsx(
             controlClasses?.control,
-            'h-9 min-h-[36px] w-full cursor-pointer appearance-none rounded-md border outline-none dark:text-white',
+            'h-9 min-h-[36px] w-full appearance-none rounded-lg border outline-none dark:text-white md:h-[38px] md:min-h-[38px]',
             size === 'xs' ? 'py-0 pr-2 text-xs' : 'py-1 pr-4',
             clearBg ? '' : 'bg-grey-150 px-3 dark:bg-grey-900',
             error ? 'border-red' : `border-transparent ${!clearBg && 'hover:bg-grey-100 dark:hover:bg-grey-925'}`,
+            !disabled && 'cursor-pointer',
             (title && !clearBg) && 'mt-1.5'
         ),
         valueContainer: clsx('mr-1.5 gap-1', controlClasses?.valueContainer),
         placeHolder: clsx('text-grey-700 dark:text-grey-800', controlClasses?.placeHolder),
         menu: clsx(
-            'z-[300] rounded-b bg-white shadow dark:border dark:border-grey-900 dark:bg-black',
+            'z-[300] mt-0.5 overflow-hidden rounded-lg bg-white shadow-lg dark:border dark:border-grey-900 dark:bg-black',
             size === 'xs' && 'text-xs',
             controlClasses?.menu
         ),
-        option: clsx('px-3 py-[6px] hover:cursor-pointer hover:bg-grey-100 dark:text-white dark:hover:bg-grey-900', controlClasses?.option),
+        option: clsx('group px-3 py-[7px] hover:cursor-pointer hover:bg-grey-100 dark:text-white dark:hover:bg-grey-900', controlClasses?.option),
         noOptionsMessage: clsx('nowrap p-3 text-grey-600', controlClasses?.noOptionsMessage),
-        groupHeading: clsx('px-3 py-[6px] text-2xs font-semibold uppercase tracking-wide text-grey-700', controlClasses?.groupHeading),
+        groupHeading: clsx('px-3 py-[7px] text-2xs font-semibold uppercase tracking-wide text-grey-700', controlClasses?.groupHeading),
         clearIndicator: clsx('', controlClasses?.clearIndicator)
     };
 
@@ -159,6 +183,21 @@ const Select: React.FC<SelectProps> = ({
         };
     }, [clearBg]);
 
+    const {components: propComponents = {}, ...restProps} = props;
+
+    // Define your default components
+    const defaultComponents = {
+        DropdownIndicator: dropdownIndicatorComponent,
+        Option,
+        ClearIndicator
+    };
+
+    // Merge the default components with those passed via props
+    const allComponents = {
+        ...defaultComponents,
+        ...propComponents
+    };
+
     const customProps = {
         classNames: {
             menuList: () => 'z-[300]',
@@ -166,22 +205,30 @@ const Select: React.FC<SelectProps> = ({
             control: () => customClasses.control,
             placeholder: () => customClasses.placeHolder,
             menu: () => customClasses.menu,
-            option: () => customClasses.option,
+            /* eslint-disable @typescript-eslint/no-explicit-any */
+            option: (state: any) => {
+                if (state.data.className) {
+                    return clsx(customClasses.option, state.data.className);
+                }
+                return customClasses.option;
+            },
             noOptionsMessage: () => customClasses.noOptionsMessage,
             groupHeading: () => customClasses.groupHeading,
             clearIndicator: () => customClasses.clearIndicator
         },
-        components: {DropdownIndicator: dropdownIndicatorComponent, Option, ClearIndicator},
+        // components: {DropdownIndicator: dropdownIndicatorComponent, Option, ClearIndicator},
         inputId: id,
         isClearable: false,
         isSearchable: isSearchable,
         options,
         placeholder: prompt ? prompt : '',
         value: selectedOption,
+        isDisabled: disabled,
         unstyled: true,
         onChange: onSelect,
         onFocus: handleFocus,
-        onBlur: handleBlur
+        onBlur: handleBlur,
+        menuPlacement: 'auto' as MenuPlacement
     };
 
     const select = (
@@ -190,7 +237,7 @@ const Select: React.FC<SelectProps> = ({
             <div className={containerClasses} data-testid={testId}>
                 {async ?
                     <AsyncSelect<SelectOption, false> {...customProps} {...props} /> :
-                    <ReactSelect<SelectOption, false> {...customProps} {...props} />
+                    <ReactSelect<SelectOption, false> {...customProps} {...restProps} components={allComponents} />
                 }
             </div>
             {hint && <Hint color={error ? 'red' : ''}>{hint}</Hint>}

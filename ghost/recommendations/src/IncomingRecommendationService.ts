@@ -80,7 +80,7 @@ export class IncomingRecommendationService {
         // More importantly, we might have missed some deletes which we can detect.
         // So we do a slow revalidation of all incoming recommendations
         // This also prevents doing multiple external fetches when doing quick reboots of Ghost after each other (requires Ghost to be up for at least 15 seconds)
-        if (!process.env.NODE_ENV?.startsWith('test')) {
+        if (!process.env.NODE_ENV?.startsWith('test') && process.env.NODE_ENV !== 'development') {
             setTimeout(() => {
                 logging.info('Updating incoming recommendations on boot');
                 this.#updateIncomingRecommendations().catch((err) => {
@@ -95,8 +95,10 @@ export class IncomingRecommendationService {
     }
 
     async #updateIncomingRecommendations() {
-        // Note: we also recheck recommendations that were not verified (verification could have failed)
-        const filter = this.#getMentionFilter();
+        // We refresh all incoming recommendations, including:
+        // - recommendations that were not verified, as the verification could have failed
+        // - recommendations that were deleted previously. Implementation note: given that we have `deleted:false` as default filter in the Mention model, we need to override it here
+        const filter = this.#getMentionFilter() + '+deleted:[true,false]';
         await this.#mentionsApi.refreshMentions({filter, limit: 100});
     }
 

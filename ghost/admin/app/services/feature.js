@@ -60,27 +60,22 @@ export default class FeatureService extends Service {
 
     // labs flags
     @feature('urlCache') urlCache;
-    @feature('lexicalMultiplayer') lexicalMultiplayer;
     @feature('audienceFeedback') audienceFeedback;
     @feature('webmentions') webmentions;
-    @feature('websockets') websockets;
     @feature('stripeAutomaticTax') stripeAutomaticTax;
     @feature('emailCustomization') emailCustomization;
     @feature('i18n') i18n;
     @feature('announcementBar') announcementBar;
     @feature('signupCard') signupCard;
-    @feature('signupForm') signupForm;
-    @feature('collections') collections;
     @feature('mailEvents') mailEvents;
     @feature('collectionsCard') collectionsCard;
     @feature('importMemberTier') importMemberTier;
-    @feature('tipsAndDonations') tipsAndDonations;
-    @feature('recommendations') recommendations;
     @feature('lexicalIndicators') lexicalIndicators;
-    @feature('editorEmojiPicker') editorEmojiPicker;
-    @feature('filterEmailDisabled') filterEmailDisabled;
     @feature('adminXDemo') adminXDemo;
-    @feature('tkReminders') tkReminders;
+    @feature('ActivityPub') ActivityPub;
+    @feature('editorExcerpt') editorExcerpt;
+    @feature('contentVisibility') contentVisibility;
+    @feature('commentImprovements') commentImprovements;
 
     _user = null;
 

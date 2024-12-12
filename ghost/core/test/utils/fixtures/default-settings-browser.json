@@ -326,6 +326,14 @@
             "defaultValue": "[\"free\"]",
             "type": "array"
         },
+        "portal_default_plan": {
+            "defaultValue": "yearly",
+            "validations": {
+                "isEmpty": false,
+                "isIn": [["yearly", "monthly"]]
+            },
+            "type": "string"
+        },
         "portal_products": {
             "defaultValue": "[]",
             "type": "array"
@@ -534,7 +542,7 @@
             "type": "string"
         },
         "donations_suggested_amount": {
-            "defaultValue": 0,
+            "defaultValue": 500,
             "validations": {
                 "isEmpty": false
             },

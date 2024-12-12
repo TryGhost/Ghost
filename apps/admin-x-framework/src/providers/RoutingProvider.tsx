@@ -1,5 +1,6 @@
 import NiceModal, {NiceModalHocProps} from '@ebay/nice-modal-react';
 import React, {createContext, useCallback, useContext, useEffect, useState} from 'react';
+import {useFramework} from './FrameworkProvider';
 
 export type RouteParams = Record<string, string>
 
@@ -45,7 +46,6 @@ function getHashPath(basePath: string, urlPath: string | undefined) {
     }
     const regex = new RegExp(`/${basePath}/(.*)`);
     const match = urlPath?.match(regex);
-
     if (match) {
         const afterSettingsX = match[1];
         return afterSettingsX;
@@ -63,6 +63,12 @@ const handleNavigation = (basePath: string, currentRoute: string | undefined, lo
     const url = new URL(hash, domain);
 
     const pathName = getHashPath(basePath, url.pathname);
+    
+    // Return early if we don't have modal configuration
+    if (!modalPaths || !loadModals) {
+        return {pathName: pathName || ''};
+    }
+
     const searchParams = url.searchParams;
 
     if (pathName && modalPaths && loadModals) {
@@ -83,7 +89,7 @@ const handleNavigation = (basePath: string, currentRoute: string | undefined, lo
 };
 
 const matchRoute = (pathname: string, routeDefinition: string) => {
-    const regex = new RegExp('^' + routeDefinition.replace(/:(\w+)/, '(?<$1>[^/]+)') + '$');
+    const regex = new RegExp('^' + routeDefinition.replace(/:(\w+)/g, '(?<$1>[^/]+)') + '/?$');
     const match = pathname.match(regex);
     if (match) {
         return match.groups || {};
@@ -92,12 +98,12 @@ const matchRoute = (pathname: string, routeDefinition: string) => {
 
 export interface RoutingProviderProps {
     basePath: string;
-    externalNavigate: (link: ExternalLink) => void;
     modals?: {paths: Record<string, string>, load: () => Promise<ModalsModule>}
     children: React.ReactNode;
 }
 
-const RoutingProvider: React.FC<RoutingProviderProps> = ({basePath, externalNavigate, modals, children}) => {
+export const RoutingProvider: React.FC<RoutingProviderProps> = ({basePath, modals, children}) => {
+    const {externalNavigate} = useFramework();
     const [route, setRoute] = useState<string | undefined>(undefined);
     const [loadingModal, setLoadingModal] = useState(false);
     const [eventTarget] = useState(new EventTarget());
@@ -110,7 +116,7 @@ const RoutingProvider: React.FC<RoutingProviderProps> = ({basePath, externalNavi
             return;
         }
 
-        const newPath = options.route;
+        const newPath = options.route.replace(/^\//, '');
 
         if (newPath === route) {
             // No change
@@ -170,8 +176,6 @@ const RoutingProvider: React.FC<RoutingProviderProps> = ({basePath, externalNavi
         </RouteContext.Provider>
     );
 };
-
-export default RoutingProvider;
 
 export function useRouting() {
     return useContext(RouteContext);

@@ -1,5 +1,4 @@
-const _debug = require('@tryghost/debug')._base;
-const debug = _debug('ghost:services:url:service');
+const debug = require('@tryghost/debug')('services:url:service');
 const _ = require('lodash');
 const errors = require('@tryghost/errors');
 const labs = require('../../../shared/labs');
@@ -92,7 +91,7 @@ class UrlService {
      * @param {String} permalink
      */
     onRouterAddedType(identifier, filter, resourceType, permalink) {
-        debug('Registering route: ', filter, resourceType, permalink);
+        debug('Registering route:', filter, resourceType, permalink);
 
         let urlGenerator = new UrlGenerator({
             identifier,
@@ -219,14 +218,12 @@ class UrlService {
      * They would show localhost:2368/null/.
      *
      * @param {String} id
-     * @param {Object} options
+     * @param {Object} [options]
      * @param {Object} [options.absolute]
      * @param {Object} [options.withSubdirectory]
      * @returns {String}
      */
-    getUrlByResourceId(id, options) {
-        options = options || {};
-
+    getUrlByResourceId(id, options = {}) {
         const obj = this.urls.getByResourceId(id);
 
         if (obj) {

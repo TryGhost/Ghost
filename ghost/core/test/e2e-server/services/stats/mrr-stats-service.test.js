@@ -53,7 +53,7 @@ describe('MRR Stats Service', function () {
 
     describe('getCurrentMrr', function () {
         it('Always returns at least one currency', async function () {
-            const result = await statsService.mrr.getCurrentMrr();
+            const result = await statsService.api.mrr.getCurrentMrr();
             result.should.eql([
                 {
                     currency: 'usd', // need to check capital usage here!
@@ -64,7 +64,7 @@ describe('MRR Stats Service', function () {
 
         it('Can handle multiple currencies', async function () {
             await createMemberWithSubscription('month', 500, 'eur', '2000-01-10');
-            const result = await statsService.mrr.getCurrentMrr();
+            const result = await statsService.api.mrr.getCurrentMrr();
             result.should.eql([
                 {
                     currency: 'EUR',
@@ -75,7 +75,7 @@ describe('MRR Stats Service', function () {
 
         it('Increases MRR by 1 / 12 of yearly subscriptions', async function () {
             await createMemberWithSubscription('year', 12, 'usd', '2000-01-10');
-            const result = await statsService.mrr.getCurrentMrr();
+            const result = await statsService.api.mrr.getCurrentMrr();
             result.should.eql([
                 {
                     currency: 'EUR',
@@ -90,7 +90,7 @@ describe('MRR Stats Service', function () {
 
         it('Increases MRR with monthly subscriptions', async function () {
             await createMemberWithSubscription('month', 1, 'usd', '2000-01-11');
-            const result = await statsService.mrr.getCurrentMrr();
+            const result = await statsService.api.mrr.getCurrentMrr();
             result.should.eql([
                 {
                     currency: 'EUR',
@@ -105,7 +105,7 @@ describe('MRR Stats Service', function () {
 
         it('Floors results', async function () {
             await createMemberWithSubscription('year', 17, 'usd', '2000-01-12');
-            let result = await statsService.mrr.getCurrentMrr();
+            let result = await statsService.api.mrr.getCurrentMrr();
             result.should.eql([
                 {
                     currency: 'EUR',
@@ -119,7 +119,7 @@ describe('MRR Stats Service', function () {
 
             // Floor 11/12 to 0 (same as getMRRDelta method)
             await createMemberWithSubscription('year', 11, 'usd', '2000-01-12');
-            result = await statsService.mrr.getCurrentMrr();
+            result = await statsService.api.mrr.getCurrentMrr();
             result.should.eql([
                 {
                     currency: 'EUR',
@@ -133,7 +133,7 @@ describe('MRR Stats Service', function () {
 
             // Floor 11/12 to 0, don't combine with previous addition
             await createMemberWithSubscription('year', 11, 'usd', '2000-01-12');
-            result = await statsService.mrr.getCurrentMrr();
+            result = await statsService.api.mrr.getCurrentMrr();
             result.should.eql([
                 {
                     currency: 'EUR',
@@ -147,7 +147,7 @@ describe('MRR Stats Service', function () {
 
             // Floor 13/12 to 1
             await createMemberWithSubscription('year', 13, 'usd', '2000-01-12');
-            result = await statsService.mrr.getCurrentMrr();
+            result = await statsService.api.mrr.getCurrentMrr();
             result.should.eql([
                 {
                     currency: 'EUR',
@@ -162,31 +162,59 @@ describe('MRR Stats Service', function () {
     });
 
     describe('fetchAllDeltas', function () {
-        it('Returns deltas in ascending order', async function () {
-            const results = await statsService.mrr.fetchAllDeltas();
-            results.length.should.equal(4);
+        it('Returns deltas for mrr', async function () {
+            const ninetyDaysAgo = moment().subtract(90, 'days').startOf('day').format('YYYY-MM-DD');
+            const ninetyFiveDaysAgo = moment().subtract(95, 'days').startOf('day').format('YYYY-MM-DD');
+            const eightyNineDaysAgo = moment().subtract(89, 'days').startOf('day').format('YYYY-MM-DD');
+            const today = moment().startOf('day').format('YYYY-MM-DD');
+    
+            await createMemberWithSubscription('month', 500, 'eur', moment(ninetyDaysAgo).toISOString());
+            await createMemberWithSubscription('month', 500, 'eur', moment(ninetyFiveDaysAgo).toISOString());
+            await createMemberWithSubscription('month', 1, 'usd', moment(eightyNineDaysAgo).toISOString());
+            await createMemberWithSubscription('month', 2, 'usd', moment(today).toISOString());
+    
+            const results = await statsService.api.mrr.fetchAllDeltas();
+            results.length.should.equal(3);
             results.should.match([
                 {
-                    date: '2000-01-10',
+                    date: ninetyDaysAgo,
                     delta: 500,
                     currency: 'EUR'
                 },
                 {
-                    date: '2000-01-10',
+                    date: eightyNineDaysAgo,
                     delta: 1,
                     currency: 'USD'
                 },
                 {
-                    date: '2000-01-11',
-                    delta: 1,
-                    currency: 'USD'
-                },
-                {
-                    date: '2000-01-12',
+                    date: today,
                     delta: 2,
                     currency: 'USD'
                 }
             ]);
+        });
+
+        it('Returns deltas for the last 90 days', async function () {
+            const ninetyDaysAgo = moment().subtract(90, 'days').startOf('day');
+            const ninetyFiveDaysAgo = moment().subtract(95, 'days').startOf('day');
+            const eightyNineDaysAgo = moment().subtract(89, 'days').startOf('day');
+            const today = moment().startOf('day');
+    
+            await createMemberWithSubscription('month', 500, 'eur', ninetyDaysAgo.toISOString());
+            await createMemberWithSubscription('month', 500, 'eur', ninetyFiveDaysAgo.toISOString());
+            await createMemberWithSubscription('month', 1, 'usd', eightyNineDaysAgo.toISOString());
+            await createMemberWithSubscription('month', 2, 'usd', today.toISOString());
+    
+            const results = await statsService.api.mrr.fetchAllDeltas();
+    
+            // Check that results are within the last 90 days
+            const isWithinLast90Days = (date) => {
+                return moment(date).isBetween(ninetyDaysAgo, today, null, '[]');
+            };
+            results.length.should.be.above(0);
+            results.forEach((result) => {
+                isWithinLast90Days(result.date).should.equal(true);
+            });
         });
     });
 });

@@ -1,0 +1,78 @@
+<p>Faster and more robust than ever before, we just shipped a complete rewrite of the Ghost editor. This is our third
+    major iteration of the Ghost editor, packed with new features, including:</p>
+<ul>
+    <li><a href="https://ghost.org/changelog/image-editor/"><strong>Native image editing</strong></a> - so you can
+        adjust photos on the fly</li>
+    <li><a href="https://ghost.org/changelog/post-history/"><strong>Post history</strong></a> - so you can see who
+        edited what, when, and restore old versions</li>
+    <li><a href="https://ghost.org/changelog/create-landing-pages/"><strong>Landing page cards</strong></a> - so you can
+        build beautiful custom experiences</li>
+    <li><a href="https://ghost.org/changelog/bookmarker/"><strong>Bookmarking</strong></a> - so you can collect links
+        from around the web for your posts</li>
+</ul>
+<p>And some fixes for longstanding issues with our previous editor, like:</p>
+<ul>
+    <li><strong>Faster overall performance</strong> - things just feel more <em>snappy</em></li>
+    <li><strong>Improved handling of very large posts</strong> - which, in the past, was... painful</li>
+    <li><strong>Better undo/redo chaining</strong> - a smoother experience when fixing mistakes</li>
+    <li><strong>Much improved mobile editing</strong> - so you can write on the go in iOS / Android</li>
+    <li><strong>Nested lists</strong> - for structuring your bulleted thoughts<ul>
+            <li>Which wasn't possible before<ul>
+                    <li>But is now</li>
+                </ul>
+            </li>
+        </ul>
+    </li>
+    <li><strong>More keyboard shortcuts</strong> - find the full list in the post settings menu</li>
+</ul>
+<p>The new editor is now available across all Ghost installs. <a
+        href="https://ghost.org/pricing/"><strong>Ghost(Pro)</strong></a> users can log into their sites to give it a
+    try. If you're a developer, self-hosting Ghost, you'll need to <a href="https://ghost.org/docs/update/">update</a>
+    to the latest version to get access to everything that's new.</p>
+<hr>
+<h2 id="developer-changes">Developer changes</h2>
+<p>Keep reading below if you're curious about the technical details behind the new editor, and what it means if you're
+    building API integrations with Ghost.</p>
+<figure class="kg-card kg-image-card kg-width-wide"><img
+        src="https://ghost.org/changelog/content/images/2023/10/Frame-1--4-.png" class="kg-image" alt="" loading="lazy"
+        width="2000" height="1052"></figure>
+<p>As we worked on this new editor, one of our main goals was to keep things the same. We made a few visual tweaks here
+    and there, but for the most part it's still the same editor you know and love... it just works better than it did
+    before.</p>
+<p>Under the hood, though, the technical changes we've made to the editor unlock exciting possibilities for the future.
+</p>
+<p>Ghost's editor, called Koenig, was previously built in <a href="https://emberjs.com/">Ember.js</a> on an open
+    JSON-based document storage format called <a href="https://github.com/bustle/mobiledoc-kit">MobileDoc</a>. We loved
+    how it worked, but MobileDoc never became widely adopted, so the technology underpinning our editor became a bit
+    stagnant. This limited our ability to build new features, or solve frustrating core bugs (like better mobile
+    support).</p>
+<p>Koenig has now been rebuilt on a new stack: <a href="https://react.dev/">React.js</a> and <a
+        href="https://lexical.dev/">Lexical</a> — both of which are open source frameworks developed by Meta. So, Ghost
+    is now using the same underlying technology that powers every single editor, comment box, or user input for billions
+    of users across Facebook and Instagram.</p>
+<figure class="kg-card kg-image-card kg-width-wide kg-card-hascaption"><img
+        src="https://ghost.org/changelog/content/images/2023/10/Screenshot-2023-10-23-at-16.44.43@2x.png"
+        class="kg-image" alt="" loading="lazy" width="2000" height="1246">
+    <figcaption><span style="white-space: pre-wrap;">Try the new Koenig editor for yourself — </span><a
+            href="https://koenig.ghost.org/"><span style="white-space: pre-wrap;">https://koenig.ghost.org</span></a>
+    </figcaption>
+</figure>
+<p>Ghost is the first independent company outside of Meta to build a full-scale dynamic editor on top of Lexical, and we
+    worked directly with the Lexical core team to make it happen. Today's announcement reflects over a year of quiet,
+    dedicated work by both teams to get to where we are now.</p>
+<p>We have lots of plans for continuing to improve Ghost's editing experience, and this shift in architecture has opened
+    a lot of new doors for what's possible next.</p>
+<p>For developers building integrations with Ghost, check out our updated API docs, which cover how to interact with
+    Lexical content stored in the database:</p>
+<figure class="kg-card kg-bookmark-card"><a class="kg-bookmark-container"
+        href="https://ghost.org/docs/admin-api/#posts">
+        <div class="kg-bookmark-content">
+            <div class="kg-bookmark-title">Ghost Admin API Documentation</div>
+            <div class="kg-bookmark-description">Manage content via Ghost’s Admin API, with secure role-based
+                authentication. Read more on Ghost Docs 👉</div>
+            <div class="kg-bookmark-metadata"><img class="kg-bookmark-icon" src="https://ghost.org/favicon.ico"
+                    alt=""><span class="kg-bookmark-author">Ghost - The Professional Publishing Platform</span></div>
+        </div>
+        <div class="kg-bookmark-thumbnail"><img src="https://ghost.org/images/meta/ghost-docs.png" alt=""></div>
+    </a></figure>
+<p></p>

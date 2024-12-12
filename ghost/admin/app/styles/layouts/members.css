@@ -68,6 +68,7 @@
 @media (max-width: 1450px) {
     .members-list-container-stretch {
         min-height: calc(100vh - 176px);
+        overflow: hidden;
     }
 }
 
@@ -100,9 +101,10 @@
 .members-header .view-actions input.gh-members-list-searchfield {
     min-width: 220px;
     padding-left: 32px;
-    border: none;
-    background: var(--white);
+    height: 34px;
+    background: var(--whitegrey-l1);
     border: var(--input-border);
+    border-color: transparent;
 }
 
 .members-header.grey .view-actions .gh-btn,
@@ -120,7 +122,7 @@
     height: 16px;
     top: 9px;
     left: 9px;
-    fill: var(--middarkgrey);
+    fill: var(--midlightgrey);
 }
 
 .members-header.black .view-actions input.gh-members-list-searchfield {
@@ -315,6 +317,12 @@ p.gh-members-list-email {
     text-transform: uppercase;
 }
 
+.gh-members-list-row .gh-list-data:first-child {
+    width: 30%;
+    min-width: 360px;
+    padding-right: 20px !important;
+}
+
 @media (max-width: 1100px) {
     .gh-members-chart-summary-data {
         font-size: 2.8rem;
@@ -332,6 +340,18 @@ p.gh-members-list-email {
     .gh-list-with-helpsection {
         margin-left: 0;
         margin-right: 0;
+    }
+
+    .gh-members-list-row .gh-list-data:first-child {
+        min-width: 280px;
+        overflow-x: hidden;
+    }
+
+    .gh-members-list-email,
+    .gh-members-list-name {
+        max-width: 200px;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 }
 
@@ -355,31 +375,6 @@ p.gh-members-list-email {
 @media (max-width: 1100px) {
     .members-list .gh-list-header, .gh-list-hidecell-m {
         display: none;
-    }
-
-    .gh-members-list-item {
-        display: flex;
-        position: relative;
-        flex-wrap: wrap;
-        border-bottom: 1px solid var(--list-color-divider);
-        margin: 0;
-    }
-
-    .gh-members-list-item:nth-of-type(2) {
-        border-top-left-radius: 5px;
-        border-top-right-radius: 5px;
-    }
-
-    .gh-members-list-item .gh-list-data {
-        border-top: none !important;
-    }
-
-    .gh-members-list-item:hover {
-        background: var(--whitegrey-l2);
-    }
-
-    .gh-members-list-item:hover .gh-list-data {
-        background: none !important;
     }
 
     .gh-members-list-basic {
@@ -469,16 +464,16 @@ p.gh-members-list-email {
     .gh-members-list-chevron {
         display: none;
     }
+
+    .members-header .view-actions .gh-members-header-search {
+        width: 100%;
+    }
 }
 
 @media (max-width: 450px) {
     .members-header {
         justify-content: flex-end;
         min-height: 120px;
-    }
-
-    .members-header.gh-canvas-header.break.tablet .gh-canvas-header-content {
-        height: 140px;
     }
 
     .members-header.gh-canvas-header.break.tablet .view-actions {
@@ -1104,6 +1099,10 @@ textarea.gh-member-details-textarea {
     justify-content: space-between;
     border-bottom: 1px solid var(--whitegrey);
     padding: 16px 0;
+}
+
+.gh-member-newsletter-row .for-switch {
+    display: flex;
 }
 
 .gh-member-newsletter-row:first-child {
@@ -2820,13 +2819,14 @@ a.gh-members-emailpreview-subscription-link {
 
 @media (max-width: 690px) {
     .gh-members-filter-builder {
-        width: calc(100vw - 20px);
-        min-width: calc(100vw - 20px);
-        max-width: calc(100vw - 20px);
-        left: 0 !important;
-        right: 0 !important;
-        margin-left: 10px;
-        margin-right: 10px;
+        position: fixed;
+        top: 9vh !important;
+        left: 10px !important;
+        right: 10px !important;
+        width: auto;
+        min-width: 0;
+        max-width: none;
+        margin: 0;
     }
 }
 
@@ -2837,6 +2837,10 @@ a.gh-members-emailpreview-subscription-link {
 
     .members-header .gh-canvas-title {
         left: 25px;
+    }
+    
+    .members-header .view-actions .gh-members-header-search {
+        width: 100%;
     }
 }
 

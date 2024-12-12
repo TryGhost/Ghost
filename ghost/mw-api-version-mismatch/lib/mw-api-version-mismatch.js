@@ -7,7 +7,7 @@ const versionMismatchHandler = (APIVersionCompatibilityService) => {
      * @param {import('express').Response} res
      * @param {import('express').NextFunction} next
      */
-    return async (err, req, res, next) => {
+    return async function versionMismatchHandlerMiddleware(err, req, res, next) {
         if (err && err.errorType === 'RequestNotAcceptableError') {
             if (err.code === 'UPDATE_CLIENT') {
                 const {key, type} = extractApiKey(req);
@@ -24,7 +24,7 @@ const versionMismatchHandler = (APIVersionCompatibilityService) => {
             }
         }
 
-        next(err, req, res);
+        next(err);
     };
 };
 

@@ -1,5 +1,6 @@
-import {chooseOptionInSelect, globalDataRequests, mockApi, responseFixtures, updatedSettingsResponse} from '../../utils/acceptance';
+import {chooseOptionInSelect, mockApi, responseFixtures, updatedSettingsResponse} from '@tryghost/admin-x-framework/test/acceptance';
 import {expect, test} from '@playwright/test';
+import {globalDataRequests} from '../../utils/acceptance';
 
 test.describe('Default recipient settings', async () => {
     test('Supports editing default recipients', async ({page}) => {
@@ -102,5 +103,34 @@ test.describe('Default recipient settings', async () => {
                 }
             ]
         });
+    });
+
+    test('renders existing default recipients filters correctly', async ({page}) => {
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseTiers: {method: 'GET', path: '/tiers/?filter=&limit=20', response: responseFixtures.tiers},
+            browseLabels: {method: 'GET', path: '/labels/?filter=&limit=20', response: responseFixtures.labels},
+            browseOffers: {method: 'GET', path: '/offers/?filter=&limit=20', response: responseFixtures.offers},
+            browseSettings: {...globalDataRequests.browseSettings, response: updatedSettingsResponse([
+                {
+                    key: 'editor_default_email_recipients',
+                    value: 'filter'
+                },
+                {
+                    key: 'editor_default_email_recipients_filter',
+                    value: '645453f4d254799990dd0e22,label:first-label,offer_redemptions:6487ea6464fca78ec2fff5fe'
+                }
+            ])}
+        }});
+
+        await page.goto('/');
+
+        const section = page.getByTestId('default-recipients');
+        await section.getByRole('button', {name: 'Edit'}).click();
+
+        await expect(section.getByText('Specific people')).toHaveCount(1);
+        await expect(section.getByText('Basic Supporter')).toHaveCount(1);
+        await expect(section.getByText('first-label')).toHaveCount(1);
+        await expect(section.getByText('First offer')).toHaveCount(1);
     });
 });

@@ -20,6 +20,9 @@ const meta = {
     title: 'Global / Layout / Page',
     component: Page,
     tags: ['autodocs'],
+    parameters: {
+        layout: 'fullscreen'
+    },
     render: function Component(args) {
         const [, updateArgs] = useArgs();
 
@@ -35,7 +38,7 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof Page>;
 
-const dummyContent = <div className='m-auto max-w-[800px] p-5 text-center'>Placeholder content</div>;
+const dummyContent = <div className='w-full bg-grey-100 p-5 text-center'>Placeholder content</div>;
 
 const customGlobalActions: CustomGlobalAction[] = [
     {
@@ -58,82 +61,97 @@ const pageTabs: Tab[] = [
 ];
 
 export const Default: Story = {
-    parameters: {
-        layout: 'fullscreen'
-    },
     args: {
         pageTabs: pageTabs,
         children: dummyContent
     }
 };
 
-export const WithHamburger: Story = {
-    parameters: {
-        layout: 'fullscreen'
-    },
+export const LimitToolbarWidth: Story = {
     args: {
         pageTabs: pageTabs,
-        showPageMenu: true,
+        children: dummyContent,
+        fullBleedToolbar: false
+    }
+};
+
+export const WithHamburger: Story = {
+    args: {
+        pageTabs: pageTabs,
+        showAppMenu: true,
         children: dummyContent
     }
 };
 
 export const WithGlobalActions: Story = {
-    parameters: {
-        layout: 'fullscreen'
-    },
     args: {
         pageTabs: pageTabs,
-        showPageMenu: true,
+        showAppMenu: true,
         showGlobalActions: true,
         children: dummyContent
     }
 };
 
 export const CustomGlobalActions: Story = {
-    parameters: {
-        layout: 'fullscreen'
-    },
     args: {
         pageTabs: pageTabs,
-        showPageMenu: true,
+        showAppMenu: true,
         showGlobalActions: true,
         children: dummyContent,
         customGlobalActions: customGlobalActions
     }
 };
 
+const currentAdminExample = <ViewContainer
+    title='Members'
+    type='page'
+>
+    <DynamicTable
+        columns={testColumns}
+        pageHasSidebar={false}
+        rows={testRows(100)}
+    />
+</ViewContainer>;
+
+export const ExampleCurrentAdminList: Story = {
+    name: 'Example: List in Current Admin',
+    args: {
+        children: currentAdminExample
+    }
+};
+
 const simpleList = <ViewContainer
+    firstOnPage={false}
     title='Members'
     type='page'
 >
     <DynamicTable
         columns={testColumns}
         footer={<Hint>Just a regular table footer</Hint>}
+        pageHasSidebar={false}
         rows={testRows(100)}
     />
 </ViewContainer>;
 
 export const ExampleSimpleList: Story = {
-    parameters: {
-        layout: 'fullscreen'
-    },
     name: 'Example: Simple List',
     args: {
         pageTabs: pageTabs,
-        showPageMenu: true,
+        showAppMenu: true,
         showGlobalActions: true,
         children: simpleList
     }
 };
 
 const stickyList = <ViewContainer
+    firstOnPage={false}
     title='Members'
     type='page'
 >
     <DynamicTable
         columns={testColumns}
         footer={<Hint>Sticky footer</Hint>}
+        pageHasSidebar={false}
         rows={testRows(40)}
         stickyFooter
         stickyHeader
@@ -141,19 +159,17 @@ const stickyList = <ViewContainer
 </ViewContainer>;
 
 export const ExampleStickyList: Story = {
-    parameters: {
-        layout: 'fullscreen'
-    },
     name: 'Example: Sticky Header/Footer List',
     args: {
         pageTabs: pageTabs,
-        showPageMenu: true,
+        showAppMenu: true,
         showGlobalActions: true,
         children: stickyList
     }
 };
 
 const examplePrimaryAction = <ViewContainer
+    firstOnPage={false}
     primaryAction={{
         title: 'Add member',
         color: 'black',
@@ -167,6 +183,7 @@ const examplePrimaryAction = <ViewContainer
     <DynamicTable
         columns={testColumns}
         footer={<Hint>Sticky footer</Hint>}
+        pageHasSidebar={false}
         rows={testRows(40)}
         stickyFooter
         stickyHeader
@@ -174,13 +191,10 @@ const examplePrimaryAction = <ViewContainer
 </ViewContainer>;
 
 export const ExamplePrimaryAction: Story = {
-    parameters: {
-        layout: 'fullscreen'
-    },
     name: 'Example: Primary Action',
     args: {
         pageTabs: pageTabs,
-        showPageMenu: true,
+        showAppMenu: true,
         showGlobalActions: true,
         children: examplePrimaryAction
     }
@@ -188,6 +202,7 @@ export const ExamplePrimaryAction: Story = {
 
 const exampleActionsContent = <ViewContainer
     actions={exampleActionButtons}
+    firstOnPage={false}
     primaryAction={{
         title: 'Add member',
         icon: 'add',
@@ -202,6 +217,7 @@ const exampleActionsContent = <ViewContainer
     <DynamicTable
         columns={testColumns}
         footer={<Hint>Sticky footer</Hint>}
+        pageHasSidebar={false}
         rows={testRows(40)}
         stickyFooter
         stickyHeader
@@ -209,13 +225,10 @@ const exampleActionsContent = <ViewContainer
 </ViewContainer>;
 
 export const ExampleActions: Story = {
-    parameters: {
-        layout: 'fullscreen'
-    },
     name: 'Example: Custom Actions',
     args: {
         pageTabs: pageTabs,
-        showPageMenu: true,
+        showAppMenu: true,
         showGlobalActions: true,
         children: exampleActionsContent
     }
@@ -246,6 +259,7 @@ const mockIdeaCards = () => {
 const exampleCardViewContent = (
     <ViewContainer
         actions={exampleActionButtons}
+        firstOnPage={false}
         primaryAction={{
             title: 'New idea',
             icon: 'add'
@@ -253,20 +267,17 @@ const exampleCardViewContent = (
         title='Ideas'
         type='page'
     >
-        <div className='grid grid-cols-4 gap-7 py-7'>
+        <div className='grid grid-cols-2 gap-7 py-7 tablet:grid-cols-4'>
             {mockIdeaCards()}
         </div>
     </ViewContainer>
 );
 
 export const ExampleCardView: Story = {
-    parameters: {
-        layout: 'fullscreen'
-    },
     name: 'Example: Card View',
     args: {
         pageTabs: pageTabs,
-        showPageMenu: true,
+        showAppMenu: true,
         showGlobalActions: true,
         children: exampleCardViewContent
     }
@@ -315,6 +326,7 @@ const mockPosts = () => {
 const examplePostsContent = (
     <ViewContainer
         actions={exampleActionButtons}
+        firstOnPage={false}
         primaryAction={{
             title: 'New post',
             icon: 'add'
@@ -329,29 +341,26 @@ const examplePostsContent = (
 );
 
 export const ExampleAlternativeList: Story = {
-    parameters: {
-        layout: 'fullscreen'
-    },
     name: 'Example: Alternative List',
     args: {
         pageTabs: pageTabs,
-        showPageMenu: true,
+        showAppMenu: true,
         showGlobalActions: true,
         children: examplePostsContent
     }
 };
 
 export const ExampleDetailScreen: Story = {
-    parameters: {
-        layout: 'fullscreen'
-    },
     name: 'Example: Detail Page',
     args: {
-        showPageMenu: true,
+        showAppMenu: true,
         breadCrumbs: <Breadcrumbs
             items={[
                 {
-                    label: 'Members'
+                    label: 'Members',
+                    onClick: () => {
+                        alert('Clicked back');
+                    }
                 },
                 {
                     label: 'Emerson Vaccaro'
@@ -362,37 +371,41 @@ export const ExampleDetailScreen: Story = {
         showGlobalActions: true,
         children: <>
             <ViewContainer
-                toolbarBorder={false}
-                type='page'>
-                <div className='flex items-end justify-between gap-5 border-b border-grey-200 py-2'>
+                firstOnPage={false}
+                headerContent={
                     <div>
                         <Avatar bgColor='#A5D5F7' label='EV' labelColor='white' size='xl' />
                         <Heading className='mt-2' level={1}>Emerson Vaccaro</Heading>
                         <div className=''>Colombus, OH</div>
                     </div>
-                    <div className='pb-2'>
-                        <Button color='outline' icon='ellipsis' />
-                    </div>
-                </div>
-                <div className='grid grid-cols-4 border-b border-grey-200 py-5'>
-                    <div className='-ml-5 flex h-full flex-col px-5'>
+                }
+                primaryAction={
+                    {
+                        icon: 'ellipsis',
+                        color: 'outline'
+                    }
+                }
+                type='page'
+            >
+                <div className='grid grid-cols-3 border-b border-grey-200 pb-5 tablet:grid-cols-4'>
+                    <div className='col-span-3 -ml-5 mb-5 hidden h-full gap-4 px-5 tablet:col-span-1 tablet:mb-0 tablet:!flex tablet:flex-col tablet:gap-0'>
                         <span>Last seen on <strong>22 June 2023</strong></span>
-                        <span className='mt-2'>Created on <strong>27 Jan 2021</strong></span>
+                        <span className='tablet:mt-2'>Created on <strong>27 Jan 2021</strong></span>
                     </div>
-                    <div className='flex h-full flex-col px-5'>
+                    <div className='flex h-full flex-col tablet:px-5'>
                         <Heading level={6}>Emails received</Heading>
                         <span className='mt-1 text-4xl font-bold leading-none'>181</span>
                     </div>
-                    <div className='flex h-full flex-col px-5'>
+                    <div className='flex h-full flex-col tablet:px-5'>
                         <Heading level={6}>Emails opened</Heading>
                         <span className='mt-1 text-4xl font-bold leading-none'>104</span>
                     </div>
-                    <div className='-mr-5 flex h-full flex-col px-5'>
+                    <div className='-mr-5 flex h-full flex-col tablet:px-5'>
                         <Heading level={6}>Average open rate</Heading>
                         <span className='mt-1 text-4xl font-bold leading-none'>57%</span>
                     </div>
                 </div>
-                <div className='grid grid-cols-4 items-baseline py-5'>
+                <div className='grid grid-cols-2 items-baseline border-b border-grey-200 py-5 tablet:grid-cols-4'>
                     <div className='-ml-5 flex h-full flex-col gap-6 border-r border-grey-200 px-5'>
                         <div className='flex justify-between'>
                             <Heading level={5}>Member data</Heading>
@@ -408,10 +421,17 @@ export const ExampleDetailScreen: Story = {
                         </div>
                         <div>
                             <Heading level={6}>Labels</Heading>
-                            <div className='inline-block rounded-sm bg-grey-300 px-1 text-xs font-medium'>VIP</div>
+                            <div className='mt-2 flex gap-1'>
+                                <div className='inline-block rounded-sm bg-grey-200 px-1.5 text-xs font-medium'>VIP</div>
+                                <div className='inline-block rounded-sm bg-grey-200 px-1.5 text-xs font-medium'>Inner Circle</div>
+                            </div>
+                        </div>
+                        <div>
+                            <Heading level={6}>Notes</Heading>
+                            <div className='text-grey-500'>No notes.</div>
                         </div>
                     </div>
-                    <div className='flex h-full flex-col gap-6 border-r border-grey-200 px-5'>
+                    <div className='flex h-full flex-col gap-6 border-grey-200 px-5 tablet:border-r'>
                         <Heading level={5}>Newsletters</Heading>
                         <div className='flex flex-col gap-3'>
                             <div className='flex items-center gap-2'>
@@ -422,24 +442,44 @@ export const ExampleDetailScreen: Story = {
                                 <Toggle />
                                 <span>Weekly roundup</span>
                             </div>
+                            <div className='flex items-center gap-2'>
+                                <Toggle checked />
+                                <span>The Inner Circle</span>
+                            </div>
+                            <div className='mt-5 rounded border border-red p-4 text-sm text-red'>
+                                This member cannot receive emails due to permanent failure (bounce).
+                            </div>
                         </div>
                     </div>
-                    <div className='flex h-full flex-col gap-6 border-r border-grey-200 px-5'>
+                    <div className='-ml-5 flex h-full flex-col gap-6 border-r border-grey-200 px-5 pt-10 tablet:ml-0 tablet:pt-0'>
                         <Heading level={5}>Subscriptions</Heading>
-                        <div className='flex flex-col'>
-                            <span className='font-semibold'>Gold &mdash; $12/month</span>
-                            <span className='text-sm text-grey-500'>Renews 21 Jan 2024</span>
+                        <div className='flex items-center gap-3'>
+                            <div className='flex h-16 w-16 flex-col items-center justify-center rounded-md bg-grey-200'>
+                                <Heading level={5}>$5</Heading>
+                                <span className='text-xs text-grey-700'>Yearly</span>
+                            </div>
+                            <div className='flex flex-col'>
+                                <span className='font-semibold'>Gold</span>
+                                <span className='text-sm text-grey-500'>Renews 21 Jan 2024</span>
+                            </div>
                         </div>
                     </div>
-                    <div className='-mr-5 flex h-full flex-col gap-6 px-5'>
-                        <Heading level={5}>Activity</Heading>
-                        <div className='flex flex-col'>
-                            <span className='font-semibold'>Logged in</span>
-                            <span className='text-sm text-grey-500'>Renews 21 Jan 2024</span>
+                    <div className='-mr-5 flex h-full flex-col gap-6 px-5 pt-10 tablet:pt-0'>
+                        <div className='flex justify-between'>
+                            <Heading level={5}>Activity</Heading>
+                            <Button color='green' label='View all' link />
                         </div>
-                        <div className='flex flex-col'>
+                        <div className='flex flex-col text-sm'>
+                            <span className='font-semibold'>Logged in</span>
+                            <span className='text-sm text-grey-500'>13 days ago</span>
+                        </div>
+                        <div className='flex flex-col text-sm'>
                             <span className='font-semibold'>Subscribed to Daily News</span>
-                            <span className='text-sm text-grey-500'>Renews 21 Jan 2024</span>
+                            <span className='text-sm text-grey-500'>17 days ago</span>
+                        </div>
+                        <div className='flex flex-col text-sm'>
+                            <span className='font-semibold'>Logged in</span>
+                            <span className='text-sm text-grey-500'>21 days ago</span>
                         </div>
                     </div>
                 </div>

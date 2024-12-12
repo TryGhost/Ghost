@@ -1,11 +1,11 @@
 import {MATCH_RELATION_OPTIONS} from './relation-options';
 import {capitalizeFirstLetter} from 'ghost-admin/helpers/capitalize-first-letter';
-import {mostRecentlyUpdated} from 'ghost-admin/helpers/most-recently-updated';
+import {mostRelevantSubscription} from 'ghost-admin/helpers/most-relevant-subscription';
 
 export const SUBSCRIPTION_STATUS_FILTER = {
-    label: 'Stripe subscription status', 
-    name: 'subscriptions.status', 
-    columnLabel: 'Subscription Status', 
+    label: 'Stripe subscription status',
+    name: 'subscriptions.status',
+    columnLabel: 'Subscription Status',
     relationOptions: MATCH_RELATION_OPTIONS,
     valueType: 'options',
     options: [
@@ -18,7 +18,7 @@ export const SUBSCRIPTION_STATUS_FILTER = {
         {label: 'Incomplete - Expired', name: 'incomplete_expired'}
     ],
     getColumnValue: (member) => {
-        const subscription = mostRecentlyUpdated(member.subscriptions);
+        const subscription = mostRelevantSubscription(member.subscriptions);
         if (!subscription) {
             return null;
         }

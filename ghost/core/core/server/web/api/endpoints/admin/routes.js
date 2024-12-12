@@ -7,6 +7,9 @@ const mw = require('./middleware');
 const shared = require('../../../shared');
 const labs = require('../../../../../shared/labs');
 
+/**
+ * @returns {import('express').Router}
+ */
 module.exports = function apiRoutes() {
     const router = express.Router('admin api');
 
@@ -48,6 +51,9 @@ module.exports = function apiRoutes() {
 
     router.get('/mentions', mw.authAdminApi, http(api.mentions.browse));
 
+    router.get('/comments/:id', mw.authAdminApi, http(api.commentReplies.read));
+    router.get('/comments/:id/replies', mw.authAdminApi, http(api.commentReplies.browse));
+    router.get('/comments/post/:post_id', mw.authAdminApi, http(api.comments.browse));
     router.put('/comments/:id', mw.authAdminApi, http(api.comments.edit));
 
     // ## Pages
@@ -240,6 +246,8 @@ module.exports = function apiRoutes() {
         http(api.session.add)
     );
     router.del('/session', mw.authAdminApi, http(api.session.delete));
+    router.post('/session/verify', shared.middleware.brute.sendVerificationCode, http(api.session.sendVerification));
+    router.put('/session/verify', shared.middleware.brute.userVerification, http(api.session.verify));
 
     // ## Identity
     router.get('/identities', mw.authAdminApi, http(api.identities.read));

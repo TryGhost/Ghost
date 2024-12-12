@@ -23,8 +23,10 @@
     "sinon": "15.2.0"
   },
   "dependencies": {
+    "@tryghost/email-addresses": "0.0.0",
+    "handlebars": "4.7.8",
+    "juice": "9.1.0",
     "lodash": "4.17.21",
-    "moment": "2.29.1",
-    "handlebars": "4.7.8"
+    "moment": "2.29.1"
   }
 }

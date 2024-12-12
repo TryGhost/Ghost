@@ -2,10 +2,10 @@ import CommentComponent from './Comment';
 import RepliesPagination from './RepliesPagination';
 import {Comment, useAppContext} from '../../AppContext';
 
-type Props = {
+export type RepliesProps = {
     comment: Comment
 };
-const Replies: React.FC<Props> = ({comment}) => {
+const Replies: React.FC<RepliesProps> = ({comment}) => {
     const {dispatchAction} = useAppContext();
 
     const repliesLeft = comment.count.replies - comment.replies.length;

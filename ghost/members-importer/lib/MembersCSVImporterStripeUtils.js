@@ -153,7 +153,8 @@ module.exports = class MembersCSVImporterStripeUtils {
             await this._stripeAPIService.updateSubscriptionItemPrice(
                 stripeSubscription.id,
                 stripeSubscriptionItem.id,
-                newStripePrice.id
+                newStripePrice.id,
+                {prorationBehavior: 'none'}
             );
 
             stripePriceId = newStripePrice.id;
@@ -167,7 +168,8 @@ module.exports = class MembersCSVImporterStripeUtils {
                 await this._stripeAPIService.updateSubscriptionItemPrice(
                     stripeSubscription.id,
                     stripeSubscriptionItem.id,
-                    stripePriceId
+                    stripePriceId,
+                    {prorationBehavior: 'none'}
                 );
             }
         }

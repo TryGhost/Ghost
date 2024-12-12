@@ -36,10 +36,10 @@ const AnnouncementBarPreview: React.FC<AnnouncementBarSettings> = ({announcement
                     announcementContent,
                     visibilityMemo
                 ),
-                Accept: 'text/plain',
-                mode: 'cors',
-                credentials: 'include'
-            }
+                Accept: 'text/plain'
+            },
+            mode: 'cors',
+            credentials: 'include'
         })
             .then(response => response.text())
             .then((data) => {
@@ -71,7 +71,7 @@ const AnnouncementBarPreview: React.FC<AnnouncementBarSettings> = ({announcement
     return (
         <IframeBuffering
             addDelay={true}
-            className="absolute h-[110%] w-[110%] origin-top-left scale-[.90909] max-[1600px]:h-[130%] max-[1600px]:w-[130%] max-[1600px]:scale-[.76923]"
+            className="absolute h-[110%] w-[110%] origin-top-left scale-[.90909] bg-white max-[1600px]:h-[130%] max-[1600px]:w-[130%] max-[1600px]:scale-[.76923]"
             generateContent={injectContentIntoIframe}
             height='100%'
             parentClassName="relative h-full w-full"

@@ -1,5 +1,6 @@
 import {expect, test} from '@playwright/test';
-import {globalDataRequests, mockApi, updatedSettingsResponse} from '../../utils/acceptance';
+import {globalDataRequests} from '../../utils/acceptance';
+import {mockApi, updatedSettingsResponse} from '@tryghost/admin-x-framework/test/acceptance';
 
 test.describe('Title and description settings', async () => {
     test('Supports editing the title and description', async ({page}) => {

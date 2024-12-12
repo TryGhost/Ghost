@@ -1,3 +1,4 @@
+const fs = require('fs');
 const path = require('path');
 const util = require('util');
 const exec = util.promisify(require('child_process').exec);
@@ -15,6 +16,20 @@ if (nodeVersion < 18) {
 const config = require('../../ghost/core/core/shared/config/loader').loadNconf({
     customConfigPath: path.join(__dirname, '../../ghost/core')
 });
+
+const tsPackages = fs.readdirSync(path.resolve(__dirname, '../../ghost'), {withFileTypes: true})
+    .filter(dirent => dirent.isDirectory())
+    .map(dirent => dirent.name)
+    .filter(packageFolder => {
+        try {
+            const packageJson = require(path.resolve(__dirname, `../../ghost/${packageFolder}/package.json`));
+            return packageJson.scripts?.['build:ts'];
+        } catch (err) {
+            return false;
+        }
+    })
+    .map(packageFolder => `ghost/${packageFolder}`)
+    .join(',');
 
 const liveReloadBaseUrl = config.getSubdir() || '/ghost/';
 const siteUrl = config.getSiteUrl();
@@ -43,27 +58,35 @@ const COMMAND_ADMIN = {
     env: {}
 };
 
+const COMMAND_BROWSERTESTS = {
+    name: 'browser-tests',
+    command: 'nx run ghost:test:browser',
+    cwd: path.resolve(__dirname, '../../ghost/core'),
+    prefixColor: 'blue',
+    env: {}
+};
+
 const COMMAND_TYPESCRIPT = {
     name: 'ts',
-    command: 'nx watch --projects=ghost/collections,ghost/in-memory-repository,ghost/bookshelf-repository,ghost/mail-events,ghost/model-to-domain-event-interceptor,ghost/post-revisions,ghost/nql-filter-expansions,ghost/post-events,ghost/donations,ghost/recommendations -- nx run \\$NX_PROJECT_NAME:build:ts',
+    command: `while [ 1 ]; do nx watch --projects=${tsPackages} -- nx run \\$NX_PROJECT_NAME:build:ts; done`,
     cwd: path.resolve(__dirname, '../../'),
     prefixColor: 'cyan',
     env: {}
 };
 
-const adminXApps = '@tryghost/admin-x-demo,@tryghost/admin-x-settings';
+const adminXApps = '@tryghost/admin-x-demo,@tryghost/admin-x-settings,@tryghost/admin-x-activitypub';
 
 const COMMANDS_ADMINX = [{
     name: 'adminXDeps',
-    command: 'nx watch --projects=apps/admin-x-design-system,apps/admin-x-framework -- nx run \\$NX_PROJECT_NAME:build --skip-nx-cache',
+    command: 'while [ 1 ]; do nx watch --projects=apps/admin-x-design-system,apps/admin-x-framework,apps/shade -- nx run \\$NX_PROJECT_NAME:build; done',
     cwd: path.resolve(__dirname, '../..'),
-    prefixColor: '#C35831',
+    prefixColor: '#C72AF7',
     env: {}
 }, {
     name: 'adminX',
-    command: `nx run-many --projects=${adminXApps} --targets=build && nx run-many --projects=${adminXApps} --parallel=${adminXApps.length} --targets=dev`,
-    cwd: path.resolve(__dirname, '../../apps/admin-x-settings'),
-    prefixColor: '#C35831',
+    command: `nx run-many --projects=${adminXApps} --parallel=${adminXApps.length} --targets=dev`,
+    cwd: path.resolve(__dirname, '../../apps/admin-x-settings', '../../apps/admin-x-activitypub'),
+    prefixColor: '#C72AF7',
     env: {}
 }];
 
@@ -71,6 +94,8 @@ if (DASH_DASH_ARGS.includes('ghost')) {
     commands = [COMMAND_GHOST, COMMAND_TYPESCRIPT];
 } else if (DASH_DASH_ARGS.includes('admin')) {
     commands = [COMMAND_ADMIN, ...COMMANDS_ADMINX];
+} else if (DASH_DASH_ARGS.includes('browser-tests')) {
+    commands = [COMMAND_BROWSERTESTS];
 } else {
     commands = [COMMAND_GHOST, COMMAND_TYPESCRIPT, COMMAND_ADMIN, ...COMMANDS_ADMINX];
 }
@@ -171,7 +196,7 @@ if (DASH_DASH_ARGS.includes('comments') || DASH_DASH_ARGS.includes('all')) {
 
 async function handleStripe() {
     if (DASH_DASH_ARGS.includes('stripe') || DASH_DASH_ARGS.includes('all')) {
-        if (DASH_DASH_ARGS.includes('offline')) {
+        if (DASH_DASH_ARGS.includes('offline') || DASH_DASH_ARGS.includes('browser-tests')) {
             return;
         }
 
@@ -206,11 +231,16 @@ async function handleStripe() {
         process.exit(0);
     }
 
+    process.env.NX_DISABLE_DB = "true";
+    await exec("yarn nx reset --onlyDaemon");
+    await exec("yarn nx daemon --start");
+
     console.log(`Running projects: ${commands.map(c => chalk.green(c.name)).join(', ')}`);
 
     const {result} = concurrently(commands, {
         prefix: 'name',
-        killOthers: ['failure', 'success']
+        killOthers: ['failure', 'success'],
+        successCondition: 'first'
     });
 
     try {
@@ -221,5 +251,6 @@ async function handleStripe() {
         console.error(chalk.red(`If you've recently done a \`yarn main\`, dependencies might be out of sync. Try running \`${chalk.green('yarn fix')}\` to fix this.`));
         console.error(chalk.red(`If not, something else went wrong. Please report this to the Ghost team.`));
         console.error();
+        process.exit(1);
     }
 })();

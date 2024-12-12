@@ -1,32 +1,29 @@
-import SecundaryForm from './SecundaryForm';
-import {Comment, useAppContext} from '../../../AppContext';
-import {getEditorConfig} from '../../../utils/editor';
-import {useCallback, useEffect} from 'react';
-import {useEditor} from '@tiptap/react';
+import {Comment, OpenCommentForm, useAppContext} from '../../../AppContext';
+import {Form} from './Form';
+import {isMobile} from '../../../utils/helpers';
+import {useCallback, useEffect, useMemo} from 'react';
+import {useEditor} from '../../../utils/hooks';
 
 type Props = {
+    openForm: OpenCommentForm;
     comment: Comment;
     parent?: Comment;
-    close: () => void;
 };
 
-const EditForm: React.FC<Props> = ({comment, parent, close}) => {
+const EditForm: React.FC<Props> = ({comment, openForm, parent}) => {
     const {dispatchAction, t} = useAppContext();
 
-    const config = {
+    const editorConfig = useMemo(() => ({
         placeholder: t('Edit this comment'),
         // warning: we cannot use autofocus on the edit field, because that sets
         // the cursor position at the beginning of the text field instead of the end
         autofocus: false,
         content: comment.html
-    };
+    }), [comment]);
 
-    const editor = useEditor({
-        ...getEditorConfig(config)
-    });
+    const {editor} = useEditor(editorConfig);
 
     // Instead of autofocusing, we focus and jump to end manually
-    // // jump to end manually
     useEffect(() => {
         if (!editor) {
             return;
@@ -55,20 +52,24 @@ const EditForm: React.FC<Props> = ({comment, parent, close}) => {
         });
     }, [parent, comment, dispatchAction]);
 
-    const submitProps = {
-        submitText: t('Save'),
-        submitSize: 'small',
-        submit
-    };
-
-    const closeIfNotChanged = useCallback(() => {
-        if (editor?.getHTML() === comment.html) {
-            close();
-        }
-    }, [editor, close, comment.html]);
+    const close = useCallback(() => {
+        dispatchAction('closeCommentForm', openForm.id);
+    }, [dispatchAction, openForm]);
 
     return (
-        <SecundaryForm close={close} closeIfNotChanged={closeIfNotChanged} editor={editor} {...submitProps} />
+        <div className="relative w-full">
+            <Form
+                close={close}
+                comment={comment}
+                editor={editor}
+                isOpen={true}
+                openForm={openForm}
+                reduced={isMobile()}
+                submit={submit}
+                submitSize={'small'}
+                submitText={t('Save')}
+            />
+        </div>
     );
 };
 

@@ -6,10 +6,10 @@ import {ThemeProblem} from '@tryghost/admin-x-framework/api/themes';
 type FatalError = {
     details: {
       errors: ThemeProblem[];
-    };
+    }|string;
   };
 
-type FatalErrors = FatalError[];
+export type FatalErrors = FatalError[];
 
 export const ThemeProblemView = ({problem}:{problem: ThemeProblem}) => {
     const [isExpanded, setExpanded] = useState(false);
@@ -63,8 +63,15 @@ const InvalidThemeModal: React.FC<{
     if (fatalErrors) {
         warningPrompt = <div className="mt-10">
             <List title="Errors">
-                {fatalErrors?.map((error: any) => error?.details?.errors?.map((err: any) => <ThemeProblemView problem={err} />
-                ))}
+                {fatalErrors.map((error) => {
+                    if (typeof error.details === 'object' && error.details.errors && error.details.errors.length > 0) {
+                        return error.details.errors.map(err => <ThemeProblemView problem={err} />);
+                    } else if (typeof error.details === 'string') {
+                        return <ListItem title={error.details} />;
+                    } else {
+                        return null;
+                    }
+                })}
             </List>
         </div>;
     }

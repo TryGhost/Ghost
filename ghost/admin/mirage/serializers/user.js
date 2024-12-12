@@ -1,5 +1,4 @@
 import BaseSerializer from './application';
-import {RestSerializer} from 'miragejs';
 
 export default BaseSerializer.extend({
     embed: true,
@@ -12,19 +11,21 @@ export default BaseSerializer.extend({
         return [];
     },
 
-    serialize(object, request) {
-        if (this.isCollection(object)) {
-            return BaseSerializer.prototype.serialize.call(this, object, request);
+    serialize(userModelOrCollection, request) {
+        const updateUser = (user) => {
+            user.update('url', `http://localhost:4200/author/${user.slug}/`);
+
+            if (user.postCount) {
+                user.update('count', {posts: user.posts.models.length});
+            }
+        };
+
+        if (this.isModel(userModelOrCollection)) {
+            updateUser(userModelOrCollection);
+        } else {
+            userModelOrCollection.models.forEach(updateUser);
         }
 
-        let {user} = RestSerializer.prototype.serialize.call(this, object, request);
-
-        if (object.postCount) {
-            let posts = object.posts.models.length;
-
-            user.count = {posts};
-        }
-
-        return {users: [user]};
+        return BaseSerializer.prototype.serialize.call(this, userModelOrCollection, request);
     }
 });

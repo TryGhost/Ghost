@@ -6,7 +6,8 @@ import {ButtonProps} from './Button';
 const ButtonGroupMeta = {
     title: 'Global / Button Group',
     component: ButtonGroup,
-    tags: ['autodocs']
+    tags: ['autodocs'],
+    decorators: [(_story: () => React.ReactNode) => (<div className='inline-block'>{_story()}</div>)]
 } satisfies Meta<typeof ButtonGroup>;
 
 export default ButtonGroupMeta;
@@ -29,6 +30,14 @@ export const Default: Story = {
     args: {
         buttons: defaultButtons,
         link: false
+    }
+};
+
+export const Small: Story = {
+    args: {
+        buttons: defaultButtons,
+        link: false,
+        size: 'sm'
     }
 };
 

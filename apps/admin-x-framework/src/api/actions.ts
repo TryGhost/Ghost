@@ -18,12 +18,12 @@ export type Action = {
         id: string;
         name: string;
         slug: string;
-        image: string;
+        image: string|null;
     },
     resource?: {
         id: string;
         slug: string;
-        name: string;
+        name?: string;
         title?: string;
     }
 
@@ -32,9 +32,13 @@ export type Action = {
 };
 
 export interface ActionsResponseType {
+    actions: Array<Omit<Action, 'context'> & {context: string}>;
+    meta: Meta;
+}
+
+export interface ActionsList {
     actions: Action[];
     meta: Meta;
-
     isEnd: boolean;
 }
 
@@ -42,7 +46,7 @@ export interface ActionsResponseType {
 
 const dataType = 'ActionsResponseType';
 
-export const useBrowseActions = createInfiniteQuery<ActionsResponseType>({
+export const useBrowseActions = createInfiniteQuery<ActionsList>({
     dataType,
     path: '/actions/',
     returnData: (originalData) => {
@@ -74,7 +78,7 @@ export const useBrowseActions = createInfiniteQuery<ActionsResponseType>({
             }
         });
 
-        const meta = pages.at(-1)!.meta;
+        const meta = pages[pages.length - 1].meta;
 
         return {
             actions: actions.reverse(),
@@ -128,7 +132,7 @@ export const getLinkTarget = (action: Action): InternalLink | ExternalLink | und
 
             return {
                 isExternal: true,
-                route: 'editor.edit',
+                route: `editor/${resourceType}/${action.resource.id}`,
                 models: [resourceType, action.resource.id]
             };
         case 'integration':
@@ -141,10 +145,10 @@ export const getLinkTarget = (action: Action): InternalLink | ExternalLink | und
             if (!action.resource || !action.resource.id) {
                 return;
             }
-
+            // replace with Settings route once Offers X GA is released
             return {
                 isExternal: true,
-                route: 'offer',
+                route: `offers/${action.resource.id}`,
                 models: [action.resource.id]
             };
         case 'tag':

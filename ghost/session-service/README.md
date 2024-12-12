@@ -24,7 +24,7 @@ const sessionService = SessionService({
     }
 });
 
-app.use(async (req, res, next) => {
+app.use(async function sessionMiddleware(req, res, next) {
     try {
         const user = await sessionService.getUserForSession(req, res);
         req.user = user;

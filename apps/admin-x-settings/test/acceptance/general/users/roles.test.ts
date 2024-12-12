@@ -1,5 +1,6 @@
 import {expect, test} from '@playwright/test';
-import {globalDataRequests, meWithRole, mockApi, responseFixtures} from '../../../utils/acceptance';
+import {globalDataRequests} from '../../../utils/acceptance';
+import {meWithRole, mockApi, responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
 
 test.describe('User roles', async () => {
     test('Shows users under their role', async ({page}) => {
@@ -15,10 +16,10 @@ test.describe('User roles', async () => {
         await expect(section.getByTestId('owner-user')).toHaveText(/owner@test\.com/);
 
         await expect(section.getByRole('tab')).toHaveText([
-            'Administrators',
-            'Editors',
-            'Authors',
-            'Contributors',
+            'Administrators1',
+            'Editors1',
+            'Authors1',
+            'Contributors1',
             'Invited'
         ]);
 
@@ -56,7 +57,7 @@ test.describe('User roles', async () => {
         await page.goto('/');
 
         const section = page.getByTestId('users');
-        const activeTab = section.locator('[role=tabpanel]:not(.hidden)');
+        const activeTab = section.locator('[role=tabpanel]:not([hidden])');
 
         await section.getByRole('tab', {name: 'Authors'}).click();
 
@@ -66,11 +67,13 @@ test.describe('User roles', async () => {
 
         const modal = page.getByTestId('user-detail-modal');
 
-        await modal.locator('input[value=editor]').check();
+        await modal.locator('button[value=editor]').click();
 
-        await modal.getByRole('button', {name: 'Save & close'}).click();
+        await modal.getByRole('button', {name: 'Save'}).click();
 
         await expect(modal.getByRole('button', {name: 'Saved'})).toBeVisible();
+
+        await modal.getByRole('button', {name: 'Close'}).click();
 
         await expect(activeTab).toHaveText(/No authors found./);
 
@@ -145,6 +148,7 @@ test.describe('User roles', async () => {
 
         await modal.getByLabel('Full name').fill('New name');
         await modal.getByRole('button', {name: 'Save'}).click();
+        await modal.getByRole('button', {name: 'Close'}).click();
 
         await expect(modal).toBeHidden();
     });

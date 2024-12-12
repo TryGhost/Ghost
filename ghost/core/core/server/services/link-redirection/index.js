@@ -1,5 +1,8 @@
 const urlUtils = require('../../../shared/url-utils');
 const LinkRedirectRepository = require('./LinkRedirectRepository');
+const adapterManager = require('../adapter-manager');
+const config = require('../../../shared/config');
+const EventRegistry = require('../../lib/common/events');
 
 class LinkRedirectsServiceWrapper {
     async init() {
@@ -15,7 +18,9 @@ class LinkRedirectsServiceWrapper {
 
         this.linkRedirectRepository = new LinkRedirectRepository({
             LinkRedirect: models.Redirect,
-            urlUtils
+            urlUtils,
+            cacheAdapter: config.get('hostSettings:linkRedirectsPublicCache:enabled') ? adapterManager.getAdapter('cache:linkRedirectsPublic') : null,
+            EventRegistry
         });
 
         // Expose the service

@@ -11,11 +11,11 @@ export type User = {
     name: string;
     slug: string;
     email: string;
-    profile_image: string;
+    profile_image: string|null;
     cover_image: string|null;
     bio: string|null;
-    website: string;
-    location: string;
+    website: string|null;
+    location: string|null;
     facebook: string|null;
     twitter: string|null;
     accessibility: string|null;
@@ -33,6 +33,7 @@ export type User = {
     mention_notifications: boolean;
     recommendation_notifications: boolean;
     milestone_notifications: boolean;
+    donation_notifications: boolean;
     roles: UserRole[];
     url: string;
 }
@@ -76,7 +77,7 @@ export const useBrowseUsers = createInfiniteQuery<UsersResponseType & {isEnd: bo
     returnData: (originalData) => {
         const {pages} = originalData as InfiniteData<UsersResponseType>;
         const users = pages.flatMap(page => page.users);
-        const meta = pages.at(-1)!.meta;
+        const meta = pages[pages.length - 1].meta;
 
         return {
             users: users,

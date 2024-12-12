@@ -147,6 +147,7 @@ export const GlobalStyles = `
         font-size: 27px;
         margin-top: 0px;
         margin-bottom: 0.25em;
+        text-wrap: balance;
     }
 
     .gh-longform h4 {
@@ -176,7 +177,12 @@ export const GlobalStyles = `
     .gh-longform .gh-portal-btn {
         width: calc(100% + 4vmin);
         margin-top: 4rem;
-        margin-right: -4vmin;
+        margin-inline-end: -4vmin;
+    }
+
+    .gh-longform .gh-portal-btn.no-margin-right {
+       margin-inline-end: 0;
+        width: 100%;
     }
 
     .gh-longform .gh-portal-btn-text {

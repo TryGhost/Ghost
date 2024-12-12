@@ -13,7 +13,7 @@
                                 @triggerComponent={{component "gh-power-select/trigger"}}
                                 @triggerClass="gh-preview-newsletter-trigger"
                                 @dropdownClass="gh-publish-newsletter-dropdown gh-preview-newsletter-dropdown"
-                                @extra={{concat "<" (full-email-address (or this.newsletter.senderEmail "noreply")) ">"}}
+                                @extra={{concat "<" (sender-email-address this.newsletter.senderEmail) ">"}}
                                 @selectedItemComponent={{component "editor/modals/preview/selected-newsletter-label"}}
                                 data-test-email-preview-newsletter-select
                                 as |option|
@@ -22,8 +22,7 @@
                             </PowerSelect>
                         {{else}}
                             <p class="gh-preview-newsletter-name">{{this.newsletter.name}} <span
-                                class="gh-preview-email-address">&lt;{{full-email-address
-                                (or this.newsletter.senderEmail "noreply")}}&gt;</span></p>
+                                class="gh-preview-email-address">&lt;{{sender-email-address this.newsletter.senderEmail}}&gt;</span></p>
                         {{/if}}
                     </div>
                     <div class="gh-email-preview-newsletter-select" data-test-email-preview-segment-select-section>

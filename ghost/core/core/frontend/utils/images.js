@@ -92,6 +92,10 @@ module.exports.getImageWithSize = function getImageWithSize(imagePath, sizeOptio
     const sizeDirectoryName = prefixIfPresent('w', width) + prefixIfPresent('h', height);
     const formatPrefix = requestedFormat && imageTransform.canTransformToFormat(requestedFormat) ? `/format/${requestedFormat}` : '';
 
+    if (!imageName) {
+        return imgBlogUrl;
+    }
+
     return [imgBlogUrl, urlUtils.STATIC_IMAGE_URL_PREFIX, `/size/${sizeDirectoryName}`, formatPrefix, imageName].join('');
 };
 

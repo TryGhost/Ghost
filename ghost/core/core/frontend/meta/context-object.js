@@ -2,15 +2,6 @@ const settingsCache = require('../../shared/settings-cache');
 const _ = require('lodash');
 
 function getContextObject(data, context) {
-    /**
-     * If the data object does not contain the requested context, we return the fallback object.
-     */
-    const blog = {
-        cover_image: settingsCache.get('cover_image'),
-        twitter: settingsCache.get('twitter'),
-        facebook: settingsCache.get('facebook')
-    };
-
     let chosenContext;
 
     // @TODO: meta layer is very broken, it's really hard to understand what it's doing
@@ -31,9 +22,13 @@ function getContextObject(data, context) {
         chosenContext = data[context];
     }
 
-    // Super fallback.
+    // If the data object does not contain the requested context, we return the fallback object.
     if (!chosenContext) {
-        chosenContext = blog;
+        chosenContext = {
+            cover_image: settingsCache.get('cover_image'),
+            twitter: settingsCache.get('twitter'),
+            facebook: settingsCache.get('facebook')
+        };
     }
 
     return chosenContext;

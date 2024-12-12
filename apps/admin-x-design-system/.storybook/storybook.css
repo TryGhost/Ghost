@@ -241,3 +241,7 @@ html, body, #root {
     grid-template-columns: auto 240px;
     gap: 32px;
 }
+
+.sbdocs-a {
+    color: #30CF43 !important;
+}
