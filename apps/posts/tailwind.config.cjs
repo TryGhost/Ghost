@@ -1,4 +1,4 @@
-const shadePreset = require('@tryghost/shade/tailwind.cjs');
+import shadePreset from '@tryghost/shade/tailwind.cjs';
 
 module.exports = {
     presets: [shadePreset('.shade')],
