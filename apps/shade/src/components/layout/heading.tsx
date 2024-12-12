@@ -52,4 +52,9 @@ const H4 = React.forwardRef<HTMLHeadingElement, HeadingProps>(
 );
 H4.displayName = 'H4';
 
-export {H1, H2, H3, H4};
+export {
+    H1,
+    H2,
+    H3,
+    H4
+};

@@ -1,6 +1,8 @@
 // UI components
 export * from './components/ui/button';
-export * from './components/ui/icon';
+export {IconComponents as Icon} from './components/ui/icon';
+export * from './components/ui/breadcrumb';
+
 export * from './components/layout/page';
 export * from './components/layout/heading';
 
