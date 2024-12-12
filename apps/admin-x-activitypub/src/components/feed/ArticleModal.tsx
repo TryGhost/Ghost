@@ -4,10 +4,11 @@ import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useRef, useState} from 'react';
 import articleBodyStyles from '../articleBodyStyles';
 import getUsername from '../../utils/get-username';
+import {OptionProps, SingleValueProps, components} from 'react-select';
 
 import {type Activity} from '../activities/ActivityItem';
 import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
-import {Button, LoadingIndicator, Modal, Popover, Select, SelectOption} from '@tryghost/admin-x-design-system';
+import {Button, Icon, LoadingIndicator, Modal, Popover, Select, SelectOption} from '@tryghost/admin-x-design-system';
 import {renderTimestamp} from '../../utils/render-timestamp';
 import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
 import {useModal} from '@ebay/nice-modal-react';
@@ -63,6 +64,7 @@ const ArticleBody: React.FC<{heading: string, image: string|undefined, excerpt: 
                     --font-size: ${fontSize};
                     --line-height: ${lineHeight};
                     --font-family: ${fontFamily.value};
+                    --letter-spacing: ${fontFamily.label === 'Clean sans-serif' ? '-0.013em' : '0'};
                     --content-spacing-factor: ${SPACING_FACTORS[FONT_SIZES.indexOf(fontSize)]};
                 }
                 body {
@@ -184,6 +186,7 @@ const ArticleBody: React.FC<{heading: string, image: string|undefined, excerpt: 
         root.style.setProperty('--font-size', fontSize);
         root.style.setProperty('--line-height', lineHeight);
         root.style.setProperty('--font-family', fontFamily.value);
+        root.style.setProperty('--letter-spacing', fontFamily.label === 'Clean sans-serif' ? '-0.013em' : '0');
         root.style.setProperty('--content-spacing-factor', SPACING_FACTORS[FONT_SIZES.indexOf(fontSize)]);
 
         const iframeWindow = iframe.contentWindow as IframeWindow;
@@ -226,27 +229,54 @@ const FeedItemDivider: React.FC = () => (
     <div className="h-px bg-grey-200"></div>
 );
 
-const FONT_SIZES = ['1.4rem', '1.7rem', '1.9rem', '2.1rem', '2.4rem'] as const;
-const LINE_HEIGHTS = ['1.3', '1.4', '1.5', '1.6', '1.7', '1.8'] as const;
+const FONT_SIZES = ['1.5rem', '1.6rem', '1.7rem', '1.8rem', '2rem'] as const;
+const LINE_HEIGHTS = ['1.3', '1.4', '1.5', '1.6', '1.7'] as const;
 const SPACING_FACTORS = ['0.85', '1', '1.1', '1.2', '1.3'] as const;
 
 type FontSize = typeof FONT_SIZES[number];
 
-// Add constants for localStorage keys
 const STORAGE_KEYS = {
     FONT_SIZE: 'ghost-ap-font-size',
     LINE_HEIGHT: 'ghost-ap-line-height',
     FONT_FAMILY: 'ghost-ap-font-family'
 } as const;
 
-// Add this constant near your other constants
 const MAX_WIDTHS = {
-    '1.4rem': '544px',
-    '1.7rem': '644px',
-    '1.9rem': '684px',
-    '2.1rem': '724px',
-    '2.4rem': '764px'
+    '1.5rem': '544px',
+    '1.6rem': '644px',
+    '1.7rem': '684px',
+    '1.8rem': '724px',
+    '2rem': '764px'
 } as const;
+
+const SingleValue: React.FC<SingleValueProps<FontSelectOption, false>> = ({children, ...props}) => (
+    <components.SingleValue {...props}>
+        <div className='group' data-testid="select-current-option" data-value={props.data.value}>
+            <div className='flex items-center gap-2.5'>
+                <div className={`${props.data.className} flex h-8 w-8 items-center justify-center rounded-md bg-white text-[1.5rem] font-semibold dark:bg-black`}>Aa</div>
+                <span className={`text-md ${props.data.className}`}>{children}</span>
+            </div>
+        </div>
+    </components.SingleValue>
+);
+
+const Option: React.FC<OptionProps<FontSelectOption, false>> = ({children, ...props}) => (
+    <components.Option {...props}>
+        <div className={props.isSelected ? 'relative flex w-full items-center justify-between gap-2' : 'group'} data-testid="select-option" data-value={props.data.value}>
+            <div className='flex items-center gap-2.5'>
+                <div className='flex h-8 w-8 items-center justify-center rounded-md bg-grey-150 text-[1.5rem] font-semibold group-hover:bg-grey-250 dark:bg-grey-900 dark:group-hover:bg-grey-800'>Aa</div>
+                <span className={`text-md ${props.data.className}`}>{children}</span>
+            </div>
+            {props.isSelected && <span><Icon name='check' size='xs' /></span>}
+        </div>
+    </components.Option>
+);
+
+interface FontSelectOption {
+    value: string;
+    label: string;
+    className?: string;
+}
 
 const ArticleModal: React.FC<ArticleModalProps> = ({
     activityId,
@@ -367,7 +397,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
 
     const [currentLineHeightIndex, setCurrentLineHeightIndex] = useState(() => {
         const saved = localStorage.getItem(STORAGE_KEYS.LINE_HEIGHT);
-        return saved ? parseInt(saved) : 3;
+        return saved ? parseInt(saved) : 1;
     });
 
     const [fontFamily, setFontFamily] = useState<SelectOption>(() => {
@@ -415,6 +445,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                 iframeDocument.documentElement.style.setProperty('--font-size', FONT_SIZES[currentFontSizeIndex]);
                 iframeDocument.documentElement.style.setProperty('--line-height', LINE_HEIGHTS[currentLineHeightIndex]);
                 iframeDocument.documentElement.style.setProperty('--font-family', fontFamily.value);
+                iframeDocument.documentElement.style.setProperty('--letter-spacing', fontFamily.label === 'Clean sans-serif' ? '-0.013em' : '0');
                 iframeDocument.documentElement.style.setProperty('--content-spacing-factor', SPACING_FACTORS[FONT_SIZES.indexOf(FONT_SIZES[currentFontSizeIndex])]);
             }
         }
@@ -494,18 +525,29 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                         <div className='col-[3/4] flex items-center justify-end gap-2'>
                             {modalSize === MODAL_SIZE_LG && object.type === 'Article' && <Popover position='end' trigger={ <Button className='transition-color flex h-10 w-10 items-center justify-center rounded-full bg-white hover:bg-grey-100' icon='typography' size='sm' unstyled onClick={() => {}}/>
                             }>
-                                <div className='flex min-w-[260px] flex-col p-5'>
+                                <div className='flex min-w-[300px] flex-col p-5'>
                                     <Select
                                         className='mb-3'
+                                        components={{Option, SingleValue}}
+                                        controlClasses={{control: '!min-h-[40px] !py-0 !pl-1', option: '!pl-1 !py-[4px]'}}
                                         options={[
-                                            {value: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif', label: 'Clean sans-serif'},
-                                            {value: 'Georgia, Times, serif', label: 'Elegant serif'}
+                                            {
+                                                value: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif',
+                                                label: 'Clean sans-serif',
+                                                className: 'font-sans'
+                                            },
+                                            {
+                                                value: 'Georgia, Times, serif',
+                                                label: 'Elegant serif',
+                                                className: 'font-serif'
+                                            }
                                         ]}
                                         title='Typeface'
                                         value={fontFamily}
                                         onSelect={option => setFontFamily(option || {
                                             value: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif',
-                                            label: 'Clean sans-serif'
+                                            label: 'Clean sans-serif',
+                                            className: 'font-sans'
                                         })}
                                     />
                                     <div className='mb-2 flex items-center justify-between'>
@@ -533,7 +575,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                             />
                                         </div>
                                     </div>
-                                    <div className='flex items-center justify-between'>
+                                    <div className='mb-5 flex items-center justify-between'>
                                         <span className='text-sm font-medium text-grey-900'>Line spacing</span>
                                         <div className='flex items-center'>
                                             <Button
@@ -558,6 +600,19 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                             />
                                         </div>
                                     </div>
+                                    <Button
+                                        className="text-sm text-grey-600 hover:text-grey-700"
+                                        label="Reset to default"
+                                        link={true}
+                                        onClick={() => {
+                                            setCurrentFontSizeIndex(1); // Default font size
+                                            setCurrentLineHeightIndex(1); // Default line height
+                                            setFontFamily({
+                                                value: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif',
+                                                label: 'Clean sans-serif'
+                                            });
+                                        }}
+                                    />
                                 </div>
                             </Popover>}
                             <Button className='transition-color flex h-10 w-10 items-center justify-center rounded-full bg-white hover:bg-grey-100' icon='close' size='sm' unstyled onClick={() => modal.remove()}/>
