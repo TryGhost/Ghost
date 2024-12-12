@@ -271,13 +271,21 @@ async function unlikeComment({state, api, data: comment}: {state: EditableAppCon
     };
 }
 
-async function deleteComment({state, api, data: comment}: {state: EditableAppContext, api: GhostApi, data: {id: string}}) {
+async function deleteComment({state, api, data: comment, dispatchAction}: {state: EditableAppContext, api: GhostApi, data: {id: string}, dispatchAction: DispatchActionType}) {
     await api.comments.edit({
         comment: {
             id: comment.id,
             status: 'deleted'
         }
     });
+
+    // If we're deleting a top-level comment with no replies we refresh the
+    // whole comments section to maintain correct pagination
+    const commentToDelete = state.comments.find(c => c.id === comment.id);
+    if (commentToDelete && (!commentToDelete.replies || commentToDelete.replies.length === 0)) {
+        dispatchAction('setOrder', {order: state.order});
+        return null;
+    }
 
     return {
         comments: state.comments.map((topLevelComment) => {
