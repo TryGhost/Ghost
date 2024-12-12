@@ -84,38 +84,6 @@
         & {
             @apply font-sans text-black text-base leading-normal;
         }
-
-        h1,
-        h2,
-        h3,
-        h4,
-        h5 {
-            @apply font-bold tracking-tight leading-tighter;
-        }
-
-        h1 {
-            @apply text-4xl leading-supertight;
-        }
-
-        h2 {
-            @apply text-2xl;
-        }
-
-        h3 {
-            @apply text-xl;
-        }
-
-        h4 {
-            @apply text-lg;
-        }
-
-        h5 {
-            @apply text-md leading-supertight;
-        }
-
-        h6 {
-            @apply text-md leading-normal;
-        }
     }
 }
 

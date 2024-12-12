@@ -59,7 +59,9 @@ const preview: Preview = {
 		options: {
 			storySort: {
 				method: 'alphabetical',
-				order: ['Welcome', 'Adding components', 'Component usage', 'Conventions', 'Icons', 'Components', 'Meta', 'Experimental'],
+				order: [
+					'Welcome', 'Adding components', 'Component usage', 'Conventions', 'Icons',
+					'Components', 'Layout', 'Experimental', 'Meta'],
 			},
 		},
 		docs: {

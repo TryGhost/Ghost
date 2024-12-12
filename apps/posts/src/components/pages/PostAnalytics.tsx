@@ -1,10 +1,11 @@
 import Header from '../layout/Header';
+import {Page} from '@tryghost/shade';
 
 const PostAnalytics = () => {
     return (
-        <div className='max-w-content mx-auto w-full px-12'>
+        <Page>
             <Header />
-        </div>
+        </Page>
     );
 };
 
