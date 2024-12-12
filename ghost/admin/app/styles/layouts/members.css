@@ -464,6 +464,10 @@ p.gh-members-list-email {
     .gh-members-list-chevron {
         display: none;
     }
+
+    .members-header .view-actions .gh-members-header-search {
+        width: 100%;
+    }
 }
 
 @media (max-width: 450px) {
@@ -2833,6 +2837,10 @@ a.gh-members-emailpreview-subscription-link {
 
     .members-header .gh-canvas-title {
         left: 25px;
+    }
+    
+    .members-header .view-actions .gh-members-header-search {
+        width: 100%;
     }
 }
 
