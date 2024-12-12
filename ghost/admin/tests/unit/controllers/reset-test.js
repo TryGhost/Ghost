@@ -1,20 +1,9 @@
-import EmberObject from '@ember/object';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
 import {setupTest} from 'ember-mocha';
 
 describe('Unit: Controller: reset', function () {
     setupTest();
-
-    let sessionStub;
-
-    beforeEach(function () {
-        sessionStub = EmberObject.create({
-            authenticate: function () {
-                return Promise.resolve();
-            }
-        });
-    });
 
     it('performs resetPasswordTask successfully', async function () {
         const controller = this.owner.lookup('controller:reset');
