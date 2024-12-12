@@ -15,9 +15,12 @@ async function loadMoreComments({state, api, options, order}: {state: EditableAp
         data = await api.comments.browse({page, postId: options.postId, order: order || state.order});
     }
 
+    const updatedComments = [...state.comments, ...data.comments];
+    const dedupedComments = updatedComments.filter((comment, index, self) => self.findIndex(c => c.id === comment.id) === index);
+
     // Note: we store the comments from new to old, and show them in reverse order
     return {
-        comments: [...state.comments, ...data.comments],
+        comments: dedupedComments,
         pagination: data.meta.pagination
     };
 }
