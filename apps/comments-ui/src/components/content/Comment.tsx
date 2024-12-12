@@ -93,7 +93,7 @@ type PublishedCommentProps = CommentProps & {
     openEditMode: () => void;
 }
 const PublishedComment: React.FC<PublishedCommentProps> = ({comment, parent, openEditMode}) => {
-    const {dispatchAction, openCommentForms, admin} = useAppContext();
+    const {dispatchAction, openCommentForms, admin, commentIdToHighlight} = useAppContext();
     const labs = useLabs();
 
     // Determine if the comment should be displayed with reduced opacity
@@ -149,7 +149,7 @@ const PublishedComment: React.FC<PublishedCommentProps> = ({comment, parent, ope
                 ) : (
                     <>
                         <CommentHeader className={hiddenClass} comment={comment} />
-                        <CommentBody className={hiddenClass} html={comment.html} />
+                        <CommentBody className={hiddenClass} html={comment.html} isHighlighted={comment.id === commentIdToHighlight} />
                         <CommentMenu
                             comment={comment}
                             highlightReplyButton={highlightReplyButton}
@@ -279,27 +279,9 @@ const AuthorName: React.FC<{comment: Comment}> = ({comment}) => {
     );
 };
 
-type CommentHeaderProps = {
-    comment: Comment;
-    className?: string;
-}
-
-const CommentHeader: React.FC<CommentHeaderProps> = ({comment, className = ''}) => {
-    const {comments, t} = useAppContext();
-    const labs = useLabs();
-    const createdAtRelative = useRelativeTime(comment.created_at);
-    const {member} = useAppContext();
-    const memberExpertise = member && comment.member && comment.member.uuid === member.uuid ? member.expertise : comment?.member?.expertise;
-    const isReplyToReply = labs.commentImprovements && comment.in_reply_to_id && comment.in_reply_to_snippet;
-
-    let inReplyToSnippet = comment.in_reply_to_snippet;
-
-    if (isReplyToReply) {
-        const inReplyToComment = findCommentById(comments, comment.in_reply_to_id);
-        if (inReplyToComment && inReplyToComment.status !== 'published') {
-            inReplyToSnippet = `[${t('removed')}]`;
-        }
-    }
+export const RepliedToSnippet: React.FC<{comment: Comment}> = ({comment}) => {
+    const {comments, dispatchAction, t} = useAppContext();
+    const inReplyToComment = findCommentById(comments, comment.in_reply_to_id);
 
     const scrollRepliedToCommentIntoView = (e: React.MouseEvent<HTMLAnchorElement>) => {
         e.preventDefault();
@@ -310,9 +292,40 @@ const CommentHeader: React.FC<CommentHeaderProps> = ({comment, className = ''}) 
 
         const element = (e.target as HTMLElement).ownerDocument.getElementById(comment.in_reply_to_id);
         if (element) {
+            dispatchAction('highlightComment', {commentId: comment.in_reply_to_id});
             element.scrollIntoView({behavior: 'smooth', block: 'center'});
         }
     };
+
+    let inReplyToSnippet = comment.in_reply_to_snippet;
+    // For public API requests hidden/deleted comments won't exist in the comments array
+    // unless it was only just deleted in which case it will exist but have a 'deleted' status
+    if (!inReplyToComment || inReplyToComment.status !== 'published') {
+        inReplyToSnippet = `[${t('removed')}]`;
+    }
+
+    const linkToReply = inReplyToComment && inReplyToComment.status === 'published';
+
+    const className = 'font-medium text-neutral-900/60 transition-colors dark:text-white/70';
+
+    return (
+        linkToReply
+            ? <a className={`${className} hover:text-neutral-900/75 dark:hover:text-white/85`} data-testid="comment-in-reply-to" href={`#${comment.in_reply_to_id}`} onClick={scrollRepliedToCommentIntoView}>{inReplyToSnippet}</a>
+            : <span className={className} data-testid="comment-in-reply-to">{inReplyToSnippet}</span>
+    );
+};
+
+type CommentHeaderProps = {
+    comment: Comment;
+    className?: string;
+}
+
+const CommentHeader: React.FC<CommentHeaderProps> = ({comment, className = ''}) => {
+    const {member, t} = useAppContext();
+    const labs = useLabs();
+    const createdAtRelative = useRelativeTime(comment.created_at);
+    const memberExpertise = member && comment.member && comment.member.uuid === member.uuid ? member.expertise : comment?.member?.expertise;
+    const isReplyToReply = labs.commentImprovements && comment.in_reply_to_id && comment.in_reply_to_snippet;
 
     return (
         <>
@@ -328,7 +341,7 @@ const CommentHeader: React.FC<CommentHeaderProps> = ({comment, className = ''}) 
             </div>
             {(isReplyToReply &&
                 <div className="mb-2 line-clamp-1 font-sans text-base leading-snug text-neutral-900/50 sm:text-sm dark:text-white/60">
-                    <span>{t('Replied to')}</span>:&nbsp;<a className="font-semibold text-neutral-900/60 transition-colors hover:text-neutral-900/70 dark:text-white/70 dark:hover:text-white/80" data-testid="comment-in-reply-to" href={`#${comment.in_reply_to_id}`} onClick={scrollRepliedToCommentIntoView}>{inReplyToSnippet}</a>
+                    <span>{t('Replied to')}</span>:&nbsp;<RepliedToSnippet comment={comment} />
                 </div>
             )}
         </>
@@ -338,13 +351,38 @@ const CommentHeader: React.FC<CommentHeaderProps> = ({comment, className = ''}) 
 type CommentBodyProps = {
     html: string;
     className?: string;
+    isHighlighted?: boolean;
 }
 
-const CommentBody: React.FC<CommentBodyProps> = ({html, className = ''}) => {
-    const dangerouslySetInnerHTML = {__html: html};
+const CommentBody: React.FC<CommentBodyProps> = ({html, className = '', isHighlighted}) => {
+    let commentHtml = html;
+
+    if (isHighlighted) {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+
+        const paragraphs = doc.querySelectorAll('p');
+
+        paragraphs.forEach((p) => {
+            const mark = doc.createElement('mark');
+            mark.className =
+                'animate-[highlight_2.5s_ease-out] [animation-delay:1s] bg-yellow-300/40 -my-0.5 py-0.5 dark:text-white/85 dark:bg-yellow-500/40';
+
+            while (p.firstChild) {
+                mark.appendChild(p.firstChild);
+            }
+            p.appendChild(mark);
+        });
+
+        // Serialize the modified html back to a string
+        commentHtml = doc.body.innerHTML;
+    }
+
+    const dangerouslySetInnerHTML = {__html: commentHtml};
+
     return (
         <div className={`mt mb-2 flex flex-row items-center gap-4 pr-4 ${className}`}>
-            <p dangerouslySetInnerHTML={dangerouslySetInnerHTML} className="gh-comment-content text-md text-pretty font-sans leading-normal text-neutral-900 [overflow-wrap:anywhere] sm:text-lg dark:text-white/85" data-testid="comment-content"/>
+            <p dangerouslySetInnerHTML={dangerouslySetInnerHTML} className="gh-comment-content text-md -mx-1 text-pretty rounded-md px-1 font-sans leading-normal text-neutral-900 [overflow-wrap:anywhere] sm:text-lg dark:text-white/85" data-testid="comment-content"/>
         </div>
     );
 };
@@ -401,7 +439,7 @@ const RepliesLine: React.FC<{hasReplies: boolean}> = ({hasReplies}) => {
         return null;
     }
 
-    return (<div className="mb-2 h-full w-px grow rounded bg-gradient-to-b from-neutral-900/10 via-neutral-900/10 to-transparent dark:from-white/10 dark:via-white/10" />);
+    return (<div className="mb-2 h-full w-px grow rounded bg-gradient-to-b from-neutral-900/10 via-neutral-900/10 to-transparent dark:from-white/10 dark:via-white/10" data-testid="replies-line" />);
 };
 
 type CommentLayoutProps = {

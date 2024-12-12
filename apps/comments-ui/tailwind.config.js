@@ -168,6 +168,19 @@ module.exports = {
                 '0 57.7px 33.4px rgba(0, 0, 0, 0.072)',
                 '0 138px 80px rgba(0, 0, 0, 0.1)'
             ]
+        },
+        animation: {
+            heartbeat: 'heartbeat 0.35s ease-in-out forwards',
+            highlight: 'highlight 1s steps(1) forwards'
+        },
+        keyframes: {
+            heartbeat: {
+                '0%, 100%': {transform: 'scale(1)'},
+                '50%': {transform: 'scale(1.3)'}
+            },
+            highlight: {
+                '100%': {backgroundColor: 'transparent'}
+            }
         }
     },
     content: [

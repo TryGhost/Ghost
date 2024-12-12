@@ -30,7 +30,8 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
         labs: {},
         order: 'count__likes desc, created_at desc',
         adminApi: null,
-        commentsIsLoading: false
+        commentsIsLoading: false,
+        commentIdToHighlight: null
     });
 
     const iframeRef = React.createRef<HTMLIFrameElement>();
@@ -76,7 +77,7 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
         // allow for async actions within it's updater function so this is the best option.
         return new Promise((resolve) => {
             setState((state) => {
-                ActionHandler({action, data, state, api, adminApi: state.adminApi!, options}).then((updatedState) => {
+                ActionHandler({action, data, state, api, adminApi: state.adminApi!, options, dispatchAction: dispatchAction as DispatchActionType}).then((updatedState) => {
                     const newState = {...updatedState};
                     resolve(newState);
                     setState(newState);
@@ -115,13 +116,12 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
                 admin = await adminApi.getUser();
                 if (admin && state.labs.commentImprovements) {
                     // this is a bit of a hack, but we need to fetch the comments fully populated if the user is an admin
-                    const adminComments = await adminApi.browse({page: 1, postId: options.postId, order: state.order});
+                    const adminComments = await adminApi.browse({page: 1, postId: options.postId, order: state.order, memberUuid: state.member?.uuid});
                     setState({
                         ...state,
                         adminApi: adminApi,
                         comments: adminComments.comments,
-                        pagination: adminComments.meta.pagination,
-                        commentCount: adminComments.meta.pagination.total
+                        pagination: adminComments.meta.pagination
                     });
                 }
             } catch (e) {
@@ -175,7 +175,8 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
                 commentCount: count,
                 order,
                 labs: labs,
-                commentsIsLoading: false
+                commentsIsLoading: false,
+                commentIdToHighlight: null
             };
 
             setState(state);

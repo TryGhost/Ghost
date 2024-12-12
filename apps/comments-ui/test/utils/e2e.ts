@@ -70,6 +70,7 @@ function authFrameMain() {
                 respond(null, json);
             } catch (err) {
                 console.log('e2e Admin endpoint error:', err); // eslint-disable-line no-console
+                console.log('error with', data); // eslint-disable-line no-console
                 respond(err, null);
             }
         }
