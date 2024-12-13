@@ -16,4 +16,4 @@ SCHEMA >
 
 ENGINE AggregatingMergeTree
 ENGINE_PARTITION_KEY toYYYYMM(date)
-ENGINE_SORTING_KEY date, device, browser, location, source, pathname, post_uuid, site_uuid
+ENGINE_SORTING_KEY date, device, browser, location, source, pathname, post_type, post_uuid, site_uuid
