@@ -5,7 +5,7 @@ import NewsletterPerformance from './overview/NewsletterPerformance';
 
 const Overview = () => {
     return (
-        <div className="grid w-full grid-cols-3 gap-6 py-6">
+        <div className="grid w-full grid-cols-3 gap-6 py-4">
             <NewsletterPerformance className='col-span-2' />
             <Feedback />
             <ClickPerformance className='col-span-2' />
