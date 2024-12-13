@@ -22,7 +22,9 @@
   "scripts": {
     "archive": "npm pack",
     "dev": "node --watch index.js",
-    "build:assets": "postcss core/frontend/public/ghost.css --no-map --use cssnano -o core/frontend/public/ghost.min.css",
+    "build:assets:css": "postcss core/frontend/public/ghost.css --no-map --use cssnano -o core/frontend/public/ghost.min.css",
+    "build:assets:js": "../minifier/bin/minify core/frontend/public/comment-counts.js core/frontend/public/comment-counts.min.js",
+    "build:assets": "yarn build:assets:css && yarn build:assets:js",
     "test": "yarn test:unit",
     "test:base": "mocha --reporter dot --require=./test/utils/overrides.js --exit --trace-warnings --recursive --extension=test.js",
     "test:single": "yarn test:base --timeout=60000",
@@ -282,6 +284,7 @@
       },
       "dev": {
         "dependsOn": [
+          "build:assets",
           "^build:ts"
         ]
       },

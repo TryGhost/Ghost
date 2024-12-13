@@ -16,7 +16,7 @@ const membersService = require('../../server/services/members');
 const offersService = require('../../server/services/offers');
 const customRedirects = require('../../server/services/custom-redirects');
 const linkRedirects = require('../../server/services/link-redirection');
-const {cardAssets, commentCountsAssets, memberAttributionAssets} = require('../services/assets-minification');
+const {cardAssets, memberAttributionAssets} = require('../services/assets-minification');
 const siteRoutes = require('./routes');
 const shared = require('../../server/web/shared');
 const errorHandler = require('@tryghost/mw-error-handler');
@@ -77,7 +77,7 @@ module.exports = function setupSiteApp(routerConfig) {
     siteApp.use(cardAssets.serveMiddleware(), mw.servePublicFile('built', 'public/cards.min.js', 'application/javascript', config.get('caching:publicAssets:maxAge')));
 
     // Comment counts
-    siteApp.use(commentCountsAssets.serveMiddleware(), mw.servePublicFile('built', 'public/comment-counts.min.js', 'application/javascript', config.get('caching:publicAssets:maxAge')));
+    siteApp.use(mw.servePublicFile('static', 'public/comment-counts.min.js', 'application/javascript', config.get('caching:publicAssets:maxAge')));
 
     // Member attribution
     siteApp.use(memberAttributionAssets.serveMiddleware(), mw.servePublicFile('built', 'public/member-attribution.min.js', 'application/javascript', config.get('caching:publicAssets:maxAge')));

@@ -1,0 +1,27 @@
+#!/usr/bin/env node
+
+/**
+ * Script to minify a given file
+ *
+ * Usage: bin/minify <source> <destination>
+ */
+
+const path = require('path');
+const Minifier = require('../index');
+
+const src = path.parse(process.argv[2]);
+const dest = path.parse(process.argv[3]);
+
+const minifier = new Minifier({src: src.dir, dest: dest.dir});
+
+(async () => {
+    try {
+        await minifier.minify({
+            [dest.base]: src.base
+        });
+    } catch (error) {
+        console.error(error);
+
+        process.exit(1);
+    }
+})();
