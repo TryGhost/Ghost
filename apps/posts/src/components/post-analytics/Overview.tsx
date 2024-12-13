@@ -6,9 +6,9 @@ import NewsletterPerformance from './overview/NewsletterPerformance';
 const Overview = () => {
     return (
         <div className="grid w-full grid-cols-3 gap-6 py-6">
-            <NewsletterPerformance />
+            <NewsletterPerformance className='col-span-2' />
             <Feedback />
-            <ClickPerformance />
+            <ClickPerformance className='col-span-2' />
             <Conversions />
         </div>
     );

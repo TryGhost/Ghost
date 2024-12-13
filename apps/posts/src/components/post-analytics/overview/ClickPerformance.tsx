@@ -1,8 +1,21 @@
-const ClickPerformance = () => {
+import * as React from 'react';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle} from '@tryghost/shade';
+
+interface ClickPerformanceProps extends React.ComponentProps<typeof Card> {};
+
+const ClickPerformance: React.FC<ClickPerformanceProps> = (props) => {
     return (
-        <>
-            Click Performance
-        </>
+        <Card {...props}>
+            <CardHeader>
+                <CardTitle>Click performance</CardTitle>
+                <CardDescription>
+                    Links in this newsletter
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+                Card contents
+            </CardContent>
+        </Card>
     );
 };
 

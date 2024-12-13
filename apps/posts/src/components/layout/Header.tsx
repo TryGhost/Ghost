@@ -18,7 +18,7 @@ const Header = () => {
                     </BreadcrumbItem>
                 </BreadcrumbList>
             </Breadcrumb>
-            <div className="mt-1 flex items-start justify-between gap-5">
+            <div className="mt-2 flex items-start justify-between gap-5">
                 <H1 className='grow'>The Evolution of Basketball: From Pastime to Professional Sport</H1>
                 <div className='flex items-center gap-1'>
                     <Button variant='outline'><Icon.Share className='-mt-0.5' />Share</Button>

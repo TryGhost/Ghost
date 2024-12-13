@@ -6,7 +6,7 @@ const PostAnalytics = () => {
     return (
         <Page>
             <Header />
-            <div>[TK: tabs]</div>
+            <div className='pt-5'>[TK: tabs]</div>
 
             <Overview />
         </Page>
