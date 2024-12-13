@@ -13,7 +13,6 @@ export const handleViewContent = (
         object: activity.object,
         actor: authorActor,
         focusReply,
-        backDrop: activity.object.type === 'Article' ? false : false,
         width: activity.object.type === 'Article' ? 'wide' : 'narrow',
         updateActivity
     });

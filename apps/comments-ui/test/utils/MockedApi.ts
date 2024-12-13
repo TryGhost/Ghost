@@ -174,10 +174,10 @@ export class MockedApi {
 
         let filteredComments = this.comments;
 
-        if (this.labs.commentImprovements && !admin) {
+        if (!admin) {
             function filterPublishedComments(comments: any[] = []) {
                 return comments
-                    .filter(comment => comment.status === 'published')
+                    .filter(comment => (comment.status === 'published' || comment.replies?.some(r => r.status === 'published')))
                     .map(comment => ({...comment, replies: filterPublishedComments(comment.replies)}));
             }
 
@@ -364,7 +364,7 @@ export class MockedApi {
             });
         },
 
-        async getComment(route) {
+        async getOrDeleteComment(route) {
             const failureResponse = await this.#handleFailure('getComment');
             if (failureResponse) {
                 return route.fulfill(failureResponse);
@@ -382,6 +382,13 @@ export class MockedApi {
                     order: ''
                 }))
             });
+
+            if (route.request().method() === 'PUT' && JSON.parse(route.request().postData()).comments?.[0]?.status === 'deleted') {
+                const comment = findCommentById(this.comments, commentId);
+                if (comment) {
+                    comment.status = 'deleted';
+                }
+            }
         },
 
         async likeComment(route) {
@@ -593,7 +600,7 @@ export class MockedApi {
         await page.route(`${path}/members/api/member/`, this.requestHandlers.getMember.bind(this));
         await page.route(`${path}/members/api/comments/*`, this.requestHandlers.addComment.bind(this));
         await page.route(`${path}/members/api/comments/post/*/*`, this.requestHandlers.browseComments.bind(this));
-        await page.route(`${path}/members/api/comments/*/`, this.requestHandlers.getComment.bind(this));
+        await page.route(`${path}/members/api/comments/*/`, this.requestHandlers.getOrDeleteComment.bind(this));
         await page.route(`${path}/members/api/comments/*/like/`, this.requestHandlers.likeComment.bind(this));
         await page.route(`${path}/members/api/comments/*/replies/*`, this.requestHandlers.getReplies.bind(this));
         await page.route(`${path}/members/api/comments/counts/*`, this.requestHandlers.getCommentCounts.bind(this));
