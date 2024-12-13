@@ -16,7 +16,7 @@ const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 const themeEngine = require('./frontend/services/theme-engine');
 const appService = require('./frontend/services/apps');
-const {adminAuthAssets, cardAssets, memberAttributionAssets} = require('./frontend/services/assets-minification');
+const {adminAuthAssets, cardAssets} = require('./frontend/services/assets-minification');
 const routerManager = require('./frontend/services/routing').routerManager;
 const settingsCache = require('./shared/settings-cache');
 const urlService = require('./server/services/url');
@@ -73,7 +73,6 @@ class Bridge {
             // TODO: is this in the right place?
             // rebuild asset files
             adminAuthAssets.invalidate();
-            memberAttributionAssets.invalidate();
         } catch (err) {
             logging.error(new errors.InternalServerError({
                 message: tpl(messages.activateFailed, {theme: loadedTheme.name}),
