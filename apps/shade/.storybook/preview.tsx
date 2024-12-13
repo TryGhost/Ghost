@@ -1,11 +1,11 @@
 import React from 'react';
 
-import '../styles.css';
-import './storybook.css';
-
 import type { Preview } from "@storybook/react";
 import ShadeProvider from '../src/providers/ShadeProvider';
 import shadeTheme from './shade-theme';
+
+import '../styles.css';
+import './storybook.css';
 
 // import { MINIMAL_VIEWPORTS } from '@storybook/addon-viewport';
 
@@ -77,12 +77,19 @@ const preview: Preview = {
 		(Story, context) => {
 			let {scheme} = context.globals;
 
+			React.useEffect(() => {
+				const defaultClassNames = document.body.className.split(' ');
+				const newClassNames = ['shade', scheme === 'dark' ? 'dark' : ''];
+
+				// Remove duplicates
+				const uniqueClassNames = Array.from(new Set([...defaultClassNames, ...newClassNames]));
+
+				document.body.className = uniqueClassNames.join(' ').trim();
+			}, [scheme]);
+
 			return (
-			<div className={`shade ${scheme === 'dark' ? 'dark' : ''}`} style={{
-				// padding: '24px',
-				// width: 'unset',
+			<div style={{
 				height: 'unset',
-				// overflow: 'unset',
 				background: (scheme === 'dark' ? '#131416' : '')
 			}}>
 				{/* 👇 Decorators in Storybook also accept a function. Replace <Story/> with Story() to enable it  */}
