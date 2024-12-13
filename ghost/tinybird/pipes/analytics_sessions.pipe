@@ -89,4 +89,4 @@ SQL >
     GROUP BY date, session_id, site_uuid
 
 TYPE MATERIALIZED
-DATASOURCE analytics_sessions_mv__v0
+DATASOURCE analytics_sessions_mv__v1
