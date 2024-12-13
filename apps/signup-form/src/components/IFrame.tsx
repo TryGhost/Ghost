@@ -1,70 +1,58 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import {Component} from 'react';
+import React from 'react';
 import {createPortal} from 'react-dom';
 
-/**
- * This is still a class component because it causes issues with the behaviour (DOM recreation and layout glitches) if we switch to a functional component. Feel free to refactor.
- */
-export default class IFrame extends Component<any> {
-    node: any;
-    iframeHtml: any;
-    iframeHead: any;
-    iframeRoot: any;
+type IFrameProps = React.PropsWithChildren<{
+    style: React.CSSProperties
+    head: React.ReactNode;
+    title: string;
+    onResize?: (el: HTMLElement) => void;
+} & Omit<React.ComponentProps<'iframe'>, 'onResize'>>
 
-    constructor(props: {onResize?: (el: HTMLElement) => void, children: any}) {
-        super(props);
-        this.setNode = this.setNode.bind(this);
-        this.node = null;
-    }
+const IFrame: React.FC<IFrameProps> = ({children, head, title = '', onResize, style = {}, ...rest}) => {
+    const [iframeHead, setIframeHead] = React.useState<HTMLHeadElement>();
+    const [iframeRoot, setIframeRoot] = React.useState<HTMLElement>();
 
-    componentDidMount() {
-        this.node.addEventListener('load', this.handleLoad);
-    }
+    // TODO: Migrate to callback ref when React 19 cleanup refs are available: https://react.dev/blog/2024/04/25/react-19#cleanup-functions-for-refs
+    const node = React.useRef<HTMLIFrameElement>(null);
+    React.useEffect(() => {
+        function setupFrameBaseStyle() {
+            if (node.current?.contentDocument) {
+                const iframeRootLocal = node.current.contentDocument.body;
+                // This is safe because of batched updates, new to React 18
+                setIframeHead(node.current.contentDocument.head);
+                setIframeRoot(iframeRootLocal);
 
-    handleLoad = () => {
-        this.setupFrameBaseStyle();
-    };
+                if (onResize) {
+                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                    (new ResizeObserver(_ => onResize(iframeRootLocal)))?.observe?.(iframeRootLocal);
+                }
 
-    componentWillUnmount() {
-        this.node.removeEventListener('load', this.handleLoad);
-    }
-
-    setupFrameBaseStyle() {
-        if (this.node.contentDocument) {
-            this.iframeHtml = this.node.contentDocument.documentElement;
-            this.iframeHead = this.node.contentDocument.head;
-            this.iframeRoot = this.node.contentDocument.body;
-            this.forceUpdate();
-
-            if (this.props.onResize) {
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                (new ResizeObserver(_ => this.props.onResize(this.iframeRoot)))?.observe?.(this.iframeRoot);
+                // This is a bit hacky, but prevents us to need to attach even listeners to all the iframes we have
+                // because when we want to listen for keydown events, those are only send in the window of iframe that is focused
+                // To get around this, we pass down the keydown events to the main window
+                // No need to detach, because the iframe would get removed
+                node.current.contentWindow?.addEventListener('keydown', (e: KeyboardEvent | undefined) => {
+                    // dispatch a new event
+                    window.dispatchEvent(
+                        new KeyboardEvent('keydown', e)
+                    );
+                });
             }
-
-            // This is a bit hacky, but prevents us to need to attach even listeners to all the iframes we have
-            // because when we want to listen for keydown events, those are only send in the window of iframe that is focused
-            // To get around this, we pass down the keydown events to the main window
-            // No need to detach, because the iframe would get removed
-            this.node.contentWindow.addEventListener('keydown', (e: KeyboardEvent | undefined) => {
-                // dispatch a new event
-                window.dispatchEvent(
-                    new KeyboardEvent('keydown', e)
-                );
-            });
         }
-    }
 
-    setNode(node: any) {
-        this.node = node;
-    }
+        node.current?.addEventListener('load', setupFrameBaseStyle);
 
-    render() {
-        const {children, head, title = '', style = {}, ...rest} = this.props;
-        return (
-            <iframe srcDoc={`<!DOCTYPE html>`} {...rest} ref={this.setNode} frameBorder="0" style={style} title={title}>
-                {this.iframeHead && createPortal(head, this.iframeHead)}
-                {this.iframeRoot && createPortal(children, this.iframeRoot)}
-            </iframe>
-        );
-    }
-}
+        return () => {
+            node.current?.removeEventListener('load', setupFrameBaseStyle);
+        };
+    }, [onResize]);
+
+    return (
+        <iframe srcDoc={`<!DOCTYPE html>`} {...rest} ref={node} frameBorder="0" style={style} title={title}>
+            {iframeHead && createPortal(head, iframeHead)}
+            {iframeRoot && createPortal(children, iframeRoot)}
+        </iframe>
+    );
+};
+
+export default IFrame;
