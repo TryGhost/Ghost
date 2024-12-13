@@ -1,0 +1,8 @@
+SCHEMA >
+    `version` LowCardinality(String) `json:$.version`,
+    `timestamp` DateTime64(3) `json:$.timestamp` DEFAULT now64(3),
+    `step_id` Int64 `json:$.step_id`,
+    `message` LowCardinality(String) `json:$.message`
+
+ENGINE "MergeTree"
+ENGINE_SORTING_KEY "version, timestamp"
