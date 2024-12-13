@@ -189,39 +189,17 @@ async function showComment({state, api, data: comment}: {state: EditableAppConte
     };
 }
 
-async function sendLikeToApi({api, data: comment}: {api: GhostApi, data: {id: string, commentsState: Comment[]}}) {
-    const commentsState = comment.commentsState;
-
-    try {
-        await api.comments.like({comment: {id: comment.id}});
-        return {
-            commentLikeLoadingId: null
-        };
-    } catch (err) {
-        // if error we revert the state
-        return {
-            comments: commentsState,
-            commentLikeLoadingId: null
-        };
-    }
-}
-
-async function likeComment({state, data: comment, dispatchAction}: {state: EditableAppContext, api: GhostApi, data: {id: string}, dispatchAction: DispatchActionType}) {
-    const exisitngState = state.comments;
-
-    dispatchAction('sendLikeToApi', {id: comment.id, commentsState: exisitngState});
-
-    // optimistic update
+async function updateCommentLikeState({state, data: comment}: {state: EditableAppContext, data: {id: string, liked: boolean, commentsState: Comment[]}}) {
     return {
         comments: state.comments.map((c) => {
             const replies = c.replies.map((r) => {
                 if (r.id === comment.id) {
                     return {
                         ...r,
-                        liked: true,
+                        liked: comment.liked,
                         count: {
                             ...r.count,
-                            likes: r.count.likes + 1
+                            likes: comment.liked ? r.count.likes + 1 : r.count.likes - 1
                         }
                     };
                 }
@@ -232,11 +210,11 @@ async function likeComment({state, data: comment, dispatchAction}: {state: Edita
             if (c.id === comment.id) {
                 return {
                     ...c,
-                    liked: true,
+                    liked: comment.liked,
                     replies,
                     count: {
                         ...c.count,
-                        likes: c.count.likes + 1
+                        likes: comment.liked ? c.count.likes + 1 : c.count.likes - 1
                     }
                 };
             }
@@ -245,69 +223,29 @@ async function likeComment({state, data: comment, dispatchAction}: {state: Edita
                 ...c,
                 replies
             };
-        }),
-        commentLikeLoadingId: comment.id
+        })
     };
 }
 
-async function sendUnlikeToApi({api, data: comment}: {api: GhostApi, data: {id: string, commentsState: Comment[]}}) {
-    const commentsState = comment.commentsState;
-
+async function likeComment({state, api, data: comment, dispatchAction}: {state: EditableAppContext, api: GhostApi, data: {id: string}, dispatchAction: DispatchActionType}) {
+    dispatchAction('updateCommentLikeState', {id: comment.id, liked: true, commentsState: state.comments});
     try {
-        await api.comments.unlike({comment: {id: comment.id}});
-        return {
-            commentUnlikeLoading: null
-        };
+        await api.comments.like({comment});
+        return {};
     } catch (err) {
-        // If error, revert the state
-        return {
-            comments: commentsState,
-            commentUnlikeLoading: null
-        };
+        dispatchAction('updateCommentLikeState', {id: comment.id, liked: false, commentsState: state.comments});
     }
 }
 
-async function unlikeComment({state, data: comment, dispatchAction}: {state: EditableAppContext, api: GhostApi, data: {id: string}, dispatchAction: DispatchActionType}) {
-    const existingState = state.comments;
+async function unlikeComment({state, api, data: comment, dispatchAction}: {state: EditableAppContext, api: GhostApi, data: {id: string}, dispatchAction: DispatchActionType}) {
+    dispatchAction('updateCommentLikeState', {id: comment.id, liked: false, commentsState: state.comments});
 
-    dispatchAction('sendUnlikeToApi', {id: comment.id, commentsState: existingState});
-    // optimistic update
-    return {
-        comments: state.comments.map((c) => {
-            const replies = c.replies.map((r) => {
-                if (r.id === comment.id) {
-                    return {
-                        ...r,
-                        liked: false,
-                        count: {
-                            ...r.count,
-                            likes: r.count.likes - 1
-                        }
-                    };
-                }
-
-                return r;
-            });
-
-            if (c.id === comment.id) {
-                return {
-                    ...c,
-                    liked: false,
-                    replies,
-                    count: {
-                        ...c.count,
-                        likes: c.count.likes - 1
-                    }
-                };
-            }
-
-            return {
-                ...c,
-                replies
-            };
-        }),
-        commentUnlikeLoading: comment.id
-    };
+    try {
+        await api.comments.unlike({comment});
+        return {};
+    } catch (err) {
+        dispatchAction('updateCommentLikeState', {id: comment.id, liked: true, commentsState: state.comments});
+    }
 }
 
 async function reportComment({api, data: comment}: {api: GhostApi, data: {id: string}}) {
@@ -317,7 +255,6 @@ async function reportComment({api, data: comment}: {api: GhostApi, data: {id: st
 }
 
 async function deleteComment({state, api, data: comment, dispatchAction}: {state: EditableAppContext, api: GhostApi, data: {id: string}, dispatchAction: DispatchActionType}) {
-
     await api.comments.edit({
         comment: {
             id: comment.id,
@@ -542,8 +479,7 @@ export const Actions = {
     highlightComment,
     setHighlightComment,
     setCommentsIsLoading,
-    sendLikeToApi,
-    sendUnlikeToApi
+    updateCommentLikeState
 };
 
 export type ActionType = keyof typeof Actions;

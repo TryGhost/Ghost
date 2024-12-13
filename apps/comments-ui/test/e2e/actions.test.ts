@@ -102,12 +102,9 @@ test.describe('Actions', async () => {
             html: '<p>This is comment 1</p>'
         });
         mockedApi.addComment({
-            html: '<p>This is comment 2</p>',
-            liked: true,
-            count: {
-                likes: 52
-            }
+            html: '<p>This is comment 2</p>'
         });
+
         mockedApi.addComment({
             html: '<p>This is comment 3</p>'
         });
@@ -136,11 +133,7 @@ test.describe('Actions', async () => {
             html: '<p>This is comment 1</p>'
         });
         mockedApi.addComment({
-            html: '<p>This is comment 2</p>',
-            liked: true,
-            count: {
-                likes: 52
-            }
+            html: '<p>This is comment 2</p>'
         });
         mockedApi.addComment({
             html: '<p>This is comment 3</p>'
@@ -244,6 +237,39 @@ test.describe('Actions', async () => {
         await likeButton.click();
         mockedApi.setDelay(100); // give time for disabled state
         await expect(likeButton).toHaveText('52');
+    });
+
+    test('Can revert state of a reply if its unsuccessful', async ({page}) => {
+        mockedApi.addComment({
+            html: '<p>This is comment 1</p>',
+            replies: [
+                mockedApi.buildReply({
+                    html: '<p>This is a reply to 1</p>',
+                    liked: true,
+                    count: {
+                        likes: 3
+                    }
+                })
+            ]
+        });
+
+        const {frame} = await initializeTest(page);
+
+        // Check like button is not filled yet
+        const comment = frame.getByTestId('comment-component').nth(0);
+        const reply = comment.getByTestId('comment-component').nth(0);
+        // check if reply contains text This is a reply to 1
+        await expect(reply).toContainText('This is a reply to 1');
+
+        const likeButton = reply.getByTestId('like-button');
+
+        mockedApi.setFailure('likeComment', {
+            status: 500,
+            body: {error: 'Internal Server Error'}
+        });
+        await likeButton.click();
+        mockedApi.setDelay(100); // give time for disabled state
+        await expect(likeButton).toHaveText('3');
     });
 
     test('Can reply to a comment', async ({page}) => {
