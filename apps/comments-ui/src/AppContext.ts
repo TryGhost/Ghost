@@ -1,6 +1,7 @@
 // Ref: https://reactjs.org/docs/context.html
 import React, {useContext} from 'react';
 import {ActionType, Actions, SyncActionType, SyncActions} from './actions';
+import {AdminApi} from './utils/adminApi';
 import {Page} from './pages';
 
 export type Member = {
@@ -79,7 +80,10 @@ export type EditableAppContext = {
     openCommentForms: OpenCommentForm[],
     popup: Page | null,
     labs: LabsContextType,
-    order: string
+    order: string,
+    adminApi: AdminApi | null,
+    commentsIsLoading?: boolean
+    commentIdToHighlight: string | null
 }
 
 export type TranslationFunction = (key: string, replacements?: Record<string, string | number>) => string;
@@ -116,3 +120,4 @@ export const useLabs = () => {
         return {};
     }
 };
+

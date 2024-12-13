@@ -1,6 +1,6 @@
 import React, {useEffect, useRef, useState} from 'react';
 
-import {Activity, ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
+import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, Icon, LoadingIndicator, NoValueLabel, TextField} from '@tryghost/admin-x-design-system';
 import {useDebounce} from 'use-debounce';
 
@@ -10,9 +10,10 @@ import FollowButton from './global/FollowButton';
 import MainNavigation from './navigation/MainNavigation';
 
 import NiceModal from '@ebay/nice-modal-react';
-import ViewProfileModal from './global/ViewProfileModal';
+import ViewProfileModal from './modals/ViewProfileModal';
 
 import Separator from './global/Separator';
+
 import {useSearchForUser, useSuggestedProfiles} from '../hooks/useActivityPubQueries';
 
 interface SearchResultItem {
@@ -21,15 +22,12 @@ interface SearchResultItem {
     followerCount: number;
     followingCount: number;
     isFollowing: boolean;
-    posts: Activity[];
 }
 
 interface SearchResultProps {
     result: SearchResultItem;
     update: (id: string, updated: Partial<SearchResultItem>) => void;
 }
-
-interface SearchProps {}
 
 const SearchResult: React.FC<SearchResultProps> = ({result, update}) => {
     const onFollow = () => {
@@ -120,10 +118,13 @@ const SuggestedAccounts: React.FC<{
     );
 };
 
+interface SearchProps {}
+
 const Search: React.FC<SearchProps> = ({}) => {
     // Initialise suggested profiles
-    const {suggestedProfilesQuery, updateSuggestedProfile} = useSuggestedProfiles('index', ['@index@activitypub.ghost.org', '@index@john.onolan.org', '@index@coffeecomplex.ghost.io', '@index@codename-jimmy.ghost.io', '@index@syphoncontinuity.ghost.io']);
-    const {data: suggested = [], isLoading: isLoadingSuggested} = suggestedProfilesQuery;
+    const {suggestedProfilesQuery, updateSuggestedProfile} = useSuggestedProfiles('index', 6);
+    const {data: suggestedData, isLoading: isLoadingSuggested} = suggestedProfilesQuery;
+    const suggested = suggestedData || [];
 
     // Initialise search query
     const queryInputRef = useRef<HTMLInputElement>(null);
@@ -151,6 +152,7 @@ const Search: React.FC<SearchProps> = ({}) => {
                 <div className='relative flex w-full items-center'>
                     <Icon className='absolute left-3 top-3 z-10' colorClass='text-grey-500' name='magnifying-glass' size='sm' />
                     <TextField
+                        autoComplete='off'
                         className='mb-6 mr-12 flex h-10 w-full items-center rounded-lg border border-transparent bg-grey-100 px-[33px] py-1.5 transition-colors focus:border-green focus:bg-white focus:outline-2 dark:border-transparent dark:bg-grey-925 dark:text-white dark:placeholder:text-grey-800 dark:focus:border-green dark:focus:bg-grey-950 tablet:mr-0'
                         containerClassName='w-100'
                         inputRef={queryInputRef}
@@ -178,22 +180,22 @@ const Search: React.FC<SearchProps> = ({}) => {
                     )}
                 </div>
                 {showLoading && <LoadingIndicator size='lg'/>}
-                
+
                 {showNoResults && (
                     <NoValueLabel icon='user'>
                         No users matching this username
                     </NoValueLabel>
                 )}
-                
+
                 {!showLoading && !showNoResults && (
-                    <SearchResults 
-                        results={results as SearchResultItem[]} 
+                    <SearchResults
+                        results={results as SearchResultItem[]}
                         onUpdate={updateResult}
                     />
                 )}
-                
+
                 {showSuggested && (
-                    <SuggestedAccounts 
+                    <SuggestedAccounts
                         isLoading={isLoadingSuggested}
                         profiles={suggested as SearchResultItem[]}
                         onUpdate={updateSuggestedProfile}

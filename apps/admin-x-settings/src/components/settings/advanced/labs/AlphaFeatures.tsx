@@ -8,10 +8,6 @@ const features = [{
     description: 'Enable URL Caching',
     flag: 'urlCache'
 },{
-    title: 'Lexical multiplayer',
-    description: 'Enables multiplayer editing in the lexical editor.',
-    flag: 'lexicalMultiplayer'
-},{
     title: 'Webmentions',
     description: 'Allows viewing received mentions on the dashboard.',
     flag: 'webmentions'
@@ -23,10 +19,6 @@ const features = [{
     title: 'Email customization',
     description: 'Adding more control over the newsletter template',
     flag: 'emailCustomization'
-},{
-    title: 'Collections',
-    description: 'Enables Collections 2.0',
-    flag: 'collections'
 },{
     title: 'Collections Card',
     description: 'Enables the Collections Card for pages - requires Collections and the beta Editor to be enabled',
@@ -59,14 +51,6 @@ const features = [{
     title: 'Comment Improvements',
     description: 'Enables new comment features',
     flag: 'commentImprovements'
-}, {
-    title: 'Staff 2FA',
-    description: 'Enables email verification for staff logins',
-    flag: 'staff2fa'
-}, {
-    title: 'Custom Fonts',
-    description: 'Enables new custom font settings',
-    flag: 'customFonts'
 }];
 
 const AlphaFeatures: React.FC = () => {

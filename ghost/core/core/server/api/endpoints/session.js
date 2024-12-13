@@ -28,9 +28,19 @@ const controller = {
             }));
         }
 
-        return models.User.check({
-            email: object.username,
-            password: object.password
+        let skipVerification = false;
+
+        return models.User.getByEmail(object.username).then((user) => {
+            if (user && !user.hasLoggedIn()) {
+                skipVerification = true;
+            } else if (frame.data.skipEmailVerification) {
+                skipVerification = true;
+            }
+
+            return models.User.check({
+                email: object.username,
+                password: object.password
+            });
         }).then((user) => {
             return Promise.resolve(function sessionMiddleware(req, res, next) {
                 req.brute.reset(function (err) {
@@ -38,6 +48,8 @@ const controller = {
                         return next(err);
                     }
                     req.user = user;
+                    req.skipVerification = skipVerification;
+
                     auth.session.createSession(req, res, next);
                 });
             });

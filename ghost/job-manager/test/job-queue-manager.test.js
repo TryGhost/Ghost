@@ -10,7 +10,7 @@ describe('JobQueueManager', function () {
     let mockWorkerPool;
     let mockPrometheusClient;
     let metricIncStub;
-
+    let mockEventEmitter;
     beforeEach(function () {
         metricIncStub = sinon.stub();
         mockJobModel = {};
@@ -36,13 +36,17 @@ describe('JobQueueManager', function () {
                 terminate: sinon.stub()
             })
         };
+        mockEventEmitter = {
+            emit: sinon.stub()
+        };
 
         jobQueueManager = new JobQueueManager({
             JobModel: mockJobModel,
             config: mockConfig,
             logger: mockLogger,
             WorkerPool: mockWorkerPool,
-            prometheusClient: mockPrometheusClient
+            prometheusClient: mockPrometheusClient,
+            eventEmitter: mockEventEmitter
         });
     });
 
@@ -304,6 +308,30 @@ describe('JobQueueManager', function () {
             sinon.stub(jobQueueManager.jobsRepository, 'delete').resolves();
             await jobQueueManager.executeJob(job, 'update-member-email-analytics', {job: 'update-member-email-analytics', data: {}});
             expect(metricIncStub.calledTwice).to.be.true;
+        });
+
+        it('should emit events if present in result', async function () {
+            const job = {id: '1', get: sinon.stub().returns('{"job": "testJob", "data": {}}')};
+            jobQueueManager.pool.exec.resolves({eventData: {events: [{name: 'member.edited', data: {id: '1'}}]}});
+            sinon.stub(jobQueueManager.jobsRepository, 'delete').resolves();
+            await jobQueueManager.executeJob(job, 'testJob', {job: 'testJob', data: {}});
+            expect(mockEventEmitter.emit.calledOnce).to.be.true;
+            expect(mockEventEmitter.emit.calledWith('member.edited', {id: '1'})).to.be.true;
+        });
+    });
+
+    describe('emitEvents', function () {
+        it('should emit events', function () {
+            jobQueueManager.emitEvents([{name: 'member.edited', data: {id: '1'}}]);
+            expect(mockEventEmitter.emit.calledOnce).to.be.true;
+            expect(mockEventEmitter.emit.calledWith('member.edited', {id: '1'})).to.be.true;
+        });
+
+        it('should handle multiple events', function () {
+            jobQueueManager.emitEvents([{name: 'member.edited', data: {id: '1'}}, {name: 'site.changed', data: {}}]);
+            expect(mockEventEmitter.emit.calledTwice).to.be.true;
+            expect(mockEventEmitter.emit.calledWith('member.edited', {id: '1'})).to.be.true;
+            expect(mockEventEmitter.emit.calledWith('site.changed', {})).to.be.true;
         });
     });
 

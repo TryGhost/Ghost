@@ -20,34 +20,32 @@ const GA_FEATURES = [
     'themeErrorsNotification',
     'outboundLinkTagging',
     'announcementBar',
-    'newEmailAddresses'
+    'newEmailAddresses',
+    'customFonts'
 ];
 
 // NOTE: this allowlist is meant to be used to filter out any unexpected
 //       input for the "labs" setting value
 const BETA_FEATURES = [
     'additionalPaymentMethods',
-    'activitypub',
     'stripeAutomaticTax',
     'webmentions',
     'editorExcerpt',
-    'ActivityPub'
+    'ActivityPub',
+    'importMemberTier',
+    'staff2fa',
+    'contentVisibility'
 ];
 
 const ALPHA_FEATURES = [
     'NestPlayground',
     'urlCache',
-    'lexicalMultiplayer',
     'emailCustomization',
     'mailEvents',
     'collectionsCard',
-    'importMemberTier',
     'lexicalIndicators',
     'adminXDemo',
-    'contentVisibility',
-    'commentImprovements',
-    'staff2fa',
-    'customFonts'
+    'commentImprovements'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

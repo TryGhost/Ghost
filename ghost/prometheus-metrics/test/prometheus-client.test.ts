@@ -47,10 +47,10 @@ describe('Prometheus Client', function () {
             const clock = sinon.useFakeTimers();
             nock('http://localhost:9091')
                 .persist()
-                .post('/metrics/job/ghost')
+                .post('/metrics/job/ghost-test')
                 .reply(200);
             
-            instance = new PrometheusClient({pushgateway: {enabled: true, interval: 20}});
+            instance = new PrometheusClient({pushgateway: {enabled: true, interval: 20, jobName: 'ghost-test'}});
             const pushMetricsStub = sinon.stub(instance, 'pushMetrics').resolves();
             instance.init();
             assert.ok(instance.gateway);
@@ -58,6 +58,12 @@ describe('Prometheus Client', function () {
             clock.tick(30);
             assert.ok(pushMetricsStub.calledTwice, 'pushMetrics should be called again after the interval');
             clock.restore();
+        });
+
+        it('should not create the pushgateway client if the pushgateway is disabled', function () {
+            instance = new PrometheusClient({pushgateway: {enabled: false}});
+            instance.init();
+            assert.equal(instance.gateway, undefined);
         });
     });
 
@@ -74,16 +80,16 @@ describe('Prometheus Client', function () {
         it('should push metrics to the pushgateway', async function () {
             const scope = nock('http://localhost:9091')
                 .persist()
-                .post('/metrics/job/ghost')
+                .post('/metrics/job/ghost-test')
                 .reply(200);
-            instance = new PrometheusClient({pushgateway: {enabled: true}});
+            instance = new PrometheusClient({pushgateway: {enabled: true, jobName: 'ghost-test'}});
             instance.init();
             await instance.pushMetrics();
             scope.done();
         });
 
         it('should log an error with error code if pushing metrics to the gateway fails', async function () {
-            instance = new PrometheusClient({pushgateway: {enabled: true}}, logger);
+            instance = new PrometheusClient({pushgateway: {enabled: true, jobName: 'ghost-test'}}, logger);
             instance.init();
             instance.gateway = {
                 pushAdd: sinon.stub().rejects({code: 'ECONNRESET'})
@@ -95,7 +101,7 @@ describe('Prometheus Client', function () {
         });
 
         it('should log a generic error if the error is unknown', async function () {
-            instance = new PrometheusClient({pushgateway: {enabled: true}}, logger);
+            instance = new PrometheusClient({pushgateway: {enabled: true, jobName: 'ghost-test'}}, logger);
             instance.init();
             instance.gateway = {
                 pushAdd: sinon.stub().rejects()
@@ -104,6 +110,27 @@ describe('Prometheus Client', function () {
             assert.ok(logger.error.called);
             const [[error]] = logger.error.args;
             assert.match(error, /Unknown error/);
+        });
+
+        it('should give up after 3 retries in a row', async function () {
+            instance = new PrometheusClient({pushgateway: {enabled: true, jobName: 'ghost-test'}}, logger);
+            instance.init();
+            const pushAddStub = sinon.stub().rejects();
+            instance.gateway = {
+                pushAdd: pushAddStub
+            } as unknown as Pushgateway<RegistryContentType>;
+
+            // Simulate failing to push metrics multiple times in a row
+            // It should give up after the 3rd attempt in a row
+            await instance.pushMetrics();
+            await instance.pushMetrics();
+            await instance.pushMetrics();
+            await instance.pushMetrics();
+            await instance.pushMetrics();
+            await instance.pushMetrics();
+            await instance.pushMetrics();
+            assert.ok(pushAddStub.calledThrice);
+            assert.ok(logger.error.calledWith('Failed to push metrics to pushgateway 3 times in a row, giving up'));
         });
     });
 
@@ -281,6 +308,22 @@ describe('Prometheus Client', function () {
             clock.restore();
         }
 
+        function simulateCreate(duration: number) {
+            const clock = sinon.useFakeTimers();
+            poolEventEmitter.emit('createRequest');
+            clock.tick(duration);
+            poolEventEmitter.emit('createSuccess');
+            clock.restore();
+        }
+
+        function simulateCreateFail(duration: number) {
+            const clock = sinon.useFakeTimers();
+            poolEventEmitter.emit('createRequest');
+            clock.tick(duration);
+            poolEventEmitter.emit('createFail');
+            clock.restore();
+        }
+
         beforeEach(function () {
             knexEventEmitter = new EventEmitter();
             poolEventEmitter = new EventEmitter();
@@ -410,6 +453,24 @@ describe('Prometheus Client', function () {
             instance.instrumentKnex(knexMock);
             simulateAcquireFail(500);
             const metricValues = await instance.getMetricValues('db_connection_acquire_duration_seconds');
+            assert.equal(metricValues?.[0].value, 0.5);
+        });
+
+        it('should collect the db connection create duration metrics when a connection is created', async function () {
+            instance = new PrometheusClient();
+            instance.init();
+            instance.instrumentKnex(knexMock);
+            simulateCreate(500);
+            const metricValues = await instance.getMetricValues('db_connection_create_duration_seconds');
+            assert.equal(metricValues?.[0].value, 0.5);
+        });
+
+        it('should collect the db connection create duration metrics when a connection fails to be created', async function () {
+            instance = new PrometheusClient();
+            instance.init();
+            instance.instrumentKnex(knexMock);
+            simulateCreateFail(500);
+            const metricValues = await instance.getMetricValues('db_connection_create_duration_seconds');
             assert.equal(metricValues?.[0].value, 0.5);
         });
     });

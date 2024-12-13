@@ -16,11 +16,11 @@
   },
   "scripts": {
     "dev": "tsc --watch --preserveWatchOutput --sourceMap",
-    "build": "yarn build:cjs && yarn build:esm && yarn build:ts",
+    "build": "yarn build:cjs && yarn build:esm && yarn build:types",
     "build:types": "tsc -p tsconfig.json --emitDeclarationOnly --declaration --declarationDir ./build/types",
     "build:cjs": "tsc -p tsconfig.json --outDir ./build/cjs --module CommonJS",
     "build:esm": "tsc -p tsconfig.esm.json --outDir ./build/esm --module ES2020",
-    "build:ts": "yarn build:cjs && yarn build:esm && yarn build:types",
+    "build:ts": "yarn build",
     "prepare": "yarn build",
     "test:unit": "NODE_ENV=testing c8 --src src --all --check-coverage --100 --reporter text --reporter cobertura mocha -r ts-node/register './test/**/*.test.ts'",
     "test": "yarn test:ts && yarn test:unit",
