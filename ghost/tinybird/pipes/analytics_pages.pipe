@@ -85,7 +85,7 @@ SQL >
         ) AS member_status,
         uniqState(session_id) AS visits,
         countState() AS pageviews
-    FROM analytics_hits
+    FROM analytics_hits_data
         GROUP BY date, device, browser, location, source, pathname, post_uuid, post_type, site_uuid
 
 TYPE MATERIALIZED
