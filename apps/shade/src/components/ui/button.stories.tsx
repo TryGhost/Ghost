@@ -21,6 +21,7 @@ export const Default: Story = {
 
 export const IconOnly: Story = {
     args: {
+        size: 'icon',
         children: (
             <Icon.ArrowUp />
         )
