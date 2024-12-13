@@ -10,7 +10,7 @@ const PostAnalytics = () => {
                 <div className='flex w-full items-center border-b pb-2'>
                     <TabsList className='flex w-full items-center justify-start border-none pb-0'>
                         <TabsTrigger value="overview">Overview</TabsTrigger>
-                        <TabsTrigger value="newsletters">Newsletters</TabsTrigger>
+                        <TabsTrigger value="newsletter">Newsletter</TabsTrigger>
                     </TabsList>
                     <div className='flex items-center gap-1'>
                         <Button variant='outline'><Icon.Share className='-mt-0.5' />Share</Button>
@@ -36,7 +36,7 @@ const PostAnalytics = () => {
                 <TabsContent value="overview">
                     <Overview />
                 </TabsContent>
-                <TabsContent value="newsletters">
+                <TabsContent value="newsletter">
                     Newsletter details
                 </TabsContent>
             </Tabs>
