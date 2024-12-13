@@ -318,3 +318,7 @@ body,
 .sbdocs hr {
     margin: 40px 0;
 }
+
+.docs-story .shade {
+    overflow: unset;
+}
