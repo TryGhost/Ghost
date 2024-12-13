@@ -12,7 +12,7 @@ echo "Current version: $current_ver"
 # TODO: If current_ver = '', the DS is empty, we need to initialize
 # I am going to leave this command as a placeholder initializer for now:
 # tb datasource truncate version_log --yes
-# curl -X POST 'https://api.tinybird.co/v0/events?name=version_log' -H "Authorization: Bearer $TB_TOKEN" -d '{"version":"0.0.0","step_id":-1,"retry":-1,"message":"Initial version statement"}'
+# curl -X POST 'https://api.tinybird.co/v0/events?name=version_log' -H "Authorization: Bearer $TB_TOKEN" -d '{"version":"0.0.0","step_id":-1,"message":"Initial version statement"}'
 
 
 if [ "$ver_from" != "$current_ver" ];
@@ -25,12 +25,9 @@ echo "Upgrading from: \"$ver_from\" to: \"$ver_to\""
 
 
 # Get the highest step done:
-query_result=$(tb sql --format JSON "SELECT max(step_id) last_step, max(retry) last_retry FROM version_log WHERE version = '$current_ver'")
+query_result=$(tb sql --format JSON "SELECT max(step_id) last_step FROM version_log WHERE version = '$current_ver'")
 
 max_step=$(echo "$query_result" | jq -r '.data[0].last_step')
-current_retry=$(echo "$query_result" | jq -r '.data[0].last_retry')
-
-current_retry=$((current_retry+1))
 
 if [ $max_step -lt 0 ]
 then
@@ -53,7 +50,7 @@ while [ $current_step -le $max_steps ]; do
     if [ "$current_step" -le 0 ];then
         # Do stuff...
         # Log the stuff you've done
-        curl -X POST 'https://api.tinybird.co/v0/events?name=version_log' -H "Authorization: Bearer $TB_TOKEN" -d "{\"version\":\"0.0.0\",\"step_id\":$current_step,\"retry\":$current_retry,\"message\":\"Start update to $ver_to\"}"
+        curl -X POST 'https://api.tinybird.co/v0/events?name=version_log' -H "Authorization: Bearer $TB_TOKEN" -d "{\"version\":\"0.0.0\",\"step_id\":$current_step,\"message\":\"Start update to $ver_to\"}"
     elif [ "$current_step" -le 1 ];
     then
         # Do stuff...
@@ -67,7 +64,7 @@ while [ $current_step -le $max_steps ]; do
         fi
 
         # Log the stuff you've done
-        curl -X POST 'https://api.tinybird.co/v0/events?name=version_log' -H "Authorization: Bearer $TB_TOKEN" -d "{\"version\":\"0.0.0\",\"step_id\":1,\"retry\":$current_retry,\"message\":\"Deploy changes\"}"
+        curl -X POST 'https://api.tinybird.co/v0/events?name=version_log' -H "Authorization: Bearer $TB_TOKEN" -d "{\"version\":\"0.0.0\",\"step_id\":$current_step,\"message\":\"Deploy changes\"}"
     elif [ "$current_step" -le 2 ];
     then
         # Do stuff...
@@ -79,7 +76,7 @@ while [ $current_step -le $max_steps ]; do
             exit 1
         fi
         # Log the stuff you've done
-        curl -X POST 'https://api.tinybird.co/v0/events?name=version_log' -H "Authorization: Bearer $TB_TOKEN" -d "{\"version\":\"0.0.0\",\"step_id\":1,\"retry\":$current_retry,\"message\":\"Deploy changes\"}"
+        curl -X POST 'https://api.tinybird.co/v0/events?name=version_log' -H "Authorization: Bearer $TB_TOKEN" -d "{\"version\":\"0.0.0\",\"step_id\":$current_step,\"message\":\"Deploy changes\"}"
     else
         sleep 1
     fi
