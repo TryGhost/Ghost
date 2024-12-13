@@ -38,7 +38,7 @@ const Tabs = React.forwardRef<
 Tabs.displayName = TabsPrimitive.Root.displayName;
 
 const tabsListVariants = cva(
-    'inline-flex items-center justify-center text-muted-foreground/80',
+    'inline-flex items-center justify-center text-muted-foreground',
     {
         variants: {
             variant: {
