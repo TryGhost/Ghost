@@ -9,15 +9,18 @@ async function loadMoreComments({state, api, options, order}: {state: EditableAp
         page = state.pagination.page + 1;
     }
     let data;
-    if (state.admin && state.adminApi && state.labs.commentImprovements) {
+    if (state.admin && state.adminApi) {
         data = await state.adminApi.browse({page, postId: options.postId, order: order || state.order, memberUuid: state.member?.uuid});
     } else {
         data = await api.comments.browse({page, postId: options.postId, order: order || state.order});
     }
 
+    const updatedComments = [...state.comments, ...data.comments];
+    const dedupedComments = updatedComments.filter((comment, index, self) => self.findIndex(c => c.id === comment.id) === index);
+
     // Note: we store the comments from new to old, and show them in reverse order
     return {
-        comments: [...state.comments, ...data.comments],
+        comments: dedupedComments,
         pagination: data.meta.pagination
     };
 }
@@ -33,7 +36,7 @@ async function setOrder({state, data: {order}, options, api, dispatchAction}: {s
 
     try {
         let data;
-        if (state.admin && state.adminApi && state.labs.commentImprovements) {
+        if (state.admin && state.adminApi) {
             data = await state.adminApi.browse({page: 1, postId: options.postId, order, memberUuid: state.member?.uuid});
         } else {
             data = await api.comments.browse({page: 1, postId: options.postId, order});
@@ -54,7 +57,7 @@ async function setOrder({state, data: {order}, options, api, dispatchAction}: {s
 
 async function loadMoreReplies({state, api, data: {comment, limit}, isReply}: {state: EditableAppContext, api: GhostApi, data: {comment: any, limit?: number | 'all'}, isReply: boolean}): Promise<Partial<EditableAppContext>> {
     let data;
-    if (state.admin && state.adminApi && state.labs.commentImprovements && !isReply) { // we don't want the admin api to load reply data for replying to a reply, so we pass isReply: true
+    if (state.admin && state.adminApi && !isReply) { // we don't want the admin api to load reply data for replying to a reply, so we pass isReply: true
         data = await state.adminApi.replies({commentId: comment.id, afterReplyId: comment.replies[comment.replies.length - 1]?.id, limit, memberUuid: state.member?.uuid});
     } else {
         data = await api.comments.replies({commentId: comment.id, afterReplyId: comment.replies[comment.replies.length - 1]?.id, limit});
@@ -155,7 +158,7 @@ async function showComment({state, api, data: comment}: {state: EditableAppConte
     // We need to refetch the comment, to make sure we have an up to date HTML content
     // + all relations are loaded as the current member (not the admin)
     let data;
-    if (state.admin && state.adminApi && state.labs.commentImprovements) {
+    if (state.admin && state.adminApi) {
         data = await state.adminApi.read({commentId: comment.id, memberUuid: state.member?.uuid});
     } else {
         data = await api.comments.read(comment.id);
@@ -271,7 +274,7 @@ async function unlikeComment({state, api, data: comment}: {state: EditableAppCon
     };
 }
 
-async function deleteComment({state, api, data: comment}: {state: EditableAppContext, api: GhostApi, data: {id: string}}) {
+async function deleteComment({state, api, data: comment, dispatchAction}: {state: EditableAppContext, api: GhostApi, data: {id: string}, dispatchAction: DispatchActionType}) {
     await api.comments.edit({
         comment: {
             id: comment.id,
@@ -279,60 +282,48 @@ async function deleteComment({state, api, data: comment}: {state: EditableAppCon
         }
     });
 
-    if (state.labs.commentImprovements) {
-        return {
-            comments: state.comments.map((c) => {
-                // If the comment has replies we want to keep it so the replies are
-                // still visible, but mark the comment as deleted. Otherwise remove it.
-                if (c.id === comment.id) {
-                    if (c.replies.length > 0) {
-                        return {
-                            ...c,
-                            status: 'deleted'
-                        };
-                    } else {
-                        return null; // Will be filtered out later
-                    }
-                }
-
-                const updatedReplies = c.replies.filter(r => r.id !== comment.id);
-                return {
-                    ...c,
-                    replies: updatedReplies
-                };
-            }).filter(Boolean),
-            commentCount: state.commentCount - 1
-        };
-    } else {
-        return {
-            comments: state.comments.map((c) => {
-                const replies = c.replies.map((r) => {
-                    if (r.id === comment.id) {
-                        return {
-                            ...r,
-                            status: 'deleted'
-                        };
-                    }
-
-                    return r;
-                });
-
-                if (c.id === comment.id) {
-                    return {
-                        ...c,
-                        status: 'deleted',
-                        replies
-                    };
-                }
-
-                return {
-                    ...c,
-                    replies
-                };
-            }),
-            commentCount: state.commentCount - 1
-        };
+    // If we're deleting a top-level comment with no replies we refresh the
+    // whole comments section to maintain correct pagination
+    const commentToDelete = state.comments.find(c => c.id === comment.id);
+    if (commentToDelete && (!commentToDelete.replies || commentToDelete.replies.length === 0)) {
+        dispatchAction('setOrder', {order: state.order});
+        return null;
     }
+
+    return {
+        comments: state.comments.map((topLevelComment) => {
+            // If the comment has replies we want to keep it so the replies are
+            // still visible, but mark the comment as deleted. Otherwise remove it.
+            if (topLevelComment.id === comment.id) {
+                if (topLevelComment.replies.length > 0) {
+                    return {
+                        ...topLevelComment,
+                        status: 'deleted'
+                    };
+                } else {
+                    return null; // Will be filtered out later
+                }
+            }
+
+            const originalLength = topLevelComment.replies.length;
+            const updatedReplies = topLevelComment.replies.filter(reply => reply.id !== comment.id);
+            const hasDeletedReply = originalLength !== updatedReplies.length;
+
+            const updatedTopLevelComment = {
+                ...topLevelComment,
+                replies: updatedReplies
+            };
+
+            // When a reply is deleted we need to update the parent's count so
+            // pagination displays the correct number of replies still to load
+            if (hasDeletedReply && topLevelComment.count?.replies) {
+                topLevelComment.count.replies = topLevelComment.count.replies - 1;
+            }
+
+            return updatedTopLevelComment;
+        }).filter(Boolean),
+        commentCount: state.commentCount - 1
+    };
 }
 
 async function editComment({state, api, data: {comment, parent}}: {state: EditableAppContext, api: GhostApi, data: {comment: Partial<Comment> & {id: string}, parent?: Comment}}) {

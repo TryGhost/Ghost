@@ -10,9 +10,8 @@ test.describe('Actions', async () => {
             mockedApi,
             page,
             publication: 'Publisher Weekly',
-            labs: {
-                commentImprovements: labs
-            }
+            // always return `labs` value for any labs.x property access
+            labs: new Proxy({}, {get: () => labs})
         });
     }
 
@@ -26,6 +25,7 @@ test.describe('Actions', async () => {
     });
 
     test('Can like and unlike a comment', async ({page}) => {
+        // NOTE: comments are ordered by likes
         mockedApi.addComment({
             html: '<p>This is comment 1</p>'
         });
@@ -43,7 +43,7 @@ test.describe('Actions', async () => {
         const {frame} = await initializeTest(page);
 
         // Check like button is not filled yet
-        const comment = frame.getByTestId('comment-component').nth(0);
+        const comment = frame.getByTestId('comment-component').nth(1);
         const likeButton = comment.getByTestId('like-button');
         await expect(likeButton).toHaveCount(1);
 
@@ -65,7 +65,7 @@ test.describe('Actions', async () => {
         await expect(likeButton).toHaveText('0');
 
         // Check state for already liked comment
-        const secondComment = frame.getByTestId('comment-component').nth(1);
+        const secondComment = frame.getByTestId('comment-component').nth(0);
         const likeButton2 = secondComment.getByTestId('like-button');
         await expect(likeButton2).toHaveCount(1);
         const icon2 = likeButton2.locator('svg');
@@ -120,7 +120,7 @@ test.describe('Actions', async () => {
 
         // Click button
         await replyButton.click();
-        const editor = frame.getByTestId('form-editor');
+        const editor = comment.getByTestId('form-editor');
         await expect(editor).toBeVisible();
         // Wait for focused
         await waitEditorFocused(editor);
@@ -145,28 +145,8 @@ test.describe('Actions', async () => {
         await expect(frame.getByText('This is a reply 123')).toHaveCount(1);
     });
 
-    test('Reply-to-reply action not shown without labs flag', async ({
-        page
-    }) => {
-        mockedApi.addComment({
-            html: '<p>This is comment 1</p>',
-            replies: [
-                mockedApi.buildReply({
-                    html: '<p>This is a reply to 1</p>'
-                })
-            ]
-        });
-
-        const {frame} = await initializeTest(page);
-
-        const parentComment = frame.getByTestId('comment-component').nth(0);
-        const replyComment = parentComment.getByTestId('comment-component').nth(0);
-
-        expect(replyComment.getByTestId('reply-button')).not.toBeVisible();
-    });
-
     async function testReplyToReply(page) {
-        const {frame} = await initializeTest(page, {labs: true});
+        const {frame} = await initializeTest(page);
 
         const parentComment = frame.getByTestId('comment-component').nth(0);
         const replyComment = parentComment.getByTestId('comment-component').nth(0);
@@ -174,7 +154,7 @@ test.describe('Actions', async () => {
         const replyReplyButton = replyComment.getByTestId('reply-button');
         await replyReplyButton.click();
 
-        const editor = frame.getByTestId('form-editor').nth(1);
+        const editor = parentComment.getByTestId('form-editor');
         await expect(editor).toBeVisible();
         await waitEditorFocused(editor);
 
@@ -218,6 +198,20 @@ test.describe('Actions', async () => {
         await testReplyToReply(page);
     });
 
+    test('Can reply to a reply with a deleted parent comment', async function ({page}) {
+        mockedApi.addComment({
+            html: '<p>This is comment 1</p>',
+            status: 'deleted',
+            replies: [
+                mockedApi.buildReply({
+                    html: '<p>This is a reply to 1</p>'
+                })
+            ]
+        });
+
+        await testReplyToReply(page);
+    });
+
     test('Can highlight reply when clicking on reply to: snippet', async ({page}) => {
         mockedApi.addComment({
             html: '<p>This is comment 1</p>',
@@ -235,7 +229,7 @@ test.describe('Actions', async () => {
             ]
         });
 
-        const {frame} = await initializeTest(page, {labs: true});
+        const {frame} = await initializeTest(page);
 
         await frame.getByTestId('comment-in-reply-to').click();
 
@@ -274,7 +268,7 @@ test.describe('Actions', async () => {
             ]
         });
 
-        const {frame} = await initializeTest(page, {labs: true});
+        const {frame} = await initializeTest(page);
 
         await frame.getByTestId('comment-in-reply-to').click();
 
@@ -298,20 +292,6 @@ test.describe('Actions', async () => {
         const timeout = 3000;
         await page.waitForTimeout(timeout);
         await expect(markElement).not.toBeVisible();
-    });
-
-    test('Can reply to a reply with a deleted parent comment', async function ({page}) {
-        mockedApi.addComment({
-            html: '<p>This is comment 1</p>',
-            status: 'deleted',
-            replies: [
-                mockedApi.buildReply({
-                    html: '<p>This is a reply to 1</p>'
-                })
-            ]
-        });
-
-        await testReplyToReply(page);
     });
 
     test('Can add expertise', async ({page}) => {
@@ -361,6 +341,13 @@ test.describe('Actions', async () => {
         );
     });
 
+    async function deleteComment(page, frame, commentComponent) {
+        await commentComponent.getByTestId('more-button').first().click();
+        await frame.getByTestId('delete').click();
+        const popupIframe = page.frameLocator('iframe[title="deletePopup"]');
+        await popupIframe.getByTestId('delete-popup-confirm').click();
+    }
+
     test('Can delete a comment', async ({page}) => {
         const loggedInMember = buildMember();
         mockedApi.setMember(loggedInMember);
@@ -370,17 +357,10 @@ test.describe('Actions', async () => {
             member: loggedInMember
         });
 
-        const {frame} = await initializeTest(page, {labs: true});
+        const {frame} = await initializeTest(page);
 
-        const comment = frame.getByTestId('comment-component').nth(0);
-        const moreButton = comment.getByTestId('more-button').first();
-        await moreButton.click();
-        await frame.getByTestId('delete').click();
-
-        const popupIframe = page.frameLocator('iframe[title="deletePopup"]');
-
-        await expect(popupIframe.getByTestId('delete-popup')).toBeVisible();
-        await popupIframe.getByTestId('delete-popup-confirm').click();
+        const commentToDelete = frame.getByTestId('comment-component').nth(0);
+        await deleteComment(page, frame, commentToDelete);
 
         await expect(frame.getByTestId('comment-component')).toHaveCount(0);
     });
@@ -399,21 +379,34 @@ test.describe('Actions', async () => {
             ]
         });
 
-        const {frame} = await initializeTest(page, {labs: true});
+        const {frame} = await initializeTest(page);
 
         const comment = frame.getByTestId('comment-component').nth(0);
-        const reply = comment.getByTestId('comment-component').nth(0);
-        const moreButton = reply.getByTestId('more-button').first();
-        await moreButton.click();
-        await frame.getByTestId('delete').click();
-
-        const popupIframe = page.frameLocator('iframe[title="deletePopup"]');
-
-        await expect(popupIframe.getByTestId('delete-popup')).toBeVisible();
-        await popupIframe.getByTestId('delete-popup-confirm').click();
+        const replyToDelete = comment.getByTestId('comment-component').nth(0);
+        await deleteComment(page, frame, replyToDelete);
 
         await expect(frame.getByTestId('comment-component')).toHaveCount(1);
         await expect(frame.getByTestId('replies-line')).not.toBeVisible();
+    });
+
+    test('Deleting a reply updates pagination', async ({page}) => {
+        const loggedInMember = buildMember();
+        mockedApi.setMember(loggedInMember);
+
+        mockedApi.addComment({
+            html: '<p>Parent comment</p>',
+            // 6 replies
+            replies: Array.from({length: 6}, (_, i) => buildReply({member: loggedInMember, html: `<p>Reply ${i + 1}</p>`}))
+        });
+
+        const {frame} = await initializeTest(page);
+        await expect(frame.getByTestId('replies-pagination')).toContainText('3');
+
+        const replyToDelete = frame.getByTestId('comment-component').nth(2);
+        await deleteComment(page, frame, replyToDelete);
+
+        // Replies count does not change - we still have 3 unloaded replies
+        await expect(frame.getByTestId('replies-pagination')).toContainText('3');
     });
 
     test('Can delete a comment with replies', async ({page}) => {
@@ -430,24 +423,33 @@ test.describe('Actions', async () => {
             ]
         });
 
-        const {frame} = await initializeTest(page, {labs: true});
+        const {frame} = await initializeTest(page);
 
-        const comment = frame.getByTestId('comment-component').nth(0);
-        const moreButton = comment.getByTestId('more-button').first();
-        await moreButton.click();
-        await frame.getByTestId('delete').click();
-
-        const popupIframe = page.frameLocator('iframe[title="deletePopup"]');
-
-        await expect(popupIframe.getByTestId('delete-popup')).toBeVisible();
-        await popupIframe.getByTestId('delete-popup-confirm').click();
+        const commentToDelete = frame.getByTestId('comment-component').nth(0);
+        await deleteComment(page, frame, commentToDelete);
 
         await expect(frame.getByTestId('comment-component')).toHaveCount(2);
         await expect(frame.getByText('This comment has been removed')).toBeVisible();
         await expect(frame.getByTestId('replies-line')).toBeVisible();
     });
 
-    test.describe('Sorting - flag needs to be enabled', () => {
+    test('Resets comments list after deleting a top-level comment', async ({page}) => {
+        const loggedInMember = buildMember();
+        mockedApi.setMember(loggedInMember);
+        // We have a page limit of 20, this will show the load more button
+        mockedApi.addComments(21, {member: loggedInMember});
+
+        const {frame} = await initializeTest(page);
+        await expect(frame.getByTestId('pagination-component')).toBeVisible();
+
+        const commentToDelete = frame.getByTestId('comment-component').nth(0);
+        await deleteComment(page, frame, commentToDelete);
+
+        // more button should have disappeared because the list was reloaded
+        await expect(frame.getByTestId('pagination-component')).not.toBeVisible();
+    });
+
+    test.describe('Sorting', () => {
         test('Renders Sorting Form dropdown', async ({page}) => {
             mockedApi.addComment({
                 html: '<p>This is comment 1</p>'
@@ -471,7 +473,7 @@ test.describe('Actions', async () => {
                 html: '<p>This is comment 6</p>'
             });
 
-            const {frame} = await initializeTest(page, {labs: true});
+            const {frame} = await initializeTest(page);
 
             const sortingForm = frame.getByTestId('comments-sorting-form');
 
@@ -501,7 +503,7 @@ test.describe('Actions', async () => {
                 created_at: new Date('2022-02-01T00:00:00Z')
             });
 
-            const {frame} = await initializeTest(page, {labs: true});
+            const {frame} = await initializeTest(page);
 
             const sortingForm = frame.getByTestId('comments-sorting-form');
 
@@ -538,7 +540,7 @@ test.describe('Actions', async () => {
                 html: '<p>This is comment 6</p>'
             });
 
-            const {frame} = await initializeTest(page, {labs: true});
+            const {frame} = await initializeTest(page);
 
             const sortingForm = frame.getByTestId('comments-sorting-form');
 
@@ -575,7 +577,7 @@ test.describe('Actions', async () => {
                 created_at: new Date('2024-04-03T00:00:00Z')
             });
 
-            const {frame} = await initializeTest(page, {labs: true});
+            const {frame} = await initializeTest(page);
 
             const sortingForm = await frame.getByTestId('comments-sorting-form');
 
@@ -618,7 +620,7 @@ test.describe('Actions', async () => {
                 created_at: new Date('2024-04-03T00:00:00Z')
             });
 
-            const {frame} = await initializeTest(page, {labs: true});
+            const {frame} = await initializeTest(page);
 
             const sortingForm = await frame.getByTestId('comments-sorting-form');
 
@@ -657,7 +659,7 @@ test.describe('Actions', async () => {
                 created_at: new Date('2024-04-03T00:00:00Z')
             });
 
-            const {frame} = await initializeTest(page, {labs: true});
+            const {frame} = await initializeTest(page);
 
             const sortingForm = await frame.getByTestId('comments-sorting-form');
 
@@ -720,7 +722,7 @@ test.describe('Actions', async () => {
         await frame.getByTestId('edit').click();
 
         // Verify the edit form is visible
-        await expect(frame.getByTestId('form-editor')).toBeVisible();
+        await expect(parentComment.getByTestId('form-editor')).toBeVisible();
 
         // Verify replies are still visible while editing
         await expect(replies[0]).toBeVisible();

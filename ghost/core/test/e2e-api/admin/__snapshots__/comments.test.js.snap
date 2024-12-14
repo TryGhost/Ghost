@@ -1,172 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Admin Comments API - commentImprovements off Hide Can hide comments 1: [body] 1`] = `
-Object {
-  "comments": Array [
-    Object {
-      "count": Object {
-        "likes": Any<Number>,
-        "replies": 0,
-      },
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "edited_at": null,
-      "html": "<p>This is a comment</p>",
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "liked": Any<Boolean>,
-      "member": Object {
-        "avatar_image": null,
-        "expertise": null,
-        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-        "name": "Mr Egg",
-        "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-      },
-      "replies": Array [],
-      "status": "published",
-    },
-  ],
-}
-`;
-
-exports[`Admin Comments API - commentImprovements off Hide Can hide comments 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "*",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "361",
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Admin Comments API - commentImprovements off Hide Can hide comments 3: [body] 1`] = `
-Object {
-  "comments": Array [
-    Object {
-      "count": Object {
-        "likes": Any<Number>,
-        "replies": 0,
-      },
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "edited_at": null,
-      "html": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "liked": Any<Boolean>,
-      "member": Object {
-        "avatar_image": null,
-        "expertise": null,
-        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-        "name": "Mr Egg",
-        "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-      },
-      "replies": Array [],
-      "status": "hidden",
-    },
-  ],
-}
-`;
-
-exports[`Admin Comments API - commentImprovements off Hide Can hide comments 4: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "*",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "336",
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Admin Comments API - commentImprovements off Hide Can hide replies 1: [body] 1`] = `
-Object {
-  "comments": Array [
-    Object {
-      "count": Object {
-        "likes": Any<Number>,
-        "replies": 0,
-      },
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "edited_at": null,
-      "html": "<p>This is a reply</p>",
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "liked": Any<Boolean>,
-      "member": Object {
-        "avatar_image": null,
-        "expertise": null,
-        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-        "name": null,
-        "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-      },
-      "replies": Array [],
-      "status": "published",
-    },
-  ],
-}
-`;
-
-exports[`Admin Comments API - commentImprovements off Hide Can hide replies 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "*",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "355",
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Admin Comments API - commentImprovements off Hide Can hide replies 3: [body] 1`] = `
-Object {
-  "comments": Array [
-    Object {
-      "count": Object {
-        "likes": Any<Number>,
-        "replies": 0,
-      },
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "edited_at": null,
-      "html": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "liked": Any<Boolean>,
-      "member": Object {
-        "avatar_image": null,
-        "expertise": null,
-        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-        "name": null,
-        "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-      },
-      "replies": Array [],
-      "status": "hidden",
-    },
-  ],
-}
-`;
-
-exports[`Admin Comments API - commentImprovements off Hide Can hide replies 4: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "*",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "332",
-  "content-type": "application/json; charset=utf-8",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Admin Comments API - commentImprovements off likes Can like a comment 1: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "*",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "x-cache-invalidate": "/api/members/comments/post/618ba1ffbe2896088840a6e1/",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Admin Comments API - commentImprovements on Hide Can hide comments 1: [body] 1`] = `
+exports[`Admin Comments API Hide Can hide comments 1: [body] 1`] = `
 Object {
   "comments": Array [
     Object {
@@ -195,7 +29,7 @@ Object {
 }
 `;
 
-exports[`Admin Comments API - commentImprovements on Hide Can hide comments 2: [headers] 1`] = `
+exports[`Admin Comments API Hide Can hide comments 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
@@ -207,7 +41,7 @@ Object {
 }
 `;
 
-exports[`Admin Comments API - commentImprovements on Hide Can hide comments 3: [body] 1`] = `
+exports[`Admin Comments API Hide Can hide comments 3: [body] 1`] = `
 Object {
   "comments": Array [
     Object {
@@ -236,7 +70,7 @@ Object {
 }
 `;
 
-exports[`Admin Comments API - commentImprovements on Hide Can hide comments 4: [headers] 1`] = `
+exports[`Admin Comments API Hide Can hide comments 4: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
@@ -248,7 +82,7 @@ Object {
 }
 `;
 
-exports[`Admin Comments API - commentImprovements on Hide Can hide replies 1: [body] 1`] = `
+exports[`Admin Comments API Hide Can hide replies 1: [body] 1`] = `
 Object {
   "comments": Array [
     Object {
@@ -277,7 +111,7 @@ Object {
 }
 `;
 
-exports[`Admin Comments API - commentImprovements on Hide Can hide replies 2: [headers] 1`] = `
+exports[`Admin Comments API Hide Can hide replies 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
@@ -289,7 +123,7 @@ Object {
 }
 `;
 
-exports[`Admin Comments API - commentImprovements on Hide Can hide replies 3: [body] 1`] = `
+exports[`Admin Comments API Hide Can hide replies 3: [body] 1`] = `
 Object {
   "comments": Array [
     Object {
@@ -318,7 +152,7 @@ Object {
 }
 `;
 
-exports[`Admin Comments API - commentImprovements on Hide Can hide replies 4: [headers] 1`] = `
+exports[`Admin Comments API Hide Can hide replies 4: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
@@ -330,7 +164,7 @@ Object {
 }
 `;
 
-exports[`Admin Comments API - commentImprovements on Logged in member gets own likes via admin api can get comment liked status by impersonating member  1: [headers] 1`] = `
+exports[`Admin Comments API Logged in member gets own likes via admin api can get comment liked status by impersonating member via admin browse route 1: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
@@ -340,7 +174,7 @@ Object {
 }
 `;
 
-exports[`Admin Comments API - commentImprovements on Logged in member gets own likes via admin api can get comment liked status by impersonating member via admin browse route 1: [headers] 1`] = `
+exports[`Admin Comments API Logged in member gets own likes via admin api can get comment liked status by impersonating member via admin get by comment id read route 1: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
@@ -350,77 +184,7 @@ Object {
 }
 `;
 
-exports[`Admin Comments API - commentImprovements on Logged in member gets own likes via admin api can get comment liked status by impersonating member via admin get by comment id read route 1: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "*",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "x-cache-invalidate": "/api/members/comments/post/618ba1ffbe2896088840a6e1/",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Admin Comments API - commentImprovements on Logged in member gets own likes via admin api can get comment liked status by impersonating member via admin get by comment read route 1: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "*",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "x-cache-invalidate": "/api/members/comments/post/618ba1ffbe2896088840a6e1/",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Admin Comments API - commentImprovements on Logged in member gets own likes via admin api can get comment liked status by impersonating member via admin get by comment replies route 1: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "*",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "x-cache-invalidate": "/api/members/comments/post/618ba1ffbe2896088840a6e1/",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Admin Comments API - commentImprovements on Logged in member gets own likes via admin api can get comment liked status by impersonating member via admin get by comment replies route 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "*",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "x-cache-invalidate": "/api/members/comments/post/618ba1ffbe2896088840a6e1/",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Admin Comments API - commentImprovements on Logged in member gets own likes via admin api can get comment liked status by impersonating member via admin get by comment replies route 3: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "*",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "x-cache-invalidate": "/api/members/comments/post/618ba1ffbe2896088840a6e1/, /api/members/comments/67568ca99db975825f9772a5/replies/",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Admin Comments API - commentImprovements on Logged in member likes via admin api can get comment liked status by impersonating member 1: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "*",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "x-cache-invalidate": "/api/members/comments/post/618ba1ffbe2896088840a6e1/",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Admin Comments API - commentImprovements on can get logged in member likes via admin api Can like a comment 1: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "*",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "x-cache-invalidate": "/api/members/comments/post/618ba1ffbe2896088840a6e1/",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Admin Comments API - commentImprovements on likes Can like a comment 1: [headers] 1`] = `
+exports[`Admin Comments API Logged in member gets own likes via admin api can get comment liked status by impersonating member via admin get by comment replies route 1: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
