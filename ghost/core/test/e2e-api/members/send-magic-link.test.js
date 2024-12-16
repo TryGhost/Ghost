@@ -90,7 +90,8 @@ describe('sendMagicLink', function () {
             .expectStatus(400)
             .matchBodySnapshot({
                 errors: [{
-                    id: anyErrorId
+                    id: anyErrorId,
+                    message: 'This site is invite-only, contact the owner for access.'
                 }]
             });
     });
@@ -106,7 +107,7 @@ describe('sendMagicLink', function () {
             })
             .expectStatus(400)
             .matchBodySnapshot({
-                errors: [{id: anyErrorId}]
+                errors: [{id: anyErrorId, message: 'This site only accepts paid members.'}]
             });
     });
 

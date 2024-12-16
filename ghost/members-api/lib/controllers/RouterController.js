@@ -1,6 +1,5 @@
 const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
-const _ = require('lodash');
 const {BadRequestError, NoPermissionError, UnauthorizedError, DisabledFeatureError} = require('@tryghost/errors');
 const errors = require('@tryghost/errors');
 
@@ -15,6 +14,7 @@ const messages = {
     existingSubscription: 'A subscription exists for this Member.',
     unableToCheckout: 'Unable to initiate checkout session',
     inviteOnly: 'This site is invite-only, contact the owner for access.',
+    paidOnly: 'This site only accepts paid members.',
     memberNotFound: 'No member exists with this e-mail address.',
     memberNotFoundSignUp: 'No member exists with this e-mail address. Please sign up first.',
     invalidType: 'Invalid checkout type.',
@@ -41,6 +41,7 @@ module.exports = class RouterController {
      * @param {{isSet(name: string): boolean}} deps.labsService
      * @param {any} deps.newslettersService
      * @param {any} deps.sentry
+     * @param {any} deps.settingsCache
      */
     constructor({
         offersAPI,
@@ -56,7 +57,8 @@ module.exports = class RouterController {
         sendEmailWithMagicLink,
         labsService,
         newslettersService,
-        sentry
+        sentry,
+        settingsCache
     }) {
         this._offersAPI = offersAPI;
         this._paymentsService = paymentsService;
@@ -72,6 +74,7 @@ module.exports = class RouterController {
         this.labsService = labsService;
         this._newslettersService = newslettersService;
         this._sentry = sentry || undefined;
+        this._settingsCache = settingsCache;
     }
 
     async ensureStripe(_req, res, next) {
@@ -552,9 +555,15 @@ module.exports = class RouterController {
 
     async _handleSignup(req, referrer = null) {
         if (!this._allowSelfSignup()) {
-            throw new errors.BadRequestError({
-                message: tpl(messages.inviteOnly)
-            });
+            if (this._settingsCache.get('members_signup_access') === 'paid') {
+                throw new errors.BadRequestError({
+                    message: tpl(messages.paidOnly)
+                });
+            } else {
+                throw new errors.BadRequestError({
+                    message: tpl(messages.inviteOnly)
+                });
+            }
         }
 
         const {email, emailType} = req.body;

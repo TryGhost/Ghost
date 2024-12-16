@@ -64,7 +64,7 @@ Object {
       "ghostErrorCode": null,
       "help": null,
       "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-      "message": "This site is invite-only, contact the owner for access.",
+      "message": "This site only accepts paid members.",
       "property": null,
       "type": "BadRequestError",
     },
