@@ -137,7 +137,23 @@ describe('Portal Data links:', () => {
             expect(signupTitle).toBeInTheDocument();
         });
 
-        test('opens portal signup page with free plan even if free plan is hidden', async () => {
+        describe.only('on a invite-only site', () => {
+            test('renders invite-only message and does not allow signups', async () => {});
+        });
+
+        describe.only('on a paid-members only site', () => {
+            describe('with only a free plan', () => {
+                test('renders paid-members only message and does not allow signups', async () => {});
+            });
+
+            describe('with paid plans', () => {
+                test('allows paid signups', async () => {});
+            });
+        });
+    });
+
+    describe.only('#/portal/signup/free', () => {
+        test('opens free signup page even if free plan is hidden', async () => {
             window.location.hash = '#/portal/signup/free';
             let {
                 popupFrame, triggerButtonFrame, ...utils
@@ -159,6 +175,14 @@ describe('Portal Data links:', () => {
             expect(signinButton).toBeInTheDocument();
             const signupTitle = within(popupFrame.contentDocument).queryByText(/already a member/i);
             expect(signupTitle).toBeInTheDocument();
+        });
+
+        describe('on a invite-only site', () => {
+            test('renders invite-only message and does not allow signups', async () => {});
+        });
+
+        describe('on a paid-members only site', () => {
+            test('renders paid-members only message and does not allow signups', async () => {});
         });
     });
 

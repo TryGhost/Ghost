@@ -96,19 +96,34 @@ const setup = async ({site, member = null}) => {
         <App api={ghostApi} />
     );
 
-    const triggerButtonFrame = await utils.findByTitle(/portal-trigger/i);
+    const triggerButtonFrame = utils.queryByTitle(/portal-trigger/i);
     const popupFrame = utils.queryByTitle(/portal-popup/i);
-    const popupIframeDocument = popupFrame.contentDocument;
-    const emailInput = within(popupIframeDocument).queryByLabelText(/email/i);
-    const nameInput = within(popupIframeDocument).queryByLabelText(/name/i);
-    const submitButton = within(popupIframeDocument).queryByRole('button', {name: 'Continue'});
-    const chooseBtns = within(popupIframeDocument).queryAllByRole('button', {name: 'Choose'});
-    const signinButton = within(popupIframeDocument).queryByRole('button', {name: 'Sign in'});
-    const siteTitle = within(popupIframeDocument).queryByText(site.title);
-    const freePlanTitle = within(popupIframeDocument).queryByText('Free');
-    const monthlyPlanTitle = within(popupIframeDocument).queryByText('Monthly');
-    const yearlyPlanTitle = within(popupIframeDocument).queryByText('Yearly');
-    const fullAccessTitle = within(popupIframeDocument).queryByText('Full access');
+    const popupIframeDocument = popupFrame?.contentDocument;
+
+    let emailInput = null;
+    let nameInput = null;
+    let submitButton = null;
+    let chooseBtns = null;
+    let signinButton = null;
+    let siteTitle = null;
+    let freePlanTitle = null;
+    let monthlyPlanTitle = null;
+    let yearlyPlanTitle = null;
+    let fullAccessTitle = null;
+
+    if (popupIframeDocument) {
+        emailInput = within(popupIframeDocument).queryByLabelText(/email/i);
+        nameInput = within(popupIframeDocument).queryByLabelText(/name/i);
+        submitButton = within(popupIframeDocument).queryByRole('button', {name: 'Continue'});
+        chooseBtns = within(popupIframeDocument).queryAllByRole('button', {name: 'Choose'});
+        signinButton = within(popupIframeDocument).queryByRole('button', {name: 'Sign in'});
+        siteTitle = within(popupIframeDocument).queryByText(site.title);
+        freePlanTitle = within(popupIframeDocument).queryByText('Free');
+        monthlyPlanTitle = within(popupIframeDocument).queryByText('Monthly');
+        yearlyPlanTitle = within(popupIframeDocument).queryByText('Yearly');
+        fullAccessTitle = within(popupIframeDocument).queryByText('Full access');
+    }
+
     return {
         ghostApi,
         popupIframeDocument,
@@ -818,6 +833,58 @@ describe('Signup', () => {
             });
 
             window.location.hash = '';
+        });
+    });
+
+    describe.only('on a paid-members only site', () => {
+        test('does not allow signups if the site only has a free plan', async () => {
+            let {
+                popupFrame, emailInput, nameInput, submitButton,
+                siteTitle, freePlanTitle, monthlyPlanTitle, yearlyPlanTitle, fullAccessTitle
+            } = await setup({
+                site: {...FixtureSite.singleTier.onlyFreePlan, members_signup_access: 'paid'}
+            });
+
+            expect(popupFrame).toBeInTheDocument();
+            expect(siteTitle).toBeInTheDocument();
+
+            // The free tier should not render, as the site is set to paid-members only
+            expect(freePlanTitle).not.toBeInTheDocument();
+
+            // Paid tiers should not render either, as not enabled in Portal settings
+            expect(monthlyPlanTitle).not.toBeInTheDocument();
+            expect(yearlyPlanTitle).not.toBeInTheDocument();
+            expect(fullAccessTitle).not.toBeInTheDocument();
+
+            // Therefore, given that no tiers are available, the signup form should not render
+            expect(emailInput).not.toBeInTheDocument();
+            expect(nameInput).not.toBeInTheDocument();
+            expect(submitButton).not.toBeInTheDocument();
+        });
+
+        test('does not render the free tier, only paid tiers', async () => {
+            let {
+                popupFrame, emailInput, nameInput, submitButton,
+                siteTitle, freePlanTitle, monthlyPlanTitle, yearlyPlanTitle, fullAccessTitle
+            } = await setup({
+                site: {...FixtureSite.multipleTiers.basic, members_signup_access: 'paid'}
+            });
+
+            expect(popupFrame).toBeInTheDocument();
+            expect(siteTitle).toBeInTheDocument();
+
+            // The free tier should not render, as the site is set to paid-members only
+            expect(freePlanTitle).not.toBeInTheDocument();
+
+            // Paid tiers should render
+            expect(monthlyPlanTitle).toBeInTheDocument();
+            expect(yearlyPlanTitle).toBeInTheDocument();
+            expect(fullAccessTitle).toBeInTheDocument();
+
+            // The signup form should render
+            expect(emailInput).toBeInTheDocument();
+            expect(nameInput).toBeInTheDocument();
+            expect(submitButton).toBeInTheDocument();
         });
     });
 });
