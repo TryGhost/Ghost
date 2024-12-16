@@ -67,18 +67,14 @@ while [ $current_step -le $max_steps ]; do
         # Do stuff...
         step_message="Populate analytics_sessions_mv__v1 with analytics_sessions__v1"
         # Migrate the data
-        output=$(tb pipe populate --truncate --wait analytics_sessions__v1 | tee /dev/tty)
+        output=$(tb pipe populate --truncate --wait analytics_sessions__v1)
 
         # Check that it ran ok
         if [ $? -ne 0 ]; then
             echo "Error in step $current_step"
+            echo $output
             exit 1
         fi
-        # ^ Right now this is broken, on error it does not stop
-        # Suggested approach: parse the output of the job. Output:
-        # ** Populating job url https://api.tinybird.co/v0/jobs/b19bebf2-6d21-435b-ac63-2ab1703fa563
-        # tb job details <job_id>
-
 
         # Log the stuff you've done
         # curl -X POST 'https://api.tinybird.co/v0/events?name=version_log' -H "Authorization: Bearer $TB_TOKEN" -d "{\"version\":\"$ver_from\",\"step_id\":$current_step,\"message\":\"$step_message\"}"
@@ -89,13 +85,15 @@ while [ $current_step -le $max_steps ]; do
         # Do stuff...
         step_message="Populate analytics_pages_mv__v1 with analytics_pages__v1"
         # Migrate the data
-        output=$(tb pipe populate --truncate --wait analytics_pages__v1 | tee /dev/tty)
+        output=$(tb pipe populate --truncate --wait analytics_pages__v1)
 
         # Check that it ran ok
         if [ $? -ne 0 ]; then
             echo "Error in step $current_step"
+            echo $output
             exit 1
         fi
+
         # Log the stuff you've done
         echo "{\"version\":\"$ver_from\",\"step_id\":$current_step,\"message\":\"$step_message\"}" > /tmp/msg.ndjson
         tb datasource append version_log /tmp/msg.ndjson
