@@ -65,18 +65,20 @@ const SignupOptions: React.FC<{
     // This is a bit unclear in current admin, maybe we should add a message if the settings are disabled?
     const isDisabled = membersSignupAccess !== 'all';
 
+    const isFreeTierAvailable = membersSignupAccess === 'all';
     const isStripeEnabled = checkStripeEnabled(localSettings, config!);
 
     let tiersCheckboxes: CheckboxProps[] = [];
 
     if (localTiers) {
         localTiers.forEach((tier) => {
-            if (tier.type === 'free') {
+            if (tier.type === 'free' && isFreeTierAvailable) {
                 tiersCheckboxes.push({
                     checked: (portalPlans.includes('free')),
                     disabled: isDisabled,
                     label: tier.name,
                     value: 'free',
+                    testId: 'free-tier-checkbox',
                     onChange: (checked) => {
                         if (portalPlans.includes('free') && !checked) {
                             portalPlans.splice(portalPlans.indexOf('free'), 1);
