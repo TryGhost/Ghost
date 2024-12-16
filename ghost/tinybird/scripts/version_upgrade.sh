@@ -4,6 +4,8 @@ ver_from="0.0.0"
 ver_to="1.0.0"
 
 
+
+
 current_ver=$(tb sql --format JSON "SELECT argMax(version, timestamp) version FROM version_log" | jq -r '.data[0].version')
 
 echo "Current version: $current_ver"
@@ -11,8 +13,8 @@ echo "Current version: $current_ver"
 # TODO: If current_ver = '', the DS is empty, we need to initialize
 # I am going to leave this command as a placeholder initializer for now:
 # tb datasource truncate version_log --yes
-# curl -X POST 'https://api.tinybird.co/v0/events?name=version_log' -H "Authorization: Bearer $TB_TOKEN" -d '{"version":"$ver_from","step_id":-1,"message":"Initial version statement"}'
-
+# echo "{\"version\":\"0.0.0\",\"step_id\":-1,\"message\":\"Current version statement\"}" > /tmp/msg.ndjson
+# tb datasource append version_log /tmp/msg.ndjson
 
 if [ "$ver_from" != "$current_ver" ];
 then
@@ -48,35 +50,46 @@ echo "Running from step id $current_step"
 # 2. Populate analytics_sessions_mv__v1 with analytics_sessions_v1
 # 3. Populate analytics_pages_mv__v1 with analytics_pages_v1
 
-max_steps=5
+max_steps=3
 while [ $current_step -le $max_steps ]; do
     echo
     echo "Running step $current_step"
     if [ "$current_step" -le 0 ];then
         # Do stuff...
+        step_message="Start update to $ver_to"
 
         # Log the stuff you've done
-        curl -X POST 'https://api.tinybird.co/v0/events?name=version_log' -H "Authorization: Bearer $TB_TOKEN" -d "{\"version\":\"$ver_from\",\"step_id\":$current_step,\"message\":\"Start update to $ver_to\"}"
+        echo "{\"version\":\"$ver_from\",\"step_id\":$current_step,\"message\":\"$step_message\"}" > /tmp/msg.ndjson
+        tb datasource append version_log /tmp/msg.ndjson
+
     elif [ "$current_step" -le 1 ];
     then
         # Do stuff...
-        step_message="Populate analytics_sessions_mv__v1 with analytics_sessions_v1"
+        step_message="Populate analytics_sessions_mv__v1 with analytics_sessions__v1"
         # Migrate the data
-        output=$(tb pipe populate --truncate --wait analytics_sessions_v1 | tee /dev/tty)
+        output=$(tb pipe populate --truncate --wait analytics_sessions__v1 | tee /dev/tty)
 
         # Check that it ran ok
         if [ $? -ne 0 ]; then
             echo "Error in step $current_step"
             exit 1
         fi
+        # ^ Right now this is broken, on error it does not stop
+        # Suggested approach: parse the output of the job. Output:
+        # ** Populating job url https://api.tinybird.co/v0/jobs/b19bebf2-6d21-435b-ac63-2ab1703fa563
+        # tb job details <job_id>
+
+
         # Log the stuff you've done
-        curl -X POST 'https://api.tinybird.co/v0/events?name=version_log' -H "Authorization: Bearer $TB_TOKEN" -d "{\"version\":\"$ver_from\",\"step_id\":$current_step,\"message\":\"$step_message\"}"
+        # curl -X POST 'https://api.tinybird.co/v0/events?name=version_log' -H "Authorization: Bearer $TB_TOKEN" -d "{\"version\":\"$ver_from\",\"step_id\":$current_step,\"message\":\"$step_message\"}"
+        echo "{\"version\":\"$ver_from\",\"step_id\":$current_step,\"message\":\"$step_message\"}" > /tmp/msg.ndjson
+        tb datasource append version_log /tmp/msg.ndjson
     elif [ "$current_step" -le 2 ];
     then
         # Do stuff...
-        step_message="Populate analytics_pages_mv__v1 with analytics_pages_v1"
+        step_message="Populate analytics_pages_mv__v1 with analytics_pages__v1"
         # Migrate the data
-        output=$(tb pipe populate --truncate --wait analytics_pages_v1 | tee /dev/tty)
+        output=$(tb pipe populate --truncate --wait analytics_pages__v1 | tee /dev/tty)
 
         # Check that it ran ok
         if [ $? -ne 0 ]; then
@@ -84,7 +97,8 @@ while [ $current_step -le $max_steps ]; do
             exit 1
         fi
         # Log the stuff you've done
-        curl -X POST 'https://api.tinybird.co/v0/events?name=version_log' -H "Authorization: Bearer $TB_TOKEN" -d "{\"version\":\"$ver_from\",\"step_id\":$current_step,\"message\":\"$step_message\"}"
+        echo "{\"version\":\"$ver_from\",\"step_id\":$current_step,\"message\":\"$step_message\"}" > /tmp/msg.ndjson
+        tb datasource append version_log /tmp/msg.ndjson
     else
         # Empty step for testing
         sleep 1
@@ -94,5 +108,9 @@ while [ $current_step -le $max_steps ]; do
 done
 
 
-# When all runs ok, finish
+# When all runs ok, finish logging that the new version is up and running
+step_message="Current version statement"
+current_step=-1
+echo "{\"version\":\"$ver_to\",\"step_id\":$current_step,\"message\":\"$step_message\"}" > /tmp/msg.ndjson
+tb datasource append version_log /tmp/msg.ndjson
 
