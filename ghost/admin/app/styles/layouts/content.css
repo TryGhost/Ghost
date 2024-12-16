@@ -666,7 +666,17 @@
         flex: 1 1 auto;
         max-width: 100%;
         overflow: hidden;
+        padding-right: 0;
     }
+
+    /* .gh-post-list-metrics-container {
+        padding-right: 0!important;
+    } */
+
+    .gh-post-list-metrics-container a {
+        padding: 0!important;
+    }
+
 }
 
 @media (min-width: 901px) {
