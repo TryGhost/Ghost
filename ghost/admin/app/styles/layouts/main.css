@@ -1835,9 +1835,25 @@
     .gh-canvas {
         padding: 0 4vw 4vw;
     }
+    
+    .gh-canvas-header.break.tablet .view-actions {
+        position: absolute;
+        left: 0;
+        width: 100%;
+    }
 
-    .gh-canvas-header.break .view-actions-bottom-row {
+    .gh-canvas-header.break.tablet .view-actions-bottom-row {
+        position: relative;
         max-width: calc(100vw - 56px) !important;
+        min-width: 100%;
+        display: flex;
+        justify-content: space-between;
+        overflow-x: auto;
+
+    }
+
+    .gh-canvas-header.break .view-actions .gh-contentfilter {
+        border: none;
     }
 }
 

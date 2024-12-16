@@ -1,5 +1,6 @@
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type Actor = any;
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type Activity = any;
 
@@ -9,12 +10,17 @@ export interface Profile {
     followerCount: number;
     followingCount: number;
     isFollowing: boolean;
-    posts: Activity[];
 }
 
 export interface SearchResults {
     profiles: Profile[];
 }
+
+export interface ActivityThread {
+    items: Activity[];
+}
+
+export type ActivityPubCollectionResponse<T> = {data: T[], next: string | null};
 
 export interface GetFollowersForProfileResponse {
     followers: {
@@ -32,8 +38,9 @@ export interface GetFollowingForProfileResponse {
     next: string | null;
 }
 
-export interface ActivityThread {
-    items: Activity[];
+export interface GetPostsForProfileResponse {
+    posts: Activity[];
+    next: string | null;
 }
 
 export class ActivityPubAPI {
@@ -73,39 +80,52 @@ export class ActivityPubAPI {
         return json;
     }
 
-    private async getActivityPubCollection<T>(collectionUrl: URL): Promise<T[]> {
-        const fetchPage = async (pageUrl: URL): Promise<T[]> => {
-            const json = await this.fetchJSON(pageUrl);
+    private async getActivityPubCollection<T>(collectionUrl: URL, cursor?: string): Promise<ActivityPubCollectionResponse<T>> {
+        const url = new URL(collectionUrl);
+        url.searchParams.set('cursor', cursor || '0');
 
-            if (json === null) {
-                return [];
-            }
+        const json = await this.fetchJSON(url);
 
-            let items: T[] = [];
-
-            if ('orderedItems' in json) {
-                items = Array.isArray(json.orderedItems) ? json.orderedItems : [json.orderedItems];
-            }
-
-            if ('next' in json && typeof json.next === 'string') {
-                const nextPageUrl = new URL(json.next);
-                const nextPageItems = await fetchPage(nextPageUrl);
-
-                items = items.concat(nextPageItems);
-            }
-
-            return items;
-        };
-
-        const initialJson = await this.fetchJSON(collectionUrl);
-
-        if (initialJson === null || !('first' in initialJson) || typeof initialJson.first !== 'string') {
-            return [];
+        if (json === null) {
+            return {
+                data: [],
+                next: null
+            };
         }
 
-        const firstPageUrl = new URL(initialJson.first);
+        if (!('orderedItems' in json)) {
+            return {
+                data: [],
+                next: null
+            };
+        }
 
-        return fetchPage(firstPageUrl);
+        const data = Array.isArray(json.orderedItems) ? json.orderedItems : [];
+        let next = 'next' in json && typeof json.next === 'string' ? json.next : null;
+
+        if (next !== null) {
+            const nextUrl = new URL(next);
+            next = nextUrl.searchParams.get('cursor') || null;
+        }
+
+        return {
+            data,
+            next
+        };
+    }
+
+    private async getActivityPubCollectionCount(collectionUrl: URL): Promise<number> {
+        const json = await this.fetchJSON(collectionUrl);
+
+        if (json === null) {
+            return 0;
+        }
+
+        if ('totalItems' in json && typeof json.totalItems === 'number') {
+            return json.totalItems;
+        }
+
+        return 0;
     }
 
     get inboxApiUrl() {
@@ -130,108 +150,32 @@ export class ActivityPubAPI {
         return new URL(`.ghost/activitypub/outbox/${this.handle}`, this.apiUrl);
     }
 
-    async getOutbox(): Promise<Activity[]> {
-        return this.getActivityPubCollection<Activity>(this.outboxApiUrl);
+    async getOutbox(cursor?: string): Promise<ActivityPubCollectionResponse<Activity>> {
+        return this.getActivityPubCollection<Activity>(this.outboxApiUrl, cursor);
     }
 
     get followingApiUrl() {
         return new URL(`.ghost/activitypub/following/${this.handle}`, this.apiUrl);
     }
 
-    async getFollowing(): Promise<Actor[]> {
-        return this.getActivityPubCollection<Actor>(this.followingApiUrl);
+    async getFollowing(cursor?: string): Promise<ActivityPubCollectionResponse<Actor>> {
+        return this.getActivityPubCollection<Actor>(this.followingApiUrl, cursor);
     }
 
     async getFollowingCount(): Promise<number> {
-        const json = await this.fetchJSON(this.followingApiUrl);
-        if (json === null) {
-            return 0;
-        }
-        if ('totalItems' in json && typeof json.totalItems === 'number') {
-            return json.totalItems;
-        }
-        return 0;
+        return this.getActivityPubCollectionCount(this.followingApiUrl);
     }
 
     get followersApiUrl() {
         return new URL(`.ghost/activitypub/followers/${this.handle}`, this.apiUrl);
     }
 
-    async getFollowers(): Promise<Actor[]> {
-        return this.getActivityPubCollection<Actor>(this.followersApiUrl);
+    async getFollowers(cursor?: string): Promise<ActivityPubCollectionResponse<Actor>> {
+        return this.getActivityPubCollection<Actor>(this.followersApiUrl, cursor);
     }
 
     async getFollowersCount(): Promise<number> {
-        const json = await this.fetchJSON(this.followersApiUrl);
-        if (json === null) {
-            return 0;
-        }
-        if ('totalItems' in json && typeof json.totalItems === 'number') {
-            return json.totalItems;
-        }
-        return 0;
-    }
-
-    async getFollowersForProfile(handle: string, next?: string): Promise<GetFollowersForProfileResponse> {
-        const url = new URL(`.ghost/activitypub/profile/${handle}/followers`, this.apiUrl);
-        if (next) {
-            url.searchParams.set('next', next);
-        }
-
-        const json = await this.fetchJSON(url);
-
-        if (json === null) {
-            return {
-                followers: [],
-                next: null
-            };
-        }
-
-        if (!('followers' in json)) {
-            return {
-                followers: [],
-                next: null
-            };
-        }
-
-        const followers = Array.isArray(json.followers) ? json.followers : [];
-        const nextPage = 'next' in json && typeof json.next === 'string' ? json.next : null;
-
-        return {
-            followers,
-            next: nextPage
-        };
-    }
-
-    async getFollowingForProfile(handle: string, next?: string): Promise<GetFollowingForProfileResponse> {
-        const url = new URL(`.ghost/activitypub/profile/${handle}/following`, this.apiUrl);
-        if (next) {
-            url.searchParams.set('next', next);
-        }
-
-        const json = await this.fetchJSON(url);
-
-        if (json === null) {
-            return {
-                following: [],
-                next: null
-            };
-        }
-
-        if (!('following' in json)) {
-            return {
-                following: [],
-                next: null
-            };
-        }
-
-        const following = Array.isArray(json.following) ? json.following : [];
-        const nextPage = 'next' in json && typeof json.next === 'string' ? json.next : null;
-
-        return {
-            following,
-            next: nextPage
-        };
+        return this.getActivityPubCollectionCount(this.followersApiUrl);
     }
 
     async follow(username: string): Promise<Actor> {
@@ -240,17 +184,16 @@ export class ActivityPubAPI {
         return json as Actor;
     }
 
-    async getActor(url: string): Promise<Actor> {
-        const json = await this.fetchJSON(new URL(url));
-        return json as Actor;
-    }
-
     get likedApiUrl() {
         return new URL(`.ghost/activitypub/liked/${this.handle}`, this.apiUrl);
     }
 
-    async getLiked() {
-        return this.getActivityPubCollection<Activity>(this.likedApiUrl);
+    async getLiked(cursor?: string): Promise<ActivityPubCollectionResponse<Activity>> {
+        return this.getActivityPubCollection<Activity>(this.likedApiUrl, cursor);
+    }
+
+    async getLikedCount(): Promise<number> {
+        return this.getActivityPubCollectionCount(this.likedApiUrl);
     }
 
     async like(id: string): Promise<void> {
@@ -270,7 +213,6 @@ export class ActivityPubAPI {
     async getActivities(
         includeOwn: boolean = false,
         includeReplies: boolean = false,
-        excludeNonFollowers: boolean = false,
         filter: {type?: string[]} | null = null,
         cursor?: string
     ): Promise<{data: Activity[], next: string | null}> {
@@ -283,9 +225,6 @@ export class ActivityPubAPI {
         }
         if (includeReplies) {
             url.searchParams.set('includeReplies', includeReplies.toString());
-        }
-        if (excludeNonFollowers) {
-            url.searchParams.set('excludeNonFollowers', excludeNonFollowers.toString());
         }
         if (filter) {
             url.searchParams.set('filter', JSON.stringify(filter));
@@ -364,6 +303,99 @@ export class ActivityPubAPI {
         const url = new URL(`.ghost/activitypub/profile/${handle}`, this.apiUrl);
         const json = await this.fetchJSON(url);
         return json as Profile;
+    }
+
+    async getFollowersForProfile(handle: string, next?: string): Promise<GetFollowersForProfileResponse> {
+        const url = new URL(`.ghost/activitypub/profile/${handle}/followers`, this.apiUrl);
+        if (next) {
+            url.searchParams.set('next', next);
+        }
+
+        const json = await this.fetchJSON(url);
+
+        if (json === null) {
+            return {
+                followers: [],
+                next: null
+            };
+        }
+
+        if (!('followers' in json)) {
+            return {
+                followers: [],
+                next: null
+            };
+        }
+
+        const followers = Array.isArray(json.followers) ? json.followers : [];
+        const nextPage = 'next' in json && typeof json.next === 'string' ? json.next : null;
+
+        return {
+            followers,
+            next: nextPage
+        };
+    }
+
+    async getFollowingForProfile(handle: string, next?: string): Promise<GetFollowingForProfileResponse> {
+        const url = new URL(`.ghost/activitypub/profile/${handle}/following`, this.apiUrl);
+        if (next) {
+            url.searchParams.set('next', next);
+        }
+
+        const json = await this.fetchJSON(url);
+
+        if (json === null) {
+            return {
+                following: [],
+                next: null
+            };
+        }
+
+        if (!('following' in json)) {
+            return {
+                following: [],
+                next: null
+            };
+        }
+
+        const following = Array.isArray(json.following) ? json.following : [];
+        const nextPage = 'next' in json && typeof json.next === 'string' ? json.next : null;
+
+        return {
+            following,
+            next: nextPage
+        };
+    }
+
+    async getPostsForProfile(handle: string, next?: string): Promise<GetPostsForProfileResponse> {
+        const url = new URL(`.ghost/activitypub/profile/${handle}/posts`, this.apiUrl);
+        if (next) {
+            url.searchParams.set('next', next);
+        }
+
+        const json = await this.fetchJSON(url);
+
+        if (json === null) {
+            return {
+                posts: [],
+                next: null
+            };
+        }
+
+        if (!('posts' in json)) {
+            return {
+                posts: [],
+                next: null
+            };
+        }
+
+        const posts = Array.isArray(json.posts) ? json.posts : [];
+        const nextPage = 'next' in json && typeof json.next === 'string' ? json.next : null;
+
+        return {
+            posts,
+            next: nextPage
+        };
     }
 
     async getThread(id: string): Promise<ActivityThread> {

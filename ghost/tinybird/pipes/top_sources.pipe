@@ -1,4 +1,4 @@
-
+VERSION 0
 DESCRIPTION >
     Top traffic sources (domains), ordered by most visits.
     Accepts `date_from` and `date_to` date filter. Defaults to last 7 days.

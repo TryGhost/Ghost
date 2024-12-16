@@ -1,5 +1,6 @@
 import React from 'react';
 import ThemeSetting from './ThemeSetting';
+import useCustomFonts from '../../../../hooks/useCustomFonts';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import {CustomThemeSetting} from '@tryghost/admin-x-framework/api/customThemeSettings';
 import {Form} from '@tryghost/admin-x-design-system';
@@ -46,6 +47,7 @@ const ThemeSettings: React.FC<ThemeSettingsProps> = ({sections, updateSetting}) 
     const activeThemeName = activeTheme?.package.name?.toLowerCase() || '';
     const activeThemeAuthor = activeTheme?.package.author?.name || '';
     const hasCustomFonts = useFeatureFlag('customFonts');
+    const {supportsCustomFonts} = useCustomFonts();
 
     return (
         <>
@@ -70,7 +72,7 @@ const ThemeSettings: React.FC<ThemeSettingsProps> = ({sections, updateSetting}) 
                             // should be removed once we remove the settings from the themes in 6.0
                             if (hasCustomFonts) {
                                 const hidingSettings = themeSettingsMap[activeThemeName];
-                                if (hidingSettings && hidingSettings.includes(setting.key) && activeThemeAuthor === 'Ghost Foundation') {
+                                if (hidingSettings && hidingSettings.includes(setting.key) && activeThemeAuthor === 'Ghost Foundation' && supportsCustomFonts) {
                                     spaceClass += ' hidden';
                                 }
                             }
