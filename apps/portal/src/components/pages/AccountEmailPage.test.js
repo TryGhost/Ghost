@@ -118,7 +118,7 @@ describe('Account Email Page', () => {
         expect(mockOnActionFn).toHaveBeenCalledWith('switchPage', {page: 'signin'});
     });
 
-    test('newsletters are not visible when newsletters are disabled on the site ', async () => {
+    test('newsletters are not visible when newsletters are disabled on the site but has comments enabled', async () => {
         const newsletterData = getNewslettersData({numOfNewsletters: 2});
         const siteData = getSiteData({
             newsletters: newsletterData,
