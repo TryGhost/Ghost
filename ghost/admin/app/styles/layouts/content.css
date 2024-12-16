@@ -236,7 +236,9 @@
 /* END Temporary styles to move post list to use flex instead of tables */
 
 .gh-posts-list-item {
-    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
 .gh-posts-list-item a:hover {
@@ -281,7 +283,10 @@
 }
 
 .gh-post-list-title {
-    padding-left: 10px;
+    flex: 0 1 auto;
+    min-width: 0;
+    max-width: 80%;
+    overflow: hidden;
 }
 
 .gh-post-list-title .gh-lexical-indicator {
@@ -339,6 +344,8 @@
     margin: 0 0 2px;
     font-size: 1.6rem;
     font-weight: 600;
+    max-width: 100%;
+    overflow: hidden;
 }
 
 .gh-content-entry-title a {
@@ -654,6 +661,18 @@
     .gh-contentfilter-menu:last-of-type {
         padding-right: 8px;
     }
+
+    .gh-post-list-title {
+        flex: 1 1 auto;
+        max-width: 100%;
+        overflow: hidden;
+        padding-right: 0;
+    }
+
+    .gh-post-list-metrics-container a {
+        padding: 0!important;
+    }
+
 }
 
 @media (min-width: 901px) {
@@ -753,11 +772,7 @@
     display: block;
     padding: 6px 0 8px;
     overflow: hidden;
-    text-overflow: ellipsis;
     white-space: initial;
-    display: -webkit-box;
-    -webkit-line-clamp: 1;
-    -webkit-box-orient: vertical;
 }
 
 @media (max-width: 1280px) {
@@ -1451,10 +1466,6 @@
     transition: all 1s ease;
 }
 
-.gh-post-list-metrics {
-    width: 120px;
-}
-
 .gh-content-email-stats,
 .gh-post-list-cta {
     margin: 0 0 3px;
@@ -2126,4 +2137,24 @@ span.dropdown .gh-post-list-cta > span {
 
 .gh-post-analytics-mentions .gh-dashboard-list-footer a {
     font-size: 1.3rem;
+}
+
+.gh-post-list-button {
+    flex: 0 0 auto;
+}
+
+.gh-post-list-metrics-container {
+    display: flex;
+    flex: 0 0 auto;
+}
+
+.gh-post-list-metrics {
+    width: 100px;
+    flex-shrink: 0;
+    display: grid;
+    grid-template-rows: auto auto;
+}
+
+.gh-post-list-button {
+    flex: 0 0 auto;
 }
