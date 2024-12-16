@@ -86,6 +86,7 @@ while [ $current_step -le $max_steps ]; do
         # Log the stuff you've done
         curl -X POST 'https://api.tinybird.co/v0/events?name=version_log' -H "Authorization: Bearer $TB_TOKEN" -d "{\"version\":\"$ver_from\",\"step_id\":$current_step,\"message\":\"$step_message\"}"
     else
+        # Empty step for testing
         sleep 1
     fi
     # Go to the next step
