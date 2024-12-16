@@ -1462,7 +1462,7 @@
 }
 
 .gh-post-list-metrics {
-    width: 120px;
+    min-width: 120px;
 }
 
 .gh-content-email-stats,
