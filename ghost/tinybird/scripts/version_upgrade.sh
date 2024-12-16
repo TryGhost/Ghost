@@ -4,7 +4,6 @@ ver_from="0.0.0"
 ver_to="1.0.0"
 
 
-
 current_ver=$(tb sql --format JSON "SELECT argMax(version, timestamp) version FROM version_log" | jq -r '.data[0].version')
 
 echo "Current version: $current_ver"
@@ -12,7 +11,7 @@ echo "Current version: $current_ver"
 # TODO: If current_ver = '', the DS is empty, we need to initialize
 # I am going to leave this command as a placeholder initializer for now:
 # tb datasource truncate version_log --yes
-# curl -X POST 'https://api.tinybird.co/v0/events?name=version_log' -H "Authorization: Bearer $TB_TOKEN" -d '{"version":"0.0.0","step_id":-1,"message":"Initial version statement"}'
+# curl -X POST 'https://api.tinybird.co/v0/events?name=version_log' -H "Authorization: Bearer $TB_TOKEN" -d '{"version":"$ver_from","step_id":-1,"message":"Initial version statement"}'
 
 
 if [ "$ver_from" != "$current_ver" ];
@@ -42,6 +41,12 @@ current_step=$((current_step+1))
 
 echo "Running from step id $current_step"
 
+# Migration plan:
+# analytics_sources.pipe should not really be iterated, as the output 
+# does not change and thus does not require a migration
+# 1. Start (can be removed)
+# 2. Populate analytics_sessions_mv__v1 with analytics_sessions_v1
+# 3. Populate analytics_pages_mv__v1 with analytics_pages_v1
 
 max_steps=5
 while [ $current_step -le $max_steps ]; do
@@ -49,34 +54,37 @@ while [ $current_step -le $max_steps ]; do
     echo "Running step $current_step"
     if [ "$current_step" -le 0 ];then
         # Do stuff...
+
         # Log the stuff you've done
-        curl -X POST 'https://api.tinybird.co/v0/events?name=version_log' -H "Authorization: Bearer $TB_TOKEN" -d "{\"version\":\"0.0.0\",\"step_id\":$current_step,\"message\":\"Start update to $ver_to\"}"
+        curl -X POST 'https://api.tinybird.co/v0/events?name=version_log' -H "Authorization: Bearer $TB_TOKEN" -d "{\"version\":\"$ver_from\",\"step_id\":$current_step,\"message\":\"Start update to $ver_to\"}"
     elif [ "$current_step" -le 1 ];
     then
         # Do stuff...
-        # Deploy changes
-        output=$(tb push --push-deps --only-changes --no-check --yes | tee /dev/tty)
+        step_message="Populate analytics_sessions_mv__v1 with analytics_sessions_v1"
+        # Migrate the data
+        output=$(tb pipe populate --truncate --wait analytics_sessions_v1 | tee /dev/tty)
 
-        # If a step fails, the script should stop without logging so it can be retried
+        # Check that it ran ok
         if [ $? -ne 0 ]; then
             echo "Error in step $current_step"
             exit 1
         fi
-
         # Log the stuff you've done
-        curl -X POST 'https://api.tinybird.co/v0/events?name=version_log' -H "Authorization: Bearer $TB_TOKEN" -d "{\"version\":\"0.0.0\",\"step_id\":$current_step,\"message\":\"Deploy changes\"}"
+        curl -X POST 'https://api.tinybird.co/v0/events?name=version_log' -H "Authorization: Bearer $TB_TOKEN" -d "{\"version\":\"$ver_from\",\"step_id\":$current_step,\"message\":\"$step_message\"}"
     elif [ "$current_step" -le 2 ];
     then
         # Do stuff...
+        step_message="Populate analytics_pages_mv__v1 with analytics_pages_v1"
         # Migrate the data
-        let
+        output=$(tb pipe populate --truncate --wait analytics_pages_v1 | tee /dev/tty)
 
+        # Check that it ran ok
         if [ $? -ne 0 ]; then
             echo "Error in step $current_step"
             exit 1
         fi
         # Log the stuff you've done
-        curl -X POST 'https://api.tinybird.co/v0/events?name=version_log' -H "Authorization: Bearer $TB_TOKEN" -d "{\"version\":\"0.0.0\",\"step_id\":$current_step,\"message\":\"Deploy changes\"}"
+        curl -X POST 'https://api.tinybird.co/v0/events?name=version_log' -H "Authorization: Bearer $TB_TOKEN" -d "{\"version\":\"$ver_from\",\"step_id\":$current_step,\"message\":\"$step_message\"}"
     else
         sleep 1
     fi
