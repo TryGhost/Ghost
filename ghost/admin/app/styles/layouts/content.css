@@ -282,6 +282,9 @@
 
 .gh-post-list-title {
     padding-left: 10px;
+    min-width: 0;
+    max-width: 70%;
+    overflow: hidden;
 }
 
 .gh-post-list-title .gh-lexical-indicator {
