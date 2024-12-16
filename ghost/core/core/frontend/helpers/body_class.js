@@ -2,7 +2,7 @@
 // Usage: `{{body_class}}`
 //
 // Output classes for the body element
-const {labs, settingsCache} = require('../services/proxy');
+const {settingsCache} = require('../services/proxy');
 const {generateCustomFontBodyClass, isValidCustomFont, isValidCustomHeadingFont} = require('@tryghost/custom-fonts');
 const {SafeString} = require('../services/handlebars');
 
@@ -45,30 +45,28 @@ module.exports = function body_class(options) { // eslint-disable-line camelcase
         classes.push('paged');
     }
 
-    if (labs.isSet('customFonts')) {
-        // Check if if the request is for a site preview, in which case we **always** use the custom font values
-        // from the passed in data, even when they're empty strings or settings cache has values.
-        const isSitePreview = options.data?.site?._preview ?? false;
-        // Taking the fonts straight from the passed in data, as they can't be used from the
-        // settings cache for the theme preview until the settings are saved. Once saved,
-        // we need to use the settings cache to provide the correct CSS injection.
-        const headingFont = isSitePreview ? options.data?.site?.heading_font : settingsCache.get('heading_font');
-        const bodyFont = isSitePreview ? options.data?.site?.body_font : settingsCache.get('body_font');
+    // Check if if the request is for a site preview, in which case we **always** use the custom font values
+    // from the passed in data, even when they're empty strings or settings cache has values.
+    const isSitePreview = options.data?.site?._preview ?? false;
+    // Taking the fonts straight from the passed in data, as they can't be used from the
+    // settings cache for the theme preview until the settings are saved. Once saved,
+    // we need to use the settings cache to provide the correct CSS injection.
+    const headingFont = isSitePreview ? options.data?.site?.heading_font : settingsCache.get('heading_font');
+    const bodyFont = isSitePreview ? options.data?.site?.body_font : settingsCache.get('body_font');
 
-        if ((typeof headingFont === 'string' && isValidCustomHeadingFont(headingFont)) ||
-            (typeof bodyFont === 'string' && isValidCustomFont(bodyFont))) {
-            /** @type FontSelection */
-            const fontSelection = {};
+    if ((typeof headingFont === 'string' && isValidCustomHeadingFont(headingFont)) ||
+        (typeof bodyFont === 'string' && isValidCustomFont(bodyFont))) {
+        /** @type FontSelection */
+        const fontSelection = {};
 
-            if (headingFont) {
-                fontSelection.heading = headingFont;
-            }
-            if (bodyFont) {
-                fontSelection.body = bodyFont;
-            }
-            const customBodyClasses = generateCustomFontBodyClass(fontSelection);
-            classes.push(new SafeString(customBodyClasses));
+        if (headingFont) {
+            fontSelection.heading = headingFont;
         }
+        if (bodyFont) {
+            fontSelection.body = bodyFont;
+        }
+        const customBodyClasses = generateCustomFontBodyClass(fontSelection);
+        classes.push(new SafeString(customBodyClasses));
     }
 
     classes = classes.join(' ').trim();

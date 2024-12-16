@@ -7,7 +7,7 @@ const body_class = require('../../../../core/frontend/helpers/body_class');
 
 // Stubs
 const proxy = require('../../../../core/frontend/services/proxy');
-const {settingsCache, labs} = proxy;
+const {settingsCache} = proxy;
 
 describe('{{body_class}} helper', function () {
     let options = {};
@@ -164,7 +164,6 @@ describe('{{body_class}} helper', function () {
 
     describe('custom fonts', function () {
         let settingsCacheStub;
-        let labsStub;
 
         function callBodyClassWithContext(context, self) {
             options.data.root.context = context;
@@ -175,7 +174,6 @@ describe('{{body_class}} helper', function () {
         }
 
         beforeEach(function () {
-            labsStub = sinon.stub(labs, 'isSet').withArgs('customFonts').returns(true);
             settingsCacheStub = sinon.stub(settingsCache, 'get');
             options = {
                 data: {
@@ -218,8 +216,6 @@ describe('{{body_class}} helper', function () {
         });
 
         it('does not include custom font classes when custom fonts are not enabled', function () {
-            labsStub.withArgs('customFonts').returns(false);
-
             const rendered = callBodyClassWithContext(
                 ['post'],
                 {relativeUrl: '/my-awesome-post/', post: {tags: [{slug: 'foo'}, {slug: 'bar'}]}}

@@ -1032,7 +1032,7 @@ Object {
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\">
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\">
     
-    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" crossorigin=\\"anonymous\\"></script>
+    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" data-locale=\\"en\\" crossorigin=\\"anonymous\\"></script>
     
     <link href=\\"http://127.0.0.1:2369/webmentions/receive/\\" rel=\\"webmention\\">",
 }
@@ -1106,7 +1106,7 @@ Object {
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\">
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\">
     
-    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" crossorigin=\\"anonymous\\"></script>
+    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" data-locale=\\"en\\" crossorigin=\\"anonymous\\"></script>
     
     <link href=\\"http://127.0.0.1:2369/webmentions/receive/\\" rel=\\"webmention\\">",
 }
@@ -1180,7 +1180,7 @@ Object {
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\">
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\">
     
-    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" crossorigin=\\"anonymous\\"></script>
+    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" data-locale=\\"en\\" crossorigin=\\"anonymous\\"></script>
     
     <link href=\\"http://127.0.0.1:2369/webmentions/receive/\\" rel=\\"webmention\\">",
 }
@@ -1254,7 +1254,7 @@ Object {
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\">
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\">
     
-    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" crossorigin=\\"anonymous\\"></script>
+    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" data-locale=\\"en\\" crossorigin=\\"anonymous\\"></script>
     
     <link href=\\"http://127.0.0.1:2369/webmentions/receive/\\" rel=\\"webmention\\">",
 }
@@ -1403,7 +1403,7 @@ Object {
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\">
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\">
     
-    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" crossorigin=\\"anonymous\\"></script>
+    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" data-locale=\\"en\\" crossorigin=\\"anonymous\\"></script>
     
     <link href=\\"http://127.0.0.1:2369/webmentions/receive/\\" rel=\\"webmention\\">
     <link rel=\\"preconnect\\" href=\\"https://fonts.bunny.net\\"><link rel=\\"stylesheet\\" href=\\"https://fonts.bunny.net/css?family=space-grotesk:700|poppins:400,500,600\\"><style>:root {--gh-font-heading: Space Grotesk;--gh-font-body: Poppins;}</style>",
@@ -1553,7 +1553,7 @@ Object {
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\">
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\">
     
-    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" crossorigin=\\"anonymous\\"></script>
+    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" data-locale=\\"en\\" crossorigin=\\"anonymous\\"></script>
     
     <link href=\\"http://127.0.0.1:2369/webmentions/receive/\\" rel=\\"webmention\\">
     <link rel=\\"preconnect\\" href=\\"https://fonts.bunny.net\\"><link rel=\\"stylesheet\\" href=\\"https://fonts.bunny.net/css?family=undefined|lora:400,700\\"><style>:root {--gh-font-heading: Playfair Display;--gh-font-body: Lora;}</style>",
