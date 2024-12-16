@@ -15,7 +15,7 @@ function calculateMemberTier(member, freeTier) {
     const activeSubscriptions = member.subscriptions.filter(sub => sub.status === 'active');
     if (activeSubscriptions.length === 0) {
         return freeTier;
-    } 
+    }
     if (activeSubscriptions.length === 1) {
         return activeSubscriptions[0].tier;
     }
@@ -62,10 +62,14 @@ const getMiddleware = async (getFreeTier = async () => {
             // The member is either on the free tier or has a single active subscription
             // Cache the content based on the member's tier
             res.set({'X-Member-Cache-Tier': memberTier.id});
-            return shared.middleware.cacheControl('public', {maxAge: config.get('caching:frontend:maxAge')})(req, res, next);
         }
+
         // CASE: Site is not private and the request is not made by a member — cache the content
-        return shared.middleware.cacheControl('public', {maxAge: config.get('caching:frontend:maxAge')})(req, res, next);
+        return shared.middleware.cacheControl('public', {
+            maxAge: config.get('caching:frontend:maxAge'),
+            staleWhileRevalidate: config.get('caching:frontend:staleWhileRevalidate'),
+            staleIfError: config.get('caching:frontend:staleIfError')
+        })(req, res, next);
     }
 
     return setFrontendCacheHeadersMiddleware;

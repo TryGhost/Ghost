@@ -13,13 +13,15 @@ const isString = require('lodash/isString');
  * @param {object} [options]
  * @param {number} [options.maxAge] The max-age in seconds to use when profile is "public"
  * @param {number} [options.staleWhileRevalidate] The stale-while-revalidate in seconds to use when profile is "public"
+ * @param {number} [options.staleIfError] The stale-if-error in seconds to use when profile is "public"
  */
 const cacheControl = (profile, options = {maxAge: 0}) => {
-    const isOptionHasProperty = property => Object.prototype.hasOwnProperty.call(options, property);
+    const isOptionHasProperty = property => Object.prototype.hasOwnProperty.call(options, property) && options[property];
     const publicOptions = [
         'public',
         `max-age=${options.maxAge}`,
-        isOptionHasProperty('staleWhileRevalidate') ? `stale-while-revalidate=${options.staleWhileRevalidate}` : ''
+        isOptionHasProperty('staleWhileRevalidate') ? `stale-while-revalidate=${options.staleWhileRevalidate}` : '',
+        isOptionHasProperty('staleIfError') ? `stale-if-error=${options.staleIfError}` : ''
     ];
 
     const profiles = {
