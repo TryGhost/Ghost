@@ -285,7 +285,7 @@
 .gh-post-list-title {
     flex: 0 1 auto;
     min-width: 0;
-    max-width: 70%;
+    max-width: 80%;
     overflow: hidden;
 }
 
@@ -668,10 +668,6 @@
         overflow: hidden;
         padding-right: 0;
     }
-
-    /* .gh-post-list-metrics-container {
-        padding-right: 0!important;
-    } */
 
     .gh-post-list-metrics-container a {
         padding: 0!important;
@@ -2150,7 +2146,6 @@ span.dropdown .gh-post-list-cta > span {
 .gh-post-list-metrics-container {
     display: flex;
     flex: 0 0 auto;
-    padding-right: 16px;
 }
 
 .gh-post-list-metrics {
@@ -2158,7 +2153,6 @@ span.dropdown .gh-post-list-cta > span {
     flex-shrink: 0;
     display: grid;
     grid-template-rows: auto auto;
-    text-align: right;
 }
 
 .gh-post-list-button {

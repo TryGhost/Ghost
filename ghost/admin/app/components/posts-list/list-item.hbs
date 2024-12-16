@@ -145,8 +145,9 @@
         </LinkTo>
     {{/if}}
 
-    {{!-- Metrics columns --}}
+    {{!-- Metrics columns wrapper --}}
     <div class="gh-post-list-metrics-container">
+        {{!-- Opened / Signups column --}}
         {{#if (and @post.showEmailOpenAnalytics @post.showEmailClickAnalytics) }}
             <LinkTo @route="members" @query={{hash filterParam=(concat "opened_emails.post_id:" @post.id) }} class="permalink gh-list-data gh-post-list-metrics">
                 <span class="gh-content-email-stats-value">
@@ -166,6 +167,7 @@
             </LinkTo>
         {{/if}}
 
+        {{!-- Clicked / Conversions column --}}
         {{#if @post.showEmailClickAnalytics }}
             <LinkTo @route="members" @query={{hash filterParam=(concat "clicked_links.post_id:" @post.id) }} class="permalink gh-list-data gh-post-list-metrics">
                 <span class="gh-content-email-stats-value">
