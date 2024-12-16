@@ -83,8 +83,7 @@ export type EditableAppContext = {
     order: string,
     adminApi: AdminApi | null,
     commentsIsLoading?: boolean,
-    commentIdToHighlight: string | null,
-    commentLikeLoadingId?: string | null
+    commentIdToHighlight: string | null
 }
 
 export type TranslationFunction = (key: string, replacements?: Record<string, string | number>) => string;
