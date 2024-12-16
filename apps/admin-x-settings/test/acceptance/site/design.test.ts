@@ -3,7 +3,6 @@ import {
     mockApi,
     mockSitePreview,
     responseFixtures,
-    toggleLabsFlag,
     updatedSettingsResponse
 } from '@tryghost/admin-x-framework/test/acceptance';
 import {expect, test} from '@playwright/test';

@@ -7,7 +7,7 @@ const body_class = require('../../../../core/frontend/helpers/body_class');
 
 // Stubs
 const proxy = require('../../../../core/frontend/services/proxy');
-const {settingsCache, labs} = proxy;
+const {settingsCache} = proxy;
 
 describe('{{body_class}} helper', function () {
     let options = {};
@@ -164,7 +164,6 @@ describe('{{body_class}} helper', function () {
 
     describe('custom fonts', function () {
         let settingsCacheStub;
-        let labsStub;
 
         function callBodyClassWithContext(context, self) {
             options.data.root.context = context;
