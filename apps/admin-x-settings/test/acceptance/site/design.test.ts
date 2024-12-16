@@ -418,6 +418,7 @@ test.describe('Design settings', async () => {
                     name: 'headline',
                     package: {
                         name: 'headline',
+                        version: '1.1.0',
                         author: {
                             name: 'Ghost Foundation'
                         }
@@ -449,19 +450,7 @@ test.describe('Design settings', async () => {
                         key: 'body_font'
                     }
                 ]
-            }},
-            activeTheme: {
-                method: 'GET',
-                path: '/themes/active/',
-                response: {
-                    themes: [{
-                        name: 'casper',
-                        package: {},
-                        active: true,
-                        templates: []
-                    }]
-                }
-            }
+            }}
         }});
 
         await page.goto('/');
@@ -539,32 +528,7 @@ test.describe('Design settings', async () => {
                         key: 'body_font'
                     }
                 ]
-            }},
-            activeTheme: {
-                method: 'GET',
-                path: '/themes/active/',
-                response: {
-                    themes: [{
-                        name: 'casper',
-                        package: {},
-                        active: true,
-                        templates: [],
-                        warnings: [{
-                            fatal: false,
-                            level: 'warning',
-                            rule: 'Missing support for custom fonts',
-                            details: 'CSS variables for Ghost font settings are not present: <code>--gh-font-heading</code>, <code>--gh-font-body</code>',
-                            regex: {},
-                            failures: [
-                                {
-                                    ref: 'styles'
-                                }
-                            ],
-                            code: 'GS051-CUSTOM-FONTS'
-                        }]
-                    }]
-                }
-            }
+            }}
         }});
 
         await page.goto('/');
