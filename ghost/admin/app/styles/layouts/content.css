@@ -236,7 +236,9 @@
 /* END Temporary styles to move post list to use flex instead of tables */
 
 .gh-posts-list-item {
-    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
 .gh-posts-list-item a:hover {
@@ -281,7 +283,7 @@
 }
 
 .gh-post-list-title {
-    padding-left: 10px;
+    flex: 0 1 auto;
     min-width: 0;
     max-width: 70%;
     overflow: hidden;
@@ -1461,10 +1463,6 @@
     transition: all 1s ease;
 }
 
-.gh-post-list-metrics {
-    min-width: 120px;
-}
-
 .gh-content-email-stats,
 .gh-post-list-cta {
     margin: 0 0 3px;
@@ -2136,4 +2134,23 @@ span.dropdown .gh-post-list-cta > span {
 
 .gh-post-analytics-mentions .gh-dashboard-list-footer a {
     font-size: 1.3rem;
+}
+
+.gh-post-list-button {
+    flex: 0 0 auto;
+}
+
+.gh-post-list-metrics-container {
+    display: flex;
+    gap: 24px;  /* Space between metrics */
+    flex: 0 0 auto;
+}
+
+.gh-post-list-metrics {
+    min-width: 100px;
+    flex: 0 1 120px;
+}
+
+.gh-post-list-button {
+    flex: 0 0 auto;
 }
