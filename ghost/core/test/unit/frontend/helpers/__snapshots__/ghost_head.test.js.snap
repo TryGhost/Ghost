@@ -1626,7 +1626,7 @@ Object {
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" data-locale=\\"en\\" crossorigin=\\"anonymous\\"></script>
     
     <link href=\\"http://127.0.0.1:2369/webmentions/receive/\\" rel=\\"webmention\\">
-    <script defer src=\\"https://unpkg.com/@tinybirdco/flock.js\\" data-host=\\"https://api.tinybird.co\\" data-token=\\"tinybird_token\\" tb_site_uuid=\\"tb_test_site_uuid\\" tb_post_uuid=\\"post_uuid\\" tb_member_uuid=\\"undefined\\" tb_member_status=\\"undefined\\"></script>",
+    <script defer src=\\"https://unpkg.com/@tinybirdco/flock.js\\" data-storage=\\"localStorage\\" data-host=\\"https://api.tinybird.co\\" data-token=\\"tinybird_token\\" tb_site_uuid=\\"tb_test_site_uuid\\" tb_post_uuid=\\"post_uuid\\" tb_member_uuid=\\"undefined\\" tb_member_status=\\"undefined\\"></script>",
 }
 `;
 
@@ -1696,7 +1696,7 @@ Object {
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" data-locale=\\"en\\" crossorigin=\\"anonymous\\"></script>
     
     <link href=\\"http://127.0.0.1:2369/webmentions/receive/\\" rel=\\"webmention\\">
-    <script defer src=\\"https://unpkg.com/@tinybirdco/flock.js\\" data-host=\\"https://api.tinybird.co\\" data-token=\\"tinybird_token\\" tb_site_uuid=\\"tb_test_site_uuid\\" tb_post_uuid=\\"post_uuid\\" tb_member_uuid=\\"member_uuid\\" tb_member_status=\\"free\\"></script>",
+    <script defer src=\\"https://unpkg.com/@tinybirdco/flock.js\\" data-storage=\\"localStorage\\" data-host=\\"https://api.tinybird.co\\" data-token=\\"tinybird_token\\" tb_site_uuid=\\"tb_test_site_uuid\\" tb_post_uuid=\\"post_uuid\\" tb_member_uuid=\\"member_uuid\\" tb_member_status=\\"free\\"></script>",
 }
 `;
 
@@ -1748,7 +1748,7 @@ Object {
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" data-locale=\\"en\\" crossorigin=\\"anonymous\\"></script>
     
     <link href=\\"http://127.0.0.1:2369/webmentions/receive/\\" rel=\\"webmention\\">
-    <script defer src=\\"https://unpkg.com/@tinybirdco/flock.js\\" data-host=\\"https://api.tinybird.co\\" data-token=\\"tinybird_token\\" tb_site_uuid=\\"tb_test_site_uuid\\" tb_post_uuid=\\"undefined\\" tb_member_uuid=\\"member_uuid\\" tb_member_status=\\"paid\\"></script>",
+    <script defer src=\\"https://unpkg.com/@tinybirdco/flock.js\\" data-storage=\\"localStorage\\" data-host=\\"https://api.tinybird.co\\" data-token=\\"tinybird_token\\" tb_site_uuid=\\"tb_test_site_uuid\\" tb_post_uuid=\\"undefined\\" tb_member_uuid=\\"member_uuid\\" tb_member_status=\\"paid\\"></script>",
 }
 `;
 
@@ -1800,7 +1800,7 @@ Object {
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" data-locale=\\"en\\" crossorigin=\\"anonymous\\"></script>
     
     <link href=\\"http://127.0.0.1:2369/webmentions/receive/\\" rel=\\"webmention\\">
-    <script defer src=\\"https://unpkg.com/@tinybirdco/flock.js\\" data-host=\\"https://api.tinybird.co\\" data-token=\\"tinybird_token\\" tb_site_uuid=\\"tb_test_site_uuid\\" tb_post_uuid=\\"undefined\\" tb_member_uuid=\\"undefined\\" tb_member_status=\\"undefined\\"></script>",
+    <script defer src=\\"https://unpkg.com/@tinybirdco/flock.js\\" data-storage=\\"localStorage\\" data-host=\\"https://api.tinybird.co\\" data-token=\\"tinybird_token\\" tb_site_uuid=\\"tb_test_site_uuid\\" tb_post_uuid=\\"undefined\\" tb_member_uuid=\\"undefined\\" tb_member_status=\\"undefined\\"></script>",
 }
 `;
 

@@ -103,8 +103,11 @@ export class MockedApi {
     }
 
     commentsCounts() {
+        // get total number of published comments and replies in this.comments
+        const count = flattenComments(this.comments).filter(c => c.status === 'published').length;
+
         return {
-            [this.postId]: this.comments.length
+            [this.postId]: count
         };
     }
 
@@ -159,10 +162,10 @@ export class MockedApi {
 
         let filteredComments = this.comments;
 
-        if (this.labs.commentImprovements && !admin) {
+        if (!admin) {
             function filterPublishedComments(comments: any[] = []) {
                 return comments
-                    .filter(comment => comment.status === 'published')
+                    .filter(comment => (comment.status === 'published' || comment.replies?.some(r => r.status === 'published')))
                     .map(comment => ({...comment, replies: filterPublishedComments(comment.replies)}));
             }
 
@@ -327,7 +330,7 @@ export class MockedApi {
             });
         },
 
-        async getComment(route) {
+        async getOrDeleteComment(route) {
             await this.#delayResponse();
             const url = new URL(route.request().url());
             const commentId = url.pathname.split('/').reverse()[1];
@@ -341,6 +344,13 @@ export class MockedApi {
                     order: ''
                 }))
             });
+
+            if (route.request().method() === 'PUT' && JSON.parse(route.request().postData()).comments?.[0]?.status === 'deleted') {
+                const comment = findCommentById(this.comments, commentId);
+                if (comment) {
+                    comment.status = 'deleted';
+                }
+            }
         },
 
         async likeComment(route) {
@@ -435,6 +445,7 @@ export class MockedApi {
             const limit = parseInt(url.searchParams.get('limit') ?? '5');
             const filter = url.searchParams.get('filter') ?? '';
             const order = url.searchParams.get('order') ?? '';
+            const memberUuid = url.searchParams.get('impersonate_member_uuid') ?? '';
 
             await route.fulfill({
                 status: 200,
@@ -443,7 +454,28 @@ export class MockedApi {
                     limit,
                     filter,
                     order,
-                    admin: true
+                    admin: true,
+                    memberUuid
+                }))
+            });
+        },
+
+        async getReplies(route) {
+            await this.#delayResponse();
+            const url = new URL(route.request().url());
+
+            const limit = parseInt(url.searchParams.get('limit') ?? '5');
+            const commentId = url.pathname.split('/').reverse()[2];
+            const filter = url.searchParams.get('filter') ?? '';
+            const memberUuid = url.searchParams.get('impersonate_member_uuid') ?? '';
+
+            await route.fulfill({
+                status: 200,
+                body: JSON.stringify(this.browseReplies({
+                    limit,
+                    filter,
+                    commentId,
+                    memberUuid
                 }))
             });
         },
@@ -454,6 +486,7 @@ export class MockedApi {
 
             if (route.request().method() === 'GET') {
                 const commentId = url.pathname.split('/').reverse()[1];
+                const memberUuid = url.searchParams.get('impersonate_member_uuid') ?? '';
                 await route.fulfill({
                     status: 200,
                     body: JSON.stringify(this.browseComments({
@@ -461,7 +494,8 @@ export class MockedApi {
                         filter: `id:'${commentId}'`,
                         page: 1,
                         order: '',
-                        admin: true
+                        admin: true,
+                        memberUuid
                     }))
                 });
             }
@@ -470,7 +504,6 @@ export class MockedApi {
                 const commentId = url.pathname.split('/').reverse()[1];
                 const payload = JSON.parse(route.request().postData());
                 const comment = findCommentById(this.comments, commentId);
-
                 if (!comment) {
                     await route.fulfill({status: 404});
                     return;
@@ -497,7 +530,7 @@ export class MockedApi {
         await page.route(`${path}/members/api/member/`, this.requestHandlers.getMember.bind(this));
         await page.route(`${path}/members/api/comments/*`, this.requestHandlers.addComment.bind(this));
         await page.route(`${path}/members/api/comments/post/*/*`, this.requestHandlers.browseComments.bind(this));
-        await page.route(`${path}/members/api/comments/*/`, this.requestHandlers.getComment.bind(this));
+        await page.route(`${path}/members/api/comments/*/`, this.requestHandlers.getOrDeleteComment.bind(this));
         await page.route(`${path}/members/api/comments/*/like/`, this.requestHandlers.likeComment.bind(this));
         await page.route(`${path}/members/api/comments/*/replies/*`, this.requestHandlers.getReplies.bind(this));
         await page.route(`${path}/members/api/comments/counts/*`, this.requestHandlers.getCommentCounts.bind(this));
@@ -506,6 +539,7 @@ export class MockedApi {
         // Admin API -----------------------------------------------------------
         await page.route(`${path}/ghost/api/admin/users/me/`, this.adminRequestHandlers.getUser.bind(this));
         await page.route(`${path}/ghost/api/admin/comments/post/*/*`, this.adminRequestHandlers.browseComments.bind(this));
-        await page.route(`${path}/ghost/api/admin/comments/*/`, this.adminRequestHandlers.getOrUpdateComment.bind(this));
+        await page.route(`${path}/ghost/api/admin/comments/*/*`, this.adminRequestHandlers.getOrUpdateComment.bind(this));
+        await page.route(`${path}/ghost/api/admin/comments/*/replies/*`, this.adminRequestHandlers.getReplies.bind(this));
     }
 }

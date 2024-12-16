@@ -14,7 +14,11 @@ export type ObjectProperties = {
     content: string;
     url?: string | undefined;
     attributedTo?: object | string | object[] | undefined;
-    image?: string;
+    image?: string | {
+        url: string;
+        mediaType?: string;
+        type?: string;
+    };
     published?: string;
     preview?: {type: string, content: string};
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

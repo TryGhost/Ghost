@@ -1,3 +1,4 @@
+VERSION 0
 SCHEMA >
     `site_uuid` String,
     `date` Date,
