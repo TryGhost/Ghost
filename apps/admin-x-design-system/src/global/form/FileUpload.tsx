@@ -51,7 +51,7 @@ const FileUpload: React.FC<FileUploadProps> = ({id, onUpload, children, style, u
 
     return (
         <label className={clsx('relative', className)} htmlFor={id} style={style} onDragEnter={handleDragging} onDragLeave={handleStopDragging} onDragOver={handleDragging} onDrop={handleDrop} {...props}>
-            <div className={clsx({'absolute inset-1 rounded': true, 'border-2 border-dashed border-grey-400/25': isDragging}, isDragging && [dragIndicatorClassName])} />
+            <div className={clsx({'absolute inset-1 rounded -z-50': true, 'border-2 border-dashed border-grey-400/25': isDragging}, isDragging && [dragIndicatorClassName])} />
             <input key={fileKey} ref={inputRef || null} id={id} type="file" hidden onChange={handleFileChange} />
             {(typeof children === 'string') ?
                 <div className={!unstyled ? `inline-flex h-[34px] cursor-pointer items-center justify-center rounded px-4 text-sm font-semibold hover:bg-grey-100 dark:text-white dark:hover:bg-grey-900` : ''}>
