@@ -11,13 +11,13 @@ const NotificationStyles = `
     .gh-portal-notification {
         position: absolute;
         display: flex;
-        align-items: center;
+        gap: 12px;
+        align-items: flex-start;
         top: 12px;
         right: 12px;
         width: 100%;
-        padding: 16px 44px 16px 20px;
+        padding: 16px;
         max-width: 380px;
-        min-height: 66px;
         font-size: 1.3rem;
         letter-spacing: 0.2px;
         background: var(--white);
@@ -26,6 +26,7 @@ const NotificationStyles = `
         border-radius: 7px;
         box-shadow: 0px 0px 1px 0px rgba(0, 0, 0, 0.30), 0px 51px 40px 0px rgba(0, 0, 0, 0.05), 0px 15.375px 12.059px 0px rgba(0, 0, 0, 0.03), 0px 6.386px 5.009px 0px rgba(0, 0, 0, 0.03), 0px 2.31px 1.812px 0px rgba(0, 0, 0, 0.02);
         animation: notification-slidein 0.55s cubic-bezier(0.215, 0.610, 0.355, 1.000);
+        z-index: 99999;
     }
 
     html[dir="rtl"] .gh-portal-notification {
@@ -35,7 +36,7 @@ const NotificationStyles = `
     }
 
     .gh-portal-notification.slideout {
-        /*animation: notification-slideout 0.4s cubic-bezier(0.550, 0.055, 0.675, 0.190);*/
+        animation: notification-slideout 0.4s cubic-bezier(0.550, 0.055, 0.675, 0.190);
     }
 
     .gh-portal-notification.hide {
@@ -50,7 +51,6 @@ const NotificationStyles = `
         margin: 0;
         padding: 0;
         color: var(--grey0);
-        padding-inline-start: 40px;
     }
 
     .gh-portal-notification p strong {
@@ -69,11 +69,10 @@ const NotificationStyles = `
     }
 
     .gh-portal-notification-icon {
-        position: absolute;
-        top: calc(50% - 20px);
-        left: 16px;
         width: 18px;
         height: 18px;
+        min-width: 18px;
+        margin-top: 2px;
     }
     html[dir="rtl"] .gh-portal-notification-icon {
         right: 17px;
@@ -89,15 +88,15 @@ const NotificationStyles = `
     }
 
     .gh-portal-notification-closeicon {
-        position: absolute;
-        top: 5px;
-        bottom: 0;
-        right: 5px;
         color: var(--grey8);
         cursor: pointer;
         width: 12px;
+        min-width: 12px;
         height: 12px;
         padding: 10px;
+        margin-top: -6px;
+        margin-right: -6px;
+        margin-bottom: -6px;
         transition: all 0.2s ease-in-out forwards;
         opacity: 0.8;
     }
@@ -130,7 +129,7 @@ const NotificationStyles = `
         100% { transform: translateY(-150px); }
     }
 
-    @media (max-width: 414px) {
+    @media (max-width: 480px) {
         .gh-portal-notification {
             left: 12px;
             max-width: calc(100% - 24px);

@@ -15,7 +15,7 @@ const Styles = () => {
             position: 'fixed',
             top: '0',
             right: '0',
-            maxWidth: '415px',
+            maxWidth: '481px',
             width: '100%',
             height: '220px',
             animation: '250ms ease 0s 1 normal none running animation-bhegco',
