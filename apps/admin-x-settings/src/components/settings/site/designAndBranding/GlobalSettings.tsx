@@ -1,4 +1,3 @@
-import BehindFeatureFlag from '../../../BehindFeatureFlag';
 import React, {useState} from 'react';
 import UnsplashSelector from '../../../selectors/UnsplashSelector';
 import clsx from 'clsx';

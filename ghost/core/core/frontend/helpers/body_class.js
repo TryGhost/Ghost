@@ -2,7 +2,7 @@
 // Usage: `{{body_class}}`
 //
 // Output classes for the body element
-const {labs, settingsCache} = require('../services/proxy');
+const {settingsCache} = require('../services/proxy');
 const {generateCustomFontBodyClass, isValidCustomFont, isValidCustomHeadingFont} = require('@tryghost/custom-fonts');
 const {SafeString} = require('../services/handlebars');
 
