@@ -346,11 +346,6 @@
     font-weight: 600;
     max-width: 100%;
     overflow: hidden;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    line-clamp: 2;
-    box-orient: vertical;
 }
 
 .gh-content-entry-title a {
@@ -666,6 +661,12 @@
     .gh-contentfilter-menu:last-of-type {
         padding-right: 8px;
     }
+
+    .gh-post-list-title {
+        flex: 1 1 auto;
+        max-width: 100%;
+        overflow: hidden;
+    }
 }
 
 @media (min-width: 901px) {
@@ -765,11 +766,7 @@
     display: block;
     padding: 6px 0 8px;
     overflow: hidden;
-    text-overflow: ellipsis;
     white-space: initial;
-    display: -webkit-box;
-    -webkit-line-clamp: 1;
-    -webkit-box-orient: vertical;
 }
 
 @media (max-width: 1280px) {
