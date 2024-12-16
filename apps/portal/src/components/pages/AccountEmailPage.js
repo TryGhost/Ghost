@@ -1,6 +1,6 @@
 import AppContext from '../../AppContext';
 import {useContext, useEffect, useState} from 'react';
-import {isPaidMember, getSiteNewsletters} from '../../utils/helpers';
+import {isPaidMember, getSiteNewsletters, hasNewsletterSendingEnabled} from '../../utils/helpers';
 import {SYNTAX_I18NEXT} from '@doist/react-interpolate';
 import NewsletterManagement from '../common/NewsletterManagement';
 import Interpolate from '@doist/react-interpolate';
@@ -16,6 +16,7 @@ export default function AccountEmailPage() {
     const [hasInteracted, setHasInteracted] = useState(true);
     const siteNewsletters = getSiteNewsletters({site});
 
+    const hasNewslettersEnabled = hasNewsletterSendingEnabled({site});
     // Redirect to signin page if member is not available
     useEffect(() => {
         if (!member) {
@@ -90,6 +91,7 @@ export default function AccountEmailPage() {
 
     return (
         <NewsletterManagement
+            hasNewslettersEnabled={hasNewslettersEnabled}
             notification={newsletterUuid ? HeaderNotification : null}
             subscribedNewsletters={subscribedNewsletters}
             updateSubscribedNewsletters={(updatedNewsletters) => {

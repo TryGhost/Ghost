@@ -1,7 +1,7 @@
 import AppContext from '../../AppContext';
 import ActionButton from '../common/ActionButton';
 import {useContext, useEffect, useState} from 'react';
-import {getSiteNewsletters} from '../../utils/helpers';
+import {getSiteNewsletters,hasNewsletterSendingEnabled} from '../../utils/helpers';
 import NewsletterManagement from '../common/NewsletterManagement';
 import CloseButton from '../common/CloseButton';
 import {ReactComponent as WarningIcon} from '../../images/icons/warning-fill.svg';
@@ -56,6 +56,8 @@ export default function UnsubscribePage() {
     const [showPrefs, setShowPrefs] = useState(false);
     const {comments_enabled: commentsEnabled} = site;
     const {enable_comment_notifications: enableCommentNotifications = false} = member || {};
+
+    const hasNewslettersEnabled = hasNewsletterSendingEnabled({site});
 
     const updateNewsletters = async (newsletters) => {
         if (loggedInMember) {
@@ -256,6 +258,7 @@ export default function UnsubscribePage() {
 
     return (
         <NewsletterManagement
+            hasNewslettersEnabled={hasNewslettersEnabled}
             notification={HeaderNotification}
             subscribedNewsletters={subscribedNewsletters}
             updateSubscribedNewsletters={async (newsletters) => {
