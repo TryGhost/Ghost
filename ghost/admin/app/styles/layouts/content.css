@@ -2142,12 +2142,13 @@ span.dropdown .gh-post-list-cta > span {
 
 .gh-post-list-metrics-container {
     display: flex;
-    gap: 24px;
     flex: 0 0 auto;
+    padding-right: 16px;
 }
 
 .gh-post-list-metrics {
-    min-width: 100px;
+    width: 100px;
+    flex-shrink: 0;
     display: grid;
     grid-template-rows: auto auto;
     text-align: right;
