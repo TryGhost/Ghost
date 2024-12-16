@@ -175,7 +175,6 @@ describe('{{body_class}} helper', function () {
         }
 
         beforeEach(function () {
-            labsStub = sinon.stub(labs, 'isSet').withArgs('customFonts').returns(true);
             settingsCacheStub = sinon.stub(settingsCache, 'get');
             options = {
                 data: {
@@ -218,8 +217,6 @@ describe('{{body_class}} helper', function () {
         });
 
         it('does not include custom font classes when custom fonts are not enabled', function () {
-            labsStub.withArgs('customFonts').returns(false);
-
             const rendered = callBodyClassWithContext(
                 ['post'],
                 {relativeUrl: '/my-awesome-post/', post: {tags: [{slug: 'foo'}, {slug: 'bar'}]}}
