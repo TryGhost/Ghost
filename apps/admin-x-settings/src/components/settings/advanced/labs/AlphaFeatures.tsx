@@ -20,10 +20,6 @@ const features = [{
     description: 'Adding more control over the newsletter template',
     flag: 'emailCustomization'
 },{
-    title: 'Collections',
-    description: 'Enables Collections 2.0',
-    flag: 'collections'
-},{
     title: 'Collections Card',
     description: 'Enables the Collections Card for pages - requires Collections and the beta Editor to be enabled',
     flag: 'collectionsCard'

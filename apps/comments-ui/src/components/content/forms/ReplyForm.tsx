@@ -1,27 +1,25 @@
-import Form from './Form';
 import {Comment, OpenCommentForm, useAppContext} from '../../../AppContext';
-import {getEditorConfig} from '../../../utils/editor';
+import {Form, FormWrapper} from './Form';
 import {isMobile, scrollToElement} from '../../../utils/helpers';
-import {useCallback} from 'react';
-import {useEditor} from '@tiptap/react';
+import {useCallback, useMemo} from 'react';
+import {useEditor} from '../../../utils/hooks';
 import {useRefCallback} from '../../../utils/hooks';
 
 type Props = {
     openForm: OpenCommentForm;
     parent: Comment;
 }
+
 const ReplyForm: React.FC<Props> = ({openForm, parent}) => {
     const {postId, dispatchAction, t} = useAppContext();
     const [, setForm] = useRefCallback<HTMLDivElement>(scrollToElement);
 
-    const config = {
+    const config = useMemo(() => ({
         placeholder: t('Reply to comment'),
         autofocus: true
-    };
+    }), []);
 
-    const editor = useEditor({
-        ...getEditorConfig(config)
-    });
+    const {editor} = useEditor(config);
 
     const submit = useCallback(async ({html}) => {
         // Send comment to server
@@ -45,18 +43,20 @@ const ReplyForm: React.FC<Props> = ({openForm, parent}) => {
     </>);
 
     return (
-        <div ref={setForm}>
+        <div ref={setForm} data-testid="reply-form">
             <div className='mt-[-16px] pr-2'>
-                <Form
-                    close={close}
-                    editor={editor}
-                    isOpen={true}
-                    openForm={openForm}
-                    reduced={isMobile()}
-                    submit={submit}
-                    submitSize={'medium'}
-                    submitText={SubmitText}
-                />
+                <FormWrapper comment={parent} editor={editor} isOpen={true} openForm={openForm} reduced={isMobile()}>
+                    <Form
+                        close={close}
+                        editor={editor}
+                        isOpen={true}
+                        openForm={openForm}
+                        reduced={isMobile()}
+                        submit={submit}
+                        submitSize={'medium'}
+                        submitText={SubmitText}
+                    />
+                </FormWrapper>
             </div>
         </div>
     );

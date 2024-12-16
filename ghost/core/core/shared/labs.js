@@ -20,7 +20,8 @@ const GA_FEATURES = [
     'themeErrorsNotification',
     'outboundLinkTagging',
     'announcementBar',
-    'newEmailAddresses'
+    'newEmailAddresses',
+    'customFonts'
 ];
 
 // NOTE: this allowlist is meant to be used to filter out any unexpected
@@ -32,8 +33,8 @@ const BETA_FEATURES = [
     'editorExcerpt',
     'ActivityPub',
     'importMemberTier',
-    'customFonts',
-    'staff2fa'
+    'staff2fa',
+    'contentVisibility'
 ];
 
 const ALPHA_FEATURES = [
@@ -44,7 +45,6 @@ const ALPHA_FEATURES = [
     'collectionsCard',
     'lexicalIndicators',
     'adminXDemo',
-    'contentVisibility',
     'commentImprovements'
 ];
 

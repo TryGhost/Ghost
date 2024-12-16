@@ -196,6 +196,19 @@
     color: var(--black);
 }
 
+.gh-post-history .gh-editor-excerpt {
+    max-width: 740px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.gh-post-history .gh-editor-title-divider {
+    width: 100%;
+    max-width: 740px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
 .gh-post-history-hidden-lexical {
     display: none;
 }

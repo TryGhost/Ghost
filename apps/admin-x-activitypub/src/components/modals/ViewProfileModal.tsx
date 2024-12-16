@@ -16,6 +16,7 @@ import FollowButton from '../global/FollowButton';
 import Separator from '../global/Separator';
 import getName from '../../utils/get-name';
 import getUsername from '../../utils/get-username';
+import {handleProfileClick} from '../../utils/handle-profile-click';
 
 const noop = () => {};
 
@@ -83,7 +84,9 @@ const ActorList: React.FC<ActorListProps> = ({
                         {actors.map(({actor, isFollowing}, index) => {
                             return (
                                 <React.Fragment key={actor.id}>
-                                    <ActivityItem key={actor.id} url={actor.url}>
+                                    <ActivityItem key={actor.id}
+                                        onClick={() => handleProfileClick(actor)}
+                                    >
                                         <APAvatar author={actor} />
                                         <div>
                                             <div className='text-grey-600'>
@@ -290,6 +293,7 @@ const ViewProfileModal: React.FC<ViewProfileModalProps> = ({
         <Modal
             align='right'
             animate={true}
+            backDrop={false}
             footer={<></>}
             height={'full'}
             padding={false}
@@ -299,7 +303,7 @@ const ViewProfileModal: React.FC<ViewProfileModalProps> = ({
             <div className='sticky top-0 z-50 border-grey-200 bg-white py-3'>
                 <div className='grid h-8 grid-cols-3'>
                     <div className='col-[3/4] flex items-center justify-end space-x-6 px-8'>
-                        <Button icon='close' size='sm' unstyled onClick={() => modal.remove()}/>
+                        <Button className='transition-color flex h-10 w-10 items-center justify-center rounded-full bg-white hover:bg-grey-100' icon='close' size='sm' unstyled onClick={() => modal.remove()}/>
                     </div>
                 </div>
             </div>

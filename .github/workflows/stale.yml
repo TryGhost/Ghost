@@ -21,7 +21,7 @@ jobs:
             If we’ve missed reviewing your PR & you’re still interested in working on it, please let us know. Otherwise this PR will be closed shortly, but can always be reopened later. Thank you for understanding 🙂
           exempt-issue-labels: 'feature,pinned'
           exempt-pr-labels: 'feature,pinned'
-          days-before-stale: 120
+          days-before-stale: 113
           days-before-pr-stale: -1
           stale-issue-label: 'stale'
           stale-pr-label: 'stale'

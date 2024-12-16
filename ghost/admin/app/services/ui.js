@@ -192,4 +192,9 @@ export default class UiService extends Service {
         document.body.removeEventListener('dragend', this.cancelDrag, {capture: true});
         document.body.removeEventListener('drop', this.cancelDrag, {capture: true});
     }
+
+    @action
+    toggleMobileMenu() {
+        this.showMobileMenu = !this.showMobileMenu;
+    }
 }
