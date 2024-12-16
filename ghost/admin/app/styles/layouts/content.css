@@ -339,6 +339,13 @@
     margin: 0 0 2px;
     font-size: 1.6rem;
     font-weight: 600;
+    max-width: 100%;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    line-clamp: 2;
+    box-orient: vertical;
 }
 
 .gh-content-entry-title a {
