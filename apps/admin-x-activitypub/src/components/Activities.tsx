@@ -148,7 +148,14 @@ const getGroupDescription = (group: GroupedActivity): JSX.Element => {
         return <>{actorText} liked your post <span className='font-semibold'>{group.object?.name || ''}</span></>;
     case ACTIVITY_TYPE.CREATE:
         if (group.object?.inReplyTo && typeof group.object?.inReplyTo !== 'string') {
-            const content = stripHtml(group.object.inReplyTo.name);
+            let content = stripHtml(group.object.inReplyTo.content);
+
+            // If the post has a name, use that instead of the content (short
+            // form posts do not have a name)
+            if (group.object.inReplyTo.name) {
+                content = stripHtml(group.object.inReplyTo.name);
+            }
+
             return <>{actorText} replied to your post <span className='font-semibold'>{truncate(content, 80)}</span></>;
         }
     }
@@ -176,7 +183,7 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
         includeOwn: true,
         includeReplies: true,
         filter: {
-            type: ['Follow', 'Like', `Create:Note:isReplyToOwn`]
+            type: ['Follow', 'Like', `Create:Note`]
         },
         key: GET_ACTIVITIES_QUERY_KEY_NOTIFICATIONS
     });
@@ -202,6 +209,17 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
             // Remove follower likes if they are not for our own posts
             .filter((activity) => {
                 if (activity.type === ACTIVITY_TYPE.LIKE && activity.object?.attributedTo?.id !== userProfile?.id) {
+                    return false;
+                }
+
+                return true;
+            })
+            // Remove create activities that are not replies to our own posts
+            .filter((activity) => {
+                if (
+                    activity.type === ACTIVITY_TYPE.CREATE &&
+                    activity.object?.inReplyTo?.attributedTo?.id !== userProfile?.id
+                ) {
                     return false;
                 }
 
