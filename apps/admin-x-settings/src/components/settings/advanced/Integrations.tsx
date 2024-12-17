@@ -235,27 +235,26 @@ const Integrations: React.FC<{ keywords: string[] }> = ({keywords}) => {
         <TopLevelGroup
             customButtons={buttons}
             customHeader={
-                <>
-                    <div className='z-10 flex items-start justify-between'>
-                        <img src={DesignSettingsImg} />
+                <div className='-mt-7'>
+                    <div className='-mx-5 overflow-hidden rounded-t-xl border-b border-grey-200 dark:border-grey-800 md:-mx-7'>
+                        <img className='h-full w-full rounded-t-xl' src={DesignSettingsImg} />
                     </div>
-                    <div className='z-10 flex items-start justify-between'>
+                    <div className=' z-10 mt-6 flex items-start justify-between'>
                         <SettingGroupHeader description='Make Ghost work with apps and tools.' title='Integrations' />
-                        <div className='flex justify-center rounded border border-green px-4 py-2 md:hidden'>
+                        {
                             <Button color='green' label='Add custom integration' link onClick={() => {
                                 updateRoute('integrations/new');
                                 setSelectedTab('custom');
                             }} />
-                        </div>
+                        }
                     </div>
-                    
-                </>
+                </div>
             }
             keywords={keywords}
             navid='integrations'
-            testId='integrations'>
+            testId='integrations'
+        >
             <TabView<'built-in' | 'custom'> selectedTab={selectedTab} tabs={tabs} onTabChange={setSelectedTab} />
-            
         </TopLevelGroup>
     );
 };
