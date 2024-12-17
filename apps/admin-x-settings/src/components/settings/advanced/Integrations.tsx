@@ -235,7 +235,7 @@ const Integrations: React.FC<{ keywords: string[] }> = ({keywords}) => {
         <TopLevelGroup
             customButtons={buttons}
             customHeader={
-                <div className='-mt-7'>
+                <div className='sm:-mt-5 md:-mt-7'>
                     <div className='-mx-5 overflow-hidden rounded-t-xl border-b border-grey-200 dark:border-grey-800 md:-mx-7'>
                         <img className='h-full w-full rounded-t-xl' src={IntegrationsSettingsImg} />
                     </div>
