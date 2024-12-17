@@ -7,7 +7,7 @@ import NewsletterSelectionPage from './NewsletterSelectionPage';
 import ProductsSection from '../common/ProductsSection';
 import InputForm from '../common/InputForm';
 import {ValidateInputForm} from '../../utils/form';
-import {getSiteProducts, getSitePrices, hasOnlyFreePlan, isInviteOnlySite, freeHasBenefitsOrDescription, hasOnlyFreeProduct, hasMultipleNewsletters, hasFreeTrialTier, isSignupAllowed} from '../../utils/helpers';
+import {getSiteProducts, getSitePrices, hasAvailablePrices, hasOnlyFreePlan, isInviteOnly, freeHasBenefitsOrDescription, hasOnlyFreeProduct, hasMultipleNewsletters, hasFreeTrialTier, isSignupAllowed} from '../../utils/helpers';
 import {ReactComponent as InvitationIcon} from '../../images/icons/invitation.svg';
 import {interceptAnchorClicks} from '../../utils/links';
 
@@ -354,7 +354,7 @@ class SignupPage extends React.Component {
             showNewsletterSelection: false,
             termsCheckboxChecked: false
         };
-    
+
         this.termsRef = React.createRef();
     }
 
@@ -409,12 +409,12 @@ class SignupPage extends React.Component {
             const {site, onAction} = this.context;
             const {name, email, plan, phonenumber, errors} = this.state;
             const hasFormErrors = (errors && Object.values(errors).filter(d => !!d).length > 0);
-            
+
             // Only scroll checkbox into view if it's the only error
             const otherErrors = {...errors};
             delete otherErrors.checkbox;
             const hasOnlyCheckboxError = errors?.checkbox && Object.values(otherErrors).every(error => !error);
-            
+
             if (hasOnlyCheckboxError && this.termsRef.current) {
                 this.termsRef.current.scrollIntoView({behavior: 'smooth', block: 'center'});
             }
@@ -587,7 +587,7 @@ class SignupPage extends React.Component {
     renderSubmitButton() {
         const {action, site, brandColor, pageQuery, t} = this.context;
 
-        if (isInviteOnlySite({site, pageQuery})) {
+        if (isInviteOnly({site}) || !hasAvailablePrices({site, pageQuery})) {
             return null;
         }
 
@@ -651,7 +651,7 @@ class SignupPage extends React.Component {
 
     renderFreeTrialMessage() {
         const {site, t, pageQuery} = this.context;
-        if (hasFreeTrialTier({site, pageQuery}) && !isInviteOnlySite({site})) {
+        if (hasFreeTrialTier({site, pageQuery}) && !isInviteOnly({site}) && hasAvailablePrices({site, pageQuery})) {
             return (
                 <p className='gh-portal-free-trial-notification' data-testid="free-trial-notification-text">
                     {t('After a free trial ends, you will be charged the regular price for the tier you\'ve chosen. You can always cancel before then.')}
@@ -698,7 +698,7 @@ class SignupPage extends React.Component {
             );
         }
 
-        if (isInviteOnlySite({site, pageQuery})) {
+        if (!hasAvailablePrices({site, pageQuery}) || isInviteOnly({site})) {
             return (
                 <section>
                     <div className='gh-portal-section'>
@@ -786,15 +786,14 @@ class SignupPage extends React.Component {
             return (
                 <img className='gh-portal-signup-logo' src={siteIcon} alt={site.title} />
             );
-        } else if (isInviteOnlySite({site, pageQuery})) {
-            return (
-                <InvitationIcon className='gh-portal-icon gh-portal-icon-invitation' />
-            );
-        } else if (!isSignupAllowed({site})) {
+        }
+
+        if (!hasAvailablePrices({site, pageQuery}) || isInviteOnly({site}) || !isSignupAllowed({site})) {
             return (
                 <InvitationIcon className='gh-portal-icon gh-portal-icon-invitation' />
             );
         }
+
         return null;
     }
 
@@ -816,13 +815,13 @@ class SignupPage extends React.Component {
         let sectionClass = '';
         let footerClass = '';
 
-        if (plansData.length <= 1 || isInviteOnlySite({site})) {
-            if ((plansData.length === 1 && plansData[0].type === 'free') || isInviteOnlySite({site, pageQuery})) {
+        if (plansData.length <= 1 || isInviteOnly({site})) {
+            if ((plansData.length === 1 && plansData[0].type === 'free') || isInviteOnly({site, pageQuery})) {
                 sectionClass = freeHasBenefitsOrDescription({site}) ? 'singleplan' : 'noplan';
                 if (fields.length === 1) {
                     sectionClass = 'single-field';
                 }
-                if (isInviteOnlySite({site})) {
+                if (isInviteOnly({site})) {
                     footerClass = 'invite-only';
                     sectionClass = 'invite-only';
                 }

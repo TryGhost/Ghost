@@ -238,9 +238,17 @@ export function capitalize(str) {
     return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
-export function isInviteOnlySite({site = {}, pageQuery = ''}) {
+export function isPaidMembersOnly({site}) {
+    return site?.members_signup_access === 'paid';
+}
+
+export function isInviteOnly({site = {}}) {
+    return site?.members_signup_access === 'invite';
+}
+
+export function hasAvailablePrices({site = {}, pageQuery = ''}) {
     const prices = getSitePrices({site, pageQuery});
-    return prices.length === 0 || (site && site.members_signup_access === 'invite');
+    return prices.length > 0;
 }
 
 export function hasRecommendations({site}) {
