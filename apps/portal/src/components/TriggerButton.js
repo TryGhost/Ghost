@@ -223,6 +223,18 @@ export default class TriggerButton extends React.Component {
         this.state = {
             width: null
         };
+        this.buttonRef = React.createRef();
+    }
+
+    componentDidMount() {
+        setTimeout(() => {
+            if (this.buttonRef.current) {
+                const iframeElement = this.buttonRef.current.node;
+                if (iframeElement) {
+                    this.buttonMargin = window.getComputedStyle(iframeElement).getPropertyValue('margin-right');
+                }
+            }
+        }, 0);
     }
 
     onWidthChange(width) {
@@ -251,7 +263,7 @@ export default class TriggerButton extends React.Component {
     render() {
         const site = this.context.site;
         const {portal_button: portalButton} = site;
-        const {showPopup} = this.context;
+        const {showPopup, scrollbarWidth} = this.context;
 
         if (!portalButton || !isSigninAllowed({site}) || hasMode(['offerPreview'])) {
             return null;
@@ -268,8 +280,12 @@ export default class TriggerButton extends React.Component {
             frameStyle.width = `${updatedWidth}px`;
         }
 
+        if (scrollbarWidth && showPopup) {
+            frameStyle.marginRight = `calc(${scrollbarWidth}px + ${this.buttonMargin})`;
+        }
+
         return (
-            <Frame dataTestId='portal-trigger-frame' className='gh-portal-triggerbtn-iframe' style={frameStyle} title="portal-trigger" head={this.renderFrameStyles()}>
+            <Frame ref={this.buttonRef} dataTestId='portal-trigger-frame' className='gh-portal-triggerbtn-iframe' style={frameStyle} title="portal-trigger" head={this.renderFrameStyles()}>
                 <TriggerButtonContent isPopupOpen={showPopup} updateWidth={width => this.onWidthChange(width)} />
             </Frame>
         );
