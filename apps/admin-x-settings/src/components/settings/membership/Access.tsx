@@ -3,7 +3,7 @@ import TopLevelGroup from '../../TopLevelGroup';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {GroupBase, MultiValue} from 'react-select';
 import {MultiSelect, MultiSelectOption, Select, SettingGroupContent, withErrorBoundary} from '@tryghost/admin-x-design-system';
-import {getOptionLabel} from '../../../utils/helpers';
+// import {getOptionLabel} from '../../../utils/helpers';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 
@@ -81,9 +81,9 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
         'members_signup_access', 'default_content_visibility', 'default_content_visibility_tiers', 'comments_enabled'
     ]) as string[];
 
-    const membersSignupAccessLabel = getOptionLabel(MEMBERS_SIGNUP_ACCESS_OPTIONS, membersSignupAccess);
-    const defaultContentVisibilityLabel = getOptionLabel(DEFAULT_CONTENT_VISIBILITY_OPTIONS, defaultContentVisibility);
-    const commentsEnabledLabel = getOptionLabel(COMMENTS_ENABLED_OPTIONS, commentsEnabled);
+    // const membersSignupAccessLabel = getOptionLabel(MEMBERS_SIGNUP_ACCESS_OPTIONS, membersSignupAccess);
+    // const defaultContentVisibilityLabel = getOptionLabel(DEFAULT_CONTENT_VISIBILITY_OPTIONS, defaultContentVisibility);
+    // const commentsEnabledLabel = getOptionLabel(COMMENTS_ENABLED_OPTIONS, commentsEnabled);
 
     const {data: {tiers} = {}} = useBrowseTiers();
 
@@ -106,27 +106,27 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
         updateSetting('default_content_visibility_tiers', JSON.stringify(selectedTiers));
     };
 
-    const values = (
-        <SettingGroupContent
-            values={[
-                {
-                    heading: 'Subscription access',
-                    key: 'subscription-access',
-                    value: membersSignupAccessLabel
-                },
-                {
-                    heading: 'Default post access',
-                    key: 'default-post-access',
-                    value: defaultContentVisibilityLabel
-                },
-                {
-                    heading: 'Commenting',
-                    key: 'commenting',
-                    value: commentsEnabledLabel
-                }
-            ]}
-        />
-    );
+    // const values = (
+    //     <SettingGroupContent
+    //         values={[
+    //             {
+    //                 heading: 'Subscription access',
+    //                 key: 'subscription-access',
+    //                 value: membersSignupAccessLabel
+    //             },
+    //             {
+    //                 heading: 'Default post access',
+    //                 key: 'default-post-access',
+    //                 value: defaultContentVisibilityLabel
+    //             },
+    //             {
+    //                 heading: 'Commenting',
+    //                 key: 'commenting',
+    //                 value: commentsEnabledLabel
+    //             }
+    //         ]}
+    //     />
+    // );
 
     const form = (
         <SettingGroupContent columns={1}>
@@ -138,6 +138,7 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 title="Subscription access"
                 onSelect={(option) => {
                     updateSetting('members_signup_access', option?.value || null);
+                    handleEditingChange(true);
                 }}
             />
             <Select
@@ -148,6 +149,7 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 title="Default post access"
                 onSelect={(option) => {
                     updateSetting('default_content_visibility', option?.value || null);
+                    handleEditingChange(true);
                 }}
             />
             {defaultContentVisibility === 'tiers' && (
@@ -158,7 +160,10 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     title='Select tiers'
                     values={selectedTierOptions}
                     clearBg
-                    onChange={setSelectedTiers}
+                    onChange={(selectedOptions) => {
+                        setSelectedTiers(selectedOptions);
+                        handleEditingChange(true);
+                    }}
                 />
             )}
             <Select
@@ -169,6 +174,7 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 title="Commenting"
                 onSelect={(option) => {
                     updateSetting('comments_enabled', option?.value || null);
+                    handleEditingChange(true);
                 }}
             />
         </SettingGroupContent>
@@ -183,11 +189,12 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
             saveState={saveState}
             testId='access'
             title='Access'
+            hideEditButton
             onCancel={handleCancel}
             onEditingChange={handleEditingChange}
             onSave={handleSave}
         >
-            {isEditing ? form : values}
+            {form}
         </TopLevelGroup>
     );
 };
