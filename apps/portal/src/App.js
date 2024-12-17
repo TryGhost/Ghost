@@ -90,7 +90,7 @@ export default class App extends React.Component {
                     if (!this.bodyMargin || this.bodyMargin === '0px') {
                         window.document.body.style.marginRight = '';
                     } else {
-                        window.document.body.style.marginRight = this.bodyMargin
+                        window.document.body.style.marginRight = this.bodyMargin;
                     }
                 }
             } catch (e) {
