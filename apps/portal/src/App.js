@@ -57,11 +57,15 @@ export default class App extends React.Component {
             initStatus: 'running',
             lastPage: null,
             customSiteUrl: props.customSiteUrl,
-            locale: props.locale
+            locale: props.locale,
+            scrollbarWidth: 0
         };
     }
 
     componentDidMount() {
+        const scrollbarWidth = this.getScrollbarWidth();
+        this.setState({scrollbarWidth});
+
         this.initSetup();
     }
 
@@ -75,10 +79,15 @@ export default class App extends React.Component {
                 if (this.state.showPopup) {
                     /** When modal is opened, store current overflow and set as hidden */
                     this.bodyScroll = window.document?.body?.style?.overflow;
+                    this.bodyMargin = window.getComputedStyle(document.body).getPropertyValue('margin-right');
                     window.document.body.style.overflow = 'hidden';
+                    if (this.state.scrollbarWidth) {
+                        window.document.body.style.marginRight = `calc(${this.bodyMargin} + ${this.state.scrollbarWidth}px)`;
+                    }
                 } else {
                     /** When the modal is hidden, reset overflow property for body */
                     window.document.body.style.overflow = this.bodyScroll || '';
+                    window.document.body.style.marginRight = this.bodyMargin || '';
                 }
             } catch (e) {
                 /** Ignore any errors for scroll handling */
@@ -113,6 +122,27 @@ export default class App extends React.Component {
                 payload: {}
             }, '*');
         }
+    }
+
+    // User for adding trailing margin to prevent layout shift when popup appears
+    getScrollbarWidth() {
+        // Create a temporary div
+        const outer = document.createElement('div');
+        outer.style.visibility = 'hidden';
+        outer.style.overflow = 'scroll'; // forcing scrollbar to appear
+        document.body.appendChild(outer);
+
+        // Create an inner div
+        const inner = document.createElement('div');
+        outer.appendChild(inner);
+
+        // Calculate the width difference
+        const scrollbarWidth = outer.offsetWidth - inner.offsetWidth;
+
+        // Clean up
+        outer.parentNode.removeChild(outer);
+
+        return scrollbarWidth;
     }
 
     /** Setup custom trigger buttons handling on page */
@@ -161,7 +191,7 @@ export default class App extends React.Component {
             const {site, member, page, showPopup, popupNotification, lastPage, pageQuery, pageData} = await this.fetchData();
             const i18nLanguage = this.props.siteI18nEnabled ? this.props.locale || site.locale || 'en' : 'en';
             const i18n = i18nLib(i18nLanguage, 'portal');
-            
+
             const state = {
                 site,
                 member,
@@ -926,7 +956,7 @@ export default class App extends React.Component {
 
     /**Get final App level context from App state*/
     getContextFromState() {
-        const {site, member, action, page, lastPage, showPopup, pageQuery, pageData, popupNotification, customSiteUrl, t, dir} = this.state;
+        const {site, member, action, page, lastPage, showPopup, pageQuery, pageData, popupNotification, customSiteUrl, t, dir, scrollbarWidth} = this.state;
         const contextPage = this.getContextPage({site, page, member});
         const contextMember = this.getContextMember({page: contextPage, member, customSiteUrl});
         return {
@@ -944,6 +974,7 @@ export default class App extends React.Component {
             customSiteUrl,
             t,
             dir,
+            scrollbarWidth,
             onAction: (_action, data) => this.dispatchAction(_action, data)
         };
     }
