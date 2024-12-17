@@ -698,7 +698,7 @@ class SignupPage extends React.Component {
             );
         }
 
-        if (!hasAvailablePrices({site, pageQuery}) || isInviteOnly({site})) {
+        if (!hasAvailablePrices({site, pageQuery}) && isInviteOnly({site})) {
             return (
                 <section>
                     <div className='gh-portal-section'>
