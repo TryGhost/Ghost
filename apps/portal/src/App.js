@@ -87,7 +87,11 @@ export default class App extends React.Component {
                 } else {
                     /** When the modal is hidden, reset overflow property for body */
                     window.document.body.style.overflow = this.bodyScroll || '';
-                    window.document.body.style.marginRight = this.bodyMargin || '';
+                    if (!this.bodyMargin || this.bodyMargin === '0px') {
+                        window.document.body.style.marginRight = '';
+                    } else {
+                        window.document.body.style.marginRight = this.bodyMargin
+                    }
                 }
             } catch (e) {
                 /** Ignore any errors for scroll handling */
@@ -127,20 +131,20 @@ export default class App extends React.Component {
     // User for adding trailing margin to prevent layout shift when popup appears
     getScrollbarWidth() {
         // Create a temporary div
-        const outer = document.createElement('div');
-        outer.style.visibility = 'hidden';
-        outer.style.overflow = 'scroll'; // forcing scrollbar to appear
-        document.body.appendChild(outer);
+        const div = document.createElement('div');
+        div.style.visibility = 'hidden';
+        div.style.overflow = 'scroll'; // forcing scrollbar to appear
+        document.body.appendChild(div);
 
         // Create an inner div
-        const inner = document.createElement('div');
-        outer.appendChild(inner);
+        // const inner = document.createElement('div');
+        document.body.appendChild(div);
 
         // Calculate the width difference
-        const scrollbarWidth = outer.offsetWidth - inner.offsetWidth;
+        const scrollbarWidth = div.offsetWidth - div.clientWidth;
 
         // Clean up
-        outer.parentNode.removeChild(outer);
+        document.body.removeChild(div);
 
         return scrollbarWidth;
     }
