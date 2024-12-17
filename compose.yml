@@ -26,6 +26,10 @@ services:
     ports:
       - "6379:6379"
     restart: always
+    healthcheck:
+      test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
+      interval: 1s
+      retries: 120
   prometheus:
     profiles: [monitoring]
     image: prom/prometheus:v2.30.3
