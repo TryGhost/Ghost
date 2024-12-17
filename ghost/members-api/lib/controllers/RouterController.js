@@ -519,11 +519,7 @@ module.exports = class RouterController {
 
         if (!emailType) {
             // Default to subscribe form that also allows to login (safe fallback for older clients)
-            if (!this._allowSelfSignup()) {
-                emailType = 'signin';
-            } else {
-                emailType = 'subscribe';
-            }
+            emailType = 'subscribe';
         }
 
         if (!['signin', 'signup', 'subscribe'].includes(emailType)) {
