@@ -1,4 +1,4 @@
-// Feature flags behavior in tests:
+// Feature flags behaviour in tests:
 // By default, all flags listed in GA_FEATURES, BETA_FEATURES, and ALPHA_FEATURES
 // are globally enabled during E2E tests. This ensures flagged code paths are tested
 // automatically.
