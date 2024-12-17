@@ -23,6 +23,7 @@ import EmailReceivingFAQ from './pages/EmailReceivingFAQ.css';
 import {TipsAndDonationsSuccessStyle} from './pages/SupportSuccess';
 import {TipsAndDonationsErrorStyle} from './pages/SupportError';
 import {RecommendationsPageStyles} from './pages/RecommendationsPage';
+import NotificationStyle from './Notification.styles';
 
 // Global styles
 const FrameStyles = `
@@ -1275,6 +1276,7 @@ export function getFrameStyles({site}) {
         MagicLinkStyles +
         SignupPageStyles +
         OfferPageStyles({site}) +
+        NotificationStyle +
         PopupNotificationStyles +
         MobileStyles +
         MultipleProductsGlobalStyles +

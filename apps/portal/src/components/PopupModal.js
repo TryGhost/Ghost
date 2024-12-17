@@ -215,9 +215,9 @@ class PopupContent extends React.Component {
         return (
             <>
                 <div className={'gh-portal-popup-wrapper ' + pageClass} onClick={e => this.handlePopupClose(e)}>
+                    {this.renderPopupNotification()}
                     <div className={containerClassName} style={pageStyle} ref={node => (this.node = node)} tabIndex={-1}>
                         <CookieDisabledBanner message={cookieBannerText} />
-                        {this.renderPopupNotification()}
                         {this.renderActivePage()}
                         {(popupSize === 'full' ?
                             <div className={'gh-portal-powered inside ' + (hasMode(['preview']) ? 'hidden ' : '') + pageClass}>
