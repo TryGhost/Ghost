@@ -13,7 +13,11 @@ import Separator from './global/Separator';
 import getUsername from '../utils/get-username';
 import stripHtml from '../utils/strip-html';
 import truncate from '../utils/truncate';
-import {GET_ACTIVITIES_QUERY_KEY_NOTIFICATIONS, useActivitiesForUser} from '../hooks/useActivityPubQueries';
+import {
+    GET_ACTIVITIES_QUERY_KEY_NOTIFICATIONS,
+    useActivitiesForUser,
+    useUserDataForUser
+} from '../hooks/useActivityPubQueries';
 import {type NotificationType} from './activities/NotificationIcon';
 import {handleProfileClick} from '../utils/handle-profile-click';
 
@@ -153,6 +157,7 @@ const getGroupDescription = (group: GroupedActivity): JSX.Element => {
 
 const Activities: React.FC<ActivitiesProps> = ({}) => {
     const user = 'index';
+
     const [openStates, setOpenStates] = React.useState<{[key: string]: boolean}>({});
 
     const toggleOpen = (groupId: string) => {
@@ -164,6 +169,8 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
 
     const maxAvatars = 5;
 
+    const {data: userProfile, isLoading: isLoadingProfile} = useUserDataForUser(user) as {data: ActorProperties | null, isLoading: boolean};
+
     const {getActivitiesQuery} = useActivitiesForUser({
         handle: user,
         includeOwn: true,
@@ -174,9 +181,24 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
         key: GET_ACTIVITIES_QUERY_KEY_NOTIFICATIONS
     });
 
-    const {data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading} = getActivitiesQuery;
+    const {data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading: isLoadingActivities} = getActivitiesQuery;
+
+    const isLoading = isLoadingProfile === true || isLoadingActivities === true;
+
     const groupedActivities = (data?.pages.flatMap((page) => {
-        const filtered = page.data.filter((activity, index, self) => index === self.findIndex(a => a.id === activity.id));
+        const filtered = page.data
+            // Remove duplicates
+            .filter(
+                (activity, index, self) => index === self.findIndex(a => a.id === activity.id)
+            )
+            // Remove our own likes
+            .filter((activity) => {
+                if (activity.type === ACTIVITY_TYPE.LIKE && activity.actor?.id === userProfile?.id) {
+                    return false;
+                }
+
+                return true;
+            });
 
         return groupActivities(filtered);
     }) ?? []);
@@ -234,6 +256,7 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
             break;
         }
     };
+
     return (
         <>
             <MainNavigation page='activities'/>
