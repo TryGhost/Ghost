@@ -198,6 +198,14 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
                 }
 
                 return true;
+            })
+            // Remove follower likes if they are not for our own posts
+            .filter((activity) => {
+                if (activity.type === ACTIVITY_TYPE.LIKE && activity.object?.attributedTo?.id !== userProfile?.id) {
+                    return false;
+                }
+
+                return true;
             });
 
         return groupActivities(filtered);
