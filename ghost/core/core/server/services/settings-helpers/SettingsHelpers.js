@@ -24,11 +24,8 @@ class SettingsHelpers {
         return this.settingsCache.get('members_signup_access') === 'invite';
     }
 
-    /**
-     * NOTE! The backend still allows to self signup if this returns false because a site might use built-in free signup forms apart from Portal
-     */
     allowSelfSignup() {
-        return this.settingsCache.get('members_signup_access') === 'all' && (this.settingsCache.get('portal_plans').includes('free') || !this.arePaidMembersEnabled());
+        return this.settingsCache.get('members_signup_access') === 'all';
     }
 
     /**

@@ -57,13 +57,9 @@ class MembersConfigProvider {
     }
 
     getAllowSelfSignup() {
-        // Free signup is only allowed if member signup access is set to 'all'
-        if (this._settingsCache.get('members_signup_access') === 'all') {
-            return true;
-        }
-
-        // "Paid", "Invite" and "None" member signup access do not allow free signup
-        return false;
+        // Free signups are allowed only if the site subscription is set to "Full-access"
+        // It is blocked for "Invite-only", "Paid-members-only" and "None" accesses
+        return this._settingsCache.get('members_signup_access') === 'all';
     }
 
     getTokenConfig() {
