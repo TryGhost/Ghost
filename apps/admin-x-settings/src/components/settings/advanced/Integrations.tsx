@@ -1,4 +1,4 @@
-import DesignSettingsImg from '../../../assets/images/design-settings.png';
+import IntegrationsSettingsImg from '../../../assets/images/integrations-settings.png';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
 import TopLevelGroup from '../../TopLevelGroup';
@@ -237,7 +237,7 @@ const Integrations: React.FC<{ keywords: string[] }> = ({keywords}) => {
             customHeader={
                 <div className='-mt-7'>
                     <div className='-mx-5 overflow-hidden rounded-t-xl border-b border-grey-200 dark:border-grey-800 md:-mx-7'>
-                        <img className='h-full w-full rounded-t-xl' src={DesignSettingsImg} />
+                        <img className='h-full w-full rounded-t-xl' src={IntegrationsSettingsImg} />
                     </div>
                     <div className=' z-10 mt-6 flex items-start justify-between'>
                         <SettingGroupHeader description='Make Ghost work with apps and tools.' title='Integrations' />
