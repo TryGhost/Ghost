@@ -189,7 +189,7 @@ async function showComment({state, api, data: comment}: {state: EditableAppConte
     };
 }
 
-async function updateCommentLikeState({state, data: comment}: {state: EditableAppContext, data: {id: string, liked: boolean, commentsState: Comment[]}}) {
+async function updateCommentLikeState({state, data: comment}: {state: EditableAppContext, data: {id: string, liked: boolean}}) {
     return {
         comments: state.comments.map((c) => {
             const replies = c.replies.map((r) => {
@@ -227,24 +227,24 @@ async function updateCommentLikeState({state, data: comment}: {state: EditableAp
     };
 }
 
-async function likeComment({state, api, data: comment, dispatchAction}: {state: EditableAppContext, api: GhostApi, data: {id: string}, dispatchAction: DispatchActionType}) {
-    dispatchAction('updateCommentLikeState', {id: comment.id, liked: true, commentsState: state.comments});
+async function likeComment({api, data: comment, dispatchAction}: {state: EditableAppContext, api: GhostApi, data: {id: string}, dispatchAction: DispatchActionType}) {
+    dispatchAction('updateCommentLikeState', {id: comment.id, liked: true});
     try {
         await api.comments.like({comment});
         return {};
     } catch (err) {
-        dispatchAction('updateCommentLikeState', {id: comment.id, liked: false, commentsState: state.comments});
+        dispatchAction('updateCommentLikeState', {id: comment.id, liked: false});
     }
 }
 
-async function unlikeComment({state, api, data: comment, dispatchAction}: {state: EditableAppContext, api: GhostApi, data: {id: string}, dispatchAction: DispatchActionType}) {
-    dispatchAction('updateCommentLikeState', {id: comment.id, liked: false, commentsState: state.comments});
+async function unlikeComment({api, data: comment, dispatchAction}: {state: EditableAppContext, api: GhostApi, data: {id: string}, dispatchAction: DispatchActionType}) {
+    dispatchAction('updateCommentLikeState', {id: comment.id, liked: false});
 
     try {
         await api.comments.unlike({comment});
         return {};
     } catch (err) {
-        dispatchAction('updateCommentLikeState', {id: comment.id, liked: true, commentsState: state.comments});
+        dispatchAction('updateCommentLikeState', {id: comment.id, liked: true});
     }
 }
 
