@@ -1,8 +1,9 @@
+import DesignSettingsImg from '../../../assets/images/design-settings.png';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
 import TopLevelGroup from '../../TopLevelGroup';
 import usePinturaEditor from '../../../hooks/usePinturaEditor';
-import {Button, ConfirmationModal, Icon, List, ListItem, NoValueLabel, TabView, showToast, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {Button, ConfirmationModal, Icon, List, ListItem, NoValueLabel, SettingGroupHeader, TabView, showToast, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {ReactComponent as FirstPromoterIcon} from '../../../assets/icons/firstpromoter.svg';
 import {Integration, useBrowseIntegrations, useDeleteIntegration} from '@tryghost/admin-x-framework/api/integrations';
 import {ReactComponent as PinturaIcon} from '../../../assets/icons/pintura.svg';
@@ -233,19 +234,28 @@ const Integrations: React.FC<{ keywords: string[] }> = ({keywords}) => {
     return (
         <TopLevelGroup
             customButtons={buttons}
-            description="Make Ghost work with apps and tools"
+            customHeader={
+                <>
+                    <div className='z-10 flex items-start justify-between'>
+                        <img src={DesignSettingsImg} />
+                    </div>
+                    <div className='z-10 flex items-start justify-between'>
+                        <SettingGroupHeader description='Make Ghost work with apps and tools.' title='Integrations' />
+                        <div className='flex justify-center rounded border border-green px-4 py-2 md:hidden'>
+                            <Button color='green' label='Add custom integration' link onClick={() => {
+                                updateRoute('integrations/new');
+                                setSelectedTab('custom');
+                            }} />
+                        </div>
+                    </div>
+                    
+                </>
+            }
             keywords={keywords}
             navid='integrations'
-            testId='integrations'
-            title="Integrations"
-        >
-            <div className='flex justify-center rounded border border-green px-4 py-2 md:hidden'>
-                <Button color='green' label='Add custom integration' link onClick={() => {
-                    updateRoute('integrations/new');
-                    setSelectedTab('custom');
-                }} />
-            </div>
+            testId='integrations'>
             <TabView<'built-in' | 'custom'> selectedTab={selectedTab} tabs={tabs} onTabChange={setSelectedTab} />
+            
         </TopLevelGroup>
     );
 };
