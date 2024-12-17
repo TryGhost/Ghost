@@ -142,7 +142,7 @@ class PopupContent extends React.Component {
 
     render() {
         const {page, pageQuery, site, customSiteUrl} = this.context;
-        const products = getSiteProducts({site});
+        const products = getSiteProducts({site, pageQuery});
         const noOfProducts = products.length;
 
         getActivePage({page});
