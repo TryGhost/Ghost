@@ -62,9 +62,7 @@ const SignupOptions: React.FC<{
         }
     };
 
-    // This is a bit unclear in current admin, maybe we should add a message if the settings are disabled?
-    const isDisabled = membersSignupAccess !== 'all';
-
+    const isSignupDisabled = membersSignupAccess === 'invite' || membersSignupAccess === 'none';
     const isFreeTierAvailable = membersSignupAccess === 'all';
     const isStripeEnabled = checkStripeEnabled(localSettings, config!);
 
@@ -75,7 +73,7 @@ const SignupOptions: React.FC<{
             if (tier.type === 'free' && isFreeTierAvailable) {
                 tiersCheckboxes.push({
                     checked: (portalPlans.includes('free')),
-                    disabled: isDisabled,
+                    disabled: isSignupDisabled,
                     label: tier.name,
                     value: 'free',
                     testId: 'free-tier-checkbox',
@@ -121,7 +119,7 @@ const SignupOptions: React.FC<{
         <Toggle
             checked={Boolean(portalName)}
             direction='rtl'
-            disabled={isDisabled}
+            disabled={isSignupDisabled}
             label='Display name in signup form'
             onChange={e => updateSetting('portal_name', e.target.checked)}
         />
@@ -137,7 +135,7 @@ const SignupOptions: React.FC<{
                     checkboxes={[
                         {
                             checked: portalPlans.includes('monthly'),
-                            disabled: isDisabled,
+                            disabled: isSignupDisabled,
                             label: 'Monthly',
                             value: 'monthly',
                             onChange: () => {
@@ -146,7 +144,7 @@ const SignupOptions: React.FC<{
                         },
                         {
                             checked: portalPlans.includes('yearly'),
-                            disabled: isDisabled,
+                            disabled: isSignupDisabled,
                             label: 'Yearly',
                             value: 'yearly',
                             onChange: () => {
@@ -181,7 +179,7 @@ const SignupOptions: React.FC<{
 
         {portalSignupTermsHtml?.toString() && <Toggle
             checked={Boolean(portalSignupCheckboxRequired)}
-            disabled={isDisabled}
+            disabled={isSignupDisabled}
             label='Require agreement'
             labelStyle='heading'
             onChange={e => updateSetting('portal_signup_checkbox_required', e.target.checked)}
