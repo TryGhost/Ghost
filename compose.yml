@@ -1,6 +1,14 @@
 name: ghost
 
 services:
+  ghost:
+    build:
+      context: .
+      dockerfile: ./.docker/Dockerfile
+      target: development
+      args:
+        WORKDIR: /home/ghost
+    profiles: [full]
   mysql:
     image: mysql:8.0.35
     container_name: ghost-mysql
