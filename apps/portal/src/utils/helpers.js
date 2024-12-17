@@ -256,11 +256,14 @@ export function hasRecommendations({site}) {
 }
 
 export function isSigninAllowed({site}) {
-    return site?.members_signup_access === 'all' || site?.members_signup_access === 'invite';
+    return site?.members_signup_access !== 'none';
 }
 
 export function isSignupAllowed({site}) {
-    return site?.members_signup_access === 'all' && (site?.is_stripe_configured || hasOnlyFreePlan({site}));
+    const hasSignupAccess = site?.members_signup_access === 'all' || site?.members_signup_access === 'paid';
+    const hasSignupConfigured = site?.is_stripe_configured || hasOnlyFreePlan({site});
+
+    return hasSignupAccess && hasAvailablePrices({site}) && hasSignupConfigured;
 }
 
 export function hasMultipleProducts({site}) {
