@@ -62,7 +62,7 @@ test.describe('Access settings', async () => {
             ]
         });
 
-        await expect(section.getByText('Nobody')).toHaveCount(1);
+        await expect(section.getByTestId('subscription-access-select')).toHaveValue('none');
 
         await expect(page.getByTestId('portal').getByRole('button', {name: 'Customize'})).toBeDisabled();
         await expect(page.getByTestId('enable-newsletters')).toContainText('only existing members will receive newsletters');
