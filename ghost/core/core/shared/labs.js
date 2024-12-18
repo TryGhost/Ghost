@@ -1,3 +1,10 @@
+// Feature flags behaviour in tests:
+// By default, all flags listed in GA_FEATURES, BETA_FEATURES, and ALPHA_FEATURES
+// are globally enabled during E2E tests. This ensures flagged code paths are tested
+// automatically.
+// For more details, see the E2E testing documentation:
+// https://www.notion.so/ghost/End-to-end-Testing-6a2ef073b1754b18aff42e24a632a007
+
 const _ = require('lodash');
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');

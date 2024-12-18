@@ -3,7 +3,6 @@ const _ = require('lodash');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const {ValidationError} = require('@tryghost/errors');
-const labs = require('../../shared/labs');
 
 const messages = {
     emptyComment: 'The body of a comment cannot be empty',
@@ -62,43 +61,21 @@ const Comment = ghostBookshelf.Model.extend({
             .query('limit', 3);
     },
 
-    customQuery(qb) {
-        qb.where(function () {
-            this.whereNotIn('comments.status', ['hidden', 'deleted'])
-                .orWhereExists(function () {
-                    this.select(1)
-                        .from('comments as replies')
-                        .whereRaw('replies.parent_id = comments.id')
-                        .whereNotIn('replies.status', ['hidden', 'deleted']);
-                });
-        });
-    },
-
-    adminCustomQuery(qb) {
-        qb.where(function () {
-            this.whereNotIn('comments.status', ['deleted'])
-                .orWhereExists(function () {
-                    this.select(1)
-                        .from('comments as replies')
-                        .whereRaw('replies.parent_id = comments.id')
-                        .whereNotIn('replies.status', ['deleted']);
-                });
-        });
-    },
-
+    // Called by our filtered-collection bookshelf plugin
     applyCustomQuery(options) {
-        if (labs.isSet('commentImprovements')) {
-            if (!options.isAdmin) { // if it's an admin request, we don't need to apply the custom query
-                this.query((qb) => {
-                    this.customQuery(qb, options);
-                });
-            }
-            if (options.isAdmin) {
-                this.query((qb) => {
-                    this.adminCustomQuery(qb, options);
-                });
-            }
-        }
+        const excludedCommentStatuses = options.isAdmin ? ['deleted'] : ['hidden', 'deleted'];
+
+        this.query((qb) => {
+            qb.where(function () {
+                this.whereNotIn('comments.status', excludedCommentStatuses)
+                    .orWhereExists(function () {
+                        this.select(1)
+                            .from('comments as replies')
+                            .whereRaw('replies.parent_id = comments.id')
+                            .whereNotIn('replies.status', excludedCommentStatuses);
+                    });
+            });
+        });
     },
 
     emitChange: function emitChange(event, options) {
@@ -228,7 +205,7 @@ const Comment = ghostBookshelf.Model.extend({
         // - public requests never return hidden or deleted replies
         // - admin requests never return deleted replies but do return hidden replies
         const repliesOptionIndex = withRelated.indexOf('replies');
-        if (labs.isSet('commentImprovements') && repliesOptionIndex > -1) {
+        if (repliesOptionIndex > -1) {
             withRelated[repliesOptionIndex] = {
                 replies: (qb) => {
                     if (isAdmin) {
@@ -297,31 +274,15 @@ const Comment = ghostBookshelf.Model.extend({
     countRelations() {
         return {
             replies(modelOrCollection, options) {
-                if (labs.isSet('commentImprovements') && !options.isAdmin) {
-                    modelOrCollection.query('columns', 'comments.*', (qb) => {
-                        qb.count('replies.id')
-                            .from('comments AS replies')
-                            .whereRaw('replies.parent_id = comments.id')
-                            .whereNotIn('replies.status', ['hidden', 'deleted'])
-                            .as('count__replies');
-                    });
-                } else {
-                    modelOrCollection.query('columns', 'comments.*', (qb) => {
-                        qb.count('replies.id')
-                            .from('comments AS replies')
-                            .whereRaw('replies.parent_id = comments.id')
-                            .as('count__replies');
-                    });
-                }
-                if (options.isAdmin && labs.isSet('commentImprovements')) {
-                    modelOrCollection.query('columns', 'comments.*', (qb) => {
-                        qb.count('replies.id')
-                            .from('comments AS replies')
-                            .whereRaw('replies.parent_id = comments.id')
-                            .whereNotIn('replies.status', ['deleted'])
-                            .as('count__replies');
-                    });
-                }
+                const excludedCommentStatuses = options.isAdmin ? ['deleted'] : ['hidden', 'deleted'];
+
+                modelOrCollection.query('columns', 'comments.*', (qb) => {
+                    qb.count('replies.id')
+                        .from('comments AS replies')
+                        .whereRaw('replies.parent_id = comments.id')
+                        .whereNotIn('replies.status', excludedCommentStatuses)
+                        .as('count__replies');
+                });
             },
             likes(modelOrCollection) {
                 modelOrCollection.query('columns', 'comments.*', (qb) => {

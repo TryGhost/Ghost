@@ -1,0 +1,178 @@
+@import "./preflight.css";
+
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+
+@import url(https://fonts.bunny.net/css?family=cardo:400,700);
+@import url(https://fonts.bunny.net/css?family=manrope:300,500,700);
+@import url(https://fonts.bunny.net/css?family=merriweather:300,700);
+@import url(https://fonts.bunny.net/css?family=nunito:400,600,700);
+@import url(https://fonts.bunny.net/css?family=old-standard-tt:400,700);
+@import url(https://fonts.bunny.net/css?family=prata:400);
+@import url(https://fonts.bunny.net/css?family=roboto:400,500,700);
+@import url(https://fonts.bunny.net/css?family=rufina:400,500,700);
+@import url(https://fonts.bunny.net/css?family=tenor-sans:400);
+@import url(https://fonts.bunny.net/css?family=space-grotesk:700);
+@import url(https://fonts.bunny.net/css?family=chakra-petch:400);
+@import url(https://fonts.bunny.net/css?family=noto-sans:400,700);
+@import url(https://fonts.bunny.net/css?family=poppins:400,700);
+@import url(https://fonts.bunny.net/css?family=fira-sans:400,700);
+@import url(https://fonts.bunny.net/css?family=inter:400,700);
+@import url(https://fonts.bunny.net/css?family=noto-serif:400,700);
+@import url(https://fonts.bunny.net/css?family=lora:400,700);
+@import url(https://fonts.bunny.net/css?family=ibm-plex-serif:400,700);
+@import url(https://fonts.bunny.net/css?family=space-mono:400,700);
+@import url(https://fonts.bunny.net/css?family=fira-mono:400,700);
+@import url(https://fonts.bunny.net/css?family=jetbrains-mono:400,700);
+
+/* Defaults */
+@layer base {
+    :root {
+        --background: 0 0% 100%;
+        --foreground: 222.2 47.4% 11.2%;
+        --muted: 210 40% 96.1%;
+        --muted-foreground: 215.4 16.3% 46.9%;
+        --popover: 0 0% 100%;
+        --popover-foreground: 222.2 47.4% 11.2%;
+        --border: 214.3 31.8% 91.4%;
+        --input: 214.3 31.8% 91.4%;
+        --card: 0 0% 100%;
+        --card-foreground: 222.2 47.4% 11.2%;
+        --primary: 222.2 47.4% 11.2%;
+        --primary-foreground: 210 40% 98%;
+        --secondary: 210 40% 96.1%;
+        --secondary-foreground: 222.2 47.4% 11.2%;
+        --accent: 210 40% 96.1%;
+        --accent-foreground: 222.2 47.4% 11.2%;
+        --destructive: 0 100% 50%;
+        --destructive-foreground: 210 40% 98%;
+        --ring: 215 20.2% 65.1%;
+        --radius: 9px;
+    }
+
+    .dark {
+        --background: 224 71% 4%;
+        --foreground: 213 31% 91%;
+        --muted: 223 47% 11%;
+        --muted-foreground: 215.4 16.3% 56.9%;
+        --accent: 216 34% 17%;
+        --accent-foreground: 210 40% 98%;
+        --popover: 224 71% 4%;
+        --popover-foreground: 215 20.2% 65.1%;
+        --border: 216 34% 17%;
+        --input: 216 34% 17%;
+        --card: 224 71% 4%;
+        --card-foreground: 213 31% 91%;
+        --primary: 210 40% 98%;
+        --primary-foreground: 222.2 47.4% 1.2%;
+        --secondary: 222.2 47.4% 11.2%;
+        --secondary-foreground: 210 40% 98%;
+        --destructive: 0 63% 31%;
+        --destructive-foreground: 210 40% 98%;
+        --ring: 216 34% 17%;
+    }
+
+    /* This just serves as a placeholder; we actually load Inter from a font file in Ember admin */
+    @font-face {
+        font-family: "Inter";
+        src: local("Inter") format("truetype-variations");
+        font-weight: 100 900;
+    }
+
+    .shade-base {
+        & {
+            @apply font-sans text-black text-base leading-normal;
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5 {
+            @apply font-bold tracking-tight leading-tighter;
+        }
+
+        h1 {
+            @apply text-4xl leading-supertight;
+        }
+
+        h2 {
+            @apply text-2xl;
+        }
+
+        h3 {
+            @apply text-xl;
+        }
+
+        h4 {
+            @apply text-lg;
+        }
+
+        h5 {
+            @apply text-md leading-supertight;
+        }
+
+        h6 {
+            @apply text-md leading-normal;
+        }
+    }
+}
+
+@layer base {
+    * {
+        @apply border-border;
+    }
+    body {
+        @apply font-sans antialiased bg-background text-foreground;
+    }
+}
+
+.shade-base {
+    line-height: 1.5;
+    -ms-text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
+
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-text-size-adjust: 100%;
+    letter-spacing: unset;
+
+    height: 100vh;
+    width: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+@media (max-width: 800px) {
+    .shade-base {
+        height: calc(100vh - 55px);
+    }
+}
+
+.shade-base.dark {
+    color: #fafafb;
+}
+
+.shade-base.dark .gh-loading-orb-container {
+    background-color: #000000;
+}
+
+.shade-base.dark .gh-loading-orb {
+    filter: invert(100%);
+}
+
+.shade-base .no-scrollbar::-webkit-scrollbar {
+    display: none; /* Chrome */
+}
+
+.shade-base .no-scrollbar {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+}
+
+/* Prose classes are for formatting arbitrary HTML that comes from the API */
+.gh-prose-links a {
+    color: #30cf43;
+}

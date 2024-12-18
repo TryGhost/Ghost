@@ -26,6 +26,12 @@ services:
     ports:
       - "6379:6379"
     restart: always
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
+      interval: 1s
+      retries: 120
   prometheus:
     profiles: [monitoring]
     image: prom/prometheus:v2.30.3
@@ -57,3 +63,4 @@ services:
       - "9091:9091"
 volumes:
   mysql-data:
+  redis-data:

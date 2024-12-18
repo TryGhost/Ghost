@@ -1,8 +1,9 @@
+import IntegrationsSettingsImg from '../../../assets/images/integrations-settings.png';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
 import TopLevelGroup from '../../TopLevelGroup';
 import usePinturaEditor from '../../../hooks/usePinturaEditor';
-import {Button, ConfirmationModal, Icon, List, ListItem, NoValueLabel, TabView, showToast, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {Button, ConfirmationModal, Icon, List, ListItem, NoValueLabel, SettingGroupHeader, TabView, showToast, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {ReactComponent as FirstPromoterIcon} from '../../../assets/icons/firstpromoter.svg';
 import {Integration, useBrowseIntegrations, useDeleteIntegration} from '@tryghost/admin-x-framework/api/integrations';
 import {ReactComponent as PinturaIcon} from '../../../assets/icons/pintura.svg';
@@ -224,27 +225,41 @@ const Integrations: React.FC<{ keywords: string[] }> = ({keywords}) => {
     ] as const;
 
     const buttons = (
-        <Button className='mt-[-5px] hidden md:!visible md:!block' color='clear' label='Add custom integration' size='sm' onClick={() => {
-            updateRoute('integrations/new');
-            setSelectedTab('custom');
-        }} />
+        <Button 
+            className='mt-[-5px] inline-flex h-7 cursor-pointer items-center justify-center whitespace-nowrap rounded px-3 text-sm font-semibold text-grey-900 transition hover:bg-grey-200 dark:text-white dark:hover:bg-grey-900 [&:hover]:text-black' 
+            color='clear'
+            label='Add custom integration' 
+            link 
+            onClick={() => {
+                updateRoute('integrations/new');
+                setSelectedTab('custom');
+            }} 
+        />
     );
 
     return (
         <TopLevelGroup
             customButtons={buttons}
-            description="Make Ghost work with apps and tools"
+            customHeader={
+                <div className='sm:-mt-5 md:-mt-7'>
+                    <div className='-mx-5 overflow-hidden rounded-t-xl border-b border-grey-200 dark:border-grey-800 md:-mx-7'>
+                        <img className='h-full w-full' src={IntegrationsSettingsImg} />
+                    </div>
+                    <div className=' z-10 mt-6 flex items-start justify-between'>
+                        <SettingGroupHeader description='Make Ghost work with apps and tools.' title='Integrations' />
+                        {
+                            <Button className='mt-[-5px] inline-flex h-7 cursor-pointer items-center justify-center whitespace-nowrap rounded px-3 text-sm font-semibold text-grey-900 transition hover:bg-grey-200 dark:text-white dark:hover:bg-grey-900 [&:hover]:text-black' color='clear' label='Add custom integration' link onClick={() => {
+                                updateRoute('integrations/new');
+                                setSelectedTab('custom');
+                            }} />
+                        }
+                    </div>
+                </div>
+            }
             keywords={keywords}
             navid='integrations'
             testId='integrations'
-            title="Integrations"
         >
-            <div className='flex justify-center rounded border border-green px-4 py-2 md:hidden'>
-                <Button color='green' label='Add custom integration' link onClick={() => {
-                    updateRoute('integrations/new');
-                    setSelectedTab('custom');
-                }} />
-            </div>
             <TabView<'built-in' | 'custom'> selectedTab={selectedTab} tabs={tabs} onTabChange={setSelectedTab} />
         </TopLevelGroup>
     );
