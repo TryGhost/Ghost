@@ -2,7 +2,7 @@ import React from 'react';
 import TopLevelGroup from '../../TopLevelGroup';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {GroupBase, MultiValue} from 'react-select';
-import {MultiSelect, MultiSelectOption, Select, SettingGroupContent, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {MultiSelect, MultiSelectOption, Select, Separator, SettingGroupContent, withErrorBoundary} from '@tryghost/admin-x-design-system';
 // import {getOptionLabel} from '../../../utils/helpers';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
@@ -129,52 +129,69 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
     // );
 
     const form = (
-        <SettingGroupContent columns={1}>
-            
-            <Select
-                options={MEMBERS_SIGNUP_ACCESS_OPTIONS}
-                selectedOption={MEMBERS_SIGNUP_ACCESS_OPTIONS.find(option => option.value === membersSignupAccess)}
-                testId='subscription-access-select'
-                title="Who should be able to subscribe to your site?"
-                onSelect={(option) => {
-                    updateSetting('members_signup_access', option?.value || null);
-                    handleEditingChange(true);
-                }}
-            />
-            <Select
-                options={DEFAULT_CONTENT_VISIBILITY_OPTIONS}
-                selectedOption={DEFAULT_CONTENT_VISIBILITY_OPTIONS.find(option => option.value === defaultContentVisibility)}
-                testId='default-post-access-select'
-                title="Who should have access to new posts?"
-                onSelect={(option) => {
-                    updateSetting('default_content_visibility', option?.value || null);
-                    handleEditingChange(true);
-                }}
-            />
+        <SettingGroupContent className='gap-y-4' columns={1}>
+            <div className="flex content-center items-center gap-4">
+                <div className="w-[320px]">Who should be able to subscribe to your site?</div>
+                <div className="flex-1">
+                    <Select 
+                        options={MEMBERS_SIGNUP_ACCESS_OPTIONS}
+                        selectedOption={MEMBERS_SIGNUP_ACCESS_OPTIONS.find(option => option.value === membersSignupAccess)}
+                        testId='subscription-access-select'
+                        onSelect={(option) => {
+                            updateSetting('members_signup_access', option?.value || null);
+                            handleEditingChange(true);
+                        }}
+                    />
+                </div>
+            </div>
+            <Separator />
+            <div className="flex content-center items-center gap-4">
+                <div className="w-[320px] pt-1">Who should have access to new posts?</div>
+                <div className="flex-1">
+                    <Select
+                        options={DEFAULT_CONTENT_VISIBILITY_OPTIONS}
+                        selectedOption={DEFAULT_CONTENT_VISIBILITY_OPTIONS.find(option => option.value === defaultContentVisibility)}
+                        testId='default-post-access-select'
+                        onSelect={(option) => {
+                            updateSetting('default_content_visibility', option?.value || null);
+                            handleEditingChange(true);
+                        }}
+                    />
+                </div>
+            </div>
             {defaultContentVisibility === 'tiers' && (
-                <MultiSelect
-                    color='black'
-                    options={tierOptionGroups.filter(group => group.options.length > 0)}
-                    testId='tiers-select'
-                    title='Select tiers'
-                    values={selectedTierOptions}
-                    clearBg
-                    onChange={(selectedOptions) => {
-                        setSelectedTiers(selectedOptions);
-                        handleEditingChange(true);
-                    }}
-                />
+                <div className="flex content-center items-center gap-4">
+                    <div className="w-[320px] pt-1">Select specific tiers</div>
+                    <div className="flex-1">
+                        <MultiSelect
+                            color='black'
+                            options={tierOptionGroups.filter(group => group.options.length > 0)}
+                            testId='tiers-select'
+                            values={selectedTierOptions}
+                            onChange={(selectedOptions) => {
+                                setSelectedTiers(selectedOptions);
+                                handleEditingChange(true);
+                            }}
+                        />
+                    </div>
+                </div>
             )}
-            <Select
-                options={COMMENTS_ENABLED_OPTIONS}
-                selectedOption={COMMENTS_ENABLED_OPTIONS.find(option => option.value === commentsEnabled)}
-                testId='commenting-select'
-                title="Who can comment on posts?"
-                onSelect={(option) => {
-                    updateSetting('comments_enabled', option?.value || null);
-                    handleEditingChange(true);
-                }}
-            />
+            <Separator />
+            <div className="flex content-center items-center gap-4">
+                <div className="w-[320px] pt-1">Who can comment on posts?</div>
+                <div className="flex-1">
+                    <Select
+                        options={COMMENTS_ENABLED_OPTIONS}
+                        selectedOption={COMMENTS_ENABLED_OPTIONS.find(option => option.value === commentsEnabled)}
+                        testId='commenting-select'
+                        title=""
+                        onSelect={(option) => {
+                            updateSetting('comments_enabled', option?.value || null);
+                            handleEditingChange(true);
+                        }}
+                    />
+                </div>
+            </div>
         </SettingGroupContent>
     );
 
