@@ -90,7 +90,7 @@ test.describe('Access settings', async () => {
 
         await section.getByRole('button', {name: 'Save'}).click();
 
-        await expect(section.getByText('Specific tiers')).toHaveCount(1);
+        await expect(section.getByTestId('default-post-access-select')).toHaveValue('tiers');
 
         expect(lastApiRequests.editSettings?.body).toEqual({
             settings: [
