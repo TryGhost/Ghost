@@ -130,23 +130,22 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     const form = (
         <SettingGroupContent columns={1}>
+            
             <Select
-                hint='Who should be able to subscribe to your site?'
                 options={MEMBERS_SIGNUP_ACCESS_OPTIONS}
                 selectedOption={MEMBERS_SIGNUP_ACCESS_OPTIONS.find(option => option.value === membersSignupAccess)}
                 testId='subscription-access-select'
-                title="Subscription access"
+                title="Who should be able to subscribe to your site?"
                 onSelect={(option) => {
                     updateSetting('members_signup_access', option?.value || null);
                     handleEditingChange(true);
                 }}
             />
             <Select
-                hint='When a new post is created, who should have access?'
                 options={DEFAULT_CONTENT_VISIBILITY_OPTIONS}
                 selectedOption={DEFAULT_CONTENT_VISIBILITY_OPTIONS.find(option => option.value === defaultContentVisibility)}
                 testId='default-post-access-select'
-                title="Default post access"
+                title="Who should have access to new posts?"
                 onSelect={(option) => {
                     updateSetting('default_content_visibility', option?.value || null);
                     handleEditingChange(true);
@@ -167,11 +166,10 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 />
             )}
             <Select
-                hint='Who can comment on posts?'
                 options={COMMENTS_ENABLED_OPTIONS}
                 selectedOption={COMMENTS_ENABLED_OPTIONS.find(option => option.value === commentsEnabled)}
                 testId='commenting-select'
-                title="Commenting"
+                title="Who can comment on posts?"
                 onSelect={(option) => {
                     updateSetting('comments_enabled', option?.value || null);
                     handleEditingChange(true);
