@@ -356,13 +356,13 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
         updateActivity(activityId, {
             object: {
                 ...object,
-                replyCount: object.replyCount + 1
+                replyCount: (object.replyCount ?? 0) + 1
             }
         } as Partial<Activity>);
 
         // Update the replyCount on the current activity loaded in the modal
         // This is used for when we navigate via the history
-        object.replyCount = object.replyCount + 1;
+        object.replyCount = (object.replyCount ?? 0) + 1;
     }
 
     const replyBoxRef = useRef<HTMLDivElement>(null);
