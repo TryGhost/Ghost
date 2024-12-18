@@ -82,8 +82,6 @@ test.describe('Access settings', async () => {
 
         const section = page.getByTestId('access');
 
-        await section.getByRole('button', {name: 'Edit'}).click();
-
         await chooseOptionInSelect(section.getByTestId('default-post-access-select'), 'Specific tiers');
         await section.getByTestId('tiers-select').click();
 
