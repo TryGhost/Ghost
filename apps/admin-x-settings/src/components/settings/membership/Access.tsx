@@ -130,9 +130,9 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     const form = (
         <SettingGroupContent className='gap-y-4' columns={1}>
-            <div className="flex content-center items-center gap-4">
-                <div className="w-2/3 min-w-[200px] max-w-[340px]">Who should be able to subscribe to your site?</div>
-                <div className="flex-1">
+            <div className="flex flex-col content-center items-center gap-4 md:flex-row">
+                <div className="w-full min-w-[200px] max-w-none md:w-2/3 md:max-w-[340px]">Who should be able to subscribe to your site?</div>
+                <div className="w-full md:flex-1">
                     <Select 
                         options={MEMBERS_SIGNUP_ACCESS_OPTIONS}
                         selectedOption={MEMBERS_SIGNUP_ACCESS_OPTIONS.find(option => option.value === membersSignupAccess)}
@@ -145,9 +145,9 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 </div>
             </div>
             <Separator />
-            <div className="flex content-center items-center gap-4">
-                <div className="w-2/3 min-w-[200px] max-w-[340px]">Who should have access to new posts?</div>
-                <div className="flex-1">
+            <div className="flex flex-col content-center items-center gap-4 md:flex-row">
+                <div className="w-full min-w-[200px] max-w-none md:w-2/3 md:max-w-[340px]">Who should have access to new posts?</div>
+                <div className="w-full md:flex-1">
                     <Select
                         options={DEFAULT_CONTENT_VISIBILITY_OPTIONS}
                         selectedOption={DEFAULT_CONTENT_VISIBILITY_OPTIONS.find(option => option.value === defaultContentVisibility)}
@@ -160,9 +160,9 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 </div>
             </div>
             {defaultContentVisibility === 'tiers' && (
-                <div className="flex content-center items-center gap-4">
-                    <div className="w-2/3 min-w-[200px] max-w-[340px]">Select specific tiers</div>
-                    <div className="flex-1">
+                <div className="flex flex-col content-center items-center gap-4 md:flex-row">
+                    <div className="w-full min-w-[200px] max-w-none md:w-2/3 md:max-w-[340px]">Select specific tiers</div>
+                    <div className="w-full md:flex-1">
                         <MultiSelect
                             color='black'
                             options={tierOptionGroups.filter(group => group.options.length > 0)}
@@ -177,9 +177,9 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 </div>
             )}
             <Separator />
-            <div className="flex content-center items-center gap-4">
-                <div className="w-2/3 min-w-[200px] max-w-[340px]">Who can comment on posts?</div>
-                <div className="flex-1">
+            <div className="flex flex-col content-center items-center gap-4 md:flex-row">
+                <div className="w-full min-w-[200px] max-w-none md:w-2/3 md:max-w-[340px]">Who can comment on posts?</div>
+                <div className="w-full md:flex-1">
                     <Select
                         options={COMMENTS_ENABLED_OPTIONS}
                         selectedOption={COMMENTS_ENABLED_OPTIONS.find(option => option.value === commentsEnabled)}
