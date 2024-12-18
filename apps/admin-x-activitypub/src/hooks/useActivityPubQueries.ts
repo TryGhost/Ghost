@@ -488,7 +488,8 @@ export function useReplyMutationForUser(handle: string) {
         async mutationFn({id, content}: {id: string, content: string}) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
-            return await api.reply(id, content) as Activity;
+
+            return api.reply(id, content);
         }
     });
 }
@@ -500,15 +501,27 @@ export function useNoteMutationForUser(handle: string) {
         async mutationFn({content}: {content: string}) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
-            return await api.note(content) as Activity;
+
+            return api.note(content);
         },
         onSuccess: (activity: Activity) => {
-            queryClient.setQueryData([`outbox:${handle}`], (current?: Activity[]) => {
+            queryClient.setQueryData([`outbox:${handle}`], (current?: {pages: {data: Activity[]}[]}) => {
                 if (current === undefined) {
                     return current;
                 }
 
-                return [activity, ...current];
+                return {
+                    ...current,
+                    pages: current.pages.map((page: {data: Activity[]}, index: number) => {
+                        if (index === 0) {
+                            return {
+                                ...page,
+                                data: [activity, ...page.data]
+                            };
+                        }
+                        return page;
+                    })
+                };
             });
 
             queryClient.setQueriesData([`activities:${handle}`, GET_ACTIVITIES_QUERY_KEY_FEED], (current?: {pages: {data: Activity[]}[]}) => {
