@@ -6,15 +6,19 @@ const changeSubscriptionAccess = async (page, access) => {
     await page.locator('[data-test-nav="settings"]').click();
 
     const section = page.getByTestId('access');
-    await section.getByRole('button', {name: 'Edit'}).click();
-
+    
     const select = section.getByTestId('subscription-access-select');
     await select.click();
     await page.locator(`[data-testid="select-option"][data-value="${access}"]`).click();
 
     // Save settings
     await section.getByRole('button', {name: 'Save'}).click();
-    await expect(select).not.toBeVisible();
+    
+    await expect(select).toContainText(
+        access === 'all' ? 'Anyone can sign up' :
+            access === 'invite' ? 'Only people I invite' :
+                'Nobody'
+    );
 };
 
 const checkPortalScriptLoaded = async (page, loaded = true) => {
