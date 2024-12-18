@@ -199,7 +199,7 @@
     "intl": "1.2.5",
     "intl-messageformat": "5.4.3",
     "js-yaml": "4.1.0",
-    "json-stable-stringify": "1.1.1",
+    "json-stable-stringify": "1.2.0",
     "jsonpath": "1.1.1",
     "jsonwebtoken": "8.5.1",
     "keypair": "1.0.4",
