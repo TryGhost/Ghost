@@ -17,23 +17,28 @@ const NewPostModal = NiceModal.create(() => {
 
     const handlePost = async () => {
         const trimmedContent = content.trim();
+
         if (!trimmedContent) {
             return;
         }
 
-        await noteMutation.mutate({content: trimmedContent}, {
+        noteMutation.mutate({content: trimmedContent}, {
             onSuccess() {
                 showToast({
                     message: 'Note posted',
                     type: 'success'
                 });
+
                 modal.remove();
             },
-            onError() {
+            onError(error) {
                 showToast({
                     message: 'An error occurred while posting your note.',
                     type: 'error'
                 });
+
+                // eslint-disable-next-line no-console
+                console.error(error);
             }
         });
     };
