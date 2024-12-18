@@ -62,7 +62,7 @@ test.describe('Access settings', async () => {
             ]
         });
 
-        await expect(section.getByTestId('subscription-access-select')).toHaveValue('none');
+        await expect(section.getByTestId('subscription-access-select')).toContainText('Nobody');
 
         await expect(page.getByTestId('portal').getByRole('button', {name: 'Customize'})).toBeDisabled();
         await expect(page.getByTestId('enable-newsletters')).toContainText('only existing members will receive newsletters');
@@ -90,7 +90,7 @@ test.describe('Access settings', async () => {
 
         await section.getByRole('button', {name: 'Save'}).click();
 
-        await expect(section.getByTestId('default-post-access-select')).toHaveValue('tiers');
+        await expect(section.getByTestId('default-post-access-select')).toContainText('Specific tiers');
 
         expect(lastApiRequests.editSettings?.body).toEqual({
             settings: [
