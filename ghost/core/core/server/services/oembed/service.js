@@ -12,7 +12,14 @@ const nft = new NFT({
     }
 });
 
-const Twitter = require('./TwitterOEmbedProvider');
+// const Twitter = require('./TwitterOEmbedProvider');
+// const twitter = new Twitter({
+//     config: {
+//         bearerToken: config.get('twitter').privateReadOnlyToken
+//     }
+// });
+
+const Twitter = require('./RettiwtOEmbedProvider');
 const twitter = new Twitter({
     config: {
         bearerToken: config.get('twitter').privateReadOnlyToken
