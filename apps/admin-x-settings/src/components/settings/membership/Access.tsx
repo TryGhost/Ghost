@@ -146,7 +146,7 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
             </div>
             <Separator />
             <div className="flex content-center items-center gap-4">
-                <div className="w-[320px] pt-1">Who should have access to new posts?</div>
+                <div className="w-[320px]">Who should have access to new posts?</div>
                 <div className="flex-1">
                     <Select
                         options={DEFAULT_CONTENT_VISIBILITY_OPTIONS}
@@ -161,7 +161,7 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
             </div>
             {defaultContentVisibility === 'tiers' && (
                 <div className="flex content-center items-center gap-4">
-                    <div className="w-[320px] pt-1">Select specific tiers</div>
+                    <div className="w-[320px]">Select specific tiers</div>
                     <div className="flex-1">
                         <MultiSelect
                             color='black'
@@ -178,7 +178,7 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
             )}
             <Separator />
             <div className="flex content-center items-center gap-4">
-                <div className="w-[320px] pt-1">Who can comment on posts?</div>
+                <div className="w-[320px]">Who can comment on posts?</div>
                 <div className="flex-1">
                     <Select
                         options={COMMENTS_ENABLED_OPTIONS}
