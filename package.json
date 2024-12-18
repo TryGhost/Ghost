@@ -23,7 +23,7 @@
     "archive": "nx run ghost:archive",
     "build": "nx run-many -t build",
     "build:clean": "nx reset && rimraf -g 'ghost/*/build' && rimraf -g 'ghost/*/tsconfig.tsbuildinfo'",
-    "clean:hard": "./.github/scripts/clean.sh",
+    "clean:hard": "node ./.github/scripts/clean.js",
     "dev:debug": "DEBUG_COLORS=true DEBUG=@tryghost*,ghost:* yarn dev",
     "dev:admin": "node .github/scripts/dev.js --admin",
     "dev:ghost": "node .github/scripts/dev.js --ghost",
