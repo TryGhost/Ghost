@@ -225,10 +225,16 @@ const Integrations: React.FC<{ keywords: string[] }> = ({keywords}) => {
     ] as const;
 
     const buttons = (
-        <Button className='mt-[-5px] hidden hover:text-black md:!visible md:!block' color='clear' label='Add custom integration' size='sm' onClick={() => {
-            updateRoute('integrations/new');
-            setSelectedTab('custom');
-        }} />
+        <Button 
+            className='mt-[-5px] inline-flex h-7 cursor-pointer items-center justify-center whitespace-nowrap rounded px-3 text-sm font-semibold text-grey-900 transition hover:bg-grey-200 dark:text-white dark:hover:bg-grey-900 [&:hover]:text-black' 
+            color='clear'
+            label='Add custom integration' 
+            link 
+            onClick={() => {
+                updateRoute('integrations/new');
+                setSelectedTab('custom');
+            }} 
+        />
     );
 
     return (
@@ -242,7 +248,7 @@ const Integrations: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     <div className=' z-10 mt-6 flex items-start justify-between'>
                         <SettingGroupHeader description='Make Ghost work with apps and tools.' title='Integrations' />
                         {
-                            <Button className='mt-[-5px] inline-flex h-7 cursor-pointer items-center justify-center whitespace-nowrap rounded px-3 text-sm font-semibold text-grey-900 transition hover:bg-grey-200 hover:text-black dark:text-white dark:hover:bg-grey-900' color='clear' label='Add custom integration' link onClick={() => {
+                            <Button className='mt-[-5px] inline-flex h-7 cursor-pointer items-center justify-center whitespace-nowrap rounded px-3 text-sm font-semibold text-grey-900 transition hover:bg-grey-200 dark:text-white dark:hover:bg-grey-900 [&:hover]:text-black' color='clear' label='Add custom integration' link onClick={() => {
                                 updateRoute('integrations/new');
                                 setSelectedTab('custom');
                             }} />
