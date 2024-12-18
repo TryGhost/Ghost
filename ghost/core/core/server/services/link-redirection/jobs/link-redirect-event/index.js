@@ -8,7 +8,8 @@ module.exports = async function handleRedirect(data) {
     const {uuid, linkId, timestamp, timezone} = data;
     const member = await db.knex.select('id').from('members').where('uuid', uuid).first();
     if (!member) {
-        throw new errors.NotFoundError({message: `Member with uuid ${uuid} not found`});
+        return; // throwing error causes the job to fail and be retried
+        // throw new errors.NotFoundError({message: `Member with uuid ${uuid} not found`});
     }
     // const formattedTimestamp = new Date(timestamp).toISOString(); // for sqlite support
     try {
