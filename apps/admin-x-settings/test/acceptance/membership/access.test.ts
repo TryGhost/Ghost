@@ -21,11 +21,15 @@ test.describe('Access settings', async () => {
         await expect(section.getByText('Public')).toHaveCount(1);
         await expect(section.getByText('Nobody')).toHaveCount(1);
 
+        await section.getByRole('button', {name: 'Edit'}).click();
+
         await chooseOptionInSelect(section.getByTestId('subscription-access-select'), 'Only people I invite');
         await chooseOptionInSelect(section.getByTestId('default-post-access-select'), /^Members only$/);
         await chooseOptionInSelect(section.getByTestId('commenting-select'), 'All members');
 
         await section.getByRole('button', {name: 'Save'}).click();
+
+        await expect(section.getByTestId('subscription-access-select')).toHaveCount(0);
 
         await expect(section.getByText('Only people I invite')).toHaveCount(1);
         await expect(section.getByText('Members only')).toHaveCount(1);
@@ -52,6 +56,8 @@ test.describe('Access settings', async () => {
 
         const section = page.getByTestId('access');
 
+        await section.getByRole('button', {name: 'Edit'}).click();
+
         await chooseOptionInSelect(section.getByTestId('subscription-access-select'), 'Nobody');
 
         await section.getByRole('button', {name: 'Save'}).click();
@@ -62,7 +68,7 @@ test.describe('Access settings', async () => {
             ]
         });
 
-        await expect(section.getByTestId('subscription-access-select')).toContainText('Nobody');
+        await expect(section.getByTestId('subscription-access-select')).toHaveCount(0);
 
         await expect(page.getByTestId('portal').getByRole('button', {name: 'Customize'})).toBeDisabled();
         await expect(page.getByTestId('enable-newsletters')).toContainText('only existing members will receive newsletters');
@@ -82,6 +88,8 @@ test.describe('Access settings', async () => {
 
         const section = page.getByTestId('access');
 
+        await section.getByRole('button', {name: 'Edit'}).click();
+
         await chooseOptionInSelect(section.getByTestId('default-post-access-select'), 'Specific tiers');
         await section.getByTestId('tiers-select').click();
 
@@ -90,7 +98,7 @@ test.describe('Access settings', async () => {
 
         await section.getByRole('button', {name: 'Save'}).click();
 
-        await expect(section.getByTestId('default-post-access-select')).toContainText('Specific tiers');
+        await expect(section.getByText('Specific tiers')).toHaveCount(1);
 
         expect(lastApiRequests.editSettings?.body).toEqual({
             settings: [
