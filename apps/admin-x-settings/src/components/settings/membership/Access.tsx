@@ -131,7 +131,7 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const form = (
         <SettingGroupContent className='gap-y-4' columns={1}>
             <div className="flex content-center items-center gap-4">
-                <div className="w-[320px]">Who should be able to subscribe to your site?</div>
+                <div className="w-2/3 min-w-[200px] max-w-[340px]">Who should be able to subscribe to your site?</div>
                 <div className="flex-1">
                     <Select 
                         options={MEMBERS_SIGNUP_ACCESS_OPTIONS}
@@ -146,7 +146,7 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
             </div>
             <Separator />
             <div className="flex content-center items-center gap-4">
-                <div className="w-[320px]">Who should have access to new posts?</div>
+                <div className="w-2/3 min-w-[200px] max-w-[340px]">Who should have access to new posts?</div>
                 <div className="flex-1">
                     <Select
                         options={DEFAULT_CONTENT_VISIBILITY_OPTIONS}
@@ -161,7 +161,7 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
             </div>
             {defaultContentVisibility === 'tiers' && (
                 <div className="flex content-center items-center gap-4">
-                    <div className="w-[320px]">Select specific tiers</div>
+                    <div className="w-2/3 min-w-[200px] max-w-[340px]">Select specific tiers</div>
                     <div className="flex-1">
                         <MultiSelect
                             color='black'
@@ -178,7 +178,7 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
             )}
             <Separator />
             <div className="flex content-center items-center gap-4">
-                <div className="w-[320px]">Who can comment on posts?</div>
+                <div className="w-2/3 min-w-[200px] max-w-[340px]">Who can comment on posts?</div>
                 <div className="flex-1">
                     <Select
                         options={COMMENTS_ENABLED_OPTIONS}
