@@ -263,7 +263,7 @@ export function isSignupAllowed({site}) {
     const hasSignupAccess = site?.members_signup_access === 'all' || site?.members_signup_access === 'paid';
     const hasSignupConfigured = site?.is_stripe_configured || hasOnlyFreePlan({site});
 
-    return hasSignupAccess && hasSignupConfigured;
+    return hasSignupAccess && hasAvailablePrices({site}) && hasSignupConfigured;
 }
 
 export function isFreeSignupAllowed({site}) {
@@ -312,6 +312,10 @@ export function transformApiSiteData({site}) {
         });
 
         site.is_stripe_configured = !!site.paid_members_enabled;
+
+        if (site.allow_self_signup === undefined) {
+            site.allow_self_signup = site.members_signup_access === 'all';
+        }
 
         // Map tier visibility to old settings
         if (site.products?.[0]?.visibility) {

@@ -37,19 +37,25 @@ const offerSetup = async ({site, member = null, offer}) => {
     const popupFrame = await utils.findByTitle(/portal-popup/i);
     const triggerButtonFrame = await utils.queryByTitle(/portal-trigger/i);
     const popupIframeDocument = popupFrame.contentDocument;
-    const emailInput = within(popupIframeDocument).queryByLabelText(/email/i);
-    const nameInput = within(popupIframeDocument).queryByLabelText(/name/i);
-    const submitButton = within(popupIframeDocument).queryByRole('button', {name: 'Continue'});
-    const chooseBtns = within(popupIframeDocument).queryAllByRole('button', {name: 'Choose'});
-    const signinButton = within(popupIframeDocument).queryByRole('button', {name: 'Sign in'});
-    const siteTitle = within(popupIframeDocument).queryByText(site.title);
-    const offerName = within(popupIframeDocument).queryByText(offer.display_title);
-    const offerDescription = within(popupIframeDocument).queryByText(offer.display_description);
 
-    const freePlanTitle = within(popupIframeDocument).queryByText('Free');
-    const monthlyPlanTitle = within(popupIframeDocument).queryByText('Monthly');
-    const yearlyPlanTitle = within(popupIframeDocument).queryByText('Yearly');
-    const fullAccessTitle = within(popupIframeDocument).queryByText('Full access');
+    let emailInput, nameInput, continueButton, chooseBtns, signinButton, siteTitle, offerName, offerDescription, freePlanTitle, monthlyPlanTitle, yearlyPlanTitle, fullAccessTitle;
+
+    if (popupIframeDocument) {
+        emailInput = within(popupIframeDocument).queryByLabelText(/email/i);
+        nameInput = within(popupIframeDocument).queryByLabelText(/name/i);
+        continueButton = within(popupIframeDocument).queryByRole('button', {name: 'Continue'});
+        chooseBtns = within(popupIframeDocument).queryAllByRole('button', {name: 'Choose'});
+        signinButton = within(popupIframeDocument).queryByRole('button', {name: 'Sign in'});
+        siteTitle = within(popupIframeDocument).queryByText(site.title);
+        offerName = within(popupIframeDocument).queryByText(offer.display_title);
+        offerDescription = within(popupIframeDocument).queryByText(offer.display_description);
+
+        freePlanTitle = within(popupIframeDocument).queryByText('Free');
+        monthlyPlanTitle = within(popupIframeDocument).queryByText('Monthly');
+        yearlyPlanTitle = within(popupIframeDocument).queryByText('Yearly');
+        fullAccessTitle = within(popupIframeDocument).queryByText('Full access');
+    }
+
     return {
         ghostApi,
         popupIframeDocument,
@@ -59,7 +65,7 @@ const offerSetup = async ({site, member = null, offer}) => {
         emailInput,
         nameInput,
         signinButton,
-        submitButton,
+        submitButton: continueButton,
         chooseBtns,
         freePlanTitle,
         monthlyPlanTitle,
@@ -96,33 +102,20 @@ const setup = async ({site, member = null}) => {
         <App api={ghostApi} />
     );
 
-    const triggerButtonFrame = utils.queryByTitle(/portal-trigger/i);
+    const triggerButtonFrame = await utils.findByTitle(/portal-trigger/i);
     const popupFrame = utils.queryByTitle(/portal-popup/i);
     const popupIframeDocument = popupFrame?.contentDocument;
 
-    let emailInput = null;
-    let nameInput = null;
-    let submitButton = null;
-    let chooseBtns = null;
-    let signinButton = null;
-    let siteTitle = null;
-    let freePlanTitle = null;
-    let monthlyPlanTitle = null;
-    let yearlyPlanTitle = null;
-    let fullAccessTitle = null;
-
-    if (popupIframeDocument) {
-        emailInput = within(popupIframeDocument).queryByLabelText(/email/i);
-        nameInput = within(popupIframeDocument).queryByLabelText(/name/i);
-        submitButton = within(popupIframeDocument).queryByRole('button', {name: 'Continue'});
-        chooseBtns = within(popupIframeDocument).queryAllByRole('button', {name: 'Choose'});
-        signinButton = within(popupIframeDocument).queryByRole('button', {name: 'Sign in'});
-        siteTitle = within(popupIframeDocument).queryByText(site.title);
-        freePlanTitle = within(popupIframeDocument).queryByText('Free');
-        monthlyPlanTitle = within(popupIframeDocument).queryByText('Monthly');
-        yearlyPlanTitle = within(popupIframeDocument).queryByText('Yearly');
-        fullAccessTitle = within(popupIframeDocument).queryByText('Full access');
-    }
+    const emailInput = within(popupIframeDocument).queryByLabelText(/email/i);
+    const nameInput = within(popupIframeDocument).queryByLabelText(/name/i);
+    const submitButton = within(popupIframeDocument).queryByRole('button', {name: 'Continue'});
+    const chooseBtns = within(popupIframeDocument).queryAllByRole('button', {name: 'Choose'});
+    const signinButton = within(popupIframeDocument).queryByRole('button', {name: 'Sign in'});
+    const siteTitle = within(popupIframeDocument).queryByText(site.title);
+    const freePlanTitle = within(popupIframeDocument).queryByText('Free');
+    const monthlyPlanTitle = within(popupIframeDocument).queryByText('Monthly');
+    const yearlyPlanTitle = within(popupIframeDocument).queryByText('Yearly');
+    const fullAccessTitle = within(popupIframeDocument).queryByText('Full access');
 
     return {
         ghostApi,
@@ -211,6 +204,7 @@ describe('Signup', () => {
             } = await setup({
                 site: FixtureSite.singleTier.basic
             });
+
             const continueButton = within(popupIframeDocument).queryAllByRole('button', {name: 'Continue'});
             expect(popupFrame).toBeInTheDocument();
             expect(triggerButtonFrame).toBeInTheDocument();
@@ -837,54 +831,56 @@ describe('Signup', () => {
     });
 
     describe('on a paid-members only site', () => {
-        test('does not allow signups if the site only has a free plan', async () => {
-            let {
-                popupFrame, emailInput, nameInput, submitButton,
-                siteTitle, freePlanTitle, monthlyPlanTitle, yearlyPlanTitle, fullAccessTitle
-            } = await setup({
-                site: {...FixtureSite.singleTier.onlyFreePlan, members_signup_access: 'paid'}
+        describe('with only a free plan', () => {
+            test('the trigger button redirects to signin instead of signup', async () => {
+                let {
+                    popupFrame, emailInput,
+                    freePlanTitle, monthlyPlanTitle, yearlyPlanTitle, fullAccessTitle
+                } = await setup({
+                    site: {...FixtureSite.singleTier.onlyFreePlan, allow_self_signup: false, members_signup_access: 'paid'}
+                });
+
+                expect(popupFrame).toBeInTheDocument();
+
+                // Check that the signup form is not rendered
+                // - No tiers
+                // - No submit button
+                expect(freePlanTitle).not.toBeInTheDocument();
+                expect(monthlyPlanTitle).not.toBeInTheDocument();
+                expect(yearlyPlanTitle).not.toBeInTheDocument();
+                expect(fullAccessTitle).not.toBeInTheDocument();
+
+                // Check that the signin form is rendered instead
+                const signinTitle = within(popupFrame.contentDocument).queryByText(/Sign in/i);
+                expect(signinTitle).toBeInTheDocument();
+                expect(emailInput).toBeInTheDocument();
             });
-
-            expect(popupFrame).toBeInTheDocument();
-            expect(siteTitle).toBeInTheDocument();
-
-            // The free tier should not render, as the site is set to paid-members only
-            expect(freePlanTitle).not.toBeInTheDocument();
-
-            // Paid tiers should not render either, as not enabled in Portal settings
-            expect(monthlyPlanTitle).not.toBeInTheDocument();
-            expect(yearlyPlanTitle).not.toBeInTheDocument();
-            expect(fullAccessTitle).not.toBeInTheDocument();
-
-            // Therefore, given that no tiers are available, the signup form should not render
-            expect(emailInput).not.toBeInTheDocument();
-            expect(nameInput).not.toBeInTheDocument();
-            expect(submitButton).not.toBeInTheDocument();
         });
 
         test('does not render the free tier, only paid tiers', async () => {
+            // Setup paid-members only site with 4 tiers: free + 3 paid
             let {
-                popupFrame, emailInput, nameInput, submitButton,
-                siteTitle, freePlanTitle, monthlyPlanTitle, yearlyPlanTitle, fullAccessTitle
+                popupFrame, emailInput, nameInput,
+                freePlanTitle, monthlyPlanTitle, yearlyPlanTitle, chooseBtns
             } = await setup({
-                site: {...FixtureSite.multipleTiers.basic, members_signup_access: 'paid'}
+                site: {...FixtureSite.multipleTiers.basic, allow_self_signup: false, members_signup_access: 'paid'}
             });
 
             expect(popupFrame).toBeInTheDocument();
-            expect(siteTitle).toBeInTheDocument();
 
             // The free tier should not render, as the site is set to paid-members only
-            expect(freePlanTitle).not.toBeInTheDocument();
+            expect(freePlanTitle).not.toBeInTheDocument('Free');
 
             // Paid tiers should render
             expect(monthlyPlanTitle).toBeInTheDocument();
             expect(yearlyPlanTitle).toBeInTheDocument();
-            expect(fullAccessTitle).toBeInTheDocument();
 
             // The signup form should render
             expect(emailInput).toBeInTheDocument();
             expect(nameInput).toBeInTheDocument();
-            expect(submitButton).toBeInTheDocument();
+
+            // There should be three paid tiers to choose from
+            expect(chooseBtns).toHaveLength(3);
         });
     });
 });
