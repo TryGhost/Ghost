@@ -698,16 +698,16 @@ class SignupPage extends React.Component {
             );
         }
 
+        if (isInviteOnly({site})) {
+            return this.renderInviteOnlyMessage();
+        }
+
         if (!hasAvailablePrices({site, pageQuery})) {
             if (isPaidMembersOnly({site})) {
                 return this.renderPaidMembersOnlyMessage();
             }
 
-            if (isInviteOnly({site})) {
-                return this.renderInviteOnlyMessage();
-            }
-
-            return this.renderMembersDisabledMessage();
+            return this.renderInviteOnlyMessage();
         }
 
         if (pageQuery === 'free' && !isFreeSignupAllowed({site})) {
