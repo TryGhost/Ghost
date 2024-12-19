@@ -13,7 +13,11 @@ import Separator from './global/Separator';
 import getUsername from '../utils/get-username';
 import stripHtml from '../utils/strip-html';
 import truncate from '../utils/truncate';
-import {GET_ACTIVITIES_QUERY_KEY_NOTIFICATIONS, useActivitiesForUser} from '../hooks/useActivityPubQueries';
+import {
+    GET_ACTIVITIES_QUERY_KEY_NOTIFICATIONS,
+    useActivitiesForUser,
+    useUserDataForUser
+} from '../hooks/useActivityPubQueries';
 import {type NotificationType} from './activities/NotificationIcon';
 import {handleProfileClick} from '../utils/handle-profile-click';
 
@@ -144,7 +148,14 @@ const getGroupDescription = (group: GroupedActivity): JSX.Element => {
         return <>{actorText} liked your post <span className='font-semibold'>{group.object?.name || ''}</span></>;
     case ACTIVITY_TYPE.CREATE:
         if (group.object?.inReplyTo && typeof group.object?.inReplyTo !== 'string') {
-            const content = stripHtml(group.object.inReplyTo.name);
+            let content = stripHtml(group.object.inReplyTo.content);
+
+            // If the post has a name, use that instead of the content (short
+            // form posts do not have a name)
+            if (group.object.inReplyTo.name) {
+                content = stripHtml(group.object.inReplyTo.name);
+            }
+
             return <>{actorText} replied to your post <span className='font-semibold'>{truncate(content, 80)}</span></>;
         }
     }
@@ -153,6 +164,7 @@ const getGroupDescription = (group: GroupedActivity): JSX.Element => {
 
 const Activities: React.FC<ActivitiesProps> = ({}) => {
     const user = 'index';
+
     const [openStates, setOpenStates] = React.useState<{[key: string]: boolean}>({});
 
     const toggleOpen = (groupId: string) => {
@@ -164,19 +176,67 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
 
     const maxAvatars = 5;
 
+    const {data: userProfile, isLoading: isLoadingProfile} = useUserDataForUser(user) as {data: ActorProperties | null, isLoading: boolean};
+
     const {getActivitiesQuery} = useActivitiesForUser({
         handle: user,
         includeOwn: true,
         includeReplies: true,
         filter: {
-            type: ['Follow', 'Like', `Create:Note:isReplyToOwn`]
+            type: ['Follow', 'Like', `Create:Note`]
         },
+        limit: 120,
         key: GET_ACTIVITIES_QUERY_KEY_NOTIFICATIONS
     });
 
-    const {data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading} = getActivitiesQuery;
+    const {data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading: isLoadingActivities} = getActivitiesQuery;
+
+    const isLoading = isLoadingProfile === true || isLoadingActivities === true;
+
     const groupedActivities = (data?.pages.flatMap((page) => {
-        const filtered = page.data.filter((activity, index, self) => index === self.findIndex(a => a.id === activity.id));
+        const filtered = page.data
+            // Remove duplicates
+            .filter(
+                (activity, index, self) => index === self.findIndex(a => a.id === activity.id)
+            )
+            // Remove our own likes
+            .filter((activity) => {
+                if (activity.type === ACTIVITY_TYPE.LIKE && activity.actor?.id === userProfile?.id) {
+                    return false;
+                }
+
+                return true;
+            })
+            // Remove follower likes if they are not for our own posts
+            .filter((activity) => {
+                if (activity.type === ACTIVITY_TYPE.LIKE && activity.object?.attributedTo?.id !== userProfile?.id) {
+                    return false;
+                }
+
+                return true;
+            })
+            // Remove create activities that are not replies to our own posts
+            .filter((activity) => {
+                if (
+                    activity.type === ACTIVITY_TYPE.CREATE &&
+                    activity.object?.inReplyTo?.attributedTo?.id !== userProfile?.id
+                ) {
+                    return false;
+                }
+
+                return true;
+            })
+            // Remove our own create activities
+            .filter((activity) => {
+                if (
+                    activity.type === ACTIVITY_TYPE.CREATE &&
+                    activity.actor?.id === userProfile?.id
+                ) {
+                    return false;
+                }
+
+                return true;
+            });
 
         return groupActivities(filtered);
     }) ?? []);
@@ -234,6 +294,7 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
             break;
         }
     };
+
     return (
         <>
             <MainNavigation page='activities'/>

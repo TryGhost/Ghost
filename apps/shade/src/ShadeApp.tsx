@@ -5,12 +5,13 @@ import ShadeProvider from './providers/ShadeProvider';
 
 export interface ShadeAppProps extends React.HTMLProps<HTMLDivElement> {
     darkMode: boolean;
-    // fetchKoenigLexical: FetchKoenigLexical;
+    fetchKoenigLexical: null;
 }
 
-const ShadeApp: React.FC<ShadeAppProps> = ({darkMode, className, children, ...props}) => {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const ShadeApp: React.FC<ShadeAppProps> = ({darkMode, fetchKoenigLexical, className, children, ...props}) => {
     const appClassName = clsx(
-        'shade-base',
+        'shade',
         darkMode && 'dark',
         className
     );
