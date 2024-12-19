@@ -35,7 +35,9 @@ Object {
         \\"url\\": \\"http://127.0.0.1:2369/\\",
         \\"logo\\": {
             \\"@type\\": \\"ImageObject\\",
-            \\"url\\": \\"http://127.0.0.1:2369/favicon.ico\\"
+            \\"url\\": \\"http://127.0.0.1:2369/favicon.ico\\",
+            \\"width\\": 48,
+            \\"height\\": 48
         }
     },
     \\"author\\": {
@@ -81,7 +83,7 @@ Object {
 
 .gh-post-upgrade-cta-content {
     border-radius: 8px;
-    padding: 40px 4vw;
+    padding: 40px min(4vw,80px);
 }
 
 .gh-post-upgrade-cta h2 {
@@ -172,7 +174,9 @@ Object {
         \\"url\\": \\"http://127.0.0.1:2369/\\",
         \\"logo\\": {
             \\"@type\\": \\"ImageObject\\",
-            \\"url\\": \\"http://127.0.0.1:2369/favicon.ico\\"
+            \\"url\\": \\"http://127.0.0.1:2369/favicon.ico\\",
+            \\"width\\": 48,
+            \\"height\\": 48
         }
     },
     \\"author\\": {
@@ -242,7 +246,9 @@ Object {
         \\"url\\": \\"http://127.0.0.1:2369/\\",
         \\"logo\\": {
             \\"@type\\": \\"ImageObject\\",
-            \\"url\\": \\"http://127.0.0.1:2369/favicon.ico\\"
+            \\"url\\": \\"http://127.0.0.1:2369/favicon.ico\\",
+            \\"width\\": 48,
+            \\"height\\": 48
         }
     },
     \\"author\\": {
@@ -340,7 +346,9 @@ Object {
         \\"url\\": \\"http://127.0.0.1:2369/\\",
         \\"logo\\": {
             \\"@type\\": \\"ImageObject\\",
-            \\"url\\": \\"http://127.0.0.1:2369/favicon.ico\\"
+            \\"url\\": \\"http://127.0.0.1:2369/favicon.ico\\",
+            \\"width\\": 48,
+            \\"height\\": 48
         }
     },
     \\"author\\": {
@@ -413,7 +421,9 @@ Object {
         \\"url\\": \\"http://127.0.0.1:2369/\\",
         \\"logo\\": {
             \\"@type\\": \\"ImageObject\\",
-            \\"url\\": \\"http://127.0.0.1:2369/favicon.ico\\"
+            \\"url\\": \\"http://127.0.0.1:2369/favicon.ico\\",
+            \\"width\\": 48,
+            \\"height\\": 48
         }
     },
     \\"author\\": {
@@ -763,7 +773,9 @@ Object {
         \\"url\\": \\"http://127.0.0.1:2369/\\",
         \\"logo\\": {
             \\"@type\\": \\"ImageObject\\",
-            \\"url\\": \\"http://127.0.0.1:2369/favicon.ico\\"
+            \\"url\\": \\"http://127.0.0.1:2369/favicon.ico\\",
+            \\"width\\": 48,
+            \\"height\\": 48
         }
     },
     \\"url\\": \\"http://127.0.0.1:2369/\\",
@@ -793,7 +805,7 @@ Object {
 
 .gh-post-upgrade-cta-content {
     border-radius: 8px;
-    padding: 40px 4vw;
+    padding: 40px min(4vw,80px);
 }
 
 .gh-post-upgrade-cta h2 {
@@ -878,7 +890,9 @@ Object {
         \\"url\\": \\"http://127.0.0.1:2369/\\",
         \\"logo\\": {
             \\"@type\\": \\"ImageObject\\",
-            \\"url\\": \\"http://127.0.0.1:2369/favicon.ico\\"
+            \\"url\\": \\"http://127.0.0.1:2369/favicon.ico\\",
+            \\"width\\": 48,
+            \\"height\\": 48
         }
     },
     \\"url\\": \\"http://127.0.0.1:2369/\\",
@@ -908,7 +922,7 @@ Object {
 
 .gh-post-upgrade-cta-content {
     border-radius: 8px;
-    padding: 40px 4vw;
+    padding: 40px min(4vw,80px);
 }
 
 .gh-post-upgrade-cta h2 {
@@ -1946,7 +1960,9 @@ Object {
         \\"url\\": \\"http://127.0.0.1:2369/\\",
         \\"logo\\": {
             \\"@type\\": \\"ImageObject\\",
-            \\"url\\": \\"http://127.0.0.1:2369/favicon.ico\\"
+            \\"url\\": \\"http://127.0.0.1:2369/favicon.ico\\",
+            \\"width\\": 48,
+            \\"height\\": 48
         }
     },
     \\"url\\": \\"http://127.0.0.1:2369/\\",
@@ -1976,7 +1992,7 @@ Object {
 
 .gh-post-upgrade-cta-content {
     border-radius: 8px;
-    padding: 40px 4vw;
+    padding: 40px min(4vw,80px);
 }
 
 .gh-post-upgrade-cta h2 {
@@ -2175,7 +2191,9 @@ Object {
         \\"url\\": \\"http://127.0.0.1:2369/\\",
         \\"logo\\": {
             \\"@type\\": \\"ImageObject\\",
-            \\"url\\": \\"http://127.0.0.1:2369/favicon.ico\\"
+            \\"url\\": \\"http://127.0.0.1:2369/favicon.ico\\",
+            \\"width\\": 48,
+            \\"height\\": 48
         }
     },
     \\"url\\": \\"http://127.0.0.1:2369/\\",
@@ -2205,7 +2223,7 @@ Object {
 
 .gh-post-upgrade-cta-content {
     border-radius: 8px;
-    padding: 40px 4vw;
+    padding: 40px min(4vw,80px);
 }
 
 .gh-post-upgrade-cta h2 {
@@ -2290,7 +2308,9 @@ Object {
         \\"url\\": \\"http://127.0.0.1:2369/\\",
         \\"logo\\": {
             \\"@type\\": \\"ImageObject\\",
-            \\"url\\": \\"http://127.0.0.1:2369/favicon.ico\\"
+            \\"url\\": \\"http://127.0.0.1:2369/favicon.ico\\",
+            \\"width\\": 48,
+            \\"height\\": 48
         }
     },
     \\"url\\": \\"http://127.0.0.1:2369/\\",
@@ -2341,7 +2361,9 @@ Object {
         \\"url\\": \\"http://127.0.0.1:2369/\\",
         \\"logo\\": {
             \\"@type\\": \\"ImageObject\\",
-            \\"url\\": \\"http://127.0.0.1:2369/favicon.ico\\"
+            \\"url\\": \\"http://127.0.0.1:2369/favicon.ico\\",
+            \\"width\\": 48,
+            \\"height\\": 48
         }
     },
     \\"url\\": \\"http://127.0.0.1:2369/\\",
@@ -2371,7 +2393,7 @@ Object {
 
 .gh-post-upgrade-cta-content {
     border-radius: 8px;
-    padding: 40px 4vw;
+    padding: 40px min(4vw,80px);
 }
 
 .gh-post-upgrade-cta h2 {
@@ -3615,7 +3637,9 @@ Object {
         \\"url\\": \\"http://127.0.0.1:2369/\\",
         \\"logo\\": {
             \\"@type\\": \\"ImageObject\\",
-            \\"url\\": \\"http://127.0.0.1:2369/favicon.ico\\"
+            \\"url\\": \\"http://127.0.0.1:2369/favicon.ico\\",
+            \\"width\\": 48,
+            \\"height\\": 48
         }
     },
     \\"url\\": \\"http://127.0.0.1:2369/\\",
