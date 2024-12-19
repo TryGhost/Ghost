@@ -4,7 +4,7 @@ import AppContext from '../../AppContext';
 import {ReactComponent as CheckmarkIcon} from '../../images/icons/checkmark.svg';
 import CloseButton from '../common/CloseButton';
 import InputForm from '../common/InputForm';
-import {getCurrencySymbol, getProductFromId, hasMultipleProductsFeature, isSameCurrency, formatNumber, formatMonetaryAmount, hasMultipleNewsletters} from '../../utils/helpers';
+import {getCurrencySymbol, getProductFromId, hasMultipleProductsFeature, isSameCurrency, formatMonetaryAmount, hasMultipleNewsletters} from '../../utils/helpers';
 import {ValidateInputForm} from '../../utils/form';
 import {interceptAnchorClicks} from '../../utils/links';
 import NewsletterSelectionPage from './NewsletterSelectionPage';
@@ -595,7 +595,7 @@ export default class OfferPage extends React.Component {
             <div className="gh-portal-product-card-pricecontainer">
                 <div className="gh-portal-product-price">
                     <span className={'currency-sign ' + currencyClass}>{getCurrencySymbol(price.currency)}</span>
-                    <span className="amount">{formatMonetaryAmount(this.updatedPrice)}</span>
+                    <span className="amount">{formatMonetaryAmount(this.renderRoundedPrice(updatedPrice))}</span>
                 </div>
             </div>
         );
