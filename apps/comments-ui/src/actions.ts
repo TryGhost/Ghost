@@ -189,19 +189,17 @@ async function showComment({state, api, data: comment}: {state: EditableAppConte
     };
 }
 
-async function likeComment({state, api, data: comment}: {state: EditableAppContext, api: GhostApi, data: {id: string}}) {
-    await api.comments.like({comment});
-
+async function updateCommentLikeState({state, data: comment}: {state: EditableAppContext, data: {id: string, liked: boolean}}) {
     return {
         comments: state.comments.map((c) => {
             const replies = c.replies.map((r) => {
                 if (r.id === comment.id) {
                     return {
                         ...r,
-                        liked: true,
+                        liked: comment.liked,
                         count: {
                             ...r.count,
-                            likes: r.count.likes + 1
+                            likes: comment.liked ? r.count.likes + 1 : r.count.likes - 1
                         }
                     };
                 }
@@ -212,11 +210,11 @@ async function likeComment({state, api, data: comment}: {state: EditableAppConte
             if (c.id === comment.id) {
                 return {
                     ...c,
-                    liked: true,
+                    liked: comment.liked,
                     replies,
                     count: {
                         ...c.count,
-                        likes: c.count.likes + 1
+                        likes: comment.liked ? c.count.likes + 1 : c.count.likes - 1
                     }
                 };
             }
@@ -227,51 +225,33 @@ async function likeComment({state, api, data: comment}: {state: EditableAppConte
             };
         })
     };
+}
+
+async function likeComment({api, data: comment, dispatchAction}: {state: EditableAppContext, api: GhostApi, data: {id: string}, dispatchAction: DispatchActionType}) {
+    dispatchAction('updateCommentLikeState', {id: comment.id, liked: true});
+    try {
+        await api.comments.like({comment});
+        return {};
+    } catch (err) {
+        dispatchAction('updateCommentLikeState', {id: comment.id, liked: false});
+    }
+}
+
+async function unlikeComment({api, data: comment, dispatchAction}: {state: EditableAppContext, api: GhostApi, data: {id: string}, dispatchAction: DispatchActionType}) {
+    dispatchAction('updateCommentLikeState', {id: comment.id, liked: false});
+
+    try {
+        await api.comments.unlike({comment});
+        return {};
+    } catch (err) {
+        dispatchAction('updateCommentLikeState', {id: comment.id, liked: true});
+    }
 }
 
 async function reportComment({api, data: comment}: {api: GhostApi, data: {id: string}}) {
     await api.comments.report({comment});
 
     return {};
-}
-
-async function unlikeComment({state, api, data: comment}: {state: EditableAppContext, api: GhostApi, data: {id: string}}) {
-    await api.comments.unlike({comment});
-
-    return {
-        comments: state.comments.map((c) => {
-            const replies = c.replies.map((r) => {
-                if (r.id === comment.id) {
-                    return {
-                        ...r,
-                        liked: false,
-                        count: {
-                            ...r.count,
-                            likes: r.count.likes - 1
-                        }
-                    };
-                }
-
-                return r;
-            });
-
-            if (c.id === comment.id) {
-                return {
-                    ...c,
-                    liked: false,
-                    replies,
-                    count: {
-                        ...c.count,
-                        likes: c.count.likes - 1
-                    }
-                };
-            }
-            return {
-                ...c,
-                replies
-            };
-        })
-    };
 }
 
 async function deleteComment({state, api, data: comment, dispatchAction}: {state: EditableAppContext, api: GhostApi, data: {id: string}, dispatchAction: DispatchActionType}) {
@@ -498,7 +478,8 @@ export const Actions = {
     openCommentForm,
     highlightComment,
     setHighlightComment,
-    setCommentsIsLoading
+    setCommentsIsLoading,
+    updateCommentLikeState
 };
 
 export type ActionType = keyof typeof Actions;
