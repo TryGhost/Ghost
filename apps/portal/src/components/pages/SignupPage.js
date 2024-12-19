@@ -7,7 +7,7 @@ import NewsletterSelectionPage from './NewsletterSelectionPage';
 import ProductsSection from '../common/ProductsSection';
 import InputForm from '../common/InputForm';
 import {ValidateInputForm} from '../../utils/form';
-import {getSiteProducts, getSitePrices, hasAvailablePrices, hasOnlyFreePlan, isInviteOnly, freeHasBenefitsOrDescription, hasOnlyFreeProduct, hasMultipleNewsletters, hasFreeTrialTier, isSignupAllowed} from '../../utils/helpers';
+import {getSiteProducts, getSitePrices, hasAvailablePrices, hasOnlyFreePlan, isInviteOnly, isFreeSignupAllowed, freeHasBenefitsOrDescription, hasMultipleNewsletters, hasFreeTrialTier, isSignupAllowed} from '../../utils/helpers';
 import {ReactComponent as InvitationIcon} from '../../images/icons/invitation.svg';
 import {interceptAnchorClicks} from '../../utils/links';
 
@@ -592,7 +592,8 @@ class SignupPage extends React.Component {
         }
 
         let label = t('Continue');
-        const showOnlyFree = pageQuery === 'free';
+        const showOnlyFree = pageQuery === 'free' && isFreeSignupAllowed({site});
+
 
         if (hasOnlyFreePlan({site}) || showOnlyFree) {
             label = t('Sign up');
@@ -714,6 +715,22 @@ class SignupPage extends React.Component {
             );
         }
 
+        if (pageQuery === 'free' && !isFreeSignupAllowed({site})) {
+            return (
+                <section>
+                    <div className='gh-portal-section'>
+                        <p
+                            className='gh-portal-invite-only-notification'
+                            data-testid="invite-only-notification-text"
+                        >
+                            {t('This site only accepts paid memberships.')}
+                        </p>
+                        {this.renderLoginMessage()}
+                    </div>
+                </section>
+            );
+        }
+
         if (!isSignupAllowed({site})) {
             return (
                 <section>
@@ -729,8 +746,8 @@ class SignupPage extends React.Component {
             );
         }
 
-        const showOnlyFree = pageQuery === 'free';
-        const hasOnlyFree = hasOnlyFreeProduct({site}) || showOnlyFree;
+        const showOnlyFree = pageQuery === 'free' && isFreeSignupAllowed({site});
+        const hasOnlyFree = hasOnlyFreePlan({site}) || showOnlyFree;
 
         const signupTerms = this.renderSignupTerms();
 
