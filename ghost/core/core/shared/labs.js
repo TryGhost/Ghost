@@ -52,7 +52,6 @@ const ALPHA_FEATURES = [
     'collectionsCard',
     'lexicalIndicators',
     'adminXDemo',
-    'commentImprovements',
     'postsX'
 ];
 
