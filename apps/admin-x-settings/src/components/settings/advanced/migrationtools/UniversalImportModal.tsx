@@ -20,6 +20,7 @@ const UniversalImportModal: React.FC = () => {
         >
             <div className='py-4 leading-9'>
                 <FileUpload
+                    accept="application/json, application/zip"
                     id="import-file"
                     onUpload={async (file) => {
                         setUploading(true);
