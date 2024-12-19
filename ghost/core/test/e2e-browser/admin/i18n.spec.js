@@ -2,24 +2,18 @@ const {expect} = require('@playwright/test');
 const test = require('../fixtures/ghost-test');
 const {createPostDraft} = require('../utils');
 
-/**
- * @param {import('@playwright/test').Page} page
- */
+async function setLanguage(sharedPage, language) {
+    await sharedPage.goto('/ghost/#/settings/publication-language');
+    const section = sharedPage.getByTestId('publication-language');
+    const input = section.getByPlaceholder('Site language');
+    await input.fill(language);
+    await section.getByRole('button', {name: 'Save'}).click();
+}
 
 test.describe('i18n', () => {
     test.describe('Newsletter', () => {
         test('changing the site language immediately translates strings in newsletters', async ({sharedPage}) => {
-            await sharedPage.goto('/ghost/#/settings/publication-language');
-            const section = sharedPage.getByTestId('publication-language');
-            const input = section.getByPlaceholder('Site language');
-            await input.fill('fr');
-            await section.getByRole('button', {name: 'Save'}).click();
-
-            const labsSection = sharedPage.getByTestId('labs');
-            await labsSection.getByRole('button', {name: 'Open'}).click();
-            let portalLabel = labsSection.getByText('Portal translation');
-            let portalToggle = portalLabel.locator('..').locator('..').locator('..').getByRole('switch');
-            await portalToggle.click();
+            await setLanguage(sharedPage, 'fr');
 
             const postData = {
                 title: 'Publish and email post',
@@ -40,6 +34,9 @@ test.describe('i18n', () => {
             const metaText = await sharedPage.frameLocator('iframe.gh-pe-iframe').locator('td.post-meta').first().textContent();
             expect(metaText).toContain('Par Joe Bloggs');
             expect(metaText).not.toContain('By Joe Bloggs');
+
+            // Set the language back before the next test!
+            await setLanguage(sharedPage, 'en');
         });
     });
 });
