@@ -167,6 +167,7 @@
     "There was an error sending the email, please try again": "Възникна грешка при изпращане на имейл, опитайте отново",
     "This site is invite-only, contact the owner for access.": "Сайтът е само с покани. Свържете се със собственика за да получите достъп.",
     "This site is not accepting payments at the moment.": "В момента сайтът не приема плащания.",
+    "This site only accepts paid members.": "",
     "To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!": "За да приключите регистрацията, последвайте препратката в съобщението, изпратено Ви по имейл. Ако не пристигне до 3 минути, проверете дали не е категоризирано като нежелано писмо.",
     "To continue to stay up to date, subscribe to {{publication}} below.": "За да останете информирани, запишете се за {{publication}} по-долу.",
     "Too many attempts try again in {{number}} days.": "Твърде много опити. Опитайте отново след {{number}} дни.",

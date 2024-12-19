@@ -167,6 +167,7 @@
     "There was an error sending the email, please try again": "",
     "This site is invite-only, contact the owner for access.": "මෙම වෙබ් අඩවිය ආරාධිතයන් සඳහා පමණි, ප්\u200dරවේශ වීම සඳහා හිමිකරු අමතන්න.",
     "This site is not accepting payments at the moment.": "",
+    "This site only accepts paid members.": "",
     "To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!": "Signup වීම සම්පූර්ණ කිරීම සඳහා, ඔබ\u200dගේ inbox එකට ලැබුණු email එකෙහි ඇති confirmation link එක click කරන්න. එය මිනිත්තු 3ක් ඇතුලත නොපැමිණියේ නම්, spam folder එක පරීක්ෂා කරන්න!",
     "To continue to stay up to date, subscribe to {{publication}} below.": "",
     "Too many attempts try again in {{number}} days.": "",

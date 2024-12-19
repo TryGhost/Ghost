@@ -259,7 +259,7 @@
             "defaultValue": "all",
             "validations": {
                 "isEmpty": false,
-                "isIn": [["all", "invite", "none"]]
+                "isIn": [["all", "paid", "invite", "none"]]
             },
             "type": "string"
         },
