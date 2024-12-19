@@ -52,6 +52,10 @@ Router.map(function () {
         this.route('demo-x', {path: '/*sub'});
     });
 
+    this.route('posts-x', function () {
+        this.route('posts-x', {path: '/*sub'});
+    });
+
     this.route('settings-x', {path: '/settings'}, function () {
         this.route('settings-x', {path: '/*sub'});
     });

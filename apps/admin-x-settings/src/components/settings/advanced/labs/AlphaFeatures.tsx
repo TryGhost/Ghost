@@ -48,9 +48,9 @@ const features = [{
     description: 'Enables content visibility in Emails',
     flag: 'contentVisibility'
 }, {
-    title: 'Comment Improvements',
-    description: 'Enables new comment features',
-    flag: 'commentImprovements'
+    title: 'Post analytics redesign',
+    description: 'Enables redesigned Post analytics page',
+    flag: 'postsX'
 }];
 
 const AlphaFeatures: React.FC = () => {

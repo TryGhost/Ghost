@@ -214,12 +214,13 @@ export class ActivityPubAPI {
         includeOwn: boolean = false,
         includeReplies: boolean = false,
         filter: {type?: string[]} | null = null,
+        limit: number = 50,
         cursor?: string
     ): Promise<{data: Activity[], next: string | null}> {
-        const LIMIT = 50;
-
         const url = new URL(this.activitiesApiUrl);
-        url.searchParams.set('limit', LIMIT.toString());
+
+        url.searchParams.set('limit', limit.toString());
+
         if (includeOwn) {
             url.searchParams.set('includeOwn', includeOwn.toString());
         }
@@ -258,13 +259,13 @@ export class ActivityPubAPI {
         };
     }
 
-    async reply(id: string, content: string) {
+    async reply(id: string, content: string): Promise<Activity> {
         const url = new URL(`.ghost/activitypub/actions/reply/${encodeURIComponent(id)}`, this.apiUrl);
         const response = await this.fetchJSON(url, 'POST', {content});
         return response;
     }
 
-    async note(content: string) {
+    async note(content: string): Promise<Activity> {
         const url = new URL('.ghost/activitypub/actions/note', this.apiUrl);
         const response = await this.fetchJSON(url, 'POST', {content});
         return response;
