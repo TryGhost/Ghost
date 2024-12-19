@@ -23,8 +23,6 @@ export const getPortalPreviewUrl = ({settings, config, tiers, siteData, selected
     const portalBase = '/?v=modal-portal-settings#/portal/preview';
 
     const portalPlans: string[] = JSON.parse(getSettingValue<string>(settings, 'portal_plans') || '');
-    const membersSignupAccess = getSettingValue<string>(settings, 'members_signup_access');
-    const allowSelfSignup = membersSignupAccess === 'all' && (!checkStripeEnabled(settings, config) || portalPlans.includes('free'));
 
     const settingsParam = new URLSearchParams();
     settingsParam.append('button', getSettingValue(settings, 'portal_button') ? 'true' : 'false');
@@ -36,7 +34,7 @@ export const getPortalPreviewUrl = ({settings, config, tiers, siteData, selected
     settingsParam.append('buttonIcon', encodeURIComponent(getSettingValue(settings, 'portal_button_icon') || 'icon-1'));
     settingsParam.append('signupButtonText', encodeURIComponent(getSettingValue(settings, 'portal_button_signup_text') || ''));
     settingsParam.append('membersSignupAccess', getSettingValue(settings, 'members_signup_access') || 'all');
-    settingsParam.append('allowSelfSignup', allowSelfSignup ? 'true' : 'false');
+    settingsParam.append('allowSelfSignup', getSettingValue<string>(settings, 'allow_self_signup') || 'false');
     settingsParam.append('signupTermsHtml', getSettingValue(settings, 'portal_signup_terms_html') || '');
     settingsParam.append('signupCheckboxRequired', getSettingValue(settings, 'portal_signup_checkbox_required') ? 'true' : 'false');
     settingsParam.append('portalProducts', portalTiers.join(',')); // assuming that it might be more than 1

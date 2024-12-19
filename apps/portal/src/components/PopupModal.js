@@ -6,7 +6,7 @@ import {getFrameStyles} from './Frame.styles';
 import Pages, {getActivePage} from '../pages';
 import PopupNotification from './common/PopupNotification';
 import PoweredBy from './common/PoweredBy';
-import {getSiteProducts, isInviteOnlySite, isCookiesDisabled, hasFreeProductPrice} from '../utils/helpers';
+import {getSiteProducts, hasAvailablePrices, isInviteOnly, isCookiesDisabled, hasFreeProductPrice} from '../utils/helpers';
 
 const StylesWrapper = () => {
     return {
@@ -142,7 +142,7 @@ class PopupContent extends React.Component {
 
     render() {
         const {page, pageQuery, site, customSiteUrl} = this.context;
-        const products = getSiteProducts({site});
+        const products = getSiteProducts({site, pageQuery});
         const noOfProducts = products.length;
 
         getActivePage({page});
@@ -177,7 +177,7 @@ class PopupContent extends React.Component {
             break;
         }
 
-        if (noOfProducts > 1 && !isInviteOnlySite({site, pageQuery})) {
+        if (noOfProducts > 1 && !isInviteOnly({site}) && hasAvailablePrices({site, pageQuery})) {
             if (page === 'signup') {
                 pageClass += ' full-size';
                 popupSize = 'full';

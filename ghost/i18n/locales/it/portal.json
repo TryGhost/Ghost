@@ -167,6 +167,7 @@
     "There was an error sending the email, please try again": "C'è stato un errore nell'invio dell'e-mail, per favore riprova",
     "This site is invite-only, contact the owner for access.": "Questo sito è accessibile solo su invito, contatta il proprietario per poter accedere.",
     "This site is not accepting payments at the moment.": "Questo sito non accetta pagamenti al momento.",
+    "This site only accepts paid members.": "",
     "To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!": "Per completare l'iscrizione, clicca il link di conferma inviato alla tua email. Se non lo ricevi entro 3 minuti, controlla nello spam!",
     "To continue to stay up to date, subscribe to {{publication}} below.": "Per continuare a rimanere aggiornato, iscriviti a {{publication}} qui sotto.",
     "Too many attempts try again in {{number}} days.": "Troppi tentativi, prova fra {{number}} giorni.",

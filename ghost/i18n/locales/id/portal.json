@@ -167,6 +167,7 @@
     "There was an error sending the email, please try again": "Terjadi kesalahan saat mengirim email, harap coba lagi",
     "This site is invite-only, contact the owner for access.": "Situs ini hanya untuk yang diundang, hubungi pemiliknya untuk mendapatkan akses.",
     "This site is not accepting payments at the moment.": "Situs ini tidak menerima pembayaran saat ini.",
+    "This site only accepts paid members.": "",
     "To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!": "Untuk menyelesaikan pendaftaran, klik tautan konfirmasi di kotak masuk Anda. Jika tidak diterima dalam waktu 3 menit, pastikan untuk memeriksa folder spam Anda!",
     "To continue to stay up to date, subscribe to {{publication}} below.": "Untuk tetap mendapatkan informasi terkini, silakan berlangganan ke {{publication}} di bawah ini.",
     "Too many attempts try again in {{number}} days.": "Terlalu banyak percobaan, coba lagi dalam {{number}} hari.",

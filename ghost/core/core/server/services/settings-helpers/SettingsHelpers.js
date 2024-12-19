@@ -24,11 +24,8 @@ class SettingsHelpers {
         return this.settingsCache.get('members_signup_access') === 'invite';
     }
 
-    /**
-     * NOTE! The backend still allows to self signup if this returns false because a site might use built-in free signup forms apart from Portal
-     */
     allowSelfSignup() {
-        return this.settingsCache.get('members_signup_access') === 'all' && (this.settingsCache.get('portal_plans').includes('free') || !this.arePaidMembersEnabled());
+        return this.settingsCache.get('members_signup_access') === 'all';
     }
 
     /**
@@ -108,7 +105,7 @@ class SettingsHelpers {
     }
 
     /**
-     * Retrieves the member validation key from the settings cache. The intent is for this key to be used where member 
+     * Retrieves the member validation key from the settings cache. The intent is for this key to be used where member
      *  auth is not required. For example, unsubscribe links in emails, which are required to be one-click unsubscribe.
      *
      * @returns {string} The member validation key.

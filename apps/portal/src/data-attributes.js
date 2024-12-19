@@ -3,7 +3,7 @@ import {getCheckoutSessionDataFromPlanAttribute, getUrlHistory} from './utils/he
 import {HumanReadableError, chooseBestErrorMessage} from './utils/errors';
 import i18nLib from '@tryghost/i18n';
 
-export function formSubmitHandler({event, form, errorEl, siteUrl, submitHandler}, 
+export function formSubmitHandler({event, form, errorEl, siteUrl, submitHandler},
     t = (str) => {
         return str;
     }) {

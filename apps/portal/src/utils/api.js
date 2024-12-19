@@ -589,7 +589,9 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
         } catch (e) {
             // Ignore
         }
+
         site = transformApiSiteData({site});
+
         return {site, member};
     };
 

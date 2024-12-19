@@ -167,6 +167,7 @@
     "There was an error sending the email, please try again": "寄送 email 時發生錯誤，請您再試一次。",
     "This site is invite-only, contact the owner for access.": "此網站僅限受邀請者觀看，請聯繫網站擁有者取得存取權限。",
     "This site is not accepting payments at the moment.": "此網站目前無付款方式。",
+    "This site only accepts paid members.": "",
     "To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!": "要完成註冊，請點擊您收件匣中的確認連結。如果在 3 分鐘內沒有收到，請檢查您的垃圾郵件。",
     "To continue to stay up to date, subscribe to {{publication}} below.": "訂閱 {{publication}} 以持續獲得最新消息。",
     "Too many attempts try again in {{number}} days.": "過多的嘗試，請於 {{number}} 天後再試一次。",

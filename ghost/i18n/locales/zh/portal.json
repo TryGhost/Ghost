@@ -167,6 +167,7 @@
     "There was an error sending the email, please try again": "",
     "This site is invite-only, contact the owner for access.": "此网站仅限邀请，联系网站所有者以获取访问",
     "This site is not accepting payments at the moment.": "本网站目前暂不接受付款。",
+    "This site only accepts paid members.": "",
     "To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!": "要完成注册，请点击您收件箱中的确认链接。如果在3分钟内没有收到，请检查一下您的垃圾邮件文件夹！",
     "To continue to stay up to date, subscribe to {{publication}} below.": "如需持续获取最新资讯，请在下方订阅{{publication}}",
     "Too many attempts try again in {{number}} days.": "",
