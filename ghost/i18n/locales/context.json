@@ -244,6 +244,7 @@
     "This email address will not be used.": "This is in the footer of signup verification emails, and comes right after 'If you did not make this request, you can simply delete this message.'",
     "This site is invite-only, contact the owner for access.": "A message on the member login screen indicating that a site is not-open to public signups",
     "This site is not accepting payments at the moment.": "An error message shown when a tips or donations link is opened but the site has donations disabled",
+    "This site only accepts paid members.": "",
     "To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!": "A confirmation message displayed during the signup process, indicating that the person signing up needs to go and check their email - and reminding them to check their spam folder, too",
     "To continue to stay up to date, subscribe to {{publication}} below.": "A message shown in the success modal after a non-member has made a tip or donation",
     "Too many attempts try again in {{number}} days.": "",

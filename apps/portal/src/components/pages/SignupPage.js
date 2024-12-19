@@ -722,7 +722,7 @@ class SignupPage extends React.Component {
                             className='gh-portal-invite-only-notification'
                             data-testid="invite-only-notification-text"
                         >
-                            {t('This site only accepts paid memberships.')}
+                            {t('This site only accepts paid members.')}
                         </p>
                         {this.renderLoginMessage()}
                     </div>
