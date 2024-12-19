@@ -20,6 +20,8 @@ const DISPLAY_OPTIONS = [{
     value: 'paid'
 }];
 
+const AUTO_REFRESH_RATE = 10000;
+
 export default class Analytics extends Component {
     @service ajax;
     @service ghostPaths;
@@ -56,7 +58,7 @@ export default class Analytics extends Component {
     }
 
     setupAutoRefresh() {
-        later(this, this.triggerRefresh, 5000);
+        later(this, this.triggerRefresh, AUTO_REFRESH_RATE);
     }
 
     triggerRefresh() {
