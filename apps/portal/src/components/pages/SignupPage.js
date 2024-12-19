@@ -683,7 +683,7 @@ class SignupPage extends React.Component {
 
     renderForm() {
         const fields = this.getInputFields({state: this.state});
-        const {site, pageQuery, t} = this.context;
+        const {site, pageQuery} = this.context;
 
         if (this.state.showNewsletterSelection) {
             return (
