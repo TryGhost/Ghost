@@ -45,7 +45,7 @@ module.exports.resetToken = {
 
         hash.update(String(expires));
         hash.update(email.toLocaleLowerCase());
-        hash.update(password);
+        hash.update(String(password));
         hash.update(String(dbHash));
 
         text += [expires, email, hash.digest('base64')].join('|');
