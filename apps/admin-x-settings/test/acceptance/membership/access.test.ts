@@ -2,7 +2,7 @@ import {chooseOptionInSelect, getOptionsFromSelect, mockApi, responseFixtures, u
 import {expect, test} from '@playwright/test';
 import {globalDataRequests} from '../../utils/acceptance';
 
-test.describe.only('Access settings', async () => {
+test.describe('Access settings', async () => {
     test('Supports editing access', async ({page}) => {
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,
