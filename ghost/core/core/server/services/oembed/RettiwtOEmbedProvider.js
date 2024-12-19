@@ -1,6 +1,4 @@
 const logging = require('@tryghost/logging');
-const {FetcherService, EResourceType, Rettiwt} = require('rettiwt-api');
-const {id} = require('../../../shared/SentryKnexTracingIntegration');
 
 /**
  * @typedef {import('./oembed').ICustomProvider} ICustomProvider
@@ -9,53 +7,65 @@ const {id} = require('../../../shared/SentryKnexTracingIntegration');
 
 const TWITTER_PATH_REGEX = /\/status\/(\d+)/;
 
-function mapTweetDetails(rettiwtTweet) {
-    return {
-        edit_history_tweet_ids: [rettiwtTweet.id],
-        referenced_tweets: rettiwtTweet.replyTo
-            ? [{type: 'replied_to', id: rettiwtTweet.replyTo}]
-            : undefined,
-        author_id: rettiwtTweet.tweetBy.id,
-        created_at: new Date(rettiwtTweet.createdAt).toISOString(),
-        in_reply_to_user_id: rettiwtTweet.replyTo ? rettiwtTweet.tweetBy.id : undefined,
-        text: rettiwtTweet.fullText,
-        reply_settings: 'everyone', // Default value as per the original structure
-        conversation_id: rettiwtTweet.replyTo || rettiwtTweet.id,
-        possibly_sensitive: false, // Default value as it's not in the rettiwt object
-        lang: rettiwtTweet.lang,
-        entities: {
-            mentions: rettiwtTweet.entities.mentions || []
-        },
-        context_annotations: [], // Placeholder, as context annotations are not provided in rettiwt
-        id: rettiwtTweet.id,
-        public_metrics: {
-            retweet_count: rettiwtTweet.retweetCount,
-            reply_count: rettiwtTweet.replyCount,
-            like_count: rettiwtTweet.likeCount,
-            quote_count: rettiwtTweet.quoteCount,
-            bookmark_count: rettiwtTweet.bookmarkCount,
-            impression_count: rettiwtTweet.viewCount
-        },
-        includes: {
-            users: [
-                {
-                    id: rettiwtTweet.tweetBy.id,
-                    username: rettiwtTweet.tweetBy.username,
-                    name: rettiwtTweet.tweetBy.fullName,
-                    created_at: rettiwtTweet.tweetBy.createdAt, // Assuming this field exists
-                    description: rettiwtTweet.tweetBy.description || '',
-                    verified: rettiwtTweet.tweetBy.isVerified || false,
-                    profile_image_url: rettiwtTweet.tweetBy.profileImage || ''
-                }
-            ],
-            tweets: [] // Placeholder, as no quoted or retweeted tweets are in rettiwt object
-        }
-    };
-}
-
 /**
  * @implements ICustomProvider
  */
+
+function mapTweetEntity(tweet) {
+    return {
+        id: tweet?.id,
+        created_at: new Date(tweet?.createdAt),
+        text: tweet?.fullText,
+        public_metrics: {
+            retweet_count: tweet?.retweetCount || 0,
+            like_count: tweet?.likeCount || 0,
+            reply_count: tweet?.replyCount || 0,
+            view_count: tweet?.viewCount || 0
+        },
+        author_id: tweet?.tweetBy?.id,
+        entities: {
+            mentions: (tweet?.entities?.mentionedUsers || []).map(user => ({
+                start: 0, // Update with actual start index if available
+                end: 0, // Update with actual end index if available
+                username: user?.userName
+            })),
+            hashtags: (tweet?.entities?.hashtags || []).map(hashtag => ({
+                start: 0, // Update with actual start index if available
+                end: 0, // Update with actual end index if available
+                tag: hashtag?.tag || hashtag
+            })),
+            urls: (tweet?.entities?.urls || []).map(url => ({
+                start: 0, // Update with actual start index if available
+                end: 0, // Update with actual end index if available
+                url: url?.url,
+                display_url: url?.displayUrl || url?.url,
+                expanded_url: url?.expandedUrl || url?.url
+            }))
+        },
+        users: [
+            {
+                id: tweet?.tweetBy?.id,
+                name: tweet?.tweetBy?.fullName,
+                username: tweet?.tweetBy?.userName,
+                profile_image_url: tweet?.tweetBy?.profileImage,
+                description: tweet?.tweetBy?.description,
+                verified: tweet?.tweetBy?.isVerified,
+                location: tweet?.tweetBy?.location
+            }
+        ],
+        attachments: {
+            media_keys: tweet?.media ? tweet?.media.map((_, index) => `media_${index + 1}`) : []
+        },
+        includes: {
+            media: (tweet?.media || []).map((media, index) => ({
+                media_key: `media_${index + 1}`,
+                type: media?.type,
+                url: media?.url,
+                preview_image_url: media?.previewUrl || media?.url
+            }))
+        }
+    };
+}
 class RettiwtOEmbedProvider {
     /**
      * @param {object} dependencies
@@ -74,11 +84,10 @@ class RettiwtOEmbedProvider {
 
     /**
      * @param {URL} url
-     * @param {IExternalRequest} externalRequest
      *
      * @returns {Promise<object>}
      */
-    async getOEmbedData(url, externalRequest) {
+    async getOEmbedData(url) {
         if (url.host === 'x.com') { // api is still at twitter.com... also not certain how people are getting x urls because twitter currently redirects every x host to twitter
             url = new URL('https://twitter.com' + url.pathname);
         }
@@ -106,11 +115,9 @@ class RettiwtOEmbedProvider {
         }).join('&');
 
         try {
-            console.log('fetching tweet data');
-            const rettiwt = new Rettiwt();
-            const tweet = await rettiwt.tweet.details(tweetId);
-            // flatten tweet and set as oembedData.tweet_data
-            oembedData.tweet_data = mapTweetDetails(tweet);
+            // const tweet = await .request(EResourceType.TWEET_DETAILS, {id: tweetId, query: queryString});
+            const tweet = await this.dependencies.externalRequest.tweet.details(tweetId, queryString);
+            oembedData.tweet_data = mapTweetEntity(tweet);
         } catch (err) {
             if (err.response?.body) {
                 try {
@@ -124,7 +131,6 @@ class RettiwtOEmbedProvider {
         }
 
         oembedData.type = 'twitter';
-        console.log('oembedData---', oembedData);
         return oembedData;
     }
 }
