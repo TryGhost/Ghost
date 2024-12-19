@@ -36,7 +36,12 @@ describe('Themes', function () {
 
                 fakeLoadedTheme = {
                     name: 'casper',
-                    path: 'my/fake/theme/path'
+                    path: 'my/fake/theme/path',
+                    'package.json': {
+                        config: {
+                            asset_hash: 'abcd1234'
+                        }
+                    }
                 };
                 fakeCheckedTheme = {
                     templates: {
@@ -57,10 +62,6 @@ describe('Themes', function () {
 
                 // Call mount!
                 theme.mount(fakeBlogApp);
-
-                // Check the asset hash gets reset
-                configStub.calledOnce.should.be.true();
-                configStub.calledWith('assetHash', null).should.be.true();
 
                 // Check te view cache was cleared
                 fakeBlogApp.cache.should.eql({});
@@ -91,7 +92,7 @@ describe('Themes', function () {
 
                 // Check the asset hash gets reset
                 configStub.calledOnce.should.be.true();
-                configStub.calledWith('assetHash', null).should.be.true();
+                configStub.calledWith('asset_hash', fakeLoadedTheme['package.json'].config.asset_hash).should.be.true();
 
                 // Check te view cache was cleared
                 fakeBlogApp.cache.should.eql({});

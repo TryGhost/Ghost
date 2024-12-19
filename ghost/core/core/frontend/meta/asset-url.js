@@ -44,13 +44,15 @@ function getAssetUrl(path, hasMinFile) {
     // Add the path for the requested asset
     output = urlUtils.urlJoin(output, path);
 
-    // Ensure we have an assetHash
-    // @TODO rework this!
-    if (!config.get('assetHash')) {
-        config.set('assetHash', (crypto.createHash('md5').update(Date.now().toString()).digest('hex')).substring(0, 10));
+    // Ensure we have an asset_hash
+    // This is backcompat, generating a hash if no config value is provided.
+    // Theme config can also provide either `false`(to disable) or a specific string to use as the hash.
+    // eslint-disable-next-line eqeqeq
+    if (config.get('asset_hash') == null) {
+        config.set('asset_hash', (crypto.createHash('md5').update(Date.now().toString()).digest('hex')).substring(0, 10));
     }
 
-    // if url has # make sure the hash is at th right place
+    // if url has # make sure the hash is at the right place
     let anchor;
     if (path.match('#')) {
         const index = output.indexOf('#');
@@ -58,8 +60,10 @@ function getAssetUrl(path, hasMinFile) {
         output = output.slice(0, index);
     }
 
-    // Finally add the asset hash to the output URL
-    output += '?v=' + config.get('assetHash');
+    // Finally add the asset hash to the output URL unless it is explicitly disabled by config
+    if (config.get('asset_hash') !== false) {
+        output += '?v=' + config.get('asset_hash');
+    }
 
     if (anchor) {
         output += anchor;
