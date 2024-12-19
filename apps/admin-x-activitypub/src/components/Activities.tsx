@@ -185,7 +185,7 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
         filter: {
             type: ['Follow', 'Like', `Create:Note`]
         },
-        limit: 250,
+        limit: 120,
         key: GET_ACTIVITIES_QUERY_KEY_NOTIFICATIONS
     });
 
