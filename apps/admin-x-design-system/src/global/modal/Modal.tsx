@@ -156,7 +156,7 @@ const Modal: React.FC<ModalProps> = ({
 
     const buttons: ButtonProps[] = [];
 
-    let contentClasses;
+    let contentClasses = '[&_p]:text-pretty';
 
     const removeModal = () => {
         confirmIfDirty(dirty, () => {
@@ -196,7 +196,7 @@ const Modal: React.FC<ModalProps> = ({
         align === 'center' && 'mx-auto',
         align === 'left' && 'mr-auto',
         align === 'right' && 'ml-auto',
-        size !== 'bleed' && 'rounded',
+        size !== 'bleed' && 'rounded-xl',
         formSheet ? 'shadow-md' : 'shadow-xl',
         (animate && !formSheet && !animationFinished && align === 'center') && 'animate-modal-in',
         (animate && !formSheet && !animationFinished && align === 'right') && 'animate-modal-in-from-right',
@@ -342,6 +342,7 @@ const Modal: React.FC<ModalProps> = ({
     );
 
     contentClasses = clsx(
+        contentClasses,
         paddingClasses,
         'py-0'
     );
