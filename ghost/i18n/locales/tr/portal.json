@@ -167,6 +167,7 @@
     "There was an error sending the email, please try again": "E-posta gönderilirken bir hata oluştu, lütfen tekrar deneyin.",
     "This site is invite-only, contact the owner for access.": "Bu site sadece davetiyesi olanlar içindir, erişim için site sahibiyle iletişime geç.",
     "This site is not accepting payments at the moment.": "Bu site şu anda ödeme kabul etmemektedir.",
+    "This site only accepts paid members.": "",
     "To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!": "Kaydınızı tamamlamak için gelen kutunuzdaki onay bağlantısına tıklayın. Eğer 3 dakika içinde gelmezse, spam klasörünüzü kontrol edin!",
     "To continue to stay up to date, subscribe to {{publication}} below.": "Güncel kalmaya devam etmek için, aşağıdaki {{publication}} abone olun.",
     "Too many attempts try again in {{number}} days.": "Çok fazla deneme yapıldı, lütfen {{number}} gün sonra tekrar deneyin.",

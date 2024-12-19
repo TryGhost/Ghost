@@ -167,6 +167,7 @@
     "There was an error sending the email, please try again": "Nosūtot e-pasta ziņojumu, radās kļūda. Lūdzu, mēģiniet vēlreiz",
     "This site is invite-only, contact the owner for access.": "Šī vietne ir paredzēta tikai ielūgumam. Lai iegūtu piekļuvi, sazinieties ar īpašnieku.",
     "This site is not accepting payments at the moment.": "Šī vietne pašlaik nepieņem maksājumus.",
+    "This site only accepts paid members.": "",
     "To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!": "Lai pabeigtu reģistrāciju, iesūtnē noklikšķiniet uz apstiprinājuma saites. Ja tas nepienāk 3 minūšu laikā, pārbaudiet savu surogātpasta mapi!",
     "To continue to stay up to date, subscribe to {{publication}} below.": "Lai turpinātu saņemt jaunāko informāciju, abonējiet tālāk norādīto {{publication}}.",
     "Too many attempts try again in {{number}} days.": "Pārāk daudz mēģinājumu mēģiniet vēlreiz pēc {{number}} dienām.",

@@ -167,6 +167,7 @@
     "There was an error sending the email, please try again": "",
     "This site is invite-only, contact the owner for access.": "A website csak meghívóval látogatható. Meghívóért lépjen kapcsolatba az oldal tulajdonosával!",
     "This site is not accepting payments at the moment.": "",
+    "This site only accepts paid members.": "",
     "To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!": "A regisztráció befejezéséhez kérjük kattintson az email-ben kapott linkre. Ha a link nem érkezne meg 3 percen belül kérjük ellenőrizze a spam mappát.",
     "To continue to stay up to date, subscribe to {{publication}} below.": "",
     "Too many attempts try again in {{number}} days.": "",
