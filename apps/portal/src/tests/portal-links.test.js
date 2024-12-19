@@ -137,11 +137,11 @@ describe('Portal Data links:', () => {
             expect(signupTitle).toBeInTheDocument();
         });
 
-        describe.only('on a invite-only site', () => {
+        describe('on a invite-only site', () => {
             test('renders invite-only message and does not allow signups', async () => {});
         });
 
-        describe.only('on a paid-members only site', () => {
+        describe('on a paid-members only site', () => {
             describe('with only a free plan', () => {
                 test('renders paid-members only message and does not allow signups', async () => {});
             });

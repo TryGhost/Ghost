@@ -594,7 +594,6 @@ class SignupPage extends React.Component {
         let label = t('Continue');
         const showOnlyFree = pageQuery === 'free' && isFreeSignupAllowed({site});
 
-
         if (hasOnlyFreePlan({site}) || showOnlyFree) {
             label = t('Sign up');
         } else {

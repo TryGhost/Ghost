@@ -836,7 +836,7 @@ describe('Signup', () => {
         });
     });
 
-    describe.only('on a paid-members only site', () => {
+    describe('on a paid-members only site', () => {
         test('does not allow signups if the site only has a free plan', async () => {
             let {
                 popupFrame, emailInput, nameInput, submitButton,
