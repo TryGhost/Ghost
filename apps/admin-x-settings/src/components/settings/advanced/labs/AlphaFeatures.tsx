@@ -4,10 +4,6 @@ import React from 'react';
 import {List} from '@tryghost/admin-x-design-system';
 
 const features = [{
-    title: 'URL cache',
-    description: 'Enable URL Caching',
-    flag: 'urlCache'
-},{
     title: 'Webmentions',
     description: 'Allows viewing received mentions on the dashboard.',
     flag: 'webmentions'
