@@ -4,6 +4,7 @@ import PostSuccessModal from '../modal-post-success';
 import anime from 'animejs/lib/anime.es.js';
 import {action} from '@ember/object';
 import {didCancel, task} from 'ember-concurrency';
+import {later} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
 
@@ -51,6 +52,18 @@ export default class Analytics extends Component {
     constructor() {
         super(...arguments);
         this.checkPublishFlowModal();
+        this.setupAutoRefresh();
+    }
+
+    setupAutoRefresh() {
+        later(this, this.triggerRefresh, 5000);
+    }
+
+    triggerRefresh() {
+        if (!this.isDestroyed && !this.isDestroying) {
+            this.fetchPostTask.perform();
+            this.setupAutoRefresh();
+        }
     }
 
     openPublishFlowModal() {
