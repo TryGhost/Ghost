@@ -20,7 +20,6 @@ test.describe('i18n', () => {
         test('changing the site language immediately translates strings in newsletters', async ({sharedPage}) => {
             await setLanguage(sharedPage, 'fr');
 
-
             const postData = {
                 title: 'Publish and email post',
                 body: 'This is my post body.'
