@@ -150,8 +150,8 @@ describe('Portal Data links:', () => {
 
                     expect(popupFrame).toBeInTheDocument();
 
-                    const membershipsUnavailableMessage = within(popupFrame.contentDocument).queryByText(/Memberships unavailable/i);
-                    expect(membershipsUnavailableMessage).toBeInTheDocument();
+                    const paidMembersOnlyMessage = within(popupFrame.contentDocument).queryByText(/This site only accepts paid members/i);
+                    expect(paidMembersOnlyMessage).toBeInTheDocument();
                 });
             });
 
