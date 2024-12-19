@@ -267,12 +267,14 @@ export function useActivitiesForUser({
     includeOwn = false,
     includeReplies = false,
     filter = null,
+    limit = undefined,
     key = null
 }: {
     handle: string;
     includeOwn?: boolean;
     includeReplies?: boolean;
     filter?: {type?: string[]} | null;
+    limit?: number;
     key?: string | null;
 }) {
     const queryKey = [`activities:${handle}`, key, {includeOwn, includeReplies, filter}];
@@ -283,7 +285,7 @@ export function useActivitiesForUser({
         async queryFn({pageParam}: {pageParam?: string}) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
-            return api.getActivities(includeOwn, includeReplies, filter, pageParam);
+            return api.getActivities(includeOwn, includeReplies, filter, limit, pageParam);
         },
         getNextPageParam(prevPage) {
             return prevPage.next;
