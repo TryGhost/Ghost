@@ -83,7 +83,9 @@ const AddNewsletterModal: React.FC<RoutingModalProps> = () => {
         }}
     >
         <Form
+            gap='sm'
             marginBottom={false}
+            margins='sm'
             marginTop
         >
             <TextField
