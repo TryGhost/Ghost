@@ -730,7 +730,7 @@ class SignupPage extends React.Component {
             );
         }
 
-        if (!isSignupAllowed({site})) {
+        if (!isSignupAllowed({site}) || !hasAvailablePrices({site})) {
             return (
                 <section>
                     <div className='gh-portal-section'>

@@ -263,7 +263,7 @@ export function isSignupAllowed({site}) {
     const hasSignupAccess = site?.members_signup_access === 'all' || site?.members_signup_access === 'paid';
     const hasSignupConfigured = site?.is_stripe_configured || hasOnlyFreePlan({site});
 
-    return hasSignupAccess && hasAvailablePrices({site}) && hasSignupConfigured;
+    return hasSignupAccess && hasSignupConfigured;
 }
 
 export function isFreeSignupAllowed({site}) {
