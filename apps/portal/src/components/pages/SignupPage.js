@@ -7,7 +7,7 @@ import NewsletterSelectionPage from './NewsletterSelectionPage';
 import ProductsSection from '../common/ProductsSection';
 import InputForm from '../common/InputForm';
 import {ValidateInputForm} from '../../utils/form';
-import {getSiteProducts, getSitePrices, hasAvailablePrices, hasOnlyFreePlan, isInviteOnly, isFreeSignupAllowed, freeHasBenefitsOrDescription, hasMultipleNewsletters, hasFreeTrialTier, isSignupAllowed} from '../../utils/helpers';
+import {getSiteProducts, getSitePrices, hasAvailablePrices, hasOnlyFreePlan, isInviteOnly, isFreeSignupAllowed, isPaidMembersOnly, freeHasBenefitsOrDescription, hasMultipleNewsletters, hasFreeTrialTier, isSignupAllowed} from '../../utils/helpers';
 import {ReactComponent as InvitationIcon} from '../../images/icons/invitation.svg';
 import {interceptAnchorClicks} from '../../utils/links';
 
@@ -698,51 +698,24 @@ class SignupPage extends React.Component {
             );
         }
 
-        if (!hasAvailablePrices({site, pageQuery}) && isInviteOnly({site})) {
-            return (
-                <section>
-                    <div className='gh-portal-section'>
-                        <p
-                            className='gh-portal-invite-only-notification'
-                            data-testid="invite-only-notification-text"
-                        >
-                            {t('This site is invite-only, contact the owner for access.')}
-                        </p>
-                        {this.renderLoginMessage()}
-                    </div>
-                </section>
-            );
+        if (!hasAvailablePrices({site, pageQuery})) {
+            if (isPaidMembersOnly({site})) {
+                return this.renderPaidMembersOnlyMessage();
+            }
+
+            if (isInviteOnly({site})) {
+                return this.renderInviteOnlyMessage();
+            }
+
+            return this.renderMembersDisabledMessage();
         }
 
         if (pageQuery === 'free' && !isFreeSignupAllowed({site})) {
-            return (
-                <section>
-                    <div className='gh-portal-section'>
-                        <p
-                            className='gh-portal-invite-only-notification'
-                            data-testid="invite-only-notification-text"
-                        >
-                            {t('This site only accepts paid members.')}
-                        </p>
-                        {this.renderLoginMessage()}
-                    </div>
-                </section>
-            );
+            return this.renderPaidMembersOnlyMessage();
         }
 
-        if (!isSignupAllowed({site}) || !hasAvailablePrices({site})) {
-            return (
-                <section>
-                    <div className='gh-portal-section'>
-                        <p
-                            className='gh-portal-members-disabled-notification'
-                            data-testid="members-disabled-notification-text"
-                        >
-                            {t('Memberships unavailable, contact the owner for access.')}
-                        </p>
-                    </div>
-                </section>
-            );
+        if (!isSignupAllowed({site})) {
+            return this.renderMembersDisabledMessage();
         }
 
         const showOnlyFree = pageQuery === 'free' && isFreeSignupAllowed({site});
@@ -789,6 +762,56 @@ class SignupPage extends React.Component {
                             :
                             this.renderLoginMessage())}
                     </div>
+                </div>
+            </section>
+        );
+    }
+
+    renderPaidMembersOnlyMessage() {
+        const {t} = this.context;
+        return (
+            <section>
+                <div className='gh-portal-section'>
+                    <p
+                        className='gh-portal-invite-only-notification'
+                        data-testid="invite-only-notification-text"
+                    >
+                        {t('This site only accepts paid members.')}
+                    </p>
+                    {this.renderLoginMessage()}
+                </div>
+            </section>
+        );
+    }
+
+    renderInviteOnlyMessage() {
+        const {t} = this.context;
+        return (
+            <section>
+                <div className='gh-portal-section'>
+                    <p
+                        className='gh-portal-invite-only-notification'
+                        data-testid="invite-only-notification-text"
+                    >
+                        {t('This site is invite-only, contact the owner for access.')}
+                    </p>
+                    {this.renderLoginMessage()}
+                </div>
+            </section>
+        );
+    }
+
+    renderMembersDisabledMessage() {
+        const {t} = this.context;
+        return (
+            <section>
+                <div className='gh-portal-section'>
+                    <p
+                        className='gh-portal-members-disabled-notification'
+                        data-testid="members-disabled-notification-text"
+                    >
+                        {t('Memberships unavailable, contact the owner for access.')}
+                    </p>
                 </div>
             </section>
         );
