@@ -3,8 +3,7 @@ import DeletePostModal from '../modals/delete-post';
 import PostSuccessModal from '../modal-post-success';
 import anime from 'animejs/lib/anime.es.js';
 import {action} from '@ember/object';
-import {didCancel, task} from 'ember-concurrency';
-import {later} from '@ember/runloop';
+import {didCancel, task, timeout} from 'ember-concurrency';
 import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
 
@@ -20,7 +19,7 @@ const DISPLAY_OPTIONS = [{
     value: 'paid'
 }];
 
-const AUTO_REFRESH_RATE = 10000;
+const AUTO_REFRESH_RATE = 7500;
 
 export default class Analytics extends Component {
     @service ajax;
@@ -54,18 +53,8 @@ export default class Analytics extends Component {
     constructor() {
         super(...arguments);
         this.checkPublishFlowModal();
-        this.setupAutoRefresh();
-    }
-
-    setupAutoRefresh() {
-        later(this, this.triggerRefresh, AUTO_REFRESH_RATE);
-    }
-
-    triggerRefresh() {
-        if (!this.isDestroyed && !this.isDestroying) {
-            this.fetchPostTask.perform();
-            this.setupAutoRefresh();
-        }
+        this.fetchPostTask.perform();
+        this.autoRefreshTask.perform();
     }
 
     openPublishFlowModal() {
@@ -403,6 +392,13 @@ export default class Analytics extends Component {
         yield this.fetchLinks();
 
         return true;
+    }
+
+    @task
+    *autoRefreshTask() {
+        yield timeout(AUTO_REFRESH_RATE);
+        yield this.fetchPostTask.perform();
+        this.autoRefreshTask.perform();
     }
 
     @action
