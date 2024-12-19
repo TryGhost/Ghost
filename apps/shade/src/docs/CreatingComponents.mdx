@@ -83,7 +83,15 @@ export interface ButtonProps
 }
 ```
 
-That's it — you've just added a new component to Shade.
+**Step 5:** Export the component
+
+In order to be able to import the new component in apps, you'll need to export it in the `index.ts` file of Shade, like this:
+
+```
+export * from './components/ui/button';
+```
+
+That's it — you've just added a new component to Shade and made it ready to use in other React apps.
 
 ## Stories
 

@@ -6,7 +6,7 @@ const fs = require('fs');
 const path = require('path');
 const camelCase = require('lodash/camelCase');
 
-const adminXApps = ['admin-x-demo', 'admin-x-settings', 'admin-x-activitypub'];
+const adminXApps = ['admin-x-demo', 'admin-x-settings', 'admin-x-activitypub', 'posts'];
 
 function generateHash(filePath) {
     const fileContents = fs.readFileSync(filePath, 'utf8');

@@ -59,7 +59,9 @@ const preview: Preview = {
 		options: {
 			storySort: {
 				method: 'alphabetical',
-				order: ['Welcome', 'Adding components', 'Component usage', 'Conventions', 'Icons', 'Components', 'Meta', 'Experimental'],
+				order: [
+					'Welcome', 'Adding components', 'Component usage', 'Conventions', 'Icons',
+					'Components', 'Layout', 'Experimental', 'Meta'],
 			},
 		},
 		docs: {
@@ -76,7 +78,7 @@ const preview: Preview = {
 			let {scheme} = context.globals;
 
 			return (
-			<div className={`shade shade-base ${scheme === 'dark' ? 'dark' : ''}`} style={{
+			<div className={`shade ${scheme === 'dark' ? 'dark' : ''}`} style={{
 				// padding: '24px',
 				// width: 'unset',
 				height: 'unset',

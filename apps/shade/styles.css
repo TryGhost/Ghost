@@ -80,41 +80,9 @@
         font-weight: 100 900;
     }
 
-    .shade-base {
+    .shade {
         & {
             @apply font-sans text-black text-base leading-normal;
-        }
-
-        h1,
-        h2,
-        h3,
-        h4,
-        h5 {
-            @apply font-bold tracking-tight leading-tighter;
-        }
-
-        h1 {
-            @apply text-4xl leading-supertight;
-        }
-
-        h2 {
-            @apply text-2xl;
-        }
-
-        h3 {
-            @apply text-xl;
-        }
-
-        h4 {
-            @apply text-lg;
-        }
-
-        h5 {
-            @apply text-md leading-supertight;
-        }
-
-        h6 {
-            @apply text-md leading-normal;
         }
     }
 }
@@ -128,7 +96,7 @@
     }
 }
 
-.shade-base {
+.shade {
     line-height: 1.5;
     -ms-text-size-adjust: 100%;
     -webkit-text-size-adjust: 100%;
@@ -146,28 +114,28 @@
 }
 
 @media (max-width: 800px) {
-    .shade-base {
+    .shade {
         height: calc(100vh - 55px);
     }
 }
 
-.shade-base.dark {
+.shade.dark {
     color: #fafafb;
 }
 
-.shade-base.dark .gh-loading-orb-container {
+.shade.dark .gh-loading-orb-container {
     background-color: #000000;
 }
 
-.shade-base.dark .gh-loading-orb {
+.shade.dark .gh-loading-orb {
     filter: invert(100%);
 }
 
-.shade-base .no-scrollbar::-webkit-scrollbar {
+.shade .no-scrollbar::-webkit-scrollbar {
     display: none; /* Chrome */
 }
 
-.shade-base .no-scrollbar {
+.shade .no-scrollbar {
     -ms-overflow-style: none; /* IE and Edge */
     scrollbar-width: none; /* Firefox */
 }
