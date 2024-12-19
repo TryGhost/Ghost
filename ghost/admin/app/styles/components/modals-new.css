@@ -214,9 +214,9 @@
 .modal-header h1 {
     display: inline-block;
     margin: -5px 25px 0 0;
-    font-size: 2.2rem;
-    line-height: 1.15em;
-    font-weight: 600;
+    font-size: 2.4rem;
+    line-height: 1.25em;
+    font-weight: 700;
     letter-spacing: -0.025em;
     text-wrap: pretty;
 }
@@ -253,6 +253,22 @@
 .modal-body p {
     font-size: 1.4rem;
     line-height: 1.5em;
+    color: var(--black);
+}
+
+.modal-body .gh-input {
+    height: 38px;
+    padding: 4px 12px;
+    font-size: 1.4rem;
+    color: var(--black);
+    background-color: var(--grey-150);
+    border: 0;
+    border-radius: 8px;
+}
+
+.modal-body .gh-input-group .gh-input {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
 }
 
 .modal-footer {
