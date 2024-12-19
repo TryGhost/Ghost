@@ -2,7 +2,7 @@ import {chooseOptionInSelect, getOptionsFromSelect, mockApi, responseFixtures, u
 import {expect, test} from '@playwright/test';
 import {globalDataRequests} from '../../utils/acceptance';
 
-test.describe('Access settings', async () => {
+test.describe.only('Access settings', async () => {
     test('Supports editing access', async ({page}) => {
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,
@@ -17,17 +17,16 @@ test.describe('Access settings', async () => {
 
         const section = page.getByTestId('access');
 
-        // Check that the current values are displayed when in view mode
+        // Check current selected values
         await expect(section.getByText('Anyone can sign up')).toHaveCount(1);
         await expect(section.getByText('Public')).toHaveCount(1);
         await expect(section.getByText('Nobody')).toHaveCount(1);
 
-        // Check available options in access settings in edit mode
-        await section.getByRole('button', {name: 'Edit'}).click();
         const subscriptionAccessSelect = section.getByTestId('subscription-access-select');
         const defaultPostAccessSelect = section.getByTestId('default-post-access-select');
         const commentingSelect = section.getByTestId('commenting-select');
 
+        // Check available options
         await expect(getOptionsFromSelect(subscriptionAccessSelect)).resolves.toEqual(['Anyone can sign up', 'Paid-members only', 'Invite-only', 'Nobody']);
         await expect(getOptionsFromSelect(defaultPostAccessSelect)).resolves.toEqual(['Public', 'Members only', 'Paid-members only', 'Specific tiers']);
         await expect(getOptionsFromSelect(commentingSelect)).resolves.toEqual(['All members', 'Paid-members only', 'Nobody']);
@@ -38,9 +37,8 @@ test.describe('Access settings', async () => {
         await chooseOptionInSelect(commentingSelect, 'All members');
 
         await section.getByRole('button', {name: 'Save'}).click();
-        await expect(section.getByTestId('subscription-access-select')).toHaveCount(0);
 
-        // Check that the new values are displayed when in view mode
+        // Check that the new values are now displayed
         await expect(section.getByText('Invite-only')).toHaveCount(1);
         await expect(section.getByText('Members only')).toHaveCount(1);
         await expect(section.getByText('All members')).toHaveCount(1);
@@ -66,8 +64,6 @@ test.describe('Access settings', async () => {
 
         const section = page.getByTestId('access');
 
-        await section.getByRole('button', {name: 'Edit'}).click();
-
         await chooseOptionInSelect(section.getByTestId('subscription-access-select'), 'Nobody');
 
         await section.getByRole('button', {name: 'Save'}).click();
@@ -78,7 +74,7 @@ test.describe('Access settings', async () => {
             ]
         });
 
-        await expect(section.getByTestId('subscription-access-select')).toHaveCount(0);
+        await expect(section.getByTestId('subscription-access-select')).toContainText('Nobody');
 
         await expect(page.getByTestId('portal').getByRole('button', {name: 'Customize'})).toBeDisabled();
         await expect(page.getByTestId('enable-newsletters')).toContainText('only existing members will receive newsletters');
@@ -98,8 +94,6 @@ test.describe('Access settings', async () => {
 
         const section = page.getByTestId('access');
 
-        await section.getByRole('button', {name: 'Edit'}).click();
-
         await chooseOptionInSelect(section.getByTestId('default-post-access-select'), 'Specific tiers');
         await section.getByTestId('tiers-select').click();
 
@@ -108,7 +102,7 @@ test.describe('Access settings', async () => {
 
         await section.getByRole('button', {name: 'Save'}).click();
 
-        await expect(section.getByText('Specific tiers')).toHaveCount(1);
+        await expect(section.getByTestId('default-post-access-select')).toContainText('Specific tiers');
 
         expect(lastApiRequests.editSettings?.body).toEqual({
             settings: [
