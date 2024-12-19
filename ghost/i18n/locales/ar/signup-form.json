@@ -1,9 +1,9 @@
 {
-    "Email sent": "تم ارسال البريد الالكترونى",
-    "Now check your email!": "قم بتفقد بريدك الالكترونى",
-    "Please enter a valid email address": "من فضلك قم بإدخال بريدك الالكترونى بشكل صحيح",
-    "Something went wrong, please try again.": "حدث خطأ ما! من فضلك اعد المحاولة",
+    "Email sent": "تم إرسال البريد الإلكتروني",
+    "Now check your email!": "الآن تحقق من بريدك الإلكتروني!",
+    "Please enter a valid email address": "يرجى إدخال عنوان بريد إلكتروني صحيح",
+    "Something went wrong, please try again.": "حدث خطأ ما، يرجى المحاولة مرة أخرى.",
     "Subscribe": "اشترك",
-    "To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!": "لإكمال التسجيل قم بالضغط على الرابط الموجود فى الرسالة التى وصلت لبريدك الالكترونى، إذا لم تصلّك الرسالة خلال 3 دقائق قم بتفقد صندوق الرسائل المزعجة ",
-    "Your email address": "بريدك الالكترونى"
+    "To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!": "لإكمال التسجيل، انقر على رابط التأكيد في صندوق الوارد. إذا لم يصل خلال 3 دقائق، تحقق من مجلد الرسائل غير المرغوب فيها!",
+    "Your email address": "عنوان بريدك الإلكتروني"
 }

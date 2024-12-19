@@ -1,9 +1,10 @@
 {
-    "Authors": "الكتّاب",
+    "Authors": "المؤلفون",
     "Cancel": "إلغاء",
-    "No matches found": "لا يوجد نتائج مطابقة",
-    "Posts": "منشورات",
-    "Search posts, tags and authors": "قم بالبحث عن المنشورات، الوسوم و الكتّاب",
-    "Show more results": "اظهر المزيد من النتائج",
+    "No matches found": "لم يتم العثور على نتائج مطابقة",
+    "Posts": "المشاركات",
+    "Search posts, tags and authors": "ابحث في المشاركات، الوسوم والمؤلفين",
+    "Show more results": "عرض المزيد من النتائج",
     "Tags": "الوسوم"
 }
+
