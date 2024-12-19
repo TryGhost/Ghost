@@ -224,6 +224,17 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
                 }
 
                 return true;
+            })
+            // Remove our own create activities
+            .filter((activity) => {
+                if (
+                    activity.type === ACTIVITY_TYPE.CREATE &&
+                    activity.actor?.id === userProfile?.id
+                ) {
+                    return false;
+                }
+
+                return true;
             });
 
         return groupActivities(filtered);
