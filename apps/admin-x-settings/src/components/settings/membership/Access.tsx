@@ -14,9 +14,14 @@ const MEMBERS_SIGNUP_ACCESS_OPTIONS = [
         hint: 'All visitors will be able to subscribe and sign in'
     },
     {
+        value: 'paid',
+        label: 'Paid-members only',
+        hint: 'A paid Stripe subscription is required to sign up'
+    },
+    {
         value: 'invite',
-        label: 'Only people I invite',
-        hint: 'People can sign in from your site but won\'t be able to sign up'
+        label: 'Invite-only',
+        hint: 'People can sign in but won\'t be able to sign up'
     },
     {
         value: 'none',

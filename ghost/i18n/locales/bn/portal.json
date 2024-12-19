@@ -167,6 +167,7 @@
     "There was an error sending the email, please try again": "",
     "This site is invite-only, contact the owner for access.": "এই সাইটটি কেবল আমন্ত্রণের মাধ্যমে, প্রবেশাধিকার পেতে মালিকের সাথে যোগাযোগ করুন।",
     "This site is not accepting payments at the moment.": "",
+    "This site only accepts paid members.": "",
     "To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!": "সাইন আপ সম্পূর্ণ করতে, আপনার ইনবক্সে নিশ্চিতকরণ লিঙ্কে ক্লিক করুন। যদি এটি ৩ মিনিটের মধ্যে না আসে, তবে আপনার স্প্যাম ফোল্ডার চেক করুন!",
     "To continue to stay up to date, subscribe to {{publication}} below.": "",
     "Too many attempts try again in {{number}} days.": "",

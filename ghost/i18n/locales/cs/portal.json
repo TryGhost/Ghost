@@ -167,6 +167,7 @@
     "There was an error sending the email, please try again": "",
     "This site is invite-only, contact the owner for access.": "Tento web je pouze pro pozvané, kontaktujte provozovatele pro přístup.",
     "This site is not accepting payments at the moment.": "Tento web momentálně nepřijímá platby.",
+    "This site only accepts paid members.": "",
     "To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!": "Pro dokončení registrace klikněte na potvrzovací odkaz ve vaší e-mailové schránce. Pokud nepřijde do 3 minut, zkontrolujte prosím složku nevyžádaných zpráv (spam)!",
     "To continue to stay up to date, subscribe to {{publication}} below.": "Chcete-li zůstat informováni, přihlaste se k odběru {{publication}} níže.",
     "Too many attempts try again in {{number}} days.": "",

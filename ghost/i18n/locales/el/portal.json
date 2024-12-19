@@ -167,6 +167,7 @@
     "There was an error sending the email, please try again": "",
     "This site is invite-only, contact the owner for access.": "Αυτός ο ιστότοπος είναι μόνο με πρόσκληση, επικοινωνήστε με τον ιδιοκτήτη για πρόσβαση.",
     "This site is not accepting payments at the moment.": "",
+    "This site only accepts paid members.": "",
     "To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!": "Για να ολοκληρώσετε την εγγραφή, κάντε κλικ στον σύνδεσμο επιβεβαίωσης στα εισερχόμενά σας. Αν δεν φτάσει εντός 3 λεπτών, ελέγξτε τον φάκελο ανεπιθύμητης αλληλογραφίας!",
     "To continue to stay up to date, subscribe to {{publication}} below.": "",
     "Too many attempts try again in {{number}} days.": "",

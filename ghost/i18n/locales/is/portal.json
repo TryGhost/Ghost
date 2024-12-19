@@ -167,6 +167,7 @@
     "There was an error sending the email, please try again": "",
     "This site is invite-only, contact the owner for access.": "Aðgangur krefst boðsmiða, hafið samband við eiganda síðunnar til að fá aðgang.",
     "This site is not accepting payments at the moment.": "",
+    "This site only accepts paid members.": "",
     "To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!": "Til að ljúka nýskráningu skaltu smella á staðfestingarhlekkinn sem var sendur á netfangið þitt. Ef hann er ekki kominn innan 3 mínútna skaltu athuga spam-möppuna.",
     "To continue to stay up to date, subscribe to {{publication}} below.": "",
     "Too many attempts try again in {{number}} days.": "",

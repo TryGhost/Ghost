@@ -22,6 +22,7 @@ Object {
     "logo": null,
     "members_enabled": true,
     "members_invite_only": false,
+    "members_signup_access": "all",
     "members_support_address": "noreply",
     "meta_description": null,
     "meta_title": null,

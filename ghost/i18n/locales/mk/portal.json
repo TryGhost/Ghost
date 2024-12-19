@@ -167,6 +167,7 @@
     "There was an error sending the email, please try again": "",
     "This site is invite-only, contact the owner for access.": "Оваа страница е достапна само со покана. За пристап контактирајте го сопственикот.",
     "This site is not accepting payments at the moment.": "",
+    "This site only accepts paid members.": "",
     "To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!": "За да ја завршите регистрацијата, кликнете на линкот за потврда испратен на вашата email адреса. Ако не пристигне во рок од 3 минути, проверте во спам!",
     "To continue to stay up to date, subscribe to {{publication}} below.": "",
     "Too many attempts try again in {{number}} days.": "",

@@ -167,6 +167,7 @@
     "There was an error sending the email, please try again": ".حدث خطأ أثناء إرسال البريد الاكتروني، يرجى المحاولة مرة أخرى",
     "This site is invite-only, contact the owner for access.": "هذا الموقع للمشتركين فقط، تواصل مع ادارة الموقع للحصول على اشتراك.",
     "This site is not accepting payments at the moment.": "هذا الموقع لا يقبل المدفوعات في الوقت الحالي",
+    "This site only accepts paid members.": "",
     "To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!": "لاكمال انشاء حسابك، استخدم رابط التأكيد المرسل الى بريد. اذا لم تتلقى الرسالة خلال 3 دقائق، برجاء التأكد من مجلد المهملات.",
     "To continue to stay up to date, subscribe to {{publication}} below.": ".أدناه {{publication}} للاستمرار في متابعة أخر التحديثات، اشترك في ",
     "Too many attempts try again in {{number}} days.": ".أيام{{number}} محاولات متعددة جدًا، حاول مرة أخرى بعد ",

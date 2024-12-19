@@ -32,7 +32,6 @@ export const specialMessages = [];
  * whenever one is available.
  */
 export function chooseBestErrorMessage(error, alreadyTranslatedDefaultMessage, t) {
-    // helper functions
     const translateMessage = (message, number = null) => {
         if (number) {
             return t(message, {number});
@@ -40,6 +39,7 @@ export function chooseBestErrorMessage(error, alreadyTranslatedDefaultMessage, t
             return t(message);
         }
     };
+
     const setupSpecialMessages = () => {
         // eslint-disable-next-line no-shadow
         const t = message => specialMessages.push(message);
@@ -58,8 +58,10 @@ export function chooseBestErrorMessage(error, alreadyTranslatedDefaultMessage, t
             t('Too many different sign-in attempts, try again in {{number}} hours');
             t('Too many different sign-in attempts, try again in {{number}} days');
             t('Failed to send magic link email');
+            t('This site only accepts paid members.');
         }
     };
+
     const isSpecialMessage = (message) => {
         if (specialMessages.length === 0) {
             setupSpecialMessages();
@@ -72,9 +74,9 @@ export function chooseBestErrorMessage(error, alreadyTranslatedDefaultMessage, t
 
     const prepareErrorMessage = (message = null) => {
         // Check for a number in message, if found, replace the number with {{number}} and return the number.
-        // Assumes there's only one number in the message. 
-        if (!message) { 
-            return {preparedMessage: 'An error occurred', number: null}; 
+        // Assumes there's only one number in the message.
+        if (!message) {
+            return {preparedMessage: 'An error occurred', number: null};
         }
         const number = message.match(/\d+/);
         if (number) {
@@ -83,10 +85,10 @@ export function chooseBestErrorMessage(error, alreadyTranslatedDefaultMessage, t
         return {preparedMessage: message, number: number ? number[0] : null};
     };
 
-    // main function
     if (!error && !alreadyTranslatedDefaultMessage) {
-        return t('An error occurred'); 
+        return t('An error occurred');
     }
+
     if (error instanceof HumanReadableError || error.message) {
         const {preparedMessage, number} = prepareErrorMessage(error.message);
         if (isSpecialMessage(preparedMessage)) {
