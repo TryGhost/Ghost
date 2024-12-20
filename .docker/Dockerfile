@@ -56,23 +56,5 @@ RUN yarn install --frozen-lockfile --prefer-offline --cache-folder $YARN_CACHE_F
 FROM base-devcontainer AS development
 ARG WORKDIR
 WORKDIR $WORKDIR
-RUN pwd
-COPY . .
-RUN ls -la
-RUN yarn install --frozen-lockfile --prefer-offline --cache-folder $YARN_CACHE_FOLDER
+ENTRYPOINT ["/home/ghost/.docker/development.entrypoint.sh"]
 CMD ["yarn", "dev"]
-
-# # Development Stage: alternative entrypoint for development with some caching optimizations
-# FROM base-devcontainer AS development-optimized
-
-# WORKDIR $WORKDIR
-
-# COPY ../../ .
-
-# RUN yarn install --frozen-lockfile --prefer-offline --cache-folder $YARN_CACHE_FOLDER && \
-#     cp -r .yarncache .yarncachecopy && \
-#     rm -Rf .yarncachecopy/.tmp && \
-#     yarn cache clean
-
-# ENTRYPOINT ["./.devcontainer/.docker/development.entrypoint.sh"]
-# CMD ["yarn", "dev"]
