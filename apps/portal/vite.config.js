@@ -5,10 +5,9 @@ import {defineConfig} from 'vitest/config';
 import cssInjectedByJsPlugin from 'vite-plugin-css-injected-by-js';
 import reactPlugin from '@vitejs/plugin-react';
 import svgrPlugin from 'vite-plugin-svgr';
+import {ghostI18nPlugin} from '@tryghost/i18n/plugin.js';
 
 import pkg from './package.json';
-
-import {SUPPORTED_LOCALES} from '@tryghost/i18n';
 
 export default defineConfig((config) => {
     const outputFileName = pkg.name[0] === '@' ? pkg.name.slice(pkg.name.indexOf('/') + 1) : pkg.name;
@@ -30,7 +29,8 @@ export default defineConfig((config) => {
         plugins: [
             cssInjectedByJsPlugin(),
             reactPlugin(),
-            svgrPlugin()
+            svgrPlugin(),
+            ghostI18nPlugin('portal'),
         ],
         esbuild: {
             loader: 'jsx',
@@ -69,11 +69,6 @@ export default defineConfig((config) => {
                 output: {
                     manualChunks: false
                 }
-            },
-            commonjsOptions: {
-                include: [/ghost/, /node_modules/],
-                dynamicRequireRoot: '../../',
-                dynamicRequireTargets: SUPPORTED_LOCALES.map(locale => `../../ghost/i18n/locales/${locale}/portal.json`)
             }
         },
         test: {

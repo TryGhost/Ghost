@@ -1,7 +1,8 @@
+// @ts-check
 /* eslint-disable no-console */
 import {getCheckoutSessionDataFromPlanAttribute, getUrlHistory} from './utils/helpers';
 import {HumanReadableError, chooseBestErrorMessage} from './utils/errors';
-import i18nLib from '@tryghost/i18n';
+import {getAsyncInstance} from '@tryghost/i18n/browser.mjs';
 
 export function formSubmitHandler({event, form, errorEl, siteUrl, submitHandler},
     t = (str) => {
@@ -94,10 +95,7 @@ export function formSubmitHandler({event, form, errorEl, siteUrl, submitHandler}
     });
 }
 
-export function planClickHandler({event, el, errorEl, siteUrl, site, member, clickHandler}) {
-    const i18nLanguage = site.locale | 'en';
-    const i18n = i18nLib(i18nLanguage, 'portal');
-    const t = i18n.t;
+export function planClickHandler({event, el, errorEl, siteUrl, site, member, clickHandler, t}) {
     el.removeEventListener('click', clickHandler);
     event.preventDefault();
     let plan = el.dataset.membersPlan;
@@ -178,9 +176,7 @@ export function planClickHandler({event, el, errorEl, siteUrl, site, member, cli
 }
 
 export function handleDataAttributes({siteUrl, site, member}) {
-    const i18nLanguage = site.locale | 'en';
-    const i18n = i18nLib(i18nLanguage, 'portal');
-    const t = i18n.t;
+    const {t} = getAsyncInstance('portal');
     if (!siteUrl) {
         return;
     }
@@ -196,7 +192,7 @@ export function handleDataAttributes({siteUrl, site, member}) {
     Array.prototype.forEach.call(document.querySelectorAll('[data-members-plan]'), function (el) {
         let errorEl = el.querySelector('[data-members-error]');
         function clickHandler(event) {
-            planClickHandler({el, event, errorEl, member, site, siteUrl, clickHandler});
+            planClickHandler({el, event, errorEl, member, site, siteUrl, clickHandler, t});
         }
         el.addEventListener('click', clickHandler);
     });
