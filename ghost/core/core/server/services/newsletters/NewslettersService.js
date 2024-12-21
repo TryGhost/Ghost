@@ -53,19 +53,22 @@ class NewslettersService {
                 return `Verify email address`;
             },
             getText(url, type, email) {
+                const expiration_message = 'For your security, the link will expire in 24 hours time.';
+                const Help_text = 'If you did not make this request, you can simply delete this message. This email address will not be used.';
+                const From_address = 'Sent to';
                 return `
                 Hey there,
-
+              
                 Please confirm your email address with this link:
-
+              
                 ${url}
-
-                For your security, the link will expire in 24 hours time.
-
+              
+                ${expiration_message}
+              
                 ---
-
-                Sent to ${email}
-                If you did not make this request, you can simply delete this message. This email address will not be used.
+              
+                ${From_address} ${email}
+                ${Help_text}
                 `;
             },
             getHTML(url, type, email) {
