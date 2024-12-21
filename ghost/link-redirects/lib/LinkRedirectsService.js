@@ -16,24 +16,31 @@ class LinkRedirectsService {
     #linkRedirectRepository;
     /** @type URL */
     #baseURL;
-
+    /** @type object */
+    #config;
     /** @type String */
     #redirectURLPrefix = 'r/';
+    /** @type Function */
+    #submitHandleRedirectJob;
 
     /**
      * @param {object} deps
      * @param {ILinkRedirectRepository} deps.linkRedirectRepository
+     * @param {object} deps.urlConfig
+     * @param {URL} deps.urlConfig.baseURL
      * @param {object} deps.config
-     * @param {URL} deps.config.baseURL
+     * @param {Function} deps.submitHandleRedirectJob
      */
     constructor(deps) {
         this.#linkRedirectRepository = deps.linkRedirectRepository;
-        if (!deps.config.baseURL.pathname.endsWith('/')) {
-            this.#baseURL = new URL(deps.config.baseURL);
+        if (!deps.urlConfig.baseURL.pathname.endsWith('/')) {
+            this.#baseURL = new URL(deps.urlConfig.baseURL);
             this.#baseURL.pathname += '/';
         } else {
-            this.#baseURL = deps.config.baseURL;
+            this.#baseURL = deps.urlConfig.baseURL;
         }
+        this.#config = deps.config;
+        this.#submitHandleRedirectJob = deps.submitHandleRedirectJob;
         this.handleRequest = this.handleRequest.bind(this);
     }
 
@@ -105,12 +112,19 @@ class LinkRedirectsService {
                 return next();
             }
 
-            const event = RedirectEvent.create({
-                url,
-                link
-            });
+            if (this.#config?.get('services:jobs:queue:enabled') && this.#config?.get('backgroundJobs:clickTracking')) {
+                const uuid = url.searchParams.get('m');
+                if (uuid) {
+                    await this.#submitHandleRedirectJob({uuid, linkId: link.link_id, timestamp: Date.now()});
+                }
+            } else {
+                const event = RedirectEvent.create({
+                    url,
+                    link
+                });
 
-            DomainEvents.dispatch(event);
+                DomainEvents.dispatch(event);
+            }
 
             res.setHeader('X-Robots-Tag', 'noindex, nofollow');
             return res.redirect(link.to.href);
