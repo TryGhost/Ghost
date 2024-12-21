@@ -34,6 +34,7 @@ jobs:
     permissions:
       pull-requests: read
     steps:
+
       - name: Checkout current commit
         uses: actions/checkout@v4
         with:
@@ -44,6 +45,7 @@ jobs:
         run: echo "$GITHUB_CONTEXT"
         env:
           GITHUB_CONTEXT: ${{ toJson(github) }}
+
 
       - name: Get metadata (push)
         if: github.event_name == 'push'
@@ -121,6 +123,10 @@ jobs:
               - 'apps/sodo-search/**'
             any-code:
               - '!**/*.md'
+            tinybird:
+              - *shared
+              - 'ghost/tinybird/**/*.datasource'
+              - 'ghost/tinybird/**/*.pipe'
 
       - name: 'Checkout current commit'
         uses: actions/checkout@v4
@@ -192,6 +198,7 @@ jobs:
       changed_portal: ${{ steps.changed.outputs.portal }}
       changed_signup_form: ${{ steps.changed.outputs.signup-form }}
       changed_sodo_search: ${{ steps.changed.outputs.sodo-search }}
+      changed_tinybird: ${{ steps.changed.outputs.tinybird }}
       changed_any_code: ${{ steps.changed.outputs.any-code }}
       changed_new_package: ${{ steps.added.outputs.new-package }}
       base_commit: ${{ env.BASE_COMMIT }}
@@ -940,6 +947,185 @@ jobs:
         with:
           flags: e2e-tests
           move_coverage_to_trash: true
+
+  job_tinybird:
+    name: Tinybird Tests
+    runs-on: ubuntu-latest
+    needs: [
+      job_setup
+    ]
+    defaults:
+      run:
+        working-directory: ghost/tinybird
+    if: needs.job_setup.outputs.changed_tinybird == 'true'
+
+    steps:
+      - name: Get User Permission
+        id: checkAccess
+        uses: actions-cool/check-user-permission@v2
+        with:
+          require: write
+          username: ${{ github.triggering_actor }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Check User Permission
+        if: steps.checkAccess.outputs.require-result == 'false'
+        run: |
+          echo "${{ github.triggering_actor }} does not have permissions on this repo."
+          echo "Current permission level is ${{ steps.checkAccess.outputs.user-permission }}"
+          echo "Job originally triggered by ${{ github.actor }}"
+          exit 1
+
+      - name: Checkout current commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{  github.event.pull_request.head.sha }}
+          fetch-depth: 2
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          architecture: "x64"
+          cache: 'pip'
+
+      - name: Check Secret
+        run: |
+          if [[ -z "${{ secrets.TEST_SECRET }}" ]]; then
+            echo "No access to secrets"
+            exit 1
+          else
+            echo "Access to secrets"
+          fi
+
+      - name: Set environment variables
+        run: |
+          _ENV_FLAGS="${ENV_FLAGS:=--last-partition --wait}"
+          _NORMALIZED_BRANCH_NAME=$(echo $DATA_PROJECT_DIR | rev | cut -d "/" -f 1 | rev | tr '.-' '_')
+          GIT_BRANCH=${GITHUB_HEAD_REF}
+          echo "GIT_BRANCH=$GIT_BRANCH" >> $GITHUB_ENV
+          echo "_ENV_FLAGS=$_ENV_FLAGS" >> $GITHUB_ENV
+          echo "_NORMALIZED_BRANCH_NAME=$_NORMALIZED_BRANCH_NAME" >> $GITHUB_ENV
+
+      - name: Install Tinybird CLI
+        run: |
+          if [ -f "requirements.txt" ]; then
+            pip install -r requirements.txt
+          else
+            pip install tinybird-cli
+          fi
+
+      - name: Tinybird version
+        run: tb --version
+
+      - name: Check all the datafiles syntax
+        run: tb check
+
+      - name: Check auth
+        run: tb --host ${{ secrets.TB_HOST }} --token ${{ secrets.TB_ADMIN_TOKEN }} auth info
+
+      - name: Try to delete previous Branch
+        run: |
+          output=$(tb --host ${{ secrets.TB_HOST }} --token ${{ secrets.TB_ADMIN_TOKEN }} branch ls)
+          BRANCH_NAME="tmp_ci_${_NORMALIZED_BRANCH_NAME}_${{ github.event.pull_request.number }}"
+
+          # Check if the branch name exists in the output
+          if echo "$output" | grep -q "\b$BRANCH_NAME\b"; then
+            tb \
+            --host ${{ secrets.TB_HOST }} \
+            --token ${{ secrets.TB_ADMIN_TOKEN }} \
+            branch rm $BRANCH_NAME \
+            --yes
+          else
+            echo "Skipping clean up: The Branch '$BRANCH_NAME' does not exist."
+          fi
+
+      - name: Create new test Branch with data
+        run: |
+          tb \
+          --host ${{ secrets.TB_HOST }} \
+          --token ${{ secrets.TB_ADMIN_TOKEN }} \
+          branch create tmp_ci_${_NORMALIZED_BRANCH_NAME}_${{ github.event.pull_request.number }} \
+          ${_ENV_FLAGS}
+
+      - name: Deploy changes to the test Branch
+        run: |
+          DEPLOY_FILE=./deploy/${VERSION}/deploy.sh
+          if [ ! -f "$DEPLOY_FILE" ]; then
+              echo "$DEPLOY_FILE not found, running default tb deploy command"
+              tb deploy
+          fi
+
+      - name: Custom deployment to the test Branch
+        run: |
+          DEPLOY_FILE=./deploy/${VERSION}/deploy.sh
+          if [ -f "$DEPLOY_FILE" ]; then
+              echo "$DEPLOY_FILE found"
+              if ! [ -x "$DEPLOY_FILE" ]; then
+                echo "Error: You do not have permission to execute '$DEPLOY_FILE'. Run:"
+                echo "> chmod +x $DEPLOY_FILE"
+                echo "and commit your changes"
+                exit 1
+              else
+                $DEPLOY_FILE
+              fi
+          fi
+      - name: Get regression labels
+        id: regression_labels
+        uses: SamirMarin/get-labels-action@v0
+        with:
+            github_token: ${{ secrets.GITHUB_TOKEN }}
+            label_key: regression
+
+      - name: Run Pipe regression tests
+        run: |
+          source .tinyenv
+          echo ${{ steps.regression_labels.outputs.labels }}
+          REGRESSION_LABELS=$(echo "${{ steps.regression_labels.outputs.labels }}" | awk -F, '{for (i=1; i<=NF; i++) if ($i ~ /^--/) print $i}' ORS=',' | sed 's/,$//')
+          echo ${REGRESSION_LABELS}
+
+          CONFIG_FILE=./tests/regression.yaml
+          BASE_CMD="tb branch regression-tests"
+          LABELS_CMD="$(echo ${REGRESSION_LABELS} | tr , ' ')"
+          if [ -f ${CONFIG_FILE} ]; then
+              echo "Config file found: ${CONFIG_FILE}"
+              ${BASE_CMD} -f ${CONFIG_FILE} --wait ${LABELS_CMD}
+          else
+              echo "Config file not found at '${CONFIG_FILE}', running with default values"
+              ${BASE_CMD} coverage --wait ${LABELS_CMD}
+          fi
+
+      - name: Append fixtures
+        run: |
+          if [ -f ./scripts/append_fixtures.sh ]; then
+          echo "append_fixtures script found"
+          ./scripts/append_fixtures.sh
+          fi
+
+      - name: Run fixture tests
+        run: |
+          if [ -f ./scripts/exec_test.sh ]; then
+          ./scripts/exec_test.sh
+          fi
+
+      # - name: Run data quality tests
+      #   run: |
+      #     tb test run -v -c 4
+
+      - name: Try to delete previous Branch
+        run: |
+          output=$(tb --host ${{ secrets.TB_HOST }} --token ${{ secrets.TB_ADMIN_TOKEN }} branch ls)
+          BRANCH_NAME="tmp_ci_${_NORMALIZED_BRANCH_NAME}_${{ github.event.pull_request.number }}"
+
+          # Check if the branch name exists in the output
+          if echo "$output" | grep -q "\b$BRANCH_NAME\b"; then
+            tb \
+                --host ${{ secrets.TB_HOST }} \
+                --token ${{ secrets.TB_ADMIN_TOKEN }} \
+                branch rm $BRANCH_NAME \
+                --yes
+          else
+            echo "Skipping clean up: The Branch '$BRANCH_NAME' does not exist."
+          fi
 
   job_required_tests:
     name: All required tests passed or skipped
