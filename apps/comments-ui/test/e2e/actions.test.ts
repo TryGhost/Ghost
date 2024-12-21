@@ -1,3 +1,4 @@
+import sinon from 'sinon';
 import {MockedApi, initialize, waitEditorFocused} from '../utils/e2e';
 import {buildMember, buildReply} from '../utils/fixtures';
 import {expect, test} from '@playwright/test';
@@ -94,6 +95,181 @@ test.describe('Actions', async () => {
         await expect(likeButton).toHaveText('1');
         await likeButton.click();
         await expect(likeButton).toHaveText('0');
+    });
+
+    test('Like button is disabled while api is loading, UI updates instantly', async ({page}) => {
+        mockedApi.addComment({
+            html: '<p>This is comment 1</p>'
+        });
+        mockedApi.addComment({
+            html: '<p>This is comment 2</p>'
+        });
+
+        mockedApi.addComment({
+            html: '<p>This is comment 3</p>'
+        });
+
+        const memberLikeSpy = sinon.spy(mockedApi.requestHandlers, 'likeComment');
+        const {frame} = await initializeTest(page);
+
+        // Check like button is not filled yet
+        const comment = frame.getByTestId('comment-component').nth(0);
+        const likeButton = comment.getByTestId('like-button');
+        await expect(likeButton).toHaveCount(1);
+
+        const icon = likeButton.locator('svg');
+        await expect(icon).not.toHaveClass(/fill/);
+        await expect(likeButton).toHaveText('0');
+
+        await likeButton.click();
+        mockedApi.setDelay(100); // give time for disabled state
+        await expect(likeButton).toHaveText('1');
+        expect(likeButton.isDisabled()).toBeTruthy();
+        expect(memberLikeSpy.called).toBe(true);
+    });
+
+    test('Like state reverts when like api request is unsuccessful', async ({page}) => {
+        mockedApi.addComment({
+            html: '<p>This is comment 1</p>'
+        });
+        mockedApi.addComment({
+            html: '<p>This is comment 2</p>'
+        });
+        mockedApi.addComment({
+            html: '<p>This is comment 3</p>'
+        });
+
+        const {frame} = await initializeTest(page);
+
+        // Check like button is not filled yet
+        const comment = frame.getByTestId('comment-component').nth(0);
+        const likeButton = comment.getByTestId('like-button');
+        await expect(likeButton).toHaveText('0');
+
+        mockedApi.setFailure('likeComment', {
+            status: 500,
+            body: {error: 'Internal Server Error'}
+        });
+        await likeButton.click();
+        mockedApi.setDelay(100); // give time for disabled state
+        await expect(likeButton).toHaveText('0');
+    });
+
+    test('like button UI updates instantly when unliking a comment', async ({page}) => {
+        mockedApi.addComment({
+            html: '<p>This is comment 1</p>',
+            liked: true,
+            count: {
+                likes: 52
+            }
+        });
+
+        const memberLikeSpy = sinon.spy(mockedApi.requestHandlers, 'likeComment');
+        const {frame} = await initializeTest(page);
+
+        // Check like button is filled
+        const comment = frame.getByTestId('comment-component').nth(0);
+        const likeButton = comment.getByTestId('like-button');
+        await expect(likeButton).toHaveText('52');
+        const icon = likeButton.locator('svg');
+        await expect(icon).toHaveClass(/fill/);
+
+        await likeButton.click();
+        mockedApi.setDelay(100); // give time for disabled state
+        await expect(likeButton).toHaveText('51');
+        expect(likeButton.isDisabled()).toBeTruthy();
+        expect(memberLikeSpy.called).toBe(true);
+    });
+
+    test('like button UI updates instantly when unliking a comment and can like again after button is enabled', async ({page}) => {
+        mockedApi.addComment({
+            html: '<p>This is comment 1</p>',
+            liked: true,
+            count: {
+                likes: 52
+            }
+        });
+
+        const memberLikeSpy = sinon.spy(mockedApi.requestHandlers, 'likeComment');
+        const {frame} = await initializeTest(page);
+
+        // Check like button is filled
+        const comment = frame.getByTestId('comment-component').nth(0);
+        const likeButton = comment.getByTestId('like-button');
+        await expect(likeButton).toHaveText('52');
+        const icon = likeButton.locator('svg');
+        await expect(icon).toHaveClass(/fill/);
+
+        await likeButton.click();
+        mockedApi.setDelay(100); // give time for disabled state
+        await expect(likeButton).toHaveText('51');
+        expect(likeButton.isDisabled()).toBeTruthy();
+        expect(memberLikeSpy.called).toBe(true);
+
+        expect(await likeButton.isDisabled()).toBeFalsy();
+
+        await likeButton.click();
+        await expect(likeButton).toHaveText('52');
+    });
+
+    test('Like state reverts when unlike api request is unsuccessful', async ({page}) => {
+        mockedApi.addComment({
+            html: '<p>This is comment 1</p>',
+            liked: true,
+            count: {
+                likes: 52
+            }
+        });
+
+        const {frame} = await initializeTest(page);
+
+        // Check like button is filled
+        const comment = frame.getByTestId('comment-component').nth(0);
+        const likeButton = comment.getByTestId('like-button');
+        await expect(likeButton).toHaveText('52');
+        const icon = likeButton.locator('svg');
+        await expect(icon).toHaveClass(/fill/);
+
+        mockedApi.setFailure('likeComment', {
+            status: 500,
+            body: {error: 'Internal Server Error'}
+        });
+        await likeButton.click();
+        mockedApi.setDelay(100); // give time for disabled state
+        await expect(likeButton).toHaveText('52');
+    });
+
+    test('Can revert state of a reply if its unsuccessful', async ({page}) => {
+        mockedApi.addComment({
+            html: '<p>This is comment 1</p>',
+            replies: [
+                mockedApi.buildReply({
+                    html: '<p>This is a reply to 1</p>',
+                    liked: true,
+                    count: {
+                        likes: 3
+                    }
+                })
+            ]
+        });
+
+        const {frame} = await initializeTest(page);
+
+        // Check like button is not filled yet
+        const comment = frame.getByTestId('comment-component').nth(0);
+        const reply = comment.getByTestId('comment-component').nth(0);
+        // check if reply contains text This is a reply to 1
+        await expect(reply).toContainText('This is a reply to 1');
+
+        const likeButton = reply.getByTestId('like-button');
+
+        mockedApi.setFailure('likeComment', {
+            status: 500,
+            body: {error: 'Internal Server Error'}
+        });
+        await likeButton.click();
+        mockedApi.setDelay(100); // give time for disabled state
+        await expect(likeButton).toHaveText('3');
     });
 
     test('Can reply to a comment', async ({page}) => {
