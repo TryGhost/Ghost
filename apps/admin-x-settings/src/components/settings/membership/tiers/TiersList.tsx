@@ -3,8 +3,7 @@ import clsx from 'clsx';
 import {Icon, NoValueLabel} from '@tryghost/admin-x-design-system';
 import {Tier} from '@tryghost/admin-x-framework/api/tiers';
 import {TrialDaysLabel} from './TierDetailPreview';
-import {currencyToDecimal, getSymbol} from '../../../../utils/currency';
-import {numberWithCommas} from '../../../../utils/helpers';
+import {currencyToDecimal, formatMonetaryAmount, getSymbol} from '../../../../utils/currency';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 interface TiersListProps {
@@ -33,7 +32,7 @@ const TierCard: React.FC<TierCardProps> = ({tier}) => {
                 <div className='text-[1.65rem] font-bold leading-tight tracking-tight text-black dark:text-white'>{tier.name}</div>
                 <div className='mt-2 flex items-baseline'>
                     <span className="ml-1 translate-y-[-3px] text-md font-bold uppercase">{currencySymbol}</span>
-                    <span className='text-xl font-bold tracking-tighter'>{numberWithCommas(currencyToDecimal(tier.monthly_price || 0))}</span>
+                    <span className='text-xl font-bold tracking-tighter'>{formatMonetaryAmount(currencyToDecimal(tier.monthly_price || 0))}</span>
                     {(tier.monthly_price && tier.monthly_price > 0) && <span className='text-sm text-grey-700'>/month</span>}
                 </div>
                 {tier.trial_days ?
