@@ -28,8 +28,8 @@
     left: 0;
     z-index: 50;
     height: 100vh;
-    background: #15171A;
-    opacity: 0.6;
+    background: #626d7933;
+    backdrop-filter: blur(3px);
 }
 
 .fullscreen-modal {
@@ -147,7 +147,7 @@
     padding: 32px;
     background-color: #fff;
     background-clip: padding-box;
-    border-radius: 3px;
+    border-radius: 12px;
     box-shadow:
         0 2.8px 2.2px rgba(0, 0, 0, 0.02),
         0 6.7px 5.3px rgba(0, 0, 0, 0.028),
