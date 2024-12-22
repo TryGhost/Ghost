@@ -21,6 +21,10 @@ export function getAsyncInstance (ns = 'portal') {
     throw new Error(`No cached i18n instance available for ${ns}`);
 }
 
+// TODO: Remove this when all apps are using async locales
+// Added at build time
+const INLINE_TRANSLATIONS = global.GHOST_INLINE_TRANSLATIONS;
+
 /**
  * @param {GhostNamespace} ns
  * @param {string} lng
@@ -39,6 +43,12 @@ export function createAsyncInstance(ns, lng, root) {
             // CASE: locale is the default. The text is already translated, so avoid loading a translation file.
             if (locale === 'en') {
                 callback(null, {});
+                return;
+            }
+
+            const local = INLINE_TRANSLATIONS[locale];
+            if (local) {
+                callback(null, local);
                 return;
             }
 

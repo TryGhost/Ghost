@@ -30,7 +30,7 @@ export default defineConfig((config) => {
             cssInjectedByJsPlugin(),
             reactPlugin(),
             svgrPlugin(),
-            ghostI18nPlugin('portal'),
+            ghostI18nPlugin('portal', 'opt-in'),
         ],
         esbuild: {
             loader: 'jsx',
