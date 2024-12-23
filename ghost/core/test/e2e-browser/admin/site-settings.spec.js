@@ -6,18 +6,19 @@ const changeSubscriptionAccess = async (page, access) => {
     await page.locator('[data-test-nav="settings"]').click();
 
     const section = page.getByTestId('access');
-    
     const select = section.getByTestId('subscription-access-select');
+
     await select.click();
     await page.locator(`[data-testid="select-option"][data-value="${access}"]`).click();
 
     // Save settings
     await section.getByRole('button', {name: 'Save'}).click();
-    
+
     await expect(select).toContainText(
         access === 'all' ? 'Anyone can sign up' :
-            access === 'invite' ? 'Only people I invite' :
-                'Nobody'
+            access === 'invite' ? 'Invite-only' :
+                access === 'paid' ? 'Paid-members only' :
+                    'Nobody'
     );
 };
 
@@ -50,7 +51,7 @@ test.describe('Site Settings', () => {
             const portalFrame = sharedPage.frameLocator('#ghost-portal-root div iframe');
 
             // Check sign up is disabled and a message is shown
-            await expect(portalFrame.locator('.gh-portal-invite-only-notification')).toHaveText('This site is invite-only, contact the owner for access.');
+            await expect(portalFrame.locator('.gh-portal-section')).toHaveText(/contact the owner for access/);
 
             // Check free trial message is not shown for invite only
             await expect(portalFrame.locator('.gh-portal-free-trial-notification')).not.toBeVisible();
