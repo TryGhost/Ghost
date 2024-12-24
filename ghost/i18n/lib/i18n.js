@@ -1,3 +1,4 @@
+// @ts-check
 const i18next = require('i18next');
 
 const SUPPORTED_LOCALES = [
@@ -85,7 +86,7 @@ function generateResources(locales, ns) {
 
 /**
  * @param {string} [lng]
- * @param {'ghost'|'portal'|'test'|'signup-form'|'comments'|'search'|'newsletter'} ns
+ * @param {import('../browser.mjs').GhostNamespace} ns
  */
 module.exports = (lng = 'en', ns = 'portal') => {
     const i18nextInstance = i18next.createInstance();

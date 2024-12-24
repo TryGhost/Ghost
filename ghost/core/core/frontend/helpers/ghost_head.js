@@ -69,7 +69,7 @@ function getMembersHelper(data, frontendKey, excludeList) {
             attributes['accent-color'] = colorString;
         }
         const dataAttributes = getDataAttributes(attributes);
-        membersHelper += `<script defer src="${scriptUrl}" ${dataAttributes} crossorigin="anonymous"></script>`;
+        membersHelper += `<script type="module" defer src="${scriptUrl}" ${dataAttributes} crossorigin="anonymous"></script>`;
     }
     if (!excludeList.has('cta_styles')) {
         membersHelper += (`<style id="gh-members-styles">${templateStyles}</style>`);
