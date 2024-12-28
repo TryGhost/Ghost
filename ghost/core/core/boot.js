@@ -257,36 +257,13 @@ async function initExpressApps({frontend, backend, config}) {
  * Initialize prometheus client
  */
 function initPrometheusClient({config}) {
-    if (config.get('metrics_server:enabled')) {
+    if (config.get('prometheus:enabled')) {
         debug('Begin: initPrometheusClient');
         const prometheusClient = require('./shared/prometheus-client');
         debug('End: initPrometheusClient');
         return prometheusClient;
     }
     return null;
-}
-
-/**
- * Starts the standalone metrics server and registers a cleanup task to stop it when the ghost server shuts down
- * @param {object} ghostServer 
- */
-async function initMetricsServer({prometheusClient, ghostServer, config}) {
-    debug('Begin: initMetricsServer');
-    if (ghostServer && config.get('metrics_server:enabled')) {
-        const {MetricsServer} = require('@tryghost/metrics-server');
-        const serverConfig = {
-            host: config.get('metrics_server:host') || '127.0.0.1',
-            port: config.get('metrics_server:port') || 9416
-        };
-        const handler = prometheusClient.handleMetricsRequest.bind(prometheusClient);
-        const metricsServer = new MetricsServer({serverConfig, handler});
-        await metricsServer.start();
-        // Ensure the metrics server is cleaned up when the ghost server is shut down
-        ghostServer.registerCleanupTask(async () => {
-            await metricsServer.shutdown();
-        });
-    }
-    debug('End: initMetricsServer');
 }
 
 /**
@@ -333,6 +310,7 @@ async function initServices() {
     debug('Begin: initServices');
 
     debug('Begin: Services');
+    const identityTokens = require('./server/services/identity-tokens');
     const stripe = require('./server/services/stripe');
     const members = require('./server/services/members');
     const tiers = require('./server/services/tiers');
@@ -380,6 +358,7 @@ async function initServices() {
     await emailAddressService.init(),
 
     await Promise.all([
+        identityTokens.init(),
         memberAttribution.init(),
         mentionsService.init(),
         mentionsEmailReport.init(),
@@ -472,6 +451,8 @@ async function initBackgroundServices({config}) {
         return;
     }
 
+    const activitypub = require('./server/services/activitypub');
+    await activitypub.init();
     // Load email analytics recurring jobs
     if (config.get('backgroundJobs:emailAnalytics')) {
         const emailAnalyticsJobs = require('./server/services/email-analytics/jobs');
@@ -564,6 +545,13 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
             ghostServer = new GhostServer({url: config.getSiteUrl(), env: config.get('env'), serverConfig: config.get('server')});
             await ghostServer.start(rootApp);
             bootLogger.log('server started');
+
+            // Ensure the prometheus client is stopped when the server shuts down
+            ghostServer.registerCleanupTask(async () => {
+                if (prometheusClient) {
+                    prometheusClient.stop();
+                }
+            });
             debug('End: load server + minimal app');
         }
 
@@ -580,6 +568,13 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
         // Step 4 - Load Ghost with all its services
         debug('Begin: Load Ghost Services & Apps');
         await initCore({ghostServer, config, bootLogger, frontend});
+
+        // Instrument the knex instance and connection pool if prometheus is enabled
+        // Needs to be after initCore because the pool is destroyed and recreated in initCore, which removes the event listeners
+        if (prometheusClient) {
+            prometheusClient.instrumentKnex(connection);
+        }
+
         const {dataService} = await initServicesForFrontend({bootLogger});
 
         if (frontend) {
@@ -590,13 +585,6 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
         if (frontend) {
             await initDynamicRouting();
             await initAppService();
-        }
-
-        // TODO: move this to the correct place once we figure out where that is
-        if (ghostServer) {
-            const lexicalMultiplayer = require('./server/services/lexical-multiplayer');
-            await lexicalMultiplayer.init(ghostServer);
-            await lexicalMultiplayer.enable();
         }
 
         await initServices({config});
@@ -622,9 +610,6 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
 
         // Step 7 - Init our background services, we don't wait for this to finish
         initBackgroundServices({config});
-
-        // Step 8 - Init our metrics server, we don't wait for this to finish
-        initMetricsServer({prometheusClient, ghostServer, config});
 
         // If we pass the env var, kill Ghost
         if (process.env.GHOST_CI_SHUTDOWN_AFTER_BOOT) {

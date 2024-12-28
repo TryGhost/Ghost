@@ -1,6 +1,6 @@
 import React, {useEffect, useRef, useState} from 'react';
 
-import {Activity, ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
+import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, Icon, LoadingIndicator, NoValueLabel, TextField} from '@tryghost/admin-x-design-system';
 import {useDebounce} from 'use-debounce';
 
@@ -10,7 +10,9 @@ import FollowButton from './global/FollowButton';
 import MainNavigation from './navigation/MainNavigation';
 
 import NiceModal from '@ebay/nice-modal-react';
-import ViewProfileModal from './global/ViewProfileModal';
+import ViewProfileModal from './modals/ViewProfileModal';
+
+import Separator from './global/Separator';
 
 import {useSearchForUser, useSuggestedProfiles} from '../hooks/useActivityPubQueries';
 
@@ -20,15 +22,12 @@ interface SearchResultItem {
     followerCount: number;
     followingCount: number;
     isFollowing: boolean;
-    posts: Activity[];
 }
 
 interface SearchResultProps {
     result: SearchResultItem;
     update: (id: string, updated: Partial<SearchResultItem>) => void;
 }
-
-interface SearchProps {}
 
 const SearchResult: React.FC<SearchResultProps> = ({result, update}) => {
     const onFollow = () => {
@@ -71,31 +70,73 @@ const SearchResult: React.FC<SearchResultProps> = ({result, update}) => {
     );
 };
 
+const SearchResults: React.FC<{
+    results: SearchResultItem[];
+    onUpdate: (id: string, updated: Partial<SearchResultItem>) => void;
+}> = ({results, onUpdate}) => {
+    return (
+        <>
+            {results.map(result => (
+                <SearchResult
+                    key={result.actor.id}
+                    result={result}
+                    update={onUpdate}
+                />
+            ))}
+        </>
+    );
+};
+
+const SuggestedAccounts: React.FC<{
+    profiles: SearchResultItem[];
+    isLoading: boolean;
+    onUpdate: (id: string, updated: Partial<SearchResultItem>) => void;
+}> = ({profiles, isLoading, onUpdate}) => {
+    return (
+        <>
+            <span className='mb-1 flex w-full max-w-[560px] font-semibold'>
+                Suggested accounts
+            </span>
+            {isLoading && (
+                <div className='p-4'>
+                    <LoadingIndicator size='md'/>
+                </div>
+            )}
+            {profiles.map((profile, index) => {
+                return (
+                    <React.Fragment key={profile.actor.id}>
+                        <SearchResult
+                            key={profile.actor.id}
+                            result={profile}
+                            update={onUpdate}
+                        />
+                        {index < profiles.length - 1 && <Separator />}
+                    </React.Fragment>
+                );
+            })}
+        </>
+    );
+};
+
+interface SearchProps {}
+
 const Search: React.FC<SearchProps> = ({}) => {
     // Initialise suggested profiles
-    const {suggestedProfilesQuery, updateSuggestedProfile} = useSuggestedProfiles('index', ['@index@activitypub.ghost.org', '@index@john.onolan.org', '@index@coffeecomplex.ghost.io', '@index@codename-jimmy.ghost.io', '@index@syphoncontinuity.ghost.io']);
-    const {data: suggested = [], isLoading: isLoadingSuggested} = suggestedProfilesQuery;
+    const {suggestedProfilesQuery, updateSuggestedProfile} = useSuggestedProfiles('index', 6);
+    const {data: suggestedData, isLoading: isLoadingSuggested} = suggestedProfilesQuery;
+    const suggested = suggestedData || [];
 
     // Initialise search query
     const queryInputRef = useRef<HTMLInputElement>(null);
     const [query, setQuery] = useState('');
     const [debouncedQuery] = useDebounce(query, 300);
-    const [isQuerying, setIsQuerying] = useState(false);
     const {searchQuery, updateProfileSearchResult: updateResult} = useSearchForUser('index', query !== '' ? debouncedQuery : query);
     const {data, isFetching, isFetched} = searchQuery;
 
     const results = data?.profiles || [];
-    const showLoading = (isFetching || isQuerying) && !isFetched;
-    const showNoResults = isFetched && results.length === 0 && (query.length > 0);
+    const showLoading = isFetching && query.length > 0;
+    const showNoResults = !isFetching && isFetched && results.length === 0 && query.length > 0 && debouncedQuery === query;
     const showSuggested = query === '' || (isFetched && results.length === 0);
-
-    useEffect(() => {
-        if (query !== '') {
-            setIsQuerying(true);
-        } else {
-            setIsQuerying(false);
-        }
-    }, [query]);
 
     // Focus the query input on initial render
     useEffect(() => {
@@ -107,10 +148,11 @@ const Search: React.FC<SearchProps> = ({}) => {
     return (
         <>
             <MainNavigation page='search' />
-            <div className='z-0 flex w-full flex-col items-center pt-8'>
-                <div className='relative flex w-full max-w-[560px] items-center '>
+            <div className='z-0 mx-auto flex w-full max-w-[560px] flex-col items-center pt-8'>
+                <div className='relative flex w-full items-center'>
                     <Icon className='absolute left-3 top-3 z-10' colorClass='text-grey-500' name='magnifying-glass' size='sm' />
                     <TextField
+                        autoComplete='off'
                         className='mb-6 mr-12 flex h-10 w-full items-center rounded-lg border border-transparent bg-grey-100 px-[33px] py-1.5 transition-colors focus:border-green focus:bg-white focus:outline-2 dark:border-transparent dark:bg-grey-925 dark:text-white dark:placeholder:text-grey-800 dark:focus:border-green dark:focus:bg-grey-950 tablet:mr-0'
                         containerClassName='w-100'
                         inputRef={queryInputRef}
@@ -132,41 +174,32 @@ const Search: React.FC<SearchProps> = ({}) => {
                             unstyled
                             onClick={() => {
                                 setQuery('');
-
                                 queryInputRef.current?.focus();
                             }}
                         />
                     )}
                 </div>
-                {showLoading && (
-                    <LoadingIndicator size='lg'/>
-                )}
+                {showLoading && <LoadingIndicator size='lg'/>}
+
                 {showNoResults && (
                     <NoValueLabel icon='user'>
                         No users matching this username
                     </NoValueLabel>
                 )}
-                {results.map(result => (
-                    <SearchResult
-                        key={(result as SearchResultItem).actor.id}
-                        result={result as SearchResultItem}
-                        update={updateResult}
+
+                {!showLoading && !showNoResults && (
+                    <SearchResults
+                        results={results as SearchResultItem[]}
+                        onUpdate={updateResult}
                     />
-                ))}
+                )}
+
                 {showSuggested && (
-                    <>
-                        <span className='mb-1 flex w-full max-w-[560px] font-semibold'>Suggested accounts</span>
-                        {isLoadingSuggested && (
-                            <LoadingIndicator size='sm'/>
-                        )}
-                        {suggested.map(profile => (
-                            <SearchResult
-                                key={(profile as SearchResultItem).actor.id}
-                                result={profile as SearchResultItem}
-                                update={updateSuggestedProfile}
-                            />
-                        ))}
-                    </>
+                    <SuggestedAccounts
+                        isLoading={isLoadingSuggested}
+                        profiles={suggested as SearchResultItem[]}
+                        onUpdate={updateSuggestedProfile}
+                    />
                 )}
             </div>
         </>

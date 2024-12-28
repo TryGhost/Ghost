@@ -270,6 +270,19 @@ export async function chooseOptionInSelect(select: Locator, optionText: string |
     await select.page().locator('[data-testid="select-option"]', {hasText: optionText}).click();
 }
 
+export async function getOptionsFromSelect(select: Locator): Promise<string[]> {
+    // Open the select dropdown
+    await select.click();
+
+    const options = await select.page().locator('[data-testid="select-option"]');
+    const optionTexts = await options.allTextContents();
+
+    // Close the select dropdown
+    await select.press('Escape');
+
+    return optionTexts;
+}
+
 export async function testUrlValidation(input: Locator, textToEnter: string, expectedResult: string, expectedError?: string) {
     await input.fill(textToEnter);
     await input.blur();

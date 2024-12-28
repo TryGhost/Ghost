@@ -623,6 +623,24 @@ describe('Acceptance: Editor', function () {
             expect(find('[data-test-editor-post-status]')).to.contain.text('New');
         });
 
+        it('updates slug when title changes without blur', async function () {
+            let post = this.server.create('post', {authors: [author]});
+
+            await visit(`/editor/post/${post.id}`);
+            await fillIn('[data-test-editor-title-input]', 'Test Title');
+
+            await triggerEvent('[data-test-editor-title-input]', 'keydown', {
+                keyCode: 83, // s
+                metaKey: ctrlOrCmd === 'command',
+                ctrlKey: ctrlOrCmd === 'ctrl'
+            });
+
+            let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
+            let body = JSON.parse(lastRequest.requestBody);
+            expect(body.posts[0].slug).to.equal('test-title');
+            expect(post.slug).to.equal('test-title');
+        });
+
         it('handles TKs in title', async function () {
             let post = this.server.create('post', {authors: [author]});
 

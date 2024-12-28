@@ -238,9 +238,17 @@ export function capitalize(str) {
     return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
-export function isInviteOnlySite({site = {}, pageQuery = ''}) {
+export function isPaidMembersOnly({site}) {
+    return site?.members_signup_access === 'paid';
+}
+
+export function isInviteOnly({site = {}}) {
+    return site?.members_signup_access === 'invite';
+}
+
+export function hasAvailablePrices({site = {}, pageQuery = ''}) {
     const prices = getSitePrices({site, pageQuery});
-    return prices.length === 0 || (site && site.members_signup_access === 'invite');
+    return prices.length > 0;
 }
 
 export function hasRecommendations({site}) {
@@ -248,11 +256,18 @@ export function hasRecommendations({site}) {
 }
 
 export function isSigninAllowed({site}) {
-    return site?.members_signup_access === 'all' || site?.members_signup_access === 'invite';
+    return site?.members_signup_access !== 'none';
 }
 
 export function isSignupAllowed({site}) {
-    return site?.members_signup_access === 'all' && (site?.is_stripe_configured || hasOnlyFreePlan({site}));
+    const hasSignupAccess = site?.members_signup_access === 'all' || site?.members_signup_access === 'paid';
+    const hasSignupConfigured = site?.is_stripe_configured || hasOnlyFreePlan({site});
+
+    return hasSignupAccess && hasSignupConfigured;
+}
+
+export function isFreeSignupAllowed({site}) {
+    return site?.members_signup_access === 'all';
 }
 
 export function hasMultipleProducts({site}) {
@@ -297,31 +312,9 @@ export function transformApiSiteData({site}) {
         });
 
         site.is_stripe_configured = !!site.paid_members_enabled;
-        site.members_signup_access = 'all';
 
-        if (!site.members_enabled) {
-            site.members_signup_access = 'none';
-        }
-
-        if (site.members_invite_only) {
-            site.members_signup_access = 'invite';
-        }
-
-        site.allow_self_signup = false;
-
-        if (site.members_signup_access !== 'all') {
-            site.allow_self_signup = false;
-        }
-
-        // if stripe is not connected then selected plans mean nothing.
-        // disabling signup would be done by switching to "invite only" mode
-        if (site.paid_members_enabled) {
-            site.allow_self_signup = true;
-        }
-
-        // self signup must be available for free plan signup to work
-        if (site.portal_plans?.includes('free')) {
-            site.allow_self_signup = true;
+        if (site.allow_self_signup === undefined) {
+            site.allow_self_signup = site.members_signup_access === 'all';
         }
 
         // Map tier visibility to old settings

@@ -5,13 +5,24 @@ const debug = require('@tryghost/debug')('job-manager:JobQueueManager');
 const logging = require('@tryghost/logging');
 
 class JobQueueManager {
-    constructor({JobModel, config, logger = logging, WorkerPool = workerpool}) {
+    constructor({JobModel, config, logger = logging, WorkerPool = workerpool, prometheusClient, eventEmitter}) {
         this.jobsRepository = new JobsRepository({JobModel});
         this.config = this.initializeConfig(config?.get('services:jobs:queue') || {});
         this.logger = this.createLogger(logger, this.config.logLevel);
         this.WorkerPool = WorkerPool;
         this.pool = this.createWorkerPool();
         this.state = this.initializeState();
+        this.eventEmitter = eventEmitter;
+        
+        this.prometheusClient = prometheusClient;
+        if (prometheusClient) {
+            this.prometheusClient.registerCounter({
+                name: 'job_manager_queue_job_completion_count',
+                help: 'The number of jobs completed by the job manager queue',
+                labelNames: ['jobName']
+            });
+            this.prometheusClient.registerGauge({name: 'job_manager_queue_depth', help: 'The number of jobs in the job manager queue'});
+        }
     }
 
     createLogger(logger, logLevel) {
@@ -97,9 +108,9 @@ class JobQueueManager {
         const stats = await this.getStats();
         if (stats.pendingTasks <= this.config.QUEUE_CAPACITY) {
             const entriesToAdd = Math.min(this.config.FETCH_COUNT, this.config.FETCH_COUNT - stats.pendingTasks);
-            this.logger.info(`Adding up to ${entriesToAdd} queue entries. Current pending tasks: ${stats.pendingTasks}. Current worker count: ${stats.totalWorkers}`);
-            
-            const jobs = await this.jobsRepository.getQueuedJobs(entriesToAdd);
+            const {data: jobs, total} = await this.jobsRepository.getQueuedJobs(entriesToAdd);
+            this.prometheusClient?.getMetric('job_manager_queue_depth')?.set(total || 0);
+            this.logger.info(`Adding up to ${entriesToAdd} queue entries. Current pending tasks: ${stats.pendingTasks}. Current worker count: ${stats.totalWorkers}. Current depth: ${total}.`);
             this.updatePollInterval(jobs);
             await this.processJobs(jobs);
         }
@@ -117,6 +128,16 @@ class JobQueueManager {
         }
     }
 
+    /**
+     * Emits events to the Node event emitter
+     * @param {Array<{name: string, data: any}>} events - The events to emit, e.g. member.edited
+     */
+    emitEvents(events) {
+        events.forEach((e) => {
+            this.eventEmitter.emit(e.name, e.data);
+        });
+    }
+
     async processJobs(jobs) {
         for (const job of jobs) {
             const jobMetadata = JSON.parse(job.get('metadata'));
@@ -131,8 +152,20 @@ class JobQueueManager {
     async executeJob(job, jobName, jobMetadata) {
         this.state.queuedJobs.add(jobName);
         try {
-            await this.pool.exec('executeJob', [jobMetadata.job, jobMetadata.data]);
+            /**
+             * @param {'executeJob'} jobName - This is the generic job execution fn
+             * @param {Array<{name: string, data: any}>} args - The arguments to pass to the job execution fn
+             * @returns {Promise<{success?: boolean, eventData?: {events: Array<{name: string, data: any}>}}>}
+             */
+            const result = await this.pool.exec('executeJob', [jobMetadata.job, jobMetadata.data]);
             await this.jobsRepository.delete(job.id);
+            this.prometheusClient?.getMetric('job_manager_queue_job_completion_count')?.inc({jobName});
+            if (jobName === 'update-member-email-analytics') {
+                this.prometheusClient?.getMetric('email_analytics_aggregate_member_stats_count')?.inc();
+            }
+            if (result && result.eventData) {
+                this.emitEvents(result.eventData.events); // this is nested within eventData because we may want to support DomainEvents emission as well
+            }
         } catch (error) {
             await this.handleJobError(job, jobMetadata, error);
         } finally {

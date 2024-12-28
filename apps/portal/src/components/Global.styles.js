@@ -26,7 +26,7 @@ export const GlobalStyles = `
         --red: #f02525;
         --darkerRed: #C50202;
         --yellow: #FFDC15;
-        --green: #7FC724;
+        --green: #30CF43;
     }
 
     /* Globals

@@ -1,6 +1,7 @@
 const {
     BadRequestError
 } = require('@tryghost/errors');
+const errors = require('@tryghost/errors');
 const emailTemplate = require('../lib/emails/signin');
 const UAParser = require('ua-parser-js');
 const got = require('got');
@@ -40,6 +41,7 @@ totp.options = {
  * @prop {(req: Req, res: Res) => Promise<User | null>} getUserForSession
  * @prop {(req: Req, res: Res) => Promise<void>} removeUserForSession
  * @prop {(req: Req, res: Res, user: User) => Promise<void>} createSessionForUser
+ * @prop {(req: Req, res: Res) => Promise<void>} createVerifiedSessionForUser
  * @prop {(req: Req, res: Res) => Promise<void>} verifySession
  * @prop {(req: Req, res: Res) => Promise<void>} sendAuthCodeToUser
  * @prop {(req: Req, res: Res) => Promise<boolean>} verifyAuthCodeForUser
@@ -119,6 +121,19 @@ module.exports = function createSessionService({
         if (!labs.isSet('staff2fa')) {
             session.verified = true;
         }
+    }
+
+    /**
+     * createVerifiedSessionForUser
+     *
+     * @param {Req} req
+     * @param {Res} res
+     * @param {User} user
+     * @returns {Promise<void>}
+     */
+    async function createVerifiedSessionForUser(req, res, user) {
+        await createSessionForUser(req, res, user);
+        await verifySession(req, res);
     }
 
     /**
@@ -244,11 +259,18 @@ module.exports = function createSessionService({
             deviceDetails: await getDeviceDetails(session.user_agent, session.ip)
         });
 
-        await mailer.send({
-            to: recipient,
-            subject: `${token} is your Ghost sign in verification code`,
-            html: email
-        });
+        try {
+            await mailer.send({
+                to: recipient,
+                subject: `${token} is your Ghost sign in verification code`,
+                html: email
+            });
+        } catch (error) {
+            throw new errors.EmailError({
+                ...error,
+                message: 'Failed to send email. Please check your site configuration and try again.'
+            });
+        }
     }
 
     /**
@@ -320,6 +342,7 @@ module.exports = function createSessionService({
     return {
         getUserForSession,
         createSessionForUser,
+        createVerifiedSessionForUser,
         removeUserForSession,
         verifySession,
         isVerifiedSession,
