@@ -15,9 +15,10 @@ class EmailServiceWrapper {
             return;
         }
 
-        const {EmailService, EmailController, EmailRenderer, SendingService, BatchSendingService, EmailSegmenter, MailgunEmailProvider} = require('@tryghost/email-service');
+        const {EmailService, EmailController, EmailRenderer, SendingService, BatchSendingService, EmailSegmenter, MailgunEmailProvider, MailjetEmailProvider} = require('@tryghost/email-service');
         const {Post, Newsletter, Email, EmailBatch, EmailRecipient, Member} = require('../../models');
         const MailgunClient = require('@tryghost/mailgun-client');
+        const Mailjet = require('node-mailjet');
         const configService = require('../../../shared/config');
         const settingsCache = require('../../../shared/settings-cache');
         const settingsHelpers = require('../settings-helpers');
@@ -51,6 +52,12 @@ class EmailServiceWrapper {
         const mailgunClient = new MailgunClient({
             config: configService, settings: settingsCache
         });
+
+        const mailjetClient = new Mailjet.Client({
+            apiKey: settingsCache.get('mailjet_api_key'),
+            apiSecret: settingsCache.get('mailjet_secret_key')
+        });
+        
         const i18nLanguage = labs.isSet('i18n') ? settingsCache.get('locale') || 'en' : 'en';
         const i18n = i18nLib(i18nLanguage, 'newsletter');
         
@@ -73,6 +80,11 @@ class EmailServiceWrapper {
 
         const mailgunEmailProvider = new MailgunEmailProvider({
             mailgunClient,
+            errorHandler
+        });
+
+        const mailjetEmailProvider = new MailjetEmailProvider({
+            mailjetClient,
             errorHandler
         });
 
@@ -99,7 +111,7 @@ class EmailServiceWrapper {
         });
 
         const sendingService = new SendingService({
-            emailProvider: mailgunEmailProvider,
+            emailProvider: mailjetEmailProvider,
             emailRenderer
         });
 

@@ -155,6 +155,7 @@ class BatchSendingService {
         email._retryCutOffTime = retryCutOffTime;
 
         try {
+            logging.info(`Sending email ${emailId}`);
             await this.sendEmail(email);
             await this.retryDb(async () => {
                 await email.save({
@@ -210,6 +211,7 @@ class BatchSendingService {
         if (batches.length === 0) {
             batches = await this.createBatches({email, newsletter, post});
         }
+        logging.info(`Sending batches for email ${email.id}`);
         await this.sendBatches({email, batches, post, newsletter});
     }
 

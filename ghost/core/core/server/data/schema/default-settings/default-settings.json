@@ -392,6 +392,14 @@
             "defaultValue": null,
             "type": "string"
         },
+        "mailjet_api_key": {
+            "defaultValue": null,
+            "type": "string"
+        },
+        "mailjet_secret_key": {
+            "defaultValue": null,
+            "type": "string"
+        },
         "email_track_opens": {
             "defaultValue": "true",
             "validations": {

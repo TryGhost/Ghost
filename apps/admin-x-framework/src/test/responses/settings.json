@@ -217,6 +217,14 @@
             "value": null
         },
         {
+            "key": "mailjet_api_key",
+            "value": null
+        },
+        {
+            "key": "mailjet_secret_key",
+            "value": null
+        },
+        {
             "key": "email_track_opens",
             "value": true
         },

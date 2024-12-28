@@ -11,7 +11,7 @@
     "apps/*"
   ],
   "monorepo": {
-    "public": false,
+    "public": true,
     "internalPackages": true,
     "repo": "https://github.com/TryGhost/Ghost",
     "scope": "@tryghost"
@@ -128,5 +128,8 @@
     "rimraf": "5.0.10",
     "ts-node": "10.9.2",
     "typescript": "5.4.5"
+  },
+  "dependencies": {
+    "node-mailjet": "*"
   }
 }

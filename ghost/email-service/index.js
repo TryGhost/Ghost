@@ -1,3 +1,5 @@
+const lib = require('@tryghost/members-events-service/lib');
+
 module.exports = {
     EmailService: require('./lib/EmailService'),
     EmailController: require('./lib/EmailController'),
@@ -7,5 +9,6 @@ module.exports = {
     BatchSendingService: require('./lib/BatchSendingService'),
     EmailEventProcessor: require('./lib/EmailEventProcessor'),
     EmailEventStorage: require('./lib/EmailEventStorage'),
-    MailgunEmailProvider: require('./lib/MailgunEmailProvider')
+    MailgunEmailProvider: require('./lib/MailgunEmailProvider'),
+    MailjetEmailProvider: require('./lib/MailjetEmailProvider')
 };

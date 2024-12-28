@@ -213,6 +213,7 @@
     "mysql2": "3.11.5",
     "nconf": "0.12.1",
     "node-jose": "2.2.0",
+    "node-mailjet": "^6.0.6",
     "path-match": "1.2.4",
     "probe-image-size": "7.2.3",
     "rss": "1.2.2",
