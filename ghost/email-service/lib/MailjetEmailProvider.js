@@ -86,15 +86,15 @@ class MailjetEmailProvider {
             replacementDefinitions
         } = data;
 
-        logging.info(`Sending email to ${recipients.length} recipients`);
+        logging.info(`Sending email to ${recipients.length} recipients, from ${from}`);
         const startTime = Date.now();
-        debug(`sending message to ${recipients.length} recipients`);
+        debug(`sending message to ${recipients.length} recipients, from ${from}`);
 
         try {
             // Prepare recipient-specific data
             const messages = recipients.map((recipient) => ({
                 From: {
-                    Email: 'baus@cathodebias.com',
+                    Email: from,
                 },
                 To: [
                     {
@@ -104,11 +104,14 @@ class MailjetEmailProvider {
                 Subject: subject,
                 HTMLPart: this.#updateRecipientVariables(html, replacementDefinitions),
                 TextPart: this.#updateRecipientVariables(plaintext, replacementDefinitions),
-                /*ReplyTo: replyTo ? { Email: replyTo } : undefined,
                 CustomID: emailId,
+                /*
+                ReplyTo: replyTo ? { Email: replyTo } : undefined,
                 TrackOpens: options.openTrackingEnabled ? 1 : 0,
                 TrackClicks: options.clickTrackingEnabled ? 1 : 0,
-                SendingStartAt: options.deliveryTime ? options.deliveryTime.toISOString() : undefined,*/
+                */
+                SendingStartAt: options.deliveryTime ? options.deliveryTime.toISOString() : undefined,
+                
             }));
 
             debug(`send messages (${messages})`);
