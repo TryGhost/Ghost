@@ -89,7 +89,7 @@ const NewsletterPreviewContent: React.FC<{
 
     let emailHeader;
 
-    if ({hasNewEmailAddresses} || isManagedEmail(config)) {
+    if (hasNewEmailAddresses || isManagedEmail(config)) {
         emailHeader = <><p className="leading-normal"><span className="font-semibold text-grey-900">From: </span><span>{senderName} ({senderEmail})</span></p>
             <p className="leading-normal">
                 <span className="font-semibold text-grey-900">Reply-to: </span>{senderReplyTo ? senderReplyTo : senderEmail}

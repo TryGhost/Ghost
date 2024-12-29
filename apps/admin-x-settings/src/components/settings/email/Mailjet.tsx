@@ -1,9 +1,8 @@
 import React from 'react';
 import TopLevelGroup from '../../TopLevelGroup';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {IconLabel, Icon, Link, SettingGroupContent, TextField, withErrorBoundary} from '@tryghost/admin-x-design-system';
-import {getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
-import {useHandleError} from '@tryghost/admin-x-framework/hooks';
+import {Icon, Link, SettingGroupContent, TextField, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 
 const Mailjet: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {
@@ -15,15 +14,12 @@ const Mailjet: React.FC<{ keywords: string[] }> = ({keywords}) => {
         updateSetting,
         handleEditingChange
     } = useSettingGroup();
-    const {mutateAsync: editSettings} = useEditSettings();
-    const handleError = useHandleError();
-
+    
     const [mailjetApiKey, mailjetSecretKey] = getSettingValues(localSettings, [
         'mailjet_api_key',
         'mailjet_secret_key'
     ]) as string[];
 
-    console.log("mailjetSecretKey", mailjetSecretKey);
     const isMailjetSetup = mailjetApiKey && mailjetSecretKey;
 
     const data = isMailjetSetup ? [
