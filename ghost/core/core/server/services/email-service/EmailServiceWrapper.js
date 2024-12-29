@@ -53,11 +53,7 @@ class EmailServiceWrapper {
             config: configService, settings: settingsCache
         });
 
-        const mailjetClient = new Mailjet.Client({
-            apiKey: settingsCache.get('mailjet_api_key'),
-            apiSecret: settingsCache.get('mailjet_secret_key')
-        });
-        
+    
         const i18nLanguage = labs.isSet('i18n') ? settingsCache.get('locale') || 'en' : 'en';
         const i18n = i18nLib(i18nLanguage, 'newsletter');
         
@@ -83,8 +79,9 @@ class EmailServiceWrapper {
             errorHandler
         });
 
+        logging.error(`settingsCache ${settingsCache}`);
         const mailjetEmailProvider = new MailjetEmailProvider({
-            mailjetClient,
+            settings: settingsCache,
             errorHandler
         });
 

@@ -1,7 +1,8 @@
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
 const debug = require('@tryghost/debug')('email-service:mailjet-provider-service');
-
+const Mailjet = require('node-mailjet');
+        
 /**
  * @typedef {object} Recipient
  * @prop {string} email
@@ -28,16 +29,17 @@ const debug = require('@tryghost/debug')('email-service:mailjet-provider-service
  */
 
 class MailjetEmailProvider {
-    #mailjetClient;
+    #settings;
     #errorHandler;
 
     /**
      * @param {object} dependencies
-     * @param {import('node-mailjet').Mailjet} dependencies.mailjetClient - Mailjet client to send emails
+     * @param {object} dependencies 
      * @param {Function} [dependencies.errorHandler] - custom error handler for logging exceptions
      */
-    constructor({ mailjetClient, errorHandler }) {
-        this.#mailjetClient = mailjetClient;
+    constructor({ settings, errorHandler }) {
+        logging.error(`settings ${settings}`);
+        this.#settings = settings;
         this.#errorHandler = errorHandler;
     }
 
@@ -86,6 +88,11 @@ class MailjetEmailProvider {
             replacementDefinitions
         } = data;
 
+        const mailjetClient = new Mailjet.Client({
+            apiKey: this.#settings.get('mailjet_api_key'),
+            apiSecret: this.#settings.get('mailjet_secret_key')
+        });
+        logging.error(`Sending with mailjetClient ${mailjetClient}`); 
         logging.info(`Sending email to ${recipients.length} recipients, from ${from}`);
         const startTime = Date.now();
         debug(`sending message to ${recipients.length} recipients, from ${from}`);
@@ -115,25 +122,22 @@ class MailjetEmailProvider {
             }));
 
             debug(`send messages (${messages})`);
-            logging.error(`send messages !!!!! (${JSON.stringify(messages)})`); 
-
+            
             // Send email using Mailjet
-            const response = await this.#mailjetClient.post('send', { version: 'v3.1' }).request({
+            const response = await mailjetClient.post('send', { version: 'v3.1' }).request({
                 Messages: messages,
             });
 
-            logging.error(`sent message !!! (${response})`);
-            
             debug(`sent message (${Date.now() - startTime}ms)`);
             logging.info(`Sent message (${Date.now() - startTime}ms)`);
 
             // Return Mailjet provider id
             return {
-                id: response.body.Messages[0].CustomID, // Assuming single batch
+                id: '42', // Assuming single batch
             };
         } catch (e) {
             let ghostError;
-            logging.error(`sent message !!! ${e.toString()}`);
+            logging.error(`sent message: ${e.toString()}`);
             
             if (e.response) {
                 const { response } = e;
