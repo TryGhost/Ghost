@@ -22812,10 +22812,10 @@ magic-string@^0.30.0, magic-string@^0.30.1:
   dependencies:
     "@jridgewell/sourcemap-codec" "^1.4.15"
 
-mailgun.js@10.3.0:
-  version "10.3.0"
-  resolved "https://registry.yarnpkg.com/mailgun.js/-/mailgun.js-10.3.0.tgz#7599600a4c144e4df63675ede48de8fe9b38dbfc"
-  integrity sha512-HJPmninRDGlzs8izNyfM/hbvefz6ol1gqeZ+doiumEHli7kGCrLlK6hURsq6oLjDoTNwgS37CUDhBPQy7x5PeQ==
+mailgun.js@10.4.0:
+  version "10.4.0"
+  resolved "https://registry.yarnpkg.com/mailgun.js/-/mailgun.js-10.4.0.tgz#8b6221e0f1172248a487e7bfa156471058efe4dd"
+  integrity sha512-YrdaZEAJwwjXGBTfZTNQ1LM7tmkdUaz2NpZEu7+zULcG4Wrlhd7cWSNZW0bxT3bP48k5N0mZWz8C2f9gc2+Geg==
   dependencies:
     axios "^1.7.4"
     base-64 "^1.0.0"
