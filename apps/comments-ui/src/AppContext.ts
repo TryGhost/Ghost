@@ -82,7 +82,7 @@ export type EditableAppContext = {
     labs: LabsContextType,
     order: string,
     adminApi: AdminApi | null,
-    commentsIsLoading?: boolean
+    commentsIsLoading?: boolean,
     commentIdToHighlight: string | null
 }
 

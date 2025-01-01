@@ -20,6 +20,8 @@ export class MockedApi {
 
     labs: any;
 
+    failures: Map<string, {status: number, body: any}>;
+
     #lastCommentDate = new Date('2021-01-01T00:00:00.000Z');
 
     #findReplyById(id: string) {
@@ -34,10 +36,20 @@ export class MockedApi {
         this.members = [];
         this.delay = 0;
         this.labs = labs;
+        this.failures = new Map();
     }
 
     setDelay(delay: number) {
         this.delay = delay;
+    }
+
+    setFailure(handlerName: string, failureResponse: {status: number, body: any}) {
+        if (!this.requestHandlers[handlerName] && !this.adminRequestHandlers[handlerName]) {
+            throw new Error(`Handler ${handlerName} does not exist in MockedApi`);
+        }
+
+        const key = handlerName;
+        this.failures.set(key, failureResponse);
     }
 
     addComment(overrides: any = {}) {
@@ -265,11 +277,25 @@ export class MockedApi {
         });
     }
 
+    async #handleFailure(handlerName: string) {
+        if (this.failures.has(handlerName)) {
+            const failure = this.failures.get(handlerName);
+            return {
+                status: failure?.status,
+                body: JSON.stringify(failure?.body)
+            };
+        }
+    }
+
     // Request handlers ------------------------------------------------------
     // (useful to spy on these methods in tests)
 
     requestHandlers = {
         async getMember(route) {
+            const failureResponse = await this.#handleFailure('getMember');
+            if (failureResponse) {
+                return route.fulfill(failureResponse);
+            }
             await this.#delayResponse();
             if (!this.member) {
                 return await route.fulfill({
@@ -293,6 +319,10 @@ export class MockedApi {
         },
 
         async addComment(route) {
+            const failureResponse = await this.#handleFailure('addComment');
+            if (failureResponse) {
+                return route.fulfill(failureResponse);
+            }
             await this.#delayResponse();
             const payload = JSON.parse(route.request().postData());
 
@@ -312,6 +342,10 @@ export class MockedApi {
         },
 
         async browseComments(route) {
+            const failureResponse = await this.#handleFailure('browseComments');
+            if (failureResponse) {
+                return route.fulfill(failureResponse);
+            }
             await this.#delayResponse();
             const url = new URL(route.request().url());
 
@@ -331,6 +365,10 @@ export class MockedApi {
         },
 
         async getOrDeleteComment(route) {
+            const failureResponse = await this.#handleFailure('getComment');
+            if (failureResponse) {
+                return route.fulfill(failureResponse);
+            }
             await this.#delayResponse();
             const url = new URL(route.request().url());
             const commentId = url.pathname.split('/').reverse()[1];
@@ -354,6 +392,10 @@ export class MockedApi {
         },
 
         async likeComment(route) {
+            const failureResponse = await this.#handleFailure('likeComment');
+            if (failureResponse) {
+                return route.fulfill(failureResponse);
+            }
             await this.#delayResponse();
             const url = new URL(route.request().url());
             const commentId = url.pathname.split('/').reverse()[2];
@@ -388,6 +430,10 @@ export class MockedApi {
         },
 
         async getReplies(route) {
+            const failureResponse = await this.#handleFailure('getReplies');
+            if (failureResponse) {
+                return route.fulfill(failureResponse);
+            }
             await this.#delayResponse();
             const url = new URL(route.request().url());
 
@@ -406,6 +452,10 @@ export class MockedApi {
         },
 
         async getCommentCounts(route) {
+            const failureResponse = await this.#handleFailure('getCommentCounts');
+            if (failureResponse) {
+                return route.fulfill(failureResponse);
+            }
             await this.#delayResponse();
             await route.fulfill({
                 status: 200,
@@ -416,6 +466,10 @@ export class MockedApi {
         },
 
         async getSettings(route) {
+            const failureResponse = await this.#handleFailure('getSettings');
+            if (failureResponse) {
+                return route.fulfill(failureResponse);
+            }
             await this.#delayResponse();
             await route.fulfill({
                 status: 200,
@@ -426,6 +480,10 @@ export class MockedApi {
 
     adminRequestHandlers = {
         async getUser(route) {
+            const failureResponse = await this.#handleFailure('getUser');
+            if (failureResponse) {
+                return route.fulfill(failureResponse);
+            }
             await this.#delayResponse();
             await route.fulfill({
                 status: 200,
@@ -438,6 +496,10 @@ export class MockedApi {
         },
 
         async browseComments(route) {
+            const failureResponse = await this.#handleFailure('browseComments');
+            if (failureResponse) {
+                return route.fulfill(failureResponse);
+            }
             await this.#delayResponse();
             const url = new URL(route.request().url());
 
@@ -461,6 +523,10 @@ export class MockedApi {
         },
 
         async getReplies(route) {
+            const failureResponse = await this.#handleFailure('getReplies');
+            if (failureResponse) {
+                return route.fulfill(failureResponse);
+            }
             await this.#delayResponse();
             const url = new URL(route.request().url());
 
@@ -481,6 +547,10 @@ export class MockedApi {
         },
 
         async getOrUpdateComment(route) {
+            const failureResponse = await this.#handleFailure('getOrUpdateComment');
+            if (failureResponse) {
+                return route.fulfill(failureResponse);
+            }
             await this.#delayResponse();
             const url = new URL(route.request().url());
 
