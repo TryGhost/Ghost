@@ -1,5 +1,3 @@
-VERSION 0
-
 DESCRIPTION >
     Summary with general KPIs per date, including visits, page views, bounce rate and average session duration.
     Accepts `date_from` and `date_to` date filter, all historical data if not passed.
@@ -75,17 +73,17 @@ SQL >
         action,
         version,
         coalesce(session_id, '0') as session_id,
-        JSONExtractString(payload, 'locale') as locale,
-        JSONExtractString(payload, 'location') as location,
-        JSONExtractString(payload, 'referrer') as referrer,
-        JSONExtractString(payload, 'pathname') as pathname,
-        JSONExtractString(payload, 'href') as href,
-        JSONExtractString(payload, 'site_uuid') as site_uuid,
-        JSONExtractString(payload, 'member_uuid') as member_uuid,
-        JSONExtractString(payload, 'member_status') as member_status,
-        JSONExtractString(payload, 'post_uuid') as post_uuid,
-        JSONExtractString(payload, 'post_type') as post_type,
-        lower(JSONExtractString(payload, 'user-agent')) as user_agent
+        payload.locale::String as locale,
+        payload.location::String as location,
+        payload.referrer::String as referrer,
+        payload.pathname::String as pathname,
+        payload.href::String as href,
+        payload.site_uuid::String as site_uuid,
+        payload.member_uuid::String as member_uuid,
+        payload.member_status::String as member_status,
+        payload.post_uuid::String as post_uuid,
+        payload.post_type::String as post_type,
+        lower(payload.`user-agent`::String) as user_agent
     FROM analytics_events
     where action = 'page_hit'
 
@@ -169,7 +167,7 @@ SQL >
             case when min(first_view) = max(latest_view) then 1 else 0 end as is_bounce,
             max(latest_view) as latest_view_aux,
             min(first_view) as first_view_aux
-        from analytics_sessions_mv
+        from analytics_sessions
         where
             {% if defined(date_from) %} date >= {{ Date(date_from) }}
             {% else %} date >= timestampAdd(today(), interval -7 day)
