@@ -17,7 +17,7 @@
     --epm-animation-modal-out: var(--epm-animation-modal-out-duration) ease-out
         var(--epm-animation-modal-out-delay) forwards epm-modal-out;
     --epm-backdrop-opacity: 0.6;
-    --epm-backdrop-background: #15171A;
+    --epm-backdrop-background: #626d7933;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -67,8 +67,9 @@
     align-items: unset;
 }
 
+.epm-modal-container,
 .epm-modal-container.background-blur {
-    backdrop-filter: blur(4px);
+    backdrop-filter: blur(3px);
 }
 
 .epm-animating .epm-modal-container {
@@ -169,7 +170,7 @@
     padding: 32px;
     background-color: #fff;
     background-clip: padding-box;
-    border-radius: 8px;
+    border-radius: 12px;
     box-shadow:
         0 2.8px 2.2px rgba(0, 0, 0, 0.02),
         0 6.7px 5.3px rgba(0, 0, 0, 0.028),
@@ -186,8 +187,8 @@
 
 .modal-content .close {
     position: absolute;
-    top: 16px;
-    right: 16px;
+    top: 24px;
+    right: 24px;
     z-index: 9999;
     margin: 0;
     padding: 0;
@@ -208,15 +209,15 @@
 
 .modal-header {
     position: relative;
-    margin-bottom: 22px;
+    margin-bottom: 16px;
 }
 
 .modal-header h1 {
     display: inline-block;
-    margin: -5px 25px 0 0;
-    font-size: 2.2rem;
-    line-height: 1.15em;
-    font-weight: 600;
+    margin: -5px 32px 0 0;
+    font-size: 2.4rem;
+    line-height: 1.25em;
+    font-weight: 700;
     letter-spacing: -0.025em;
     text-wrap: pretty;
 }
@@ -253,6 +254,80 @@
 .modal-body p {
     font-size: 1.4rem;
     line-height: 1.5em;
+    color: var(--black);
+    text-wrap: pretty;
+}
+
+.modal-body label {
+    font-weight: 500;
+}
+
+.modal-body .gh-input {
+    height: 38px;
+    padding: 4px 12px;
+    font-size: 1.4rem;
+    color: var(--black);
+    background-color: var(--grey-150);
+    border: 0;
+    border-radius: 8px;
+}
+
+.modal-body .gh-input,
+.modal-body select,
+.modal-body .gh-date-time-picker-date,
+.modal-body .gh-date-time-picker-time,
+.modal-body .ember-power-select-multiple-trigger {
+    min-height: 38px;
+    padding: 4px 12px;
+    font-size: 1.4rem;
+    color: var(--black);
+    background-color: var(--grey-150);
+    border: 1px solid transparent;
+    border-radius: 8px;
+    transition-property: color, background-color,border-color, text-decoration-color, fill, stroke;
+    transition-timing-function: cubic-bezier(.4,0,.2,1);
+    transition-duration: .15s;
+}
+
+.modal-body .gh-input:hover,
+.modal-body select:hover,
+.modal-body .gh-date-time-picker-date:hover,
+.modal-body .gh-date-time-picker-time:hover,
+.modal-body .ember-power-select-multiple-trigger:hover {
+    background-color: var(--grey-100);
+}
+
+.modal-body .gh-input:focus,
+.modal-body .gh-input:focus-visible,
+.modal-body .ember-basic-dropdown-trigger[aria-expanded=true] .gh-date-time-picker-date,
+.modal-body .gh-date-time-picker-time:focus-within {
+    background-color: var(--white);
+    border: 1px solid var(--green);
+    box-shadow: 0 0 0 2px rgba(48,207,67,.25);
+    outline: none;
+}
+
+.modal-body .gh-select .ember-power-select-status-icon {
+    top: 50%;
+    right: 16px;
+    margin-top: -5px;
+    width: 8px;
+    height: 8px;
+    border-color: var(--black);
+}
+
+.modal-body .for-checkbox .input-toggle-component {
+    background-color: transparent;
+}
+
+.modal-body .gh-input-group .gh-input {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.modal-body .gh-input-group .gh-btn {
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
 }
 
 .modal-footer {
@@ -266,12 +341,25 @@
 }
 
 .modal-footer .gh-btn {
-    min-width: 100px;
+    min-width: auto;
     text-align: center;
+    font-weight: 700;
+    transition: all .15s cubic-bezier(.4,0,.2,1);
+    -webkit-font-smoothing: antialiased;
+}
+
+.modal-footer .gh-btn:not(^="gh-btn-") {
+    border-color: var(--grey-300);
+    color: var(--black);
 }
 
 .modal-footer .gh-btn:not(:first-child) {
-    margin-left: 12px;
+    margin-left: 8px;
+}
+
+.modal-footer .gh-btn:hover {
+    border-color: var(--black);
+    background-color: transparent;
 }
 
 .modal-footer-hint {
