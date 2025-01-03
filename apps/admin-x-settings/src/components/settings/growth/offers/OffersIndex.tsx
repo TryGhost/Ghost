@@ -5,9 +5,8 @@ import {Modal} from '@tryghost/admin-x-design-system';
 import {SortMenu} from '@tryghost/admin-x-design-system';
 import {Tier, getPaidActiveTiers, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {Tooltip} from '@tryghost/admin-x-design-system';
-import {currencyToDecimal, getSymbol} from '../../../../utils/currency';
+import {currencyToDecimal, formatMonetaryAmount, getSymbol} from '../../../../utils/currency';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
-import {numberWithCommas} from '../../../../utils/helpers';
 import {useBrowseOffers} from '@tryghost/admin-x-framework/api/offers';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 import {useModal} from '@ebay/nice-modal-react';
@@ -37,9 +36,7 @@ export const getOfferDiscount = (type: string, amount: number, cadence: string, 
     const originalPrice = cadence === 'month' ? tier?.monthly_price ?? 0 : tier?.yearly_price ?? 0;
     let updatedPrice = originalPrice;
 
-    const formatToTwoDecimals = (num: number): number => parseFloat(num.toFixed(2));
-
-    let originalPriceWithCurrency = getSymbol(currency) + numberWithCommas(formatToTwoDecimals(currencyToDecimal(originalPrice)));
+    let originalPriceWithCurrency = getSymbol(currency) + formatMonetaryAmount(currencyToDecimal(originalPrice));
 
     switch (type) {
     case 'percent':
@@ -49,7 +46,7 @@ export const getOfferDiscount = (type: string, amount: number, cadence: string, 
         break;
     case 'fixed':
         discountColor = 'text-blue';
-        discountOffer = numberWithCommas(formatToTwoDecimals(currencyToDecimal(amount))) + ' ' + currency + ' off';
+        discountOffer = formatMonetaryAmount(currencyToDecimal(amount)) + ' ' + currency + ' off';
         updatedPrice = originalPrice - amount;
         break;
     case 'trial':
@@ -65,7 +62,7 @@ export const getOfferDiscount = (type: string, amount: number, cadence: string, 
         updatedPrice = 0;
     }
 
-    const updatedPriceWithCurrency = getSymbol(currency) + numberWithCommas(formatToTwoDecimals(currencyToDecimal(updatedPrice)));
+    const updatedPriceWithCurrency = getSymbol(currency) + formatMonetaryAmount(currencyToDecimal(updatedPrice));
 
     return {
         discountColor,
