@@ -83,7 +83,7 @@
         "autoprefixer": "10.4.19",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
-        "lucide-react": "^0.468.0",
+        "lucide-react": "^0.469.0",
         "postcss": "8.4.39",
         "postcss-import": "16.1.0",
         "react-colorful": "5.6.1",
