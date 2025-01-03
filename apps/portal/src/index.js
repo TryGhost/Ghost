@@ -22,7 +22,18 @@ function getSiteData() {
         const apiKey = scriptTag.dataset.key;
         const apiUrl = scriptTag.dataset.api;
         const locale = scriptTag.dataset.locale; // not providing a fallback here but will do it within the app.
-        return {siteUrl, apiKey, apiUrl, siteI18nEnabled, locale};
+        let localeRoot = scriptTag.dataset.localeRoot ?? './locales';
+
+        // CASE: The root is based on the current script, resolve it
+        if (localeRoot.startsWith('.')) {
+            const currentPath = import.meta.url.slice(0, import.meta.url.lastIndexOf('/'));
+            localeRoot = new URL(localeRoot, currentPath).href;
+        }
+
+        // Remove the trailing slash since it's not needed by our i18n implementation
+        localeRoot = localeRoot.replace(/\/$/, '');
+
+        return {siteUrl, apiKey, apiUrl, siteI18nEnabled, locale, localeRoot};
     }
     return {};
 }
@@ -42,12 +53,12 @@ function setup() {
 
 function init() {
     // const customSiteUrl = getSiteUrl();
-    const {siteUrl: customSiteUrl, apiKey, apiUrl, siteI18nEnabled, locale} = getSiteData();
+    const {siteUrl: customSiteUrl, apiKey, apiUrl, siteI18nEnabled, locale, localeRoot} = getSiteData();
     const siteUrl = customSiteUrl || window.location.origin;
     setup({siteUrl});
     ReactDOM.render(
         <React.StrictMode>
-            <App siteUrl={siteUrl} customSiteUrl={customSiteUrl} apiKey={apiKey} apiUrl={apiUrl} siteI18nEnabled={siteI18nEnabled} locale={locale}/>
+            <App siteUrl={siteUrl} customSiteUrl={customSiteUrl} apiKey={apiKey} apiUrl={apiUrl} siteI18nEnabled={siteI18nEnabled} locale={locale} localeRoot={localeRoot} />
         </React.StrictMode>,
         document.getElementById(ROOT_DIV_ID)
     );

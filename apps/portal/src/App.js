@@ -1,3 +1,4 @@
+// @ts-check
 import React from 'react';
 import * as Sentry from '@sentry/react';
 import TriggerButton from './components/TriggerButton';
@@ -15,7 +16,7 @@ import './App.css';
 import {hasRecommendations, allowCompMemberUpgrade, createPopupNotification, hasAvailablePrices, getCurrencySymbol, getFirstpromoterId, getPriceIdFromPageQuery, getProductCadenceFromPrice, getProductFromId, getQueryPrice, getSiteDomain, isActiveOffer, isComplimentaryMember, isInviteOnly, isPaidMember, isRecentMember, isSentryEventAllowed, removePortalLinkFromUrl} from './utils/helpers';
 import {handleDataAttributes} from './data-attributes';
 
-import i18nLib from '@tryghost/i18n';
+import {createAsyncInstance} from '@tryghost/i18n/browser.mjs';
 
 const DEV_MODE_DATA = {
     showPopup: true,
@@ -191,10 +192,18 @@ export default class App extends React.Component {
     /** Initialize portal setup on load, fetch data and setup state*/
     async initSetup() {
         try {
+            // i18n should be initialized in only one location, so create the instance before performing any async operations
+            const baseLocale = (this.props.siteI18nEnabled && this.props.locale) || 'en';
+            const i18n = createAsyncInstance('portal', baseLocale, this.props.localeRoot);
+
             // Fetch data from API, links, preview, dev sources
             const {site, member, page, showPopup, popupNotification, lastPage, pageQuery, pageData} = await this.fetchData();
-            const i18nLanguage = this.props.siteI18nEnabled ? this.props.locale || site.locale || 'en' : 'en';
-            const i18n = i18nLib(i18nLanguage, 'portal');
+
+            const localeWithSite = this.props.siteI18nEnabled && !this.props.locale && site.locale;
+
+            if (localeWithSite && baseLocale !== localeWithSite) {
+                i18n.changeLanguage(localeWithSite);
+            }
 
             const state = {
                 site,
@@ -209,7 +218,7 @@ export default class App extends React.Component {
                 dir: i18n.dir() || 'ltr',
                 action: 'init:success',
                 initStatus: 'success',
-                locale: i18nLanguage
+                locale: localeWithSite || baseLocale
             };
 
             this.handleSignupQuery({site, pageQuery, member});
