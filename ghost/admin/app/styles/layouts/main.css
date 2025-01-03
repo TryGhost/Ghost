@@ -1339,8 +1339,9 @@
 
 /* Expandable options */
 .gh-expandable {
-    background: var(--main-color-content-greybg);
-    border-radius: 3px;
+    background: var(--white);
+    border: 1px solid var(--whitegrey);
+    border-radius: var(--border-radius);
 }
 
 .gh-expandable.overflow-hidden {
@@ -1348,7 +1349,7 @@
 }
 
 .gh-expandable-block {
-    border-bottom: 1px solid var(--white);
+    border-bottom: 1px solid var(--whitegrey);
     padding: 18px 24px;
     margin: 0;
 }
@@ -1387,7 +1388,7 @@
 }
 
 .gh-expandable-content {
-    background: linear-gradient(var(--main-color-content-greybg), color-mod(var(--main-color-content-greybg) l(-2%)));
+    background: var(--white);
     margin: 18px -24px -18px;
     padding: 0 24px;
 }
@@ -1409,22 +1410,16 @@
 }
 
 .gh-expandable-header .gh-btn:not(.gh-btn-white):not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red) {
-    background: color-mod(var(--whitegrey-d1) l(-1%));
+    background: var(--white);
+    border: transparent;
 }
 
 .gh-expandable-header .gh-btn:not(.gh-btn-white):not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red):hover {
-    background: color-mod(var(--whitegrey-d2) l(-1%));
+    background: var(--whitegrey-l1);
 }
 
 .gh-main-section-content.grey .gh-btn-group {
-    background: var(--whitegrey-d1);
-}
-
-.gh-expandable-content input:not(:focus),
-.gh-expandable-content .gh-input:not(:focus),
-.gh-expandable-content .ember-power-select-multiple-trigger,
-.gh-expandable-content select:not(:focus) {
-    border-color: var(--whitegrey-d1);
+    background: var(--whitegrey);
 }
 
 .gh-main-section-content.grey .gh-btn-tabs {
