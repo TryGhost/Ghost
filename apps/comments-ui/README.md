@@ -30,4 +30,4 @@ A patch release can be rolled out instantly in production, whereas a minor/major
 
 # Copyright & License
 
-Copyright (c) 2013-2024 Ghost Foundation - Released under the [MIT license](LICENSE).
+Copyright (c) 2013-2025 Ghost Foundation - Released under the [MIT license](LICENSE).

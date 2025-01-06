@@ -85,4 +85,4 @@ In order to have Ghost's e2e tests run against the new code on CI or to test the
 
 # Copyright & License
 
-Copyright (c) 2013-2024 Ghost Foundation - Released under the [MIT license](LICENSE).
+Copyright (c) 2013-2025 Ghost Foundation - Released under the [MIT license](LICENSE).
