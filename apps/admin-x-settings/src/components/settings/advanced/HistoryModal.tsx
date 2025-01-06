@@ -1,6 +1,6 @@
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import {Action, getActionTitle, getContextResource, getLinkTarget, isBulkAction, useBrowseActions} from '@tryghost/admin-x-framework/api/actions';
-import {Avatar, Button, Icon, InfiniteScrollListener, List, ListItem, LoadSelectOptions, Modal, NoValueLabel, Popover, Select, SelectOption, Toggle, ToggleGroup, debounce} from '@tryghost/admin-x-design-system';
+import {Avatar, Button, Icon, InfiniteScrollListener, List, ListItem, LoadSelectOptions, LoadingIndicator, Modal, NoValueLabel, Popover, Select, SelectOption, Toggle, ToggleGroup, debounce} from '@tryghost/admin-x-design-system';
 import {RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {User} from '@tryghost/admin-x-framework/api/users';
 import {generateAvatarColor, getInitials} from '../../../utils/helpers';
@@ -221,30 +221,33 @@ const HistoryModal = NiceModal.create<RoutingModalProps>(({params}) => {
         >
             <div className='relative -mb-8 mt-6'>
                 <List hint={data?.isEnd ? 'End of history log' : undefined}>
-                    {data?.actions ? <>
-                        <InfiniteScrollListener offset={250} onTrigger={fetchNext} />
-                        {data?.actions.map(action => !action.skip && <ListItem
-                            avatar={<HistoryAvatar action={action} />}
-                            detail={[
-                                new Date(action.created_at).toLocaleDateString('default', {year: 'numeric', month: 'short', day: '2-digit'}),
-                                new Date(action.created_at).toLocaleTimeString('default', {hour: '2-digit', minute: '2-digit', second: '2-digit'})
-                            ].join(' | ')}
-                            title={
-                                <div className='text-sm'>
-                                    {getActionTitle(action)}{isBulkAction(action) ? '' : ': '}
-                                    {!isBulkAction(action) && <HistoryActionDescription action={action} />}
-                                    {action.count ? <> {action.count} times</> : null}
-                                    <span> &mdash; by {action.actor?.name || action.actor?.slug}</span>
-                                </div>
-                            }
-                            separator
-                        />)}
-                    </>
-                        :
-                        <NoValueLabel>
-                        No entries found.
-                        </NoValueLabel>
-                    }
+                    {data?.actions ? (
+                        <>
+                            <InfiniteScrollListener offset={250} onTrigger={fetchNext} />
+                            {data.actions.map(action => !action.skip && <ListItem
+                                avatar={<HistoryAvatar action={action} />}
+                                detail={[
+                                    new Date(action.created_at).toLocaleDateString('default', {year: 'numeric', month: 'short', day: '2-digit'}),
+                                    new Date(action.created_at).toLocaleTimeString('default', {hour: '2-digit', minute: '2-digit', second: '2-digit'})
+                                ].join(' | ')}
+                                title={
+                                    <div className='text-sm'>
+                                        {getActionTitle(action)}{isBulkAction(action) ? '' : ': '}
+                                        {!isBulkAction(action) && <HistoryActionDescription action={action} />}
+                                        {action.count ? <> {action.count} times</> : null}
+                                        <span> &mdash; by {action.actor?.name || action.actor?.slug}</span>
+                                    </div>
+                                }
+                                separator
+                            />)}
+                        </>
+                    ) : data === undefined ? (
+                        <div className="flex justify-center px-5 py-10">
+                            <LoadingIndicator />
+                        </div>
+                    ) : (
+                        <NoValueLabel>No entries found.</NoValueLabel>
+                    )}
                 </List>
             </div>
         </Modal>
