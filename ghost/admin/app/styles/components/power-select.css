@@ -80,15 +80,8 @@
 
 .ember-power-select-option {
     margin: 0;
+    padding: 6px 14px;
     color: var(--darkgrey);
-    -webkit-line-clamp: 2;
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    word-break: break-word;
-    line-height: 1.3;
-    max-height: 3.45em;
 }
 
 .ember-power-select-option[aria-current="true"] {
