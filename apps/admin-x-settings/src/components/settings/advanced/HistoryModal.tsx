@@ -32,7 +32,7 @@ const HistoryAvatar: React.FC<{action: Action}> = ({action}) => {
                 labelColor='white'
                 size='md'
             />
-            <div className='absolute -bottom-1 -right-1 z-10 flex items-center justify-center rounded-full border border-grey-100 bg-white p-1 shadow-sm dark:border-grey-900 dark:bg-black'>
+            <div className='absolute -bottom-1 -right-1 z-30 flex items-center justify-center rounded-full border border-grey-100 bg-white p-1 shadow-sm dark:border-grey-900 dark:bg-black'>
                 <HistoryIcon action={action} />
             </div>
         </div>
@@ -194,6 +194,8 @@ const HistoryModal = NiceModal.create<RoutingModalProps>(({params}) => {
         setter(values => (included ? values.concat(value) : values.filter(current => current !== value)));
     };
 
+    const hasActiveFilters = excludedEvents.length > 0 || excludedResources.length > 0 || params?.user;
+
     return (
         <Modal
             afterClose={() => {
@@ -219,28 +221,37 @@ const HistoryModal = NiceModal.create<RoutingModalProps>(({params}) => {
                 updateRoute('history');
             }}
         >
-            <div className='relative -mb-8 mt-6'>
-                <List hint={data?.isEnd ? 'End of history log' : undefined}>
+            <div className='relative mt-6'>
+                <List hint={(data?.isEnd && data.actions.length > 0) ? 'End of history log' : undefined}>
                     {data?.actions ? (
-                        <>
-                            <InfiniteScrollListener offset={250} onTrigger={fetchNext} />
-                            {data.actions.map(action => !action.skip && <ListItem
-                                avatar={<HistoryAvatar action={action} />}
-                                detail={[
-                                    new Date(action.created_at).toLocaleDateString('default', {year: 'numeric', month: 'short', day: '2-digit'}),
-                                    new Date(action.created_at).toLocaleTimeString('default', {hour: '2-digit', minute: '2-digit', second: '2-digit'})
-                                ].join(' | ')}
-                                title={
-                                    <div className='text-sm'>
-                                        {getActionTitle(action)}{isBulkAction(action) ? '' : ': '}
-                                        {!isBulkAction(action) && <HistoryActionDescription action={action} />}
-                                        {action.count ? <> {action.count} times</> : null}
-                                        <span> &mdash; by {action.actor?.name || action.actor?.slug}</span>
-                                    </div>
+                        data.actions.length > 0 ? (
+                            <>
+                                <InfiniteScrollListener offset={250} onTrigger={fetchNext} />
+                                {data.actions.map(action => !action.skip && <ListItem
+                                    avatar={<HistoryAvatar action={action} />}
+                                    detail={[
+                                        new Date(action.created_at).toLocaleDateString('default', {year: 'numeric', month: 'short', day: '2-digit'}),
+                                        new Date(action.created_at).toLocaleTimeString('default', {hour: '2-digit', minute: '2-digit', second: '2-digit'})
+                                    ].join(' | ')}
+                                    title={
+                                        <div className='text-sm'>
+                                            {getActionTitle(action)}{isBulkAction(action) ? '' : ': '}
+                                            {!isBulkAction(action) && <HistoryActionDescription action={action} />}
+                                            {action.count ? <> {action.count} times</> : null}
+                                            <span> &mdash; by {action.actor?.name || action.actor?.slug}</span>
+                                        </div>
+                                    }
+                                    separator
+                                />)}
+                            </>
+                        ) : (
+                            <NoValueLabel icon='time-back'>
+                                {hasActiveFilters ?
+                                    'No entries match your current filters.' :
+                                    'No history entries found.'
                                 }
-                                separator
-                            />)}
-                        </>
+                            </NoValueLabel>
+                        )
                     ) : data === undefined ? (
                         <div className="flex justify-center px-5 py-10">
                             <LoadingIndicator />
