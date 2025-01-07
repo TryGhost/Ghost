@@ -313,10 +313,6 @@ export function transformApiSiteData({site}) {
 
         site.is_stripe_configured = !!site.paid_members_enabled;
 
-        if (site.allow_self_signup === undefined) {
-            site.allow_self_signup = site.members_signup_access === 'all';
-        }
-
         // Map tier visibility to old settings
         if (site.products?.[0]?.visibility) {
         // Map paid tier visibility to portal products
@@ -500,11 +496,9 @@ export function getPricesFromProducts({site = null, products = null}) {
 }
 
 export function hasFreeProductPrice({site}) {
-    const {
-        allow_self_signup: allowSelfSignup,
-        portal_plans: portalPlans
-    } = site || {};
-    return allowSelfSignup && portalPlans.includes('free');
+    const {portal_plans: portalPlans} = site || {};
+
+    return isFreeSignupAllowed({site}) && portalPlans.includes('free');
 }
 
 export function getSiteNewsletters({site}) {
@@ -639,14 +633,9 @@ export function getFreePriceCurrency({site}) {
 }
 
 export function getSitePrices({site = {}, pageQuery = ''} = {}) {
-    const {
-        allow_self_signup: allowSelfSignup,
-        portal_plans: portalPlans
-    } = site || {};
-
     const plansData = [];
 
-    if (allowSelfSignup && portalPlans.includes('free')) {
+    if (hasFreeProductPrice({site})) {
         const freePriceCurrencyDetail = getFreePriceCurrency({site});
         plansData.push({
             id: 'free',
@@ -666,6 +655,7 @@ export function getSitePrices({site = {}, pageQuery = ''} = {}) {
             plansData.push(price);
         });
     }
+
     return plansData;
 }
 
