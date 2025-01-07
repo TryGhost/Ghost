@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import TopLevelGroup from '../../TopLevelGroup';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {SettingGroupContent, TextField, withErrorBoundary} from '@tryghost/admin-x-design-system';
@@ -13,7 +13,6 @@ const SocialAccounts: React.FC<{ keywords: string[] }> = ({keywords}) => {
         handleSave,
         handleCancel,
         updateSetting,
-        focusRef,
         handleEditingChange
     } = useSettingGroup();
 
@@ -27,78 +26,82 @@ const SocialAccounts: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const [facebookUrl, setFacebookUrl] = useState(facebookHandle ? facebookHandleToUrl(facebookHandle) : '');
     const [twitterUrl, setTwitterUrl] = useState(twitterHandle ? twitterHandleToUrl(twitterHandle) : '');
 
-    const values = (
-        <SettingGroupContent
-            values={[
-                {
-                    heading: `URL of your publication’s Facebook Page`,
-                    key: 'facebook',
-                    value: facebookUrl,
-                    hideEmptyValue: true
-                },
-                {
-                    heading: 'URL of your X (formerly Twitter) profile',
-                    key: 'twitter',
-                    value: twitterUrl,
-                    hideEmptyValue: true
-                }
-            ]}
-        />
-    );
+    // Update local state when settings change (e.g., after cancel)
+    useEffect(() => {
+        setFacebookUrl(facebookHandle ? facebookHandleToUrl(facebookHandle) : '');
+        setTwitterUrl(twitterHandle ? twitterHandleToUrl(twitterHandle) : '');
+    }, [facebookHandle, twitterHandle]);
 
-    const inputs = (
-        <SettingGroupContent>
-            <TextField
-                error={!!errors.facebook}
-                hint={errors.facebook}
-                inputRef={focusRef}
-                placeholder="https://www.facebook.com/ghost"
-                title={`URL of your publication’s Facebook Page`}
-                value={facebookUrl}
-                onBlur={(e) => {
-                    try {
-                        const newUrl = validateFacebookUrl(e.target.value);
-                        updateSetting('facebook', facebookUrlToHandle(newUrl));
-                        setFacebookUrl(newUrl);
-                    } catch (err) {
-                        if (err instanceof Error) {
-                            setErrors({...errors, facebook: err.message});
-                        }
-                    }
-                }}
-                onChange={e => setFacebookUrl(e.target.value)}
-                onKeyDown={() => {
-                    if (errors.facebook) {
-                        setErrors({...errors, facebook: ''});
-                    }
-                }}
-            />
-            <TextField
-                error={!!errors.twitter}
-                hint={errors.twitter}
-                placeholder="https://x.com/ghost"
-                title="URL of your X (formerly Twitter) profile"
-                value={twitterUrl}
-                onBlur={(e) => {
-                    try {
-                        const newUrl = validateTwitterUrl(e.target.value);
-                        updateSetting('twitter', twitterUrlToHandle(newUrl));
-                        setTwitterUrl(newUrl);
-                    } catch (err) {
-                        if (err instanceof Error) {
-                            setErrors({...errors, twitter: err.message});
-                        }
-                    }
-                }}
-                onChange={e => setTwitterUrl(e.target.value)}
-                onKeyDown={() => {
-                    if (errors.twitter) {
-                        setErrors({...errors, twitter: ''});
-                    }
-                }}
-            />
-        </SettingGroupContent>
-    );
+    const handleFacebookChange = (value: string) => {
+        setFacebookUrl(value);
+        try {
+            const newUrl = validateFacebookUrl(value);
+            updateSetting('facebook', facebookUrlToHandle(newUrl));
+            if (!isEditing) {
+                handleEditingChange(true);
+            }
+            if (errors.facebook) {
+                setErrors({...errors, facebook: ''});
+            }
+        } catch (err) {
+            if (err instanceof Error) {
+                setErrors({...errors, facebook: err.message});
+            }
+            updateSetting('facebook', null);
+        }
+    };
+
+    const handleTwitterChange = (value: string) => {
+        setTwitterUrl(value);
+        try {
+            const newUrl = validateTwitterUrl(value);
+            updateSetting('twitter', twitterUrlToHandle(newUrl));
+            if (!isEditing) {
+                handleEditingChange(true);
+            }
+            if (errors.twitter) {
+                setErrors({...errors, twitter: ''});
+            }
+        } catch (err) {
+            if (err instanceof Error) {
+                setErrors({...errors, twitter: err.message});
+            }
+            updateSetting('twitter', null);
+        }
+    };
+
+    const handleSaveClick = () => {
+        const formErrors: {
+            facebook?: string;
+            twitter?: string;
+        } = {};
+
+        if (facebookUrl) {
+            try {
+                validateFacebookUrl(facebookUrl);
+            } catch (e) {
+                if (e instanceof Error) {
+                    formErrors.facebook = e.message;
+                }
+            }
+        }
+
+        if (twitterUrl) {
+            try {
+                validateTwitterUrl(twitterUrl);
+            } catch (e) {
+                if (e instanceof Error) {
+                    formErrors.twitter = e.message;
+                }
+            }
+        }
+
+        setErrors(formErrors);
+
+        if (Object.keys(formErrors).length === 0) {
+            handleSave();
+        }
+    };
 
     return (
         <TopLevelGroup
@@ -109,36 +112,29 @@ const SocialAccounts: React.FC<{ keywords: string[] }> = ({keywords}) => {
             saveState={saveState}
             testId='social-accounts'
             title='Social accounts'
+            hideEditButton
             onCancel={handleCancel}
             onEditingChange={handleEditingChange}
-            onSave={() => {
-                const formErrors: {
-                    facebook?: string;
-                    twitter?: string;
-                } = {};
-                try {
-                    validateFacebookUrl(facebookUrl);
-                } catch (e) {
-                    if (e instanceof Error) {
-                        formErrors.facebook = e.message;
-                    }
-                }
-
-                try {
-                    validateTwitterUrl(twitterUrl);
-                } catch (e) {
-                    if (e instanceof Error) {
-                        formErrors.twitter = e.message;
-                    }
-                }
-
-                setErrors(formErrors);
-                if (Object.keys(formErrors).length === 0) {
-                    handleSave();
-                }
-            }}
+            onSave={handleSaveClick}
         >
-            {isEditing ? inputs : values}
+            <SettingGroupContent>
+                <TextField
+                    error={!!errors.facebook}
+                    hint={errors.facebook}
+                    placeholder="https://www.facebook.com/ghost"
+                    title={`URL of your publication's Facebook Page`}
+                    value={facebookUrl}
+                    onChange={e => handleFacebookChange(e.target.value)}
+                />
+                <TextField
+                    error={!!errors.twitter}
+                    hint={errors.twitter}
+                    placeholder="https://x.com/ghost"
+                    title="URL of your X (formerly Twitter) profile"
+                    value={twitterUrl}
+                    onChange={e => handleTwitterChange(e.target.value)}
+                />
+            </SettingGroupContent>
         </TopLevelGroup>
     );
 };
