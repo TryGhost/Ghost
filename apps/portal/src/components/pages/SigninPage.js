@@ -131,7 +131,7 @@ export default class SigninPage extends React.Component {
 
     renderForm() {
         const {site, t} = this.context;
-        const showSignupLink = isSignupAllowed({site}) && hasAvailablePrices({site});
+        const isSignupAvailable = isSignupAllowed({site}) && hasAvailablePrices({site});
 
         if (!isSigninAllowed({site})) {
             return (
@@ -159,7 +159,7 @@ export default class SigninPage extends React.Component {
                 </div>
                 <footer className='gh-portal-signin-footer'>
                     {this.renderSubmitButton()}
-                    {showSignupLink && this.renderSignupMessage()}
+                    {isSignupAvailable && this.renderSignupMessage()}
                 </footer>
             </section>
         );
