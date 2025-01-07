@@ -1306,7 +1306,8 @@
 .gh-main-section-content.bordered {
     padding: 24px;
     border: 1px solid var(--whitegrey);
-    border-radius: 3px;
+    border-radius: 12px;
+    box-shadow: 0 1px 4px -1px rgb(0 0 0 / 10%);
 }
 
 .gh-main-section-content.columns-2 {
@@ -1439,11 +1440,8 @@
 }
 
 .gh-main-content-card {
-    border-radius: 3px;
-    padding: 24px;
     background: var(--main-bg-color);
     margin-bottom: 12px;
-    box-shadow: 0 1px 4px -1px rgba(0,0,0,0.1);
 }
 
 .gh-main-content-card:last-of-type {
