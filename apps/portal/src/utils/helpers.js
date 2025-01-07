@@ -633,11 +633,9 @@ export function getFreePriceCurrency({site}) {
 }
 
 export function getSitePrices({site = {}, pageQuery = ''} = {}) {
-    const {portal_plans: portalPlans} = site || {};
-
     const plansData = [];
 
-    if (isFreeSignupAllowed({site}) && portalPlans.includes('free')) {
+    if (hasFreeProductPrice({site})) {
         const freePriceCurrencyDetail = getFreePriceCurrency({site});
         plansData.push({
             id: 'free',
@@ -657,6 +655,7 @@ export function getSitePrices({site = {}, pageQuery = ''} = {}) {
             plansData.push(price);
         });
     }
+
     return plansData;
 }
 
