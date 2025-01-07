@@ -63,8 +63,8 @@ const TipsAndDonations: React.FC<{ keywords: string[] }> = ({keywords}) => {
     };
 
     const handleCancelClick = () => {
-        setIsEditing(false);
         handleCancel();
+        setIsEditing(false);
     };
 
     const handleSaveClick = async () => {
