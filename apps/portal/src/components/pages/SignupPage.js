@@ -177,7 +177,7 @@ footer.gh-portal-signup-footer.invite-only .gh-portal-signup-message {
     margin-top: 0;
 }
 
-.gh-portal-invite-only-notification, .gh-portal-members-disabled-notification {
+.gh-portal-invite-only-notification, .gh-portal-members-disabled-notification, .gh-portal-paid-members-only-notification {
     margin: 8px 32px 24px;
     padding: 0;
     text-align: center;
@@ -194,7 +194,7 @@ footer.gh-portal-signup-footer.invite-only .gh-portal-signup-message {
     padding-bottom: 32px;
 }
 
-.gh-portal-invite-only-notification + .gh-portal-signup-message {
+.gh-portal-invite-only-notification + .gh-portal-signup-message, .gh-portal-paid-members-only-notification + .gh-portal-signup-message {
     margin-bottom: 12px;
 }
 
@@ -773,8 +773,8 @@ class SignupPage extends React.Component {
             <section>
                 <div className='gh-portal-section'>
                     <p
-                        className='gh-portal-invite-only-notification'
-                        data-testid="invite-only-notification-text"
+                        className='gh-portal-paid-members-only-notification'
+                        data-testid="paid-members-only-notification-text"
                     >
                         {t('This site only accepts paid members.')}
                     </p>
