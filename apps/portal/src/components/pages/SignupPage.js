@@ -7,7 +7,7 @@ import NewsletterSelectionPage from './NewsletterSelectionPage';
 import ProductsSection from '../common/ProductsSection';
 import InputForm from '../common/InputForm';
 import {ValidateInputForm} from '../../utils/form';
-import {getSiteProducts, getSitePrices, hasAvailablePrices, hasOnlyFreePlan, isInviteOnly, isFreeSignupAllowed, isPaidMembersOnly, freeHasBenefitsOrDescription, hasMultipleNewsletters, hasFreeTrialTier, isSignupAllowed} from '../../utils/helpers';
+import {getSiteProducts, getSitePrices, hasAvailablePrices, hasOnlyFreePlan, isInviteOnly, isFreeSignupAllowed, isPaidMembersOnly, freeHasBenefitsOrDescription, hasMultipleNewsletters, hasFreeTrialTier, isSignupAllowed, isSigninAllowed} from '../../utils/helpers';
 import {ReactComponent as InvitationIcon} from '../../images/icons/invitation.svg';
 import {interceptAnchorClicks} from '../../utils/links';
 
@@ -698,24 +698,28 @@ class SignupPage extends React.Component {
             );
         }
 
+        // Invite-only site: block signups, offer to sign in
         if (isInviteOnly({site})) {
             return this.renderInviteOnlyMessage();
         }
 
-        if (!hasAvailablePrices({site, pageQuery})) {
-            if (isPaidMembersOnly({site})) {
+        // Paid-members-only site:
+        // - block free signups
+        // - block signups if no prices are available
+        // - offer to sign in
+        if (isPaidMembersOnly({site})) {
+            if (pageQuery === 'free' || !hasAvailablePrices({site, pageQuery})) {
                 return this.renderPaidMembersOnlyMessage();
+            }
+        }
+
+        // Signup is not allowed or no prices are available: block signup with the relevant message, offer signin when available
+        if (!isSignupAllowed({site}) || !hasAvailablePrices({site, pageQuery})) {
+            if (!isSigninAllowed({site})) {
+                return this.renderMembersDisabledMessage();
             }
 
             return this.renderInviteOnlyMessage();
-        }
-
-        if (pageQuery === 'free' && !isFreeSignupAllowed({site})) {
-            return this.renderPaidMembersOnlyMessage();
-        }
-
-        if (!isSignupAllowed({site})) {
-            return this.renderMembersDisabledMessage();
         }
 
         const showOnlyFree = pageQuery === 'free' && isFreeSignupAllowed({site});

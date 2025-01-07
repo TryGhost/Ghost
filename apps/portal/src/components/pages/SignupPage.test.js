@@ -115,4 +115,43 @@ describe('SignupPage', () => {
             expect(message).toBeInTheDocument();
         });
     });
+
+    describe('when site is invite-only', () => {
+        test('blocks signups but offers to sign in', () => {
+            setup({
+                site: getSiteData({
+                    membersSignupAccess: 'invite'
+                })
+            });
+
+            const message = getByTestId(document.body, 'invite-only-notification-text');
+            expect(message).toBeInTheDocument();
+        });
+    });
+
+    describe('when site is paid-members only', () => {
+        test('blocks the #/portal/signup/free page, but offers to sign in', () => {
+            setup({
+                site: getSiteData({
+                    membersSignupAccess: 'paid'
+                }),
+                pageQuery: 'free'
+            });
+
+            const message = getByTestId(document.body, 'paid-members-only-notification-text');
+            expect(message).toBeInTheDocument();
+        });
+
+        test('blocks signups when only the free plan is available, but offers to sign in', () => {
+            setup({
+                site: getSiteData({
+                    membersSignupAccess: 'paid',
+                    products: [getFreeProduct({})]
+                })
+            });
+
+            const message = getByTestId(document.body, 'paid-members-only-notification-text');
+            expect(message).toBeInTheDocument();
+        });
+    });
 });
