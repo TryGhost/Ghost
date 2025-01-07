@@ -18,7 +18,7 @@ export const TipsAndDonationsSuccessStyle = `
         height: 48px;
     }
 
-    .gh-portal-tips-and-donations .gh-tips-and-donations-icon-success svg { 
+    .gh-portal-tips-and-donations .gh-tips-and-donations-icon-success svg {
         width: 48px;
         height: 48px;
     }
@@ -64,6 +64,7 @@ const SupportSuccess = () => {
                 <div>{t('Already a member?')}</div>
                 <button
                     data-test-button='signin-switch'
+                    data-testid='signin-switch'
                     className='gh-portal-btn gh-portal-btn-link'
                     style={{color: brandColor}}
                     onClick={() => onAction('switchPage', {page: 'signin'})}

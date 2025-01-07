@@ -5,7 +5,7 @@ import CloseButton from '../common/CloseButton';
 import AppContext from '../../AppContext';
 import InputForm from '../common/InputForm';
 import {ValidateInputForm} from '../../utils/form';
-import {isSigninAllowed} from '../../utils/helpers';
+import {hasAvailablePrices, isSigninAllowed, isSignupAllowed} from '../../utils/helpers';
 import {ReactComponent as InvitationIcon} from '../../images/icons/invitation.svg';
 
 export default class SigninPage extends React.Component {
@@ -131,6 +131,7 @@ export default class SigninPage extends React.Component {
 
     renderForm() {
         const {site, t} = this.context;
+        const isSignupAvailable = isSignupAllowed({site}) && hasAvailablePrices({site});
 
         if (!isSigninAllowed({site})) {
             return (
@@ -158,7 +159,7 @@ export default class SigninPage extends React.Component {
                 </div>
                 <footer className='gh-portal-signin-footer'>
                     {this.renderSubmitButton()}
-                    {this.renderSignupMessage()}
+                    {isSignupAvailable && this.renderSignupMessage()}
                 </footer>
             </section>
         );

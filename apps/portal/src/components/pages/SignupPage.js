@@ -7,7 +7,7 @@ import NewsletterSelectionPage from './NewsletterSelectionPage';
 import ProductsSection from '../common/ProductsSection';
 import InputForm from '../common/InputForm';
 import {ValidateInputForm} from '../../utils/form';
-import {getSiteProducts, getSitePrices, hasAvailablePrices, hasOnlyFreePlan, isInviteOnly, isFreeSignupAllowed, isPaidMembersOnly, freeHasBenefitsOrDescription, hasMultipleNewsletters, hasFreeTrialTier, isSignupAllowed} from '../../utils/helpers';
+import {getSiteProducts, getSitePrices, hasAvailablePrices, hasOnlyFreePlan, isInviteOnly, isFreeSignupAllowed, isPaidMembersOnly, freeHasBenefitsOrDescription, hasMultipleNewsletters, hasFreeTrialTier, isSignupAllowed, isSigninAllowed} from '../../utils/helpers';
 import {ReactComponent as InvitationIcon} from '../../images/icons/invitation.svg';
 import {interceptAnchorClicks} from '../../utils/links';
 
@@ -177,7 +177,7 @@ footer.gh-portal-signup-footer.invite-only .gh-portal-signup-message {
     margin-top: 0;
 }
 
-.gh-portal-invite-only-notification, .gh-portal-members-disabled-notification {
+.gh-portal-invite-only-notification, .gh-portal-members-disabled-notification, .gh-portal-paid-members-only-notification {
     margin: 8px 32px 24px;
     padding: 0;
     text-align: center;
@@ -194,7 +194,7 @@ footer.gh-portal-signup-footer.invite-only .gh-portal-signup-message {
     padding-bottom: 32px;
 }
 
-.gh-portal-invite-only-notification + .gh-portal-signup-message {
+.gh-portal-invite-only-notification + .gh-portal-signup-message, .gh-portal-paid-members-only-notification + .gh-portal-signup-message {
     margin-bottom: 12px;
 }
 
@@ -670,6 +670,7 @@ class SignupPage extends React.Component {
                     <div>{t('Already a member?')}</div>
                     <button
                         data-test-button='signin-switch'
+                        data-testid='signin-switch'
                         className='gh-portal-btn gh-portal-btn-link'
                         style={{color: brandColor}}
                         onClick={() => onAction('switchPage', {page: 'signin'})}
@@ -698,24 +699,23 @@ class SignupPage extends React.Component {
             );
         }
 
-        if (!hasAvailablePrices({site, pageQuery})) {
-            if (isPaidMembersOnly({site})) {
-                return this.renderPaidMembersOnlyMessage();
-            }
-
-            if (isInviteOnly({site})) {
-                return this.renderInviteOnlyMessage();
-            }
-
-            return this.renderMembersDisabledMessage();
+        // Invite-only site: block signups, offer to sign in
+        if (isInviteOnly({site})) {
+            return this.renderInviteOnlyMessage();
         }
 
-        if (pageQuery === 'free' && !isFreeSignupAllowed({site})) {
+        // Paid-members-only site: block free signups, offer to sign in
+        if (isPaidMembersOnly({site}) && pageQuery === 'free') {
             return this.renderPaidMembersOnlyMessage();
         }
 
-        if (!isSignupAllowed({site})) {
-            return this.renderMembersDisabledMessage();
+        // Signup is not allowed or no prices are available: block signup with the relevant message, offer signin when available
+        if (!isSignupAllowed({site}) || !hasAvailablePrices({site, pageQuery})) {
+            if (!isSigninAllowed({site})) {
+                return this.renderMembersDisabledMessage();
+            }
+
+            return this.renderInviteOnlyMessage();
         }
 
         const showOnlyFree = pageQuery === 'free' && isFreeSignupAllowed({site});
@@ -773,8 +773,8 @@ class SignupPage extends React.Component {
             <section>
                 <div className='gh-portal-section'>
                     <p
-                        className='gh-portal-invite-only-notification'
-                        data-testid="invite-only-notification-text"
+                        className='gh-portal-paid-members-only-notification'
+                        data-testid="paid-members-only-notification-text"
                     >
                         {t('This site only accepts paid members.')}
                     </p>

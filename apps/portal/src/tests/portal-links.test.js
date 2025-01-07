@@ -139,19 +139,19 @@ describe('Portal Data links:', () => {
 
         describe('on a paid-members only site', () => {
             describe('with only a free plan', () => {
-                test('renders paid-members only message and does not allow signups', async () => {
+                test('renders invite-only message and does not allow signups', async () => {
                     window.location.hash = '#/portal/signup';
                     let {
                         popupFrame
                     } = await setup({
-                        site: {...FixtureSite.singleTier.onlyFreePlan, allow_self_signup: false, members_signup_access: 'paid'},
+                        site: {...FixtureSite.singleTier.onlyFreePlan, members_signup_access: 'paid'},
                         member: null
                     });
 
                     expect(popupFrame).toBeInTheDocument();
 
-                    const paidMembersOnlyMessage = within(popupFrame.contentDocument).queryByText(/This site only accepts paid members/i);
-                    expect(paidMembersOnlyMessage).toBeInTheDocument();
+                    const inviteOnlyMessage = within(popupFrame.contentDocument).queryByText(/This site is invite-only/i);
+                    expect(inviteOnlyMessage).toBeInTheDocument();
                 });
             });
 
@@ -164,7 +164,7 @@ describe('Portal Data links:', () => {
                         popupFrame
 
                     } = await setup({
-                        site: {...FixtureSite.multipleTiers.basic, allow_self_signup: false, members_signup_access: 'paid'},
+                        site: {...FixtureSite.multipleTiers.basic, members_signup_access: 'paid'},
                         member: null
                     });
 
@@ -215,7 +215,7 @@ describe('Portal Data links:', () => {
                 let {
                     popupFrame
                 } = await setup({
-                    site: {...FixtureSite.multipleTiers.basic, allow_self_signup: false, members_signup_access: 'paid'},
+                    site: {...FixtureSite.multipleTiers.basic, members_signup_access: 'paid'},
                     member: null
                 });
 

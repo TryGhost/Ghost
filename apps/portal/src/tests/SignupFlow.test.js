@@ -837,7 +837,7 @@ describe('Signup', () => {
                     popupFrame, emailInput,
                     freePlanTitle, monthlyPlanTitle, yearlyPlanTitle, fullAccessTitle
                 } = await setup({
-                    site: {...FixtureSite.singleTier.onlyFreePlan, allow_self_signup: false, members_signup_access: 'paid'}
+                    site: {...FixtureSite.singleTier.onlyFreePlan, members_signup_access: 'paid'}
                 });
 
                 expect(popupFrame).toBeInTheDocument();
@@ -863,7 +863,7 @@ describe('Signup', () => {
                 popupFrame, emailInput, nameInput,
                 freePlanTitle, monthlyPlanTitle, yearlyPlanTitle, chooseBtns
             } = await setup({
-                site: {...FixtureSite.multipleTiers.basic, allow_self_signup: false, members_signup_access: 'paid'}
+                site: {...FixtureSite.multipleTiers.basic, members_signup_access: 'paid'}
             });
 
             expect(popupFrame).toBeInTheDocument();
