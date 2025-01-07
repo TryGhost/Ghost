@@ -703,14 +703,9 @@ class SignupPage extends React.Component {
             return this.renderInviteOnlyMessage();
         }
 
-        // Paid-members-only site:
-        // - block free signups
-        // - block signups if no prices are available
-        // - offer to sign in
-        if (isPaidMembersOnly({site})) {
-            if (pageQuery === 'free' || !hasAvailablePrices({site, pageQuery})) {
-                return this.renderPaidMembersOnlyMessage();
-            }
+        // Paid-members-only site: block free signups, offer to sign in
+        if (isPaidMembersOnly({site}) && pageQuery === 'free') {
+            return this.renderPaidMembersOnlyMessage();
         }
 
         // Signup is not allowed or no prices are available: block signup with the relevant message, offer signin when available

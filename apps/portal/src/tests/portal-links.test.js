@@ -139,7 +139,7 @@ describe('Portal Data links:', () => {
 
         describe('on a paid-members only site', () => {
             describe('with only a free plan', () => {
-                test('renders paid-members only message and does not allow signups', async () => {
+                test('renders invite-only message and does not allow signups', async () => {
                     window.location.hash = '#/portal/signup';
                     let {
                         popupFrame
@@ -150,8 +150,8 @@ describe('Portal Data links:', () => {
 
                     expect(popupFrame).toBeInTheDocument();
 
-                    const paidMembersOnlyMessage = within(popupFrame.contentDocument).queryByText(/This site only accepts paid members/i);
-                    expect(paidMembersOnlyMessage).toBeInTheDocument();
+                    const inviteOnlyMessage = within(popupFrame.contentDocument).queryByText(/This site is invite-only/i);
+                    expect(inviteOnlyMessage).toBeInTheDocument();
                 });
             });
 

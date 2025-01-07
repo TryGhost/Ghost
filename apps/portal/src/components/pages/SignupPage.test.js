@@ -156,7 +156,7 @@ describe('SignupPage', () => {
                 })
             });
 
-            const message = getByTestId(document.body, 'paid-members-only-notification-text');
+            const message = getByTestId(document.body, 'invite-only-notification-text');
             expect(message).toBeInTheDocument();
 
             const signinLink = getByTestId(document.body, 'signin-link');
@@ -171,7 +171,7 @@ describe('SignupPage', () => {
                 })
             });
 
-            const message = getByTestId(document.body, 'paid-members-only-notification-text');
+            const message = getByTestId(document.body, 'invite-only-notification-text');
             expect(message).toBeInTheDocument();
 
             const signinLink = getByTestId(document.body, 'signin-link');
