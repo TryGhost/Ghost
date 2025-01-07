@@ -48,7 +48,7 @@ test.describe('Portal', () => {
 
             // check that sign out was successful and 'Sign in' button is available
             await portalTriggerButton.click();
-            await expect(portalFrame.locator('[data-testid="signin-link"]')).toBeVisible();
+            await expect(portalFrame.locator('[data-test-button="signin-switch"]')).toBeVisible();
         });
 
         test('can unsubscribe from newsletter from account settings', async ({sharedPage}) => {

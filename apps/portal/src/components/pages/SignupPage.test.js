@@ -127,7 +127,7 @@ describe('SignupPage', () => {
             const message = getByTestId(document.body, 'invite-only-notification-text');
             expect(message).toBeInTheDocument();
 
-            const signinLink = getByTestId(document.body, 'signin-link');
+            const signinLink = getByTestId(document.body, 'signin-switch');
             expect(signinLink).toBeInTheDocument();
         });
     });
@@ -144,7 +144,7 @@ describe('SignupPage', () => {
             const message = getByTestId(document.body, 'paid-members-only-notification-text');
             expect(message).toBeInTheDocument();
 
-            const signinLink = getByTestId(document.body, 'signin-link');
+            const signinLink = getByTestId(document.body, 'signin-switch');
             expect(signinLink).toBeInTheDocument();
         });
 
@@ -159,7 +159,7 @@ describe('SignupPage', () => {
             const message = getByTestId(document.body, 'invite-only-notification-text');
             expect(message).toBeInTheDocument();
 
-            const signinLink = getByTestId(document.body, 'signin-link');
+            const signinLink = getByTestId(document.body, 'signin-switch');
             expect(signinLink).toBeInTheDocument();
         });
 
@@ -174,7 +174,7 @@ describe('SignupPage', () => {
             const message = getByTestId(document.body, 'invite-only-notification-text');
             expect(message).toBeInTheDocument();
 
-            const signinLink = getByTestId(document.body, 'signin-link');
+            const signinLink = getByTestId(document.body, 'signin-switch');
             expect(signinLink).toBeInTheDocument();
         });
     });
@@ -190,7 +190,7 @@ describe('SignupPage', () => {
             const message = getByTestId(document.body, 'members-disabled-notification-text');
             expect(message).toBeInTheDocument();
 
-            const signinLink = queryByTestId(document.body, 'signin-link');
+            const signinLink = queryByTestId(document.body, 'signin-switch');
             expect(signinLink).toBeNull();
         });
     });
@@ -208,7 +208,7 @@ describe('SignupPage', () => {
             const message = getByTestId(document.body, 'invite-only-notification-text');
             expect(message).toBeInTheDocument();
 
-            const signinLink = getByTestId(document.body, 'signin-link');
+            const signinLink = getByTestId(document.body, 'signin-switch');
             expect(signinLink).toBeInTheDocument();
         });
     });
