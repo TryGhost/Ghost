@@ -71,6 +71,7 @@ const AddNewsletterModal: React.FC<RoutingModalProps> = () => {
         }}
         backDropClick={false}
         okColor='black'
+        okDisabled={saveState === 'saving'}
         okLabel='Create'
         okLoading={saveState === 'saving'}
         size='sm'
