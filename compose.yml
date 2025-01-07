@@ -1,6 +1,21 @@
 name: ghost
 
 services:
+  ghost:
+    build:
+      context: .
+      dockerfile: ./.docker/Dockerfile
+      target: development
+    ports:
+      - "2368:2368"
+      - "4200:4200"
+    profiles: [full]
+    volumes:
+      - .:/home/ghost
+    tty: true
+    depends_on:
+      - mysql
+      - redis
   mysql:
     image: mysql:8.0.35
     container_name: ghost-mysql
