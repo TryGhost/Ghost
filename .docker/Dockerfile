@@ -15,7 +15,7 @@ RUN apt-get update && \
 # Base DevContainer: for use in a Dev Container where your local code is mounted into the container
 ### Adding code and installing dependencies gets overridden by your local code/dependencies, so this is done in onCreateCommand
 FROM base AS base-devcontainer
-ARG WORKDIR
+ARG WORKDIR=/home/ghost
 # Install Stripe CLI, zsh, playwright
 RUN curl -s https://packages.stripe.dev/api/security/keypair/stripe-cli-gpg/public | gpg --dearmor | tee /usr/share/keyrings/stripe.gpg && \
     echo "deb [signed-by=/usr/share/keyrings/stripe.gpg] https://packages.stripe.dev/stripe-cli-debian-local stable main" | tee -a /etc/apt/sources.list.d/stripe.list && \
@@ -48,13 +48,13 @@ EXPOSE 7174
 ### This is a full devcontainer with all the code and dependencies installed
 ### Useful in an environment like Github Codespaces where you don't mount your local code into the container
 FROM base-devcontainer AS full-devcontainer
-ARG WORKDIR
+ARG WORKDIR=/home/ghost
 WORKDIR $WORKDIR
 COPY . .
 RUN yarn install --frozen-lockfile --prefer-offline --cache-folder $YARN_CACHE_FOLDER
 
 FROM base-devcontainer AS development
-ARG WORKDIR
+ARG WORKDIR=/home/ghost
 WORKDIR $WORKDIR
 ENTRYPOINT ["/home/ghost/.docker/development.entrypoint.sh"]
 CMD ["yarn", "dev"]

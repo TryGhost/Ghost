@@ -6,8 +6,6 @@ services:
       context: .
       dockerfile: ./.docker/Dockerfile
       target: development
-      args:
-        WORKDIR: /home/ghost
     ports:
       - "2368:2368"
       - "4200:4200"
@@ -15,8 +13,6 @@ services:
     volumes:
       - .:/home/ghost
     tty: true
-    env_file:
-      - .env
     depends_on:
       - mysql
       - redis
