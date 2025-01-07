@@ -144,7 +144,7 @@ describe('Portal Data links:', () => {
                     let {
                         popupFrame
                     } = await setup({
-                        site: {...FixtureSite.singleTier.onlyFreePlan, allow_self_signup: false, members_signup_access: 'paid'},
+                        site: {...FixtureSite.singleTier.onlyFreePlan, members_signup_access: 'paid'},
                         member: null
                     });
 
@@ -164,7 +164,7 @@ describe('Portal Data links:', () => {
                         popupFrame
 
                     } = await setup({
-                        site: {...FixtureSite.multipleTiers.basic, allow_self_signup: false, members_signup_access: 'paid'},
+                        site: {...FixtureSite.multipleTiers.basic, members_signup_access: 'paid'},
                         member: null
                     });
 
@@ -215,7 +215,7 @@ describe('Portal Data links:', () => {
                 let {
                     popupFrame
                 } = await setup({
-                    site: {...FixtureSite.multipleTiers.basic, allow_self_signup: false, members_signup_access: 'paid'},
+                    site: {...FixtureSite.multipleTiers.basic, members_signup_access: 'paid'},
                     member: null
                 });
 
