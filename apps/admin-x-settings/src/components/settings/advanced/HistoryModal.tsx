@@ -77,7 +77,7 @@ const HistoryFilter: React.FC<{
 
     return (
         <div className='flex items-center gap-4'>
-            <Popover position='end' trigger={<Button color='outline' label='Filter' size='sm' />}>
+            <Popover position='end' trigger={<Button color='outline' label='Filter' />}>
                 <div className='flex w-[220px] flex-col gap-8 p-5'>
                     <ToggleGroup>
                         <HistoryFilterToggle excludedItems={excludedEvents} item='added' label='Added' toggleItem={toggleEventType} />
@@ -167,7 +167,7 @@ const HistoryModal = NiceModal.create<RoutingModalProps>(({params}) => {
     const [excludedEvents, setExcludedEvents] = useState<string[]>([]);
     const [excludedResources, setExcludedResources] = useState<string[]>(['label']);
 
-    const {data, fetchNextPage} = useBrowseActions({
+    const {data, fetchNextPage, isFetchingNextPage} = useBrowseActions({
         searchParams: {
             include: 'actor,resource',
             limit: PAGE_SIZE.toString(),
@@ -243,6 +243,11 @@ const HistoryModal = NiceModal.create<RoutingModalProps>(({params}) => {
                                     }
                                     separator
                                 />)}
+                                {isFetchingNextPage && (
+                                    <div className="flex items-center justify-center p-5">
+                                        <LoadingIndicator size='md' />
+                                    </div>
+                                )}
                             </>
                         ) : (
                             <NoValueLabel icon='time-back'>
@@ -253,7 +258,7 @@ const HistoryModal = NiceModal.create<RoutingModalProps>(({params}) => {
                             </NoValueLabel>
                         )
                     ) : data === undefined ? (
-                        <div className="flex justify-center px-5 py-10">
+                        <div className="flex items-center justify-center px-5 pb-10 pt-12">
                             <LoadingIndicator />
                         </div>
                     ) : (
