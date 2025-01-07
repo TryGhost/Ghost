@@ -44,6 +44,15 @@ const TipsAndDonations: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const [copied, setCopied] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
 
+    // Watch for changes in localSettings and update editing state
+    useEffect(() => {
+        const hasChanges = localSettings.some(setting => setting.dirty);
+        if (hasChanges && !isEditing) {
+            setIsEditing(true);
+            handleEditingChange(true);
+        }
+    }, [localSettings, isEditing, handleEditingChange]);
+
     const copyDonateUrl = () => {
         navigator.clipboard.writeText(donateUrl);
         setCopied(true);
@@ -55,10 +64,6 @@ const TipsAndDonations: React.FC<{ keywords: string[] }> = ({keywords}) => {
     };
 
     const handleSettingChange = (key: string, value: string) => {
-        if (!isEditing) {
-            setIsEditing(true);
-            handleEditingChange(true);
-        }
         updateSetting(key, value);
     };
 
@@ -91,6 +96,7 @@ const TipsAndDonations: React.FC<{ keywords: string[] }> = ({keywords}) => {
             <SettingGroupContent columns={1}>
                 <div className='flex max-w-[180px] items-end gap-[.6rem]'>
                     <CurrencyField
+                        key={donationsSuggestedAmount}
                         error={!!errors.donationsSuggestedAmount}
                         hint={errors.donationsSuggestedAmount}
                         inputRef={focusRef}
