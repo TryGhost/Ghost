@@ -204,17 +204,43 @@
     cursor: pointer !important;
 }
 
+.gh-posts-list-item-group > * {
+    position: relative;
+    z-index: 10;
+}
+
+.gh-posts-list-item-group:after {
+    opacity: 0;
+    display: block;
+    position: absolute;
+    content: "";
+    top: -1px;
+    right: -16px;
+    bottom: -1px;
+    left: -16px;
+    background-color: var(--lightgrey-l2);
+    z-index: 0;
+    border-radius: 7px;
+}
+
+.gh-posts-list-item-group:hover:after {
+    opacity: 0.2;
+}
+
 .posts-list .gh-posts-list-item-group:hover {
-    background: linear-gradient(315deg, var(--whitegrey-l2) 60%, var(--white) 100%);
+    /* background: linear-gradient(315deg, var(--whitegrey-l2) 60%, var(--white) 100%); */
+    border-color: transparent;
 }
 
 .posts-list[data-ctrl] .gh-posts-list-item-group:hover {
-    background: linear-gradient(300deg, var(--whitegrey-l1) 75%, var(--white) 100%);
+    /* background: linear-gradient(300deg, var(--whitegrey-l1) 75%, var(--white) 100%); */
+    border-color: transparent;
 }
 
 .gh-posts-list-item-group[data-selected] {
-    background: linear-gradient(300deg, var(--whitegrey-l1) 75%, var(--white) 100%) !important;
+    /* background: linear-gradient(300deg, var(--whitegrey-l1) 75%, var(--white) 100%) !important; */
     user-select: none;
+    border-color: transparent;
 }
 
 .gh-posts-list-item-group .gh-posts-list-item:hover .gh-list-data {
@@ -226,12 +252,17 @@
 }
 
 .gh-posts-list-item-group {
-    border-top: 1px solid var(--whitegrey);
+    position: relative;
+    border-top: 1px solid var(--whitegrey-l1);
+}
+
+.gh-posts-list-item-group:hover + .gh-posts-list-item-group {
+    border-color: transparent;
 }
 
 .gh-posts-list-item-group[data-selected]:not(:first-of-type),
 .gh-posts-list-item-group[data-selected] + .gh-posts-list-item-group:hover {
-    border-top: 1px solid var(--white) !important;
+    border-top: 1px solid var(--transparent) !important;
 }
 /* END Temporary styles to move post list to use flex instead of tables */
 

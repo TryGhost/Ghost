@@ -49,6 +49,16 @@
     -webkit-overflow-scrolling: touch;
 }
 
+body:not(.gh-body-fullscreen) .gh-viewport {
+    background-color: var(--whitegrey-l2);
+}
+
+body:not(.gh-body-fullscreen) .gh-main {
+    margin: 8px 8px 8px 0;
+    box-shadow: 0px 1px 4px 0px rgba(0, 0, 0, 0.07), 0px 3px 7px 0px rgba(0, 0, 0, 0.02);
+    border-radius: 12px;
+}
+
 .gh-main-white {
     background: var(--white);
 }
@@ -101,7 +111,7 @@
     /* background: linear-gradient(315deg,var(--whitegrey-l2),var(--white)); */
     /* background: var(--whitegrey-l2); */
     transform: translateX(0);
-    border-right: 1px solid var(--main-color-area-divider);
+    /* border-right: 1px solid var(--main-color-area-divider); */
     transition: flex-basis 250ms;
     overflow: hidden;
 }
@@ -127,8 +137,8 @@
     flex-shrink: 0;
     display: flex;
     align-items: center;
-    height: var(--main-layout-vpanel-height);
-    padding: 32px;
+    /* height: var(--main-layout-vpanel-height); */
+    padding: 32px 32px 28px;
 }
 
 .gh-nav-menu-dropdown .dropdown-menu {
@@ -439,7 +449,7 @@
 .gh-nav-list .active {
     position: relative;
     color: var(--black);
-    background-color: var(--whitegrey-l1);
+    background-color: var(--whitegrey);
     font-weight: 600;
 }
 
@@ -1067,7 +1077,7 @@
 
 .gh-canvas {
     flex-grow: 1;
-    padding: 0 var(--main-layout-content-sidepadding) 48px;
+    padding: 0 var(--main-layout-content-sidepadding) var(--main-layout-content-sidepadding);
     margin: 0 auto;
     max-width: var(--main-layout-content-maxwidth);
 }
@@ -1091,9 +1101,9 @@
 }
 
 .gh-canvas-header {
-    min-height: calc(var(--main-layout-vpanel-height) - 1px);
+    /* min-height: calc(var(--main-layout-vpanel-height) - 1px); */
     margin: 0 calc(-1 * var(--main-layout-content-sidepadding));
-    padding: 32px var(--main-layout-content-sidepadding);
+    padding: 24px var(--main-layout-content-sidepadding);
     top: 0;
     background: var(--main-bg-color);
     z-index: 700;
@@ -1466,7 +1476,7 @@
     display: flex;
     align-items: center;
     overflow: hidden;
-    margin: -0.1em 0 0;
+    margin: 0 0 0;
     padding: 0 6px 0 0;
     text-overflow: ellipsis;
     font-size: 2.8rem;
@@ -1712,7 +1722,7 @@
 
 @media (max-width: 1440px) {
     .gh-canvas-header.break.tablet {
-        padding: 32px var(--main-layout-content-sidepadding) 12px;
+        padding: 24px var(--main-layout-content-sidepadding) 12px;
     }
 
     .gh-canvas-header.break.tablet .gh-canvas-header-content {
@@ -1840,7 +1850,7 @@
     .gh-canvas {
         padding: 0 4vw 4vw;
     }
-    
+
     .gh-canvas-header.break.tablet .view-actions {
         position: absolute;
         left: 0;

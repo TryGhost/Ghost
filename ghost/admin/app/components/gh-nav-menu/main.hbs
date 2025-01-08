@@ -57,9 +57,9 @@
                 {{/if}}
             </ul>
             <ul class="gh-nav-list gh-nav-manage">
-                <li class="gh-nav-list-new relative">
+                <li class="gh-nav-list-new gh-nav-list-posts relative">
                     <GhLinkToCustomViewsIndex @route="posts" @query={{reset-query-params "posts" }}
-                        data-test-nav="posts">{{svg-jar "posts"}}Posts</GhLinkToCustomViewsIndex>
+                        data-test-nav="posts">{{svg-jar "posts" class="gh-nav-posts-icon"}}Posts</GhLinkToCustomViewsIndex>
                     <LinkTo @route="lexical-editor.new" @model="post" class="gh-secondary-action gh-nav-new-post"
                         @alt="New post" title="New post" data-test-nav="new-story"><span>{{svg-jar "plus"}}</span>
                     </LinkTo>
