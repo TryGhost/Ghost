@@ -67,7 +67,7 @@ export class ToggleNode extends BaseToggleNode {
         if (this.__headingEditor) {
             this.__headingEditor.getEditorState().read(() => {
                 const html = $generateHtmlFromNodes(this.__headingEditor, null);
-                const cleanedHtml = cleanBasicHtml(html, {firstChildInnerContent: true});
+                const cleanedHtml = cleanBasicHtml(html, {firstChildInnerContent: true, allowBr: true});
                 json.heading = cleanedHtml;
             });
         }
