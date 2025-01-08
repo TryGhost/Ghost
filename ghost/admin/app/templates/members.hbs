@@ -72,11 +72,21 @@
                             {{/if}}
                             <li class="{{if this.members.length "" "disabled"}}">
                                 {{#if this.members.length}}
-                                    <button class="mr2" type="button" {{on "click" this.exportData}} data-test-button="export-members">
-                                        {{#if this.showingAll}}
-                                            <span>Export all members</span>
+                                    <button 
+                                        class="mr2" 
+                                        type="button" 
+                                        {{on "click" this.exportData}} 
+                                        data-test-button="export-members"
+                                        disabled={{this.isExporting}}
+                                    >
+                                        {{#if this.isExporting}}
+                                            <span>Preparing download...</span>
                                         {{else}}
-                                            <span>Export selected members ({{this.members.length}})</span>
+                                            {{#if this.showingAll}}
+                                                <span>Export all members</span>
+                                            {{else}}
+                                                <span>Export selected members ({{this.members.length}})</span>
+                                            {{/if}}
                                         {{/if}}
                                     </button>
                                 {{else}}

@@ -70,6 +70,8 @@ export default class MembersController extends Controller {
      */
     @tracked postAnalytics = null;
 
+    @tracked isExporting = false;
+
     get fromAnalytics() {
         if (!this.postAnalytics) {
             return null;
@@ -369,12 +371,39 @@ export default class MembersController extends Controller {
     }
 
     @action
-    exportData() {
-        let exportUrl = ghostPaths().url.api('members/upload');
-        let downloadParams = new URLSearchParams(this.getApiQueryObject());
-        downloadParams.set('limit', 'all');
+    async exportData() {
+        this.isExporting = true;
+        
+        try {
+            let exportUrl = ghostPaths().url.api('members/upload');
+            let downloadParams = new URLSearchParams(this.getApiQueryObject());
+            downloadParams.set('limit', 'all');
 
-        this.utils.downloadFile(`${exportUrl}?${downloadParams.toString()}`);
+            // First fetch the URL from the API
+            const response = await fetch(`${exportUrl}?${downloadParams.toString()}`);
+            const data = await response.json();
+            
+            if (data.url) {
+                // Create a temporary anchor element for download
+                const link = document.createElement('a');
+                link.href = data.url;  // Use the URL returned from the API
+                link.download = 'memberssss.csv'; // This forces download instead of navigation
+                
+                // Append to document, click, and cleanup
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            } else {
+                console.error('No download URL received from the API');
+            }
+        } catch (error) {
+            console.error('Error during export:', error);
+        } finally {
+            // Reset after a short delay
+            setTimeout(() => {
+                this.isExporting = false;
+            }, 1500);
+        }
     }
 
     @action

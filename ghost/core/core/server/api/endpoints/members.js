@@ -374,13 +374,6 @@ const controller = {
             'search'
         ],
         headers: {
-            disposition: {
-                type: 'csv',
-                value() {
-                    const datetime = (new Date()).toJSON().substring(0, 10);
-                    return `members.${datetime}.csv`;
-                }
-            },
             cacheInvalidate: false
         },
         response: {
@@ -391,9 +384,12 @@ const controller = {
         },
         validation: {},
         async query(frame) {
+            console.time("exportCSV");
+            await membersService.export(frame.options);
+            console.timeEnd("exportCSV");
             return {
-                data: await membersService.export(frame.options)
-            };
+                "url": "/content/files/members.csv"
+            }
         }
     },
 

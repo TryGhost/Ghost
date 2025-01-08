@@ -91,11 +91,12 @@ function activityFeed(data, _apiConfig, frame) {
  *
  * @param {{data: any[]}} data
  *
- * @returns {string} - A CSV string
+ * @returns {any} - A CSV string
  */
 function exportCSV(data) {
-    debug('exportCSV');
-    return unparse(data.data);
+    //debug('exportCSV');
+    return data;
+    //unparse(data.data);
 }
 
 function serializeAttribution(attribution) {

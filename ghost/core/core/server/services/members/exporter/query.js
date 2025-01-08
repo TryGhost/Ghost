@@ -84,5 +84,5 @@ module.exports = async function (options) {
         member.created_at = moment(member.created_at).toISOString();
     }
 
-    return rows;
+    return null;
 };
