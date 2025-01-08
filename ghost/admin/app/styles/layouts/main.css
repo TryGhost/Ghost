@@ -112,8 +112,13 @@ body:not(.gh-body-fullscreen) .gh-main {
     /* background: var(--whitegrey-l2); */
     transform: translateX(0);
     /* border-right: 1px solid var(--main-color-area-divider); */
-    transition: flex-basis 250ms;
+    transition: flex-basis ease-in-out 250ms, opacity ease-in-out 250ms;
     overflow: hidden;
+}
+
+.gh-nav.close {
+    flex-basis: 8px;
+    opacity: 0;
 }
 
 body:not(.gh-body-fullscreen) .gh-nav {
@@ -201,14 +206,41 @@ body:not(.gh-body-fullscreen) .gh-nav {
     background-color: transparent;
     background-size: cover;
     border-radius: 6px;
+    transition: all ease-in-out 0.3s;
+    pointer-events: none;
 }
 
 .gh-nav-menu-details {
+    position: relative;
     display: flex;
     align-items: center;
     flex-grow: 1;
     padding-right: 10px;
     min-width: 0; /* TODO: This is a bullshit Firefox hack */
+}
+
+.gh-nav-menu-details .gh-btn-toggle-menu {
+    cursor: pointer;
+    position: absolute;
+    top: 9px;
+    left: 2px;
+    width: 16px;
+    height: 16px;
+    transform: rotate(180deg);
+    opacity: 0;
+    transition: all ease-in-out 0.3s;
+}
+
+.gh-nav-menu-details:hover .gh-btn-toggle-menu {
+    opacity: 1;
+}
+
+.gh-nav-menu-details:hover .gh-nav-menu-icon {
+    opacity: 0;
+}
+
+.gh-nav-menu-details .gh-btn-toggle-menu svg path {
+    stroke: var(--black);
 }
 
 .gh-nav-menu-details-sitetitle {
@@ -1084,6 +1116,12 @@ body:not(.gh-body-fullscreen) .gh-nav {
     padding: 0 var(--main-layout-content-sidepadding) var(--main-layout-content-sidepadding);
     margin: 0 auto;
     max-width: var(--main-layout-content-maxwidth);
+    transition: padding ease-in-out 250ms;
+}
+
+.gh-nav.close + .gh-main .gh-canvas {
+    padding-left: 80px;
+    padding-right: 80px;
 }
 
 .gh-canvas.gh-canvas-sticky {

@@ -10,11 +10,17 @@ export default class GhNavMenuComponent extends Component {
     @service session;
 
     @tracked firstRender = true;
+    @tracked menuVisible = true;
 
     @action
     updateFirstRender() {
         schedule('afterRender', this, () => {
             this.firstRender = false;
         });
+    }
+
+    @action
+    toggleMenu() {
+        this.menuVisible = !this.menuVisible;
     }
 }

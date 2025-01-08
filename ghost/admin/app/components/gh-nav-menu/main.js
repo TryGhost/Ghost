@@ -10,6 +10,7 @@ import {htmlSafe} from '@ember/template';
 import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 import {tagName} from '@ember-decorators/component';
+import {tracked} from '@glimmer/tracking';
 
 @classic
 @tagName('')
