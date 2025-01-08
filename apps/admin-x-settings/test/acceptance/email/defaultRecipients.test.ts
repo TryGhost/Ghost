@@ -28,7 +28,6 @@ test.describe('Default recipient settings', async () => {
             ]
         });
 
-        await section.getByRole('button', {name: 'Edit'}).click();
         await chooseOptionInSelect(section.getByTestId('default-recipients-select'), 'Usually nobody');
         await section.getByRole('button', {name: 'Save'}).click();
 
