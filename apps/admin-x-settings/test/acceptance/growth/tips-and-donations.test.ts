@@ -27,6 +27,8 @@ test.describe('Tips and donations', () => {
         await expect(suggestedAmountInput).toBeVisible();
         await expect(suggestedAmountInput).toHaveValue('5');
 
+        await expect(section.getByRole('combobox')).toBeVisible();
+
         const donateUrl = section.getByTestId('donate-url');
         await expect(donateUrl).toBeVisible();
         await expect(donateUrl).toHaveText('http://test.com/#/portal/support');

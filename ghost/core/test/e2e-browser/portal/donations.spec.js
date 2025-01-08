@@ -63,7 +63,8 @@ test.describe('Portal', () => {
             await select.click();
             await sharedPage.locator(`[data-testid="select-option"][data-value="EUR"]`).click();
             await section.getByRole('button', {name: 'Save'}).click();
-            await expect(select).not.toBeVisible();
+            // Currency selector is now always visible
+            await expect(select).toBeVisible();
 
             // go to website and open portal
             await sharedPage.goto('/#/portal/support');
