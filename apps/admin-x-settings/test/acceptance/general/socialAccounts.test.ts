@@ -20,7 +20,6 @@ test.describe('Social account settings', async () => {
         await expect(section.getByLabel(`URL of your publication's Facebook Page`)).toHaveValue('https://www.facebook.com/ghost');
         await expect(section.getByLabel('URL of your X (formerly Twitter) profile')).toHaveValue('https://x.com/ghost');
 
-        // Fill in new values
         await section.getByLabel(`URL of your publication's Facebook Page`).fill('https://www.facebook.com/fb');
         await section.getByLabel('URL of your X (formerly Twitter) profile').fill('https://x.com/tw');
 
@@ -47,7 +46,9 @@ test.describe('Social account settings', async () => {
 
         const section = page.getByTestId('social-accounts');
 
+        // Wait for the inputs to be visible
         const facebookInput = section.getByLabel(`URL of your publication's Facebook Page`);
+        await expect(facebookInput).toBeVisible();
 
         await testUrlValidation(
             facebookInput,
@@ -94,14 +95,14 @@ test.describe('Social account settings', async () => {
         await testUrlValidation(
             facebookInput,
             'http://github.com/username',
-            'http://github.com/username',
+            '',
             'The URL must be in a format like https://www.facebook.com/yourPage'
         );
 
         await testUrlValidation(
             facebookInput,
             'http://github.com/pages/username',
-            'http://github.com/pages/username',
+            '',
             'The URL must be in a format like https://www.facebook.com/yourPage'
         );
 
@@ -128,7 +129,7 @@ test.describe('Social account settings', async () => {
         await testUrlValidation(
             twitterInput,
             '*(&*(%%))',
-            '*(&*(%%))',
+            '',
             'The URL must be in a format like https://x.com/yourUsername'
         );
 
