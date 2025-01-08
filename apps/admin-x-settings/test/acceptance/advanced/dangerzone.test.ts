@@ -17,7 +17,7 @@ test.describe('DangerZone', async () => {
 
         await page.getByTestId('confirmation-modal').getByRole('button', {name: 'Delete'}).click();
 
-        await expect(page.getByTestId('toast-success')).toContainText('All content deleted');
+        await expect(page.getByTestId('toast-success')).toContainText('All content deleted from database');
 
         expect(lastApiRequests.deleteAllContent).toBeTruthy();
     });

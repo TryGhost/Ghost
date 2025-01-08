@@ -184,8 +184,11 @@ test.describe('Offers Modal', () => {
 
         await page.goto('/');
         const section = page.getByTestId('offers');
-        await section.getByRole('button', {name: 'Manage offers'}).click();
+        const manageButton = section.getByRole('button', {name: 'Manage offers'});
+        await expect(manageButton).toBeVisible();
+        await manageButton.click();
         const modal = page.getByTestId('offers-modal');
+        await expect(modal).toBeVisible();
         await expect(modal.getByText('Active')).toHaveAttribute('aria-selected', 'true');
         await expect(modal).toContainText('First offer');
         await expect(modal).toContainText('Second offer');

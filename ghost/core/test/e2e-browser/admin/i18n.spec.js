@@ -11,7 +11,6 @@ test.describe('i18n', () => {
         test('changing the site language immediately translates strings in newsletters', async ({sharedPage}) => {
             await sharedPage.goto('/ghost/#/settings/publication-language');
             const section = sharedPage.getByTestId('publication-language');
-            await section.getByRole('button', {name: 'Edit'}).click();
             const input = section.getByPlaceholder('Site language');
             await input.fill('fr');
             await section.getByRole('button', {name: 'Save'}).click();

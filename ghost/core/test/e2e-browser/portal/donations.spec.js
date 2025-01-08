@@ -58,13 +58,13 @@ test.describe('Portal', () => {
 
             const section = sharedPage.getByTestId('tips-and-donations');
 
-            await section.getByRole('button', {name: 'Edit'}).click();
             await section.getByLabel('Suggested amount').fill('98');
             const select = section.getByLabel('Currency');
             await select.click();
             await sharedPage.locator(`[data-testid="select-option"][data-value="EUR"]`).click();
             await section.getByRole('button', {name: 'Save'}).click();
-            await expect(select).not.toBeVisible();
+            // Currency selector is now always visible
+            await expect(select).toBeVisible();
 
             // go to website and open portal
             await sharedPage.goto('/#/portal/support');
