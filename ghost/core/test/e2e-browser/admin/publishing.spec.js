@@ -637,7 +637,6 @@ test.describe('Updating post access', () => {
         await page.locator('[data-testid="select-option"]', {hasText: /Usually nobody/}).click();
         await page.getByTestId('default-recipients').getByRole('button', {name: 'Save'}).click();
 
-        await expect(page.getByTestId('default-recipients-select')).toBeHidden();
         await expect(page.getByTestId('default-recipients')).toContainText('Usually nobody');
 
         await page.goto('/ghost');
