@@ -205,7 +205,7 @@ const Modal: React.FC<ModalProps> = ({
     );
 
     let backdropClasses = clsx(
-        'fixed inset-0 z-[1000] h-[100vh] w-[100vw]',
+        'fixed inset-0 z-[1000] h-[100dvh] w-[100dvw]',
         allowBackgroundInteraction && 'pointer-events-none'
     );
 

@@ -12,7 +12,6 @@ const PublicationLanguage: React.FC<{ keywords: string[] }> = ({keywords}) => {
         handleSave,
         handleCancel,
         updateSetting,
-        focusRef,
         errors,
         clearError,
         handleEditingChange
@@ -32,38 +31,16 @@ const PublicationLanguage: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     const handleLanguageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         updateSetting('locale', e.target.value);
+        if (!isEditing) {
+            handleEditingChange(true);
+        }
     };
-
-    const values = (
-        <SettingGroupContent values={[
-            {
-                heading: 'Site language',
-                key: 'site-language',
-                value: publicationLanguage
-            }
-        ]} />
-    );
 
     const hint = (
         <>
             Default: English (<strong>en</strong>); find out more about
             <a className='text-green-400' href="https://ghost.org/docs/faq/translation/" rel="noopener noreferrer" target="_blank"> using Ghost in other languages</a>
         </>
-    );
-
-    const inputFields = (
-        <SettingGroupContent columns={1}>
-            <TextField
-                error={!!errors.publicationLanguage}
-                hint={errors.publicationLanguage || hint}
-                inputRef={focusRef}
-                placeholder="Site language"
-                title='Site language'
-                value={publicationLanguage}
-                onChange={handleLanguageChange}
-                onKeyDown={() => clearError('password')}
-            />
-        </SettingGroupContent>
     );
 
     return (
@@ -75,11 +52,22 @@ const PublicationLanguage: React.FC<{ keywords: string[] }> = ({keywords}) => {
             saveState={saveState}
             testId='publication-language'
             title="Publication Language"
+            hideEditButton
             onCancel={handleCancel}
             onEditingChange={handleEditingChange}
             onSave={handleSave}
         >
-            {isEditing ? inputFields : values}
+            <SettingGroupContent columns={1}>
+                <TextField
+                    error={!!errors.publicationLanguage}
+                    hint={errors.publicationLanguage || hint}
+                    placeholder="Site language"
+                    title='Site language'
+                    value={publicationLanguage}
+                    onChange={handleLanguageChange}
+                    onKeyDown={() => clearError('password')}
+                />
+            </SettingGroupContent>
         </TopLevelGroup>
     );
 };

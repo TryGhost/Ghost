@@ -13,4 +13,4 @@ You can automatically start the announcement-bar dev server when developing Ghos
 
 # Copyright & License 
 
-Copyright (c) 2013-2023 Ghost Foundation - Released under the [MIT license](LICENSE).
+Copyright (c) 2013-2025 Ghost Foundation - Released under the [MIT license](LICENSE).
