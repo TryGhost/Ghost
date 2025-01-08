@@ -41,9 +41,9 @@ test.describe('Default recipient settings', async () => {
         await chooseOptionInSelect(section.getByTestId('default-recipients-select'), 'Paid-members only');
         await section.getByRole('button', {name: 'Save'}).click();
 
-        await expect(section.getByTestId('default-recipients-select')).toHaveCount(0);
-
-        await expect(section.getByText('Paid-members only')).toHaveCount(1);
+        const select = section.getByTestId('default-recipients-select');
+        await expect(select).toBeVisible();
+        await expect(select).toHaveText(/Paid-members only/);
 
         expect(lastApiRequests.editSettings?.body).toEqual({
             settings: [
@@ -84,7 +84,9 @@ test.describe('Default recipient settings', async () => {
 
         await section.getByRole('button', {name: 'Save'}).click();
 
-        await expect(section.getByText('Specific people')).toHaveCount(1);
+        const select = section.getByTestId('default-recipients-select');
+        await expect(select).toBeVisible();
+        await expect(select).toHaveText(/Specific people/);
 
         expect(lastApiRequests.editSettings?.body).toEqual({
             settings: [
