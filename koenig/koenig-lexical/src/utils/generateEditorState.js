@@ -16,25 +16,19 @@ export default function generateEditorState({editor, initialHtml}) {
         editor.update(() => {
             const nodes = _$generateNodesFromHTML(editor, initialHtml);
 
-            // There are few recent issues related to $generateNodesFromDOM
-            // https://github.com/facebook/lexical/issues/2807
-            // https://github.com/facebook/lexical/issues/3677
-            // As a temporary fix, checking node content to remove additional spaces and br
-            const filteredNodes = nodes.filter(n => n.getTextContent().trim());
-
             // Select the root
             $getRoot().select();
             // Clear existing content (we initialize an editor with an empty p node so it is focusable if there's no content)
             $getRoot().clear();
 
             // Insert them at a selection.
-            $insertNodes(filteredNodes);
+            $insertNodes(nodes);
 
             // $insertNodes is focusing an editor (https://github.com/facebook/lexical/issues/4546)
             // This behaviour can break the ability to autofocus the editor because
             // initial state filling can happen after the component is already mounted.
             // Reset selection to make it easier to manage editor focus in components instead of editor state generation
-            if (filteredNodes.length) {
+            if (nodes.length) {
                 $setSelection(null);
             }
         }, {discrete: true, tag: 'history-merge'}); // use history merge to prevent undo clearing the initial state
