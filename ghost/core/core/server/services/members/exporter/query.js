@@ -84,5 +84,38 @@ module.exports = async function (options) {
         member.created_at = moment(member.created_at).toISOString();
     }
 
-    return null;
+    
+
+    const fs = require('fs');
+    const path = require('path');
+    const createObjectCsvStringifier = require('csv-writer').createObjectCsvStringifier;
+
+    const csvPath = path.join(process.cwd(), 'content/files/members101.csv');
+
+    const csvStringifier = createObjectCsvStringifier({
+        header: [
+            {id: 'id', title: 'ID'},
+            {id: 'email', title: 'Email'},
+            {id: 'name', title: 'Name'}, 
+            {id: 'note', title: 'Note'},
+            {id: 'status', title: 'Status'},
+            {id: 'created_at', title: 'Created At'},
+            {id: 'subscribed', title: 'Subscribed'},
+            {id: 'comped', title: 'Comped'},
+            {id: 'tiers', title: 'Tiers'},
+            {id: 'labels', title: 'Labels'},
+            {id: 'stripe_customer_id', title: 'Stripe Customer ID'}
+        ]
+    });
+
+    const records = rows.map(row => ({
+        ...row,
+        tiers: row.tiers.map(t => t.name).join(','),
+        labels: row.labels.map(l => l.name).join(',')
+    }));
+
+    const csvString = csvStringifier.getHeaderString() + csvStringifier.stringifyRecords(records);
+    fs.writeFileSync(csvPath, csvString);
+
+    return csvPath;
 };
