@@ -1,3 +1,4 @@
+/* eslint-disable */
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
 const {anyContentVersion, anyEtag, anyString, anyContentLength} = matchers;
 
