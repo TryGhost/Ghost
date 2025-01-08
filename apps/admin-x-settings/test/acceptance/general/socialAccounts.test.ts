@@ -16,20 +16,19 @@ test.describe('Social account settings', async () => {
 
         const section = page.getByTestId('social-accounts');
 
-        await expect(section.getByText('https://www.facebook.com/ghost')).toHaveCount(1);
-        await expect(section.getByText('https://x.com/ghost')).toHaveCount(1);
+        // Check initial values in input fields
+        await expect(section.getByLabel(`URL of your publication's Facebook Page`)).toHaveValue('https://www.facebook.com/ghost');
+        await expect(section.getByLabel('URL of your X (formerly Twitter) profile')).toHaveValue('https://x.com/ghost');
 
-        await section.getByRole('button', {name: 'Edit'}).click();
-
-        await section.getByLabel(`URL of your publication’s Facebook Page`).fill('https://www.facebook.com/fb');
+        // Fill in new values
+        await section.getByLabel(`URL of your publication's Facebook Page`).fill('https://www.facebook.com/fb');
         await section.getByLabel('URL of your X (formerly Twitter) profile').fill('https://x.com/tw');
 
         await section.getByRole('button', {name: 'Save'}).click();
 
-        await expect(section.getByLabel('URL of your X (formerly Twitter) profile')).toHaveCount(0);
-
-        await expect(section.getByText('https://www.facebook.com/fb')).toHaveCount(1);
-        await expect(section.getByText('https://x.com/tw')).toHaveCount(1);
+        // Check updated values in input fields
+        await expect(section.getByLabel(`URL of your publication's Facebook Page`)).toHaveValue('https://www.facebook.com/fb');
+        await expect(section.getByLabel('URL of your X (formerly Twitter) profile')).toHaveValue('https://x.com/tw');
 
         expect(lastApiRequests.editSettings?.body).toEqual({
             settings: [
@@ -48,7 +47,7 @@ test.describe('Social account settings', async () => {
 
         const section = page.getByTestId('social-accounts');
 
-        const facebookInput = section.getByLabel(`URL of your publication’s Facebook Page`);
+        const facebookInput = section.getByLabel(`URL of your publication's Facebook Page`);
 
         await testUrlValidation(
             facebookInput,
