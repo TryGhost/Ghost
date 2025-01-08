@@ -13,6 +13,8 @@ services:
     volumes:
       - .:/home/ghost
     tty: true
+    env_file:
+      - .env
     depends_on:
       - mysql
       - redis

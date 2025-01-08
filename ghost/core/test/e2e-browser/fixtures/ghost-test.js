@@ -11,7 +11,10 @@ const Stripe = require('stripe').Stripe;
 const configUtils = require('../../utils/configUtils');
 
 const startWebhookServer = (port) => {
-    const command = `stripe listen --forward-connect-to http://127.0.0.1:${port}/members/webhooks/stripe/ ${process.env.CI ? `--api-key ${process.env.STRIPE_SECRET_KEY}` : ''}`.trim();
+    const isCI = process.env.CI;
+    const isDocker = process.env.COMPOSE_PROFILES === 'full';
+    const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
+    const command = `stripe listen --forward-connect-to http://127.0.0.1:${port}/members/webhooks/stripe/ ${isDocker || isCI ? `--api-key ${stripeSecretKey}` : ''}`.trim();
     const webhookServer = spawn(command.split(' ')[0], command.split(' ').slice(1));
 
     // Adding event listeners here seems to prevent heisenbug where webhooks aren't received
@@ -22,7 +25,10 @@ const startWebhookServer = (port) => {
 };
 
 const getWebhookSecret = async () => {
-    const command = `stripe listen --print-secret ${process.env.CI ? `--api-key ${process.env.STRIPE_SECRET_KEY}` : ''}`.trim();
+    const isCI = process.env.CI;
+    const isDocker = process.env.COMPOSE_PROFILES === 'full';
+    const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
+    const command = `stripe listen --print-secret ${isDocker || isCI ? `--api-key ${stripeSecretKey}` : ''}`.trim();
     const webhookSecret = (await promisify(exec)(command)).stdout;
     return webhookSecret.toString().trim();
 };
