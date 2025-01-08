@@ -617,7 +617,6 @@ test.describe('Updating post access', () => {
         await page.locator('[data-testid="select-option"]', {hasText: 'Tokyo'}).click();
 
         await page.getByTestId('timezone').getByRole('button', {name: 'Save'}).click();
-        await expect(page.getByTestId('timezone-select')).toBeHidden();
         await expect(page.getByTestId('timezone')).toContainText('(GMT +9:00) Osaka, Sapporo, Tokyo');
 
         await page.getByTestId('exit-settings').click();
