@@ -335,8 +335,7 @@ module.exports = function MembersAPI({
     const middleware = {
         sendMagicLink: Router().use(
             body.json(),
-            captchaService.getTokenMiddleware(),
-            captchaService.getEvaluationMiddleware(),
+            captchaService.getMiddleware(),
             forwardError((req, res) => routerController.sendMagicLink(req, res))
         ),
         createCheckoutSession: Router().use(

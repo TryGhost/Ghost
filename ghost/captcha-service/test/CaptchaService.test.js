@@ -1,21 +1,15 @@
 const assert = require('assert/strict');
+const sinon = require('sinon');
 const CaptchaService = require('../index');
+const hcaptcha = require('hcaptcha');
 
 describe('CaptchaService', function () {
-    it('Returns whether the service is enabled', function () {
-        const captchaService = new CaptchaService({
-            enabled: true,
-            secretKey: 'test-secret'
-        });
+    beforeEach(function () {
+        sinon.stub(hcaptcha, 'verify');
+    });
 
-        assert.equal(captchaService.isEnabled(), true);
-
-        const disabledCaptchaService = new CaptchaService({
-            enabled: false,
-            secretKey: 'test-secret'
-        });
-
-        assert.equal(disabledCaptchaService.isEnabled(), false);
+    afterEach(function () {
+        hcaptcha.verify.restore();
     });
 
     it('Creates a middleware when enabled', function () {
@@ -24,72 +18,106 @@ describe('CaptchaService', function () {
             secretKey: 'test-secret'
         });
 
-        const tokenMiddleware = captchaService.getTokenMiddleware();
-        assert.equal(tokenMiddleware.length, 3);
+        const captchaMiddleware = captchaService.getMiddleware();
+        assert.equal(captchaMiddleware.length, 3);
     });
 
     it('No-ops if CAPTCHA score is safe', function (done) {
+        hcaptcha.verify.resolves({score: 0.6});
+
         const captchaService = new CaptchaService({
             enabled: true,
             scoreThreshold: 0.8,
             secretKey: 'test-secret'
         });
 
-        const evaluationMiddleware = captchaService.getEvaluationMiddleware();
+        const captchaMiddleware = captchaService.getMiddleware();
 
         const req = {
-            hcaptcha: {
-                score: 0.6
+            body: {
+                token: 'test-token'
             }
         };
 
-        evaluationMiddleware(req, null, (err) => {
+        captchaMiddleware(req, null, (err) => {
             assert.equal(err, undefined);
             done();
         });
     });
 
     it('Errors when CAPTCHA score is suspicious', function (done) {
+        hcaptcha.verify.resolves({score: 0.8});
+
         const captchaService = new CaptchaService({
             enabled: true,
             scoreThreshold: 0.8,
             secretKey: 'test-secret'
         });
 
-        const evaluationMiddleware = captchaService.getEvaluationMiddleware();
+        const captchaMiddleware = captchaService.getMiddleware();
 
         const req = {
-            hcaptcha: {
-                score: 0.8
+            body: {
+                token: 'test-token'
             }
         };
 
-        evaluationMiddleware(req, null, (err) => {
+        captchaMiddleware(req, null, (err) => {
             assert.equal(err.message, 'The server has encountered an error.');
             done();
         });
     });
 
-    it('Returns no-op token middleware when not enabled', function (done) {
+    it('Fails gracefully if hcaptcha verification fails', function (done) {
+        hcaptcha.verify.rejects(new Error('Test error'));
+
         const captchaService = new CaptchaService({
-            enabled: false,
+            enabled: true,
+            scoreThreshold: 0.8,
             secretKey: 'test-secret'
         });
 
-        const tokenMiddleware = captchaService.getTokenMiddleware();
-        tokenMiddleware(null, null, () => {
+        const captchaMiddleware = captchaService.getMiddleware();
+
+        const req = {
+            body: {
+                token: 'test-token'
+            }
+        };
+
+        captchaMiddleware(req, null, (err) => {
+            assert.equal(err.message, 'Failed to verify hCaptcha token');
             done();
         });
     });
 
-    it('Returns no-op evaluation middleware when not enabled', function (done) {
+    it('Returns a 400 if no token provided', function (done) {
+        const captchaService = new CaptchaService({
+            enabled: true,
+            scoreThreshold: 0.8,
+            secret: 'test-secret'
+        });
+
+        const captchaMiddleware = captchaService.getMiddleware();
+
+        const req = {
+            body: {}
+        };
+
+        captchaMiddleware(req, null, (err) => {
+            assert.equal(err.message, 'hCaptcha token missing');
+            done();
+        });
+    });
+
+    it('Returns no-op middleware when not enabled', function (done) {
         const captchaService = new CaptchaService({
             enabled: false,
             secretKey: 'test-secret'
         });
 
-        const evaluationMiddlware = captchaService.getEvaluationMiddleware();
-        evaluationMiddlware(null, null, () => {
+        const captchaMiddleware = captchaService.getMiddleware();
+        captchaMiddleware(null, null, () => {
             done();
         });
     });

@@ -1,6 +1,6 @@
-const hcaptchaMiddleware = require('./hcaptcha-middleware');
+const hcaptcha = require('hcaptcha');
 const logging = require('@tryghost/logging');
-const {InternalServerError} = require('@tryghost/errors');
+const {InternalServerError, BadRequestError, utils: errorUtils} = require('@tryghost/errors');
 
 class CaptchaService {
     #enabled;
@@ -23,33 +23,46 @@ class CaptchaService {
         this.#scoreThreshold = scoreThreshold;
     }
 
-    isEnabled() {
-        return this.#enabled;
-    }
+    getMiddleware() {
+        const scoreThreshold = this.#scoreThreshold;
+        const secretKey = this.#secretKey;
 
-    getTokenMiddleware() {
-        if (this.#enabled) {
-            return hcaptchaMiddleware(this.#secretKey);
-        } else {
-            return (req, res, next) => next();
+        if (!this.#enabled) {
+            return function captchaNoOpMiddleware(req, res, next) {
+                next();
+            };
         }
-    }
 
-    getEvaluationMiddleware() {
-        if (this.#enabled) {
-            return (req, res, next) => {
-                if (req.hcaptcha.score < this.#scoreThreshold) {
+        return async function captchaMiddleware(req, res, next) {
+            let captchaResponse;
+
+            try {
+                if (!req.body || !req.body.token) {
+                    throw new BadRequestError({
+                        message: 'hCaptcha token missing'
+                    });
+                }
+
+                captchaResponse = await hcaptcha.verify(secretKey, req.body.token, req.ip);
+
+                if (captchaResponse.score < scoreThreshold) {
                     next();
                 } else {
-                    logging.error(`Blocking request due to high score (${req.hcaptcha.score})`);
+                    logging.error(`Blocking request due to high score (${captchaResponse.score})`);
 
                     // Intentionally left sparse to avoid leaking information
-                    next(new InternalServerError());
+                    throw new InternalServerError();
                 }
-            };
-        } else {
-            return (req, res, next) => next();
-        }
+            } catch (err) {
+                if (errorUtils.isGhostError(err)) {
+                    return next(err);
+                } else {
+                    return next(new InternalServerError({
+                        message: 'Failed to verify hCaptcha token'
+                    }));
+                }
+            }
+        };
     }
 }
 
