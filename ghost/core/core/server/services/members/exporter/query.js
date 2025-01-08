@@ -84,8 +84,6 @@ module.exports = async function (options) {
         member.created_at = moment(member.created_at).toISOString();
     }
 
-    
-
     const fs = require('fs');
     const path = require('path');
     const createObjectCsvStringifier = require('csv-writer').createObjectCsvStringifier;

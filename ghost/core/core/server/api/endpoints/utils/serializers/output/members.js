@@ -1,7 +1,7 @@
 //@ts-check
 const _ = require('lodash');
 const debug = require('@tryghost/debug')('api:endpoints:utils:serializers:output:members');
-const {unparse} = require('@tryghost/members-csv');
+//const {unparse} = require('@tryghost/members-csv');
 const mappers = require('./mappers');
 
 module.exports = {

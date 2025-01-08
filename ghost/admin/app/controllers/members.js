@@ -3,6 +3,7 @@ import BulkDeleteMembersModal from '../components/members/modals/bulk-delete';
 import BulkRemoveMembersLabelModal from '../components/members/modals/bulk-remove-label';
 import BulkUnsubscribeMembersModal from '../components/members/modals/bulk-unsubscribe';
 import Controller from '@ember/controller';
+import fetch from 'fetch';
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
 import moment from 'moment-timezone';
 import {A} from '@ember/array';
@@ -386,18 +387,16 @@ export default class MembersController extends Controller {
             if (data.url) {
                 // Create a temporary anchor element for download
                 const link = document.createElement('a');
-                link.href = data.url;  // Use the URL returned from the API
-                link.download = 'memberssss.csv'; // This forces download instead of navigation
+                link.href = data.url;
+                link.download = 'memberssss.csv';
                 
                 // Append to document, click, and cleanup
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
-            } else {
-                console.error('No download URL received from the API');
             }
         } catch (error) {
-            console.error('Error during export:', error);
+            //console.error('Error during export:', error);
         } finally {
             // Reset after a short delay
             setTimeout(() => {
