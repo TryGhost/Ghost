@@ -2,13 +2,19 @@ import {$createParagraphNode, $setSelection} from 'lexical';
 import {$generateNodesFromDOM} from '@lexical/html';
 import {$getRoot, $insertNodes} from 'lexical';
 
+// exported for testing
+export function _$generateNodesFromHTML(editor, html) {
+    const parser = new DOMParser();
+    const dom = parser.parseFromString(html, 'text/html');
+    const nodes = $generateNodesFromDOM(editor, dom);
+    return nodes;
+}
+
 export default function generateEditorState({editor, initialHtml}) {
     if (initialHtml) {
         // convert html in `text` to Lexical nodes and populate the editor
         editor.update(() => {
-            const parser = new DOMParser();
-            const dom = parser.parseFromString(initialHtml, 'text/html');
-            const nodes = $generateNodesFromDOM(editor, dom);
+            const nodes = _$generateNodesFromHTML(editor, initialHtml);
 
             // There are few recent issues related to $generateNodesFromDOM
             // https://github.com/facebook/lexical/issues/2807
