@@ -23,7 +23,7 @@ test.describe('Time zone settings', async () => {
         await section.getByRole('button', {name: 'Save'}).click();
 
         await expect(select).toBeVisible();
-        await expect(select).toHaveValue('America/Anchorage');
+        await expect(select).toContainText('(GMT -9:00) Alaska');
 
         expect(lastApiRequests.editSettings?.body).toEqual({
             settings: [

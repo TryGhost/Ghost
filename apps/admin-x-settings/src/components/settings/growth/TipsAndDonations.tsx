@@ -127,10 +127,10 @@ const TipsAndDonations: React.FC<{ keywords: string[] }> = ({keywords}) => {
                         <Heading level={6}>Shareable link</Heading>
                     </div>
                     <div className='w-100 group relative mt-0 flex items-center justify-between overflow-hidden border-b border-transparent pb-2 pt-1 hover:border-grey-300 dark:hover:border-grey-600'>
-                        {donateUrl}
+                        <span data-testid='donate-url'>{donateUrl}</span>
                         <div className='invisible flex gap-1 bg-white pl-1 group-hover:visible dark:bg-black'>
-                            <Button color='clear' label={'Preview'} size='sm' onClick={openPreview} />
-                            <Button color='light-grey' label={copied ? 'Copied' : 'Copy link'} size='sm' onClick={copyDonateUrl} />
+                            <Button color='clear' data-testid='preview-shareable-link' label={'Preview'} size='sm' onClick={openPreview} />
+                            <Button color='light-grey' data-testid='copy-shareable-link' label={copied ? 'Copied' : 'Copy link'} size='sm' onClick={copyDonateUrl} />
                         </div>
                     </div>
                 </div>
