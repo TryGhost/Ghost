@@ -366,7 +366,7 @@
 .gh-list-data.gh-post-list-button {
     vertical-align: top;
     padding-left: 0;
-    padding-right: 16px;
+    padding-right: 0;
 }
 
 .gh-list .gh-content-entry-title {
@@ -1528,14 +1528,14 @@
     align-items: center;
     justify-content: flex-start;
     margin: 0;
-    padding: 1px 14px;
+    padding: 1px 12px;
     border: 1px solid var(--whitegrey-d1);
     background: var(--white);
     color: var(--darkgrey);
     border-radius: var(--border-radius);
     transition: all .2s ease;
     white-space: nowrap;
-    height: 36px;
+    height: 34px;
     overflow: hidden;
     transition: all .1s linear;
 }
