@@ -38,7 +38,6 @@ test.describe('Default recipient settings', async () => {
             ]
         });
 
-        await section.getByRole('button', {name: 'Edit'}).click();
         await chooseOptionInSelect(section.getByTestId('default-recipients-select'), 'Paid-members only');
         await section.getByRole('button', {name: 'Save'}).click();
 
