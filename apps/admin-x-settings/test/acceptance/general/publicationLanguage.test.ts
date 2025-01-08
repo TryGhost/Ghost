@@ -17,8 +17,6 @@ test.describe('Publication language settings', async () => {
 
         await expect(section.getByText('en')).toHaveCount(1);
 
-        await section.getByRole('button', {name: 'Edit'}).click();
-
         await section.getByLabel('Site language').fill('jp');
 
         await section.getByRole('button', {name: 'Save'}).click();

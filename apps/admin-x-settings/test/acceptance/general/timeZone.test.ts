@@ -17,8 +17,6 @@ test.describe('Time zone settings', async () => {
 
         await expect(section.getByText('(GMT) UTC')).toHaveCount(1);
 
-        await section.getByRole('button', {name: 'Edit'}).click();
-
         await chooseOptionInSelect(section.getByTestId('timezone-select'), '(GMT -9:00) Alaska');
 
         await section.getByRole('button', {name: 'Save'}).click();

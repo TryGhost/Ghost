@@ -18,7 +18,6 @@ test.describe('Default recipient settings', async () => {
 
         await expect(section.getByText('Whoever has access to the post')).toHaveCount(1);
 
-        await section.getByRole('button', {name: 'Edit'}).click();
         await chooseOptionInSelect(section.getByTestId('default-recipients-select'), 'All members');
         await section.getByRole('button', {name: 'Save'}).click();
 
@@ -78,8 +77,6 @@ test.describe('Default recipient settings', async () => {
 
         const section = page.getByTestId('default-recipients');
 
-        await section.getByRole('button', {name: 'Edit'}).click();
-
         await chooseOptionInSelect(section.getByTestId('default-recipients-select'), 'Specific people');
         await section.getByLabel('Filter').click();
 
@@ -126,7 +123,6 @@ test.describe('Default recipient settings', async () => {
         await page.goto('/');
 
         const section = page.getByTestId('default-recipients');
-        await section.getByRole('button', {name: 'Edit'}).click();
 
         await expect(section.getByText('Specific people')).toHaveCount(1);
         await expect(section.getByText('Basic Supporter')).toHaveCount(1);

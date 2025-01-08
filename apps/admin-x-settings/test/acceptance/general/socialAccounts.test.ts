@@ -47,7 +47,6 @@ test.describe('Social account settings', async () => {
         await page.goto('/');
 
         const section = page.getByTestId('social-accounts');
-        await section.getByRole('button', {name: 'Edit'}).click();
 
         const facebookInput = section.getByLabel(`URL of your publication’s Facebook Page`);
 
