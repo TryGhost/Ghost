@@ -634,7 +634,6 @@ test.describe('Updating post access', () => {
     test('default recipient settings - usually nobody', async ({page}) => {
         // switch to "usually nobody" setting
         await page.goto('/ghost/settings/newsletters');
-        await page.getByTestId('default-recipients').getByRole('button', {name: 'Edit'}).click();
         await page.getByTestId('default-recipients-select').click();
         await page.locator('[data-testid="select-option"]', {hasText: /Usually nobody/}).click();
         await page.getByTestId('default-recipients').getByRole('button', {name: 'Save'}).click();
