@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "incremental": true,
+    "rootDir": "src",
+    "target": "ES2020",
+    "module": "CommonJS",
+    "outDir": "./build",
+    "declaration": true,
+    "declarationDir": "./build",
+    "sourceMap": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "skipLibCheck": true
+  },
+  "include": ["src/**/*"]
+}

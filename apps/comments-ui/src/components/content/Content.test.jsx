@@ -6,7 +6,7 @@ const contextualRender = (ui, {appContext, ...renderOptions}) => {
     const contextWithDefaults = {
         commentsEnabled: 'all',
         comments: [],
-        secundaryFormCount: 0,
+        openCommentForms: [],
         member: null,
         t: str => str,
         ...appContext
@@ -18,7 +18,7 @@ const contextualRender = (ui, {appContext, ...renderOptions}) => {
     );
 };
 
-describe('Content', function () {
+describe('<Content>', function () {
     describe('main form or cta', function () {
         it('renders CTA when not logged in', function () {
             contextualRender(<Content />, {appContext: {}});
@@ -44,10 +44,10 @@ describe('Content', function () {
             expect(screen.queryByTestId('main-form')).toBeInTheDocument();
         });
 
-        it('renders no CTA or form when a reply form is open', function () {
-            contextualRender(<Content />, {appContext: {member: {}, secundaryFormCount: 1}});
+        it('renders main form when a reply form is open', function () {
+            contextualRender(<Content />, {appContext: {member: {}, openFormCount: 1}});
             expect(screen.queryByTestId('cta-box')).not.toBeInTheDocument();
-            expect(screen.queryByTestId('main-form')).not.toBeInTheDocument();
+            expect(screen.queryByTestId('main-form')).toBeInTheDocument();
         });
     });
 });

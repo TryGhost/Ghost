@@ -1,6 +1,7 @@
 const EventProcessingResult = require('./EventProcessingResult');
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
+const {MemberEmailAnalyticsUpdateEvent} = require('@tryghost/member-events');
 
 /**
  * @typedef {import('@tryghost/email-service').EmailEventProcessor} EmailEventProcessor
@@ -73,13 +74,22 @@ module.exports = class EmailAnalyticsService {
      * @param {object} dependencies.queries
      * @param {EmailEventProcessor} dependencies.eventProcessor
      * @param {object} dependencies.providers
+     * @param {import('@tryghost/domain-events')} dependencies.domainEvents
+     * @param {import('@tryghost/prometheus-metrics')} dependencies.prometheusClient
      */
-    constructor({config, settings, queries, eventProcessor, providers}) {
+    constructor({config, settings, queries, eventProcessor, providers, domainEvents, prometheusClient}) {
         this.config = config;
         this.settings = settings;
         this.queries = queries;
         this.eventProcessor = eventProcessor;
         this.providers = providers;
+        this.domainEvents = domainEvents;
+        this.prometheusClient = prometheusClient;
+
+        if (prometheusClient) {
+            // @ts-expect-error
+            prometheusClient.registerCounter({name: 'email_analytics_aggregate_member_stats_count', help: 'Count of member stats aggregations'});
+        }
     }
 
     getStatus() {
@@ -502,6 +512,7 @@ module.exports = class EmailAnalyticsService {
     async aggregateStats({emailIds = [], memberIds = []}, includeOpenedEvents = true) {
         let startTime = Date.now();
         logging.info(`[EmailAnalytics] Aggregating for ${emailIds.length} emails`);
+
         for (const emailId of emailIds) {
             await this.aggregateEmailStats(emailId, includeOpenedEvents);
         }
@@ -510,8 +521,18 @@ module.exports = class EmailAnalyticsService {
 
         startTime = Date.now();
         logging.info(`[EmailAnalytics] Aggregating for ${memberIds.length} members`);
+
+        // @ts-expect-error
+        const memberMetric = this.prometheusClient?.getMetric('email_analytics_aggregate_member_stats_count');
         for (const memberId of memberIds) {
-            await this.aggregateMemberStats(memberId);
+            if (this.config?.get('services:jobs:queue:enabled')) {
+                // With the queue enabled we will dispatch an event to update the member email analytics on the background queue (multithreaded :))
+                //  job manager has its own metrics
+                await this.domainEvents.dispatch(MemberEmailAnalyticsUpdateEvent.create({memberId}));
+            } else {
+                await this.aggregateMemberStats(memberId);
+                memberMetric?.inc();
+            }
         }
         endTime = Date.now() - startTime;
         logging.info(`[EmailAnalytics] Aggregating for ${memberIds.length} members took ${endTime}ms`);

@@ -161,6 +161,7 @@ module.exports = {
         meta_title: {type: 'string', maxlength: 2000, nullable: true, validations: {isLength: {max: 300}}},
         meta_description: {type: 'string', maxlength: 2000, nullable: true, validations: {isLength: {max: 500}}},
         tour: {type: 'text', maxlength: 65535, nullable: true},
+        // NOTE: Used to determine whether a user has logged in previously
         last_seen: {type: 'dateTime', nullable: true},
         comment_notifications: {type: 'boolean', nullable: false, defaultTo: true},
         free_member_signup_notification: {type: 'boolean', nullable: false, defaultTo: true},
@@ -958,6 +959,7 @@ module.exports = {
         post_id: {type: 'string', maxlength: 24, nullable: false, unique: false, references: 'posts.id', cascadeDelete: true},
         member_id: {type: 'string', maxlength: 24, nullable: true, unique: false, references: 'members.id', setNullDelete: true},
         parent_id: {type: 'string', maxlength: 24, nullable: true, unique: false, references: 'comments.id', cascadeDelete: true},
+        in_reply_to_id: {type: 'string', maxlength: 24, nullable: true, unique: false, references: 'comments.id', setNullDelete: true},
         status: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'published', validations: {isIn: [['published', 'hidden', 'deleted']]}},
         html: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
         edited_at: {type: 'dateTime', nullable: true},
@@ -985,11 +987,13 @@ module.exports = {
         started_at: {type: 'dateTime', nullable: true},
         finished_at: {type: 'dateTime', nullable: true},
         created_at: {type: 'dateTime', nullable: false},
-        updated_at: {type: 'dateTime', nullable: true}
+        updated_at: {type: 'dateTime', nullable: true},
+        metadata: {type: 'string', maxlength: 2000, nullable: true},
+        queue_entry: {type: 'integer', nullable: true, unsigned: true}
     },
     redirects: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
-        from: {type: 'string', maxlength: 2000, nullable: false},
+        from: {type: 'string', maxlength: 191, nullable: false, index: true},
         to: {type: 'string', maxlength: 2000, nullable: false},
         post_id: {type: 'string', maxlength: 24, nullable: true, unique: false, references: 'posts.id', setNullDelete: true},
         created_at: {type: 'dateTime', nullable: false},

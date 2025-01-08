@@ -1,0 +1,25 @@
+import { Meta } from '@storybook/blocks';
+
+<Meta title="Component usage" />
+
+<div className="sb-doc">
+
+# Component usage
+
+The simplest way to use a component is to select the variant in Storybook and copy + paste the code from it. All components have their `className` prop forwarded to their rendered HTML component, which allows you to override any default classes.
+
+## UI component API's
+
+ShadCN/UI uses [RadixUI](https://www.radix-ui.com/) under the hood which allows to use the full RadixUI API in each component. E.g. if you need a dropdown menu to be open by default you can just use the `defaultOpen` prop from [RadixUI dropdown API](https://www.radix-ui.com/primitives/docs/components/dropdown-menu).
+
+For [Charts](https://ui.shadcn.com/charts), ShadCN/UI uses [Recharts](https://recharts.org/en-US/). Similarly to RadixUI, you can use the Recharts API to customize and use charting features.
+
+## ShadCN/UI configuration
+
+The `components.json` file contains the ShadCN/UI default configuration, so when you install a new component these options are taken into consideration. There are some of them worth mentioning:
+
+- `"style": "new-york"` — We chose "New York" because visually it's closer to Ghost's UI style than the "Default" style
+- `"baseColor": "gray"` — This means that all newly installed ShadCN/UI component will use the color code `gray` (with an `a`, not `grey`) to set default colors
+- `"cssVariables": true` — This ensures to use CSS variable names instead of colors as a default in new components which means less more consistency and less code. However if a component doesn't work with the default colors, there's always an option to override colors in the component implementation.
+
+</div>

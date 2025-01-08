@@ -4,14 +4,6 @@ import React from 'react';
 import {List} from '@tryghost/admin-x-design-system';
 
 const features = [{
-    title: 'URL cache',
-    description: 'Enable URL Caching',
-    flag: 'urlCache'
-},{
-    title: 'Lexical multiplayer',
-    description: 'Enables multiplayer editing in the lexical editor.',
-    flag: 'lexicalMultiplayer'
-},{
     title: 'Webmentions',
     description: 'Allows viewing received mentions on the dashboard.',
     flag: 'webmentions'
@@ -23,10 +15,6 @@ const features = [{
     title: 'Email customization',
     description: 'Adding more control over the newsletter template',
     flag: 'emailCustomization'
-},{
-    title: 'Collections',
-    description: 'Enables Collections 2.0',
-    flag: 'collections'
 },{
     title: 'Collections Card',
     description: 'Enables the Collections Card for pages - requires Collections and the beta Editor to be enabled',
@@ -56,9 +44,9 @@ const features = [{
     description: 'Enables content visibility in Emails',
     flag: 'contentVisibility'
 }, {
-    title: 'Comment Improvements',
-    description: 'Enables new comment features',
-    flag: 'commentImprovements'
+    title: 'Post analytics redesign',
+    description: 'Enables redesigned Post analytics page',
+    flag: 'postsX'
 }];
 
 const AlphaFeatures: React.FC = () => {

@@ -74,11 +74,11 @@ const COMMAND_TYPESCRIPT = {
     env: {}
 };
 
-const adminXApps = '@tryghost/admin-x-demo,@tryghost/admin-x-settings,@tryghost/admin-x-activitypub';
+const adminXApps = '@tryghost/admin-x-demo,@tryghost/admin-x-settings,@tryghost/admin-x-activitypub,@tryghost/posts';
 
 const COMMANDS_ADMINX = [{
     name: 'adminXDeps',
-    command: 'while [ 1 ]; do nx watch --projects=apps/admin-x-design-system,apps/admin-x-framework -- nx run \\$NX_PROJECT_NAME:build; done',
+    command: 'while [ 1 ]; do nx watch --projects=apps/admin-x-design-system,apps/admin-x-framework,apps/shade -- nx run \\$NX_PROJECT_NAME:build; done',
     cwd: path.resolve(__dirname, '../..'),
     prefixColor: '#C72AF7',
     env: {}
@@ -95,7 +95,7 @@ if (DASH_DASH_ARGS.includes('ghost')) {
 } else if (DASH_DASH_ARGS.includes('admin')) {
     commands = [COMMAND_ADMIN, ...COMMANDS_ADMINX];
 } else if (DASH_DASH_ARGS.includes('browser-tests')) {
-    commands = [COMMAND_BROWSERTESTS, COMMAND_TYPESCRIPT];
+    commands = [COMMAND_BROWSERTESTS];
 } else {
     commands = [COMMAND_GHOST, COMMAND_TYPESCRIPT, COMMAND_ADMIN, ...COMMANDS_ADMINX];
 }
@@ -239,7 +239,8 @@ async function handleStripe() {
 
     const {result} = concurrently(commands, {
         prefix: 'name',
-        killOthers: ['failure', 'success']
+        killOthers: ['failure', 'success'],
+        successCondition: 'first'
     });
 
     try {
@@ -250,5 +251,6 @@ async function handleStripe() {
         console.error(chalk.red(`If you've recently done a \`yarn main\`, dependencies might be out of sync. Try running \`${chalk.green('yarn fix')}\` to fix this.`));
         console.error(chalk.red(`If not, something else went wrong. Please report this to the Ghost team.`));
         console.error();
+        process.exit(1);
     }
 })();

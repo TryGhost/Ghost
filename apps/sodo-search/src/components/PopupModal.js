@@ -378,27 +378,29 @@ function ShowMoreButton({posts, maxPosts, setMaxPosts}) {
 function PostResults({posts, selectedResult, setSelectedResult}) {
     const {t} = useContext(AppContext);
     const [maxPosts, setMaxPosts] = useState(DEFAULT_MAX_POSTS);
+    const [paginatedPosts, setPaginatedPosts] = useState([]);
     useEffect(() => {
         setMaxPosts(DEFAULT_MAX_POSTS);
     }, [posts]);
-
+    useEffect(() => {
+        setPaginatedPosts(posts?.slice(0, maxPosts + 1));
+    }, [maxPosts, posts]);
     if (!posts?.length) {
         return null;
     }
-    const paginatedPosts = posts?.slice(0, maxPosts);
-    const PostItems = paginatedPosts.map((d) => {
-        return (
+    function PostItems() {
+        return paginatedPosts.map(d => (
             <PostListItem
                 key={d.title}
                 post={d}
                 {...{selectedResult, setSelectedResult}}
             />
-        );
-    });
+        ));
+    }
     return (
         <div className='border-t border-neutral-200 py-3 px-4 sm:px-7'>
             <h1 className='uppercase text-xs text-neutral-400 font-semibold mb-1 tracking-wide'>{t('Posts')}</h1>
-            {PostItems}
+            <PostItems/>
             <ShowMoreButton setMaxPosts={setMaxPosts} maxPosts={maxPosts} posts={posts} />
         </div>
     );

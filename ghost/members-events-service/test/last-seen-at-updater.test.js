@@ -285,6 +285,85 @@ describe('LastSeenAtUpdater', function () {
             await DomainEvents.allSettled();
             assert(spy.notCalled, 'The LastSeenAtUpdater should never fire on MemberSubscribeEvent events.');
         });
+
+        describe('Disable via config', function () {
+            it('MemberLinkClickEvent should not be fired when disabled', async function () {
+                const now = moment.utc('2022-02-28T18:00:00Z');
+                const previousLastSeen = moment.utc('2022-02-27T22:59:00Z').toDate();
+                const stub = sinon.stub().resolves();
+                const settingsCache = sinon.stub();
+                settingsCache.returns('Europe/Brussels'); // Default return for other settings
+                const configStub = sinon.stub();
+                configStub.withArgs('backgroundJobs:clickTrackingLastSeenAtUpdater').returns(false);
+    
+                const updater = new LastSeenAtUpdater({
+                    services: {
+                        settingsCache: {
+                            get: settingsCache
+                        }
+                    },
+                    config: {
+                        get: configStub
+                    },
+                    getMembersApi() {
+                        return {
+                            members: {
+                                update: stub,
+                                get: () => {
+                                    return {
+                                        id: '1',
+                                        get: () => {
+                                            return previousLastSeen;
+                                        }
+                                    };
+                                }
+                            }
+                        };
+                    },
+                    events
+                });
+                updater.subscribe(DomainEvents);
+                sinon.stub(updater, 'updateLastSeenAt');
+                DomainEvents.dispatch(MemberLinkClickEvent.create({memberId: '1', memberLastSeenAt: previousLastSeen, url: '/'}, now.toDate()));
+                assert(updater.updateLastSeenAt.notCalled, 'The LastSeenAtUpdater should not attempt a member update when disabled');
+            });
+    
+            it('MemberLinkClickEvent should be fired when enabled/empty', async function () {
+                const now = moment.utc('2022-02-28T18:00:00Z');
+                const previousLastSeen = moment.utc('2022-02-27T22:59:00Z').toDate();
+                const stub = sinon.stub().resolves();
+                const settingsCache = sinon.stub();
+                settingsCache.returns('Europe/Brussels'); // Default return for other settings
+    
+                const updater = new LastSeenAtUpdater({
+                    services: {
+                        settingsCache: {
+                            get: settingsCache
+                        }
+                    },
+                    getMembersApi() {
+                        return {
+                            members: {
+                                update: stub,
+                                get: () => {
+                                    return {
+                                        id: '1',
+                                        get: () => {
+                                            return previousLastSeen;
+                                        }
+                                    };
+                                }
+                            }
+                        };
+                    },
+                    events
+                });
+                updater.subscribe(DomainEvents);
+                sinon.stub(updater, 'updateLastSeenAt');
+                DomainEvents.dispatch(MemberLinkClickEvent.create({memberId: '1', memberLastSeenAt: previousLastSeen, url: '/'}, now.toDate()));
+                assert(updater.updateLastSeenAt.calledOnce, 'The LastSeenAtUpdater should attempt a member update when not disabled');
+            });
+        });
     });
 
     describe('updateLastSeenAt', function () {

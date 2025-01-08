@@ -27,7 +27,8 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
         return fetch(url, options);
     }
 
-    // To fix pagination when we create new comments (or people post comments after you loaded the page, we need to only load comments creatd AFTER the page load)
+    // To fix pagination when we create new comments (or people post comments
+    // after you loaded the page), we need to only load comments created AFTER the page load
     let firstCommentCreatedAt: null | string = null;
 
     const api = {
@@ -121,9 +122,9 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
 
                 return json;
             },
-            browse({page, postId}: {page: number, postId: string}) {
+            browse({page, postId, order}: {page: number, postId: string, order?: string}) {
                 let filter = null;
-                if (firstCommentCreatedAt) {
+                if (firstCommentCreatedAt && !order) {
                     filter = `created_at:<=${firstCommentCreatedAt}`;
                 }
 
@@ -134,6 +135,9 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
                     params.set('filter', filter);
                 }
                 params.set('page', page.toString());
+                if (order) {
+                    params.set('order', order);
+                }
                 const url = endpointFor({type: 'members', resource: `comments/post/${postId}`, params: `?${params.toString()}`});
                 const response = makeRequest({
                     url,

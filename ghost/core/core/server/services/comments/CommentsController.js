@@ -23,6 +23,14 @@ module.exports = class CommentsController {
         this.stats = stats;
     }
 
+    async #setImpersonationContext(options) {
+        if (options.impersonate_member_uuid) {
+            options.context = options.context || {};
+            options.context.member = options.context.member || {};
+            options.context.member.id = await this.service.getMemberIdByUUID(options.impersonate_member_uuid);
+        }
+    }
+
     #checkMember(frame) {
         if (!frame.options?.context?.member?.id) {
             throw new errors.UnauthorizedError({
@@ -51,7 +59,37 @@ module.exports = class CommentsController {
                 frame.options.filter = `post_id:${frame.options.post_id}`;
             }
         }
-        return this.service.getComments(frame.options);
+
+        return await this.service.getComments(frame.options);
+    }
+
+    async adminBrowse(frame) {
+        if (frame.options.post_id) {
+            if (frame.options.filter) {
+                frame.options.mongoTransformer = function (query) {
+                    return {
+                        $and: [
+                            {
+                                post_id: frame.options.post_id
+                            },
+                            query
+                        ]
+                    };
+                };
+            } else {
+                frame.options.filter = `post_id:${frame.options.post_id}`;
+            }
+        }
+
+        frame.options.isAdmin = true;
+        // Admin routes in Comments-UI lack member context due to cross-domain constraints (CORS), which prevents
+        // credentials from being passed. This causes issues like the inability to determine if a
+        // logged-in admin (acting on behalf of a member) has already liked a comment.
+        // To resolve this, we retrieve the `impersonate_member_uuid` from the request params and
+        // explicitly set it in the context options as the acting member's ID.
+        // Note: This approach is applied to several admin routes where member context is required.
+        await this.#setImpersonationContext(frame.options);
+        return await this.service.getAdminComments(frame.options);
     }
 
     /**
@@ -64,7 +102,19 @@ module.exports = class CommentsController {
     /**
      * @param {Frame} frame
      */
+    async adminReplies(frame) {
+        frame.options.isAdmin = true;
+        frame.options.order = 'created_at asc'; // we always want to load replies from oldest to newest
+        await this.#setImpersonationContext(frame.options);
+
+        return this.service.getReplies(frame.options.id, _.omit(frame.options, 'id'));
+    }
+
+    /**
+     * @param {Frame} frame
+     */
     async read(frame) {
+        await this.#setImpersonationContext(frame.options);
         return await this.service.getCommentByID(frame.data.id, frame.options);
     }
 
@@ -114,6 +164,7 @@ module.exports = class CommentsController {
         if (data.parent_id) {
             result = await this.service.replyToComment(
                 data.parent_id,
+                data.in_reply_to_id,
                 frame.options.context.member.id,
                 data.html,
                 frame.options

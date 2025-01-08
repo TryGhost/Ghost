@@ -40,7 +40,6 @@ module.exports = class MemberAttributionAssets extends AssetsMinificationBase {
     async load() {
         const globs = this.generateGlobs();
         const replacements = this.generateReplacements();
-        await this.clearFiles();
         await this.minify(globs, {replacements});
     }
 };
