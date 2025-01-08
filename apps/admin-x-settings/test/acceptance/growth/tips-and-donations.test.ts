@@ -23,7 +23,7 @@ test.describe('Tips and donations', () => {
         await expect(page.locator('[data-setting-nav-item] #tips-and-donations')).toBeVisible();
         await expect(section).toBeVisible();
 
-        const suggestedAmountInput = section.getByTestId('suggested-amount');
+        const suggestedAmountInput = section.getByRole('textbox', {name: 'Suggested amount'});
         await expect(suggestedAmountInput).toBeVisible();
         await expect(suggestedAmountInput).toHaveValue('5');
 
