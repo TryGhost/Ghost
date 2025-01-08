@@ -44,7 +44,9 @@ export function getSiteData({
     posts = getPostsData(),
     commentsEnabled,
     recommendations = [],
-    recommendationsEnabled
+    recommendationsEnabled,
+    captchaEnabled = false,
+    captchaSiteKey
 } = {}) {
     return {
         title,
@@ -73,7 +75,9 @@ export function getSiteData({
         recommendations,
         recommendations_enabled: !!recommendationsEnabled,
         editor_default_email_recipients,
-        posts
+        posts,
+        captcha_enabled: !!captchaEnabled,
+        captcha_sitekey: captchaSiteKey
     };
 }
 

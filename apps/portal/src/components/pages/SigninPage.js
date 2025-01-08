@@ -34,13 +34,17 @@ export default class SigninPage extends React.Component {
 
     handleSignin(e) {
         e.preventDefault();
+        this.doPreSignin();
+    }
 
+    doPreSignin() {
         const {site} = this.context;
         if (hasCaptchaEnabled({site})) {
+            // hCaptcha's callback will handle the signin
             return this.captchaRef.current.execute();
+        } else {
+            this.doSignin();
         }
-
-        this.doSignin();
     }
 
     doSignin() {

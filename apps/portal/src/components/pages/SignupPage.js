@@ -441,20 +441,26 @@ class SignupPage extends React.Component {
         });
     }
 
-    handleSignup(e) {
+    async handleSignup(e) {
         e.preventDefault();
-        const {site} = this.context;
-        if (hasCaptchaEnabled({site})) {
-            return this.captchaRef.current.execute();
-        }
-        this.doSignup();
+        this.doPreSignup();
     }
 
     handleChooseSignup(e, plan) {
         e.preventDefault();
         this.setState({plan}, () => {
-            this.doSignup();
+            this.doPreSignup();
         });
+    }
+
+    doPreSignup() {
+        const {site} = this.context;
+        if (hasCaptchaEnabled({site})) {
+            // hCaptcha's callback will handle the signup
+            return this.captchaRef.current.execute();
+        } else {
+            this.doSignup();
+        }
     }
 
     handleInputChange(e, field) {
@@ -620,7 +626,7 @@ class SignupPage extends React.Component {
             retry = true;
         }
 
-        const disabled = (action === 'signup:running') ? true : false;
+        const disabled = (action === 'signup:running' && (!hasCaptchaEnabled({site}) || this.captchaLoaded)) ? true : false;
         return (
             <ActionButton
                 style={{width: '100%'}}
@@ -762,6 +768,7 @@ class SignupPage extends React.Component {
                                     this.doSignup();
                                 }}
                                 ref={this.captchaRef}
+                                id="hcaptcha"
                             />
                         )}
                     </div>

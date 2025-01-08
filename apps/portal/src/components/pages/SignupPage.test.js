@@ -1,6 +1,6 @@
 import SignupPage from './SignupPage';
 import {getFreeProduct, getProductData, getSiteData} from '../../utils/fixtures-generator';
-import {render, fireEvent, getByTestId} from '../../utils/test-utils';
+import {render, fireEvent, getByTestId, queryByAttribute, waitFor} from '../../utils/test-utils';
 
 const setup = (overrides) => {
     const {mockOnActionFn, ...utils} = render(
@@ -113,6 +113,23 @@ describe('SignupPage', () => {
 
             const message = getByTestId(document.body, 'members-disabled-notification-text');
             expect(message).toBeInTheDocument();
+        });
+    });
+
+    // Cannot test using hCaptcha component, as it cannot run in a test environment
+    describe('when captcha is enabled', () => {
+        test('renders', () => {
+            setup({
+                site: getSiteData({
+                    captchaEnabled: true,
+                    captchaSiteKey: '20000000-ffff-ffff-ffff-000000000002'
+                })
+            });
+
+            const getById = queryByAttribute.bind(null, 'id');
+
+            const hcaptchaElement = getById(document.body, 'hcaptcha');
+            expect(hcaptchaElement).toBeInTheDocument();
         });
     });
 });
