@@ -54,7 +54,7 @@ body:not(.gh-body-fullscreen) .gh-viewport {
 }
 
 body:not(.gh-body-fullscreen) .gh-main {
-    margin: 8px 8px 8px 0;
+    margin: 8px;
     box-shadow: 0px 1px 4px 0px rgba(0, 0, 0, 0.07), 0px 3px 7px 0px rgba(0, 0, 0, 0.02);
     border-radius: 12px;
 }
@@ -114,6 +114,10 @@ body:not(.gh-body-fullscreen) .gh-main {
     /* border-right: 1px solid var(--main-color-area-divider); */
     transition: flex-basis 250ms;
     overflow: hidden;
+}
+
+body:not(.gh-body-fullscreen) .gh-nav {
+    margin-right: -8px;
 }
 
 .gh-nav-contributor {
