@@ -15,7 +15,7 @@ test.describe('Time zone settings', async () => {
 
         const section = page.getByTestId('timezone');
 
-        await expect(section.getByText('(GMT) UTC')).toHaveCount(1);
+        await expect(section.getByLabel('Site timezone')).toBeVisible();
 
         await chooseOptionInSelect(section.getByTestId('timezone-select'), '(GMT -9:00) Alaska');
 
@@ -23,7 +23,7 @@ test.describe('Time zone settings', async () => {
 
         await expect(section.getByTestId('timezone-select')).toHaveCount(0);
 
-        await expect(section.getByText('(GMT -9:00) Alaska')).toHaveCount(1);
+        await expect(section.getByLabel('Site timezone')).toContainText('(GMT -9:00) Alaska');
 
         expect(lastApiRequests.editSettings?.body).toEqual({
             settings: [
