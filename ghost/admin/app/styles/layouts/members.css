@@ -1097,7 +1097,7 @@ textarea.gh-member-details-textarea {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    border-bottom: 1px solid var(--whitegrey);
+    border-bottom: 1px solid var(--grey-250);
     padding: 16px 0;
 }
 
@@ -1141,7 +1141,7 @@ textarea.gh-member-details-textarea {
 }
 
 .gh-member-newsletter-footer {
-    font-size: 1.25rem;
+    font-size: 1.3rem;
     margin-top: 12px;
 }
 
@@ -1231,7 +1231,7 @@ textarea.gh-member-details-textarea {
 }
 
 .gh-member-feed-row {
-    border-bottom: 1px solid var(--whitegrey);
+    border-bottom: 1px solid var(--grey-250);
 }
 
 .gh-member-feed-detail {
@@ -2549,6 +2549,12 @@ a.gh-members-emailpreview-subscription-link {
     margin-bottom: 0 !important;
 }
 
+.gh-cp-membertier-container {
+    margin-top: 8px;
+    margin-left: 16px;
+    flex-grow: 1;
+}
+
 .gh-membertier-name {
     display: flex;
     justify-content: space-between;
@@ -2568,6 +2574,7 @@ a.gh-members-emailpreview-subscription-link {
 }
 
 .gh-cp-membertier-pricelabel {
+    font-size: 1.3rem;
     font-weight: 600;
 }
 
@@ -2733,19 +2740,20 @@ a.gh-members-emailpreview-subscription-link {
 
 .gh-cp-membertier-details {
     margin-top: 1px;
-    color: var(--middarkgrey);
+    color: var(--green-d1);
+    font-size: 1.3rem;
     font-weight: 500;
 }
 
 .gh-cp-membertier-details svg {
-    width: 10px;
+    width: 8px;
     margin-left: 4px;
-    transition: transform 0.2s ease-in-out;
+    transition: transform 0.15s ease-in-out;
 }
 
 .gh-cp-membertier-details svg path {
     stroke-width: 3px;
-    stroke: var(--middarkgrey);
+    stroke: var(--green-d1);
 }
 
 .gh-cp-membertier-details.rotate svg {
@@ -2857,7 +2865,7 @@ a.gh-members-emailpreview-subscription-link {
 
 .gh-cp-membertier-attribution .gh-tier-card-header:not(:first-child) {
     margin-top: 16px;
-    border-top: 1px solid var(--whitegrey);
+    border-top: 1px solid var(--grey-250);
     padding-top: 16px;
 }
 
@@ -2887,13 +2895,15 @@ a.gh-members-emailpreview-subscription-link {
 }
 
 .gh-cp-membertier-attribution .gh-membertier-name {
-    font-weight: bold !important;
-    font-size: 2rem !important;
+    font-weight: 600 !important;
+    font-size: 1.4rem !important;
 }
 
 .gh-cp-membertier-attribution .gh-badge {
     margin-bottom: -1px !important;
     margin-left: 8px;
+    font-size: 1.1rem;
+    font-weight: 600;
 }
 
 .gh-cp-membertier-attribution .action-menu {
@@ -2915,7 +2925,7 @@ a.gh-members-emailpreview-subscription-link {
 .gh-cp-membertier-attribution .gh-membertier-advanced {
     margin-top: 16px;
     padding-top: 16px;
-    border-top:1px solid #ECEEF0;
+    border-top:1px solid var(--grey-250);
     animation: fade-in .25s ease-in-out;
 }
 
@@ -2934,6 +2944,7 @@ a.gh-members-emailpreview-subscription-link {
 .gh-cp-membertier-attribution .gh-membertier-details p {
     margin: 0;
     color: var(--middarkgrey);
+    font-size: 1.3rem;
 }
 
 .gh-cp-membertier-attribution .gh-membertier-detail {
@@ -2941,7 +2952,7 @@ a.gh-members-emailpreview-subscription-link {
 }
 
 .gh-cp-membertier-attribution .gh-membertier-details span, .gh-cp-membertier-attribution .gh-membertier-details a {
-    font-size: 1.4rem;
+    font-size: 1.3rem;
     font-weight: 500;
     color: var(--darkgrey);
 }
@@ -2961,7 +2972,8 @@ a.gh-members-emailpreview-subscription-link {
 }
 
 .gh-cp-membertier-attribution .gh-cp-membertier-renewal {
-    color: #7c8b9a;
+    color: var(--middarkgrey);
+    font-size: 1.3rem;
 }
 
 .gh-cp-membertier-attribution .gh-membertier-detail-timestamp {

@@ -54,7 +54,7 @@
                     </GhFormGroup>
 
                     <GhFormGroup @errors={{this.member.errors}} @hasValidated={{this.member.hasValidated}} @property="note" class="mb0 gh-member-note">
-                        <label for="member-note">Note <span class="midgrey-d1 fw4">(not visible to member)</span></label>
+                        <label for="member-note">Note <span class="middarkgrey fw4">(not visible to member)</span></label>
                         <GhTextarea
                             @id="member-note"
                             @name="note"
@@ -123,7 +123,7 @@
                                             </div>
                                             <div class="period">{{if (eq sub.price.interval "year") "yearly" "monthly"}}</div>
                                         </div>
-                                        <div style="margin-left: 16px; flex-grow: 1;">
+                                        <div class="gh-cp-membertier-container">
                                             <h3 class="gh-membertier-name" data-test-text="tier-name" style="align-items:center !important; justify-content:flex-start !important;">
                                                 {{tier.name}}
                                                 {{#if (eq sub.status "canceled")}}

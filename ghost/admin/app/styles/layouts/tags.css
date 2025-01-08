@@ -144,14 +144,14 @@ a.gh-tag-list-posts-count:hover {
     min-height: 240px;
     background: var(--white);
     color: var(--darkgrey);
-    border: 1px solid var(--whitegrey);
+    border: 1px solid var(--grey-500);
     border-radius: 4px;
     margin-bottom: 24px;
 }
 
 .gh-tag-setting-codeinjection .CodeMirror-gutters {
     background-color: var(--whitegrey-l2);
-    border-right: 1px solid var(--lightgrey);
+    border-right: 1px solid var(--grey-500);
 }
 
 .gh-tag-setting-codeinjection .CodeMirror-scroll {

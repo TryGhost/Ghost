@@ -1305,9 +1305,8 @@
 
 .gh-main-section-content.bordered {
     padding: 24px;
-    border: 1px solid var(--whitegrey);
+    border: 1px solid var(--grey-250);
     border-radius: 12px;
-    box-shadow: 0 1px 4px -1px rgb(0 0 0 / 10%);
 }
 
 .gh-main-section-content.columns-2 {
@@ -1341,8 +1340,8 @@
 /* Expandable options */
 .gh-expandable {
     background: var(--white);
-    border: 1px solid var(--whitegrey);
-    border-radius: var(--border-radius);
+    border: 1px solid var(--grey-250);
+    border-radius: 12px;
 }
 
 .gh-expandable.overflow-hidden {
@@ -1350,7 +1349,7 @@
 }
 
 .gh-expandable-block {
-    border-bottom: 1px solid var(--whitegrey);
+    border-bottom: 1px solid var(--grey-250);
     padding: 18px 24px;
     margin: 0;
 }
@@ -1392,6 +1391,7 @@
     background: var(--white);
     margin: 18px -24px -18px;
     padding: 0 24px;
+    border-radius: 0 0 12px 12px;
 }
 
 .gh-expandable-content .gh-main-section-block {
