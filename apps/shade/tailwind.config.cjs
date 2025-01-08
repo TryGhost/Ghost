@@ -287,7 +287,8 @@ module.exports = {
                 min: 'min-content',
                 max: 'max-content',
                 fit: 'fit-content',
-                prose: '65ch'
+                prose: '65ch',
+                page: '128rem'
             },
             borderRadius: {
                 sm: 'calc(var(--radius) - 4px)',

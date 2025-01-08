@@ -82,7 +82,6 @@
     margin: 0;
     padding: 6px 14px;
     color: var(--darkgrey);
-    height: 32px;
 }
 
 .ember-power-select-option[aria-current="true"] {

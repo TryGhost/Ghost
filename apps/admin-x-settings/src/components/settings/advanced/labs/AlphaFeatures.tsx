@@ -4,10 +4,6 @@ import React from 'react';
 import {List} from '@tryghost/admin-x-design-system';
 
 const features = [{
-    title: 'URL cache',
-    description: 'Enable URL Caching',
-    flag: 'urlCache'
-},{
     title: 'Webmentions',
     description: 'Allows viewing received mentions on the dashboard.',
     flag: 'webmentions'
@@ -48,9 +44,9 @@ const features = [{
     description: 'Enables content visibility in Emails',
     flag: 'contentVisibility'
 }, {
-    title: 'Comment Improvements',
-    description: 'Enables new comment features',
-    flag: 'commentImprovements'
+    title: 'Post analytics redesign',
+    description: 'Enables redesigned Post analytics page',
+    flag: 'postsX'
 }];
 
 const AlphaFeatures: React.FC = () => {

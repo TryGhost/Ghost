@@ -25,6 +25,6 @@ const config: StorybookConfig = {
 			crypto: require.resolve('rollup-plugin-node-builtins')
 		}
 		return config;
-	}
+	},
 };
 export default config;

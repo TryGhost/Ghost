@@ -47,6 +47,10 @@ export default (function viteConfig() {
             },
             rollupOptions: {
                 external: (source) => {
+                    if (source.startsWith('@/')) {
+                        return false;
+                    }
+
                     if (source.startsWith('.')) {
                         return false;
                     }

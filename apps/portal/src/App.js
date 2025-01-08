@@ -12,7 +12,7 @@ import {transformPortalAnchorToRelative} from './utils/transform-portal-anchor-t
 import {getActivePage, isAccountPage, isOfferPage} from './pages';
 import ActionHandler from './actions';
 import './App.css';
-import {hasRecommendations, allowCompMemberUpgrade, createPopupNotification, getCurrencySymbol, getFirstpromoterId, getPriceIdFromPageQuery, getProductCadenceFromPrice, getProductFromId, getQueryPrice, getSiteDomain, isActiveOffer, isComplimentaryMember, isInviteOnlySite, isPaidMember, isRecentMember, isSentryEventAllowed, removePortalLinkFromUrl} from './utils/helpers';
+import {hasRecommendations, allowCompMemberUpgrade, createPopupNotification, hasAvailablePrices, getCurrencySymbol, getFirstpromoterId, getPriceIdFromPageQuery, getProductCadenceFromPrice, getProductFromId, getQueryPrice, getSiteDomain, isActiveOffer, isComplimentaryMember, isInviteOnly, isPaidMember, isRecentMember, isSentryEventAllowed, removePortalLinkFromUrl} from './utils/helpers';
 import {handleDataAttributes} from './data-attributes';
 
 import i18nLib from '@tryghost/i18n';
@@ -397,8 +397,6 @@ export default class App extends React.Component {
                 currency = currencyValue;
             } else if (key === 'disableBackground') {
                 data.site.disableBackground = JSON.parse(value);
-            } else if (key === 'allowSelfSignup') {
-                data.site.allow_self_signup = JSON.parse(value);
             } else if (key === 'membersSignupAccess' && value) {
                 data.site.members_signup_access = value;
             } else if (key === 'portalDefaultPlan' && value) {
@@ -927,7 +925,7 @@ export default class App extends React.Component {
     getContextPage({site, page, member}) {
         /**Set default page based on logged-in status */
         if (!page || page === 'default') {
-            const loggedOutPage = isInviteOnlySite({site}) ? 'signin' : 'signup';
+            const loggedOutPage = isInviteOnly({site}) || !hasAvailablePrices({site}) ? 'signin' : 'signup';
             page = member ? 'accountHome' : loggedOutPage;
         }
 
