@@ -21,9 +21,7 @@ test.describe('Publication language settings', async () => {
 
         await section.getByRole('button', {name: 'Save'}).click();
 
-        await expect(section.getByLabel('Site language')).toHaveCount(0);
-
-        await expect(section.getByText('jp')).toHaveCount(1);
+        await expect(section.getByLabel('Site language')).toHaveValue('jp');
 
         expect(lastApiRequests.editSettings?.body).toEqual({
             settings: [
