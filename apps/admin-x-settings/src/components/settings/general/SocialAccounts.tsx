@@ -34,12 +34,22 @@ const SocialAccounts: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     const handleFacebookChange = (value: string) => {
         setFacebookUrl(value);
+        if (!isEditing) {
+            handleEditingChange(true);
+        }
+    };
+
+    const handleTwitterChange = (value: string) => {
+        setTwitterUrl(value);
+        if (!isEditing) {
+            handleEditingChange(true);
+        }
+    };
+
+    const handleFacebookBlur = () => {
         try {
-            const newUrl = validateFacebookUrl(value);
+            const newUrl = validateFacebookUrl(facebookUrl);
             updateSetting('facebook', facebookUrlToHandle(newUrl));
-            if (!isEditing) {
-                handleEditingChange(true);
-            }
             if (errors.facebook) {
                 setErrors({...errors, facebook: ''});
             }
@@ -51,14 +61,10 @@ const SocialAccounts: React.FC<{ keywords: string[] }> = ({keywords}) => {
         }
     };
 
-    const handleTwitterChange = (value: string) => {
-        setTwitterUrl(value);
+    const handleTwitterBlur = () => {
         try {
-            const newUrl = validateTwitterUrl(value);
+            const newUrl = validateTwitterUrl(twitterUrl);
             updateSetting('twitter', twitterUrlToHandle(newUrl));
-            if (!isEditing) {
-                handleEditingChange(true);
-            }
             if (errors.twitter) {
                 setErrors({...errors, twitter: ''});
             }
@@ -124,6 +130,7 @@ const SocialAccounts: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     placeholder="https://www.facebook.com/ghost"
                     title={`URL of your publication's Facebook Page`}
                     value={facebookUrl}
+                    onBlur={handleFacebookBlur}
                     onChange={e => handleFacebookChange(e.target.value)}
                 />
                 <TextField
@@ -132,6 +139,7 @@ const SocialAccounts: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     placeholder="https://x.com/ghost"
                     title="URL of your X (formerly Twitter) profile"
                     value={twitterUrl}
+                    onBlur={handleTwitterBlur}
                     onChange={e => handleTwitterChange(e.target.value)}
                 />
             </SettingGroupContent>
