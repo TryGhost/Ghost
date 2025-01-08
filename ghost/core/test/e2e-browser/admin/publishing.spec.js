@@ -613,7 +613,6 @@ test.describe('Updating post access', () => {
         await page.locator('[data-test-nav="settings"]').click();
         await expect(page.getByTestId('timezone')).toContainText('UTC');
 
-        await page.getByTestId('timezone').getByRole('button', {name: 'Edit'}).click();
         await page.getByTestId('timezone-select').click();
         await page.locator('[data-testid="select-option"]', {hasText: 'Tokyo'}).click();
 
