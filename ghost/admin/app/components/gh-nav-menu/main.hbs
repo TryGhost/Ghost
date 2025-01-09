@@ -38,7 +38,7 @@
                 </li>
                 {{/if}}
                 <li class="relative">
-                    <span {{action "transitionToOrRefreshSite" on="click" }}>
+                    <span {{action "transitionToOrRefreshSite" on="click" }} class="{{if this.isOnSite "active"}}">
                         <LinkTo @route="site" data-test-nav="site" @current-when={{this.isOnSite}}
                             @preventDefault={{false}}>
                             {{svg-jar "view-site"}} View site

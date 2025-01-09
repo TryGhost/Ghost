@@ -648,6 +648,10 @@ body:not(.gh-body-fullscreen) .gh-viewport {
     background: var(--mainmenu-color-hover-bg);
 }
 
+.gh-nav-list .active + .gh-secondary-action:hover span {
+    background: none;
+}
+
 .gh-nav-list .gh-secondary-action:hover,
 .gh-nav-list a.gh-secondary-action:hover {
     background: none;
