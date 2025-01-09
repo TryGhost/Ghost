@@ -371,26 +371,22 @@ export default class MembersController extends Controller {
 
     @action
     async exportData() {
-        try {
-            let exportUrl = ghostPaths().url.api('members/upload');
-            let downloadParams = new URLSearchParams(this.getApiQueryObject());
-            downloadParams.set('limit', 'all');
+        let exportUrl = ghostPaths().url.api('members/upload');
+        let downloadParams = new URLSearchParams(this.getApiQueryObject());
+        downloadParams.set('limit', 'all');
 
-            const response = await fetch(`${exportUrl}?${downloadParams.toString()}`);
-            const data = await response.json();
+        const response = await fetch(`${exportUrl}?${downloadParams.toString()}`);
+        const data = await response.json();
+        
+        if (data.url) {
+            const link = document.createElement('a');
+            link.href = data.url;
+            const datetime = (new Date()).toJSON().substring(0, 10);
+            link.download = `members.${datetime}.csv`;
             
-            if (data.url) {
-                const link = document.createElement('a');
-                link.href = data.url;
-                const datetime = (new Date()).toJSON().substring(0, 10);
-                link.download = `members.${datetime}.csv`;
-                
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            }
-        } catch (error) {
-            throw error;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
     }
 
