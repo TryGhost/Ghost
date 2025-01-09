@@ -116,6 +116,7 @@ body:not(.gh-body-fullscreen) .gh-viewport {
     width: 320px;
     background-color: var(--white);
     height: 100%;
+    z-index: 9999;
 }
 
 .gh-nav-hidden:hover {
