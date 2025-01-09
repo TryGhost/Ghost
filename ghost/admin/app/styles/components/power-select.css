@@ -79,8 +79,6 @@
 }
 
 .ember-power-select-option {
-    margin: 0;
-    padding: 6px 14px;
     color: var(--darkgrey);
 }
 
@@ -97,6 +95,8 @@
 
 .ember-power-select-options:not([role="group"]) {
     max-height: 50vh;
+    width: 100%;
+    overflow-x: hidden;
 }
 
 .ember-power-select-options li {
@@ -175,11 +175,19 @@
 }
 
 .ember-power-select-group .ember-power-select-option {
-    overflow: hidden;
     padding: 7px 12px;
-    line-height: 1.35em;
     cursor: pointer;
     font-size: 1.4rem;
+}
+
+.ember-power-select-group .ember-power-select-option span {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    text-overflow: ellipsis;
+    word-break: break-word;
+    line-height: 1.3em;
+    overflow: hidden;
 }
 
 .ember-power-select-group .ember-power-select-option .highlight {
