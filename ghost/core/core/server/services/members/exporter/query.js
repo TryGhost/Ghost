@@ -2,6 +2,7 @@ const models = require('../../../models');
 const {knex} = require('../../../data/db');
 const moment = require('moment');
 const urlUtils = require('../../../../shared/url-utils');
+const storage = require('../../../adapters/storage');
 
 module.exports = async function (options) {
     const hasFilter = options.limit !== 'all' || options.filter || options.search;
@@ -89,7 +90,7 @@ module.exports = async function (options) {
     const path = require('path');
     const createObjectCsvStringifier = require('csv-writer').createObjectCsvStringifier;
 
-    const csvPath = path.join(process.cwd(), 'content/files/members101.csv');
+    //const csvPath = urlUtils.urlFor('home') + 'content/files/members101.csv';
 
     const csvStringifier = createObjectCsvStringifier({
         header: [
@@ -114,9 +115,13 @@ module.exports = async function (options) {
     }));
 
     const csvString = csvStringifier.getHeaderString() + csvStringifier.stringifyRecords(records);
-    fs.writeFileSync(csvPath, csvString);
+    //fs.writeFileSync(csvPath, csvString);
     //console.log('csvPath: ', csvPath);
-    const path1 = urlUtils.urlFor('home', {file: csvPath}, true) + 'content/files/members101.csv';
-    //console.log('path1: ', path1);
+    const store = storage.getStorage('files');
+    const imageStoredUrl = await store.saveRaw(csvString, 'members10h.csv');
+    //const path1 = urlUtils.urlFor('home', {file: csvPath}, true) + 'content/files/members101.csv';
+    console.log('imageStoredUrl: ', imageStoredUrl);
+    const path1 = urlUtils.urlFor('files', {file: imageStoredUrl}, true) + 'content/files/members10h.csv';
+    console.log('imageStoredUrl2: ', imageStoredUrl);
     return path1;
 };
