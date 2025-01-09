@@ -433,7 +433,7 @@ ul.nostyle li {
     font-weight: 500;
     letter-spacing: 0.03em;
     color: var(--black);
-    border-bottom: var(--whitegrey) 1px solid;
+    /* border-bottom: var(--whitegrey) 1px solid; */
     padding: 10px 20px;
     text-transform: uppercase;
     white-space: nowrap;
@@ -469,7 +469,7 @@ ul.nostyle li {
     z-index: 99;
 }
 
-.gh-list-scrolling thead th:first-child::before,
+/* .gh-list-scrolling thead th:first-child::before,
 .gh-list-scrolling tbody .gh-list-data:first-child::before {
     position: absolute;
     content: "";
@@ -478,7 +478,7 @@ ul.nostyle li {
     left: 0;
     height: 1px;
     background: var(--whitegrey);
-}
+} */
 
 .gh-list-scrolling td:not(.wrap),
 .gh-list-scrolling th:not(.wrap),
@@ -492,16 +492,51 @@ ul.nostyle li {
 }
 
 .gh-list-scrolling tbody .gh-list-data {
-    border-top: none;
-    border-bottom: var(--whitegrey-l1) 1px solid;
+    border-bottom: none;
+    border-top: var(--whitegrey-l1) 1px solid;
 }
 
 .gh-list-scrolling tbody tr:hover > a:first-of-type {
-    background: linear-gradient(315deg, var(--whitegrey-l2) 60%, var(--white) 100%);
+    background: var(--whitegrey-l2);
 }
 
 .gh-list-scrolling tbody tr:hover > a:not(:first-of-type) {
     background: var(--whitegrey-l2);
+}
+
+.gh-list-scrolling tbody tr:hover > a:first-of-type:after {
+    display: block;
+    position: absolute;
+    content: "";
+    top: 0;
+    left: -16px;
+    bottom: 0;
+    width: 16px;
+    background-color: var(--whitegrey-l2);
+    z-index: 0;
+    border-radius: 7px 0 0 7px;
+}
+
+.gh-list-scrolling tbody tr:hover > a:last-of-type {
+    position: relative;
+}
+
+.gh-list-scrolling tbody tr:hover > a:last-of-type:after {
+    display: block;
+    position: absolute;
+    content: "";
+    top: 0;
+    right: -16px;
+    bottom: 0;
+    width: 16px;
+    background-color: var(--whitegrey-l2);
+    z-index: 0;
+    border-radius: 0 7px 7px 0;
+}
+
+.gh-list-scrolling tbody tr:hover > .gh-list-data,
+.gh-list-scrolling tbody tr:hover + tr > .gh-list-data {
+    border-color: transparent;
 }
 
 @media (min-width: 1441px) {
