@@ -449,13 +449,30 @@ ul.nostyle li {
     background: linear-gradient(90deg, rgba(255,255,255,1) 90%, rgba(255,255,255,0) 100%);
 }
 
-.gh-list-scrolling thead th:first-child::after {
+.gh-list-scrolling thead th:first-child::before {
     position: absolute;
     top: 0;
-    right: 0;
-    width: 40px;
-    height: 100%;
-    background: green;
+    left: -16px;
+    bottom: 0;
+    width: 16px;
+    display: block;
+    content: "";
+    background: var(--main-bg-color);
+}
+
+.gh-list-scrolling thead th:last-child {
+    position: relative;
+}
+
+.gh-list-scrolling thead th:last-child::before {
+    position: absolute;
+    top: 0;
+    right: -16px;
+    bottom: 0;
+    width: 16px;
+    display: block;
+    content: "";
+    background: var(--main-bg-color);
 }
 
 .gh-list-scrolling tbody .gh-list-data:first-child {
