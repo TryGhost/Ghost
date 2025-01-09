@@ -49,8 +49,8 @@ export default class NavigationService extends Service {
 
     @action
     async toggleMenu() {
-        if (!this.settings.menu.visible) {
-            this.settings.menu.visible = true;
+        if (!this.settings.menu) {
+            this.settings.menu = {};
         }
 
         this.settings.menu.visible = !this.settings.menu.visible;

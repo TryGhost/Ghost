@@ -5,22 +5,17 @@ import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
 
 export default class GhNavMenuComponent extends Component {
+    @service navigation;
     @service settings;
     @service ui;
     @service session;
 
     @tracked firstRender = true;
-    @tracked menuVisible = true;
 
     @action
     updateFirstRender() {
         schedule('afterRender', this, () => {
             this.firstRender = false;
         });
-    }
-
-    @action
-    toggleMenu() {
-        this.menuVisible = !this.menuVisible;
     }
 }

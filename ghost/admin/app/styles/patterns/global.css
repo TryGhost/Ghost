@@ -180,8 +180,8 @@
     --errorbg-lightred: rgba(240, 82, 48, 0.05);
 
     /* Global layout values */
-    --main-layout-content-sidepadding: 40px;
-    --main-layout-content-maxwidth: 1320px;
+    --main-layout-content-sidepadding: 32px;
+    --main-layout-content-maxwidth: 1480px;
     --main-layout-vpanel-height: 96px;
     --main-layout-section-vpadding: 3vw;
 
