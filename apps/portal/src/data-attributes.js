@@ -3,7 +3,7 @@ import {getCheckoutSessionDataFromPlanAttribute, getUrlHistory} from './utils/he
 import {HumanReadableError, chooseBestErrorMessage} from './utils/errors';
 import i18nLib from '@tryghost/i18n';
 
-export function formSubmitHandler({event, form, errorEl, siteUrl, submitHandler},
+export async function formSubmitHandler({event, form, errorEl, siteUrl, submitHandler},
     t = (str) => {
         return str;
     }) {
@@ -60,12 +60,13 @@ export function formSubmitHandler({event, form, errorEl, siteUrl, submitHandler}
         }
     }
 
-    return fetch(`${siteUrl}/members/api/integrity-token/`, {
-        method: 'GET'
-    }).then((res) => {
-        return res.text();
-    }).then((integrityToken) => {
-        return fetch(`${siteUrl}/members/api/send-magic-link/`, {
+    try {
+        const integrityTokenRes = await fetch(`${siteUrl}/members/api/integrity-token/`, {
+            method: 'GET'
+        });
+        const integrityToken = await integrityTokenRes.text();
+
+        const magicLinkRes = await fetch(`${siteUrl}/members/api/send-magic-link/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -75,23 +76,23 @@ export function formSubmitHandler({event, form, errorEl, siteUrl, submitHandler}
                 integrityToken
             })
         });
-    }).then(function (res) {
+
         form.addEventListener('submit', submitHandler);
         form.classList.remove('loading');
-        if (res.ok) {
+        if (magicLinkRes.ok) {
             form.classList.add('success');
         } else {
-            return HumanReadableError.fromApiResponse(res).then((e) => {
+            return HumanReadableError.fromApiResponse(magicLinkRes).then((e) => {
                 throw e;
             });
         }
-    }).catch((err) => {
+    } catch (err) {
         if (errorEl) {
             // This theme supports a custom error element
             errorEl.innerText = chooseBestErrorMessage(err, t('There was an error sending the email, please try again'), t);
         }
         form.classList.add('error');
-    });
+    }
 }
 
 export function planClickHandler({event, el, errorEl, siteUrl, site, member, clickHandler}) {
