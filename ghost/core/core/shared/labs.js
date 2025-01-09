@@ -52,7 +52,8 @@ const ALPHA_FEATURES = [
     'collectionsCard',
     'lexicalIndicators',
     'adminXDemo',
-    'postsX'
+    'postsX',
+    'captcha'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
