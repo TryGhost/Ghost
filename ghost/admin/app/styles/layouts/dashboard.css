@@ -1041,6 +1041,12 @@ Dashboard Attribution */
     padding: 32px 0;
 }
 
+@media (max-width: 800px) {
+    .gh-dashboard .gh-canvas-header.sticky {
+        padding: 16px 0;
+    }
+}
+
 .gh-dashboard .gh-canvas-header.sticky .gh-dashboard-select {
     top: 0px !important;
     right: -6px !important;
