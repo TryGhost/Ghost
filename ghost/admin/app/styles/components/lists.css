@@ -27,6 +27,7 @@ ul.nostyle li {
 
 .gh-list-row {
     display: table-row;
+    position: relative;
 }
 
 .gh-list-row:not(.header):first-of-type {
@@ -80,7 +81,7 @@ ul.nostyle li {
     display: table-cell;
     vertical-align: middle;
     padding: 16px 20px;
-    border-top: var(--whitegrey) 1px solid;
+    border-top: var(--whitegrey-l1) 1px solid;
     transition: none !important;
     font-size: 1.3rem;
 }
@@ -104,12 +105,27 @@ ul.nostyle li {
     opacity: 1;
 }
 
-.gh-list-row:not(.loading):hover .gh-list-data:first-of-type {
-    background: linear-gradient(315deg, var(--whitegrey-l2) 60%, var(--white) 100%);
+.gh-list-row > * {
+    position: relative;
+    z-index: 10;
 }
 
-.gh-list-row:not(.loading):hover .gh-list-data:not(:first-of-type) {
-    background: var(--whitegrey-l2);
+.gh-list-row:not(.header):hover:after {
+    display: block;
+    position: absolute;
+    content: "";
+    top: -1px;
+    right: -16px;
+    bottom: -1px;
+    left: -16px;
+    background-color: var(--whitegrey-l2);
+    z-index: 0;
+    border-radius: 7px;
+}
+
+.gh-list-row:not(.header):hover .gh-list-data,
+.gh-list-row:not(.header):hover + .gh-list-row:not(.header) .gh-list-data {
+    border-color: transparent;
 }
 
 .gh-list-data-attribution {
@@ -284,7 +300,7 @@ ul.nostyle li {
     justify-content: space-between;
     margin: 0;
     padding: 0;
-    border-top: var(--whitegrey) 1px solid;
+    border-top: var(--whitegrey-l1) 1px solid;
 }
 
 .gh-flex-list-row:first-of-type {
@@ -477,7 +493,7 @@ ul.nostyle li {
 
 .gh-list-scrolling tbody .gh-list-data {
     border-top: none;
-    border-bottom: var(--whitegrey) 1px solid;
+    border-bottom: var(--whitegrey-l1) 1px solid;
 }
 
 .gh-list-scrolling tbody tr:hover > a:first-of-type {
