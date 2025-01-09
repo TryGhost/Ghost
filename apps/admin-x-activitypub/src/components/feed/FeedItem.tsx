@@ -264,7 +264,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                     <div className=''>
                                         {(object.type === 'Article') && renderFeedAttachment(object, layout)}
                                         {object.name && <Heading className='my-1 text-pretty leading-tight' level={5} data-test-activity-heading>{object.name}</Heading>}
-                                        {(object.preview && object.type === 'Article') ? <div className='line-clamp-3 leading-tight'>{object.preview.content}</div> : <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content text-pretty leading-[1.4285714286] tracking-[-0.006em] text-grey-900'></div>}
+                                        {(object.preview && object.type === 'Article') ? <div className='line-clamp-3 leading-tight'>{object.preview.content}</div> : <div dangerouslySetInnerHTML={({__html: object.content ?? ''})} className='ap-note-content text-pretty leading-[1.4285714286] tracking-[-0.006em] text-grey-900'></div>}
                                         {(object.type === 'Note') && renderFeedAttachment(object, layout)}
                                         {(object.type === 'Article') && <Button
                                             className={`mt-3 self-start text-grey-900 transition-all hover:opacity-60`}
@@ -318,7 +318,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                 <div className={`relative z-10 col-start-1 col-end-3 w-full gap-4`}>
                                     <div className='flex flex-col'>
                                         {object.name && <Heading className='mb-1 leading-tight' level={4} data-test-activity-heading>{object.name}</Heading>}
-                                        <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content-large text-pretty text-[1.6rem] tracking-[-0.011em] text-grey-900'></div>
+                                        <div dangerouslySetInnerHTML={({__html: object.content ?? ''})} className='ap-note-content-large text-pretty text-[1.6rem] tracking-[-0.011em] text-grey-900'></div>
                                         {renderFeedAttachment(object, layout)}
                                         <div className='space-between ml-[-7px] mt-3 flex'>
                                             <FeedItemStats
@@ -372,7 +372,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                     <div className='flex flex-col'>
                                         {(object.type === 'Article') && renderFeedAttachment(object, layout)}
                                         {object.name && <Heading className='my-1 text-pretty leading-tight' level={5} data-test-activity-heading>{object.name}</Heading>}
-                                        {(object.preview && object.type === 'Article') ? <div className='line-clamp-3 leading-tight'>{object.preview.content}</div> : <div dangerouslySetInnerHTML={({__html: object.content})} className='ap-note-content text-pretty tracking-[-0.006em] text-grey-900'></div>}
+                                        {(object.preview && object.type === 'Article') ? <div className='line-clamp-3 leading-tight'>{object.preview.content}</div> : <div dangerouslySetInnerHTML={({__html: object.content ?? ''})} className='ap-note-content text-pretty tracking-[-0.006em] text-grey-900'></div>}
                                         {(object.type === 'Note') && renderFeedAttachment(object, layout)}
                                         {(object.type === 'Article') && <Button
                                             className={`mt-3 self-start text-grey-900 transition-all hover:opacity-60`}
@@ -423,11 +423,11 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                     <Heading className='w-full max-w-[600px] text-pretty text-[1.6rem] font-semibold leading-tight' level={5} data-test-activity-heading>
                                         {object.name ? object.name : (
                                             <span dangerouslySetInnerHTML={{
-                                                __html: stripHtml(object.content)
+                                                __html: stripHtml(object.content || '')
                                             }}></span>
                                         )}
                                     </Heading>
-                                    <div dangerouslySetInnerHTML={({__html: stripHtml(object.preview?.content ?? object.content)})} className='ap-note-content line-clamp-2 w-full max-w-[600px] text-pretty text-base leading-normal text-grey-800'></div>
+                                    <div dangerouslySetInnerHTML={({__html: stripHtml(object.preview?.content ?? object.content ?? '')})} className='ap-note-content line-clamp-2 w-full max-w-[600px] text-pretty text-base leading-normal text-grey-800'></div>
                                     <span className='mt-1 shrink-0 whitespace-nowrap text-sm leading-none text-grey-600'>{object.content && `${getReadingTime(object.content)}`}</span>
                                 </div>
                                 <div className='invisible absolute right-4 top-1/2 z-[49] flex -translate-y-1/2 flex-col rounded-full bg-white p-1 shadow-md group-hover/article:visible'>
