@@ -18,7 +18,6 @@ ul.nostyle li {
     list-style: none;
     background: var(--white);
     width: 100%;
-    border-bottom: var(--main-color-area-divider) 1px solid;
 }
 
 .gh-list.tabbed {
@@ -507,7 +506,7 @@ ul.nostyle li {
         padding-left: 0;
         padding-right: 4vw;
     }
-    
+
     .gh-list-scrolling thead {
         position: relative;
         z-index: 780;
