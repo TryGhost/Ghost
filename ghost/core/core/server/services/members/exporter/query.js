@@ -106,8 +106,8 @@ module.exports = async function (options) {
 
     //console.time('storing_csv');
     const store = storage.getStorage('files');
-    const imageStoredUrl = await store.saveRaw(csvContent, 'members10h.csv');
-    const fileUrl = urlUtils.urlFor('files', {file: imageStoredUrl}, true) + '/content/files/members10h.csv';
+    const imageStoredUrl = await store.saveRaw(csvContent, 'members10hk.csv');
+    const fileUrl = urlUtils.urlFor('files', {file: imageStoredUrl}, true) + 'content/files/members10hk.csv';
     //console.timeEnd('storing_csv');
 
     //console.timeEnd('total_export_time');
