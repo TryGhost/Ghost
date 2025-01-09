@@ -522,7 +522,7 @@ body:not(.gh-body-fullscreen) .gh-viewport {
 .gh-nav-list .active {
     position: relative;
     color: var(--black);
-    background-color: var(--whitegrey);
+    background-color: var(--mainmenu-color-active-bg);
     font-weight: 600;
 }
 
@@ -693,7 +693,7 @@ body:not(.gh-body-fullscreen) .gh-viewport {
     margin: 0;
     right: 10px;
     top: 5px;
-    background: var(--mainmenu-color-hover-bg);
+    background: var(--mainmenu-color-active-bg);
     color: var(--middarkgrey);
     border-radius: 999px;
     font-weight: 500;
@@ -987,17 +987,13 @@ body:not(.gh-body-fullscreen) .gh-viewport {
     .mobile-menu-expanded .gh-nav {
         transform: translate3d(0,0,0);
         z-index: 1000;
+        box-shadow: 100px 0px 80px 0px rgba(0, 0, 0, 0.02), 41.78px 0px 33.422px 0px rgba(0, 0, 0, 0.01), 22.34px 0px 17.869px 0px rgba(0, 0, 0, 0.01), 12.52px 0px 10.017px 0px rgba(0, 0, 0, 0.01), 6.65px 0px 5.32px 0px rgba(0, 0, 0, 0.01), 2.77px 0px 2.214px 0px rgba(0, 0, 0, 0.01);
     }
 
     .mobile-menu-expanded .content-cover {
         width: calc(100vw - 260px);
         cursor: pointer;
         transform: translate3d(260px, 0, 0);
-    }
-
-    .gh-nav-list .active {
-        background: var(--black);
-        color: var(--white);
     }
 }
 
@@ -1059,6 +1055,10 @@ body:not(.gh-body-fullscreen) .gh-viewport {
         padding-bottom: 64px;
     }
 
+    .gh-toggle-nav-menu {
+        display: none;
+    }
+
     @supports (padding-bottom: env(safe-area-inset-bottom)) {
         .gh-viewport {
             padding-bottom: calc(55px + env(safe-area-inset-bottom, 0px));
@@ -1102,18 +1102,18 @@ body:not(.gh-body-fullscreen) .gh-viewport {
     }
 
     .gh-mobile-nav-bar a.active {
-        background: var(--black);
-        color: var(--white);
+        background: var(--mainmenu-color-active-bg);
+        color: var(--mainmenu-color-active);
     }
 
     .gh-mobile-nav-bar a.active svg {
-        fill: var(--white);
+        fill: var(--mainmenu-color-active);
     }
 
     .gh-mobile-nav-bar a.active.gh-nav-main-users g,
     .gh-mobile-nav-bar a.active.gh-nav-main-users path {
         fill: transparent;
-        stroke: var(--white);
+        stroke: var(--mainmenu-color-active);
     }
 
     .gh-mobile-nav-bar svg,
