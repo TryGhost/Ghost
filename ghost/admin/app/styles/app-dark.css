@@ -238,7 +238,7 @@ input:focus,
 }
 
 .gh-image-uploader-unsplash {
-    filter: invert(100%);
+    color: var(--grey-400);
 }
 
 /* Buttons
@@ -259,7 +259,7 @@ input:focus,
 }
 
 .gh-btn:not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red):not(.gh-btn-primary):not(.gh-btn-black):not(.gh-btn-text):not(.gh-btn-accent):not(.gh-btn-link):not(.gh-editor-preview-trigger) {
-    border: 1px solid var(--lightgrey);
+    border: 1px solid var(--grey-900);
     color: var(--black);
 }
 
@@ -740,11 +740,12 @@ input:focus,
 
 .gh-tag-setting-codeinjection .CodeMirror {
     background: var(--dark-main-bg-color);
+    border: 1px solid var(--grey-800);
 }
 
 .gh-tag-setting-codeinjection .CodeMirror-gutters {
     background-color: var(--whitegrey);
-    border-right: 1px solid var(--lightgrey);
+    border-right: 1px solid var(--grey-800);
 }
 
 /* Koenig styles */
@@ -937,6 +938,18 @@ input:focus,
 }
 
 /* Members activity */
+.gh-member-newsletter-row {
+    border-bottom: 1px solid var(--grey-900);
+}
+
+.gh-members-no-subs .lightgrey {
+    color: var(--grey-600);
+}
+
+.gh-cp-membertier-attribution .gh-tier-card-price {
+    background: var(--grey-900);
+}
+
 .gh-members-activity-icon svg path,
 .gh-member-feed-icon svg path {
     stroke: #fff;
@@ -947,7 +960,7 @@ input:focus,
 }
 
 .gh-member-feed-row {
-    border-bottom: 1px solid var(--lightgrey-l1);
+    border-bottom: 1px solid var(--grey-900);
 }
 
 .ghost-members-activity-event-prefix,
@@ -999,7 +1012,7 @@ input:focus,
 
 /* Member */
 .gh-cp-membertier-attribution .gh-membertier-advanced {
-    border-top: 1px solid rgb(23, 25, 28);
+    border-top: 1px solid var(--grey-900);
 }
 
 .gh-dashboard-metric.is-embedded {
@@ -1492,4 +1505,43 @@ Publish flow: Share modal */
 /* --------------------------------- */
 .gh-contentfilter-menu-trigger.bordered {
     border-color: var(--lightgrey);
+}
+
+/* ---------------------------------
+New form styles */
+
+
+.gh-input-x {
+    background-color: var(--grey-900);
+}
+
+.gh-input-x::placeholder {
+    color: var(--grey-700);
+}
+
+.gh-input-x:hover {
+    background-color: var(--grey-925);
+}
+
+.gh-input-x:focus,
+.gh-input-x:focus-visible {
+    background-color: var(--grey-950);
+    border: 1px solid var(--green);
+}
+
+.gh-tag-image-uploader .gh-image-uploader {
+    background-color: var(--grey-900);
+    border-color: transparent;
+}
+
+.gh-main-section-content.bordered {
+    border-color: var(--grey-925);
+}
+
+.gh-expandable {
+    border: 1px solid var(--grey-925);
+}
+
+.gh-expandable-block {
+    border-bottom: 1px solid var(--grey-925);
 }
