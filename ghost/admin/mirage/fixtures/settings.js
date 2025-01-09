@@ -75,7 +75,7 @@ export default [
 
     // PORTAL
     setting('portal', 'portal_name', true),
-    setting('portal', 'portal_button', true),
+    setting('portal', 'portal_button', false),
     setting('portal', 'portal_plans', JSON.stringify(['free'])),
     setting('portal', 'portal_default_plan', 'yearly'),
     setting('portal', 'portal_products', JSON.stringify([])),
