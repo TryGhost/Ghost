@@ -86,8 +86,8 @@ module.exports = async function (options) {
         member.created_at = moment(member.created_at).toISOString();
     }
 
-    const fs = require('fs');
-    const path = require('path');
+    // const fs = require('fs');
+    //const path = require('path');
     const createObjectCsvStringifier = require('csv-writer').createObjectCsvStringifier;
 
     //const csvPath = urlUtils.urlFor('home') + 'content/files/members101.csv';
@@ -120,8 +120,8 @@ module.exports = async function (options) {
     const store = storage.getStorage('files');
     const imageStoredUrl = await store.saveRaw(csvString, 'members10h.csv');
     //const path1 = urlUtils.urlFor('home', {file: csvPath}, true) + 'content/files/members101.csv';
-    console.log('imageStoredUrl: ', imageStoredUrl);
+    //console.log('imageStoredUrl: ', imageStoredUrl);
     const path1 = urlUtils.urlFor('files', {file: imageStoredUrl}, true) + 'content/files/members10h.csv';
-    console.log('imageStoredUrl2: ', imageStoredUrl);
+    //console.log('imageStoredUrl2: ', imageStoredUrl);
     return path1;
 };
