@@ -1,6 +1,7 @@
 const models = require('../../../models');
 const {knex} = require('../../../data/db');
 const moment = require('moment');
+const urlUtils = require('../../../../shared/url-utils');
 
 module.exports = async function (options) {
     const hasFilter = options.limit !== 'all' || options.filter || options.search;
@@ -114,6 +115,8 @@ module.exports = async function (options) {
 
     const csvString = csvStringifier.getHeaderString() + csvStringifier.stringifyRecords(records);
     fs.writeFileSync(csvPath, csvString);
-
-    return csvPath;
+    //console.log('csvPath: ', csvPath);
+    const path1 = urlUtils.urlFor('home', {file: csvPath}, true) + 'content/files/members101.csv';
+    //console.log('path1: ', path1);
+    return path1;
 };

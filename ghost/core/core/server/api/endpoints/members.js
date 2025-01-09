@@ -385,10 +385,10 @@ const controller = {
         validation: {},
         async query(frame) {
             //console.time('exportCSV');
-            await membersService.export(frame.options);
+            const p = await membersService.export(frame.options);
             //console.timeEnd('exportCSV');
             return {
-                url: '/content/files/members101.csv'
+                url: p
             };
         }
     },
