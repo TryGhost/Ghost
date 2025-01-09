@@ -1,7 +1,6 @@
 //@ts-check
 const _ = require('lodash');
 const debug = require('@tryghost/debug')('api:endpoints:utils:serializers:output:members');
-//const {unparse} = require('@tryghost/members-csv');
 const mappers = require('./mappers');
 
 module.exports = {
@@ -91,12 +90,10 @@ function activityFeed(data, _apiConfig, frame) {
  *
  * @param {{data: any[]}} data
  *
- * @returns {any} - A CSV string
+ * @returns {object} - A CSV string
  */
 function exportCSV(data) {
-    //debug('exportCSV');
     return data;
-    //unparse(data.data);
 }
 
 function serializeAttribution(attribution) {

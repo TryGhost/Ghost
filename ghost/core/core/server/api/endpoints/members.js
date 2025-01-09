@@ -384,11 +384,9 @@ const controller = {
         },
         validation: {},
         async query(frame) {
-            //console.time('exportCSV');
-            const p = await membersService.export(frame.options);
-            //console.timeEnd('exportCSV');
+            const memberFileUrl = await membersService.export(frame.options);
             return {
-                url: p
+                url: memberFileUrl
             };
         }
     },

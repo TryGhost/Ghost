@@ -71,8 +71,6 @@ export default class MembersController extends Controller {
      */
     @tracked postAnalytics = null;
 
-    @tracked isExporting = false;
-
     get fromAnalytics() {
         if (!this.postAnalytics) {
             return null;
@@ -373,35 +371,26 @@ export default class MembersController extends Controller {
 
     @action
     async exportData() {
-        this.isExporting = true;
-        
         try {
             let exportUrl = ghostPaths().url.api('members/upload');
             let downloadParams = new URLSearchParams(this.getApiQueryObject());
             downloadParams.set('limit', 'all');
 
-            // First fetch the URL from the API
             const response = await fetch(`${exportUrl}?${downloadParams.toString()}`);
             const data = await response.json();
             
             if (data.url) {
-                // Create a temporary anchor element for download
                 const link = document.createElement('a');
                 link.href = data.url;
-                link.download = 'memberssssppp.csv';
+                const datetime = (new Date()).toJSON().substring(0, 10);
+                link.download = `members.${datetime}.csv`;
                 
-                // Append to document, click, and cleanup
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
             }
         } catch (error) {
-            //console.error('Error during export:', error);
-        } finally {
-            // Reset after a short delay
-            setTimeout(() => {
-                this.isExporting = false;
-            }, 1500);
+            throw error;
         }
     }
 

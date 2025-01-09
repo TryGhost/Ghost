@@ -1,100 +1,94 @@
 const models = require('../../../models');
 const {knex} = require('../../../data/db');
 const moment = require('moment');
+const {unparse} = require('@tryghost/members-csv');
 const urlUtils = require('../../../../shared/url-utils');
 const storage = require('../../../adapters/storage');
-const csvWriter = require('csv-writer').createObjectCsvStringifier;
 
 module.exports = async function (options) {
     const hasFilter = options.limit !== 'all' || options.filter || options.search;
-    let ids = null;
 
+    let ids = null;
     if (hasFilter) {
+        // do a very minimal query, only to fetch the ids of the filtered values
+        // should be quite fast
         options.withRelated = [];
         options.columns = ['id'];
+
         const page = await models.Member.findPage(options);
         ids = page.data.map(d => d.id);
+
+        /*
+        const filterOptions = _.pick(options, ['transacting', 'context']);
+
+        if (all !== true) {
+            // Include mongoTransformer to apply subscribed:{true|false} => newsletter relation mapping
+            Object.assign(filterOptions, _.pick(options, ['filter', 'search', 'mongoTransformer']));
+        }
+
+        const memberRows = await models.Member.getFilteredCollectionQuery(filterOptions)
+            .select('members.id')
+            .distinct();
+
+        ids = memberRows.map(row => row.id);
+        */
     }
 
-    const [
-        members,
-        tiers,
-        labels,
-        stripeCustomers,
-        newsletterSubscriptions
-    ] = await Promise.all([
-        knex('members')
-            .select('id', 'email', 'name', 'note', 'status', 'created_at')
-            .modify((query) => {
-                if (hasFilter) {
-                    query.whereIn('id', ids);
-                }
-            }),
-        knex('members_products')
-            .select('member_id', knex.raw('GROUP_CONCAT(DISTINCT product_id) as tiers'))
-            .groupBy('member_id'),
-        knex('members_labels')
-            .select('member_id', knex.raw('GROUP_CONCAT(DISTINCT label_id) as labels'))
-            .groupBy('member_id'),
-        knex('members_stripe_customers')
-            .select('member_id', knex.raw('MIN(customer_id) as stripe_customer_id'))
-            .groupBy('member_id'),
-        knex('members_newsletters')
-            .distinct('member_id')
-    ]);
+    const allProducts = await models.Product.fetchAll();
+    const allLabels = await models.Label.fetchAll();
 
-    const tiersMap = new Map(tiers.map(row => [row.member_id, row.tiers]));
-    const labelsMap = new Map(labels.map(row => [row.member_id, row.labels]));
-    const stripeCustomerMap = new Map(stripeCustomers.map(row => [row.member_id, row.stripe_customer_id]));
-    const subscribedSet = new Set(newsletterSubscriptions.map(row => row.member_id));
+    let query = knex('members')
+        .select('id', 'email', 'name', 'note', 'status', 'created_at')
+        .select(knex.raw(`
+            (CASE WHEN EXISTS (SELECT 1 FROM members_newsletters n WHERE n.member_id = members.id)
+                    THEN TRUE ELSE FALSE
+            END) as subscribed
+        `))
+        .select(knex.raw(`
+            (SELECT GROUP_CONCAT(product_id) FROM members_products f WHERE f.member_id = members.id) as tiers
+        `))
+        .select(knex.raw(`
+            (SELECT GROUP_CONCAT(label_id) FROM members_labels f WHERE f.member_id = members.id) as labels
+        `))
+        .select(knex.raw(`
+            (SELECT customer_id FROM members_stripe_customers f WHERE f.member_id = members.id limit 1) as stripe_customer_id
+        `));
 
-    const csvWriterInstance = csvWriter({
-        header: [
-            {id: 'id', title: 'ID'},
-            {id: 'email', title: 'Email'},
-            {id: 'name', title: 'Name'},
-            {id: 'note', title: 'Note'},
-            {id: 'status', title: 'Status'},
-            {id: 'created_at', title: 'Created At'},
-            {id: 'subscribed', title: 'Subscribed'},
-            {id: 'comped', title: 'Comped'},
-            {id: 'tiers', title: 'Tiers'},
-            {id: 'labels', title: 'Labels'},
-            {id: 'stripe_customer_id', title: 'Stripe Customer ID'}
-        ]
-    });
-
-    const batchSize = 10000;
-    const batches = [];
-    for (let i = 0; i < members.length; i += batchSize) {
-        batches.push(members.slice(i, i + batchSize));
+    if (hasFilter) {
+        query = query.whereIn('id', ids);
     }
 
-    const processBatch = (batch) => {
-        return batch.map((member) => {
-            const tierIds = tiersMap.get(member.id)?.split(',') || [];
-            const labelIds = labelsMap.get(member.id)?.split(',') || [];
-            const subscribed = subscribedSet.has(member.id);
-            const stripeCustomerId = stripeCustomerMap.get(member.id);
+    const rows = await query;
+    for (const row of rows) {
+        const tierIds = row.tiers ? row.tiers.split(',') : [];
+        const tiers = tierIds.map((id) => {
+            const tier = allProducts.find(p => p.id === id);
+            return {
+                name: tier.get('name')
+            };
+        });
+        row.tiers = tiers;
 
-            return csvWriterInstance.stringifyRecords([{
-                ...member,
-                tiers: tierIds.join(', '),
-                labels: labelIds.join(', '),
-                subscribed,
-                comped: member.status === 'comped',
-                created_at: moment(member.created_at).toISOString(),
-                stripe_customer_id: stripeCustomerId || null
-            }]);
-        }).join('');
-    };
+        const labelIds = row.labels ? row.labels.split(',') : [];
+        const labels = labelIds.map((id) => {
+            const label = allLabels.find(l => l.id === id);
+            return {
+                name: label.get('name')
+            };
+        });
+        row.labels = labels;
+    }
 
-    const csvContent = [
-        csvWriterInstance.getHeaderString(),
-        ...(await Promise.all(batches.map(processBatch)))
-    ].join('');
+    for (const member of rows) {
+        // Note: we don't modify the array or change/duplicate objects
+        // to increase performance
+        member.subscribed = !!member.subscribed;
+        member.comped = member.status === 'comped';
+        member.created_at = moment(member.created_at).toISOString();
+    }
 
+    const csv = unparse(rows);
     const store = storage.getStorage('files');
-    const imageStoredUrl = await store.saveRaw(csvContent, 'members10h.csv');
+    const imageStoredUrl = await store.saveRaw(csv, 'members10h.csv');
     return urlUtils.urlFor('files', {file: imageStoredUrl}, true) + 'content/files/members10h.csv';
 };
