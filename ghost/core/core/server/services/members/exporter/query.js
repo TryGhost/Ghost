@@ -38,7 +38,6 @@ module.exports = async function (options) {
     const allProducts = await models.Product.fetchAll();
     const allLabels = await models.Label.fetchAll();
 
-    // Split SQL queries into separate queries and execute in parallel
     const [members, tiers, labels, stripeCustomers, subscriptions] = await Promise.all([
         knex('members')
             .select('id', 'email', 'name', 'note', 'status', 'created_at')
@@ -87,22 +86,21 @@ module.exports = async function (options) {
 
     for (const row of members) {
         const tierIds = tiersMap.get(row.id) ? tiersMap.get(row.id).split(',') : [];
-        const tierDetails = tierIds.map((id) => { // Renamed 'tiers' to 'tierDetails'
+        const tierDetails = tierIds.map((id) => {
             const tier = allProducts.find(p => p.id === id);
             return {
                 name: tier.get('name')
             };
         });
-        row.tiers = tierDetails; // Updated to use 'tierDetails'
-
+        row.tiers = tierDetails;
         const labelIds = labelsMap.get(row.id) ? labelsMap.get(row.id).split(',') : [];
-        const labelDetails = labelIds.map((id) => { // Renamed 'labels' to 'labelDetails'
+        const labelDetails = labelIds.map((id) => {
             const label = allLabels.find(l => l.id === id);
             return {
                 name: label.get('name')
             };
         });
-        row.labels = labelDetails; // Updated to use 'labelDetails'
+        row.labels = labelDetails;
 
         row.subscribed = subscribedSet.has(row.id);
         row.comped = row.status === 'comped';
@@ -114,6 +112,6 @@ module.exports = async function (options) {
 
     const store = storage.getStorage('files');
     const csvStoredUrl = await store.saveRaw(csv, 'members.csv');
-    const finalUrl = `${urlUtils.urlFor('files', true)}${csvStoredUrl}`;
+    const finalUrl = `${urlUtils.urlFor('files', true)}${csvStoredUrl.replace(/^\/+/, '')}`;
     return finalUrl;
 };
