@@ -111,8 +111,16 @@ module.exports = async function (options) {
     const csv = unparse(members);
 
     const store = storage.getStorage('files');
-    await store.delete('members.csv', 'content/files');
-    const csvStoredUrl = await store.saveRaw(csv, 'members.csv');
+    // const uniqueFilePath = await store.generateUnique('content/files/members', 'members', '.csv', 0);
+    // console.log('uniqueFilePath: ', uniqueFilePath);
+
+    const glob = require('glob');
+    const files = glob.sync('content/files/members/members*');
+    files.forEach((file) => {
+        store.delete(file, '');
+    });
+    // const p = path.basename(uniqueFilePath);//.replace('-', '');
+    const csvStoredUrl = await store.saveRaw(csv, `/members/members-${(new Date()).toJSON()}.csv`);
     const finalUrl = `${urlUtils.urlFor('files', true)}${csvStoredUrl.replace(/^\/+/, '')}`;
     return finalUrl;
 };
