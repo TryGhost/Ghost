@@ -12,6 +12,7 @@ module.exports = async function (options) {
     if (hasFilter) {
         // do a very minimal query, only to fetch the ids of the filtered values
         // should be quite fast
+
         options.withRelated = [];
         options.columns = ['id'];
 
@@ -110,7 +111,9 @@ module.exports = async function (options) {
     }
 
     const csv = unparse(members);
+
     const store = storage.getStorage('files');
-    const imageStoredUrl = await store.saveRaw(csv, 'members10h.csv');
-    return urlUtils.urlFor('files', {file: imageStoredUrl}, true) + 'content/files/members10h.csv';
+    const csvStoredUrl = await store.saveRaw(csv, 'members.csv');
+    const finalUrl = `${urlUtils.urlFor('files', true)}${csvStoredUrl}`;
+    return finalUrl;
 };
