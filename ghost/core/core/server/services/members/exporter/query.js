@@ -111,6 +111,7 @@ module.exports = async function (options) {
     const csv = unparse(members);
 
     const store = storage.getStorage('files');
+    await store.delete('members.csv', 'content/files');
     const csvStoredUrl = await store.saveRaw(csv, 'members.csv');
     const finalUrl = `${urlUtils.urlFor('files', true)}${csvStoredUrl.replace(/^\/+/, '')}`;
     return finalUrl;
