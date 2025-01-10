@@ -48,7 +48,7 @@ function getMockData({newsletterQuerySelectorResult = null} = {}) {
             querySelector: (elem) => {
                 if (elem === 'input[data-members-email]') {
                     return {
-                        value: 'jamie@example.com'
+                        value: 'aroha@example.nz'
                     };
                 }
                 if (elem === 'input[data-members-name]') {
@@ -153,7 +153,7 @@ describe('Member Data attributes:', () => {
 
             expect(window.fetch).toHaveBeenCalledTimes(2);
             const expectedBody = JSON.stringify({
-                email: 'jamie@example.com',
+                email: 'aroha@example.nz',
                 emailType: 'signup',
                 labels: ['Gold'],
                 name: 'Jamie Larsen',
@@ -260,7 +260,7 @@ describe('Member Data attributes:', () => {
 
             expect(window.fetch).toHaveBeenCalledTimes(2);
             const expectedBody = JSON.stringify({
-                email: 'jamie@example.com',
+                email: 'aroha@example.nz',
                 emailType: 'signup',
                 labels: ['Gold'],
                 name: 'Jamie Larsen',
@@ -287,7 +287,7 @@ describe('Member Data attributes:', () => {
 
             expect(window.fetch).toHaveBeenCalledTimes(2);
             const expectedBody = JSON.stringify({
-                email: 'jamie@example.com',
+                email: 'aroha@example.nz',
                 emailType: 'signup',
                 labels: ['Gold'],
                 name: 'Jamie Larsen',

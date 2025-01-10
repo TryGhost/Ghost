@@ -113,9 +113,9 @@ export function getOfferData({
 }
 
 export function getMemberData({
-    name = 'Jamie Larson',
-    email = 'jamie@example.com',
-    firstname = 'Jamie',
+    name = 'Aroha Te Hiranga',
+    email = 'aroha@example.nz',
+    firstname = 'Aroha',
     subscriptions = [],
     paid = false,
     avatarImage: avatar_image = '',
@@ -353,8 +353,8 @@ export function getSubscriptionData({
         id,
         customer: {
             id: `cus_${objectId()}`,
-            name: 'Jamie',
-            email: 'jamie@example.com'
+            name: 'Aroha',
+            email: 'aroha@example.nz'
         },
         plan: {
             id: `price_${objectId()}`,

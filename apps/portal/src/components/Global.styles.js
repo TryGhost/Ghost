@@ -2,31 +2,63 @@ export const GlobalStyles = `
     /* Colors
     /* ----------------------------------------------------- */
     :root {
-        --black: #000;
-        --blackrgb: 0,0,0;
-        --grey0: #1d1d1d;
-        --grey1: #333;
-        --grey1rgb: 33, 33, 33;
-        --grey2: #3d3d3d;
-        --grey3: #474747;
-        --grey4: #515151;
-        --grey5: #686868;
-        --grey6: #7f7f7f;
-        --grey7: #979797;
-        --grey8: #aeaeae;
-        --grey9: #c5c5c5;
-        --grey10: #dcdcdc;
-        --grey11: #e1e1e1;
-        --grey12: #eaeaea;
-        --grey13: #f9f9f9;
-        --grey13rgb: 249,249,249;
-        --grey14: #fbfbfb;
-        --white: #fff;
-        --whitergb: 255,255,255;
         --red: #f02525;
         --darkerRed: #C50202;
         --yellow: #FFDC15;
         --green: #30CF43;
+    }
+
+    @media (prefers-color-scheme: light) {
+        :root {
+            --black: #000;
+            --blackrgb: 0,0,0;
+            --grey0: #1d1d1d;
+            --grey1: #333;
+            --grey1rgb: 33, 33, 33;
+            --grey2: #3d3d3d;
+            --grey3: #474747;
+            --grey4: #515151;
+            --grey5: #686868;
+            --grey6: #7f7f7f;
+            --grey7: #979797;
+            --grey8: #aeaeae;
+            --grey9: #c5c5c5;
+            --grey10: #dcdcdc;
+            --grey11: #e1e1e1;
+            --grey12: #eaeaea;
+            --grey13: #f9f9f9;
+            --grey13rgb: 249,249,249;
+            --grey14: #fbfbfb;
+            --white: #fff;
+            --whitergb: 255,255,255;
+        }
+    }
+
+    @media (prefers-color-scheme: dark) {
+        :root {
+            --black: #fff;
+            --blackrgb: 0,0,0;
+            --grey0: #fbfbfb;
+            --grey1: #f9f9f9;
+            --grey1rgb: 249,249,249;
+            --grey2: #eaeaea;
+            --grey3: #e1e1e1;
+            --grey4: #dcdcdc;
+            --grey5: #c5c5c5;
+            --grey6: #aeaeae;
+            --grey7: #979797;
+            --grey8: #7f7f7f;
+            --grey9: #686868;
+            --grey10: #515151;
+            --grey11: #474747;
+            --grey12: #3d3d3d;
+            --grey13: #333;
+            --grey13rgb: 33,33,33;
+            --grey14: #1d1d1d;
+            --white: #000;
+            --whitergb: 255,255,255;
+            --brandcolor: #dea4ff;
+        }
     }
 
     /* Globals

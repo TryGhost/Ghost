@@ -27,6 +27,19 @@ import NotificationStyle from './Notification.styles';
 
 // Global styles
 const FrameStyles = `
+/* PolicyFlow modifications */
+
+.gh-portal-btn-main {
+    background-color: var(--brandcolor) !important;
+    color: var(--white) !important;
+}
+
+.gh-portal-btn-link {
+    color: var(--brandcolor) !important;
+}
+
+/* Default Ghost */
+
 .gh-portal-main-title {
     text-align: center;
     color: var(--grey0);
@@ -333,7 +346,7 @@ html[dir="rtl"] .gh-portal-btn-site-title-back span {
     text-align: start;
     letter-spacing: 0;
     text-rendering: optimizeLegibility;
-    background: var(--white);
+    background: var(--white); 
     width: 500px;
     margin: 0 auto 40px;
     padding: 32px;
