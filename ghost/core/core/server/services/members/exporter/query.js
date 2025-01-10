@@ -48,15 +48,35 @@ module.exports = async function (options) {
             }),
         knex('members_products')
             .select('member_id', knex.raw('GROUP_CONCAT(product_id) as tiers'))
-            .groupBy('member_id'),
+            .groupBy('member_id')
+            .modify((query) => {
+                if (hasFilter) {
+                    query.whereIn('member_id', ids);
+                }
+            }),
         knex('members_labels')
             .select('member_id', knex.raw('GROUP_CONCAT(label_id) as labels'))
-            .groupBy('member_id'),
+            .groupBy('member_id')
+            .modify((query) => {
+                if (hasFilter) {
+                    query.whereIn('member_id', ids);
+                }
+            }),
         knex('members_stripe_customers')
             .select('member_id', knex.raw('MIN(customer_id) as stripe_customer_id'))
-            .groupBy('member_id'),
+            .groupBy('member_id')
+            .modify((query) => {
+                if (hasFilter) {
+                    query.whereIn('member_id', ids);
+                }
+            }),
         knex('members_newsletters')
             .distinct('member_id')
+            .modify((query) => {
+                if (hasFilter) {
+                    query.whereIn('member_id', ids);
+                }
+            })
     ]);
 
     const tiersMap = new Map(tiers.map(row => [row.member_id, row.tiers]));
