@@ -2,7 +2,7 @@
 {{#if (eq this.router.currentRouteName "posts")}}
     <LinkTo @route="posts" @query={{hash type=null}} class="active" data-test-mobile-nav="posts">{{svg-jar "posts"}}</LinkTo>
 {{else}}
-    <LinkTo @route="posts">{{svg-jar "posts" data-test-mobile-nav="posts"}}</LinkTo>
+    <LinkTo @route="posts">{{svg-jar "posts" data-test-mobile-nav="posts" class="mobile-nav-posts-icon"}}</LinkTo>
 {{/if}}
 <LinkTo @route="members" class="gh-nav-main-users" data-test-mobile-nav="members">{{svg-jar "members"}}</LinkTo>
 <div

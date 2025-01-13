@@ -1154,6 +1154,10 @@ body:not(.gh-body-fullscreen) .gh-viewport {
     .gh-body-fullscreen .gh-mobile-nav-bar {
         display: none;
     }
+
+    .mobile-nav-posts-icon {
+        transform: translateY(-1px) translateX(1px);
+    }
 }
 
 

@@ -168,11 +168,11 @@ input:focus,
 
 @media (max-width: 800px) {
     .gh-mobile-nav-bar {
-        background: #191b1f;
+        background: var(--nav-bg-color);
     }
 
     .gh-mobile-nav-bar a.active {
-        background: #111213;
+        background: var(--whitegrey-l2);
         color: #fff;
     }
 }
@@ -643,7 +643,8 @@ input:focus,
     background: var(--main-bg-color);
 }
 
-.gh-nav-hidden:hover {
+.gh-nav-hidden:hover,
+.mobile-menu-expanded .gh-nav {
     box-shadow:
         100px 0px 80px 0px rgba(0, 0, 0, 0.06),
         41.78px 0px 33.422px 0px rgba(0, 0, 0, 0.05),
