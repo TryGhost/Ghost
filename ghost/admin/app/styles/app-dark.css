@@ -108,11 +108,7 @@ input,
 .gh-input,
 .gh-select,
 .for-switch .input-toggle-component,
-.gh-select select,
-.settings-menu-container:not(.ember-power-select-multiple-trigger):not(.tag-settings) input:not([disabled]),
-.settings-menu-container:not(.tag-settings) .gh-input:not([disabled]),
-.settings-menu-pane .gh-date-time-picker-date,
-.settings-menu-pane .gh-date-time-picker-time {
+.gh-select select {
     color: var(--darkgrey);
     border-color: color-mod(var(--lightgrey));
     background: color-mod(var(--lightgrey));
@@ -190,6 +186,11 @@ input:focus,
     background: color-mod(var(--lightgrey));
 }
 
+.ember-power-select-multiple-remove-btn svg path {
+    stroke: var(--grey-100);
+    fill: var(--grey-100);
+}
+
 .ember-power-select-dropdown {
     box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
 }
@@ -258,7 +259,7 @@ input:focus,
     background: var(--black) !important;
 }
 
-.gh-btn:not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red):not(.gh-btn-primary):not(.gh-btn-black):not(.gh-btn-text):not(.gh-btn-accent):not(.gh-btn-link):not(.gh-editor-preview-trigger) {
+.gh-btn:not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red):not(.gh-btn-primary):not(.gh-btn-black):not(.gh-btn-text):not(.gh-btn-accent):not(.gh-btn-link):not(.gh-editor-preview-trigger):not(.gh-expandable-header .gh-btn):not(.gh-btn.gh-post-preview-mode) {
     border: 1px solid var(--grey-900);
     color: var(--black);
 }
@@ -361,13 +362,17 @@ input:focus,
     color: var(--lightgrey);
 }
 
-.nav-list {
+.nav-list:not(.settings-menu .nav-list) {
     border-color: var(--lightgrey);
     background: var(--lightgrey);
 }
 
 .nav-list-item:hover {
     background: var(--lightgrey-l1);
+}
+
+.nav-list-item-twitter button svg path {
+    stroke: var(--black);
 }
 
 .gh-select select {
@@ -586,6 +591,10 @@ input:focus,
     border: 1px solid var(--lightgrey);
 }
 
+.for-switch .input-toggle-component {
+    background: var(--grey-800);
+}
+
 .for-switch input:checked+.input-toggle-component {
     background: var(--green);
 }
@@ -723,7 +732,7 @@ input:focus,
 }
 
 .nightshift-toggle {
-    background: var(--lightgrey);
+    background: var(--grey-800);
 }
 
 .nightshift-toggle .thumb {
@@ -942,12 +951,16 @@ input:focus,
     border-bottom: 1px solid var(--grey-900);
 }
 
-.gh-members-no-subs .lightgrey {
+.gh-members-no-data .lightgrey {
     color: var(--grey-600);
 }
 
 .gh-cp-membertier-attribution .gh-tier-card-price {
     background: var(--grey-900);
+}
+
+.gh-cp-membertier-attribution .gh-tier-card-header:not(:first-child) {
+    border-top: 1px solid var(--grey-900);
 }
 
 .gh-members-activity-icon svg path,
@@ -1109,9 +1122,7 @@ kbd {
 /* Dashboard */
 
 .gh-dashboard-box.is-secondary, .gh-dashboard-resource-box,
-.gh-main-section-content.grey,
-.gh-expandable,
-.gh-expandable-content {
+.gh-main-section-content.grey {
     background: #1C1E22;
 }
 
@@ -1525,6 +1536,24 @@ New form styles */
 
 .gh-input-x:focus,
 .gh-input-x:focus-visible {
+    background-color: var(--grey-950);
+    border: 1px solid var(--green);
+}
+
+.settings-menu-container select,
+.settings-menu-pane .gh-date-time-picker-date,
+.settings-menu-pane .gh-date-time-picker-time {
+    background-color: var(--grey-900);
+}
+
+.settings-menu-container select:hover,
+.settings-menu-pane .gh-date-time-picker-date:hover,
+.settings-menu-pane .gh-date-time-picker-time:hover {
+    background-color: var(--grey-925);
+}
+
+.settings-menu-pane .gh-date-time-picker-date:focus,
+.settings-menu-pane .gh-date-time-picker-time:focus {
     background-color: var(--grey-950);
     border: 1px solid var(--green);
 }

@@ -524,11 +524,9 @@ li.nav-list-item .for-switch.xs label {
 
 /* Form controls
 /* ---------------------------------------------------------- */
-.settings-menu-container .gh-input,
 .settings-menu-container select,
 .settings-menu-container .gh-date-time-picker-date,
-.settings-menu-container .gh-date-time-picker-time,
-.settings-menu-container .ember-power-select-multiple-trigger {
+.settings-menu-container .gh-date-time-picker-time {
     min-height: 38px;
     padding: 4px 12px;
     font-size: 1.4rem;
@@ -541,16 +539,12 @@ li.nav-list-item .for-switch.xs label {
     transition-duration: .15s;
 }
 
-.settings-menu-container .gh-input:hover,
 .settings-menu-container select:hover,
 .settings-menu-container .gh-date-time-picker-date:hover,
-.settings-menu-container .gh-date-time-picker-time:hover,
-.settings-menu-container .ember-power-select-multiple-trigger:hover {
+.settings-menu-container .gh-date-time-picker-time:hover{
     background-color: var(--grey-100);
 }
 
-.settings-menu-container .gh-input:focus,
-.settings-menu-container .gh-input:focus-visible,
 .settings-menu-container .ember-basic-dropdown-trigger[aria-expanded=true] .gh-date-time-picker-date,
 .settings-menu-container .gh-date-time-picker-time:focus-within {
     background-color: var(--white);
@@ -599,7 +593,6 @@ li.nav-list-item .for-switch.xs label {
 }
 
 .settings-menu-container .ember-power-select-dropdown {
-    padding: 0 !important;
     border: 0 !important;
     border-radius: 8px;
     --tw-shadow: 0 0 7px rgba(0, 0, 0, .08), 0 2.1px 2.2px -5px rgba(0, 0, 0, .011), 0 5.1px 5.3px -5px rgba(0, 0, 0, .016), 0 9.5px 10px -5px rgba(0, 0, 0, .02), 0 17px 17.9px -5px rgba(0, 0, 0, .024), 0 31.8px 33.4px -5px rgba(0, 0, 0, .029), 0 76px 80px -5px rgba(0, 0, 0, .04);
