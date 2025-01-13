@@ -52,6 +52,24 @@
     --lightgrey: #CED4D9;
     --whitegrey: #EBEEF0;
 
+    /* AdminX Greys */
+    --grey-50: #FAFAFB;
+    --grey-75: #F9FAFB;
+    --grey-100: #F4F5F6;
+    --grey-150: #F1F3F4;
+    --grey-200: #EBEEF0;
+    --grey-250: #E5E9ED;
+    --grey-300: #DDE1E5;
+    --grey-400: #CED4D9;
+    --grey-500: #AEB7C1;
+    --grey-600: #95A1AD;
+    --grey-700: #7C8B9A;
+    --grey-800: #626D79;
+    --grey-900: #394047;
+    --grey-925: #2E3338;
+    --grey-950: #222427;
+    --grey-975: #191B1E;
+
     /* Tones */
     --white-10: rgba(255, 255, 255, 0.1);
     --white-20: rgba(255, 255, 255, 0.2);
