@@ -660,11 +660,11 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                         {object.type === 'Article' && (
                             <div className='border-b border-grey-200 pb-8' id='object-content'>
                                 <ArticleBody
-                                    excerpt={object?.preview?.content}
+                                    excerpt={object?.preview?.content ?? ''}
                                     fontFamily={fontFamily}
                                     fontSize={FONT_SIZES[currentFontSizeIndex]}
                                     heading={object.name}
-                                    html={object.content}
+                                    html={object.content ?? ''}
                                     image={typeof object.image === 'string' ? object.image : object.image?.url}
                                     lineHeight={LINE_HEIGHTS[currentLineHeightIndex]}
                                 />
@@ -728,7 +728,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
             {modalSize === MODAL_SIZE_LG && object.type === 'Article' && (
                 <div className='pointer-events-none sticky bottom-0 flex items-end justify-between px-10 pb-[42px]'>
                     <div className='pointer-events-auto text-grey-600'>
-                        {getReadingTime(object.content)}
+                        {getReadingTime(object.content ?? '')}
                     </div>
                     <div className='pointer-events-auto text-grey-600 transition-all duration-200 ease-out'>
                         {readingProgress}%

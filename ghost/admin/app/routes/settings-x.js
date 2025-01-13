@@ -16,4 +16,10 @@ export default class SettingsXRoute extends AuthenticatedRoute {
         super.deactivate(...arguments);
         this.ui.set('isFullScreen', false);
     }
+
+    buildRouteInfoMetadata() {
+        return {
+            bodyClasses: ['gh-body-fullscreen']
+        };
+    }
 }
