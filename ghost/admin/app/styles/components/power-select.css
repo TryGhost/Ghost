@@ -99,9 +99,10 @@
     overflow-x: hidden;
 }
 
-.ember-power-select-options li {
+.ember-power-select-group .ember-power-select-options li,
+.ember-power-select-options li.ember-power-select-option {
     margin-bottom: 0;
-    padding: 0;
+    padding: 7px 12px;
 }
 
 .ember-power-select-options li span {
@@ -112,7 +113,6 @@
     word-break: break-word;
     line-height: 1.3em;
     overflow: hidden;
-    /* padding: 7px 12px; */
 }
 
 .ember-power-select-search input {
@@ -145,7 +145,7 @@
     display: inline-block;
     width: 100%;
     margin-top: 6px;
-    padding: 10px 12px 8px 0px;
+    padding: 12px 0 0 12px;
     cursor: default;
     border-top: 1px solid var(--list-color-divider);
     text-transform: uppercase;
@@ -174,8 +174,7 @@
 
 .ember-power-select-group:first-of-type .ember-power-select-group-name {
     margin: 8px 0;
-    padding-top: 0;
-    padding-bottom: 0;
+    padding: 0 0 0 12px;
 }
 
 .ember-power-select-group:first-of-type .ember-power-select-group-name:after {
