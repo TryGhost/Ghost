@@ -218,13 +218,17 @@
     right: -16px;
     bottom: -1px;
     left: -16px;
-    background-color: var(--lightgrey-l2);
+    background-color: var(--whitegrey-l2);
     z-index: 0;
     border-radius: 7px;
 }
 
+.gh-posts-list-item::after {
+    display: none !important;
+}
+
 .gh-posts-list-item-group:hover:after {
-    opacity: 0.2;
+    opacity: 1;
 }
 
 .posts-list .gh-posts-list-item-group:hover {
@@ -238,6 +242,16 @@
 .gh-posts-list-item-group[data-selected] {
     user-select: none;
     border-color: transparent;
+}
+
+.posts-list[data-ctrl] .gh-posts-list-item-group:hover::after {
+    opacity: 0.05;
+    background: #6E78E5;
+}
+
+.gh-posts-list-item-group[data-selected]::after {
+    opacity: 0.1 !important;
+    background: #6E78E5;
 }
 
 .gh-posts-list-item-group .gh-posts-list-item:hover .gh-list-data {
@@ -801,7 +815,7 @@
 
 .gh-canvas-title.gh-post-title {
     max-width: 880px;
-    padding: 20px 0 0 0;
+    padding: 0;
     font-size: 2.8rem;
     line-height: 1.2em;
     overflow: inherit;

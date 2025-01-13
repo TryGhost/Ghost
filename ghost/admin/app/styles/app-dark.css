@@ -701,7 +701,6 @@ input:focus,
     border-color: var(--lightgrey);
 }
 
-.gh-posts-list-item:hover,
 .ember-power-select-group .ember-power-select-option[aria-current=true],
 .settings-tag .tag-edit-button.active,
 .gh-portal-site-frame-cover {
@@ -1361,6 +1360,14 @@ kbd {
 .gh-posts-list-item .gh-content-entry-status,
 .gh-posts-list-item .gh-content-email-stats {
     color: #626D79;
+}
+
+.posts-list[data-ctrl] .gh-posts-list-item-group:hover::after {
+    opacity: 0.08;
+}
+
+.gh-posts-list-item-group[data-selected]::after {
+    opacity: 0.13 !important;
 }
 
 .gh-portal-settings-stripefooter {
