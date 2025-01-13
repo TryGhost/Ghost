@@ -1,14 +1,13 @@
 <h4 class="gh-main-section-header small bn">Activity</h4>
 {{#if @member.isNew}}
-    <div class="gh-main-section-content grey">
+    <div class="gh-main-section-content bordered">
         <div class="gh-member-feed gh-member-feed-no-data">
             <Member::ActivityFeedEmpty />
         </div>
     </div>
 {{else}}
     {{#let (members-event-fetcher filter=(members-event-filter member=@member.id excludedEvents=this.excludedEventTypes) pageSize=5 memberId=@member.id) as |eventsFetcher|}}
-        <div class="gh-main-section-content grey {{if eventsFetcher.data "" "mt8"}}">
-            <div class="gh-member-feed {{if eventsFetcher.data "" "gh-member-feed-no-data"}}" ...attributes>
+        <div class="gh-main-section-content bordered {{if eventsFetcher.data "" "mt8"}}" ...attributes>
                 <div class="flex-auto flex flex-column items-stretch {{if eventsFetcher.data "justify-between" "h-100 justify-center"}}">
                     <div>
                         {{#if eventsFetcher.isLoading}}
@@ -66,7 +65,6 @@
                         {{/if}}
                     </div>
                 </div>
-            </div>
         </div>
     {{/let}}
 {{/if}}
