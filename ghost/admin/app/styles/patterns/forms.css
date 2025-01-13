@@ -301,6 +301,7 @@ textarea {
 
 textarea.gh-input-x {
     padding-block: 8px;
+    max-width: unset;
 }
 
 
