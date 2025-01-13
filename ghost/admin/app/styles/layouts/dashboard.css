@@ -375,6 +375,7 @@ Dashboard Layout */
 
 .gh-dashboard .ember-power-select-trigger {
     transition: none;
+    border: transparent;
 }
 
 .gh-dashboard-layout > .gh-dashboard-select {
