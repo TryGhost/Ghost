@@ -486,7 +486,7 @@ export default class PaidMix extends Component {
                         } else {
                             value += '%';
                         }
-                        tooltipTextEl.innerHTML = `<span class="indicator solid" style="background-color: ${data.datasets[tooltipItems.datasetIndex].backgroundColor}"></span><span class="value">${value}</span><span class="metric">${label}</span>`;
+                        tooltipTextEl.innerHTML = `<span class="indicator solid" style="background-color: ${data.datasets[tooltipItems.datasetIndex].backgroundColor}"></span><span class="metric">${label}</span><span class="value">${value}</span>`;
                     },
                     title: () => {
                         return null;

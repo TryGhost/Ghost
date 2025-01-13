@@ -112,11 +112,6 @@ Dashboard Layout */
     }
 }
 
-.gh-dashboard-box.is-secondary {
-    background: var(--main-color-content-greybg);
-    border-color: var(--main-color-content-greybg);
-}
-
 .gh-dashboard-resource-box {
     background: var(--main-color-content-greybg);
     border-color: var(--main-color-content-greybg);
@@ -369,17 +364,18 @@ Dashboard Layout */
 .gh-dashboard-select-title .ember-power-select-selected-item {
     font-size: 1.5rem;
     letter-spacing: 0;
-    font-weight: 700;
+    font-weight: 600;
     line-height: 1em;
     margin: 0;
     padding: 0;
-    letter-spacing: -0.3px;
+    letter-spacing: -0.1px;
     white-space: nowrap;
     color: var(--black);
 }
 
 .gh-dashboard .ember-power-select-trigger {
     transition: none;
+    border: transparent;
 }
 
 .gh-dashboard-layout > .gh-dashboard-select {
@@ -567,14 +563,14 @@ Dashboard Metric */
 
 .gh-dashboard-metric-label {
     align-items: center;
-    font-size: 1.55rem;
-    font-weight: 700;
+    font-size: 1.5rem;
+    font-weight: 600;
     line-height: 1em;
     margin: 0 0 8px;
     padding: 0;
     color: var(--black);
     white-space: nowrap;
-    letter-spacing: -.3px;
+    letter-spacing: -.1px;
 }
 
 .gh-dashboard-metric.is-reverse .gh-dashboard-metric-label {
@@ -596,8 +592,8 @@ Dashboard Metric */
 .gh-dashboard-metric-value {
     display: flex;
     align-items: flex-end;
-    font-size: 2.6rem;
-    font-weight: 700;
+    font-size: 2.7rem;
+    font-weight: 600;
     letter-spacing: -.4px;
     line-height: 1em;
     white-space: nowrap;
@@ -610,7 +606,7 @@ Dashboard Metric */
 }
 
 .gh-dashboard-metric.is-large .gh-dashboard-metric-value {
-    font-size: 3.2rem;
+    font-size: 2.7rem;
     letter-spacing: -0.8px;
     margin-bottom: 0;
 }
@@ -655,19 +651,14 @@ Dashboard Metric */
     display: none;
 }
 
-.gh-dashboard-metric.is-embedded .gh-dashboard-metric-value {
-    font-size: 2.4rem;
-}
-
 .gh-dashboard-hero.source-attribution:not(.is-solo) {
     margin-top: -40px;
 }
 
 .gh-dashboard-metric-minivalue {
-    font-size: 1.5rem;
+    font-size: 1.4rem;
     letter-spacing: 0;
-    font-weight: 700;
-    color: var(--darkgrey);
+    font-weight: 600;
     text-decoration: none;
     min-width: 54px;
 }
@@ -744,10 +735,9 @@ Dashboard List */
 }
 
 .gh-dashboard-list-text {
-    font-weight: 600;
-    font-size: 1.5rem;
+    font-weight: 500;
+    font-size: 1.4rem;
     letter-spacing: 0;
-    color: var(--darkgrey);
     padding: 0 32px 0 0;
     text-decoration: none;
     text-overflow: ellipsis;
@@ -1050,6 +1040,12 @@ Dashboard Attribution */
     max-width: 1230px;
     margin: 0 auto;
     padding: 32px 0;
+}
+
+@media (max-width: 800px) {
+    .gh-dashboard .gh-canvas-header.sticky {
+        padding: 16px 0;
+    }
 }
 
 .gh-dashboard .gh-canvas-header.sticky .gh-dashboard-select {
@@ -1485,6 +1481,7 @@ Dashboard Recents */
     height: 100%;
     padding-top: 6px;
     padding-bottom: 6px;
+    color: var(--black);
 }
 
 .gh-dashboard-recents .gh-dashboard-list-item a > span {
@@ -1787,12 +1784,6 @@ Dashboard Latest Newsletters */
 
 /* ---------------------------------
 Dashboard What's New */
-
-.gh-dashboard-whats-new .gh-dashboard-resource-box {
-    background: var(--main-color-content-greybg);
-    border-color: var(--main-color-content-greybg);
-}
-
 .gh-dashboard-whats-new .gh-dashboard-list-body {
     justify-content: flex-start;
 }
@@ -1815,8 +1806,8 @@ Dashboard What's New */
 }
 
 .gh-dashboard-whats-new .gh-dashboard-list-link span {
-    font-size: 1.8rem;
-    font-weight: 700;
+    font-size: 1.7rem;
+    font-weight: 600;
 }
 
 /* ---------------------------------
@@ -2029,7 +2020,7 @@ Dashboard Resource */
 
 .gh-dashboard-resource-bigarticle h3 {
     font-size: 1.8rem;
-    font-weight: 700;
+    font-weight: 600;
     transition: all 0.25 ease-in-out;
 }
 
@@ -2038,7 +2029,7 @@ Dashboard Resource */
 }
 
 .gh-dashboard-resource-bigarticle p {
-    font-size: 1.5rem;
+    font-size: 1.4rem;
     letter-spacing: 0;
     line-height: 1.55;
     color: var(--middarkgrey);
@@ -2071,7 +2062,7 @@ Dashboard Resource */
 
 .gh-dashboard-resource-secondary {
     margin-top: .4rem;
-    font-size: 1.4rem;
+    font-size: 1.3rem;
     line-height: 1.5em;
     font-weight: 400;
     color: var(--midgrey);
@@ -2248,7 +2239,7 @@ Dashboard Resource */
     margin: 8px 0 16px;
     padding: 0;
     color: var(--middarkgrey);
-    font-size: 1.5rem;
+    font-size: 1.4rem;
     line-height: 1.55;
     line-clamp: 2;
     -webkit-line-clamp: 2;
@@ -2261,7 +2252,8 @@ Dashboard Resource */
 }
 
 .gh-dashboard-explore-title h5 {
-    font-weight: 800;
+    font-weight: 600;
+    font-size: 1.7rem;
 }
 
 .gh-dashboard-explore-footer {
@@ -2329,11 +2321,11 @@ Dashboard Tooltips */
 }
 
 .gh-dashboard-tooltip-label {
-    font-size: 1.2rem;
-    font-weight: 500;
+    font-size: 1.3rem;
+    font-weight: 600;
     line-height: 1em;
     letter-spacing: 0;
-    color: var(--midlightgrey);
+    color: var(--black);
     white-space: nowrap;
     margin: 0 0 8px;
 }
@@ -2341,9 +2333,9 @@ Dashboard Tooltips */
 .gh-dashboard-tooltip-value {
     display: flex;
     align-items: baseline;
-    font-size: 1.5rem;
+    font-size: 1.4rem;
     letter-spacing: 0;
-    font-weight: 700;
+    font-weight: 400;
     letter-spacing: 0;
     line-height: 1em;
     white-space: nowrap;
@@ -2369,15 +2361,16 @@ Dashboard Tooltips */
 }
 
 .gh-dashboard-tooltip-value .value {
-    font-size: 1.5rem;
+    font-size: 1.4rem;
     letter-spacing: 0;
-    margin-right: 8px;
+    margin-left: 12px;
+    font-family: var(--font-family-mono);
 }
 
 .gh-dashboard-tooltip-value .metric {
     font-size: 1.4rem;
     font-weight: 400;
-    color: var(--middarkgrey);
+    color: var(--midgrey);
     padding: 0;
 }
 
@@ -2401,11 +2394,11 @@ Dashboard Tooltips */
 }
 
 .gh-dashboard-totals .value {
-    font-size: 1.7rem;
+    font-size: 1.4rem;
 }
 
 .gh-dashboard-totals .metric {
-    font-size: 1.45rem;
+    font-size: 1.4rem;
 }
 
 .gh-dashboard-mrr .indicator {

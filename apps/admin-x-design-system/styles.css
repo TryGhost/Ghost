@@ -88,11 +88,13 @@
 }
 
 
+/*
+Used to be for fixed bottom mobile menu bar
 @media (max-width: 800px) {
     .admin-x-base {
         height: calc(100vh - 55px);
     }
-}
+} */
 
 .admin-x-base.dark {
     color: #FAFAFB;

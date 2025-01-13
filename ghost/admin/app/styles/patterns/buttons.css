@@ -349,10 +349,6 @@ svg.gh-btn-icon-right {
     color: var(--red);
 }
 
-.gh-btn-action-icon {
-    margin-right: 10px
-}
-
 .gh-btn-action-icon svg {
     height: 16px;
     width: 16px;

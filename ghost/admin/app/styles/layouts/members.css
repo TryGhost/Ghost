@@ -194,10 +194,6 @@ p.gh-members-list-email {
     margin-right: 4px;
 }
 
-.members-header .gh-members-header-search {
-    margin-right: 32px;
-}
-
 .gh-members-chart-header {
     display: flex;
     align-items: center;
@@ -2832,7 +2828,7 @@ a.gh-members-emailpreview-subscription-link {
     .members-header .gh-canvas-title {
         left: 25px;
     }
-    
+
     .members-header .view-actions .gh-members-header-search {
         width: 100%;
     }

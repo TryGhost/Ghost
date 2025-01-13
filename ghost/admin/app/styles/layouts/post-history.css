@@ -157,7 +157,7 @@
     align-items: center;
     height: 80px;
     margin-bottom: -24px;
-    padding: var(--main-layout-area-padding);
+    padding: 32px;
     background: var(--white);
 }
 

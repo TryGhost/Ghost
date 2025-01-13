@@ -180,14 +180,13 @@
     --errorbg-lightred: rgba(240, 82, 48, 0.05);
 
     /* Global layout values */
-    --main-layout-content-sidepadding: 48px;
-    --main-layout-content-maxwidth: 1320px;
-    --main-layout-area-padding: 32px;
+    --main-layout-content-sidepadding: 32px;
+    --main-layout-content-maxwidth: 1480px;
     --main-layout-vpanel-height: 96px;
     --main-layout-section-vpadding: 3vw;
 
     /* Style values */
-    --border-radius: 5px;
+    --border-radius: 6px;
     --font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Droid Sans", "Helvetica Neue", sans-serif;
     --font-family-mono: Consolas, "Liberation Mono", Menlo, Courier, monospace;
 
@@ -417,8 +416,8 @@ h6 {
 
 .gh-data-summary {
     color: var(--black);
-    font-size: 4rem;
-    line-height: 4.4rem;
+    font-size: 2.7rem;
+    line-height: 1.1em;
     font-weight: 600;
 }
 

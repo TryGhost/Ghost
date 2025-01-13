@@ -1,6 +1,13 @@
 <div class="flex flex-column h-100" {{css-transition (unless @firstRender "gh-nav-main" )}} data-test-nav-menu="main"
     ...attributes>
 
+    <div class="gh-toggle-nav-menu">
+        <button type="button" class="gh-btn-toggle-menu" {{on "click" (fn this.navigation.toggleMenu)}} title="Toggle sidebar">
+            <div class="segment-1"></div>
+            <div class="segment-2"></div>
+        </button>
+    </div>
+
     {{#unless this.session.user.isContributor}}
     <header class="gh-nav-menu">
         <div class="gh-nav-menu-details">
@@ -31,7 +38,7 @@
                 </li>
                 {{/if}}
                 <li class="relative">
-                    <span {{action "transitionToOrRefreshSite" on="click" }}>
+                    <span {{action "transitionToOrRefreshSite" on="click" }} class="{{if this.isOnSite "active"}}">
                         <LinkTo @route="site" data-test-nav="site" @current-when={{this.isOnSite}}
                             @preventDefault={{false}}>
                             {{svg-jar "view-site"}} View site
@@ -57,9 +64,9 @@
                 {{/if}}
             </ul>
             <ul class="gh-nav-list gh-nav-manage">
-                <li class="gh-nav-list-new relative">
+                <li class="gh-nav-list-new gh-nav-list-posts relative">
                     <GhLinkToCustomViewsIndex @route="posts" @query={{reset-query-params "posts" }}
-                        data-test-nav="posts">{{svg-jar "posts"}}Posts</GhLinkToCustomViewsIndex>
+                        data-test-nav="posts">{{svg-jar "posts" class="gh-nav-posts-icon"}}Posts</GhLinkToCustomViewsIndex>
                     <LinkTo @route="lexical-editor.new" @model="post" class="gh-secondary-action gh-nav-new-post"
                         @alt="New post" title="New post" data-test-nav="new-story"><span>{{svg-jar "plus"}}</span>
                     </LinkTo>
