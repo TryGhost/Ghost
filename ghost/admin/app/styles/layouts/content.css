@@ -249,12 +249,20 @@
 }
 
 .gh-posts-list-item-group {
+    border-color: var(--whitegrey-l1);
+    border-style: solid;
+    border-left: none;
+    border-right: none;
+}
+
+.gh-posts-list-item-group {
     position: relative;
-    border-top: 1px solid var(--whitegrey-l1);
+    border-top-width: 1px;
+    border-bottom-width: 0;
 }
 
 .gh-posts-list-item-group:last-of-type {
-    border-bottom: 1px solid var(--whitegrey-l1);
+    border-bottom-width: 1px;
 }
 
 .gh-posts-list-item-group:hover + .gh-posts-list-item-group {
