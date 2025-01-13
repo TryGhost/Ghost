@@ -137,12 +137,13 @@ body:not(.gh-body-fullscreen) .gh-viewport {
     opacity: 0;
 }
 
-.gh-nav:hover .gh-toggle-nav-menu {
+.gh-nav:hover .gh-toggle-nav-menu,
+.gh-nav-hidden .gh-toggle-nav-menu {
     opacity: 1;
 }
 
 .gh-btn-toggle-menu {
-    width: 24px;
+    width: 18px;
     height: 32px;
     display: flex;
     flex-direction: column;
@@ -150,8 +151,8 @@ body:not(.gh-body-fullscreen) .gh-viewport {
     justify-content: center;
 }
 
-.gh-nav-hidden .gh-btn-toggle-menu {
-    transform: translateX(-24px);
+.gh-nav-hidden:hover .gh-btn-toggle-menu {
+    transform: translateX(-22px);
 }
 
 .gh-btn-toggle-menu .segment-1,
@@ -159,12 +160,13 @@ body:not(.gh-body-fullscreen) .gh-viewport {
     display: block;
     width: 2px;
     height: 10px;
-    background: var(--lightgrey);
+    background: var(--midlightgrey);
     transition: transform ease-in-out 150ms;
 }
 
 .gh-btn-toggle-menu .segment-1 {
     border-radius: 10px 10px 0 0;
+
 }
 
 .gh-btn-toggle-menu .segment-2 {
@@ -179,12 +181,17 @@ body:not(.gh-body-fullscreen) .gh-viewport {
     transform: rotate(-45deg) translateY(-2px) scaleY(1.2);
 }
 
+.gh-nav-hidden .gh-btn-toggle-menu .segment-1,
+.gh-nav-hidden .gh-btn-toggle-menu .segment-2 {
+    transform: translateX(2px);
+}
+
 .gh-nav-hidden .gh-btn-toggle-menu:hover .segment-1 {
-    transform: rotate(-45deg) translateY(2px) scaleY(1.2);
+    transform: rotate(-45deg) translateY(2px) scaleY(1.2) translateX(0);
 }
 
 .gh-nav-hidden .gh-btn-toggle-menu:hover .segment-2 {
-    transform: rotate(45deg) translateY(-2px) scaleY(1.2);
+    transform: rotate(45deg) translateY(-2px) scaleY(1.2) translateX(0);
 }
 
 .gh-nav-contributor {
