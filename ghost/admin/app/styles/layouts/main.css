@@ -1168,6 +1168,11 @@ body:not(.gh-body-fullscreen) .gh-viewport {
     .mobile-nav-posts-icon {
         transform: translateY(-1px) translateX(1px);
     }
+
+    .mobile-nav-members-icon {
+        width: 20px;
+        transform: translateY(-1px);
+    }
 }
 
 
