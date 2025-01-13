@@ -801,6 +801,16 @@ body:not(.gh-body-fullscreen) .gh-viewport {
     background: var(--pink);
 }
 
+@media (max-width: 800px) {
+    .gh-nav-button-expand {
+        opacity: 1;
+    }
+
+    .gh-nav-posts-icon {
+        opacity: 0;
+    }
+}
+
 /* Bottom nav
 /* ---------------------------------------------------------- */
 
