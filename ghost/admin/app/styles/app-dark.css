@@ -84,6 +84,7 @@
 
     --main-bg-color: #15171A;
     --dark-main-bg-color: #15171A;
+    --nav-bg-color: #101114;
     --hairline-color-1: #22252A;
     --hairline-color-2: #5E6874;
 
@@ -233,7 +234,6 @@ input:focus,
 }
 
 .gh-main:not(.gh-main-white),
-.gh-nav,
 .gh-unsplash-window {
     background: var(--dark-main-bg-color);
 }
@@ -636,7 +636,21 @@ input:focus,
 }
 
 .gh-nav {
-    border-color: var(--hairline-color-1);
+    background: var(--nav-bg-color);
+}
+
+.gh-nav-hidden {
+    background: var(--main-bg-color);
+}
+
+.gh-nav-hidden:hover {
+    box-shadow:
+        100px 0px 80px 0px rgba(0, 0, 0, 0.06),
+        41.78px 0px 33.422px 0px rgba(0, 0, 0, 0.05),
+        22.34px 0px 17.869px 0px rgba(0, 0, 0, 0.05),
+        12.52px 0px 10.017px 0px rgba(0, 0, 0, 0.05),
+        6.65px 0px 5.32px 0px rgba(0, 0, 0, 0.05),
+        2.77px 0px 2.214px 0px rgba(0, 0, 0, 0.05);
 }
 
 .gh-nav-list a {
@@ -672,7 +686,6 @@ input:focus,
     background: var(--lightgrey);
 }
 
-.gh-nav,
 .gh-contentfilter-menu-trigger,
 .gh-contentfilter-menu-trigger--active,
 .gh-contentfilter-menu-trigger:focus,
