@@ -101,6 +101,18 @@
 
 .ember-power-select-options li {
     margin-bottom: 0;
+    padding: 0;
+}
+
+.ember-power-select-options li span {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    text-overflow: ellipsis;
+    word-break: break-word;
+    line-height: 1.3em;
+    overflow: hidden;
+    /* padding: 7px 12px; */
 }
 
 .ember-power-select-search input {
@@ -133,7 +145,7 @@
     display: inline-block;
     width: 100%;
     margin-top: 6px;
-    padding: 10px 12px 8px;
+    padding: 10px 12px 8px 0px;
     cursor: default;
     border-top: 1px solid var(--list-color-divider);
     text-transform: uppercase;
@@ -175,9 +187,9 @@
 }
 
 .ember-power-select-group .ember-power-select-option {
-    padding: 7px 12px;
     cursor: pointer;
     font-size: 1.4rem;
+    padding-left: 0;
 }
 
 .ember-power-select-group .ember-power-select-option span {
