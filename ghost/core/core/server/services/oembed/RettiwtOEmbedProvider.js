@@ -7,10 +7,6 @@ const logging = require('@tryghost/logging');
 
 const TWITTER_PATH_REGEX = /\/status\/(\d+)/;
 
-/**
- * @implements ICustomProvider
- */
-
 function mapTweetEntity(tweet) {
     return {
         id: tweet?.id,
@@ -66,6 +62,11 @@ function mapTweetEntity(tweet) {
         }
     };
 }
+
+/**
+ * @implements ICustomProvider
+ */
+
 class RettiwtOEmbedProvider {
     /**
      * @param {object} dependencies
