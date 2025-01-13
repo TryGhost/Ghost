@@ -59,7 +59,7 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     handleToggleChange('email_track_opens', e);
                 }}
             />
-            <Separator />
+            <Separator className="border-grey-200 dark:border-grey-900" />
             <Toggle
                 checked={trackEmailClicks}
                 direction='rtl'
@@ -70,7 +70,7 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     handleToggleChange('email_track_clicks', e);
                 }}
             />
-            <Separator />
+            <Separator className="border-grey-200 dark:border-grey-900" />
             <Toggle
                 checked={trackMemberSources}
                 direction='rtl'
@@ -81,7 +81,7 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     handleToggleChange('members_track_sources', e);
                 }}
             />
-            <Separator />
+            <Separator className="border-grey-200 dark:border-grey-900" />
             <Toggle
                 checked={outboundLinkTagging}
                 direction='rtl'
