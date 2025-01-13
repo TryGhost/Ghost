@@ -1724,7 +1724,7 @@ body:not(.gh-body-fullscreen) .gh-viewport {
 .view-actions {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 8px;
     flex-wrap: wrap-reverse;
     justify-content: flex-end;
 }
@@ -1843,11 +1843,13 @@ body:not(.gh-body-fullscreen) .gh-viewport {
 .view-actions-top-row {
     display: flex;
     align-items: center;
+    gap: 8px;
 }
 
 .view-actions-bottom-row {
     display: flex;
     align-items: center;
+    gap: 8px;
 }
 
 @media (max-width: 800px) {

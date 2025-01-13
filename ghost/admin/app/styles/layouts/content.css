@@ -7,7 +7,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin: 0 16px;
+    margin: 0 8px;
     padding: 0;
     list-style: none;
 }
@@ -53,7 +53,6 @@
     font-weight: 500;
     height: 34px;
     padding: 6px 12px 6px;
-    margin-right: 6px;
     outline: none;
     border: 1px solid transparent;
     border-radius: 5px !important;
