@@ -499,7 +499,6 @@ li.nav-list-item .for-switch.xs label {
     z-index: 900;
     opacity: 0;
     transition: transform 0.4s cubic-bezier(0.1, 0.7, 0.1, 1);
-    background: rgba(0,0,0,0.02);
     /* Not off the screen, to give a parallax effect */
     animation: coverFadeIn 0.3s ease 0.1s 1 forwards;
 }

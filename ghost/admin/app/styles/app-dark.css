@@ -84,6 +84,7 @@
 
     --main-bg-color: #15171A;
     --dark-main-bg-color: #15171A;
+    --nav-bg-color: #101114;
     --hairline-color-1: #22252A;
     --hairline-color-2: #5E6874;
 
@@ -167,11 +168,11 @@ input:focus,
 
 @media (max-width: 800px) {
     .gh-mobile-nav-bar {
-        background: #191b1f;
+        background: var(--nav-bg-color);
     }
 
     .gh-mobile-nav-bar a.active {
-        background: #111213;
+        background: var(--whitegrey-l2);
         color: #fff;
     }
 }
@@ -233,7 +234,6 @@ input:focus,
 }
 
 .gh-main:not(.gh-main-white),
-.gh-nav,
 .gh-unsplash-window {
     background: var(--dark-main-bg-color);
 }
@@ -636,11 +636,34 @@ input:focus,
 }
 
 .gh-nav {
-    border-color: var(--hairline-color-1);
+    background: var(--nav-bg-color);
+}
+
+.gh-nav-hidden {
+    background: var(--main-bg-color);
+}
+
+.gh-nav-hidden:hover,
+.mobile-menu-expanded .gh-nav {
+    box-shadow:
+        100px 0px 80px 0px rgba(0, 0, 0, 0.06),
+        41.78px 0px 33.422px 0px rgba(0, 0, 0, 0.05),
+        22.34px 0px 17.869px 0px rgba(0, 0, 0, 0.05),
+        12.52px 0px 10.017px 0px rgba(0, 0, 0, 0.05),
+        6.65px 0px 5.32px 0px rgba(0, 0, 0, 0.05),
+        2.77px 0px 2.214px 0px rgba(0, 0, 0, 0.05);
 }
 
 .gh-nav-list a {
     color: color-mod(var(--middarkgrey-d1));
+}
+
+.gh-nav-list a:hover {
+    background: var(--whitegrey-l2);
+}
+
+.gh-nav-list .active {
+    background: var(--whitegrey-l2);
 }
 
 .gh-nav-list a:not(.active):not(.gh-secondary-action):hover,
@@ -655,15 +678,15 @@ input:focus,
     background: var(--whitegrey);
 }
 
-.gh-nav-list a:not(.active):not(.gh-secondary-action):hover {
-    background: var(--whitegrey);
+.gh-nav-list a:not(.active):not(.gh-secondary-action):hover,
+.gh-nav-menu-dropdown .dropdown-menu>li>a:hover, .gh-nav-menu-dropdown .dropdown-menu>li>button:hover {
+    background: var(--whitegrey-l2);
 }
 
 .gh-nav-btn-search:hover {
     background: var(--lightgrey);
 }
 
-.gh-nav,
 .gh-contentfilter-menu-trigger,
 .gh-contentfilter-menu-trigger--active,
 .gh-contentfilter-menu-trigger:focus,
@@ -678,31 +701,9 @@ input:focus,
     border-color: var(--lightgrey);
 }
 
-.gh-list-scrolling thead th:first-child::before,
-.gh-list-scrolling tbody .gh-list-data:first-child::before {
-    background: var(--lightgrey);
-}
-
-.gh-posts-list-item:hover,
 .ember-power-select-group .ember-power-select-option[aria-current=true],
 .settings-tag .tag-edit-button.active,
 .gh-portal-site-frame-cover {
-    background: var(--whitegrey);
-}
-
-.gh-list-row:not(.loading):hover .gh-list-data:first-of-type {
-    background: linear-gradient(315deg, var(--whitegrey) 60%, var(--white) 100%);
-}
-
-.gh-list-row:not(.loading):hover .gh-list-data:not(:first-of-type) {
-    background: var(--whitegrey);
-}
-
-.gh-list-scrolling tbody tr:hover > a:first-of-type {
-    background: linear-gradient(315deg, var(--whitegrey) 60%, var(--white) 100%);
-}
-
-.gh-list-scrolling tbody tr:hover > a:not(:first-of-type) {
     background: var(--whitegrey);
 }
 
@@ -845,12 +846,6 @@ input:focus,
 /* Dark style Lists */
 .gh-list {
     background: var(--dark-main-bg-color) !important;
-}
-
-.gh-list-header,
-.gh-list-row:not(.header):hover .gh-list-cell,
-.gh-list-row:not(.header):hover .gh-list-data {
-    background: var(--dark-main-bg-color);
 }
 
 .gh-list-header {
@@ -1213,7 +1208,7 @@ kbd {
 }
 
 .gh-dashboard-tooltip {
-    background: var(--whitegrey);
+    background: var(--whitegrey-l2);
 }
 
 /* Empty states */
@@ -1365,6 +1360,14 @@ kbd {
 .gh-posts-list-item .gh-content-entry-status,
 .gh-posts-list-item .gh-content-email-stats {
     color: #626D79;
+}
+
+.posts-list[data-ctrl] .gh-posts-list-item-group:hover::after {
+    opacity: 0.08;
+}
+
+.gh-posts-list-item-group[data-selected]::after {
+    opacity: 0.13 !important;
 }
 
 .gh-portal-settings-stripefooter {

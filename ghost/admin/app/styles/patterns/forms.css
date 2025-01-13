@@ -303,6 +303,10 @@ textarea.gh-input-x {
     padding-block: 8px;
 }
 
+.ember-power-select-multiple-trigger {
+    padding-left: 4px;
+}
+
 
 /* Radio / Checkboxes
 /* ---------------------------------------------------------- */
