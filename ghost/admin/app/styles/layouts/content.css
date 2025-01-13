@@ -810,7 +810,7 @@
 
 .post-header .gh-canvas-title.gh-post-title {
     display: block;
-    padding: 6px 0 8px;
+    padding: 0;
     overflow: hidden;
     white-space: initial;
 }
@@ -818,7 +818,7 @@
 @media (max-width: 1280px) {
     .post-header .gh-canvas-title.gh-post-title {
         white-space: nowrap;
-        padding: 0;
+        padding-top: 8px;
     }
 }
 
