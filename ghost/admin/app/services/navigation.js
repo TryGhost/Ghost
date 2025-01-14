@@ -6,6 +6,9 @@ import {tracked} from '@glimmer/tracking';
 const DEFAULT_SETTINGS = {
     expanded: {
         posts: true
+    },
+    menu: {
+        visible: true
     }
 };
 
@@ -40,6 +43,17 @@ export default class NavigationService extends Service {
         }
 
         this.settings.expanded[key] = !this.settings.expanded[key];
+
+        return await this._saveNavigationSettings();
+    }
+
+    @action
+    async toggleMenu() {
+        if (!this.settings.menu) {
+            this.settings.menu = {};
+        }
+
+        this.settings.menu.visible = !this.settings.menu.visible;
 
         return await this._saveNavigationSettings();
     }
