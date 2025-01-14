@@ -8,12 +8,13 @@ type Props = {
 const LikeButton: React.FC<Props> = ({comment}) => {
     const {dispatchAction, member, commentsEnabled} = useAppContext();
     const [animationClass, setAnimation] = useState('');
+    const [disabled, setDisabled] = useState(false);
 
     const paidOnly = commentsEnabled === 'paid';
     const isPaidMember = member && !!member.paid;
     const canLike = member && (isPaidMember || !paidOnly);
 
-    const toggleLike = () => {
+    const toggleLike = async () => {
         if (!canLike) {
             dispatchAction('openPopup', {
                 type: 'ctaPopup'
@@ -22,13 +23,17 @@ const LikeButton: React.FC<Props> = ({comment}) => {
         }
 
         if (!comment.liked) {
-            dispatchAction('likeComment', comment);
+            setDisabled(true);
+            await dispatchAction('likeComment', comment);
             setAnimation('animate-heartbeat');
             setTimeout(() => {
                 setAnimation('');
             }, 400);
+            setDisabled(false);
         } else {
-            dispatchAction('unlikeComment', comment);
+            setDisabled(true);
+            await dispatchAction('unlikeComment', comment);
+            setDisabled(false);
         }
     };
 
@@ -38,6 +43,7 @@ const LikeButton: React.FC<Props> = ({comment}) => {
                 comment.liked ? 'text-black/90 dark:text-white/90' : 'text-black/50 hover:text-black/75 dark:text-white/60 dark:hover:text-white/75'
             }`}
             data-testid="like-button"
+            disabled={disabled}
             type="button"
             onClick={toggleLike}
         >
