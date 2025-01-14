@@ -5,7 +5,6 @@ const {anyContentVersion, anyEtag, anyObjectId, anyUuid, anyErrorId, anyISODateT
 const {queryStringToken} = regexes;
 const models = require('../../../core/server/models');
 const logging = require('@tryghost/logging');
-const {mockLabsDisabled, mockLabsEnabled} = require('../../utils/e2e-framework-mock-manager');
 const settingsHelpers = require('../../../core/server/services/settings-helpers');
 
 const assertMemberRelationCount = async (newsletterId, expectedCount) => {

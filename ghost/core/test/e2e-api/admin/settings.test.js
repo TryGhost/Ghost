@@ -6,7 +6,6 @@ const settingsCache = require('../../../core/shared/settings-cache');
 const {agentProvider, fixtureManager, mockManager, matchers, configUtils} = require('../../utils/e2e-framework');
 const {stringMatching, anyEtag, anyUuid, anyContentLength, anyContentVersion} = matchers;
 const models = require('../../../core/server/models');
-const {mockLabsEnabled} = require('../../utils/e2e-framework-mock-manager');
 const {anyErrorId} = matchers;
 
 const CURRENT_SETTINGS_COUNT = 87;
