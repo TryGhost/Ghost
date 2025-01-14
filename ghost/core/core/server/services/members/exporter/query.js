@@ -2,7 +2,6 @@ const models = require('../../../models');
 const {knex} = require('../../../data/db');
 const moment = require('moment');
 
-
 module.exports = async function (options) {
     const hasFilter = options.limit !== 'all' || options.filter || options.search;
 
@@ -10,6 +9,7 @@ module.exports = async function (options) {
     if (hasFilter) {
         // do a very minimal query, only to fetch the ids of the filtered values
         // should be quite fast
+        // hello
         options.withRelated = [];
         options.columns = ['id'];
 
