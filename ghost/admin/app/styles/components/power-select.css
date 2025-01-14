@@ -1,5 +1,5 @@
-.ember-power-select-trigger {
-    padding: 0 16px 0 8px;
+.ember-power-select-trigger:not(.gh-input-x) {
+    padding: 0 12px;
     border: var(--input-border);
     border-radius: var(--border-radius);
     background: transparent;
@@ -16,7 +16,7 @@
     padding: 0 6px 0 8px;
 }
 
-.ember-power-select-trigger:focus, .ember-power-select-trigger--active {
+.ember-power-select-trigger:focus, .ember-power-select-trigger--active:not(.gh-input-x) {
     border: var(--input-border);
 }
 
@@ -40,7 +40,7 @@
 }
 
 .ember-basic-dropdown--opened > .ember-power-select-trigger,
-.ember-power-select-trigger[aria-expanded="true"],
+.ember-power-select-trigger[aria-expanded="true"]:not(.gh-input-x),
 .ember-power-select-search input {
     outline: 0;
     border-color: var(--input-border-color);
@@ -69,7 +69,7 @@
     border-top: none;
 }
 
-.ember-basic-dropdown-trigger--below.ember-power-select-trigger[aria-expanded="true"] {
+.ember-basic-dropdown-trigger--below.ember-power-select-trigger[aria-expanded="true"]:not(.gh-input-x) {
     border-radius: var(--border-radius);
 }
 
@@ -79,8 +79,6 @@
 }
 
 .ember-power-select-option {
-    margin: 0;
-    padding: 6px 14px;
     color: var(--darkgrey);
 }
 
@@ -97,10 +95,24 @@
 
 .ember-power-select-options:not([role="group"]) {
     max-height: 50vh;
+    width: 100%;
+    overflow-x: hidden;
 }
 
-.ember-power-select-options li {
+.ember-power-select-group .ember-power-select-options li,
+.ember-power-select-options li.ember-power-select-option {
     margin-bottom: 0;
+    padding: 7px 12px;
+}
+
+.ember-power-select-options li span {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    text-overflow: ellipsis;
+    word-break: break-word;
+    line-height: 1.3em;
+    overflow: hidden;
 }
 
 .ember-power-select-search input {
@@ -133,7 +145,7 @@
     display: inline-block;
     width: 100%;
     margin-top: 6px;
-    padding: 10px 12px 8px;
+    padding: 12px 0 0 12px;
     cursor: default;
     border-top: 1px solid var(--list-color-divider);
     text-transform: uppercase;
@@ -162,8 +174,7 @@
 
 .ember-power-select-group:first-of-type .ember-power-select-group-name {
     margin: 8px 0;
-    padding-top: 0;
-    padding-bottom: 0;
+    padding: 0 0 0 12px;
 }
 
 .ember-power-select-group:first-of-type .ember-power-select-group-name:after {
@@ -175,11 +186,19 @@
 }
 
 .ember-power-select-group .ember-power-select-option {
-    overflow: hidden;
-    padding: 7px 12px;
-    line-height: 1.35em;
     cursor: pointer;
     font-size: 1.4rem;
+    padding-left: 0;
+}
+
+.ember-power-select-group .ember-power-select-option span {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    text-overflow: ellipsis;
+    word-break: break-word;
+    line-height: 1.3em;
+    overflow: hidden;
 }
 
 .ember-power-select-group .ember-power-select-option .highlight {
@@ -222,7 +241,7 @@
 }
 
 /* Multiple */
-.ember-power-select-multiple-trigger {
+.ember-power-select-multiple-trigger:not(.gh-input-x) {
     background: #fff;
     padding: 4px;
     border: var(--input-border);
