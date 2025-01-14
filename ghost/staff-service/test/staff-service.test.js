@@ -152,16 +152,10 @@ describe('StaffService', function () {
         };
 
         const settingsHelpers = {
-            getDefaultEmailDomain: () => {
-                return 'ghost.example';
-            },
             getDefaultEmail: () => ({
                 address: 'default@email.com',
                 name: 'Default'
-            }),
-            useNewEmailAddresses: () => {
-                return true;
-            }
+            })
         };
 
         beforeEach(function () {
