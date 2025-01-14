@@ -51,7 +51,6 @@ describe('Newsletters API', function () {
 
     beforeEach(function () {
         emailMockReceiver = mockManager.mockMail();
-        mockLabsDisabled('newEmailAddresses');
     });
 
     afterEach(function () {
@@ -369,103 +368,6 @@ describe('Newsletters API', function () {
                 pattern: queryStringToken('verifyEmail'),
                 replacement: 'verifyEmail=REPLACED_TOKEN'
             }]);
-    });
-
-    it('[Legacy] Can only set newsletter reply to to newsletter or support value', async function () {
-        const id = fixtureManager.get('newsletters', 0).id;
-
-        await agent.put(`newsletters/${id}`)
-            .body({
-                newsletters: [{
-                    sender_reply_to: 'support'
-                }]
-            })
-            .expectStatus(200)
-            .matchBodySnapshot({
-                newsletters: [newsletterSnapshot]
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
-
-        await agent.put(`newsletters/${id}`)
-            .body({
-                newsletters: [{
-                    sender_reply_to: 'newsletter'
-                }]
-            })
-            .expectStatus(200)
-            .matchBodySnapshot({
-                newsletters: [newsletterSnapshot]
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
-    });
-
-    it('[Legacy] Cannot set newsletter clear sender_reply_to', async function () {
-        const id = fixtureManager.get('newsletters', 0).id;
-
-        await agent.put(`newsletters/${id}`)
-            .body({
-                newsletters: [{
-                    sender_reply_to: ''
-                }]
-            })
-            .expectStatus(422)
-            .matchBodySnapshot({
-                errors: [{
-                    id: anyErrorId
-                }]
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
-    });
-
-    it('[Legacy] Cannot set newsletter reply-to to any email address', async function () {
-        const id = fixtureManager.get('newsletters', 0).id;
-
-        await agent.put(`newsletters/${id}`)
-            .body({
-                newsletters: [{
-                    sender_reply_to: 'hello@acme.com'
-                }]
-            })
-            .expectStatus(422)
-            .matchBodySnapshot({
-                errors: [{
-                    id: anyErrorId
-                }]
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
-    });
-
-    it('[Legacy] Cannot set newsletter sender_email to invalid email address', async function () {
-        const id = fixtureManager.get('newsletters', 0).id;
-
-        await agent.put(`newsletters/${id}`)
-            .body({
-                newsletters: [{
-                    sender_email: 'notvalid'
-                }]
-            })
-            .expectStatus(422)
-            .matchBodySnapshot({
-                errors: [{
-                    id: anyErrorId
-                }]
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
     });
 
     it('Can verify property updates', async function () {
@@ -1697,7 +1599,6 @@ describe('Newsletters API', function () {
         this.beforeEach(function () {
             configUtils.set('hostSettings:managedEmail:enabled', false);
             configUtils.set('hostSettings:managedEmail:sendingDomain', '');
-            mockLabsEnabled('newEmailAddresses');
         });
 
         it('Can set newsletter reply-to to newsletter or support', async function () {
