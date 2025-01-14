@@ -196,16 +196,34 @@ export default class CustomViewsService extends Service {
         if (!this.router.currentRoute) {
             return undefined;
         }
-        return this.findView(this.router.currentRouteName, this.router.currentRoute.queryParams);
+        const found = this.findView(this.router.currentRouteName, this.router.currentRoute.queryParams);
+        return found;
     }
 
     findView(routeName, queryParams) {
         let _routeName = routeName.replace(/_loading$/, '');
-
         return this.viewList.find((view) => {
             return view.route === _routeName
-                && isFilterEqual(view.filter, queryParams);
+                && isFilterEqual(this.cleanFilter(view.filter), queryParams);
         });
+    }
+
+    cleanFilter(filter) {
+        // Remove keys where the value is null or undefined using native JS methods
+        return Object.fromEntries(
+            Object.entries(filter).filter(([, value]) => value !== null)
+        );
+    }
+
+    isFilterEqual(filterA, filterB) {
+        const keysA = Object.keys(filterA);
+        const keysB = Object.keys(filterB);
+
+        if (keysA.length !== keysB.length) {
+            return false;
+        }
+
+        return keysA.every(key => filterA[key] === filterB[key]);
     }
 
     newView() {
