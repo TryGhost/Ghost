@@ -4,6 +4,8 @@ const moment = require('moment');
 const {unparse} = require('@tryghost/members-csv');
 const urlUtils = require('../../../../shared/url-utils');
 const storage = require('../../../adapters/storage');
+const crypto = require('crypto');
+const glob = require('glob');
 
 module.exports = async function (options) {
     const hasFilter = options.limit !== 'all' || options.filter || options.search;
@@ -38,6 +40,57 @@ module.exports = async function (options) {
     const allProducts = await models.Product.fetchAll();
     const allLabels = await models.Label.fetchAll();
 
+    /*
+
+    explain analyze SELECT 
+    id,
+    email,
+    name,
+    note,
+    status,
+    created_at,
+    CASE 
+        WHEN EXISTS (
+            SELECT 1 
+            FROM members_newsletters n 
+            WHERE n.member_id = members.id
+        ) THEN TRUE 
+        ELSE FALSE 
+    END AS subscribed,
+    (SELECT GROUP_CONCAT(product_id) 
+    FROM members_products f 
+    WHERE f.member_id = members.id) AS tiers,
+    (SELECT GROUP_CONCAT(label_id) 
+    FROM members_labels f 
+    WHERE f.member_id = members.id) AS labels,
+    (SELECT customer_id 
+    FROM members_stripe_customers f 
+    WHERE f.member_id = members.id LIMIT 1) AS stripe_customer_id
+    FROM members
+
+
+    */
+    
+    
+    /*
+    explain analyze SELECT id, email, name, note, status, created_at
+    FROM members;
+
+    explain analyze SELECT member_id, GROUP_CONCAT(product_id) AS tiers
+    FROM members_products
+    GROUP BY member_id;
+
+    explain analyze SELECT member_id, GROUP_CONCAT(label_id) AS labels
+    FROM members_labels
+    GROUP BY member_id;
+
+    explain analyze SELECT member_id, MIN(customer_id) AS stripe_customer_id
+    FROM members_stripe_customers
+    GROUP BY member_id;
+
+    explain analyze SELECT DISTINCT member_id
+    FROM members_newsletters;
+    */
     const [members, tiers, labels, stripeCustomers, subscriptions] = await Promise.all([
         knex('members')
             .select('id', 'email', 'name', 'note', 'status', 'created_at')
@@ -93,6 +146,7 @@ module.exports = async function (options) {
             };
         });
         row.tiers = tierDetails;
+
         const labelIds = labelsMap.get(row.id) ? labelsMap.get(row.id).split(',') : [];
         const labelDetails = labelIds.map((id) => {
             const label = allLabels.find(l => l.id === id);
@@ -101,7 +155,7 @@ module.exports = async function (options) {
             };
         });
         row.labels = labelDetails;
-
+        
         row.subscribed = subscribedSet.has(row.id);
         row.comped = row.status === 'comped';
         row.stripe_customer_id = stripeCustomerMap.get(row.id) || null;
@@ -110,17 +164,21 @@ module.exports = async function (options) {
 
     const csv = unparse(members);
 
-    const store = storage.getStorage('files');
-    // const uniqueFilePath = await store.generateUnique('content/files/members', 'members', '.csv', 0);
-    // console.log('uniqueFilePath: ', uniqueFilePath);
+    return await saveCsv(csv);
+};
 
-    const glob = require('glob');
+async function saveCsv(csv) {
+    const store = storage.getStorage('files');
     const files = glob.sync('content/files/members/members*');
     files.forEach((file) => {
-        store.delete(file, '');
+        store.delete(file, ''); // delete all previously generated member csv files to free up storage space
     });
-    // const p = path.basename(uniqueFilePath);//.replace('-', '');
-    const csvStoredUrl = await store.saveRaw(csv, `/members/members-${(new Date()).toJSON()}.csv`);
-    const finalUrl = `${urlUtils.urlFor('files', true)}${csvStoredUrl.replace(/^\/+/, '')}`;
-    return finalUrl;
-};
+    const csvStoredUrl = await store.saveRaw(csv, `/members/${generateUniqueFileName()}`);
+    return `${urlUtils.urlFor('files', true)}${csvStoredUrl.replace(/^\/+/, '')}`;
+}
+
+function generateUniqueFileName() {
+    const timestamp = new Date().toISOString();
+    const randomHash = crypto.randomBytes(16).toString('hex');
+    return `members-${timestamp}-${randomHash}.csv`;
+}
