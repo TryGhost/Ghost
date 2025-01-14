@@ -68,10 +68,8 @@ module.exports = async function (options) {
     WHERE f.member_id = members.id LIMIT 1) AS stripe_customer_id
     FROM members
 
-
     */
-    
-    
+
     /*
     explain analyze SELECT id, email, name, note, status, created_at
     FROM members;
@@ -155,7 +153,7 @@ module.exports = async function (options) {
             };
         });
         row.labels = labelDetails;
-        
+
         row.subscribed = subscribedSet.has(row.id);
         row.comped = row.status === 'comped';
         row.stripe_customer_id = stripeCustomerMap.get(row.id) || null;
