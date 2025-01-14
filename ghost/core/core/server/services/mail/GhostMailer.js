@@ -1,14 +1,12 @@
 // # Mail
 // Handles sending email for Ghost
 const _ = require('lodash');
-const validator = require('@tryghost/validator');
 const config = require('../../../shared/config');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const settingsCache = require('../../../shared/settings-cache');
 const urlUtils = require('../../../shared/url-utils');
 const metrics = require('@tryghost/metrics');
-const settingsHelpers = require('../settings-helpers');
 const emailAddress = require('../email-address');
 const messages = {
     title: 'Ghost at {domain}',
@@ -19,7 +17,6 @@ const messages = {
     messageSent: 'Message sent. Double check inbox and spam folder!'
 };
 const {EmailAddressParser} = require('@tryghost/email-addresses');
-const logging = require('@tryghost/logging');
 
 function getDomain() {
     const domain = urlUtils.urlFor('home', true).match(new RegExp('^https?://([^/:?#]+)(?:[/:?#]|$)', 'i'));
