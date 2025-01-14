@@ -154,6 +154,9 @@ class SettingsHelpers {
 
         // For missing configs, we default to the old flow
         logging.warn('Missing mail.from config, falling back to a generated email address. Please update your config file and set a valid from address');
+        return {
+            address: this.getLegacyNoReplyAddress()
+        };
     }
 
     /**
