@@ -49,7 +49,7 @@ export class EmailAddressService {
     }
 
     get useNewEmailAddresses() {
-        return this.managedEmailEnabled || this.#labs.isSet('newEmailAddresses');
+        return true;
     }
 
     get defaultFromEmail(): EmailAddress {

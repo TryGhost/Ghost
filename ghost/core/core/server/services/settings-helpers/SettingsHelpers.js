@@ -174,7 +174,7 @@ class SettingsHelpers {
     }
 
     useNewEmailAddresses() {
-        return this.#managedEmailEnabled() || this.labs.isSet('newEmailAddresses');
+        return true;
     }
 
     createUnsubscribeUrl(uuid, options = {}) {
