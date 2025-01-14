@@ -137,6 +137,11 @@ body:not(.gh-body-fullscreen) .gh-viewport {
     opacity: 0;
 }
 
+.gh-nav-hidden .gh-toggle-nav-menu {
+    width: 60px;
+    right: -60px;
+}
+
 .gh-nav:hover .gh-toggle-nav-menu,
 .gh-nav-hidden .gh-toggle-nav-menu {
     opacity: 1;
@@ -1190,10 +1195,9 @@ body:not(.gh-body-fullscreen) .gh-viewport {
     padding: 0 var(--main-layout-content-sidepadding) var(--main-layout-content-sidepadding);
     margin: 0 auto;
     max-width: var(--main-layout-content-maxwidth);
-    transition: padding ease-in-out 250ms;
 }
 
-.gh-nav.close + .gh-main .gh-canvas {
+.gh-nav-hidden + .gh-main .gh-canvas {
     padding-left: 80px;
     padding-right: 80px;
 }
