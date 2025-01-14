@@ -4,7 +4,7 @@ const mentionsService = require('../../../core/server/services/mentions');
 const assert = require('assert/strict');
 const {agentProvider, fixtureManager, mockManager} = require('../../utils/e2e-framework');
 const configUtils = require('../../utils/configUtils');
-const {mockLabsDisabled, mockLabsEnabled, mockSetting} = require('../../utils/e2e-framework-mock-manager');
+const {mockSetting} = require('../../utils/e2e-framework-mock-manager');
 const ObjectId = require('bson-objectid').default;
 const {sendEmail, getDefaultNewsletter, getLastEmail} = require('../../utils/batch-email-utils');
 const urlUtils = require('../../utils/urlUtils');
@@ -125,7 +125,6 @@ describe('Email addresses', function () {
     beforeEach(async function () {
         emailMockReceiver = mockManager.mockMail();
         mockManager.mockMailgun();
-        mockLabsDisabled('newEmailAddresses');
 
         configureSite({
             siteUrl: 'http://blog.acme.com'
@@ -401,7 +400,6 @@ describe('Email addresses', function () {
 
     describe('Self-hosted', function () {
         beforeEach(async function () {
-            mockLabsEnabled('newEmailAddresses');
             configUtils.set('hostSettings:managedEmail:enabled', false);
             configUtils.set('hostSettings:managedEmail:sendingDomain', undefined);
             configUtils.set('mail:from', '"Default Address" <default@sendingdomain.com>');
