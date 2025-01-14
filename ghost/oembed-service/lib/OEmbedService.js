@@ -65,7 +65,7 @@ const findUrlWithProvider = (url) => {
 /**
  * @typedef {object} ICustomProvider
  * @prop {(url: URL) => Promise<boolean>} canSupportRequest
- * @prop {(url: URL, externalRequest: IExternalRequest) => Promise<import('@extractus/oembed-extractor').OembedData>} getOEmbedData
+ * @prop {(url: URL, externalRequest: IExternalRequest) => Promise<import('@extractus/oembed-extractor').OembedData>} [getOEmbedData]
  */
 
 class OEmbedService {

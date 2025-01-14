@@ -2,9 +2,6 @@ import {ValidationError} from '@tryghost/errors';
 // import type {FetcherService} from 'rettiwt-api';
 
 type DependenciesType = {
-    config?: {
-        bearerToken?: string;
-    },
     _fetcher: (tweetId: string) => Promise<any>; // eslint-disable-line
 }
 
@@ -174,7 +171,7 @@ type TweetData = {
 
 type OEmbedData = {
     tweet_data: TweetData;
-    type: string;
+    type: 'video' | 'photo' | 'link' | 'rich';
 }
 
 const TWITTER_PATH_REGEX = /\/status\/(\d+)/;
@@ -209,7 +206,7 @@ export class XEmbedProvider implements IXEmbedProvider {
             id: rawTweetData.id_str,
             text: rawTweetData.full_text || rawTweetData.text,
             created_at: rawTweetData.created_at,
-            author_id: rawTweetData.user.id_str,
+            author_id: rawTweetData.user_id_str,
             public_metrics: {
                 retweet_count: rawTweetData.retweet_count,
                 like_count: rawTweetData.favorite_count
@@ -312,7 +309,7 @@ export class XEmbedProvider implements IXEmbedProvider {
         // Handling user information
         tweetData.includes.users = tweetData.includes.users || [];
         tweetData.includes.users.push({
-            id: rawTweetData.user.id_str,
+            id: rawTweetData.user_id_str,
             name: rawTweetData.user.name,
             username: rawTweetData.user.screen_name,
             profile_image_url: rawTweetData.user.profile_image_url_https,
@@ -338,13 +335,14 @@ export class XEmbedProvider implements IXEmbedProvider {
 
     async getOEmbedData(url: URL) : Promise<OEmbedData> {
         const tweetId = await this.getTweetId(url);
-
         const tweetData = await this._dependencies._fetcher(tweetId);
-        const oembed = {
-            tweet_data: await this.mapTweetToTweetData(tweetData),
-            type: 'tweet'
+        console.log('tweetData', tweetData.data.tweetResult.result.legacy);
+        const oembed : OEmbedData = {
+            tweet_data: await this.mapTweetToTweetData(tweetData.data.tweetResult.result.legacy),
+            type: 'rich'
         };
         
+        console.log('returning oembed', oembed);
         return oembed;
     }
 }

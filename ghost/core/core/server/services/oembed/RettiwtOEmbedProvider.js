@@ -118,6 +118,7 @@ class RettiwtOEmbedProvider {
         try {
             // const tweet = await .request(EResourceType.TWEET_DETAILS, {id: tweetId, query: queryString});
             const tweet = await this.dependencies.externalRequest.tweet.details(tweetId, queryString);
+            console.log(tweet);
             oembedData.tweet_data = mapTweetEntity(tweet);
         } catch (err) {
             if (err.response?.body) {
