@@ -204,7 +204,8 @@ const FollowingTab: React.FC = () => {
                                     icon: {
                                         url: account.avatarUrl
                                     },
-                                    name: account.name
+                                    name: account.name,
+                                    handle: account.handle
                                 }} />
                                 <div>
                                     <div className='text-grey-600'>
@@ -245,7 +246,8 @@ const FollowersTab: React.FC = () => {
                                     icon: {
                                         url: account.avatarUrl
                                     },
-                                    name: account.name
+                                    name: account.name,
+                                    handle: account.handle
                                 }} />
                                 <div>
                                     <div className='text-grey-600'>
@@ -364,7 +366,8 @@ const Profile: React.FC<ProfileProps> = ({}) => {
                                             icon: {
                                                 url: account?.avatarUrl
                                             },
-                                            name: account?.name
+                                            name: account?.name,
+                                            handle: account?.handle
                                         }}
                                         size='lg'
                                     />

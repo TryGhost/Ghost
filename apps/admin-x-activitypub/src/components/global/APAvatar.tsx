@@ -14,6 +14,7 @@ interface APAvatarProps {
             url: string;
         };
         name: string;
+        handle?: string;
     } | undefined;
     size?: AvatarSize;
 }
@@ -64,14 +65,16 @@ const APAvatar: React.FC<APAvatarProps> = ({author, size}) => {
         containerClass = clsx(containerClass, 'bg-grey-100');
     }
 
+    const handle = author?.handle || getUsername(author as ActorProperties);
+
     const onClick = (e: React.MouseEvent) => {
         e.stopPropagation();
         NiceModal.show(ViewProfileModal, {
-            profile: getUsername(author as ActorProperties)
+            profile: handle
         });
     };
 
-    const title = `${author?.name} ${getUsername(author as ActorProperties)}`;
+    const title = `${author?.name} ${handle}`;
 
     if (iconUrl) {
         return (
