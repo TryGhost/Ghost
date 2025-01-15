@@ -177,9 +177,7 @@ const LikesTab: React.FC = () => {
 };
 
 const handleAccountClick = (handle: string) => {
-    NiceModal.show(ViewProfileModal, {
-        profile: handle
-    });
+    NiceModal.show(ViewProfileModal, {handle});
 };
 
 const FollowingTab: React.FC = () => {

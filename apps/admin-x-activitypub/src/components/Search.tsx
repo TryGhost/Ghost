@@ -48,7 +48,7 @@ const SearchResult: React.FC<SearchResultProps> = ({result, update}) => {
         <ActivityItem
             key={result.actor.id}
             onClick={() => {
-                NiceModal.show(ViewProfileModal, {profile: result, onFollow, onUnfollow});
+                NiceModal.show(ViewProfileModal, {handle: result.handle, onFollow, onUnfollow});
             }}
         >
             <APAvatar author={result.actor}/>
