@@ -11,6 +11,8 @@ export * from './components/ui/Tabs';
 export * from './components/layout/Page';
 export * from './components/layout/Heading';
 
+export {cn} from '@/lib/utils';
+
 // Assets
 export {ReactComponent as FacebookLogo} from './assets/images/facebook-logo.svg';
 export {ReactComponent as GhostLogo} from './assets/images/ghost-logo.svg';

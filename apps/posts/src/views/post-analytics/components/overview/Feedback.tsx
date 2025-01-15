@@ -1,5 +1,6 @@
 import * as React from 'react';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, Label, Pie, PieChart} from '@tryghost/shade';
+import {Metric, MetricLabel, MetricValue} from '../Metric';
 
 interface FeedbackProps extends React.ComponentProps<typeof Card> {};
 
@@ -35,6 +36,17 @@ const Feedback: React.FC<FeedbackProps> = (props) => {
                 </CardDescription>
             </CardHeader>
             <CardContent>
+                <div className='grid grid-cols-2 gap-5 py-5'>
+                    <Metric>
+                        <MetricLabel>More like this</MetricLabel>
+                        <MetricValue>98</MetricValue>
+                    </Metric>
+
+                    <Metric>
+                        <MetricLabel>Less like this</MetricLabel>
+                        <MetricValue>17</MetricValue>
+                    </Metric>
+                </div>
                 <ChartContainer
                     className="mx-auto aspect-square h-[250px] min-h-[250px] w-full"
                     config={chartConfig}

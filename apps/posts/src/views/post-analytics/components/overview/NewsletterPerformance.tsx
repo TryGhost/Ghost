@@ -1,5 +1,6 @@
 import * as React from 'react';
 import {Bar, BarChart, Card, CardContent, CardDescription, CardHeader, CardTitle, CartesianGrid, ChartConfig, ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent, XAxis} from '@tryghost/shade';
+import {Metric, MetricLabel, MetricPercentage, MetricValue} from '../Metric';
 
 interface NewsletterPerformanceProps extends React.ComponentProps<typeof Card> {};
 
@@ -30,6 +31,22 @@ const NewsletterPerformance: React.FC<NewsletterPerformanceProps> = (props) => {
                 </CardDescription>
             </CardHeader>
             <CardContent>
+                <div className='grid grid-cols-3 py-5'>
+                    <Metric className='pl-6'>
+                        <MetricLabel>Sent</MetricLabel>
+                        <MetricValue>1,697</MetricValue>
+                    </Metric>
+
+                    <Metric className='pl-6'>
+                        <MetricLabel>Opened</MetricLabel>
+                        <MetricValue>1,184 <MetricPercentage>69%</MetricPercentage></MetricValue>
+                    </Metric>
+
+                    <Metric className='pl-6'>
+                        <MetricLabel>Clicked</MetricLabel>
+                        <MetricValue>750 <MetricPercentage>44%</MetricPercentage></MetricValue>
+                    </Metric>
+                </div>
                 <ChartContainer className='-mx-1 aspect-auto h-[250px] min-h-[250px] w-[calc(100%+8px)]' config={chartConfig}>
                     <BarChart data={chartData} dataKey='metric' accessibilityLayer>
                         <CartesianGrid vertical={false} />
