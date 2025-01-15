@@ -9,7 +9,12 @@ import {Icon} from '@tryghost/admin-x-design-system';
 type AvatarSize = '2xs' | 'xs' | 'sm' | 'lg' | 'notification';
 
 interface APAvatarProps {
-    author: ActorProperties | undefined;
+    author: {
+        icon: {
+            url: string;
+        };
+        name: string;
+    } | undefined;
     size?: AvatarSize;
 }
 
