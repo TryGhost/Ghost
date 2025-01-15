@@ -1,4 +1,4 @@
-import Icon, {IconName} from '@/components/ui/icon';
+import Icon, {IconName} from '@/components/ui/tmp-icon';
 import type {Meta, StoryObj} from '@storybook/react';
 import {useState} from 'react';
 

@@ -1,5 +1,5 @@
 import type {Meta, StoryObj} from '@storybook/react';
-import {H1, H2, H3, H4, HeadingProps} from './heading';
+import {H1, H2, H3, H4, HeadingProps} from './tmp-heading';
 
 const meta = {
     title: 'Layout / Heading',
