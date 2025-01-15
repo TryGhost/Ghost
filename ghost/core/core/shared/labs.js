@@ -27,7 +27,6 @@ const GA_FEATURES = [
     'themeErrorsNotification',
     'outboundLinkTagging',
     'announcementBar',
-    'newEmailAddresses',
     'customFonts'
 ];
 

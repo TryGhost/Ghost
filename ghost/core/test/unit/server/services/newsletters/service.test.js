@@ -182,24 +182,6 @@ describe('NewslettersService', function () {
             sinon.assert.calledOnceWithExactly(findOneStub, {id: 'test'}, {foo: 'bar', require: true});
         });
 
-        it('will trigger verification when sender_email is provided', async function () {
-            const data = {name: 'hello world', sender_email: 'test@example.com'};
-            const options = {foo: 'bar'};
-
-            const result = await newsletterService.add(data, options);
-
-            assert.deepEqual(result.meta, {
-                sent_email_verification: [
-                    'sender_email'
-                ]
-            });
-            sinon.assert.calledOnceWithExactly(addStub, {name: 'hello world', sort_order: 1}, options);
-            mockManager.assert.sentEmail({to: 'test@example.com'});
-            sinon.assert.calledOnceWithExactly(tokenProvider.create, {id: 'test', property: 'sender_email', value: 'test@example.com'});
-            sinon.assert.notCalled(fetchMembersStub);
-            sinon.assert.calledOnceWithExactly(findOneStub, {id: 'test'}, {foo: 'bar', require: true});
-        });
-
         it('will try to find existing members when opt_in_existing is provided', async function () {
             const data = {name: 'hello world'};
             const options = {opt_in_existing: true};
@@ -267,49 +249,6 @@ describe('NewslettersService', function () {
             sinon.assert.calledTwice(findOneStub);
             sinon.assert.calledWithExactly(findOneStub.firstCall, {id: 'test'}, {require: true});
             sinon.assert.calledWithExactly(findOneStub.secondCall, {id: 'test'}, {...options, require: true});
-        });
-
-        it('will trigger verification when sender_email is provided', async function () {
-            const data = {name: 'hello world', sender_email: 'test@example.com'};
-            const options = {id: 'test', foo: 'bar'};
-
-            // Explicitly set the old value to a different value
-            getStub.withArgs('sender_email').returns('old@example.com');
-
-            const result = await newsletterService.edit(data, options);
-
-            assert.deepEqual(result.meta, {
-                sent_email_verification: [
-                    'sender_email'
-                ]
-            });
-            sinon.assert.calledOnceWithExactly(editStub, {name: 'hello world'}, options);
-
-            sinon.assert.calledTwice(findOneStub);
-            sinon.assert.calledWithExactly(findOneStub.firstCall, {id: 'test'}, {require: true});
-            sinon.assert.calledWithExactly(findOneStub.secondCall, {id: 'test'}, {...options, require: true});
-
-            mockManager.assert.sentEmail({to: 'test@example.com'});
-            sinon.assert.calledOnceWithExactly(tokenProvider.create, {id: 'test', property: 'sender_email', value: 'test@example.com'});
-        });
-
-        it('will NOT trigger verification when sender_email is provided but is already verified', async function () {
-            const data = {name: 'hello world', sender_email: 'test@example.com'};
-            const options = {foo: 'bar', id: 'test'};
-
-            // The model says this is already verified
-            getStub.withArgs('sender_email').returns('test@example.com');
-
-            const result = await newsletterService.edit(data, options);
-
-            assert.deepEqual(result.meta, undefined);
-            sinon.assert.calledOnceWithExactly(editStub, {name: 'hello world', sender_email: 'test@example.com'}, options);
-
-            sinon.assert.calledTwice(findOneStub);
-            sinon.assert.calledWithExactly(findOneStub.firstCall, {id: 'test'}, {require: true});
-            sinon.assert.calledWithExactly(findOneStub.secondCall, {id: 'test'}, {...options, require: true});
-
-            mockManager.assert.sentEmailCount(0);
         });
     });
 

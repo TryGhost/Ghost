@@ -268,20 +268,9 @@ class NewslettersService {
             {property: 'sender_email', type: 'from', emptyable: true, error: messages.senderEmailNotAllowed}
         ];
 
-        if (!this.emailAddressService.service.useNewEmailAddresses) {
-            // Validate reply_to is either newsletter or support
-            if (cleanedAttrs.sender_reply_to !== undefined) {
-                if (!['newsletter', 'support'].includes(cleanedAttrs.sender_reply_to)) {
-                    throw new errors.ValidationError({
-                        message: tpl(messages.replyToNotAllowed, {email: cleanedAttrs.sender_reply_to})
-                    });
-                }
-            }
-        } else {
-            if (cleanedAttrs.sender_reply_to !== undefined) {
-                if (!['newsletter', 'support'].includes(cleanedAttrs.sender_reply_to)) {
-                    emailProperties.push({property: 'sender_reply_to', type: 'replyTo', emptyable: false, error: messages.replyToNotAllowed});
-                }
+        if (cleanedAttrs.sender_reply_to !== undefined) {
+            if (!['newsletter', 'support'].includes(cleanedAttrs.sender_reply_to)) {
+                emailProperties.push({property: 'sender_reply_to', type: 'replyTo', emptyable: false, error: messages.replyToNotAllowed});
             }
         }
 
@@ -355,20 +344,7 @@ class NewslettersService {
      * @private
      */
     async sendEmailVerificationMagicLink({id, email, property = 'sender_from'}) {
-        const [,toDomain] = email.split('@');
-
-        let fromEmail = `noreply@${toDomain}`;
-        if (fromEmail === email) {
-            fromEmail = `no-reply@${toDomain}`;
-        }
-
-        if (this.emailAddressService.service.useNewEmailAddresses) {
-            // Gone with the old logic: always use the default email address here
-            // We don't need to validate the FROM address, only the to address
-            // Also because we are not only validating FROM addresses, but also possible REPLY-TO addresses, which we won't send FROM
-            fromEmail = this.emailAddressService.service.defaultFromAddress;
-        }
-
+        const fromEmail = this.emailAddressService.service.defaultFromAddress;
         const {ghostMailer} = this;
 
         this.magicLinkService.transporter = {

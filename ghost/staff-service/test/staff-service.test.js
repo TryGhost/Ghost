@@ -18,7 +18,7 @@ function testCommonMailData({mailStub, getEmailAlertUsersStub}) {
 
     // has right from/to address
     mailStub.calledWith(sinon.match({
-        from: 'ghost@ghost.example',
+        from: '"Default" <default@email.com>',
         to: 'owner@ghost.org'
     })).should.be.true();
 
@@ -152,12 +152,10 @@ describe('StaffService', function () {
         };
 
         const settingsHelpers = {
-            getDefaultEmailDomain: () => {
-                return 'ghost.example';
-            },
-            useNewEmailAddresses: () => {
-                return false;
-            }
+            getDefaultEmail: () => ({
+                address: 'default@email.com',
+                name: 'Default'
+            })
         };
 
         beforeEach(function () {

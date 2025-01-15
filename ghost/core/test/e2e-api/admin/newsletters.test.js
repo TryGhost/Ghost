@@ -5,7 +5,6 @@ const {anyContentVersion, anyEtag, anyObjectId, anyUuid, anyErrorId, anyISODateT
 const {queryStringToken} = regexes;
 const models = require('../../../core/server/models');
 const logging = require('@tryghost/logging');
-const {mockLabsDisabled, mockLabsEnabled} = require('../../utils/e2e-framework-mock-manager');
 const settingsHelpers = require('../../../core/server/services/settings-helpers');
 
 const assertMemberRelationCount = async (newsletterId, expectedCount) => {
@@ -51,7 +50,6 @@ describe('Newsletters API', function () {
 
     beforeEach(function () {
         emailMockReceiver = mockManager.mockMail();
-        mockLabsDisabled('newEmailAddresses');
     });
 
     afterEach(function () {
@@ -222,51 +220,6 @@ describe('Newsletters API', function () {
             });
     });
 
-    it('Can add a newsletter - with custom sender_email', async function () {
-        const newsletter = {
-            name: 'My test newsletter with custom sender_email',
-            sender_name: 'Test',
-            sender_email: 'test@example.com',
-            sender_reply_to: 'newsletter',
-            status: 'active',
-            subscribe_on_signup: true,
-            title_font_category: 'serif',
-            body_font_category: 'serif',
-            show_header_icon: true,
-            show_header_title: true,
-            show_badge: true,
-            sort_order: 0
-        };
-
-        await agent
-            .post(`newsletters/`)
-            .body({newsletters: [newsletter]})
-            .expectStatus(201)
-            .matchBodySnapshot({
-                newsletters: [newsletterSnapshot],
-                meta: {
-                    sent_email_verification: ['sender_email']
-                }
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag,
-                location: anyLocationFor('newsletters')
-            });
-
-        emailMockReceiver
-            .assertSentEmailCount(1)
-            .matchMetadataSnapshot()
-            .matchHTMLSnapshot([{
-                pattern: queryStringToken('verifyEmail'),
-                replacement: 'verifyEmail=REPLACED_TOKEN'
-            }])
-            .matchPlaintextSnapshot([{
-                pattern: queryStringToken('verifyEmail'),
-                replacement: 'verifyEmail=REPLACED_TOKEN'
-            }]);
-    });
-
     it('Can add a newsletter - and subscribe existing members', async function () {
         const newsletter = {
             name: 'New newsletter with existing members subscribed',
@@ -333,182 +286,6 @@ describe('Newsletters API', function () {
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
                 etag: anyEtag
-            });
-    });
-
-    it('Can edit a newsletters and update the sender_email when already set', async function () {
-        const id = fixtureManager.get('newsletters', 0).id;
-
-        await agent.put(`newsletters/${id}`)
-            .body({
-                newsletters: [{
-                    name: 'Updated newsletter name',
-                    sender_email: 'updated@example.com'
-                }]
-            })
-            .expectStatus(200)
-            .matchBodySnapshot({
-                newsletters: [newsletterSnapshot],
-                meta: {
-                    sent_email_verification: ['sender_email']
-                }
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
-
-        emailMockReceiver
-            .assertSentEmailCount(1)
-            .matchMetadataSnapshot()
-            .matchHTMLSnapshot([{
-                pattern: queryStringToken('verifyEmail'),
-                replacement: 'verifyEmail=REPLACED_TOKEN'
-            }])
-            .matchPlaintextSnapshot([{
-                pattern: queryStringToken('verifyEmail'),
-                replacement: 'verifyEmail=REPLACED_TOKEN'
-            }]);
-    });
-
-    it('[Legacy] Can only set newsletter reply to to newsletter or support value', async function () {
-        const id = fixtureManager.get('newsletters', 0).id;
-
-        await agent.put(`newsletters/${id}`)
-            .body({
-                newsletters: [{
-                    sender_reply_to: 'support'
-                }]
-            })
-            .expectStatus(200)
-            .matchBodySnapshot({
-                newsletters: [newsletterSnapshot]
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
-
-        await agent.put(`newsletters/${id}`)
-            .body({
-                newsletters: [{
-                    sender_reply_to: 'newsletter'
-                }]
-            })
-            .expectStatus(200)
-            .matchBodySnapshot({
-                newsletters: [newsletterSnapshot]
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
-    });
-
-    it('[Legacy] Cannot set newsletter clear sender_reply_to', async function () {
-        const id = fixtureManager.get('newsletters', 0).id;
-
-        await agent.put(`newsletters/${id}`)
-            .body({
-                newsletters: [{
-                    sender_reply_to: ''
-                }]
-            })
-            .expectStatus(422)
-            .matchBodySnapshot({
-                errors: [{
-                    id: anyErrorId
-                }]
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
-    });
-
-    it('[Legacy] Cannot set newsletter reply-to to any email address', async function () {
-        const id = fixtureManager.get('newsletters', 0).id;
-
-        await agent.put(`newsletters/${id}`)
-            .body({
-                newsletters: [{
-                    sender_reply_to: 'hello@acme.com'
-                }]
-            })
-            .expectStatus(422)
-            .matchBodySnapshot({
-                errors: [{
-                    id: anyErrorId
-                }]
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
-    });
-
-    it('[Legacy] Cannot set newsletter sender_email to invalid email address', async function () {
-        const id = fixtureManager.get('newsletters', 0).id;
-
-        await agent.put(`newsletters/${id}`)
-            .body({
-                newsletters: [{
-                    sender_email: 'notvalid'
-                }]
-            })
-            .expectStatus(422)
-            .matchBodySnapshot({
-                errors: [{
-                    id: anyErrorId
-                }]
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
-    });
-
-    it('Can verify property updates', async function () {
-        const cheerio = require('cheerio');
-
-        const id = fixtureManager.get('newsletters', 0).id;
-
-        await agent.put(`newsletters/${id}`)
-            .body({
-                newsletters: [{
-                    name: 'Updated newsletter name',
-                    sender_email: 'verify@example.com'
-                }]
-            })
-            .expectStatus(200);
-
-        // @NOTE: need a way to return snapshot of sent email from email mock receiver
-        const mail = mockManager.assert.sentEmail([]);
-        emailMockReceiver
-            .assertSentEmailCount(1)
-            .matchMetadataSnapshot()
-            .matchHTMLSnapshot([{
-                pattern: queryStringToken('verifyEmail'),
-                replacement: 'verifyEmail=REPLACED_TOKEN'
-            }])
-            .matchPlaintextSnapshot([{
-                pattern: queryStringToken('verifyEmail'),
-                replacement: 'verifyEmail=REPLACED_TOKEN'
-            }]);
-
-        const $mailHtml = cheerio.load(mail.html);
-
-        const verifyUrl = new URL($mailHtml('[data-test-verify-link]').attr('href'));
-        // convert Admin URL hash to native URL for easier token param extraction
-        const token = (new URL(verifyUrl.hash.replace('#', ''), 'http://example.com')).searchParams.get('verifyEmail');
-
-        await agent.put(`newsletters/verifications`)
-            .body({
-                token
-            })
-            .expectStatus(200)
-            .matchBodySnapshot({
-                newsletters: [newsletterSnapshot]
             });
     });
 
@@ -797,17 +574,9 @@ describe('Newsletters API', function () {
             });
     });
 
-    it('Can add a newsletter - with custom sender_email and subscribe existing members', async function () {
-        if (dbUtils.isSQLite()) {
-            // This breaks snapshot tests if you don't update snapshot tests on MySQL + make sure this is the last ADD test
-            return;
-        }
-
+    it('Can add a newsletter and subscribe existing members', async function () {
         const newsletter = {
-            name: 'My test newsletter with custom sender_email and subscribe existing',
-            sender_name: 'Test',
-            sender_email: 'test@example.com',
-            sender_reply_to: 'newsletter',
+            name: 'My test newsletter where I want to subscribe existing members',
             status: 'active',
             subscribe_on_signup: true,
             title_font_category: 'serif',
@@ -824,27 +593,13 @@ describe('Newsletters API', function () {
             .expectStatus(201)
             .matchBodySnapshot({
                 newsletters: [newsletterSnapshot],
-                meta: {
-                    sent_email_verification: ['sender_email']
-                }
+                meta: {opted_in_member_count: 6}
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
                 etag: anyEtag,
                 location: anyLocationFor('newsletters')
             });
-
-        emailMockReceiver
-            .assertSentEmailCount(1)
-            .matchMetadataSnapshot()
-            .matchHTMLSnapshot([{
-                pattern: queryStringToken('verifyEmail'),
-                replacement: 'verifyEmail=REPLACED_TOKEN'
-            }])
-            .matchPlaintextSnapshot([{
-                pattern: queryStringToken('verifyEmail'),
-                replacement: 'verifyEmail=REPLACED_TOKEN'
-            }]);
     });
 
     it(`Can't edit multiple newsletters to existing name`, async function () {
@@ -1697,7 +1452,6 @@ describe('Newsletters API', function () {
         this.beforeEach(function () {
             configUtils.set('hostSettings:managedEmail:enabled', false);
             configUtils.set('hostSettings:managedEmail:sendingDomain', '');
-            mockLabsEnabled('newEmailAddresses');
         });
 
         it('Can set newsletter reply-to to newsletter or support', async function () {
