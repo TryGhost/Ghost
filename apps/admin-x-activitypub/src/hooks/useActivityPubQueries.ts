@@ -1,10 +1,25 @@
+import {
+    type AccountFollowsType,
+    ActivityPubAPI,
+    ActivityPubCollectionResponse,
+    ActivityThread,
+    type GetAccountFollowsResponse,
+    type Profile,
+    type SearchResults
+} from '../api/activitypub';
 import {Activity} from '../components/activities/ActivityItem';
-import {ActivityPubAPI, ActivityPubCollectionResponse, ActivityThread, type Profile, type SearchResults} from '../api/activitypub';
-import {type UseInfiniteQueryResult, useInfiniteQuery, useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
+import {
+    type UseInfiniteQueryResult,
+    useInfiniteQuery,
+    useMutation,
+    useQuery,
+    useQueryClient
+} from '@tanstack/react-query';
 
 let SITE_URL: string;
 
 export type ActivityPubCollectionQueryResult<TData> = UseInfiniteQueryResult<ActivityPubCollectionResponse<TData>>;
+export type AccountFollowsQueryResult = UseInfiniteQueryResult<GetAccountFollowsResponse>;
 
 async function getSiteUrl() {
     if (!SITE_URL) {
@@ -48,17 +63,6 @@ export function useLikedForUser(handle: string) {
         },
         getNextPageParam(prevPage) {
             return prevPage.next;
-        }
-    });
-}
-
-export function useLikedCountForUser(handle: string) {
-    return useQuery({
-        queryKey: [`likedCount:${handle}`],
-        async queryFn() {
-            const siteUrl = await getSiteUrl();
-            const api = createActivityPubAPI(handle, siteUrl);
-            return api.getLikedCount();
         }
     });
 }
@@ -183,17 +187,6 @@ export function useFollowersForUser(handle: string) {
     });
 }
 
-export function useFollowersCountForUser(handle: string) {
-    return useQuery({
-        queryKey: [`followersCount:${handle}`],
-        async queryFn() {
-            const siteUrl = await getSiteUrl();
-            const api = createActivityPubAPI(handle, siteUrl);
-            return api.getFollowersCount();
-        }
-    });
-}
-
 export function useFollowingForUser(handle: string) {
     return useInfiniteQuery({
         queryKey: [`following:${handle}`],
@@ -204,17 +197,6 @@ export function useFollowingForUser(handle: string) {
         },
         getNextPageParam(prevPage) {
             return prevPage.next;
-        }
-    });
-}
-
-export function useFollowingCountForUser(handle: string) {
-    return useQuery({
-        queryKey: [`followingCount:${handle}`],
-        async queryFn() {
-            const siteUrl = await getSiteUrl();
-            const api = createActivityPubAPI(handle, siteUrl);
-            return api.getFollowingCount();
         }
     });
 }
@@ -544,6 +526,31 @@ export function useNoteMutationForUser(handle: string) {
                     })
                 };
             });
+        }
+    });
+}
+
+export function useAccountForUser(handle: string) {
+    return useQuery({
+        queryKey: [`account:${handle}`],
+        async queryFn() {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI(handle, siteUrl);
+            return api.getAccount();
+        }
+    });
+}
+
+export function useAccountFollowsForUser(handle: string, type: AccountFollowsType) {
+    return useInfiniteQuery({
+        queryKey: [`follows:${handle}:${type}`],
+        async queryFn({pageParam}: {pageParam?: string}) {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI(handle, siteUrl);
+            return api.getAccountFollows(type, pageParam);
+        },
+        getNextPageParam(prevPage) {
+            return prevPage.next;
         }
     });
 }
