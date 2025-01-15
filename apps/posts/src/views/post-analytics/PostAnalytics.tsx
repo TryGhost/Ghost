@@ -1,5 +1,5 @@
-import Header from '../components/layout/Header';
-import Overview from '../components/post-analytics/Overview';
+import Header from '../../components/Header';
+import Overview from './components/Overview';
 import {Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuTrigger, Icon, Page, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade';
 
 const PostAnalytics = () => {
