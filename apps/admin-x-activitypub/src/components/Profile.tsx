@@ -381,7 +381,7 @@ const Profile: React.FC<ProfileProps> = ({}) => {
                                         className='ap-profile-content mt-3 text-[1.5rem] [&>p]:mb-3'
                                     />
                                     {customFields.map(customField => (
-                                        <span className='mt-3 line-clamp-1 flex flex-col text-[1.5rem]'>
+                                        <span key={customField.name} className='mt-3 line-clamp-1 flex flex-col text-[1.5rem]'>
                                             <span className={`text-xs font-semibold`}>{customField.name}</span>
                                             <span dangerouslySetInnerHTML={{__html: customField.value}} className='ap-profile-content truncate'/>
                                         </span>
