@@ -1,6 +1,5 @@
 const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
 const {anyEtag, anyContentLength, anyContentVersion} = matchers;
-const config = require('../../../core/shared/config');
 const configUtils = require('../../utils/configUtils');
 
 const settingsMatcher = {
@@ -51,10 +50,10 @@ describe('Settings Content API', function () {
                     'content-length': anyContentLength
                 })
                 .matchBodySnapshot({
-                    settings: {
+                    settings: Object.assign({}, settingsMatcher, {
                         captcha_enabled: true,
                         captcha_sitekey: 'testkey'
-                    }
+                    })
                 });
         });
     });
