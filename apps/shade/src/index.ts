@@ -1,13 +1,13 @@
 // UI components
-export * from './components/ui/button';
-export {IconComponents as Icon} from './components/ui/icon';
-export * from './components/ui/breadcrumb';
-export * from './components/ui/dropdown-menu';
-export * from './components/ui/card';
-export * from './components/ui/tabs';
+export * from './components/ui/Button';
+export {IconComponents as Icon} from './components/ui/Icon';
+export * from './components/ui/Breadcrumb';
+export * from './components/ui/DropdownMenu';
+export * from './components/ui/Card';
+export * from './components/ui/Tabs';
 
-export * from './components/layout/page';
-export * from './components/layout/heading';
+export * from './components/layout/Page';
+export * from './components/layout/Heading';
 
 // Assets
 export {ReactComponent as FacebookLogo} from './assets/images/facebook-logo.svg';
@@ -17,13 +17,13 @@ export {ReactComponent as GoogleLogo} from './assets/images/google-logo.svg';
 export {ReactComponent as TwitterLogo} from './assets/images/twitter-logo.svg';
 export {ReactComponent as XLogo} from './assets/images/x-logo.svg';
 
-export {default as useGlobalDirtyState} from './hooks/useGlobalDirtyState';
+export {default as useGlobalDirtyState} from './hooks/use-global-dirty-state';
 
 // Utils
 export * from '@/lib/utils';
 export {debounce} from './utils/debounce';
-export {formatUrl} from './utils/formatUrl';
+export {formatUrl} from './utils/format-url';
 
 export {default as ShadeApp} from './ShadeApp';
 export type {ShadeAppProps} from './ShadeApp';
-export {useFocusContext} from './providers/ShadeProvider';
+export {useFocusContext} from './providers/shade-provider';

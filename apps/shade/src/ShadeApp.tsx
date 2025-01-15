@@ -1,7 +1,7 @@
 import clsx from 'clsx';
 import React from 'react';
 // import {FetchKoenigLexical} from './global/form/HtmlEditor';
-import ShadeProvider from './providers/ShadeProvider';
+import ShadeProvider from './providers/shade-provider';
 
 export interface ShadeAppProps extends React.HTMLProps<HTMLDivElement> {
     darkMode: boolean;
