@@ -294,11 +294,8 @@ const ArticleBody: React.FC<{
                 return;
             }
 
-            // Extract headings
-            const headings = Array.from(iframe.contentDocument.querySelectorAll('h1:not(.gh-article-title), h2, h3, h4, h5, h6')).map((el) => {
-                const baseId = el.textContent?.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '') || 'heading';
-                const randomSuffix = Math.random().toString(36).substring(2, 6);
-                const id = `heading-${baseId}-${randomSuffix}`;
+            const headings = Array.from(iframe.contentDocument.querySelectorAll('h1:not(.gh-article-title), h2, h3, h4, h5, h6')).map((el, idx) => {
+                const id = `heading-${idx}`;
                 el.id = id;
                 return {
                     id,
