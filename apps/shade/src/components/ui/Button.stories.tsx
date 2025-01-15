@@ -1,7 +1,7 @@
 import type {Meta, StoryObj} from '@storybook/react';
 
-import {Button} from './tmp-button';
-import Icon from './tmp-icon';
+import {Button} from './Button';
+import Icon from './Icon';
 import {Smile} from 'lucide-react';
 
 const meta = {

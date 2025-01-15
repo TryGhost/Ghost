@@ -1,5 +1,5 @@
 import type {Meta, StoryObj} from '@storybook/react';
-import {Page} from './tmp-page';
+import {Page} from './Page';
 
 const meta = {
     title: 'Layout / Page',

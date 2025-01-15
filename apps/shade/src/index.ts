@@ -1,13 +1,13 @@
 // UI components
-export * from './components/ui/tmp-button';
-export {IconComponents as Icon} from './components/ui/tmp-icon';
-export * from './components/ui/tmp-breadcrumb';
-export * from './components/ui/tmp-dropdown-menu';
-export * from './components/ui/tmp-card';
-export * from './components/ui/tmp-tabs';
+export * from './components/ui/Button';
+export {IconComponents as Icon} from './components/ui/Icon';
+export * from './components/ui/Breadcrumb';
+export * from './components/ui/DropdownMenu';
+export * from './components/ui/Card';
+export * from './components/ui/Tabs';
 
-export * from './components/layout/tmp-page';
-export * from './components/layout/tmp-heading';
+export * from './components/layout/Page';
+export * from './components/layout/Heading';
 
 // Assets
 export {ReactComponent as FacebookLogo} from './assets/images/facebook-logo.svg';
