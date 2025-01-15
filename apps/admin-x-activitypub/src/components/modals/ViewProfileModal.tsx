@@ -1,7 +1,6 @@
 import React, {useEffect, useRef, useState} from 'react';
 
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
-import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 
 import {Button, Heading, Icon, List, LoadingIndicator, Modal, NoValueLabel, Tab,TabView} from '@tryghost/admin-x-design-system';
 import {UseInfiniteQueryResult} from '@tanstack/react-query';
@@ -217,13 +216,7 @@ const FollowersTab: React.FC<{handle: string}> = ({handle}) => {
 };
 
 interface ViewProfileModalProps {
-    profile: {
-        actor: ActorProperties;
-        handle: string;
-        followerCount: number;
-        followingCount: number;
-        isFollowing: boolean;
-    } | string;
+    handle: string;
     onFollow?: () => void;
     onUnfollow?: () => void;
 }
@@ -231,20 +224,14 @@ interface ViewProfileModalProps {
 type ProfileTab = 'posts' | 'following' | 'followers';
 
 const ViewProfileModal: React.FC<ViewProfileModalProps> = ({
-    profile: initialProfile,
+    handle,
     onFollow = noop,
     onUnfollow = noop
 }) => {
     const modal = useModal();
     const [selectedTab, setSelectedTab] = useState<ProfileTab>('posts');
 
-    const willLoadProfile = typeof initialProfile === 'string';
-    let {data: profile, isInitialLoading: isLoading} = useProfileForUser('index', initialProfile as string, willLoadProfile);
-
-    if (!willLoadProfile) {
-        profile = initialProfile;
-        isLoading = false;
-    }
+    const {data: profile, isLoading} = useProfileForUser('index', handle);
 
     const attachments = (profile?.actor.attachment || []);
 

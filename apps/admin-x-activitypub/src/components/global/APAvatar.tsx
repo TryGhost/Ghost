@@ -69,9 +69,7 @@ const APAvatar: React.FC<APAvatarProps> = ({author, size}) => {
 
     const onClick = (e: React.MouseEvent) => {
         e.stopPropagation();
-        NiceModal.show(ViewProfileModal, {
-            profile: handle
-        });
+        NiceModal.show(ViewProfileModal, {handle});
     };
 
     const title = `${author?.name} ${handle}`;
