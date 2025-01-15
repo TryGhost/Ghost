@@ -1,14 +1,17 @@
 import * as React from 'react';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, Label, Pie, PieChart} from '@tryghost/shade';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, Label, Pie, PieChart, Separator} from '@tryghost/shade';
 import {Metric, MetricLabel, MetricValue} from '../Metric';
 
 interface FeedbackProps extends React.ComponentProps<typeof Card> {};
 
 const Feedback: React.FC<FeedbackProps> = (props) => {
-    const chartData = [
-        {browser: 'chrome', visitors: 98, fill: 'var(--color-chrome)'},
-        {browser: 'safari', visitors: 17, fill: 'var(--color-safari)'}
-    ];
+    const chartData = React.useMemo(() => {
+        return [
+            {browser: 'chrome', visitors: 98, fill: 'var(--color-chrome)'},
+            {browser: 'safari', visitors: 17, fill: 'var(--color-safari)'}
+        ];
+    }, []);
+
     const chartConfig = {
         visitors: {
             label: 'Reactions'
@@ -25,7 +28,7 @@ const Feedback: React.FC<FeedbackProps> = (props) => {
 
     const totalVisitors = React.useMemo(() => {
         return chartData.reduce((acc, curr) => acc + curr.visitors, 0);
-    }, []);
+    }, [chartData]);
 
     return (
         <Card {...props}>
@@ -36,6 +39,7 @@ const Feedback: React.FC<FeedbackProps> = (props) => {
                 </CardDescription>
             </CardHeader>
             <CardContent>
+                <Separator />
                 <div className='grid grid-cols-2 gap-5 py-5'>
                     <Metric>
                         <MetricLabel>More like this</MetricLabel>

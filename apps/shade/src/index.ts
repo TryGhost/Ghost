@@ -5,12 +5,15 @@ export * from './components/ui/Breadcrumb';
 export * from './components/ui/DropdownMenu';
 export * from './components/ui/Card';
 export * from './components/ui/Chart';
-export * from 'recharts';
+export * from './components/ui/Separator';
 export * from './components/ui/Tabs';
 
+// Layout components
 export * from './components/layout/Page';
 export * from './components/layout/Heading';
 
+// Supporting libraries and utils
+export * from 'recharts';
 export {cn} from '@/lib/utils';
 
 // Assets

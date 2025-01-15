@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {Bar, BarChart, Card, CardContent, CardDescription, CardHeader, CardTitle, CartesianGrid, ChartConfig, ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent, XAxis} from '@tryghost/shade';
+import {Bar, BarChart, Card, CardContent, CardDescription, CardHeader, CardTitle, CartesianGrid, ChartConfig, ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent, Separator, XAxis} from '@tryghost/shade';
 import {Metric, MetricLabel, MetricPercentage, MetricValue} from '../Metric';
 
 interface NewsletterPerformanceProps extends React.ComponentProps<typeof Card> {};
@@ -31,6 +31,7 @@ const NewsletterPerformance: React.FC<NewsletterPerformanceProps> = (props) => {
                 </CardDescription>
             </CardHeader>
             <CardContent>
+                <Separator />
                 <div className='grid grid-cols-3 py-5'>
                     <Metric className='pl-6'>
                         <MetricLabel>Sent</MetricLabel>
