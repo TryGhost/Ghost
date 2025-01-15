@@ -9,7 +9,6 @@ module.exports = async function (options) {
     if (hasFilter) {
         // do a very minimal query, only to fetch the ids of the filtered values
         // should be quite fast
-        // hello
         options.withRelated = [];
         options.columns = ['id'];
 
@@ -35,55 +34,76 @@ module.exports = async function (options) {
     const allProducts = await models.Product.fetchAll();
     const allLabels = await models.Label.fetchAll();
 
-    let query = knex('members')
-        .select('id', 'email', 'name', 'note', 'status', 'created_at')
-        .select(knex.raw(`
-            (CASE WHEN EXISTS (SELECT 1 FROM members_newsletters n WHERE n.member_id = members.id)
-                    THEN TRUE ELSE FALSE
-            END) as subscribed
-        `))
-        .select(knex.raw(`
-            (SELECT GROUP_CONCAT(product_id) FROM members_products f WHERE f.member_id = members.id) as tiers
-        `))
-        .select(knex.raw(`
-            (SELECT GROUP_CONCAT(label_id) FROM members_labels f WHERE f.member_id = members.id) as labels
-        `))
-        .select(knex.raw(`
-            (SELECT customer_id FROM members_stripe_customers f WHERE f.member_id = members.id limit 1) as stripe_customer_id
-        `));
+    const [members, tiers, labels, stripeCustomers, subscriptions] = await Promise.all([
+        knex('members')
+            .select('id', 'email', 'name', 'note', 'status', 'created_at')
+            .modify((query) => {
+                if (hasFilter) {
+                    query.whereIn('id', ids);
+                }
+            }),
+        knex('members_products')
+            .select('member_id', knex.raw('GROUP_CONCAT(product_id) as tiers'))
+            .groupBy('member_id')
+            .modify((query) => {
+                if (hasFilter) {
+                    query.whereIn('member_id', ids);
+                }
+            }),
+        knex('members_labels')
+            .select('member_id', knex.raw('GROUP_CONCAT(label_id) as labels'))
+            .groupBy('member_id')
+            .modify((query) => {
+                if (hasFilter) {
+                    query.whereIn('member_id', ids);
+                }
+            }),
+        knex('members_stripe_customers')
+            .select('member_id', knex.raw('MIN(customer_id) as stripe_customer_id'))
+            .groupBy('member_id')
+            .modify((query) => {
+                if (hasFilter) {
+                    query.whereIn('member_id', ids);
+                }
+            }),
+        knex('members_newsletters')
+            .distinct('member_id')
+            .modify((query) => {
+                if (hasFilter) {
+                    query.whereIn('member_id', ids);
+                }
+            })
+    ]);
 
-    if (hasFilter) {
-        query = query.whereIn('id', ids);
-    }
+    const tiersMap = new Map(tiers.map(row => [row.member_id, row.tiers]));
+    const labelsMap = new Map(labels.map(row => [row.member_id, row.labels]));
+    const stripeCustomerMap = new Map(stripeCustomers.map(row => [row.member_id, row.stripe_customer_id]));
+    const subscribedSet = new Set(subscriptions.map(row => row.member_id));
 
-    const rows = await query;
-    for (const row of rows) {
-        const tierIds = row.tiers ? row.tiers.split(',') : [];
-        const tiers = tierIds.map((id) => {
+    for (const row of members) {
+        const tierIds = tiersMap.get(row.id) ? tiersMap.get(row.id).split(',') : [];
+        const tierDetails = tierIds.map((id) => {
             const tier = allProducts.find(p => p.id === id);
             return {
                 name: tier.get('name')
             };
         });
-        row.tiers = tiers;
+        row.tiers = tierDetails;
 
-        const labelIds = row.labels ? row.labels.split(',') : [];
-        const labels = labelIds.map((id) => {
+        const labelIds = labelsMap.get(row.id) ? labelsMap.get(row.id).split(',') : [];
+        const labelDetails = labelIds.map((id) => {
             const label = allLabels.find(l => l.id === id);
             return {
                 name: label.get('name')
             };
         });
-        row.labels = labels;
+        row.labels = labelDetails;
+
+        row.subscribed = subscribedSet.has(row.id);
+        row.comped = row.status === 'comped';
+        row.stripe_customer_id = stripeCustomerMap.get(row.id) || null;
+        row.created_at = moment(row.created_at).toISOString();
     }
 
-    for (const member of rows) {
-        // Note: we don't modify the array or change/duplicate objects
-        // to increase performance
-        member.subscribed = !!member.subscribed;
-        member.comped = member.status === 'comped';
-        member.created_at = moment(member.created_at).toISOString();
-    }
-
-    return rows;
+    return members;
 };
