@@ -1,8 +1,9 @@
 // UI components
-export * from './components/ui/Button';
-export {IconComponents as Icon} from './components/ui/Icon';
+export * from './components/ui/Badge';
 export * from './components/ui/Breadcrumb';
+export * from './components/ui/Button';
 export * from './components/ui/DropdownMenu';
+export {IconComponents as Icon} from './components/ui/Icon';
 export * from './components/ui/Card';
 export * from './components/ui/Chart';
 export * from './components/ui/Separator';

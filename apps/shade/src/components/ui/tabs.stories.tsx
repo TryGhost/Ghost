@@ -4,7 +4,12 @@ import {Tabs, TabsContent, TabsList, TabsTrigger} from './Tabs';
 const meta = {
     title: 'Components / Tabs',
     component: Tabs,
-    tags: ['autodocs']
+    tags: ['autodocs'],
+    argTypes: {
+        children: {
+            control: false
+        }
+    }
 } satisfies Meta<typeof Tabs>;
 
 export default meta;

@@ -12,10 +12,6 @@ type Story = StoryObj<typeof Page>;
 
 export const Default: Story = {
     args: {
-        children: (
-            <>
-                Page container with a max width of <code>max-w-content</code>
-            </>
-        )
+        children: 'Page container with a max width of <code>max-w-content</code>'
     }
 };

@@ -5,7 +5,12 @@ import {Button} from './Button';
 const meta = {
     title: 'Components / Dropdown menu',
     component: DropdownMenu,
-    tags: ['autodocs']
+    tags: ['autodocs'],
+    argTypes: {
+        children: {
+            control: false
+        }
+    }
 } satisfies Meta<typeof DropdownMenu>;
 
 export default meta;

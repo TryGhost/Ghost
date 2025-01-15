@@ -5,7 +5,12 @@ import {Button} from './Button';
 const meta = {
     title: 'Components / Card',
     component: Card,
-    tags: ['autodocs']
+    tags: ['autodocs'],
+    argTypes: {
+        children: {
+            control: false
+        }
+    }
 } satisfies Meta<typeof Card>;
 
 export default meta;

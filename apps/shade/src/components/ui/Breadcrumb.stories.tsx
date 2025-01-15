@@ -4,7 +4,15 @@ import {Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPa
 const meta = {
     title: 'Components / Breadcrumb',
     component: Breadcrumb,
-    tags: ['autodocs']
+    tags: ['autodocs'],
+    argTypes: {
+        children: {
+            control: false
+        },
+        separator: {
+            control: false
+        }
+    }
 } satisfies Meta<typeof Breadcrumb>;
 
 export default meta;

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {Bar, BarChart, Card, CardContent, CardDescription, CardHeader, CardTitle, CartesianGrid, ChartConfig, ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent, Separator, XAxis} from '@tryghost/shade';
+import {Badge, Bar, BarChart, Card, CardContent, CardDescription, CardHeader, CardTitle, CartesianGrid, ChartConfig, ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent, Separator, XAxis} from '@tryghost/shade';
 import {Metric, MetricLabel, MetricPercentage, MetricValue} from '../Metric';
 
 interface NewsletterPerformanceProps extends React.ComponentProps<typeof Card> {};
@@ -26,8 +26,9 @@ const NewsletterPerformance: React.FC<NewsletterPerformanceProps> = (props) => {
         <Card {...props}>
             <CardHeader>
                 <CardTitle>Newsletter performance</CardTitle>
-                <CardDescription>
-                    Sent 19 Sept 2024
+                <CardDescription className='flex items-center gap-1.5'>
+                    <Badge variant='success'>Sent</Badge>
+                    19 Sept 2024
                 </CardDescription>
             </CardHeader>
             <CardContent>
