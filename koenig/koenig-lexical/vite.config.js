@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import mdx from '@mdx-js/rollup';
 import pkg from './package.json';
 import react from '@vitejs/plugin-react';
 import svgr from 'vite-plugin-svgr';
@@ -15,7 +16,8 @@ export default (function viteConfig({mode}) {
 
     const plugins = [
         svgr(),
-        react()
+        react(),
+        mdx()
     ];
 
     // Keep sentryVitePlugin as the last plugin
