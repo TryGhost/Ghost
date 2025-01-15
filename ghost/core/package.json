@@ -188,7 +188,7 @@
     "express-query-boolean": "2.0.0",
     "express-queue": "0.0.13",
     "express-session": "1.18.1",
-    "fs-extra": "11.2.0",
+    "fs-extra": "11.3.0",
     "ghost-storage-base": "1.0.0",
     "glob": "8.1.0",
     "got": "11.8.6",
