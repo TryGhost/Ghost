@@ -4,6 +4,8 @@ export {IconComponents as Icon} from './components/ui/Icon';
 export * from './components/ui/Breadcrumb';
 export * from './components/ui/DropdownMenu';
 export * from './components/ui/Card';
+export * from './components/ui/Chart';
+export * from 'recharts';
 export * from './components/ui/Tabs';
 
 export * from './components/layout/Page';
