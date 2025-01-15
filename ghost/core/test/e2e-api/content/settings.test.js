@@ -1,5 +1,7 @@
 const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
 const {anyEtag, anyContentLength, anyContentVersion} = matchers;
+const config = require('../../../core/shared/config');
+const configUtils = require('../../utils/configUtils');
 
 const settingsMatcher = {
     version: matchers.anyString,
@@ -26,5 +28,34 @@ describe('Settings Content API', function () {
             .matchBodySnapshot({
                 settings: settingsMatcher
             });
+    });
+
+    describe('Captcha settings', function () {
+        beforeEach(function () {
+            configUtils.set('captcha', {
+                enabled: true,
+                siteKey: 'testkey'
+            });
+        });
+
+        afterEach(function () {
+            configUtils.restore();
+        });
+
+        it('Can request captcha settings', async function () {
+            await agent.get('settings/')
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    etag: anyEtag,
+                    'content-version': anyContentVersion,
+                    'content-length': anyContentLength
+                })
+                .matchBodySnapshot({
+                    settings: {
+                        captcha_enabled: true,
+                        captcha_sitekey: 'testkey'
+                    }
+                });
+        });
     });
 });
