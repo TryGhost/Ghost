@@ -74,9 +74,7 @@ const TableOfContents: React.FC<{
                         {items.map(item => (
                             <div
                                 key={item.id}
-                                className={`h-[2px] rounded-sm transition-all ${
-                                    activeId === item.id ? 'bg-grey-900' : 'bg-grey-300'
-                                } ${getLineWidth(item.level)}`}
+                                className={`h-[2px] rounded-sm bg-grey-300 transition-all ${getLineWidth(item.level)}`}
                             />
                         ))}
                     </div>
@@ -87,9 +85,7 @@ const TableOfContents: React.FC<{
                         {items.map(item => (
                             <button
                                 key={item.id}
-                                className={`block w-full cursor-pointer truncate rounded py-1 text-left ${
-                                    activeId === item.id ? 'text-black' : 'text-grey-600 hover:bg-grey-75 hover:text-grey-900'
-                                }`}
+                                className={`block w-full cursor-pointer truncate rounded py-1 text-left text-grey-600 hover:bg-grey-75 hover:text-grey-900`}
                                 style={{
                                     paddingLeft: `${(item.level - 1) * 12}px`
                                 }}
@@ -300,7 +296,9 @@ const ArticleBody: React.FC<{
 
             // Extract headings
             const headings = Array.from(iframe.contentDocument.querySelectorAll('h1:not(.gh-article-title), h2, h3, h4, h5, h6')).map((el) => {
-                const id = `heading-${Math.random().toString(36).substr(2, 9)}`;
+                const baseId = el.textContent?.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '') || 'heading';
+                const randomSuffix = Math.random().toString(36).substring(2, 6);
+                const id = `heading-${baseId}-${randomSuffix}`;
                 el.id = id;
                 return {
                     id,
@@ -873,7 +871,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                     last={true}
                                     layout={'modal'}
                                     object={object}
-                                    showHeader={(canNavigateBack || (activityThreadParents.length > 0)) ? true : false}
+                                    showHeader={(canNavigateBack || (activityThreadParents.length > 0))}
                                     type='Note'
                                     onCommentClick={() => {
                                         repliesRef.current?.scrollIntoView({
@@ -930,7 +928,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                     const showDivider = index !== activityThreadChildren.length - 1;
 
                                     return (
-                                        <>
+                                        <React.Fragment key={item.id}>
                                             <FeedItem
                                                 actor={item.actor}
                                                 commentCount={item.object.replyCount ?? 0}
@@ -946,7 +944,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                                 }}
                                             />
                                             {showDivider && <FeedItemDivider />}
-                                        </>
+                                        </React.Fragment>
                                     );
                                 })}
                             </div>
