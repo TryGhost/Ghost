@@ -48,7 +48,7 @@ const TableOfContents: React.FC<{
     items: TOCItem[];
     activeId: string | null;
     onItemClick: (id: string) => void;
-}> = ({items, activeId, onItemClick}) => {
+}> = ({items, onItemClick}) => {
     if (items.length === 0) {
         return null;
     }
