@@ -1,6 +1,8 @@
 import {Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, H1} from '@tryghost/shade';
 
-const Header = () => {
+interface headerProps {};
+
+const Header: React.FC<headerProps> = () => {
     return (
         <div className="flex flex-col items-start justify-between gap-4 pt-9">
             <div>

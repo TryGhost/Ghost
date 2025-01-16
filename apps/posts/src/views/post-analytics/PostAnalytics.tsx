@@ -2,7 +2,9 @@ import Header from '../../components/Header';
 import Overview from './components/Overview';
 import {Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuTrigger, Icon, Page, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade';
 
-const PostAnalytics = () => {
+interface postAnalyticsProps {};
+
+const PostAnalytics: React.FC<postAnalyticsProps> = () => {
     return (
         <Page>
             <Header />
