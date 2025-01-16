@@ -56,16 +56,27 @@ const TableOfContents: React.FC<{
     const getLineWidth = (level: number) => {
         switch (level) {
         case 1:
-            return 'w-5';
-        case 2:
             return 'w-3';
-        default:
+        case 2:
             return 'w-2';
+        default:
+            return 'w-1';
+        }
+    };
+
+    const getHeadingPadding = (level: number) => {
+        switch (level) {
+        case 1:
+            return 'pl-2';
+        case 2:
+            return 'pl-6';
+        default:
+            return 'pl-10';
         }
     };
 
     return (
-        <div className="absolute right-2 top-1/2 -translate-y-1/2 text-sm">
+        <div className="absolute right-2 top-1/2 -translate-y-1/2 text-base">
             <Popover
                 position='center'
                 side='right'
@@ -74,7 +85,7 @@ const TableOfContents: React.FC<{
                         {items.map(item => (
                             <div
                                 key={item.id}
-                                className={`h-[2px] rounded-sm bg-grey-300 transition-all ${getLineWidth(item.level)}`}
+                                className={`h-[2px] rounded-sm bg-grey-400 pr-1 transition-all ${getLineWidth(item.level)}`}
                             />
                         ))}
                     </div>
@@ -85,10 +96,7 @@ const TableOfContents: React.FC<{
                         {items.map(item => (
                             <button
                                 key={item.id}
-                                className={`block w-full cursor-pointer truncate rounded py-1 text-left text-grey-600 hover:bg-grey-75 hover:text-grey-900`}
-                                style={{
-                                    paddingLeft: `${(item.level - 1) * 12}px`
-                                }}
+                                className={`block w-full cursor-pointer truncate rounded py-1 text-left text-grey-700 hover:bg-grey-75 hover:text-grey-900 ${getHeadingPadding(item.level)}`}
                                 type='button'
                                 onClick={() => onItemClick(item.id)}
                             >
@@ -294,13 +302,33 @@ const ArticleBody: React.FC<{
                 return;
             }
 
-            const headings = Array.from(iframe.contentDocument.querySelectorAll('h1:not(.gh-article-title), h2, h3, h4, h5, h6')).map((el, idx) => {
+            // Get all headings except the article title
+            const headingElements = Array.from(
+                iframe.contentDocument.querySelectorAll('h1:not(.gh-article-title), h2, h3, h4, h5, h6')
+            );
+
+            if (headingElements.length === 0) {
+                return;
+            }
+
+            // Find the highest level (smallest number) heading
+            const highestLevel = Math.min(
+                ...headingElements.map(el => parseInt(el.tagName[1]))
+            );
+
+            // Map headings and normalize their levels
+            const headings = headingElements.map((el, idx) => {
                 const id = `heading-${idx}`;
                 el.id = id;
+
+                // Calculate normalized level (e.g., if highest is h3, then h3->h1, h4->h2)
+                const actualLevel = parseInt(el.tagName[1]);
+                const normalizedLevel = actualLevel - highestLevel + 1;
+
                 return {
                     id,
                     text: el.textContent || '',
-                    level: parseInt(el.tagName[1]),
+                    level: normalizedLevel,
                     element: el as HTMLElement
                 };
             });
