@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, Label, Pie, PieChart, Separator} from '@tryghost/shade';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, Recharts, Separator} from '@tryghost/shade';
 import {Metric, MetricLabel, MetricValue} from '../Metric';
 
 interface FeedbackProps extends React.ComponentProps<typeof Card> {};
@@ -55,19 +55,19 @@ const Feedback: React.FC<FeedbackProps> = (props) => {
                     className="mx-auto aspect-square h-[250px] min-h-[250px] w-full"
                     config={chartConfig}
                 >
-                    <PieChart>
+                    <Recharts.PieChart>
                         <ChartTooltip
                             content={<ChartTooltipContent hideLabel />}
                             cursor={false}
                         />
-                        <Pie
+                        <Recharts.Pie
                             data={chartData}
                             dataKey="visitors"
                             innerRadius={60}
                             nameKey="browser"
                             strokeWidth={5}
                         >
-                            <Label
+                            <Recharts.Label
                                 content={({viewBox}) => {
                                     if (viewBox && 'cx' in viewBox && 'cy' in viewBox) {
                                         return (
@@ -96,8 +96,8 @@ const Feedback: React.FC<FeedbackProps> = (props) => {
                                     }
                                 }}
                             />
-                        </Pie>
-                    </PieChart>
+                        </Recharts.Pie>
+                    </Recharts.PieChart>
                 </ChartContainer>
             </CardContent>
         </Card>

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {Badge, Bar, BarChart, Card, CardContent, CardDescription, CardHeader, CardTitle, CartesianGrid, ChartConfig, ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent, Separator, XAxis} from '@tryghost/shade';
+import {Badge, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent, Recharts, Separator} from '@tryghost/shade';
 import {Metric, MetricLabel, MetricPercentage, MetricValue} from '../Metric';
 
 interface NewsletterPerformanceProps extends React.ComponentProps<typeof Card> {};
@@ -49,9 +49,9 @@ const NewsletterPerformance: React.FC<NewsletterPerformanceProps> = (props) => {
                     </Metric>
                 </div>
                 <ChartContainer className='-mx-1 aspect-auto h-[250px] min-h-[250px] w-[calc(100%+8px)]' config={chartConfig}>
-                    <BarChart data={chartData} dataKey='metric' accessibilityLayer>
-                        <CartesianGrid vertical={false} />
-                        <XAxis
+                    <Recharts.BarChart data={chartData} dataKey='metric' accessibilityLayer>
+                        <Recharts.CartesianGrid vertical={false} />
+                        <Recharts.XAxis
                             axisLine={false}
                             dataKey="metric"
                             tickLine={false}
@@ -60,9 +60,9 @@ const NewsletterPerformance: React.FC<NewsletterPerformanceProps> = (props) => {
                         />
                         <ChartTooltip content={<ChartTooltipContent />} />
                         <ChartLegend content={<ChartLegendContent />} />
-                        <Bar dataKey="current" fill="var(--color-current)" radius={4} />
-                        <Bar dataKey="avg" fill="var(--color-avg)" radius={4} />
-                    </BarChart>
+                        <Recharts.Bar dataKey="current" fill="var(--color-current)" radius={4} />
+                        <Recharts.Bar dataKey="avg" fill="var(--color-avg)" radius={4} />
+                    </Recharts.BarChart>
                 </ChartContainer>
             </CardContent>
         </Card>
