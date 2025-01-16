@@ -12,6 +12,8 @@ export * from './components/ui/tabs';
 export * from './components/layout/page';
 export * from './components/layout/heading';
 
+// Additional components
+export * from 'recharts';
 export {IconComponents as Icon} from './components/ui/icon';
 
 // Assets
