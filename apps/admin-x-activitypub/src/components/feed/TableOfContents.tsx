@@ -43,6 +43,7 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({items, onItemClick}) =
     return (
         <div className='absolute right-2 top-1/2 -translate-y-1/2 text-base'>
             <Popover
+                aria-label='Table of Contents'
                 position='center'
                 side='right'
                 trigger={
@@ -57,7 +58,11 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({items, onItemClick}) =
                 }
             >
                 <div className='w-[220px] p-4'>
-                    <nav className='max-h-[60vh] overflow-y-auto'>
+                    <nav
+                        aria-label='Table of contents navigation'
+                        className='max-h-[60vh] overflow-y-auto'
+                        role='navigation'
+                    >
                         {items.map(item => (
                             <button
                                 key={item.id}
