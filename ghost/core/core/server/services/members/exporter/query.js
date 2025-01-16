@@ -31,49 +31,60 @@ module.exports = async function (options) {
         */
     }
 
-    const allProducts = await models.Product.fetchAll();
-    const allLabels = await models.Label.fetchAll();
+    const allProducts = await knex('products').select('id', 'name').then(rows => rows.reduce((acc, product) => {
+        acc[product.id] = product.name;
+        return acc; 
+    }, {})
+    );
 
-    const [members, tiers, labels, stripeCustomers, subscriptions] = await Promise.all([
-        knex('members')
-            .select('id', 'email', 'name', 'note', 'status', 'created_at')
-            .modify((query) => {
-                if (hasFilter) {
-                    query.whereIn('id', ids);
-                }
-            }),
-        knex('members_products')
-            .select('member_id', knex.raw('GROUP_CONCAT(product_id) as tiers'))
-            .groupBy('member_id')
-            .modify((query) => {
-                if (hasFilter) {
-                    query.whereIn('member_id', ids);
-                }
-            }),
-        knex('members_labels')
-            .select('member_id', knex.raw('GROUP_CONCAT(label_id) as labels'))
-            .groupBy('member_id')
-            .modify((query) => {
-                if (hasFilter) {
-                    query.whereIn('member_id', ids);
-                }
-            }),
-        knex('members_stripe_customers')
-            .select('member_id', knex.raw('MIN(customer_id) as stripe_customer_id'))
-            .groupBy('member_id')
-            .modify((query) => {
-                if (hasFilter) {
-                    query.whereIn('member_id', ids);
-                }
-            }),
-        knex('members_newsletters')
-            .distinct('member_id')
-            .modify((query) => {
-                if (hasFilter) {
-                    query.whereIn('member_id', ids);
-                }
-            })
-    ]);
+    const allLabels = await knex('labels').select('id', 'name').then(rows => rows.reduce((acc, label) => {
+        acc[label.id] = label.name;
+        return acc;
+    }, {})
+    );
+
+    const members = await knex('members')
+        .select('id', 'email', 'name', 'note', 'status', 'created_at')
+        .modify((query) => {
+            if (hasFilter) {
+                query.whereIn('id', ids);
+            }
+        });
+
+    const tiers = await knex('members_products')
+        .select('member_id', knex.raw('GROUP_CONCAT(product_id) as tiers'))
+        .groupBy('member_id')
+        .modify((query) => {
+            if (hasFilter) {
+                query.whereIn('member_id', ids);
+            }
+        });
+
+    const labels = await knex('members_labels')
+        .select('member_id', knex.raw('GROUP_CONCAT(label_id) as labels'))
+        .groupBy('member_id')
+        .modify((query) => {
+            if (hasFilter) {
+                query.whereIn('member_id', ids);
+            }
+        });
+
+    const stripeCustomers = await knex('members_stripe_customers')
+        .select('member_id', knex.raw('MIN(customer_id) as stripe_customer_id'))
+        .groupBy('member_id')
+        .modify((query) => {
+            if (hasFilter) {
+                query.whereIn('member_id', ids);
+            }
+        });
+
+    const subscriptions = await knex('members_newsletters')
+        .distinct('member_id')
+        .modify((query) => {
+            if (hasFilter) {
+                query.whereIn('member_id', ids);
+            }
+        });
 
     const tiersMap = new Map(tiers.map(row => [row.member_id, row.tiers]));
     const labelsMap = new Map(labels.map(row => [row.member_id, row.labels]));
@@ -83,18 +94,16 @@ module.exports = async function (options) {
     for (const row of members) {
         const tierIds = tiersMap.get(row.id) ? tiersMap.get(row.id).split(',') : [];
         const tierDetails = tierIds.map((id) => {
-            const tier = allProducts.find(p => p.id === id);
             return {
-                name: tier.get('name')
+                name: allProducts[id]
             };
         });
         row.tiers = tierDetails;
 
         const labelIds = labelsMap.get(row.id) ? labelsMap.get(row.id).split(',') : [];
         const labelDetails = labelIds.map((id) => {
-            const label = allLabels.find(l => l.id === id);
             return {
-                name: label.get('name')
+                name: allLabels[id]
             };
         });
         row.labels = labelDetails;
