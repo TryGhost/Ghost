@@ -4,7 +4,7 @@ import * as TabsPrimitive from '@radix-ui/react-tabs';
 import {cn} from '@/lib/utils';
 import {cva} from 'class-variance-authority';
 
-type TabsVariant = 'segmented' | 'page';
+type TabsVariant = 'segmented' | 'button' | 'link';
 
 const TabsVariantContext = React.createContext<TabsVariant>('segmented');
 
@@ -18,7 +18,8 @@ const tabsVariants = cva(
         variants: {
             variant: {
                 segmented: '',
-                page: ''
+                button: '',
+                link: ''
             }
         },
         defaultVariants: {
@@ -38,12 +39,13 @@ const Tabs = React.forwardRef<
 Tabs.displayName = TabsPrimitive.Root.displayName;
 
 const tabsListVariants = cva(
-    'inline-flex items-center justify-center text-muted-foreground',
+    'inline-flex items-center text-muted-foreground',
     {
         variants: {
             variant: {
                 segmented: 'h-[34px] rounded-lg bg-muted px-[3px]',
-                page: 'gap-2 border-b pb-2'
+                button: 'gap-2 border-b',
+                link: 'gap-7 border-b'
             }
         },
         defaultVariants: {
@@ -68,12 +70,13 @@ const TabsList = React.forwardRef<
 TabsList.displayName = TabsPrimitive.List.displayName;
 
 const tabsTriggerVariants = cva(
-    'inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground',
+    'inline-flex items-center justify-center whitespace-nowrap px-3 py-1 ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground',
     {
         variants: {
             variant: {
-                segmented: 'h-7 data-[state=active]:shadow-md',
-                page: 'h-[34px] border data-[state=active]:bg-muted/70'
+                segmented: 'h-7 rounded-md text-sm font-medium data-[state=active]:shadow-md',
+                button: 'h-[34px] rounded-md border text-sm font-medium data-[state=active]:bg-muted/70',
+                link: 'font-md relative h-[34px] px-0 text-md text-gray-600 data-[state=active]:font-semibold data-[state=active]:text-black'
             }
         },
         defaultVariants: {
@@ -103,7 +106,8 @@ const tabsContentVariants = cva(
         variants: {
             variant: {
                 segmented: '',
-                page: ''
+                button: '',
+                link: ''
             }
         },
         defaultVariants: {

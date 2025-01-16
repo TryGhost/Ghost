@@ -18,7 +18,7 @@ const MetricLabel = ({className, ...props}: MetricDivProps) => {
 
 const MetricValue = ({className, ...props}: MetricDivProps) => {
     return (
-        <div className={cn('inline-flex gap-2 items-center font-semibold text-xl tracking-tight leading-none', className)} {...props} />
+        <div className={cn('inline-flex gap-2 items-center font-semibold text-2xl tracking-tight leading-none', className)} {...props} />
     );
 };
 

@@ -4,9 +4,32 @@ import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, Card
 interface ClickPerformanceProps extends React.ComponentProps<typeof Card> {};
 
 const ClickPerformance: React.FC<ClickPerformanceProps> = (props) => {
+    const mockData = [
+        {
+            url: 'activitypub.ghost.org/archive',
+            clicks: '250'
+        },
+        {
+            url: 'nytimes.com',
+            clicks: '134'
+        },
+        {
+            url: 'activitypub.ghost.org/unsubscribe',
+            clicks: '71'
+        },
+        {
+            url: 'example.com',
+            clicks: '29'
+        },
+        {
+            url: 'example.com/clickme',
+            clicks: '13'
+        }
+    ];
+
     return (
         <Card {...props}>
-            <CardHeader>
+            <CardHeader className='pb-2'>
                 <CardTitle>Click performance</CardTitle>
                 <CardDescription>
                     Links in this newsletter
@@ -21,18 +44,14 @@ const ClickPerformance: React.FC<ClickPerformanceProps> = (props) => {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        <TableRow>
-                            <TableCell className="font-medium">activitypub.ghost.org/archive</TableCell>
-                            <TableCell className="text-right">250</TableCell>
-                        </TableRow>
-                        <TableRow>
-                            <TableCell className="font-medium">example.com</TableCell>
-                            <TableCell className="text-right">87</TableCell>
-                        </TableRow>
-                        <TableRow>
-                            <TableCell className="font-medium">activitypub.ghost.org/unsubscribe</TableCell>
-                            <TableCell className="text-right">12</TableCell>
-                        </TableRow>
+                        {mockData.map((link) => {
+                            return (
+                                <TableRow key={link.url}>
+                                    <TableCell className="font-medium">{link.url}</TableCell>
+                                    <TableCell className="text-right">{link.clicks}</TableCell>
+                                </TableRow>
+                            );
+                        })}
                     </TableBody>
                 </Table>
             </CardContent>

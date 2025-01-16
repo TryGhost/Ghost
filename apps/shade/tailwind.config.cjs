@@ -115,6 +115,15 @@ module.exports = {
             'fira-mono': 'Fira Mono',
             'jetbrains-mono': 'JetBrains Mono'
         },
+        letterSpacing: {
+            tightest: '-.05em',
+            tighter: '-.025em',
+            tight: '-.01em',
+            normal: '0',
+            wide: '.01em',
+            wider: '.025em',
+            widest: '.5em'
+        },
         boxShadow: {
             DEFAULT: '0 0 1px rgba(0,0,0,.05), 0 5px 18px rgba(0,0,0,.08)',
             xs: '0 0 1px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.03), 0 8px 10px -12px rgba(0,0,0,.1)',
@@ -306,9 +315,9 @@ module.exports = {
                 xs: '1.2rem',
                 sm: '1.3rem',
                 md: '1.4rem',
-                lg: '1.65rem',
-                xl: '2rem',
-                '2xl': '2.4rem',
+                lg: '1.5rem',
+                xl: '1.7rem',
+                '2xl': '2.2rem',
                 '3xl': '2.7rem',
                 '4xl': '3.2rem',
                 '5xl': ['4.0rem', '1.15'],
