@@ -1,5 +1,6 @@
 import {
     type AccountFollowsType,
+    type AccountSearchResult,
     ActivityPubAPI,
     ActivityPubCollectionResponse,
     ActivityThread,
@@ -306,6 +307,7 @@ export function useSearchForUser(handle: string, query: string) {
 
     const searchQuery = useQuery({
         queryKey,
+        enabled: query.length > 0,
         async queryFn() {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
@@ -313,7 +315,7 @@ export function useSearchForUser(handle: string, query: string) {
         }
     });
 
-    const updateProfileSearchResult = (id: string, updated: Partial<Profile>) => {
+    const updateAccountSearchResult = (id: string, updated: Partial<AccountSearchResult>) => {
         queryClient.setQueryData(queryKey, (current: SearchResults | undefined) => {
             if (!current) {
                 return current;
@@ -321,8 +323,8 @@ export function useSearchForUser(handle: string, query: string) {
 
             return {
                 ...current,
-                profiles: current.profiles.map((item: Profile) => {
-                    if (item.actor.id === id) {
+                accounts: current.accounts.map((item: AccountSearchResult) => {
+                    if (item.id === id) {
                         return {...item, ...updated};
                     }
                     return item;
@@ -331,7 +333,7 @@ export function useSearchForUser(handle: string, query: string) {
         });
     };
 
-    return {searchQuery, updateProfileSearchResult};
+    return {searchQuery, updateAccountSearchResult};
 }
 
 export function useSuggestedProfiles(handle: string, limit = 3) {

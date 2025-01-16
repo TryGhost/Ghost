@@ -12,8 +12,30 @@ export interface Profile {
     isFollowing: boolean;
 }
 
+interface Account {
+    id: string;
+    name: string;
+    handle: string;
+    bio: string;
+    url: string;
+    avatarUrl: string;
+    bannerImageUrl: string | null;
+    customFields: Record<string, string>;
+    postCount: number;
+    likedCount: number;
+    followingCount: number;
+    followerCount: number;
+    followsMe: boolean;
+    followedByMe: boolean;
+}
+
+export type AccountSearchResult = Pick<
+    Account,
+    'id' | 'name' | 'handle' | 'avatarUrl' | 'followedByMe' | 'followerCount'
+>;
+
 export interface SearchResults {
-    profiles: Profile[];
+    accounts: AccountSearchResult[];
 }
 
 export interface ActivityThread {
@@ -45,29 +67,12 @@ export interface GetPostsForProfileResponse {
 
 export type AccountFollowsType = 'following' | 'followers';
 
-interface Account {
-    id: string;
-    name: string;
-    handle: string;
-    bio: string;
-    url: string;
-    avatarUrl: string;
-    bannerImageUrl: string | null;
-    customFields: Record<string, string>;
-    postsCount: number;
-    likedCount: number;
-    followingCount: number;
-    followerCount: number;
-    followsMe: boolean;
-    followedByMe: boolean;
-}
-
 type GetAccountResponse = Account
 
-export type MinimalAccount = Pick<Account, 'id' | 'name' | 'handle' | 'avatarUrl'>;
+export type FollowAccount = Pick<Account, 'id' | 'name' | 'handle' | 'avatarUrl'>;
 
 export interface GetAccountFollowsResponse {
-    accounts: MinimalAccount[];
+    accounts: FollowAccount[];
     next: string | null;
 }
 
@@ -293,12 +298,12 @@ export class ActivityPubAPI {
 
         const json = await this.fetchJSON(url, 'GET');
 
-        if (json && 'profiles' in json) {
+        if (json && 'accounts' in json) {
             return json as SearchResults;
         }
 
         return {
-            profiles: []
+            accounts: []
         };
     }
 
