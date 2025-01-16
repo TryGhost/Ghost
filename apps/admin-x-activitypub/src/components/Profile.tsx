@@ -12,7 +12,7 @@ import {
     useLikedForUser,
     useOutboxForUser
 } from '../hooks/useActivityPubQueries';
-import {MinimalAccount} from '../api/activitypub';
+import {FollowAccount} from '../api/activitypub';
 import {handleViewContent} from '../utils/content-handlers';
 
 import APAvatar from './global/APAvatar';
@@ -181,7 +181,7 @@ const handleAccountClick = (handle: string) => {
 };
 
 const FollowingTab: React.FC = () => {
-    const {items: accounts, EmptyState, LoadingState} = useInfiniteScrollTab<MinimalAccount>({
+    const {items: accounts, EmptyState, LoadingState} = useInfiniteScrollTab<FollowAccount>({
         useDataHook: handle => useAccountFollowsForUser(handle, 'following'),
         emptyStateLabel: 'You aren\'t following anyone yet.',
         emptyStateIcon: 'user-add'
@@ -223,7 +223,7 @@ const FollowingTab: React.FC = () => {
 };
 
 const FollowersTab: React.FC = () => {
-    const {items: accounts, EmptyState, LoadingState} = useInfiniteScrollTab<MinimalAccount>({
+    const {items: accounts, EmptyState, LoadingState} = useInfiniteScrollTab<FollowAccount>({
         useDataHook: handle => useAccountFollowsForUser(handle, 'followers'),
         emptyStateLabel: 'Nobody\'s following you yet. Their loss!',
         emptyStateIcon: 'user-add'
