@@ -16,6 +16,7 @@ import {useThreadForUser} from '../../hooks/useActivityPubQueries';
 
 import APAvatar from '../global/APAvatar';
 import APReplyBox from '../global/APReplyBox';
+import TableOfContents, {TOCItem} from './TableOfContents';
 import getReadingTime from '../../utils/get-reading-time';
 
 interface ArticleModalProps {
@@ -36,79 +37,6 @@ interface ArticleModalProps {
 interface IframeWindow extends Window {
     resizeIframe?: () => void;
 }
-
-interface TOCItem {
-    id: string;
-    text: string;
-    level: number;
-    element?: HTMLElement;
-}
-
-const TableOfContents: React.FC<{
-    items: TOCItem[];
-    activeId: string | null;
-    onItemClick: (id: string) => void;
-}> = ({items, onItemClick}) => {
-    if (items.length === 0) {
-        return null;
-    }
-
-    const getLineWidth = (level: number) => {
-        switch (level) {
-        case 1:
-            return 'w-3';
-        case 2:
-            return 'w-2';
-        default:
-            return 'w-1';
-        }
-    };
-
-    const getHeadingPadding = (level: number) => {
-        switch (level) {
-        case 1:
-            return 'pl-2';
-        case 2:
-            return 'pl-6';
-        default:
-            return 'pl-10';
-        }
-    };
-
-    return (
-        <div className="absolute right-2 top-1/2 -translate-y-1/2 text-base">
-            <Popover
-                position='center'
-                side='right'
-                trigger={
-                    <div className="flex cursor-pointer flex-col items-end gap-2 rounded-md bg-white p-2 hover:bg-grey-75">
-                        {items.map(item => (
-                            <div
-                                key={item.id}
-                                className={`h-[2px] rounded-sm bg-grey-400 pr-1 transition-all ${getLineWidth(item.level)}`}
-                            />
-                        ))}
-                    </div>
-                }
-            >
-                <div className="w-[220px] p-4">
-                    <nav className="max-h-[60vh] overflow-y-auto">
-                        {items.map(item => (
-                            <button
-                                key={item.id}
-                                className={`block w-full cursor-pointer truncate rounded py-1 text-left text-grey-700 hover:bg-grey-75 hover:text-grey-900 ${getHeadingPadding(item.level)}`}
-                                type='button'
-                                onClick={() => onItemClick(item.id)}
-                            >
-                                {item.text}
-                            </button>
-                        ))}
-                    </nav>
-                </div>
-            </Popover>
-        </div>
-    );
-};
 
 const ArticleBody: React.FC<{
     heading: string;
@@ -859,7 +787,6 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                         <div className="!visible absolute inset-y-0 right-7 z-40 hidden lg:!block">
                             <div className="sticky top-1/2 -translate-y-1/2">
                                 <TableOfContents
-                                    activeId={activeHeadingId}
                                     items={tocItems}
                                     onItemClick={scrollToHeading}
                                 />
