@@ -29,7 +29,7 @@ const ClickPerformance: React.FC<ClickPerformanceProps> = (props) => {
 
     return (
         <Card {...props}>
-            <CardHeader className='pb-2'>
+            <CardHeader>
                 <CardTitle>Click performance</CardTitle>
                 <CardDescription>
                     Links in this newsletter
@@ -48,7 +48,7 @@ const ClickPerformance: React.FC<ClickPerformanceProps> = (props) => {
                             return (
                                 <TableRow key={link.url}>
                                     <TableCell className="font-medium">{link.url}</TableCell>
-                                    <TableCell className="text-right">{link.clicks}</TableCell>
+                                    <TableCell className="text-right text-gray-700">{link.clicks}</TableCell>
                                 </TableRow>
                             );
                         })}

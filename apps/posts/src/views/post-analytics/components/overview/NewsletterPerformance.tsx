@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {Badge, Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent, Recharts, Separator} from '@tryghost/shade';
-import {Metric, MetricLabel, MetricPercentage, MetricValue} from '../Metric';
+import {Metric, MetricLabel, MetricPercentage, MetricValue} from './Metric';
 
 interface NewsletterPerformanceProps extends React.ComponentProps<typeof Card> {};
 

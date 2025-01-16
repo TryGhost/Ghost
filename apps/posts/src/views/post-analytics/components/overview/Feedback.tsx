@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, Recharts, Separator} from '@tryghost/shade';
-import {Metric, MetricLabel, MetricValue} from '../Metric';
+import {Metric, MetricLabel, MetricValue} from './Metric';
 
 interface FeedbackProps extends React.ComponentProps<typeof Card> {};
 

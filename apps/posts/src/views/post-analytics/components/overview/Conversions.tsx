@@ -26,39 +26,11 @@ const Conversions: React.FC<ConversionsProps> = (props) => {
             avatarFallback: 'SL',
             receiveDate: 'A month ago'
         }
-        // {
-        //     name: 'Kaylynn Torff',
-        //     tier: 'Silver',
-        //     avatarImage: 'https://i.pravatar.cc/150?img=3',
-        //     avatarFallback: 'KT',
-        //     receiveDate: 'A month ago'
-        // },
-        // {
-        //     name: 'Abram Vaccaro',
-        //     tier: 'Gold',
-        //     avatarImage: 'https://i.pravatar.cc/150?img=4',
-        //     avatarFallback: 'AV',
-        //     receiveDate: 'A month ago'
-        // },
-        // {
-        //     name: 'Jaxson Westervelt',
-        //     tier: 'Free',
-        //     avatarImage: '',
-        //     avatarFallback: 'JW',
-        //     receiveDate: 'A month ago'
-        // },
-        // {
-        //     name: 'Kierra Bergson',
-        //     tier: 'Gold',
-        //     avatarImage: 'https://i.pravatar.cc/150?img=5',
-        //     avatarFallback: 'KB',
-        //     receiveDate: 'A month ago'
-        // }
     ];
 
     return (
         <Card {...props}>
-            <CardHeader className='pb-2'>
+            <CardHeader>
                 <CardTitle>Conversions</CardTitle>
                 <CardDescription>
                     3 members signed up on this post
@@ -84,7 +56,7 @@ const Conversions: React.FC<ConversionsProps> = (props) => {
                                         <span className='whitespace-nowrap'>{member.name}</span>
                                     </div>
                                 </TableCell>
-                                <TableCell className='text-grey-700 text-right'>{member.tier}</TableCell>
+                                <TableCell className='text-right text-gray-700'>{member.tier}</TableCell>
                             </TableRow>
                         ))}
                     </TableBody>
