@@ -33,11 +33,15 @@ const Conversions: React.FC<ConversionsProps> = (props) => {
                             <TableCell className="font-medium">tatiana@calzoni.pizza</TableCell>
                             <TableCell className="text-right">Paid</TableCell>
                         </TableRow>
+                        <TableRow>
+                            <TableCell className="font-medium">Tiana Baptista</TableCell>
+                            <TableCell className="text-right">Free</TableCell>
+                        </TableRow>
                     </TableBody>
                 </Table>
             </CardContent>
             <CardFooter>
-                <Button variant="ghost">See all &rarr;</Button>
+                <Button variant="outline">See all &rarr;</Button>
             </CardFooter>
         </Card>
     );

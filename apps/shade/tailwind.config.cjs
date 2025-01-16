@@ -288,7 +288,7 @@ module.exports = {
                 max: 'max-content',
                 fit: 'fit-content',
                 prose: '65ch',
-                page: '128rem'
+                page: '148rem'
             },
             borderRadius: {
                 sm: 'calc(var(--radius) - 4px)',
@@ -309,11 +309,11 @@ module.exports = {
                 lg: '1.65rem',
                 xl: '2rem',
                 '2xl': '2.4rem',
-                '3xl': '3.2rem',
-                '4xl': '3.6rem',
-                '5xl': ['4.2rem', '1.15'],
-                '6xl': ['6rem', '1'],
-                '7xl': ['7.2rem', '1'],
+                '3xl': '2.7rem',
+                '4xl': '3.2rem',
+                '5xl': ['4.0rem', '1.15'],
+                '6xl': ['5.8rem', '1'],
+                '7xl': ['7.0rem', '1'],
                 '8xl': ['9.6rem', '1'],
                 '9xl': ['12.8rem', '1'],
                 inherit: 'inherit'

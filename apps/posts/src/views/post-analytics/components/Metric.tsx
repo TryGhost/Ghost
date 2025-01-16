@@ -12,7 +12,7 @@ const Metric = ({className, ...props}: MetricDivProps) => {
 
 const MetricLabel = ({className, ...props}: MetricDivProps) => {
     return (
-        <div className={cn('text-sm text-neutral-700 font-medium', className)} {...props} />
+        <div className={cn('text-sm text-gray-700 font-medium', className)} {...props} />
     );
 };
 
@@ -24,7 +24,7 @@ const MetricValue = ({className, ...props}: MetricDivProps) => {
 
 const MetricPercentage = ({className, ...props}: MetricDivProps) => {
     return (
-        <div className={cn('text-xs tracking-normal inline-block bg-neutral-100 text-neutral-700 p-1 rounded-md', className)} {...props} />
+        <div className={cn('text-xs tracking-normal inline-block bg-gray-100 text-gray-700 p-1 rounded-md', className)} {...props} />
     );
 };
 

@@ -37,7 +37,7 @@ const ClickPerformance: React.FC<ClickPerformanceProps> = (props) => {
                 </Table>
             </CardContent>
             <CardFooter>
-                <Button variant="ghost">See all &rarr;</Button>
+                <Button variant="outline">See all &rarr;</Button>
             </CardFooter>
         </Card>
     );
