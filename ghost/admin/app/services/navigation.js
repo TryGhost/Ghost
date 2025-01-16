@@ -33,7 +33,7 @@ export default class NavigationService extends Service {
         }
 
         let userSettings = JSON.parse(this.session.user.accessibility || '{}') || {};
-        this.settings = userSettings.navigation || Object.assign({}, DEFAULT_SETTINGS);
+        this.settings = {...DEFAULT_SETTINGS, ...userSettings.navigation};
     }
 
     @action
