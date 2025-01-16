@@ -1,7 +1,7 @@
 import FeedItem from './FeedItem';
 import FeedItemStats from './FeedItemStats';
 import NiceModal from '@ebay/nice-modal-react';
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import articleBodyStyles from '../articleBodyStyles';
 import getUsername from '../../utils/get-username';
 import {OptionProps, SingleValueProps, components} from 'react-select';
@@ -37,14 +37,91 @@ interface IframeWindow extends Window {
     resizeIframe?: () => void;
 }
 
-const ArticleBody: React.FC<{heading: string, image: string|undefined, excerpt: string|undefined, html: string, fontSize: FontSize, lineHeight: string, fontFamily: SelectOption}> = ({
+interface TOCItem {
+    id: string;
+    text: string;
+    level: number;
+    element?: HTMLElement;
+}
+
+const TableOfContents: React.FC<{
+    items: TOCItem[];
+    activeId: string | null;
+    onItemClick: (id: string) => void;
+}> = ({items, onItemClick}) => {
+    if (items.length === 0) {
+        return null;
+    }
+
+    const getLineWidth = (level: number) => {
+        switch (level) {
+        case 1:
+            return 'w-5';
+        case 2:
+            return 'w-3';
+        default:
+            return 'w-2';
+        }
+    };
+
+    return (
+        <div className="absolute right-2 top-1/2 -translate-y-1/2 text-sm">
+            <Popover
+                position='center'
+                side='right'
+                trigger={
+                    <div className="flex cursor-pointer flex-col items-end gap-2 rounded-md bg-white p-2 hover:bg-grey-75">
+                        {items.map(item => (
+                            <div
+                                key={item.id}
+                                className={`h-[2px] rounded-sm bg-grey-300 transition-all ${getLineWidth(item.level)}`}
+                            />
+                        ))}
+                    </div>
+                }
+            >
+                <div className="w-[220px] p-4">
+                    <nav className="max-h-[60vh] overflow-y-auto">
+                        {items.map(item => (
+                            <button
+                                key={item.id}
+                                className={`block w-full cursor-pointer truncate rounded py-1 text-left text-grey-600 hover:bg-grey-75 hover:text-grey-900`}
+                                style={{
+                                    paddingLeft: `${(item.level - 1) * 12}px`
+                                }}
+                                type='button'
+                                onClick={() => onItemClick(item.id)}
+                            >
+                                {item.text}
+                            </button>
+                        ))}
+                    </nav>
+                </div>
+            </Popover>
+        </div>
+    );
+};
+
+const ArticleBody: React.FC<{
+    heading: string;
+    image: string|undefined;
+    excerpt: string|undefined;
+    html: string;
+    fontSize: FontSize;
+    lineHeight: string;
+    fontFamily: SelectOption;
+    onHeadingsExtracted?: (headings: TOCItem[]) => void;
+    onIframeLoad?: (iframe: HTMLIFrameElement) => void;
+}> = ({
     heading,
     image,
     excerpt,
     html,
     fontSize,
     lineHeight,
-    fontFamily
+    fontFamily,
+    onHeadingsExtracted,
+    onIframeLoad
 }) => {
     const site = useBrowseSite();
     const siteData = site.data?.site;
@@ -112,7 +189,15 @@ const ArticleBody: React.FC<{heading: string, image: string|undefined, excerpt: 
                 window.addEventListener('DOMContentLoaded', initializeResize);
                 window.addEventListener('load', resizeIframe);
                 window.addEventListener('resize', resizeIframe);
-                new MutationObserver(resizeIframe).observe(document.body, { subtree: true, childList: true });
+
+                if (document.body) {
+                    const observer = new MutationObserver(resizeIframe);
+                    observer.observe(document.body, {
+                        subtree: true,
+                        childList: true,
+                        attributes: true
+                    });
+                }
 
                 window.addEventListener('message', (event) => {
                     if (event.data.type === 'triggerResize') {
@@ -197,6 +282,36 @@ const ArticleBody: React.FC<{heading: string, image: string|undefined, excerpt: 
             iframeDocument.dispatchEvent(resizeEvent);
         }
     }, [fontSize, lineHeight, fontFamily]);
+
+    useEffect(() => {
+        const iframe = iframeRef.current;
+        if (!iframe) {
+            return;
+        }
+
+        const handleLoad = () => {
+            if (!iframe.contentDocument) {
+                return;
+            }
+
+            const headings = Array.from(iframe.contentDocument.querySelectorAll('h1:not(.gh-article-title), h2, h3, h4, h5, h6')).map((el, idx) => {
+                const id = `heading-${idx}`;
+                el.id = id;
+                return {
+                    id,
+                    text: el.textContent || '',
+                    level: parseInt(el.tagName[1]),
+                    element: el as HTMLElement
+                };
+            });
+
+            onHeadingsExtracted?.(headings);
+            onIframeLoad?.(iframe);
+        };
+
+        iframe.addEventListener('load', handleLoad);
+        return () => iframe.removeEventListener('load', handleLoad);
+    }, [onHeadingsExtracted, onIframeLoad]);
 
     return (
         <div className='w-full pb-6'>
@@ -480,6 +595,100 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
         return () => container?.removeEventListener('scroll', handleScroll);
     }, []);
 
+    const [tocItems, setTocItems] = useState<TOCItem[]>([]);
+    const [activeHeadingId, setActiveHeadingId] = useState<string | null>(null);
+    const [iframeElement, setIframeElement] = useState<HTMLIFrameElement | null>(null);
+
+    const handleHeadingsExtracted = useCallback((headings: TOCItem[]) => {
+        setTocItems(headings);
+    }, []);
+
+    const handleIframeLoad = useCallback((iframe: HTMLIFrameElement) => {
+        setIframeElement(iframe);
+    }, []);
+
+    const scrollToHeading = useCallback((id: string) => {
+        if (!iframeElement?.contentDocument) {
+            return;
+        }
+
+        const heading = iframeElement.contentDocument.getElementById(id);
+        if (heading) {
+            const container = document.querySelector('.overflow-y-auto');
+            if (!container) {
+                return;
+            }
+
+            // Use offsetTop for absolute position within the document
+            const headingOffset = heading.offsetTop;
+
+            container.scrollTo({
+                top: headingOffset - 120,
+                behavior: 'smooth'
+            });
+        }
+    }, [iframeElement]);
+
+    useEffect(() => {
+        if (!iframeElement?.contentDocument || !tocItems.length) {
+            return;
+        }
+
+        const setupObserver = () => {
+            const container = document.querySelector('.overflow-y-auto');
+            if (!container) {
+                return;
+            }
+
+            const handleScroll = () => {
+                const doc = iframeElement.contentDocument;
+                if (!doc || !doc.documentElement) {
+                    return;
+                }
+
+                // Get all heading elements and their positions
+                const headings = tocItems
+                    .map(item => doc.getElementById(item.id))
+                    .filter((el): el is HTMLElement => el !== null)
+                    .map(el => ({
+                        element: el,
+                        id: el.id,
+                        position: el.getBoundingClientRect().top - container.getBoundingClientRect().top
+                    }));
+
+                if (!headings.length) {
+                    return;
+                }
+
+                // Find the last visible heading
+                const viewportCenter = container.clientHeight / 2;
+                const buffer = 100;
+
+                // Find the last heading that's above the viewport center
+                const lastVisibleHeading = headings.reduce((last, current) => {
+                    if (current.position < (viewportCenter + buffer)) {
+                        return current;
+                    }
+                    return last;
+                }, headings[0]);
+
+                if (lastVisibleHeading && lastVisibleHeading.element.id !== activeHeadingId) {
+                    setActiveHeadingId(lastVisibleHeading.element.id);
+                }
+            };
+
+            container.addEventListener('scroll', handleScroll);
+            handleScroll();
+
+            return () => {
+                container.removeEventListener('scroll', handleScroll);
+            };
+        };
+
+        const timeoutId = setTimeout(setupObserver, 100);
+        return () => clearTimeout(timeoutId);
+    }, [iframeElement, tocItems, activeHeadingId]);
+
     return (
         <Modal
             align='right'
@@ -617,96 +826,27 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                         </div>
                     </div>
                 </div>
-                <div className='grow overflow-y-auto'>
-                    <div className={`mx-auto px-8 pb-10 pt-5`} style={{maxWidth: currentMaxWidth}}>
-                        {activityThreadParents.map((item) => {
-                            return (
-                                <>
-                                    <FeedItem
-                                        actor={item.actor}
-                                        commentCount={item.object.replyCount ?? 0}
-                                        last={false}
-                                        layout='reply'
-                                        object={item.object}
-                                        type='Note'
-                                        onClick={() => {
-                                            navigateForward(item.id, item.object, item.actor, false);
-                                        }}
-                                        onCommentClick={() => {
-                                            navigateForward(item.id, item.object, item.actor, true);
-                                        }}
-                                    />
-                                </>
-                            );
-                        })}
-
-                        {object.type === 'Note' && (
-                            <FeedItem
-                                actor={actor}
-                                commentCount={object.replyCount ?? 0}
-                                last={true}
-                                layout={'modal'}
-                                object={object}
-                                showHeader={(canNavigateBack || (activityThreadParents.length > 0)) ? true : false}
-                                type='Note'
-                                onCommentClick={() => {
-                                    repliesRef.current?.scrollIntoView({
-                                        behavior: 'smooth',
-                                        block: 'center'
-                                    });
-                                }}
-                            />
-                        )}
-                        {object.type === 'Article' && (
-                            <div className='border-b border-grey-200 pb-8' id='object-content'>
-                                <ArticleBody
-                                    excerpt={object?.preview?.content ?? ''}
-                                    fontFamily={fontFamily}
-                                    fontSize={FONT_SIZES[currentFontSizeIndex]}
-                                    heading={object.name}
-                                    html={object.content ?? ''}
-                                    image={typeof object.image === 'string' ? object.image : object.image?.url}
-                                    lineHeight={LINE_HEIGHTS[currentLineHeightIndex]}
+                <div className='relative flex-1'>
+                    {modalSize === MODAL_SIZE_LG && object.type === 'Article' && tocItems.length > 0 && (
+                        <div className="!visible absolute inset-y-0 right-7 z-40 hidden lg:!block">
+                            <div className="sticky top-1/2 -translate-y-1/2">
+                                <TableOfContents
+                                    activeId={activeHeadingId}
+                                    items={tocItems}
+                                    onItemClick={scrollToHeading}
                                 />
-                                <div className='ml-[-7px]'>
-                                    <FeedItemStats
-                                        commentCount={object.replyCount ?? 0}
-                                        layout={'modal'}
-                                        likeCount={1}
-                                        object={object}
-                                        onCommentClick={() => {
-                                            repliesRef.current?.scrollIntoView({
-                                                behavior: 'smooth',
-                                                block: 'center'
-                                            });
-                                        }}
-                                        onLikeClick={onLikeClick}
-                                    />
-                                </div>
                             </div>
-                        )}
-
-                        <div ref={replyBoxRef}>
-                            <APReplyBox
-                                focused={isFocused}
-                                object={object}
-                                onNewReply={handleNewReply}
-                            />
                         </div>
-                        <FeedItemDivider />
-
-                        {isLoadingThread && <LoadingIndicator size='lg' />}
-
-                        <div ref={repliesRef}>
-                            {activityThreadChildren.map((item, index) => {
-                                const showDivider = index !== activityThreadChildren.length - 1;
-
+                    )}
+                    <div className='grow overflow-y-auto'>
+                        <div className={`mx-auto px-8 pb-10 pt-5`} style={{maxWidth: currentMaxWidth}}>
+                            {activityThreadParents.map((item) => {
                                 return (
                                     <>
                                         <FeedItem
                                             actor={item.actor}
                                             commentCount={item.object.replyCount ?? 0}
-                                            last={true}
+                                            last={false}
                                             layout='reply'
                                             object={item.object}
                                             type='Note'
@@ -717,16 +857,100 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                                 navigateForward(item.id, item.object, item.actor, true);
                                             }}
                                         />
-                                        {showDivider && <FeedItemDivider />}
                                     </>
                                 );
                             })}
+
+                            {object.type === 'Note' && (
+                                <FeedItem
+                                    actor={actor}
+                                    commentCount={object.replyCount ?? 0}
+                                    last={true}
+                                    layout={'modal'}
+                                    object={object}
+                                    showHeader={(canNavigateBack || (activityThreadParents.length > 0))}
+                                    type='Note'
+                                    onCommentClick={() => {
+                                        repliesRef.current?.scrollIntoView({
+                                            behavior: 'smooth',
+                                            block: 'center'
+                                        });
+                                    }}
+                                />
+                            )}
+                            {object.type === 'Article' && (
+                                <div className='border-b border-grey-200 pb-8' id='object-content'>
+                                    <ArticleBody
+                                        excerpt={object?.preview?.content ?? ''}
+                                        fontFamily={fontFamily}
+                                        fontSize={FONT_SIZES[currentFontSizeIndex]}
+                                        heading={object.name}
+                                        html={object.content ?? ''}
+                                        image={typeof object.image === 'string' ? object.image : object.image?.url}
+                                        lineHeight={LINE_HEIGHTS[currentLineHeightIndex]}
+                                        onHeadingsExtracted={handleHeadingsExtracted}
+                                        onIframeLoad={handleIframeLoad}
+                                    />
+                                    <div className='ml-[-7px]'>
+                                        <FeedItemStats
+                                            commentCount={object.replyCount ?? 0}
+                                            layout={'modal'}
+                                            likeCount={1}
+                                            object={object}
+                                            onCommentClick={() => {
+                                                repliesRef.current?.scrollIntoView({
+                                                    behavior: 'smooth',
+                                                    block: 'center'
+                                                });
+                                            }}
+                                            onLikeClick={onLikeClick}
+                                        />
+                                    </div>
+                                </div>
+                            )}
+
+                            <div ref={replyBoxRef}>
+                                <APReplyBox
+                                    focused={isFocused}
+                                    object={object}
+                                    onNewReply={handleNewReply}
+                                />
+                            </div>
+                            <FeedItemDivider />
+
+                            {isLoadingThread && <LoadingIndicator size='lg' />}
+
+                            <div ref={repliesRef}>
+                                {activityThreadChildren.map((item, index) => {
+                                    const showDivider = index !== activityThreadChildren.length - 1;
+
+                                    return (
+                                        <React.Fragment key={item.id}>
+                                            <FeedItem
+                                                actor={item.actor}
+                                                commentCount={item.object.replyCount ?? 0}
+                                                last={true}
+                                                layout='reply'
+                                                object={item.object}
+                                                type='Note'
+                                                onClick={() => {
+                                                    navigateForward(item.id, item.object, item.actor, false);
+                                                }}
+                                                onCommentClick={() => {
+                                                    navigateForward(item.id, item.object, item.actor, true);
+                                                }}
+                                            />
+                                            {showDivider && <FeedItemDivider />}
+                                        </React.Fragment>
+                                    );
+                                })}
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
             {modalSize === MODAL_SIZE_LG && object.type === 'Article' && (
-                <div className='pointer-events-none sticky bottom-0 flex items-end justify-between px-10 pb-[42px]'>
+                <div className='pointer-events-none !visible sticky bottom-0 hidden items-end justify-between px-10 pb-[42px] lg:!flex'>
                     <div className='pointer-events-auto text-grey-600'>
                         {getReadingTime(object.content ?? '')}
                     </div>

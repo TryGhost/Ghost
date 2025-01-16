@@ -4,19 +4,15 @@ import NiceModal from '@ebay/nice-modal-react';
 import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, Heading, List, LoadingIndicator, NoValueLabel, Tab, TabView} from '@tryghost/admin-x-design-system';
 
-import getName from '../utils/get-name';
-import getUsername from '../utils/get-username';
 import {
+    type AccountFollowsQueryResult,
     type ActivityPubCollectionQueryResult,
-    useFollowersCountForUser,
-    useFollowersForUser,
-    useFollowingCountForUser,
-    useFollowingForUser,
-    useLikedCountForUser,
+    useAccountFollowsForUser,
+    useAccountForUser,
     useLikedForUser,
-    useOutboxForUser,
-    useUserDataForUser
+    useOutboxForUser
 } from '../hooks/useActivityPubQueries';
+import {MinimalAccount} from '../api/activitypub';
 import {handleViewContent} from '../utils/content-handlers';
 
 import APAvatar from './global/APAvatar';
@@ -28,13 +24,13 @@ import ViewProfileModal from './modals/ViewProfileModal';
 import {type Activity} from '../components/activities/ActivityItem';
 
 interface UseInfiniteScrollTabProps<TData> {
-    useDataHook: (key: string) => ActivityPubCollectionQueryResult<TData>;
+    useDataHook: (key: string) => ActivityPubCollectionQueryResult<TData> | AccountFollowsQueryResult;
     emptyStateLabel: string;
     emptyStateIcon: string;
 }
 
 /**
- * Hook to abstract away the common logic for infinite scroll in tabs
+ * Hook to abstract away the common logic for infinite scroll in the tabs
  */
 const useInfiniteScrollTab = <TData,>({useDataHook, emptyStateLabel, emptyStateIcon}: UseInfiniteScrollTabProps<TData>) => {
     const {
@@ -45,7 +41,15 @@ const useInfiniteScrollTab = <TData,>({useDataHook, emptyStateLabel, emptyStateI
         isLoading
     } = useDataHook('index');
 
-    const items = (data?.pages.flatMap(page => page.data) ?? []);
+    const items = (data?.pages.flatMap((page) => {
+        if ('data' in page) {
+            return page.data;
+        } else if ('accounts' in page) {
+            return page.accounts as TData[];
+        }
+
+        return [];
+    }) ?? []);
 
     const observerRef = useRef<IntersectionObserver | null>(null);
     const loadMoreRef = useRef<HTMLDivElement | null>(null);
@@ -172,15 +176,13 @@ const LikesTab: React.FC = () => {
     );
 };
 
-const handleUserClick = (actor: ActorProperties) => {
-    NiceModal.show(ViewProfileModal, {
-        profile: getUsername(actor)
-    });
+const handleAccountClick = (handle: string) => {
+    NiceModal.show(ViewProfileModal, {handle});
 };
 
 const FollowingTab: React.FC = () => {
-    const {items: following, EmptyState, LoadingState} = useInfiniteScrollTab<ActorProperties>({
-        useDataHook: useFollowingForUser,
+    const {items: accounts, EmptyState, LoadingState} = useInfiniteScrollTab<MinimalAccount>({
+        useDataHook: handle => useAccountFollowsForUser(handle, 'following'),
         emptyStateLabel: 'You aren\'t following anyone yet.',
         emptyStateIcon: 'user-add'
     });
@@ -190,21 +192,27 @@ const FollowingTab: React.FC = () => {
             <EmptyState />
             {
                 <List>
-                    {following.map((item, index) => (
-                        <React.Fragment key={item.id}>
+                    {accounts.map((account, index) => (
+                        <React.Fragment key={account.id}>
                             <ActivityItem
-                                key={item.id}
-                                onClick={() => handleUserClick(item)}
+                                key={account.id}
+                                onClick={() => handleAccountClick(account.handle)}
                             >
-                                <APAvatar author={item} />
+                                <APAvatar author={{
+                                    icon: {
+                                        url: account.avatarUrl
+                                    },
+                                    name: account.name,
+                                    handle: account.handle
+                                }} />
                                 <div>
                                     <div className='text-grey-600'>
-                                        <span className='mr-1 font-bold text-black'>{getName(item)}</span>
-                                        <div className='text-sm'>{getUsername(item)}</div>
+                                        <span className='mr-1 font-bold text-black'>{account.name}</span>
+                                        <div className='text-sm'>{account.handle}</div>
                                     </div>
                                 </div>
                             </ActivityItem>
-                            {index < following.length - 1 && <Separator />}
+                            {index < accounts.length - 1 && <Separator />}
                         </React.Fragment>
                     ))}
                 </List>
@@ -215,8 +223,8 @@ const FollowingTab: React.FC = () => {
 };
 
 const FollowersTab: React.FC = () => {
-    const {items: followers, EmptyState, LoadingState} = useInfiniteScrollTab<ActorProperties>({
-        useDataHook: useFollowersForUser,
+    const {items: accounts, EmptyState, LoadingState} = useInfiniteScrollTab<MinimalAccount>({
+        useDataHook: handle => useAccountFollowsForUser(handle, 'followers'),
         emptyStateLabel: 'Nobody\'s following you yet. Their loss!',
         emptyStateIcon: 'user-add'
     });
@@ -226,21 +234,27 @@ const FollowersTab: React.FC = () => {
             <EmptyState />
             {
                 <List>
-                    {followers.map((item, index) => (
-                        <React.Fragment key={item.id}>
+                    {accounts.map((account, index) => (
+                        <React.Fragment key={account.id}>
                             <ActivityItem
-                                key={item.id}
-                                onClick={() => handleUserClick(item)}
+                                key={account.id}
+                                onClick={() => handleAccountClick(account.handle)}
                             >
-                                <APAvatar author={item} />
+                                <APAvatar author={{
+                                    icon: {
+                                        url: account.avatarUrl
+                                    },
+                                    name: account.name,
+                                    handle: account.handle
+                                }} />
                                 <div>
                                     <div className='text-grey-600'>
-                                        <span className='mr-1 font-bold text-black'>{item.name || getName(item) || 'Unknown'}</span>
-                                        <div className='text-sm'>{getUsername(item)}</div>
+                                        <span className='mr-1 font-bold text-black'>{account.name}</span>
+                                        <div className='text-sm'>{account.handle}</div>
                                     </div>
                                 </div>
                             </ActivityItem>
-                            {index < followers.length - 1 && <Separator />}
+                            {index < accounts.length - 1 && <Separator />}
                         </React.Fragment>
                     ))}
                 </List>
@@ -255,12 +269,7 @@ type ProfileTab = 'posts' | 'likes' | 'following' | 'followers';
 interface ProfileProps {}
 
 const Profile: React.FC<ProfileProps> = ({}) => {
-    const {data: followersCount = 0, isLoading: isLoadingFollowersCount} = useFollowersCountForUser('index');
-    const {data: followingCount = 0, isLoading: isLoadingFollowingCount} = useFollowingCountForUser('index');
-    const {data: likedCount = 0, isLoading: isLoadingLikedCount} = useLikedCountForUser('index');
-    const {data: userProfile, isLoading: isLoadingProfile} = useUserDataForUser('index') as {data: ActorProperties | null, isLoading: boolean};
-
-    const isInitialLoading = isLoadingProfile || isLoadingFollowersCount || isLoadingFollowingCount || isLoadingLikedCount;
+    const {data: account, isLoading: isLoadingAccount} = useAccountForUser('index');
 
     const [selectedTab, setSelectedTab] = useState<ProfileTab>('posts');
 
@@ -282,7 +291,7 @@ const Profile: React.FC<ProfileProps> = ({}) => {
                     <LikesTab />
                 </div>
             ),
-            counter: likedCount
+            counter: account?.likedCount || 0
         },
         {
             id: 'following',
@@ -292,7 +301,7 @@ const Profile: React.FC<ProfileProps> = ({}) => {
                     <FollowingTab />
                 </div>
             ),
-            counter: followingCount
+            counter: account?.followingCount || 0
         },
         {
             id: 'followers',
@@ -302,11 +311,16 @@ const Profile: React.FC<ProfileProps> = ({}) => {
                     <FollowersTab />
                 </div>
             ),
-            counter: followersCount
+            counter: account?.followerCount || 0
         }
     ].filter(Boolean) as Tab<ProfileTab>[];
 
-    const attachments = (userProfile?.attachment || []);
+    const customFields = Object.keys(account?.customFields || {}).map((key) => {
+        return {
+            name: key,
+            value: account!.customFields[key]
+        };
+    }) || [];
 
     const [isExpanded, setisExpanded] = useState(false);
 
@@ -326,45 +340,51 @@ const Profile: React.FC<ProfileProps> = ({}) => {
     return (
         <>
             <MainNavigation page='profile' />
-            {isInitialLoading ? (
+            {isLoadingAccount ? (
                 <div className='flex h-[calc(100vh-8rem)] items-center justify-center'>
                     <LoadingIndicator />
                 </div>
             ) : (
                 <div className='z-0 mx-auto mt-8 flex w-full max-w-[580px] flex-col items-center pb-16'>
                     <div className='mx-auto w-full'>
-                        {userProfile?.image && (
+                        {account?.bannerImageUrl && (
                             <div className='h-[200px] w-full overflow-hidden rounded-lg bg-gradient-to-tr from-grey-200 to-grey-100'>
                                 <img
-                                    alt={userProfile?.name}
+                                    alt={account?.name}
                                     className='h-full w-full object-cover'
-                                    src={userProfile?.image.url}
+                                    src={account?.bannerImageUrl}
                                 />
                             </div>
                         )}
-                        <div className={`${userProfile?.image && '-mt-12'} px-4`}>
+                        <div className={`${account?.bannerImageUrl && '-mt-12'} px-4`}>
                             <div className='flex items-end justify-between'>
                                 <div className='rounded-xl outline outline-4 outline-white'>
                                     <APAvatar
-                                        author={userProfile as ActorProperties}
+                                        author={account && {
+                                            icon: {
+                                                url: account?.avatarUrl
+                                            },
+                                            name: account?.name,
+                                            handle: account?.handle
+                                        }}
                                         size='lg'
                                     />
                                 </div>
                             </div>
-                            <Heading className='mt-4' level={3}>{userProfile?.name}</Heading>
+                            <Heading className='mt-4' level={3}>{account?.name}</Heading>
                             <span className='mt-1 text-[1.5rem] text-grey-800'>
-                                <span>{userProfile && getUsername(userProfile)}</span>
+                                <span>{account?.handle}</span>
                             </span>
-                            {(userProfile?.summary || attachments.length > 0) && (
+                            {(account?.bio || customFields.length > 0) && (
                                 <div ref={contentRef} className={`ap-profile-content transition-max-height relative text-[1.5rem] duration-300 ease-in-out [&>p]:mb-3 ${isExpanded ? 'max-h-none pb-7' : 'max-h-[160px] overflow-hidden'} relative`}>
                                     <div
-                                        dangerouslySetInnerHTML={{__html: userProfile?.summary ?? ''}}
+                                        dangerouslySetInnerHTML={{__html: account?.bio ?? ''}}
                                         className='ap-profile-content mt-3 text-[1.5rem] [&>p]:mb-3'
                                     />
-                                    {attachments.map(attachment => (
-                                        <span className='mt-3 line-clamp-1 flex flex-col text-[1.5rem]'>
-                                            <span className={`text-xs font-semibold`}>{attachment.name}</span>
-                                            <span dangerouslySetInnerHTML={{__html: attachment.value}} className='ap-profile-content truncate'/>
+                                    {customFields.map(customField => (
+                                        <span key={customField.name} className='mt-3 line-clamp-1 flex flex-col text-[1.5rem]'>
+                                            <span className={`text-xs font-semibold`}>{customField.name}</span>
+                                            <span dangerouslySetInnerHTML={{__html: customField.value}} className='ap-profile-content truncate'/>
                                         </span>
                                     ))}
                                     {!isExpanded && isOverflowing && (
