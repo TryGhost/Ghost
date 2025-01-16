@@ -274,7 +274,7 @@ const ViewProfileModal: React.FC<ViewProfileModalProps> = ({
         if (contentRef.current) {
             setIsOverflowing(contentRef.current.scrollHeight > 160); // Compare content height to max height
         }
-    }, [isExpanded]);
+    }, [isExpanded, profile]);
 
     return (
         <Modal
@@ -345,7 +345,7 @@ const ViewProfileModal: React.FC<ViewProfileModalProps> = ({
                                         <div className='absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-white via-white/90 via-60% to-transparent' />
                                     )}
                                     {isOverflowing && <Button
-                                        className='absolute bottom-0 text-pink'
+                                        className='absolute bottom-0 text-green'
                                         label={isExpanded ? 'Show less' : 'Show all'}
                                         link={true}
                                         onClick={toggleExpand}
