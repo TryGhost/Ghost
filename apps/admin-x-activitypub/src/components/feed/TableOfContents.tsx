@@ -13,31 +13,33 @@ interface TableOfContentsProps {
     onItemClick: (id: string) => void;
 }
 
+const LINE_WIDTHS = {
+    1: 'w-3',
+    2: 'w-2',
+    3: 'w-1'
+} as const;
+
+const HEADING_PADDINGS = {
+    1: 'pl-2',
+    2: 'pl-6',
+    3: 'pl-10'
+} as const;
+
 const TableOfContents: React.FC<TableOfContentsProps> = ({items, onItemClick}) => {
     if (items.length === 0) {
         return null;
     }
 
+    const getNormalizedLevel = (level: number) => {
+        return Math.min(level, 3);
+    };
+
     const getLineWidth = (level: number) => {
-        switch (level) {
-        case 1:
-            return 'w-3';
-        case 2:
-            return 'w-2';
-        default:
-            return 'w-1';
-        }
+        return LINE_WIDTHS[getNormalizedLevel(level) as keyof typeof LINE_WIDTHS];
     };
 
     const getHeadingPadding = (level: number) => {
-        switch (level) {
-        case 1:
-            return 'pl-2';
-        case 2:
-            return 'pl-6';
-        default:
-            return 'pl-10';
-        }
+        return HEADING_PADDINGS[getNormalizedLevel(level) as keyof typeof HEADING_PADDINGS];
     };
 
     return (
