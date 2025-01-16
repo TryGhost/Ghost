@@ -49,6 +49,11 @@
         --destructive-foreground: 210 40% 98%;
         --ring: 215 20.2% 65.1%;
         --radius: 9px;
+        --chart-1: 221.2 83.2% 53.3%;
+        --chart-2: 212 95% 68%;
+        --chart-3: 216 92% 60%;
+        --chart-4: 210 98% 78%;
+        --chart-5: 212 97% 87%;
     }
 
     .dark {
@@ -71,6 +76,11 @@
         --destructive: 0 63% 31%;
         --destructive-foreground: 210 40% 98%;
         --ring: 216 34% 17%;
+        --chart-1: 221.2 83.2% 53.3%;
+        --chart-2: 212 95% 68%;
+        --chart-3: 216 92% 60%;
+        --chart-4: 210 98% 78%;
+        --chart-5: 212 97% 87%;
     }
 
     /* This just serves as a placeholder; we actually load Inter from a font file in Ember admin */

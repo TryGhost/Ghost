@@ -1,13 +1,16 @@
 // UI components
-export * from './components/ui/button';
-export {IconComponents as Icon} from './components/ui/icon';
 export * from './components/ui/breadcrumb';
-export * from './components/ui/dropdown-menu';
+export * from './components/ui/button';
 export * from './components/ui/card';
+export * from './components/ui/chart';
+export * from './components/ui/dropdown-menu';
 export * from './components/ui/tabs';
 
+// Layout components
 export * from './components/layout/page';
 export * from './components/layout/heading';
+
+export {IconComponents as Icon} from './components/ui/icon';
 
 // Assets
 export {ReactComponent as FacebookLogo} from './assets/images/facebook-logo.svg';
@@ -21,6 +24,7 @@ export {default as useGlobalDirtyState} from './hooks/useGlobalDirtyState';
 
 // Utils
 export * from '@/lib/utils';
+export {cn} from '@/lib/utils';
 export {debounce} from './utils/debounce';
 export {formatUrl} from './utils/formatUrl';
 
