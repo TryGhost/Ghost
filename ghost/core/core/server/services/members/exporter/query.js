@@ -146,7 +146,7 @@ module.exports = async function (options) {
 
     logging.info('[MembersExporter] In memory processing finished in ' + (Date.now() - startInMemoryProcessing) + 'ms');
 
-    logging.info('[MembersExporter] Total time taken: ' + (Date.now() - start)/1000 + 's');
+    logging.info('[MembersExporter] Total time taken: ' + (Date.now() - start) / 1000 + 's');
 
     return members;
 };
