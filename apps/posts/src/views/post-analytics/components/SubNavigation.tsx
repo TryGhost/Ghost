@@ -1,15 +1,18 @@
 import * as React from 'react';
-import {Button} from '@tryghost/shade';
+import {Button, ButtonProps} from '@tryghost/shade';
+import {cn} from '@tryghost/shade';
 
-interface subNavItemProps {
-    children: React.ReactElement;
+interface subNavItemProps extends ButtonProps {
+    isActive: boolean;
 }
 
-const SubNavItem: React.FC<subNavItemProps> = ({children}) => {
+const SubNavItem: React.FC<subNavItemProps> = ({isActive, ...props}) => {
+    const subNavItemClasses = cn(
+        'flex justify-between',
+        isActive && 'bg-gray-100'
+    );
     return (
-        <Button className='flex justify-between' variant='ghost'>
-            {children}
-        </Button>
+        <Button className={subNavItemClasses} variant='ghost' {...props} />
     );
 };
 
