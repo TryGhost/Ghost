@@ -77,8 +77,8 @@ const SentList: React.FC<sentListProps> = () => {
                                 <span className='whitespace-nowrap'>{member.name}</span>
                             </div>
                         </TableCell>
-                        <TableCell className='text-gray-700'>{member.tier}</TableCell>
-                        <TableCell className='text-gray-700'>{member.receiveDate}</TableCell>
+                        <TableCell className='text-gray-800'>{member.tier}</TableCell>
+                        <TableCell className='text-gray-800'>{member.receiveDate}</TableCell>
                     </TableRow>
                 ))}
             </TableBody>

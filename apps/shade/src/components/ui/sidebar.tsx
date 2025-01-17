@@ -23,7 +23,7 @@ const SIDEBAR_WIDTH = '16rem';
 const SIDEBAR_WIDTH_MOBILE = '18rem';
 const SIDEBAR_WIDTH_ICON = '3rem';
 const SIDEBAR_KEYBOARD_SHORTCUT = 'b';
-const SIDEBAR_MENU_HEIGHT = '34px';
+const SIDEBAR_MENU_HEIGHT = '9';
 
 type SidebarContext = {
     state: 'expanded' | 'collapsed'
@@ -341,7 +341,7 @@ const SidebarInput = React.forwardRef<
             ref={ref}
             className={cn(
                 'w-full bg-background shadow-none focus-visible:ring-2 focus-visible:ring-sidebar-ring',
-                `h-[${SIDEBAR_MENU_HEIGHT}]`,
+                `h-${SIDEBAR_MENU_HEIGHT}`,
                 className
             )}
             data-sidebar="input"
@@ -404,7 +404,7 @@ const SidebarContent = React.forwardRef<
         <div
             ref={ref}
             className={cn(
-                'flex min-h-0 flex-1 flex-col gap-2 overflow-auto group-data-[collapsible=icon]:overflow-hidden',
+                'flex min-h-0 flex-1 flex-col gap-5 overflow-auto group-data-[collapsible=icon]:overflow-hidden',
                 className
             )}
             data-sidebar="content"
@@ -441,7 +441,7 @@ const SidebarGroupLabel = React.forwardRef<
             className={cn(
                 'duration-200 flex shrink-0 items-center rounded-md px-3 text-xs font-medium text-sidebar-foreground/70 outline-none ring-sidebar-ring transition-[margin,opa] ease-linear focus-visible:ring-2 [&>svg]:size-4 [&>svg]:shrink-0',
                 'group-data-[collapsible=icon]:-mt-8 group-data-[collapsible=icon]:opacity-0',
-                `h-[${SIDEBAR_MENU_HEIGHT}]`,
+                `h-${SIDEBAR_MENU_HEIGHT}`,
                 className
             )}
             data-sidebar="group-label"
@@ -493,7 +493,7 @@ const SidebarMenu = React.forwardRef<
 >(({className, ...props}, ref) => (
     <ul
         ref={ref}
-        className={cn('flex w-full min-w-0 flex-col gap-1', className)}
+        className={cn('flex w-full min-w-0 flex-col gap-px', className)}
         data-sidebar="menu"
         {...props}
     />
@@ -514,7 +514,7 @@ const SidebarMenuItem = React.forwardRef<
 SidebarMenuItem.displayName = 'SidebarMenuItem';
 
 const sidebarMenuButtonVariants = cva(
-    'peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left text-sm outline-none ring-sidebar-ring transition-[width,height,padding] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 group-has-[[data-sidebar=menu-action]]/menu-item:pr-8 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-sidebar-accent data-[active=true]:font-medium data-[active=true]:text-sidebar-accent-foreground data-[state=open]:hover:bg-sidebar-accent data-[state=open]:hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:!size-8 group-data-[collapsible=icon]:!p-2 [&>span:last-child]:truncate [&>svg]:size-4 [&>svg]:shrink-0',
+    'peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md px-3 py-2 text-left text-md font-medium text-gray-800 outline-none ring-sidebar-ring transition-[width,height,padding] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 group-has-[[data-sidebar=menu-action]]/menu-item:pr-8 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-sidebar-accent data-[active=true]:font-semibold data-[active=true]:text-sidebar-accent-foreground data-[state=open]:hover:bg-sidebar-accent data-[state=open]:hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:!size-8 group-data-[collapsible=icon]:!p-2 [&>span:last-child]:truncate [&>svg]:size-4 [&>svg]:shrink-0',
     {
         variants: {
             variant: {
@@ -523,7 +523,7 @@ const sidebarMenuButtonVariants = cva(
         'bg-background shadow-[0_0_0_1px_hsl(var(--sidebar-border))] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground hover:shadow-[0_0_0_1px_hsl(var(--sidebar-accent))]'
             },
             size: {
-                default: `h-[${SIDEBAR_MENU_HEIGHT}] text-md`,
+                default: `h-${SIDEBAR_MENU_HEIGHT} text-md`,
                 sm: 'h-7 text-xs',
                 lg: 'h-12 text-sm group-data-[collapsible=icon]:!p-0'
             }
@@ -632,11 +632,11 @@ const SidebarMenuBadge = React.forwardRef<
     <div
         ref={ref}
         className={cn(
-            'absolute right-1 flex h-5 min-w-5 items-center justify-center rounded-md px-1 text-xs font-medium tabular-nums text-sidebar-foreground select-none pointer-events-none',
-            'peer-hover/menu-button:text-sidebar-accent-foreground peer-data-[active=true]/menu-button:text-sidebar-accent-foreground',
-            'peer-data-[size=sm]/menu-button:top-1',
-            'peer-data-[size=default]/menu-button:top-1.5',
-            'peer-data-[size=lg]/menu-button:top-2.5',
+            'absolute right-2 flex h-5 min-w-5 items-center justify-center rounded-md px-1 text-sm font-medium tabular-nums text-gray-600 select-none pointer-events-none',
+            'peer-hover/menu-button: peer-data-[active=true]/menu-button:text-sidebar-accent-foreground',
+            'peer-data-[size=sm]/menu-button:top-1.5',
+            'peer-data-[size=default]/menu-button:top-2',
+            'peer-data-[size=lg]/menu-button:top-3',
             'group-data-[collapsible=icon]:hidden',
             className
         )}
@@ -660,7 +660,7 @@ const SidebarMenuSkeleton = React.forwardRef<
     return (
         <div
             ref={ref}
-            className={cn('rounded-md flex gap-2 px-3 items-center', `h-[${SIDEBAR_MENU_HEIGHT}]`, className)}
+            className={cn('rounded-md flex gap-2 px-3 items-center', `h-${SIDEBAR_MENU_HEIGHT}`, className)}
             data-sidebar="menu-skeleton"
             {...props}
         >
@@ -691,7 +691,7 @@ React.ComponentProps<'ul'>
     <ul
         ref={ref}
         className={cn(
-            'mx-3.5 flex min-w-0 translate-x-px flex-col gap-1 border-l border-sidebar-border px-2.5 py-0.5',
+            'mx-3.5 flex min-w-0 translate-x-px flex-col gap-px border-l border-sidebar-border px-3 py-0.5',
             'group-data-[collapsible=icon]:hidden',
             className
         )}

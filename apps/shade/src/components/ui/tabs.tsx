@@ -76,7 +76,7 @@ const tabsTriggerVariants = cva(
             variant: {
                 segmented: 'h-7 rounded-md text-sm font-medium data-[state=active]:shadow-md',
                 button: 'h-[34px] rounded-md text-sm font-medium data-[state=active]:bg-muted/70',
-                underline: 'font-md relative h-[34px] px-0 text-md text-gray-600 data-[state=active]:font-semibold data-[state=active]:text-black data-[state=active]:after:absolute data-[state=active]:after:inset-x-0 data-[state=active]:after:bottom-[-5px] data-[state=active]:after:h-px data-[state=active]:after:bg-black data-[state=active]:after:content-[""]'
+                underline: 'relative h-[34px] px-0 text-md font-medium text-gray-700 data-[state=active]:font-semibold data-[state=active]:text-black data-[state=active]:after:absolute data-[state=active]:after:inset-x-0 data-[state=active]:after:bottom-[-5px] data-[state=active]:after:h-px data-[state=active]:after:bg-black data-[state=active]:after:content-[""]'
             }
         },
         defaultVariants: {
