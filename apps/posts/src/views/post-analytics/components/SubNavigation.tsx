@@ -1,12 +1,14 @@
 import * as React from 'react';
 import {Button} from '@tryghost/shade';
 
-interface subNavItemProps {}
+interface subNavItemProps {
+    children: React.ReactElement;
+}
 
-const SubNavItem: React.FC<subNavItemProps> = () => {
+const SubNavItem: React.FC<subNavItemProps> = ({children}) => {
     return (
         <Button className='flex justify-between' variant='ghost'>
-            This is a button
+            {children}
         </Button>
     );
 };

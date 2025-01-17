@@ -4,7 +4,7 @@ import * as TabsPrimitive from '@radix-ui/react-tabs';
 import {cn} from '@/lib/utils';
 import {cva} from 'class-variance-authority';
 
-type TabsVariant = 'segmented' | 'button' | 'link';
+type TabsVariant = 'segmented' | 'button' | 'underline';
 
 const TabsVariantContext = React.createContext<TabsVariant>('segmented');
 
@@ -19,7 +19,7 @@ const tabsVariants = cva(
             variant: {
                 segmented: '',
                 button: '',
-                link: ''
+                underline: ''
             }
         },
         defaultVariants: {
@@ -45,7 +45,7 @@ const tabsListVariants = cva(
             variant: {
                 segmented: 'h-[34px] rounded-lg bg-muted px-[3px]',
                 button: 'gap-2 border-b',
-                link: 'gap-7 border-b'
+                underline: 'gap-7 border-b pb-1'
             }
         },
         defaultVariants: {
@@ -76,7 +76,7 @@ const tabsTriggerVariants = cva(
             variant: {
                 segmented: 'h-7 rounded-md text-sm font-medium data-[state=active]:shadow-md',
                 button: 'h-[34px] rounded-md text-sm font-medium data-[state=active]:bg-muted/70',
-                link: 'font-md relative h-[34px] px-0 text-md text-gray-600 data-[state=active]:font-semibold data-[state=active]:text-black'
+                underline: 'font-md relative h-[34px] px-0 text-md text-gray-600 data-[state=active]:font-semibold data-[state=active]:text-black data-[state=active]:after:absolute data-[state=active]:after:inset-x-0 data-[state=active]:after:bottom-[-5px] data-[state=active]:after:h-px data-[state=active]:after:bg-black data-[state=active]:after:content-[""]'
             }
         },
         defaultVariants: {
@@ -101,13 +101,13 @@ const TabsTrigger = React.forwardRef<
 TabsTrigger.displayName = TabsPrimitive.Trigger.displayName;
 
 const tabsContentVariants = cva(
-    'mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+    'ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
     {
         variants: {
             variant: {
                 segmented: '',
                 button: '',
-                link: ''
+                underline: ''
             }
         },
         defaultVariants: {
