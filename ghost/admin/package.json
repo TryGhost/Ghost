@@ -1,6 +1,6 @@
 {
   "name": "ghost-admin",
-  "version": "5.101.2",
+  "version": "5.106.1",
   "description": "Ember.js admin client for Ghost",
   "author": "Ghost Foundation",
   "homepage": "http://ghost.org",
@@ -48,15 +48,15 @@
     "@tryghost/color-utils": "0.2.2",
     "@tryghost/ember-promise-modals": "2.0.1",
     "@tryghost/helpers": "1.1.90",
-    "@tryghost/kg-clean-basic-html": "4.1.4",
-    "@tryghost/kg-converters": "1.0.7",
-    "@tryghost/koenig-lexical": "1.3.30",
+    "@tryghost/kg-clean-basic-html": "4.1.5",
+    "@tryghost/kg-converters": "1.0.8",
+    "@tryghost/koenig-lexical": "1.4.0",
     "@tryghost/limit-service": "1.2.14",
     "@tryghost/members-csv": "0.0.0",
     "@tryghost/nql": "0.12.7",
     "@tryghost/nql-lang": "0.6.3",
     "@tryghost/string": "0.2.12",
-    "@tryghost/timezone-data": "0.4.3",
+    "@tryghost/timezone-data": "0.4.4",
     "animejs": "3.2.2",
     "autoprefixer": "9.8.6",
     "babel-eslint": "10.1.0",
@@ -179,7 +179,7 @@
     "i18n-iso-countries": "7.12.0",
     "jose": "4.15.9",
     "path-browserify": "1.0.1",
-    "webpack": "5.96.1"
+    "webpack": "5.97.1"
   },
   "nx": {
     "targets": {
@@ -190,7 +190,8 @@
             "projects": [
               "@tryghost/admin-x-demo",
               "@tryghost/admin-x-settings",
-              "@tryghost/admin-x-activitypub"
+              "@tryghost/admin-x-activitypub",
+              "@tryghost/posts"
             ],
             "target": "build"
           }
@@ -207,7 +208,8 @@
             "projects": [
               "@tryghost/admin-x-demo",
               "@tryghost/admin-x-settings",
-              "@tryghost/admin-x-activitypub"
+              "@tryghost/admin-x-activitypub",
+              "@tryghost/posts"
             ],
             "target": "build"
           }

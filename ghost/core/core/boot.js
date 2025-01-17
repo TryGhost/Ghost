@@ -336,8 +336,6 @@ async function initServices() {
     const postsPublic = require('./server/services/posts-public');
     const slackNotifications = require('./server/services/slack-notifications');
     const mediaInliner = require('./server/services/media-inliner');
-    const collections = require('./server/services/collections');
-    const modelToDomainEventInterceptor = require('./server/services/model-to-domain-event-interceptor');
     const mailEvents = require('./server/services/mail-events');
     const donationService = require('./server/services/donations');
     const recommendationsService = require('./server/services/recommendations');
@@ -383,8 +381,6 @@ async function initServices() {
         linkTracking.init(),
         emailSuppressionList.init(),
         slackNotifications.init(),
-        collections.init(),
-        modelToDomainEventInterceptor.init(),
         mediaInliner.init(),
         mailEvents.init(),
         donationService.init(),
@@ -574,7 +570,7 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
         if (prometheusClient) {
             prometheusClient.instrumentKnex(connection);
         }
-        
+
         const {dataService} = await initServicesForFrontend({bootLogger});
 
         if (frontend) {
@@ -585,13 +581,6 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
         if (frontend) {
             await initDynamicRouting();
             await initAppService();
-        }
-
-        // TODO: move this to the correct place once we figure out where that is
-        if (ghostServer) {
-            const lexicalMultiplayer = require('./server/services/lexical-multiplayer');
-            await lexicalMultiplayer.init(ghostServer);
-            await lexicalMultiplayer.enable();
         }
 
         await initServices({config});

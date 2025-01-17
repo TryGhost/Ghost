@@ -144,7 +144,7 @@ export default class AccountProfilePage extends React.Component {
                 placeholder: t('Jamie Larson'),
                 label: t('Name'),
                 name: 'name',
-                required: true,
+                required: false,
                 errorMessage: errors.name || ''
             },
             {

@@ -3,7 +3,6 @@ const _ = require('lodash');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const {ValidationError} = require('@tryghost/errors');
-const labs = require('../../shared/labs');
 
 const messages = {
     emptyComment: 'The body of a comment cannot be empty',
@@ -61,43 +60,22 @@ const Comment = ghostBookshelf.Model.extend({
             // Note: this limit is not working
             .query('limit', 3);
     },
-    customQuery(qb) {
-        qb.where(function () {
-            this.whereNotIn('comments.status', ['hidden', 'deleted'])
-                .orWhereExists(function () {
-                    this.select(1)
-                        .from('comments as replies')
-                        .whereRaw('replies.parent_id = comments.id')
-                        .whereNotIn('replies.status', ['hidden', 'deleted']);
-                });
-        });
-    },
 
-    adminCustomQuery(qb) {
-        qb.where(function () {
-            this.whereNotIn('comments.status', ['deleted'])
-                .orWhereExists(function () {
-                    this.select(1)
-                        .from('comments as replies')
-                        .whereRaw('replies.parent_id = comments.id')
-                        .whereNotIn('replies.status', ['deleted']);
-                });
-        });
-    },
-
+    // Called by our filtered-collection bookshelf plugin
     applyCustomQuery(options) {
-        if (labs.isSet('commentImprovements')) {
-            if (!options.isAdmin) { // if it's an admin request, we don't need to apply the custom query
-                this.query((qb) => {
-                    this.customQuery(qb, options);
-                });
-            }
-            if (options.isAdmin) {
-                this.query((qb) => {
-                    this.adminCustomQuery(qb, options);
-                });
-            }
-        }
+        const excludedCommentStatuses = options.isAdmin ? ['deleted'] : ['hidden', 'deleted'];
+
+        this.query((qb) => {
+            qb.where(function () {
+                this.whereNotIn('comments.status', excludedCommentStatuses)
+                    .orWhereExists(function () {
+                        this.select(1)
+                            .from('comments as replies')
+                            .whereRaw('replies.parent_id = comments.id')
+                            .whereNotIn('replies.status', excludedCommentStatuses);
+                    });
+            });
+        });
     },
 
     emitChange: function emitChange(event, options) {
@@ -222,6 +200,24 @@ const Comment = ghostBookshelf.Model.extend({
         return hasMemberPermission;
     },
 
+    applyRepliesWithRelatedOption(withRelated, isAdmin) {
+        // we want to apply filters when fetching replies so we don't expose data that should be hidden
+        // - public requests never return hidden or deleted replies
+        // - admin requests never return deleted replies but do return hidden replies
+        const repliesOptionIndex = withRelated.indexOf('replies');
+        if (repliesOptionIndex > -1) {
+            withRelated[repliesOptionIndex] = {
+                replies: (qb) => {
+                    if (isAdmin) {
+                        qb.where('status', '!=', 'deleted');
+                    } else {
+                        qb.where('status', 'published');
+                    }
+                }
+            };
+        }
+    },
+
     /**
      * We have to ensure consistency. If you listen on model events (e.g. `member.added`), you can expect that you always
      * receive all fields including relations. Otherwise you can't rely on a consistent flow. And we want to avoid
@@ -248,6 +244,8 @@ const Comment = ghostBookshelf.Model.extend({
                     ];
                 }
             }
+
+            this.applyRepliesWithRelatedOption(options.withRelated, options.isAdmin);
         }
 
         return options;
@@ -255,13 +253,17 @@ const Comment = ghostBookshelf.Model.extend({
 
     async findPage(options) {
         const {withRelated} = this.defaultRelations('findPage', options);
+
         const relationsToLoadIndividually = [
             'replies',
             'replies.member',
             'replies.inReplyTo',
             'replies.count.likes',
             'replies.count.liked'
-        ].filter(relation => withRelated.includes(relation));
+        ].filter(relation => (withRelated.includes(relation) || withRelated.some(r => typeof r === 'object' && r[relation])));
+
+        this.applyRepliesWithRelatedOption(relationsToLoadIndividually, options.isAdmin);
+
         const result = await ghostBookshelf.Model.findPage.call(this, options);
         for (const model of result.data) {
             await model.load(relationsToLoadIndividually, _.omit(options, 'withRelated'));
@@ -271,11 +273,14 @@ const Comment = ghostBookshelf.Model.extend({
 
     countRelations() {
         return {
-            replies(modelOrCollection) {
+            replies(modelOrCollection, options) {
+                const excludedCommentStatuses = options.isAdmin ? ['deleted'] : ['hidden', 'deleted'];
+
                 modelOrCollection.query('columns', 'comments.*', (qb) => {
                     qb.count('replies.id')
                         .from('comments AS replies')
                         .whereRaw('replies.parent_id = comments.id')
+                        .whereNotIn('replies.status', excludedCommentStatuses)
                         .as('count__replies');
                 });
             },
@@ -312,8 +317,7 @@ const Comment = ghostBookshelf.Model.extend({
      */
     permittedOptions: function permittedOptions(methodName) {
         let options = ghostBookshelf.Model.permittedOptions.call(this, methodName);
-
-        // The comment model additionally supports having a parentId option
+        // The comment model additionally supports having a parentId and isAdmin option
         options.push('parentId');
         options.push('isAdmin');
 

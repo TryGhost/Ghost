@@ -215,10 +215,7 @@ table.body .footer a {
   }
 
   table.body .feedback-button-text {
-    display: block !important;
-    padding-top: 4px !important;
-    padding-left: 0px !important;
-    font-size: 13px !important;
+    display: none!important;
   }
 
   table.body .latest-posts-header {
@@ -522,7 +519,7 @@ table.body h2 span {
                                 <td class=\\"wrapper\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A; box-sizing: border-box;\\" valign=\\"top\\">
                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding-top: 40px; padding-bottom: 30px;\\">
                                         <tr>
-                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2024 &#x2013; <a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=member-uuid&key=xxxxxx&newsletter=requested-newsletter-uuid\\" style=\\"overflow-wrap: anywhere; color: #738a94; text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
+                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2025 &#x2013; <a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=member-uuid&key=xxxxxx&newsletter=requested-newsletter-uuid\\" style=\\"overflow-wrap: anywhere; color: #738a94; text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
                                         </tr>
 
                                             <tr>
@@ -660,7 +657,7 @@ Testing feature image caption
 
 
 
-Ghost © 2024 – Unsubscribe [http://127.0.0.1:2369/unsubscribe/?uuid=member-uuid&key=xxxxxx&newsletter=requested-newsletter-uuid]
+Ghost © 2025 – Unsubscribe [http://127.0.0.1:2369/unsubscribe/?uuid=member-uuid&key=xxxxxx&newsletter=requested-newsletter-uuid]
 
 
 
@@ -900,10 +897,7 @@ table.body .footer a {
   }
 
   table.body .feedback-button-text {
-    display: block !important;
-    padding-top: 4px !important;
-    padding-left: 0px !important;
-    font-size: 13px !important;
+    display: none!important;
   }
 
   table.body .latest-posts-header {
@@ -1194,7 +1188,7 @@ table.body h2 span {
                                 <td class=\\"wrapper\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A; box-sizing: border-box;\\" valign=\\"top\\">
                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding-top: 40px; padding-bottom: 30px;\\">
                                         <tr>
-                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2024 &#x2013; <a href=\\"unsubscribe_url\\" style=\\"overflow-wrap: anywhere; color: #738a94; text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
+                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2025 &#x2013; <a href=\\"unsubscribe_url\\" style=\\"overflow-wrap: anywhere; color: #738a94; text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
                                         </tr>
 
                                             <tr>
@@ -1321,7 +1315,7 @@ Hello world
 
 
 
-Ghost © 2024 – Unsubscribe [unsubscribe_url]
+Ghost © 2025 – Unsubscribe [unsubscribe_url]
 
 
 
@@ -1561,10 +1555,7 @@ table.body .footer a {
   }
 
   table.body .feedback-button-text {
-    display: block !important;
-    padding-top: 4px !important;
-    padding-left: 0px !important;
-    font-size: 13px !important;
+    display: none!important;
   }
 
   table.body .latest-posts-header {
@@ -1855,7 +1846,7 @@ table.body h2 span {
                                 <td class=\\"wrapper\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A; box-sizing: border-box;\\" valign=\\"top\\">
                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding-top: 40px; padding-bottom: 30px;\\">
                                         <tr>
-                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2024 &#x2013; <a href=\\"unsubscribe_url\\" style=\\"overflow-wrap: anywhere; color: #738a94; text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
+                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2025 &#x2013; <a href=\\"unsubscribe_url\\" style=\\"overflow-wrap: anywhere; color: #738a94; text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
                                         </tr>
 
                                             <tr>
@@ -1982,7 +1973,7 @@ Hello world
 
 
 
-Ghost © 2024 – Unsubscribe [unsubscribe_url]
+Ghost © 2025 – Unsubscribe [unsubscribe_url]
 
 
 
@@ -2222,10 +2213,7 @@ table.body .footer a {
   }
 
   table.body .feedback-button-text {
-    display: block !important;
-    padding-top: 4px !important;
-    padding-left: 0px !important;
-    font-size: 13px !important;
+    display: none!important;
   }
 
   table.body .latest-posts-header {
@@ -2516,7 +2504,7 @@ table.body h2 span {
                                 <td class=\\"wrapper\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A; box-sizing: border-box;\\" valign=\\"top\\">
                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding-top: 40px; padding-bottom: 30px;\\">
                                         <tr>
-                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2024 &#x2013; <a href=\\"unsubscribe_url\\" style=\\"overflow-wrap: anywhere; color: #738a94; text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
+                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2025 &#x2013; <a href=\\"unsubscribe_url\\" style=\\"overflow-wrap: anywhere; color: #738a94; text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
                                         </tr>
 
                                             <tr>
@@ -2643,7 +2631,7 @@ Hello world
 
 
 
-Ghost © 2024 – Unsubscribe [unsubscribe_url]
+Ghost © 2025 – Unsubscribe [unsubscribe_url]
 
 
 
@@ -2883,10 +2871,7 @@ table.body .footer a {
   }
 
   table.body .feedback-button-text {
-    display: block !important;
-    padding-top: 4px !important;
-    padding-left: 0px !important;
-    font-size: 13px !important;
+    display: none!important;
   }
 
   table.body .latest-posts-header {
@@ -3153,7 +3138,7 @@ table.body h2 span {
                                 <td class=\\"wrapper\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A; box-sizing: border-box;\\" valign=\\"top\\">
                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding-top: 40px; padding-bottom: 30px;\\">
                                         <tr>
-                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2024 &#x2013; <a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=member-uuid&key=xxxxxx&newsletter=requested-newsletter-uuid\\" style=\\"overflow-wrap: anywhere; color: #738a94; text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
+                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2025 &#x2013; <a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=member-uuid&key=xxxxxx&newsletter=requested-newsletter-uuid\\" style=\\"overflow-wrap: anywhere; color: #738a94; text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
                                         </tr>
 
                                             <tr>
@@ -3252,7 +3237,7 @@ Hello world
 
 
 
-Ghost © 2024 – Unsubscribe [http://127.0.0.1:2369/unsubscribe/?uuid=member-uuid&key=xxxxxx&newsletter=requested-newsletter-uuid]
+Ghost © 2025 – Unsubscribe [http://127.0.0.1:2369/unsubscribe/?uuid=member-uuid&key=xxxxxx&newsletter=requested-newsletter-uuid]
 
 
 
@@ -3492,10 +3477,7 @@ table.body .footer a {
   }
 
   table.body .feedback-button-text {
-    display: block !important;
-    padding-top: 4px !important;
-    padding-left: 0px !important;
-    font-size: 13px !important;
+    display: none!important;
   }
 
   table.body .latest-posts-header {
@@ -3786,7 +3768,7 @@ table.body h2 span {
                                 <td class=\\"wrapper\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A; box-sizing: border-box;\\" valign=\\"top\\">
                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding-top: 40px; padding-bottom: 30px;\\">
                                         <tr>
-                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2024 &#x2013; <a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=member-uuid&key=xxxxxx&newsletter=requested-newsletter-uuid\\" style=\\"overflow-wrap: anywhere; color: #738a94; text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
+                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2025 &#x2013; <a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=member-uuid&key=xxxxxx&newsletter=requested-newsletter-uuid\\" style=\\"overflow-wrap: anywhere; color: #738a94; text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
                                         </tr>
 
                                             <tr>
@@ -3913,7 +3895,7 @@ Hello world
 
 
 
-Ghost © 2024 – Unsubscribe [http://127.0.0.1:2369/unsubscribe/?uuid=member-uuid&key=xxxxxx&newsletter=requested-newsletter-uuid]
+Ghost © 2025 – Unsubscribe [http://127.0.0.1:2369/unsubscribe/?uuid=member-uuid&key=xxxxxx&newsletter=requested-newsletter-uuid]
 
 
 
@@ -4153,10 +4135,7 @@ table.body .footer a {
   }
 
   table.body .feedback-button-text {
-    display: block !important;
-    padding-top: 4px !important;
-    padding-left: 0px !important;
-    font-size: 13px !important;
+    display: none!important;
   }
 
   table.body .latest-posts-header {
@@ -4444,20 +4423,20 @@ table.body h2 span {
                                     <td dir=\\"ltr\\" width=\\"100%\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A; background-color: #ffffff; text-align: center; padding: 32px 0 24px; border-bottom: 1px solid #e5eff5;\\" align=\\"center\\" bgcolor=\\"#ffffff\\" valign=\\"top\\">
                                         <table class=\\"feedback-buttons\\" role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; margin: auto; width: 100%;\\" width=\\"100%\\">
                                             <tr>
-                                                    <td dir=\\"ltr\\" valign=\\"top\\" align=\\"center\\" style=\\"font-size: 18px; color: #15212A; display: inline-block; vertical-align: top; font-family: inherit; text-align: center; padding: 0 4px 4px; cursor: pointer; width: 30%;\\" nowrap width=\\"30%\\">
+                                                    <td dir=\\"ltr\\" valign=\\"top\\" align=\\"center\\" style=\\"font-size: 18px; color: #15212A; display: inline-block; vertical-align: top; font-family: inherit; text-align: center; padding: 0 4px 4px; cursor: pointer; width: 30%;\\" width=\\"30%\\">
                                                         <a href=\\"http://127.0.0.1:2369/this-is-a-test-post-title-4/#/feedback/post-id/1/?uuid=member-uuid&amp;key=xxxxxx\\" target=\\"_blank\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\">
-                                                            <img src=\\"https://static.ghost.org/v5.0.0/images/more-like-this-mobile.png\\" border=\\"0\\" width=\\"42\\" height=\\"42\\" alt=\\"More like this\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; display: inline-block; vertical-align: middle;\\">
-                                                            <p class=\\"feedback-button-text\\" style=\\"margin: 0 0 1.5em 0; line-height: 1.6em; display: inline; padding-left: 8px; font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; color: #15212A; font-weight: 500; margin-bottom: 0; font-size: 13px;\\">More like this</p>
+                                                            <img src=\\"https://static.ghost.org/v5.0.0/images/more-like-this-mobile.png\\" border=\\"0\\" width=\\"42\\" height=\\"42\\" alt=\\"More like this\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; display: block; margin: 0 auto; vertical-align: middle;\\">
+                                                            <p class=\\"feedback-button-text\\" style=\\"display: inline-block; font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; color: #15212A; font-weight: 500; margin: 1em 0 0 0; line-height: 1.4em; word-break: break-word; font-size: 13px;\\">More like this</p>
                                                         </a>
-                                                    </td>                                                    <td dir=\\"ltr\\" valign=\\"top\\" align=\\"center\\" style=\\"font-size: 18px; color: #15212A; display: inline-block; vertical-align: top; font-family: inherit; text-align: center; padding: 0 4px 4px; cursor: pointer; width: 30%;\\" nowrap width=\\"30%\\">
+                                                    </td>                                                    <td dir=\\"ltr\\" valign=\\"top\\" align=\\"center\\" style=\\"font-size: 18px; color: #15212A; display: inline-block; vertical-align: top; font-family: inherit; text-align: center; padding: 0 4px 4px; cursor: pointer; width: 30%;\\" width=\\"30%\\">
                                                         <a href=\\"http://127.0.0.1:2369/this-is-a-test-post-title-4/#/feedback/post-id/0/?uuid=member-uuid&amp;key=xxxxxx\\" target=\\"_blank\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\">
-                                                            <img src=\\"https://static.ghost.org/v5.0.0/images/less-like-this-mobile.png\\" border=\\"0\\" width=\\"42\\" height=\\"42\\" alt=\\"Less like this\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; display: inline-block; vertical-align: middle;\\">
-                                                            <p class=\\"feedback-button-text\\" style=\\"margin: 0 0 1.5em 0; line-height: 1.6em; display: inline; padding-left: 8px; font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; color: #15212A; font-weight: 500; margin-bottom: 0; font-size: 13px;\\">Less like this</p>
+                                                            <img src=\\"https://static.ghost.org/v5.0.0/images/less-like-this-mobile.png\\" border=\\"0\\" width=\\"42\\" height=\\"42\\" alt=\\"Less like this\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; display: block; margin: 0 auto; vertical-align: middle;\\">
+                                                            <p class=\\"feedback-button-text\\" style=\\"display: inline-block; font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; color: #15212A; font-weight: 500; margin: 1em 0 0 0; line-height: 1.4em; word-break: break-word; font-size: 13px;\\">Less like this</p>
                                                         </a>
-                                                    </td>                                                    <td dir=\\"ltr\\" valign=\\"top\\" align=\\"center\\" style=\\"font-size: 18px; color: #15212A; display: inline-block; vertical-align: top; font-family: inherit; text-align: center; padding: 0 4px 4px; cursor: pointer; width: 30%;\\" nowrap width=\\"30%\\">
+                                                    </td>                                                    <td dir=\\"ltr\\" valign=\\"top\\" align=\\"center\\" style=\\"font-size: 18px; color: #15212A; display: inline-block; vertical-align: top; font-family: inherit; text-align: center; padding: 0 4px 4px; cursor: pointer; width: 30%;\\" width=\\"30%\\">
                                                         <a href=\\"http://127.0.0.1:2369/this-is-a-test-post-title-4/#ghost-comments\\" target=\\"_blank\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\">
-                                                            <img src=\\"https://static.ghost.org/v5.0.0/images/comment-mobile.png\\" border=\\"0\\" width=\\"42\\" height=\\"42\\" alt=\\"Comment\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; display: inline-block; vertical-align: middle;\\">
-                                                            <p class=\\"feedback-button-text\\" style=\\"margin: 0 0 1.5em 0; line-height: 1.6em; display: inline; padding-left: 8px; font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; color: #15212A; font-weight: 500; margin-bottom: 0; font-size: 13px;\\">Comment</p>
+                                                            <img src=\\"https://static.ghost.org/v5.0.0/images/comment-mobile.png\\" border=\\"0\\" width=\\"42\\" height=\\"42\\" alt=\\"Comment\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; display: block; margin: 0 auto; vertical-align: middle;\\">
+                                                            <p class=\\"feedback-button-text\\" style=\\"display: inline-block; font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; color: #15212A; font-weight: 500; margin: 1em 0 0 0; line-height: 1.4em; word-break: break-word; font-size: 13px;\\">Comment</p>
                                                         </a>
                                                     </td>                                            </tr>
                                         </table>
@@ -4470,7 +4449,7 @@ table.body h2 span {
                                 <td class=\\"wrapper\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A; box-sizing: border-box;\\" valign=\\"top\\">
                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding-top: 40px; padding-bottom: 30px;\\">
                                         <tr>
-                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2024 &#x2013; <a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=member-uuid&key=xxxxxx&newsletter=requested-newsletter-uuid\\" style=\\"overflow-wrap: anywhere; color: #738a94; text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
+                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2025 &#x2013; <a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=member-uuid&key=xxxxxx&newsletter=requested-newsletter-uuid\\" style=\\"overflow-wrap: anywhere; color: #738a94; text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
                                         </tr>
 
                                             <tr>
@@ -4634,7 +4613,7 @@ Comment
 
 
 
-Ghost © 2024 – Unsubscribe [http://127.0.0.1:2369/unsubscribe/?uuid=member-uuid&key=xxxxxx&newsletter=requested-newsletter-uuid]
+Ghost © 2025 – Unsubscribe [http://127.0.0.1:2369/unsubscribe/?uuid=member-uuid&key=xxxxxx&newsletter=requested-newsletter-uuid]
 
 
 
@@ -4874,10 +4853,7 @@ table.body .footer a {
   }
 
   table.body .feedback-button-text {
-    display: block !important;
-    padding-top: 4px !important;
-    padding-left: 0px !important;
-    font-size: 13px !important;
+    display: none!important;
   }
 
   table.body .latest-posts-header {
@@ -5165,10 +5141,10 @@ table.body h2 span {
                                     <td dir=\\"ltr\\" width=\\"100%\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A; background-color: #ffffff; text-align: center; padding: 32px 0 24px; border-bottom: 1px solid #e5eff5;\\" align=\\"center\\" bgcolor=\\"#ffffff\\" valign=\\"top\\">
                                         <table class=\\"feedback-buttons\\" role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; margin: auto; width: 100%;\\" width=\\"100%\\">
                                             <tr>
-                                                    <td dir=\\"ltr\\" valign=\\"top\\" align=\\"center\\" style=\\"font-size: 18px; color: #15212A; display: inline-block; vertical-align: top; font-family: inherit; text-align: center; padding: 0 4px 4px; cursor: pointer; width: 30%;\\" nowrap width=\\"30%\\">
+                                                    <td dir=\\"ltr\\" valign=\\"top\\" align=\\"center\\" style=\\"font-size: 18px; color: #15212A; display: inline-block; vertical-align: top; font-family: inherit; text-align: center; padding: 0 4px 4px; cursor: pointer; width: 30%;\\" width=\\"30%\\">
                                                         <a href=\\"http://127.0.0.1:2369/this-is-a-test-post-title-3/#ghost-comments\\" target=\\"_blank\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\">
-                                                            <img src=\\"https://static.ghost.org/v5.0.0/images/comment-mobile.png\\" border=\\"0\\" width=\\"42\\" height=\\"42\\" alt=\\"Comment\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; display: inline-block; vertical-align: middle;\\">
-                                                            <p class=\\"feedback-button-text\\" style=\\"margin: 0 0 1.5em 0; line-height: 1.6em; display: inline; padding-left: 8px; font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; color: #15212A; font-weight: 500; margin-bottom: 0; font-size: 13px;\\">Comment</p>
+                                                            <img src=\\"https://static.ghost.org/v5.0.0/images/comment-mobile.png\\" border=\\"0\\" width=\\"42\\" height=\\"42\\" alt=\\"Comment\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; display: block; margin: 0 auto; vertical-align: middle;\\">
+                                                            <p class=\\"feedback-button-text\\" style=\\"display: inline-block; font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; color: #15212A; font-weight: 500; margin: 1em 0 0 0; line-height: 1.4em; word-break: break-word; font-size: 13px;\\">Comment</p>
                                                         </a>
                                                     </td>                                            </tr>
                                         </table>
@@ -5181,7 +5157,7 @@ table.body h2 span {
                                 <td class=\\"wrapper\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A; box-sizing: border-box;\\" valign=\\"top\\">
                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding-top: 40px; padding-bottom: 30px;\\">
                                         <tr>
-                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2024 &#x2013; <a href=\\"unsubscribe_url\\" style=\\"overflow-wrap: anywhere; color: #738a94; text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
+                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2025 &#x2013; <a href=\\"unsubscribe_url\\" style=\\"overflow-wrap: anywhere; color: #738a94; text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
                                         </tr>
 
                                             <tr>
@@ -5327,7 +5303,7 @@ Comment
 
 
 
-Ghost © 2024 – Unsubscribe [unsubscribe_url]
+Ghost © 2025 – Unsubscribe [unsubscribe_url]
 
 
 
@@ -6931,10 +6907,7 @@ table.body .footer a {
   }
 
   table.body .feedback-button-text {
-    display: block !important;
-    padding-top: 4px !important;
-    padding-left: 0px !important;
-    font-size: 13px !important;
+    display: none!important;
   }
 
   table.body .latest-posts-header {
@@ -7284,7 +7257,7 @@ table.body h2 span {
                                 <td class=\\"wrapper\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A; box-sizing: border-box;\\" valign=\\"top\\">
                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding-top: 40px; padding-bottom: 30px;\\">
                                         <tr>
-                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2024 &#x2013; <a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=member-uuid&key=xxxxxx&newsletter=requested-newsletter-uuid\\" style=\\"overflow-wrap: anywhere; color: #738a94; text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
+                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2025 &#x2013; <a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=member-uuid&key=xxxxxx&newsletter=requested-newsletter-uuid\\" style=\\"overflow-wrap: anywhere; color: #738a94; text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
                                         </tr>
 
                                             <tr>
@@ -7497,7 +7470,7 @@ Hello world [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
 
 
 
-Ghost © 2024 – Unsubscribe [http://127.0.0.1:2369/unsubscribe/?uuid=member-uuid&key=xxxxxx&newsletter=requested-newsletter-uuid]
+Ghost © 2025 – Unsubscribe [http://127.0.0.1:2369/unsubscribe/?uuid=member-uuid&key=xxxxxx&newsletter=requested-newsletter-uuid]
 
 
 
@@ -7737,10 +7710,7 @@ table.body .footer a {
   }
 
   table.body .feedback-button-text {
-    display: block !important;
-    padding-top: 4px !important;
-    padding-left: 0px !important;
-    font-size: 13px !important;
+    display: none!important;
   }
 
   table.body .latest-posts-header {
@@ -8051,7 +8021,7 @@ table.body h2 span {
                                 <td class=\\"wrapper\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A; box-sizing: border-box;\\" valign=\\"top\\">
                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding-top: 40px; padding-bottom: 30px;\\">
                                         <tr>
-                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2024 &#x2013; <a href=\\"unsubscribe_url\\" style=\\"overflow-wrap: anywhere; color: #738a94; text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
+                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2025 &#x2013; <a href=\\"unsubscribe_url\\" style=\\"overflow-wrap: anywhere; color: #738a94; text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
                                         </tr>
 
                                             <tr>
@@ -8213,7 +8183,7 @@ Manage subscription → [http://127.0.0.1:2369/#/portal/account]
 
 
 
-Ghost © 2024 – Unsubscribe [unsubscribe_url]
+Ghost © 2025 – Unsubscribe [unsubscribe_url]
 
 
 
@@ -8453,10 +8423,7 @@ table.body .footer a {
   }
 
   table.body .feedback-button-text {
-    display: block !important;
-    padding-top: 4px !important;
-    padding-left: 0px !important;
-    font-size: 13px !important;
+    display: none!important;
   }
 
   table.body .latest-posts-header {
@@ -8767,7 +8734,7 @@ table.body h2 span {
                                 <td class=\\"wrapper\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A; box-sizing: border-box;\\" valign=\\"top\\">
                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding-top: 40px; padding-bottom: 30px;\\">
                                         <tr>
-                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2024 &#x2013; <a href=\\"unsubscribe_url\\" style=\\"overflow-wrap: anywhere; color: #738a94; text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
+                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2025 &#x2013; <a href=\\"unsubscribe_url\\" style=\\"overflow-wrap: anywhere; color: #738a94; text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
                                         </tr>
 
                                             <tr>
@@ -8929,7 +8896,7 @@ Manage subscription → [http://127.0.0.1:2369/#/portal/account]
 
 
 
-Ghost © 2024 – Unsubscribe [unsubscribe_url]
+Ghost © 2025 – Unsubscribe [unsubscribe_url]
 
 
 
@@ -9169,10 +9136,7 @@ table.body .footer a {
   }
 
   table.body .feedback-button-text {
-    display: block !important;
-    padding-top: 4px !important;
-    padding-left: 0px !important;
-    font-size: 13px !important;
+    display: none!important;
   }
 
   table.body .latest-posts-header {
@@ -9483,7 +9447,7 @@ table.body h2 span {
                                 <td class=\\"wrapper\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A; box-sizing: border-box;\\" valign=\\"top\\">
                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding-top: 40px; padding-bottom: 30px;\\">
                                         <tr>
-                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2024 &#x2013; <a href=\\"unsubscribe_url\\" style=\\"overflow-wrap: anywhere; color: #738a94; text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
+                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2025 &#x2013; <a href=\\"unsubscribe_url\\" style=\\"overflow-wrap: anywhere; color: #738a94; text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
                                         </tr>
 
                                             <tr>
@@ -9645,7 +9609,7 @@ Manage subscription → [http://127.0.0.1:2369/#/portal/account]
 
 
 
-Ghost © 2024 – Unsubscribe [unsubscribe_url]
+Ghost © 2025 – Unsubscribe [unsubscribe_url]
 
 
 
@@ -9885,10 +9849,7 @@ table.body .footer a {
   }
 
   table.body .feedback-button-text {
-    display: block !important;
-    padding-top: 4px !important;
-    padding-left: 0px !important;
-    font-size: 13px !important;
+    display: none!important;
   }
 
   table.body .latest-posts-header {
@@ -10199,7 +10160,7 @@ table.body h2 span {
                                 <td class=\\"wrapper\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A; box-sizing: border-box;\\" valign=\\"top\\">
                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding-top: 40px; padding-bottom: 30px;\\">
                                         <tr>
-                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2024 &#x2013; <a href=\\"unsubscribe_url\\" style=\\"overflow-wrap: anywhere; color: #738a94; text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
+                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2025 &#x2013; <a href=\\"unsubscribe_url\\" style=\\"overflow-wrap: anywhere; color: #738a94; text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
                                         </tr>
 
                                             <tr>
@@ -10361,7 +10322,7 @@ Manage subscription → [http://127.0.0.1:2369/#/portal/account]
 
 
 
-Ghost © 2024 – Unsubscribe [unsubscribe_url]
+Ghost © 2025 – Unsubscribe [unsubscribe_url]
 
 
 
@@ -10601,10 +10562,7 @@ table.body .footer a {
   }
 
   table.body .feedback-button-text {
-    display: block !important;
-    padding-top: 4px !important;
-    padding-left: 0px !important;
-    font-size: 13px !important;
+    display: none!important;
   }
 
   table.body .latest-posts-header {
@@ -10915,7 +10873,7 @@ table.body h2 span {
                                 <td class=\\"wrapper\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A; box-sizing: border-box;\\" valign=\\"top\\">
                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding-top: 40px; padding-bottom: 30px;\\">
                                         <tr>
-                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2024 &#x2013; <a href=\\"unsubscribe_url\\" style=\\"overflow-wrap: anywhere; color: #738a94; text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
+                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2025 &#x2013; <a href=\\"unsubscribe_url\\" style=\\"overflow-wrap: anywhere; color: #738a94; text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
                                         </tr>
 
                                             <tr>
@@ -11077,7 +11035,7 @@ Manage subscription → [http://127.0.0.1:2369/#/portal/account]
 
 
 
-Ghost © 2024 – Unsubscribe [unsubscribe_url]
+Ghost © 2025 – Unsubscribe [unsubscribe_url]
 
 
 
@@ -11317,10 +11275,7 @@ table.body .footer a {
   }
 
   table.body .feedback-button-text {
-    display: block !important;
-    padding-top: 4px !important;
-    padding-left: 0px !important;
-    font-size: 13px !important;
+    display: none!important;
   }
 
   table.body .latest-posts-header {
@@ -11611,7 +11566,7 @@ table.body h2 span {
                                 <td class=\\"wrapper\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A; box-sizing: border-box;\\" valign=\\"top\\">
                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding-top: 40px; padding-bottom: 30px;\\">
                                         <tr>
-                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2024 &#x2013; <a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=member-uuid&key=xxxxxx&newsletter=requested-newsletter-uuid\\" style=\\"overflow-wrap: anywhere; color: #738a94; text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
+                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2025 &#x2013; <a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=member-uuid&key=xxxxxx&newsletter=requested-newsletter-uuid\\" style=\\"overflow-wrap: anywhere; color: #738a94; text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
                                         </tr>
 
                                             <tr>
@@ -11740,7 +11695,7 @@ Hey Simon, Hey Simon,
 
 
 
-Ghost © 2024 – Unsubscribe [http://127.0.0.1:2369/unsubscribe/?uuid=member-uuid&key=xxxxxx&newsletter=requested-newsletter-uuid]
+Ghost © 2025 – Unsubscribe [http://127.0.0.1:2369/unsubscribe/?uuid=member-uuid&key=xxxxxx&newsletter=requested-newsletter-uuid]
 
 
 
@@ -11980,10 +11935,7 @@ table.body .footer a {
   }
 
   table.body .feedback-button-text {
-    display: block !important;
-    padding-top: 4px !important;
-    padding-left: 0px !important;
-    font-size: 13px !important;
+    display: none!important;
   }
 
   table.body .latest-posts-header {
@@ -12274,7 +12226,7 @@ table.body h2 span {
                                 <td class=\\"wrapper\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #15212A; box-sizing: border-box;\\" valign=\\"top\\">
                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding-top: 40px; padding-bottom: 30px;\\">
                                         <tr>
-                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2024 &#x2013; <a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=member-uuid&key=xxxxxx&newsletter=requested-newsletter-uuid\\" style=\\"overflow-wrap: anywhere; color: #738a94; text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
+                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #738a94; margin-top: 20px; text-align: center; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em; font-size: 13px;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2025 &#x2013; <a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=member-uuid&key=xxxxxx&newsletter=requested-newsletter-uuid\\" style=\\"overflow-wrap: anywhere; color: #738a94; text-decoration: underline; font-size: 13px;\\" target=\\"_blank\\">Unsubscribe</a></td>
                                         </tr>
 
                                             <tr>
@@ -12403,7 +12355,7 @@ Hey there, Hey ,
 
 
 
-Ghost © 2024 – Unsubscribe [http://127.0.0.1:2369/unsubscribe/?uuid=member-uuid&key=xxxxxx&newsletter=requested-newsletter-uuid]
+Ghost © 2025 – Unsubscribe [http://127.0.0.1:2369/unsubscribe/?uuid=member-uuid&key=xxxxxx&newsletter=requested-newsletter-uuid]
 
 
 

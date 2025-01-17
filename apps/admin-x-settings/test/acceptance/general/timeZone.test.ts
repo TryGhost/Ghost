@@ -14,18 +14,16 @@ test.describe('Time zone settings', async () => {
         await page.goto('/');
 
         const section = page.getByTestId('timezone');
+        const select = section.getByTestId('timezone-select');
 
-        await expect(section.getByText('(GMT) UTC')).toHaveCount(1);
+        await expect(select).toBeVisible();
 
-        await section.getByRole('button', {name: 'Edit'}).click();
-
-        await chooseOptionInSelect(section.getByTestId('timezone-select'), '(GMT -9:00) Alaska');
+        await chooseOptionInSelect(select, '(GMT -9:00) Alaska');
 
         await section.getByRole('button', {name: 'Save'}).click();
 
-        await expect(section.getByTestId('timezone-select')).toHaveCount(0);
-
-        await expect(section.getByText('(GMT -9:00) Alaska')).toHaveCount(1);
+        await expect(select).toBeVisible();
+        await expect(select).toContainText('(GMT -9:00) Alaska');
 
         expect(lastApiRequests.editSettings?.body).toEqual({
             settings: [

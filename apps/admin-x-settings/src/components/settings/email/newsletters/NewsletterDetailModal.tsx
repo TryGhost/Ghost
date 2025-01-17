@@ -1,6 +1,6 @@
 import NewsletterPreview from './NewsletterPreview';
 import NiceModal from '@ebay/nice-modal-react';
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
 import validator from 'validator';
@@ -25,45 +25,17 @@ const ReplyToEmailField: React.FC<{
 }> = ({newsletter, updateNewsletter, errors, clearError}) => {
     const {settings, config} = useGlobalData();
     const [defaultEmailAddress, supportEmailAddress] = getSettingValues<string>(settings, ['default_email_address', 'support_email_address']);
-    const newEmailAddressesFlag = useFeatureFlag('newEmailAddresses');
 
     // When editing the senderReplyTo, we use a state, so we don't cause jumps when the 'rendering' method decides to change the value
     // Because 'newsletter' 'support' or an empty value can be mapped to a default value, we don't want those changes to happen when entering text
     const [senderReplyTo, setSenderReplyTo] = useState(renderReplyToEmail(newsletter, config, supportEmailAddress, defaultEmailAddress) || '');
 
     let newsletterAddress = renderSenderEmail(newsletter, config, defaultEmailAddress);
-    const replyToEmails = useMemo(() => [
-        {label: `Newsletter address (${newsletterAddress})`, value: 'newsletter'},
-        {label: `Support address (${supportEmailAddress})`, value: 'support'}
-    ], [newsletterAddress, supportEmailAddress]);
-
-    useEffect(() => {
-        if (!isManagedEmail(config) && !newEmailAddressesFlag) {
-            // Autocorrect invalid values
-            const foundValue = replyToEmails.find(option => option.value === newsletter.sender_reply_to);
-            if (!foundValue) {
-                updateNewsletter({sender_reply_to: 'newsletter'});
-            }
-        }
-    }, [config, replyToEmails, updateNewsletter, newsletter.sender_reply_to, newEmailAddressesFlag]);
 
     const onChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         setSenderReplyTo(e.target.value);
         updateNewsletter({sender_reply_to: e.target.value || 'newsletter'});
     }, [updateNewsletter, setSenderReplyTo]);
-
-    // Self-hosters, or legacy Pro users
-    if (!isManagedEmail(config) && !newEmailAddressesFlag) {
-        // Only allow some choices
-        return (
-            <Select
-                options={replyToEmails}
-                selectedOption={replyToEmails.find(option => option.value === newsletter.sender_reply_to)}
-                title="Reply-to email"
-                onSelect={option => updateNewsletter({sender_reply_to: option?.value})}
-            />
-        );
-    }
 
     const onBlur = () => {
         // Update the senderReplyTo to the rendered value again
@@ -189,7 +161,7 @@ const Sidebar: React.FC<{
     };
 
     const renderSenderEmailField = () => {
-        // Self-hosters, or legacy Pro users
+        // Self-hosters
         if (!isManagedEmail(config)) {
             return (
                 <TextField

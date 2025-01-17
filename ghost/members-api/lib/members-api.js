@@ -195,6 +195,7 @@ module.exports = function MembersAPI({
         memberAttributionService,
         labsService,
         newslettersService,
+        settingsCache,
         sentry
     });
 

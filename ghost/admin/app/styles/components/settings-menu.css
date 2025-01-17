@@ -179,14 +179,6 @@
 /* Content
 /* ---------------------------------------------------------- */
 
-.settings-menu-container:not(.ember-power-select-multiple-trigger):not(.tag-settings) input:not([disabled]),
-.settings-menu-container:not(.tag-settings) .gh-input:not([disabled]),
-.settings-menu-pane .gh-date-time-picker-date,
-.settings-menu-pane .gh-date-time-picker-time {
-    background: var(--white);
-    border: var(--input-border);
-}
-
 .settings-menu-container .ember-power-select-multiple-trigger input,
 .settings-menu-pane .gh-date-time-picker-date input,
 .settings-menu-pane .gh-date-time-picker-time input {
@@ -254,12 +246,6 @@
 
 .settings-menu-content textarea {
     height: 108px;
-}
-
-.settings-menu-content textarea.gh-input {
-    font-size: 1.5rem;
-    line-height: 1.4em;
-    letter-spacing: 0;
 }
 
 .settings-menu-content .gh-cm-editor-textarea {
@@ -513,7 +499,6 @@ li.nav-list-item .for-switch.xs label {
     z-index: 900;
     opacity: 0;
     transition: transform 0.4s cubic-bezier(0.1, 0.7, 0.1, 1);
-    background: rgba(0,0,0,0.02);
     /* Not off the screen, to give a parallax effect */
     animation: coverFadeIn 0.3s ease 0.1s 1 forwards;
 }
@@ -534,4 +519,82 @@ li.nav-list-item .for-switch.xs label {
 .settings-menu-email .disabled button,
 .settings-menu-email .disabled input {
     opacity: 0.5;
+}
+
+/* Form controls
+/* ---------------------------------------------------------- */
+.settings-menu-container select,
+.settings-menu-container .gh-date-time-picker-date,
+.settings-menu-container .gh-date-time-picker-time {
+    min-height: 38px;
+    padding: 4px 12px;
+    font-size: 1.4rem;
+    color: var(--black);
+    background-color: var(--grey-150);
+    border: 1px solid transparent;
+    border-radius: 8px;
+    transition-property: color, background-color,border-color, text-decoration-color, fill, stroke;
+    transition-timing-function: cubic-bezier(.4,0,.2,1);
+    transition-duration: .15s;
+}
+
+.settings-menu-container select:hover,
+.settings-menu-container .gh-date-time-picker-date:hover,
+.settings-menu-container .gh-date-time-picker-time:hover{
+    background-color: var(--grey-100);
+}
+
+.settings-menu-container .ember-basic-dropdown-trigger[aria-expanded=true] .gh-date-time-picker-date,
+.settings-menu-container .gh-date-time-picker-time:focus-within {
+    background-color: var(--white);
+    border: 1px solid var(--green);
+    box-shadow: 0 0 0 2px rgba(48,207,67,.25);
+    outline: none;
+}
+
+.settings-menu-container textarea.gh-input {
+    padding-block: 8px;
+}
+
+.settings-menu-container .gh-date-time-picker input {
+    font-size: 1.4rem;
+    color: var(--black);
+}
+
+.settings-menu-container .gh-input-icon .gh-input {
+    padding-left: 32px;
+}
+
+.settings-menu-container .ember-power-select-trigger[aria-expanded=true] {
+    border-color: transparent;
+}
+
+.settings-menu-container .ember-power-select-multiple-trigger {
+    padding: 5px 8px;
+    border-radius: 8px !important;
+}
+
+.settings-menu-container .ember-power-select-multiple-trigger:has(.ember-power-select-multiple-option) {
+    padding-left: 6px !important;
+}
+
+.settings-menu-container .ember-power-select-multiple-option {
+    height: 24px;
+}
+
+.settings-menu-container .ember-power-select-status-icon {
+    border-color: var(--black);
+}
+
+.settings-menu-container .gh-date-time-picker-timezone {
+    font-size: 1.2rem;
+    margin-left: 0;
+}
+
+.settings-menu-container .ember-power-select-dropdown {
+    border: 0 !important;
+    border-radius: 8px;
+    --tw-shadow: 0 0 7px rgba(0, 0, 0, .08), 0 2.1px 2.2px -5px rgba(0, 0, 0, .011), 0 5.1px 5.3px -5px rgba(0, 0, 0, .016), 0 9.5px 10px -5px rgba(0, 0, 0, .02), 0 17px 17.9px -5px rgba(0, 0, 0, .024), 0 31.8px 33.4px -5px rgba(0, 0, 0, .029), 0 76px 80px -5px rgba(0, 0, 0, .04);
+    --tw-shadow-colored: 0 0 7px var(--tw-shadow-color), 0 2.1px 2.2px -5px var(--tw-shadow-color), 0 5.1px 5.3px -5px var(--tw-shadow-color), 0 9.5px 10px -5px var(--tw-shadow-color), 0 17px 17.9px -5px var(--tw-shadow-color), 0 31.8px 33.4px -5px var(--tw-shadow-color), 0 76px 80px -5px var(--tw-shadow-color);
+    box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000),var(--tw-ring-shadow, 0 0 #0000),var(--tw-shadow);
 }
