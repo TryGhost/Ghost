@@ -22,8 +22,8 @@ interface subNavItemProps extends ButtonProps {
 
 const StatsTabItem: React.FC<subNavItemProps> = ({isActive, ...props}) => {
     const subNavItemClasses = cn(
-        'flex flex-col items-start h-auto py-3 gap-0 border group/item',
-        isActive ? 'bg-gray-100 border-transparent' : 'border-gray-200 hover:bg-gray-100/50'
+        'flex flex-col items-start h-auto py-3 gap-0 border border-border group/item',
+        isActive ? 'bg-muted/70' : 'border-gray-200 hover:bg-muted/50'
     );
     return (
         <Button
@@ -38,7 +38,7 @@ interface statsTabTitleProps
     extends React.HTMLAttributes<HTMLDivElement> {}
 
 const StatsTabTitle: React.FC<statsTabTitleProps> = ({className, ...props}) => {
-    return <div className={cn('min-h-5 w-full font-semibold flex justify-between items-start text-gray-600 group-data-[state=active]/item:text-gray-800 gap-2', className)} {...props} />;
+    return <div className={cn('min-h-5 w-full font-medium flex justify-between items-start text-gray-600 group-data-[state=active]/item:text-gray-800 gap-2', className)} {...props} />;
 };
 
 interface statsTabValueProps

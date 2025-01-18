@@ -22,6 +22,7 @@ export * from './components/layout/heading';
 
 // Third party components
 export * as Recharts from 'recharts';
+export * as LucideIcon from 'lucide-react';
 
 export {IconComponents as Icon} from './components/ui/icon';
 

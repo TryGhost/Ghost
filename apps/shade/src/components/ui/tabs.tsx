@@ -44,7 +44,7 @@ const tabsListVariants = cva(
         variants: {
             variant: {
                 segmented: 'h-[34px] rounded-lg bg-muted px-[3px]',
-                button: 'gap-2 border-b',
+                button: 'gap-2',
                 underline: 'gap-7 border-b pb-1'
             }
         },
@@ -70,12 +70,12 @@ const TabsList = React.forwardRef<
 TabsList.displayName = TabsPrimitive.List.displayName;
 
 const tabsTriggerVariants = cva(
-    'inline-flex items-center justify-center whitespace-nowrap px-3 py-1 ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground',
+    'inline-flex items-center justify-center whitespace-nowrap px-3 py-1 ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground [&_svg]:size-4 [&_svg]:shrink-0',
     {
         variants: {
             variant: {
                 segmented: 'h-7 rounded-md text-sm font-medium data-[state=active]:shadow-md',
-                button: 'h-[34px] rounded-md text-sm font-medium data-[state=active]:bg-muted/70',
+                button: 'h-[34px] gap-1.5 rounded-md border border-input py-2 text-sm font-medium hover:bg-muted/50 data-[state=active]:bg-muted/70 data-[state=active]:font-semibold',
                 underline: 'relative h-[34px] px-0 text-md font-medium text-gray-700 data-[state=active]:font-semibold data-[state=active]:text-black data-[state=active]:after:absolute data-[state=active]:after:inset-x-0 data-[state=active]:after:bottom-[-5px] data-[state=active]:after:h-px data-[state=active]:after:bg-black data-[state=active]:after:content-[""]'
             }
         },

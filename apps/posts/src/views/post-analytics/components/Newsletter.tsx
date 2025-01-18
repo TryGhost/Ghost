@@ -8,11 +8,9 @@ interface newsletterProps {};
 
 const Newsletter: React.FC<newsletterProps> = () => {
     return (
-        <div className='grid grow grid-cols-[auto_300px] gap-8'>
-            <div className='pt-0'>
-                <SentList />
-            </div>
-            <div className='flex basis-[300px] flex-col py-2'>
+        <div className='grid grow grid-cols-[auto_300px] gap-8 py-5'>
+            <SentList />
+            <div className='-mt-px flex basis-[300px] flex-col'>
                 <StatsTabs>
                     <StatsTabsGroup>
                         <StatsTabItem isActive>

@@ -9,7 +9,7 @@ const Page = React.forwardRef<HTMLDivElement, PageProps>(
         return (
             <div
                 ref={ref}
-                className={cn('max-w-page mx-auto w-full min-h-full px-12 flex flex-col', className)}
+                className={cn('max-w-page mx-auto w-full min-h-full px-8 flex flex-col', className)}
                 {...props}
             />
         );

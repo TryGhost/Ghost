@@ -1,4 +1,4 @@
-import {Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuTrigger, H1, Icon} from '@tryghost/shade';
+import {Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuTrigger, H1, LucideIcon} from '@tryghost/shade';
 
 interface headerProps {};
 
@@ -10,22 +10,22 @@ const Header: React.FC<headerProps> = () => {
                     <BreadcrumbList>
                         <BreadcrumbItem>
                             <BreadcrumbLink href="/ghost/posts">
-                        Posts
+                                Posts
                             </BreadcrumbLink>
                         </BreadcrumbItem>
                         <BreadcrumbSeparator />
                         <BreadcrumbItem>
                             <BreadcrumbPage>
-                        Analytics
+                                Analytics
                             </BreadcrumbPage>
                         </BreadcrumbItem>
                     </BreadcrumbList>
                 </Breadcrumb>
                 <div className='flex items-center gap-2'>
-                    <Button variant='outline'><Icon.Share className='-mt-0.5' />Share</Button>
+                    <Button variant='outline'><LucideIcon.Share />Share</Button>
                     <DropdownMenu>
                         <DropdownMenuTrigger>
-                            <Button variant='outline'><Icon.Dotdotdot /></Button>
+                            <Button variant='outline'><LucideIcon.Ellipsis /></Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="min-w-48">
                             <DropdownMenuItem>
