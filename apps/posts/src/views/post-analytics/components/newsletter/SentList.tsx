@@ -59,7 +59,7 @@ const SentList: React.FC<sentListProps> = () => {
     return (
         <Table>
             <TableHeader>
-                <TableRow>
+                <TableRow className='h-[44px]'>
                     <TableHead className="w-1/3">Member</TableHead>
                     <TableHead className="w-1/3">Tier</TableHead>
                     <TableHead className="w-1/3">Received</TableHead>

@@ -1,96 +1,61 @@
 import * as React from 'react';
 import SentList from './newsletter/SentList';
-// import SubNavItem from './SubNavigation';
-import {Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarMenu, SidebarMenuBadge, SidebarMenuButton, SidebarMenuItem} from '@tryghost/shade';
+import {Badge} from '@tryghost/shade';
+import {StatsTabItem, StatsTabTitle, StatsTabValue, StatsTabs, StatsTabsGroup} from './StatsTabs';
+// import {Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarMenu, SidebarMenuBadge, SidebarMenuButton, SidebarMenuItem} from '@tryghost/shade';
 
 interface newsletterProps {};
 
 const Newsletter: React.FC<newsletterProps> = () => {
     return (
-        <div className='grid grow grid-cols-[auto_320px] gap-5'>
-            <div className='py-5'>
+        <div className='grid grow grid-cols-[auto_300px] gap-8'>
+            <div className='pt-0'>
                 <SentList />
             </div>
-            <div className='flex basis-[320px] flex-col gap-px border-l py-5 pl-5'>
-                <Sidebar className="w-full bg-transparent" collapsible="none">
-                    <SidebarContent>
-                        <SidebarGroup className='p-0'>
-                            <SidebarGroupContent>
-                                <SidebarMenu>
-                                    <SidebarMenuItem>
-                                        <SidebarMenuButton asChild isActive>
-                                            <a href='javascript:;'>
-                                                <span>Sent</span>
-                                            </a>
-                                        </SidebarMenuButton>
-                                        <SidebarMenuBadge>1,697</SidebarMenuBadge>
-                                    </SidebarMenuItem>
-                                    <SidebarMenuItem>
-                                        <SidebarMenuButton asChild>
-                                            <a href='javascript:;'>
-                                                <span>Opened</span>
-                                            </a>
-                                        </SidebarMenuButton>
-                                        <SidebarMenuBadge>1,184</SidebarMenuBadge>
-                                    </SidebarMenuItem>
-                                    <SidebarMenuItem>
-                                        <SidebarMenuButton asChild>
-                                            <a href='javascript:;'>
-                                                <span>Clicked</span>
-                                            </a>
-                                        </SidebarMenuButton>
-                                        <SidebarMenuBadge>750</SidebarMenuBadge>
-                                    </SidebarMenuItem>
-                                </SidebarMenu>
-                            </SidebarGroupContent>
-                        </SidebarGroup>
+            <div className='flex basis-[300px] flex-col py-2'>
+                <StatsTabs>
+                    <StatsTabsGroup>
+                        <StatsTabItem isActive>
+                            <StatsTabTitle>
+                                Sent
+                            </StatsTabTitle>
+                            <StatsTabValue>1,697</StatsTabValue>
+                        </StatsTabItem>
+                        <StatsTabItem>
+                            <StatsTabTitle>
+                                Opened
+                                <Badge variant='secondary'>75%</Badge>
+                            </StatsTabTitle>
+                            <StatsTabValue>560</StatsTabValue>
+                        </StatsTabItem>
+                        <StatsTabItem>
+                            <StatsTabTitle>
+                                Clicked
+                                <Badge variant='secondary'>18%</Badge>
+                            </StatsTabTitle>
+                            <StatsTabValue>21</StatsTabValue>
+                        </StatsTabItem>
+                    </StatsTabsGroup>
 
-                        <SidebarGroup className='p-0'>
-                            <SidebarGroupContent>
-                                <SidebarMenu>
-                                    <SidebarMenuItem>
-                                        <SidebarMenuButton asChild>
-                                            <a href='javascript:;'>
-                                                <span>Unsubscribed</span>
-                                            </a>
-                                        </SidebarMenuButton>
-                                        <SidebarMenuBadge>29</SidebarMenuBadge>
-                                    </SidebarMenuItem>
-                                    <SidebarMenuItem>
-                                        <SidebarMenuButton asChild>
-                                            <a href='javascript:;'>
-                                                <span>Feedback</span>
-                                            </a>
-                                        </SidebarMenuButton>
-                                        <SidebarMenuBadge>65</SidebarMenuBadge>
-                                    </SidebarMenuItem>
-                                    <SidebarMenuItem>
-                                        <SidebarMenuButton asChild>
-                                            <a href='javascript:;'>
-                                                <span>Marked as spam</span>
-                                            </a>
-                                        </SidebarMenuButton>
-                                        <SidebarMenuBadge>0</SidebarMenuBadge>
-                                    </SidebarMenuItem>
-                                    <SidebarMenuItem>
-                                        <SidebarMenuButton asChild>
-                                            <a href='javascript:;'>
-                                                <span>Bounced</span>
-                                            </a>
-                                        </SidebarMenuButton>
-                                        <SidebarMenuBadge>6</SidebarMenuBadge>
-                                    </SidebarMenuItem>
-                                </SidebarMenu>
-                            </SidebarGroupContent>
-                        </SidebarGroup>
-                    </SidebarContent>
-                </Sidebar>
-                {/* <SubNavItem>
-                    <>
-                        <span>Sent</span>
-                        <span>1,697</span>
-                    </>
-                </SubNavItem> */}
+                    <StatsTabsGroup>
+                        <StatsTabItem>
+                            <StatsTabTitle>Unsubscribed</StatsTabTitle>
+                            <StatsTabValue>29</StatsTabValue>
+                        </StatsTabItem>
+                        <StatsTabItem>
+                            <StatsTabTitle>Feedback</StatsTabTitle>
+                            <StatsTabValue>5</StatsTabValue>
+                        </StatsTabItem>
+                        <StatsTabItem>
+                            <StatsTabTitle>Marked as spam</StatsTabTitle>
+                            <StatsTabValue>17</StatsTabValue>
+                        </StatsTabItem>
+                        <StatsTabItem>
+                            <StatsTabTitle>Bounced</StatsTabTitle>
+                            <StatsTabValue>81</StatsTabValue>
+                        </StatsTabItem>
+                    </StatsTabsGroup>
+                </StatsTabs>
             </div>
         </div>
     );
