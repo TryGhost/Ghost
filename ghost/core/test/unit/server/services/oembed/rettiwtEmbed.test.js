@@ -4,7 +4,7 @@ const XEmbedProvider = require('../../../../../core/server/services/oembed/XEmbe
 const nock = require('nock');
 const {ValidationError} = require('@tryghost/errors');
 
-describe.only('XEmbedProvider', function () {
+describe('XEmbedProvider', function () {
     let provider;
     let mockDependencies;
 
@@ -95,6 +95,7 @@ describe.only('XEmbedProvider', function () {
                     username: 'GhostOrg',
                     profile_image_url: 'https://example.com/profile.jpg'
                 }],
+                source: 'Rettiwt',
                 text: 'This is a test tweet.',
                 created_at: '2024-01-01T12:00:00.000Z',
                 entities: {

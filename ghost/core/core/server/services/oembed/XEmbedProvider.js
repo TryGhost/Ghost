@@ -62,11 +62,6 @@ class XEmbedProvider {
             }],
             text: tweetEntity.fullText,
             created_at: new Date(tweetEntity.createdAt).toISOString(),
-            // entities: {
-            //     mentions: tweetEntity.entities.mentionedUsers || [],
-            //     hashtags: tweetEntity.entities.hashtags || [],
-            //     urls: tweetEntity.entities.urls || []
-            // },
             entities: {
                 // loop urls into an array of objects eg [{url: 'https://example.com', expanded_url: 'https://example.com', display_url: 'example.com'}]
                 urls: tweetEntity.entities.urls.map((url) => {
@@ -98,7 +93,8 @@ class XEmbedProvider {
             includes: {
                 media: tweetEntity.media
             },
-            retweetedTweet: tweetEntity.retweetedTweet
+            retweetedTweet: tweetEntity.retweetedTweet,
+            source: 'rettiwt'
         };
 
         return tweetData;
