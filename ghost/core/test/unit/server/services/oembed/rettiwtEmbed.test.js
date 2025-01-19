@@ -95,7 +95,7 @@ describe('XEmbedProvider', function () {
                     username: 'GhostOrg',
                     profile_image_url: 'https://example.com/profile.jpg'
                 }],
-                source: 'Rettiwt',
+                source: 'rettiwt',
                 text: 'This is a test tweet.',
                 created_at: '2024-01-01T12:00:00.000Z',
                 entities: {
