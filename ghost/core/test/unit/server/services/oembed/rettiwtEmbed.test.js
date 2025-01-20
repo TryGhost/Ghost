@@ -72,9 +72,9 @@ describe('XEmbedProvider', function () {
                 fullText: 'This is a test tweet.',
                 createdAt: '2024-01-01T12:00:00Z',
                 entities: {
-                    urls: [{url: 'https://example.com'}],
-                    hashtags: [{tag: 'example'}],
-                    mentionedUsers: [{username: 'anotherUser'}]
+                    urls: ['https://example.com'],
+                    hashtags: ['example'],
+                    mentionedUsers: ['anotherUser']
                 },
                 media: [{url: 'https://example.com/media.jpg'}],
                 retweetedTweet: null
@@ -100,8 +100,12 @@ describe('XEmbedProvider', function () {
                 created_at: '2024-01-01T12:00:00.000Z',
                 entities: {
                     urls: [{url: 'https://example.com', display_url: 'example.com'}],
-                    hashtags: [{tag: 'example'}],
-                    mentions: [{username: 'anotherUser'}]
+                    hashtags: [{
+                        tag: 'example'
+                    }],
+                    mentions: [{
+                        username: 'anotherUser'
+                    }]
                 },
                 attachments: {
                     media_keys: ['https://example.com/media.jpg']
@@ -135,9 +139,9 @@ describe('XEmbedProvider', function () {
                 fullText: 'This is a test tweet.',
                 createdAt: '2024-01-01T12:00:00Z',
                 entities: {
-                    urls: [{url: 'https://example.com'}],
-                    hashtags: [{tag: 'example'}],
-                    mentionedUsers: [{username: 'anotherUser'}]
+                    urls: ['https://example.com', 'https://example2.com'],
+                    hashtags: ['example'],
+                    mentions: ['anotherUser']
                 },
                 media: [{url: 'https://example.com/media.jpg'}],
                 retweetedTweet: null

@@ -47,6 +47,18 @@ class XEmbedProvider {
 
     // Maps tweet entity in email template compatible format
     async mapTweetToTweetData(tweetEntity) {
+        const urls = (tweetEntity.entities?.urls || []).map((url) => {
+            return {
+                url: url,
+                display_url: url.replace(/(^\w+:|^)\/\//, '') // Remove the protocol
+            };
+        });
+
+        const mentionedUsers = (tweetEntity.entities?.mentionedUsers || []).map((mention) => {
+            return {
+                username: mention
+            };
+        });
         const tweetData = {
             id: tweetEntity.id,
             author_id: tweetEntity.tweetBy.id,
@@ -63,27 +75,13 @@ class XEmbedProvider {
             text: tweetEntity.fullText,
             created_at: new Date(tweetEntity.createdAt).toISOString(),
             entities: {
-                // loop urls into an array of objects eg [{url: 'https://example.com', expanded_url: 'https://example.com', display_url: 'example.com'}]
-                urls: tweetEntity.entities.urls.map((url) => {
-                    return {
-                        url: url,
-                        display_url: url.replace(/(^\w+:|^)\/\//, '')
-                        // strip url to get display url
-                    };
-                }),
-                // loop hashtags into an array of objects eg [{tag: 'example'}]
+                urls: urls,
                 hashtags: tweetEntity.entities.hashtags.map((hashtag) => {
                     return {
-                        tag: hashtag.tag
+                        tag: hashtag
                     };
                 }),
-
-                // loop mentions into an array of objects eg [{username: 'example'}]
-                mentions: tweetEntity.entities.mentionedUsers.map((mention) => {
-                    return {
-                        username: mention
-                    };
-                })
+                mentions: mentionedUsers
             },
             attachments: {
                 ...(tweetEntity.media?.length > 0 
