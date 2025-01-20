@@ -297,6 +297,12 @@ describe('sendMagicLink', function () {
                 email,
                 emailType: 'signup'
             })
-            .expectStatus(400);
+            .expectStatus(400)
+            .matchBodySnapshot({
+                errors: [{
+                    id: anyErrorId,
+                    message: 'This email domain is not accepted, try again with a different email address'
+                }]
+            });
     });
 });
