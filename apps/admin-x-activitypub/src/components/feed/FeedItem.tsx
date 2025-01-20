@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, Heading, Icon, Menu, MenuItem, showToast} from '@tryghost/admin-x-design-system';
 
@@ -166,6 +166,16 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
 
     const [, setIsCopied] = useState(false);
 
+    const contentRef = useRef<HTMLDivElement>(null);
+    const [isTruncated, setIsTruncated] = useState(false);
+
+    useEffect(() => {
+        const element = contentRef.current;
+        if (element) {
+            setIsTruncated(element.scrollHeight > element.clientHeight);
+        }
+    }, [object.content]);
+
     const onLikeClick = () => {
         // Do API req or smth
         // Don't need to know about setting timeouts or anything like that
@@ -264,10 +274,23 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                     <div className=''>
                                         {(object.type === 'Article') && renderFeedAttachment(object, layout)}
                                         {object.name && <Heading className='my-1 text-pretty leading-tight' level={5} data-test-activity-heading>{object.name}</Heading>}
-                                        {(object.preview && object.type === 'Article') ? <div className='line-clamp-3 leading-tight'>{object.preview.content}</div> : <div dangerouslySetInnerHTML={({__html: object.content ?? ''})} className='ap-note-content text-pretty leading-[1.4285714286] tracking-[-0.006em] text-grey-900'></div>}
+                                        {(object.preview && object.type === 'Article') ? (
+                                            <div className='line-clamp-3 leading-tight'>{object.preview.content}</div>
+                                        ) : (
+                                            <div className='relative'>
+                                                <div
+                                                    dangerouslySetInnerHTML={({__html: object.content ?? ''})}
+                                                    ref={contentRef}
+                                                    className='ap-note-content line-clamp-[10] text-pretty leading-[1.4285714286] tracking-[-0.006em] text-grey-900'
+                                                ></div>
+                                                {isTruncated && (
+                                                    <button className='mt-1 text-[#2563EB]' type='button'>Show more</button>
+                                                )}
+                                            </div>
+                                        )}
                                         {(object.type === 'Note') && renderFeedAttachment(object, layout)}
                                         {(object.type === 'Article') && <Button
-                                            className={`mt-3 self-start text-grey-900 transition-all hover:opacity-60`}
+                                            className={`mt-3 self-start text-grey-900 transition-all`}
                                             color='grey'
                                             fullWidth={true}
                                             id='read-more'
