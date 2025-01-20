@@ -4,6 +4,7 @@ const settingsCache = require('../../../core/shared/settings-cache');
 const DomainEvents = require('@tryghost/domain-events');
 const {anyErrorId} = matchers;
 const spamPrevention = require('../../../core/server/web/shared/middleware/api/spam-prevention');
+const configUtils = require('../../utils/configUtils');
 
 let membersAgent, membersService;
 
@@ -29,6 +30,7 @@ describe('sendMagicLink', function () {
 
     afterEach(function () {
         mockManager.restore();
+        configUtils.restore();
     });
 
     it('Errors when passed multiple emails', async function () {
@@ -284,5 +286,23 @@ describe('sendMagicLink', function () {
                 type: 'url'
             }
         });
+    });
+
+    it('blocks signups from blocked email domains', async function () {
+        configUtils.set('spam:blocked_email_domains', ['blocked-domain.com']);
+
+        const email = 'this-member-does-not-exist@blocked-domain.com';
+        await membersAgent.post('/api/send-magic-link')
+            .body({
+                email,
+                emailType: 'signup'
+            })
+            .expectStatus(400)
+            .matchBodySnapshot({
+                errors: [{
+                    id: anyErrorId,
+                    message: 'This email domain is not accepted, try again with a different email address'
+                }]
+            });
     });
 });

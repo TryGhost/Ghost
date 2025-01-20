@@ -73,7 +73,8 @@ module.exports = function MembersAPI({
     emailSuppressionList,
     settingsCache,
     sentry,
-    settingsHelpers
+    settingsHelpers,
+    config
 }) {
     const tokenService = new TokenService({
         privateKey,
@@ -158,7 +159,8 @@ module.exports = function MembersAPI({
         getText,
         getHTML,
         getSubject,
-        sentry
+        sentry,
+        config
     });
 
     const paymentsService = new PaymentsService({

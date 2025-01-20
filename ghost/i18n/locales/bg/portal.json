@@ -165,6 +165,7 @@
     "There was an error continuing your subscription, please try again.": "Възникна грешка при продължаването на абонамента ви, опитайте отново.",
     "There was an error processing your payment. Please try again.": "Възникна грешка при обработката на вашето плащане. Моля, опитайте отново.",
     "There was an error sending the email, please try again": "Възникна грешка при изпращане на имейл, опитайте отново",
+    "This email domain is not accepted, try again with a different email address": "",
     "This site is invite-only, contact the owner for access.": "Сайтът е само с покани. Свържете се със собственика за да получите достъп.",
     "This site is not accepting payments at the moment.": "В момента сайтът не приема плащания.",
     "This site only accepts paid members.": "",
