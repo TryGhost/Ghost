@@ -1,4 +1,4 @@
-const {createDocument, dom, html} = require('../utils');
+const {createDocument, dom, html} = require('../test-utils');
 const {$getRoot} = require('lexical');
 const {createHeadlessEditor} = require('@lexical/headless');
 const {VideoNode, $createVideoNode, $isVideoNode} = require('../../');

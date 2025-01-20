@@ -1,4 +1,4 @@
-const {createDocument, dom, html} = require('../utils');
+const {createDocument, dom, html} = require('../test-utils');
 const {createHeadlessEditor} = require('@lexical/headless');
 const {$generateNodesFromDOM} = require('@lexical/html');
 const {HeaderNode, $createHeaderNode, $isHeaderNode} = require('../../');

@@ -1,6 +1,6 @@
 const {createHeadlessEditor} = require('@lexical/headless');
 const {$getRoot} = require('lexical');
-const {dom, html} = require('../utils');
+const {dom, html} = require('../test-utils');
 const {EmailNode, $createEmailNode, $isEmailNode} = require('../../');
 
 const editorNodes = [EmailNode];

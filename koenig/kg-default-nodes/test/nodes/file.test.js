@@ -1,4 +1,4 @@
-const {dom, createDocument} = require('../utils');
+const {dom, createDocument} = require('../test-utils');
 const {$getRoot} = require('lexical');
 const {createHeadlessEditor} = require('@lexical/headless');
 const {$generateNodesFromDOM} = require('@lexical/html');

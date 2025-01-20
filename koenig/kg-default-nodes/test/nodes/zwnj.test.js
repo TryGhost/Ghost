@@ -1,4 +1,4 @@
-require('../utils');
+require('../test-utils');
 const {createHeadlessEditor} = require('@lexical/headless');
 const {ZWNJNode, $createZWNJNode, $isZWNJNode} = require('../../');
 

@@ -1,4 +1,4 @@
-const {createDocument} = require('../utils');
+const {createDocument} = require('../test-utils');
 const {createHeadlessEditor} = require('@lexical/headless');
 const {$generateNodesFromDOM} = require('@lexical/html');
 const {DEFAULT_CONFIG, DEFAULT_NODES} = require('../../');

@@ -1,6 +1,6 @@
 const {createHeadlessEditor} = require('@lexical/headless');
 const {$getRoot} = require('lexical');
-const {createDocument, dom, html} = require('../utils');
+const {createDocument, dom, html} = require('../test-utils');
 const {PaywallNode, $createPaywallNode, $isPaywallNode} = require('../../');
 const {$generateNodesFromDOM} = require('@lexical/html');
 
