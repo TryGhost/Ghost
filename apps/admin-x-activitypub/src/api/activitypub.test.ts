@@ -850,7 +850,7 @@ describe('ActivityPubAPI', function () {
                 },
                 [`https://activitypub.api/.ghost/activitypub/actions/search?query=${encodeURIComponent(handle)}`]: {
                     response: JSONResponse({
-                        profiles: [
+                        accounts: [
                             {
                                 handle,
                                 name: 'Foo Bar'
@@ -869,7 +869,7 @@ describe('ActivityPubAPI', function () {
 
             const actual = await api.search(handle);
             const expected = {
-                profiles: [
+                accounts: [
                     {
                         handle,
                         name: 'Foo Bar'
@@ -880,7 +880,7 @@ describe('ActivityPubAPI', function () {
             expect(actual).toEqual(expected);
         });
 
-        test('It returns an empty array when there are no profiles in the response', async function () {
+        test('It returns an empty array when there are no accounts in the response', async function () {
             const handle = '@foo@bar.baz';
 
             const fakeFetch = Fetch({
@@ -905,7 +905,7 @@ describe('ActivityPubAPI', function () {
 
             const actual = await api.search(handle);
             const expected = {
-                profiles: []
+                accounts: []
             };
 
             expect(actual).toEqual(expected);

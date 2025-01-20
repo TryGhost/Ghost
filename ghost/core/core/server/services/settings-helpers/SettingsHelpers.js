@@ -117,7 +117,7 @@ class SettingsHelpers {
     getMembersSupportAddress() {
         let supportAddress = this.settingsCache.get('members_support_address');
 
-        if (!supportAddress && this.useNewEmailAddresses()) {
+        if (!supportAddress) {
             // In the new flow, we make a difference between an empty setting (= use default) and a 'noreply' setting (=use noreply @ domain)
             // Also keep the name of the default email!
             return EmailAddressParser.stringify(this.getDefaultEmail());
@@ -144,18 +144,16 @@ class SettingsHelpers {
     }
 
     getDefaultEmail() {
-        if (this.useNewEmailAddresses()) {
-            // parse the email here and remove the sender name
-            // E.g. when set to "bar" <from@default.com>
-            const configAddress = this.config.get('mail:from');
-            const parsed = EmailAddressParser.parse(configAddress);
-            if (parsed) {
-                return parsed;
-            }
-
-            // For missing configs, we default to the old flow
-            logging.warn('Missing mail.from config, falling back to a generated email address. Please update your config file and set a valid from address');
+        // parse the email here and remove the sender name
+        // E.g. when set to "bar" <from@default.com>
+        const configAddress = this.config.get('mail:from');
+        const parsed = EmailAddressParser.parse(configAddress);
+        if (parsed) {
+            return parsed;
         }
+
+        // For missing configs, we default to the old flow
+        logging.warn('Missing mail.from config, falling back to a generated email address. Please update your config file and set a valid from address');
         return {
             address: this.getLegacyNoReplyAddress()
         };
@@ -171,10 +169,6 @@ class SettingsHelpers {
 
     areDonationsEnabled() {
         return this.isStripeConnected();
-    }
-
-    useNewEmailAddresses() {
-        return this.#managedEmailEnabled() || this.labs.isSet('newEmailAddresses');
     }
 
     createUnsubscribeUrl(uuid, options = {}) {

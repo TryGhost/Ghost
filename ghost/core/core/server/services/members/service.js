@@ -92,13 +92,8 @@ const initVerificationTrigger = () => {
         isVerificationRequired: () => settingsCache.get('email_verification_required') === true,
         sendVerificationEmail: async ({subject, message, amountTriggered}) => {
             const escalationAddress = config.get('hostSettings:emailVerification:escalationAddress');
-            let fromAddress = config.get('user_email');
-            let replyTo = undefined;
-
-            if (settingsHelpers.useNewEmailAddresses()) {
-                replyTo = fromAddress;
-                fromAddress = settingsHelpers.getNoReplyAddress();
-            }
+            const replyTo = config.get('user_email');
+            const fromAddress = settingsHelpers.getDefaultEmailAddress();
 
             if (escalationAddress) {
                 await ghostMailer.send({

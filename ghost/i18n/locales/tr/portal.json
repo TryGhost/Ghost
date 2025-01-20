@@ -165,6 +165,7 @@
     "There was an error continuing your subscription, please try again.": "Aboneliğinizi devam ettirirken bir hata oluştu, lütfen tekrar deneyin.",
     "There was an error processing your payment. Please try again.": "Ödemeniz işlenirken bir hata oluştu. Lütfen tekrar deneyiniz.",
     "There was an error sending the email, please try again": "E-posta gönderilirken bir hata oluştu, lütfen tekrar deneyin.",
+    "This email domain is not accepted, try again with a different email address": "",
     "This site is invite-only, contact the owner for access.": "Bu site sadece davetiyesi olanlar içindir, erişim için site sahibiyle iletişime geç.",
     "This site is not accepting payments at the moment.": "Bu site şu anda ödeme kabul etmemektedir.",
     "This site only accepts paid members.": "",
