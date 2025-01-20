@@ -20,6 +20,7 @@ const memberAttributionService = require('../member-attribution');
 const emailSuppressionList = require('../email-suppression-list');
 const {t} = require('../i18n');
 const sentry = require('../../../shared/sentry');
+const sharedConfig = require('../../../shared/config');
 
 const MAGIC_LINK_TOKEN_VALIDITY = 24 * 60 * 60 * 1000;
 const MAGIC_LINK_TOKEN_VALIDITY_AFTER_USAGE = 10 * 60 * 1000;
@@ -238,7 +239,8 @@ function createApiInstance(config) {
         emailSuppressionList,
         settingsCache,
         sentry,
-        settingsHelpers
+        settingsHelpers,
+        config: sharedConfig
     });
 
     return membersApiInstance;

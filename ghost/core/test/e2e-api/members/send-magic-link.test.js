@@ -289,7 +289,7 @@ describe('sendMagicLink', function () {
     });
 
     it('blocks signups from blocked email domains', async function () {
-        configUtils.config.set('spam.blocked_email_domains', {value: ['blocked-domain.com']});
+        configUtils.set('spam:blocked_email_domains', ['blocked-domain.com']);
 
         const email = 'this-member-does-not-exist@blocked-domain.com';
         await membersAgent.post('/api/send-magic-link')
