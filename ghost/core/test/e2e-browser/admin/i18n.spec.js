@@ -2,16 +2,6 @@ const {expect} = require('@playwright/test');
 const test = require('../fixtures/ghost-test');
 const {createPostDraft} = require('../utils');
 
-// const section = page.getByTestId('publication-language');
-
-//         await expect(section.getByText('en')).toHaveCount(1);
-
-//         await section.getByLabel('Site language').fill('jp');
-
-//         await section.getByRole('button', {name: 'Save'}).click();
-
-//         await expect(section.getByLabel('Site language')).toHaveValue('jp');
-
 async function setLanguage(sharedPage, language) {
     await sharedPage.goto('/ghost/#/settings/publication-language');
     const section = sharedPage.getByTestId('publication-language');
@@ -45,9 +35,6 @@ test.describe('i18n', () => {
 
             await expect(metaText).toContain('Par Joe Bloggs');
             await expect(metaText).not.toContain('By Joe Bloggs');
-
-            // Set the language back before the next test!
-            // await setLanguage(sharedPage, 'en');
         });
     });
 });
