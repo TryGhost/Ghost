@@ -107,3 +107,21 @@ Object {
   ],
 }
 `;
+
+exports[`sendMagicLink blocks signups from blocked email domains 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": null,
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "This email domain is not accepted, try again with a different email address",
+      "property": null,
+      "type": "BadRequestError",
+    },
+  ],
+}
+`;
