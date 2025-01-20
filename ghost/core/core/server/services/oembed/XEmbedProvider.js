@@ -66,9 +66,9 @@ class XEmbedProvider {
                 // loop urls into an array of objects eg [{url: 'https://example.com', expanded_url: 'https://example.com', display_url: 'example.com'}]
                 urls: tweetEntity.entities.urls.map((url) => {
                     return {
-                        url: url.url,
+                        url: url,
+                        display_url: url.replace(/(^\w+:|^)\/\//, '')
                         // strip url to get display url
-                        display_url: url.url.replace(/(^\w+:|^)\/\//, '')
                     };
                 }),
                 // loop hashtags into an array of objects eg [{tag: 'example'}]
@@ -81,7 +81,7 @@ class XEmbedProvider {
                 // loop mentions into an array of objects eg [{username: 'example'}]
                 mentions: tweetEntity.entities.mentionedUsers.map((mention) => {
                     return {
-                        username: mention.username
+                        username: mention
                     };
                 })
             },
