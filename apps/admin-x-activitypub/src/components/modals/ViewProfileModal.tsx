@@ -16,6 +16,7 @@ import Separator from '../global/Separator';
 import getName from '../../utils/get-name';
 import getUsername from '../../utils/get-username';
 import {handleProfileClick} from '../../utils/handle-profile-click';
+import {handleViewContent} from '../../utils/content-handlers';
 
 const noop = () => {};
 
@@ -173,7 +174,8 @@ const PostsTab: React.FC<{handle: string}> = ({handle}) => {
                                     layout='feed'
                                     object={post.object}
                                     type={post.type}
-                                    onCommentClick={() => {}}
+                                    onClick={() => handleViewContent(post, false)}
+                                    onCommentClick={() => handleViewContent(post, true)}
                                 />
                                 {index < posts.length - 1 && <Separator />}
                             </div>
