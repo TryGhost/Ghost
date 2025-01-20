@@ -1,6 +1,7 @@
 import PostAnalytics from './views/post-analytics/PostAnalytics';
 import {FrameworkProvider, TopLevelFrameworkProps} from '@tryghost/admin-x-framework';
-import {RoutingProvider} from '@tryghost/admin-x-framework/routing';
+import {RouterProvider, createHashRouter} from 'react-router';
+// import {RoutingProvider} from '@tryghost/admin-x-framework/routing';
 import {ShadeApp, ShadeAppProps, SidebarProvider} from '@tryghost/shade';
 
 interface AppProps {
@@ -8,16 +9,23 @@ interface AppProps {
     designSystem: ShadeAppProps;
 }
 
+// TODO: should be in a routing wrapper
+const basePath = 'posts-x';
+const router = createHashRouter([
+    {
+        path: `${basePath}/analytics`,
+        element: <PostAnalytics />
+    }
+]);
+
 const App: React.FC<AppProps> = ({framework, designSystem}) => {
     return (
         <FrameworkProvider {...framework}>
-            <RoutingProvider basePath='posts-x'>
-                <ShadeApp className='posts' {...designSystem}>
-                    <SidebarProvider>
-                        <PostAnalytics />
-                    </SidebarProvider>
-                </ShadeApp>
-            </RoutingProvider>
+            <ShadeApp className='posts' {...designSystem}>
+                <SidebarProvider>
+                    <RouterProvider router={router} />
+                </SidebarProvider>
+            </ShadeApp>
         </FrameworkProvider>
     );
 };
