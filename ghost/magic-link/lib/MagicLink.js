@@ -2,7 +2,8 @@ const {IncorrectUsageError, BadRequestError} = require('@tryghost/errors');
 const {isEmail} = require('@tryghost/validator');
 const tpl = require('@tryghost/tpl');
 const messages = {
-    invalidEmail: 'Email is not valid'
+    invalidEmail: 'Email is not valid',
+    unsupportedEmailDomain: 'This email domain is not accepted, try again with a different email address'
 };
 
 /**
@@ -34,6 +35,7 @@ class MagicLink {
      * @param {typeof defaultGetHTML} [options.getHTML]
      * @param {typeof defaultGetSubject} [options.getSubject]
      * @param {object} [options.sentry]
+     * @param {object} [options.config]
      */
     constructor(options) {
         if (!options || !options.transporter || !options.tokenProvider || !options.getSigninURL) {
@@ -46,6 +48,7 @@ class MagicLink {
         this.getHTML = options.getHTML || defaultGetHTML;
         this.getSubject = options.getSubject || defaultGetSubject;
         this.sentry = options.sentry || undefined;
+        this.config = options.config || {};
     }
 
     /**
@@ -60,12 +63,19 @@ class MagicLink {
      */
     async sendMagicLink(options) {
         this.sentry?.captureMessage?.(`[Magic Link] Generating magic link`, {extra: options});
-        
+
         if (!isEmail(options.email)) {
             throw new BadRequestError({
                 message: tpl(messages.invalidEmail)
             });
         }
+
+        if (this.isEmailDomainBlocked(options.email)) {
+            throw new BadRequestError({
+                message: tpl(messages.unsupportedEmailDomain)
+            });
+        }
+
         const token = await this.tokenProvider.create(options.tokenData);
 
         const type = options.type || 'signin';
@@ -107,6 +117,24 @@ class MagicLink {
     async getDataFromToken(token) {
         const tokenData = await this.tokenProvider.validate(token);
         return tokenData;
+    }
+
+    /**
+     * Check if the email domain is blocked, based on the `spam.blocked_email_domains` config
+     *
+     * @param {string} email
+     * @returns {boolean}
+     */
+    isEmailDomainBlocked(email) {
+        const emailDomain = email.split('@')[1]?.toLowerCase();
+        const blockedDomains = this.config?.get('spam:blocked_email_domains');
+
+        // Config is not set properly: skip check
+        if (!blockedDomains || !Array.isArray(blockedDomains)) {
+            return false;
+        }
+
+        return blockedDomains.includes(emailDomain);
     }
 }
 

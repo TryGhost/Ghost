@@ -126,7 +126,8 @@
             "maxWait": 360000,
             "lifetime": 3600,
             "freeRetries": 10
-        }
+        },
+        "blocked_email_domains": []
     },
     "caching": {
         "frontend": {
