@@ -13,6 +13,8 @@ const nft = new NFT({
     }
 });
 
+//#TODO Clean up
+
 // const Twitter = require('./TwitterOEmbedProvider');
 // const twitter = new Twitter({
 //     config: {

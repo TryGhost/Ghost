@@ -162,5 +162,45 @@ describe('XEmbedProvider', function () {
             assert.ok(oembedData.html);
             assert.ok(oembedData.tweet_data);
         });
+
+        it('should handle errors when fetching oEmbed data', async function () {
+            const tweetURL = new URL('https://twitter.com/Ghost/status/1630581157568839683');
+
+            // Mock a failed oEmbed request
+            nock('https://publish.twitter.com')
+                .get('/oembed')
+                .query(true)
+                .reply(500, 'Internal Server Error');
+
+            await assert.rejects(
+                () => provider.getOEmbedData(tweetURL),
+                {
+                    name: 'Error',
+                    message: 'Request failed with error code 500'
+                }
+            );
+        });
+        
+        it('should handle errors when fetching tweet entity', async function () {
+            const tweetURL = new URL('https://twitter.com/Ghost/status/1630581157568839683');
+
+            // Mock successful oEmbed request
+            nock('https://publish.twitter.com')
+                .get('/oembed')
+                .query(true)
+                .reply(200, {
+                    html: '<blockquote>Test embed</blockquote>'
+                });
+
+            // Mock failed tweet entity fetch
+            mockDependencies._fetchTweetEntity.rejects(new Error('Failed to fetch tweet'));
+
+            await assert.rejects(
+                () => provider.getOEmbedData(tweetURL),
+                {
+                    message: 'Failed to fetch tweet'
+                }
+            );
+        });
     });
 });
