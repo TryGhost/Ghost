@@ -242,6 +242,7 @@
     "This comment has been hidden.": "Text for a comment thas was hidden",
     "This comment has been removed.": "Text for a comment thas was removed",
     "This email address will not be used.": "This is in the footer of signup verification emails, and comes right after 'If you did not make this request, you can simply delete this message.'",
+    "This email domain is not accepted, try again with a different email address": "",
     "This site is invite-only, contact the owner for access.": "A message on the member login screen indicating that a site is not-open to public signups",
     "This site is not accepting payments at the moment.": "An error message shown when a tips or donations link is opened but the site has donations disabled",
     "This site only accepts paid members.": "",

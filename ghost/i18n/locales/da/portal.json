@@ -165,6 +165,7 @@
     "There was an error continuing your subscription, please try again.": "Der opstod en fejl under forlængelsen af dit abonnement, prøv venligst igen.",
     "There was an error processing your payment. Please try again.": "Der opstod en fejl under behandlingen af din betaling. Prøv venligst igen.",
     "There was an error sending the email, please try again": "Der opstod en fejl under afsendelse af e-mailen, prøv venligst igen.",
+    "This email domain is not accepted, try again with a different email address": "",
     "This site is invite-only, contact the owner for access.": "Denne sider kræver at du skal være inviteret. Kontakt ejeres for at få adgang.",
     "This site is not accepting payments at the moment.": "Denne side accepterer ikke betalinger i øjeblikket.",
     "This site only accepts paid members.": "",
