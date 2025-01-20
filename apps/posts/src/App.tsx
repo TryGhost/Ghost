@@ -13,7 +13,7 @@ interface AppProps {
 const basePath = 'posts-x';
 const router = createHashRouter([
     {
-        path: `${basePath}/analytics`,
+        path: `${basePath}/analytics/:postId`,
         element: <PostAnalytics />
     }
 ]);
