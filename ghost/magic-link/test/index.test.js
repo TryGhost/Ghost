@@ -108,21 +108,30 @@ describe('MagicLink', function () {
             };
             const service = new MagicLink(options);
 
-            const args = {
+            const blockedArgs = {
                 email: 'test@blocked-domain.com',
                 tokenData: {
                     id: '420'
                 }
             };
 
-            let errored = false;
-            try {
-                await service.sendMagicLink(args);
-            } catch (err) {
-                errored = true;
-            } finally {
-                assert(errored, 'Email addresses from blocked domains should not be accepted');
-            }
+            await assert.rejects(
+                () => service.sendMagicLink(blockedArgs),
+                {
+                    name: 'BadRequestError',
+                    message: 'This email domain is not accepted, try again with a different email address'
+                }
+            );
+
+            // Verify non-blocked domain is allowed
+            const allowedArgs = {
+                email: 'test@allowed-domain.com',
+                tokenData: {
+                    id: '420'
+                }
+            };
+
+            await assert.doesNotReject(() => service.sendMagicLink(allowedArgs));
         });
     });
 
