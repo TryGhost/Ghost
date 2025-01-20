@@ -6,6 +6,7 @@ const logging = require('@tryghost/logging');
 const MagicLink = require('@tryghost/magic-link');
 const verifyEmailTemplate = require('./emails/verify-email');
 const sentry = require('../../../shared/sentry');
+const config = require('../../../shared/config');
 
 const EMAIL_KEYS = ['members_support_address'];
 const messages = {
@@ -82,7 +83,8 @@ class SettingsBREADService {
             getText,
             getHTML,
             getSubject,
-            sentry
+            sentry,
+            config
         });
     }
 
