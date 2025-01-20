@@ -26,7 +26,7 @@ const Header: React.FC<headerProps> = () => {
                         <DialogTrigger>
                             <Button variant='outline'><LucideIcon.Share />Share</Button>
                         </DialogTrigger>
-                        <DialogContent>
+                        <DialogContent className='max-w-2xl'>
                             <DialogHeader>
                                 <DialogTitle>Share</DialogTitle>
                                 <DialogDescription>
