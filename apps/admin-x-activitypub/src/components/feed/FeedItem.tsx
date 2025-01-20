@@ -62,7 +62,7 @@ export function renderFeedAttachment(object: ObjectProperties, layout: string) {
         return (
             <div className={`attachment-gallery mt-3 grid ${gridClass} gap-2`}>
                 {attachment.map((item, index) => (
-                    <img key={item.url} alt={`attachment-${index}`} className={`h-full w-full rounded-md object-cover outline outline-1 -outline-offset-1 outline-black/10 ${attachmentCount === 3 && index === 0 ? 'row-span-2' : ''}`} src={item.url} />
+                    <img key={item.url} alt={item.name || `Image-${index}`} className={`h-full w-full rounded-md object-cover outline outline-1 -outline-offset-1 outline-black/10 ${attachmentCount === 3 && index === 0 ? 'row-span-2' : ''}`} src={item.url} />
                 ))}
             </div>
         );
@@ -72,21 +72,20 @@ export function renderFeedAttachment(object: ObjectProperties, layout: string) {
     case 'image/jpeg':
     case 'image/png':
     case 'image/gif':
-        return <img alt='attachment' className='mt-3 max-h-[420px] rounded-md outline outline-1 -outline-offset-1 outline-black/10' src={attachment.url} />;
+        return <img alt={attachment.name || 'Image'} className={`${object.type === 'Article' ? 'w-full rounded-t-md' : 'mt-3 max-h-[420px] rounded-md outline outline-1 -outline-offset-1 outline-black/10'}`} src={attachment.url} />;
     case 'video/mp4':
     case 'video/webm':
         return <div className='relative mb-4 mt-3'>
             <video className='h-[300px] w-full rounded object-cover' src={attachment.url} controls/>
         </div>;
-
     case 'audio/mpeg':
     case 'audio/ogg':
         return <div className='relative mb-4 mt-2 w-full'>
             <audio className='w-full' src={attachment.url} controls/>
         </div>;
     default:
-        if (object.image) {
-            return <img alt='attachment' className='my-3 max-h-[280px] w-full rounded-md object-cover outline outline-1 -outline-offset-1 outline-black/[0.05]' src={typeof object.image === 'string' ? object.image : object.image?.url} />;
+        if (object.image || attachment.type === 'Image') {
+            return <img alt={attachment.name || 'Image'} className={`${object.type === 'Article' ? 'aspect-[16/7.55] w-full rounded-t-md object-cover' : 'mt-3 max-h-[420px] rounded-md outline outline-1 -outline-offset-1 outline-black/10'}`} src={typeof object.image === 'string' ? object.image : object.image?.url} />;
         }
         return null;
     }
@@ -272,11 +271,13 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                             <div className={`relative col-start-2 col-end-3 w-full gap-4`}>
                                 <div className='flex flex-col'>
                                     <div className=''>
-                                        {(object.type === 'Article') && renderFeedAttachment(object, layout)}
-                                        {object.name && <Heading className='my-1 text-pretty leading-tight' level={5} data-test-activity-heading>{object.name}</Heading>}
-                                        {(object.preview && object.type === 'Article') ? (
-                                            <div className='line-clamp-3 leading-tight'>{object.preview.content}</div>
-                                        ) : (
+                                        {(object.type === 'Article') ? <div className='rounded-md border border-grey-150 transition-colors hover:bg-grey-75'>
+                                            {renderFeedAttachment(object, layout)}
+                                            <div className='p-4'>
+                                                <Heading className='mb-1 text-pretty leading-tight' level={5} data-test-activity-heading>{object.name}</Heading>
+                                                <div className='line-clamp-3 leading-tight'>{object.preview?.content}</div>
+                                            </div>
+                                        </div> :
                                             <div className='relative'>
                                                 <div
                                                     dangerouslySetInnerHTML={({__html: object.content ?? ''})}
@@ -286,17 +287,9 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                                 {isTruncated && (
                                                     <button className='mt-1 text-[#2563EB]' type='button'>Show more</button>
                                                 )}
+                                                {renderFeedAttachment(object, layout)}
                                             </div>
-                                        )}
-                                        {(object.type === 'Note') && renderFeedAttachment(object, layout)}
-                                        {(object.type === 'Article') && <Button
-                                            className={`mt-3 self-start text-grey-900 transition-all`}
-                                            color='grey'
-                                            fullWidth={true}
-                                            id='read-more'
-                                            label='Read more'
-                                            size='md'
-                                        />}
+                                        }
                                     </div>
                                     <div className='space-between relative z-[30] ml-[-7px] mt-1 flex'>
                                         <FeedItemStats
