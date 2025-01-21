@@ -23,7 +23,7 @@ const Header: React.FC<headerProps> = () => {
                 </Breadcrumb>
                 <div className='flex items-center gap-2'>
                     <Dialog>
-                        <DialogTrigger>
+                        <DialogTrigger asChild>
                             <Button variant='outline'><LucideIcon.Share />Share</Button>
                         </DialogTrigger>
                         <DialogContent className='max-w-2xl'>
