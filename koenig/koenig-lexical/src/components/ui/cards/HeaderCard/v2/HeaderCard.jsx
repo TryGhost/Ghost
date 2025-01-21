@@ -19,9 +19,9 @@ import {FastAverageColor} from 'fast-average-color';
 import {IconButton} from '../../../IconButton';
 import {MediaUploader} from '../../../MediaUploader';
 import {ReadOnlyOverlay} from '../../../ReadOnlyOverlay';
+import {Tooltip} from '../../../Tooltip';
 import {getAccentColor} from '../../../../../utils/getAccentColor';
 import {isEditorEmpty} from '../../../../../utils/isEditorEmpty';
-
 // Header Card Version 2
 export function HeaderCard({alignment,
     buttonEnabled,
@@ -407,7 +407,7 @@ export function HeaderCard({alignment,
                                 customContent: (
                                     <button
                                         className={clsx(
-                                            `relative flex size-6 shrink-0 items-center justify-center rounded-full border border-grey-300 bg-grey-100 text-black`,
+                                            `group relative flex size-6 shrink-0 items-center justify-center rounded-full border border-grey-300 bg-grey-100 text-black`,
                                             showBackgroundImage && 'outline outline-2 outline-green'
                                         )}
                                         data-testid="header-background-image-toggle"
@@ -420,6 +420,7 @@ export function HeaderCard({alignment,
                                         }}
                                     >
                                         <ImgBgIcon className="size-[1.4rem]" />
+                                        <Tooltip label='Image' />
                                     </button>
                                 )
                             }),
@@ -468,6 +469,7 @@ export function HeaderCard({alignment,
                         setFileInputRef={setFileInputRef}
                         size='xsmall'
                         src={backgroundImageSrc}
+                        stacked={true}
                         onFileChange={onFileChange}
                         onRemoveMedia={() => {
                             handleClearBackgroundImage();

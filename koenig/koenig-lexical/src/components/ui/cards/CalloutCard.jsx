@@ -7,8 +7,8 @@ import {ColorOptionSetting, SettingsPanel, ToggleSetting} from '../SettingsPanel
 import {ReadOnlyOverlay} from '../ReadOnlyOverlay';
 
 export const CALLOUT_COLORS = {
-    grey: 'bg-grey/10 border-transparent',
     white: 'bg-transparent border-grey/30',
+    grey: 'bg-grey/10 border-transparent',
     blue: 'bg-blue/10 border-transparent',
     green: 'bg-green/10 border-transparent',
     yellow: 'bg-yellow/10 border-transparent',
@@ -22,8 +22,8 @@ const TEXT_BLACK = 'text-black dark:text-grey-300 caret-black dark:caret-grey-30
 const TEXT_WHITE = 'text-white caret-white';
 
 export const CALLOUT_TEXT_COLORS = {
-    grey: TEXT_BLACK,
     white: TEXT_BLACK,
+    grey: TEXT_BLACK,
     blue: TEXT_BLACK,
     green: TEXT_BLACK,
     yellow: TEXT_BLACK,
@@ -36,49 +36,49 @@ export const CALLOUT_TEXT_COLORS = {
 
 export const calloutColorPicker = [
     {
-        label: 'Grey',
-        name: 'grey',
-        color: 'bg-grey/10 dark:border-white/10'
-    },
-    {
         label: 'White',
         name: 'white',
-        color: 'bg-transparent dark:border-white/10'
+        color: 'bg-transparent border-black/15 dark:border-white/10'
+    },
+    {
+        label: 'Grey',
+        name: 'grey',
+        color: 'bg-grey/15 border-black/[0.08] dark:border-white/10'
     },
     {
         label: 'Blue',
         name: 'blue',
-        color: 'bg-blue/10 dark:border-white/10'
+        color: 'bg-blue/15 border-black/[0.08] dark:border-white/10'
     },
     {
         label: 'Green',
         name: 'green',
-        color: 'bg-green/10 dark:border-white/10'
+        color: 'bg-green/15 border-black/[0.08] dark:border-white/10'
     },
     {
         label: 'Yellow',
         name: 'yellow',
-        color: 'bg-yellow/10 dark:border-white/10'
+        color: 'bg-yellow/15 border-black/[0.08] dark:border-white/10'
     },
     {
         label: 'Red',
         name: 'red',
-        color: 'bg-red/10 dark:border-white/10'
+        color: 'bg-red/15 border-black/[0.08] dark:border-white/10'
     },
     {
         label: 'Pink',
         name: 'pink',
-        color: 'bg-pink/10 dark:border-white/10'
+        color: 'bg-pink/15 border-black/[0.08] dark:border-white/10'
     },
     {
         label: 'Purple',
         name: 'purple',
-        color: 'bg-purple/10 dark:border-white/10'
+        color: 'bg-purple/15 border-black/[0.08] dark:border-white/10'
     },
     {
         label: 'Accent',
         name: 'accent',
-        color: 'bg-accent'
+        color: 'bg-accent border-black/[0.08] dark:border-white/10'
     }
 ];
 
@@ -157,7 +157,7 @@ export function CalloutCard({
                         <ColorOptionSetting
                             buttons={calloutColorPicker}
                             dataTestId='callout-color-picker'
-                            label='Background color'
+                            label='Background'
                             layout='stacked'
                             selectedName={color}
                             onClick={handleColorChange}
@@ -172,7 +172,7 @@ export function CalloutCard({
 }
 
 CalloutCard.propTypes = {
-    color: PropTypes.oneOf(['grey', 'white', 'blue', 'green', 'yellow', 'red', 'pink', 'purple', 'accent']),
+    color: PropTypes.oneOf(['white', 'grey', 'blue', 'green', 'yellow', 'red', 'pink', 'purple', 'accent']),
     text: PropTypes.string,
     hasEmoji: PropTypes.bool,
     placeholder: PropTypes.string,

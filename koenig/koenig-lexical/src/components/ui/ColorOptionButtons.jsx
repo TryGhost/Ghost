@@ -1,5 +1,6 @@
 import PlusIcon from '../../assets/icons/plus.svg?react';
 import React from 'react';
+import {Tooltip} from './Tooltip';
 import {usePreviousFocus} from '../../hooks/usePreviousFocus';
 
 export function ColorOptionButtons({buttons = [], selectedName, onClick}) {
@@ -37,15 +38,16 @@ export function ColorButton({onClick, label, name, color, selectedName}) {
         <li>
             <button
                 aria-label={label}
-                className={`flex size-[2.6rem] cursor-pointer items-center justify-center rounded-full border-2 ${isActive ? 'border-green' : 'border-transparent'}`}
+                className={`group relative flex size-6 cursor-pointer items-center justify-center rounded-full border-2 ${isActive ? 'border-green' : 'border-transparent'}`}
                 data-test-id={`color-picker-${name}`}
                 type="button"
                 onClick={handleClick}
                 onMouseDown={handleMousedown}
             >
                 <span
-                    className={`${color} size-5 rounded-full border border-black/5`}
+                    className={`${color} size-[1.8rem] rounded-full border`}
                 ></span>
+                <Tooltip label={label} />
             </button>
         </li>
     );

@@ -3,6 +3,7 @@ import React, {Fragment, useCallback, useEffect, useRef} from 'react';
 import clsx from 'clsx';
 import {Button} from './Button';
 import {HexColorInput, HexColorPicker} from 'react-colorful';
+import {Tooltip} from './Tooltip';
 import {getAccentColor} from '../../utils/getAccentColor';
 
 export function ColorPicker({value, eyedropper, hasTransparentOption, onChange}) {
@@ -119,7 +120,7 @@ function ColorSwatch({hex, accent, transparent, title, isSelected, onSelect}) {
         <button
             ref={ref}
             className={clsx(
-                `relative flex size-5 shrink-0 items-center rounded-full border border-grey-200 dark:border-grey-800`,
+                `group relative flex size-5 shrink-0 items-center rounded-full border border-grey-250 dark:border-grey-800`,
                 isSelected && 'outline outline-2 outline-green'
             )}
             style={{backgroundColor}}
@@ -128,6 +129,7 @@ function ColorSwatch({hex, accent, transparent, title, isSelected, onSelect}) {
             onClick={onSelectHandler}
         >
             {transparent && <div className="absolute left-0 top-0 z-10 w-[136%] origin-left rotate-45 border-b border-b-red" />}
+            <Tooltip label={title} />
         </button>
     );
 }
@@ -154,13 +156,14 @@ export function ColorIndicator({value, swatches, onSwatchChange, onTogglePicker,
                     customContent ? <Fragment key={swatch.title}>{customContent}</Fragment> : <ColorSwatch key={swatch.title} isSelected={selectedSwatch === swatch.title} onSelect={onSwatchChange} {...swatch} />
                 ))}
             </div>
-            <button aria-label="Pick color" className="relative size-6 rounded-full border border-grey-200 dark:border-grey-800" type="button" onClick={onTogglePicker}>
+            <button aria-label="Pick color" className="group relative size-6 rounded-full border border-grey-200 dark:border-grey-800" type="button" onClick={onTogglePicker}>
                 <div className='absolute inset-0 rounded-full bg-[conic-gradient(hsl(360,100%,50%),hsl(315,100%,50%),hsl(270,100%,50%),hsl(225,100%,50%),hsl(180,100%,50%),hsl(135,100%,50%),hsl(90,100%,50%),hsl(45,100%,50%),hsl(0,100%,50%))]' />
                 {value && !selectedSwatch && (
                     <div className="absolute inset-[3px] overflow-hidden rounded-full border border-white dark:border-grey-950" style={{backgroundColor}}>
                         {value === 'transparent' && <div className="absolute left-[3px] top-[3px] z-10 w-[136%] origin-left rotate-45 border-b border-b-red" />}
                     </div>
                 )}
+                <Tooltip label='Pick color' />
             </button>
         </div>
     );
