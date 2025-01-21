@@ -1,4 +1,4 @@
-import {Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuTrigger, H1, LucideIcon} from '@tryghost/shade';
+import {Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuTrigger, H1, LucideIcon} from '@tryghost/shade';
 
 interface headerProps {};
 
@@ -22,7 +22,19 @@ const Header: React.FC<headerProps> = () => {
                     </BreadcrumbList>
                 </Breadcrumb>
                 <div className='flex items-center gap-2'>
-                    <Button variant='outline'><LucideIcon.Share />Share</Button>
+                    <Dialog>
+                        <DialogTrigger asChild>
+                            <Button variant='outline'><LucideIcon.Share />Share</Button>
+                        </DialogTrigger>
+                        <DialogContent className='max-w-2xl'>
+                            <DialogHeader>
+                                <DialogTitle>Share</DialogTitle>
+                                <DialogDescription>
+                                This is a dialog, lets see how it works.
+                                </DialogDescription>
+                            </DialogHeader>
+                        </DialogContent>
+                    </Dialog>
                     <DropdownMenu>
                         <DropdownMenuTrigger>
                             <Button variant='outline'><LucideIcon.Ellipsis /></Button>
