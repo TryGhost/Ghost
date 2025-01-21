@@ -35,7 +35,7 @@ const NewsletterPerformance: React.FC<NewsletterPerformanceProps> = (props) => {
                 <div className='grid grid-cols-3 py-5'>
                     <Metric className='pl-6'>
                         <MetricLabel>Sent</MetricLabel>
-                        <MetricValue>1,697</MetricValue>
+                        <MetricValue>1,697 <MetricPercentage>100%</MetricPercentage></MetricValue>
                     </Metric>
 
                     <Metric className='pl-6'>
