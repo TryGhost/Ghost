@@ -6,7 +6,7 @@ interface statsTabsProps
     extends React.HTMLAttributes<HTMLDivElement> {}
 
 const StatsTabs: React.FC<statsTabsProps> = ({className, ...props}) => {
-    return <div className={cn('flex flex-col gap-8', className)} {...props} />;
+    return <div className={cn('flex flex-col gap-6', className)} {...props} />;
 };
 
 interface statsTabsGroupProps

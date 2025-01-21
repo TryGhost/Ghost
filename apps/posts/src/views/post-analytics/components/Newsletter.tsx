@@ -13,7 +13,7 @@ const Newsletter: React.FC<newsletterProps> = () => {
                 key: 'sent',
                 title: 'Sent',
                 value: '1,697',
-                badge: '',
+                badge: '100%',
                 content: <SentList />
             },
             {
