@@ -73,11 +73,9 @@ const Newsletter: React.FC<newsletterProps> = () => {
     };
 
     return (
-        <div className='grid grow grid-cols-[auto_300px] gap-8 py-5'>
-            <div className='border-t border-border'>
-                <Content />
-            </div>
-            <div className='-mt-px flex basis-[300px] flex-col'>
+        <div className='grid grow grid-cols-[auto_300px] gap-6'>
+            <Content />
+            <div className='-mt-px flex basis-[300px] flex-col py-2'>
                 <StatsTabs>
                     {tabs.map(group => (
                         <StatsTabsGroup>

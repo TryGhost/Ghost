@@ -1,7 +1,7 @@
 import Header from '../../components/Header';
 import {ANALYTICS} from '../../routes';
-import {LucideIcon, Page, Tabs, TabsList, TabsTrigger} from '@tryghost/shade';
 import {Outlet, useLocation, useNavigate, useParams} from 'react-router';
+import {Page, Tabs, TabsList, TabsTrigger} from '@tryghost/shade';
 
 interface postAnalyticsProps {};
 
@@ -9,7 +9,11 @@ const PostAnalytics: React.FC<postAnalyticsProps> = () => {
     const navigate = useNavigate();
     const {postId} = useParams();
     const location = useLocation();
-    const currentTab = location.pathname.split('/').pop() || 'overview';
+
+    let currentTab = location.pathname.split('/').pop();
+    if (currentTab === postId || !currentTab) {
+        currentTab = 'overview';
+    }
 
     const handleTabChange = (value: string) => {
         if (value === 'overview') {
@@ -25,12 +29,12 @@ const PostAnalytics: React.FC<postAnalyticsProps> = () => {
             <Tabs
                 className='my-8 flex grow flex-col'
                 value={currentTab}
-                variant="button"
+                variant="underline"
                 onValueChange={handleTabChange}
             >
                 <TabsList className='w-full'>
-                    <TabsTrigger value="overview"><LucideIcon.Gauge /> Overview</TabsTrigger>
-                    <TabsTrigger value="newsletter"><LucideIcon.Mail /> Newsletter</TabsTrigger>
+                    <TabsTrigger value="overview">Overview</TabsTrigger>
+                    <TabsTrigger value="newsletter">Newsletter</TabsTrigger>
                 </TabsList>
                 <div>
                     <Outlet />
