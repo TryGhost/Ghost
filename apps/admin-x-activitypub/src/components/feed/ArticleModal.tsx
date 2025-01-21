@@ -48,6 +48,7 @@ const ArticleBody: React.FC<{
     fontFamily: SelectOption;
     onHeadingsExtracted?: (headings: TOCItem[]) => void;
     onIframeLoad?: (iframe: HTMLIFrameElement) => void;
+    onLoadingChange?: (isLoading: boolean) => void;
 }> = ({
     heading,
     image,
@@ -57,7 +58,8 @@ const ArticleBody: React.FC<{
     lineHeight,
     fontFamily,
     onHeadingsExtracted,
-    onIframeLoad
+    onIframeLoad,
+    onLoadingChange
 }) => {
     const site = useBrowseSite();
     const siteData = site.data?.site;
@@ -213,7 +215,6 @@ const ArticleBody: React.FC<{
         if (iframeWindow && typeof iframeWindow.resizeIframe === 'function') {
             iframeWindow.resizeIframe();
         } else {
-            // Fallback: trigger a resize event
             const resizeEvent = new Event('resize');
             iframeDocument.dispatchEvent(resizeEvent);
         }
@@ -268,6 +269,11 @@ const ArticleBody: React.FC<{
         iframe.addEventListener('load', handleLoad);
         return () => iframe.removeEventListener('load', handleLoad);
     }, [onHeadingsExtracted, onIframeLoad]);
+
+    // Update parent when loading state changes
+    useEffect(() => {
+        onLoadingChange?.(isLoading);
+    }, [isLoading, onLoadingChange]);
 
     return (
         <div className='w-full pb-6'>
@@ -527,17 +533,29 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
 
     const [readingProgress, setReadingProgress] = useState(0);
 
+    const [isLoading, setIsLoading] = useState(true);
+
     useEffect(() => {
         const container = document.querySelector('.overflow-y-auto');
         const article = document.getElementById('object-content');
 
         const handleScroll = () => {
-            if (!container || !article) {
+            if (!container || !article || isLoading) {
                 return;
             }
 
             const articleRect = article.getBoundingClientRect();
             const containerRect = container.getBoundingClientRect();
+
+            // Calculate if content is shorter than viewport
+            const isContentShorterThanViewport = articleRect.height <= containerRect.height;
+
+            if (isContentShorterThanViewport) {
+                setReadingProgress(100);
+                return;
+            }
+
+            // Existing progress calculation for longer content
             const scrolledPast = Math.max(0, containerRect.top - articleRect.top);
             const totalHeight = (article as HTMLElement).offsetHeight - (container as HTMLElement).offsetHeight;
 
@@ -547,9 +565,26 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
             setReadingProgress(progress);
         };
 
-        container?.addEventListener('scroll', handleScroll);
-        return () => container?.removeEventListener('scroll', handleScroll);
-    }, []);
+        // Only set up observers and listeners once content is loaded
+        if (!isLoading) {
+            const observer = new MutationObserver(handleScroll);
+            if (article) {
+                observer.observe(article, {
+                    childList: true,
+                    subtree: true,
+                    characterData: true
+                });
+            }
+
+            container?.addEventListener('scroll', handleScroll);
+            handleScroll();
+
+            return () => {
+                container?.removeEventListener('scroll', handleScroll);
+                observer.disconnect();
+            };
+        }
+    }, [isLoading]);
 
     const [tocItems, setTocItems] = useState<TOCItem[]>([]);
     const [activeHeadingId, setActiveHeadingId] = useState<string | null>(null);
@@ -575,7 +610,6 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                 return;
             }
 
-            // Use offsetTop for absolute position within the document
             const headingOffset = heading.offsetTop;
 
             container.scrollTo({
@@ -602,7 +636,6 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                     return;
                 }
 
-                // Get all heading elements and their positions
                 const headings = tocItems
                     .map(item => doc.getElementById(item.id))
                     .filter((el): el is HTMLElement => el !== null)
@@ -845,6 +878,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                         lineHeight={LINE_HEIGHTS[currentLineHeightIndex]}
                                         onHeadingsExtracted={handleHeadingsExtracted}
                                         onIframeLoad={handleIframeLoad}
+                                        onLoadingChange={setIsLoading}
                                     />
                                     <div className='ml-[-7px]'>
                                         <FeedItemStats
