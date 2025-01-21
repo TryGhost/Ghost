@@ -1,7 +1,7 @@
 import OpenedList from './newsletter/OpenedList';
 import React from 'react';
 import SentList from './newsletter/SentList';
-import {Badge} from '@tryghost/shade';
+import {Badge, Card, CardContent} from '@tryghost/shade';
 import {StatsTabItem, StatsTabTitle, StatsTabValue, StatsTabs, StatsTabsGroup} from './StatsTabs';
 
 interface newsletterProps {};
@@ -73,9 +73,13 @@ const Newsletter: React.FC<newsletterProps> = () => {
     };
 
     return (
-        <div className='grid grow grid-cols-[auto_300px] gap-6'>
-            <Content />
-            <div className='-mt-px flex basis-[300px] flex-col py-2'>
+        <div className='grid grow grid-cols-[auto_300px] gap-6 py-6'>
+            <Card className='self-start'>
+                <CardContent>
+                    <Content />
+                </CardContent>
+            </Card>
+            <div className='-mt-px flex basis-[300px] flex-col'>
                 <StatsTabs>
                     {tabs.map(group => (
                         <StatsTabsGroup>
