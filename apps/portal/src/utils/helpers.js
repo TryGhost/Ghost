@@ -87,7 +87,7 @@ export function getNewsletterFromUuid({site, uuid}) {
 }
 
 export function hasNewsletterSendingEnabled({site}) {
-    return site?.editor_default_email_recipients === 'visibility';
+    return site?.editor_default_email_recipients !== 'disabled';
 }
 
 export function allowCompMemberUpgrade({member}) {
