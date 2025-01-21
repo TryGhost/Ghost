@@ -3349,10 +3349,10 @@
   resolved "https://registry.yarnpkg.com/@hcaptcha/loader/-/loader-1.2.4.tgz#541714395a82e27ec0f0e8bd80ef1a0bea141cc3"
   integrity sha512-3MNrIy/nWBfyVVvMPBKdKrX7BeadgiimW0AL/a/8TohNtJqxoySKgTJEXOQvYwlHemQpUzFrIsK74ody7JiMYw==
 
-"@hcaptcha/react-hcaptcha@1.11.0":
-  version "1.11.0"
-  resolved "https://registry.yarnpkg.com/@hcaptcha/react-hcaptcha/-/react-hcaptcha-1.11.0.tgz#d4520dd3b7ece735bc928dedcda048be477b2dcd"
-  integrity sha512-UKHtzzVMHLTGwab5pgV96UbcXdyh5Qyq8E0G5DTyXq8txMvuDx7rSyC+BneOjWVW0a7O9VuZmkg/EznVLRE45g==
+"@hcaptcha/react-hcaptcha@1.11.1":
+  version "1.11.1"
+  resolved "https://registry.yarnpkg.com/@hcaptcha/react-hcaptcha/-/react-hcaptcha-1.11.1.tgz#cc0dd0b180b3458ca7b0f8cf1446f09afca2ec55"
+  integrity sha512-g6TwatNIzBtOR3RM4mxzvTUQGs5T9HMN+4fcNGHn7wUVThvmazThUs0vImI836bSkGpJS8n0rOYvv1UZ47q8Vw==
   dependencies:
     "@babel/runtime" "^7.17.9"
     "@hcaptcha/loader" "^1.2.1"
