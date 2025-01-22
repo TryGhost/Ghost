@@ -60,6 +60,7 @@ export function chooseBestErrorMessage(error, alreadyTranslatedDefaultMessage, t
             t('Failed to send magic link email');
             t('This site only accepts paid members.');
             t('Signups from this email provider are not allowed');
+            t('Too many sign-up attempts, try again later');
         }
     };
 
