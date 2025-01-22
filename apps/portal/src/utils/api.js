@@ -254,6 +254,11 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             if (res.ok) {
                 return res.text();
             } else {
+                // Try to read body error message that is human readable and should be shown to the user
+                const humanError = await HumanReadableError.fromApiResponse(res);
+                if (humanError) {
+                    throw humanError;
+                }
                 throw new Error('Failed to start a members session');
             }
         },
