@@ -118,7 +118,7 @@ Object {
       "ghostErrorCode": null,
       "help": null,
       "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-      "message": "This email domain is not accepted, try again with a different email address",
+      "message": "Signups from this email provider are not allowed",
       "property": null,
       "type": "BadRequestError",
     },

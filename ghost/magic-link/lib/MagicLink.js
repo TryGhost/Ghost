@@ -3,7 +3,7 @@ const {isEmail} = require('@tryghost/validator');
 const tpl = require('@tryghost/tpl');
 const messages = {
     invalidEmail: 'Email is not valid',
-    unsupportedEmailDomain: 'This email domain is not accepted, try again with a different email address'
+    unsupportedEmailDomain: 'Signups from this email provider are not allowed'
 };
 
 /**
