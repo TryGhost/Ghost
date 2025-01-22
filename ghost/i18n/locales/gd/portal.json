@@ -207,6 +207,6 @@
     "Your email has failed to resubscribe, please try again": "Dh'fhàillig ath-nuadhachadh an fho-sgrìobhaidh, feuch a-rithist",
     "Your input helps shape what gets published.": "Bheir na beachdan agad buaidh air na foillseachaidhean ri teachd.",
     "Your subscription will expire on {{expiryDate}}": "Falbhaidh an ùine air am fo-sgrìobhadh agad: {{expiryDate}}",
-    "Your subscription will renew on {{renewalDate}}": "Ath-nuadhaichidh am fo-sgrìobhadh agad: {{expiryDate}}",
-    "Your subscription will start on {{subscriptionStart}}": "Tòisichidh am fo-sgrìobhadh agad: {{expiryDate}}"
+    "Your subscription will renew on {{renewalDate}}": "Ath-nuadhaichidh am fo-sgrìobhadh agad: {{renewalDate}}",
+    "Your subscription will start on {{subscriptionStart}}": "Tòisichidh am fo-sgrìobhadh agad: {{subscriptionStart}}"
 }
