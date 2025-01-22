@@ -8,6 +8,7 @@ import KoenigNestedComposer from './components/KoenigNestedComposer';
 
 /* Plugins */
 import AudioPlugin from './plugins/AudioPlugin';
+import CallToActionPlugin from './plugins/CallToActionPlugin';
 import CalloutPlugin from './plugins/CalloutPlugin';
 import CardMenuPlugin from './plugins/CardMenuPlugin';
 import CollectionPlugin from './plugins/CollectionPlugin';
@@ -65,6 +66,7 @@ export {
 
     AudioPlugin,
     CalloutPlugin,
+    CallToActionPlugin,
     CardMenuPlugin,
     CollectionPlugin,
     DragDropPastePlugin,

@@ -50,7 +50,8 @@ const defaultCardConfig = {
     feature: {
         collections: true,
         collectionsCard: true,
-        contentVisibility: true
+        contentVisibility: true,
+        contentVisibilityAlpha: true
     },
     deprecated: {
         headerV1: process.env.NODE_ENV === 'test' ? false : true // show header v1 only for tests

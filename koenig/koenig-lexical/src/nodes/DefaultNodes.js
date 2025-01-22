@@ -15,6 +15,7 @@ import {AsideNode} from './AsideNode';
 import {AudioNode} from './AudioNode';
 import {BookmarkNode} from './BookmarkNode';
 import {ButtonNode} from './ButtonNode';
+import {CallToActionNode} from './CallToActionNode';
 import {CalloutNode} from './CalloutNode';
 import {CodeBlockNode} from './CodeBlockNode';
 import {CollectionNode} from './CollectionNode';
@@ -60,6 +61,7 @@ const DEFAULT_NODES = [
     HtmlNode,
     FileNode,
     ButtonNode,
+    CallToActionNode,
     ToggleNode,
     HeaderNode,
     BookmarkNode,

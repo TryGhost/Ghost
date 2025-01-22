@@ -8,9 +8,10 @@ export class CallToActionNode extends generateDecoratorNode({nodeType: 'call-to-
         {name: 'showButton', default: false},
         {name: 'buttonText', default: ''},
         {name: 'buttonUrl', default: ''},
+        {name: 'buttonColor', default: ''},
         {name: 'hasSponsorLabel', default: false},
         {name: 'hasBackground', default: false},
-        {name: 'backgroundColor', default: '#123456'},
+        {name: 'backgroundColor', default: 'none'},
         {name: 'hasImage', default: false},
         {name: 'imageUrl', default: ''}
     ]}
@@ -22,6 +23,7 @@ export class CallToActionNode extends generateDecoratorNode({nodeType: 'call-to-
         showButton,
         buttonText,
         buttonUrl,
+        buttonColor,
         hasSponsorLabel,
         hasBackground,
         backgroundColor,
@@ -34,9 +36,10 @@ export class CallToActionNode extends generateDecoratorNode({nodeType: 'call-to-
         this.__showButton = showButton || false;
         this.__buttonText = buttonText || '';
         this.__buttonUrl = buttonUrl || '';
+        this.__buttonColor = buttonColor || 'none';
         this.__hasSponsorLabel = hasSponsorLabel || false;
         this.__hasBackground = hasBackground || false;
-        this.__backgroundColor = backgroundColor || '#123456';
+        this.__backgroundColor = backgroundColor || 'none';
         this.__hasImage = hasImage || false;
         this.__imageUrl = imageUrl || '';
     }

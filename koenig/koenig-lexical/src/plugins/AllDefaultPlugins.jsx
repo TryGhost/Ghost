@@ -1,4 +1,5 @@
 import AtLinkPlugin from './AtLinkPlugin.jsx';
+import CallToActionPlugin from '../plugins/CallToActionPlugin';
 import CollectionPlugin from '../plugins/CollectionPlugin';
 import EmEnDashPlugin from '../plugins/EmEnDashPlugin';
 import HorizontalRulePlugin from '../plugins/HorizontalRulePlugin';
@@ -63,6 +64,7 @@ export const AllDefaultPlugins = () => {
             <EmbedPlugin />
             <SignupPlugin />
             <CollectionPlugin />
+            <CallToActionPlugin />
         </>
     );
 };

@@ -60,26 +60,26 @@ export const ctaColorPicker = [
 ];
 
 export function CtaCard({
-    buttonText,
-    buttonUrl,
-    buttonColor,
+    buttonText, //
+    buttonUrl, //
+    buttonColor, //
     buttonTextColor,
-    color,
-    hasSponsorLabel,
+    color, //
+    hasSponsorLabel, //
     htmlEditor,
     htmlEditorInitialState,
-    imageSrc,
-    isEditing,
-    isSelected,
-    layout,
-    showButton,
-    updateButtonText,
-    updateButtonUrl,
-    updateShowButton,
-    updateHasSponsorLabel,
-    updateLayout,
-    handleColorChange,
-    handleButtonColor
+    imageSrc, //
+    isEditing, //
+    isSelected, //
+    layout, //
+    showButton, //
+    updateButtonText, //
+    updateButtonUrl, //
+    updateShowButton, //
+    updateHasSponsorLabel, //
+    updateLayout, //
+    handleColorChange, //
+    handleButtonColor //
 }) {
     const [buttonColorPickerExpanded, setButtonColorPickerExpanded] = useState(false);
 
