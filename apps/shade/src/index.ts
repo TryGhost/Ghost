@@ -39,9 +39,7 @@ export {default as useGlobalDirtyState} from './hooks/useGlobalDirtyState';
 
 // Utils
 export * from '@/lib/utils';
-export {cn} from '@/lib/utils';
-export {debounce} from './utils/debounce';
-export {formatUrl} from './utils/formatUrl';
+export {cn, debounce, kebabToPascalCase, formatUrl} from '@/lib/utils';
 
 export {default as ShadeApp} from './ShadeApp';
 export type {ShadeAppProps} from './ShadeApp';
