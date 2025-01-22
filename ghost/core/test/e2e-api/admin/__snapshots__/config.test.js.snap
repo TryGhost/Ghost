@@ -18,6 +18,7 @@ Object {
       "captcha": true,
       "collectionsCard": true,
       "contentVisibility": true,
+      "contentVisibilityAlpha": true,
       "customFonts": true,
       "editorExcerpt": true,
       "emailCustomization": true,
