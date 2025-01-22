@@ -301,7 +301,7 @@ describe('sendMagicLink', function () {
             .matchBodySnapshot({
                 errors: [{
                     id: anyErrorId,
-                    message: 'This email domain is not accepted, try again with a different email address'
+                    message: 'Signups from this email provider are not allowed'
                 }]
             });
     });
