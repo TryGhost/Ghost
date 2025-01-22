@@ -18,6 +18,7 @@ import APAvatar from '../global/APAvatar';
 import APReplyBox from '../global/APReplyBox';
 import TableOfContents, {TOCItem} from './TableOfContents';
 import getReadingTime from '../../utils/get-reading-time';
+import {useDebounce} from 'use-debounce';
 
 interface ArticleModalProps {
     activityId: string;
@@ -532,8 +533,10 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
     const currentGridWidth = `${parseInt(currentMaxWidth) - 64}px`;
 
     const [readingProgress, setReadingProgress] = useState(0);
-
     const [isLoading, setIsLoading] = useState(true);
+
+    // Add debounced version of setReadingProgress
+    const [debouncedSetReadingProgress] = useDebounce(setReadingProgress, 100);
 
     useEffect(() => {
         const container = document.querySelector('.overflow-y-auto');
@@ -550,7 +553,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
             const isContentShorterThanViewport = articleRect.height <= containerRect.height;
 
             if (isContentShorterThanViewport) {
-                setReadingProgress(100);
+                debouncedSetReadingProgress(100);
                 return;
             }
 
@@ -560,7 +563,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
             const rawProgress = Math.min(Math.max((scrolledPast / totalHeight) * 100, 0), 100);
             const progress = Math.round(rawProgress / 5) * 5;
 
-            setReadingProgress(progress);
+            debouncedSetReadingProgress(progress);
         };
 
         if (isLoading) {
@@ -583,7 +586,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
             container?.removeEventListener('scroll', handleScroll);
             observer.disconnect();
         };
-    }, [isLoading]);
+    }, [isLoading, debouncedSetReadingProgress]);
 
     const [tocItems, setTocItems] = useState<TOCItem[]>([]);
     const [activeHeadingId, setActiveHeadingId] = useState<string | null>(null);
