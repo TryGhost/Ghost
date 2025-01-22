@@ -543,7 +543,11 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
         const article = document.getElementById('object-content');
 
         const handleScroll = () => {
-            if (!container || !article || isLoading) {
+            if (isLoading) {
+                return;
+            }
+
+            if (!container || !article) {
                 return;
             }
 
