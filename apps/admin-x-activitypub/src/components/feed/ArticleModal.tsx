@@ -18,6 +18,7 @@ import APAvatar from '../global/APAvatar';
 import APReplyBox from '../global/APReplyBox';
 import TableOfContents, {TOCItem} from './TableOfContents';
 import getReadingTime from '../../utils/get-reading-time';
+import {useDebounce} from 'use-debounce';
 
 interface ArticleModalProps {
     activityId: string;
@@ -48,6 +49,7 @@ const ArticleBody: React.FC<{
     fontFamily: SelectOption;
     onHeadingsExtracted?: (headings: TOCItem[]) => void;
     onIframeLoad?: (iframe: HTMLIFrameElement) => void;
+    onLoadingChange?: (isLoading: boolean) => void;
 }> = ({
     heading,
     image,
@@ -57,7 +59,8 @@ const ArticleBody: React.FC<{
     lineHeight,
     fontFamily,
     onHeadingsExtracted,
-    onIframeLoad
+    onIframeLoad,
+    onLoadingChange
 }) => {
     const site = useBrowseSite();
     const siteData = site.data?.site;
@@ -213,7 +216,6 @@ const ArticleBody: React.FC<{
         if (iframeWindow && typeof iframeWindow.resizeIframe === 'function') {
             iframeWindow.resizeIframe();
         } else {
-            // Fallback: trigger a resize event
             const resizeEvent = new Event('resize');
             iframeDocument.dispatchEvent(resizeEvent);
         }
@@ -268,6 +270,11 @@ const ArticleBody: React.FC<{
         iframe.addEventListener('load', handleLoad);
         return () => iframe.removeEventListener('load', handleLoad);
     }, [onHeadingsExtracted, onIframeLoad]);
+
+    // Update parent when loading state changes
+    useEffect(() => {
+        onLoadingChange?.(isLoading);
+    }, [isLoading, onLoadingChange]);
 
     return (
         <div className='w-full pb-6'>
@@ -526,30 +533,66 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
     const currentGridWidth = `${parseInt(currentMaxWidth) - 64}px`;
 
     const [readingProgress, setReadingProgress] = useState(0);
+    const [isLoading, setIsLoading] = useState(true);
+
+    // Add debounced version of setReadingProgress
+    const [debouncedSetReadingProgress] = useDebounce(setReadingProgress, 100);
+
+    const PROGRESS_INCREMENT = 5; // Progress is shown in 5% increments (0%, 5%, 10%, etc.)
 
     useEffect(() => {
         const container = document.querySelector('.overflow-y-auto');
         const article = document.getElementById('object-content');
 
         const handleScroll = () => {
+            if (isLoading) {
+                return;
+            }
+
             if (!container || !article) {
                 return;
             }
 
             const articleRect = article.getBoundingClientRect();
             const containerRect = container.getBoundingClientRect();
+
+            const isContentShorterThanViewport = articleRect.height <= containerRect.height;
+
+            if (isContentShorterThanViewport) {
+                debouncedSetReadingProgress(100);
+                return;
+            }
+
             const scrolledPast = Math.max(0, containerRect.top - articleRect.top);
             const totalHeight = (article as HTMLElement).offsetHeight - (container as HTMLElement).offsetHeight;
 
             const rawProgress = Math.min(Math.max((scrolledPast / totalHeight) * 100, 0), 100);
-            const progress = Math.round(rawProgress / 5) * 5;
+            const progress = Math.round(rawProgress / PROGRESS_INCREMENT) * PROGRESS_INCREMENT;
 
-            setReadingProgress(progress);
+            debouncedSetReadingProgress(progress);
         };
 
+        if (isLoading) {
+            return;
+        }
+
+        const observer = new MutationObserver(handleScroll);
+        if (article) {
+            observer.observe(article, {
+                childList: true,
+                subtree: true,
+                characterData: true
+            });
+        }
+
         container?.addEventListener('scroll', handleScroll);
-        return () => container?.removeEventListener('scroll', handleScroll);
-    }, []);
+        handleScroll();
+
+        return () => {
+            container?.removeEventListener('scroll', handleScroll);
+            observer.disconnect();
+        };
+    }, [isLoading, debouncedSetReadingProgress]);
 
     const [tocItems, setTocItems] = useState<TOCItem[]>([]);
     const [activeHeadingId, setActiveHeadingId] = useState<string | null>(null);
@@ -575,7 +618,6 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                 return;
             }
 
-            // Use offsetTop for absolute position within the document
             const headingOffset = heading.offsetTop;
 
             container.scrollTo({
@@ -602,7 +644,6 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                     return;
                 }
 
-                // Get all heading elements and their positions
                 const headings = tocItems
                     .map(item => doc.getElementById(item.id))
                     .filter((el): el is HTMLElement => el !== null)
@@ -845,6 +886,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                         lineHeight={LINE_HEIGHTS[currentLineHeightIndex]}
                                         onHeadingsExtracted={handleHeadingsExtracted}
                                         onIframeLoad={handleIframeLoad}
+                                        onLoadingChange={setIsLoading}
                                     />
                                     <div className='ml-[-7px]'>
                                         <FeedItemStats
