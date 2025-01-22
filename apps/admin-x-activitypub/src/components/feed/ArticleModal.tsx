@@ -547,7 +547,6 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
             const articleRect = article.getBoundingClientRect();
             const containerRect = container.getBoundingClientRect();
 
-            // Calculate if content is shorter than viewport
             const isContentShorterThanViewport = articleRect.height <= containerRect.height;
 
             if (isContentShorterThanViewport) {
@@ -555,7 +554,6 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                 return;
             }
 
-            // Existing progress calculation for longer content
             const scrolledPast = Math.max(0, containerRect.top - articleRect.top);
             const totalHeight = (article as HTMLElement).offsetHeight - (container as HTMLElement).offsetHeight;
 
@@ -565,25 +563,26 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
             setReadingProgress(progress);
         };
 
-        // Only set up observers and listeners once content is loaded
-        if (!isLoading) {
-            const observer = new MutationObserver(handleScroll);
-            if (article) {
-                observer.observe(article, {
-                    childList: true,
-                    subtree: true,
-                    characterData: true
-                });
-            }
-
-            container?.addEventListener('scroll', handleScroll);
-            handleScroll();
-
-            return () => {
-                container?.removeEventListener('scroll', handleScroll);
-                observer.disconnect();
-            };
+        if (isLoading) {
+            return;
         }
+
+        const observer = new MutationObserver(handleScroll);
+        if (article) {
+            observer.observe(article, {
+                childList: true,
+                subtree: true,
+                characterData: true
+            });
+        }
+
+        container?.addEventListener('scroll', handleScroll);
+        handleScroll();
+
+        return () => {
+            container?.removeEventListener('scroll', handleScroll);
+            observer.disconnect();
+        };
     }, [isLoading]);
 
     const [tocItems, setTocItems] = useState<TOCItem[]>([]);
