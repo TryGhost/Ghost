@@ -538,6 +538,8 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
     // Add debounced version of setReadingProgress
     const [debouncedSetReadingProgress] = useDebounce(setReadingProgress, 100);
 
+    const PROGRESS_INCREMENT = 5; // Progress is shown in 5% increments (0%, 5%, 10%, etc.)
+
     useEffect(() => {
         const container = document.querySelector('.overflow-y-auto');
         const article = document.getElementById('object-content');
@@ -565,7 +567,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
             const totalHeight = (article as HTMLElement).offsetHeight - (container as HTMLElement).offsetHeight;
 
             const rawProgress = Math.min(Math.max((scrolledPast / totalHeight) * 100, 0), 100);
-            const progress = Math.round(rawProgress / 5) * 5;
+            const progress = Math.round(rawProgress / PROGRESS_INCREMENT) * PROGRESS_INCREMENT;
 
             debouncedSetReadingProgress(progress);
         };
