@@ -9,8 +9,9 @@ const Posts: React.FC<postAnalyticsProps> = () => {
     return (
         <Page>
             <H1 className='my-8 min-h-[38px]'>Posts</H1>
-            <div>
+            <div className='flex items-center gap-2'>
                 <Button onClick={() => navigate('analytics/123')}>Analytics</Button>
+                <Button variant='secondary' onClick={() => navigate('analytics/123/share')}>Open dialog via navigation</Button>
             </div>
         </Page>
     );

@@ -26,6 +26,10 @@ export const routes: RouteObject[] = [
             {
                 path: 'newsletter',
                 Component: Newsletter
+            },
+            {
+                path: 'share',
+                Component: Overview
             }
         ]
     }
