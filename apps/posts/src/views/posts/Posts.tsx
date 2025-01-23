@@ -12,7 +12,7 @@ const Posts: React.FC<postAnalyticsProps> = () => {
             <div className='flex items-center gap-2'>
                 <Button onClick={() => navigate('analytics/123')}>Analytics</Button>
                 <Button variant='secondary' onClick={() => navigate('analytics/123/share')}>Open dialog via navigation</Button>
-                <Button variant='secondary' onClick={() => navigate('dashboard', {isExternal: true})}>Go to dashboard (external route)</Button>
+                <Button variant='secondary' onClick={() => navigate('dashboard', {crossApp: true})}>Go to dashboard (external route)</Button>
             </div>
         </Page>
     );

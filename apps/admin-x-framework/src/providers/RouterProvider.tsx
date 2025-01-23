@@ -55,12 +55,12 @@ export function RouterProvider({
 }
 
 /**
- * Override the default navigate function to add the isExternal option. This is
+ * Override the default navigate function to add the crossApp option. This is
  * used to determine if the navigate should be handled by the custom router, ie.
  * if we need to navigate to another React app in Ghost.
  */
 interface NavigateOptions extends ReactRouterNavigateOptions {
-    isExternal?: boolean;
+    crossApp?: boolean;
 }
 
 export function useNavigate() {
@@ -71,7 +71,7 @@ export function useNavigate() {
         to: string,
         options?: NavigateOptions
     ) => {
-        if (options?.isExternal) {
+        if (options?.crossApp) {
             externalNavigate({route: to, isExternal: true});
             return;
         }
