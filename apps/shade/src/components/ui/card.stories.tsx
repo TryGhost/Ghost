@@ -24,7 +24,7 @@ export const Default: Story = {
                 Card contents
             </CardContent>,
 
-            <CardFooter key="footer" className="flex justify-between">
+            <CardFooter key="footer" className="flex grow justify-between">
                 <Button variant="outline">Cancel</Button>
                 <Button>Deploy</Button>
             </CardFooter>

@@ -1,6 +1,5 @@
 import Header from '../../components/Header';
-import {ANALYTICS} from '../../routes';
-import {Outlet, useLocation, useNavigate, useParams} from 'react-router';
+import {Outlet, useLocation, useNavigate, useParams} from '@tryghost/admin-x-framework';
 import {Page, Tabs, TabsList, TabsTrigger} from '@tryghost/shade';
 
 interface postAnalyticsProps {};
@@ -17,9 +16,9 @@ const PostAnalytics: React.FC<postAnalyticsProps> = () => {
 
     const handleTabChange = (value: string) => {
         if (value === 'overview') {
-            navigate(`${ANALYTICS}/${postId}`);
+            navigate(`analytics/${postId}`);
         } else {
-            navigate(`${ANALYTICS}/${postId}/${value}`);
+            navigate(`analytics/${postId}/${value}`);
         }
     };
 

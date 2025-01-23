@@ -19,6 +19,7 @@ export * from './components/ui/tooltip';
 
 // Layout components
 export * from './components/layout/page';
+export * from './components/layout/error-page';
 export * from './components/layout/heading';
 
 // Third party components
