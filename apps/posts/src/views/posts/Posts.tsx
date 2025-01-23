@@ -1,5 +1,5 @@
 import {Button, H1, Page} from '@tryghost/shade';
-import {useNavigate} from 'react-router';
+import {useNavigate} from '@tryghost/admin-x-framework';
 
 interface postAnalyticsProps {};
 

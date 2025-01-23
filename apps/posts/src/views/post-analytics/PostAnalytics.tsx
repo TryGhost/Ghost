@@ -1,5 +1,5 @@
 import Header from '../../components/Header';
-import {Outlet, useLocation, useNavigate, useParams} from 'react-router';
+import {Outlet, useLocation, useNavigate, useParams} from '@tryghost/admin-x-framework';
 import {Page, Tabs, TabsList, TabsTrigger} from '@tryghost/shade';
 
 interface postAnalyticsProps {};
