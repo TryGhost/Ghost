@@ -1,14 +1,16 @@
-/**
- * This is an experimental provider that uses React Router to provide a router
- * context to React apps in Ghost.
- *
- * This is not ready for production yet. For apps in production, use the
- * RoutingProvider.
- */
-
 import {ErrorPage} from '@tryghost/shade';
 import React, {useMemo} from 'react';
 import {createHashRouter, RouteObject, RouterProvider as ReactRouterProvider} from 'react-router';
+
+/**
+ * READ THIS BEFORE USING THIS PROVIDER
+ *
+ * This is an experimental provider that tests using React Router to provide
+ * a router context to React apps in Ghost.
+ *
+ * It is not ready for production yet. For apps in production, use the custom
+ * RoutingProvider.
+ */
 
 export interface RouterProviderProps {
     routes: RouteObject[];
@@ -23,6 +25,7 @@ export function RouterProvider({
     prefix,
     errorElement
 }: RouterProviderProps) {
+    // Memoize the router to avoid re-creating it on every render
     const router = useMemo(() => {
         // Ensure prefix has a leading slash and no trailing slash
         const normalizedPrefix = `/${prefix?.replace(/^\/|\/$/g, '')}`;
