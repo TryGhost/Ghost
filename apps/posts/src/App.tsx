@@ -1,7 +1,6 @@
-import {FrameworkProvider, TopLevelFrameworkProps} from '@tryghost/admin-x-framework';
-import {RouterProvider} from 'react-router';
+import {APP_ROUTE_PREFIX, routes} from './routes';
+import {FrameworkProvider, RouterProvider, TopLevelFrameworkProps} from '@tryghost/admin-x-framework';
 import {ShadeApp, ShadeAppProps, SidebarProvider} from '@tryghost/shade';
-import {router} from './routes';
 
 interface AppProps {
     framework: TopLevelFrameworkProps;
@@ -13,7 +12,7 @@ const App: React.FC<AppProps> = ({framework, designSystem}) => {
         <FrameworkProvider {...framework}>
             <ShadeApp className='posts' {...designSystem}>
                 <SidebarProvider>
-                    <RouterProvider router={router} />
+                    <RouterProvider prefix={APP_ROUTE_PREFIX} routes={routes} />
                 </SidebarProvider>
             </ShadeApp>
         </FrameworkProvider>

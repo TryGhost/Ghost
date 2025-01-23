@@ -2,11 +2,11 @@ import Newsletter from './views/post-analytics/components/Newsletter';
 import Overview from './views/post-analytics/components/Overview';
 import PostAnalytics from './views/post-analytics/PostAnalytics';
 import Posts from './views/posts/Posts';
-import {RouteObject, createHashRouter} from 'react-router';
+import {RouteObject} from '@tryghost/admin-x-framework';
 
-export const BASE_PATH = '/posts-x';
+export const APP_ROUTE_PREFIX = '/posts-x';
 
-const postsRoutes: RouteObject[] = [
+export const routes: RouteObject[] = [
     {
         path: '',
         Component: Posts
@@ -30,10 +30,3 @@ const postsRoutes: RouteObject[] = [
         ]
     }
 ];
-
-export const router = createHashRouter(
-    postsRoutes,
-    {
-        basename: BASE_PATH
-    }
-);
