@@ -1,6 +1,7 @@
 import {ErrorPage} from '@tryghost/shade';
-import React, {useMemo} from 'react';
-import {createHashRouter, RouteObject, RouterProvider as ReactRouterProvider} from 'react-router';
+import React, {useCallback, useMemo} from 'react';
+import {createHashRouter, RouteObject, RouterProvider as ReactRouterProvider, NavigateOptions as ReactRouterNavigateOptions, useNavigate as useReactRouterNavigate} from 'react-router';
+import {useFramework} from './FrameworkProvider';
 
 /**
  * READ THIS BEFORE USING THIS PROVIDER
@@ -12,6 +13,11 @@ import {createHashRouter, RouteObject, RouterProvider as ReactRouterProvider} fr
  * RoutingProvider.
  */
 
+/**
+ * Wrap React Router in a custom provider to provide a standard, simplified
+ * interface for all Ghost apps for routing. It also sanitizes the routes and
+ * adds a default error element.
+ */
 export interface RouterProviderProps {
     routes: RouteObject[];
     prefix?: string;
@@ -46,4 +52,30 @@ export function RouterProvider({
             router={router}
         />
     );
+}
+
+/**
+ * Override the default navigate function to add the isExternal option. This is
+ * used to determine if the navigate should be handled by the custom router, ie.
+ * if we need to navigate to another React app in Ghost.
+ */
+interface NavigateOptions extends ReactRouterNavigateOptions {
+    isExternal?: boolean;
+}
+
+export function useNavigate() {
+    const navigate = useReactRouterNavigate();
+    const {externalNavigate} = useFramework();
+
+    return useCallback((
+        to: string,
+        options?: NavigateOptions
+    ) => {
+        if (options?.isExternal) {
+            externalNavigate({route: to, isExternal: true});
+            return;
+        }
+
+        navigate(to, options);
+    }, [navigate, externalNavigate]);
 }
