@@ -35,13 +35,11 @@ export {ReactComponent as GoogleLogo} from './assets/images/google-logo.svg';
 export {ReactComponent as TwitterLogo} from './assets/images/twitter-logo.svg';
 export {ReactComponent as XLogo} from './assets/images/x-logo.svg';
 
-export {default as useGlobalDirtyState} from './hooks/useGlobalDirtyState';
+export {default as useGlobalDirtyState} from './hooks/use-global-dirty-state';
 
 // Utils
 export * from '@/lib/utils';
-export {cn} from '@/lib/utils';
-export {debounce} from './utils/debounce';
-export {formatUrl} from './utils/formatUrl';
+export {cn, debounce, kebabToPascalCase, formatUrl} from '@/lib/utils';
 
 export {default as ShadeApp} from './ShadeApp';
 export type {ShadeAppProps} from './ShadeApp';
