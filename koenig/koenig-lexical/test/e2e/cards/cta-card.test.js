@@ -55,4 +55,12 @@ test.describe('Call To Action Card', async () => {
         expect(await page.isVisible('[data-testid="button-text"]')).toBe(false);
         expect(await page.isVisible('[data-testid="button-url"]')).toBe(false);
     });
+
+    test('can set button text', async function () {
+        await focusEditor(page);
+        await insertCard(page, {cardName: 'call-to-action'});
+        await page.click('[data-testid="button-settings"]');
+        await page.fill('[data-testid="button-text"]', 'Click me');
+        expect(await page.textContent('[data-testid="cta-button"]')).toBe('Click me');
+    });
 });
