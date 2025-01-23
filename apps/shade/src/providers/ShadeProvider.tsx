@@ -2,7 +2,7 @@ import NiceModal from '@ebay/nice-modal-react';
 import React, {createContext, useContext, useState} from 'react';
 import {Toaster} from 'react-hot-toast';
 // import {FetchKoenigLexical} from '../global/form/HtmlEditor';
-import {GlobalDirtyStateProvider} from '../hooks/useGlobalDirtyState';
+import {GlobalDirtyStateProvider} from '../hooks/use-global-dirty-state';
 
 interface ShadeContextType {
     isAnyTextFieldFocused: boolean;

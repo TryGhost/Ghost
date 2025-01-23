@@ -1,4 +1,5 @@
 import { Meta } from '@storybook/blocks';
+import techStackImage from './assets/tech-stack.png';
 
 <Meta title="Welcome" />
 
@@ -8,9 +9,10 @@ import { Meta } from '@storybook/blocks';
 
 <p className="excerpt">**Shade** is Ghost's design system for product design. It contains all the necessary components and their usage that help you design a great product experience.</p>
 
-## Stack
-
 Shade uses the RadixUI based open source UI library, [ShadCN/UI](https://ui.shadcn.com/) as its foundation which does the heavy lifting and gives a great starting point for any UI component. Additionally Shade is built using [TailwindCSS](https://www.tailwindcss.com). Before diving deep into working with Shade, please get familiar with both of these libraries.
 
-Shade uses [Storybook](https://storybook.js.org/) to document components and best practices.
+<img src={techStackImage} alt="Technology Stack" />
+
+Shade uses [Storybook](https://storybook.js.org/) to test and document components and best practices. For every component used in production, there must be a Storybook entry with at least one story that showcases the component.
+
 </div>

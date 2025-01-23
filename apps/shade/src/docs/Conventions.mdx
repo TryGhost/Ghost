@@ -26,6 +26,26 @@ className={cn(buttonVariants({variant, size, className}))}
 
 ## TailwindCSS color naming
 
-[TK]
+For gray colors up until now we've used `grey`. ShadCN follows TailwindCSS naming conventions and uses `gray` when you install a component. We also decided to go with this mainly to avoid having to manually override color names and risking manual errors in the design system.
+
+## Filenames
+
+Our generic naming conventions is:
+
+- `PascalCase` for React component names
+- `kebab-case` for non-React-components like utilities, hooks and so on
+- `camelCase` for functions, objects, types etc.
+
+When you install a ShadCN component via the CLI it'll create files with kebab-case. This is _not_ following our standards. Unfortunately changing _only_ filename casing in MacOS and Github is a **massive** PITA so for now we're accepting this inconsistency and let ShadCN create its files as is.
+
+## File structure
+
+- `/src/components/` — Root directory for components
+    - `/src/components/ui/` — Directory for atomic UI components (foundational UI elements such as buttons, dropdowns etc.)
+    - `/src/components/layout` — Complex, globally reusable components (such as a page or header container etc.)
+- `/src/hooks/` — Custom Reach hooks
+- `/src/providers/` — Context providers
+- `/src/ib/utils.ts` — Utilities
+- `/src/docs/` — Shade documentation
 
 </div>
