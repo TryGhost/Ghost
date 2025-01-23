@@ -1,10 +1,9 @@
-const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
+const {agentProvider, mockManager, fixtureManager, matchers, configUtils} = require('../../utils/e2e-framework');
 const should = require('should');
 const settingsCache = require('../../../core/shared/settings-cache');
 const DomainEvents = require('@tryghost/domain-events');
 const {anyErrorId} = matchers;
 const spamPrevention = require('../../../core/server/web/shared/middleware/api/spam-prevention');
-const configUtils = require('../../utils/configUtils');
 
 let membersAgent, membersService;
 
@@ -30,7 +29,6 @@ describe('sendMagicLink', function () {
 
     afterEach(function () {
         mockManager.restore();
-        configUtils.restore();
     });
 
     it('Errors when passed multiple emails', async function () {
@@ -288,21 +286,95 @@ describe('sendMagicLink', function () {
         });
     });
 
-    it('blocks signups from blocked email domains', async function () {
-        configUtils.set('spam:blocked_email_domains', ['blocked-domain.com']);
+    describe('blocked email domains', function () {
+        beforeEach(function () {
+            settingsCache.set('blocked_email_domains', {value: ['blocked-domain-setting.com']});
+            configUtils.set('spam:blocked_email_domains', ['blocked-domain-config.com']);
 
-        const email = 'this-member-does-not-exist@blocked-domain.com';
-        await membersAgent.post('/api/send-magic-link')
-            .body({
-                email,
-                emailType: 'signup'
-            })
-            .expectStatus(400)
-            .matchBodySnapshot({
-                errors: [{
-                    id: anyErrorId,
-                    message: 'Signups from this email provider are not allowed'
-                }]
-            });
+            // Re-initialize members API
+            membersService.api = null;
+            membersService.init();
+        });
+
+        afterEach(function () {
+            settingsCache.set('blocked_email_domains', {value: []});
+            configUtils.restore();
+        });
+
+        it('blocks signups from email domains blocked in config', async function () {
+            const blockedEmail = 'hello@blocked-domain-config.com';
+            membersAgent = membersAgent.duplicate();
+            await membersAgent.post('/api/send-magic-link')
+                .body({
+                    email: blockedEmail,
+                    emailType: 'signup'
+                })
+                .expectStatus(400)
+                .matchBodySnapshot({
+                    errors: [{
+                        id: anyErrorId,
+                        message: 'Signups from this email provider are not allowed'
+                    }]
+                });
+        });
+
+        it('blocks signups from email domains blocked in settings', async function () {
+            const blockedEmail = 'hello@blocked-domain-setting.com';
+            membersAgent = membersAgent.duplicate();
+            await membersAgent.post('/api/send-magic-link')
+                .body({
+                    email: blockedEmail,
+                    emailType: 'signup'
+                })
+                .expectStatus(400)
+                .matchBodySnapshot({
+                    errors: [{
+                        id: anyErrorId,
+                        message: 'Signups from this email provider are not allowed'
+                    }]
+                });
+        });
+
+        it('allows signups from non-blocked email domains', async function () {
+            const allowedEmail = 'hello@example.com';
+            await membersAgent.post('/api/send-magic-link')
+                .body({
+                    email: allowedEmail,
+                    emailType: 'signup'
+                })
+                .expectEmptyBody()
+                .expectStatus(201);
+        });
+
+        it('allows signins from email domains blocked in config', async function () {
+            // Create member with the blocked email address in the database
+            const email = 'hello@blocked-domain-config.com';
+            await membersService.api.members.create({email, name: 'Member Test'});
+
+            // Check that the member can still sign in
+            await membersAgent.post('/api/send-magic-link')
+                .body({
+                    email,
+                    emailType: 'signin'
+                })
+                .expectEmptyBody()
+                .expectStatus(201);
+        });
+
+        it('allows signins from email domains blocked in settings', async function () {
+            // Create member with the blocked email address in the database
+            const email = 'hello@blocked-domain-setting.com';
+            await membersService.api.members.create({email, name: 'Member Test'});
+
+            // Check that the member can still sign in
+            await membersAgent.post('/api/send-magic-link')
+                .body({
+                    email,
+                    emailType: 'signin'
+                })
+                .expectEmptyBody()
+                .expectStatus(201);
+        });
     });
 });
+

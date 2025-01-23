@@ -6,7 +6,6 @@ const debug = require('@tryghost/debug')('services:newsletters');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const sentry = require('../../../shared/sentry');
-const config = require('../../../shared/config');
 
 const messages = {
     nameAlreadyExists: 'A newsletter with the same name already exists',
@@ -87,8 +86,7 @@ class NewslettersService {
             getText,
             getHTML,
             getSubject,
-            sentry,
-            config
+            sentry
         });
     }
 

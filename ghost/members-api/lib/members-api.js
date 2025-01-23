@@ -28,7 +28,8 @@ module.exports = function MembersAPI({
     auth: {
         allowSelfSignup = () => true,
         getSigninURL,
-        tokenProvider
+        tokenProvider,
+        blockedEmailDomains
     },
     mail: {
         transporter,
@@ -73,8 +74,7 @@ module.exports = function MembersAPI({
     emailSuppressionList,
     settingsCache,
     sentry,
-    settingsHelpers,
-    config
+    settingsHelpers
 }) {
     const tokenService = new TokenService({
         privateKey,
@@ -159,8 +159,7 @@ module.exports = function MembersAPI({
         getText,
         getHTML,
         getSubject,
-        sentry,
-        config
+        sentry
     });
 
     const paymentsService = new PaymentsService({
@@ -198,7 +197,8 @@ module.exports = function MembersAPI({
         labsService,
         newslettersService,
         settingsCache,
-        sentry
+        sentry,
+        blockedEmailDomains
     });
 
     const wellKnownController = new WellKnownController({

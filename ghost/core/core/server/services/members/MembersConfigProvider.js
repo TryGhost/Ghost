@@ -7,7 +7,7 @@ class MembersConfigProvider {
     /**
      * @param {object} options
      * @param {{get: (key: string) => any}} options.settingsCache
-     * @param {{getDefaultEmailDomain(): string, getMembersSupportAddress(): string, getNoReplyAddress(): string, isStripeConnected(): boolean}} options.settingsHelpers
+     * @param {{getDefaultEmailDomain(): string, getMembersSupportAddress(): string, getNoReplyAddress(): string, isStripeConnected(): boolean, getBlockedEmailDomains(): string[]}} options.settingsHelpers
      * @param {any} options.urlUtils
      */
     constructor({settingsCache, settingsHelpers, urlUtils}) {
@@ -91,6 +91,10 @@ class MembersConfigProvider {
             signinURL.searchParams.set('r', referrer);
         }
         return signinURL.toString();
+    }
+
+    getBlockedEmailDomains() {
+        return this._settingsHelpers.getBlockedEmailDomains();
     }
 }
 

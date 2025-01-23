@@ -2,9 +2,12 @@ const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
 const {BadRequestError, NoPermissionError, UnauthorizedError, DisabledFeatureError} = require('@tryghost/errors');
 const errors = require('@tryghost/errors');
+const {isEmail} = require('@tryghost/validator');
 
 const messages = {
     emailRequired: 'Email is required.',
+    invalidEmail: 'Email is not valid',
+    blockedEmailDomain: 'Signups from this email provider are not allowed',
     badRequest: 'Bad Request.',
     notFound: 'Not Found.',
     offerNotFound: 'This offer does not exist.',
@@ -42,6 +45,7 @@ module.exports = class RouterController {
      * @param {any} deps.newslettersService
      * @param {any} deps.sentry
      * @param {any} deps.settingsCache
+     * @param {string[]} deps.blockedEmailDomains
      */
     constructor({
         offersAPI,
@@ -58,7 +62,8 @@ module.exports = class RouterController {
         labsService,
         newslettersService,
         sentry,
-        settingsCache
+        settingsCache,
+        blockedEmailDomains
     }) {
         this._offersAPI = offersAPI;
         this._paymentsService = paymentsService;
@@ -75,6 +80,7 @@ module.exports = class RouterController {
         this._newslettersService = newslettersService;
         this._sentry = sentry || undefined;
         this._settingsCache = settingsCache;
+        this._blockedEmailDomains = blockedEmailDomains;
     }
 
     async ensureStripe(_req, res, next) {
@@ -508,6 +514,12 @@ module.exports = class RouterController {
             });
         }
 
+        if (!isEmail(email)) {
+            throw new errors.BadRequestError({
+                message: tpl(messages.invalidEmail)
+            });
+        }
+
         if (honeypot) {
             logging.warn('Honeypot field filled, this is likely a bot');
 
@@ -562,6 +574,13 @@ module.exports = class RouterController {
             }
         }
 
+        const emailDomain = req.body.email.split('@')[1]?.toLowerCase();
+        if (emailDomain && this._blockedEmailDomains.includes(emailDomain)) {
+            throw new errors.BadRequestError({
+                message: tpl(messages.blockedEmailDomain)
+            });
+        }
+
         const {email, emailType} = req.body;
 
         const tokenData = {
@@ -587,7 +606,7 @@ module.exports = class RouterController {
         }
 
         const tokenData = {};
-        await this._sendEmailWithMagicLink({email, tokenData, requestedType: emailType, referrer});
+        return await this._sendEmailWithMagicLink({email, tokenData, requestedType: emailType, referrer});
     }
 
     async _validateNewsletters(req) {

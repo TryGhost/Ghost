@@ -252,6 +252,7 @@ describe('RouterController', function () {
                         getAttribution: sinon.stub().resolves({})
                     },
                     sendEmailWithMagicLink: sendEmailWithMagicLinkStub,
+                    blockedEmailDomains: [],
                     ...deps
                 });
             };
@@ -399,6 +400,7 @@ describe('RouterController', function () {
                         getAttribution: sinon.stub().resolves({})
                     },
                     sendEmailWithMagicLink: sendEmailWithMagicLinkStub,
+                    blockedEmailDomains: [],
                     ...deps
                 });
             };
@@ -413,7 +415,6 @@ describe('RouterController', function () {
                 };
                 res = {
                     writeHead: sinon.stub(),
-
                     end: sinon.stub()
                 };
                 sendEmailWithMagicLinkStub = sinon.stub().resolves();
@@ -433,6 +434,56 @@ describe('RouterController', function () {
 
                 await controller.sendMagicLink(req, res).should.be.fulfilled();
                 sendEmailWithMagicLinkStub.notCalled.should.be.true();
+            });
+        });
+
+        describe('signup', function () {
+            let req, res, sendEmailWithMagicLinkStub;
+            let blockedEmailDomains = [];
+
+            const createRouterController = (deps = {}) => {
+                return new RouterController({
+                    allowSelfSignup: sinon.stub().returns(true),
+                    memberAttributionService: {
+                        getAttribution: sinon.stub().resolves({})
+                    },
+                    sendEmailWithMagicLink: sendEmailWithMagicLinkStub,
+                    blockedEmailDomains: blockedEmailDomains,
+                    ...deps
+                });
+            };
+
+            beforeEach(function () {
+                req = {
+                    body: {
+                        email: 'jamie@example.com',
+                        emailType: 'signup'
+                    },
+                    get: sinon.stub()
+                };
+                res = {
+                    writeHead: sinon.stub(),
+                    end: sinon.stub()
+                };
+                sendEmailWithMagicLinkStub = sinon.stub().resolves();
+            });
+
+            it('blocks signups from blocked email domains', async function () {
+                blockedEmailDomains = ['blocked-domain.com'];
+                req.body.email = 'test@blocked-domain.com';
+
+                const controller = createRouterController();
+
+                await controller.sendMagicLink(req, res).should.be.rejectedWith('Signups from this email provider are not allowed');
+            });
+
+            it('allows signups from non-blocked email domains', async function () {
+                blockedEmailDomains = ['blocked-domain.com'];
+                req.body.email = 'test@allowed-domain.com';
+
+                const controller = createRouterController();
+
+                await controller.sendMagicLink(req, res).should.be.fulfilled();
             });
         });
     });

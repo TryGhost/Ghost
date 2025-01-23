@@ -136,7 +136,9 @@ module.exports = {
                 });
             }
         }
-        if (!membersApi) {
+
+        // Create API instance if it doesn't exist, or if init() is called in test mode
+        if (!membersApi || env?.startsWith('testing')) {
             membersApi = createMembersApiInstance(membersConfig);
 
             membersApi.bus.on('error', function (err) {
