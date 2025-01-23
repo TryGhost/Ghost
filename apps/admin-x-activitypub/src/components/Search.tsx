@@ -59,7 +59,7 @@ const AccountSearchResultItem: React.FC<AccountSearchResultItemProps> = ({accoun
             }}/>
             <div>
                 <div className='text-grey-600'>
-                    <span className='font-bold text-black'>{account.name} </span>{account.handle}
+                    <span className='font-semibold text-black'>{account.name} </span>{account.handle}
                 </div>
                 <div className='text-sm'>{new Intl.NumberFormat().format(account.followerCount)} followers</div>
             </div>
@@ -124,7 +124,7 @@ const SuggestedProfile: React.FC<SuggestedProfileProps> = ({profile, update}) =>
             <APAvatar author={profile.actor}/>
             <div>
                 <div className='text-grey-600'>
-                    <span className='font-bold text-black'>{profile.actor.name} </span>{profile.handle}
+                    <span className='font-semibold text-black'>{profile.actor.name} </span>{profile.handle}
                 </div>
                 <div className='text-sm'>{new Intl.NumberFormat().format(profile.followerCount)} followers</div>
             </div>

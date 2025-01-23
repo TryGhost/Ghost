@@ -718,7 +718,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                             </div>
                             <div className='relative z-10 flex w-full min-w-0 flex-col overflow-visible text-[1.5rem]'>
                                 <div className='flex w-full'>
-                                    <span className='min-w-0 truncate whitespace-nowrap font-bold'>{actor.name}</span>
+                                    <span className='min-w-0 truncate whitespace-nowrap font-semibold'>{actor.name}</span>
                                 </div>
                                 <div className='flex w-full'>
                                     <span className='text-grey-700 after:mx-1 after:font-normal after:text-grey-700 after:content-["·"]'>{getUsername(actor)}</span>

@@ -324,7 +324,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                 </div>
                                 <div className='relative z-10 flex w-full min-w-0 flex-col overflow-visible text-[1.5rem]'>
                                     <div className='flex w-full'>
-                                        <span className='min-w-0 truncate whitespace-nowrap font-bold after:mx-1 after:font-normal after:text-grey-700 after:content-["·"]' data-test-activity-heading>{author.name}</span>
+                                        <span className='min-w-0 truncate whitespace-nowrap font-semibold after:mx-1 after:font-normal after:text-grey-700 after:content-["·"]' data-test-activity-heading>{author.name}</span>
                                         <div>{renderTimestamp(object)}</div>
                                     </div>
                                     <div className='flex w-full'>
@@ -375,7 +375,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                 <div className='flex w-full items-center justify-between'>
                                     <div className='relative z-10 flex w-full min-w-0 flex-col overflow-visible'>
                                         <div className='flex'>
-                                            <span className='min-w-0 truncate whitespace-nowrap font-bold after:mx-1 after:font-normal after:text-grey-700 after:content-["·"]' data-test-activity-heading>{author.name}</span>
+                                            <span className='min-w-0 truncate whitespace-nowrap font-semibold after:mx-1 after:font-normal after:text-grey-700 after:content-["·"]' data-test-activity-heading>{author.name}</span>
                                             <div>{renderTimestamp(object)}</div>
                                         </div>
                                         <div className='flex'>

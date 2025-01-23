@@ -154,7 +154,7 @@ const Inbox: React.FC<InboxProps> = ({layout}) => {
                                                             >
                                                                 <APAvatar author={actor} />
                                                                 <div className='flex min-w-0 flex-col'>
-                                                                    <span className='block w-full truncate font-bold text-black'>{getName(actor)}</span>
+                                                                    <span className='block w-full truncate font-semibold text-black'>{getName(actor)}</span>
                                                                     <span className='block w-full truncate text-sm text-grey-600'>{getUsername(actor)}</span>
                                                                 </div>
                                                             </ActivityItem>
