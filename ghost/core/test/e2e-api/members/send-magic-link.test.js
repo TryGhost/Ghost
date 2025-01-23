@@ -287,16 +287,16 @@ describe('sendMagicLink', function () {
     });
 
     describe('blocked email domains', function () {
-        beforeEach(function () {
+        before(async function () {
             settingsCache.set('blocked_email_domains', {value: ['blocked-domain-setting.com']});
             configUtils.set('spam:blocked_email_domains', ['blocked-domain-config.com']);
 
             // Re-initialize members API
-            membersService.api = null;
-            membersService.init();
+            membersService.resetMembersApi();
+            await membersService.init();
         });
 
-        afterEach(function () {
+        after(function () {
             settingsCache.set('blocked_email_domains', {value: []});
             configUtils.restore();
         });

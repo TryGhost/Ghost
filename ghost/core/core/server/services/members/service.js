@@ -138,7 +138,7 @@ module.exports = {
         }
 
         // Create API instance if it doesn't exist, or if init() is called in test mode
-        if (!membersApi || env?.startsWith('testing')) {
+        if (!membersApi) {
             membersApi = createMembersApiInstance(membersConfig);
 
             membersApi.bus.on('error', function (err) {
@@ -199,6 +199,10 @@ module.exports = {
     stripeConnect: require('./stripe-connect'),
 
     processImport: null,
+
+    resetMembersApi() {
+        membersApi = null;
+    },
 
     stats: membersStats,
     export: require('./exporter/query')
