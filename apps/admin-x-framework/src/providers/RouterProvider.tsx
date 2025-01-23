@@ -57,7 +57,7 @@ export function RouterProvider({
 /**
  * Override the default navigate function to add the crossApp option. This is
  * used to determine if the navigate should be handled by the custom router, ie.
- * if we need to navigate to another React app in Ghost.
+ * if we need to navigate outside of the current app in Ghost.
  */
 interface NavigateOptions extends ReactRouterNavigateOptions {
     crossApp?: boolean;
