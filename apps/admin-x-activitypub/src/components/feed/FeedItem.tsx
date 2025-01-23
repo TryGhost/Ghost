@@ -7,7 +7,6 @@ import APAvatar from '../global/APAvatar';
 import FeedItemStats from './FeedItemStats';
 import clsx from 'clsx';
 import getReadingTime from '../../utils/get-reading-time';
-import getRelativeTimestamp from '../../utils/get-relative-timestamp';
 import getUsername from '../../utils/get-username';
 import stripHtml from '../../utils/strip-html';
 import {handleProfileClick} from '../../utils/handle-profile-click';
@@ -160,8 +159,6 @@ const noop = () => {};
 const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, commentCount = 0, showHeader = true, last, onClick: onClickHandler = noop, onCommentClick}) => {
     const timestamp =
         new Date(object?.published ?? new Date()).toLocaleDateString('default', {year: 'numeric', month: 'short', day: '2-digit'}) + ', ' + new Date(object?.published ?? new Date()).toLocaleTimeString('default', {hour: '2-digit', minute: '2-digit'});
-
-    const date = new Date(object?.published ?? new Date());
 
     const [, setIsCopied] = useState(false);
 
