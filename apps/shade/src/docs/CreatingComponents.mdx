@@ -6,11 +6,17 @@ import { Meta } from '@storybook/blocks';
 
 # Adding new components
 
-ShadCN/UI is actually not a library, it's a starting point — this means that whenever you install a new ShadCN/UI component it adds a new React `tsx` file with the default implementation for the given UI component. Then you can customize the implementation by applying TW classes, creating new variants and so on.
+<p className="excerpt">ShadCN/UI is not a library, it's a starting point — this means that whenever you install a new ShadCN/UI component it adds new React component(s) with the default implementation for the given UI component. Then you can customize the implementation by applying TW classes, creating new variants and so on.</p>
 
 As an example, let's see how to add a "Button" component.
 
+---
+
 **Step 1:** Go to [ShadCN/UI component list](https://ui.shadcn.com/docs/components) and find **Button**
+
+> ⚠️ Sometimes the npx command fails with a massive error. This usually happens if ShadCN tries to reinstall an already existing third party library or component (e.g. `radix-ui/dialog` or `lucide-react`). In these cases, find out which package causes the issue (usually it's the one indicated under the manual installation of the given component), remove it from Shade's `package.json` and retry adding the ShadCN component via the CLI command.
+
+---
 
 **Step 2:** Install the component
 
@@ -35,6 +41,8 @@ If you take a look at the source of this component you'll see that the whole but
 - You can't "update" ShadCN/UI components, you can only reinstall. This means that if you re-run the install command it overwrites the existing implementation including all your changes, so be careful.
 - You can change the implementation as you wish. You can add, remove or CSS classes, create new variants and add UI logic if you want.
 
+---
+
 **Step 3:** Create stories for the new component
 
 In order to make the new component appear in Storybook, you need to create at least one story for it. You can use the Boilerplate story as a starting point: copy it as `[component].stories.tsx` to the same folder as your component:
@@ -52,6 +60,8 @@ For a story, at a minimum you'll need to:
 
 - Update the imported component (for the button example: `import {Button} from './button'`), and update all references in the stories file
 - Change the meta data (most imporantly, `title: 'Components / Button'`, where "Components" will be the parent directory of Button in Storybook — this is a meta directory it doesn't have to exist in the file system)
+
+---
 
 **Step 4:** (Optional) Add or remove component variants
 
@@ -83,6 +93,8 @@ export interface ButtonProps
 }
 ```
 
+---
+
 **Step 5:** Export the component
 
 In order to be able to import the new component in apps, you'll need to export it in the `index.ts` file of Shade, like this:
@@ -92,6 +104,12 @@ export * from './components/ui/button';
 ```
 
 That's it — you've just added a new component to Shade and made it ready to use in other React apps.
+
+---
+
+**Note:** ShadCN uses a few third party libraries. Since we export everything from Shade under the project `@tryghost/shade` there might be conflicts if a third party library uses similar component names as some other components in Shade. For example, ShadCN uses Recharts to display charts. Recharts has a `<Tooltip>` component and Shade also has one. To overcome this issue we alias all third party exports (e.g. `export * as Recharts from "recharts"`).
+
+---
 
 ## Stories
 
@@ -113,6 +131,10 @@ The `components.json` file contains the ShadCN/UI default configuration, so when
 
 ## Custom components
 
-[TK]
+It is of course possible to create our own components. Examine how ShadCN components are structured and follow their patterns:
+
+- Create a single file for each UI component
+- Create [composable components](https://blog.tomaszgil.me/choosing-the-right-path-composable-vs-configurable-components-in-react) (multiple React components), _not_ configurable ones (lots of props). Create all corresponding React components in the same file (take a look at the Dropdown Menu implementation for an example).
+- Export custom components the same way as you would with ShadCN ones.
 
 </div>

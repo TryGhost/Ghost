@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "5.106.1",
+  "version": "5.107.2",
   "description": "The professional publishing platform",
   "author": "Ghost Foundation",
   "homepage": "https://ghost.org",
@@ -73,7 +73,6 @@
     "@tryghost/audience-feedback": "0.0.0",
     "@tryghost/bookshelf-plugins": "0.6.25",
     "@tryghost/bootstrap-socket": "0.0.0",
-    "@tryghost/collections": "0.0.0",
     "@tryghost/color-utils": "0.2.2",
     "@tryghost/config-url-helpers": "1.0.12",
     "@tryghost/constants": "0.0.0",
@@ -133,7 +132,6 @@
     "@tryghost/metrics": "1.0.34",
     "@tryghost/milestones": "0.0.0",
     "@tryghost/minifier": "0.0.0",
-    "@tryghost/model-to-domain-event-interceptor": "0.0.0",
     "@tryghost/mw-api-version-mismatch": "0.0.0",
     "@tryghost/mw-cache-control": "0.0.0",
     "@tryghost/mw-error-handler": "0.0.0",

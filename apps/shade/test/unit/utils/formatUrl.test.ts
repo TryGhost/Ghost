@@ -1,5 +1,5 @@
 import * as assert from 'assert/strict';
-import {formatUrl} from '../../../src/utils/formatUrl';
+import {formatUrl} from '@/lib/utils';
 
 describe('formatUrl', function () {
     it('displays empty string if the input is empty and nullable is true', function () {

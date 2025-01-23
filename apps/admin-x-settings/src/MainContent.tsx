@@ -11,7 +11,7 @@ import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 const Page: React.FC<{children: ReactNode}> = ({children}) => {
     return <>
-        <div className='fixed right-0 top-2 z-50 flex justify-end p-8 dark:bg-grey-975 tablet:fixed tablet:top-0 tablet:bg-transparent tablet:px-8 dark:tablet:bg-transparent' id="done-button-container">
+        <div className='fixed right-0 top-2 z-50 flex justify-end bg-transparent p-8 tablet:fixed tablet:top-0 tablet:px-8' id="done-button-container">
             <ExitSettingsButton />
         </div>
         <div className="w-full dark:bg-grey-975 tablet:fixed tablet:left-0 tablet:top-0 tablet:flex tablet:h-full" id="admin-x-settings-content">
@@ -77,7 +77,7 @@ const MainContent: React.FC = () => {
                     <Sidebar />
                 </div>
             </div>
-            <div className="relative h-full flex-1 overflow-y-scroll bg-white pt-12 dark:bg-black tablet:basis-[800px]" id="admin-x-settings-scroller">
+            <div className="relative h-full flex-1 overflow-y-scroll bg-white pt-12 dark:bg-grey-975 tablet:basis-[800px] dark:tablet:bg-black" id="admin-x-settings-scroller">
                 <Settings />
             </div>
         </Page>
