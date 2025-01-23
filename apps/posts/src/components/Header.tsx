@@ -1,15 +1,18 @@
 import {Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuTrigger, H1, LucideIcon} from '@tryghost/shade';
+import {useNavigate} from 'react-router';
 
 interface headerProps {};
 
 const Header: React.FC<headerProps> = () => {
+    const navigate = useNavigate();
+
     return (
         <div className="flex flex-col items-start justify-between gap-1 pt-9">
             <div className='flex h-8 w-full items-center justify-between gap-3'>
                 <Breadcrumb>
                     <BreadcrumbList>
                         <BreadcrumbItem>
-                            <BreadcrumbLink href="/ghost/posts">
+                            <BreadcrumbLink className='cursor-pointer' onClick={() => navigate('/')}>
                                 Posts
                             </BreadcrumbLink>
                         </BreadcrumbItem>

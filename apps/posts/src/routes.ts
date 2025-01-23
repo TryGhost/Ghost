@@ -1,14 +1,18 @@
 import Newsletter from './views/post-analytics/components/Newsletter';
 import Overview from './views/post-analytics/components/Overview';
 import PostAnalytics from './views/post-analytics/PostAnalytics';
-import {createHashRouter} from 'react-router';
+import Posts from './views/posts/Posts';
+import {RouteObject, createHashRouter} from 'react-router';
 
 export const BASE_PATH = '/posts-x';
-export const ANALYTICS = `${BASE_PATH}/analytics`;
 
-const postAnalyticsRoutes = [
+const postsRoutes: RouteObject[] = [
     {
-        path: `${BASE_PATH}/analytics/:postId`,
+        path: '',
+        Component: Posts
+    },
+    {
+        path: 'analytics/:postId',
         Component: PostAnalytics,
         children: [
             {
@@ -27,4 +31,9 @@ const postAnalyticsRoutes = [
     }
 ];
 
-export const router = createHashRouter(postAnalyticsRoutes);
+export const router = createHashRouter(
+    postsRoutes,
+    {
+        basename: BASE_PATH
+    }
+);
