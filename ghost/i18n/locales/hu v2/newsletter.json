@@ -15,7 +15,7 @@
     "trialing": "utólag",
     "Unsubscribe": "Leiratkozás",
     "View in browser": "Megnyitás a böngészőben",
-    "You are receiving this because you are a <strong>%%{status}%% subscriber</strong> to {site}.": "Ezt azért kapod, mert <strong>%%{status}%% subscriber</strong> to {site}",
+    "You are receiving this because you are a <strong>%%{status}%% subscriber</strong> to {site}.": "Ezt azért kapod, mert <strong>%%{status}%% előfizető</strong> vagy itt: {site}",
     "Your free trial ends on {date}, at which time you will be charged the regular price. You can always cancel before then.": "Az ingyenes próbaidőszak után fiókod automatikusan átvált előfizetésesre. A próbaidőszak alatt bármikor lemondhatod az előfizetésedet.",
     "Your subscription has been canceled and will expire on {date}. You can resume your subscription via your account settings.": "Az előfizetésed törölve lesz és lejár ekkor: {date}. A fiókodban beállíthatod az előfizetésed folytatását.",
     "Your subscription has expired.": "Az előfizetésed lejárt.",
