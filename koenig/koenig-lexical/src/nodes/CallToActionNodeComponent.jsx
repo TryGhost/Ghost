@@ -47,6 +47,13 @@ export const CallToActionNodeComponent = ({
         });
     };
 
+    const handleButtonUrlChange = (val) => {
+        editor.update(() => {
+            const node = $getNodeByKey(nodeKey);
+            node.buttonUrl = val;
+        });
+    };
+
     return (
         <>
             <CtaCard
@@ -68,7 +75,7 @@ export const CallToActionNodeComponent = ({
                 showButton={showButton}
                 text={textValue}
                 updateButtonText={handleButtonTextChange}
-                updateButtonUrl={() => {}}
+                updateButtonUrl={handleButtonUrlChange}
                 updateHasSponsorLabel={() => {}}
                 updateLayout={() => {}}
                 updateShowButton={toggleShowButton}

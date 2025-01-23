@@ -63,4 +63,65 @@ test.describe('Call To Action Card', async () => {
         await page.fill('[data-testid="button-text"]', 'Click me');
         expect(await page.textContent('[data-testid="cta-button"]')).toBe('Click me');
     });
+
+    test('can set button url', async function () {
+        await focusEditor(page);
+        await insertCard(page, {cardName: 'call-to-action'});
+        await page.click('[data-testid="button-settings"]');
+        await page.fill('[data-testid="button-url"]', 'https://example.com/somepost');
+        const buttonContainer = await page.$('[data-test-cta-button-current-url]');
+        const currentUrl = await buttonContainer.getAttribute('data-test-cta-button-current-url');
+        expect(currentUrl).toBe('https://example.com/somepost');
+    });
+
+    // NOTE: an improvement would be to pass in suggested url options, but the construction now doesn't make that straightforward
+    test('suggested urls display', async function () {
+        await focusEditor(page);
+        await insertCard(page, {cardName: 'call-to-action'});
+        await page.click('[data-testid="button-settings"]');
+
+        const buttonTextInput = await page.getByTestId('button-url');
+        await expect(buttonTextInput).toHaveValue('');
+
+        await page.getByTestId('button-url').fill('Home');
+        await page.waitForSelector('[data-testid="button-url-listOption"]');
+
+        await expect(await page.getByTestId('button-url-listOption')).toContainText('Homepage');
+        await page.getByTestId('button-url-listOption').click();
+        const buttonContainer = await page.$('[data-test-cta-button-current-url]');
+        const currentUrl = await buttonContainer.getAttribute('data-test-cta-button-current-url');
+        // current view can be any url, so check for a valid url
+        const validUrlRegex = /^(https?:\/\/)([\w.-]+)(:[0-9]+)?(\/[\w.-]*)*(\?.*)?(#.*)?$/;
+        // Assert the URL is valid
+        expect(currentUrl).toMatch(validUrlRegex);
+    });
+
+    test('button doesnt disappear when toggled, has text, has url and loses focus', async function () {
+        await focusEditor(page);
+        await insertCard(page, {cardName: 'call-to-action'});
+        await page.click('[data-testid="button-settings"]');
+        await page.fill('[data-testid="button-text"]', 'Click me');
+        await page.fill('[data-testid="button-url"]', 'https://example.com/somepost');
+        expect(await page.isVisible('[data-testid="cta-button"]')).toBe(true);
+        expect(await page.textContent('[data-testid="cta-button"]')).toBe('Click me');
+        const buttonContainer = await page.$('[data-test-cta-button-current-url]');
+        const currentUrl = await buttonContainer.getAttribute('data-test-cta-button-current-url');
+        expect(currentUrl).toBe('https://example.com/somepost');
+
+        // lose focus and editing mode
+        await page.keyboard.press('Escape');
+        await page.keyboard.press('Enter');
+
+        // check if editing is false
+        await assertHTML(page, html`
+            <div data-lexical-decorator="true" contenteditable="false">
+                <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="call-to-action">
+                </div>
+            </div>
+            <p><br /></p>
+            <p><br /></p>
+        `, {ignoreCardContents: true});
+
+        expect(await page.isVisible('[data-testid="cta-button"]')).toBe(true);
+    });
 });

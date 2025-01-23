@@ -134,10 +134,8 @@ test.describe('Button Card', async () => {
         const buttonTextInput = await page.getByTestId('button-input-url');
         await expect(buttonTextInput).toHaveValue('');
 
-        // this is dependent on the test values inserted in the node
-        await page.getByTestId('button-input-url').fill('Ho');
-        // this is too fast, need to try two inputs or add a delay before checking the suggested options
-        await page.getByTestId('button-input-url').fill('me');
+        await page.getByTestId('button-input-url').fill('Home');
+        await page.waitForSelector('[data-testid="button-input-url-listOption"]');
         await expect(await page.getByTestId('button-input-url-listOption-Homepage')).toHaveText('Homepage');
         await page.getByTestId('button-input-url-listOption').click();
 

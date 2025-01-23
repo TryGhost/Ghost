@@ -269,7 +269,7 @@ export function CtaCard({
 
                         {/* Button */}
                         { (showButton && (isEditing || (buttonText && buttonUrl))) &&
-                            <div>
+                            <div data-test-cta-button-current-url={buttonUrl}>
                                 <Button 
                                     color={'accent'} 
                                     dataTestId="cta-button" 
