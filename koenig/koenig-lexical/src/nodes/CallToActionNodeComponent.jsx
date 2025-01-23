@@ -1,10 +1,12 @@
 import CardContext from '../context/CardContext';
 import KoenigComposerContext from '../context/KoenigComposerContext.jsx';
 import React from 'react';
+import {$getNodeByKey} from 'lexical';
 import {ActionToolbar} from '../components/ui/ActionToolbar.jsx';
 import {CtaCard} from '../components/ui/cards/CtaCard';
 import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
 import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu.jsx';
+import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
 export const CallToActionNodeComponent = ({
     nodeKey,
@@ -21,7 +23,7 @@ export const CallToActionNodeComponent = ({
     buttonColor,
     htmlEditor
 }) => {
-    // const [editor] = useLexicalComposerContext();
+    const [editor] = useLexicalComposerContext();
     const {isEditing, isSelected, setEditing} = React.useContext(CardContext);
     const {cardConfig} = React.useContext(KoenigComposerContext);
     const [showSnippetToolbar, setShowSnippetToolbar] = React.useState(false);
@@ -30,6 +32,14 @@ export const CallToActionNodeComponent = ({
         event.stopPropagation();
         setEditing(true);
     };
+
+    const toggleShowButton = (event) => {
+        editor.update(() => {
+            const node = $getNodeByKey(nodeKey);
+            node.showButton = !node.showButton;
+        });
+    };
+
     return (
         <>
             <CtaCard
@@ -54,7 +64,7 @@ export const CallToActionNodeComponent = ({
                 updateButtonUrl={() => {}}
                 updateHasSponsorLabel={() => {}}
                 updateLayout={() => {}}
-                updateShowButton={() => {}}
+                updateShowButton={toggleShowButton}
             />
             <ActionToolbar
                 data-kg-card-toolbar="button"

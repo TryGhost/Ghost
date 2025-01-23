@@ -73,13 +73,13 @@ export function CtaCard({
     isSelected, //
     layout, //
     showButton, //
-    updateButtonText, //
-    updateButtonUrl, //
-    updateShowButton, //
-    updateHasSponsorLabel, //
-    updateLayout, //
-    handleColorChange, //
-    handleButtonColor //
+    updateButtonText,
+    updateButtonUrl,
+    updateShowButton,
+    updateHasSponsorLabel,
+    updateLayout,
+    handleColorChange,
+    handleButtonColor
 }) {
     const [buttonColorPickerExpanded, setButtonColorPickerExpanded] = useState(false);
 
