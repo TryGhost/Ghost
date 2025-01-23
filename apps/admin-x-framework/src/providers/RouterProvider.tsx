@@ -33,8 +33,8 @@ export function RouterProvider({
 }: RouterProviderProps) {
     // Memoize the router to avoid re-creating it on every render
     const router = useMemo(() => {
-        // Ensure prefix has a leading slash and no trailing slash
-        const normalizedPrefix = `/${prefix?.replace(/^\/|\/$/g, '')}`;
+        // Ensure prefix has a leading slash and no double+ or trailing slashes
+        const normalizedPrefix = `/${prefix?.replace(/\/+/g, '/').replace(/^\/|\/$/g, '')}`;
 
         // Add default error element if not provided
         const finalRoutes = routes.map(route => ({
