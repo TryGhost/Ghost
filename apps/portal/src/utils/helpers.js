@@ -511,6 +511,14 @@ export function getSiteNewsletters({site}) {
     return newsletters;
 }
 
+export function hasCaptchaEnabled({site}) {
+    return site?.captcha_enabled === true;
+}
+
+export function getCaptchaSitekey({site}) {
+    return site?.captcha_sitekey || '';
+}
+
 export function hasMultipleNewsletters({site}) {
     const {
         newsletters

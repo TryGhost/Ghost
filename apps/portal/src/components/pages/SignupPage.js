@@ -7,9 +7,10 @@ import NewsletterSelectionPage from './NewsletterSelectionPage';
 import ProductsSection from '../common/ProductsSection';
 import InputForm from '../common/InputForm';
 import {ValidateInputForm} from '../../utils/form';
-import {getSiteProducts, getSitePrices, hasAvailablePrices, hasOnlyFreePlan, isInviteOnly, isFreeSignupAllowed, isPaidMembersOnly, freeHasBenefitsOrDescription, hasMultipleNewsletters, hasFreeTrialTier, isSignupAllowed, isSigninAllowed} from '../../utils/helpers';
+import {getSiteProducts, getSitePrices, hasAvailablePrices, hasOnlyFreePlan, isInviteOnly, isFreeSignupAllowed, isPaidMembersOnly, freeHasBenefitsOrDescription, hasMultipleNewsletters, hasFreeTrialTier, isSignupAllowed, isSigninAllowed, hasCaptchaEnabled, getCaptchaSitekey} from '../../utils/helpers';
 import {ReactComponent as InvitationIcon} from '../../images/icons/invitation.svg';
 import {interceptAnchorClicks} from '../../utils/links';
+import HCaptcha from '@hcaptcha/react-hcaptcha';
 
 export const SignupPageStyles = `
 .gh-portal-back-sitetitle {
@@ -356,6 +357,7 @@ class SignupPage extends React.Component {
         };
 
         this.termsRef = React.createRef();
+        this.captchaRef = React.createRef();
     }
 
     componentDidMount() {
@@ -400,6 +402,16 @@ class SignupPage extends React.Component {
         };
     }
 
+    doSignupWithChecks() {
+        const {site} = this.context;
+        if (hasCaptchaEnabled({site})) {
+            // hCaptcha's callback will call doSignup
+            return this.captchaRef.current.execute();
+        } else {
+            this.doSignup();
+        }
+    }
+
     doSignup() {
         this.setState((state) => {
             return {
@@ -407,7 +419,7 @@ class SignupPage extends React.Component {
             };
         }, () => {
             const {site, onAction} = this.context;
-            const {name, email, plan, phonenumber, errors} = this.state;
+            const {name, email, plan, phonenumber, token, errors} = this.state;
             const hasFormErrors = (errors && Object.values(errors).filter(d => !!d).length > 0);
 
             // Only scroll checkbox into view if it's the only error
@@ -423,14 +435,14 @@ class SignupPage extends React.Component {
                 if (hasMultipleNewsletters({site})) {
                     this.setState({
                         showNewsletterSelection: true,
-                        pageData: {name, email, plan, phonenumber},
+                        pageData: {name, email, plan, phonenumber, token},
                         errors: {}
                     });
                 } else {
                     this.setState({
                         errors: {}
                     });
-                    onAction('signup', {name, email, phonenumber, plan});
+                    onAction('signup', {name, email, phonenumber, plan, token});
                 }
             }
         });
@@ -444,7 +456,7 @@ class SignupPage extends React.Component {
     handleChooseSignup(e, plan) {
         e.preventDefault();
         this.setState({plan}, () => {
-            this.doSignup();
+            this.doSignupWithChecks();
         });
     }
 
@@ -732,6 +744,16 @@ class SignupPage extends React.Component {
                             onChange={(e, field) => this.handleInputChange(e, field)}
                             onKeyDown={e => this.onKeyDown(e)}
                         />
+                        {(hasCaptchaEnabled({site}) &&
+                            <HCaptcha
+                                size="invisible"
+                                sitekey={getCaptchaSitekey({site})}
+                                onLoad={() => this.setState({captchaLoaded: true})}
+                                onVerify={token => this.setState({token: token}, this.doSignup)}
+                                ref={this.captchaRef}
+                                id="hcaptcha-signup"
+                            />
+                        )}
                     </div>
                     <div>
                         {(hasOnlyFree ?
