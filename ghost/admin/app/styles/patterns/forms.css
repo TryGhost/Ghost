@@ -99,7 +99,7 @@ input[type=number] {
 
 .form-group p {
     margin: 4px 0 0 0;
-    color: var(--midgrey-d1);
+    color: var(--middarkgrey);
     font-size: 1.25rem;
     font-weight: 400;
 }
@@ -278,6 +278,34 @@ textarea {
     top: 6px;
     font-size: 1.3rem;
     color: var(--midgrey);
+}
+
+.gh-input-x {
+    width: 100%;
+    height: 38px;
+    padding: 4px 12px;
+    font-size: 1.4rem;
+    color: var(--black);
+    background-color: var(--grey-150);
+    border: 1px solid transparent;
+    border-radius: 8px;
+}
+
+.gh-input-x:focus,
+.gh-input-x:focus-visible {
+    background-color: var(--white);
+    border: 1px solid var(--green);
+    box-shadow: 0 0 0 2px rgba(48,207,67,.25);
+    outline: none;
+}
+
+textarea.gh-input-x {
+    padding-block: 8px;
+    max-width: unset;
+}
+
+.ember-power-select-multiple-trigger {
+    padding-left: 4px;
 }
 
 

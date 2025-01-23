@@ -9,7 +9,13 @@ import {Icon} from '@tryghost/admin-x-design-system';
 type AvatarSize = '2xs' | 'xs' | 'sm' | 'lg' | 'notification';
 
 interface APAvatarProps {
-    author: ActorProperties | undefined;
+    author: {
+        icon: {
+            url: string;
+        };
+        name: string;
+        handle?: string;
+    } | undefined;
     size?: AvatarSize;
 }
 
@@ -59,14 +65,14 @@ const APAvatar: React.FC<APAvatarProps> = ({author, size}) => {
         containerClass = clsx(containerClass, 'bg-grey-100');
     }
 
+    const handle = author?.handle || getUsername(author as ActorProperties);
+
     const onClick = (e: React.MouseEvent) => {
         e.stopPropagation();
-        NiceModal.show(ViewProfileModal, {
-            profile: getUsername(author as ActorProperties)
-        });
+        NiceModal.show(ViewProfileModal, {handle});
     };
 
-    const title = `${author?.name} ${getUsername(author as ActorProperties)}`;
+    const title = `${author?.name} ${handle}`;
 
     if (iconUrl) {
         return (

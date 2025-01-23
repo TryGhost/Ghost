@@ -54,6 +54,9 @@ Router.map(function () {
 
     this.route('posts-x', function () {
         this.route('posts-x', {path: '/*sub'});
+        this.route('analytics', function () {
+            this.route('123');
+        });
     });
 
     this.route('settings-x', {path: '/settings'}, function () {

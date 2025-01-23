@@ -15,6 +15,7 @@ RUN apt-get update && \
 # Base DevContainer: for use in a Dev Container where your local code is mounted into the container
 ### Adding code and installing dependencies gets overridden by your local code/dependencies, so this is done in onCreateCommand
 FROM base AS base-devcontainer
+ARG WORKDIR=/home/ghost
 # Install Stripe CLI, zsh, playwright
 RUN curl -s https://packages.stripe.dev/api/security/keypair/stripe-cli-gpg/public | gpg --dearmor | tee /usr/share/keyrings/stripe.gpg && \
     echo "deb [signed-by=/usr/share/keyrings/stripe.gpg] https://packages.stripe.dev/stripe-cli-debian-local stable main" | tee -a /etc/apt/sources.list.d/stripe.list && \
@@ -28,7 +29,7 @@ RUN curl -s https://packages.stripe.dev/api/security/keypair/stripe-cli-gpg/publ
     npx -y playwright@1.46.1 install --with-deps
 
 ENV NX_DAEMON=true
-ENV YARN_CACHE_FOLDER=/workspaces/ghost/.yarncache
+ENV YARN_CACHE_FOLDER=$WORKDIR/.yarncache
 
 EXPOSE 2368
 EXPOSE 4200
@@ -47,21 +48,13 @@ EXPOSE 7174
 ### This is a full devcontainer with all the code and dependencies installed
 ### Useful in an environment like Github Codespaces where you don't mount your local code into the container
 FROM base-devcontainer AS full-devcontainer
+ARG WORKDIR=/home/ghost
 WORKDIR $WORKDIR
-COPY ../../ .
+COPY . .
 RUN yarn install --frozen-lockfile --prefer-offline --cache-folder $YARN_CACHE_FOLDER
 
-# Development Stage: alternative entrypoint for development with some caching optimizations
 FROM base-devcontainer AS development
-
+ARG WORKDIR=/home/ghost
 WORKDIR $WORKDIR
-
-COPY ../../ .
-
-RUN yarn install --frozen-lockfile --prefer-offline --cache-folder $YARN_CACHE_FOLDER && \
-    cp -r .yarncache .yarncachecopy && \
-    rm -Rf .yarncachecopy/.tmp && \
-    yarn cache clean
-
-ENTRYPOINT ["./.devcontainer/.docker/development.entrypoint.sh"]
+ENTRYPOINT ["/home/ghost/.docker/development.entrypoint.sh"]
 CMD ["yarn", "dev"]
