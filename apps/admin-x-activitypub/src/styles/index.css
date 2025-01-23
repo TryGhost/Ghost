@@ -31,14 +31,13 @@ button.ap-like-button:active svg {
 .ap-note-content a,
 .ap-profile-content a,
 .ap-note-content-large a {
-    color: #2563eb !important;
+    color: #00A4EB !important;
     word-break: break-all;
 }
 
 .ap-note-content a:hover,
 .ap-profile-content a:hover,
 .ap-note-content-large a:hover {
-    color: #1d4ed8 !important;
     text-decoration: underline !important;
 }
 
@@ -60,7 +59,7 @@ button.ap-like-button:active svg {
 }
 
 .ap-note-content-large > * + * {
-    margin-top: 1.6rem !important;
+    margin-top: 1.65rem !important;
 }
 
 .ap-note-content > h1 + *,

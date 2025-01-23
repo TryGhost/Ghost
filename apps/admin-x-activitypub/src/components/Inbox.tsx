@@ -137,9 +137,9 @@ const Inbox: React.FC<InboxProps> = ({layout}) => {
                                     </div>
                                 </div>
                                 <div className={`sticky top-[133px] ml-auto w-full max-w-[300px] max-lg:hidden xxxl:sticky xxxl:right-[40px]`}>
-                                    <h2 className='mb-2 text-lg font-semibold'>This is your {layout === 'inbox' ? 'inbox' : 'feed'}</h2>
-                                    <p className='mb-6 border-b border-grey-200 pb-6 text-grey-700'>You&apos;ll find {layout === 'inbox' ? 'long-form content' : 'short posts and updates'} from the accounts you follow here.</p>
-                                    <h2 className='mb-2 text-lg font-semibold'>You might also like</h2>
+                                    <h2 className='mb-1.5 text-lg font-semibold'>This is your {layout === 'inbox' ? 'inbox' : 'feed'}</h2>
+                                    <p className='mb-6 text-grey-700'>You&apos;ll find {layout === 'inbox' ? 'long-form content' : 'short posts and updates'} from the accounts you follow here.</p>
+                                    <h2 className='mb-1 text-lg font-semibold'>You might also like</h2>
                                     {isLoadingSuggested ? (
                                         <LoadingIndicator size="sm" />
                                     ) : (
@@ -154,7 +154,7 @@ const Inbox: React.FC<InboxProps> = ({layout}) => {
                                                             >
                                                                 <APAvatar author={actor} />
                                                                 <div className='flex min-w-0 flex-col'>
-                                                                    <span className='block w-full truncate font-bold text-black'>{getName(actor)}</span>
+                                                                    <span className='block w-full truncate font-semibold text-black'>{getName(actor)}</span>
                                                                     <span className='block w-full truncate text-sm text-grey-600'>{getUsername(actor)}</span>
                                                                 </div>
                                                             </ActivityItem>
@@ -165,7 +165,7 @@ const Inbox: React.FC<InboxProps> = ({layout}) => {
                                             })}
                                         </ul>
                                     )}
-                                    <Button className='mt-4' color='grey' fullWidth={true} label='Explore' onClick={() => updateRoute('search')} />
+                                    <Button className='mt-2' color='green' fullWidth={true} label='Explore &rarr;' link={true} onClick={() => updateRoute('search')} />
                                 </div>
                             </div>
                         </>
