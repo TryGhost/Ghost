@@ -202,7 +202,7 @@ class SettingsHelpers {
      *
      * @returns {string[]}
      */
-    getBlockedEmailDomains() {
+    getAllBlockedEmailDomains() {
         let configBlocklist = this.config.get('spam:blocked_email_domains') || [];
         let settingsBlocklist = this.settingsCache.get('blocked_email_domains') || [];
 

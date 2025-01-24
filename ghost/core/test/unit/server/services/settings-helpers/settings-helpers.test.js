@@ -150,7 +150,7 @@ describe('Settings Helpers', function () {
         });
     });
 
-    describe('getBlockedEmailDomains', function () {
+    describe('getAllBlockedEmailDomains', function () {
         let fakeSettings;
         const urlUtils = {
             urlFor: sinon.stub().returns('http://domain.com/')
@@ -173,7 +173,7 @@ describe('Settings Helpers', function () {
             });
 
             const settingsHelpers = new SettingsHelpers({settingsCache: fakeSettings, config: configUtils.config, urlUtils, labs: {}});
-            const domains = settingsHelpers.getBlockedEmailDomains();
+            const domains = settingsHelpers.getAllBlockedEmailDomains();
 
             assert.deepEqual(domains, []);
         });
@@ -187,7 +187,7 @@ describe('Settings Helpers', function () {
             });
 
             const settingsHelpers = new SettingsHelpers({settingsCache: fakeSettings, config: configUtils.config, urlUtils, labs: {}});
-            const domains = settingsHelpers.getBlockedEmailDomains();
+            const domains = settingsHelpers.getAllBlockedEmailDomains();
 
             assert.deepEqual(domains, []);
         });
@@ -201,7 +201,7 @@ describe('Settings Helpers', function () {
             });
 
             const settingsHelpers = new SettingsHelpers({settingsCache: fakeSettings, config: configUtils.config, urlUtils, labs: {}});
-            const domains = settingsHelpers.getBlockedEmailDomains();
+            const domains = settingsHelpers.getAllBlockedEmailDomains();
 
             assert.deepEqual(domains, []);
         });
@@ -215,7 +215,7 @@ describe('Settings Helpers', function () {
             });
 
             const settingsHelpers = new SettingsHelpers({settingsCache: fakeSettings, config: configUtils.config, urlUtils, labs: {}});
-            const domains = settingsHelpers.getBlockedEmailDomains();
+            const domains = settingsHelpers.getAllBlockedEmailDomains();
 
             assert.deepEqual(domains, []);
         });
@@ -229,7 +229,7 @@ describe('Settings Helpers', function () {
             });
 
             const settingsHelpers = new SettingsHelpers({settingsCache: fakeSettings, config: configUtils.config, urlUtils, labs: {}});
-            const domains = settingsHelpers.getBlockedEmailDomains();
+            const domains = settingsHelpers.getAllBlockedEmailDomains();
 
             assert.deepEqual(domains, ['configdomain.com', 'domain.com', 'settingsdomain.com']);
         });
@@ -243,7 +243,7 @@ describe('Settings Helpers', function () {
             });
 
             const settingsHelpers = new SettingsHelpers({settingsCache: fakeSettings, config: configUtils.config, urlUtils, labs: {}});
-            const domains = settingsHelpers.getBlockedEmailDomains();
+            const domains = settingsHelpers.getAllBlockedEmailDomains();
 
             assert.deepEqual(domains, ['configdomain.com', 'configexample.com', 'domain.com', 'example.com']);
         });

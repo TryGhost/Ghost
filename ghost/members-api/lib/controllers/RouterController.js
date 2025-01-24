@@ -45,7 +45,6 @@ module.exports = class RouterController {
      * @param {any} deps.newslettersService
      * @param {any} deps.sentry
      * @param {any} deps.settingsCache
-     * @param {string[]} deps.blockedEmailDomains
      */
     constructor({
         offersAPI,
@@ -62,8 +61,7 @@ module.exports = class RouterController {
         labsService,
         newslettersService,
         sentry,
-        settingsCache,
-        blockedEmailDomains
+        settingsCache
     }) {
         this._offersAPI = offersAPI;
         this._paymentsService = paymentsService;
@@ -80,7 +78,6 @@ module.exports = class RouterController {
         this._newslettersService = newslettersService;
         this._sentry = sentry || undefined;
         this._settingsCache = settingsCache;
-        this._blockedEmailDomains = blockedEmailDomains;
     }
 
     async ensureStripe(_req, res, next) {
@@ -574,8 +571,9 @@ module.exports = class RouterController {
             }
         }
 
+        const blockedEmailDomains = this._settingsCache.get('all_blocked_email_domains');
         const emailDomain = req.body.email.split('@')[1]?.toLowerCase();
-        if (emailDomain && this._blockedEmailDomains.includes(emailDomain)) {
+        if (emailDomain && blockedEmailDomains.includes(emailDomain)) {
             throw new errors.BadRequestError({
                 message: tpl(messages.blockedEmailDomain)
             });

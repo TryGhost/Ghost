@@ -200,10 +200,6 @@ module.exports = {
 
     processImport: null,
 
-    resetMembersApi() {
-        membersApi = null;
-    },
-
     stats: membersStats,
     export: require('./exporter/query')
 };

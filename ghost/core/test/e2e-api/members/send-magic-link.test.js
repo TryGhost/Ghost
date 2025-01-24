@@ -1,6 +1,7 @@
 const {agentProvider, mockManager, fixtureManager, matchers, configUtils} = require('../../utils/e2e-framework');
 const should = require('should');
 const settingsCache = require('../../../core/shared/settings-cache');
+const settingsService = require('../../../core/server/services/settings');
 const DomainEvents = require('@tryghost/domain-events');
 const {anyErrorId} = matchers;
 const spamPrevention = require('../../../core/server/web/shared/middleware/api/spam-prevention');
@@ -287,17 +288,13 @@ describe('sendMagicLink', function () {
     });
 
     describe('blocked email domains', function () {
-        before(async function () {
-            settingsCache.set('blocked_email_domains', {value: ['blocked-domain-setting.com']});
+        beforeEach(async function () {
             configUtils.set('spam:blocked_email_domains', ['blocked-domain-config.com']);
 
-            // Re-initialize members API
-            membersService.resetMembersApi();
-            await membersService.init();
+            await settingsService.init();
         });
 
-        after(function () {
-            settingsCache.set('blocked_email_domains', {value: []});
+        afterEach(function () {
             configUtils.restore();
         });
 
@@ -319,6 +316,8 @@ describe('sendMagicLink', function () {
         });
 
         it('blocks signups from email domains blocked in settings', async function () {
+            settingsCache.set('all_blocked_email_domains', {value: ['blocked-domain-setting.com']});
+
             const blockedEmail = 'hello@blocked-domain-setting.com';
             membersAgent = membersAgent.duplicate();
             await membersAgent.post('/api/send-magic-link')
@@ -362,6 +361,8 @@ describe('sendMagicLink', function () {
         });
 
         it('allows signins from email domains blocked in settings', async function () {
+            settingsCache.set('all_blocked_email_domains', {value: ['blocked-domain-setting.com']});
+
             // Create member with the blocked email address in the database
             const email = 'hello@blocked-domain-setting.com';
             await membersService.api.members.create({email, name: 'Member Test'});
