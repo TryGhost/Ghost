@@ -306,28 +306,34 @@ textarea.gh-input-x {
 }
 
 .ember-power-select-multiple-trigger {
-    padding-left: 4px;
-    padding-right: 32px;
-    height: auto;
+    padding: 4px;
     min-height: 38px;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: flex-start;
-    gap: 4px;
+    display: grid;
+    grid-template-columns: 1fr 24px;
     position: relative;
 }
 
+.ember-power-select-multiple-options {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+    margin: 0;
+    padding: 0;
+}
+
 .ember-power-select-trigger-multiple-input {
-    width: auto !important;
-    max-width: 100%;
+    margin: 2px;
+    padding: 0;
+    border: 0;
+    background: none;
+    min-width: 60px;
 }
 
 .ember-basic-dropdown-trigger[aria-expanded="true"] .ember-power-select-status-icon,
 .ember-power-select-status-icon {
-    position: absolute;
-    right: 12px;
-    top: 16px;
-    transform: translateY(-50%);
+    margin: 0 auto;
+    transform: none;
 }
 
 
