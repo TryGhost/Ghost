@@ -60,19 +60,19 @@ export const ctaColorPicker = [
 ];
 
 export function CtaCard({
-    buttonText, //
-    buttonUrl, //
-    buttonColor, //
+    buttonText,
+    buttonUrl,
+    buttonColor,
     buttonTextColor,
     color, //
-    hasSponsorLabel, //
+    hasSponsorLabel,
     htmlEditor,
     htmlEditorInitialState,
-    imageSrc, //
-    isEditing, //
-    isSelected, //
-    layout, //
-    showButton, //
+    imageSrc,
+    isEditing,
+    isSelected,
+    layout,
+    showButton,
     updateButtonText,
     updateButtonUrl,
     updateShowButton,

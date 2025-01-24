@@ -34,6 +34,7 @@ describe('CallToActionNode', function () {
             buttonText: 'click me',
             buttonUrl: 'http://blog.com/post1',
             buttonColor: 'none',
+            buttonTextColor: 'none',
             hasSponsorLabel: true,
             hasBackground: true,
             backgroundColor: 'none',
@@ -60,6 +61,7 @@ describe('CallToActionNode', function () {
             callToActionNode.buttonText.should.equal(dataset.buttonText);
             callToActionNode.buttonUrl.should.equal(dataset.buttonUrl);
             callToActionNode.buttonColor.should.equal(dataset.buttonColor);
+            callToActionNode.buttonTextColor.should.equal(dataset.buttonTextColor);
             callToActionNode.hasSponsorLabel.should.equal(dataset.hasSponsorLabel);
             callToActionNode.hasBackground.should.equal(dataset.hasBackground);
             callToActionNode.backgroundColor.should.equal(dataset.backgroundColor);
@@ -93,6 +95,10 @@ describe('CallToActionNode', function () {
             callToActionNode.buttonColor.should.equal('none');
             callToActionNode.buttonColor = 'red';
             callToActionNode.buttonColor.should.equal('red');
+
+            callToActionNode.buttonTextColor.should.equal('none');
+            callToActionNode.buttonTextColor = 'black';
+            callToActionNode.buttonTextColor.should.equal('black');
 
             callToActionNode.hasSponsorLabel.should.equal(false);
             callToActionNode.hasSponsorLabel = true;

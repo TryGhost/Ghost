@@ -124,4 +124,54 @@ test.describe('Call To Action Card', async () => {
 
         expect(await page.isVisible('[data-testid="cta-button"]')).toBe(true);
     });
+
+    test('default button colour is accent', async function () {
+        await focusEditor(page);
+        await insertCard(page, {cardName: 'call-to-action'});
+        await page.click('[data-testid="button-settings"]');
+        expect(await page.getAttribute('[data-testid="cta-button"]', 'class')).toContain('bg-accent');
+    });
+
+    test('can change button colour to black', async function () {
+        await focusEditor(page);
+        await insertCard(page, {cardName: 'call-to-action'});
+        await page.click('[data-testid="button-settings"]');
+        // find the parent element cta-button-color and select child button with title=black
+        await page.click('[data-testid="cta-button-color"] button[title="Black"]');
+        // check if the button has style="background-color: rgb(0, 0, 0);"
+        expect(await page.getAttribute('[data-testid="cta-button"]', 'style')).toContain('background-color: rgb(0, 0, 0);');
+    });
+
+    test('can change button colour to grey', async function () {
+        await focusEditor(page);
+        await insertCard(page, {cardName: 'call-to-action'});
+        await page.click('[data-testid="button-settings"]');
+        // find the parent element cta-button-color and select child button with title=white
+        await page.click('[data-testid="cta-button-color"] button[title="Grey"]');
+        // check if the button has style="background-color: rgb(255, 255, 255);"
+        expect(await page.getAttribute('[data-testid="cta-button"]', 'style')).toContain('background-color: rgb(240, 240, 240);');
+    });
+
+    test('can use colour picker to change button colour', async function () {
+        await focusEditor(page);
+        await insertCard(page, {cardName: 'call-to-action'});
+        await page.click('[data-testid="button-settings"]');
+        await page.click('button[aria-label="Pick color"]');
+        await page.fill('input[aria-label="Color value"]', 'ff0000');
+        expect(await page.getAttribute('[data-testid="cta-button"]', 'style')).toContain('background-color: rgb(255, 0, 0);');
+    });
+
+    test('button text colour changes with button colour', async function () {
+        await focusEditor(page);
+        await insertCard(page, {cardName: 'call-to-action'});
+        await page.click('[data-testid="button-settings"]');
+        await page.fill('[data-testid="button-text"]', 'Click me');
+        await page.click('button[aria-label="Pick color"]');
+        await page.fill('input[aria-label="Color value"]', 'FFFFFF');
+        expect(await page.getAttribute('[data-testid="cta-button"]', 'style')).toContain('color: rgb(255, 255, 255);');
+
+        // change button colour to black
+        await page.click('[data-testid="cta-button-color"] button[title="Black"]');
+        expect(await page.getAttribute('[data-testid="cta-button"]', 'style')).toContain('color: rgb(0, 0, 0);');
+    });
 });

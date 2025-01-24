@@ -56,6 +56,7 @@ export class CallToActionNode extends BaseCallToActionNode {
                     backgroundColor={this.backgroundColor}
                     buttonColor={this.buttonColor}
                     buttonText={this.buttonText}
+                    buttonTextColor={this.buttonTextColor}
                     buttonUrl={this.buttonUrl}
                     hasBackground={this.hasBackground}
                     hasImage={this.hasImage}

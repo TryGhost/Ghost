@@ -9,6 +9,7 @@ export class CallToActionNode extends generateDecoratorNode({nodeType: 'call-to-
         {name: 'buttonText', default: ''},
         {name: 'buttonUrl', default: ''},
         {name: 'buttonColor', default: ''},
+        {name: 'buttonTextColor', default: ''},
         {name: 'hasSponsorLabel', default: false},
         {name: 'hasBackground', default: false},
         {name: 'backgroundColor', default: 'none'},
@@ -24,6 +25,7 @@ export class CallToActionNode extends generateDecoratorNode({nodeType: 'call-to-
         buttonText,
         buttonUrl,
         buttonColor,
+        buttonTextColor,
         hasSponsorLabel,
         hasBackground,
         backgroundColor,
@@ -37,6 +39,7 @@ export class CallToActionNode extends generateDecoratorNode({nodeType: 'call-to-
         this.__buttonText = buttonText || '';
         this.__buttonUrl = buttonUrl || '';
         this.__buttonColor = buttonColor || 'none';
+        this.__buttonTextColor = buttonTextColor || 'none';
         this.__hasSponsorLabel = hasSponsorLabel || false;
         this.__hasBackground = hasBackground || false;
         this.__backgroundColor = backgroundColor || 'none';
