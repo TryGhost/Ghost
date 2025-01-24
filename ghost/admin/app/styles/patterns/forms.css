@@ -282,7 +282,8 @@ textarea {
 
 .gh-input-x {
     width: 100%;
-    height: 38px;
+    min-height: 38px;
+    height: auto;
     padding: 4px 12px;
     font-size: 1.4rem;
     color: var(--black);
@@ -306,6 +307,27 @@ textarea.gh-input-x {
 
 .ember-power-select-multiple-trigger {
     padding-left: 4px;
+    padding-right: 32px;
+    height: auto;
+    min-height: 38px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 4px;
+    position: relative;
+}
+
+.ember-power-select-trigger-multiple-input {
+    width: auto !important;
+    max-width: 100%;
+}
+
+.ember-basic-dropdown-trigger[aria-expanded="true"] .ember-power-select-status-icon,
+.ember-power-select-status-icon {
+    position: absolute;
+    right: 12px;
+    top: 16px;
+    transform: translateY(-50%);
 }
 
 
