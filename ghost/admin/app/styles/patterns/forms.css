@@ -282,7 +282,8 @@ textarea {
 
 .gh-input-x {
     width: 100%;
-    height: 38px;
+    min-height: 38px;
+    height: auto;
     padding: 4px 12px;
     font-size: 1.4rem;
     color: var(--black);
@@ -305,7 +306,34 @@ textarea.gh-input-x {
 }
 
 .ember-power-select-multiple-trigger {
-    padding-left: 4px;
+    padding: 4px;
+    min-height: 38px;
+    display: grid;
+    grid-template-columns: 1fr 24px;
+    position: relative;
+}
+
+.ember-power-select-multiple-options {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+    margin: 0;
+    padding: 0;
+}
+
+.ember-power-select-trigger-multiple-input {
+    margin: 2px;
+    padding: 0;
+    border: 0;
+    background: none;
+    min-width: 60px;
+}
+
+.ember-basic-dropdown-trigger[aria-expanded="true"] .ember-power-select-status-icon,
+.ember-power-select-status-icon {
+    margin: 0 auto;
+    transform: none;
 }
 
 
