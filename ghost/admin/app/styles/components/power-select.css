@@ -310,7 +310,7 @@
 
 .ember-power-select-status-icon {
     position: absolute;
-    top: 11px;
+    top: 13px;
     right: 13px;
     border: solid var(--midlightgrey);
     border-width: 0 1px 1px 0;
