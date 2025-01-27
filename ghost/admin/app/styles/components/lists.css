@@ -406,15 +406,16 @@ ul.nostyle li {
 .gh-list-sticky,
 .gh-list-scrolling {
     position: relative;
-    overflow: auto;
+    overflow-y: visible;
+    overflow-x: auto;
     max-width: calc(100% + 96px);
-    height: calc(100vh - 140px);
-    margin: 0 -48px -81px;
+    margin: 0 -48px 0;
     padding: 0 48px;
 }
 
 .view-container {
-    overflow-x: hidden;
+    position: relative;
+    overflow: hidden;
 }
 
 .gh-list-scrolling table {
@@ -422,6 +423,7 @@ ul.nostyle li {
     border-collapse: inherit;
     margin: 0;
     border-bottom: none;
+    width: 100%;
 }
 
 .gh-list-scrolling thead tr {
