@@ -62,7 +62,13 @@ export const CallToActionNodeComponent = ({
             node.buttonTextColor = matchingTextColor;
         });
     };
-
+    const handleHasSponsorLabelChange = (val) => {
+        editor.update(() => {
+            const node = $getNodeByKey(nodeKey);
+            // get the current value and toggle it
+            node.hasSponsorLabel = !node.hasSponsorLabel;
+        });
+    };
     const handleBackgroundColorChange = (val) => {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
@@ -93,7 +99,7 @@ export const CallToActionNodeComponent = ({
                 text={textValue}
                 updateButtonText={handleButtonTextChange}
                 updateButtonUrl={handleButtonUrlChange}
-                updateHasSponsorLabel={() => {}}
+                updateHasSponsorLabel={handleHasSponsorLabelChange}
                 updateLayout={() => {}}
                 updateShowButton={toggleShowButton}
             />

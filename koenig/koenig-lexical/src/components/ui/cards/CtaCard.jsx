@@ -125,6 +125,7 @@ export function CtaCard({
             />
             {/* Sponsor label setting */}
             <ToggleSetting
+                dataTestId="sponsor-label-toggle"
                 isChecked={hasSponsorLabel}
                 label='Sponsor label'
                 onChange={updateHasSponsorLabel}
@@ -224,7 +225,7 @@ export function CtaCard({
                         'not-kg-prose py-3',
                         {'mx-5': color !== 'none'}
                     )}>
-                        <p className="font-sans text-2xs font-semibold uppercase leading-8 tracking-normal text-grey-900/40 dark:text-grey-100/40">Sponsored</p>
+                        <p className="font-sans text-2xs font-semibold uppercase leading-8 tracking-normal text-grey-900/40 dark:text-grey-100/40" data-testid="sponsor-label">Sponsored</p>
                     </div>
                 )}
 
