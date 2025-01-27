@@ -64,7 +64,7 @@ export function CtaCard({
     buttonUrl,
     buttonColor,
     buttonTextColor,
-    color, //
+    color,
     hasSponsorLabel,
     htmlEditor,
     htmlEditorInitialState,
@@ -79,7 +79,10 @@ export function CtaCard({
     updateHasSponsorLabel,
     updateLayout,
     handleColorChange,
-    handleButtonColor
+    handleButtonColor,
+    onFileChange,
+    setFileInputRef,
+    onRemoveMedia
 }) {
     const [buttonColorPickerExpanded, setButtonColorPickerExpanded] = useState(false);
 
@@ -137,8 +140,11 @@ export function CtaCard({
                 icon='file'
                 label='Image'
                 mimeTypes={['image/*']}
+                setFileInputRef={setFileInputRef}
                 size='xsmall'
                 src={imageSrc}
+                onFileChange={onFileChange}
+                onRemoveMedia={onRemoveMedia}
             />
             {/* Button settings */}
             <ToggleSetting
@@ -329,7 +335,10 @@ CtaCard.propTypes = {
     updateShowButton: PropTypes.func,
     updateLayout: PropTypes.func,
     handleColorChange: PropTypes.func,
-    handleButtonColor: PropTypes.func
+    handleButtonColor: PropTypes.func,
+    onFileChange: PropTypes.func,
+    setFileInputRef: PropTypes.func,
+    onRemoveMedia: PropTypes.func
 };
 
 CtaCard.defaultProps = {
@@ -348,5 +357,8 @@ CtaCard.defaultProps = {
     updateShowButton: () => {},
     updateLayout: () => {},
     handleColorChange: () => {},
-    handleButtonColor: () => {}
+    handleButtonColor: () => {},
+    onFileChange: () => {},
+    setFileInputRef: () => {},
+    onRemoveMedia: () => {}
 };

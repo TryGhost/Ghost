@@ -1,6 +1,6 @@
 import CardContext from '../context/CardContext';
 import KoenigComposerContext from '../context/KoenigComposerContext.jsx';
-import React from 'react';
+import React, {useRef} from 'react';
 import {$getNodeByKey} from 'lexical';
 import {ActionToolbar} from '../components/ui/ActionToolbar.jsx';
 import {CtaCard} from '../components/ui/cards/CtaCard';
@@ -26,13 +26,17 @@ export const CallToActionNodeComponent = ({
 }) => {
     const [editor] = useLexicalComposerContext();
     const {isEditing, isSelected, setEditing} = React.useContext(CardContext);
-    const {cardConfig} = React.useContext(KoenigComposerContext);
+    const {fileUploader, cardConfig} = React.useContext(KoenigComposerContext);
     const [showSnippetToolbar, setShowSnippetToolbar] = React.useState(false);
     const handleToolbarEdit = (event) => {
         event.preventDefault();
         event.stopPropagation();
         setEditing(true);
     };
+
+    const fileInputRef = useRef(null);
+
+    const imageUploader = fileUploader.useFileUpload('image');
 
     const toggleShowButton = (event) => {
         editor.update(() => {
@@ -77,6 +81,27 @@ export const CallToActionNodeComponent = ({
         });
     };
 
+    const handleImageChange = async (files) => {
+        const result = await imageUploader.upload(files);
+        // reset original src so it can be replaced with preview and upload progress
+        editor.update(() => {
+            const node = $getNodeByKey(nodeKey);
+            node.imageUrl = result?.[0].url;
+            node.hasImage = true;
+        });
+    };
+
+    const onFileChange = async (e) => {
+        handleImageChange(e.target.files);
+    };
+
+    const onRemoveMedia = () => {
+        editor.update(() => {
+            const node = $getNodeByKey(nodeKey);
+            node.imageUrl = '';
+            node.hasImage = false;
+        });
+    };
     const handleUpdatingLayout = (val) => {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
@@ -99,10 +124,12 @@ export const CallToActionNodeComponent = ({
                 hasSponsorLabel={hasSponsorLabel}
                 htmlEditor={htmlEditor}
                 imageSrc={imageUrl}
+                imageUploader={imageUploader}
                 isEditing={isEditing}
                 isSelected={isSelected}
                 layout={layout}
                 setEditing={setEditing}
+                setFileInputRef={ref => fileInputRef.current = ref}
                 showButton={showButton}
                 text={textValue}
                 updateButtonText={handleButtonTextChange}
@@ -110,6 +137,8 @@ export const CallToActionNodeComponent = ({
                 updateHasSponsorLabel={handleHasSponsorLabelChange}
                 updateLayout={handleUpdatingLayout}
                 updateShowButton={toggleShowButton}
+                onFileChange={onFileChange}
+                onRemoveMedia={onRemoveMedia}
             />
 
             <ActionToolbar
