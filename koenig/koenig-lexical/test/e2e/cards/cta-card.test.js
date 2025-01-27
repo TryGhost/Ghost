@@ -174,4 +174,25 @@ test.describe('Call To Action Card', async () => {
         await page.click('[data-testid="cta-button-color"] button[title="Black"]');
         expect(await page.getAttribute('[data-testid="cta-button"]', 'style')).toContain('color: rgb(0, 0, 0);');
     });
+
+    test('can change background colours', async function () {
+        const colors = [
+            {testId: 'color-picker-none', expectedClass: 'bg-transparent border-transparent'},
+            {testId: 'color-picker-white', expectedClass: 'bg-transparent border-grey'},
+            {testId: 'color-picker-grey', expectedClass: 'bg-grey'},
+            {testId: 'color-picker-green', expectedClass: 'bg-green'},
+            {testId: 'color-picker-blue', expectedClass: 'bg-blue'},
+            {testId: 'color-picker-yellow', expectedClass: 'bg-yellow'},
+            {testId: 'color-picker-red', expectedClass: 'bg-red'}
+        ];
+        await focusEditor(page);
+        await insertCard(page, {cardName: 'call-to-action'});
+
+        const firstChildSelector = '[data-kg-card="call-to-action"] > :first-child';
+        await expect(page.locator(firstChildSelector)).not.toHaveClass(/bg-(grey|green|blue|yellow|red)/); // shouldn't have any of the classes yet
+        for (const color of colors) {
+            await page.click(`[data-test-id="${color.testId}"]`);
+            await expect(page.locator(firstChildSelector)).toHaveClass(new RegExp(color.expectedClass));
+        }
+    });
 });
