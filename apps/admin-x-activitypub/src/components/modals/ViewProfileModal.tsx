@@ -96,8 +96,10 @@ const ActorList: React.FC<ActorListProps> = ({
                                         </div>
                                         <FollowButton
                                             className='ml-auto'
+                                            color='grey'
                                             following={isFollowing}
                                             handle={getUsername(actor)}
+                                            size='sm'
                                             type='link'
                                         />
                                     </ActivityItem>
@@ -324,8 +326,10 @@ const ViewProfileModal: React.FC<ViewProfileModalProps> = ({
                                         />
                                     </div>
                                     <FollowButton
+                                        color='black'
                                         following={profile.isFollowing}
                                         handle={profile.handle}
+                                        size='md'
                                         onFollow={onFollow}
                                         onUnfollow={onUnfollow}
                                     />
@@ -347,9 +351,10 @@ const ViewProfileModal: React.FC<ViewProfileModalProps> = ({
                                         <div className='absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-white via-white/90 via-60% to-transparent' />
                                     )}
                                     {isOverflowing && <Button
-                                        className='absolute bottom-0 text-green'
+                                        className='absolute bottom-0'
                                         label={isExpanded ? 'Show less' : 'Show all'}
                                         link={true}
+                                        size='sm'
                                         onClick={toggleExpand}
                                     />}
                                 </div>)}

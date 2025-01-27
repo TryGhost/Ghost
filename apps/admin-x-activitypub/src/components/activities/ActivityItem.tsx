@@ -28,7 +28,7 @@ const ActivityItem: React.FC<ActivityItemProps> = ({children, url = null, onClic
                 onClick();
             }
         }}>
-            <div className='relative z-10 flex w-full gap-3 px-2 py-4'>
+            <div className='relative z-10 flex w-full items-center gap-3 px-2 py-4'>
                 {childrenArray[0]}
                 {childrenArray[1]}
                 {childrenArray[2]}
