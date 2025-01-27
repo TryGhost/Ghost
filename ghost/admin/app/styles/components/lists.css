@@ -406,16 +406,17 @@ ul.nostyle li {
 .gh-list-sticky,
 .gh-list-scrolling {
     position: relative;
-    overflow-y: visible;
-    overflow-x: auto;
+    overflow: auto;
     max-width: calc(100% + 96px);
-    margin: 0 -48px 0;
+    height: calc(100vh - 140px);
+    margin: 0 -48px -81px;
     padding: 0 48px;
+    z-index: 0;
 }
 
 .view-container {
     position: relative;
-    overflow: hidden;
+    z-index: 0;
 }
 
 .gh-list-scrolling table {
@@ -423,7 +424,16 @@ ul.nostyle li {
     border-collapse: inherit;
     margin: 0;
     border-bottom: none;
-    width: 100%;
+    z-index: 1;
+}
+
+.gh-list-scrolling tbody tr {
+    position: relative;
+    z-index: 2;
+}
+
+.gh-list-scrolling tbody tr:hover {
+    z-index: 3;
 }
 
 .gh-list-scrolling thead tr {
