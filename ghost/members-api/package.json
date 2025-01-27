@@ -32,7 +32,7 @@
   "dependencies": {
     "@tryghost/domain-events": "0.0.0",
     "@tryghost/errors": "1.3.5",
-    "@tryghost/logging": "@tryghost/logging#remove-lodash-from-logging",
+    "@tryghost/logging": "remove-lodash-from-logging",
     "@tryghost/magic-link": "0.0.0",
     "@tryghost/member-events": "0.0.0",
     "@tryghost/members-payments": "0.0.0",

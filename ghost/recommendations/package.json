@@ -34,6 +34,6 @@
     "@tryghost/errors": "1.3.5",
     "@tryghost/in-memory-repository": "0.0.0",
     "@tryghost/bookshelf-repository": "0.0.0",
-    "@tryghost/logging": "@tryghost/logging#remove-lodash-from-logging"
+    "@tryghost/logging": "remove-lodash-from-logging"
   }
 }
