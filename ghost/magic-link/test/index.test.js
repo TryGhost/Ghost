@@ -119,7 +119,7 @@ describe('MagicLink', function () {
                 () => service.sendMagicLink(blockedArgs),
                 {
                     name: 'BadRequestError',
-                    message: 'This email domain is not accepted, try again with a different email address'
+                    message: 'Signups from this email provider are not allowed'
                 }
             );
 
