@@ -165,6 +165,10 @@ function getTinybirdTrackerScript(dataRoot) {
     return `<script defer src="${scriptUrl}" data-storage="localStorage" data-host="${endpoint}" data-token="${token}" ${tbParams}></script>`;
 }
 
+function getHCaptchaScript() {
+    return `<script defer async src="https://js.hcaptcha.com/1/api.js"></script>`;
+}
+
 /**
  * **NOTE**
  * Express adds `_locals`, see https://github.com/expressjs/express/blob/4.15.4/lib/response.js#L962.
@@ -351,6 +355,10 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
 
             if (config.get('tinybird') && config.get('tinybird:tracker') && config.get('tinybird:tracker:scriptUrl')) {
                 head.push(getTinybirdTrackerScript(dataRoot));
+            }
+
+            if (labs.isSet('captcha') && config.get('captcha:enabled')) {
+                head.push(getHCaptchaScript());
             }
 
             // Check if if the request is for a site preview, in which case we **always** use the custom font values
