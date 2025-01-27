@@ -48,18 +48,15 @@ class LocalStorageBase extends StorageBase {
      * @returns {Promise<String>}
      */
     async save(file, targetDir) {
-        let targetFilename;
-
         // NOTE: the base implementation of `getTargetDir` returns the format this.storagePath/YYYY/MM
-        targetDir = targetDir || this.getTargetDir(this.storagePath);
+        const directory = targetDir || this.getTargetDir(this.storagePath);
 
-        const filename = await this.getUniqueFileName(file, targetDir);
-
-        targetFilename = filename;
-        await fs.mkdirs(targetDir);
+        const originalFilePath = file.path;
+        const newFilePath = this.getUniqueSecureFilePath(file, directory);
 
         try {
-            await fs.copy(file.path, targetFilename);
+            await fs.mkdirs(directory);
+            await fs.copy(originalFilePath, newFilePath);
         } catch (err) {
             if (err.code === 'ENAMETOOLONG') {
                 throw new errors.BadRequestError({err});
@@ -74,7 +71,7 @@ class LocalStorageBase extends StorageBase {
             urlUtils.urlJoin('/',
                 urlUtils.getSubdir(),
                 this.staticFileURLPrefix,
-                path.relative(this.storagePath, targetFilename))
+                path.relative(this.storagePath, newFilePath))
         ).replace(new RegExp(`\\${path.sep}`, 'g'), '/');
 
         return fullUrl;
