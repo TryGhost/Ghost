@@ -218,7 +218,7 @@ export function CtaCard({
                     'py-3': (isEditing || isSelected) && color === 'none' && !hasSponsorLabel,
                     'pb-3': color === 'none' && !((isEditing || isSelected) && !hasSponsorLabel)
                 }
-            )}>
+            )} data-cta-layout={layout}>
                 {/* Sponsor label */}
                 {hasSponsorLabel && (
                     <div className={clsx(
@@ -254,6 +254,7 @@ export function CtaCard({
                         {/* HTML content */}
                         <KoenigNestedEditor
                             autoFocus={true}
+                            dataTestId={'cta-card-content-editor'}
                             hasSettingsPanel={true}
                             initialEditor={htmlEditor}
                             initialEditorState={htmlEditorInitialState}

@@ -3,7 +3,7 @@ import {generateDecoratorNode} from '../../generate-decorator-node';
 
 export class CallToActionNode extends generateDecoratorNode({nodeType: 'call-to-action',
     properties: [
-        {name: 'layout', default: 'immersive'},
+        {name: 'layout', default: 'minimal'},
         {name: 'textValue', default: '', wordCount: true},
         {name: 'showButton', default: false},
         {name: 'buttonText', default: ''},
@@ -33,7 +33,7 @@ export class CallToActionNode extends generateDecoratorNode({nodeType: 'call-to-
         imageUrl
     } = {}, key) {
         super(key);
-        this.__layout = layout || 'immersive';
+        this.__layout = layout || 'minimal';
         this.__textValue = textValue || '';
         this.__showButton = showButton || false;
         this.__buttonText = buttonText || '';

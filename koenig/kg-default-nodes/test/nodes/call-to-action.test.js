@@ -28,7 +28,7 @@ describe('CallToActionNode', function () {
     beforeEach(function () {
         editor = createHeadlessEditor({nodes: editorNodes});
         dataset = {
-            layout: 'immersive',
+            layout: 'minimal',
             textValue: 'This is a cool advertisement',
             showButton: true,
             buttonText: 'click me',
@@ -72,7 +72,7 @@ describe('CallToActionNode', function () {
         it('has setters for all properties', editorTest(function () {
             const callToActionNode = new CallToActionNode();
 
-            callToActionNode.layout.should.equal('immersive');
+            callToActionNode.layout.should.equal('minimal');
             callToActionNode.layout = 'compact';
             callToActionNode.layout.should.equal('compact');
 

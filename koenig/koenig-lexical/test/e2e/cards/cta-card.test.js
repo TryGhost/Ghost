@@ -205,4 +205,38 @@ test.describe('Call To Action Card', async () => {
             await expect(page.locator(firstChildSelector)).toHaveClass(new RegExp(color.expectedClass));
         }
     });
+
+    test('default layout is minimal', async function () {
+        await focusEditor(page);
+        await insertCard(page, {cardName: 'call-to-action'});
+        // find data-cta-layout and check if it data-cta-layout="minimal"
+        const firstChildSelector = '[data-kg-card="call-to-action"] > :first-child';
+        await expect(page.locator(firstChildSelector)).toHaveAttribute('data-cta-layout', 'minimal');
+        expect(await page.getAttribute('[data-testid="cta-card-content-editor"]', 'class')).toContain('text-left');
+    });
+
+    test('can toggle layout to immersive', async function () {
+        await focusEditor(page);
+        await insertCard(page, {cardName: 'call-to-action'});
+        await page.click('[data-testid="immersive-layout"]');
+        // find data-cta-layout and check if it data-cta-layout="immersive"
+        const firstChildSelector = '[data-kg-card="call-to-action"] > :first-child';
+        await expect(page.locator(firstChildSelector)).toHaveAttribute('data-cta-layout', 'immersive');
+        expect(await page.getAttribute('[data-testid="cta-card-content-editor"]', 'class')).toContain('text-center');
+    });
+
+    test('can toggle layout to immersive and then back to minimal', async function () {
+        await focusEditor(page);
+        await insertCard(page, {cardName: 'call-to-action'});
+        await page.click('[data-testid="immersive-layout"]');
+        // find data-cta-layout and check if it data-cta-layout="immersive"
+        const firstChildSelector = '[data-kg-card="call-to-action"] > :first-child';
+        await expect(page.locator(firstChildSelector)).toHaveAttribute('data-cta-layout', 'immersive');
+        expect(await page.getAttribute('[data-testid="cta-card-content-editor"]', 'class')).toContain('text-center');
+
+        await page.click('[data-testid="minimal-layout"]');
+        // find data-cta-layout and check if it data-cta-layout="minimal"
+        await expect(page.locator(firstChildSelector)).toHaveAttribute('data-cta-layout', 'minimal');
+        expect(await page.getAttribute('[data-testid="cta-card-content-editor"]', 'class')).toContain('text-left');
+    });
 });

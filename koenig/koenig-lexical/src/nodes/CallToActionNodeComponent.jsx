@@ -69,10 +69,18 @@ export const CallToActionNodeComponent = ({
             node.hasSponsorLabel = !node.hasSponsorLabel;
         });
     };
+
     const handleBackgroundColorChange = (val) => {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
             node.backgroundColor = val;
+        });
+    };
+
+    const handleUpdatingLayout = (val) => {
+        editor.update(() => {
+            const node = $getNodeByKey(nodeKey);
+            node.layout = val;
         });
     };
 
@@ -100,9 +108,10 @@ export const CallToActionNodeComponent = ({
                 updateButtonText={handleButtonTextChange}
                 updateButtonUrl={handleButtonUrlChange}
                 updateHasSponsorLabel={handleHasSponsorLabelChange}
-                updateLayout={() => {}}
+                updateLayout={handleUpdatingLayout}
                 updateShowButton={toggleShowButton}
             />
+
             <ActionToolbar
                 data-kg-card-toolbar="button"
                 isVisible={showSnippetToolbar}
