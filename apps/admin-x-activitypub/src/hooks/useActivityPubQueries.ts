@@ -1,10 +1,26 @@
+import {
+    type AccountFollowsType,
+    type AccountSearchResult,
+    ActivityPubAPI,
+    ActivityPubCollectionResponse,
+    ActivityThread,
+    type GetAccountFollowsResponse,
+    type Profile,
+    type SearchResults
+} from '../api/activitypub';
 import {Activity} from '../components/activities/ActivityItem';
-import {ActivityPubAPI, ActivityPubCollectionResponse, ActivityThread, type Profile, type SearchResults} from '../api/activitypub';
-import {type UseInfiniteQueryResult, useInfiniteQuery, useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
+import {
+    type UseInfiniteQueryResult,
+    useInfiniteQuery,
+    useMutation,
+    useQuery,
+    useQueryClient
+} from '@tanstack/react-query';
 
 let SITE_URL: string;
 
 export type ActivityPubCollectionQueryResult<TData> = UseInfiniteQueryResult<ActivityPubCollectionResponse<TData>>;
+export type AccountFollowsQueryResult = UseInfiniteQueryResult<GetAccountFollowsResponse>;
 
 async function getSiteUrl() {
     if (!SITE_URL) {
@@ -48,17 +64,6 @@ export function useLikedForUser(handle: string) {
         },
         getNextPageParam(prevPage) {
             return prevPage.next;
-        }
-    });
-}
-
-export function useLikedCountForUser(handle: string) {
-    return useQuery({
-        queryKey: [`likedCount:${handle}`],
-        async queryFn() {
-            const siteUrl = await getSiteUrl();
-            const api = createActivityPubAPI(handle, siteUrl);
-            return api.getLikedCount();
         }
     });
 }
@@ -183,17 +188,6 @@ export function useFollowersForUser(handle: string) {
     });
 }
 
-export function useFollowersCountForUser(handle: string) {
-    return useQuery({
-        queryKey: [`followersCount:${handle}`],
-        async queryFn() {
-            const siteUrl = await getSiteUrl();
-            const api = createActivityPubAPI(handle, siteUrl);
-            return api.getFollowersCount();
-        }
-    });
-}
-
 export function useFollowingForUser(handle: string) {
     return useInfiniteQuery({
         queryKey: [`following:${handle}`],
@@ -204,17 +198,6 @@ export function useFollowingForUser(handle: string) {
         },
         getNextPageParam(prevPage) {
             return prevPage.next;
-        }
-    });
-}
-
-export function useFollowingCountForUser(handle: string) {
-    return useQuery({
-        queryKey: [`followingCount:${handle}`],
-        async queryFn() {
-            const siteUrl = await getSiteUrl();
-            const api = createActivityPubAPI(handle, siteUrl);
-            return api.getFollowingCount();
         }
     });
 }
@@ -267,12 +250,14 @@ export function useActivitiesForUser({
     includeOwn = false,
     includeReplies = false,
     filter = null,
+    limit = undefined,
     key = null
 }: {
     handle: string;
     includeOwn?: boolean;
     includeReplies?: boolean;
     filter?: {type?: string[]} | null;
+    limit?: number;
     key?: string | null;
 }) {
     const queryKey = [`activities:${handle}`, key, {includeOwn, includeReplies, filter}];
@@ -283,7 +268,7 @@ export function useActivitiesForUser({
         async queryFn({pageParam}: {pageParam?: string}) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
-            return api.getActivities(includeOwn, includeReplies, filter, pageParam);
+            return api.getActivities(includeOwn, includeReplies, filter, limit, pageParam);
         },
         getNextPageParam(prevPage) {
             return prevPage.next;
@@ -322,6 +307,7 @@ export function useSearchForUser(handle: string, query: string) {
 
     const searchQuery = useQuery({
         queryKey,
+        enabled: query.length > 0,
         async queryFn() {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
@@ -329,7 +315,7 @@ export function useSearchForUser(handle: string, query: string) {
         }
     });
 
-    const updateProfileSearchResult = (id: string, updated: Partial<Profile>) => {
+    const updateAccountSearchResult = (id: string, updated: Partial<AccountSearchResult>) => {
         queryClient.setQueryData(queryKey, (current: SearchResults | undefined) => {
             if (!current) {
                 return current;
@@ -337,8 +323,8 @@ export function useSearchForUser(handle: string, query: string) {
 
             return {
                 ...current,
-                profiles: current.profiles.map((item: Profile) => {
-                    if (item.actor.id === id) {
+                accounts: current.accounts.map((item: AccountSearchResult) => {
+                    if (item.id === id) {
                         return {...item, ...updated};
                     }
                     return item;
@@ -347,7 +333,7 @@ export function useSearchForUser(handle: string, query: string) {
         });
     };
 
-    return {searchQuery, updateProfileSearchResult};
+    return {searchQuery, updateAccountSearchResult};
 }
 
 export function useSuggestedProfiles(handle: string, limit = 3) {
@@ -488,7 +474,8 @@ export function useReplyMutationForUser(handle: string) {
         async mutationFn({id, content}: {id: string, content: string}) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
-            return await api.reply(id, content) as Activity;
+
+            return api.reply(id, content);
         }
     });
 }
@@ -500,15 +487,27 @@ export function useNoteMutationForUser(handle: string) {
         async mutationFn({content}: {content: string}) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
-            return await api.note(content) as Activity;
+
+            return api.note(content);
         },
         onSuccess: (activity: Activity) => {
-            queryClient.setQueryData([`outbox:${handle}`], (current?: Activity[]) => {
+            queryClient.setQueryData([`outbox:${handle}`], (current?: {pages: {data: Activity[]}[]}) => {
                 if (current === undefined) {
                     return current;
                 }
 
-                return [activity, ...current];
+                return {
+                    ...current,
+                    pages: current.pages.map((page: {data: Activity[]}, index: number) => {
+                        if (index === 0) {
+                            return {
+                                ...page,
+                                data: [activity, ...page.data]
+                            };
+                        }
+                        return page;
+                    })
+                };
             });
 
             queryClient.setQueriesData([`activities:${handle}`, GET_ACTIVITIES_QUERY_KEY_FEED], (current?: {pages: {data: Activity[]}[]}) => {
@@ -529,6 +528,31 @@ export function useNoteMutationForUser(handle: string) {
                     })
                 };
             });
+        }
+    });
+}
+
+export function useAccountForUser(handle: string) {
+    return useQuery({
+        queryKey: [`account:${handle}`],
+        async queryFn() {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI(handle, siteUrl);
+            return api.getAccount();
+        }
+    });
+}
+
+export function useAccountFollowsForUser(handle: string, type: AccountFollowsType) {
+    return useInfiniteQuery({
+        queryKey: [`follows:${handle}:${type}`],
+        async queryFn({pageParam}: {pageParam?: string}) {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI(handle, siteUrl);
+            return api.getAccountFollows(type, pageParam);
+        },
+        getNextPageParam(prevPage) {
+            return prevPage.next;
         }
     });
 }

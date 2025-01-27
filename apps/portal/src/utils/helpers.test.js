@@ -1,4 +1,4 @@
-import {getAllProductsForSite, getAvailableProducts, getCurrencySymbol, getFreeProduct, getMemberName, getMemberSubscription, getPriceFromSubscription, getPriceIdFromPageQuery, getSupportAddress, getDefaultNewsletterSender, getUrlHistory, hasMultipleProducts, isActiveOffer, isInviteOnlySite, isPaidMember, isSameCurrency, transformApiTiersData, isSigninAllowed, isSignupAllowed, getCompExpiry, isInThePast} from './helpers';
+import {hasAvailablePrices, getAllProductsForSite, getAvailableProducts, getCurrencySymbol, getFreeProduct, getMemberName, getMemberSubscription, getPriceFromSubscription, getPriceIdFromPageQuery, getSupportAddress, getDefaultNewsletterSender, getUrlHistory, hasMultipleProducts, isActiveOffer, isInviteOnly, isPaidMember, isPaidMembersOnly, isSameCurrency, transformApiTiersData, isSigninAllowed, isSignupAllowed, getCompExpiry, isInThePast, hasNewsletterSendingEnabled} from './helpers';
 import * as Fixtures from './fixtures-generator';
 import {site as FixturesSite, member as FixtureMember, offer as FixtureOffer, transformTierFixture as TransformFixtureTiers} from '../utils/test-fixtures';
 import {isComplimentaryMember} from '../utils/helpers';
@@ -136,18 +136,44 @@ describe('Helpers - ', () => {
         });
     });
 
-    describe('isInviteOnlySite - ', () => {
-        test('returns true for a site without plans', () => {
-            const value = isInviteOnlySite({site: FixturesSite.singleTier.withoutPlans});
-            expect(value).toBe(true);
+    describe('isInviteOnly - ', () => {
+        test('returns true for an invite-only site', () => {
+            const isInviteOnlySite = isInviteOnly({site: FixturesSite.singleTier.membersInviteOnly});
+            expect(isInviteOnlySite).toBe(true);
         });
-        test('returns true for a site with invite-only members', () => {
-            const value = isInviteOnlySite({site: FixturesSite.singleTier.membersInviteOnly});
-            expect(value).toBe(true);
+
+        test('returns false for a full-access site', () => {
+            const isInviteOnlySite = isInviteOnly({site: FixturesSite.singleTier.basic});
+            expect(isInviteOnlySite).toBe(false);
         });
-        test('returns false for non invite only site', () => {
-            const value = isInviteOnlySite({site: FixturesSite.singleTier.basic});
-            expect(value).toBe(false);
+    });
+
+    describe('isPaidMembersOnly - ', () => {
+        test('returns true for paid-members-only site', () => {
+            const isPaidMembersOnlySite = isPaidMembersOnly({site: FixturesSite.singleTier.paidMembersOnly});
+            expect(isPaidMembersOnlySite).toBe(true);
+        });
+
+        test('returns false for a full-access site', () => {
+            const isPaidMembersOnlySite = isPaidMembersOnly({site: FixturesSite.singleTier.basic});
+            expect(isPaidMembersOnlySite).toBe(false);
+        });
+    });
+
+    describe('hasAvailablePrices - ', () => {
+        test('returns true for a site with a single tier', () => {
+            const hasAvailablePricesCheck = hasAvailablePrices({site: FixturesSite.singleTier.basic});
+            expect(hasAvailablePricesCheck).toBe(true);
+        });
+
+        test('returns true for a site with multiple tiers', () => {
+            const hasAvailablePricesCheck = hasAvailablePrices({site: FixturesSite.multipleTiers.basic});
+            expect(hasAvailablePricesCheck).toBe(true);
+        });
+
+        test('returns false for a site with no plans', () => {
+            const hasAvailablePricesCheck = hasAvailablePrices({site: FixturesSite.singleTier.withoutPlans});
+            expect(hasAvailablePricesCheck).toBe(false);
         });
     });
 
@@ -511,6 +537,23 @@ describe('Helpers - ', () => {
 
             expect(isInThePast(pastDate)).toEqual(true);
             expect(isInThePast(futureDate)).toEqual(false);
+        });
+    });
+
+    describe('hasNewsletterSendingEnabled', () => {
+        test('returns true when editor default email recipients is set to visibility', () => {
+            const site = {editor_default_email_recipients: 'visibility'};
+            expect(hasNewsletterSendingEnabled({site})).toBe(true);
+        });
+
+        test('returns false when editor default email recipients is set to disabled', () => {
+            const site = {editor_default_email_recipients: 'disabled'};
+            expect(hasNewsletterSendingEnabled({site})).toBe(false);
+        });
+
+        test('returns true when editor default email recipients is set to filter', () => {
+            const site = {editor_default_email_recipients: 'filter'};
+            expect(hasNewsletterSendingEnabled({site})).toBe(true);
         });
     });
 });

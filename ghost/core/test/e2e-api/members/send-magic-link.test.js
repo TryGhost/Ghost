@@ -3,6 +3,8 @@ const should = require('should');
 const settingsCache = require('../../../core/shared/settings-cache');
 const DomainEvents = require('@tryghost/domain-events');
 const {anyErrorId} = matchers;
+const spamPrevention = require('../../../core/server/web/shared/middleware/api/spam-prevention');
+const configUtils = require('../../utils/configUtils');
 
 let membersAgent, membersService;
 
@@ -19,12 +21,16 @@ describe('sendMagicLink', function () {
     beforeEach(function () {
         mockManager.mockMail();
 
+        // Reset spam prevention middleware
+        spamPrevention.reset();
+
         // Reset settings
         settingsCache.set('members_signup_access', {value: 'all'});
     });
 
     afterEach(function () {
         mockManager.restore();
+        configUtils.restore();
     });
 
     it('Errors when passed multiple emails', async function () {
@@ -74,7 +80,7 @@ describe('sendMagicLink', function () {
             });
     });
 
-    it('Throws an error when trying to sign up on an invite only site', async function () {
+    it('Throws an error when trying to sign up on an invite-only site', async function () {
         settingsCache.set('members_signup_access', {value: 'invite'});
 
         const email = 'this-member-does-not-exist@test.com';
@@ -86,8 +92,39 @@ describe('sendMagicLink', function () {
             .expectStatus(400)
             .matchBodySnapshot({
                 errors: [{
-                    id: anyErrorId
+                    id: anyErrorId,
+                    message: 'This site is invite-only, contact the owner for access.'
                 }]
+            });
+    });
+
+    it('Throws an error when trying to sign up on a paid-members only site', async function () {
+        settingsCache.set('members_signup_access', {value: 'paid'});
+
+        const email = 'this-member-does-not-exist@test.com';
+        await membersAgent.post('/api/send-magic-link')
+            .body({
+                email,
+                emailType: 'signup'
+            })
+            .expectStatus(400)
+            .matchBodySnapshot({
+                errors: [{id: anyErrorId, message: 'This site only accepts paid members.'}]
+            });
+    });
+
+    it('Throws an error when trying to sign up on a none-members site', async function () {
+        settingsCache.set('members_signup_access', {value: 'none'});
+
+        const email = 'this-member-does-not-exist@test.com';
+        await membersAgent.post('/api/send-magic-link')
+            .body({
+                email,
+                emailType: 'signup'
+            })
+            .expectStatus(400)
+            .matchBodySnapshot({
+                errors: [{id: anyErrorId}]
             });
     });
 
@@ -249,5 +286,23 @@ describe('sendMagicLink', function () {
                 type: 'url'
             }
         });
+    });
+
+    it('blocks signups from blocked email domains', async function () {
+        configUtils.set('spam:blocked_email_domains', ['blocked-domain.com']);
+
+        const email = 'this-member-does-not-exist@blocked-domain.com';
+        await membersAgent.post('/api/send-magic-link')
+            .body({
+                email,
+                emailType: 'signup'
+            })
+            .expectStatus(400)
+            .matchBodySnapshot({
+                errors: [{
+                    id: anyErrorId,
+                    message: 'Signups from this email provider are not allowed'
+                }]
+            });
     });
 });
