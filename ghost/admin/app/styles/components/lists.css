@@ -413,6 +413,10 @@ ul.nostyle li {
     padding: 0 48px;
 }
 
+.view-container {
+    overflow-x: hidden;
+}
+
 .gh-list-scrolling table {
     position: relative;
     border-collapse: inherit;
