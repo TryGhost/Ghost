@@ -148,7 +148,7 @@ const getGroupDescription = (group: GroupedActivity): JSX.Element => {
         return <>{actorText} liked your post <span className='font-semibold'>{group.object?.name || ''}</span></>;
     case ACTIVITY_TYPE.CREATE:
         if (group.object?.inReplyTo && typeof group.object?.inReplyTo !== 'string') {
-            let content = stripHtml(group.object.inReplyTo.content);
+            let content = stripHtml(group.object.inReplyTo.content || '');
 
             // If the post has a name, use that instead of the content (short
             // form posts do not have a name)

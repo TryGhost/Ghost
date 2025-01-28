@@ -4,10 +4,6 @@ import React from 'react';
 import {List} from '@tryghost/admin-x-design-system';
 
 const features = [{
-    title: 'URL cache',
-    description: 'Enable URL Caching',
-    flag: 'urlCache'
-},{
     title: 'Webmentions',
     description: 'Allows viewing received mentions on the dashboard.',
     flag: 'webmentions'
@@ -44,13 +40,21 @@ const features = [{
     description: '(Highly) Experimental support for ActivityPub.',
     flag: 'ActivityPub'
 },{
-    title: 'Content Visibility',
-    description: 'Enables content visibility in Emails',
+    title: 'Content Visibility (Beta)',
+    description: 'Enables content visibility in Emails - Changes already released to beta testers',
     flag: 'contentVisibility'
-}, {
+},{
+    title: 'Content Visibility (Alpha)',
+    description: 'Enables content visibility in Emails - Additional changes for internal testing. NOTE: requires `contentVisibility` to also be enabled',
+    flag: 'contentVisibilityAlpha'
+},{
     title: 'Post analytics redesign',
     description: 'Enables redesigned Post analytics page',
     flag: 'postsX'
+}, {
+    title: 'Sign-up CAPTCHA',
+    description: 'Enable CAPTCHA for member sign-up and sign-in',
+    flag: 'captcha'
 }];
 
 const AlphaFeatures: React.FC = () => {

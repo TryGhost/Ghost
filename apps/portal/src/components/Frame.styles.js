@@ -999,7 +999,7 @@ const MobileStyles = `
         margin-bottom: 0;
     }
 
-    .preview .gh-portal-invite-only-notification + .gh-portal-signup-message {
+    .preview .gh-portal-invite-only-notification + .gh-portal-signup-message, .preview .gh-portal-paid-members-only-notification + .gh-portal-signup-message {
         margin-bottom: 16px;
     }
 

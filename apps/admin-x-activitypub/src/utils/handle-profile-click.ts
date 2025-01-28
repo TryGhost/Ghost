@@ -6,6 +6,6 @@ import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 export const handleProfileClick = (actor: ActorProperties, e?: React.MouseEvent) => {
     e?.stopPropagation();
     NiceModal.show(ViewProfileModal, {
-        profile: getUsername(actor)
+        handle: getUsername(actor)
     });
 };
