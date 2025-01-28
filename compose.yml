@@ -13,8 +13,6 @@ services:
     volumes:
       - .:/home/ghost
     tty: true
-    environment:
-      - IS_DOCKER=true
     env_file:
       - .env
     depends_on:
