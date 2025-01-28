@@ -4,5 +4,7 @@
 # so we need to install dependencies again
 yarn install --frozen-lockfile --prefer-offline
 
+yarn nx run-many -t build:ts
+
 # Execute the CMD
 exec "$@"

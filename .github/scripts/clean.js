@@ -1,8 +1,6 @@
 // NOTE: this file can't use any NPM dependencies because it needs to run even if dependencies aren't installed yet or are corrupted
 const {execSync} = require('child_process');
 
-const isDevContainer = process.env.DEVCONTAINER === 'true';
-
 cleanYarnCache();
 resetNxCache();
 deleteNodeModules();
@@ -49,13 +47,7 @@ function resetNxCache() {
 function cleanYarnCache() {
     console.log('Cleaning yarn cache...');
     try {
-        if (isDevContainer) {
-            // In devcontainer, these directories are mounted from the host so we can't delete them — `yarn cache clean` will fail
-            // so we delete the contents of the directories instead
-            execSync('rm -rf .yarncache/* .yarncachecopy/*');
-        } else {
-            execSync('yarn cache clean');
-        }
+        execSync('rm -rf .yarncache/* .yarncachecopy/*');
     } catch (error) {
         console.error('Failed to clean yarn cache:', error);
         process.exit(1);
