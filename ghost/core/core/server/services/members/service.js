@@ -137,7 +137,6 @@ module.exports = {
             }
         }
 
-        // Create API instance if it doesn't exist, or if init() is called in test mode
         if (!membersApi) {
             membersApi = createMembersApiInstance(membersConfig);
 

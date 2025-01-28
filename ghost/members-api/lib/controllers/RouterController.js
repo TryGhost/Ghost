@@ -7,7 +7,7 @@ const {isEmail} = require('@tryghost/validator');
 const messages = {
     emailRequired: 'Email is required.',
     invalidEmail: 'Email is not valid',
-    blockedEmailDomain: 'Signups from this email provider are not allowed',
+    blockedEmailDomain: 'Signups from this email domain are currently restricted.',
     badRequest: 'Bad Request.',
     notFound: 'Not Found.',
     offerNotFound: 'This offer does not exist.',
