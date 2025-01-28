@@ -36,7 +36,6 @@ describe('CallToActionNode', function () {
             buttonColor: 'none',
             buttonTextColor: 'none',
             hasSponsorLabel: true,
-            hasBackground: true,
             backgroundColor: 'none',
             hasImage: true,
             imageUrl: 'http://blog.com/image1.jpg'
@@ -63,7 +62,6 @@ describe('CallToActionNode', function () {
             callToActionNode.buttonColor.should.equal(dataset.buttonColor);
             callToActionNode.buttonTextColor.should.equal(dataset.buttonTextColor);
             callToActionNode.hasSponsorLabel.should.equal(dataset.hasSponsorLabel);
-            callToActionNode.hasBackground.should.equal(dataset.hasBackground);
             callToActionNode.backgroundColor.should.equal(dataset.backgroundColor);
             callToActionNode.hasImage.should.equal(dataset.hasImage);
             callToActionNode.imageUrl.should.equal(dataset.imageUrl);
@@ -100,13 +98,11 @@ describe('CallToActionNode', function () {
             callToActionNode.buttonTextColor = 'black';
             callToActionNode.buttonTextColor.should.equal('black');
 
+            callToActionNode.hasSponsorLabel.should.equal(true);
+            callToActionNode.hasSponsorLabel = false;
             callToActionNode.hasSponsorLabel.should.equal(false);
-            callToActionNode.hasSponsorLabel = true;
 
-            callToActionNode.hasBackground.should.equal(false);
-            callToActionNode.hasBackground = true;
-
-            callToActionNode.backgroundColor.should.equal('none');
+            callToActionNode.backgroundColor.should.equal('grey');
             callToActionNode.backgroundColor = '#654321';
             callToActionNode.backgroundColor.should.equal('#654321');
 

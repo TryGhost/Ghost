@@ -10,9 +10,8 @@ export class CallToActionNode extends generateDecoratorNode({nodeType: 'call-to-
         {name: 'buttonUrl', default: ''},
         {name: 'buttonColor', default: ''},
         {name: 'buttonTextColor', default: ''},
-        {name: 'hasSponsorLabel', default: false},
-        {name: 'hasBackground', default: false},
-        {name: 'backgroundColor', default: 'none'},
+        {name: 'hasSponsorLabel', default: true},
+        {name: 'backgroundColor', default: 'grey'},
         {name: 'hasImage', default: false},
         {name: 'imageUrl', default: ''}
     ]}
@@ -27,24 +26,22 @@ export class CallToActionNode extends generateDecoratorNode({nodeType: 'call-to-
         buttonColor,
         buttonTextColor,
         hasSponsorLabel,
-        hasBackground,
         backgroundColor,
         hasImage,
         imageUrl
     } = {}, key) {
         super(key);
-        this.__layout = layout || 'minimal';
-        this.__textValue = textValue || '';
-        this.__showButton = showButton || false;
-        this.__buttonText = buttonText || '';
-        this.__buttonUrl = buttonUrl || '';
-        this.__buttonColor = buttonColor || 'none';
-        this.__buttonTextColor = buttonTextColor || 'none';
-        this.__hasSponsorLabel = hasSponsorLabel || false;
-        this.__hasBackground = hasBackground || false;
-        this.__backgroundColor = backgroundColor || 'none';
-        this.__hasImage = hasImage || false;
-        this.__imageUrl = imageUrl || '';
+        this.__layout = layout ?? 'minimal';
+        this.__textValue = textValue ?? '';
+        this.__showButton = showButton ?? false;
+        this.__buttonText = buttonText ?? '';
+        this.__buttonUrl = buttonUrl ?? '';
+        this.__buttonColor = buttonColor ?? 'none';
+        this.__buttonTextColor = buttonTextColor ?? 'none';
+        this.__hasSponsorLabel = hasSponsorLabel ?? true;
+        this.__backgroundColor = backgroundColor ?? 'grey';
+        this.__hasImage = hasImage ?? false;
+        this.__imageUrl = imageUrl ?? '';
     }
 }
 

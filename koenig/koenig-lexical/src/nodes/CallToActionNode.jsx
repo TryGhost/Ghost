@@ -1,10 +1,10 @@
-import CalloutCardIcon from '../assets/icons/kg-card-type-callout.svg?react';
+import EmailCtaCardIcon from '../assets/icons/kg-card-type-email-cta.svg?react';
 import KoenigCardWrapper from '../components/KoenigCardWrapper';
 import {BASIC_NODES} from '../index.js';
 import {CallToActionNode as BaseCallToActionNode} from '@tryghost/kg-default-nodes';
 import {CallToActionNodeComponent} from './CallToActionNodeComponent';
 import {createCommand} from 'lexical';
-import {populateNestedEditor, setupNestedEditor} from '../utils/nested-editors';
+import {setupNestedEditor} from '../utils/nested-editors';
 
 export const INSERT_CTA_COMMAND = createCommand();
 
@@ -15,7 +15,7 @@ export class CallToActionNode extends BaseCallToActionNode {
     static kgMenu = {
         label: 'Call to Action',
         desc: 'Add a call to action to your post',
-        Icon: CalloutCardIcon, // TODO: Replace with correct icon
+        Icon: EmailCtaCardIcon,
         insertCommand: INSERT_CTA_COMMAND,
         matches: ['cta', 'call-to-action'],
         priority: 10,
@@ -30,8 +30,7 @@ export class CallToActionNode extends BaseCallToActionNode {
     }
 
     getIcon() {
-        // TODO: replace with correct icon
-        return CalloutCardIcon;
+        return EmailCtaCardIcon;
     }
 
     constructor(dataset = {}, key) {
@@ -39,18 +38,13 @@ export class CallToActionNode extends BaseCallToActionNode {
 
         // set up nested editor instances
         setupNestedEditor(this, '__htmlEditor', {editor: dataset.htmlEditor, nodes: BASIC_NODES});
-
-        // populate nested editors on initial construction
-        if (!dataset.htmlEditor) {
-            populateNestedEditor(this, '__htmlEditor', dataset.html || '<p>Hey <code>{first_name, "there"}</code>,</p>');
-        }
     }
 
     decorate() {
         return (
             <KoenigCardWrapper
                 nodeKey={this.getKey()}
-                wrapperStyle="wide"
+                wrapperStyle={this.backgroundColor === 'none' ? 'wide' : 'regular'}
             >
                 <CallToActionNodeComponent
                     backgroundColor={this.backgroundColor}
@@ -58,7 +52,6 @@ export class CallToActionNode extends BaseCallToActionNode {
                     buttonText={this.buttonText}
                     buttonTextColor={this.buttonTextColor}
                     buttonUrl={this.buttonUrl}
-                    hasBackground={this.hasBackground}
                     hasImage={this.hasImage}
                     hasSponsorLabel={this.hasSponsorLabel}
                     htmlEditor={this.__htmlEditor}

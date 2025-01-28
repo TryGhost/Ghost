@@ -13,7 +13,6 @@ export const CallToActionNodeComponent = ({
     backgroundColor,
     buttonText,
     buttonUrl,
-    hasBackground,
     hasImage,
     hasSponsorLabel,
     imageUrl,
@@ -119,7 +118,6 @@ export const CallToActionNodeComponent = ({
                 color={backgroundColor}
                 handleButtonColor={handleButtonColorChange}
                 handleColorChange={handleBackgroundColorChange}
-                hasBackground={hasBackground}
                 hasImage={hasImage}
                 hasSponsorLabel={hasSponsorLabel}
                 htmlEditor={htmlEditor}

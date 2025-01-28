@@ -70,7 +70,6 @@ export function CtaCard({
     htmlEditorInitialState,
     imageSrc,
     isEditing,
-    isSelected,
     layout,
     showButton,
     updateButtonText,
@@ -221,8 +220,8 @@ export function CtaCard({
                 'w-full rounded-lg border',
                 CTA_COLORS[color],
                 {
-                    'py-3': (isEditing || isSelected) && color === 'none' && !hasSponsorLabel,
-                    'pb-3': color === 'none' && !((isEditing || isSelected) && !hasSponsorLabel)
+                    'py-3': color === 'none' && !hasSponsorLabel,
+                    'pb-3': color === 'none' && hasSponsorLabel
                 }
             )} data-cta-layout={layout}>
                 {/* Sponsor label */}
@@ -324,7 +323,6 @@ CtaCard.propTypes = {
     hasSponsorLabel: PropTypes.bool,    
     imageSrc: PropTypes.string,
     isEditing: PropTypes.bool,
-    isSelected: PropTypes.bool,
     layout: PropTypes.oneOf(['minimal', 'immersive']),
     showButton: PropTypes.bool,
     htmlEditor: PropTypes.object,
@@ -350,7 +348,6 @@ CtaCard.defaultProps = {
     hasSponsorLabel: false,
     imageSrc: '',
     isEditing: false,
-    isSelected: false,
     layout: 'immersive',
     showButton: false,
     updateHasSponsorLabel: () => {},

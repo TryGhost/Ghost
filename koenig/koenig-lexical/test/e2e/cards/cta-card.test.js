@@ -179,14 +179,14 @@ test.describe('Call To Action Card', async () => {
         expect(await page.getAttribute('[data-testid="cta-button"]', 'style')).toContain('color: rgb(0, 0, 0);');
     });
 
-    test('can toggle has sponsor label', async function () {
+    test('can toggle sponsor label', async function () {
         await focusEditor(page);
         await insertCard(page, {cardName: 'call-to-action'});
         await page.click('[data-testid="sponsor-label-toggle"]');
-        expect(await page.isVisible('[data-testid="sponsor-label"]')).toBe(true);
+        expect(await page.isVisible('[data-testid="sponsor-label"]')).toBe(false);
 
         await page.click('[data-testid="sponsor-label-toggle"]');
-        expect(await page.isVisible('[data-testid="sponsor-label"]')).toBe(false);
+        expect(await page.isVisible('[data-testid="sponsor-label"]')).toBe(true);
     });
 
     test('can change background colours', async function () {
@@ -203,7 +203,7 @@ test.describe('Call To Action Card', async () => {
         await insertCard(page, {cardName: 'call-to-action'});
 
         const firstChildSelector = '[data-kg-card="call-to-action"] > :first-child';
-        await expect(page.locator(firstChildSelector)).not.toHaveClass(/bg-(grey|green|blue|yellow|red)/); // shouldn't have any of the classes yet
+        await expect(page.locator(firstChildSelector)).not.toHaveClass(/bg-(green|blue|yellow|red)/); // shouldn't have any of the classes yet
         for (const color of colors) {
             await page.click(`[data-test-id="${color.testId}"]`);
             await expect(page.locator(firstChildSelector)).toHaveClass(new RegExp(color.expectedClass));
