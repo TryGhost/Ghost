@@ -234,18 +234,18 @@ describe('Settings Helpers', function () {
             assert.deepEqual(domains, ['configdomain.com', 'domain.com', 'settingsdomain.com']);
         });
 
-        it('returns an array of normalized domains', function () {
-            fakeSettings.get.withArgs('blocked_email_domains').returns(['Domain.com', '@example.com']);
+        it('normalises the list of email domains and filters out invalid domains', function () {
+            fakeSettings.get.withArgs('blocked_email_domains').returns(['Domain.com', '@example.com', 'hello@spam.xyz', 'bar', '']);
             configUtils.set({
                 spam: {
-                    blocked_email_domains: ['configDomain.com', '@configExample.com']
+                    blocked_email_domains: ['configDomain.com', '@configExample.com', 'foo', '']
                 }
             });
 
             const settingsHelpers = new SettingsHelpers({settingsCache: fakeSettings, config: configUtils.config, urlUtils, labs: {}});
             const domains = settingsHelpers.getAllBlockedEmailDomains();
 
-            assert.deepEqual(domains, ['configdomain.com', 'configexample.com', 'domain.com', 'example.com']);
+            assert.deepEqual(domains, ['configdomain.com', 'configexample.com', 'domain.com', 'example.com', 'spam.xyz']);
         });
     });
 });
