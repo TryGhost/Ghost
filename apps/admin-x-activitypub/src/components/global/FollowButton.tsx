@@ -1,6 +1,5 @@
-import NiceModal from '@ebay/nice-modal-react';
 import clsx from 'clsx';
-import {Button, Modal} from '@tryghost/admin-x-design-system';
+import {Button} from '@tryghost/admin-x-design-system';
 import {useEffect, useState} from 'react';
 import {useFollow} from '../../hooks/useActivityPubQueries';
 
@@ -14,25 +13,6 @@ interface FollowButtonProps {
     onFollow?: () => void;
     onUnfollow?: () => void;
 }
-
-const UnfollowModal = NiceModal.create(({onUnfollow}: {onUnfollow: () => void}) => {
-    const modal = NiceModal.useModal();
-
-    return (
-        <Modal
-            cancelLabel="Cancel"
-            okLabel="Unfollow"
-            size="sm"
-            onCancel={() => modal.remove()}
-            onOk={() => {
-                onUnfollow();
-                modal.remove();
-            }}
-        >
-            <p>Are you sure you want to unfollow this account?</p>
-        </Modal>
-    );
-});
 
 const noop = () => {};
 
@@ -59,17 +39,12 @@ const FollowButton: React.FC<FollowButtonProps> = ({
 
     const handleClick = async () => {
         if (isFollowing) {
-            NiceModal.show(UnfollowModal, {
-                onUnfollow: () => {
-                    setIsFollowing(false);
-                    onUnfollow();
-                    // @TODO: Implement unfollow mutation
-                }
-            });
+            setIsFollowing(false);
+            onUnfollow();
+            // @TODO: Implement unfollow mutation
         } else {
             setIsFollowing(true);
             onFollow();
-
             mutation.mutate(handle);
         }
     };
