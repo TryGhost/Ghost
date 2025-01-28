@@ -22,12 +22,10 @@ const messages = {
 // flags in this list always return `true`, allows quick global enable prior to full flag removal
 const GA_FEATURES = [
     'audienceFeedback',
-    'collections',
     'i18n',
     'themeErrorsNotification',
     'outboundLinkTagging',
     'announcementBar',
-    'newEmailAddresses',
     'customFonts'
 ];
 
@@ -52,7 +50,9 @@ const ALPHA_FEATURES = [
     'collectionsCard',
     'lexicalIndicators',
     'adminXDemo',
-    'postsX'
+    'postsX',
+    'captcha',
+    'contentVisibilityAlpha'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

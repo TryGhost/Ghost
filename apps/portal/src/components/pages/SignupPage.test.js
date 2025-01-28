@@ -1,6 +1,6 @@
 import SignupPage from './SignupPage';
 import {getFreeProduct, getProductData, getSiteData} from '../../utils/fixtures-generator';
-import {render, fireEvent, getByTestId} from '../../utils/test-utils';
+import {render, fireEvent, getByTestId, queryByTestId, queryByAttribute} from '../../utils/test-utils';
 
 const setup = (overrides) => {
     const {mockOnActionFn, ...utils} = render(
@@ -113,6 +113,120 @@ describe('SignupPage', () => {
 
             const message = getByTestId(document.body, 'members-disabled-notification-text');
             expect(message).toBeInTheDocument();
+        });
+    });
+
+    describe('when site is invite-only', () => {
+        test('blocks signups but offers to sign in', () => {
+            setup({
+                site: getSiteData({
+                    membersSignupAccess: 'invite'
+                })
+            });
+
+            const message = getByTestId(document.body, 'invite-only-notification-text');
+            expect(message).toBeInTheDocument();
+
+            const signinLink = getByTestId(document.body, 'signin-switch');
+            expect(signinLink).toBeInTheDocument();
+        });
+    });
+
+    describe('when site is paid-members only', () => {
+        test('blocks the #/portal/signup/free page, but offers to sign in', () => {
+            setup({
+                site: getSiteData({
+                    membersSignupAccess: 'paid'
+                }),
+                pageQuery: 'free'
+            });
+
+            const message = getByTestId(document.body, 'paid-members-only-notification-text');
+            expect(message).toBeInTheDocument();
+
+            const signinLink = getByTestId(document.body, 'signin-switch');
+            expect(signinLink).toBeInTheDocument();
+        });
+
+        test('blocks signups when only the free plan is available, but offers to sign in', () => {
+            setup({
+                site: getSiteData({
+                    membersSignupAccess: 'paid',
+                    products: [getFreeProduct({})]
+                })
+            });
+
+            const message = getByTestId(document.body, 'invite-only-notification-text');
+            expect(message).toBeInTheDocument();
+
+            const signinLink = getByTestId(document.body, 'signin-switch');
+            expect(signinLink).toBeInTheDocument();
+        });
+
+        test('blocks signups when no plans are available, but offers to sign in', () => {
+            setup({
+                site: getSiteData({
+                    membersSignupAccess: 'paid',
+                    products: []
+                })
+            });
+
+            const message = getByTestId(document.body, 'invite-only-notification-text');
+            expect(message).toBeInTheDocument();
+
+            const signinLink = getByTestId(document.body, 'signin-switch');
+            expect(signinLink).toBeInTheDocument();
+        });
+    });
+
+    describe('when site has memberships disabled', () => {
+        test('blocks signups and signins', () => {
+            setup({
+                site: getSiteData({
+                    membersSignupAccess: 'none'
+                })
+            });
+
+            const message = getByTestId(document.body, 'members-disabled-notification-text');
+            expect(message).toBeInTheDocument();
+
+            const signinLink = queryByTestId(document.body, 'signin-switch');
+            expect(signinLink).toBeNull();
+        });
+    });
+
+    describe('when site is anyone-can-signup, but has no available prices', () => {
+        test('blocks signups, but allows signins', () => {
+            setup({
+                site: getSiteData({
+                    membersSignupAccess: 'all',
+                    products: [],
+                    portalPlans: []
+                })
+            });
+
+            const message = getByTestId(document.body, 'invite-only-notification-text');
+            expect(message).toBeInTheDocument();
+
+            const signinLink = getByTestId(document.body, 'signin-switch');
+            expect(signinLink).toBeInTheDocument();
+        });
+    });
+
+    // Cannot test using hCaptcha component, as it cannot run in a test environment
+    describe('when captcha is enabled', () => {
+        test('renders', () => {
+            setup({
+                site: getSiteData({
+                    captchaEnabled: true,
+                    captchaSiteKey: '20000000-ffff-ffff-ffff-000000000002'
+                })
+            });
+
+            const getById = queryByAttribute.bind(null, 'id');
+
+            const hcaptchaElement = getById(document.body, 'hcaptcha-signup');
+            expect(hcaptchaElement).toBeInTheDocument();
         });
     });
 });

@@ -613,12 +613,10 @@ test.describe('Updating post access', () => {
         await page.locator('[data-test-nav="settings"]').click();
         await expect(page.getByTestId('timezone')).toContainText('UTC');
 
-        await page.getByTestId('timezone').getByRole('button', {name: 'Edit'}).click();
         await page.getByTestId('timezone-select').click();
         await page.locator('[data-testid="select-option"]', {hasText: 'Tokyo'}).click();
 
         await page.getByTestId('timezone').getByRole('button', {name: 'Save'}).click();
-        await expect(page.getByTestId('timezone-select')).toBeHidden();
         await expect(page.getByTestId('timezone')).toContainText('(GMT +9:00) Osaka, Sapporo, Tokyo');
 
         await page.getByTestId('exit-settings').click();
@@ -635,12 +633,10 @@ test.describe('Updating post access', () => {
     test('default recipient settings - usually nobody', async ({page}) => {
         // switch to "usually nobody" setting
         await page.goto('/ghost/settings/newsletters');
-        await page.getByTestId('default-recipients').getByRole('button', {name: 'Edit'}).click();
         await page.getByTestId('default-recipients-select').click();
         await page.locator('[data-testid="select-option"]', {hasText: /Usually nobody/}).click();
         await page.getByTestId('default-recipients').getByRole('button', {name: 'Save'}).click();
 
-        await expect(page.getByTestId('default-recipients-select')).toBeHidden();
         await expect(page.getByTestId('default-recipients')).toContainText('Usually nobody');
 
         await page.goto('/ghost');

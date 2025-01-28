@@ -1,6 +1,7 @@
-const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
+const {agentProvider, mockManager, fixtureManager, matchers, configUtils} = require('../../utils/e2e-framework');
 const should = require('should');
 const settingsCache = require('../../../core/shared/settings-cache');
+const settingsService = require('../../../core/server/services/settings');
 const DomainEvents = require('@tryghost/domain-events');
 const {anyErrorId} = matchers;
 const spamPrevention = require('../../../core/server/web/shared/middleware/api/spam-prevention');
@@ -285,4 +286,96 @@ describe('sendMagicLink', function () {
             }
         });
     });
+
+    describe('blocked email domains', function () {
+        beforeEach(async function () {
+            configUtils.set('spam:blocked_email_domains', ['blocked-domain-config.com']);
+
+            await settingsService.init();
+        });
+
+        afterEach(function () {
+            configUtils.restore();
+        });
+
+        it('blocks signups from email domains blocked in config', async function () {
+            const blockedEmail = 'hello@blocked-domain-config.com';
+            membersAgent = membersAgent.duplicate();
+            await membersAgent.post('/api/send-magic-link')
+                .body({
+                    email: blockedEmail,
+                    emailType: 'signup'
+                })
+                .expectStatus(400)
+                .matchBodySnapshot({
+                    errors: [{
+                        id: anyErrorId,
+                        message: 'Signups from this email domain are currently restricted.'
+                    }]
+                });
+        });
+
+        it('blocks signups from email domains blocked in settings', async function () {
+            settingsCache.set('all_blocked_email_domains', {value: ['blocked-domain-setting.com']});
+
+            const blockedEmail = 'hello@blocked-domain-setting.com';
+            membersAgent = membersAgent.duplicate();
+            await membersAgent.post('/api/send-magic-link')
+                .body({
+                    email: blockedEmail,
+                    emailType: 'signup'
+                })
+                .expectStatus(400)
+                .matchBodySnapshot({
+                    errors: [{
+                        id: anyErrorId,
+                        message: 'Signups from this email domain are currently restricted.'
+                    }]
+                });
+        });
+
+        it('allows signups from non-blocked email domains', async function () {
+            const allowedEmail = 'hello@example.com';
+            await membersAgent.post('/api/send-magic-link')
+                .body({
+                    email: allowedEmail,
+                    emailType: 'signup'
+                })
+                .expectEmptyBody()
+                .expectStatus(201);
+        });
+
+        it('allows signins from email domains blocked in config', async function () {
+            // Create member with the blocked email address in the database
+            const email = 'hello@blocked-domain-config.com';
+            await membersService.api.members.create({email, name: 'Member Test'});
+
+            // Check that the member can still sign in
+            await membersAgent.post('/api/send-magic-link')
+                .body({
+                    email,
+                    emailType: 'signin'
+                })
+                .expectEmptyBody()
+                .expectStatus(201);
+        });
+
+        it('allows signins from email domains blocked in settings', async function () {
+            settingsCache.set('all_blocked_email_domains', {value: ['blocked-domain-setting.com']});
+
+            // Create member with the blocked email address in the database
+            const email = 'hello@blocked-domain-setting.com';
+            await membersService.api.members.create({email, name: 'Member Test'});
+
+            // Check that the member can still sign in
+            await membersAgent.post('/api/send-magic-link')
+                .body({
+                    email,
+                    emailType: 'signin'
+                })
+                .expectEmptyBody()
+                .expectStatus(201);
+        });
+    });
 });
+

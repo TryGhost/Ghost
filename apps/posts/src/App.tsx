@@ -1,7 +1,6 @@
-import PostAnalytics from './pages/PostAnalytics';
-import {FrameworkProvider, TopLevelFrameworkProps} from '@tryghost/admin-x-framework';
-import {RoutingProvider} from '@tryghost/admin-x-framework/routing';
-import {ShadeApp, ShadeAppProps} from '@tryghost/shade';
+import {APP_ROUTE_PREFIX, routes} from './routes';
+import {FrameworkProvider, RouterProvider, TopLevelFrameworkProps} from '@tryghost/admin-x-framework';
+import {ShadeApp, ShadeAppProps, SidebarProvider} from '@tryghost/shade';
 
 interface AppProps {
     framework: TopLevelFrameworkProps;
@@ -11,11 +10,11 @@ interface AppProps {
 const App: React.FC<AppProps> = ({framework, designSystem}) => {
     return (
         <FrameworkProvider {...framework}>
-            <RoutingProvider basePath='posts-x'>
-                <ShadeApp className='posts' {...designSystem}>
-                    <PostAnalytics />
-                </ShadeApp>
-            </RoutingProvider>
+            <ShadeApp className='posts' {...designSystem}>
+                <SidebarProvider>
+                    <RouterProvider prefix={APP_ROUTE_PREFIX} routes={routes} />
+                </SidebarProvider>
+            </ShadeApp>
         </FrameworkProvider>
     );
 };
