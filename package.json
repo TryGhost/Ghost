@@ -38,6 +38,7 @@
     "docker:dev": "COMPOSE_PROFILES=full docker compose up --attach=ghost --no-log-prefix",
     "docker:test:unit": "COMPOSE_PROFILES=full docker compose run --rm --no-deps ghost yarn test:unit",
     "docker:test:browser": "COMPOSE_PROFILES=full docker compose run --rm ghost yarn test:browser",
+    "docker:test:all": "COMPOSE_PROFILES=full docker compose run --rm ghost yarn nx run ghost:test:all",
     "docker:reset": "docker compose down -v && docker compose up -d --wait",
     "docker:down": "docker compose down",
     "compose": "docker compose -f .devcontainer/compose.yml",
