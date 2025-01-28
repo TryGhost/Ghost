@@ -20,16 +20,6 @@ services:
     depends_on:
       - mysql
       - redis
-  caddy:
-    image: caddy:2.9.1
-    container_name: ghost-caddy
-    ports:
-      - "80:80"
-      - "443:443"
-      - "443:443/udp"
-    volumes:
-      - ./.docker/caddy/config:/etc/caddy
-      - caddy-data:/data
   mysql:
     image: mysql:8.0.35
     container_name: ghost-mysql
@@ -93,4 +83,3 @@ services:
 volumes:
   mysql-data:
   redis-data:
-  caddy-data:
