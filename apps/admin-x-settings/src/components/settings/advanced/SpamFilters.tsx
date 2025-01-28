@@ -43,7 +43,7 @@ const SpamFilters: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     const hint = (
         <>
-            Prevent unwanted signups by blocking email domains. Add one domain per line, e.g., <code>spam.xyz</code> to block signups from email addresses like <code>hello@spam.xyz</code>
+            Prevent unwanted signups by blocking email domains. Add one domain per line, e.g., <code>spam.xyz</code> to block signups from email addresses like <code>hello@spam.xyz</code>.
         </>
     );
 

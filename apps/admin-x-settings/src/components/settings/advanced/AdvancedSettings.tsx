@@ -23,11 +23,11 @@ const AdvancedSettings: React.FC = () => {
         <SearchableSection keywords={Object.values(searchKeywords).flat()} title='Advanced'>
             <Integrations keywords={searchKeywords.integrations} />
             <MigrationTools keywords={searchKeywords.migrationtools} />
+            <SpamFilters keywords={searchKeywords.spamFilters} />
             <CodeInjection keywords={searchKeywords.codeInjection} />
             <Labs keywords={searchKeywords.labs} />
             <History keywords={searchKeywords.history} />
             <DangerZone keywords={searchKeywords.dangerzone} />
-            <SpamFilters keywords={searchKeywords.spamFilters} />
         </SearchableSection>
     );
 };
