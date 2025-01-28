@@ -63,6 +63,7 @@ const SpamFilters: React.FC<{ keywords: string[] }> = ({keywords}) => {
         >
             <SettingGroupContent columns={1}>
                 <TextArea
+                    className='h-[86px]'
                     error={!!errors.blockedEmailDomains}
                     hint={errors.blockedEmailDomains || hint}
                     placeholder={`spam.xyz\njunk.com`}
