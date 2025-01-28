@@ -92,19 +92,9 @@ async function runMigrations() {
     await runAndStream('docker-compose', ['run', '--rm', '-w', '/home/ghost/ghost/core', 'ghost', 'yarn', 'knex-migrator', 'init'], {cwd: path.join(__dirname, '../../')});
 }
 
-async function seedDatabase() {
-    console.log('Seeding data...');
-    if (process.argv.includes('--no-seed')) {
-        console.log(`Skipping seed data`);
-        return;
-    }
-    await runAndStream('docker-compose', ['run', '--rm', 'ghost', 'yarn', 'reset:data'], {cwd: path.join(__dirname, '../../')});
-}
-
 (async () => {
     clean();
     await adjustConfig();
     await buildContainer();
     await runMigrations();
-    await seedDatabase();
 })();
