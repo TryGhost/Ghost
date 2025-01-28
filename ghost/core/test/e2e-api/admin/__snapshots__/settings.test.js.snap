@@ -352,6 +352,10 @@ Object {
       "key": "support_email_address",
       "value": "noreply@127.0.0.1",
     },
+    Object {
+      "key": "all_blocked_email_domains",
+      "value": Array [],
+    },
   ],
 }
 `;
@@ -1147,6 +1151,10 @@ Object {
       "key": "support_email_address",
       "value": "noreply@127.0.0.1",
     },
+    Object {
+      "key": "all_blocked_email_domains",
+      "value": Array [],
+    },
   ],
 }
 `;
@@ -1155,7 +1163,7 @@ exports[`Settings API Edit Can edit a setting 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "4418",
+  "content-length": "4465",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1516,6 +1524,10 @@ Object {
     Object {
       "key": "support_email_address",
       "value": "noreply@127.0.0.1",
+    },
+    Object {
+      "key": "all_blocked_email_domains",
+      "value": Array [],
     },
   ],
 }
@@ -1885,6 +1897,10 @@ Object {
     Object {
       "key": "support_email_address",
       "value": "support@example.com",
+    },
+    Object {
+      "key": "all_blocked_email_domains",
+      "value": Array [],
     },
   ],
 }
@@ -2718,6 +2734,10 @@ Object {
       "key": "support_email_address",
       "value": "noreply@127.0.0.1",
     },
+    Object {
+      "key": "all_blocked_email_domains",
+      "value": Array [],
+    },
   ],
 }
 `;
@@ -3088,6 +3108,10 @@ Object {
       "key": "support_email_address",
       "value": "default@email.com",
     },
+    Object {
+      "key": "all_blocked_email_domains",
+      "value": Array [],
+    },
   ],
 }
 `;
@@ -3457,6 +3481,10 @@ Object {
     Object {
       "key": "support_email_address",
       "value": "support@sendingdomain.com",
+    },
+    Object {
+      "key": "all_blocked_email_domains",
+      "value": Array [],
     },
   ],
 }
@@ -3832,6 +3860,10 @@ Object {
       "key": "support_email_address",
       "value": "default@email.com",
     },
+    Object {
+      "key": "all_blocked_email_domains",
+      "value": Array [],
+    },
   ],
 }
 `;
@@ -4200,6 +4232,10 @@ Object {
     Object {
       "key": "support_email_address",
       "value": "default@email.com",
+    },
+    Object {
+      "key": "all_blocked_email_domains",
+      "value": Array [],
     },
   ],
 }
@@ -4574,6 +4610,10 @@ Object {
     Object {
       "key": "support_email_address",
       "value": "support@example.com",
+    },
+    Object {
+      "key": "all_blocked_email_domains",
+      "value": Array [],
     },
   ],
 }
@@ -5313,6 +5353,10 @@ Object {
       "key": "support_email_address",
       "value": "support@customdomain.com",
     },
+    Object {
+      "key": "all_blocked_email_domains",
+      "value": Array [],
+    },
   ],
 }
 `;
@@ -5682,6 +5726,10 @@ Object {
     Object {
       "key": "support_email_address",
       "value": "default@email.com",
+    },
+    Object {
+      "key": "all_blocked_email_domains",
+      "value": Array [],
     },
   ],
 }
@@ -6116,6 +6164,10 @@ Object {
     Object {
       "key": "support_email_address",
       "value": "support@example.com",
+    },
+    Object {
+      "key": "all_blocked_email_domains",
+      "value": Array [],
     },
   ],
 }

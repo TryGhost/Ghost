@@ -2,8 +2,7 @@ const {IncorrectUsageError, BadRequestError} = require('@tryghost/errors');
 const {isEmail} = require('@tryghost/validator');
 const tpl = require('@tryghost/tpl');
 const messages = {
-    invalidEmail: 'Email is not valid',
-    unsupportedEmailDomain: 'Signups from this email provider are not allowed'
+    invalidEmail: 'Email is not valid'
 };
 
 /**
@@ -35,7 +34,6 @@ class MagicLink {
      * @param {typeof defaultGetHTML} [options.getHTML]
      * @param {typeof defaultGetSubject} [options.getSubject]
      * @param {object} [options.sentry]
-     * @param {object} [options.config]
      */
     constructor(options) {
         if (!options || !options.transporter || !options.tokenProvider || !options.getSigninURL) {
@@ -48,7 +46,6 @@ class MagicLink {
         this.getHTML = options.getHTML || defaultGetHTML;
         this.getSubject = options.getSubject || defaultGetSubject;
         this.sentry = options.sentry || undefined;
-        this.config = options.config || {};
     }
 
     /**
@@ -67,12 +64,6 @@ class MagicLink {
         if (!isEmail(options.email)) {
             throw new BadRequestError({
                 message: tpl(messages.invalidEmail)
-            });
-        }
-
-        if (this.isEmailDomainBlocked(options.email)) {
-            throw new BadRequestError({
-                message: tpl(messages.unsupportedEmailDomain)
             });
         }
 
@@ -117,24 +108,6 @@ class MagicLink {
     async getDataFromToken(token) {
         const tokenData = await this.tokenProvider.validate(token);
         return tokenData;
-    }
-
-    /**
-     * Check if the email domain is blocked, based on the `spam.blocked_email_domains` config
-     *
-     * @param {string} email
-     * @returns {boolean}
-     */
-    isEmailDomainBlocked(email) {
-        const emailDomain = email.split('@')[1]?.toLowerCase();
-        const blockedDomains = this.config?.get('spam:blocked_email_domains');
-
-        // Config is not set properly: skip check
-        if (!blockedDomains || !Array.isArray(blockedDomains)) {
-            return false;
-        }
-
-        return blockedDomains.includes(emailDomain);
     }
 }
 

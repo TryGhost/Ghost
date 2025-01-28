@@ -245,8 +245,7 @@ function createApiInstance(config) {
             enabled: labsService.isSet('captcha') && sharedConfig.get('captcha:enabled'),
             scoreThreshold: sharedConfig.get('captcha:scoreThreshold'),
             secretKey: sharedConfig.get('captcha:secretKey')
-        }),
-        config: sharedConfig
+        })
     });
 
     return membersApiInstance;

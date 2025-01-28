@@ -202,7 +202,7 @@
     "Sign up": "A button to sign up",
     "Sign up now": "Button text to sign up in order to post a comment",
     "Signup error: Invalid link": "Notification text when an invalid / expired signup link is used",
-    "Signups from this email provider are not allowed": "",
+    "Signups from this email domain are currently restricted.": "",
     "Something went wrong, please try again later.": "",
     "Something went wrong, please try again.": "Error message when subscribing to a newsletter fails in the signup form embed",
     "Sorry, no recommendations are available right now.": "",

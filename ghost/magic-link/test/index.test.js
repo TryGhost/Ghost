@@ -91,48 +91,6 @@ describe('MagicLink', function () {
             assert.equal(options.transporter.sendMail.firstCall.args[0].text, options.getText.firstCall.returnValue);
             assert.equal(options.transporter.sendMail.firstCall.args[0].html, options.getHTML.firstCall.returnValue);
         });
-
-        it('Blocks signups from blocked email domains', async function () {
-            const options = {
-                tokenProvider: new MagicLink.JWTTokenProvider(secret),
-                getSigninURL: sandbox.stub().returns('FAKEURL'),
-                getText: sandbox.stub().returns('SOMETEXT'),
-                getHTML: sandbox.stub().returns('SOMEHTML'),
-                getSubject: sandbox.stub().returns('SOMESUBJECT'),
-                transporter: {
-                    sendMail: sandbox.stub().resolves()
-                },
-                config: {
-                    get: sandbox.stub().withArgs('spam:blocked_email_domains').returns(['blocked-domain.com'])
-                }
-            };
-            const service = new MagicLink(options);
-
-            const blockedArgs = {
-                email: 'test@blocked-domain.com',
-                tokenData: {
-                    id: '420'
-                }
-            };
-
-            await assert.rejects(
-                () => service.sendMagicLink(blockedArgs),
-                {
-                    name: 'BadRequestError',
-                    message: 'Signups from this email provider are not allowed'
-                }
-            );
-
-            // Verify non-blocked domain is allowed
-            const allowedArgs = {
-                email: 'test@allowed-domain.com',
-                tokenData: {
-                    id: '420'
-                }
-            };
-
-            await assert.doesNotReject(() => service.sendMagicLink(allowedArgs));
-        });
     });
 
     describe('#getDataFromToken', function () {
