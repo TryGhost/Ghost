@@ -5,8 +5,9 @@ import CloseButton from '../common/CloseButton';
 import AppContext from '../../AppContext';
 import InputForm from '../common/InputForm';
 import {ValidateInputForm} from '../../utils/form';
-import {hasAvailablePrices, isSigninAllowed, isSignupAllowed} from '../../utils/helpers';
+import {hasAvailablePrices, isSigninAllowed, isSignupAllowed, hasCaptchaEnabled, getCaptchaSitekey} from '../../utils/helpers';
 import {ReactComponent as InvitationIcon} from '../../images/icons/invitation.svg';
+import HCaptcha from '@hcaptcha/react-hcaptcha';
 
 export default class SigninPage extends React.Component {
     static contextType = AppContext;
@@ -14,8 +15,12 @@ export default class SigninPage extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            email: ''
+            email: '',
+            captchaLoaded: false,
+            token: undefined
         };
+
+        this.captchaRef = React.createRef();
     }
 
     componentDidMount() {
@@ -29,16 +34,27 @@ export default class SigninPage extends React.Component {
 
     handleSignin(e) {
         e.preventDefault();
+
+        const {site} = this.context;
+        if (hasCaptchaEnabled({site})) {
+            // hCaptcha's callback will call doSignin
+            return this.captchaRef.current.execute();
+        } else {
+            this.doSignin();
+        }
+    }
+
+    doSignin() {
         this.setState((state) => {
             return {
                 errors: ValidateInputForm({fields: this.getInputFields({state}), t: this.context.t})
             };
         }, async () => {
-            const {email, phonenumber, errors} = this.state;
+            const {email, phonenumber, errors, token} = this.state;
             const {redirect} = this.context.pageData ?? {};
             const hasFormErrors = (errors && Object.values(errors).filter(d => !!d).length > 0);
             if (!hasFormErrors) {
-                this.context.onAction('signin', {email, phonenumber, redirect});
+                this.context.onAction('signin', {email, phonenumber, redirect, token});
             }
         });
     }
@@ -156,6 +172,16 @@ export default class SigninPage extends React.Component {
                         onChange={(e, field) => this.handleInputChange(e, field)}
                         onKeyDown={(e, field) => this.onKeyDown(e, field)}
                     />
+                    {(hasCaptchaEnabled({site}) &&
+                        <HCaptcha
+                            size="invisible"
+                            sitekey={getCaptchaSitekey({site})}
+                            onLoad={() => this.setState({captchaLoaded: true})}
+                            onVerify={token => this.setState({token: token}, this.doSignin)}
+                            ref={this.captchaRef}
+                            id="hcaptcha-signin"
+                        />
+                    )}
                 </div>
                 <footer className='gh-portal-signin-footer'>
                     {this.renderSubmitButton()}

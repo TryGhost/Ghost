@@ -124,6 +124,9 @@ export default class PublishManagement extends Component {
     // triggered by ctrl/cmd+p
     @action
     togglePreview(event) {
+        if (event?.defaultPrevented) {
+            return;
+        }
         event?.preventDefault();
 
         if (!this.previewModal || this.previewModal.isClosing) {

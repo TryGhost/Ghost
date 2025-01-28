@@ -195,6 +195,30 @@ class SettingsHelpers {
         return unsubscribeUrl.href;
     }
 
+    /**
+     * Generates an array of the blocked email domains from both config and settings
+     * Normalizes the stored values by trimming, converting to lowercase and keeping only the email domain, e.g. 'hello@spam.xyz' -> 'spam.xyz'
+     * Filters out domains without a dot
+     * Returns an array of unique domains
+     *
+     * @returns {string[]}
+     */
+    getAllBlockedEmailDomains() {
+        let configBlocklist = this.config.get('spam:blocked_email_domains') || [];
+        let settingsBlocklist = this.settingsCache.get('blocked_email_domains') || [];
+
+        const normaliseDomains = domain => domain && domain.trim().toLowerCase().split('@').pop();
+        const filterValidDomains = domain => domain && domain.includes('.');
+
+        configBlocklist = Array.isArray(configBlocklist) ? configBlocklist.map(normaliseDomains).filter(filterValidDomains) : [];
+        settingsBlocklist = Array.isArray(settingsBlocklist) ? settingsBlocklist.map(normaliseDomains).filter(filterValidDomains) : [];
+
+        return Array.from(new Set([
+            ...configBlocklist,
+            ...settingsBlocklist
+        ]));
+    }
+
     // PRIVATE
 
     #managedEmailEnabled() {
