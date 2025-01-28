@@ -9,6 +9,7 @@ services:
     ports:
       - "2368:2368"
       - "4200:4200"
+      - "4201:4201"
     profiles: [full]
     volumes:
       - .:/home/ghost
