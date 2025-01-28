@@ -4,7 +4,7 @@ import useSettingGroup from '../../../hooks/useSettingGroup';
 import {SettingGroupContent, TextArea, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 
-const Spam: React.FC<{ keywords: string[] }> = ({keywords}) => {
+const SpamFilters: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {
         localSettings,
         isEditing,
@@ -43,19 +43,19 @@ const Spam: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     const hint = (
         <>
-            Enter one email provider per line. For example, <code>spam.xyz</code> to block signups from email addresses like <code>hello@spam.xyz</code>
+            Prevent unwanted signups by blocking email domains. Add one domain per line, e.g., <code>spam.xyz</code> to block signups from email addresses like <code>hello@spam.xyz</code>
         </>
     );
 
     return (
         <TopLevelGroup
-            description='Block unwanted signups from specific email providers'
+            description='Protect your member signups from spam'
             isEditing={isEditing}
             keywords={keywords}
-            navid='spam'
+            navid='spam-filters'
             saveState={saveState}
-            testId='spam'
-            title='Spam prevention'
+            testId='spam-filters'
+            title='Spam filters'
             hideEditButton
             onCancel={handleCancel}
             onEditingChange={handleEditingChange}
@@ -66,14 +66,14 @@ const Spam: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     error={!!errors.blockedEmailDomains}
                     hint={errors.blockedEmailDomains || hint}
                     placeholder={`spam.xyz\njunk.com`}
-                    title='Blocked email providers'
+                    title='Blocked email domains'
                     value={blockedEmailDomains}
                     onChange={updateBlockedEmailDomainsSetting}
-                    onKeyDown={() => clearError('spam')}
+                    onKeyDown={() => clearError('spam-filters')}
                 />
             </SettingGroupContent>
         </TopLevelGroup>
     );
 };
 
-export default withErrorBoundary(Spam, 'Spam');
+export default withErrorBoundary(SpamFilters, 'Spam Filters');
