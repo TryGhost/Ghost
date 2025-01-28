@@ -406,7 +406,8 @@ ul.nostyle li {
 .gh-list-sticky,
 .gh-list-scrolling {
     position: relative;
-    overflow: auto;
+    overflow-x: auto;
+    overflow-y: hidden;
     max-width: calc(100% + 96px);
     height: calc(100vh - 140px);
     margin: 0 -48px -81px;
@@ -417,6 +418,7 @@ ul.nostyle li {
 .view-container {
     position: relative;
     z-index: 0;
+    overflow-x: hidden;
 }
 
 .gh-list-scrolling table {
@@ -425,6 +427,7 @@ ul.nostyle li {
     margin: 0;
     border-bottom: none;
     z-index: 1;
+    width: 100%;
 }
 
 .gh-list-scrolling tbody tr {
