@@ -195,6 +195,12 @@ export class ActivityPubAPI {
         return json as Actor;
     }
 
+    async unfollow(username: string): Promise<Actor> {
+        const url = new URL(`.ghost/activitypub/actions/unfollow/${username}`, this.apiUrl);
+        const json = await this.fetchJSON(url, 'POST');
+        return json as Actor;
+    }
+
     get likedApiUrl() {
         return new URL(`.ghost/activitypub/liked/${this.handle}`, this.apiUrl);
     }

@@ -7,7 +7,8 @@ import {
     Actor,
     type GetAccountFollowsResponse,
     type Profile,
-    type SearchResults
+    type SearchResults,
+    Actor
 } from '../api/activitypub';
 import {Activity} from '../components/activities/ActivityItem';
 import {
@@ -200,6 +201,45 @@ export function useFollowingForUser(handle: string) {
         getNextPageParam(prevPage) {
             return prevPage.next;
         }
+    });
+}
+
+export function useUnfollow(handle: string, onSuccess: () => void, onError: () => void) {
+    const queryClient = useQueryClient();
+    return useMutation({
+        async mutationFn(username: string) {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI(handle, siteUrl);
+            return api.unfollow(username);
+        },
+        onSuccess(unfollowedActor, fullHandle) {
+            queryClient.setQueryData([`profile:${fullHandle}`], (currentProfile: unknown) => {
+                if (!currentProfile) {
+                    return currentProfile;
+                }
+                return {
+                    ...currentProfile,
+                    isFollowing: false
+                };
+            });
+
+            queryClient.setQueryData(['following:index'], (currentFollowing?: Actor[]) => {
+                if (!currentFollowing) {
+                    return currentFollowing;
+                }
+                return currentFollowing.filter(item => item.id !== unfollowedActor.id);
+            });
+
+            queryClient.setQueryData(['followingCount:index'], (currentFollowingCount?: number) => {
+                if (!currentFollowingCount) {
+                    return 0;
+                }
+                return currentFollowingCount - 1;
+            });
+
+            onSuccess();
+        },
+        onError
     });
 }
 
