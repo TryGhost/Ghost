@@ -3,7 +3,6 @@ import TopLevelGroup from '../../TopLevelGroup';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {GroupBase, MultiValue} from 'react-select';
 import {MultiSelect, MultiSelectOption, Select, Separator, SettingGroupContent, withErrorBoundary} from '@tryghost/admin-x-design-system';
-// import {getOptionLabel} from '../../../utils/helpers';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 
@@ -86,10 +85,6 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
         'members_signup_access', 'default_content_visibility', 'default_content_visibility_tiers', 'comments_enabled'
     ]) as string[];
 
-    // const membersSignupAccessLabel = getOptionLabel(MEMBERS_SIGNUP_ACCESS_OPTIONS, membersSignupAccess);
-    // const defaultContentVisibilityLabel = getOptionLabel(DEFAULT_CONTENT_VISIBILITY_OPTIONS, defaultContentVisibility);
-    // const commentsEnabledLabel = getOptionLabel(COMMENTS_ENABLED_OPTIONS, commentsEnabled);
-
     const {data: {tiers} = {}} = useBrowseTiers();
 
     const tierOptionGroups: GroupBase<MultiSelectOption>[] = [
@@ -111,28 +106,6 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
         updateSetting('default_content_visibility_tiers', JSON.stringify(selectedTiers));
     };
 
-    // const values = (
-    //     <SettingGroupContent
-    //         values={[
-    //             {
-    //                 heading: 'Subscription access',
-    //                 key: 'subscription-access',
-    //                 value: membersSignupAccessLabel
-    //             },
-    //             {
-    //                 heading: 'Default post access',
-    //                 key: 'default-post-access',
-    //                 value: defaultContentVisibilityLabel
-    //             },
-    //             {
-    //                 heading: 'Commenting',
-    //                 key: 'commenting',
-    //                 value: commentsEnabledLabel
-    //             }
-    //         ]}
-    //     />
-    // );
-
     const form = (
         <SettingGroupContent className='gap-y-4' columns={1}>
             <div className="flex flex-col content-center items-center gap-4 md:flex-row">
@@ -149,7 +122,7 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     />
                 </div>
             </div>
-            <Separator />
+            <Separator className="border-grey-200 dark:border-grey-900" />
             <div className="flex flex-col content-center items-center gap-4 md:flex-row">
                 <div className="w-full min-w-[160px] max-w-none md:w-2/3 md:max-w-[320px]">Who should have access to new posts?</div>
                 <div className="w-full md:flex-1">
@@ -181,7 +154,7 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     </div>
                 </div>
             )}
-            <Separator />
+            <Separator className="border-grey-200 dark:border-grey-900" />
             <div className="flex flex-col content-center items-center gap-4 md:flex-row">
                 <div className="w-full min-w-[160px] max-w-none md:w-2/3 md:max-w-[320px]">Who can comment on posts?</div>
                 <div className="w-full md:flex-1">

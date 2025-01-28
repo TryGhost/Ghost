@@ -117,7 +117,7 @@ class SettingsHelpers {
     getMembersSupportAddress() {
         let supportAddress = this.settingsCache.get('members_support_address');
 
-        if (!supportAddress && this.useNewEmailAddresses()) {
+        if (!supportAddress) {
             // In the new flow, we make a difference between an empty setting (= use default) and a 'noreply' setting (=use noreply @ domain)
             // Also keep the name of the default email!
             return EmailAddressParser.stringify(this.getDefaultEmail());
@@ -144,18 +144,16 @@ class SettingsHelpers {
     }
 
     getDefaultEmail() {
-        if (this.useNewEmailAddresses()) {
-            // parse the email here and remove the sender name
-            // E.g. when set to "bar" <from@default.com>
-            const configAddress = this.config.get('mail:from');
-            const parsed = EmailAddressParser.parse(configAddress);
-            if (parsed) {
-                return parsed;
-            }
-
-            // For missing configs, we default to the old flow
-            logging.warn('Missing mail.from config, falling back to a generated email address. Please update your config file and set a valid from address');
+        // parse the email here and remove the sender name
+        // E.g. when set to "bar" <from@default.com>
+        const configAddress = this.config.get('mail:from');
+        const parsed = EmailAddressParser.parse(configAddress);
+        if (parsed) {
+            return parsed;
         }
+
+        // For missing configs, we default to the old flow
+        logging.warn('Missing mail.from config, falling back to a generated email address. Please update your config file and set a valid from address');
         return {
             address: this.getLegacyNoReplyAddress()
         };
@@ -171,10 +169,6 @@ class SettingsHelpers {
 
     areDonationsEnabled() {
         return this.isStripeConnected();
-    }
-
-    useNewEmailAddresses() {
-        return this.#managedEmailEnabled() || this.labs.isSet('newEmailAddresses');
     }
 
     createUnsubscribeUrl(uuid, options = {}) {
@@ -199,6 +193,30 @@ class SettingsHelpers {
         }
 
         return unsubscribeUrl.href;
+    }
+
+    /**
+     * Generates an array of the blocked email domains from both config and settings
+     * Normalizes the stored values by trimming, converting to lowercase and keeping only the email domain, e.g. 'hello@spam.xyz' -> 'spam.xyz'
+     * Filters out domains without a dot
+     * Returns an array of unique domains
+     *
+     * @returns {string[]}
+     */
+    getAllBlockedEmailDomains() {
+        let configBlocklist = this.config.get('spam:blocked_email_domains') || [];
+        let settingsBlocklist = this.settingsCache.get('blocked_email_domains') || [];
+
+        const normaliseDomains = domain => domain && domain.trim().toLowerCase().split('@').pop();
+        const filterValidDomains = domain => domain && domain.includes('.');
+
+        configBlocklist = Array.isArray(configBlocklist) ? configBlocklist.map(normaliseDomains).filter(filterValidDomains) : [];
+        settingsBlocklist = Array.isArray(settingsBlocklist) ? settingsBlocklist.map(normaliseDomains).filter(filterValidDomains) : [];
+
+        return Array.from(new Set([
+            ...configBlocklist,
+            ...settingsBlocklist
+        ]));
     }
 
     // PRIVATE
