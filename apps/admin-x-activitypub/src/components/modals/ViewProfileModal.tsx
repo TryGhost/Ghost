@@ -96,11 +96,9 @@ const ActorList: React.FC<ActorListProps> = ({
                                         </div>
                                         <FollowButton
                                             className='ml-auto'
-                                            color='grey'
                                             following={isFollowing}
                                             handle={getUsername(actor)}
-                                            size='sm'
-                                            type='link'
+                                            type='secondary'
                                         />
                                     </ActivityItem>
                                     {index < actors.length - 1 && <Separator />}
@@ -326,10 +324,9 @@ const ViewProfileModal: React.FC<ViewProfileModalProps> = ({
                                         />
                                     </div>
                                     <FollowButton
-                                        color='black'
                                         following={profile.isFollowing}
                                         handle={profile.handle}
-                                        size='md'
+                                        type='primary'
                                         onFollow={onFollow}
                                         onUnfollow={onUnfollow}
                                     />

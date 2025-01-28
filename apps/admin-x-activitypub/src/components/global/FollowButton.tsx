@@ -6,10 +6,8 @@ import {useFollow} from '../../hooks/useActivityPubQueries';
 interface FollowButtonProps {
     className?: string;
     following: boolean;
-    color?: 'black' | 'grey' | 'outline';
-    size?: 'sm' | 'md';
     handle: string;
-    type?: 'button' | 'link';
+    type?: 'primary' | 'secondary';
     onFollow?: () => void;
     onUnfollow?: () => void;
 }
@@ -18,11 +16,9 @@ const noop = () => {};
 
 const FollowButton: React.FC<FollowButtonProps> = ({
     className,
-    color = 'black',
     following,
     handle,
-    size = 'md',
-    type = 'button',
+    type = 'secondary',
     onFollow = noop,
     onUnfollow = noop
 }) => {
@@ -53,16 +49,18 @@ const FollowButton: React.FC<FollowButtonProps> = ({
         setIsFollowing(following);
     }, [following]);
 
+    const color = (type === 'primary') ? 'black' : 'grey';
+    const size = (type === 'primary') ? 'md' : 'sm';
+    const minWidth = (type === 'primary') ? 'min-w-[96px]' : 'min-w-[88px]';
+
     return (
         <Button
             className={clsx(
                 className,
-                (type !== 'link') && 'min-w-[96px]',
-                (type === 'link' && isFollowing) && 'opacity-50'
+                minWidth
             )}
             color={isFollowing ? 'outline' : color}
             label={isFollowing ? (isHovered ? 'Unfollow' : 'Following') : 'Follow'}
-            link={type === 'link'}
             size={size}
             onClick={(event) => {
                 event?.preventDefault();

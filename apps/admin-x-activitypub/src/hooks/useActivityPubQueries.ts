@@ -4,6 +4,7 @@ import {
     ActivityPubAPI,
     ActivityPubCollectionResponse,
     ActivityThread,
+    Actor,
     type GetAccountFollowsResponse,
     type Profile,
     type SearchResults
