@@ -29,18 +29,12 @@ const Spam: React.FC<{ keywords: string[] }> = ({keywords}) => {
         const input = e.target.value;
         setBlockedEmailDomains(input);
 
-        const parsedDomains = input
+        const validEmailDomains = input
             .split(/[\s,]+/) // Split by space, comma, or newline
-            .map(item => item.trim())
-            .map((item) => {
-                // Remove '@' and anything before it
-                const atIndex = item.indexOf('@');
-                return atIndex !== -1 ? item.slice(atIndex + 1) : item;
-            })
-            .map(item => item.toLowerCase())
-            .filter(item => item.includes('.'));
+            .map(domain => domain.trim().toLowerCase().split('@').pop()) // Normalise and keep only the email domain, e.g. 'hello@spam.xyz' -> 'spam.xyz'
+            .filter(domain => domain && domain.includes('.')); // Filter out domains without a dot
 
-        updateSetting('blocked_email_domains', JSON.stringify(parsedDomains));
+        updateSetting('blocked_email_domains', JSON.stringify(validEmailDomains));
 
         if (!isEditing) {
             handleEditingChange(true);

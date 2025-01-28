@@ -197,7 +197,8 @@ class SettingsHelpers {
 
     /**
      * Generates an array of the blocked email domains from both config and settings
-     * Normalizes the stored values by removing the eventual '@' symbol and converting to lowercase
+     * Normalizes the stored values by trimming, converting to lowercase and keeping only the email domain, e.g. 'hello@spam.xyz' -> 'spam.xyz'
+     * Filters out domains without a dot
      * Returns an array of unique domains
      *
      * @returns {string[]}
@@ -206,10 +207,11 @@ class SettingsHelpers {
         let configBlocklist = this.config.get('spam:blocked_email_domains') || [];
         let settingsBlocklist = this.settingsCache.get('blocked_email_domains') || [];
 
-        const normalizeEmailDomain = domain => domain.toLowerCase().replace(/^@/, '');
+        const normaliseDomains = domain => domain && domain.trim().toLowerCase().split('@').pop();
+        const filterValidDomains = domain => domain && domain.includes('.');
 
-        configBlocklist = Array.isArray(configBlocklist) ? configBlocklist.map(normalizeEmailDomain) : [];
-        settingsBlocklist = Array.isArray(settingsBlocklist) ? settingsBlocklist.map(normalizeEmailDomain) : [];
+        configBlocklist = Array.isArray(configBlocklist) ? configBlocklist.map(normaliseDomains).filter(filterValidDomains) : [];
+        settingsBlocklist = Array.isArray(settingsBlocklist) ? settingsBlocklist.map(normaliseDomains).filter(filterValidDomains) : [];
 
         return Array.from(new Set([
             ...configBlocklist,
