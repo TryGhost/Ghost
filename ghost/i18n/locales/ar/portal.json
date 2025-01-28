@@ -138,7 +138,7 @@
     "Sign out": "تسجيل الخروج",
     "Sign up": "إنشاء حساب",
     "Signup error: Invalid link": "خطأ في التسجيل: الرابط غير صالح",
-    "Signups from this email provider are not allowed": "",
+    "Signups from this email domain are currently restricted.": "",
     "Something went wrong, please try again later.": ".حدث خطأ ما، يرجى المحاولة مرة أخرى لاحقًا",
     "Sorry, no recommendations are available right now.": ".عذرًا، لا توجد توصيات متاحة حاليًا",
     "Sorry, that didn’t work.": ".عذرًا، لم ينجح ذلك",

@@ -74,8 +74,7 @@ module.exports = function MembersAPI({
     settingsCache,
     sentry,
     settingsHelpers,
-    captchaService,
-    config
+    captchaService
 }) {
     const tokenService = new TokenService({
         privateKey,
@@ -160,8 +159,7 @@ module.exports = function MembersAPI({
         getText,
         getHTML,
         getSubject,
-        sentry,
-        config
+        sentry
     });
 
     const paymentsService = new PaymentsService({
