@@ -1,4 +1,4 @@
-import {hasAvailablePrices, getAllProductsForSite, getAvailableProducts, getCurrencySymbol, getFreeProduct, getMemberName, getMemberSubscription, getPriceFromSubscription, getPriceIdFromPageQuery, getSupportAddress, getDefaultNewsletterSender, getUrlHistory, hasMultipleProducts, isActiveOffer, isInviteOnly, isPaidMember, isPaidMembersOnly, isSameCurrency, transformApiTiersData, isSigninAllowed, isSignupAllowed, getCompExpiry, isInThePast} from './helpers';
+import {hasAvailablePrices, getAllProductsForSite, getAvailableProducts, getCurrencySymbol, getFreeProduct, getMemberName, getMemberSubscription, getPriceFromSubscription, getPriceIdFromPageQuery, getSupportAddress, getDefaultNewsletterSender, getUrlHistory, hasMultipleProducts, isActiveOffer, isInviteOnly, isPaidMember, isPaidMembersOnly, isSameCurrency, transformApiTiersData, isSigninAllowed, isSignupAllowed, getCompExpiry, isInThePast, hasNewsletterSendingEnabled} from './helpers';
 import * as Fixtures from './fixtures-generator';
 import {site as FixturesSite, member as FixtureMember, offer as FixtureOffer, transformTierFixture as TransformFixtureTiers} from '../utils/test-fixtures';
 import {isComplimentaryMember} from '../utils/helpers';
@@ -537,6 +537,23 @@ describe('Helpers - ', () => {
 
             expect(isInThePast(pastDate)).toEqual(true);
             expect(isInThePast(futureDate)).toEqual(false);
+        });
+    });
+
+    describe('hasNewsletterSendingEnabled', () => {
+        test('returns true when editor default email recipients is set to visibility', () => {
+            const site = {editor_default_email_recipients: 'visibility'};
+            expect(hasNewsletterSendingEnabled({site})).toBe(true);
+        });
+
+        test('returns false when editor default email recipients is set to disabled', () => {
+            const site = {editor_default_email_recipients: 'disabled'};
+            expect(hasNewsletterSendingEnabled({site})).toBe(false);
+        });
+
+        test('returns true when editor default email recipients is set to filter', () => {
+            const site = {editor_default_email_recipients: 'filter'};
+            expect(hasNewsletterSendingEnabled({site})).toBe(true);
         });
     });
 });

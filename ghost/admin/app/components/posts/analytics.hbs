@@ -35,6 +35,14 @@
                     {{/let}}
                 </div>
                 <div style="display: flex; gap: 8px;">
+                    <GhTaskButton
+                        @buttonText="Refresh"
+                        @task={{this.fetchPostTask}}
+                        @showIcon={{true}}
+                        @idleIcon="reload"
+                        @successText="Refreshed"
+                        @class="gh-btn gh-btn-icon refresh"
+                        @successClass="gh-btn gh-btn-icon refresh" />
                     {{#unless this.post.emailOnly}}
                         <button type="button" class="gh-btn gh-btn-icon share" {{on "click" this.togglePublishFlowModal}}>
                             <span>{{svg-jar "share" title="Share post"}} Share</span>

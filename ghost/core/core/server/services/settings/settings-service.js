@@ -98,6 +98,9 @@ module.exports = {
         fields.push(new CalculatedField({key: 'default_email_address', type: 'string', group: 'email', fn: settingsHelpers.getDefaultEmailAddress.bind(settingsHelpers), dependents: ['labs']}));
         fields.push(new CalculatedField({key: 'support_email_address', type: 'string', group: 'email', fn: settingsHelpers.getMembersSupportAddress.bind(settingsHelpers), dependents: ['labs', 'members_support_address']}));
 
+        // Blocked email domains from member signup, from both config and user settings
+        fields.push(new CalculatedField({key: 'all_blocked_email_domains', type: 'string', group: 'members', fn: settingsHelpers.getAllBlockedEmailDomains.bind(settingsHelpers), dependents: ['blocked_email_domains']}));
+
         return fields;
     },
 
