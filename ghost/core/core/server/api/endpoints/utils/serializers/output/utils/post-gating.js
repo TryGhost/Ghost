@@ -3,20 +3,32 @@ const htmlToPlaintext = require('@tryghost/html-to-plaintext');
 
 const {PERMIT_ACCESS} = membersService.contentGating;
 
+// Match the start of a gated block - fast regex as a pre-check before doing full regex+loop
 const HAS_GATED_BLOCKS_REGEX = /<!--\s*kg-gated-block:begin/;
+// Match gated block comments
+// e.g. <!--kg-gated-block:begin nonMember:true memberSegment:"status:free"-->...gated content<!--kg-gated-block:end-->
 const GATED_BLOCK_REGEX = /<!--\s*kg-gated-block:begin\s+([^\n]+?)\s*-->\s*([\s\S]*?)\s*<!--\s*kg-gated-block:end\s*-->/g;
+// Match the key-value pairs (with optional quotes around the value) in the gated-block:begin comment
+const GATED_BLOCK_PARAM_REGEX = /\b(?<key>\w+):["']?(?<value>[^"'\s]+)["']?/g;
 
 const parseGatedBlockParams = function (paramsString) {
     const params = {};
-    // Match key-value pairs with optional quotes around the value
-    const paramsRegex = /\b(?<key>\w+):["']?(?<value>[^"'\s]+)["']?/g;
-    let match;
-    while ((match = paramsRegex.exec(paramsString)) !== null) {
+
+    const matches = paramsString.matchAll(GATED_BLOCK_PARAM_REGEX);
+    for (const match of matches) {
         const key = match.groups.key;
         const value = match.groups.value;
-        // Convert "true"/"false" strings to booleans for `nonMember`
-        params[key] = value === 'true' ? true : value === 'false' ? false : value;
+
+        // Convert "true"/"false" strings to booleans, otherwise store as string
+        if (value === 'true') {
+            params[key] = true;
+        } else if (value === 'false') {
+            params[key] = false;
+        } else {
+            params[key] = value;
+        }
     }
+
     return params;
 };
 
