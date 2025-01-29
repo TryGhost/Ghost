@@ -1,10 +1,11 @@
 const {createDocument, dom, html} = require('../test-utils');
 const {createHeadlessEditor} = require('@lexical/headless');
 const {$getRoot} = require('lexical');
-const {HtmlNode, $createHtmlNode, $isHtmlNode} = require('../../');
+const {HtmlNode, $createHtmlNode, $isHtmlNode, utils} = require('../../');
 const {$generateNodesFromDOM} = require('@lexical/html');
 
 const editorNodes = [HtmlNode];
+const {ALL_MEMBERS_SEGMENT, NO_MEMBERS_SEGMENT} = utils.visibility;
 
 describe('HtmlNode', function () {
     let editor;
@@ -26,7 +27,9 @@ describe('HtmlNode', function () {
     };
 
     beforeEach(function () {
-        editor = createHeadlessEditor({nodes: editorNodes});
+        editor = createHeadlessEditor({nodes: editorNodes, onError: (e) => {
+            throw e;
+        }});
 
         dataset = {
             html: '<p>Paragraph with:</p><ul><li>list</li><li>items</li></ul>'
@@ -64,9 +67,13 @@ describe('HtmlNode', function () {
             htmlNodeDataset.should.deepEqual({
                 ...dataset,
                 visibility: {
-                    showOnEmail: true,
-                    showOnWeb: true,
-                    segment: ''
+                    web: {
+                        nonMember: true,
+                        memberSegment: 'status:free,status:-free'
+                    },
+                    email: {
+                        memberSegment: 'status:free,status:-free'
+                    }
                 }
             });
         }));
@@ -103,9 +110,13 @@ describe('HtmlNode', function () {
             defaults.should.deepEqual({
                 html: '',
                 visibility: {
-                    showOnEmail: true,
-                    showOnWeb: true,
-                    segment: ''
+                    web: {
+                        nonMember: true,
+                        memberSegment: 'status:free,status:-free'
+                    },
+                    email: {
+                        memberSegment: 'status:free,status:-free'
+                    }
                 }
             });
         }));
@@ -193,99 +204,139 @@ describe('HtmlNode', function () {
                 };
             });
 
-            it('renders data-gh-segment attribute paid-members-only emails', editorTest(function () {
-                const htmlNode = $createHtmlNode({html: '<div>Test</div>', visibility: {showOnEmail: true, showOnWeb: false, segment: 'status:-free'}});
-                const options = {
-                    target: 'email'
-                };
-                const mergedOptions = {...exportOptions, ...options};
-                const {element, type} = htmlNode.exportDOM(mergedOptions);
-                type.should.equal('html');
+            describe('with old visibility settings', function () {
+                function testWebRender(visibility) {
+                    const htmlNode = $createHtmlNode({html: '<div>Test</div>', visibility});
+                    const {element, type} = htmlNode.exportDOM(exportOptions);
+                    type.should.equal('value');
+                    element.value.should.equal('\n<!--kg-card-begin: html-->\n<div>Test</div>\n<!--kg-card-end: html-->\n');
+                }
 
-                element.innerHTML.should.equal('\n<!--kg-card-begin: html-->\n<div>Test</div>\n<!--kg-card-end: html-->\n');
-                // Ensure the attribute is set correctly
-                const dataGhSegment = element.getAttribute('data-gh-segment');
-                dataGhSegment.should.equal('status:-free');
-            }));
+                function testEmailRender(visibility) {
+                    const htmlNode = $createHtmlNode({html: '<div>Test</div>', visibility});
+                    const {element, type} = htmlNode.exportDOM({...exportOptions, target: 'email'});
+                    const expectedContents = '<!--kg-card-begin: html-->\n<div>Test</div>\n<!--kg-card-end: html-->';
 
-            it('renders data-gh-segment attribute free-members-only email', editorTest(function () {
-                const htmlNode = $createHtmlNode({html: '<div>Test</div>', visibility: {showOnEmail: true, showOnWeb: false, segment: 'status:free'}});
-                const options = {
-                    target: 'email'
-                };
-                const mergedOptions = {...exportOptions, ...options};
-                const {element, type} = htmlNode.exportDOM(mergedOptions);
-                type.should.equal('html');
+                    if (visibility.segment) {
+                        type.should.equal('html');
+                        element.outerHTML.should.equal(`<div data-gh-segment="${visibility.segment}">\n${expectedContents}\n</div>`);
+                    } else {
+                        type.should.equal('value');
+                        element.value.should.equal(`\n${expectedContents}\n`);
+                    }
+                }
 
-                element.innerHTML.should.equal('\n<!--kg-card-begin: html-->\n<div>Test</div>\n<!--kg-card-end: html-->\n');
-                const dataGhSegment = element.getAttribute('data-gh-segment');
-                dataGhSegment.should.equal('status:free');
-            }));
+                function testBlankRender(visibility, target) {
+                    const htmlNode = $createHtmlNode({html: '<div>Test</div>', visibility});
+                    const {element, type} = htmlNode.exportDOM({...exportOptions, target});
+                    type.should.equal('inner');
+                    element.innerHTML.should.equal('');
+                }
 
-            it('renders on web if showOnWeb is true and showOnEmail is false', editorTest(function () {
-                const htmlNode = $createHtmlNode({html: '<div>Test</div>', visibility: {showOnEmail: false, showOnWeb: true, segment: ''}});
-                const {element, type} = htmlNode.exportDOM(exportOptions);
-                type.should.equal('value');
+                it('renders on web but not email if showOnWeb is true and showOnEmail is false', editorTest(function () {
+                    const visibility = {showOnEmail: false, showOnWeb: true, segment: ''};
+                    testWebRender(visibility);
+                    testBlankRender(visibility, 'email');
+                }));
 
-                element.value.should.equal('\n<!--kg-card-begin: html-->\n<div>Test</div>\n<!--kg-card-end: html-->\n');
-            }));
+                it('renders on email and not web if showOnEmail is true and showOnWeb is false', editorTest(function () {
+                    const visibility = {showOnEmail: true, showOnWeb: false, segment: ''};
+                    testEmailRender(visibility);
+                    testBlankRender(visibility, 'web');
+                }));
 
-            it('renders on email if showOnEmail is true and showOnWeb is false', editorTest(function () {
-                const htmlNode = $createHtmlNode({html: '<div>Test</div>', visibility: {showOnEmail: true, showOnWeb: false, segment: ''}});
-                const options = {
-                    target: 'email'
-                };
-                const mergedOptions = {...exportOptions, ...options};
-                const {element, type} = htmlNode.exportDOM(mergedOptions);
-                type.should.equal('html');
+                it('renders both on web and email if showOnEmail and showOnWeb are true', editorTest(function () {
+                    const visibility = {showOnEmail: true, showOnWeb: true, segment: ''};
+                    testWebRender(visibility);
+                    testEmailRender(visibility);
+                }));
+            });
 
-                element.innerHTML.should.equal('\n<!--kg-card-begin: html-->\n<div>Test</div>\n<!--kg-card-end: html-->\n');
-            }));
+            describe('with new visibility settings', function () {
+                function testWebRender(visibility, expectedGateParams) {
+                    const htmlNode = $createHtmlNode({html: '<div>Test</div>', visibility});
+                    const {element, type} = htmlNode.exportDOM(exportOptions);
+                    type.should.equal('value');
+                    const baseExpectedContents = '\n<!--kg-card-begin: html-->\n<div>Test</div>\n<!--kg-card-end: html-->\n';
+                    element.value.should.equal(expectedGateParams ? `\n<!--kg-gated-block:begin ${expectedGateParams} -->${baseExpectedContents}<!--kg-gated-block:end-->\n` : baseExpectedContents);
+                }
 
-            it('renders both on web and email if showOnEmail and showOnWeb are true', editorTest(function () {
-                const htmlNode = $createHtmlNode({html: '<div>Test</div>', visibility: {showOnEmail: true, showOnWeb: true, segment: ''}});
-                const {element, type} = htmlNode.exportDOM(exportOptions);
+                function testEmailRender(visibility, expectedSegment) {
+                    const htmlNode = $createHtmlNode({html: '<div>Test</div>', visibility});
+                    const {element, type} = htmlNode.exportDOM({...exportOptions, target: 'email'});
+                    const expectedContents = '<!--kg-card-begin: html-->\n<div>Test</div>\n<!--kg-card-end: html-->';
 
-                type.should.equal('value');
+                    if (!expectedSegment) {
+                        type.should.equal('value');
+                        element.value.should.equal(`\n${expectedContents}\n`);
+                    } else {
+                        type.should.equal('html');
+                        element.outerHTML.should.equal(`<div data-gh-segment="${expectedSegment}">\n${expectedContents}\n</div>`);
+                    }
+                }
 
-                element.value.should.equal('\n<!--kg-card-begin: html-->\n<div>Test</div>\n<!--kg-card-end: html-->\n');
+                function testBlankRender(visibility, target) {
+                    const htmlNode = $createHtmlNode({html: '<div>Test</div>', visibility});
+                    const {element, type} = htmlNode.exportDOM({...exportOptions, target});
+                    type.should.equal('inner');
+                    element.innerHTML.should.equal('');
+                }
 
-                const options = {
-                    target: 'email'
-                };
+                it('web: excludes gated wrapper when shown to everyone', editorTest(function () {
+                    const visibility = {web: {nonMember: true, memberSegment: ALL_MEMBERS_SEGMENT}, email: {memberSegment: ALL_MEMBERS_SEGMENT}};
+                    testWebRender(visibility, null);
+                }));
 
-                const mergedOptions = {...exportOptions, ...options};
+                it('web: includes gated wrapper with member-only params', editorTest(function () {
+                    const visibility = {web: {nonMember: false, memberSegment: ALL_MEMBERS_SEGMENT}, email: {memberSegment: ALL_MEMBERS_SEGMENT}};
+                    testWebRender(visibility, 'nonMember:false memberSegment:"status:free,status:-free"');
+                }));
 
-                const {element: emailElement, type: emailType} = htmlNode.exportDOM(mergedOptions);
+                it('web: includes gated wrapper with anonymous-only params', editorTest(function () {
+                    const visibility = {web: {nonMember: true, memberSegment: ''}, email: {memberSegment: ALL_MEMBERS_SEGMENT}};
+                    testWebRender(visibility, 'nonMember:true memberSegment:""');
+                }));
 
-                emailType.should.equal('html');
+                it('email: excludes content when hidden from all members', editorTest(function () {
+                    const visibility = {web: {nonMember: true, memberSegment: NO_MEMBERS_SEGMENT}, email: {memberSegment: ''}};
+                    testBlankRender(visibility, 'email');
+                }));
 
-                emailElement.innerHTML.should.equal('\n<!--kg-card-begin: html-->\n<div>Test</div>\n<!--kg-card-end: html-->\n');
-            }));
+                it('email: skips segment wrapper when sent to all members', editorTest(function () {
+                    const visibility = {web: {nonMember: true, memberSegment: ALL_MEMBERS_SEGMENT}, email: {memberSegment: ALL_MEMBERS_SEGMENT}};
+                    testWebRender(visibility);
+                    testEmailRender(visibility, '');
+                }));
 
-            it('does not render on web if showOnWeb is false', editorTest(function () {
-                const htmlNode = $createHtmlNode({html: '<div>Test</div>', visibility: {showOnEmail: false, showOnWeb: false, segment: ''}});
-                const {element, type} = htmlNode.exportDOM(exportOptions);
+                it('email: includes content with member segment wrapper', editorTest(function () {
+                    const visibility = {web: {nonMember: true, memberSegment: ALL_MEMBERS_SEGMENT}, email: {memberSegment: 'status:free'}};
+                    testEmailRender(visibility, 'status:free');
+                }));
 
-                type.should.equal('inner');
+                it('handles web-only (everyone)', editorTest(function () {
+                    const visibility = {web: {nonMember: true, memberSegment: ALL_MEMBERS_SEGMENT}, email: {memberSegment: NO_MEMBERS_SEGMENT}};
+                    testWebRender(visibility);
+                    testBlankRender(visibility, 'email');
+                }));
 
-                element.outerHTML.should.equal('<span></span>');
-            }));
+                it('handles web-only (members-only)', editorTest(function () {
+                    const visibility = {web: {nonMember: false, memberSegment: ALL_MEMBERS_SEGMENT}, email: {memberSegment: NO_MEMBERS_SEGMENT}};
+                    testWebRender(visibility, 'nonMember:false memberSegment:"status:free,status:-free"');
+                    testBlankRender(visibility, 'email');
+                }));
 
-            it('does not render on email if showOnEmail is false', editorTest(function () {
-                const htmlNode = $createHtmlNode({html: '<div>Test</div>', visibility: {showOnEmail: false, showOnWeb: false, segment: ''}});
-                const options = {
-                    target: 'email'
-                };
+                it('handles email-only (free members)', editorTest(function () {
+                    const visibility = {web: {nonMember: false, memberSegment: NO_MEMBERS_SEGMENT}, email: {memberSegment: 'status:free'}};
+                    testBlankRender(visibility, 'web');
+                    testEmailRender(visibility, 'status:free');
+                }));
 
-                const mergedOptions = {...exportOptions, ...options};
-
-                const {element, type} = htmlNode.exportDOM(mergedOptions);
-
-                type.should.equal('inner');
-
-                element.outerHTML.should.equal('<span></span>');
-            }));
+                it('handles visibility for no-one', editorTest(function () {
+                    const visibility = {web: {nonMember: false, memberSegment: NO_MEMBERS_SEGMENT}, email: {memberSegment: NO_MEMBERS_SEGMENT}};
+                    testBlankRender(visibility, 'web');
+                    testBlankRender(visibility, 'email');
+                }));
+            });
         });
     });
 
@@ -328,9 +379,13 @@ describe('HtmlNode', function () {
                 version: 1,
                 html: '<p>Paragraph with:</p><ul><li>list</li><li>items</li></ul>',
                 visibility: {
-                    showOnEmail: true,
-                    showOnWeb: true,
-                    segment: ''
+                    web: {
+                        nonMember: true,
+                        memberSegment: 'status:free,status:-free'
+                    },
+                    email: {
+                        memberSegment: 'status:free,status:-free'
+                    }
                 }
             });
         }));
@@ -367,6 +422,51 @@ describe('HtmlNode', function () {
                 }
             });
         });
+
+        it('updates old visibility format to new format', function (done) {
+            const serializedState = JSON.stringify({
+                root: {
+                    children: [{
+                        type: 'html',
+                        html: '<p>Paragraph with:</p><ul><li>list</li><li>items</li></ul>',
+                        visibility: {
+                            showOnEmail: true,
+                            showOnWeb: true
+                        }
+                    }],
+                    direction: null,
+                    format: '',
+                    indent: 0,
+                    type: 'root',
+                    version: 1
+                }
+            });
+
+            const editorState = editor.parseEditorState(serializedState);
+            editor.setEditorState(editorState);
+
+            editor.getEditorState().read(() => {
+                try {
+                    const [htmlNode] = $getRoot().getChildren();
+
+                    htmlNode.visibility.should.deepEqual({
+                        showOnWeb: true,
+                        showOnEmail: true,
+                        web: {
+                            nonMember: true,
+                            memberSegment: 'status:free,status:-free'
+                        },
+                        email: {
+                            memberSegment: 'status:free,status:-free'
+                        }
+                    });
+
+                    done();
+                } catch (e) {
+                    done(e);
+                }
+            });
+        });
     });
 
     describe('getTextContent', function () {
@@ -381,28 +481,50 @@ describe('HtmlNode', function () {
     });
 
     describe('getIsVisibilityActive', function () {
-        it('returns true when showOnEmail is false', editorTest(function () {
+        function testIsVisibilityActive(expected, visibility) {
             const node = $createHtmlNode();
-            node.visibility = {showOnEmail: false, showOnWeb: true, segment: ''};
-            node.getIsVisibilityActive().should.be.true();
-        }));
+            node.visibility = visibility;
+            node.getIsVisibilityActive().should.equal(expected);
+        }
 
-        it('returns true when showOnWeb is false', editorTest(function () {
-            const node = $createHtmlNode();
-            node.visibility = {showOnEmail: true, showOnWeb: false, segment: ''};
-            node.getIsVisibilityActive().should.be.true();
-        }));
+        describe('with old visibility format', function () {
+            it('returns false when both showOnEmail and showOnWeb are true and segment is blank', editorTest(function () {
+                testIsVisibilityActive(false, {showOnEmail: true, showOnWeb: true, segment: ''});
+            }));
 
-        it('returns true when segment is not empty', editorTest(function () {
-            const node = $createHtmlNode();
-            node.visibility = {showOnEmail: true, showOnWeb: true, segment: 'status:-free'};
-            node.getIsVisibilityActive().should.be.true();
-        }));
+            it('returns true when showOnEmail is false', editorTest(function () {
+                testIsVisibilityActive(true, {showOnEmail: false, showOnWeb: true, segment: ''});
+            }));
 
-        it('returns false when both showOnEmail and showOnWeb are true and segment is blank', editorTest(function () {
-            const node = $createHtmlNode();
-            node.visibility = {showOnEmail: true, showOnWeb: true, segment: ''};
-            node.getIsVisibilityActive().should.be.false();
-        }));
+            it('returns true when showOnWeb is false', editorTest(function () {
+                testIsVisibilityActive(true, {showOnEmail: true, showOnWeb: false, segment: ''});
+            }));
+
+            it('returns true when segment is not empty', editorTest(function () {
+                testIsVisibilityActive(true, {showOnEmail: true, showOnWeb: true, segment: 'status:-free'});
+            }));
+        });
+
+        describe('with new visibility format', function () {
+            it('returns false when shown to everyone', editorTest(function () {
+                testIsVisibilityActive(false, {web: {nonMember: true, memberSegment: ALL_MEMBERS_SEGMENT}, email: {memberSegment: ALL_MEMBERS_SEGMENT}});
+            }));
+
+            it('returns true when hidden on web for non-members', editorTest(function () {
+                testIsVisibilityActive(true, {web: {nonMember: false, memberSegment: ALL_MEMBERS_SEGMENT}, email: {memberSegment: ALL_MEMBERS_SEGMENT}});
+            }));
+
+            it('returns true when hidden on web for members', editorTest(function () {
+                testIsVisibilityActive(true, {web: {nonMember: true, memberSegment: 'status:free'}, email: {memberSegment: ALL_MEMBERS_SEGMENT}});
+            }));
+
+            it('returns true when hidden on email for all members', editorTest(function () {
+                testIsVisibilityActive(true, {web: {nonMember: true, memberSegment: ALL_MEMBERS_SEGMENT}, email: {memberSegment: ''}});
+            }));
+
+            it('returns true when hidden on email for some members', editorTest(function () {
+                testIsVisibilityActive(true, {web: {nonMember: true, memberSegment: ALL_MEMBERS_SEGMENT}, email: {memberSegment: 'status:free'}});
+            }));
+        });
     });
 });

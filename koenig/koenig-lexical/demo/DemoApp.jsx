@@ -51,7 +51,7 @@ const defaultCardConfig = {
         collections: true,
         collectionsCard: true,
         contentVisibility: true,
-        contentVisibilityAlpha: true
+        contentVisibilityAlpha: false
     },
     deprecated: {
         headerV1: process.env.NODE_ENV === 'test' ? false : true // show header v1 only for tests
@@ -310,7 +310,8 @@ function DemoComposer({editorType, isMultiplayer, setWordCount, setTKCount}) {
         fetchCollectionPosts,
         feature: {
             ...defaultCardConfig.feature,
-            contentVisibility: searchParams.get('labs')?.includes('contentVisibility') || defaultCardConfig.feature.contentVisibility
+            contentVisibility: searchParams.get('labs')?.includes('contentVisibility') || defaultCardConfig.feature.contentVisibility,
+            contentVisibilityAlpha: searchParams.get('labs')?.includes('contentVisibilityAlpha') || defaultCardConfig.feature.contentVisibilityAlpha
         },
         searchLinks: searchParams.get('searchLinks') === 'false' ? undefined : defaultCardConfig.searchLinks,
         stripeEnabled: searchParams.get('stripe') === 'false' ? false : defaultCardConfig.stripeEnabled

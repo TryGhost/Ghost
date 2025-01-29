@@ -1,81 +1,49 @@
 import {$getNodeByKey} from 'lexical';
+import {generateVisibilityMessage, generateVisibilityMessageAlpha, getVisibilityOptions, parseVisibilityToToggles, serializeOptionsToVisibility, serializeTogglesToVisibility} from '../utils/visibility';
 
 export const useVisibilityToggle = (editor, nodeKey, cardConfig) => {
     const isStripeEnabled = cardConfig?.stripeEnabled;
+    const isContentVisibilityAlphaEnabled = cardConfig?.feature?.contentVisibilityAlpha || false;
 
-    const dropdownOptions = () => {
-        if (isStripeEnabled) {
-            return [{
-                label: 'All members',
-                name: ''
-            }, {
-                label: 'Free members',
-                name: 'status:free'
-            }, {
-                label: 'Paid members',
-                name: 'status:-free'
-            }];
-        }
-    };
-
+    let currentVisibility;
     let isVisibilityActive = false;
-    let showOnWeb = true;
-    let showOnEmail = true;
-    let segment = '';
-    let message = '';
 
     editor.getEditorState().read(() => {
         const htmlNode = $getNodeByKey(nodeKey);
-        const visibility = htmlNode.visibility;
-
+        currentVisibility = htmlNode.visibility;
         isVisibilityActive = htmlNode.getIsVisibilityActive();
-        showOnWeb = visibility.showOnWeb;
-        showOnEmail = visibility.showOnEmail;
-        segment = visibility.segment;
     });
 
+    const visibilityData = parseVisibilityToToggles(currentVisibility);
+    const visibilityOptions = getVisibilityOptions(currentVisibility, {isStripeEnabled});
+
+    let visibilityMessage = '';
     if (isVisibilityActive) {
-        let hiddenNewsletter = '';
-
-        if (segment === 'status:free') {
-            hiddenNewsletter = 'paid newsletter';
-        } else if (segment === 'status:-free') {
-            hiddenNewsletter = 'free newsletter';
-        }
-
-        if (!showOnWeb && !showOnEmail) {
-            message = 'Hidden on website and newsletter';
-        } else if (showOnWeb && !showOnEmail) {
-            message = 'Hidden in newsletter';
-        } else if (showOnWeb && showOnEmail && hiddenNewsletter) {
-            message = `Hidden in ${hiddenNewsletter}`;
-        } else if (!showOnWeb && showOnEmail && !hiddenNewsletter) {
-            message = 'Hidden on website';
-        } else if (!showOnWeb && showOnEmail && hiddenNewsletter) {
-            message = `Hidden on website and ${hiddenNewsletter}`;
-        }
+        visibilityMessage = isContentVisibilityAlphaEnabled ? generateVisibilityMessageAlpha(currentVisibility) : generateVisibilityMessage(currentVisibility);
     }
-    
-    const toggleEmail = () => {
-        editor.update(() => {
-            const node = $getNodeByKey(nodeKey);
-            node.visibility = {...node.visibility, showOnEmail: !node.visibility.showOnEmail};
-        });
-    };
-    
-    const toggleWeb = () => {
-        editor.update(() => {
-            const node = $getNodeByKey(nodeKey);
-            node.visibility = {...node.visibility, showOnWeb: !node.visibility.showOnWeb};
-        });
-    };
-    
-    const toggleSegment = (name) => {
-        editor.update(() => {
-            const node = $getNodeByKey(nodeKey);
-            node.visibility = {...node.visibility, segment: name};
-        });
-    };
 
-    return [toggleEmail, toggleSegment, toggleWeb, segment, showOnEmail, showOnWeb, dropdownOptions(), message];
+    return {
+        visibilityData,
+        visibilityOptions,
+        visibilityMessage,
+        // used with contentVisibility
+        updateVisibility: (newVisibilityData) => {
+            editor.update(() => {
+                const node = $getNodeByKey(nodeKey);
+                node.visibility = serializeTogglesToVisibility(newVisibilityData);
+            });
+        },
+        // used with contentVisibilityAlpha
+        toggleVisibility: (type, key, value) => {
+            editor.update(() => {
+                const newVisibilityOptions = structuredClone(visibilityOptions);
+                const group = newVisibilityOptions.find(g => g.key === type);
+                const toggle = group.toggles.find(t => t.key === key);
+                toggle.checked = value;
+
+                const node = $getNodeByKey(nodeKey);
+                node.visibility = serializeOptionsToVisibility(newVisibilityOptions);
+            });
+        }
+    };
 };

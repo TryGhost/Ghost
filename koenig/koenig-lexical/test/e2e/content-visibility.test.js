@@ -8,15 +8,15 @@ test.describe('Content Visibility', async () => {
         page = await browser.newPage();
     });
 
-    test.beforeEach(async () => {
-        await initialize({page, uri: '/#/?content=false&labs=contentVisibility'});
-    });
-
     test.afterAll(async () => {
         await page.close();
     });
 
-    test.describe('HTML card', async function () {
+    test.describe('HTML card (contentVisibility flag)', async function () {
+        test.beforeEach(async () => {
+            await initialize({page, uri: '/#/?content=false&labs=contentVisibility'});
+        });
+
         async function insertHtmlCard() {
             await focusEditor(page);
             await insertCard(page, {cardName: 'html'});
@@ -110,7 +110,7 @@ test.describe('Content Visibility', async () => {
             await card.getByTestId('edit-html').click();
             await card.getByTestId('tab-visibility').click();
             await card.getByTestId('visibility-dropdown-segment').click();
-            await card.locator('[data-test-value=""]').click();
+            await card.locator('[data-test-value="status:free,status:-free"]').click();
 
             await expect(card.getByTestId('visibility-message')).not.toBeVisible();
         });
@@ -146,6 +146,120 @@ test.describe('Content Visibility', async () => {
             // click on the surrounding label rather than the inner label/input
             await page.getByTestId('visibility-show-on-web').click();
             await expect(page.getByTestId('visibility-show-on-web').locator('input')).not.toBeChecked();
+        });
+    });
+
+    test.describe('HTML card (contentVisibilityAlpha flag)', async function () {
+        test.beforeEach(async () => {
+            await initialize({page, uri: '/#/?content=false&labs=contentVisibility,contentVisibilityAlpha'});
+        });
+
+        async function insertHtmlCard() {
+            await focusEditor(page);
+            await insertCard(page, {cardName: 'html'});
+            await expect(await page.locator('.cm-content[contenteditable="true"]')).toBeVisible();
+            await page.keyboard.type('Testing');
+            await page.keyboard.press('Meta+Enter');
+            return page.locator('[data-kg-card="html"]');
+        }
+
+        test('toolbar shows edit icon', async function () {
+            await insertHtmlCard();
+
+            await expect(page.locator('[data-kg-card="html"]')).toHaveAttribute('data-kg-card-selected', 'true');
+            await expect(page.locator('[data-kg-card="html"]')).toHaveAttribute('data-kg-card-editing', 'false');
+            await expect(page.locator('[data-kg-card-toolbar="html"]')).toBeVisible();
+            await expect(page.locator('[data-kg-card-toolbar="html"] [data-testid="edit-html"]')).toBeVisible();
+        });
+
+        test('toolbar shows settings panel on click', async function () {
+            const card = await insertHtmlCard();
+
+            await card.getByTestId('edit-html').click();
+
+            // settings are visible
+            await expect(card.getByTestId('settings-panel')).toBeVisible();
+            await card.getByTestId('tab-visibility').click();
+            await expect(card.getByTestId('visibility-toggle-web-nonMembers')).toBeVisible();
+        });
+
+        test('clicking on edit button transitions card into edit mode', async function () {
+            const card = await insertHtmlCard();
+
+            await card.getByTestId('edit-html').click();
+
+            await expect(card).toHaveAttribute('data-kg-card-editing', 'true');
+        });
+
+        test('visibility settings - defaults to show on email and web and all members', async function () {
+            const card = await insertHtmlCard();
+
+            await card.getByTestId('edit-html').click();
+
+            await expect(card.getByTestId('visibility-message')).not.toBeVisible();
+            await expect(card.getByTestId('visibility-toggle-web-nonMembers')).toBeChecked();
+            await expect(card.getByTestId('visibility-toggle-web-freeMembers')).toBeChecked();
+            await expect(card.getByTestId('visibility-toggle-web-paidMembers')).toBeChecked();
+            await expect(card.getByTestId('visibility-toggle-email-freeMembers')).toBeChecked();
+            await expect(card.getByTestId('visibility-toggle-email-paidMembers')).toBeChecked();
+        });
+
+        test('can toggle visibility settings - show to anonymous web is off', async function () {
+            const card = await insertHtmlCard();
+
+            await card.getByTestId('edit-html').click();
+            await card.getByTestId('tab-visibility').click();
+            await card.getByTestId('visibility-toggle-web-nonMembers').click();
+
+            await expect(card.getByTestId('visibility-message')).toContainText('Visible to logged in web, all email recipients');
+        });
+
+        test('can toggle visibility settings - show to web is off', async function () {
+            const card = await insertHtmlCard();
+
+            await card.getByTestId('edit-html').click();
+            await card.getByTestId('tab-visibility').click();
+            await card.getByTestId('visibility-toggle-web-nonMembers').click();
+            await card.getByTestId('visibility-toggle-web-freeMembers').click();
+            await card.getByTestId('visibility-toggle-web-paidMembers').click();
+
+            await expect(card.getByTestId('visibility-message')).toContainText('Visible to all email recipients');
+        });
+
+        test('can toggle visibility settings - show on email is off', async function () {
+            const card = await insertHtmlCard();
+
+            await card.getByTestId('edit-html').click();
+            await card.getByTestId('tab-visibility').click();
+            await card.getByTestId('visibility-toggle-email-freeMembers').click();
+            await card.getByTestId('visibility-toggle-email-paidMembers').click();
+
+            await expect(card.getByTestId('visibility-message')).toContainText('Visible to all web');
+        });
+
+        test('can toggle visibility - disable everything', async function () {
+            const card = await insertHtmlCard();
+
+            await card.getByTestId('edit-html').click();
+            await card.getByTestId('tab-visibility').click();
+            await card.getByTestId('visibility-toggle-web-nonMembers').click();
+            await card.getByTestId('visibility-toggle-web-freeMembers').click();
+            await card.getByTestId('visibility-toggle-web-paidMembers').click();
+            await card.getByTestId('visibility-toggle-email-freeMembers').click();
+            await card.getByTestId('visibility-toggle-email-paidMembers').click();
+
+            await expect(card.getByTestId('visibility-message')).toContainText('Not visible on web or email');
+        });
+
+        test('can toggle visibility - member settings hidden when stripe is not enabled', async function () {
+            await initialize({page, uri: '/#/?content=false&labs=contentVisibility,contentVisibilityAlpha&stripe=false'});
+            const card = await insertHtmlCard();
+
+            await card.getByTestId('edit-html').click();
+            await card.getByTestId('tab-visibility').click();
+
+            await expect(card.getByTestId('visibility-toggle-web-paidMembers')).not.toBeVisible();
+            await expect(card.getByTestId('visibility-toggle-email-paidMembers')).not.toBeVisible();
         });
     });
 });

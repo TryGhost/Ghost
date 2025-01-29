@@ -4,10 +4,11 @@ import React from 'react';
 import {$getNodeByKey} from 'lexical';
 import {ActionToolbar} from '../components/ui/ActionToolbar.jsx';
 import {DESELECT_CARD_COMMAND, EDIT_CARD_COMMAND} from '../plugins/KoenigBehaviourPlugin.jsx';
-import {DropdownSetting, SettingsPanel, ToggleSetting} from '../components/ui/SettingsPanel.jsx';
 import {HtmlCard} from '../components/ui/cards/HtmlCard';
+import {SettingsPanel} from '../components/ui/SettingsPanel.jsx';
 import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
 import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu.jsx';
+import {VisibilitySettings, VisibilitySettingsAlpha} from '../components/ui/VisibilitySettings.jsx';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import {useVisibilityToggle} from '../hooks/useVisibilityToggle.js';
 
@@ -18,52 +19,24 @@ export function HtmlNodeComponent({nodeKey, html}) {
     const [showSnippetToolbar, setShowSnippetToolbar] = React.useState(false);
 
     const isContentVisibilityEnabled = cardConfig?.feature?.contentVisibility || false;
-    const [toggleEmail, toggleSegment, toggleWeb, segment, emailVisibility, webVisibility, dropdownOptions, visibilityMessage] = useVisibilityToggle(editor, nodeKey, cardConfig);
-    const handleSettingChange = settingFunction => (value) => {
-        if (typeof value === 'string') {
-            // This is for the dropdown
-            settingFunction(value);
-        } else {
-            // This is for the toggles
-            settingFunction();
-        }
-        editor.update(() => {
-            const node = $getNodeByKey(nodeKey);
-            if (node.select) {
-                node.select();
-            }
-        });
-    };
+    const isContentVisibilityAlphaEnabled = cardConfig?.feature?.contentVisibilityAlpha || false;
 
-    const tabs = [
+    const {visibilityData, visibilityOptions, visibilityMessage, toggleVisibility, updateVisibility} = useVisibilityToggle(editor, nodeKey, cardConfig);
+
+    const settingsTabs = [
         {id: 'visibility', label: 'Visibility'}
     ];
 
-    const visibilitySettings = (
-        <>
-            <ToggleSetting
-                dataTestId="visibility-show-on-web"
-                isChecked={webVisibility}
-                label="Show on web"
-                onChange={handleSettingChange(toggleWeb)}
-            />
-            <ToggleSetting
-                dataTestId="visibility-show-on-email"
-                isChecked={emailVisibility}
-                label="Show in email newsletter"
-                onChange={handleSettingChange(toggleEmail)}
-            />
-            {emailVisibility && dropdownOptions && (
-                <DropdownSetting
-                    dataTestId="visibility-dropdown-segment"
-                    label="Email audience"
-                    menu={dropdownOptions}
-                    value={segment}
-                    onChange={value => handleSettingChange(toggleSegment)(value)}
-                />
-            )}
-        </>
-    );
+    let visibilitySettings;
+    if (isContentVisibilityAlphaEnabled) {
+        visibilitySettings = <VisibilitySettingsAlpha toggleVisibility={toggleVisibility} visibilityOptions={visibilityOptions} />;
+    } else {
+        visibilitySettings = <VisibilitySettings isStripeEnabled={cardConfig?.stripeEnabled} updateVisibility={updateVisibility} visibilityData={visibilityData} />;
+    }
+
+    const settingsTabContents = {
+        visibility: visibilitySettings
+    };
 
     const updateHtml = (value) => {
         editor.update(() => {
@@ -129,15 +102,13 @@ export function HtmlNodeComponent({nodeKey, html}) {
             </ActionToolbar>
 
             {cardContext.isEditing && isContentVisibilityEnabled && (
-                <SettingsPanel 
-                    darkMode={darkMode} 
+                <SettingsPanel
+                    darkMode={darkMode}
                     defaultTab="visibility"
-                    tabs={tabs}
+                    tabs={settingsTabs}
                     onMouseDown={e => e.preventDefault()}
                 >
-                    {{
-                        visibility: visibilitySettings
-                    }}
+                    {settingsTabContents}
                 </SettingsPanel>
             )}
         </>

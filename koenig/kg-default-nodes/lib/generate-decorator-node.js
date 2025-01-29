@@ -1,5 +1,6 @@
 import {KoenigDecoratorNode} from './KoenigDecoratorNode';
 import readTextContent from './utils/read-text-content';
+import {ALL_MEMBERS_SEGMENT, usesOldVisibilityFormat} from './utils/visibility';
 /**
  * Validates the required arguments passed to `generateDecoratorNode`
 */
@@ -227,9 +228,17 @@ export function generateDecoratorNode({nodeType, properties = [], version = 1}) 
             }
 
             const self = this.getLatest();
-            return self.__visibility.showOnEmail === false
-                || self.__visibility.showOnWeb === false
-                || self.__visibility.segment !== '';
+            const visibility = self.__visibility;
+
+            if (usesOldVisibilityFormat(visibility)) {
+                return visibility.showOnEmail === false
+                    || visibility.showOnWeb === false
+                    || visibility.segment !== '';
+            } else {
+                return visibility.web.nonMember === false
+                    || visibility.web.memberSegment !== ALL_MEMBERS_SEGMENT
+                    || visibility.email.memberSegment !== ALL_MEMBERS_SEGMENT;
+            }
         }
     }
 

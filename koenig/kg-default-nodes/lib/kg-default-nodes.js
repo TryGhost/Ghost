@@ -63,6 +63,11 @@ export * from './nodes/TKNode';
 export * from './nodes/at-link/index.js';
 export * from './nodes/zwnj/ZWNJNode';
 
+import * as visibilityUtils from './utils/visibility';
+export const utils = {
+    visibility: visibilityUtils
+};
+
 export const serializers = {
     linebreak: linebreakSerializers,
     paragraph: paragraphSerializers
