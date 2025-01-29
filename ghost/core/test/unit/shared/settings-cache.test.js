@@ -10,18 +10,21 @@ const InMemoryCache = require('../../../core/server/adapters/cache/MemoryCache')
 
 should.equal(true, true);
 
+function createCacheManager(settingsOverrides = {}) {
+    let cacheStore = new InMemoryCache();
+    let cache = new CacheManager({
+        publicSettings,
+        settingsOverrides
+    });
+    cache.init(events, {}, [], cacheStore);
+    return cache;
+}
+
 describe('UNIT: settings cache', function () {
     let cache;
 
     beforeEach(function () {
-        let cacheStore = new InMemoryCache();
-        cache = new CacheManager({
-            publicSettings,
-            settingsOverrides: {
-                test_override_key: {value: true}
-            }
-        });
-        cache.init(events, {}, [], cacheStore);
+        cache = createCacheManager();
     });
 
     afterEach(function () {
