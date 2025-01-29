@@ -56,7 +56,7 @@ class LocalStorageBase extends StorageBase {
         const originalFilePath = file.path;
 
         // If the `keepOriginalName` flag is set, don't generate a new filename
-        // Otherwise, generate a unique secure filename, composed of a 16-character random hash and truncated to be under 255 bytes
+        // Otherwise, generate a unique secure filename, composed of a 16-character random hash and truncated to be under 255 bytes, e.g. image-a1b2c3d4e5f6g789.png
         let targetFilePath;
         if (file.keepOriginalName) {
             targetFilePath = path.join(directory, file.name);
