@@ -216,7 +216,7 @@
     "probe-image-size": "7.2.3",
     "rss": "1.2.2",
     "sanitize-html": "2.14.0",
-    "semver": "7.6.3",
+    "semver": "7.7.0",
     "stoppable": "1.1.0",
     "superagent": "5.1.0",
     "superagent-throttle": "1.0.1",
