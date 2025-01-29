@@ -106,6 +106,10 @@ describe('UNIT: settings cache', function () {
         cache.getAll().should.eql({key1: {value: '1'}});
     });
 
+    it('.getAll() respects settingsOverrides', function () {
+        cache.getAll().should.eql({test_override_key: {value: true}});
+    });
+
     it('.getPublic() correctly filters and formats public values', function () {
         cache.set('key1', {value: 'something'});
         cache.set('title', {value: 'hello world'});
