@@ -10,12 +10,12 @@ const TabView = ({tabs, defaultTab, tabContent}) => {
 
     return (
         <>
-            <div className={`no-scrollbar flex w-full gap-5 px-6 ${tabs.length > 1 ? 'border-b border-grey-300 dark:border-grey-900' : ''}`}>
+            <div className={`no-scrollbar flex gap-5 border-b border-grey-300 dark:border-grey-900 ${tabs.length > 1 ? 'w-full px-6' : 'mx-6'}`}>
                 {tabs.map(tab => (
                     <button
                         key={tab.id}
-                        className={`-mb-px appearance-none whitespace-nowrap text-sm font-semibold transition-all ${
-                            tabs.length > 1 ? 'cursor-pointer border-b-2 pb-3 pt-4' : 'cursor-default pt-6'
+                        className={`-mb-px appearance-none whitespace-nowrap pb-3 pt-4 text-sm font-semibold transition-all ${
+                            tabs.length > 1 ? 'cursor-pointer border-b-2' : 'cursor-default'
                         } ${
                             activeTab === tab.id
                                 ? 'border-black text-black dark:border-white dark:text-white'

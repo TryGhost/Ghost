@@ -88,7 +88,7 @@ export function VisibilitySettings({isStripeEnabled, updateVisibility, visibilit
 }
 
 export function VisibilitySettingsAlpha({visibilityOptions, toggleVisibility}) {
-    const settingGroups = visibilityOptions.map((group) => {
+    const settingGroups = visibilityOptions.map((group, index) => {
         const toggles = group.toggles.map((toggle) => {
             return (
                 <ToggleSetting
@@ -102,10 +102,13 @@ export function VisibilitySettingsAlpha({visibilityOptions, toggleVisibility}) {
         });
 
         return (
-            <div key={group.key} className="flex w-full flex-col justify-between gap-1">
-                <div className="text-sm font-medium tracking-normal text-grey-900 dark:text-grey-300">{group.label}</div>
+            <>
+                <p key={group.key} className="text-sm font-bold tracking-normal text-grey-900 dark:text-grey-300">{group.label}</p>
                 {toggles}
-            </div>
+                {index < visibilityOptions.length - 1 && (
+                    <hr className="not-kg-prose my-2 block border-t-grey-300 dark:border-t-grey-900" />
+                )}
+            </>
         );
     });
 
