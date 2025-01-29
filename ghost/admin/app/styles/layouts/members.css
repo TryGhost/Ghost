@@ -194,10 +194,6 @@ p.gh-members-list-email {
     margin-right: 4px;
 }
 
-.members-header .gh-members-header-search {
-    margin-right: 32px;
-}
-
 .gh-members-chart-header {
     display: flex;
     align-items: center;
@@ -555,8 +551,10 @@ p.gh-members-list-email {
 .gh-members-help .gh-main-section-content {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    grid-gap: 32px;
-    padding: 32px;
+    grid-gap: 24px;
+    padding: 0;
+    border: none;
+    box-shadow: none;
 }
 
 @media (max-width: 1080px) {
@@ -570,13 +568,14 @@ p.gh-members-list-email {
     flex-direction: column;
     align-items: flex-start;
     justify-content: space-between;
+    padding: 24px;
     background: var(--white);
-    border-radius: 3px;
-    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.07);
+    border: 1px solid var(--whitegrey);
     color: var(--midgrey);
     font-size: 1.4rem;
-    padding: 32px;
-    transition: all 0.3s ease-in-out;
+    border-radius: 12px;
+    box-shadow: 0 1px 4px -1px rgb(0 0 0 / 10%);
+    transition: all 0.15s ease-in-out;
 }
 
 .gh-members-help-card p {
@@ -614,14 +613,11 @@ p.gh-members-list-email {
 
 
 .gh-members-help-card:hover {
-    box-shadow:
-        0px 54px 80px rgba(0, 0, 0, 0.07),
-        0px 19.7109px 29.2013px rgba(0, 0, 0, 0.0482987),
-        0px 9.56927px 14.1767px rgba(0, 0, 0, 0.0389404),
-        0px 4.69103px 6.94968px rgba(0, 0, 0, 0.0310596),
-        0px 1.85484px 2.74791px rgba(0, 0, 0, 0.0217013);
-    transition: all 0.3s ease-in-out;
-    transform: translateY(-4px);
+    box-shadow: 
+        0 0 1px rgba(0,0,0,.12), 
+        0 1px 6px rgba(0,0,0,.03), 
+        0 8px 10px -8px rgba(0,0,0,.1);
+    transition: all 0.15s ease-in-out;
 }
 
 .gh-members-help-content {
@@ -1097,7 +1093,7 @@ textarea.gh-member-details-textarea {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    border-bottom: 1px solid var(--whitegrey);
+    border-bottom: 1px solid var(--grey-250);
     padding: 16px 0;
 }
 
@@ -1141,7 +1137,7 @@ textarea.gh-member-details-textarea {
 }
 
 .gh-member-newsletter-footer {
-    font-size: 1.25rem;
+    font-size: 1.3rem;
     margin-top: 12px;
 }
 
@@ -1231,7 +1227,7 @@ textarea.gh-member-details-textarea {
 }
 
 .gh-member-feed-row {
-    border-bottom: 1px solid var(--whitegrey);
+    border-bottom: 1px solid var(--grey-250);
 }
 
 .gh-member-feed-detail {
@@ -2545,12 +2541,14 @@ a.gh-members-emailpreview-subscription-link {
     grid-row-gap: 24px;
 }
 
-.gh-member-settings .gh-member-tier-container + .gh-member-tier-container {
-    padding-top: 0 !important;
-}
-
 .gh-cp-membertier {
     margin-bottom: 0 !important;
+}
+
+.gh-cp-membertier-container {
+    margin-top: 8px;
+    margin-left: 16px;
+    flex-grow: 1;
 }
 
 .gh-membertier-name {
@@ -2559,10 +2557,6 @@ a.gh-members-emailpreview-subscription-link {
     font-size: 1.65rem !important;
     font-weight: 600;
     margin-bottom: 2px !important;
-}
-
-.gh-cp-membertier.multiple-subs .gh-membertier-name {
-    margin-bottom: 8px !important;
 }
 
 .gh-membertier-subcount {
@@ -2576,6 +2570,7 @@ a.gh-members-emailpreview-subscription-link {
 }
 
 .gh-cp-membertier-pricelabel {
+    font-size: 1.3rem;
     font-weight: 600;
 }
 
@@ -2583,12 +2578,6 @@ a.gh-members-emailpreview-subscription-link {
     background: var(--lightgrey-l2);
     color: var(--midgrey);
     font-size: 1.2rem;
-}
-
-.gh-cp-membertier.multiple-subs .gh-membertier-subscription {
-    margin-top: 12px;
-    padding-top: 12px;
-    border-top: 1px solid var(--whitegrey);
 }
 
 .gh-membertier-details p {
@@ -2717,7 +2706,7 @@ a.gh-members-emailpreview-subscription-link {
     border: 1px solid var(--whitegrey);
 }
 
-.gh-cp-membertier:not(.multiple-subs) .gh-membertier-price-container {
+.gh-cp-membertier .gh-membertier-price-container {
     margin-top: -19px;
 }
 
@@ -2725,7 +2714,7 @@ a.gh-members-emailpreview-subscription-link {
     padding: 10px 18px;
 }
 
-.gh-cp-membertier:not(.multiple-subs) .gh-tier-card-price {
+.gh-cp-membertier .gh-tier-card-price {
     padding: 15px 18px;
 }
 
@@ -2747,19 +2736,20 @@ a.gh-members-emailpreview-subscription-link {
 
 .gh-cp-membertier-details {
     margin-top: 1px;
-    color: var(--middarkgrey);
+    color: var(--green-d1);
+    font-size: 1.3rem;
     font-weight: 500;
 }
 
 .gh-cp-membertier-details svg {
-    width: 10px;
+    width: 8px;
     margin-left: 4px;
-    transition: transform 0.2s ease-in-out;
+    transition: transform 0.15s ease-in-out;
 }
 
 .gh-cp-membertier-details svg path {
     stroke-width: 3px;
-    stroke: var(--middarkgrey);
+    stroke: var(--green-d1);
 }
 
 .gh-cp-membertier-details.rotate svg {
@@ -2838,7 +2828,7 @@ a.gh-members-emailpreview-subscription-link {
     .members-header .gh-canvas-title {
         left: 25px;
     }
-    
+
     .members-header .view-actions .gh-members-header-search {
         width: 100%;
     }
@@ -2871,7 +2861,7 @@ a.gh-members-emailpreview-subscription-link {
 
 .gh-cp-membertier-attribution .gh-tier-card-header:not(:first-child) {
     margin-top: 16px;
-    border-top: 1px solid var(--whitegrey);
+    border-top: 1px solid var(--grey-250);
     padding-top: 16px;
 }
 
@@ -2885,7 +2875,7 @@ a.gh-members-emailpreview-subscription-link {
 
 .gh-cp-membertier-attribution .gh-tier-card-price {
     border: none !important;
-    background: var(--main-color-content-greybg);
+    background: var(--grey-100);
     padding: 20px 10px !important;
     border-radius: 6px;
 }
@@ -2901,13 +2891,15 @@ a.gh-members-emailpreview-subscription-link {
 }
 
 .gh-cp-membertier-attribution .gh-membertier-name {
-    font-weight: bold !important;
-    font-size: 2rem !important;
+    font-weight: 600 !important;
+    font-size: 1.4rem !important;
 }
 
 .gh-cp-membertier-attribution .gh-badge {
     margin-bottom: -1px !important;
     margin-left: 8px;
+    font-size: 1.1rem;
+    font-weight: 600;
 }
 
 .gh-cp-membertier-attribution .action-menu {
@@ -2923,13 +2915,13 @@ a.gh-members-emailpreview-subscription-link {
 .gh-cp-membertier-attribution span.archived {
     background: #e4e8ec;
     color: #7c8b9a;
-    font-size: 1.2rem;
+    font-size: 1.1rem;
 }
 
 .gh-cp-membertier-attribution .gh-membertier-advanced {
     margin-top: 16px;
     padding-top: 16px;
-    border-top:1px solid #ECEEF0;
+    border-top:1px solid var(--grey-250);
     animation: fade-in .25s ease-in-out;
 }
 
@@ -2948,6 +2940,7 @@ a.gh-members-emailpreview-subscription-link {
 .gh-cp-membertier-attribution .gh-membertier-details p {
     margin: 0;
     color: var(--middarkgrey);
+    font-size: 1.3rem;
 }
 
 .gh-cp-membertier-attribution .gh-membertier-detail {
@@ -2955,7 +2948,7 @@ a.gh-members-emailpreview-subscription-link {
 }
 
 .gh-cp-membertier-attribution .gh-membertier-details span, .gh-cp-membertier-attribution .gh-membertier-details a {
-    font-size: 1.4rem;
+    font-size: 1.3rem;
     font-weight: 500;
     color: var(--darkgrey);
 }
@@ -2975,7 +2968,8 @@ a.gh-members-emailpreview-subscription-link {
 }
 
 .gh-cp-membertier-attribution .gh-cp-membertier-renewal {
-    color: #7c8b9a;
+    color: var(--middarkgrey);
+    font-size: 1.3rem;
 }
 
 .gh-cp-membertier-attribution .gh-membertier-detail-timestamp {

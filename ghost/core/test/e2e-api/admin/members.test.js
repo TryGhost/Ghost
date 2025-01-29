@@ -21,7 +21,7 @@ const urlUtils = require('../../../core/shared/url-utils');
 const settingsCache = require('../../../core/shared/settings-cache');
 const DomainEvents = require('@tryghost/domain-events');
 const logging = require('@tryghost/logging');
-const {stripeMocker, mockLabsDisabled} = require('../../utils/e2e-framework-mock-manager');
+const {stripeMocker} = require('../../utils/e2e-framework-mock-manager');
 const settingsHelpers = require('../../../core/server/services/settings-helpers');
 
 /**
@@ -197,7 +197,6 @@ describe('Members API without Stripe', function () {
 
     beforeEach(function () {
         mockManager.mockMail();
-        mockLabsDisabled('newEmailAddresses');
     });
 
     afterEach(function () {
@@ -490,10 +489,10 @@ describe('Members API', function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('posts', 'newsletters', 'members:newsletters', 'comments', 'redirects', 'clicks');
         await agent.loginAsOwner();
-        
+
         newsletters = await getNewsletters();
     });
-    
+
     beforeEach(function () {
         mockManager.mockStripe();
         emailMockReceiver = mockManager.mockMail();
@@ -544,7 +543,7 @@ describe('Members API', function () {
                 etag: anyEtag
             });
     });
-    
+
     it('Can browse with more than maximum allowed limit', async function () {
         await agent
             .get('/members/?limit=300')
@@ -566,7 +565,7 @@ describe('Members API', function () {
                 etag: anyEtag
             });
     });
-    
+
     it('Can browse with limit=all', async function () {
         await agent
             .get('/members/?limit=all')
@@ -588,7 +587,7 @@ describe('Members API', function () {
                 etag: anyEtag
             });
     });
-    
+
     it('Can browse with filter', async function () {
         await agent
             .get('/members/?filter=label:label-1')

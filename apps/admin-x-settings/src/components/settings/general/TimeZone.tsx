@@ -54,40 +54,15 @@ const TimeZone: React.FC<{ keywords: string[] }> = ({keywords}) => {
         };
     });
 
-    const publicationTimezoneData = timezoneOptions.find(option => option.value === publicationTimezone);
-
     const handleTimezoneChange = (value?: string) => {
         updateSetting('timezone', value || null);
+        handleEditingChange(true);
     };
-
-    const viewContent = (
-        <SettingGroupContent values={[
-            {
-                key: 'site-timezone',
-                value: <div className='flex flex-col'>
-                    {publicationTimezoneData?.label || publicationTimezone}
-                    <span className='text-xs'><Hint timezone={publicationTimezone} /></span>
-                </div>
-            }
-        ]} />
-    );
-    const inputFields = (
-        <SettingGroupContent columns={1}>
-            <Select
-                hint={<Hint timezone={publicationTimezone} />}
-                options={timezoneOptions}
-                selectedOption={timezoneOptions.find(option => option.value === publicationTimezone)}
-                testId='timezone-select'
-                title="Site timezone"
-                isSearchable
-                onSelect={option => handleTimezoneChange(option?.value)}
-            />
-        </SettingGroupContent>
-    );
 
     return (
         <TopLevelGroup
             description='Set the time and date of your publication, used for all published posts'
+            hideEditButton={true}
             isEditing={isEditing}
             keywords={keywords}
             navid='timezone'
@@ -98,7 +73,17 @@ const TimeZone: React.FC<{ keywords: string[] }> = ({keywords}) => {
             onEditingChange={handleEditingChange}
             onSave={handleSave}
         >
-            {isEditing ? inputFields : viewContent}
+            <SettingGroupContent columns={1}>
+                <Select
+                    hint={<Hint timezone={publicationTimezone} />}
+                    options={timezoneOptions}
+                    selectedOption={timezoneOptions.find(option => option.value === publicationTimezone)}
+                    testId='timezone-select'
+                    title="Site timezone"
+                    isSearchable
+                    onSelect={option => handleTimezoneChange(option?.value)}
+                />
+            </SettingGroupContent>
         </TopLevelGroup>
     );
 };

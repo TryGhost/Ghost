@@ -7,9 +7,10 @@ import NewsletterSelectionPage from './NewsletterSelectionPage';
 import ProductsSection from '../common/ProductsSection';
 import InputForm from '../common/InputForm';
 import {ValidateInputForm} from '../../utils/form';
-import {getSiteProducts, getSitePrices, hasAvailablePrices, hasOnlyFreePlan, isInviteOnly, isFreeSignupAllowed, isPaidMembersOnly, freeHasBenefitsOrDescription, hasMultipleNewsletters, hasFreeTrialTier, isSignupAllowed} from '../../utils/helpers';
+import {getSiteProducts, getSitePrices, hasAvailablePrices, hasOnlyFreePlan, isInviteOnly, isFreeSignupAllowed, isPaidMembersOnly, freeHasBenefitsOrDescription, hasMultipleNewsletters, hasFreeTrialTier, isSignupAllowed, isSigninAllowed, hasCaptchaEnabled, getCaptchaSitekey} from '../../utils/helpers';
 import {ReactComponent as InvitationIcon} from '../../images/icons/invitation.svg';
 import {interceptAnchorClicks} from '../../utils/links';
+import HCaptcha from '@hcaptcha/react-hcaptcha';
 
 export const SignupPageStyles = `
 .gh-portal-back-sitetitle {
@@ -177,7 +178,7 @@ footer.gh-portal-signup-footer.invite-only .gh-portal-signup-message {
     margin-top: 0;
 }
 
-.gh-portal-invite-only-notification, .gh-portal-members-disabled-notification {
+.gh-portal-invite-only-notification, .gh-portal-members-disabled-notification, .gh-portal-paid-members-only-notification {
     margin: 8px 32px 24px;
     padding: 0;
     text-align: center;
@@ -194,7 +195,7 @@ footer.gh-portal-signup-footer.invite-only .gh-portal-signup-message {
     padding-bottom: 32px;
 }
 
-.gh-portal-invite-only-notification + .gh-portal-signup-message {
+.gh-portal-invite-only-notification + .gh-portal-signup-message, .gh-portal-paid-members-only-notification + .gh-portal-signup-message {
     margin-bottom: 12px;
 }
 
@@ -356,6 +357,7 @@ class SignupPage extends React.Component {
         };
 
         this.termsRef = React.createRef();
+        this.captchaRef = React.createRef();
     }
 
     componentDidMount() {
@@ -400,6 +402,16 @@ class SignupPage extends React.Component {
         };
     }
 
+    doSignupWithChecks() {
+        const {site} = this.context;
+        if (hasCaptchaEnabled({site})) {
+            // hCaptcha's callback will call doSignup
+            return this.captchaRef.current.execute();
+        } else {
+            this.doSignup();
+        }
+    }
+
     doSignup() {
         this.setState((state) => {
             return {
@@ -407,7 +419,7 @@ class SignupPage extends React.Component {
             };
         }, () => {
             const {site, onAction} = this.context;
-            const {name, email, plan, phonenumber, errors} = this.state;
+            const {name, email, plan, phonenumber, token, errors} = this.state;
             const hasFormErrors = (errors && Object.values(errors).filter(d => !!d).length > 0);
 
             // Only scroll checkbox into view if it's the only error
@@ -423,14 +435,14 @@ class SignupPage extends React.Component {
                 if (hasMultipleNewsletters({site})) {
                     this.setState({
                         showNewsletterSelection: true,
-                        pageData: {name, email, plan, phonenumber},
+                        pageData: {name, email, plan, phonenumber, token},
                         errors: {}
                     });
                 } else {
                     this.setState({
                         errors: {}
                     });
-                    onAction('signup', {name, email, phonenumber, plan});
+                    onAction('signup', {name, email, phonenumber, plan, token});
                 }
             }
         });
@@ -444,7 +456,7 @@ class SignupPage extends React.Component {
     handleChooseSignup(e, plan) {
         e.preventDefault();
         this.setState({plan}, () => {
-            this.doSignup();
+            this.doSignupWithChecks();
         });
     }
 
@@ -670,6 +682,7 @@ class SignupPage extends React.Component {
                     <div>{t('Already a member?')}</div>
                     <button
                         data-test-button='signin-switch'
+                        data-testid='signin-switch'
                         className='gh-portal-btn gh-portal-btn-link'
                         style={{color: brandColor}}
                         onClick={() => onAction('switchPage', {page: 'signin'})}
@@ -698,24 +711,23 @@ class SignupPage extends React.Component {
             );
         }
 
-        if (!hasAvailablePrices({site, pageQuery})) {
-            if (isPaidMembersOnly({site})) {
-                return this.renderPaidMembersOnlyMessage();
-            }
-
-            if (isInviteOnly({site})) {
-                return this.renderInviteOnlyMessage();
-            }
-
-            return this.renderMembersDisabledMessage();
+        // Invite-only site: block signups, offer to sign in
+        if (isInviteOnly({site})) {
+            return this.renderInviteOnlyMessage();
         }
 
-        if (pageQuery === 'free' && !isFreeSignupAllowed({site})) {
+        // Paid-members-only site: block free signups, offer to sign in
+        if (isPaidMembersOnly({site}) && pageQuery === 'free') {
             return this.renderPaidMembersOnlyMessage();
         }
 
-        if (!isSignupAllowed({site})) {
-            return this.renderMembersDisabledMessage();
+        // Signup is not allowed or no prices are available: block signup with the relevant message, offer signin when available
+        if (!isSignupAllowed({site}) || !hasAvailablePrices({site, pageQuery})) {
+            if (!isSigninAllowed({site})) {
+                return this.renderMembersDisabledMessage();
+            }
+
+            return this.renderInviteOnlyMessage();
         }
 
         const showOnlyFree = pageQuery === 'free' && isFreeSignupAllowed({site});
@@ -732,6 +744,16 @@ class SignupPage extends React.Component {
                             onChange={(e, field) => this.handleInputChange(e, field)}
                             onKeyDown={e => this.onKeyDown(e)}
                         />
+                        {(hasCaptchaEnabled({site}) &&
+                            <HCaptcha
+                                size="invisible"
+                                sitekey={getCaptchaSitekey({site})}
+                                onLoad={() => this.setState({captchaLoaded: true})}
+                                onVerify={token => this.setState({token: token}, this.doSignup)}
+                                ref={this.captchaRef}
+                                id="hcaptcha-signup"
+                            />
+                        )}
                     </div>
                     <div>
                         {(hasOnlyFree ?
@@ -773,8 +795,8 @@ class SignupPage extends React.Component {
             <section>
                 <div className='gh-portal-section'>
                     <p
-                        className='gh-portal-invite-only-notification'
-                        data-testid="invite-only-notification-text"
+                        className='gh-portal-paid-members-only-notification'
+                        data-testid="paid-members-only-notification-text"
                     >
                         {t('This site only accepts paid members.')}
                     </p>

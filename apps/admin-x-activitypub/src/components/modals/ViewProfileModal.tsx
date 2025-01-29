@@ -1,7 +1,6 @@
 import React, {useEffect, useRef, useState} from 'react';
 
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
-import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 
 import {Button, Heading, Icon, List, LoadingIndicator, Modal, NoValueLabel, Tab,TabView} from '@tryghost/admin-x-design-system';
 import {UseInfiniteQueryResult} from '@tanstack/react-query';
@@ -17,6 +16,7 @@ import Separator from '../global/Separator';
 import getName from '../../utils/get-name';
 import getUsername from '../../utils/get-username';
 import {handleProfileClick} from '../../utils/handle-profile-click';
+import {handleViewContent} from '../../utils/content-handlers';
 
 const noop = () => {};
 
@@ -174,7 +174,8 @@ const PostsTab: React.FC<{handle: string}> = ({handle}) => {
                                     layout='feed'
                                     object={post.object}
                                     type={post.type}
-                                    onCommentClick={() => {}}
+                                    onClick={() => handleViewContent(post, false)}
+                                    onCommentClick={() => handleViewContent(post, true)}
                                 />
                                 {index < posts.length - 1 && <Separator />}
                             </div>
@@ -217,13 +218,7 @@ const FollowersTab: React.FC<{handle: string}> = ({handle}) => {
 };
 
 interface ViewProfileModalProps {
-    profile: {
-        actor: ActorProperties;
-        handle: string;
-        followerCount: number;
-        followingCount: number;
-        isFollowing: boolean;
-    } | string;
+    handle: string;
     onFollow?: () => void;
     onUnfollow?: () => void;
 }
@@ -231,20 +226,14 @@ interface ViewProfileModalProps {
 type ProfileTab = 'posts' | 'following' | 'followers';
 
 const ViewProfileModal: React.FC<ViewProfileModalProps> = ({
-    profile: initialProfile,
+    handle,
     onFollow = noop,
     onUnfollow = noop
 }) => {
     const modal = useModal();
     const [selectedTab, setSelectedTab] = useState<ProfileTab>('posts');
 
-    const willLoadProfile = typeof initialProfile === 'string';
-    let {data: profile, isInitialLoading: isLoading} = useProfileForUser('index', initialProfile as string, willLoadProfile);
-
-    if (!willLoadProfile) {
-        profile = initialProfile;
-        isLoading = false;
-    }
+    const {data: profile, isLoading} = useProfileForUser('index', handle);
 
     const attachments = (profile?.actor.attachment || []);
 
@@ -287,7 +276,7 @@ const ViewProfileModal: React.FC<ViewProfileModalProps> = ({
         if (contentRef.current) {
             setIsOverflowing(contentRef.current.scrollHeight > 160); // Compare content height to max height
         }
-    }, [isExpanded]);
+    }, [isExpanded, profile]);
 
     return (
         <Modal
@@ -358,7 +347,7 @@ const ViewProfileModal: React.FC<ViewProfileModalProps> = ({
                                         <div className='absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-white via-white/90 via-60% to-transparent' />
                                     )}
                                     {isOverflowing && <Button
-                                        className='absolute bottom-0 text-pink'
+                                        className='absolute bottom-0 text-green'
                                         label={isExpanded ? 'Show less' : 'Show all'}
                                         link={true}
                                         onClick={toggleExpand}
