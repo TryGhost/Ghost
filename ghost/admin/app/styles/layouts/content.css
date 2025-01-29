@@ -1142,7 +1142,8 @@
     display: grid;
     grid-template-columns: auto minmax(min-content,max-content);
     align-items: center;
-    padding: 1.6rem 0;
+    padding: 1.2rem 0;
+    min-height: 56px;
     border-bottom: 1px solid var(--whitegrey);
     font-size: 1.4rem;
     font-weight: 500;
@@ -1197,6 +1198,10 @@
     color: var(--midgrey-d2);
 }
 
+.gh-links-list-item-edit {
+    margin-right: 8px;
+}
+
 .gh-links-list-item-edit span {
     padding: 0 10px;
     height: 24px;
@@ -1245,6 +1250,10 @@
 
 .gh-links-list-item-edited-show {
     display: inline;
+}
+
+.gh-links-list-item-update-button {
+    border: 0;
 }
 
 .gh-links-list-item-update-button span {
@@ -1395,8 +1404,6 @@
 
 .feature-audienceFeedback .gh-links-list-item {
     border-color: rgba(235,238,240,.5);
-    padding-top: 1.4rem;
-    padding-bottom: 1.4rem;
 }
 
 .feature-audienceFeedback .gh-links-list-item.gh-links-list-item-edit-mode {
