@@ -28,7 +28,7 @@ RUN curl -s https://packages.stripe.dev/api/security/keypair/stripe-cli-gpg/publ
         default-mysql-client && \
     npx -y playwright@1.46.1 install --with-deps
 
-ENV NX_DAEMON=false
+ENV NX_DAEMON=true
 ENV YARN_CACHE_FOLDER=$WORKDIR/.yarncache
 
 EXPOSE 2368
