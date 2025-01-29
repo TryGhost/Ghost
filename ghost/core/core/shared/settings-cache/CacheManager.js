@@ -15,11 +15,13 @@ class CacheManager {
     /**
      * @prop {Object} options
      * @prop {Object} options.publicSettings - key/value pairs of settings which are publicly accessible
+     * @prop {Object} options.settingsOverrides - key/value pairs of settings which are overridden via config
      */
-    constructor({publicSettings}) {
+    constructor({publicSettings, settingsOverrides}) {
         // settingsCache holds cached settings, keyed by setting.key, contains the JSON version of the model
         this.settingsCache;
         this.publicSettings = publicSettings;
+        this.settingsOverrides = settingsOverrides;
         this.calculatedFields = [];
 
         this.get = this.get.bind(this);
@@ -54,7 +56,13 @@ class CacheManager {
             return;
         }
 
-        const cacheEntry = this.settingsCache.get(key);
+        let cacheEntry;
+        if (this.settingsOverrides && Object.keys(this.settingsOverrides).includes(key)) {
+            cacheEntry = this.settingsOverrides[key];
+        } else {
+            cacheEntry = this.settingsCache.get(key);
+        }
+        
         if (!cacheEntry) {
             return;
         }
