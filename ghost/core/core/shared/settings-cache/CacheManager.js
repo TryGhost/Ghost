@@ -62,7 +62,7 @@ class CacheManager {
         } else {
             cacheEntry = this.settingsCache.get(key);
         }
-        
+
         if (!cacheEntry) {
             return;
         }
@@ -150,7 +150,7 @@ class CacheManager {
         const all = {};
 
         keys.forEach((key) => {
-            all[key] = _.cloneDeep(this.settingsCache.get(key));
+            all[key] = _.cloneDeep(this.get(key, {resolve: false}));
         });
 
         return all;
