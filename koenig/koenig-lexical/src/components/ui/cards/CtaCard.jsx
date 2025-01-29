@@ -156,6 +156,7 @@ export function CtaCard({
                 <>
                     <ColorPickerSetting
                         dataTestId='cta-button-color'
+                        eyedropper={true}
                         isExpanded={buttonColorPickerExpanded}
                         label='Button Color'
                         swatches={[
@@ -228,17 +229,18 @@ export function CtaCard({
                 {hasSponsorLabel && (
                     <div className={clsx(
                         'not-kg-prose py-3',
-                        {'mx-5': color !== 'none'}
+                        {'mx-6': color !== 'none'}
                     )}>
                         <p className="font-sans text-2xs font-semibold uppercase leading-8 tracking-normal text-grey-900/40 dark:text-grey-100/40" data-testid="sponsor-label">Sponsored</p>
                     </div>
                 )}
 
                 <div className={clsx(
-                    'flex gap-5 py-5',
+                    'flex gap-6 pt-6',
+                    imageSrc && !showButton ? 'pb-8' : 'pb-7',
                     layout === 'immersive' ? 'flex-col' : 'flex-row',
                     color === 'none' || hasSponsorLabel ? 'border-t border-grey-900/15 dark:border-grey-100/20' : '',
-                    color === 'none' ? 'border-b border-grey-900/15 dark:border-grey-100/20' : 'mx-5'
+                    color === 'none' ? 'border-b border-grey-900/15 dark:border-grey-100/20' : 'mx-6'
                 )}>
                     {imageSrc && (
                         <div className={clsx(
@@ -255,7 +257,7 @@ export function CtaCard({
                             />
                         </div>
                     )}
-                    <div className="flex flex-col gap-5">
+                    <div className="flex flex-col gap-6">
                         {/* HTML content */}
                         <KoenigNestedEditor
                             autoFocus={true}
