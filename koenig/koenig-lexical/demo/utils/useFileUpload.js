@@ -88,7 +88,7 @@ export function useFileUpload({isMultiplayer = false} = {}) {
             let stepDelay = 200;
             // adjust when testing to speed up tests
             if (isTestEnv) {
-                stepDelay = 0;
+                stepDelay = 1;
             }
 
             setProgress(30);
