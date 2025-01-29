@@ -117,8 +117,20 @@ describe('UNIT: settings cache', function () {
         cache = createCacheManager({
             email_track_clicks: {value: false}
         });
-        cache.set('email_track_clicks', {value: true});
-        cache.getAll().should.eql({email_track_clicks: {value: false}});
+        cache.set('email_track_clicks', {
+            id: '67996cef430e5905ab385357', 
+            group: 'email', 
+            key: 'email_track_clicks', 
+            value: true, 
+            type: 'boolean'
+        });
+        cache.getAll().should.eql({email_track_clicks: {
+            id: '67996cef430e5905ab385357', 
+            group: 'email', 
+            key: 'email_track_clicks', 
+            value: false, 
+            type: 'boolean'
+        }});
     });
 
     it('.getPublic() correctly filters and formats public values', function () {
