@@ -105,6 +105,7 @@ describe('UNIT: settings cache', function () {
         });
         cache.set('email_track_clicks', {value: true});
         should(cache.get('email_track_clicks')).eql(false);
+        should(cache.get('email_track_clicks', {resolve: false})).eql({value: false, override: true});
     });
 
     it('.getAll() returns all values', function () {
@@ -118,17 +119,18 @@ describe('UNIT: settings cache', function () {
             email_track_clicks: false
         });
         cache.set('email_track_clicks', {
-            id: '67996cef430e5905ab385357', 
-            group: 'email', 
-            key: 'email_track_clicks', 
-            value: true, 
+            id: '67996cef430e5905ab385357',
+            group: 'email',
+            key: 'email_track_clicks',
+            value: true,
             type: 'boolean'
         });
         cache.getAll().should.eql({email_track_clicks: {
-            id: '67996cef430e5905ab385357', 
-            group: 'email', 
-            key: 'email_track_clicks', 
-            value: false, 
+            id: '67996cef430e5905ab385357',
+            group: 'email',
+            key: 'email_track_clicks',
+            value: false,
+            override: true,
             type: 'boolean'
         }});
     });
