@@ -69,8 +69,7 @@ class CacheManager {
             cacheEntry.override = true;
         }
 
-        // Return if the cacheEntry is undefined, but continue if it's null or false
-        if (cacheEntry === undefined) {
+        if (!cacheEntry) {
             return;
         }
 
