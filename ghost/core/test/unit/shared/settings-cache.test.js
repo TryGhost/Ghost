@@ -101,7 +101,7 @@ describe('UNIT: settings cache', function () {
 
     it('.get() respects settingsOverrides', function () {
         cache = createCacheManager({
-            email_track_clicks: {value: false}
+            email_track_clicks: false
         });
         cache.set('email_track_clicks', {value: true});
         should(cache.get('email_track_clicks')).eql(false);
@@ -115,7 +115,7 @@ describe('UNIT: settings cache', function () {
 
     it('.getAll() respects settingsOverrides', function () {
         cache = createCacheManager({
-            email_track_clicks: {value: false}
+            email_track_clicks: false
         });
         cache.set('email_track_clicks', {
             id: '67996cef430e5905ab385357', 

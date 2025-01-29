@@ -55,12 +55,17 @@ class CacheManager {
         if (!this.settingsCache) {
             return;
         }
-
-        let cacheEntry;
+        
+        let override;
         if (this.settingsOverrides && Object.keys(this.settingsOverrides).includes(key)) {
-            cacheEntry = this.settingsOverrides[key];
-        } else {
-            cacheEntry = this.settingsCache.get(key);
+            // Wrap the override value in an object in case it's a boolean
+            override = {value: this.settingsOverrides[key]};
+        }
+
+        const cacheEntry = this.settingsCache.get(key);
+
+        if (override) {
+            cacheEntry.value = override.value;
         }
 
         if (!cacheEntry) {
