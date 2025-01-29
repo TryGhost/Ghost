@@ -11,8 +11,8 @@ const InMemoryCache = require('../../../core/server/adapters/cache/MemoryCache')
 should.equal(true, true);
 
 function createCacheManager(settingsOverrides = {}) {
-    let cacheStore = new InMemoryCache();
-    let cache = new CacheManager({
+    const cacheStore = new InMemoryCache();
+    const cache = new CacheManager({
         publicSettings,
         settingsOverrides
     });
@@ -100,7 +100,11 @@ describe('UNIT: settings cache', function () {
     });
 
     it('.get() respects settingsOverrides', function () {
-        should(cache.get('test_override_key')).eql(true);
+        cache = createCacheManager({
+            email_track_clicks: {value: false}
+        });
+        cache.set('email_track_clicks', {value: true});
+        should(cache.get('email_track_clicks')).eql(false);
     });
 
     it('.getAll() returns all values', function () {
@@ -110,7 +114,11 @@ describe('UNIT: settings cache', function () {
     });
 
     it('.getAll() respects settingsOverrides', function () {
-        cache.getAll().should.eql({test_override_key: {value: true}});
+        cache = createCacheManager({
+            email_track_clicks: {value: false}
+        });
+        cache.set('email_track_clicks', {value: true});
+        cache.getAll().should.eql({email_track_clicks: {value: false}});
     });
 
     it('.getPublic() correctly filters and formats public values', function () {
