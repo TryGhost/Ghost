@@ -16,7 +16,10 @@ describe('UNIT: settings cache', function () {
     beforeEach(function () {
         let cacheStore = new InMemoryCache();
         cache = new CacheManager({
-            publicSettings
+            publicSettings,
+            settingsOverrides: {
+                test_override_key: {value: true}
+            }
         });
         cache.init(events, {}, [], cacheStore);
     });
@@ -91,6 +94,10 @@ describe('UNIT: settings cache', function () {
         should(cache.get('stringfalse')).eql(false);
         should(cache.get('stringobj')).eql({});
         should(cache.get('stringarr')).eql([]);
+    });
+
+    it('.get() respects settingsOverrides', function () {
+        should(cache.get('test_override_key')).eql(true);
     });
 
     it('.getAll() returns all values', function () {
