@@ -108,6 +108,10 @@ describe('UNIT: settings cache', function () {
         should(cache.get('email_track_clicks', {resolve: false})).eql({value: false, override: true});
     });
 
+    it('.get() only returns an override if the key is set to begin with', function () {
+        should(cache.get('email_track_clicks', {resolve: false})).eql(undefined);
+    });
+
     it('.getAll() returns all values', function () {
         cache.set('key1', {value: '1'});
         cache.get('key1').should.eql('1');
