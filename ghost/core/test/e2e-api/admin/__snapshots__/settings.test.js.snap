@@ -5974,8 +5974,8 @@ Object {
       "value": true,
     },
     Object {
+      "is_read_only": true,
       "key": "email_track_clicks",
-      "override": true,
       "value": false,
     },
     Object {
