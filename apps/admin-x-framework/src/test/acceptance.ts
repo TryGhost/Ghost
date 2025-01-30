@@ -211,13 +211,17 @@ export async function mockApi<Requests extends Record<string, MockRequestConfig>
     return {lastApiRequests};
 }
 
-export function updatedSettingsResponse(newSettings: Array<{ key: string, value: string | boolean | null }>) {
+export function updatedSettingsResponse(newSettings: Array<{ key: string, value: string | boolean | null, override?: boolean }>) {
     return {
         ...responseFixtures.settings,
         settings: responseFixtures.settings.settings.map((setting) => {
             const newSetting = newSettings.find(({key}) => key === setting.key);
 
-            return {key: setting.key, value: newSetting?.value || setting.value};
+            return {
+                key: setting.key,
+                value: newSetting?.value !== undefined ? newSetting.value : setting.value,
+                ...(newSetting?.override ? {override: true} : {})
+            };
         })
     };
 }
