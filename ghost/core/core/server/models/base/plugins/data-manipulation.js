@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const moment = require('moment');
 
 const schema = require('../../../data/schema');
@@ -25,18 +24,18 @@ module.exports = function (Bookshelf) {
         /**
          * before we insert dates into the database, we have to normalize
          * date format is now in each db the same
+         *
+         * @param {object} attrs - attributes to convert
+         * @returns {object} attrs - converted attributes
          */
         fixDatesWhenSave: function fixDatesWhenSave(attrs) {
-            const self = this;
+            const tableDef = schema.tables[this.tableName];
 
-            _.each(attrs, function each(value, key) {
-                if (value !== null
-                && Object.prototype.hasOwnProperty.call(schema.tables, self.tableName)
-                && Object.prototype.hasOwnProperty.call(schema.tables[self.tableName], key)
-                && schema.tables[self.tableName][key].type === 'dateTime') {
-                    attrs[key] = moment(value).format('YYYY-MM-DD HH:mm:ss');
+            for (const key in attrs) {
+                if (attrs[key] && tableDef?.[key]?.type === 'dateTime') {
+                    attrs[key] = moment(attrs[key]).format('YYYY-MM-DD HH:mm:ss');
                 }
-            });
+            }
 
             return attrs;
         },
@@ -48,11 +47,14 @@ module.exports = function (Bookshelf) {
          *   - knex returns a UTC String (2018-04-12 20:50:35)
          * mysql:
          *   - knex wraps the UTC value into a local JS Date
+         *
+         * @param {object} attrs - attributes to convert
+         * @returns {object} attrs - converted attributes
          */
         fixDatesWhenFetch: function fixDatesWhenFetch(attrs) {
             const tableDef = schema.tables[this.tableName];
 
-            Object.keys(attrs).forEach((key) => {
+            for (const key in attrs) {
                 if (attrs[key] && tableDef?.[key]?.type === 'dateTime') {
                     const dateMoment = moment(attrs[key]);
 
@@ -64,20 +66,25 @@ module.exports = function (Bookshelf) {
                         attrs[key] = moment().startOf('seconds').toDate();
                     }
                 }
-            });
+            }
 
             return attrs;
         },
 
-        // Convert integers to real booleans
+        /**
+         * Convert integers to real booleans
+         *
+         * @param {object} attrs - attributes to convert
+         * @returns {object} attrs - converted attributes
+         */
         fixBools: function fixBools(attrs) {
             const tableDef = schema.tables[this.tableName];
 
-            Object.keys(attrs).forEach((key) => {
+            for (const key in attrs) {
                 if (tableDef?.[key]?.type === 'boolean') {
                     attrs[key] = !!attrs[key];
                 }
-            });
+            }
 
             return attrs;
         }
