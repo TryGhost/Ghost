@@ -104,7 +104,7 @@ describe('UNIT: settings cache', function () {
         });
         cache.set('email_track_clicks', {value: true});
         should(cache.get('email_track_clicks')).eql(false);
-        should(cache.get('email_track_clicks', {resolve: false})).eql({value: false, override: true});
+        should(cache.get('email_track_clicks', {resolve: false})).eql({value: false, is_read_only: true});
     });
 
     it('.get() only returns an override if the key is set to begin with', function () {
@@ -133,7 +133,7 @@ describe('UNIT: settings cache', function () {
             group: 'email',
             key: 'email_track_clicks',
             value: false,
-            override: true,
+            is_read_only: true,
             type: 'boolean'
         }});
     });
