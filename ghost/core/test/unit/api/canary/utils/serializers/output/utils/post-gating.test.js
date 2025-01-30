@@ -138,7 +138,7 @@ describe('Unit: endpoints/utils/serializers/output/utils/post-gating', function 
             assert.deepEqual(params, expected);
         }
 
-        const testCases = [{
+        const validTestCases = [{
             input: 'nonMember:true',
             output: {nonMember: true}
         }, {
@@ -165,7 +165,17 @@ describe('Unit: endpoints/utils/serializers/output/utils/post-gating', function 
         }, {
             input: 'memberSegment:"status:free" nonMember:true',
             output: {nonMember: true, memberSegment: 'status:free'}
-        }, {
+        }];
+
+        validTestCases.forEach(function (testCase) {
+            it(`should parse ${testCase.input} correctly`, function () {
+                testFn(testCase.input, testCase.output);
+            });
+        });
+
+        // we only support known keys and values with the correct types and allowed values
+        // we should also handle malformed input gracefully
+        const invalidTestCases = [{
             input: 'unknownKey:true nonMember:false',
             output: {nonMember: false}
         }, {
@@ -185,8 +195,8 @@ describe('Unit: endpoints/utils/serializers/output/utils/post-gating', function 
             output: {}
         }];
 
-        testCases.forEach(function (testCase) {
-            it(`should parse ${testCase.input} correctly`, function () {
+        invalidTestCases.forEach(function (testCase) {
+            it(`should handle unexpected input ${testCase.input} correctly`, function () {
                 testFn(testCase.input, testCase.output);
             });
         });
