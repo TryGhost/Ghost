@@ -245,7 +245,7 @@
     background: #fff;
     padding: 4px;
     border: var(--input-border);
-    border-radius: 3px;
+    border-radius: var(--border-radius);
     outline: none;
 }
 
