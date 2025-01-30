@@ -65,7 +65,7 @@ const FollowButton: React.FC<FollowButtonProps> = ({
         <Button
             className={clsx(
                 className,
-                minWidth
+                isFollowing && minWidth
             )}
             color={isFollowing ? 'outline' : color}
             label={isFollowing ? (isHovered ? 'Unfollow' : 'Following') : 'Follow'}

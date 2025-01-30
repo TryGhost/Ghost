@@ -7,8 +7,7 @@ import {
     Actor,
     type GetAccountFollowsResponse,
     type Profile,
-    type SearchResults,
-    Actor
+    type SearchResults
 } from '../api/activitypub';
 import {Activity} from '../components/activities/ActivityItem';
 import {
