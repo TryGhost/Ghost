@@ -36,7 +36,7 @@ describe('settings utils', function () {
     describe('isSettingReadOnly', function () {
         it('returns true if the setting has an override', function () {
             const settings = [
-                {key: 'test_key', override: true, value: 'test_value'}
+                {key: 'test_key', is_read_only: true, value: 'test_value'}
             ];
             const value = isSettingReadOnly(settings, 'test_key');
             expect(value).toEqual(true);
@@ -44,7 +44,7 @@ describe('settings utils', function () {
 
         it('returns false if the setting does not have an override', function () {
             const settings = [
-                {key: 'test_key', override: false, value: 'test_value'}
+                {key: 'test_key', is_read_only: false, value: 'test_value'}
             ];
             const value = isSettingReadOnly(settings, 'test_key');
             expect(value).toEqual(false);
