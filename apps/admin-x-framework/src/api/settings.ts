@@ -8,6 +8,7 @@ export type SettingValue = string | boolean | null;
 export type Setting = {
     key: string;
     value: SettingValue;
+    override?: boolean;
 }
 
 export type SettingsResponseMeta = Meta & {
@@ -80,6 +81,14 @@ export function getSettingValue<ValueType = SettingValue>(settings: Setting[] | 
     }
     const setting = settings.find(d => d.key === key);
     return setting?.value as ValueType || null;
+}
+
+export function isSettingReadOnly(settings: Setting[] | null | undefined, key: string): boolean | null {
+    if (!settings) {
+        return null;
+    }
+    const setting = settings.find(d => d.key === key);
+    return setting?.override || false;
 }
 
 export function checkStripeEnabled(settings: Setting[], config: Config) {
