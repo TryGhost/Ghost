@@ -659,4 +659,27 @@ describe('Settings API', function () {
             mockManager.assert.sentEmailCount(0);
         });
     });
+
+    describe('Settings overrides', function () {
+        this.beforeEach(async function () {
+            const settingsOverrides = {
+                email_track_clicks: false
+            };
+            configUtils.set('hostSettings:settingsOverrides', settingsOverrides);
+            await fixtureManager.init();
+        });
+
+        it('respects settings overrides defined in hostSettings:settingsOverrides', async function () {
+            await agent.get('settings/')
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    settings: matchSettingsArray(CURRENT_SETTINGS_COUNT)
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    'content-length': anyContentLength,
+                    etag: anyEtag
+                });
+        });
+    });
 });
