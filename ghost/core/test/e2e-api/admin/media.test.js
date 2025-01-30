@@ -225,8 +225,8 @@ describe('Media API', function () {
                 .attach('file', path.join(__dirname, '/../../utils/fixtures/images/ghosticon.jpg'))
                 .expect(200);
 
-            const thumbnailUrl = res.body.media[0].url.replace('.mp4', '_thumb.jpg');
-            thumbnailRes.body.media[0].url.should.equal(thumbnailUrl);
+            const mediaUrlWithoutExt = res.body.media[0].url.replace('.mp4', '');
+            thumbnailRes.body.media[0].url.should.match(new RegExp(`${mediaUrlWithoutExt}_thumb-\\w{16}\\.jpg`));
             thumbnailRes.body.media[0].ref.should.equal('updated_thumbnail_2');
 
             media.push(thumbnailRes.body.media[0].url.replace(config.get('url'), ''));
