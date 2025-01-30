@@ -214,6 +214,24 @@ describe('Unit: endpoints/utils/serializers/output/utils/post-gating', function 
         }, {
             input: 'memberSegment:"status:free" nonMember:true',
             output: {nonMember: true, memberSegment: 'status:free'}
+        }, {
+            input: 'unknownKey:true nonMember:false',
+            output: {nonMember: false}
+        }, {
+            input: 'nonMember:invalid',
+            output: {}
+        }, {
+            input: 'nonMember: memberSegment:"status:free"',
+            output: {memberSegment: 'status:free'}
+        }, {
+            input: 'memberSegment:"status:paid"',
+            output: {}
+        }, {
+            input: 'nonMember:memberSegment:"status:free"',
+            output: {}
+        }, {
+            input: 'memberSegment',
+            output: {}
         }];
 
         testCases.forEach(function (testCase) {
@@ -282,6 +300,24 @@ describe('Unit: endpoints/utils/serializers/output/utils/post-gating', function 
             assert.equal(result.trim(), `
                 <p>Non-gated block</p>
                 <p>gated block 2</p>
+            `.trim());
+        });
+
+        it('handles malformed gated block comments', function () {
+            const checkGatedBlockAccessStub = stubCheckGatedBlockAccess(true);
+            const html = `
+                <!--kg-gated-block:begin-><p>malformed gated block 1</p><!--kg-gated-block:end-->
+                <p>Non-gated block</p>
+                <!--kg-gated-block:begin <p>malformed gated block 2</p>
+                <!--kg-gated-block:begin nonMember:true--><p>valid gated block</p><!--kg-gated-block:end-->
+            `;
+            const result = gating.stripGatedBlocks(html, null);
+            sinon.assert.calledOnce(checkGatedBlockAccessStub);
+            assert.equal(result.trim(), `
+                <!--kg-gated-block:begin-><p>malformed gated block 1</p><!--kg-gated-block:end-->
+                <p>Non-gated block</p>
+                <!--kg-gated-block:begin <p>malformed gated block 2</p>
+                <p>valid gated block</p>
             `.trim());
         });
     });

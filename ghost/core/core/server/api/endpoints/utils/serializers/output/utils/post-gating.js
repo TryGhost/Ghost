@@ -11,22 +11,40 @@ const GATED_BLOCK_REGEX = /<!--\s*kg-gated-block:begin\s+([^\n]+?)\s*-->\s*([\s\
 // Match the key-value pairs (with optional quotes around the value) in the gated-block:begin comment
 const GATED_BLOCK_PARAM_REGEX = /\b(?<key>\w+):["']?(?<value>[^"'\s]+)["']?/g;
 
+const ALLOWED_GATED_BLOCK_PARAMS = {
+    nonMember: {type: 'boolean'},
+    memberSegment: {type: 'string', allowedValues: ['', 'status:free,status:-free', 'status:free', 'status:-free']}
+};
+const ALLOWED_GATED_BLOCK_KEYS = Object.keys(ALLOWED_GATED_BLOCK_PARAMS);
+
 const parseGatedBlockParams = function (paramsString) {
     const params = {};
 
     const matches = paramsString.matchAll(GATED_BLOCK_PARAM_REGEX);
     for (const match of matches) {
         const key = match.groups.key;
-        const value = match.groups.value;
+        let value = match.groups.value;
 
-        // Convert "true"/"false" strings to booleans, otherwise store as string
-        if (value === 'true') {
-            params[key] = true;
-        } else if (value === 'false') {
-            params[key] = false;
-        } else {
-            params[key] = value;
+        if (!ALLOWED_GATED_BLOCK_KEYS.includes(key)) {
+            continue;
         }
+
+        // Convert "true"/"false" strings to booleans, otherwise keep as string
+        if (value === 'true') {
+            value = true;
+        } else if (value === 'false') {
+            value = false;
+        }
+
+        if (typeof value !== ALLOWED_GATED_BLOCK_PARAMS[key].type) {
+            continue;
+        }
+
+        if (ALLOWED_GATED_BLOCK_PARAMS[key].allowedValues && !ALLOWED_GATED_BLOCK_PARAMS[key].allowedValues.includes(value)) {
+            continue;
+        }
+
+        params[key] = value;
     }
 
     return params;
