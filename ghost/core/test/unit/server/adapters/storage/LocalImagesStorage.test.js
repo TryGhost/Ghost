@@ -55,21 +55,20 @@ describe('Local Images Storage', function () {
     it('sends correct path to image when original file has spaces', async function () {
         image.name = 'AN IMAGE.jpg';
         const url = await localFileStore.save(image);
-        assert.equal(url, '/content/images/2013/09/AN-IMAGE.jpg');
+        assert.match(url, /content\/images\/2013\/09\/AN-IMAGE-\w{16}\.jpg/);
     });
 
     it('allows "@" symbol to image for Apple hi-res (retina) modifier', async function () {
         image.name = 'photo@2x.jpg';
         const url = await localFileStore.save(image);
-        assert.equal(url, '/content/images/2013/09/photo@2x.jpg');
+        assert.match(url, /content\/images\/2013\/09\/photo@2x-\w{16}\.jpg/);
     });
 
     it('sends correct path to image when date is in Jan 2014', async function () {
         fakeDate(1, 2014);
         const url = await localFileStore.save(image);
-        assert.equal(url, '/content/images/2014/01/IMAGE.jpg');
+        assert.match(url, /content\/images\/2014\/01\/IMAGE-\w{16}\.jpg/);
     });
-
 
     it('creates month and year directory', async function () {
         await localFileStore.save(image);
@@ -81,38 +80,18 @@ describe('Local Images Storage', function () {
         await localFileStore.save(image);
         assert.equal(fs.copy.calledOnce, true);
         assert.equal(fs.copy.args[0][0], 'tmp/123456.jpg');
-        assert.equal(fs.copy.args[0][1], path.resolve('./content/images/2013/09/IMAGE.jpg'));
+
+        assert.match(fs.copy.args[0][1], /content\/images\/2013\/09\/IMAGE-\w{16}\.jpg/);
     });
 
-    it('uploads two different images with the same name without overwriting the first', async function () {
-        fs.stat.withArgs(path.resolve('./content/images/2013/09/IMAGE.jpg')).resolves();
-        fs.stat.withArgs(path.resolve('./content/images/2013/09/IMAGE-1.jpg')).rejects();
+    it('uploads two different images with the same name with different names', async function () {
+        const first = await localFileStore.save(image);
+        assert.match(first, /content\/images\/2013\/09\/IMAGE-\w{16}\.jpg/);
 
-        // if on windows need to setup with back slashes
-        // doesn't hurt for the test to cope with both
-        fs.stat.withArgs(path.resolve('.\\content\\images\\2013\\Sep\\IMAGE.jpg')).resolves();
-        fs.stat.withArgs(path.resolve('.\\content\\images\\2013\\Sep\\IMAGE-1.jpg')).rejects();
+        const second = await localFileStore.save(image);
+        assert.match(second, /content\/images\/2013\/09\/IMAGE-\w{16}\.jpg/);
 
-        const url = await localFileStore.save(image);
-        assert.equal(url, '/content/images/2013/09/IMAGE-1.jpg');
-    });
-
-    it('uploads five different images with the same name without overwriting the first', async function () {
-        fs.stat.withArgs(path.resolve('./content/images/2013/09/IMAGE.jpg')).resolves();
-        fs.stat.withArgs(path.resolve('./content/images/2013/09/IMAGE-1.jpg')).resolves();
-        fs.stat.withArgs(path.resolve('./content/images/2013/09/IMAGE-2.jpg')).resolves();
-        fs.stat.withArgs(path.resolve('./content/images/2013/09/IMAGE-3.jpg')).resolves();
-        fs.stat.withArgs(path.resolve('./content/images/2013/09/IMAGE-4.jpg')).rejects();
-
-        // windows setup
-        fs.stat.withArgs(path.resolve('.\\content\\images\\2013\\Sep\\IMAGE.jpg')).resolves();
-        fs.stat.withArgs(path.resolve('.\\content\\images\\2013\\Sep\\IMAGE-1.jpg')).resolves();
-        fs.stat.withArgs(path.resolve('.\\content\\images\\2013\\Sep\\IMAGE-2.jpg')).resolves();
-        fs.stat.withArgs(path.resolve('.\\content\\images\\2013\\Sep\\IMAGE-3.jpg')).resolves();
-        fs.stat.withArgs(path.resolve('.\\content\\images\\2013\\Sep\\IMAGE-4.jpg')).rejects();
-
-        const url = await localFileStore.save(image);
-        assert.equal(url, '/content/images/2013/09/IMAGE-4.jpg');
+        assert.notEqual(first, second);
     });
 
     describe('read image', function () {
@@ -141,25 +120,25 @@ describe('Local Images Storage', function () {
     });
 
     describe('validate extentions', function () {
-        it('saves image with .d as extension', async function () {
-            const url = await localFileStore.save({
-                name: 'test-1.1.1'
-            });
-            assert.match(url, /test-1.1.1/);
-        });
-
         it('saves image with .zip as extension', async function () {
             const url = await localFileStore.save({
                 name: 'test-1.1.1.zip'
             });
-            assert.match(url, /test-1.1.1.zip/);
+            assert.match(url, /test-1.1.1-\w{16}\.zip/);
         });
 
         it('saves image with .jpeg as extension', async function () {
             const url = await localFileStore.save({
                 name: 'test-1.1.1.jpeg'
             });
-            assert.match(url, /test-1.1.1.jpeg/);
+            assert.match(url, /test-1.1.1-\w{16}\.jpeg/);
+        });
+
+        it('saves image but ignores invalid extension .0', async function () {
+            const url = await localFileStore.save({
+                name: 'test-1.1.1.0'
+            });
+            assert.match(url, /test-1.1.1.0-\w{16}/);
         });
     });
 
@@ -171,7 +150,7 @@ describe('Local Images Storage', function () {
 
         it('sends the correct path to image', async function () {
             const url = await localFileStore.save(image);
-            assert.equal(url, '/content/images/2013/09/IMAGE.jpg');
+            assert.match(url, /\/content\/images\/2013\/09\/IMAGE-\w{16}\.jpg/);
         });
     });
 
