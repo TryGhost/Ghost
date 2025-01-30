@@ -9,18 +9,22 @@ describe('Unit: endpoints/utils/serializers/output/utils/post-gating', function 
     });
 
     describe('for post', function () {
+        let frame;
+
+        beforeEach(function () {
+            frame = {
+                options: {},
+                original: {
+                    context: {}
+                }
+            };
+        });
+
         it('should NOT hide content attributes when visibility is public', function () {
             const attrs = {
                 visibility: 'public',
                 plaintext: 'no touching',
                 html: '<p>I am here to stay</p>'
-            };
-
-            const frame = {
-                options: {},
-                original: {
-                    context: {}
-                }
             };
 
             gating.forPost(attrs, frame);
@@ -33,13 +37,6 @@ describe('Unit: endpoints/utils/serializers/output/utils/post-gating', function 
                 visibility: 'members',
                 plaintext: 'no touching. secret stuff',
                 html: '<p>I am here to stay</p>'
-            };
-
-            const frame = {
-                options: {},
-                original: {
-                    context: {}
-                }
             };
 
             gating.forPost(attrs, frame);
@@ -55,14 +52,7 @@ describe('Unit: endpoints/utils/serializers/output/utils/post-gating', function 
                 html: '<p>What\'s the matter?</p>'
             };
 
-            const frame = {
-                options: {},
-                original: {
-                    context: {
-                        member: {}
-                    }
-                }
-            };
+            frame.original.context.member = {};
 
             gating.forPost(attrs, frame);
 
@@ -77,16 +67,7 @@ describe('Unit: endpoints/utils/serializers/output/utils/post-gating', function 
                 html: '<p>What\'s the matter?</p>'
             };
 
-            const frame = {
-                options: {},
-                original: {
-                    context: {
-                        member: {
-                            status: 'free'
-                        }
-                    }
-                }
-            };
+            frame.original.context.member = {status: 'free'};
 
             gating.forPost(attrs, frame);
 
@@ -101,16 +82,7 @@ describe('Unit: endpoints/utils/serializers/output/utils/post-gating', function 
                 html: '<p>Can read this</p>'
             };
 
-            const frame = {
-                options: {},
-                original: {
-                    context: {
-                        member: {
-                            status: 'paid'
-                        }
-                    }
-                }
-            };
+            frame.original.context.member = {status: 'paid'};
 
             gating.forPost(attrs, frame);
 
@@ -124,13 +96,6 @@ describe('Unit: endpoints/utils/serializers/output/utils/post-gating', function 
                 html: '<p>no gated blocks</p>'
             };
 
-            const frame = {
-                options: {},
-                original: {
-                    context: {}
-                }
-            };
-
             const stripGatedBlocksStub = sinon.stub(gating, 'stripGatedBlocks');
             gating.forPost(attrs, frame);
             sinon.assert.notCalled(stripGatedBlocksStub);
@@ -140,13 +105,6 @@ describe('Unit: endpoints/utils/serializers/output/utils/post-gating', function 
             const attrs = {
                 visibility: 'public',
                 html: '<!--kg-gated-block:begin nonMember:true--><p>gated block</p><!--kg-gated-block:end-->'
-            };
-
-            const frame = {
-                options: {},
-                original: {
-                    context: {}
-                }
             };
 
             const stripGatedBlocksStub = sinon.stub(gating, 'stripGatedBlocks');
@@ -164,13 +122,6 @@ describe('Unit: endpoints/utils/serializers/output/utils/post-gating', function 
                 `,
                 plaintext: 'Members only. Everyone can see this. Anonymous only.',
                 excerpt: 'Members only. Everyone can see this. Anonymous only.'
-            };
-
-            const frame = {
-                options: {},
-                original: {
-                    context: {}
-                }
             };
 
             gating.forPost(attrs, frame);
