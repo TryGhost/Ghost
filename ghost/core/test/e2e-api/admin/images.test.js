@@ -70,7 +70,6 @@ const uploadImageCheck = async ({path, filename, contentType, expectedFileName, 
     images.push(filePath);
 
     // Get original image path
-
     let originalFilePath = filePath;
     if (!skipOriginal) {
         originalFilePath = imageTransform.generateOriginalImageName(filePath);
@@ -249,15 +248,6 @@ describe('Images API', function () {
         await uploadImageCheck({path: originalFilePath, filename: 'loadingcat_square.gif', contentType: 'image/gif'});
     });
 
-    it('Truncates filename to be under 253 bytes', async function () {
-        const originalFilePath = p.join(__dirname, '/../../utils/fixtures/images/ghost-logo.png');
-        const ext = '.png';
-        const hash = `-${crypto.randomBytes(8).toString('hex')}`;
-        const truncatedNameLength = 253 - hash.length - ext.length;
-
-        await uploadImageCheck({path: originalFilePath, filename: `${'a'.repeat(300)}.png`, expectedFileName: `${'a'.repeat(truncatedNameLength)}.png`, contentType: 'image/png'});
-    });
-
     it('Can not upload a json file', async function () {
         const originalFilePath = p.join(__dirname, '/../../utils/fixtures/data/redirects.json');
         const fileContents = await fs.readFile(originalFilePath);
@@ -312,6 +302,15 @@ describe('Images API', function () {
                 }]
             });
         sinon.assert.calledOnce(loggingStub);
+    });
+
+    it('Can upload a file with a long name and the filename will be truncated to be under 253 bytes', async function () {
+        const originalFilePath = p.join(__dirname, '/../../utils/fixtures/images/ghost-logo.png');
+        const ext = '.png';
+        const hash = `-${crypto.randomBytes(8).toString('hex')}`;
+        const truncatedNameLength = 253 - hash.length - ext.length;
+
+        await uploadImageCheck({path: originalFilePath, filename: `${'a'.repeat(300)}.png`, expectedFileName: `${'a'.repeat(truncatedNameLength)}.png`, contentType: 'image/png'});
     });
 
     it('Can upload multiple images with the same name', async function () {
