@@ -318,7 +318,7 @@
 .ember-power-select-status-icon {
     position: absolute;
     right: 12px;
-    top: 13px;
+    top: 12px;
     border: solid var(--midlightgrey);
     border-width: 0 1px 1px 0;
     padding: 3px;
