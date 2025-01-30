@@ -46,7 +46,7 @@ module.exports = {
         });
     },
     setFromZip: async (zip) => {
-        const themeName = getStorage().getSanitizedFileName(zip.name.split('.zip')[0]);
+        const themeName = getStorage().sanitizeFileName(zip.name.split('.zip')[0]);
         const backupName = `${themeName}_${ObjectID()}`;
 
         // check if zip name matches one of the default themes
@@ -63,6 +63,7 @@ module.exports = {
         try {
             checkedTheme = await validate.checkSafe(themeName, zip, true);
             const themeExists = await getStorage().exists(themeName);
+
             // CASE: move the existing theme to a backup folder
             if (themeExists) {
                 debug('setFromZip Theme exists already');
@@ -73,7 +74,8 @@ module.exports = {
             // CASE: store extracted theme
             await getStorage().save({
                 name: themeName,
-                path: checkedTheme.path
+                path: checkedTheme.path,
+                keepOriginalName: true
             });
 
             // CASE: loads the theme from the fs & sets the theme on the themeList
