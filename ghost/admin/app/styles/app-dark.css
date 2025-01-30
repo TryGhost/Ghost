@@ -1102,6 +1102,12 @@ input:focus,
     border-color: var(--midlightgrey);
 }
 
+.ember-power-select-trigger:not(.gh-input-x) {
+    background: var(--lightgrey);
+    border-color: var(--lightgrey);
+}
+
+
 kbd {
     color: #394047;
 }
