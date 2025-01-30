@@ -15,13 +15,12 @@ class CacheManager {
     /**
      * @prop {Object} options
      * @prop {Object} options.publicSettings - key/value pairs of settings which are publicly accessible
-     * @prop {Object} options.settingsOverrides - key/value pairs of settings which are overridden via config
      */
-    constructor({publicSettings, settingsOverrides}) {
+    constructor({publicSettings}) {
         // settingsCache holds cached settings, keyed by setting.key, contains the JSON version of the model
         this.settingsCache;
+        this.settingsOverrides;
         this.publicSettings = publicSettings;
-        this.settingsOverrides = settingsOverrides;
         this.calculatedFields = [];
 
         this.get = this.get.bind(this);
@@ -186,10 +185,12 @@ class CacheManager {
      * @param {Bookshelf.Collection<Settings>} settingsCollection
      * @param {Array} calculatedFields
      * @param {Object} cacheStore - cache storage instance base on Cache Base Adapter
+     * @param {Object} settingsOverrides - key/value pairs of settings which are overridden (i.e. via config)
      * @return {Object} - filled out instance for Cache Base Adapter
      */
-    init(events, settingsCollection, calculatedFields, cacheStore) {
+    init(events, settingsCollection, calculatedFields, cacheStore, settingsOverrides) {
         this.settingsCache = cacheStore;
+        this.settingsOverrides = settingsOverrides;
         // First, reset the cache and
         this.reset(events);
 

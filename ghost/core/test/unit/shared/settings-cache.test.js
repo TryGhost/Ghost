@@ -13,10 +13,9 @@ should.equal(true, true);
 function createCacheManager(settingsOverrides = {}) {
     const cacheStore = new InMemoryCache();
     const cache = new CacheManager({
-        publicSettings,
-        settingsOverrides
+        publicSettings
     });
-    cache.init(events, {}, [], cacheStore);
+    cache.init(events, {}, [], cacheStore, settingsOverrides);
     return cache;
 }
 
