@@ -13,6 +13,7 @@ const {anyErrorId} = matchers;
 const {imageSize} = require('../../../core/server/lib/image');
 const configUtils = require('../../utils/configUtils');
 const logging = require('@tryghost/logging');
+const crypto = require('crypto');
 
 const images = [];
 let agent, frontendAgent, ghostServer;
@@ -49,17 +50,19 @@ const uploadImageRequest = ({fileContents, filename, contentType, ref}) => {
  * @param {string} options.filename
  * @param {string} options.contentType
  * @param {string} [options.expectedFileName]
- * @param {string} [options.expectedOriginalFileName]
  * @param {string} [options.ref]
  * @param {boolean} [options.skipOriginal]
  * @returns
  */
-const uploadImageCheck = async ({path, filename, contentType, expectedFileName, expectedOriginalFileName, ref, skipOriginal}) => {
+const uploadImageCheck = async ({path, filename, contentType, expectedFileName, ref, skipOriginal}) => {
     const fileContents = await fs.readFile(path);
     const {body} = await uploadImageRequest({fileContents, filename, contentType, ref}).expectStatus(201);
-    expectedFileName = expectedFileName || filename;
 
-    assert.match(body.images[0].url, new RegExp(`${urlUtils.urlFor('home', true)}content/images/\\d+/\\d+/${expectedFileName}`));
+    expectedFileName = expectedFileName || filename;
+    const parsedFileName = p.parse(expectedFileName);
+    const expectedFileNameRegex = `${parsedFileName.name}-\\w{16}${parsedFileName.ext}`;
+
+    assert.match(body.images[0].url, new RegExp(`${urlUtils.urlFor('home', true)}content/images/\\d+/\\d+/${expectedFileNameRegex}`));
     assert.equal(body.images[0].ref, ref === undefined ? null : ref);
 
     const relativePath = body.images[0].url.replace(urlUtils.urlFor('home', true), '/');
@@ -67,8 +70,12 @@ const uploadImageCheck = async ({path, filename, contentType, expectedFileName, 
     images.push(filePath);
 
     // Get original image path
-    const originalFilePath = skipOriginal ? filePath : (expectedOriginalFileName ? filePath.replace(expectedFileName, expectedOriginalFileName) : imageTransform.generateOriginalImageName(filePath));
-    images.push(originalFilePath);
+
+    let originalFilePath = filePath;
+    if (!skipOriginal) {
+        originalFilePath = imageTransform.generateOriginalImageName(filePath);
+        images.push(originalFilePath);
+    }
 
     // Check the image is saved to disk
     const saved = await fs.readFile(originalFilePath);
@@ -242,18 +249,13 @@ describe('Images API', function () {
         await uploadImageCheck({path: originalFilePath, filename: 'loadingcat_square.gif', contentType: 'image/gif'});
     });
 
-    it('Will error when filename is too long', async function () {
+    it('Truncates filename to be under 253 bytes', async function () {
         const originalFilePath = p.join(__dirname, '/../../utils/fixtures/images/ghost-logo.png');
-        const fileContents = await fs.readFile(originalFilePath);
-        const loggingStub = sinon.stub(logging, 'error');
-        await uploadImageRequest({fileContents, filename: `${'a'.repeat(300)}.png`, contentType: 'image/png'})
-            .expectStatus(400)
-            .matchBodySnapshot({
-                errors: [{
-                    id: anyErrorId
-                }]
-            });
-        sinon.assert.calledOnce(loggingStub);
+        const ext = '.png';
+        const hash = `-${crypto.randomBytes(8).toString('hex')}`;
+        const truncatedNameLength = 253 - hash.length - ext.length;
+
+        await uploadImageCheck({path: originalFilePath, filename: `${'a'.repeat(300)}.png`, expectedFileName: `${'a'.repeat(truncatedNameLength)}.png`, contentType: 'image/png'});
     });
 
     it('Can not upload a json file', async function () {
@@ -317,7 +319,7 @@ describe('Images API', function () {
         const originalFilePath2 = p.join(__dirname, '/../../utils/fixtures/images/ghosticon.jpg');
 
         await uploadImageCheck({path: originalFilePath, filename: 'a.png', contentType: 'image/png'});
-        await uploadImageCheck({path: originalFilePath2, filename: 'a.png', contentType: 'image/png', expectedFileName: 'a-1.png', expectedOriginalFileName: 'a-1_o.png'});
+        await uploadImageCheck({path: originalFilePath2, filename: 'a.png', contentType: 'image/png'});
     });
 
     it('Can upload image with number suffix', async function () {
@@ -327,12 +329,12 @@ describe('Images API', function () {
 
     it('Trims _o suffix from uploaded files', async function () {
         const originalFilePath = p.join(__dirname, '/../../utils/fixtures/images/ghost-logo.png');
-        await uploadImageCheck({path: originalFilePath, filename: 'a-3_o.png', contentType: 'image/png', expectedFileName: 'a-3.png', expectedOriginalFileName: 'a-3_o.png'});
+        await uploadImageCheck({path: originalFilePath, filename: 'a-3_o.png', contentType: 'image/png', expectedFileName: 'a-3.png'});
     });
 
     it('Can use _o in uploaded file name, as long as it is not at the end', async function () {
         const originalFilePath = p.join(__dirname, '/../../utils/fixtures/images/ghost-logo.png');
-        await uploadImageCheck({path: originalFilePath, filename: 'a_o-3.png', contentType: 'image/png', expectedFileName: 'a_o-3.png', expectedOriginalFileName: 'a_o-3_o.png'});
+        await uploadImageCheck({path: originalFilePath, filename: 'a_o-3.png', contentType: 'image/png', expectedFileName: 'a_o-3.png'});
     });
 
     it('Can upload around midnight of month change', async function () {
