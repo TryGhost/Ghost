@@ -83,9 +83,9 @@ export function getSettingValue<ValueType = SettingValue>(settings: Setting[] | 
     return setting?.value as ValueType || null;
 }
 
-export function isSettingReadOnly(settings: Setting[] | null | undefined, key: string): boolean | null {
+export function isSettingReadOnly(settings: Setting[] | null | undefined, key: string): boolean | undefined {
     if (!settings) {
-        return null;
+        return undefined;
     }
     const setting = settings.find(d => d.key === key);
     return setting?.override || false;
