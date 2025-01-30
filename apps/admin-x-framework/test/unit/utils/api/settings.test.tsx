@@ -50,10 +50,10 @@ describe('settings utils', function () {
             expect(value).toEqual(false);
         });
 
-        it('returns null if settings is null', function () {
+        it('returns undefined if settings is falsy', function () {
             const settings = undefined;
             const value = isSettingReadOnly(settings, 'test_key');
-            expect(value).toEqual(null);
+            expect(value).toEqual(undefined);
         });
     });
 });
