@@ -5,10 +5,10 @@ import {
     ActivityPubCollectionResponse,
     ActivityThread,
     Actor,
+    FollowAccount,
     type GetAccountFollowsResponse,
     type Profile,
-    type SearchResults,
-    FollowAccount
+    type SearchResults
 } from '../api/activitypub';
 import {Activity} from '../components/activities/ActivityItem';
 import {
@@ -232,7 +232,7 @@ export function useUnfollow(handle: string, onSuccess: () => void, onError: () =
 
             queryClient.setQueryData(['follows:index:following'], (currentFollowing?: FollowAccount[]) => {
                 if (!currentFollowing) {
-                    return currentFollowing
+                    return currentFollowing;
                 }
                 return currentFollowing.filter(item => item.id !== unfollowedActor.id);
             });

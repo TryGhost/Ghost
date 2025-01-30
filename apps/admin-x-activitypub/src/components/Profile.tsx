@@ -214,8 +214,8 @@ const FollowingTab: React.FC = () => {
                                 </div>
                                 <FollowButton
                                     className='ml-auto'
-                                    handle={account.handle}
                                     following={account.isFollowing}
+                                    handle={account.handle}
                                     type='secondary'
                                 />
                             </ActivityItem>
@@ -262,8 +262,8 @@ const FollowersTab: React.FC = () => {
                                 </div>
                                 <FollowButton
                                     className='ml-auto'
-                                    handle={account.handle}
                                     following={account.isFollowing}
+                                    handle={account.handle}
                                     type='secondary'
                                 />
                             </ActivityItem>
