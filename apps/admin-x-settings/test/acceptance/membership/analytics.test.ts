@@ -64,7 +64,7 @@ test.describe('Analytics settings', async () => {
             browseSettings: {method: 'GET', path: /^\/settings\/\?group=/, response: updatedSettingsResponse([
                 {key: 'members_track_sources', value: false},
                 {key: 'email_track_opens', value: false},
-                {key: 'email_track_clicks', value: false, override: true},
+                {key: 'email_track_clicks', value: false, is_read_only: true},
                 {key: 'outbound_link_tagging', value: false}
             ])}
         }});

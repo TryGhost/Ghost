@@ -211,7 +211,7 @@ export async function mockApi<Requests extends Record<string, MockRequestConfig>
     return {lastApiRequests};
 }
 
-export function updatedSettingsResponse(newSettings: Array<{ key: string, value: string | boolean | null, override?: boolean }>) {
+export function updatedSettingsResponse(newSettings: Array<{ key: string, value: string | boolean | null, is_read_only?: boolean }>) {
     return {
         ...responseFixtures.settings,
         settings: responseFixtures.settings.settings.map((setting) => {
@@ -220,7 +220,7 @@ export function updatedSettingsResponse(newSettings: Array<{ key: string, value:
             return {
                 key: setting.key,
                 value: newSetting?.value !== undefined ? newSetting.value : setting.value,
-                ...(newSetting?.override ? {override: true} : {})
+                ...(newSetting?.is_read_only ? {is_read_only: true} : {})
             };
         })
     };
