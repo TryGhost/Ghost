@@ -1,5 +1,5 @@
 import {$getNodeByKey} from 'lexical';
-import {generateVisibilityMessage, generateVisibilityMessageAlpha, getVisibilityOptions, parseVisibilityToToggles, serializeOptionsToVisibility, serializeTogglesToVisibility} from '../utils/visibility';
+import {generateVisibilityMessage, getVisibilityOptions, parseVisibilityToToggles, serializeOptionsToVisibility, serializeTogglesToVisibility} from '../utils/visibility';
 
 export const useVisibilityToggle = (editor, nodeKey, cardConfig) => {
     const isStripeEnabled = cardConfig?.stripeEnabled;
@@ -18,8 +18,8 @@ export const useVisibilityToggle = (editor, nodeKey, cardConfig) => {
     const visibilityOptions = getVisibilityOptions(currentVisibility, {isStripeEnabled});
 
     let visibilityMessage = '';
-    if (isVisibilityActive) {
-        visibilityMessage = isContentVisibilityAlphaEnabled ? generateVisibilityMessageAlpha(currentVisibility) : generateVisibilityMessage(currentVisibility);
+    if (isVisibilityActive && !isContentVisibilityAlphaEnabled) {
+        visibilityMessage = generateVisibilityMessage(currentVisibility);
     }
 
     return {

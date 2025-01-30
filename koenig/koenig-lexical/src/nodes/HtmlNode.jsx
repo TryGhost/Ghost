@@ -31,6 +31,7 @@ export class HtmlNode extends BaseHtmlNode {
         return (
             <KoenigCardWrapper
                 IndicatorIcon={HtmlIndicatorIcon}
+                isVisibilityActive={this.getIsVisibilityActive()}
                 nodeKey={this.getKey()}
                 wrapperStyle="wide"
             >

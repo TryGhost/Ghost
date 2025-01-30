@@ -105,7 +105,8 @@ describe('useVisibilityToggle', () => {
         const {result} = callHook({web: {nonMember: false, memberSegment: ''}, email: {memberSegment: 'status:free,status:-free'}}, {feature: {contentVisibilityAlpha: true}});
         const {visibilityMessage} = result.current;
 
-        expect(visibilityMessage).toBe('Visible to all email recipients');
+        // NOTE: visibility message display has been removed in contentVisibilityAlpha
+        expect(visibilityMessage).toBe('');
     });
 
     it('returns working toggleVisibility function', () => {

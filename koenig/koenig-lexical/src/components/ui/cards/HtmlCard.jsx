@@ -8,14 +8,17 @@ import {sanitizeHtml} from '../../../utils/sanitize-html';
 
 export function HtmlCard({html, updateHtml, isEditing, darkMode, visibilityMessage}) {
     const {cardConfig} = React.useContext(KoenigComposerContext);
-    const isContentVisibilityEnabled = cardConfig?.feature?.contentVisibility || false;
+    const {feature = {}} = cardConfig;
+    const {contentVisibility, contentVisibilityAlpha} = feature;
+
+    const displayVisibilityMessage = contentVisibility && !contentVisibilityAlpha;
 
     return (
         <>
             {isEditing
                 ? (
                     <>
-                        {isContentVisibilityEnabled && <CardVisibilityMessage message={visibilityMessage} />}
+                        {displayVisibilityMessage && <CardVisibilityMessage message={visibilityMessage} />}
                         <HtmlEditor
                             darkMode={darkMode}
                             html={html}
@@ -24,7 +27,7 @@ export function HtmlCard({html, updateHtml, isEditing, darkMode, visibilityMessa
                     </>
                 )
                 : <div>
-                    {isContentVisibilityEnabled && <CardVisibilityMessage message={visibilityMessage} />}
+                    {displayVisibilityMessage && <CardVisibilityMessage message={visibilityMessage} />}
                     <HtmlDisplay html={html} />
                     <div className="absolute inset-0 z-50 mt-0"></div>
                 </div>

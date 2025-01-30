@@ -174,7 +174,6 @@ test.describe('Content Visibility', async () => {
 
         test('toolbar shows settings panel on click', async function () {
             const card = await insertHtmlCard();
-
             await card.getByTestId('edit-html').click();
 
             // settings are visible
@@ -185,18 +184,17 @@ test.describe('Content Visibility', async () => {
 
         test('clicking on edit button transitions card into edit mode', async function () {
             const card = await insertHtmlCard();
-
             await card.getByTestId('edit-html').click();
 
             await expect(card).toHaveAttribute('data-kg-card-editing', 'true');
         });
 
-        test('visibility settings - defaults to show on email and web and all members', async function () {
+        test('visibility settings defaults to show on email and web and all members', async function () {
             const card = await insertHtmlCard();
-
             await card.getByTestId('edit-html').click();
 
             await expect(card.getByTestId('visibility-message')).not.toBeVisible();
+
             await expect(card.getByTestId('visibility-toggle-web-nonMembers')).toBeChecked();
             await expect(card.getByTestId('visibility-toggle-web-freeMembers')).toBeChecked();
             await expect(card.getByTestId('visibility-toggle-web-paidMembers')).toBeChecked();
@@ -204,54 +202,46 @@ test.describe('Content Visibility', async () => {
             await expect(card.getByTestId('visibility-toggle-email-paidMembers')).toBeChecked();
         });
 
-        test('can toggle visibility settings - show to anonymous web is off', async function () {
+        test('can toggle visibility settings ', async function () {
             const card = await insertHtmlCard();
 
             await card.getByTestId('edit-html').click();
             await card.getByTestId('tab-visibility').click();
+
             await card.getByTestId('visibility-toggle-web-nonMembers').click();
-
-            await expect(card.getByTestId('visibility-message')).toContainText('Visible to logged in web, all email recipients');
-        });
-
-        test('can toggle visibility settings - show to web is off', async function () {
-            const card = await insertHtmlCard();
-
-            await card.getByTestId('edit-html').click();
-            await card.getByTestId('tab-visibility').click();
-            await card.getByTestId('visibility-toggle-web-nonMembers').click();
+            await expect(card.getByTestId('visibility-toggle-web-nonMembers')).not.toBeChecked();
             await card.getByTestId('visibility-toggle-web-freeMembers').click();
+            await expect(card.getByTestId('visibility-toggle-web-freeMembers')).not.toBeChecked();
             await card.getByTestId('visibility-toggle-web-paidMembers').click();
-
-            await expect(card.getByTestId('visibility-message')).toContainText('Visible to all email recipients');
-        });
-
-        test('can toggle visibility settings - show on email is off', async function () {
-            const card = await insertHtmlCard();
-
-            await card.getByTestId('edit-html').click();
-            await card.getByTestId('tab-visibility').click();
+            await expect(card.getByTestId('visibility-toggle-web-paidMembers')).not.toBeChecked();
             await card.getByTestId('visibility-toggle-email-freeMembers').click();
+            await expect(card.getByTestId('visibility-toggle-email-freeMembers')).not.toBeChecked();
             await card.getByTestId('visibility-toggle-email-paidMembers').click();
+            await expect(card.getByTestId('visibility-toggle-email-paidMembers')).not.toBeChecked();
 
-            await expect(card.getByTestId('visibility-message')).toContainText('Visible to all web');
+            // change from the beta - visibility message is no longer shown
+            await expect(card.getByTestId('visibility-message')).not.toBeVisible();
         });
 
-        test('can toggle visibility - disable everything', async function () {
+        test('visibility icon is shown when visibility changes from shown-to-all', async function () {
             const card = await insertHtmlCard();
 
+            await expect(page.getByTestId('visibility-indicator')).not.toBeVisible();
+
             await card.getByTestId('edit-html').click();
-            await card.getByTestId('tab-visibility').click();
+            await expect(card).toHaveAttribute('data-kg-card-editing', 'true');
             await card.getByTestId('visibility-toggle-web-nonMembers').click();
-            await card.getByTestId('visibility-toggle-web-freeMembers').click();
-            await card.getByTestId('visibility-toggle-web-paidMembers').click();
-            await card.getByTestId('visibility-toggle-email-freeMembers').click();
-            await card.getByTestId('visibility-toggle-email-paidMembers').click();
 
-            await expect(card.getByTestId('visibility-message')).toContainText('Not visible on web or email');
+            await expect(page.getByTestId('visibility-indicator')).toBeVisible();
+
+            // clicking visibility indicator toggles edit mode
+            await page.getByTestId('visibility-indicator').click();
+            await expect(card).toHaveAttribute('data-kg-card-editing', 'false');
+            await page.getByTestId('visibility-indicator').click();
+            await expect(card).toHaveAttribute('data-kg-card-editing', 'true');
         });
 
-        test('can toggle visibility - member settings hidden when stripe is not enabled', async function () {
+        test('paid member visibility settings hidden when stripe is not enabled', async function () {
             await initialize({page, uri: '/#/?content=false&labs=contentVisibility,contentVisibilityAlpha&stripe=false'});
             const card = await insertHtmlCard();
 

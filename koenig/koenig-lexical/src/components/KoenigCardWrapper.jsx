@@ -1,13 +1,15 @@
 import CardContext from '../context/CardContext';
+import KoenigComposerContext from '../context/KoenigComposerContext';
 import React from 'react';
 import {$getNodeByKey, CLICK_COMMAND, COMMAND_PRIORITY_LOW} from 'lexical';
 import {CardWrapper} from './ui/CardWrapper';
-import {EDIT_CARD_COMMAND, SELECT_CARD_COMMAND} from '../plugins/KoenigBehaviourPlugin';
+import {DESELECT_CARD_COMMAND, EDIT_CARD_COMMAND, SELECT_CARD_COMMAND} from '../plugins/KoenigBehaviourPlugin';
 import {mergeRegister} from '@lexical/utils';
 import {useKoenigSelectedCardContext} from '../context/KoenigSelectedCardContext';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
 const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, children}) => {
+    const {cardConfig} = React.useContext(KoenigComposerContext);
     const [editor] = useLexicalComposerContext();
     const [cardType, setCardType] = React.useState(null);
     const [captionHasFocus, setCaptionHasFocus] = React.useState(null);
@@ -19,6 +21,21 @@ const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, childre
 
     const isSelected = selectedCardKey === nodeKey;
     const isEditing = isSelected && isEditingCard;
+
+    const toggleEditMode = React.useCallback((event) => {
+        event.preventDefault();
+        event.stopPropagation();
+
+        editor.update(() => {
+            const cardNode = $getNodeByKey(nodeKey);
+
+            if (cardNode?.hasEditMode?.() && !isEditing) {
+                editor.dispatchCommand(EDIT_CARD_COMMAND, {cardKey: nodeKey, focusEditor: true});
+            } else if (isEditing) {
+                editor.dispatchCommand(DESELECT_CARD_COMMAND, {cardKey: nodeKey, focusEditor: true});
+            }
+        });
+    }, [editor, isEditing, nodeKey]);
 
     React.useLayoutEffect(() => {
         editor.getEditorState().read(() => {
@@ -127,6 +144,14 @@ const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, childre
         };
     }, [editor, isSelected, isEditing, nodeKey, containerRef]);
 
+    let isVisibilityActive = false;
+    if (cardConfig?.feature?.contentVisibilityAlpha) {
+        editor.getEditorState().read(() => {
+            const cardNode = $getNodeByKey(nodeKey);
+            isVisibilityActive = cardNode?.getIsVisibilityActive?.();
+        });
+    }
+
     return (
         <CardContext.Provider value={{
             isSelected,
@@ -143,11 +168,14 @@ const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, childre
                 ref={containerRef}
                 cardType={cardType}
                 cardWidth={width}
+                feature={cardConfig?.feature}
                 IndicatorIcon={IndicatorIcon}
                 isDragging={isDragging}
                 isEditing={isEditing}
                 isSelected={isSelected}
+                isVisibilityActive={isVisibilityActive}
                 wrapperStyle={wrapperStyle}
+                onIndicatorClick={toggleEditMode}
             >
                 {children}
             </CardWrapper>
