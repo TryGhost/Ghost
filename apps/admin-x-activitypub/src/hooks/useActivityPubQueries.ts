@@ -7,7 +7,8 @@ import {
     Actor,
     type GetAccountFollowsResponse,
     type Profile,
-    type SearchResults
+    type SearchResults,
+    FollowAccount
 } from '../api/activitypub';
 import {Activity} from '../components/activities/ActivityItem';
 import {
@@ -229,6 +230,13 @@ export function useUnfollow(handle: string, onSuccess: () => void, onError: () =
                 return currentFollowing.filter(item => item.id !== unfollowedActor.id);
             });
 
+            queryClient.setQueryData(['follows:index:following'], (currentFollowing?: FollowAccount[]) => {
+                if (!currentFollowing) {
+                    return currentFollowing
+                }
+                return currentFollowing.filter(item => item.id !== unfollowedActor.id);
+            });
+
             queryClient.setQueryData(['followingCount:index'], (currentFollowingCount?: number) => {
                 if (!currentFollowingCount) {
                     return 0;
@@ -267,6 +275,8 @@ export function useFollow(handle: string, onSuccess: () => void, onError: () => 
                 }
                 return [followedActor].concat(currentFollowing);
             });
+
+            queryClient.invalidateQueries(['follows:index:following']);
 
             queryClient.setQueryData(['followingCount:index'], (currentFollowingCount?: number) => {
                 if (!currentFollowingCount) {
