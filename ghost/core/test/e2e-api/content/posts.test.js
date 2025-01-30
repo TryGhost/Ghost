@@ -430,4 +430,20 @@ describe('Posts Content API', function () {
             assert(!query.sql.includes('*'), 'Query should not select *');
         }
     });
+
+    it('Strips out gated blocks not viewable by anonymous viewers ', async function () {
+        const post = await models.Post.add({
+            title: 'title',
+            status: 'published',
+            slug: 'gated-blocks',
+            lexical: JSON.stringify({root: {children: [{type: 'html',version: 1,html: '<p>Visible to free/paid members</p>',visibility: {web: {nonMember: false,memberSegment: 'status:free,status:-free'},email: {memberSegment: ''}}},{type: 'html',version: 1,html: '<p>Visible to anonymous viewers</p>',visibility: {web: {nonMember: true,memberSegment: ''},email: {memberSegment: ''}}},{children: [],direction: null,format: '',indent: 0,type: 'paragraph',version: 1}],direction: null,format: '',indent: 0,type: 'root',version: 1}})
+        }, {context: {internal: true}});
+
+        const response = await agent
+            .get(`posts/${post.id}/`)
+            .expectStatus(200);
+
+        assert.doesNotMatch(response.body.posts[0].html, /Visible to free\/paid members/);
+        assert.match(response.body.posts[0].html, /Visible to anonymous viewers/);
+    });
 });
