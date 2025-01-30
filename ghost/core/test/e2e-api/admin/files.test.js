@@ -29,7 +29,7 @@ describe('Files API', function () {
             .attach('file', path.join(__dirname, '/../../utils/fixtures/images/loadingcat_square.gif'))
             .expect(201);
 
-        res.body.files[0].url.should.match(new RegExp(`${config.get('url')}/content/files/\\d+/\\d+/loadingcat_square.gif`));
+        res.body.files[0].url.should.match(new RegExp(`${config.get('url')}/content/files/\\d+/\\d+/loadingcat_square-\\w{16}\\.gif`));
         res.body.files[0].ref.should.equal('934203942');
 
         files.push(res.body.files[0].url.replace(config.get('url'), ''));
