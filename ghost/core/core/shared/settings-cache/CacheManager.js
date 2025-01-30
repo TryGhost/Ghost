@@ -65,7 +65,7 @@ class CacheManager {
 
         if (override) {
             cacheEntry.value = override.value;
-            cacheEntry.override = true;
+            cacheEntry.is_read_only = true;
         }
 
         if (!cacheEntry) {
