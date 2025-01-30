@@ -182,7 +182,7 @@ p.gh-members-list-email {
 .gh-member-actions-menu {
     top: calc(100% + 6px);
     left: auto;
-    right: 10px;
+    right: 0;
 }
 
 .gh-member-actions-menu.fade-out {
