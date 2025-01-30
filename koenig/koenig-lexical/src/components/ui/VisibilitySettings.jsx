@@ -102,13 +102,13 @@ export function VisibilitySettingsAlpha({visibilityOptions, toggleVisibility}) {
         });
 
         return (
-            <>
-                <p key={group.key} className="text-sm font-bold tracking-normal text-grey-900 dark:text-grey-300">{group.label}</p>
+            <div key={group.key} className="flex flex-col gap-3">
+                <p className="text-sm font-bold tracking-normal text-grey-900 dark:text-grey-300">{group.label}</p>
                 {toggles}
                 {index < visibilityOptions.length - 1 && (
                     <hr className="not-kg-prose my-2 block border-t-grey-300 dark:border-t-grey-900" />
                 )}
-            </>
+            </div>
         );
     });
 
