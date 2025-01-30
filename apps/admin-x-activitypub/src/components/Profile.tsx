@@ -18,6 +18,7 @@ import {handleViewContent} from '../utils/content-handlers';
 import APAvatar from './global/APAvatar';
 import ActivityItem from './activities/ActivityItem';
 import FeedItem from './feed/FeedItem';
+import FollowButton from './global/FollowButton';
 import MainNavigation from './navigation/MainNavigation';
 import Separator from './global/Separator';
 import ViewProfileModal from './modals/ViewProfileModal';
@@ -211,6 +212,12 @@ const FollowingTab: React.FC = () => {
                                         <div className='text-sm'>{account.handle}</div>
                                     </div>
                                 </div>
+                                <FollowButton
+                                    className='ml-auto'
+                                    following={account.isFollowing}
+                                    handle={account.handle}
+                                    type='secondary'
+                                />
                             </ActivityItem>
                             {index < accounts.length - 1 && <Separator />}
                         </React.Fragment>
@@ -253,6 +260,12 @@ const FollowersTab: React.FC = () => {
                                         <div className='text-sm'>{account.handle}</div>
                                     </div>
                                 </div>
+                                <FollowButton
+                                    className='ml-auto'
+                                    following={account.isFollowing}
+                                    handle={account.handle}
+                                    type='secondary'
+                                />
                             </ActivityItem>
                             {index < accounts.length - 1 && <Separator />}
                         </React.Fragment>

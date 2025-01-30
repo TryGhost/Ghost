@@ -57,17 +57,15 @@ const AccountSearchResultItem: React.FC<AccountSearchResultItemProps> = ({accoun
                 name: account.name,
                 handle: account.handle
             }}/>
-            <div>
-                <div className='text-grey-600'>
-                    <span className='font-semibold text-black'>{account.name} </span>{account.handle}
-                </div>
-                <div className='text-sm'>{new Intl.NumberFormat().format(account.followerCount)} followers</div>
+            <div className='flex flex-col'>
+                <span className='font-semibold text-black'>{account.name}</span>
+                <span className='text-sm text-grey-700'>{account.handle}</span>
             </div>
             <FollowButton
                 className='ml-auto'
                 following={account.followedByMe}
                 handle={account.handle}
-                type='link'
+                type='secondary'
                 onFollow={onFollow}
                 onUnfollow={onUnfollow}
             />
@@ -122,17 +120,15 @@ const SuggestedProfile: React.FC<SuggestedProfileProps> = ({profile, update}) =>
             }}
         >
             <APAvatar author={profile.actor}/>
-            <div>
-                <div className='text-grey-600'>
-                    <span className='font-semibold text-black'>{profile.actor.name} </span>{profile.handle}
-                </div>
-                <div className='text-sm'>{new Intl.NumberFormat().format(profile.followerCount)} followers</div>
+            <div className='flex flex-col'>
+                <span className='font-semibold text-black'>{profile.actor.name}</span>
+                <span className='text-sm text-grey-700'>{profile.handle}</span>
             </div>
             <FollowButton
                 className='ml-auto'
                 following={profile.isFollowing}
                 handle={profile.handle}
-                type='link'
+                type='secondary'
                 onFollow={onFollow}
                 onUnfollow={onUnfollow}
             />
