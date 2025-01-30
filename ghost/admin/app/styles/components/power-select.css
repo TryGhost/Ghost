@@ -308,14 +308,23 @@
     margin: 2px;
 }
 
+.ember-power-select-trigger {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-height: 33px;
+}
+
 .ember-power-select-status-icon {
     position: absolute;
-    top: 13px;
-    right: 13px;
+    right: 12px;
+    /* Calculate vertical center position: 50% - (icon height + border width) / 2 */
+    top: calc(50% - 4px);
     border: solid var(--midlightgrey);
     border-width: 0 1px 1px 0;
     padding: 3px;
     transform: rotate(45deg);
+    pointer-events: none;
 }
 
 .ember-basic-dropdown-trigger[aria-expanded="true"] .ember-power-select-status-icon {
