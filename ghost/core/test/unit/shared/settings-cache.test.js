@@ -138,6 +138,17 @@ describe('UNIT: settings cache', function () {
         }});
     });
 
+    it('handles multiple settingsOverrides correctly', function () {
+        cache = createCacheManager({
+            setting1: false,
+            setting2: 'test'
+        });
+        cache.set('setting1', {value: true});
+        cache.set('setting2', {value: 'original'});
+        should(cache.get('setting1')).eql(false);
+        should(cache.get('setting2')).eql('test');
+    });
+
     it('.getPublic() correctly filters and formats public values', function () {
         cache.set('key1', {value: 'something'});
         cache.set('title', {value: 'hello world'});
