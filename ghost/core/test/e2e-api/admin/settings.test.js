@@ -681,5 +681,25 @@ describe('Settings API', function () {
                     etag: anyEtag
                 });
         });
+
+        it('prevents modification of overridden settings via API', async function () {
+            await agent.put('settings/')
+                .body({
+                    settings: [{
+                        key: 'email_track_clicks',
+                        value: true
+                    }]
+                })
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    settings: matchSettingsArray(CURRENT_SETTINGS_COUNT)
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    'content-length': anyContentLength,
+                    etag: anyEtag
+                });
+        });
     });
 });
+
