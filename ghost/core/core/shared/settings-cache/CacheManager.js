@@ -19,7 +19,7 @@ class CacheManager {
     constructor({publicSettings}) {
         // settingsCache holds cached settings, keyed by setting.key, contains the JSON version of the model
         this.settingsCache;
-        this.settingsOverrides;
+        this.settingsOverrides = {};
         this.publicSettings = publicSettings;
         this.calculatedFields = [];
 
