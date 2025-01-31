@@ -3,9 +3,14 @@ const debug = require('@tryghost/debug')('frontend');
 
 function fixAnyNonStandardChars(pathOrUrl) {
     let path = pathOrUrl;
-    try { path = new URL(pathOrUrl).pathname; } catch {}
     let origin = '';
-    try { origin = new URL(pathOrUrl).origin; } catch {}
+
+    try { 
+        path = new URL(pathOrUrl).pathname; 
+        origin = new URL(pathOrUrl).origin; 
+    } catch { 
+        /* no problem, just means the existing pathOrUrl is not a URL */ 
+    }
 
     let returnString = pathOrUrl;
 
