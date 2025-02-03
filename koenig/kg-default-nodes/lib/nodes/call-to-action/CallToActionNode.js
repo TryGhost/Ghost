@@ -1,7 +1,9 @@
 // eslint-disable-next-line ghost/filenames/match-exported-class
 import {generateDecoratorNode} from '../../generate-decorator-node';
 
-export class CallToActionNode extends generateDecoratorNode({nodeType: 'call-to-action',
+export class CallToActionNode extends generateDecoratorNode({
+    nodeType: 'call-to-action',
+    hasVisibility: true,
     properties: [
         {name: 'layout', default: 'minimal'},
         {name: 'textValue', default: '', wordCount: true},
@@ -14,8 +16,8 @@ export class CallToActionNode extends generateDecoratorNode({nodeType: 'call-to-
         {name: 'backgroundColor', default: 'grey'},
         {name: 'hasImage', default: false},
         {name: 'imageUrl', default: ''}
-    ]}
-) {
+    ]
+}) {
     /* overrides */
 }
 

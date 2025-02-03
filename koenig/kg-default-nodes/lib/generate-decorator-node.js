@@ -1,6 +1,6 @@
 import {KoenigDecoratorNode} from './KoenigDecoratorNode';
 import readTextContent from './utils/read-text-content';
-import {ALL_MEMBERS_SEGMENT, usesOldVisibilityFormat} from './utils/visibility';
+import {ALL_MEMBERS_SEGMENT, buildDefaultVisibility, migrateOldVisibilityFormat, usesOldVisibilityFormat} from './utils/visibility';
 /**
  * Validates the required arguments passed to `generateDecoratorNode`
 */
@@ -36,9 +36,10 @@ function validateArguments(nodeType, properties) {
  *
  * @param {string} nodeType – The node's type (must be unique)
  * @param {DecoratorNodeProperty[]} properties - An array of properties for the generated class
+ * @param {boolean} hasVisibility - Whether to add a visibility property to the node
  * @returns {Object} - The generated class.
  */
-export function generateDecoratorNode({nodeType, properties = [], version = 1}) {
+export function generateDecoratorNode({nodeType, properties = [], version = 1, hasVisibility = false}) {
     validateArguments(nodeType, properties);
 
     // Adds a `privateName` field to the properties for convenience (e.g. `__name`):
@@ -46,6 +47,18 @@ export function generateDecoratorNode({nodeType, properties = [], version = 1}) 
     properties = properties.map((prop) => {
         return {...prop, privateName: `__${prop.name}`};
     });
+
+    // Adds `visibility` property to the properties array if `hasVisibility` is true
+    // uses a getter for `default` to avoid problems with mutation of nested objects
+    if (hasVisibility) {
+        properties.push({
+            name: 'visibility',
+            get default() {
+                return buildDefaultVisibility();
+            },
+            privateName: '__visibility'
+        });
+    }
 
     class GeneratedDecoratorNode extends KoenigDecoratorNode {
         constructor(data = {}, key) {
@@ -133,6 +146,12 @@ export function generateDecoratorNode({nodeType, properties = [], version = 1}) 
          */
         static importJSON(serializedNode) {
             const data = {};
+
+            // migrate older nodes that were saved with an earlier version of the visibility format
+            const visibility = serializedNode.visibility;
+            if (visibility && usesOldVisibilityFormat(visibility)) {
+                migrateOldVisibilityFormat(visibility);
+            }
 
             properties.forEach((prop) => {
                 data[prop.name] = serializedNode[prop.name];

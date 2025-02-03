@@ -1,7 +1,5 @@
 import {utils} from '@tryghost/kg-default-nodes';
 
-const DEFAULT_VISIBILITY = utils.visibility.DEFAULT_VISIBILITY;
-
 export function parseVisibilityToToggles(visibility) {
     return {
         web: {
@@ -45,7 +43,8 @@ export function serializeTogglesToVisibility(toggles) {
 }
 
 // used for building UI
-export function getVisibilityOptions(visibility = DEFAULT_VISIBILITY, {isStripeEnabled = true} = {}) {
+export function getVisibilityOptions(visibility, {isStripeEnabled = true} = {}) {
+    visibility = visibility || utils.visibility.buildDefaultVisibility();
     const toggles = parseVisibilityToToggles(visibility);
 
     // use arrays to ensure consistent order when using to build UI

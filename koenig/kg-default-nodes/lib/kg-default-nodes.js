@@ -63,8 +63,11 @@ export * from './nodes/TKNode';
 export * from './nodes/at-link/index.js';
 export * from './nodes/zwnj/ZWNJNode';
 
+// export utility functions that are useful in other packages or tests
 import * as visibilityUtils from './utils/visibility';
+import {generateDecoratorNode} from './generate-decorator-node.js';
 export const utils = {
+    generateDecoratorNode,
     visibility: visibilityUtils
 };
 

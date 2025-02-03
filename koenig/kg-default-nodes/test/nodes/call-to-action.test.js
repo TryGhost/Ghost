@@ -1,8 +1,6 @@
 const {dom} = require('../test-utils');
-
 const {createHeadlessEditor} = require('@lexical/headless');
-
-const {CallToActionNode, $isCallToActionNode} = require('../../');
+const {CallToActionNode, $isCallToActionNode, utils} = require('../../');
 
 const editorNodes = [CallToActionNode];
 
@@ -65,6 +63,7 @@ describe('CallToActionNode', function () {
             callToActionNode.backgroundColor.should.equal(dataset.backgroundColor);
             callToActionNode.hasImage.should.equal(dataset.hasImage);
             callToActionNode.imageUrl.should.equal(dataset.imageUrl);
+            callToActionNode.visibility.should.deepEqual(utils.visibility.buildDefaultVisibility());
         }));
 
         it('has setters for all properties', editorTest(function () {
@@ -108,9 +107,31 @@ describe('CallToActionNode', function () {
 
             callToActionNode.hasImage.should.equal(false);
             callToActionNode.hasImage = true;
+            callToActionNode.hasImage.should.equal(true);
 
             callToActionNode.imageUrl.should.equal('');
             callToActionNode.imageUrl = 'http://blog.com/image1.jpg';
+            callToActionNode.imageUrl.should.equal('http://blog.com/image1.jpg');
+
+            callToActionNode.visibility.should.deepEqual(utils.visibility.buildDefaultVisibility());
+            callToActionNode.visibility = {
+                web: {
+                    nonMember: false,
+                    memberSegment: ''
+                },
+                email: {
+                    memberSegment: ''
+                }
+            };
+            callToActionNode.visibility.should.deepEqual({
+                web: {
+                    nonMember: false,
+                    memberSegment: ''
+                },
+                email: {
+                    memberSegment: ''
+                }
+            });
         }));
 
         it('has getDataset() convenience method', editorTest(function () {
@@ -118,7 +139,8 @@ describe('CallToActionNode', function () {
             const callToActionNodeDataset = callToActionNode.getDataset();
 
             callToActionNodeDataset.should.deepEqual({
-                ...dataset
+                ...dataset,
+                ...{visibility: utils.visibility.buildDefaultVisibility()}
             });
         }));
     });
