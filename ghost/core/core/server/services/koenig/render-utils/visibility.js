@@ -1,7 +1,7 @@
 export const ALL_MEMBERS_SEGMENT = 'status:free,status:-free';
 export const NO_MEMBERS_SEGMENT = '';
 
-export const DEFAULT_VISIBILITY = {
+const DEFAULT_VISIBILITY = {
     web: {
         nonMember: true,
         memberSegment: 'status:free,status:-free'
@@ -10,6 +10,11 @@ export const DEFAULT_VISIBILITY = {
         memberSegment: 'status:free,status:-free'
     }
 };
+
+// ensure we always work with a deep copy to avoid accidental constant mutations
+export function buildDefaultVisibility() {
+    return JSON.parse(JSON.stringify(DEFAULT_VISIBILITY));
+}
 
 export function usesOldVisibilityFormat(visibility) {
     return !Object.prototype.hasOwnProperty.call(visibility, 'web')
