@@ -33,7 +33,7 @@ const Inbox: React.FC<InboxProps> = ({layout}) => {
 
     // Initialise activities for the inbox or feed
     const typeFilter = layout === 'inbox'
-        ? ['Create:Article']
+        ? ['Create:Article', 'Announce:Article']
         : ['Create:Note', 'Announce:Note'];
 
     const {getActivitiesQuery, updateActivity} = useActivitiesForUser({
