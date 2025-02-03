@@ -90,11 +90,11 @@ describe('CallToActionNode', function () {
             callToActionNode.buttonUrl = 'http://blog.com/post1';
             callToActionNode.buttonUrl.should.equal('http://blog.com/post1');
 
-            callToActionNode.buttonColor.should.equal('none');
+            callToActionNode.buttonColor.should.equal('');
             callToActionNode.buttonColor = 'red';
             callToActionNode.buttonColor.should.equal('red');
 
-            callToActionNode.buttonTextColor.should.equal('none');
+            callToActionNode.buttonTextColor.should.equal('');
             callToActionNode.buttonTextColor = 'black';
             callToActionNode.buttonTextColor.should.equal('black');
 

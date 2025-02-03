@@ -16,33 +16,7 @@ export class CallToActionNode extends generateDecoratorNode({nodeType: 'call-to-
         {name: 'imageUrl', default: ''}
     ]}
 ) {
-    /* override */
-    constructor({
-        layout,
-        textValue,
-        showButton,
-        buttonText,
-        buttonUrl,
-        buttonColor,
-        buttonTextColor,
-        hasSponsorLabel,
-        backgroundColor,
-        hasImage,
-        imageUrl
-    } = {}, key) {
-        super(key);
-        this.__layout = layout ?? 'minimal';
-        this.__textValue = textValue ?? '';
-        this.__showButton = showButton ?? false;
-        this.__buttonText = buttonText ?? '';
-        this.__buttonUrl = buttonUrl ?? '';
-        this.__buttonColor = buttonColor ?? 'none';
-        this.__buttonTextColor = buttonTextColor ?? 'none';
-        this.__hasSponsorLabel = hasSponsorLabel ?? true;
-        this.__backgroundColor = backgroundColor ?? 'grey';
-        this.__hasImage = hasImage ?? false;
-        this.__imageUrl = imageUrl ?? '';
-    }
+    /* overrides */
 }
 
 export const $createCallToActionNode = (dataset) => {

@@ -62,13 +62,13 @@ const Template = ({display, value, ...args}) => {
         <div>
             <div className="kg-prose">
                 <div className="mx-auto my-8 min-w-[initial] max-w-[740px]">
-                    <CardWrapper 
+                    <CardWrapper
                         IndicatorIcon={VisibilityIndicatorIcon}
                         indicatorPosition={{
                             top: '1.2rem'
                         }}
-                        {...(args.color === 'none' && {wrapperStyle: 'wide'})} 
-                        {...display} 
+                        {...(args.color === '' && {wrapperStyle: 'wide'})}
+                        {...display}
                         {...args}
                     >
                         <CtaCard {...display} {...args} htmlEditor={htmlEditor} />
@@ -77,10 +77,10 @@ const Template = ({display, value, ...args}) => {
             </div>
             {/* <div className="kg-prose dark bg-black px-4 py-8">
                 <div className="mx-auto my-8 min-w-[initial] max-w-[740px]">
-                    <CardWrapper 
-                        IndicatorIcon={VisibilityIndicatorIcon} 
-                        {...(args.color === 'none' && {wrapperStyle: 'wide'})} 
-                        {...display} 
+                    <CardWrapper
+                        IndicatorIcon={VisibilityIndicatorIcon}
+                        {...(args.color === 'none' && {wrapperStyle: 'wide'})}
+                        {...display}
                         {...args}
                     >
                         <CtaCard {...display} {...args} htmlEditor={htmlEditor} />
