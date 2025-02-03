@@ -59,7 +59,6 @@ export class CalloutNode extends BaseCalloutNode {
 
     getDataset() {
         const dataset = super.getDataset();
-
         // client-side only data properties such as nested editors
         const self = this.getLatest();
         dataset.calloutTextEditor = self.__calloutTextEditor;

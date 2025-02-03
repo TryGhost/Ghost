@@ -20,6 +20,87 @@ test.describe('Call To Action Card', async () => {
         await page.close();
     });
 
+    test('can import serialized CTA card nodes', async function () {
+        const contentParam = encodeURIComponent(JSON.stringify({
+            root: {
+                children: [{
+                    type: 'call-to-action',
+                    backgroundColor: 'green',
+                    buttonColor: '#F0F0F0',
+                    buttonText: 'Get access now',
+                    buttonTextColor: '#000000',
+                    buttonUrl: 'http://someblog.com/somepost',
+                    hasImage: true,
+                    hasSponsorLabel: true,
+                    imageUrl: '/content/images/2022/11/koenig-lexical.jpg',
+                    layout: 'minimal',
+                    showButton: true,
+                    textValue: '<p><span style="white-space: pre-wrap;">This is a new CTA Card.</span></p>'
+                }],
+                direction: null,
+                format: '',
+                indent: 0,
+                type: 'root',
+                version: 1
+            }
+        }));
+
+        await initialize({page, uri: `/#/?content=${contentParam}`});
+        const ctaCardHtml = html`
+<div data-lexical-decorator="true" contenteditable="false" data-koenig-dnd-draggable="true" data-koenig-dnd-droppable="true">
+    <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="call-to-action">
+        <div data-cta-layout="minimal">
+            <div>
+                <p data-testid="sponsor-label">Sponsored</p>
+            </div>
+            <div>
+                <div>
+                    <img alt="Placeholder" src="/content/images/2022/11/koenig-lexical.jpg">
+                </div>
+                <div>
+                    <div data-koenig-dnd-disabled="true" data-testid="cta-card-content-editor">
+                        <div data-kg="editor">
+                            <div contenteditable="false" role="textbox" spellcheck="true" data-lexical-editor="true" aria-autocomplete="none" aria-readonly="true">
+                                <p dir="ltr">
+                                    <span data-lexical-text="true">This is a new CTA Card.</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div data-test-cta-button-current-url="http://someblog.com/somepost">
+                        <button data-testid="cta-button" type="button">
+                            <span data-testid="cta-button-span">Get access now</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div></div>
+        </div>
+        <div data-kg-card-toolbar="button">
+            <ul>
+                <li>
+                    <button aria-label="Edit" data-kg-active="false" data-testid="edit-button-card" type="button">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="m14.2 4.3 5.5 5.5m-11 11L1 23l2.2-7.7L16.856 1.644a2.2 2.2 0 0 1 3.11 0l2.39 2.39a2.2 2.2 0 0 1 0 3.11L8.7 20.8Z"></path>
+                        </svg>
+                    </button>
+                </li>
+                <li></li>
+                <li>
+                    <button aria-label="Save as snippet" data-kg-active="false" data-testid="create-snippet" type="button">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M22 13.667V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h9.667M22 13.667 13.667 22M22 13.667h-6.333a2 2 0 0 0-2 2V22"></path>
+                        </svg>
+                    </button>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+`;
+        await assertHTML(page, ctaCardHtml, {ignoreCardContents: true});
+    });
+
     test('renders CTA Card', async function () {
         await focusEditor(page);
         await insertCard(page, {cardName: 'call-to-action'});

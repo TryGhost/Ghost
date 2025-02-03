@@ -21,6 +21,7 @@ export const CallToActionNodeComponent = ({
     textValue,
     buttonColor,
     htmlEditor,
+    htmlEditorInitialState,
     buttonTextColor
 }) => {
     const [editor] = useLexicalComposerContext();
@@ -108,6 +109,10 @@ export const CallToActionNodeComponent = ({
         });
     };
 
+    React.useEffect(() => {
+        htmlEditor.setEditable(isEditing);
+    }, [isEditing, htmlEditor]);
+
     return (
         <>
             <CtaCard
@@ -121,6 +126,7 @@ export const CallToActionNodeComponent = ({
                 hasImage={hasImage}
                 hasSponsorLabel={hasSponsorLabel}
                 htmlEditor={htmlEditor}
+                htmlEditorInitialState={htmlEditorInitialState}
                 imageSrc={imageUrl}
                 imageUploader={imageUploader}
                 isEditing={isEditing}
