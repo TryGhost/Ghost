@@ -179,7 +179,6 @@ export default class SigninPage extends React.Component {
                             onLoad={() => this.setState({captchaLoaded: true})}
                             onVerify={token => this.setState({token: token}, this.doSignin)}
                             ref={this.captchaRef}
-                            id="hcaptcha-signin"
                         />
                     )}
                 </div>
