@@ -241,8 +241,8 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                 {object && (
                     <div className={`group/article relative -mx-6 -my-px cursor-pointer rounded-lg p-6 pb-[18px]`} data-layout='feed' data-object-id={object.id} onClick={onClick}>
                         {(type === 'Announce') && <div className='z-10 mb-2 flex items-center gap-2 text-grey-700'>
-                            <div><Icon colorClass='text-grey-700' name='reload' size={'sm'}></Icon></div>
-                            <span><span className='hover:underline' title={getUsername(actor)} onClick={e => handleProfileClick(actor, e)}>{actor.name}</span> reposted</span>
+                            <div><Icon colorClass='text-grey-700 shrink-0' name='reload' size={'sm'}></Icon></div>
+                            <span className='flex min-w-0 items-center gap-1'><span className='truncate break-all hover:underline' title={getUsername(actor)} onClick={e => handleProfileClick(actor, e)}>{actor.name}</span> reposted</span>
                         </div>}
                         <div className={`border-1 flex flex-col gap-2.5`} data-test-activity>
                             <div className='relative z-30 flex min-w-0 items-center gap-3'>
@@ -250,13 +250,13 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                 <div className='flex min-w-0 flex-col gap-0.5'>
                                     <span className='min-w-0 truncate break-all font-semibold leading-[normal] hover:underline'
                                         data-test-activity-heading
-                                        onClick={e => handleProfileClick(actor, e)}
+                                        onClick={e => handleProfileClick(author, e)}
                                     >
                                         {author.name}
                                     </span>
                                     <div className='flex w-full text-grey-700'>
                                         <span className='truncate leading-tight hover:underline'
-                                            onClick={e => handleProfileClick(actor, e)}
+                                            onClick={e => handleProfileClick(author, e)}
                                         >
                                             {getUsername(author)}
                                         </span>
@@ -418,10 +418,10 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                 <span className='min-w-0 truncate break-all font-semibold text-grey-900 hover:underline'
                                     title={getUsername(author)}
                                     data-test-activity-heading
-                                    onClick={e => handleProfileClick(actor, e)}
+                                    onClick={e => handleProfileClick(author, e)}
                                 >{author.name}
                                 </span>
-                                {(type === 'Announce') && <span className='z-10 flex items-center gap-1 text-grey-700'><Icon colorClass='text-grey-700' name='reload' size={'sm'}></Icon><span className='z-10'><span className='hover:underline' title={getUsername(actor)} onClick={e => handleProfileClick(actor, e)}>{actor.name}</span> reposted</span></span>}
+                                {(type === 'Announce') && <span className='z-10 flex items-center gap-1 text-grey-700'><Icon colorClass='text-grey-700 shrink-0' name='reload' size={'sm'}></Icon><span className='hover:underline' title={getUsername(actor)} onClick={e => handleProfileClick(actor, e)}>{actor.name}</span> reposted</span>}
                                 <span className='shrink-0 whitespace-nowrap text-grey-600 before:mr-1 before:content-["·"]' title={`${timestamp}`}>{renderTimestamp(object)}</span>
                             </div>
                             <div className='flex'>
