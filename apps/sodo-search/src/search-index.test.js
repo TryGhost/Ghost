@@ -253,4 +253,88 @@ describe('search index', function () {
         searchResults = searchIndex.search('glenish');
         expect(searchResults.posts.length).toEqual(0);
     });
+
+    test('searching handles #_ characters correctly', async () => {
+        const adminUrl = 'http://localhost:3000';
+        const apiKey = '69010382388f9de5869ad6e558';
+        const searchIndex = new SearchIndex({adminUrl, apiKey, dir: 'ltr', storage: localStorage});
+
+        nock('http://localhost:3000/ghost/api/content')
+            .get('/posts/?key=69010382388f9de5869ad6e558&limit=10000&fields=id%2Cslug%2Ctitle%2Cexcerpt%2Curl%2Cupdated_at%2Cvisibility&order=updated_at%20DESC')
+            .reply(200, {
+                posts: [{
+                    id: 'sounique',
+                    title: '接收電子報 Regisztráljon fizetős',
+                    excerpt: '#many_languages 要是系統發送電子報時遇到永久失敗的情形，English 該帳號將停止接收電子報 Regisztráljon fizetős fiókot  يتطابق  a  المثابرة كل يوم hozzásćzólások írásához あなたのリクエストはこのサイトの管理者に送信されます。Пријавете го овој коментар Dołączdo płatnej społeczności {{publication}}, by zaąćcąć komećantować. vietnamese: Yêu cầu nhà cung cấp dịch vụ email hỗ trợ bengali: নিউরো সার্জন',
+                    url: 'http://localhost/ghost/visting-china-as-a-polyglot/'
+                },
+                {
+                    id: 'sounique2',
+                    title: 'هذا منشور عن السعادة',
+                    excerpt: '#intro هذا منشور عن السعادة. لا يتطابق مع استعلام البحث.',
+                    url: 'http://localhost/ghost/a-post-in-arabic/'
+                },
+                {
+                    id: 'sounique3',
+                    title: '毅力和运气',
+                    excerpt: '_few_languages_ 凭借运气和毅力，Cathy 将通过所有测试。',
+                    url: 'http://localhost/ghost/a-post-in-chinese/'
+                }]
+            })
+            .get('/authors/?key=69010382388f9de5869ad6e558&limit=10000&fields=id,slug,name,url,profile_image&order=updated_at%20DESC')
+            .reply(200, {
+                authors: [{
+                    id: 'different_uniq',
+                    slug: 'barcelona-author',
+                    name: 'Barcelona Author',
+                    profile_image: 'https://url_to_avatar/barcelona.png',
+                    url: 'http://localhost/ghost/authors/barcelona-author/'
+                }, {
+                    id: 'different_uniq_2',
+                    slug: 'bob',
+                    name: 'Bob',
+                    profile_image: 'https://url_to_avatar/barcelona.png',
+                    url: 'http://localhost/ghost/authors/bob/'
+                }]
+            })
+            .get('/tags/?key=69010382388f9de5869ad6e558&&limit=10000&fields=id,slug,name,url&order=updated_at%20DESC&filter=visibility%3Apublic')
+            .reply(200, {
+                tags: [{
+                    id: 'uniq_tag',
+                    slug: 'barcelona-tag',
+                    name: 'Barcelona Tag',
+                    url: 'http://localhost/ghost/tags/barcelona-tag/'
+                }]
+            });
+            
+        await searchIndex.init();
+
+        let searchResults = searchIndex.search('#many');
+        expect(searchResults.posts.length).toEqual(1);
+        expect(searchResults.posts[0].url).toEqual('http://localhost/ghost/visting-china-as-a-polyglot/');
+
+        searchResults = searchIndex.search('_few_languages');
+        expect(searchResults.posts.length).toEqual(1);
+        expect(searchResults.posts[0].url).toEqual('http://localhost/ghost/a-post-in-chinese/');
+
+        
+        searchResults = searchIndex.search('_languages');
+        // The expected result from the user perspective is to get 2 docs back, like this:
+        // 
+        // expect(searchResults.posts.length).toEqual(2);
+        // expect(searchResults.posts[0].url).toEqual('http://localhost/ghost/visting-china-as-a-polyglot/');
+        // expect(searchResults.posts[1].url).toEqual('http://localhost/ghost/a-post-in-chinese/');
+        // 
+        // However, because right now the index is built with forward tokenization
+        // we won't be able to find this, since _languages doesn't appear from the start of any token.
+        // This seems like performance/correctness tradeoff.
+        // TODO: discuss if it's worth changing forward to full tokenization
+        expect(searchResults.posts.length).toEqual(0);
+
+        searchResults = searchIndex.search('#happy');
+        expect(searchResults.posts.length).toEqual(0);
+
+        searchResults = searchIndex.search('_wrong');
+        expect(searchResults.posts.length).toEqual(0);
+    });
 });
