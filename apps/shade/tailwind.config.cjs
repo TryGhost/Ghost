@@ -115,6 +115,15 @@ module.exports = {
             'fira-mono': 'Fira Mono',
             'jetbrains-mono': 'JetBrains Mono'
         },
+        letterSpacing: {
+            tightest: '-.05em',
+            tighter: '-.025em',
+            tight: '-.01em',
+            normal: '0',
+            wide: '.01em',
+            wider: '.025em',
+            widest: '.5em'
+        },
         boxShadow: {
             DEFAULT: '0 0 1px rgba(0,0,0,.05), 0 5px 18px rgba(0,0,0,.08)',
             xs: '0 0 1px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.03), 0 8px 10px -12px rgba(0,0,0,.1)',
@@ -288,7 +297,7 @@ module.exports = {
                 max: 'max-content',
                 fit: 'fit-content',
                 prose: '65ch',
-                page: '128rem'
+                page: '148rem'
             },
             borderRadius: {
                 sm: 'calc(var(--radius) - 4px)',
@@ -306,16 +315,31 @@ module.exports = {
                 xs: '1.2rem',
                 sm: '1.3rem',
                 md: '1.4rem',
-                lg: '1.65rem',
-                xl: '2rem',
-                '2xl': '2.4rem',
-                '3xl': '3.2rem',
-                '4xl': '3.6rem',
-                '5xl': ['4.2rem', '1.15'],
-                '6xl': ['6rem', '1'],
-                '7xl': ['7.2rem', '1'],
-                '8xl': ['9.6rem', '1'],
-                '9xl': ['12.8rem', '1'],
+                lg: '1.5rem',
+                xl: '1.7rem',
+                '2xl': '2.2rem',
+                '3xl': '2.7rem',
+                '4xl': '3.2rem',
+                '5xl': [
+                    '4.0rem',
+                    '1.15'
+                ],
+                '6xl': [
+                    '5.8rem',
+                    '1'
+                ],
+                '7xl': [
+                    '7.0rem',
+                    '1'
+                ],
+                '8xl': [
+                    '9.6rem',
+                    '1'
+                ],
+                '9xl': [
+                    '12.8rem',
+                    '1'
+                ],
                 inherit: 'inherit'
             },
             lineHeight: {
@@ -364,6 +388,16 @@ module.exports = {
                     3: 'hsl(var(--chart-3))',
                     4: 'hsl(var(--chart-4))',
                     5: 'hsl(var(--chart-5))'
+                },
+                sidebar: {
+                    DEFAULT: 'hsl(var(--sidebar-background))',
+                    foreground: 'hsl(var(--sidebar-foreground))',
+                    primary: 'hsl(var(--sidebar-primary))',
+                    'primary-foreground': 'hsl(var(--sidebar-primary-foreground))',
+                    accent: 'hsl(var(--sidebar-accent))',
+                    'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
+                    border: 'hsl(var(--sidebar-border))',
+                    ring: 'hsl(var(--sidebar-ring))'
                 }
             }
         }

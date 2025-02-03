@@ -1,10 +1,28 @@
+import {
+    type AccountFollowsType,
+    type AccountSearchResult,
+    ActivityPubAPI,
+    ActivityPubCollectionResponse,
+    ActivityThread,
+    Actor,
+    FollowAccount,
+    type GetAccountFollowsResponse,
+    type Profile,
+    type SearchResults
+} from '../api/activitypub';
 import {Activity} from '../components/activities/ActivityItem';
-import {ActivityPubAPI, ActivityPubCollectionResponse, ActivityThread, type Profile, type SearchResults} from '../api/activitypub';
-import {type UseInfiniteQueryResult, useInfiniteQuery, useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
+import {
+    type UseInfiniteQueryResult,
+    useInfiniteQuery,
+    useMutation,
+    useQuery,
+    useQueryClient
+} from '@tanstack/react-query';
 
 let SITE_URL: string;
 
 export type ActivityPubCollectionQueryResult<TData> = UseInfiniteQueryResult<ActivityPubCollectionResponse<TData>>;
+export type AccountFollowsQueryResult = UseInfiniteQueryResult<GetAccountFollowsResponse>;
 
 async function getSiteUrl() {
     if (!SITE_URL) {
@@ -48,17 +66,6 @@ export function useLikedForUser(handle: string) {
         },
         getNextPageParam(prevPage) {
             return prevPage.next;
-        }
-    });
-}
-
-export function useLikedCountForUser(handle: string) {
-    return useQuery({
-        queryKey: [`likedCount:${handle}`],
-        async queryFn() {
-            const siteUrl = await getSiteUrl();
-            const api = createActivityPubAPI(handle, siteUrl);
-            return api.getLikedCount();
         }
     });
 }
@@ -183,17 +190,6 @@ export function useFollowersForUser(handle: string) {
     });
 }
 
-export function useFollowersCountForUser(handle: string) {
-    return useQuery({
-        queryKey: [`followersCount:${handle}`],
-        async queryFn() {
-            const siteUrl = await getSiteUrl();
-            const api = createActivityPubAPI(handle, siteUrl);
-            return api.getFollowersCount();
-        }
-    });
-}
-
 export function useFollowingForUser(handle: string) {
     return useInfiniteQuery({
         queryKey: [`following:${handle}`],
@@ -208,14 +204,49 @@ export function useFollowingForUser(handle: string) {
     });
 }
 
-export function useFollowingCountForUser(handle: string) {
-    return useQuery({
-        queryKey: [`followingCount:${handle}`],
-        async queryFn() {
+export function useUnfollow(handle: string, onSuccess: () => void, onError: () => void) {
+    const queryClient = useQueryClient();
+    return useMutation({
+        async mutationFn(username: string) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
-            return api.getFollowingCount();
-        }
+            return api.unfollow(username);
+        },
+        onSuccess(unfollowedActor, fullHandle) {
+            queryClient.setQueryData([`profile:${fullHandle}`], (currentProfile: unknown) => {
+                if (!currentProfile) {
+                    return currentProfile;
+                }
+                return {
+                    ...currentProfile,
+                    isFollowing: false
+                };
+            });
+
+            queryClient.setQueryData(['following:index'], (currentFollowing?: Actor[]) => {
+                if (!currentFollowing) {
+                    return currentFollowing;
+                }
+                return currentFollowing.filter(item => item.id !== unfollowedActor.id);
+            });
+
+            queryClient.setQueryData(['follows:index:following'], (currentFollowing?: FollowAccount[]) => {
+                if (!currentFollowing) {
+                    return currentFollowing;
+                }
+                return currentFollowing.filter(item => item.id !== unfollowedActor.id);
+            });
+
+            queryClient.setQueryData(['followingCount:index'], (currentFollowingCount?: number) => {
+                if (!currentFollowingCount) {
+                    return 0;
+                }
+                return currentFollowingCount - 1;
+            });
+
+            onSuccess();
+        },
+        onError
     });
 }
 
@@ -244,6 +275,8 @@ export function useFollow(handle: string, onSuccess: () => void, onError: () => 
                 }
                 return [followedActor].concat(currentFollowing);
             });
+
+            queryClient.invalidateQueries(['follows:index:following']);
 
             queryClient.setQueryData(['followingCount:index'], (currentFollowingCount?: number) => {
                 if (!currentFollowingCount) {
@@ -324,6 +357,7 @@ export function useSearchForUser(handle: string, query: string) {
 
     const searchQuery = useQuery({
         queryKey,
+        enabled: query.length > 0,
         async queryFn() {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
@@ -331,7 +365,7 @@ export function useSearchForUser(handle: string, query: string) {
         }
     });
 
-    const updateProfileSearchResult = (id: string, updated: Partial<Profile>) => {
+    const updateAccountSearchResult = (id: string, updated: Partial<AccountSearchResult>) => {
         queryClient.setQueryData(queryKey, (current: SearchResults | undefined) => {
             if (!current) {
                 return current;
@@ -339,8 +373,8 @@ export function useSearchForUser(handle: string, query: string) {
 
             return {
                 ...current,
-                profiles: current.profiles.map((item: Profile) => {
-                    if (item.actor.id === id) {
+                accounts: current.accounts.map((item: AccountSearchResult) => {
+                    if (item.id === id) {
                         return {...item, ...updated};
                     }
                     return item;
@@ -349,7 +383,7 @@ export function useSearchForUser(handle: string, query: string) {
         });
     };
 
-    return {searchQuery, updateProfileSearchResult};
+    return {searchQuery, updateAccountSearchResult};
 }
 
 export function useSuggestedProfiles(handle: string, limit = 3) {
@@ -544,6 +578,31 @@ export function useNoteMutationForUser(handle: string) {
                     })
                 };
             });
+        }
+    });
+}
+
+export function useAccountForUser(handle: string) {
+    return useQuery({
+        queryKey: [`account:${handle}`],
+        async queryFn() {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI(handle, siteUrl);
+            return api.getAccount();
+        }
+    });
+}
+
+export function useAccountFollowsForUser(handle: string, type: AccountFollowsType) {
+    return useInfiniteQuery({
+        queryKey: [`follows:${handle}:${type}`],
+        async queryFn({pageParam}: {pageParam?: string}) {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI(handle, siteUrl);
+            return api.getAccountFollows(type, pageParam);
+        },
+        getNextPageParam(prevPage) {
+            return prevPage.next;
         }
     });
 }

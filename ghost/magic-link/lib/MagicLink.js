@@ -60,12 +60,13 @@ class MagicLink {
      */
     async sendMagicLink(options) {
         this.sentry?.captureMessage?.(`[Magic Link] Generating magic link`, {extra: options});
-        
+
         if (!isEmail(options.email)) {
             throw new BadRequestError({
                 message: tpl(messages.invalidEmail)
             });
         }
+
         const token = await this.tokenProvider.create(options.tokenData);
 
         const type = options.type || 'signin';
