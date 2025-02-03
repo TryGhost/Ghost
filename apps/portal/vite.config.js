@@ -34,7 +34,7 @@ export default defineConfig((config) => {
         ],
         esbuild: {
             loader: 'jsx',
-            include: /src\/.*\.jsx?$/,
+            include: [/src\/.*\.jsx?$/, /__mocks__\/.*\.jsx?$/],
             exclude: []
         },
         optimizeDeps: {
