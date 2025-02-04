@@ -630,6 +630,14 @@ export default class GhPostSettingsMenu extends Component {
     }
 
     @action
+    autosavePost() {
+        this.autosavePostTask.perform().catch((error) => {
+            this.showError(error);
+            this.post.rollbackAttributes();
+        });
+    }
+
+    @action
     deletePostInternal() {
         if (this.deletePost) {
             this.deletePost();

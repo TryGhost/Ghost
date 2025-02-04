@@ -70,7 +70,7 @@
                         {{#unless this.session.user.isContributor}}
                         <div class="form-group">
                             <label for="tag-input">Tags</label>
-                            <GhPsmTagsInput @triggerClass="gh-input-x" @post={{this.post}} @savePostOnChange={{action "savePost"}} @triggerId="tag-input" />
+                            <GhPsmTagsInput @triggerClass="gh-input-x" @post={{this.post}} @savePostOnChange={{action "autosavePost"}} @triggerId="tag-input" />
                         </div>
                         {{/unless}}
 
