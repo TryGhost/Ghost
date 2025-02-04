@@ -223,7 +223,6 @@
     "xml": "1.0.1"
   },
   "optionalDependencies": {
-    "@sentry/profiling-node": "7.119.2",
     "@tryghost/html-to-mobiledoc": "3.1.2",
     "sqlite3": "5.1.7"
   },
