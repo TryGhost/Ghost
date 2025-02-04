@@ -65,7 +65,6 @@
 @import "layouts/post-preview.css";
 @import "layouts/dashboard.css";
 @import "layouts/tiers.css";
-@import "layouts/offers.css";
 @import "layouts/explore.css";
 
 :root {
@@ -890,8 +889,7 @@ input:focus,
     border-color: var(--lightgrey)
 }
 
-.gh-members-help-card,
-.gh-offers-help-card {
+.gh-members-help-card {
     background: var(--dark-main-bg-color);
 }
 
@@ -1027,13 +1025,8 @@ input:focus,
     background: var(--white);
 }
 
-/* Offers */
 .gh-btn-green svg {
     fill: #fff !important;
-}
-
-.gh-offers-help-card .gh-btn {
-    background: var(--whitegrey) !important;
 }
 
 /* Portal */
@@ -1224,7 +1217,6 @@ kbd {
 .gh-posts-placeholder,
 .gh-tags-placeholder,
 .gh-members-empty .gh-members-placeholder,
-.gh-offers-list-cta .discount-bubble,
 .no-posts .gh-members-placeholder {
     fill: var(--midgrey-d2);
 }
@@ -1245,37 +1237,6 @@ kbd {
 
 .explore-permissions {
     background: var(--mainmenu-color-hover-bg);
-}
-
-.gh-offer-type-container {
-    background: var(--lightgrey);
-    border-color: transparent;
-}
-
-.gh-offer-type-container .gh-radio-label {
-    color: var(--black);
-}
-
-.gh-offer-type-container .gh-radio.active .gh-radio-button:before {
-    box-shadow: none;
-    border-color: var(--white);
-}
-
-.gh-offer-type-container .gh-radio:not(:first-child) {
-    border-color: transparent;
-}
-
-.gh-offer-type-container .gh-radio[disabled] {
-    opacity: 1;
-    background: #0e0f11;
-}
-
-.gh-offer-type-container .gh-radio[disabled] .gh-radio-button {
-    opacity: 0.5
-}
-
-.gh-offer-type-container .gh-radio[disabled] .gh-radio-label, .gh-offer-type-container .gh-radio[disabled] .gh-radio-desc {
-    color: #4d4f52;
 }
 
 /* Settings Links */
