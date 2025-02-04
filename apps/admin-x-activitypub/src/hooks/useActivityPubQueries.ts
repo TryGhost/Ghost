@@ -165,6 +165,49 @@ export function useUnlikeMutationForUser(handle: string) {
     });
 }
 
+export function useRepostMutationForUser(handle: string) {
+    const queryClient = useQueryClient();
+    return useMutation({
+        async mutationFn(id: string) {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI(handle, siteUrl);
+            return api.repost(id);
+        },
+        onMutate: (id) => {
+            const previousInbox = queryClient.getQueryData([`inbox:${handle}`]);
+            if (previousInbox) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                queryClient.setQueryData([`inbox:${handle}`], (old?: any[]) => {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    return old?.map((item: any) => {
+                        if (item.object.id === id) {
+                            return {
+                                ...item,
+                                object: {
+                                    ...item.object,
+                                    reposted: true
+                                }
+                            };
+                        }
+                        return item;
+                    });
+                });
+            }
+
+            // This sets the context for the onError handler
+            return {previousInbox};
+        },
+        onError: (_err, _id, context) => {
+            if (context?.previousInbox) {
+                queryClient.setQueryData([`inbox:${handle}`], context?.previousInbox);
+            }
+        },
+        onSettled: () => {
+            queryClient.invalidateQueries({queryKey: [`reposted:${handle}`]});
+        }
+    });
+}
+
 export function useUserDataForUser(handle: string) {
     return useQuery({
         queryKey: [`user:${handle}`],

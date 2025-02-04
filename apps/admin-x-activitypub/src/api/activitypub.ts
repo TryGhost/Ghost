@@ -219,6 +219,11 @@ export class ActivityPubAPI {
         await this.fetchJSON(url, 'POST');
     }
 
+    async repost(id: string): Promise<void> {
+        const url = new URL(`.ghost/activitypub/actions/repost/${encodeURIComponent(id)}`, this.apiUrl);
+        await this.fetchJSON(url, 'POST');
+    }
+
     get activitiesApiUrl() {
         return new URL(`.ghost/activitypub/activities/${this.handle}`, this.apiUrl);
     }
