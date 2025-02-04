@@ -6,10 +6,11 @@ import {
     ActivityThread,
     FollowAccount,
     type GetAccountFollowsResponse,
+    PostType,
     type Profile,
     type SearchResults
 } from '../api/activitypub';
-import {Activity} from '../components/activities/ActivityItem';
+import {Activity} from '@tryghost/admin-x-framework/api/activitypub';
 import {
     type UseInfiniteQueryResult,
     useInfiniteQuery,
@@ -17,6 +18,7 @@ import {
     useQuery,
     useQueryClient
 } from '@tanstack/react-query';
+import {mapPostToActivity} from '../utils/posts';
 
 export type ActivityPubCollectionQueryResult<TData> = UseInfiniteQueryResult<ActivityPubCollectionResponse<TData>>;
 export type AccountFollowsQueryResult = UseInfiniteQueryResult<GetAccountFollowsResponse>;
@@ -63,7 +65,8 @@ const QUERY_KEYS = {
     ) => ['activities', handle, key, options].filter(value => value !== undefined),
     searchResults: (query: string) => ['search_results', query],
     suggestedProfiles: (limit: number) => ['suggested_profiles', limit],
-    thread: (id: string) => ['thread', id]
+    thread: (id: string) => ['thread', id],
+    feed: (handle: string, postType: PostType) => ['feed', handle, postType]
 };
 
 export function useOutboxForUser(handle: string) {
@@ -107,20 +110,20 @@ export function useLikeMutationForUser(handle: string) {
             return api.like(id);
         },
         onMutate: (id) => {
-            // Update the "liked" property of the activity stored in the activities query cache
-            const queryKey = QUERY_KEYS.activities(handle);
+            // Update the "liked" property of the activity stored in the feed query cache
+            const queryKey = QUERY_KEYS.feed(handle, PostType.Note);
 
-            queryClient.setQueriesData(queryKey, (current?: {pages: {data: Activity[]}[]}) => {
+            queryClient.setQueriesData(queryKey, (current?: {pages: {posts: Activity[]}[]}) => {
                 if (current === undefined) {
                     return current;
                 }
 
                 return {
                     ...current,
-                    pages: current.pages.map((page: {data: Activity[]}) => {
+                    pages: current.pages.map((page: {posts: Activity[]}) => {
                         return {
                             ...page,
-                            data: page.data.map((item: Activity) => {
+                            posts: page.posts.map((item: Activity) => {
                                 if (item.object.id === id) {
                                     return {
                                         ...item,
@@ -130,6 +133,7 @@ export function useLikeMutationForUser(handle: string) {
                                         }
                                     };
                                 }
+
                                 return item;
                             })
                         };
@@ -151,20 +155,20 @@ export function useUnlikeMutationForUser(handle: string) {
             return api.unlike(id);
         },
         onMutate: (id) => {
-            // Update the "liked" property of the activity stored in the activities query cache
-            const queryKey = QUERY_KEYS.activities(handle);
+            // Update the "liked" property of the activity stored in the feed query cache
+            const queryKey = QUERY_KEYS.feed(handle, PostType.Note);
 
-            queryClient.setQueriesData(queryKey, (current?: {pages: {data: Activity[]}[]}) => {
+            queryClient.setQueriesData(queryKey, (current?: {pages: {posts: Activity[]}[]}) => {
                 if (current === undefined) {
                     return current;
                 }
 
                 return {
                     ...current,
-                    pages: current.pages.map((page: {data: Activity[]}) => {
+                    pages: current.pages.map((page: {posts: Activity[]}) => {
                         return {
                             ...page,
-                            data: page.data.map((item: Activity) => {
+                            posts: page.posts.map((item: Activity) => {
                                 if (item.object.id === id) {
                                     return {
                                         ...item,
@@ -196,20 +200,20 @@ export function useRepostMutationForUser(handle: string) {
             return api.repost(id);
         },
         onMutate: (id) => {
-            // Update the "reposted" property of the activity stored in the activities query cache
-            const queryKey = QUERY_KEYS.activities(handle);
+            // Update the "reposted" property of the activity stored in the feed query cache
+            const queryKey = QUERY_KEYS.feed(handle, PostType.Note);
 
-            queryClient.setQueriesData(queryKey, (current?: {pages: {data: Activity[]}[]}) => {
+            queryClient.setQueriesData(queryKey, (current?: {pages: {posts: Activity[]}[]}) => {
                 if (current === undefined) {
                     return current;
                 }
 
                 return {
                     ...current,
-                    pages: current.pages.map((page: {data: Activity[]}) => {
+                    pages: current.pages.map((page: {posts: Activity[]}) => {
                         return {
                             ...page,
-                            data: page.data.map((item: Activity) => {
+                            posts: page.posts.map((item: Activity) => {
                                 if (item.object.id === id) {
                                     return {
                                         ...item,
@@ -242,20 +246,20 @@ export function useDerepostMutationForUser(handle: string) {
             return api.derepost(id);
         },
         onMutate: (id) => {
-            // Update the "reposted" property of the activity stored in the activities query cache
-            const queryKey = QUERY_KEYS.activities(handle);
+            // Update the "reposted" property of the activity stored in the feed query cache
+            const queryKey = QUERY_KEYS.feed(handle, PostType.Note);
 
-            queryClient.setQueriesData(queryKey, (current?: {pages: {data: Activity[]}[]}) => {
+            queryClient.setQueriesData(queryKey, (current?: {pages: {posts: Activity[]}[]}) => {
                 if (current === undefined) {
                     return current;
                 }
 
                 return {
                     ...current,
-                    pages: current.pages.map((page: {data: Activity[]}) => {
+                    pages: current.pages.map((page: {posts: Activity[]}) => {
                         return {
                             ...page,
-                            data: page.data.map((item: Activity) => {
+                            posts: page.posts.map((item: Activity) => {
                                 if (item.object.id === id) {
                                     return {
                                         ...item,
@@ -704,21 +708,29 @@ export function useNoteMutationForUser(handle: string) {
                 };
             });
 
-            // Update the activity stored in the activities query cache
-            const activitiesQueryKey = QUERY_KEYS.activities(handle, GET_ACTIVITIES_QUERY_KEY_FEED);
+            // Update the activity stored in the feed query cache
+            const feedQueryKey = QUERY_KEYS.feed(handle, PostType.Note);
 
-            queryClient.setQueriesData(activitiesQueryKey, (current?: {pages: {data: Activity[]}[]}) => {
+            queryClient.setQueriesData(feedQueryKey, (current?: {pages: {posts: Activity[]}[]}) => {
                 if (current === undefined) {
                     return current;
                 }
 
                 return {
                     ...current,
-                    pages: current.pages.map((page: {data: Activity[]}, index: number) => {
+                    pages: current.pages.map((page: {posts: Activity[]}, index: number) => {
                         if (index === 0) {
                             return {
                                 ...page,
-                                data: [activity, ...page.data]
+                                posts: [
+                                    {
+                                        ...activity,
+                                        // Use the object id as the post id as when we switchover to using
+                                        // posts fully we will not have access the activity id
+                                        id: activity.object.id
+                                    },
+                                    ...page.posts
+                                ]
                             };
                         }
 
@@ -755,4 +767,51 @@ export function useAccountFollowsForUser(handle: string, type: AccountFollowsTyp
             return prevPage.next;
         }
     });
+}
+
+export function useFeedForUser(handle: string, postType: PostType) {
+    const queryKey = QUERY_KEYS.feed(handle, postType);
+    const queryClient = useQueryClient();
+
+    const feedQuery = useInfiniteQuery({
+        queryKey,
+        async queryFn({pageParam}: {pageParam?: string}) {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI(handle, siteUrl);
+            return api.getFeed(postType, pageParam).then((response) => {
+                return {
+                    posts: response.posts.map(mapPostToActivity),
+                    next: response.next
+                };
+            });
+        },
+        getNextPageParam(prevPage) {
+            return prevPage.next;
+        }
+    });
+
+    const updateActivity = (id: string, updated: Partial<Activity>) => {
+        queryClient.setQueryData(queryKey, (current: {pages: {posts: Activity[]}[]} | undefined) => {
+            if (!current) {
+                return current;
+            }
+
+            return {
+                ...current,
+                pages: current.pages.map((page: {posts: Activity[]}) => {
+                    return {
+                        ...page,
+                        posts: page.posts.map((item: Activity) => {
+                            if (item.id === id) {
+                                return {...item, ...updated};
+                            }
+                            return item;
+                        })
+                    };
+                })
+            };
+        });
+    };
+
+    return {feedQuery, updateActivity};
 }

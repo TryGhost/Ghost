@@ -76,6 +76,44 @@ export interface GetAccountFollowsResponse {
     next: string | null;
 }
 
+export enum PostType {
+    Article = 1,
+    Note = 2,
+}
+
+export interface Post {
+    id: string;
+    type: PostType;
+    title: string;
+    excerpt: string;
+    content: string;
+    url: string;
+    featureImageUrl: string | null;
+    publishedAt: string;
+    likeCount: number;
+    likedByMe: boolean;
+    replyCount: number;
+    readingTimeMinutes: number;
+    attachments: {
+        type: string;
+        mediaType: string;
+        name: string;
+        url: string;
+    }[];
+    author: Pick<Account, 'id' | 'handle' | 'avatarUrl' | 'name' | 'url'>;
+    repostCount: number;
+    repostedByMe: boolean;
+    repostedBy: Pick<
+        Account,
+        'id' | 'handle' | 'avatarUrl' | 'name' | 'url'
+    > | null;
+}
+
+export interface GetFeedResponse {
+    posts: Post[];
+    next: string | null;
+}
+
 export class ActivityPubAPI {
     constructor(
         private readonly apiUrl: URL,
@@ -431,6 +469,40 @@ export class ActivityPubAPI {
 
         return {
             accounts,
+            next: nextPage
+        };
+    }
+
+    async getFeed(postType: PostType, next?: string): Promise<GetFeedResponse> {
+        const url = new URL(`.ghost/activitypub/feed/${this.handle}`, this.apiUrl);
+
+        url.searchParams.set('type', postType.toString());
+
+        if (next) {
+            url.searchParams.set('next', next);
+        }
+
+        const json = await this.fetchJSON(url);
+
+        if (json === null) {
+            return {
+                posts: [],
+                next: null
+            };
+        }
+
+        if (!('posts' in json)) {
+            return {
+                posts: [],
+                next: null
+            };
+        }
+
+        const posts = Array.isArray(json.posts) ? json.posts : [];
+        const nextPage = 'next' in json && typeof json.next === 'string' ? json.next : null;
+
+        return {
+            posts,
             next: nextPage
         };
     }
