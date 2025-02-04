@@ -8,7 +8,7 @@ import {HtmlCard} from '../components/ui/cards/HtmlCard';
 import {SettingsPanel} from '../components/ui/SettingsPanel.jsx';
 import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
 import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu.jsx';
-import {VisibilitySettings, VisibilitySettingsAlpha} from '../components/ui/VisibilitySettings.jsx';
+import {VisibilitySettings} from '../components/ui/VisibilitySettings.jsx';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import {useVisibilityToggle} from '../hooks/useVisibilityToggle.js';
 
@@ -19,20 +19,14 @@ export function HtmlNodeComponent({nodeKey, html}) {
     const [showSnippetToolbar, setShowSnippetToolbar] = React.useState(false);
 
     const isContentVisibilityEnabled = cardConfig?.feature?.contentVisibility || false;
-    const isContentVisibilityAlphaEnabled = cardConfig?.feature?.contentVisibilityAlpha || false;
 
-    const {visibilityData, visibilityOptions, visibilityMessage, toggleVisibility, updateVisibility} = useVisibilityToggle(editor, nodeKey, cardConfig);
+    const {visibilityOptions, toggleVisibility} = useVisibilityToggle(editor, nodeKey, cardConfig);
 
     const settingsTabs = [
         {id: 'visibility', label: 'Visibility'}
     ];
 
-    let visibilitySettings;
-    if (isContentVisibilityAlphaEnabled) {
-        visibilitySettings = <VisibilitySettingsAlpha toggleVisibility={toggleVisibility} visibilityOptions={visibilityOptions} />;
-    } else {
-        visibilitySettings = <VisibilitySettings isStripeEnabled={cardConfig?.stripeEnabled} updateVisibility={updateVisibility} visibilityData={visibilityData} />;
-    }
+    const visibilitySettings = <VisibilitySettings toggleVisibility={toggleVisibility} visibilityOptions={visibilityOptions} />;
 
     const settingsTabContents = {
         visibility: visibilitySettings
@@ -51,6 +45,7 @@ export function HtmlNodeComponent({nodeKey, html}) {
         editor.dispatchCommand(EDIT_CARD_COMMAND, {cardKey: nodeKey, focusEditor: false});
     };
 
+    // TODO: this isn't used? <HtmlCard> does not have a prop for `onBlur`
     const onBlur = (event) => {
         if (event?.relatedTarget?.className !== 'kg-prose') {
             editor.dispatchCommand(DESELECT_CARD_COMMAND, {cardKey: nodeKey});
@@ -63,10 +58,7 @@ export function HtmlNodeComponent({nodeKey, html}) {
                 darkMode={darkMode}
                 html={html}
                 isEditing={cardContext.isEditing}
-                nodeKey={nodeKey}
-                unsplashConf={cardConfig.unsplash}
                 updateHtml={updateHtml}
-                visibilityMessage={visibilityMessage}
                 onBlur={onBlur}
             />
 

@@ -88,27 +88,6 @@ describe('useVisibilityToggle', () => {
         ]);
     });
 
-    it('calls generateVisibilityMessage with correct arguments', () => {
-        vi.spyOn(visibilityUtils, 'generateVisibilityMessage');
-        callHook();
-        expect(visibilityUtils.generateVisibilityMessage).toHaveBeenCalledWith(DEFAULT_VISIBILITY);
-    });
-
-    it('returns correct visibilityMessage (contentVisibility)', () => {
-        const {result} = callHook({web: {nonMember: false, memberSegment: ''}, email: {memberSegment: 'status:free,status:-free'}});
-        const {visibilityMessage} = result.current;
-
-        expect(visibilityMessage).toBe('Hidden on website');
-    });
-
-    it('returns correct visibilityMessage (contentVisibilityAlpha)', () => {
-        const {result} = callHook({web: {nonMember: false, memberSegment: ''}, email: {memberSegment: 'status:free,status:-free'}}, {feature: {contentVisibilityAlpha: true}});
-        const {visibilityMessage} = result.current;
-
-        // NOTE: visibility message display has been removed in contentVisibilityAlpha
-        expect(visibilityMessage).toBe('');
-    });
-
     it('returns working toggleVisibility function', () => {
         const {result} = callHook();
         const {toggleVisibility} = result.current;

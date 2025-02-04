@@ -57,7 +57,7 @@ export const CardWrapper = React.forwardRef(({
     };
 
     let indicatorIcon;
-    if (feature?.contentVisibilityAlpha && isVisibilityActive) {
+    if (isVisibilityActive) {
         indicatorIcon = (
             <div className="sticky top-0 lg:top-8">
                 <VisibilityIndicator

@@ -70,6 +70,7 @@ export async function assertHTML(
         ignoreInnerSVG = true,
         getBase64FileFormat = true,
         ignoreCardContents = false,
+        ignoreCardSettings = false,
         ignoreCardToolbarContents = false,
         ignoreDragDropAttrs = true,
         ignoreDataTestId = true,
@@ -83,6 +84,7 @@ export async function assertHTML(
         ignoreInnerSVG,
         getBase64FileFormat,
         ignoreCardContents,
+        ignoreCardSettings,
         ignoreCardToolbarContents,
         ignoreDragDropAttrs,
         ignoreDataTestId,
@@ -94,6 +96,7 @@ export async function assertHTML(
         ignoreInnerSVG,
         getBase64FileFormat,
         ignoreCardContents,
+        ignoreCardSettings,
         ignoreCardToolbarContents,
         ignoreDragDropAttrs,
         ignoreDataTestId,
@@ -105,17 +108,6 @@ export async function assertHTML(
 export function prettifyHTML(string, options = {}) {
     let output = string;
 
-    if (options.ignoreClasses) {
-        output = output.replace(/\sclass="([^"]*)"/g, '');
-    }
-
-    if (options.ignoreDataTestId) {
-        output = output.replace(/\sdata-testid="([^"]*)"/g, '');
-    }
-
-    if (options.ignoreInlineStyles) {
-        output = output.replace(/\sstyle="([^"]*)"/g, '');
-    }
     if (options.ignoreInnerSVG) {
         output = output.replace(/<svg[^>]*>.*?<\/svg>/g, '<svg></svg>');
     }
@@ -131,7 +123,8 @@ export function prettifyHTML(string, options = {}) {
     // replace all instances of blob:http with "blob:..."
     output = output.replace(/blob:http[^"]*/g, 'blob:...');
 
-    if (options.ignoreCardContents || options.ignoreCardToolbarContents || options.ignoreCardCaptionContents) {
+    // perform these replacements before class and testid removal so we can use them in selectors
+    if (options.ignoreCardContents || options.ignoreCardToolbarContents || options.ignoreCardCaptionContents || options.ignoreCardSettings) {
         const {document} = (new JSDOM(output)).window;
 
         const querySelectors = [];
@@ -144,11 +137,26 @@ export function prettifyHTML(string, options = {}) {
         if (options.ignoreCardCaptionContents) {
             querySelectors.push('figcaption');
         }
+        if (options.ignoreCardSettings) {
+            querySelectors.push('[data-testid="settings-panel"]');
+        }
 
         document.querySelectorAll(querySelectors.join(', ')).forEach((element) => {
             element.innerHTML = '';
         });
         output = document.body.innerHTML;
+    }
+
+    if (options.ignoreClasses) {
+        output = output.replace(/\sclass="([^"]*)"/g, '');
+    }
+
+    if (options.ignoreDataTestId) {
+        output = output.replace(/\sdata-testid="([^"]*)"/g, '');
+    }
+
+    if (options.ignoreInlineStyles) {
+        output = output.replace(/\sstyle="([^"]*)"/g, '');
     }
 
     return prettier

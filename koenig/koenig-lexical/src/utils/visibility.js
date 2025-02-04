@@ -105,32 +105,3 @@ export function serializeOptionsToVisibility(options) {
         }
     };
 }
-
-export function generateVisibilityMessage(visibility) {
-    const toggles = parseVisibilityToToggles(visibility);
-    const showOnWeb = toggles.web.nonMembers || toggles.web.freeMembers || toggles.web.paidMembers;
-    const showOnEmail = toggles.email.freeMembers || toggles.email.paidMembers;
-
-    let hiddenNewsletter;
-    if (!toggles.email.paidMembers && toggles.email.freeMembers) {
-        hiddenNewsletter = 'paid newsletter';
-    } else if (toggles.email.paidMembers && !toggles.email.freeMembers) {
-        hiddenNewsletter = 'free newsletter';
-    }
-
-    let message = '';
-
-    if (!showOnWeb && !showOnEmail) {
-        message = 'Hidden on website and newsletter';
-    } else if (showOnWeb && !showOnEmail) {
-        message = 'Hidden in newsletter';
-    } else if (showOnWeb && showOnEmail && hiddenNewsletter) {
-        message = `Hidden in ${hiddenNewsletter}`;
-    } else if (!showOnWeb && showOnEmail && !hiddenNewsletter) {
-        message = 'Hidden on website';
-    } else if (!showOnWeb && showOnEmail && hiddenNewsletter) {
-        message = `Hidden on website and ${hiddenNewsletter}`;
-    }
-
-    return message;
-}

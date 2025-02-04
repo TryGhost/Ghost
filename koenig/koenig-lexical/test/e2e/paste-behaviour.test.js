@@ -551,46 +551,11 @@ test.describe('Paste behaviour', async () => {
                                 </div>
                             </div>
                         </div>
-                        <div>
-                            <div draggable="true">
-                                <div>
-                                    <button type="button">Visibility</button>
-                                </div>
-                                <div>
-                                    <label>
-                                        <div><div>Show on web</div></div>
-                                        <div>
-                                            <label id="visibility-show-on-web">
-                                                <input type="checkbox" checked="" />
-                                                <div></div>
-                                            </label>
-                                        </div>
-                                    </label>
-                                    <label>
-                                        <div><div>Show in email newsletter</div></div>
-                                        <div>
-                                            <label id="visibility-show-on-email">
-                                                <input type="checkbox" checked="" />
-                                                <div></div>
-                                            </label>
-                                        </div>
-                                    </label>
-                                    <div>
-                                        <div>Email audience</div>
-                                        <div>
-                                            <button type="button">
-                                                All members
-                                                <svg></svg>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        <div><div draggable="true"></div></div>
                     </div>
                 </div>
                 <p><br /></p>
-            `, {ignoreCardContents: false});
+            `, {ignoreCardContents: false, ignoreCardSettings: true});
         });
     });
 
