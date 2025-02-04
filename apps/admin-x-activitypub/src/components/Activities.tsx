@@ -27,7 +27,8 @@ interface ActivitiesProps {}
 enum ACTIVITY_TYPE {
     CREATE = 'Create',
     LIKE = 'Like',
-    FOLLOW = 'Follow'
+    FOLLOW = 'Follow',
+    ANNOUNCE = 'Announce'
 }
 
 interface GroupedActivity {
@@ -53,6 +54,13 @@ const getExtendedDescription = (activity: GroupedActivity): JSX.Element | null =
                 className='ap-note-content mt-1 line-clamp-2 text-pretty text-grey-700'
             ></div>
         );
+    } else if (activity.type === ACTIVITY_TYPE.ANNOUNCE && !activity.object?.name && activity.object?.content) {
+        return (
+            <div
+                dangerouslySetInnerHTML={{__html: stripHtml(activity.object?.content || '')}}
+                className='ap-note-content mt-1 line-clamp-2 text-pretty text-grey-700'
+            ></div>
+        );
     }
 
     return null;
@@ -65,9 +73,9 @@ const getActivityBadge = (activity: GroupedActivity): NotificationType => {
     case ACTIVITY_TYPE.FOLLOW:
         return 'follow';
     case ACTIVITY_TYPE.LIKE:
-        if (activity.object) {
-            return 'like';
-        }
+        return 'like';
+    case ACTIVITY_TYPE.ANNOUNCE:
+        return 'repost';
     }
 
     return 'like';
@@ -89,6 +97,12 @@ const groupActivities = (activities: Activity[]): GroupedActivity[] => {
             if (activity.object?.id) {
                 // Group likes by the target object
                 groupKey = `like_${activity.object.id}`;
+            }
+            break;
+        case ACTIVITY_TYPE.ANNOUNCE:
+            if (activity.object?.id) {
+                // Group likes by the target object
+                groupKey = `announce_${activity.object.id}`;
             }
             break;
         case ACTIVITY_TYPE.CREATE:
@@ -145,7 +159,9 @@ const getGroupDescription = (group: GroupedActivity): JSX.Element => {
     case ACTIVITY_TYPE.FOLLOW:
         return <>{actorText} started following you</>;
     case ACTIVITY_TYPE.LIKE:
-        return <>{actorText} liked your post <span className='font-semibold'>{group.object?.name || ''}</span></>;
+        return <>{actorText} liked your {group.object?.type === 'Article' ? 'post' : 'note'} <span className='font-semibold'>{group.object?.name || ''}</span></>;
+    case ACTIVITY_TYPE.ANNOUNCE:
+        return <>{actorText} reposted your {group.object?.type === 'Article' ? 'post' : 'note'} <span className='font-semibold'>{group.object?.name || ''}</span></>;
     case ACTIVITY_TYPE.CREATE:
         if (group.object?.inReplyTo && typeof group.object?.inReplyTo !== 'string') {
             let content = stripHtml(group.object.inReplyTo.content || '');
@@ -183,7 +199,7 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
         includeOwn: true,
         includeReplies: true,
         filter: {
-            type: ['Follow', 'Like', `Create:Note`]
+            type: ['Follow', 'Like', `Create:Note`, `Announce:Note`, `Announce:Article`]
         },
         limit: 120,
         key: GET_ACTIVITIES_QUERY_KEY_NOTIFICATIONS
@@ -210,6 +226,14 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
             // Remove follower likes if they are not for our own posts
             .filter((activity) => {
                 if (activity.type === ACTIVITY_TYPE.LIKE && activity.object?.attributedTo?.id !== userProfile?.id) {
+                    return false;
+                }
+
+                return true;
+            })
+            // Remove reposts that are not for our own posts
+            .filter((activity) => {
+                if (activity.type === ACTIVITY_TYPE.ANNOUNCE && activity.object?.attributedTo?.id !== userProfile?.id) {
                     return false;
                 }
 
