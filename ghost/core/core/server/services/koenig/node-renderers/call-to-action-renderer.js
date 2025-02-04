@@ -1,11 +1,12 @@
 import {addCreateDocumentOption} from '../../utils/add-create-document-option';
+import {renderWithVisibility} from '../../utils/visibility';
 
 // TODO - this is a placeholder for the cta card web template
 function ctaCardTemplate(dataset) {
     const backgroundAccent = dataset.backgroundColor === 'accent' ? 'kg-style-accent' : '';
     const buttonAccent = dataset.buttonColor === 'accent' ? 'kg-style-accent' : '';
     const buttonStyle = dataset.buttonColor !== 'accent' ? `background-color: ${dataset.buttonColor};` : '';
-    
+
     return `
         <div class="cta-card ${backgroundAccent}" data-layout="${dataset.layout}" style="background-color: ${dataset.backgroundColor};">
             ${dataset.hasImage ? `<img src="${dataset.imageUrl}" alt="CTA Image">` : ''}
@@ -13,7 +14,7 @@ function ctaCardTemplate(dataset) {
                 ${dataset.textValue}
             </div>
             ${dataset.showButton ? `
-                <a href="${dataset.buttonUrl}" class="kg-cta-button ${buttonAccent}" 
+                <a href="${dataset.buttonUrl}" class="kg-cta-button ${buttonAccent}"
                    style="${buttonStyle} color: ${dataset.buttonTextColor};">
                     ${dataset.buttonText}
                 </a>
@@ -31,7 +32,7 @@ function ctaCardTemplate(dataset) {
 function emailCTATemplate(dataset) {
     const buttonStyle = dataset.buttonColor !== 'accent' ? `background-color: ${dataset.buttonColor};` : '';
     const backgroundStyle = `background-color: ${dataset.backgroundColor};`;
-    
+
     return `
         <div class="cta-card-email" style="${backgroundStyle} padding: 16px; text-align: center; border-radius: 8px;">
             ${dataset.hasImage ? `<img src="${dataset.imageUrl}" alt="CTA Image" style="max-width: 100%; border-radius: 4px;">` : ''}
@@ -39,9 +40,9 @@ function emailCTATemplate(dataset) {
                 ${dataset.textValue}
             </div>
             ${dataset.showButton ? `
-                <a href="${dataset.buttonUrl}" class="cta-button" 
-                   style="display: inline-block; margin-top: 12px; padding: 10px 16px; 
-                          ${buttonStyle} color: ${dataset.buttonTextColor}; text-decoration: none; 
+                <a href="${dataset.buttonUrl}" class="cta-button"
+                   style="display: inline-block; margin-top: 12px; padding: 10px 16px;
+                          ${buttonStyle} color: ${dataset.buttonTextColor}; text-decoration: none;
                           border-radius: 4px;">
                     ${dataset.buttonText}
                 </a>
@@ -80,12 +81,12 @@ export function renderCallToActionNode(node, options = {}) {
 
         emailDiv.innerHTML = emailCTATemplate(dataset, options);
 
-        return {element: emailDiv.firstElementChild};
+        return renderWithVisibility({element: emailDiv.firstElementChild}, node.visibility, options);
     }
 
     const htmlString = ctaCardTemplate(dataset);
     const element = document.createElement('div');
     element.innerHTML = htmlString?.trim();
 
-    return {element: element.firstElementChild};
+    return renderWithVisibility({element: element.firstElementChild}, node.visibility, options);
 }
