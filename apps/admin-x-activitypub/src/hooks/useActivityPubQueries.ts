@@ -4,6 +4,8 @@ import {
     ActivityPubAPI,
     ActivityPubCollectionResponse,
     ActivityThread,
+    Actor,
+    FollowAccount,
     type GetAccountFollowsResponse,
     type Profile,
     type SearchResults
@@ -202,6 +204,52 @@ export function useFollowingForUser(handle: string) {
     });
 }
 
+export function useUnfollow(handle: string, onSuccess: () => void, onError: () => void) {
+    const queryClient = useQueryClient();
+    return useMutation({
+        async mutationFn(username: string) {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI(handle, siteUrl);
+            return api.unfollow(username);
+        },
+        onSuccess(unfollowedActor, fullHandle) {
+            queryClient.setQueryData([`profile:${fullHandle}`], (currentProfile: unknown) => {
+                if (!currentProfile) {
+                    return currentProfile;
+                }
+                return {
+                    ...currentProfile,
+                    isFollowing: false
+                };
+            });
+
+            queryClient.setQueryData(['following:index'], (currentFollowing?: Actor[]) => {
+                if (!currentFollowing) {
+                    return currentFollowing;
+                }
+                return currentFollowing.filter(item => item.id !== unfollowedActor.id);
+            });
+
+            queryClient.setQueryData(['follows:index:following'], (currentFollowing?: FollowAccount[]) => {
+                if (!currentFollowing) {
+                    return currentFollowing;
+                }
+                return currentFollowing.filter(item => item.id !== unfollowedActor.id);
+            });
+
+            queryClient.setQueryData(['followingCount:index'], (currentFollowingCount?: number) => {
+                if (!currentFollowingCount) {
+                    return 0;
+                }
+                return currentFollowingCount - 1;
+            });
+
+            onSuccess();
+        },
+        onError
+    });
+}
+
 export function useFollow(handle: string, onSuccess: () => void, onError: () => void) {
     const queryClient = useQueryClient();
     return useMutation({
@@ -227,6 +275,8 @@ export function useFollow(handle: string, onSuccess: () => void, onError: () => 
                 }
                 return [followedActor].concat(currentFollowing);
             });
+
+            queryClient.invalidateQueries(['follows:index:following']);
 
             queryClient.setQueryData(['followingCount:index'], (currentFollowingCount?: number) => {
                 if (!currentFollowingCount) {

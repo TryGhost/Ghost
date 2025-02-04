@@ -968,7 +968,7 @@ describe('Members API', function () {
         await agent.delete(`/members/${memberFailVerification.id}`);
 
         await configUtils.restore();
-        settingsCache.set('email_verification_required', false);
+        settingsCache.set('email_verification_required', {value: false});
     });
 
     it('Can add and send a signup confirmation email', async function () {
