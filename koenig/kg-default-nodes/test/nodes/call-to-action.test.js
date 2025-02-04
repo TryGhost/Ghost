@@ -1,7 +1,7 @@
-const {dom} = require('../test-utils');
 const {createHeadlessEditor} = require('@lexical/headless');
-const {CallToActionNode, $isCallToActionNode, utils} = require('../../');
 const {$getRoot} = require('lexical');
+const {dom} = require('../test-utils');
+const {CallToActionNode, $isCallToActionNode, utils} = require('../../');
 const editorNodes = [CallToActionNode];
 
 describe('CallToActionNode', function () {
@@ -255,6 +255,31 @@ describe('CallToActionNode', function () {
 
             const html = element.outerHTML.toString();
             html.should.not.containEql('<img src="http://blog.com/image1.jpg" alt="CTA Image">');
+        }));
+
+        // NOTE: Due to the way the package gets built sinon is unable to redefine
+        // utils.visibility, so we directly test the render output rather than spying
+        it('should render with web visibility', editorTest(function () {
+            exportOptions.target = 'web';
+            dataset.visibility = {...utils.visibility.buildDefaultVisibility(), web: {nonMember: false, memberSegment: 'status:free,status:-free'}};
+
+            const callToActionNode = new CallToActionNode(dataset);
+            const {element} = callToActionNode.exportDOM(exportOptions);
+
+            element.tagName.should.equal('TEXTAREA');
+            element.value.should.match(/<!--kg-gated-block:begin nonMember:false memberSegment:"status:free,status:-free" -->/);
+        }));
+
+        it('should render with email visibility', editorTest(function () {
+            exportOptions.target = 'email';
+            dataset.visibility = {...utils.visibility.buildDefaultVisibility(), email: {memberSegment: 'status:free'}};
+
+            const callToActionNode = new CallToActionNode(dataset);
+            const {element, type} = callToActionNode.exportDOM(exportOptions);
+
+            type.should.equal('html');
+            element.tagName.should.equal('DIV');
+            element.dataset.ghSegment.should.equal('status:free');
         }));
     });
 
