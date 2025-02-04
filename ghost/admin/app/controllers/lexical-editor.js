@@ -843,6 +843,25 @@ export default class LexicalEditorController extends Controller {
         }
     }
 
+    @task({group: 'saveTasks'})
+    *autosavePostTask() {
+        try {
+            return yield this._autosaveTask.perform();
+        } catch (error) {
+            if (error === undefined) {
+                // validation error
+                return;
+            }
+
+            if (error) {
+                let status = this.get('post.status');
+                this._showErrorAlert(status, status, error);
+            }
+
+            throw error;
+        }
+    }
+
     // convenience method for saving the post and performing post-save cleanup
     @task
     *_savePostTask(options = {}) {
