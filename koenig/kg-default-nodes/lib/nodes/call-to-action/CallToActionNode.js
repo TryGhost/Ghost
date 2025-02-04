@@ -1,5 +1,6 @@
 // eslint-disable-next-line ghost/filenames/match-exported-class
 import {generateDecoratorNode} from '../../generate-decorator-node';
+import {renderCallToActionNode} from './calltoaction-renderer';
 
 export class CallToActionNode extends generateDecoratorNode({
     nodeType: 'call-to-action',
@@ -19,6 +20,9 @@ export class CallToActionNode extends generateDecoratorNode({
     ]
 }) {
     /* overrides */
+    exportDOM(options = {}) {
+        return renderCallToActionNode(this, options);
+    }
 }
 
 export const $createCallToActionNode = (dataset) => {

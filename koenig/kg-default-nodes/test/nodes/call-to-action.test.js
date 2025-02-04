@@ -1,13 +1,13 @@
 const {dom} = require('../test-utils');
 const {createHeadlessEditor} = require('@lexical/headless');
 const {CallToActionNode, $isCallToActionNode, utils} = require('../../');
-
+const {$getRoot} = require('lexical');
 const editorNodes = [CallToActionNode];
 
 describe('CallToActionNode', function () {
     let editor;
     let dataset;
-    let exportOptions; // eslint-disable-line no-unused-vars
+    let exportOptions;
 
     // NOTE: all tests should use this function, without it you need manual
     // try/catch and done handling to avoid assertion failures not triggering
@@ -39,6 +39,7 @@ describe('CallToActionNode', function () {
             imageUrl: 'http://blog.com/image1.jpg'
         };
         exportOptions = {
+            exportFormat: 'html',
             dom
         };
     });
@@ -174,15 +175,174 @@ describe('CallToActionNode', function () {
     });
 
     describe('exportDOM', function () {
-        // not yet implemented
+        it('has all data attributes in Web', editorTest(function () {
+            dataset = {
+                backgroundColor: 'green',
+                buttonColor: '#F0F0F0',
+                buttonText: 'Get access now',
+                buttonTextColor: '#000000',
+                buttonUrl: 'http://someblog.com/somepost',
+                hasImage: true,
+                hasSponsorLabel: true,
+                imageUrl: '/content/images/2022/11/koenig-lexical.jpg',
+                layout: 'minimal',
+                showButton: true,
+                textValue: '<p><span style="white-space: pre-wrap;">This is a new CTA Card.</span></p>'
+            };
+            const callToActionNode = new CallToActionNode(dataset);
+            const {element} = callToActionNode.exportDOM(exportOptions);
+
+            const html = element.outerHTML.toString();
+            html.should.containEql('data-layout="minimal"');
+            html.should.containEql('background-color: green');
+            html.should.containEql('background-color: #F0F0F0');
+            html.should.containEql('Get access now');
+            html.should.containEql('http://someblog.com/somepost');
+            html.should.containEql('/content/images/2022/11/koenig-lexical.jpg');// because hasImage is true
+            html.should.containEql('This is a new CTA Card.');
+            html.should.containEql('Sponsored'); // because hasSponsorLabel is true
+            html.should.containEql('cta-card');
+        }));
+
+        it('has all data attributes in Email', editorTest(function () {
+            exportOptions.target = 'email';
+            dataset = {
+                backgroundColor: 'green',
+                buttonColor: '#F0F0F0',
+                buttonText: 'Get access now',
+                buttonTextColor: '#000000',
+                buttonUrl: 'http://someblog.com/somepost',
+                hasImage: true,
+                hasSponsorLabel: true,
+                imageUrl: '/content/images/2022/11/koenig-lexical.jpg',
+                layout: 'minimal',
+                showButton: true,
+                textValue: '<p><span style="white-space: pre-wrap;">This is a new CTA Card via email.</span></p>'
+            };
+            const callToActionNode = new CallToActionNode(dataset);
+            const {element} = callToActionNode.exportDOM(exportOptions);
+
+            const html = element.outerHTML.toString();
+            html.should.containEql('cta-card-email');
+            html.should.containEql('background-color: green');
+            html.should.containEql('background-color: #F0F0F0');
+            html.should.containEql('Get access now');
+            html.should.containEql('http://someblog.com/somepost');
+            html.should.containEql('/content/images/2022/11/koenig-lexical.jpg'); // because hasImage is true
+            html.should.containEql('This is a new CTA Card via email.');
+        }));
+
+        it('parses textValue correctly', editorTest(function () {
+            const callToActionNode = new CallToActionNode(dataset);
+            const {element} = callToActionNode.exportDOM(exportOptions);
+
+            const html = element.outerHTML.toString();
+            html.should.containEql('This is a cool advertisement');
+        }));
+
+        it('renders img tag when hasImage is true', editorTest(function () {
+            const callToActionNode = new CallToActionNode(dataset);
+            const {element} = callToActionNode.exportDOM(exportOptions);
+
+            const html = element.outerHTML.toString();
+            html.should.containEql('<img src="http://blog.com/image1.jpg" alt="CTA Image">');
+        }));
+
+        it('does not render img tag when hasImage is false', editorTest(function () {
+            dataset.hasImage = false;
+            const callToActionNode = new CallToActionNode(dataset);
+            const {element} = callToActionNode.exportDOM(exportOptions);
+
+            const html = element.outerHTML.toString();
+            html.should.not.containEql('<img src="http://blog.com/image1.jpg" alt="CTA Image">');
+        }));
     });
 
     describe('exportJSON', function () {
-        // not yet implemented
+        it('contains all data', editorTest(function () {
+            dataset = {
+                backgroundColor: 'green',
+                buttonColor: '#F0F0F0',
+                buttonText: 'Get access now',
+                buttonTextColor: '#000000',
+                buttonUrl: 'http://someblog.com/somepost',
+                hasImage: true,
+                hasSponsorLabel: true,
+                imageUrl: '/content/images/2022/11/koenig-lexical.jpg',
+                layout: 'minimal',
+                showButton: true,
+                textValue: '<p><span style="white-space: pre-wrap;">This is a new CTA Card.</span></p>'
+            };
+            const callToActionNode = new CallToActionNode(dataset);
+            const json = callToActionNode.exportJSON();
+
+            json.should.deepEqual({
+                type: 'call-to-action',
+                version: 1,
+                backgroundColor: 'green',
+                buttonColor: '#F0F0F0',
+                buttonText: 'Get access now',
+                buttonTextColor: '#000000',
+                buttonUrl: 'http://someblog.com/somepost',
+                hasImage: true,
+                hasSponsorLabel: true,
+                imageUrl: '/content/images/2022/11/koenig-lexical.jpg',
+                layout: 'minimal',
+                showButton: true,
+                textValue: '<p><span style="white-space: pre-wrap;">This is a new CTA Card.</span></p>',
+                visibility: {
+                    web: {
+                        nonMember: true,
+                        memberSegment: 'status:free,status:-free'
+                    },
+                    email: {
+                        memberSegment: 'status:free,status:-free'
+                    }
+                }
+            });
+        }));
     });
 
     describe('importJSON', function () {
-        // not yet implemented
+        it('imports all data', function (done) {
+            const serializedData = JSON.stringify({
+                root: {
+                    children: [{
+                        type: 'call-to-action',
+                        backgroundColor: 'green',
+                        buttonColor: '#F0F0F0',
+                        buttonText: 'Get access now',
+                        buttonTextColor: '#000000',
+                        buttonUrl: 'http://someblog.com/somepost',
+                        hasImage: true,
+                        hasSponsorLabel: true,
+                        imageUrl: '/content/images/2022/11/koenig-lexical.jpg',
+                        layout: 'minimal',
+                        showButton: true,
+                        textValue: '<p><span style="white-space: pre-wrap;">This is a new CTA Card.</span></p>'
+                    }],
+                    direction: null,
+                    format: '',
+                    indent: 0,
+                    type: 'root',
+                    version: 1
+                }
+            });
+
+            const editorState = editor.parseEditorState(serializedData);
+            editor.setEditorState(editorState);
+
+            editor.getEditorState().read(() => {
+                try {
+                    const [callToActionNode] = $getRoot().getChildren();
+                    $isCallToActionNode(callToActionNode).should.be.true();
+
+                    done();
+                } catch (e) {
+                    done(e);
+                }
+            });
+        });
     });
 
     describe('static properties', function () {
@@ -200,6 +360,9 @@ describe('CallToActionNode', function () {
     });
 
     describe('getTextContent', function () {
-        // not yet implemented
+        it('returns textValue', editorTest(function () {
+            const callToActionNode = new CallToActionNode(dataset);
+            callToActionNode.getTextContent().should.equal('This is a cool advertisement\n\n');
+        }));
     });
 });
