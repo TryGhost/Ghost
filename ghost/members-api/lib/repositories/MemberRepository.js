@@ -3,7 +3,7 @@ const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 const DomainEvents = require('@tryghost/domain-events');
-const {SubscriptionActivatedEvent, MemberCreatedEvent, SubscriptionCreatedEvent, MemberSubscribeEvent, SubscriptionCancelledEvent, OfferRedemptionEvent} = require('@tryghost/member-events');
+const {SubscriptionActivatedEvent, MemberCreatedEvent, SubscriptionCreatedEvent, SubscriptionAttributionEvent, MemberSubscribeEvent, SubscriptionCancelledEvent, OfferRedemptionEvent} = require('@tryghost/member-events');
 const ObjectId = require('bson-objectid').default;
 const {NotFoundError} = require('@tryghost/errors');
 const validator = require('@tryghost/validator');
@@ -883,6 +883,18 @@ module.exports = class MemberRepository {
         }, options);
 
         return subscription;
+    }
+
+    /**
+     * @param {string} subscriptionId - The stripe subscription id
+     * @param {import('@tryghost/member-attribution/lib/Attribution').AttributionResource} attribution
+     * @returns {Promise<void>}
+     */
+    async updateSubscriptionAttribution(subscriptionId, attribution) {
+        const event = SubscriptionAttributionEvent.create({
+            subscriptionId, attribution
+        });
+        DomainEvents.dispatch(event);
     }
 
     /**

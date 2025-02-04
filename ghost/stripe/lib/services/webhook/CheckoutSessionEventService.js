@@ -193,7 +193,6 @@ module.exports = class CheckoutSessionEventService {
                         id: member.id,
                         subscription,
                         offerId,
-                        attribution
                     });
                 } catch (err) {
                     if (err.code !== 'ER_DUP_ENTRY' && err.code !== 'SQLITE_CONSTRAINT') {
@@ -204,6 +203,8 @@ module.exports = class CheckoutSessionEventService {
                     });
                 }
             }
+
+            await memberRepository.updateSubscriptionAttribution(session.subscription, attribution);
         }
 
         if (checkoutType !== 'upgrade') {

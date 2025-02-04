@@ -1,4 +1,4 @@
-const {MemberCreatedEvent, SubscriptionCreatedEvent} = require('@tryghost/member-events');
+const {MemberCreatedEvent, SubscriptionCreatedEvent, SubscriptionAttributionEvent} = require('@tryghost/member-events');
 
 /**
  * Store events in the database
@@ -54,6 +54,28 @@ class EventStorage {
                 referrer_url: attribution?.referrerUrl ?? null,
                 batch_id: event.data.batchId ?? null
             });
+        });
+
+        domainEvents.subscribe(SubscriptionAttributionEvent, async (event) => {
+            let attribution = event.data.attribution;
+
+            const subscriptionCreatedEvent = await this.models.SubscriptionCreatedEvent
+                .findOne({subscription_id: event.data.subscriptionId}, {require: false, withRelated: []});
+
+            if (!subscriptionCreatedEvent) {
+                return;
+            }
+
+            const original = subscriptionCreatedEvent.toJSON();
+
+            await this.models.SubscriptionCreatedEvent.edit({
+                attribution_id: attribution?.id ?? original.attribution_id,
+                attribution_url: attribution?.url ?? original.attribution_url,
+                attribution_type: attribution?.type ?? original.attribution_type,
+                referrer_source: attribution?.referrerSource ?? original.referrer_source,
+                referrer_medium: attribution?.referrerMedium ?? original.referrer_medium,
+                referrer_url: attribution?.referrerUrl ?? original.referrer_url,
+            }, {id: subscriptionCreatedEvent.id});
         });
     }
 }
