@@ -297,6 +297,7 @@ const Notifications: React.FC<NotificationsProps> = () => {
                 actor: group.object.attributedTo as ActorProperties,
                 width: group.object?.type === 'Article' ? 'wide' : 'narrow'
             });
+            break;
         }
     };
 
