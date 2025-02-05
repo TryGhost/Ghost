@@ -1,11 +1,9 @@
 <div class="flex flex-column h-100 items-center overflow-auto" data-test-modal="publish-flow">
     <header class="gh-publish-header">
-        <button class="gh-btn-editor gh-publish-back-button" title="Close" type="button" {{on "click" @close}}>
-            <span>{{svg-jar "arrow-left"}} Editor</span>
-        </button>
+        <h2>Publish</h2>
 
         {{#if (and (not this.emailErrorMessage) (not this.isComplete))}}
-            <div class="flex items-center pe-auto h-100">
+            <div class="gh-btn-group-right">
                 <button
                     type="button"
                     class="gh-btn gh-btn-editor gh-editor-preview-trigger"
@@ -16,14 +14,13 @@
                 </button>
                 <button
                     type="button"
-                    class="gh-btn gh-btn-editor darkgrey gh-publish-trigger active"
+                    class="gh-btn"
                     title="Close"
                     {{on "click" @close}}
                     data-test-button="publish-flow-publish"
                 >
-                    <span>Publish</span>
+                    <span>Close</span>
                 </button>
-                <div class="settings-menu-toggle-spacer"></div>
             </div>
         {{/if}}
     </header>
