@@ -15,8 +15,10 @@ services:
       - .:/home/ghost
     tty: true
     depends_on:
-      - mysql
-      - redis
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
   mysql:
     image: mysql:8.0.35
     container_name: ghost-mysql
