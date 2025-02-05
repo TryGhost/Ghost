@@ -116,6 +116,7 @@ const Inbox: React.FC<InboxProps> = ({layout}) => {
                                                     <FeedItem
                                                         actor={activity.actor}
                                                         commentCount={activity.object.replyCount ?? 0}
+                                                        repostCount={activity.object.repostCount ?? 0}
                                                         layout={layout}
                                                         object={activity.object}
                                                         type={activity.type}

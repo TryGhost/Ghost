@@ -842,6 +842,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                         <FeedItem
                                             actor={item.actor}
                                             commentCount={item.object.replyCount ?? 0}
+                                            repostCount={item.object.repostCount ?? 0}
                                             last={false}
                                             layout='reply'
                                             object={item.object}
@@ -861,6 +862,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                 <FeedItem
                                     actor={actor}
                                     commentCount={object.replyCount ?? 0}
+                                    repostCount={object.repostCount ?? 0}
                                     last={true}
                                     layout={'modal'}
                                     object={object}
@@ -891,6 +893,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                     <div className='ml-[-7px]'>
                                         <FeedItemStats
                                             commentCount={object.replyCount ?? 0}
+                                            repostCount={object.repostCount ?? 0}
                                             layout={'modal'}
                                             likeCount={1}
                                             object={object}
@@ -926,6 +929,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                             <FeedItem
                                                 actor={item.actor}
                                                 commentCount={item.object.replyCount ?? 0}
+                                                repostCount={item.object.repostCount ?? 0}
                                                 last={true}
                                                 layout='reply'
                                                 object={item.object}

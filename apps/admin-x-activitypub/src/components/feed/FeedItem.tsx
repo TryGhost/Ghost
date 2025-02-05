@@ -148,6 +148,7 @@ interface FeedItemProps {
     layout: string;
     type: string;
     commentCount?: number;
+    repostCount?: number;
     showHeader?: boolean;
     last?: boolean;
     onClick?: () => void;
@@ -156,7 +157,7 @@ interface FeedItemProps {
 
 const noop = () => {};
 
-const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, commentCount = 0, showHeader = true, last, onClick: onClickHandler = noop, onCommentClick}) => {
+const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, commentCount = 0, repostCount = 0, showHeader = true, last, onClick: onClickHandler = noop, onCommentClick}) => {
     const timestamp =
         new Date(object?.published ?? new Date()).toLocaleDateString('default', {year: 'numeric', month: 'short', day: '2-digit'}) + ', ' + new Date(object?.published ?? new Date()).toLocaleTimeString('default', {hour: '2-digit', minute: '2-digit'});
 
@@ -291,6 +292,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                     <div className='space-between relative z-[30] ml-[-7px] mt-1 flex'>
                                         <FeedItemStats
                                             commentCount={commentCount}
+                                            repostCount={repostCount}
                                             layout={layout}
                                             likeCount={1}
                                             object={object}
@@ -332,6 +334,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                         <div className='space-between ml-[-7px] mt-3 flex'>
                                             <FeedItemStats
                                                 commentCount={commentCount}
+                                                repostCount={repostCount}
                                                 layout={layout}
                                                 likeCount={1}
                                                 object={object}
@@ -390,6 +393,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                         <div className='space-between ml-[-7px] mt-2 flex'>
                                             <FeedItemStats
                                                 commentCount={commentCount}
+                                                repostCount={repostCount}
                                                 layout={layout}
                                                 likeCount={1}
                                                 object={object}
@@ -439,6 +443,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                 <div className='invisible absolute right-4 top-1/2 z-[49] flex -translate-y-1/2 flex-col rounded-full bg-white p-1 shadow-md group-hover/article:visible'>
                                     <FeedItemStats
                                         commentCount={commentCount}
+                                        repostCount={repostCount}
                                         layout={layout}
                                         likeCount={1}
                                         object={object}

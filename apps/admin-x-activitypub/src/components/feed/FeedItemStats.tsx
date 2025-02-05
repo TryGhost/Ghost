@@ -7,6 +7,7 @@ interface FeedItemStatsProps {
     object: ObjectProperties;
     likeCount: number;
     commentCount: number;
+    repostCount: number;
     layout: string;
     onLikeClick: () => void;
     onCommentClick: () => void;
@@ -16,6 +17,7 @@ const FeedItemStats: React.FC<FeedItemStatsProps> = ({
     object,
     likeCount,
     commentCount,
+    repostCount,
     layout,
     onLikeClick,
     onCommentClick
@@ -72,9 +74,11 @@ const FeedItemStats: React.FC<FeedItemStatsProps> = ({
         />
         <Button
             className={buttonClassName}
+            hideLabel={repostCount === 0 || (layout === 'inbox')}
             icon='reload'
             iconColorClass={`w-[18px] h-[18px] ${isReposted && 'text-green'}`}
             id='repost'
+            label={new Intl.NumberFormat().format(repostCount)}
             size='md'
             unstyled={true}
             onClick={(e?: React.MouseEvent<HTMLElement>) => {

@@ -171,6 +171,7 @@ const PostsTab: React.FC<{handle: string}> = ({handle}) => {
                                 <FeedItem
                                     actor={post.actor}
                                     commentCount={post.object.replyCount}
+                                    repostCount={post.object.repostCount}
                                     layout='feed'
                                     object={post.object}
                                     type={post.type}
