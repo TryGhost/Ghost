@@ -75,7 +75,7 @@ const groupActivities = (activities: Activity[]): GroupedActivity[] => {
             break;
         case ACTIVITY_TYPE.REPOST:
             if (activity.object?.id) {
-                // Group likes by the target object
+                // Group reposts by the target object
                 groupKey = `announce_${activity.object.id}`;
             }
             break;
