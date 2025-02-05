@@ -843,6 +843,11 @@ export default class LexicalEditorController extends Controller {
         }
     }
 
+    @task({group: 'saveTasks'})
+    *saveTagsTask() {
+        return yield this._autosaveTask.perform();
+    }
+
     // convenience method for saving the post and performing post-save cleanup
     @task
     *_savePostTask(options = {}) {
