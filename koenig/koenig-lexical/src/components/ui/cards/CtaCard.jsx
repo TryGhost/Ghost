@@ -60,28 +60,28 @@ export const ctaColorPicker = [
 ];
 
 export function CtaCard({
-    buttonText,
-    buttonUrl,
-    buttonColor,
-    buttonTextColor,
-    color,
-    hasSponsorLabel,
+    buttonColor = '',
+    buttonText = '',
+    buttonTextColor = '',
+    buttonUrl = '',
+    color = 'none',
+    hasSponsorLabel = false,
     htmlEditor,
     htmlEditorInitialState,
-    imageSrc,
-    isEditing,
-    layout,
-    showButton,
-    updateButtonText,
-    updateButtonUrl,
-    updateShowButton,
-    updateHasSponsorLabel,
-    updateLayout,
-    handleColorChange,
-    handleButtonColor,
-    onFileChange,
-    setFileInputRef,
-    onRemoveMedia
+    imageSrc = '',
+    isEditing = false,
+    layout = 'immersive',
+    showButton = false,
+    handleButtonColor = () => {},
+    handleColorChange = () => {},
+    onFileChange = () => {},
+    onRemoveMedia = () => {},
+    setFileInputRef = () => {},
+    updateButtonText = () => {},
+    updateButtonUrl = () => {},
+    updateHasSponsorLabel = () => {},
+    updateLayout = () => {},
+    updateShowButton = () => {}
 }) {
     const [buttonColorPickerExpanded, setButtonColorPickerExpanded] = useState(false);
 
@@ -339,25 +339,4 @@ CtaCard.propTypes = {
     onFileChange: PropTypes.func,
     setFileInputRef: PropTypes.func,
     onRemoveMedia: PropTypes.func
-};
-
-CtaCard.defaultProps = {
-    buttonText: '',
-    buttonUrl: '',
-    buttonColor: '',
-    buttonTextColor: '',
-    color: 'none',
-    hasSponsorLabel: false,
-    imageSrc: '',
-    isEditing: false,
-    layout: 'immersive',
-    showButton: false,
-    updateHasSponsorLabel: () => {},
-    updateShowButton: () => {},
-    updateLayout: () => {},
-    handleColorChange: () => {},
-    handleButtonColor: () => {},
-    onFileChange: () => {},
-    setFileInputRef: () => {},
-    onRemoveMedia: () => {}
 };
