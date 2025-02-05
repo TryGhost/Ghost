@@ -21,14 +21,14 @@ import {
 import {type NotificationType} from './activities/NotificationIcon';
 import {handleProfileClick} from '../utils/handle-profile-click';
 
-interface ActivitiesProps {}
+interface NotificationsProps {}
 
 // eslint-disable-next-line no-shadow
 enum ACTIVITY_TYPE {
     CREATE = 'Create',
     LIKE = 'Like',
     FOLLOW = 'Follow',
-    ANNOUNCE = 'Announce'
+    REPOST = 'Announce'
 }
 
 interface GroupedActivity {
@@ -54,7 +54,7 @@ const getExtendedDescription = (activity: GroupedActivity): JSX.Element | null =
                 className='ap-note-content mt-1 line-clamp-2 text-pretty text-grey-700'
             ></div>
         );
-    } else if (activity.type === ACTIVITY_TYPE.ANNOUNCE && !activity.object?.name && activity.object?.content) {
+    } else if (activity.type === ACTIVITY_TYPE.REPOST && !activity.object?.name && activity.object?.content) {
         return (
             <div
                 dangerouslySetInnerHTML={{__html: stripHtml(activity.object?.content || '')}}
@@ -74,7 +74,7 @@ const getActivityBadge = (activity: GroupedActivity): NotificationType => {
         return 'follow';
     case ACTIVITY_TYPE.LIKE:
         return 'like';
-    case ACTIVITY_TYPE.ANNOUNCE:
+    case ACTIVITY_TYPE.REPOST:
         return 'repost';
     }
 
@@ -99,7 +99,7 @@ const groupActivities = (activities: Activity[]): GroupedActivity[] => {
                 groupKey = `like_${activity.object.id}`;
             }
             break;
-        case ACTIVITY_TYPE.ANNOUNCE:
+        case ACTIVITY_TYPE.REPOST:
             if (activity.object?.id) {
                 // Group likes by the target object
                 groupKey = `announce_${activity.object.id}`;
@@ -160,7 +160,7 @@ const getGroupDescription = (group: GroupedActivity): JSX.Element => {
         return <>{actorText} started following you</>;
     case ACTIVITY_TYPE.LIKE:
         return <>{actorText} liked your {group.object?.type === 'Article' ? 'post' : 'note'} <span className='font-semibold'>{group.object?.name || ''}</span></>;
-    case ACTIVITY_TYPE.ANNOUNCE:
+    case ACTIVITY_TYPE.REPOST:
         return <>{actorText} reposted your {group.object?.type === 'Article' ? 'post' : 'note'} <span className='font-semibold'>{group.object?.name || ''}</span></>;
     case ACTIVITY_TYPE.CREATE:
         if (group.object?.inReplyTo && typeof group.object?.inReplyTo !== 'string') {
@@ -178,7 +178,7 @@ const getGroupDescription = (group: GroupedActivity): JSX.Element => {
     return <></>;
 };
 
-const Activities: React.FC<ActivitiesProps> = ({}) => {
+const Notifications: React.FC<NotificationsProps> = ({}) => {
     const user = 'index';
 
     const [openStates, setOpenStates] = React.useState<{[key: string]: boolean}>({});
@@ -233,7 +233,7 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
             })
             // Remove reposts that are not for our own posts
             .filter((activity) => {
-                if (activity.type === ACTIVITY_TYPE.ANNOUNCE && activity.object?.attributedTo?.id !== userProfile?.id) {
+                if (activity.type === ACTIVITY_TYPE.REPOST && activity.object?.attributedTo?.id !== userProfile?.id) {
                     return false;
                 }
 
@@ -424,4 +424,4 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
     );
 };
 
-export default Activities;
+export default Notifications;
