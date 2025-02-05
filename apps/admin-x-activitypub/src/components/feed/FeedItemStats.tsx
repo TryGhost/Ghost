@@ -48,6 +48,7 @@ const FeedItemStats: React.FC<FeedItemStatsProps> = ({
             id='like'
             label={new Intl.NumberFormat().format(likeCount)}
             size='md'
+            title='Like'
             unstyled={true}
             onClick={(e?: React.MouseEvent<HTMLElement>) => {
                 e?.stopPropagation();
@@ -64,6 +65,7 @@ const FeedItemStats: React.FC<FeedItemStatsProps> = ({
             id='comment'
             label={new Intl.NumberFormat().format(commentCount)}
             size='md'
+            title='Reply'
             unstyled={true}
             onClick={(e?: React.MouseEvent<HTMLElement>) => {
                 e?.stopPropagation();
@@ -76,6 +78,7 @@ const FeedItemStats: React.FC<FeedItemStatsProps> = ({
             iconColorClass={`w-[18px] h-[18px] ${isReposted && 'text-green'}`}
             id='repost'
             size='md'
+            title='Repost'
             unstyled={true}
             onClick={(e?: React.MouseEvent<HTMLElement>) => {
                 e?.stopPropagation();
