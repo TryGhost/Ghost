@@ -4,6 +4,8 @@ import {
     ActivityPubAPI,
     ActivityPubCollectionResponse,
     ActivityThread,
+    Actor,
+    FollowAccount,
     type GetAccountFollowsResponse,
     type Profile,
     type SearchResults
@@ -163,6 +165,49 @@ export function useUnlikeMutationForUser(handle: string) {
     });
 }
 
+export function useRepostMutationForUser(handle: string) {
+    const queryClient = useQueryClient();
+    return useMutation({
+        async mutationFn(id: string) {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI(handle, siteUrl);
+            return api.repost(id);
+        },
+        onMutate: (id) => {
+            const previousInbox = queryClient.getQueryData([`inbox:${handle}`]);
+            if (previousInbox) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                queryClient.setQueryData([`inbox:${handle}`], (old?: any[]) => {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    return old?.map((item: any) => {
+                        if (item.object.id === id) {
+                            return {
+                                ...item,
+                                object: {
+                                    ...item.object,
+                                    reposted: true
+                                }
+                            };
+                        }
+                        return item;
+                    });
+                });
+            }
+
+            // This sets the context for the onError handler
+            return {previousInbox};
+        },
+        onError: (_err, _id, context) => {
+            if (context?.previousInbox) {
+                queryClient.setQueryData([`inbox:${handle}`], context?.previousInbox);
+            }
+        },
+        onSettled: () => {
+            queryClient.invalidateQueries({queryKey: [`reposted:${handle}`]});
+        }
+    });
+}
+
 export function useUserDataForUser(handle: string) {
     return useQuery({
         queryKey: [`user:${handle}`],
@@ -202,6 +247,52 @@ export function useFollowingForUser(handle: string) {
     });
 }
 
+export function useUnfollow(handle: string, onSuccess: () => void, onError: () => void) {
+    const queryClient = useQueryClient();
+    return useMutation({
+        async mutationFn(username: string) {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI(handle, siteUrl);
+            return api.unfollow(username);
+        },
+        onSuccess(unfollowedActor, fullHandle) {
+            queryClient.setQueryData([`profile:${fullHandle}`], (currentProfile: unknown) => {
+                if (!currentProfile) {
+                    return currentProfile;
+                }
+                return {
+                    ...currentProfile,
+                    isFollowing: false
+                };
+            });
+
+            queryClient.setQueryData(['following:index'], (currentFollowing?: Actor[]) => {
+                if (!currentFollowing) {
+                    return currentFollowing;
+                }
+                return currentFollowing.filter(item => item.id !== unfollowedActor.id);
+            });
+
+            queryClient.setQueryData(['follows:index:following'], (currentFollowing?: FollowAccount[]) => {
+                if (!currentFollowing) {
+                    return currentFollowing;
+                }
+                return currentFollowing.filter(item => item.id !== unfollowedActor.id);
+            });
+
+            queryClient.setQueryData(['followingCount:index'], (currentFollowingCount?: number) => {
+                if (!currentFollowingCount) {
+                    return 0;
+                }
+                return currentFollowingCount - 1;
+            });
+
+            onSuccess();
+        },
+        onError
+    });
+}
+
 export function useFollow(handle: string, onSuccess: () => void, onError: () => void) {
     const queryClient = useQueryClient();
     return useMutation({
@@ -227,6 +318,8 @@ export function useFollow(handle: string, onSuccess: () => void, onError: () => 
                 }
                 return [followedActor].concat(currentFollowing);
             });
+
+            queryClient.invalidateQueries(['follows:index:following']);
 
             queryClient.setQueryData(['followingCount:index'], (currentFollowingCount?: number) => {
                 if (!currentFollowingCount) {

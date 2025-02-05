@@ -1,10 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
   <defs>
     <style>
-      circle{fill:currentColor}
+      .dotdotdotfill {fill:currentColor}
     </style>
   </defs>
-  <circle cx="3.25" cy="12" r="2.6"/>
-  <circle cx="12" cy="12" r="2.6"/>
-  <circle cx="20.75" cy="12" r="2.6"/>
+  <circle class="dotdotdotfill" cx="3.25" cy="12" r="2.6"/>
+  <circle class="dotdotdotfill" cx="12" cy="12" r="2.6"/>
+  <circle class="dotdotdotfill" cx="20.75" cy="12" r="2.6"/>
 </svg>

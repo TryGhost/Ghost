@@ -867,7 +867,7 @@ jobs:
 
       - name: Save Ghost CLI Debug Logs
         if: failure()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ghost-cli-debug-logs
           path: /home/runner/.ghost/logs/

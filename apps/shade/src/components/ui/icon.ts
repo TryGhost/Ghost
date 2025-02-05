@@ -1,7 +1,6 @@
 import React from 'react';
 import {cva, type VariantProps} from 'class-variance-authority';
-import {cn} from '@/lib/utils';
-import {kebabToPascalCase} from '@/utils/formatText';
+import {cn, kebabToPascalCase} from '@/lib/utils';
 
 const iconVariants = cva('', {
     variants: {

@@ -30,25 +30,38 @@
 @layer base {
     :root {
         --background: 0 0% 100%;
-        --foreground: 222.2 47.4% 11.2%;
-        --muted: 210 40% 96.1%;
-        --muted-foreground: 215.4 16.3% 46.9%;
+        --foreground: 216 11% 9%;
+        --muted: 200 12% 96%;
+        --muted-foreground: 211 11% 43%;
         --popover: 0 0% 100%;
-        --popover-foreground: 222.2 47.4% 11.2%;
-        --border: 214.3 31.8% 91.4%;
-        --input: 214.3 31.8% 91.4%;
+        --popover-foreground: 216 11% 9%;
+        --border: 204 14% 93%;
+        --input: 204 14% 93%;
         --card: 0 0% 100%;
-        --card-foreground: 222.2 47.4% 11.2%;
-        --primary: 222.2 47.4% 11.2%;
-        --primary-foreground: 210 40% 98%;
-        --secondary: 210 40% 96.1%;
-        --secondary-foreground: 222.2 47.4% 11.2%;
-        --accent: 210 40% 96.1%;
-        --accent-foreground: 222.2 47.4% 11.2%;
-        --destructive: 0 100% 50%;
-        --destructive-foreground: 210 40% 98%;
-        --ring: 215 20.2% 65.1%;
+        --card-foreground: 216 11% 9%;;
+        --primary: 216 11% 9%;;
+        --primary-foreground: 0 0% 100%;
+        --secondary: 204 14% 93%;
+        --secondary-foreground: 216 11% 9%;
+        --accent: 200 12% 96%;
+        --accent-foreground: 216 11% 9%;
+        --destructive: 354 92% 50%;
+        --destructive-foreground: 0 0% 100%;
+        --ring: 215 13% 63%;
         --radius: 9px;
+        --chart-1: 221.2 83.2% 53.3%;
+        --chart-2: 212 95% 68%;
+        --chart-3: 216 92% 60%;
+        --chart-4: 210 98% 78%;
+        --chart-5: 212 97% 87%;
+        --sidebar-background: 0 0% 100%;
+        --sidebar-foreground: 216 11% 9%;
+        --sidebar-primary: 216 11% 9%;
+        --sidebar-primary-foreground: 0 0% 100%;
+        --sidebar-accent: 200 12% 96%;
+        --sidebar-accent-foreground: 216 11% 9%;
+        --sidebar-border: 210 13% 88%;
+        --sidebar-ring: 215 13% 63%;
     }
 
     .dark {
@@ -71,6 +84,19 @@
         --destructive: 0 63% 31%;
         --destructive-foreground: 210 40% 98%;
         --ring: 216 34% 17%;
+        --chart-1: 221.2 83.2% 53.3%;
+        --chart-2: 212 95% 68%;
+        --chart-3: 216 92% 60%;
+        --chart-4: 210 98% 78%;
+        --chart-5: 212 97% 87%;
+        --sidebar-background: 240 5.9% 10%;
+        --sidebar-foreground: 240 4.8% 95.9%;
+        --sidebar-primary: 224.3 76.3% 48%;
+        --sidebar-primary-foreground: 0 0% 100%;
+        --sidebar-accent: 240 3.7% 15.9%;
+        --sidebar-accent-foreground: 240 4.8% 95.9%;
+        --sidebar-border: 240 3.7% 15.9%;
+        --sidebar-ring: 217.2 91.2% 59.8%;
     }
 
     /* This just serves as a placeholder; we actually load Inter from a font file in Ember admin */
@@ -143,4 +169,12 @@
 /* Prose classes are for formatting arbitrary HTML that comes from the API */
 .gh-prose-links a {
     color: #30cf43;
+}
+@layer base {
+    * {
+        @apply border-border;
+    }
+    body {
+        @apply bg-background text-foreground;
+    }
 }

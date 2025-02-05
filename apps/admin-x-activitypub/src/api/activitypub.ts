@@ -69,7 +69,7 @@ export type AccountFollowsType = 'following' | 'followers';
 
 type GetAccountResponse = Account
 
-export type FollowAccount = Pick<Account, 'id' | 'name' | 'handle' | 'avatarUrl'>;
+export type FollowAccount = Pick<Account, 'id' | 'name' | 'handle' | 'avatarUrl'> & {isFollowing: true};
 
 export interface GetAccountFollowsResponse {
     accounts: FollowAccount[];
@@ -195,6 +195,12 @@ export class ActivityPubAPI {
         return json as Actor;
     }
 
+    async unfollow(username: string): Promise<Actor> {
+        const url = new URL(`.ghost/activitypub/actions/unfollow/${username}`, this.apiUrl);
+        const json = await this.fetchJSON(url, 'POST');
+        return json as Actor;
+    }
+
     get likedApiUrl() {
         return new URL(`.ghost/activitypub/liked/${this.handle}`, this.apiUrl);
     }
@@ -210,6 +216,11 @@ export class ActivityPubAPI {
 
     async unlike(id: string): Promise<void> {
         const url = new URL(`.ghost/activitypub/actions/unlike/${encodeURIComponent(id)}`, this.apiUrl);
+        await this.fetchJSON(url, 'POST');
+    }
+
+    async repost(id: string): Promise<void> {
+        const url = new URL(`.ghost/activitypub/actions/repost/${encodeURIComponent(id)}`, this.apiUrl);
         await this.fetchJSON(url, 'POST');
     }
 
