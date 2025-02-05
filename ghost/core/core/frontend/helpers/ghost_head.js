@@ -165,6 +165,10 @@ function getTinybirdTrackerScript(dataRoot) {
     return `<script defer src="${scriptUrl}" data-storage="localStorage" data-host="${endpoint}" data-token="${token}" ${tbParams}></script>`;
 }
 
+function getHCaptchaScript() {
+    return `<script defer async src="https://js.hcaptcha.com/1/api.js"></script>`;
+}
+
 /**
  * **NOTE**
  * Express adds `_locals`, see https://github.com/expressjs/express/blob/4.15.4/lib/response.js#L962.
@@ -353,29 +357,31 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
                 head.push(getTinybirdTrackerScript(dataRoot));
             }
 
-            if (labs.isSet('customFonts')) {
-                // Check if if the request is for a site preview, in which case we **always** use the custom font values
-                // from the passed in data, even when they're empty strings or settings cache has values.
-                const isSitePreview = options.data.site._preview;
-                // Taking the fonts straight from the passed in data, as they can't be used from the
-                // settings cache for the theme preview until the settings are saved. Once saved,
-                // we need to use the settings cache to provide the correct CSS injection.
-                const headingFont = isSitePreview ? options.data.site.heading_font : settingsCache.get('heading_font');
-                const bodyFont = isSitePreview ? options.data.site.body_font : settingsCache.get('body_font');
-                if ((typeof headingFont === 'string' && isValidCustomHeadingFont(headingFont)) ||
-                    (typeof bodyFont === 'string' && isValidCustomFont(bodyFont))) {
-                    /** @type FontSelection */
-                    const fontSelection = {};
+            if (labs.isSet('captcha') && config.get('captcha:enabled')) {
+                head.push(getHCaptchaScript());
+            }
 
-                    if (headingFont) {
-                        fontSelection.heading = headingFont;
-                    }
-                    if (bodyFont) {
-                        fontSelection.body = bodyFont;
-                    }
-                    const customCSS = generateCustomFontCss(fontSelection);
-                    head.push(new SafeString(customCSS));
+            // Check if if the request is for a site preview, in which case we **always** use the custom font values
+            // from the passed in data, even when they're empty strings or settings cache has values.
+            const isSitePreview = options.data?.site?._preview ?? false;
+            // Taking the fonts straight from the passed in data, as they can't be used from the
+            // settings cache for the theme preview until the settings are saved. Once saved,
+            // we need to use the settings cache to provide the correct CSS injection.
+            const headingFont = isSitePreview ? options.data?.site?.heading_font : settingsCache.get('heading_font');
+            const bodyFont = isSitePreview ? options.data?.site?.body_font : settingsCache.get('body_font');
+            if ((typeof headingFont === 'string' && isValidCustomHeadingFont(headingFont)) ||
+                (typeof bodyFont === 'string' && isValidCustomFont(bodyFont))) {
+                /** @type FontSelection */
+                const fontSelection = {};
+
+                if (headingFont) {
+                    fontSelection.heading = headingFont;
                 }
+                if (bodyFont) {
+                    fontSelection.body = bodyFont;
+                }
+                const customCSS = generateCustomFontCss(fontSelection);
+                head.push(new SafeString(customCSS));
             }
         }
 

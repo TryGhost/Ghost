@@ -32,11 +32,33 @@ describe('<CommentComponent>', function () {
         const parent = buildComment({
             replies: [reply1, reply2]
         });
-        const appContext = {comments: [parent], labs: {commentImprovements: true}};
+        const appContext = {comments: [parent]};
 
         contextualRender(<CommentComponent comment={reply2} parent={parent} />, {appContext});
 
         expect(screen.getByText('First reply')).toBeInTheDocument();
+    });
+
+    it('outputs member uuid data attribute for published comments', function () {
+        const comment = buildComment({
+            status: 'published',
+            member: {uuid: '123'}
+        });
+        const appContext = {comments: [comment]};
+
+        const {container} = contextualRender(<CommentComponent comment={comment} />, {appContext});
+        expect(container.querySelector('[data-member-uuid="123"]')).toBeInTheDocument();
+    });
+
+    it('does not output member uuid data attribute for unpublished comments', function () {
+        const comment = buildComment({
+            status: 'hidden',
+            member: {uuid: '123'}
+        });
+        const appContext = {comments: [comment]};
+
+        const {container} = contextualRender(<CommentComponent comment={comment} />, {appContext});
+        expect(container.querySelector('[data-member-uuid="123"]')).not.toBeInTheDocument();
     });
 });
 
@@ -53,7 +75,7 @@ describe('<RepliedToSnippet>', function () {
         const parent = buildComment({
             replies: [reply1, reply2]
         });
-        const appContext = {comments: [parent], labs: {commentImprovements: true}};
+        const appContext = {comments: [parent]};
 
         contextualRender(<RepliedToSnippet comment={reply2} />, {appContext});
 
@@ -74,7 +96,7 @@ describe('<RepliedToSnippet>', function () {
         const parent = buildComment({
             replies: [reply1, reply2]
         });
-        const appContext = {comments: [parent], labs: {commentImprovements: true}};
+        const appContext = {comments: [parent]};
 
         contextualRender(<RepliedToSnippet comment={reply2} />, {appContext});
 
@@ -91,7 +113,7 @@ describe('<RepliedToSnippet>', function () {
         const parent = buildComment({
             replies: [reply2]
         });
-        const appContext = {comments: [parent], labs: {commentImprovements: true}};
+        const appContext = {comments: [parent]};
 
         contextualRender(<RepliedToSnippet comment={reply2} />, {appContext});
 

@@ -267,10 +267,9 @@ fieldset[disabled] .gh-btn {
 
 .gh-btn-icon-right svg,
 svg.gh-btn-icon-right {
-    margin-left: 0.5em;
-    margin-right: 0;
-    width: auto;
-    height: 16px;
+    width: 1.2rem;
+    height: 1.2rem;
+    margin-left: 0.4em;
 }
 
 .gh-btn-icon svg path {
@@ -350,23 +349,25 @@ svg.gh-btn-icon-right {
     color: var(--red);
 }
 
-.gh-btn-action-icon {
-    margin-right: 10px
-}
-
 .gh-btn-action-icon svg {
     height: 16px;
     width: 16px;
     margin: 0;
 }
 
-.gh-btn-action-icon:not(.icon-only) svg {
+.gh-btn-action-icon:not(.icon-only):not(.gh-btn-icon-right) svg {
     margin-right: 10px;
 }
 
 .gh-btn-action-icon svg path,
 .gh-btn-action-icon svg circle {
     stroke: currentColor;
+}
+
+.gh-btn-action-icon.gh-btn-icon-right svg {
+    height: 14px;
+    width: 14px;
+    margin-left: 8px;
 }
 
 .gh-btn-label-green {

@@ -1,6 +1,22 @@
 name: ghost
 
 services:
+  ghost:
+    build:
+      context: .
+      dockerfile: ./.docker/Dockerfile
+      target: development
+    ports:
+      - "2368:2368"
+      - "4200:4200"
+      - "4201:4201"
+    profiles: [full]
+    volumes:
+      - .:/home/ghost
+    tty: true
+    depends_on:
+      - mysql
+      - redis
   mysql:
     image: mysql:8.0.35
     container_name: ghost-mysql
@@ -26,6 +42,12 @@ services:
     ports:
       - "6379:6379"
     restart: always
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
+      interval: 1s
+      retries: 120
   prometheus:
     profiles: [monitoring]
     image: prom/prometheus:v2.30.3
@@ -57,3 +79,4 @@ services:
       - "9091:9091"
 volumes:
   mysql-data:
+  redis-data:

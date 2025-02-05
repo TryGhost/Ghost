@@ -1,0 +1,51 @@
+import { Meta } from '@storybook/blocks';
+
+<Meta title="Conventions" />
+
+<div className="sb-doc">
+
+# Conventions
+
+## Composable vs. configurable components
+
+In Shade we favor **composable** components over configurable ones. Read about the differences and the pros and cons for each in this [article](https://blog.tomaszgil.me/choosing-the-right-path-composable-vs-configurable-components-in-react).
+
+## `className` prop
+
+In order to make the design system flexible, all components in Shade should have a `className` prop that is applied to the rendered HTML component. The `className` should be merged with the default classes using the `cn` util, for example:
+
+```
+className={cn('bg-gray-200', className)}
+```
+
+Another example if variants are used:
+
+```
+className={cn(buttonVariants({variant, size, className}))}
+```
+
+## TailwindCSS color naming
+
+For gray colors up until now we've used `grey`. ShadCN follows TailwindCSS naming conventions and uses `gray` when you install a component. We also decided to go with this mainly to avoid having to manually override color names and risking manual errors in the design system.
+
+## Filenames
+
+Our generic naming conventions is:
+
+- `PascalCase` for React component names
+- `kebab-case` for non-React-components like utilities, hooks and so on
+- `camelCase` for functions, objects, types etc.
+
+When you install a ShadCN component via the CLI it'll create files with kebab-case. This is _not_ following our standards. Unfortunately changing _only_ filename casing in MacOS and Github is a **massive** PITA so for now we're accepting this inconsistency and let ShadCN create its files as is.
+
+## File structure
+
+- `/src/components/` — Root directory for components
+    - `/src/components/ui/` — Directory for atomic UI components (foundational UI elements such as buttons, dropdowns etc.)
+    - `/src/components/layout` — Complex, globally reusable components (such as a page or header container etc.)
+- `/src/hooks/` — Custom Reach hooks
+- `/src/providers/` — Context providers
+- `/src/ib/utils.ts` — Utilities
+- `/src/docs/` — Shade documentation
+
+</div>
