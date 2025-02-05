@@ -38,33 +38,9 @@ interface GroupedActivity {
     id?: string;
 }
 
-const getExtendedDescription = (activity: GroupedActivity): JSX.Element | null => {
-    // If the activity is a reply
-    if (Boolean(activity.type === ACTIVITY_TYPE.CREATE && activity.object?.inReplyTo)) {
-        return (
-            <div
-                dangerouslySetInnerHTML={{__html: stripHtml(activity.object?.content || '')}}
-                className='ap-note-content mt-1 line-clamp-2 text-pretty text-grey-700'
-            />
-        );
-    } else if (activity.type === ACTIVITY_TYPE.LIKE && !activity.object?.name && activity.object?.content) {
-        return (
-            <div
-                dangerouslySetInnerHTML={{__html: stripHtml(activity.object?.content || '')}}
-                className='ap-note-content mt-1 line-clamp-2 text-pretty text-grey-700'
-            ></div>
-        );
-    } else if (activity.type === ACTIVITY_TYPE.REPOST && !activity.object?.name && activity.object?.content) {
-        return (
-            <div
-                dangerouslySetInnerHTML={{__html: stripHtml(activity.object?.content || '')}}
-                className='ap-note-content mt-1 line-clamp-2 text-pretty text-grey-700'
-            ></div>
-        );
-    }
-
-    return null;
-};
+interface NotificationGroupDescriptionProps {
+    group: GroupedActivity;
+}
 
 const getActivityBadge = (activity: GroupedActivity): NotificationType => {
     switch (activity.type) {
@@ -77,8 +53,6 @@ const getActivityBadge = (activity: GroupedActivity): NotificationType => {
     case ACTIVITY_TYPE.REPOST:
         return 'repost';
     }
-
-    return 'like';
 };
 
 const groupActivities = (activities: Activity[]): GroupedActivity[] => {
@@ -130,7 +104,7 @@ const groupActivities = (activities: Activity[]): GroupedActivity[] => {
     return Object.values(groups);
 };
 
-const getGroupDescription = (group: GroupedActivity): JSX.Element => {
+const NotificationGroupDescription: React.FC<NotificationGroupDescriptionProps> = ({group}) => {
     const [firstActor, secondActor, ...otherActors] = group.actors;
     const hasOthers = otherActors.length > 0;
 
@@ -408,9 +382,18 @@ const Notifications: React.FC<NotificationsProps> = () => {
                                             </NotificationItem.Avatars>
                                             <NotificationItem.Content>
                                                 <div className='line-clamp-2 text-pretty text-black'>
-                                                    {getGroupDescription(group)}
+                                                    <NotificationGroupDescription group={group} />
                                                 </div>
-                                                {getExtendedDescription(group)}
+                                                {(
+                                                    (group.type === ACTIVITY_TYPE.CREATE && group.object?.inReplyTo) ||
+                                                    (group.type === ACTIVITY_TYPE.LIKE && !group.object?.name && group.object?.content) ||
+                                                    (group.type === ACTIVITY_TYPE.REPOST && !group.object?.name && group.object?.content)
+                                                ) && (
+                                                    <div
+                                                        dangerouslySetInnerHTML={{__html: stripHtml(group.object?.content || '')}}
+                                                        className='ap-note-content mt-1 line-clamp-2 text-pretty text-grey-700'
+                                                    />
+                                                )}
                                             </NotificationItem.Content>
                                         </NotificationItem>
                                         {index < groupedActivities.length - 1 && <Separator />}
