@@ -35,9 +35,9 @@ const liveReloadBaseUrl = config.getSubdir() || '/ghost/';
 const siteUrl = config.getSiteUrl();
 
 // Pass flags using GHOST_DEV_APP_FLAGS env var or --flag
-const CLI_ARGS = process.argv.filter(a => a.startsWith('--')).map(a => a.slice(2));
-const ENV_ARGS = process.env.GHOST_DEV_APP_FLAGS?.split(',') || [];
-const GHOST_APP_FLAGS = [...ENV_ARGS, ...CLI_ARGS];
+const DASH_DASH_ARGS = process.argv.filter(a => a.startsWith('--')).map(a => a.slice(2));
+const ENV_ARGS = process.env.GHOST_DEV_APP_FLAGS.split(',');
+const GHOST_APP_FLAGS = [...ENV_ARGS, ...DASH_DASH_ARGS];
 
 let commands = [];
 
