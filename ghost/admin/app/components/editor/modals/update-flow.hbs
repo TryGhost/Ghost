@@ -1,17 +1,14 @@
 <div class="flex flex-column h-100 items-center overflow-auto" data-test-modal="update-flow">
     <header class="gh-publish-header">
-        <button class="gh-btn-editor gh-publish-back-button" title="Close" type="button" {{on "click" @close}}>
-            <span>{{svg-jar "arrow-left"}} Editor</span>
-        </button>
+        <h2>{{if post.isScheduled "Unschedule" "Unpublish"}}</h2>>
         <div class="flex">
             {{#let @data.publishOptions.post as |post|}}
                 {{#if (not (and post.isSent (not post.isPublished)))}}
-                    <button class="gh-btn gh-btn-editor darkgrey gh-unpublish-trigger active" title="Close" type="button" {{on "click" @close}}>
-                        <span>{{if post.isScheduled "Unschedule" "Unpublish"}}</span>
+                    <button class="gh-btn" title="Close" type="button" {{on "click" @close}}>
+                        <span>Close</span>
                     </button>
                 {{/if}}
             {{/let}}
-            <div class="settings-menu-toggle-spacer"></div>
         </div>
     </header>
 

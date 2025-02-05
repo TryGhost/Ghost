@@ -9,7 +9,7 @@
     align-items: center;
     flex-shrink: 0;
     margin: 0;
-    padding: 12px 24px;
+    padding: 1.2rem 2rem;
     background: var(--grey-50);
 }
 
