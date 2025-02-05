@@ -178,7 +178,7 @@ const getGroupDescription = (group: GroupedActivity): JSX.Element => {
     return <></>;
 };
 
-const Notifications: React.FC<NotificationsProps> = ({}) => {
+const Notifications: React.FC<NotificationsProps> = () => {
     const user = 'index';
 
     const [openStates, setOpenStates] = React.useState<{[key: string]: boolean}>({});
