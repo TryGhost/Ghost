@@ -21,7 +21,8 @@ services:
         condition: service_healthy
     environment:
       - DEBUG=${DEBUG}
-      - APP_FLAGS=${APP_FLAGS}
+      - GHOST_DEV_APP_FLAGS=${GHOST_DEV_APP_FLAGS}
+      - GHOST_DEV_MODE=${GHOST_DEV_MODE}
   mysql:
     image: mysql:8.0.35
     container_name: ghost-mysql
