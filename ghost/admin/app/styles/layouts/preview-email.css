@@ -209,7 +209,7 @@ p .gh-preview-email-address {
     flex-direction: column;
     flex-grow: 1;
     align-items: center;
-    background: var(--white);
+    background: var(--whitegrey-l2);
     padding: 8vmin 30px 30px;
     height: calc(100vh - 119px);
     border-bottom-left-radius: 5px;
@@ -221,7 +221,7 @@ p .gh-preview-email-address {
     height: 657px;
     border-radius: 40px;
     display: flex;
-    background: var(--whitegrey-l2);
+    background: var(--white);
     box-shadow:
         0 0 0 1px rgba(0,0,0,0.02),
         0 2.8px 2.2px rgba(0, 0, 0, 0.02),

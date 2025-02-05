@@ -179,8 +179,8 @@ input[type=number] {
     transform: translateY(-7px);
 }
 
-.gh-input-icon.gh-icon-link svg path {
-    stroke: color-mod(var(--lightgrey) l(-15%) s(-10%));
+.gh-input-icon.gh-icon-link svg {
+    fill: none;
 }
 
 .gh-input-icon input {

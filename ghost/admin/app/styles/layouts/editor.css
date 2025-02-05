@@ -313,7 +313,7 @@
     justify-content: space-between;
     height: 34px;
     padding: 0;
-    margin: 30px;
+    margin: 24px;
     z-index: 799;
 }
 
@@ -1010,14 +1010,18 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
 }
 
 .gh-editor-preview-trigger {
+    height: 34px;
     background: var(--white);
     font-size: 1.35rem;
     font-weight: 500;
-    margin-right: 8px;
     outline: none;
     border: none;
     white-space: nowrap;
     transition: all 0.25s ease;
+}
+
+.gh-post-preview-header .gh-editor-preview-trigger {
+    margin-left: 4px;
 }
 
 .gh-editor-preview-trigger:hover {

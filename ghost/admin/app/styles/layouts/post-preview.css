@@ -8,21 +8,37 @@
     justify-content: center;
     align-items: center;
     flex-shrink: 0;
-    height: 34px;
-    overflow: hidden;
-    margin: 30px;
-    background: var(--white);
+    margin: 0;
+    padding: 12px 24px;
+    background: var(--grey-50);
 }
 
 .gh-post-preview-header .left {
     position: absolute;
-    left: 0;
+    left: 20px;
+    display: flex;
+    align-items: center;
+}
+
+.gh-post-preview-header h2 {
+    margin: 0;
+    font-size: 2rem;
 }
 
 .gh-post-preview-header .right {
     position: absolute;
-    right: 0;
+    right: 20px;
     display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.gh-post-preview-header .gh-btn-editor {
+    background: none !important;
+}
+
+.gh-post-preview-header .gh-btn-editor:hover {
+    background: var(--whitegrey) !important;
 }
 
 @media (max-width: 1024px) {
@@ -35,50 +51,95 @@
         background-color: var(--white);
         border-radius: 0;
     }
+}
 
-    .gh-post-preview-header .left {
-        position: absolute;
-        left: 15px;
-    }
+.gh-post-preview-btn-group {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
 }
 
 .gh-post-preview-btn-group .gh-btn-group {
+    gap: .2rem;
+    margin: 0 4px;
     background: transparent;
 }
 
 .gh-post-preview-btn-group .gh-btn-group span {
     height: 34px;
+    padding: 0 10px;
     line-height: 34px;
+    background: none !important;
     box-shadow: none;
 }
 
-.gh-post-preview-btn-group button {
-    width: 64px;
+.gh-post-preview-btn-group .gh-btn-group span:hover {
+    background: var(--whitegrey) !important;
+}
+
+.gh-post-preview-btn-group .gh-btn {
+    margin: 0;
+}
+
+.gh-web-preview-segment {
+    height: 34px;
+    margin: 0 4px;
+    background: transparent;
+}
+
+.gh-web-preview-segment select {
+    height: 34px;
+    padding: 0 28px 0 14px;
+    background: transparent;
+    border: none;
+    color: var(--black);
+    font-size: 1.3rem;
+    font-weight: 500;
+    line-height: 34px;
+    border-radius: 5px;
+}
+
+.gh-web-preview-segment:hover select {
+    background: var(--whitegrey);
+}
+
+.gh-select.gh-web-preview-segment svg {
+    height: 5px;
+    margin-top: -.1em;
+}
+
+.gh-select.gh-web-preview-segment svg path {
+    stroke-width: 4px;
+    stroke: var(--black);
 }
 
 .gh-post-preview-mode svg {
-    max-height: 20px;
-    max-width: 20px;
+    height: 18px;
+    width: 18px;
     vertical-align: middle;
     fill: var(--midgrey);
     color: var(--midgrey);
 }
 
 .gh-publish-preview-newtab {
-    display: inherit;
-    margin-top: 2px;
-    margin-left: 1.6rem;
+    height: 34px;
+    background: transparent;
+    border: none;
+    margin-right: 4px;
+}
+
+.gh-publish-preview-newtab:hover {
+    background: var(--whitegrey);
+}
+
+.gh-publish-preview-newtab span {
+    padding: 0 10px;
 }
 
 .gh-publish-preview-newtab svg {
-    width: 14px;
-    height: 16px;
-    fill: var(--darkgrey);
-}
-
-.gh-publish-preview-newtab svg path {
-    stroke-width: .8px;
-    stroke: var(--darkgrey);
+    width: 18px;
+    height: 18px;
 }
 
 /* Preview animation */
@@ -103,17 +164,10 @@
     display: flex;
     flex-direction: column;
     height: 100%;
-    margin: 0 40px;
-    border-radius: 3px !important;
-    box-shadow:
-        0 0 0 1px rgba(0,0,0,0.02),
-        0 2.8px 2.2px rgba(0, 0, 0, 0.02),
-        0 6.7px 5.3px rgba(0, 0, 0, 0.028),
-        0 12.5px 10px rgba(0, 0, 0, 0.035),
-        0 22.3px 17.9px rgba(0, 0, 0, 0.042),
-        0 41.8px 33.4px rgba(0, 0, 0, 0.05),
-        0 100px 80px rgba(0, 0, 0, 0.07);
-    ;
+    z-index: 9999;
+    margin: 0 .8rem;
+    border-radius: 8px 8px 0 0;
+    box-shadow: var(--shadow-1);
 }
 
 .gh-post-preview-browser-container .gh-pe-iframe {
@@ -128,17 +182,33 @@
     font-weight: 400;
 }
 
-.gh-post-preview-url {
+.gh-post-preview-url,
+.gh-post-preview-email-trigger {
     display: flex;
     align-items: center;
     flex-shrink: 0;
-    height: 32px;
-    border-color: transparent;
-    box-shadow: none;
+    height: 34px;
+    border: none;
     color: var(--darkgrey);
     font-size: 1.25rem;
     font-weight: 500;
     letter-spacing: .2px;
+}
+
+.gh-post-preview-url span,
+.gh-post-preview-email-trigger span {
+    padding: 0 10px;
+}
+
+.gh-post-preview-url:hover,
+.gh-post-preview-email-trigger:hover {
+    background: var(--whitegrey);
+}
+
+.gh-post-preview-url svg,
+.gh-post-preview-email-trigger svg {
+    width: 18px;
+    height: 18px;
 }
 
 .gh-post-preview-url .check {
@@ -197,8 +267,8 @@
 
 .gh-post-preview-email-header {
     border-bottom: 1px solid var(--whitegrey);
-    padding: 20px 24px;
-    background: var(--whitegrey-l2);
+    padding: 16px 20px;
+    background: var(--white);
 }
 
 .gh-post-preview-email-columns {
@@ -276,11 +346,11 @@
 /* Email preview */
 .gh-post-preview-email-container {
     position: relative;
-    height: calc(100vh - 94px);
+    height: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
-    background: var(--white);
+    background: var(--whitegrey-l2);
     padding: 0 30px;
     overflow: auto;
 }
@@ -298,18 +368,11 @@
     overflow: hidden;
     max-width: 740px;
     width: 100%;
+    margin: 0 0 2rem;
     padding: 0;
     background: var(--white);
-    box-shadow:
-        0 0 0 1px rgba(0,0,0,0.02),
-        0 2.8px 2.2px rgba(0, 0, 0, 0.02),
-        0 6.7px 5.3px rgba(0, 0, 0, 0.028),
-        0 12.5px 10px rgba(0, 0, 0, 0.035),
-        0 22.3px 17.9px rgba(0, 0, 0, 0.042),
-        0 41.8px 33.4px rgba(0, 0, 0, 0.05),
-        0 100px 80px rgba(0, 0, 0, 0.07);
-    ;
-    border-radius: 3px 3px 0 0;
+    border-radius: 8px;
+    box-shadow: var(--shadow-1);
 }
 
 .gh-post-preview-email-container iframe {
@@ -320,13 +383,18 @@
 
 .gh-post-preview-email-test {
     display: flex;
-    width: 312px;
+    gap: .8rem;
+}
+
+.gh-post-preview-email-test .form-group {
+    margin: 0;
 }
 
 .gh-post-preview-email-test button {
+    width: 100%;
     min-width: 72px;
-    border-top-left-radius: 0;
-    border-bottom-left-radius: 0;
+    margin: 1.2rem 0 .4rem;
+    border-radius: 8px;
 }
 
 .gh-post-preview-email-test .gh-btn-group .gh-btn span {
@@ -335,7 +403,12 @@
 }
 
 .gh-post-preview-email-test-dropdown {
-    padding: 16px;
+    top: calc(100% + 6px);
+    right: 0;
+    left: auto;
+    padding: 2rem 2.4rem;
+    border-radius: 8px;
+    box-shadow: var(--shadow-3);
     animation: fade-out .0s;
     animation-fill-mode: forwards;
 }
@@ -350,40 +423,13 @@
 }
 
 .gh-post-preview-email-input {
-    width: 240px;
-    border-color: var(--whitegrey);
-}
-
-.gh-post-preview-email-input {
-    border-top-right-radius: 0;
-    border-bottom-right-radius: 0;
-    border-right-width: 0;
-}
-
-.gh-post-preview-email-input:focus {
-    border-right-width: 1px;
+    width: 220px;
 }
 
 .gh-post-preview-copy-url-trigger {
     height: 38px;
     border-top-left-radius: 0;
     border-bottom-left-radius: 0;
-}
-
-.gh-post-preview-email-trigger span {
-    color: var(--green-d1);
-    font-size: 1.4rem;
-    font-weight: 500;
-}
-
-.gh-post-preview-email-trigger svg {
-    width: 8px;
-    height: auto;
-    margin-left: 6px;
-}
-
-.gh-post-preview-email-trigger svg path {
-    stroke-width: 4px;
 }
 
 .gh-post-test-email-group {
