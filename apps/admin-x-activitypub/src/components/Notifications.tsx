@@ -316,6 +316,13 @@ const Notifications: React.FC<NotificationsProps> = () => {
                 handleProfileClick(group.actors[0]);
             }
             break;
+        case ACTIVITY_TYPE.REPOST:
+            NiceModal.show(ArticleModal, {
+                activityId: group.id,
+                object: group.object,
+                actor: group.object.attributedTo as ActorProperties,
+                width: group.object?.type === 'Article' ? 'wide' : 'narrow'
+            });
         }
     };
 
