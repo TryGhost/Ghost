@@ -842,10 +842,10 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                         <FeedItem
                                             actor={item.actor}
                                             commentCount={item.object.replyCount ?? 0}
-                                            repostCount={item.object.repostCount ?? 0}
                                             last={false}
                                             layout='reply'
                                             object={item.object}
+                                            repostCount={item.object.repostCount ?? 0}
                                             type='Note'
                                             onClick={() => {
                                                 navigateForward(item.id, item.object, item.actor, false);
@@ -862,10 +862,10 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                 <FeedItem
                                     actor={actor}
                                     commentCount={object.replyCount ?? 0}
-                                    repostCount={object.repostCount ?? 0}
                                     last={true}
                                     layout={'modal'}
                                     object={object}
+                                    repostCount={object.repostCount ?? 0}
                                     showHeader={(canNavigateBack || (activityThreadParents.length > 0))}
                                     type='Note'
                                     onCommentClick={() => {
@@ -893,10 +893,10 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                     <div className='ml-[-7px]'>
                                         <FeedItemStats
                                             commentCount={object.replyCount ?? 0}
-                                            repostCount={object.repostCount ?? 0}
                                             layout={'modal'}
                                             likeCount={1}
                                             object={object}
+                                            repostCount={object.repostCount ?? 0}
                                             onCommentClick={() => {
                                                 repliesRef.current?.scrollIntoView({
                                                     behavior: 'smooth',
@@ -929,10 +929,10 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                             <FeedItem
                                                 actor={item.actor}
                                                 commentCount={item.object.replyCount ?? 0}
-                                                repostCount={item.object.repostCount ?? 0}
                                                 last={true}
                                                 layout='reply'
                                                 object={item.object}
+                                                repostCount={item.object.repostCount ?? 0}
                                                 type='Note'
                                                 onClick={() => {
                                                     navigateForward(item.id, item.object, item.actor, false);

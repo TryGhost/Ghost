@@ -292,10 +292,10 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                     <div className='space-between relative z-[30] ml-[-7px] mt-1 flex'>
                                         <FeedItemStats
                                             commentCount={commentCount}
-                                            repostCount={repostCount}
                                             layout={layout}
                                             likeCount={1}
                                             object={object}
+                                            repostCount={repostCount}
                                             onCommentClick={onCommentClick}
                                             onLikeClick={onLikeClick}
                                         />
@@ -334,10 +334,10 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                         <div className='space-between ml-[-7px] mt-3 flex'>
                                             <FeedItemStats
                                                 commentCount={commentCount}
-                                                repostCount={repostCount}
                                                 layout={layout}
                                                 likeCount={1}
                                                 object={object}
+                                                repostCount={repostCount}
                                                 onCommentClick={onCommentClick}
                                                 onLikeClick={onLikeClick}
                                             />
@@ -393,10 +393,10 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                         <div className='space-between ml-[-7px] mt-2 flex'>
                                             <FeedItemStats
                                                 commentCount={commentCount}
-                                                repostCount={repostCount}
                                                 layout={layout}
                                                 likeCount={1}
                                                 object={object}
+                                                repostCount={repostCount}
                                                 onCommentClick={onCommentClick}
                                                 onLikeClick={onLikeClick}
                                             />
@@ -443,10 +443,10 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                 <div className='invisible absolute right-4 top-1/2 z-[49] flex -translate-y-1/2 flex-col rounded-full bg-white p-1 shadow-md group-hover/article:visible'>
                                     <FeedItemStats
                                         commentCount={commentCount}
-                                        repostCount={repostCount}
                                         layout={layout}
                                         likeCount={1}
                                         object={object}
+                                        repostCount={repostCount}
                                         onCommentClick={onCommentClick}
                                         onLikeClick={onLikeClick}
                                     />
