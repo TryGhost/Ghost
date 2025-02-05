@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import {Button} from '@tryghost/admin-x-design-system';
 import {ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
-import {useLikeMutationForUser, useUnlikeMutationForUser} from '../../hooks/useActivityPubQueries';
+import {useLikeMutationForUser, useRepostMutationForUser, useUnlikeMutationForUser} from '../../hooks/useActivityPubQueries';
 
 interface FeedItemStatsProps {
     object: ObjectProperties;
@@ -21,8 +21,10 @@ const FeedItemStats: React.FC<FeedItemStatsProps> = ({
     onCommentClick
 }) => {
     const [isLiked, setIsLiked] = useState(object.liked);
+    const [isReposted, setIsReposted] = useState(object.reposted);
     const likeMutation = useLikeMutationForUser('index');
     const unlikeMutation = useUnlikeMutationForUser('index');
+    const repostMutation = useRepostMutationForUser('index');
 
     const handleLikeClick = async (e: React.MouseEvent<HTMLElement>) => {
         e.stopPropagation();
@@ -46,6 +48,7 @@ const FeedItemStats: React.FC<FeedItemStatsProps> = ({
             id='like'
             label={new Intl.NumberFormat().format(likeCount)}
             size='md'
+            title='Like'
             unstyled={true}
             onClick={(e?: React.MouseEvent<HTMLElement>) => {
                 e?.stopPropagation();
@@ -62,10 +65,28 @@ const FeedItemStats: React.FC<FeedItemStatsProps> = ({
             id='comment'
             label={new Intl.NumberFormat().format(commentCount)}
             size='md'
+            title='Reply'
             unstyled={true}
             onClick={(e?: React.MouseEvent<HTMLElement>) => {
                 e?.stopPropagation();
                 onCommentClick();
+            }}
+        />
+        <Button
+            className={buttonClassName}
+            icon='reload'
+            iconColorClass={`w-[18px] h-[18px] ${isReposted && 'text-green'}`}
+            id='repost'
+            size='md'
+            title='Repost'
+            unstyled={true}
+            onClick={(e?: React.MouseEvent<HTMLElement>) => {
+                e?.stopPropagation();
+
+                if (!isReposted) {
+                    repostMutation.mutate(object.id);
+                    setIsReposted(true);
+                }
             }}
         />
     </div>);
