@@ -19,6 +19,9 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    environment:
+      - DEBUG=${DEBUG}
+      - APP_FLAGS=${APP_FLAGS}
   mysql:
     image: mysql:8.0.35
     container_name: ghost-mysql
