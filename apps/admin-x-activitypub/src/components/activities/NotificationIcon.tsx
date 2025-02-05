@@ -1,7 +1,7 @@
 import React from 'react';
 import {Icon} from '@tryghost/admin-x-design-system';
 
-export type NotificationType = 'like' | 'follow' | 'reply';
+export type NotificationType = 'like' | 'follow' | 'reply' | 'repost';
 
 interface NotificationIconProps {
     notificationType: NotificationType;
@@ -28,6 +28,11 @@ const NotificationIcon: React.FC<NotificationIconProps> = ({notificationType, cl
         icon = 'comment';
         iconColor = 'text-purple-500';
         badgeColor = 'bg-purple-100/50';
+        break;
+    case 'repost':
+        icon = 'reload';
+        iconColor = 'text-green-500';
+        badgeColor = 'bg-green-100/50';
         break;
     }
 
