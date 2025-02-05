@@ -266,9 +266,30 @@
 }
 
 .gh-post-preview-email-header {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
     border-bottom: 1px solid var(--whitegrey);
-    padding: 16px 20px;
+    padding: 1rem 2rem;
     background: var(--white);
+}
+
+.gh-post-preview-email-header label {
+    min-width: 50px;
+}
+
+.gh-post-preview-email-header .gh-input-x {
+    background: transparent;
+    transition: all .15s ease;
+}
+
+.gh-post-preview-email-header .gh-input-x:hover:not(:focus) {
+    background: var(--whitegrey);
+}
+
+.gh-post-preview-email-header hr {
+    margin: 0;
+    border-color: var(--whitegrey);
 }
 
 .gh-post-preview-email-columns {
@@ -277,45 +298,24 @@
     align-items: flex-start;
 }
 
-.gh-email-preview-newsletter-select p {
-    padding: 0;
-    margin: 0;
-    color: var(--midgrey-l1);
-    font-weight: 500;
-    line-height: 1.8em;
-}
-
 .gh-email-preview-newsletter-select {
-    display: grid;
-    grid-template-columns: 65px 1fr;
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
 }
 
-.ember-power-select-trigger.gh-preview-newsletter-trigger,
-.ember-power-select-trigger.gh-preview-newsletter-trigger:focus {
-    padding: 0;
-    border: none;
-    cursor: pointer;
-    color: var(--darkgrey);
-    font-size: 1.4rem;
-    font-weight: 600;
-    line-height: 1.8em;
+.gh-email-preview-newsletter-select label {
+    width: 56px;
 }
 
 .gh-preview-newsletter-trigger svg {
     width: 8px;
-    margin-left: 2px;
-    margin-top: -1px;
+    margin-left: 8px;
     vertical-align: middle;
 }
 
 .gh-preview-newsletter-trigger svg path {
     stroke-width: 4px;
-}
-
-.gh-preview-newsletter-dropdown.ember-power-select-dropdown.ember-basic-dropdown-content--below {
-    width: min-content !important;
-    border-top: 1px solid var(--input-border-color);
-    border-radius: var(--border-radius);
 }
 
 .gh-preview-newsletter-dropdown .ember-power-select-option {
@@ -406,7 +406,7 @@
     top: calc(100% + 6px);
     right: 0;
     left: auto;
-    padding: 2rem 2.4rem;
+    padding: 1.6rem 2rem;
     border-radius: 8px;
     box-shadow: var(--shadow-3);
     animation: fade-out .0s;
