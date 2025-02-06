@@ -44,7 +44,7 @@ function createActivityPubAPI(handle: string, siteUrl: string) {
 
 export function useOutboxForUser(handle: string) {
     return useInfiniteQuery({
-        queryKey: [`outbox:${handle}`],
+        queryKey: ['outbox', handle],
         async queryFn({pageParam}: {pageParam?: string}) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
@@ -58,7 +58,7 @@ export function useOutboxForUser(handle: string) {
 
 export function useLikedForUser(handle: string) {
     return useInfiniteQuery({
-        queryKey: [`liked:${handle}`],
+        queryKey: ['liked', handle],
         async queryFn({pageParam}: {pageParam?: string}) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
@@ -79,7 +79,7 @@ export function useLikeMutationForUser(handle: string) {
             return api.like(id);
         },
         onMutate: async (id) => {
-            queryClient.setQueriesData([`activities:${handle}`], (current?: {pages: {data: Activity[]}[]}) => {
+            queryClient.setQueriesData(['activities', handle], (current?: {pages: {data: Activity[]}[]}) => {
                 if (current === undefined) {
                     return current;
                 }
@@ -118,7 +118,7 @@ export function useUnlikeMutationForUser(handle: string) {
             return api.unlike(id);
         },
         onMutate: async (id) => {
-            queryClient.setQueriesData([`activities:${handle}`], (current?: {pages: {data: Activity[]}[]}) => {
+            queryClient.setQueriesData(['activities', handle], (current?: {pages: {data: Activity[]}[]}) => {
                 if (current === undefined) {
                     return current;
                 }
@@ -157,7 +157,7 @@ export function useRepostMutationForUser(handle: string) {
             return api.repost(id);
         },
         onMutate: async (id) => {
-            queryClient.setQueriesData([`activities:${handle}`], (current?: {pages: {data: Activity[]}[]}) => {
+            queryClient.setQueriesData(['activities', handle], (current?: {pages: {data: Activity[]}[]}) => {
                 if (current === undefined) {
                     return current;
                 }
@@ -198,7 +198,7 @@ export function useDerepostMutationForUser(handle: string) {
             return api.derepost(id);
         },
         onMutate: async (id) => {
-            queryClient.setQueriesData([`activities:${handle}`], (current?: {pages: {data: Activity[]}[]}) => {
+            queryClient.setQueriesData(['activities', handle], (current?: {pages: {data: Activity[]}[]}) => {
                 if (current === undefined) {
                     return current;
                 }
@@ -231,7 +231,7 @@ export function useDerepostMutationForUser(handle: string) {
 
 export function useUserDataForUser(handle: string) {
     return useQuery({
-        queryKey: [`user:${handle}`],
+        queryKey: ['user', handle],
         async queryFn() {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
@@ -249,7 +249,7 @@ export function useUnfollowMutationForUser(handle: string, onSuccess: () => void
             return api.unfollow(username);
         },
         onSuccess(unfollowedActor, fullHandle) {
-            queryClient.setQueryData([`profile:${fullHandle}`], (currentProfile: unknown) => {
+            queryClient.setQueryData(['profile', fullHandle], (currentProfile: unknown) => {
                 if (!currentProfile) {
                     return currentProfile;
                 }
@@ -259,25 +259,18 @@ export function useUnfollowMutationForUser(handle: string, onSuccess: () => void
                 };
             });
 
-            queryClient.setQueryData(['following:index'], (currentFollowing?: Actor[]) => {
+            queryClient.setQueryData(['profile_following', 'index'], (currentFollowing?: Actor[]) => {
                 if (!currentFollowing) {
                     return currentFollowing;
                 }
                 return currentFollowing.filter(item => item.id !== unfollowedActor.id);
             });
 
-            queryClient.setQueryData(['follows:index:following'], (currentFollowing?: FollowAccount[]) => {
-                if (!currentFollowing) {
-                    return currentFollowing;
+            queryClient.setQueryData(['account_follows', 'index', 'following'], (currentFollows?: FollowAccount[]) => {
+                if (!currentFollows) {
+                    return currentFollows;
                 }
-                return currentFollowing.filter(item => item.id !== unfollowedActor.id);
-            });
-
-            queryClient.setQueryData(['followingCount:index'], (currentFollowingCount?: number) => {
-                if (!currentFollowingCount) {
-                    return 0;
-                }
-                return currentFollowingCount - 1;
+                return currentFollows.filter(item => item.id !== unfollowedActor.id);
             });
 
             onSuccess();
@@ -295,7 +288,7 @@ export function useFollowMutationForUser(handle: string, onSuccess: () => void, 
             return api.follow(username);
         },
         onSuccess(followedActor, fullHandle) {
-            queryClient.setQueryData([`profile:${fullHandle}`], (currentProfile: unknown) => {
+            queryClient.setQueryData(['profile', fullHandle], (currentProfile: unknown) => {
                 if (!currentProfile) {
                     return currentProfile;
                 }
@@ -305,21 +298,14 @@ export function useFollowMutationForUser(handle: string, onSuccess: () => void, 
                 };
             });
 
-            queryClient.setQueryData(['following:index'], (currentFollowing?: unknown[]) => {
+            queryClient.setQueryData(['profile_following', 'index'], (currentFollowing?: unknown[]) => {
                 if (!currentFollowing) {
                     return currentFollowing;
                 }
                 return [followedActor].concat(currentFollowing);
             });
 
-            queryClient.invalidateQueries(['follows:index:following']);
-
-            queryClient.setQueryData(['followingCount:index'], (currentFollowingCount?: number) => {
-                if (!currentFollowingCount) {
-                    return 1;
-                }
-                return currentFollowingCount + 1;
-            });
+            queryClient.invalidateQueries(['account_follows', 'index', 'following']);
 
             onSuccess();
         },
@@ -346,7 +332,7 @@ export function useActivitiesForUser({
     limit?: number;
     key?: string | null;
 }) {
-    const queryKey = [`activities:${handle}`, key, {includeOwn, includeReplies, filter}];
+    const queryKey = ['activities', handle, key, {includeOwn, includeReplies, filter}];
     const queryClient = useQueryClient();
 
     const getActivitiesQuery = useInfiniteQuery({
@@ -389,7 +375,7 @@ export function useActivitiesForUser({
 
 export function useSearchForUser(handle: string, query: string) {
     const queryClient = useQueryClient();
-    const queryKey = ['search', {handle, query}];
+    const queryKey = ['search_results', query];
 
     const searchQuery = useQuery({
         queryKey,
@@ -424,7 +410,7 @@ export function useSearchForUser(handle: string, query: string) {
 
 export function useSuggestedProfilesForUser(handle: string, limit = 3) {
     const queryClient = useQueryClient();
-    const queryKey = ['profiles', limit];
+    const queryKey = ['suggested_profiles', limit];
 
     const suggestedHandles = [
         '@index@activitypub.ghost.org',
@@ -475,7 +461,7 @@ export function useSuggestedProfilesForUser(handle: string, limit = 3) {
 
 export function useProfileForUser(handle: string, profileHandle: string, enabled: boolean = true) {
     return useQuery({
-        queryKey: [`profile:${profileHandle}`],
+        queryKey: ['profile', profileHandle],
         enabled,
         async queryFn() {
             const siteUrl = await getSiteUrl();
@@ -487,7 +473,7 @@ export function useProfileForUser(handle: string, profileHandle: string, enabled
 
 export function useProfilePostsForUser(handle: string, profileHandle: string) {
     return useInfiniteQuery({
-        queryKey: [`posts:${profileHandle}`],
+        queryKey: ['profile_posts', profileHandle],
         async queryFn({pageParam}: {pageParam?: string}) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
@@ -501,7 +487,7 @@ export function useProfilePostsForUser(handle: string, profileHandle: string) {
 
 export function useProfileFollowersForUser(handle: string, profileHandle: string) {
     return useInfiniteQuery({
-        queryKey: [`followers:${profileHandle}`],
+        queryKey: ['profile_followers', profileHandle],
         async queryFn({pageParam}: {pageParam?: string}) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
@@ -515,7 +501,7 @@ export function useProfileFollowersForUser(handle: string, profileHandle: string
 
 export function useProfileFollowingForUser(handle: string, profileHandle: string) {
     return useInfiniteQuery({
-        queryKey: [`following:${profileHandle}`],
+        queryKey: ['profile_following', profileHandle],
         async queryFn({pageParam}: {pageParam?: string}) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
@@ -529,7 +515,7 @@ export function useProfileFollowingForUser(handle: string, profileHandle: string
 
 export function useThreadForUser(handle: string, id: string) {
     const queryClient = useQueryClient();
-    const queryKey = ['thread', {id}];
+    const queryKey = ['thread', id];
 
     const threadQuery = useQuery({
         queryKey,
@@ -577,7 +563,7 @@ export function useNoteMutationForUser(handle: string) {
             return api.note(content);
         },
         onSuccess: (activity: Activity) => {
-            queryClient.setQueryData([`outbox:${handle}`], (current?: {pages: {data: Activity[]}[]}) => {
+            queryClient.setQueryData(['outbox', handle], (current?: {pages: {data: Activity[]}[]}) => {
                 if (current === undefined) {
                     return current;
                 }
@@ -596,7 +582,7 @@ export function useNoteMutationForUser(handle: string) {
                 };
             });
 
-            queryClient.setQueriesData([`activities:${handle}`, GET_ACTIVITIES_QUERY_KEY_FEED], (current?: {pages: {data: Activity[]}[]}) => {
+            queryClient.setQueriesData(['activities', handle, GET_ACTIVITIES_QUERY_KEY_FEED], (current?: {pages: {data: Activity[]}[]}) => {
                 if (current === undefined) {
                     return current;
                 }
@@ -620,7 +606,7 @@ export function useNoteMutationForUser(handle: string) {
 
 export function useAccountForUser(handle: string) {
     return useQuery({
-        queryKey: [`account:${handle}`],
+        queryKey: ['account', handle],
         async queryFn() {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
@@ -631,7 +617,7 @@ export function useAccountForUser(handle: string) {
 
 export function useAccountFollowsForUser(handle: string, type: AccountFollowsType) {
     return useInfiniteQuery({
-        queryKey: [`follows:${handle}:${type}`],
+        queryKey: ['account_follows', handle, type],
         async queryFn({pageParam}: {pageParam?: string}) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
