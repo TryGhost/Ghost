@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import {Button} from '@tryghost/admin-x-design-system';
 import {ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
-import {useLikeMutationForUser, useRepostMutationForUser, useUnlikeMutationForUser} from '../../hooks/useActivityPubQueries';
+import {useDerepostMutationForUser, useLikeMutationForUser, useRepostMutationForUser, useUnlikeMutationForUser} from '../../hooks/useActivityPubQueries';
 
 interface FeedItemStatsProps {
     object: ObjectProperties;
@@ -27,6 +27,7 @@ const FeedItemStats: React.FC<FeedItemStatsProps> = ({
     const likeMutation = useLikeMutationForUser('index');
     const unlikeMutation = useUnlikeMutationForUser('index');
     const repostMutation = useRepostMutationForUser('index');
+    const derepostMutation = useDerepostMutationForUser('index');
 
     const handleLikeClick = async (e: React.MouseEvent<HTMLElement>) => {
         e.stopPropagation();
@@ -82,15 +83,18 @@ const FeedItemStats: React.FC<FeedItemStatsProps> = ({
             id='repost'
             label={new Intl.NumberFormat().format(repostCount)}
             size='md'
-            title='Repost'
+            title={`${isReposted ? 'Undo repost' : 'Repost'}`}
             unstyled={true}
             onClick={(e?: React.MouseEvent<HTMLElement>) => {
                 e?.stopPropagation();
 
                 if (!isReposted) {
                     repostMutation.mutate(object.id);
-                    setIsReposted(true);
+                } else {
+                    derepostMutation.mutate(object.id);
                 }
+
+                setIsReposted(!isReposted);
             }}
         />
     </div>);
