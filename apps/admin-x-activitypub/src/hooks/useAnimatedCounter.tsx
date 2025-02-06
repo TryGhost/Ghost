@@ -46,6 +46,9 @@ export const useAnimatedCounter = (initialValue: number): AnimatedCounterResult 
                 {digits.map((digit, position) => (
                     <span
                         key={`${digits.length - position}-${digit}`}
+                        role='text'
+                        aria-atomic='true'
+                        aria-live='polite'
                         className={animatingDigits.has(position)
                             ? isDecrementing ? 'animate-slide-down' : 'animate-slide-up'
                             : ''}
