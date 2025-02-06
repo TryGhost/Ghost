@@ -193,7 +193,7 @@
     flex-shrink: 0;
     height: 34px;
     border: none;
-    color: var(--black);
+    color: var(--darkgrey);
     font-size: 1.25rem;
     font-weight: 500;
     letter-spacing: .2px;
@@ -287,6 +287,7 @@
 }
 
 .gh-post-preview-email-header .gh-input-x {
+    cursor: pointer;
     background: transparent;
     transition: all .15s ease;
 }
