@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {Button} from '@tryghost/admin-x-design-system';
 import {ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {useAnimatedCounter} from '../../hooks/useAnimatedCounter';
@@ -25,6 +25,24 @@ const FeedItemStats: React.FC<FeedItemStatsProps> = ({
 }) => {
     const [isLiked, setIsLiked] = useState(object.liked);
     const [isReposted, setIsReposted] = useState(object.reposted);
+
+    // Sync with external changes - Update the liked / reposted state when the object changes
+    useEffect(() => {
+        setIsLiked(object.liked);
+        setIsReposted(object.reposted);
+    }, [object.liked, object.reposted]);
+
+    // Sync with external changes - Update the repost count when the initialRepostCount changes
+    useEffect(() => {
+        if (repostCount !== initialRepostCount) {
+            if (initialRepostCount > repostCount) {
+                incrementReposts();
+            } else if (initialRepostCount < repostCount) {
+                decrementReposts();
+            }
+        }
+    }, [initialRepostCount]); // eslint-disable-line react-hooks/exhaustive-deps
+
     const likeMutation = useLikeMutationForUser('index');
     const unlikeMutation = useUnlikeMutationForUser('index');
     const repostMutation = useRepostMutationForUser('index');
