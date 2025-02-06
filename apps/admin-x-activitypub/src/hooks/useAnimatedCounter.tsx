@@ -17,9 +17,9 @@ export const useAnimatedCounter = (initialValue: number): AnimatedCounterResult 
     useEffect(() => {
         const newDigits = splitNumber(value);
         const changedPositions = new Set(
-            [...Array(Math.max(digits.length, newDigits.length))].map(
-                (_, i) => digits[i] !== newDigits[i] ? i : -1
-            ).filter(i => i !== -1)
+            [...Array(Math.max(digits.length, newDigits.length))].map((_, i) => {
+                return digits[i] !== newDigits[i] ? i : -1;
+            }).filter(i => i !== -1)
         );
 
         if (changedPositions.size > 0) {
