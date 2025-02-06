@@ -422,7 +422,7 @@ export function useSearchForUser(handle: string, query: string) {
     return {searchQuery, updateAccountSearchResult};
 }
 
-export function useSuggestedProfiles(handle: string, limit = 3) {
+export function useSuggestedProfilesForUser(handle: string, limit = 3) {
     const queryClient = useQueryClient();
     const queryKey = ['profiles', limit];
 
