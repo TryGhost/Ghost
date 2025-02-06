@@ -52,7 +52,7 @@ export interface GetProfileFollowersResponse {
     next: string | null;
 }
 
-export interface GetFollowingForProfileResponse {
+export interface GetProfileFollowingResponse {
     following: {
         actor: Actor;
         isFollowing: boolean;
@@ -326,7 +326,7 @@ export class ActivityPubAPI {
         };
     }
 
-    async getFollowingForProfile(handle: string, next?: string): Promise<GetFollowingForProfileResponse> {
+    async getProfileFollowing(handle: string, next?: string): Promise<GetProfileFollowingResponse> {
         const url = new URL(`.ghost/activitypub/profile/${handle}/following`, this.apiUrl);
         if (next) {
             url.searchParams.set('next', next);

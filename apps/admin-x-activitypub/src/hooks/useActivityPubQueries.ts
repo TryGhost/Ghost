@@ -519,7 +519,7 @@ export function useFollowingForProfile(handle: string) {
         async queryFn({pageParam}: {pageParam?: string}) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
-            return api.getFollowingForProfile(handle, pageParam);
+            return api.getProfileFollowing(handle, pageParam);
         },
         getNextPageParam(prevPage) {
             return prevPage.next;
