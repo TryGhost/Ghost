@@ -77,7 +77,7 @@ export class CallToActionNode extends BaseCallToActionNode {
         return (
             <KoenigCardWrapper
                 nodeKey={this.getKey()}
-                wrapperStyle={this.backgroundColor ? 'regular' : 'wide'}
+                wrapperStyle={this.backgroundColor === 'none' ? 'wide' : 'regular'}
             >
                 <CallToActionNodeComponent
                     backgroundColor={this.backgroundColor}
