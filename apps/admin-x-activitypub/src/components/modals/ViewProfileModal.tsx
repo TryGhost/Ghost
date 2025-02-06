@@ -173,6 +173,7 @@ const PostsTab: React.FC<{handle: string}> = ({handle}) => {
                                     commentCount={post.object.replyCount}
                                     layout='feed'
                                     object={post.object}
+                                    repostCount={post.object.repostCount}
                                     type={post.type}
                                     onClick={() => handleViewContent(post, false)}
                                     onCommentClick={() => handleViewContent(post, true)}

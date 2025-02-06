@@ -118,6 +118,7 @@ const Inbox: React.FC<InboxProps> = ({layout}) => {
                                                         commentCount={activity.object.replyCount ?? 0}
                                                         layout={layout}
                                                         object={activity.object}
+                                                        repostCount={activity.object.repostCount ?? 0}
                                                         type={activity.type}
                                                         onClick={() => handleViewContent(activity, false, updateActivity)}
                                                         onCommentClick={() => handleViewContent(activity, true, updateActivity)}
