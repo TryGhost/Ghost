@@ -254,20 +254,6 @@ export function useFollowersForUser(handle: string) {
     });
 }
 
-export function useFollowingForUser(handle: string) {
-    return useInfiniteQuery({
-        queryKey: [`following:${handle}`],
-        async queryFn({pageParam}: {pageParam?: string}) {
-            const siteUrl = await getSiteUrl();
-            const api = createActivityPubAPI(handle, siteUrl);
-            return api.getFollowing(pageParam);
-        },
-        getNextPageParam(prevPage) {
-            return prevPage.next;
-        }
-    });
-}
-
 export function useUnfollow(handle: string, onSuccess: () => void, onError: () => void) {
     const queryClient = useQueryClient();
     return useMutation({

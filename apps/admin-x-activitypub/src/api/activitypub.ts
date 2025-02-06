@@ -155,14 +155,6 @@ export class ActivityPubAPI {
         return this.getActivityPubCollection<Activity>(this.outboxApiUrl, cursor);
     }
 
-    get followingApiUrl() {
-        return new URL(`.ghost/activitypub/following/${this.handle}`, this.apiUrl);
-    }
-
-    async getFollowing(cursor?: string): Promise<ActivityPubCollectionResponse<Actor>> {
-        return this.getActivityPubCollection<Actor>(this.followingApiUrl, cursor);
-    }
-
     get followersApiUrl() {
         return new URL(`.ghost/activitypub/followers/${this.handle}`, this.apiUrl);
     }
