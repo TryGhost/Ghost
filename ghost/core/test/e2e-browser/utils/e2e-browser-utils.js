@@ -429,7 +429,8 @@ const createPostDraft = async (page, {title = 'Hello world', body = 'This is my 
     // Continue to the body by pressing enter
     await page.keyboard.press('Enter');
 
-    await page.waitForTimeout(100); // allow new->draft switch to occur fully, without this some initial typing events can be missed
+    const postStatus = await page.locator('[data-test-editor-post-status]');
+    await expect(postStatus).toHaveText('Draft - Saved');
     await page.keyboard.type(body);
 };
 
