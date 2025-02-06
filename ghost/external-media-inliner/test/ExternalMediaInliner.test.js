@@ -267,6 +267,62 @@ describe('ExternalMediaInliner', function () {
             });
         });
 
+        it('inlines srcset images in a lexical html card', async function () {
+            const requestMock = nock('https://example.com')
+                .get('/path/to/landscape-1x.jpg')
+                .reply(200, GIF1x1)
+                .get('/path/to/landscape-2x.jpg')
+                .reply(200, GIF1x1)
+                .get('/path/to/landscape-original.jpg')
+                .reply(200, GIF1x1);
+
+            const postStub = sinon.stub();
+            postStub.withArgs('mobiledoc').returns(null);
+            postStub.withArgs('lexical').returns(`{"root":{"children":[{"type":"html","version":1,"html":"<img srcset="https://example.com/path/to/landscape-1x.jpg, https://example.com/path/to/landscape-2x.jpg 2x" src="https://example.com/path/to/landscape-original.jpg" />"}],"direction":null,"format":"","indent":0,"type":"root","version":1}}`);
+
+            const postModelInstanceStub = {
+                id: 'inlined-post-with-htmlcard-id',
+                get: postStub
+            };
+
+            postModelStub = {
+                findPage: sinon.stub().returns({
+                    data: [postModelInstanceStub]
+                }),
+                edit: sinon.stub().resolves()
+            };
+
+            sinon.stub(path, 'relative')
+                .withArgs('/content/images', '/content/images/unique-image.jpg')
+                .returns('unique-image.jpg');
+            const inliner = new ExternalMediaInliner({
+                PostModel: postModelStub,
+                PostMetaModel: postMetaModelStub,
+                TagModel: tagModelStub,
+                UserModel: userModelStub,
+                getMediaStorage: sinon.stub().withArgs('.jpg').returns({
+                    getTargetDir: () => '/content/images',
+                    getUniqueFileName: () => '/content/images/unique-image.jpg',
+                    saveRaw: () => '/content/images/unique-image.jpg'
+                })
+            });
+
+            await inliner.inline(['https://example.com']);
+
+            assert.ok(requestMock.isDone());
+            assert.ok(postModelStub.edit.calledOnce);
+            // NOTE: The file names all being the same as a limitation in how this is stubbed. In production, each image is unique
+            assert.deepEqual(postModelStub.edit.args[0][0], {
+                lexical: `{"root":{"children":[{"type":"html","version":1,"html":"<img srcset="__GHOST_URL__/content/images/unique-image.jpg, __GHOST_URL__/content/images/unique-image.jpg 2x" src="__GHOST_URL__/content/images/unique-image.jpg" />"}],"direction":null,"format":"","indent":0,"type":"root","version":1}}`
+            });
+            assert.deepEqual(postModelStub.edit.args[0][1], {
+                id: 'inlined-post-with-htmlcard-id',
+                context: {
+                    internal: true
+                }
+            });
+        });
+
         it('inlines image in the post\'s mobiledoc & lexical content', async function () {
             const imageURL = 'https://img.stockfresh.com/files/f/image.jpg';
             const requestMock = nock('https://img.stockfresh.com')
