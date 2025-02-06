@@ -60,7 +60,7 @@ export interface GetProfileFollowingResponse {
     next: string | null;
 }
 
-export interface GetPostsForProfileResponse {
+export interface GetProfilePostsResponse {
     posts: Activity[];
     next: string | null;
 }
@@ -357,7 +357,7 @@ export class ActivityPubAPI {
         };
     }
 
-    async getPostsForProfile(handle: string, next?: string): Promise<GetPostsForProfileResponse> {
+    async getProfilePosts(handle: string, next?: string): Promise<GetProfilePostsResponse> {
         const url = new URL(`.ghost/activitypub/profile/${handle}/posts`, this.apiUrl);
         if (next) {
             url.searchParams.set('next', next);

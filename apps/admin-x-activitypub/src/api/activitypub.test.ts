@@ -972,7 +972,7 @@ describe('ActivityPubAPI', function () {
         });
     });
 
-    describe('getPostsForProfile', function () {
+    describe('getProfilePosts', function () {
         test('It returns an array of posts for a profile', async function () {
             const handle = '@foo@bar.baz';
 
@@ -1016,7 +1016,7 @@ describe('ActivityPubAPI', function () {
                 fakeFetch
             );
 
-            const actual = await api.getPostsForProfile(handle);
+            const actual = await api.getProfilePosts(handle);
 
             expect(actual.posts).toEqual([
                 {
@@ -1064,7 +1064,7 @@ describe('ActivityPubAPI', function () {
                 fakeFetch
             );
 
-            const actual = await api.getPostsForProfile(handle);
+            const actual = await api.getProfilePosts(handle);
 
             expect(actual.next).toEqual('abc123');
         });
@@ -1105,7 +1105,7 @@ describe('ActivityPubAPI', function () {
                 fakeFetch
             );
 
-            const actual = await api.getPostsForProfile(handle, next);
+            const actual = await api.getProfilePosts(handle, next);
             const expected = {
                 posts: [
                     {
@@ -1146,7 +1146,7 @@ describe('ActivityPubAPI', function () {
                 fakeFetch
             );
 
-            const actual = await api.getPostsForProfile(handle);
+            const actual = await api.getProfilePosts(handle);
             const expected = {
                 posts: [],
                 next: null
@@ -1178,7 +1178,7 @@ describe('ActivityPubAPI', function () {
                 fakeFetch
             );
 
-            const actual = await api.getPostsForProfile(handle);
+            const actual = await api.getProfilePosts(handle);
             const expected = {
                 posts: [],
                 next: null
@@ -1212,7 +1212,7 @@ describe('ActivityPubAPI', function () {
                 fakeFetch
             );
 
-            const actual = await api.getPostsForProfile(handle);
+            const actual = await api.getProfilePosts(handle);
 
             expect(actual.posts).toEqual([]);
         });

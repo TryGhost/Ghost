@@ -491,7 +491,7 @@ export function usePostsForProfile(handle: string) {
         async queryFn({pageParam}: {pageParam?: string}) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
-            return api.getPostsForProfile(handle, pageParam);
+            return api.getProfilePosts(handle, pageParam);
         },
         getNextPageParam(prevPage) {
             return prevPage.next;
