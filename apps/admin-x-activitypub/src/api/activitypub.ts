@@ -147,24 +147,6 @@ export class ActivityPubAPI {
         };
     }
 
-    get inboxApiUrl() {
-        return new URL(`.ghost/activitypub/inbox/${this.handle}`, this.apiUrl);
-    }
-
-    async getInbox(): Promise<Activity[]> {
-        const json = await this.fetchJSON(this.inboxApiUrl);
-        if (json === null) {
-            return [];
-        }
-        if ('orderedItems' in json) {
-            return Array.isArray(json.orderedItems) ? json.orderedItems : [json.orderedItems];
-        }
-        if ('items' in json) {
-            return Array.isArray(json.items) ? json.items : [json.items];
-        }
-        return [];
-    }
-
     get outboxApiUrl() {
         return new URL(`.ghost/activitypub/outbox/${this.handle}`, this.apiUrl);
     }
