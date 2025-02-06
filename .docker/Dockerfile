@@ -53,6 +53,7 @@ ARG WORKDIR=/home/ghost
 WORKDIR $WORKDIR
 COPY . .
 RUN yarn install --frozen-lockfile --prefer-offline --cache-folder $YARN_CACHE_FOLDER
+RUN yarn nx run-many -t build:ts && yarn nx run ghost-admin:build
 
 FROM base-devcontainer AS development
 ARG WORKDIR=/home/ghost
