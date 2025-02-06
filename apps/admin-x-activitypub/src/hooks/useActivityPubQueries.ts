@@ -78,37 +78,33 @@ export function useLikeMutationForUser(handle: string) {
             const api = createActivityPubAPI(handle, siteUrl);
             return api.like(id);
         },
-        onMutate: (id) => {
-            const previousInbox = queryClient.getQueryData([`inbox:${handle}`]);
-            if (previousInbox) {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                queryClient.setQueryData([`inbox:${handle}`], (old?: any[]) => {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    return old?.map((item: any) => {
-                        if (item.object.id === id) {
-                            return {
-                                ...item,
-                                object: {
-                                    ...item.object,
-                                    liked: true
-                                }
-                            };
-                        }
-                        return item;
-                    });
-                });
-            }
+        onMutate: async (id) => {
+            queryClient.setQueriesData([`activities:${handle}`], (current?: {pages: {data: Activity[]}[]}) => {
+                if (current === undefined) {
+                    return current;
+                }
 
-            // This sets the context for the onError handler
-            return {previousInbox};
-        },
-        onError: (_err, _id, context) => {
-            if (context?.previousInbox) {
-                queryClient.setQueryData([`inbox:${handle}`], context?.previousInbox);
-            }
-        },
-        onSettled: () => {
-            queryClient.invalidateQueries({queryKey: [`liked:${handle}`]});
+                return {
+                    ...current,
+                    pages: current.pages.map((page: {data: Activity[]}) => {
+                        return {
+                            ...page,
+                            data: page.data.map((item: Activity) => {
+                                if (item.object.id === id) {
+                                    return {
+                                        ...item,
+                                        object: {
+                                            ...item.object,
+                                            liked: true
+                                        }
+                                    };
+                                }
+                                return item;
+                            })
+                        };
+                    })
+                };
+            });
         }
     });
 }
@@ -122,45 +118,32 @@ export function useUnlikeMutationForUser(handle: string) {
             return api.unlike(id);
         },
         onMutate: async (id) => {
-            const previousInbox = queryClient.getQueryData([`inbox:${handle}`]);
-            const previousLiked = queryClient.getQueryData([`liked:${handle}`]);
+            queryClient.setQueriesData([`activities:${handle}`], (current?: {pages: {data: Activity[]}[]}) => {
+                if (current === undefined) {
+                    return current;
+                }
 
-            if (previousInbox) {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                queryClient.setQueryData([`inbox:${handle}`], (old?: any[]) => {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    return old?.map((item: any) => {
-                        if (item.object.id === id) {
-                            return {
-                                ...item,
-                                object: {
-                                    ...item.object,
-                                    liked: false
+                return {
+                    ...current,
+                    pages: current.pages.map((page: {data: Activity[]}) => {
+                        return {
+                            ...page,
+                            data: page.data.map((item: Activity) => {
+                                if (item.object.id === id) {
+                                    return {
+                                        ...item,
+                                        object: {
+                                            ...item.object,
+                                            liked: false
+                                        }
+                                    };
                                 }
-                            };
-                        }
-                        return item;
-                    });
-                });
-            }
-            if (previousLiked) {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                queryClient.setQueryData([`liked:${handle}`], (old?: any[]) => {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    return old?.filter((item: any) => item.object.id !== id);
-                });
-            }
-
-            // This sets the context for the onError handler
-            return {previousInbox, previousLiked};
-        },
-        onError: (_err, _id, context) => {
-            if (context?.previousInbox) {
-                queryClient.setQueryData([`inbox:${handle}`], context?.previousInbox);
-            }
-            if (context?.previousLiked) {
-                queryClient.setQueryData([`liked:${handle}`], context?.previousLiked);
-            }
+                                return item;
+                            })
+                        };
+                    })
+                };
+            });
         }
     });
 }
@@ -173,37 +156,34 @@ export function useRepostMutationForUser(handle: string) {
             const api = createActivityPubAPI(handle, siteUrl);
             return api.repost(id);
         },
-        onMutate: (id) => {
-            const previousInbox = queryClient.getQueryData([`inbox:${handle}`]);
-            if (previousInbox) {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                queryClient.setQueryData([`inbox:${handle}`], (old?: any[]) => {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    return old?.map((item: any) => {
-                        if (item.object.id === id) {
-                            return {
-                                ...item,
-                                object: {
-                                    ...item.object,
-                                    reposted: true
-                                }
-                            };
-                        }
-                        return item;
-                    });
-                });
-            }
+        onMutate: async (id) => {
+            queryClient.setQueriesData([`activities:${handle}`], (current?: {pages: {data: Activity[]}[]}) => {
+                if (current === undefined) {
+                    return current;
+                }
 
-            // This sets the context for the onError handler
-            return {previousInbox};
-        },
-        onError: (_err, _id, context) => {
-            if (context?.previousInbox) {
-                queryClient.setQueryData([`inbox:${handle}`], context?.previousInbox);
-            }
-        },
-        onSettled: () => {
-            queryClient.invalidateQueries({queryKey: [`reposted:${handle}`]});
+                return {
+                    ...current,
+                    pages: current.pages.map((page: {data: Activity[]}) => {
+                        return {
+                            ...page,
+                            data: page.data.map((item: Activity) => {
+                                if (item.object.id === id) {
+                                    return {
+                                        ...item,
+                                        object: {
+                                            ...item.object,
+                                            reposted: true,
+                                            repostCount: item.object.repostCount + 1
+                                        }
+                                    };
+                                }
+                                return item;
+                            })
+                        };
+                    })
+                };
+            });
         }
     });
 }
@@ -218,45 +198,33 @@ export function useDerepostMutationForUser(handle: string) {
             return api.derepost(id);
         },
         onMutate: async (id) => {
-            const previousInbox = queryClient.getQueryData([`inbox:${handle}`]);
-            const previousReposted = queryClient.getQueryData([`reposted:${handle}`]);
+            queryClient.setQueriesData([`activities:${handle}`], (current?: {pages: {data: Activity[]}[]}) => {
+                if (current === undefined) {
+                    return current;
+                }
 
-            if (previousInbox) {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                queryClient.setQueryData([`inbox:${handle}`], (old?: any[]) => {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    return old?.map((item: any) => {
-                        if (item.object.id === id) {
-                            return {
-                                ...item,
-                                object: {
-                                    ...item.object,
-                                    reposted: false
+                return {
+                    ...current,
+                    pages: current.pages.map((page: {data: Activity[]}) => {
+                        return {
+                            ...page,
+                            data: page.data.map((item: Activity) => {
+                                if (item.object.id === id) {
+                                    return {
+                                        ...item,
+                                        object: {
+                                            ...item.object,
+                                            reposted: false,
+                                            repostCount: item.object.repostCount - 1 < 0 ? 0 : item.object.repostCount - 1
+                                        }
+                                    };
                                 }
-                            };
-                        }
-                        return item;
-                    });
-                });
-            }
-            if (previousReposted) {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                queryClient.setQueryData([`reposted:${handle}`], (old?: any[]) => {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    return old?.filter((item: any) => item.object.id !== id);
-                });
-            }
-
-            // This sets the context for the onError handler
-            return {previousInbox, previousReposted};
-        },
-        onError: (_err, _id, context) => {
-            if (context?.previousInbox) {
-                queryClient.setQueryData([`inbox:${handle}`], context?.previousInbox);
-            }
-            if (context?.previousReposted) {
-                queryClient.setQueryData([`reposted:${handle}`], context?.previousReposted);
-            }
+                                return item;
+                            })
+                        };
+                    })
+                };
+            });
         }
     });
 }
