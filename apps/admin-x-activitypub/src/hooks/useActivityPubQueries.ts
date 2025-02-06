@@ -473,25 +473,25 @@ export function useSuggestedProfilesForUser(handle: string, limit = 3) {
     return {suggestedProfilesQuery, updateSuggestedProfile};
 }
 
-export function useProfileForUser(handle: string, fullHandle: string, enabled: boolean = true) {
+export function useProfileForUser(handle: string, profileHandle: string, enabled: boolean = true) {
     return useQuery({
-        queryKey: [`profile:${fullHandle}`],
+        queryKey: [`profile:${profileHandle}`],
         enabled,
         async queryFn() {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
-            return api.getProfile(fullHandle);
+            return api.getProfile(profileHandle);
         }
     });
 }
 
-export function useProfilePostsForUser(handle: string) {
+export function useProfilePostsForUser(handle: string, profileHandle: string) {
     return useInfiniteQuery({
-        queryKey: [`posts:${handle}`],
+        queryKey: [`posts:${profileHandle}`],
         async queryFn({pageParam}: {pageParam?: string}) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
-            return api.getProfilePosts(handle, pageParam);
+            return api.getProfilePosts(profileHandle, pageParam);
         },
         getNextPageParam(prevPage) {
             return prevPage.next;
@@ -499,13 +499,13 @@ export function useProfilePostsForUser(handle: string) {
     });
 }
 
-export function useProfileFollowersForUser(handle: string) {
+export function useProfileFollowersForUser(handle: string, profileHandle: string) {
     return useInfiniteQuery({
-        queryKey: [`followers:${handle}`],
+        queryKey: [`followers:${profileHandle}`],
         async queryFn({pageParam}: {pageParam?: string}) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
-            return api.getProfileFollowers(handle, pageParam);
+            return api.getProfileFollowers(profileHandle, pageParam);
         },
         getNextPageParam(prevPage) {
             return prevPage.next;
@@ -513,13 +513,13 @@ export function useProfileFollowersForUser(handle: string) {
     });
 }
 
-export function useProfileFollowingForUser(handle: string) {
+export function useProfileFollowingForUser(handle: string, profileHandle: string) {
     return useInfiniteQuery({
-        queryKey: [`following:${handle}`],
+        queryKey: [`following:${profileHandle}`],
         async queryFn({pageParam}: {pageParam?: string}) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
-            return api.getProfileFollowing(handle, pageParam);
+            return api.getProfileFollowing(profileHandle, pageParam);
         },
         getNextPageParam(prevPage) {
             return prevPage.next;

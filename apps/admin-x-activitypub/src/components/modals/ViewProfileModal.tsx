@@ -22,7 +22,7 @@ const noop = () => {};
 
 type QueryPageData = GetProfileFollowersResponse | GetProfileFollowingResponse;
 
-type QueryFn = (handle: string) => UseInfiniteQueryResult<QueryPageData>;
+type QueryFn = (handle: string, profileHandle: string) => UseInfiniteQueryResult<QueryPageData>;
 
 type ActorListProps = {
     handle: string,
@@ -43,7 +43,7 @@ const ActorList: React.FC<ActorListProps> = ({
         hasNextPage,
         isFetchingNextPage,
         isLoading
-    } = queryFn(handle);
+    } = queryFn('index', handle);
 
     const actors = (data?.pages.flatMap(resolveDataFn) ?? []);
 
@@ -127,7 +127,7 @@ const PostsTab: React.FC<{handle: string}> = ({handle}) => {
         hasNextPage,
         isFetchingNextPage,
         isLoading
-    } = useProfilePostsForUser(handle);
+    } = useProfilePostsForUser('index', handle);
 
     const observerRef = useRef<IntersectionObserver | null>(null);
     const loadMoreRef = useRef<HTMLDivElement | null>(null);
