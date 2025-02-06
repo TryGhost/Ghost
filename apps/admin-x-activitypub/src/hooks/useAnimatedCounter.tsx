@@ -1,7 +1,7 @@
 import {useEffect, useState} from 'react';
 
 interface AnimatedCounterResult {
-    displayValue: React.ReactNode;
+    Counter: React.ReactNode;
     currentValue: number;
     increment: () => void;
     decrement: () => void;
@@ -43,7 +43,7 @@ export const useAnimatedCounter = (initialValue: number): AnimatedCounterResult 
     };
 
     return {
-        displayValue: (
+        Counter: (
             <span className="flex">
                 {digits.map((digit, position) => (
                     <span

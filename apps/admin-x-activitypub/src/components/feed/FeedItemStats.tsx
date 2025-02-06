@@ -18,7 +18,7 @@ const FeedItemStats: React.FC<FeedItemStatsProps> = ({
     object,
     likeCount,
     commentCount,
-    repostCount,
+    repostCount: initialRepostCount,
     layout,
     onLikeClick,
     onCommentClick
@@ -30,11 +30,11 @@ const FeedItemStats: React.FC<FeedItemStatsProps> = ({
     const repostMutation = useRepostMutationForUser('index');
     const derepostMutation = useDerepostMutationForUser('index');
     const {
-        displayValue: repostCountDisplay,
-        currentValue: repostCountNumber,
+        Counter: RepostCounter,
+        currentValue: repostCount,
         increment: incrementReposts,
         decrement: decrementReposts
-    } = useAnimatedCounter(repostCount);
+    } = useAnimatedCounter(initialRepostCount);
 
     const handleLikeClick = async (e: React.MouseEvent<HTMLElement>) => {
         e.stopPropagation();
@@ -84,11 +84,11 @@ const FeedItemStats: React.FC<FeedItemStatsProps> = ({
         />
         <Button
             className={`${buttonClassName} ${isReposted ? 'text-green-500' : 'text-grey-900'}`}
-            hideLabel={(repostCount === 0 && !isReposted) || repostCountNumber === 0 || (layout === 'inbox')}
+            hideLabel={(initialRepostCount === 0 && !isReposted) || repostCount === 0 || (layout === 'inbox')}
             icon='reload'
             iconColorClass={`w-[18px] h-[18px] ${isReposted && 'text-green-500'}`}
             id='repost'
-            label={repostCountDisplay}
+            label={RepostCounter}
             size='md'
             title={`${isReposted ? 'Undo repost' : 'Repost'}`}
             unstyled={true}
