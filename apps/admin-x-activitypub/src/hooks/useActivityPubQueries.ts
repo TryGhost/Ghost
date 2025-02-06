@@ -505,7 +505,7 @@ export function useFollowersForProfile(handle: string) {
         async queryFn({pageParam}: {pageParam?: string}) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
-            return api.getFollowersForProfile(handle, pageParam);
+            return api.getProfileFollowers(handle, pageParam);
         },
         getNextPageParam(prevPage) {
             return prevPage.next;

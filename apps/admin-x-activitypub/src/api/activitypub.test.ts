@@ -504,7 +504,7 @@ describe('ActivityPubAPI', function () {
         });
     });
 
-    describe('getFollowersForProfile', function () {
+    describe('getProfileFollowers', function () {
         test('It returns an array of followers for a profile', async function () {
             const handle = '@foo@bar.baz';
 
@@ -544,7 +544,7 @@ describe('ActivityPubAPI', function () {
                 fakeFetch
             );
 
-            const actual = await api.getFollowersForProfile(handle);
+            const actual = await api.getProfileFollowers(handle);
 
             expect(actual.followers).toEqual([
                 {
@@ -588,7 +588,7 @@ describe('ActivityPubAPI', function () {
                 fakeFetch
             );
 
-            const actual = await api.getFollowersForProfile(handle);
+            const actual = await api.getProfileFollowers(handle);
 
             expect(actual.next).toEqual('abc123');
         });
@@ -627,7 +627,7 @@ describe('ActivityPubAPI', function () {
                 fakeFetch
             );
 
-            const actual = await api.getFollowersForProfile(handle, next);
+            const actual = await api.getProfileFollowers(handle, next);
             const expected = {
                 followers: [
                     {
@@ -666,7 +666,7 @@ describe('ActivityPubAPI', function () {
                 fakeFetch
             );
 
-            const actual = await api.getFollowersForProfile(handle);
+            const actual = await api.getProfileFollowers(handle);
             const expected = {
                 followers: [],
                 next: null
@@ -698,7 +698,7 @@ describe('ActivityPubAPI', function () {
                 fakeFetch
             );
 
-            const actual = await api.getFollowersForProfile(handle);
+            const actual = await api.getProfileFollowers(handle);
             const expected = {
                 followers: [],
                 next: null
@@ -732,7 +732,7 @@ describe('ActivityPubAPI', function () {
                 fakeFetch
             );
 
-            const actual = await api.getFollowersForProfile(handle);
+            const actual = await api.getProfileFollowers(handle);
 
             expect(actual.followers).toEqual([]);
         });

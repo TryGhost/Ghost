@@ -44,7 +44,7 @@ export interface ActivityThread {
 
 export type ActivityPubCollectionResponse<T> = {data: T[], next: string | null};
 
-export interface GetFollowersForProfileResponse {
+export interface GetProfileFollowersResponse {
     followers: {
         actor: Actor;
         isFollowing: boolean;
@@ -295,7 +295,7 @@ export class ActivityPubAPI {
         return json as Profile;
     }
 
-    async getFollowersForProfile(handle: string, next?: string): Promise<GetFollowersForProfileResponse> {
+    async getProfileFollowers(handle: string, next?: string): Promise<GetProfileFollowersResponse> {
         const url = new URL(`.ghost/activitypub/profile/${handle}/followers`, this.apiUrl);
         if (next) {
             url.searchParams.set('next', next);
