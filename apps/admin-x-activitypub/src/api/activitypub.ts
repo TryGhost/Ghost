@@ -155,14 +155,6 @@ export class ActivityPubAPI {
         return this.getActivityPubCollection<Activity>(this.outboxApiUrl, cursor);
     }
 
-    get followersApiUrl() {
-        return new URL(`.ghost/activitypub/followers/${this.handle}`, this.apiUrl);
-    }
-
-    async getFollowers(cursor?: string): Promise<ActivityPubCollectionResponse<Actor>> {
-        return this.getActivityPubCollection<Actor>(this.followersApiUrl, cursor);
-    }
-
     async follow(username: string): Promise<Actor> {
         const url = new URL(`.ghost/activitypub/actions/follow/${username}`, this.apiUrl);
         const json = await this.fetchJSON(url, 'POST');
@@ -443,4 +435,3 @@ export class ActivityPubAPI {
         };
     }
 }
-

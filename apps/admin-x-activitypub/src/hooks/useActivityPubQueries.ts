@@ -240,20 +240,6 @@ export function useUserDataForUser(handle: string) {
     });
 }
 
-export function useFollowersForUser(handle: string) {
-    return useInfiniteQuery({
-        queryKey: [`followers:${handle}`],
-        async queryFn({pageParam}: {pageParam?: string}) {
-            const siteUrl = await getSiteUrl();
-            const api = createActivityPubAPI(handle, siteUrl);
-            return api.getFollowers(pageParam);
-        },
-        getNextPageParam(prevPage) {
-            return prevPage.next;
-        }
-    });
-}
-
 export function useUnfollow(handle: string, onSuccess: () => void, onError: () => void) {
     const queryClient = useQueryClient();
     return useMutation({
