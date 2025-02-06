@@ -1,7 +1,7 @@
 import clsx from 'clsx';
 import {Button} from '@tryghost/admin-x-design-system';
 import {useEffect, useState} from 'react';
-import {useFollow, useUnfollow} from '../../hooks/useActivityPubQueries';
+import {useFollow, useUnfollowMutationForUser} from '../../hooks/useActivityPubQueries';
 
 interface FollowButtonProps {
     className?: string;
@@ -25,7 +25,7 @@ const FollowButton: React.FC<FollowButtonProps> = ({
     const [isFollowing, setIsFollowing] = useState(following);
     const [isHovered, setIsHovered] = useState(false);
 
-    const unfollowMutation = useUnfollow('index',
+    const unfollowMutation = useUnfollowMutationForUser('index',
         noop,
         () => {
             setIsFollowing(false);

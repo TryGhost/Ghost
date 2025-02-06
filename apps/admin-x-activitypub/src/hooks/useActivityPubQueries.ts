@@ -240,7 +240,7 @@ export function useUserDataForUser(handle: string) {
     });
 }
 
-export function useUnfollow(handle: string, onSuccess: () => void, onError: () => void) {
+export function useUnfollowMutationForUser(handle: string, onSuccess: () => void, onError: () => void) {
     const queryClient = useQueryClient();
     return useMutation({
         async mutationFn(username: string) {
