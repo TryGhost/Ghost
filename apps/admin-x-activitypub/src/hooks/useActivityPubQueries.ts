@@ -241,7 +241,7 @@ export function useDerepostMutationForUser(handle: string) {
             }
             if (previousReposted) {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                queryClient.setQueryData([`resposted:${handle}`], (old?: any[]) => {
+                queryClient.setQueryData([`reposted:${handle}`], (old?: any[]) => {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     return old?.filter((item: any) => item.object.id !== id);
                 });
