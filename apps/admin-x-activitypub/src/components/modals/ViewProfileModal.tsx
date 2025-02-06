@@ -5,7 +5,7 @@ import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import {Button, Heading, Icon, List, LoadingIndicator, Modal, NoValueLabel, Tab,TabView} from '@tryghost/admin-x-design-system';
 import {UseInfiniteQueryResult} from '@tanstack/react-query';
 
-import {type GetFollowersForProfileResponse, type GetFollowingForProfileResponse} from '../../api/activitypub';
+import {type GetProfileFollowersResponse, type GetProfileFollowingResponse} from '../../api/activitypub';
 import {useProfileFollowersForUser, useProfileFollowingForUser, useProfileForUser, useProfilePostsForUser} from '../../hooks/useActivityPubQueries';
 
 import APAvatar from '../global/APAvatar';
@@ -20,7 +20,7 @@ import {handleViewContent} from '../../utils/content-handlers';
 
 const noop = () => {};
 
-type QueryPageData = GetFollowersForProfileResponse | GetFollowingForProfileResponse;
+type QueryPageData = GetProfileFollowersResponse | GetProfileFollowingResponse;
 
 type QueryFn = (handle: string) => UseInfiniteQueryResult<QueryPageData>;
 
@@ -28,7 +28,7 @@ type ActorListProps = {
     handle: string,
     noResultsMessage: string,
     queryFn: QueryFn,
-    resolveDataFn: (data: QueryPageData) => GetFollowersForProfileResponse['followers'] | GetFollowingForProfileResponse['following'];
+    resolveDataFn: (data: QueryPageData) => GetProfileFollowersResponse['followers'] | GetProfileFollowingResponse['following'];
 };
 
 const ActorList: React.FC<ActorListProps> = ({
