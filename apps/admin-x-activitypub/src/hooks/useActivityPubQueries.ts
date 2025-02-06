@@ -286,7 +286,7 @@ export function useUnfollowMutationForUser(handle: string, onSuccess: () => void
     });
 }
 
-export function useFollow(handle: string, onSuccess: () => void, onError: () => void) {
+export function useFollowMutationForUser(handle: string, onSuccess: () => void, onError: () => void) {
     const queryClient = useQueryClient();
     return useMutation({
         async mutationFn(username: string) {
