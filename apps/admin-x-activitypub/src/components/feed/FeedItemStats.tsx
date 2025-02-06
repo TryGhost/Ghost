@@ -30,7 +30,8 @@ const FeedItemStats: React.FC<FeedItemStatsProps> = ({
     const repostMutation = useRepostMutationForUser('index');
     const derepostMutation = useDerepostMutationForUser('index');
     const {
-        displayValue: repostValue,
+        displayValue: repostCountDisplay,
+        currentValue: repostCountNumber,
         increment: incrementReposts,
         decrement: decrementReposts
     } = useAnimatedCounter(repostCount);
@@ -46,12 +47,12 @@ const FeedItemStats: React.FC<FeedItemStatsProps> = ({
         onLikeClick();
     };
 
-    const buttonClassName = `transition-color flex p-2 items-center justify-center rounded-full bg-white leading-none hover:bg-grey-100`;
+    const buttonClassName = `transition-color flex p-2 ap-action-button items-center justify-center rounded-full bg-white leading-none hover:bg-grey-100`;
 
     return (<div className={`flex ${(layout === 'inbox') ? 'flex-col' : 'gap-1'}`}>
         <Button
             className={`${buttonClassName} ${isLiked ? 'text-red-600' : 'text-grey-900'}`}
-            hideLabel={!isLiked || (layout === 'inbox')}
+            hideLabel={true}
             icon='heart'
             iconColorClass={`w-[18px] h-[18px] ${isLiked && 'ap-red-heart text-red-600 *:!fill-red-600 hover:text-red-600'}`}
             id='like'
@@ -83,11 +84,11 @@ const FeedItemStats: React.FC<FeedItemStatsProps> = ({
         />
         <Button
             className={`${buttonClassName} ${isReposted ? 'text-green-500' : 'text-grey-900'}`}
-            hideLabel={repostCount === 0 || (layout === 'inbox')}
+            hideLabel={(repostCount === 0 && !isReposted) || repostCountNumber === 0 || (layout === 'inbox')}
             icon='reload'
             iconColorClass={`w-[18px] h-[18px] ${isReposted && 'text-green-500'}`}
             id='repost'
-            label={repostValue}
+            label={repostCountDisplay}
             size='md'
             title={`${isReposted ? 'Undo repost' : 'Repost'}`}
             unstyled={true}

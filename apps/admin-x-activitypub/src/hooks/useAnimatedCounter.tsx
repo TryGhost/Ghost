@@ -2,6 +2,7 @@ import {useEffect, useState} from 'react';
 
 interface AnimatedCounterResult {
     displayValue: React.ReactNode;
+    currentValue: number;
     increment: () => void;
     decrement: () => void;
 }
@@ -46,18 +47,19 @@ export const useAnimatedCounter = (initialValue: number): AnimatedCounterResult 
                 {digits.map((digit, position) => (
                     <span
                         key={`${digits.length - position}-${digit}`}
-                        role='text'
                         aria-atomic='true'
                         aria-live='polite'
                         className={animatingDigits.has(position)
                             ? isDecrementing ? 'animate-slide-down' : 'animate-slide-up'
                             : ''}
+                        role='text'
                     >
                         {digit}
                     </span>
                 ))}
             </span>
         ),
+        currentValue: value,
         increment: () => updateValue(1),
         decrement: () => updateValue(-1)
     };

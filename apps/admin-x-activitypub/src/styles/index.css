@@ -68,7 +68,7 @@
     will-change: transform, opacity;
 }
 
-button.ap-like-button:active svg {
+button.ap-action-button:active svg {
     animation: bump 0.3s ease-in-out;
 }
 
