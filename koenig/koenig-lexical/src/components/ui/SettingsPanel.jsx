@@ -264,7 +264,7 @@ export function ColorPickerSetting({label, isExpanded, onSwatchChange, onPickerC
                 document.removeEventListener('click', closePicker);
             };
         }
-    }, [isExpanded]);
+    }, [isExpanded, onTogglePicker]);
 
     return (
         <div className="flex-col" data-testid={dataTestId} onClick={markClickedInside}>

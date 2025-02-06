@@ -409,8 +409,10 @@ export async function insertCard(page, {cardName, nth = 0}) {
     // hr is the one case we don't match the card name to the data attribute
     if (card === 'Divider') {
         await expect(page.locator(`[data-kg-card="horizontalrule"]`).nth(nth)).toBeVisible();
+        return page.locator(`[data-kg-card="horizontalrule"]`).nth(nth);
     } else {
         await expect(page.locator(`[data-kg-card="${cardName}" i]`).nth(nth)).toBeVisible();
+        return page.locator(`[data-kg-card="${cardName}" i]`).nth(nth);
     }
 }
 

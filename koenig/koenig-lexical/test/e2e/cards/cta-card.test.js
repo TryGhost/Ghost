@@ -1,5 +1,5 @@
 import path from 'path';
-import {assertHTML, focusEditor, html, initialize, insertCard} from '../../utils/e2e';
+import {assertHTML, focusEditor, getEditorStateJSON, html, initialize, insertCard} from '../../utils/e2e';
 import {expect, test} from '@playwright/test';
 import {fileURLToPath} from 'url';
 const __filename = fileURLToPath(import.meta.url);
@@ -7,6 +7,7 @@ const __dirname = path.dirname(__filename);
 
 test.describe('Call To Action Card', async () => {
     let page;
+    let serializedTestCard;
 
     test.beforeAll(async ({browser}) => {
         page = await browser.newPage();
@@ -14,6 +15,21 @@ test.describe('Call To Action Card', async () => {
 
     test.beforeEach(async () => {
         await initialize({page, uri: '/#/?content=false&labs=contentVisibility,contentVisibilityAlpha'});
+
+        serializedTestCard = {
+            type: 'call-to-action',
+            backgroundColor: 'green',
+            buttonColor: '#F0F0F0',
+            buttonText: 'Get access now',
+            buttonTextColor: '#000000',
+            buttonUrl: 'http://someblog.com/somepost',
+            hasImage: true,
+            hasSponsorLabel: true,
+            imageUrl: '/content/images/2022/11/koenig-lexical.jpg',
+            layout: 'minimal',
+            showButton: true,
+            textValue: '<p><span style="white-space: pre-wrap;">This is a new CTA Card.</span></p>'
+        };
     });
 
     test.afterAll(async () => {
@@ -23,20 +39,7 @@ test.describe('Call To Action Card', async () => {
     test('can import serialized CTA card nodes', async function () {
         const contentParam = encodeURIComponent(JSON.stringify({
             root: {
-                children: [{
-                    type: 'call-to-action',
-                    backgroundColor: 'green',
-                    buttonColor: '#F0F0F0',
-                    buttonText: 'Get access now',
-                    buttonTextColor: '#000000',
-                    buttonUrl: 'http://someblog.com/somepost',
-                    hasImage: true,
-                    hasSponsorLabel: true,
-                    imageUrl: '/content/images/2022/11/koenig-lexical.jpg',
-                    layout: 'minimal',
-                    showButton: true,
-                    textValue: '<p><span style="white-space: pre-wrap;">This is a new CTA Card.</span></p>'
-                }],
+                children: [serializedTestCard],
                 direction: null,
                 format: '',
                 indent: 0,
@@ -361,5 +364,80 @@ test.describe('Call To Action Card', async () => {
         await page.waitForSelector('[data-testid="media-upload-filled"]');
         const previewImage = await page.locator('[data-testid="media-upload-filled"] img');
         await expect(previewImage).toBeVisible();
+    });
+
+    test('can change visibility settings', async function () {
+        await focusEditor(page);
+        const card = await insertCard(page, {cardName: 'call-to-action'});
+
+        // switch to visibility settings
+        await card.getByTestId('tab-visibility').click();
+
+        // check visibility icon and toggles match default state
+        await expect(page.getByTestId('visibility-indicator')).not.toBeVisible();
+        await expect(card.getByTestId('visibility-toggle-web-nonMembers')).toBeChecked();
+        await expect(card.getByTestId('visibility-toggle-web-freeMembers')).toBeChecked();
+        await expect(card.getByTestId('visibility-toggle-web-paidMembers')).toBeChecked();
+        await expect(card.getByTestId('visibility-toggle-email-freeMembers')).toBeChecked();
+        await expect(card.getByTestId('visibility-toggle-email-paidMembers')).toBeChecked();
+
+        // change toggles
+        await card.getByTestId('visibility-toggle-web-paidMembers').click();
+        await card.getByTestId('visibility-toggle-email-paidMembers').click();
+
+        // visibility icon appears
+        await expect(page.getByTestId('visibility-indicator')).toBeVisible();
+
+        // serialized state gets updated
+        const serializedState = JSON.parse(await getEditorStateJSON(page));
+        expect(serializedState.root.children[0].visibility).toEqual({
+            web: {
+                nonMember: true,
+                memberSegment: 'status:free'
+            },
+            email: {
+                memberSegment: 'status:free'
+            }
+        });
+    });
+
+    test('can import serialized visibility settings', async function () {
+        const contentParam = encodeURIComponent(JSON.stringify({
+            root: {
+                children: [{
+                    ...serializedTestCard,
+                    visibility: {
+                        web: {
+                            nonMember: false,
+                            memberSegment: 'status:free'
+                        },
+                        email: {
+                            memberSegment: 'status:free'
+                        }
+                    }
+                }],
+                direction: null,
+                format: '',
+                indent: 0,
+                type: 'root',
+                version: 1
+            }
+        }));
+
+        await initialize({page, uri: `/#/?content=${contentParam}`});
+
+        // assert visibility icon is visible
+        await expect(page.getByTestId('visibility-indicator')).toBeVisible();
+
+        // put card into edit mode
+        await page.dblclick('[data-kg-card="call-to-action"]');
+
+        // check toggles match the serialized data
+        await page.click('[data-testid="tab-visibility"]');
+        await expect(page.getByTestId('visibility-toggle-web-nonMembers')).not.toBeChecked();
+        await expect(page.getByTestId('visibility-toggle-web-freeMembers')).toBeChecked();
+        await expect(page.getByTestId('visibility-toggle-web-paidMembers')).not.toBeChecked();
+        await expect(page.getByTestId('visibility-toggle-email-freeMembers')).toBeChecked();
+        await expect(page.getByTestId('visibility-toggle-email-paidMembers')).not.toBeChecked();
     });
 });

@@ -8,6 +8,7 @@ import clsx from 'clsx';
 import {Button} from '../Button';
 import {ButtonGroupSetting, ColorOptionSetting, ColorPickerSetting, InputSetting, InputUrlSetting, MediaUploadSetting, SettingsPanel, ToggleSetting} from '../SettingsPanel';
 import {ReadOnlyOverlay} from '../ReadOnlyOverlay';
+import {VisibilitySettings} from '../VisibilitySettings';
 import {getAccentColor} from '../../../utils/getAccentColor';
 import {textColorForBackgroundColor} from '@tryghost/color-utils';
 
@@ -72,6 +73,7 @@ export function CtaCard({
     isEditing = false,
     layout = 'immersive',
     showButton = false,
+    visibilityOptions = {},
     handleButtonColor = () => {},
     handleColorChange = () => {},
     onFileChange = () => {},
@@ -81,7 +83,8 @@ export function CtaCard({
     updateButtonUrl = () => {},
     updateHasSponsorLabel = () => {},
     updateLayout = () => {},
-    updateShowButton = () => {}
+    updateShowButton = () => {},
+    toggleVisibility = () => {}
 }) {
     const [buttonColorPickerExpanded, setButtonColorPickerExpanded] = useState(false);
 
@@ -193,26 +196,10 @@ export function CtaCard({
     );
 
     const visibilitySettings = (
-        <>
-            <p className="text-sm font-bold tracking-normal text-grey-900 dark:text-grey-300">Web</p>
-            <ToggleSetting
-                label="Anonymous visitors"
-            />
-            <ToggleSetting
-                label="Free members"
-            />
-            <ToggleSetting
-                label="Paid members"
-            />
-            <hr className="not-kg-prose my-2 block border-t-grey-300 dark:border-t-grey-900" />
-            <p className="text-sm font-bold tracking-normal text-grey-900 dark:text-grey-300">Email</p>
-            <ToggleSetting
-                label="Free members"
-            />
-            <ToggleSetting
-                label="Paid members"
-            />
-        </>
+        <VisibilitySettings
+            toggleVisibility={toggleVisibility}
+            visibilityOptions={visibilityOptions}
+        />
     );
 
     return (
@@ -247,13 +234,13 @@ export function CtaCard({
                             'block',
                             layout === 'immersive' ? 'w-full' : 'w-16 shrink-0'
                         )}>
-                            <img 
-                                alt="Placeholder" 
+                            <img
+                                alt="Placeholder"
                                 className={clsx(
                                     layout === 'immersive' ? 'h-auto w-full' : 'aspect-square w-16 object-cover',
                                     'rounded-md'
-                                )} 
-                                src={imageSrc} 
+                                )}
+                                src={imageSrc}
                             />
                         </div>
                     )}
@@ -279,10 +266,10 @@ export function CtaCard({
                         {/* Button */}
                         { (showButton && (isEditing || (buttonText && buttonUrl))) &&
                             <div data-test-cta-button-current-url={buttonUrl}>
-                                <Button 
-                                    color={'accent'} 
-                                    dataTestId="cta-button" 
-                                    placeholder="Add button text" 
+                                <Button
+                                    color={'accent'}
+                                    dataTestId="cta-button"
+                                    placeholder="Add button text"
                                     size={layout === 'immersive' ? 'medium' : 'small'}
                                     style={buttonColor ? {
                                         backgroundColor: buttonColor === 'accent' ? 'var(--accent-color)' : buttonColor,
@@ -322,7 +309,7 @@ CtaCard.propTypes = {
     buttonColor: PropTypes.string,
     buttonTextColor: PropTypes.string,
     color: PropTypes.oneOf(['none', 'grey', 'white', 'blue', 'green', 'yellow', 'red']),
-    hasSponsorLabel: PropTypes.bool,    
+    hasSponsorLabel: PropTypes.bool,
     imageSrc: PropTypes.string,
     isEditing: PropTypes.bool,
     layout: PropTypes.oneOf(['minimal', 'immersive']),
@@ -338,5 +325,7 @@ CtaCard.propTypes = {
     handleButtonColor: PropTypes.func,
     onFileChange: PropTypes.func,
     setFileInputRef: PropTypes.func,
-    onRemoveMedia: PropTypes.func
+    onRemoveMedia: PropTypes.func,
+    visibilityOptions: PropTypes.object,
+    toggleVisibility: PropTypes.func
 };
