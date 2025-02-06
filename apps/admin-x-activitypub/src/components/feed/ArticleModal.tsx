@@ -845,6 +845,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                             last={false}
                                             layout='reply'
                                             object={item.object}
+                                            repostCount={item.object.repostCount ?? 0}
                                             type='Note'
                                             onClick={() => {
                                                 navigateForward(item.id, item.object, item.actor, false);
@@ -864,6 +865,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                     last={true}
                                     layout={'modal'}
                                     object={object}
+                                    repostCount={object.repostCount ?? 0}
                                     showHeader={(canNavigateBack || (activityThreadParents.length > 0))}
                                     type='Note'
                                     onCommentClick={() => {
@@ -894,6 +896,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                             layout={'modal'}
                                             likeCount={1}
                                             object={object}
+                                            repostCount={object.repostCount ?? 0}
                                             onCommentClick={() => {
                                                 repliesRef.current?.scrollIntoView({
                                                     behavior: 'smooth',
@@ -929,6 +932,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                                 last={true}
                                                 layout='reply'
                                                 object={item.object}
+                                                repostCount={item.object.repostCount ?? 0}
                                                 type='Note'
                                                 onClick={() => {
                                                     navigateForward(item.id, item.object, item.actor, false);
