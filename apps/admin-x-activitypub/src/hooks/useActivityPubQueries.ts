@@ -499,7 +499,7 @@ export function useProfilePostsForUser(handle: string) {
     });
 }
 
-export function useFollowersForProfile(handle: string) {
+export function useProfileFollowersForUser(handle: string) {
     return useInfiniteQuery({
         queryKey: [`followers:${handle}`],
         async queryFn({pageParam}: {pageParam?: string}) {

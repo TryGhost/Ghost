@@ -6,7 +6,7 @@ import {Button, Heading, Icon, List, LoadingIndicator, Modal, NoValueLabel, Tab,
 import {UseInfiniteQueryResult} from '@tanstack/react-query';
 
 import {type GetFollowersForProfileResponse, type GetFollowingForProfileResponse} from '../../api/activitypub';
-import {useFollowersForProfile, useFollowingForProfile, useProfilePostsForUser, useProfileForUser} from '../../hooks/useActivityPubQueries';
+import {useProfileFollowersForUser, useFollowingForProfile, useProfilePostsForUser, useProfileForUser} from '../../hooks/useActivityPubQueries';
 
 import APAvatar from '../global/APAvatar';
 import ActivityItem from '../activities/ActivityItem';
@@ -212,7 +212,7 @@ const FollowersTab: React.FC<{handle: string}> = ({handle}) => {
         <ActorList
             handle={handle}
             noResultsMessage={`${handle} has no followers yet`}
-            queryFn={useFollowersForProfile}
+            queryFn={useProfileFollowersForUser}
             resolveDataFn={page => ('followers' in page ? page.followers : [])}
         />
     );
