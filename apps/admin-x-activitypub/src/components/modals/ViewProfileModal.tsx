@@ -6,7 +6,7 @@ import {Button, Heading, Icon, List, LoadingIndicator, Modal, NoValueLabel, Tab,
 import {UseInfiniteQueryResult} from '@tanstack/react-query';
 
 import {type GetFollowersForProfileResponse, type GetFollowingForProfileResponse} from '../../api/activitypub';
-import {useProfileFollowersForUser, useFollowingForProfile, useProfilePostsForUser, useProfileForUser} from '../../hooks/useActivityPubQueries';
+import {useProfileFollowersForUser, useProfileFollowingForUser, useProfileForUser, useProfilePostsForUser} from '../../hooks/useActivityPubQueries';
 
 import APAvatar from '../global/APAvatar';
 import ActivityItem from '../activities/ActivityItem';
@@ -201,7 +201,7 @@ const FollowingTab: React.FC<{handle: string}> = ({handle}) => {
         <ActorList
             handle={handle}
             noResultsMessage={`${handle} is not following anyone yet`}
-            queryFn={useFollowingForProfile}
+            queryFn={useProfileFollowingForUser}
             resolveDataFn={page => ('following' in page ? page.following : [])}
         />
     );

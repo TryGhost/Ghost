@@ -513,7 +513,7 @@ export function useProfileFollowersForUser(handle: string) {
     });
 }
 
-export function useFollowingForProfile(handle: string) {
+export function useProfileFollowingForUser(handle: string) {
     return useInfiniteQuery({
         queryKey: [`following:${handle}`],
         async queryFn({pageParam}: {pageParam?: string}) {
