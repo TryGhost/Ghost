@@ -148,10 +148,12 @@ const publishPost = async (page, {type = 'publish', time, date} = {}) => {
 
     if (date) {
         await page.locator('[data-test-date-time-picker-date-input]').fill(date);
+        await page.locator('[data-test-date-time-picker-date-input]').blur();
     }
 
     if (time) {
         await page.locator('[data-test-date-time-picker-time-input]').fill(time);
+        await page.locator('[data-test-date-time-picker-time-input]').blur();
     }
 
     // TODO: set other publish options
