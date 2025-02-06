@@ -19,7 +19,7 @@ export const useAnimatedCounter = (initialValue: number): AnimatedCounterResult 
         const newDigits = splitNumber(value);
         const maxLength = Math.max(digits.length, newDigits.length);
         const changedPositions = new Set(
-            Array.from({ length: maxLength }, (_, i) => {
+            Array.from({length: maxLength}, (_, i) => {
                 return digits[i] !== newDigits[i] ? i : -1;
             }).filter(i => i !== -1)
         );
