@@ -485,7 +485,7 @@ export function useProfileForUser(handle: string, fullHandle: string, enabled: b
     });
 }
 
-export function usePostsForProfile(handle: string) {
+export function useProfilePostsForUser(handle: string) {
     return useInfiniteQuery({
         queryKey: [`posts:${handle}`],
         async queryFn({pageParam}: {pageParam?: string}) {
