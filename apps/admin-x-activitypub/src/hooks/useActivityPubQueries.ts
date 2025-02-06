@@ -208,6 +208,59 @@ export function useRepostMutationForUser(handle: string) {
     });
 }
 
+export function useDepostMutationForUser(handle: string) {
+    const queryClient = useQueryClient();
+    return useMutation({
+        async mutationFn(id: string) {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI(handle, siteUrl);
+
+            return api.depost(id);
+        },
+        onMutate: async (id) => {
+            const previousInbox = queryClient.getQueryData([`inbox:${handle}`]);
+            const previousReposted = queryClient.getQueryData([`reposted:${handle}`]);
+
+            if (previousInbox) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                queryClient.setQueryData([`inbox:${handle}`], (old?: any[]) => {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    return old?.map((item: any) => {
+                        if (item.object.id === id) {
+                            return {
+                                ...item,
+                                object: {
+                                    ...item.object,
+                                    reposted: false
+                                }
+                            };
+                        }
+                        return item;
+                    });
+                });
+            }
+            if (previousReposted) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                queryClient.setQueryData([`resposted:${handle}`], (old?: any[]) => {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    return old?.filter((item: any) => item.object.id !== id);
+                });
+            }
+
+            // This sets the context for the onError handler
+            return {previousInbox, previousReposted};
+        },
+        onError: (_err, _id, context) => {
+            if (context?.previousInbox) {
+                queryClient.setQueryData([`inbox:${handle}`], context?.previousInbox);
+            }
+            if (context?.previousReposted) {
+                queryClient.setQueryData([`reposted:${handle}`], context?.previousReposted);
+            }
+        }
+    });
+}
+
 export function useUserDataForUser(handle: string) {
     return useQuery({
         queryKey: [`user:${handle}`],
