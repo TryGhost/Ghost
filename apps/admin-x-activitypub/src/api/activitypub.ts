@@ -224,8 +224,8 @@ export class ActivityPubAPI {
         await this.fetchJSON(url, 'POST');
     }
 
-    async depost(id: string): Promise<void> {
-        const url = new URL(`.ghost/activitypub/actions/depost/${encodeURIComponent(id)}`, this.apiUrl);
+    async derepost(id: string): Promise<void> {
+        const url = new URL(`.ghost/activitypub/actions/derepost/${encodeURIComponent(id)}`, this.apiUrl);
         await this.fetchJSON(url, 'POST');
     }
 

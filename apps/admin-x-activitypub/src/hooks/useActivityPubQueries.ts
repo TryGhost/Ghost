@@ -208,14 +208,14 @@ export function useRepostMutationForUser(handle: string) {
     });
 }
 
-export function useDepostMutationForUser(handle: string) {
+export function useDerepostMutationForUser(handle: string) {
     const queryClient = useQueryClient();
     return useMutation({
         async mutationFn(id: string) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
 
-            return api.depost(id);
+            return api.derepost(id);
         },
         onMutate: async (id) => {
             const previousInbox = queryClient.getQueryData([`inbox:${handle}`]);
