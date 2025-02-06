@@ -5,7 +5,8 @@ services:
     build:
       context: .
       dockerfile: ./.docker/Dockerfile
-      target: development
+      target: full-devcontainer
+    command: ["yarn", "dev"]
     ports:
       - "2368:2368" # Ghost
       - "4200:4200" # Admin
@@ -20,8 +21,22 @@ services:
       - "7173:7173" # Comments
       - "7174:7174" # Comments HTTPS
     profiles: [full]
-    volumes:
-      - .:/home/ghost
+    develop:
+      watch:
+        - action: sync
+          path: ./ghost
+          target: /home/ghost/ghost
+          ignore:
+            - node_modules
+            - .git
+            - .docker
+        - action: sync
+          path: ./apps
+          target: /home/ghost/apps
+          ignore:
+            - node_modules
+            - .git
+            - .docker
     tty: true
     depends_on:
       mysql:
