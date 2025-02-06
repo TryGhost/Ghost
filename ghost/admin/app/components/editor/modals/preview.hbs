@@ -1,11 +1,11 @@
-<div class="flex flex-column h-100 bg-whitegrey-l2">
+<div class="gh-post-preview-modal">
     <header class="modal-header gh-post-preview-header" data-test-modal="preview-email">
         <div class="left">
             <h2>Preview</h2>
         </div>
         <div class="gh-post-preview-btn-group">
             <div class="gh-contentfilter gh-btn-group">
-                <button type="button" class="gh-btn gh-post-preview-mode"><span>Web</span></button>
+                    <button type="button" class="gh-btn gh-post-preview-mode {{if (or (eq this.tab "browser") (eq this.tab "mobile")) "gh-btn-group-selected"}}" {{on "click" (fn this.changeTab "browser")}}><span>Web</span></button>
                 {{#if (and (not-eq this.settings.membersSignupAccess "none") (not-eq this.settings.editorDefaultEmailRecipients "disabled"))}}
                     {{#if (and @data.publishOptions.post.isPost (not @data.publishOptions.user.isContributor))}}
                         <button type="button" class="gh-btn {{if (eq this.tab "email") "gh-btn-group-selected"}} gh-post-preview-mode" {{on "click" (fn this.changeTab "email")}} data-test-button="email-preview"><span>Email</span></button>
@@ -14,13 +14,13 @@
             </div>
             <div class="gh-contentfilter-divider"></div>
             <div class="gh-contentfilter gh-btn-group">
-                <button type="button" class="gh-btn {{if (eq this.tab "browser") "gh-btn-group-selected"}} gh-post-preview-mode" {{on "click" (fn this.changeTab "browser")}}><span>{{svg-jar "laptop"}}</span></button>
+                <button type="button" class="gh-btn {{if (or (eq this.tab "browser") (eq this.tab "email")) "gh-btn-group-selected"}} gh-post-preview-mode" {{on "click" (fn this.changeTab "browser")}}><span>{{svg-jar "laptop"}}</span></button>
                 <button type="button" class="gh-btn {{if (eq this.tab "mobile") "gh-btn-group-selected"}} gh-post-preview-mode" {{on "click" (fn this.changeTab "mobile")}}><span>{{svg-jar "mobile-phone"}}</span></button>
             </div>
             <div class="gh-contentfilter-divider"></div>
             <span class="gh-select gh-web-preview-segment">
-                <OneWaySelect 
-                    @value="free"
+                <PowerSelect
+                    @selected={{hash value="free" label="Free member"}}
                     @options={{if (eq this.tab "email")
                         (array
                             (hash value="free" label="Free member")
@@ -32,10 +32,14 @@
                             (hash value="paid" label="Paid member")
                         )
                     }}
-                    @optionValuePath="value"
-                    @optionLabelPath="label"
-                />
-                {{svg-jar "arrow-down-small"}}
+                    @onChange={{this.noop}}
+                    @triggerComponent={{component "gh-power-select/trigger"}}
+                    @triggerClass="gh-preview-segment-trigger"
+                    @dropdownClass="gh-preview-segment-dropdown"
+                    as |option|
+                >
+                    {{option.label}}
+                </PowerSelect>
             </span>
         </div>
         <div class="right">
@@ -87,7 +91,7 @@
                     </GhDropdown>
                 </div>
             {{else}}
-                <button type="button" {{on "click" (perform this.copyPreviewUrl)}} class="gh-btn gh-post-preview-url">
+                <button type="button" {{on "click" (perform this.copyPreviewUrl)}} class="gh-btn gh-post-preview-url gh-tooltip-trigger tooltip-bottom no-shortcut">
                     <span>
                         {{#if this.copyPreviewUrl.isRunning}}
                             {{svg-jar "check-circle" class="check v-mid mr1 ml2"}} Copied
@@ -95,9 +99,11 @@
                             {{svg-jar "link"}}
                         {{/if}}
                     </span>
+                    <GhTooltip @text="Copy preview link" />
                 </button>
-                <a href={{@post.previewUrl}} target="_blank" rel="noopener noreferrer" class="gh-btn gh-publish-preview-newtab">
+                <a href={{@post.previewUrl}} target="_blank" rel="noopener noreferrer" class="gh-btn gh-publish-preview-newtab gh-tooltip-trigger tooltip-bottom no-shortcut">
                     <span>{{svg-jar "external"}}</span>
+                    <GhTooltip @text="Open in new tab" />
                 </a>
             {{/if}}
             <div class="gh-contentfilter-divider"></div>

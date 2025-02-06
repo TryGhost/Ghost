@@ -60,4 +60,6 @@ export default class EditorPostPreviewModal extends Component {
         copyTextToClipboard(this.args.post.previewUrl);
         yield timeout(this.isTesting ? 50 : 3000);
     }
+
+    noop() {}
 }

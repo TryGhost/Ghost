@@ -334,7 +334,7 @@
     border-color: transparent !important;
 }
 
-.gh-btn-editor:not(.gh-publish-trigger) span {
+.gh-btn-editor:not(.gh-publish-trigger):not(.gh-tooltip-trigger) span {
     color: var(--darkgrey);
 }
 

@@ -1,16 +1,18 @@
+.gh-post-preview-modal {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: var(--grey-75);
+}
+
 .gh-post-preview-header {
-    position: sticky;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 9999;
     display: flex;
     justify-content: center;
     align-items: center;
     flex-shrink: 0;
     margin: 0;
     padding: 1.2rem 2rem;
-    background: var(--grey-50);
+    background: var(--grey-75);
 }
 
 .gh-post-preview-header .left {
@@ -88,7 +90,7 @@
     background: transparent;
 }
 
-.gh-web-preview-segment select {
+.gh-web-preview-segment .gh-preview-segment-trigger {
     height: 34px;
     padding: 0 28px 0 14px;
     background: transparent;
@@ -100,11 +102,11 @@
     border-radius: 5px;
 }
 
-.gh-web-preview-segment:hover select {
+.gh-web-preview-segment:hover .gh-preview-segment-trigger {
     background: var(--whitegrey);
 }
 
-.gh-select.gh-web-preview-segment svg {
+.gh-select.gh-web-preview-segment .gh-preview-segment-trigger svg {
     height: 5px;
     margin-top: -.1em;
 }
@@ -127,6 +129,8 @@
     background: transparent;
     border: none;
     margin-right: 4px;
+    cursor: pointer;
+    color: var(--black);
 }
 
 .gh-publish-preview-newtab:hover {
@@ -161,10 +165,10 @@
 /* Browser preview */
 
 .gh-post-preview-browser-container {
+    z-index: 999;
     display: flex;
     flex-direction: column;
     height: 100%;
-    z-index: 9999;
     margin: 0 .8rem;
     border-radius: 8px 8px 0 0;
     box-shadow: var(--shadow-1);
@@ -189,7 +193,7 @@
     flex-shrink: 0;
     height: 34px;
     border: none;
-    color: var(--darkgrey);
+    color: var(--black);
     font-size: 1.25rem;
     font-weight: 500;
     letter-spacing: .2px;
@@ -202,6 +206,10 @@
 
 .gh-post-preview-url:hover,
 .gh-post-preview-email-trigger:hover {
+    background: var(--whitegrey);
+}
+
+.gh-post-preview-email-trigger.open {
     background: var(--whitegrey);
 }
 
@@ -350,9 +358,8 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    background: var(--whitegrey-l2);
+    background: var(--grey-75);
     padding: 0 30px;
-    overflow: auto;
 }
 
 @media (max-width: 1024px) {
