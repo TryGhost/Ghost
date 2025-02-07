@@ -15,7 +15,7 @@ import {
     GET_ACTIVITIES_QUERY_KEY_FEED,
     GET_ACTIVITIES_QUERY_KEY_INBOX,
     useActivitiesForUser,
-    useSuggestedProfiles,
+    useSuggestedProfilesForUser,
     useUserDataForUser
 } from '../hooks/useActivityPubQueries';
 import {handleProfileClick} from '../utils/handle-profile-click';
@@ -56,7 +56,7 @@ const Inbox: React.FC<InboxProps> = ({layout}) => {
         });
 
     // Initialise suggested profiles
-    const {suggestedProfilesQuery} = useSuggestedProfiles('index', 3);
+    const {suggestedProfilesQuery} = useSuggestedProfilesForUser('index', 3);
     const {data: suggestedData, isLoading: isLoadingSuggested} = suggestedProfilesQuery;
     const suggested = suggestedData || [];
 

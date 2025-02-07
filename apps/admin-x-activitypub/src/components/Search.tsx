@@ -12,7 +12,7 @@ import Separator from './global/Separator';
 import ViewProfileModal from './modals/ViewProfileModal';
 
 import {type Profile} from '../api/activitypub';
-import {useSearchForUser, useSuggestedProfiles} from '../hooks/useActivityPubQueries';
+import {useSearchForUser, useSuggestedProfilesForUser} from '../hooks/useActivityPubQueries';
 
 interface AccountSearchResult {
     id: string;
@@ -172,7 +172,7 @@ interface SearchProps {}
 
 const Search: React.FC<SearchProps> = ({}) => {
     // Initialise suggested profiles
-    const {suggestedProfilesQuery, updateSuggestedProfile} = useSuggestedProfiles('index', 6);
+    const {suggestedProfilesQuery, updateSuggestedProfile} = useSuggestedProfilesForUser('index', 6);
     const {data: suggestedProfilesData, isLoading: isLoadingSuggestedProfiles} = suggestedProfilesQuery;
     const suggestedProfiles = suggestedProfilesData || [];
 
