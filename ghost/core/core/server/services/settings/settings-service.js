@@ -5,6 +5,7 @@
 const events = require('../../lib/common/events');
 const models = require('../../models');
 const labs = require('../../../shared/labs');
+const config = require('../../../shared/config');
 const adapterManager = require('../adapter-manager');
 const SettingsCache = require('../../../shared/settings-cache');
 const SettingsBREADService = require('./SettingsBREADService');
@@ -71,7 +72,8 @@ module.exports = {
     async init() {
         const cacheStore = adapterManager.getAdapter('cache:settings');
         const settingsCollection = await models.Settings.populateDefaults();
-        SettingsCache.init(events, settingsCollection, this.getCalculatedFields(), cacheStore);
+        const settingsOverrides = config.get('hostSettings:settingsOverrides') || {};
+        SettingsCache.init(events, settingsCollection, this.getCalculatedFields(), cacheStore, settingsOverrides);
     },
 
     /**
@@ -97,6 +99,9 @@ module.exports = {
         // E-mail addresses
         fields.push(new CalculatedField({key: 'default_email_address', type: 'string', group: 'email', fn: settingsHelpers.getDefaultEmailAddress.bind(settingsHelpers), dependents: ['labs']}));
         fields.push(new CalculatedField({key: 'support_email_address', type: 'string', group: 'email', fn: settingsHelpers.getMembersSupportAddress.bind(settingsHelpers), dependents: ['labs', 'members_support_address']}));
+
+        // Blocked email domains from member signup, from both config and user settings
+        fields.push(new CalculatedField({key: 'all_blocked_email_domains', type: 'string', group: 'members', fn: settingsHelpers.getAllBlockedEmailDomains.bind(settingsHelpers), dependents: ['blocked_email_domains']}));
 
         return fields;
     },

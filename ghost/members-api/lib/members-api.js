@@ -73,7 +73,8 @@ module.exports = function MembersAPI({
     emailSuppressionList,
     settingsCache,
     sentry,
-    settingsHelpers
+    settingsHelpers,
+    captchaService
 }) {
     const tokenService = new TokenService({
         privateKey,
@@ -195,6 +196,7 @@ module.exports = function MembersAPI({
         memberAttributionService,
         labsService,
         newslettersService,
+        settingsCache,
         sentry
     });
 
@@ -334,6 +336,7 @@ module.exports = function MembersAPI({
     const middleware = {
         sendMagicLink: Router().use(
             body.json(),
+            captchaService.getMiddleware(),
             forwardError((req, res) => routerController.sendMagicLink(req, res))
         ),
         createCheckoutSession: Router().use(

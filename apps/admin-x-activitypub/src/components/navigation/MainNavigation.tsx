@@ -25,9 +25,24 @@ const MainNavigation: React.FC<MainNavigationProps> = ({page}) => {
                     unstyled
                     onClick={() => updateRoute('feed')}
                 />
-                <Button className={`${page === 'activities' ? 'font-bold text-grey-975' : 'text-grey-700 hover:text-grey-800'}`} label='Notifications' unstyled onClick={() => updateRoute('activity')} />
-                <Button className={`${page === 'search' ? 'font-bold text-grey-975' : 'text-grey-700 hover:text-grey-800'}`} label='Search' unstyled onClick={() => updateRoute('search')} />
-                <Button className={`${page === 'profile' ? 'font-bold text-grey-975' : 'text-grey-700 hover:text-grey-800'}`} label='Profile' unstyled onClick={() => updateRoute('profile')} />
+                <Button
+                    className={`${page === 'notifications' ? 'font-bold text-grey-975' : 'text-grey-700 hover:text-grey-800'}`}
+                    label='Notifications'
+                    unstyled
+                    onClick={() => updateRoute('notifications')}
+                />
+                <Button
+                    className={`${page === 'search' ? 'font-bold text-grey-975' : 'text-grey-700 hover:text-grey-800'}`}
+                    label='Search'
+                    unstyled
+                    onClick={() => updateRoute('search')}
+                />
+                <Button
+                    className={`${page === 'profile' ? 'font-bold text-grey-975' : 'text-grey-700 hover:text-grey-800'}`}
+                    label='Profile'
+                    unstyled
+                    onClick={() => updateRoute('profile')}
+                />
             </div>
         </MainHeader>
     );
