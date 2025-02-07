@@ -4,7 +4,6 @@ import {
     ActivityPubAPI,
     ActivityPubCollectionResponse,
     ActivityThread,
-    Actor,
     FollowAccount,
     type GetAccountFollowsResponse,
     type Profile,
@@ -300,41 +299,57 @@ export function useUnfollowMutationForUser(handle: string, onSuccess: () => void
 
             return api.unfollow(username);
         },
-        onSuccess(unfollowedActor, fullHandle) {
-            // Update the "isFollowing" property of the profile stored in the profile query cache
+        onSuccess(_, fullHandle) {
+            // Update the "isFollowing" and "followerCount" properties of the profile being unfollowed
             const profileQueryKey = QUERY_KEYS.profile(fullHandle);
 
-            queryClient.setQueryData(profileQueryKey, (currentProfile: unknown) => {
+            queryClient.setQueryData(profileQueryKey, (currentProfile?: {isFollowing: boolean, followerCount: number}) => {
                 if (!currentProfile) {
                     return currentProfile;
                 }
 
                 return {
                     ...currentProfile,
-                    isFollowing: false
+                    isFollowing: false,
+                    followerCount: currentProfile.followerCount - 1 < 0 ? 0 : currentProfile.followerCount - 1
                 };
             });
 
-            // Remove the unfollowed actor from the profile following query cache
-            const profileFollowingQueryKey = QUERY_KEYS.profileFollowing('index');
+            // Invalidate the profile followers query cache for the profile being unfollowed
+            // because we cannot directly remove from it as we don't have the data for the unfollowed follower
+            const profileFollowersQueryKey = QUERY_KEYS.profileFollowers(fullHandle);
 
-            queryClient.setQueryData(profileFollowingQueryKey, (currentFollowing?: Actor[]) => {
-                if (!currentFollowing) {
-                    return currentFollowing;
+            queryClient.invalidateQueries({queryKey: profileFollowersQueryKey});
+
+            // Update the "followingCount" property of the account performing the follow
+            const accountQueryKey = QUERY_KEYS.account('index');
+
+            queryClient.setQueryData(accountQueryKey, (currentAccount?: { followingCount: number }) => {
+                if (!currentAccount) {
+                    return currentAccount;
                 }
 
-                return currentFollowing.filter(item => item.id !== unfollowedActor.id);
+                return {
+                    ...currentAccount,
+                    followingCount: currentAccount.followingCount - 1
+                };
             });
 
+            // Remove the unfollowed actor from the follows query cache for the account performing the unfollow
             const accountFollowsQueryKey = QUERY_KEYS.accountFollows('index', 'following');
 
-            // Remove the unfollowed actor from the account follows query cache
-            queryClient.setQueryData(accountFollowsQueryKey, (currentFollows?: FollowAccount[]) => {
+            queryClient.setQueryData(accountFollowsQueryKey, (currentFollows?: {pages: {accounts: FollowAccount[]}[]}) => {
                 if (!currentFollows) {
                     return currentFollows;
                 }
 
-                return currentFollows.filter(item => item.id !== unfollowedActor.id);
+                return {
+                    ...currentFollows,
+                    pages: currentFollows.pages.map(page => ({
+                        ...page,
+                        data: page.accounts.filter(account => account.handle !== fullHandle)
+                    }))
+                };
             });
 
             onSuccess();
@@ -353,35 +368,47 @@ export function useFollowMutationForUser(handle: string, onSuccess: () => void, 
 
             return api.follow(username);
         },
-        onSuccess(followedActor, fullHandle) {
-            // Update the "isFollowing" property of the profile stored in the profile query cache
+        onSuccess(_, fullHandle) {
+            // Update the "isFollowing" and "followerCount" properties of the profile being followed
             const profileQueryKey = QUERY_KEYS.profile(fullHandle);
 
-            queryClient.setQueryData(profileQueryKey, (currentProfile: unknown) => {
+            queryClient.setQueryData(profileQueryKey, (currentProfile?: {isFollowing: boolean, followerCount: number}) => {
                 if (!currentProfile) {
                     return currentProfile;
                 }
 
                 return {
                     ...currentProfile,
-                    isFollowing: true
+                    isFollowing: true,
+                    followerCount: currentProfile.followerCount + 1
                 };
             });
 
-            // Add the followed actor to the profile following query cache
-            const profileFollowingQueryKey = QUERY_KEYS.profileFollowing('index');
+            // Invalidate the profile followers query cache for the profile being followed
+            // because we cannot directly add to it as we don't have the data for the new follower
+            const profileFollowersQueryKey = QUERY_KEYS.profileFollowers(fullHandle);
 
-            queryClient.setQueryData(profileFollowingQueryKey, (currentFollowing?: unknown[]) => {
-                if (!currentFollowing) {
-                    return currentFollowing;
+            queryClient.invalidateQueries({queryKey: profileFollowersQueryKey});
+
+            // Update the "followingCount" property of the account performing the follow
+            const accountQueryKey = QUERY_KEYS.account('index');
+
+            queryClient.setQueryData(accountQueryKey, (currentAccount?: { followingCount: number }) => {
+                if (!currentAccount) {
+                    return currentAccount;
                 }
 
-                return [followedActor].concat(currentFollowing);
+                return {
+                    ...currentAccount,
+                    followingCount: currentAccount.followingCount + 1
+                };
             });
 
+            // Invalidate the follows query cache for the account performing the follow
+            // because we cannot directly add to it due to potentially incompatible data
+            // shapes
             const accountFollowsQueryKey = QUERY_KEYS.accountFollows('index', 'following');
 
-            // Invalidate the account follows query cache to ensure the followed actor is added
             queryClient.invalidateQueries({queryKey: accountFollowsQueryKey});
 
             onSuccess();
