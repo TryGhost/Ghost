@@ -317,7 +317,6 @@ describe('search index', function () {
         expect(searchResults.posts.length).toEqual(1);
         expect(searchResults.posts[0].url).toEqual('http://localhost/ghost/a-post-in-chinese/');
 
-        
         searchResults = searchIndex.search('_languages');
         // The expected result from the user perspective is to get 2 docs back, like this:
         // 
