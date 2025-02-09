@@ -5,8 +5,8 @@ import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import {Button, Heading, Icon, List, LoadingIndicator, Modal, NoValueLabel, Tab,TabView} from '@tryghost/admin-x-design-system';
 import {UseInfiniteQueryResult} from '@tanstack/react-query';
 
-import {type GetFollowersForProfileResponse, type GetFollowingForProfileResponse} from '../../api/activitypub';
-import {useFollowersForProfile, useFollowingForProfile, usePostsForProfile, useProfileForUser} from '../../hooks/useActivityPubQueries';
+import {type GetProfileFollowersResponse, type GetProfileFollowingResponse} from '../../api/activitypub';
+import {useProfileFollowersForUser, useProfileFollowingForUser, useProfileForUser, useProfilePostsForUser} from '../../hooks/useActivityPubQueries';
 
 import APAvatar from '../global/APAvatar';
 import ActivityItem from '../activities/ActivityItem';
@@ -20,15 +20,15 @@ import {handleViewContent} from '../../utils/content-handlers';
 
 const noop = () => {};
 
-type QueryPageData = GetFollowersForProfileResponse | GetFollowingForProfileResponse;
+type QueryPageData = GetProfileFollowersResponse | GetProfileFollowingResponse;
 
-type QueryFn = (handle: string) => UseInfiniteQueryResult<QueryPageData>;
+type QueryFn = (handle: string, profileHandle: string) => UseInfiniteQueryResult<QueryPageData>;
 
 type ActorListProps = {
     handle: string,
     noResultsMessage: string,
     queryFn: QueryFn,
-    resolveDataFn: (data: QueryPageData) => GetFollowersForProfileResponse['followers'] | GetFollowingForProfileResponse['following'];
+    resolveDataFn: (data: QueryPageData) => GetProfileFollowersResponse['followers'] | GetProfileFollowingResponse['following'];
 };
 
 const ActorList: React.FC<ActorListProps> = ({
@@ -43,7 +43,7 @@ const ActorList: React.FC<ActorListProps> = ({
         hasNextPage,
         isFetchingNextPage,
         isLoading
-    } = queryFn(handle);
+    } = queryFn('index', handle);
 
     const actors = (data?.pages.flatMap(resolveDataFn) ?? []);
 
@@ -127,7 +127,7 @@ const PostsTab: React.FC<{handle: string}> = ({handle}) => {
         hasNextPage,
         isFetchingNextPage,
         isLoading
-    } = usePostsForProfile(handle);
+    } = useProfilePostsForUser('index', handle);
 
     const observerRef = useRef<IntersectionObserver | null>(null);
     const loadMoreRef = useRef<HTMLDivElement | null>(null);
@@ -173,6 +173,7 @@ const PostsTab: React.FC<{handle: string}> = ({handle}) => {
                                     commentCount={post.object.replyCount}
                                     layout='feed'
                                     object={post.object}
+                                    repostCount={post.object.repostCount}
                                     type={post.type}
                                     onClick={() => handleViewContent(post, false)}
                                     onCommentClick={() => handleViewContent(post, true)}
@@ -200,7 +201,7 @@ const FollowingTab: React.FC<{handle: string}> = ({handle}) => {
         <ActorList
             handle={handle}
             noResultsMessage={`${handle} is not following anyone yet`}
-            queryFn={useFollowingForProfile}
+            queryFn={useProfileFollowingForUser}
             resolveDataFn={page => ('following' in page ? page.following : [])}
         />
     );
@@ -211,7 +212,7 @@ const FollowersTab: React.FC<{handle: string}> = ({handle}) => {
         <ActorList
             handle={handle}
             noResultsMessage={`${handle} has no followers yet`}
-            queryFn={useFollowersForProfile}
+            queryFn={useProfileFollowersForUser}
             resolveDataFn={page => ('followers' in page ? page.followers : [])}
         />
     );

@@ -15,7 +15,7 @@ import {
     GET_ACTIVITIES_QUERY_KEY_FEED,
     GET_ACTIVITIES_QUERY_KEY_INBOX,
     useActivitiesForUser,
-    useSuggestedProfiles,
+    useSuggestedProfilesForUser,
     useUserDataForUser
 } from '../hooks/useActivityPubQueries';
 import {handleProfileClick} from '../utils/handle-profile-click';
@@ -33,7 +33,7 @@ const Inbox: React.FC<InboxProps> = ({layout}) => {
 
     // Initialise activities for the inbox or feed
     const typeFilter = layout === 'inbox'
-        ? ['Create:Article']
+        ? ['Create:Article', 'Announce:Article']
         : ['Create:Note', 'Announce:Note'];
 
     const {getActivitiesQuery, updateActivity} = useActivitiesForUser({
@@ -56,7 +56,7 @@ const Inbox: React.FC<InboxProps> = ({layout}) => {
         });
 
     // Initialise suggested profiles
-    const {suggestedProfilesQuery} = useSuggestedProfiles('index', 3);
+    const {suggestedProfilesQuery} = useSuggestedProfilesForUser('index', 3);
     const {data: suggestedData, isLoading: isLoadingSuggested} = suggestedProfilesQuery;
     const suggested = suggestedData || [];
 
@@ -118,6 +118,7 @@ const Inbox: React.FC<InboxProps> = ({layout}) => {
                                                         commentCount={activity.object.replyCount ?? 0}
                                                         layout={layout}
                                                         object={activity.object}
+                                                        repostCount={activity.object.repostCount ?? 0}
                                                         type={activity.type}
                                                         onClick={() => handleViewContent(activity, false, updateActivity)}
                                                         onCommentClick={() => handleViewContent(activity, true, updateActivity)}

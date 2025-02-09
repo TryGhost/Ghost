@@ -148,6 +148,7 @@ interface FeedItemProps {
     layout: string;
     type: string;
     commentCount?: number;
+    repostCount?: number;
     showHeader?: boolean;
     last?: boolean;
     onClick?: () => void;
@@ -156,7 +157,7 @@ interface FeedItemProps {
 
 const noop = () => {};
 
-const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, commentCount = 0, showHeader = true, last, onClick: onClickHandler = noop, onCommentClick}) => {
+const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, commentCount = 0, repostCount = 0, showHeader = true, last, onClick: onClickHandler = noop, onCommentClick}) => {
     const timestamp =
         new Date(object?.published ?? new Date()).toLocaleDateString('default', {year: 'numeric', month: 'short', day: '2-digit'}) + ', ' + new Date(object?.published ?? new Date()).toLocaleTimeString('default', {hour: '2-digit', minute: '2-digit'});
 
@@ -203,7 +204,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
     };
 
     let author = actor;
-    if (type === 'Announce' && object.type === 'Note') {
+    if (type === 'Announce') {
         author = typeof object.attributedTo === 'object' ? object.attributedTo as ActorProperties : actor;
     }
 
@@ -240,9 +241,9 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
             <>
                 {object && (
                     <div className={`group/article relative -mx-6 -my-px cursor-pointer rounded-lg p-6 pb-[18px]`} data-layout='feed' data-object-id={object.id} onClick={onClick}>
-                        {(type === 'Announce' && object.type === 'Note') && <div className='z-10 mb-2 flex items-center gap-3 text-grey-700'>
-                            <div className='z-10 flex w-10 justify-end'><Icon colorClass='text-grey-700' name='reload' size={'sm'}></Icon></div>
-                            <span className='z-10'>{actor.name} reposted</span>
+                        {(type === 'Announce') && <div className='z-10 mb-2 flex items-center gap-2 text-grey-700'>
+                            <div><Icon colorClass='text-grey-700 shrink-0' name='reload' size={'sm'}></Icon></div>
+                            <span className='flex min-w-0 items-center gap-1'><span className='truncate break-all hover:underline' title={getUsername(actor)} onClick={e => handleProfileClick(actor, e)}>{actor.name}</span> reposted</span>
                         </div>}
                         <div className={`border-1 flex flex-col gap-2.5`} data-test-activity>
                             <div className='relative z-30 flex min-w-0 items-center gap-3'>
@@ -250,13 +251,13 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                 <div className='flex min-w-0 flex-col gap-0.5'>
                                     <span className='min-w-0 truncate break-all font-semibold leading-[normal] hover:underline'
                                         data-test-activity-heading
-                                        onClick={e => handleProfileClick(actor, e)}
+                                        onClick={e => handleProfileClick(author, e)}
                                     >
                                         {author.name}
                                     </span>
                                     <div className='flex w-full text-grey-700'>
                                         <span className='truncate leading-tight hover:underline'
-                                            onClick={e => handleProfileClick(actor, e)}
+                                            onClick={e => handleProfileClick(author, e)}
                                         >
                                             {getUsername(author)}
                                         </span>
@@ -282,7 +283,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                                     className='ap-note-content line-clamp-[10] text-pretty leading-[1.4285714286] tracking-[-0.006em] text-grey-900'
                                                 ></div>
                                                 {isTruncated && (
-                                                    <button className='mt-1 text-[#2563EB]' type='button'>Show more</button>
+                                                    <button className='mt-1 text-blue-600' type='button'>Show more</button>
                                                 )}
                                                 {renderFeedAttachment(object, layout)}
                                             </div>
@@ -294,6 +295,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                             layout={layout}
                                             likeCount={1}
                                             object={object}
+                                            repostCount={repostCount}
                                             onCommentClick={onCommentClick}
                                             onLikeClick={onLikeClick}
                                         />
@@ -311,10 +313,6 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                 {object && (
                     <div data-object-id={object.id}>
                         <div className={`group/article relative`} data-layout='modal' onClick={onClick}>
-                            {(type === 'Announce' && object.type === 'Note') && <div className='z-10 mb-2 flex items-center gap-3 text-grey-700'>
-                                <div className='z-10 flex w-10 justify-end'><Icon colorClass='text-grey-700' name='reload' size={'sm'}></Icon></div>
-                                <span className='z-10'>{actor.name} reposted</span>
-                            </div>}
                             <div className={`z-10 -my-1 grid grid-cols-[auto_1fr] grid-rows-[auto_1fr] gap-3 pb-3 pt-4`} data-test-activity>
                                 {(showHeader) && <><div className='relative z-10 pt-[3px]'>
                                     <APAvatar author={author}/>
@@ -339,6 +337,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                                 layout={layout}
                                                 likeCount={1}
                                                 object={object}
+                                                repostCount={repostCount}
                                                 onCommentClick={onCommentClick}
                                                 onLikeClick={onLikeClick}
                                             />
@@ -360,10 +359,6 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
             <>
                 {object && (
                     <div className={`group/article relative cursor-pointer py-5`} data-layout='reply' data-object-id={object.id} onClick={onClick}>
-                        {(type === 'Announce' && object.type === 'Note') && <div className='z-10 mb-2 flex items-center gap-3 text-grey-700'>
-                            <div className='z-10 flex w-10 justify-end'><Icon colorClass='text-grey-700' name='reload' size={'sm'}></Icon></div>
-                            <span className='z-10'>{actor.name} reposted</span>
-                        </div>}
                         <div className={`border-1 z-10 flex items-start gap-3 border-b-grey-200`} data-test-activity>
                             <div className='relative z-10 pt-[3px]'>
                                 <APAvatar author={author}/>
@@ -401,6 +396,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                                 layout={layout}
                                                 likeCount={1}
                                                 object={object}
+                                                repostCount={repostCount}
                                                 onCommentClick={onCommentClick}
                                                 onLikeClick={onLikeClick}
                                             />
@@ -426,9 +422,10 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                 <span className='min-w-0 truncate break-all font-semibold text-grey-900 hover:underline'
                                     title={getUsername(author)}
                                     data-test-activity-heading
-                                    onClick={e => handleProfileClick(actor, e)}
+                                    onClick={e => handleProfileClick(author, e)}
                                 >{author.name}
                                 </span>
+                                {(type === 'Announce') && <span className='z-10 flex items-center gap-1 text-grey-700'><Icon colorClass='text-grey-700 shrink-0' name='reload' size={'sm'}></Icon><span className='hover:underline' title={getUsername(actor)} onClick={e => handleProfileClick(actor, e)}>{actor.name}</span> reposted</span>}
                                 <span className='shrink-0 whitespace-nowrap text-grey-600 before:mr-1 before:content-["·"]' title={`${timestamp}`}>{renderTimestamp(object)}</span>
                             </div>
                             <div className='flex'>
@@ -449,6 +446,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                         layout={layout}
                                         likeCount={1}
                                         object={object}
+                                        repostCount={repostCount}
                                         onCommentClick={onCommentClick}
                                         onLikeClick={onLikeClick}
                                     />

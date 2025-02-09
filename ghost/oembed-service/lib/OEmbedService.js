@@ -134,13 +134,13 @@ class OEmbedService {
      */
     async fetchImageBuffer(imageUrl) {
         const response = await fetch(imageUrl);
-
+        
         if (!response.ok) {
             throw Error(`Failed to fetch image: ${response.statusText}`);
         }
 
         const arrayBuffer = await response.arrayBuffer();
-
+        
         const buffer = Buffer.from(arrayBuffer);
         return buffer;
     }
@@ -162,9 +162,9 @@ class OEmbedService {
         let name;
 
         if (ext) {
-            name = store.sanitizeFileName(path.basename(fileName, ext));
+            name = store.getSanitizedFileName(path.basename(fileName, ext));
         } else {
-            name = store.sanitizeFileName(path.basename(fileName));
+            name = store.getSanitizedFileName(path.basename(fileName));
         }
 
         let targetDir = path.join(this.config.getContentPath('images'), imageType);
