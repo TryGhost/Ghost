@@ -7,7 +7,6 @@ import NewPostModal from './modals/NewPostModal';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useRef} from 'react';
 import Separator from './global/Separator';
-import ViewProfileModal from './modals/ViewProfileModal';
 import getName from '../utils/get-name';
 import getUsername from '../utils/get-username';
 import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
@@ -16,9 +15,10 @@ import {
     GET_ACTIVITIES_QUERY_KEY_FEED,
     GET_ACTIVITIES_QUERY_KEY_INBOX,
     useActivitiesForUser,
-    useSuggestedProfiles,
+    useSuggestedProfilesForUser,
     useUserDataForUser
 } from '../hooks/useActivityPubQueries';
+import {handleProfileClick} from '../utils/handle-profile-click';
 import {handleViewContent} from '../utils/content-handlers';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
@@ -33,7 +33,7 @@ const Inbox: React.FC<InboxProps> = ({layout}) => {
 
     // Initialise activities for the inbox or feed
     const typeFilter = layout === 'inbox'
-        ? ['Create:Article']
+        ? ['Create:Article', 'Announce:Article']
         : ['Create:Note', 'Announce:Note'];
 
     const {getActivitiesQuery, updateActivity} = useActivitiesForUser({
@@ -56,7 +56,7 @@ const Inbox: React.FC<InboxProps> = ({layout}) => {
         });
 
     // Initialise suggested profiles
-    const {suggestedProfilesQuery} = useSuggestedProfiles('index', 3);
+    const {suggestedProfilesQuery} = useSuggestedProfilesForUser('index', 3);
     const {data: suggestedData, isLoading: isLoadingSuggested} = suggestedProfilesQuery;
     const suggested = suggestedData || [];
 
@@ -118,6 +118,7 @@ const Inbox: React.FC<InboxProps> = ({layout}) => {
                                                         commentCount={activity.object.replyCount ?? 0}
                                                         layout={layout}
                                                         object={activity.object}
+                                                        repostCount={activity.object.repostCount ?? 0}
                                                         type={activity.type}
                                                         onClick={() => handleViewContent(activity, false, updateActivity)}
                                                         onCommentClick={() => handleViewContent(activity, true, updateActivity)}
@@ -137,9 +138,9 @@ const Inbox: React.FC<InboxProps> = ({layout}) => {
                                     </div>
                                 </div>
                                 <div className={`sticky top-[133px] ml-auto w-full max-w-[300px] max-lg:hidden xxxl:sticky xxxl:right-[40px]`}>
-                                    <h2 className='mb-2 text-lg font-semibold'>This is your {layout === 'inbox' ? 'inbox' : 'feed'}</h2>
-                                    <p className='mb-6 border-b border-grey-200 pb-6 text-grey-700'>You&apos;ll find {layout === 'inbox' ? 'long-form content' : 'short posts and updates'} from the accounts you follow here.</p>
-                                    <h2 className='mb-2 text-lg font-semibold'>You might also like</h2>
+                                    <h2 className='mb-1.5 text-lg font-semibold'>This is your {layout === 'inbox' ? 'inbox' : 'feed'}</h2>
+                                    <p className='mb-6 text-grey-700'>You&apos;ll find {layout === 'inbox' ? 'long-form content' : 'short posts and updates'} from the accounts you follow here.</p>
+                                    <h2 className='mb-1 text-lg font-semibold'>You might also like</h2>
                                     {isLoadingSuggested ? (
                                         <LoadingIndicator size="sm" />
                                     ) : (
@@ -149,12 +150,12 @@ const Inbox: React.FC<InboxProps> = ({layout}) => {
                                                 return (
                                                     <React.Fragment key={actor.id}>
                                                         <li key={actor.id}>
-                                                            <ActivityItem url={actor.url} onClick={() => NiceModal.show(ViewProfileModal, {
-                                                                profile: getUsername(actor)
-                                                            })}>
+                                                            <ActivityItem
+                                                                onClick={() => handleProfileClick(actor)}
+                                                            >
                                                                 <APAvatar author={actor} />
                                                                 <div className='flex min-w-0 flex-col'>
-                                                                    <span className='block w-full truncate font-bold text-black'>{getName(actor)}</span>
+                                                                    <span className='block w-full truncate font-semibold text-black'>{getName(actor)}</span>
                                                                     <span className='block w-full truncate text-sm text-grey-600'>{getUsername(actor)}</span>
                                                                 </div>
                                                             </ActivityItem>
@@ -165,7 +166,7 @@ const Inbox: React.FC<InboxProps> = ({layout}) => {
                                             })}
                                         </ul>
                                     )}
-                                    <Button className='mt-4' color='grey' fullWidth={true} label='Explore' onClick={() => updateRoute('search')} />
+                                    <Button className='mt-2' color='green' fullWidth={true} label='Explore &rarr;' link={true} onClick={() => updateRoute('search')} />
                                 </div>
                             </div>
                         </>

@@ -23,23 +23,54 @@ fi
 
 echo "Proceeding with unsafe redeploy..."
 
-# Remove our materialized views and their pipes
-tb datasource rm analytics_pages_mv  --yes
-tb datasource rm analytics_sessions_mv  --yes
-tb datasource rm analytics_sources_mv  --yes
-tb pipe rm analytics_pages  --yes
-tb pipe rm analytics_sessions  --yes
-tb pipe rm analytics_sources  --yes
-tb pipe rm analytics_hits  --yes
+# Store the lists to avoid multiple calls
+datasources=$(tb datasource ls)
+pipes=$(tb pipe ls)
 
-# Remove all the endpoints
-tb pipe rm pipes/kpis.pipe  --yes
-tb pipe rm pipes/top_browsers.pipe  --yes
-tb pipe rm pipes/top_devices.pipe  --yes
-tb pipe rm pipes/top_locations.pipe  --yes
-tb pipe rm pipes/top_pages.pipe  --yes
-tb pipe rm pipes/top_sources.pipe  --yes
-tb pipe rm pipes/trend.pipe  --yes
+# Define arrays for each type of resource
+materialized_views=(
+    "analytics_pages_mv"
+    "analytics_sessions_mv"
+    "analytics_sources_mv"
+)
+
+data_pipes=(
+    "analytics_pages"
+    "analytics_sessions"
+    "analytics_sources"
+    "analytics_hits"
+)
+
+endpoint_pipes=(
+    "kpis"
+    "top_browsers"
+    "top_devices"
+    "top_locations"
+    "top_pages"
+    "top_sources"
+    "trend"
+)
+
+# Remove materialized views
+for mv in "${materialized_views[@]}"; do
+    if echo "$datasources" | grep -q "$mv"; then
+        tb datasource rm "$mv" --yes
+    fi
+done
+
+# Remove data pipes
+for pipe in "${data_pipes[@]}"; do
+    if echo "$pipes" | grep -q "$pipe"; then
+        tb pipe rm "$pipe" --yes
+    fi
+done
+
+# Remove endpoint pipes
+for pipe in "${endpoint_pipes[@]}"; do
+    if echo "$pipes" | grep -q "$pipe"; then
+        tb pipe rm "$pipe" --yes
+    fi
+done
 
 # Push all the changes
 tb push --force --populate

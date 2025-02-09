@@ -1,3 +1,10 @@
+// Feature flags behaviour in tests:
+// By default, all flags listed in GA_FEATURES, BETA_FEATURES, and ALPHA_FEATURES
+// are globally enabled during E2E tests. This ensures flagged code paths are tested
+// automatically.
+// For more details, see the E2E testing documentation:
+// https://www.notion.so/ghost/End-to-end-Testing-6a2ef073b1754b18aff42e24a632a007
+
 const _ = require('lodash');
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
@@ -15,12 +22,11 @@ const messages = {
 // flags in this list always return `true`, allows quick global enable prior to full flag removal
 const GA_FEATURES = [
     'audienceFeedback',
-    'collections',
     'i18n',
     'themeErrorsNotification',
     'outboundLinkTagging',
     'announcementBar',
-    'newEmailAddresses'
+    'customFonts'
 ];
 
 // NOTE: this allowlist is meant to be used to filter out any unexpected
@@ -32,8 +38,8 @@ const BETA_FEATURES = [
     'editorExcerpt',
     'ActivityPub',
     'importMemberTier',
-    'customFonts',
-    'staff2fa'
+    'staff2fa',
+    'contentVisibility'
 ];
 
 const ALPHA_FEATURES = [
@@ -44,8 +50,9 @@ const ALPHA_FEATURES = [
     'collectionsCard',
     'lexicalIndicators',
     'adminXDemo',
-    'contentVisibility',
-    'commentImprovements'
+    'postsX',
+    'captcha',
+    'contentVisibilityAlpha'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

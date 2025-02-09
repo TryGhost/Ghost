@@ -75,7 +75,8 @@ const controller = {
             'fields',
             'filter',
             'order',
-            'debug'
+            'debug',
+            'impersonate_member_uuid'
         ],
         validation: {
             options: {

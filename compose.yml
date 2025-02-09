@@ -1,6 +1,39 @@
 name: ghost
 
 services:
+  ghost:
+    build:
+      context: .
+      dockerfile: ./.docker/Dockerfile
+      target: development
+    ports:
+      - "2368:2368" # Ghost
+      - "4200:4200" # Admin
+      - "4201:4201" # Admin tests
+      - "4173:4173" # Lexical
+      - "41730:41730" # Lexical HTTPS
+      - "4175:4175" # Portal
+      - "4176:4176" # Portal HTTPS
+      - "4177:4177" # Announcement bar
+      - "4178:4178" # Search
+      - "6174:6174" # Signup form
+      - "7173:7173" # Comments
+      - "7174:7174" # Comments HTTPS
+    profiles: [full]
+    volumes:
+      - .:/home/ghost
+    tty: true
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      - DEBUG=${DEBUG:-}
+      - GHOST_DEV_APP_FLAGS=${GHOST_DEV_APP_FLAGS:-}
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY:-}
+      - STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY:-}
+      - STRIPE_ACCOUNT_ID=${STRIPE_ACCOUNT_ID:-}
   mysql:
     image: mysql:8.0.35
     container_name: ghost-mysql
@@ -26,6 +59,12 @@ services:
     ports:
       - "6379:6379"
     restart: always
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
+      interval: 1s
+      retries: 120
   prometheus:
     profiles: [monitoring]
     image: prom/prometheus:v2.30.3
@@ -57,3 +96,4 @@ services:
       - "9091:9091"
 volumes:
   mysql-data:
+  redis-data:
