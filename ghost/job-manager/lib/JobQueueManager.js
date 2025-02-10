@@ -122,6 +122,7 @@ class JobQueueManager {
             const entriesToAdd = Math.min(this.config.FETCH_COUNT, this.config.FETCH_COUNT - stats.pendingTasks);
             const {data: jobs, total} = await this.jobsRepository.getQueuedJobs(entriesToAdd);
             this.prometheusClient?.getMetric('job_manager_queue_depth')?.set(total || 0);
+            this.metricCache.queueDepth = total || 0;
             this.logger.debug(`Adding up to ${entriesToAdd} queue entries. Current pending tasks: ${stats.pendingTasks}. Current worker count: ${stats.totalWorkers}. Current depth: ${total}.`);
             this.updatePollInterval(jobs);
             await this.processJobs(jobs);
@@ -172,8 +173,10 @@ class JobQueueManager {
             const result = await this.pool.exec('executeJob', [jobMetadata.job, jobMetadata.data]);
             await this.jobsRepository.delete(job.id);
             this.prometheusClient?.getMetric('job_manager_queue_job_completion_count')?.inc({jobName});
+            this.metricCache.jobCompletionCount += 1;
             if (jobName === 'update-member-email-analytics') {
                 this.prometheusClient?.getMetric('email_analytics_aggregate_member_stats_count')?.inc();
+                this.metricCache.emailAnalyticsAggregateMemberStatsCount += 1;
             }
             if (result && result.eventData) {
                 this.emitEvents(result.eventData.events); // this is nested within eventData because we may want to support DomainEvents emission as well

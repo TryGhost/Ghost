@@ -152,6 +152,7 @@ describe('JobQueueManager', function () {
             expect(jobQueueManager.jobsRepository.getQueuedJobs.calledOnce).to.be.true;
             expect(jobQueueManager.updatePollInterval.calledOnceWith(mockJobs)).to.be.true;
             expect(jobQueueManager.processJobs.calledOnceWith(mockJobs)).to.be.true;
+            expect(jobQueueManager.metricCache.queueDepth).to.equal(mockJobs.length);
         });
     });
 
@@ -331,6 +332,20 @@ describe('JobQueueManager', function () {
             sinon.stub(jobQueueManager.jobsRepository, 'delete').resolves();
             await jobQueueManager.executeJob(job, 'update-member-email-analytics', {job: 'update-member-email-analytics', data: {}});
             expect(metricIncStub.calledTwice).to.be.true;
+        });
+
+        it('should increment the metricCache.jobCompletionCount', async function () {
+            const job = {id: '1', get: sinon.stub().returns('{"job": "testJob", "data": {}}')};
+            sinon.stub(jobQueueManager.jobsRepository, 'delete').resolves();
+            await jobQueueManager.executeJob(job, 'testJob', {job: 'testJob', data: {}});
+            expect(jobQueueManager.metricCache.jobCompletionCount).to.equal(1);
+        });
+
+        it('should increment the metricCache.emailAnalyticsAggregateMemberStatsCount', async function () {
+            const job = {id: '1', get: sinon.stub().returns('{"job": "update-member-email-analytics", "data": {}}')};
+            sinon.stub(jobQueueManager.jobsRepository, 'delete').resolves();
+            await jobQueueManager.executeJob(job, 'update-member-email-analytics', {job: 'update-member-email-analytics', data: {}});
+            expect(jobQueueManager.metricCache.emailAnalyticsAggregateMemberStatsCount).to.equal(1);
         });
 
         it('should emit events if present in result', async function () {
