@@ -24,6 +24,52 @@
                                 class="gh-preview-email-address">&lt;{{sender-email-address this.newsletter.senderEmail}}&gt;</span></p>
                         {{/if}}
                     </form>
+                    <div class="gh-post-test-email-group">
+                        <GhDropdownButton
+                            @dropdownName="post-preview-test-email"
+                            @classNames="gh-btn gh-btn-icon gh-post-preview-email-trigger"
+                            data-test-button="post-preview-test-email"
+                        >
+                            <span>{{svg-jar "send-email"}}Test</span>
+                        </GhDropdownButton>
+                        <GhDropdown
+                            @name="post-preview-test-email"
+                            @classNames="dropdown-menu gh-post-preview-email-test-dropdown"
+                            @onOpen={{this.focusInput}}
+                        >
+                            <div class="gh-post-preview-email-test">
+                                <form class="form-group">
+                                    <label for="post-preview-email-input">Send test email</label>
+                                    <Input
+                                        @value={{this.previewEmailAddress}}
+                                        class="gh-input gh-input-x gh-post-preview-email-input"
+                                        placeholder="you@yoursite.com"
+                                        aria-label="Email address to receive preview"
+                                        aria-invalid={{if this.sendPreviewEmailError "true"}}
+                                        aria-describedby={{if this.sendPreviewEmailError "sendError"}}
+                                        data-post-preview-email-input
+                                        autofocus="true"
+                                        {{on-key "Enter" (perform this.sendPreviewEmailTask)}}
+                                    />
+                                    <p class="description">You'll receive this as a free member.</p>
+                                    <GhTaskButton
+                                        @task={{this.sendPreviewEmailTask}}
+                                        @buttonText="Send"
+                                        @successText="Sent"
+                                        @runningText="Sending..."
+                                        @class="gh-btn gh-btn-icon gh-btn-primary"
+                                        data-test-button="send-test-email"
+                                    />
+                                </form>
+                            </div>
+
+                            {{#if this.sendPreviewEmailError}}
+                                <div class="gh-post-preview-email-error">
+                                    <span class="response" id="sendError">{{this.sendPreviewEmailError}}</span>
+                                </div>
+                            {{/if}}
+                        </GhDropdown>
+                    </div>
                 </div>
             </div>
 

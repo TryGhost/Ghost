@@ -139,14 +139,17 @@
 }
 
 .gh-email-preview-newsletter-select p.gh-preview-newsletter-name {
+    display: flex;
+    align-items: center;
+    gap: 4px;
     margin: 0;
-    color: var(--darkgrey);
-    font-weight: 500;
+    min-height: 38px;
+    padding: 4px 0;
+    line-height: 1.15;
 }
 
 p .gh-preview-email-address {
-    color: var(--midlightgrey);
-    font-weight: 500;
+    color: var(--midgrey-l1);
 }
 
 .gh-preview-email-subject {

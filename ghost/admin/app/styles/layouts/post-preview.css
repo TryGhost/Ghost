@@ -36,11 +36,11 @@
 }
 
 .gh-post-preview-header .gh-btn-editor {
-    background: none !important;
+    background: none;
 }
 
 .gh-post-preview-header .gh-btn-editor:hover {
-    background: var(--whitegrey) !important;
+    background: var(--whitegrey);
 }
 
 @media (max-width: 1024px) {
@@ -90,6 +90,12 @@
     background: transparent;
 }
 
+.gh-preview-segment-dropdown.ember-power-select-dropdown.ember-basic-dropdown-content--below {
+    border-top: 1px solid var(--input-border-color);
+    border-radius: 6px;
+    box-shadow: var(--shadow-2);
+}
+
 .gh-web-preview-segment .gh-preview-segment-trigger {
     height: 34px;
     padding: 0 28px 0 14px;
@@ -120,7 +126,6 @@
     height: 18px;
     width: 18px;
     vertical-align: middle;
-    fill: var(--midgrey);
     color: var(--midgrey);
 }
 
@@ -259,7 +264,6 @@
     margin-top: -2px;
 }
 
-.gh-post-preview-browser-footer,
 .gh-post-preview-email-footer {
     display: flex;
     justify-content: center;
@@ -270,7 +274,9 @@
 
 .gh-post-preview-email-group {
     display: flex;
-    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
 }
 
 .gh-post-preview-email-header {
@@ -283,13 +289,18 @@
 }
 
 .gh-post-preview-email-header label {
-    min-width: 50px;
+    min-width: 52px;
 }
 
 .gh-post-preview-email-header .gh-input-x {
     cursor: pointer;
-    background: transparent;
+    background: var(--grey-100);
     transition: all .15s ease;
+}
+
+.gh-post-preview-email-header .gh-email-subject .gh-input-x:focus {
+    background: var(--white);
+    cursor: text;
 }
 
 .gh-post-preview-email-header .gh-input-x:hover:not(:focus) {
@@ -314,7 +325,7 @@
 }
 
 .gh-email-preview-newsletter-select label {
-    width: 56px;
+    width: 52px;
 }
 
 .gh-preview-newsletter-trigger svg {

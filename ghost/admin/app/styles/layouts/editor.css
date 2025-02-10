@@ -330,8 +330,8 @@
 }
 
 .gh-btn-editor {
-    background: var(--white) !important;
-    border-color: transparent !important;
+    background: var(--white);
+    border-color: transparent;
 }
 
 .gh-btn-editor:not(.gh-publish-trigger):not(.gh-tooltip-trigger) span {
@@ -339,11 +339,11 @@
 }
 
 .gh-btn-editor:hover {
-    background: var(--whitegrey-l1) !important;
+    background: var(--whitegrey-l1);
 }
 
 .gh-btn-editor.active {
-    background: var(--whitegrey-l1) !important;
+    background: var(--whitegrey-l1);
 }
 
 .gh-btn-editor.green span {
