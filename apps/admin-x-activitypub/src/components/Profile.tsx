@@ -108,7 +108,7 @@ const PostsTab: React.FC = () => {
         emptyStateIcon: 'pen'
     });
 
-    const posts = items.filter(post => post.type === 'Create' && !post.object?.inReplyTo);
+    const posts = items.filter(post => (post.type === 'Announce') || (post.type === 'Create' && !post.object?.inReplyTo));
 
     return (
         <>

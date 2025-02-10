@@ -155,7 +155,7 @@ const PostsTab: React.FC<{handle: string}> = ({handle}) => {
     }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
     const posts = (data?.pages.flatMap(page => page.posts) ?? [])
-        .filter(post => post.type === 'Create' && !post.object.inReplyTo);
+        .filter(post => (post.type === 'Announce') || (post.type === 'Create' && !post.object?.inReplyTo));
 
     return (
         <div>
