@@ -6,30 +6,20 @@ const logging = require('@tryghost/logging');
 const metrics = require('@tryghost/metrics');
 
 class JobQueueManager {
-    constructor({JobModel, config, logger = logging, WorkerPool = workerpool, prometheusClient, eventEmitter, metricLogger = metrics}) {
+    constructor({JobModel, config, logger = logging, metricLogger = metrics, WorkerPool = workerpool, eventEmitter}) {
         this.jobsRepository = new JobsRepository({JobModel});
         this.config = this.initializeConfig(config?.get('services:jobs:queue') || {});
         this.logger = this.createLogger(logger, this.config.logLevel);
+        this.metricLogger = metricLogger;
         this.WorkerPool = WorkerPool;
         this.pool = this.createWorkerPool();
         this.state = this.initializeState();
         this.eventEmitter = eventEmitter;
-        this.metricLogger = metricLogger;
         this.metricCache = {
             jobCompletionCount: 0,
             queueDepth: 0,
             emailAnalyticsAggregateMemberStatsCount: 0
         };
-
-        this.prometheusClient = prometheusClient;
-        if (prometheusClient) {
-            this.prometheusClient.registerCounter({
-                name: 'job_manager_queue_job_completion_count',
-                help: 'The number of jobs completed by the job manager queue',
-                labelNames: ['jobName']
-            });
-            this.prometheusClient.registerGauge({name: 'job_manager_queue_depth', help: 'The number of jobs in the job manager queue'});
-        }
     }
 
     createLogger(logger, logLevel) {
@@ -121,7 +111,6 @@ class JobQueueManager {
         if (stats.pendingTasks <= this.config.QUEUE_CAPACITY) {
             const entriesToAdd = Math.min(this.config.FETCH_COUNT, this.config.FETCH_COUNT - stats.pendingTasks);
             const {data: jobs, total} = await this.jobsRepository.getQueuedJobs(entriesToAdd);
-            this.prometheusClient?.getMetric('job_manager_queue_depth')?.set(total || 0);
             this.metricCache.queueDepth = total || 0;
             this.logger.debug(`Adding up to ${entriesToAdd} queue entries. Current pending tasks: ${stats.pendingTasks}. Current worker count: ${stats.totalWorkers}. Current depth: ${total}.`);
             this.updatePollInterval(jobs);
@@ -172,10 +161,8 @@ class JobQueueManager {
              */
             const result = await this.pool.exec('executeJob', [jobMetadata.job, jobMetadata.data]);
             await this.jobsRepository.delete(job.id);
-            this.prometheusClient?.getMetric('job_manager_queue_job_completion_count')?.inc({jobName});
             this.metricCache.jobCompletionCount += 1;
             if (jobName === 'update-member-email-analytics') {
-                this.prometheusClient?.getMetric('email_analytics_aggregate_member_stats_count')?.inc();
                 this.metricCache.emailAnalyticsAggregateMemberStatsCount += 1;
             }
             if (result && result.eventData) {
