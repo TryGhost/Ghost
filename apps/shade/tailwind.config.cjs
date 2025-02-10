@@ -23,7 +23,10 @@ module.exports = {
             accent: 'var(--accent-color, #ff0095)',
             white: '#FFF',
             black: '#15171A',
-            gray: {
+
+            // `grey` is part of the config because of legacy reasons. The old design
+            // system uses it but the official grey color name in Shade is "gray" — use that!
+            grey: {
                 50: '#FAFAFB',
                 75: '#F9FAFB',
                 100: '#F4F5F6',
@@ -42,7 +45,8 @@ module.exports = {
                 975: '#191B1E',
                 DEFAULT: '#ABB4BE'
             },
-            grey: {
+
+            gray: {
                 50: '#FAFAFB',
                 75: '#F9FAFB',
                 100: '#F4F5F6',

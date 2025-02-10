@@ -342,7 +342,7 @@ const Notifications: React.FC<NotificationsProps> = () => {
                                                         ))}
                                                         {group.actors.length > maxAvatars && (!openStates[group.id || `${group.type}_${index}`]) && (
                                                             <div
-                                                                className='flex h-9 w-5 items-center justify-center text-sm text-grey-700'
+                                                                className='flex h-9 w-5 items-center justify-center text-sm text-gray-700'
                                                             >
                                                                 {`+${group.actors.length - maxAvatars}`}
                                                             </div>
@@ -350,7 +350,7 @@ const Notifications: React.FC<NotificationsProps> = () => {
 
                                                         {group.actors.length > 1 && (
                                                             <Button
-                                                                className={`transition-color flex h-9 items-center rounded-full bg-transparent text-grey-700 hover:opacity-60 ${openStates[group.id || `${group.type}_${index}`] ? 'w-full justify-start pl-1' : '-ml-2 w-9 justify-center'}`}
+                                                                className={`transition-color flex h-9 items-center rounded-full bg-transparent text-gray-700 hover:opacity-60 ${openStates[group.id || `${group.type}_${index}`] ? 'w-full justify-start pl-1' : '-ml-2 w-9 justify-center'}`}
                                                                 hideLabel={!openStates[group.id || `${group.type}_${index}`]}
                                                                 icon='chevron-down'
                                                                 iconColorClass={`w-[12px] h-[12px] ${openStates[group.id || `${group.type}_${index}`] ? 'rotate-180' : ''}`}
@@ -373,7 +373,7 @@ const Notifications: React.FC<NotificationsProps> = () => {
                                                                     >
                                                                         <APAvatar author={actor} size='xs' />
                                                                         <span className='ml-2 text-base font-semibold'>{actor.name}</span>
-                                                                        <span className='ml-1 text-base text-grey-700'>{getUsername(actor)}</span>
+                                                                        <span className='ml-1 text-base text-gray-700'>{getUsername(actor)}</span>
                                                                     </div>
                                                                 ))}
                                                             </div>
@@ -392,7 +392,7 @@ const Notifications: React.FC<NotificationsProps> = () => {
                                                 ) && (
                                                     <div
                                                         dangerouslySetInnerHTML={{__html: stripHtml(group.object?.content || '')}}
-                                                        className='ap-note-content mt-1 line-clamp-2 text-pretty text-grey-700'
+                                                        className='ap-note-content mt-1 line-clamp-2 text-pretty text-gray-700'
                                                     />
                                                 )}
                                             </NotificationItem.Content>

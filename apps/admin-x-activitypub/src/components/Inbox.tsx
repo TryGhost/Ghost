@@ -106,7 +106,7 @@ const Inbox: React.FC<InboxProps> = ({layout}) => {
                                             <div className=''>
                                                 <APAvatar author={user as ActorProperties} />
                                             </div>
-                                            <Button aria-label='New post' className='text absolute inset-0 h-[64px] w-full justify-start rounded-lg bg-white pl-[64px] text-left text-[1.5rem] tracking-normal text-grey-500 shadow-[0_0_1px_rgba(0,0,0,.32),0_1px_6px_rgba(0,0,0,.03),0_8px_10px_-8px_rgba(0,0,0,.16)] transition-all hover:bg-white hover:shadow-[0_0_1px_rgba(0,0,0,.32),0_1px_6px_rgba(0,0,0,.03),0_8px_10px_-8px_rgba(0,0,0,.26)]' onClick={() => NiceModal.show(NewPostModal)}>What&apos;s new?</Button>
+                                            <Button aria-label='New post' className='text absolute inset-0 h-[64px] w-full justify-start rounded-lg bg-white pl-[64px] text-left text-[1.5rem] tracking-normal text-gray-500 shadow-[0_0_1px_rgba(0,0,0,.32),0_1px_6px_rgba(0,0,0,.03),0_8px_10px_-8px_rgba(0,0,0,.16)] transition-all hover:bg-white hover:shadow-[0_0_1px_rgba(0,0,0,.32),0_1px_6px_rgba(0,0,0,.03),0_8px_10px_-8px_rgba(0,0,0,.26)]' onClick={() => NiceModal.show(NewPostModal)}>What&apos;s new?</Button>
                                         </div>}
                                         <ul className={`mx-auto flex w-full flex-col ${layout === 'inbox' && 'mt-3'}`}>
                                             {activities.map((activity, index) => (
@@ -140,7 +140,7 @@ const Inbox: React.FC<InboxProps> = ({layout}) => {
                                 </div>
                                 <div className={`sticky top-[133px] ml-auto w-full max-w-[300px] max-lg:hidden xxxl:sticky xxxl:right-[40px]`}>
                                     <h2 className='mb-1.5 text-lg font-semibold'>This is your {layout === 'inbox' ? 'inbox' : 'feed'}</h2>
-                                    <p className='mb-6 text-grey-700'>You&apos;ll find {layout === 'inbox' ? 'long-form content' : 'short posts and updates'} from the accounts you follow here.</p>
+                                    <p className='mb-6 text-gray-700'>You&apos;ll find {layout === 'inbox' ? 'long-form content' : 'short posts and updates'} from the accounts you follow here.</p>
                                     <h2 className='mb-1 text-lg font-semibold'>You might also like</h2>
                                     {isLoadingSuggested ? (
                                         <LoadingIndicator size="sm" />
@@ -157,7 +157,7 @@ const Inbox: React.FC<InboxProps> = ({layout}) => {
                                                                 <APAvatar author={actor} />
                                                                 <div className='flex min-w-0 flex-col'>
                                                                     <span className='block w-full truncate font-semibold text-black'>{getName(actor)}</span>
-                                                                    <span className='block w-full truncate text-sm text-grey-600'>{getUsername(actor)}</span>
+                                                                    <span className='block w-full truncate text-sm text-gray-600'>{getUsername(actor)}</span>
                                                                 </div>
                                                             </ActivityItem>
                                                         </li>
@@ -182,14 +182,14 @@ const Inbox: React.FC<InboxProps> = ({layout}) => {
                                 <Heading className='text-balance' level={2}>
                                     Welcome to ActivityPub Beta
                                 </Heading>
-                                <p className="text-pretty text-grey-800">
+                                <p className="text-pretty text-gray-800">
                                     {layout === 'inbox'
                                         ? 'Here you\'ll find the latest articles from accounts you\'re following.'
                                         : 'Here you\'ll find the latest posts and updates from accounts you\'re following.'
                                     }
                                     {' Go ahead and find the ones you like using the "Search" tab.'}
                                 </p>
-                                <p className="text-pretty text-grey-800">
+                                <p className="text-pretty text-gray-800">
                                     For more information about what you can and can&apos;t (yet) do in the beta version, check out the onboarding guide:
                                 </p>
                                 <a className='font-semibold text-green' href='https://forum.ghost.org/t/activitypub-beta-start-here/51780' rel='noopener noreferrer' target='_blank'>Learn more</a>
