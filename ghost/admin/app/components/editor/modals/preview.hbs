@@ -43,21 +43,29 @@
             </span>
         </div>
         <div class="right">
-
-            <button type="button" {{on "click" (perform this.copyPreviewUrl)}} class="gh-btn gh-btn-preview gh-post-preview-url gh-tooltip-trigger tooltip-bottom no-shortcut">
-                <span>
-                    {{#if this.copyPreviewUrl.isRunning}}
-                        {{svg-jar "check-circle" class="check v-mid mr1 ml2"}} Copied
-                    {{else}}
-                        {{svg-jar "link"}}
-                    {{/if}}
-                </span>
-                <GhTooltip @text="Copy preview link" />
-            </button>
-            <a href={{@post.previewUrl}} target="_blank" rel="noopener noreferrer" class="gh-btn gh-btn-preview gh-publish-preview-newtab gh-tooltip-trigger tooltip-bottom no-shortcut">
-                <span>{{svg-jar "external"}}</span>
-                <GhTooltip @text="Open in new tab" />
-            </a>
+            <div class="gh-post-test-email-group">
+                <GhDropdownButton
+                    @dropdownName="post-preview-test-email"
+                    @classNames="gh-btn gh-btn-preview gh-post-preview-url"
+                    data-test-button="post-preview-test-email"
+                >
+                    <span>{{svg-jar "share"}}</span>
+                </GhDropdownButton>
+                <GhDropdown
+                    @name="post-preview-test-email"
+                    @classNames="dropdown-menu gh-post-preview-share-dropdown"
+                    @onOpen={{this.focusInput}}
+                >
+                    <div class="gh-post-preview-share">
+                        <button type="button" {{on "click" (perform this.copyPreviewUrl)}} class="gh-btn gh-btn-icon gh-btn-preview gh-post-copy-url">
+                            <span>{{svg-jar "link"}}Copy draft link</span>
+                        </button>
+                        <a href={{@post.previewUrl}} target="_blank" rel="noopener noreferrer" class="gh-btn gh-btn-preview gh-publish-preview-newtab">
+                            <span>{{svg-jar "external"}}Open in new tab</span>
+                        </a>
+                    </div>
+                </GhDropdown>
+            </div>
             <div class="gh-contentfilter-divider"></div>
             <button
                 type="button"

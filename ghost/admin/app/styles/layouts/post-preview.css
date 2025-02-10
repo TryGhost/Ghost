@@ -130,16 +130,13 @@
 }
 
 .gh-publish-preview-newtab {
-    height: 34px;
     background: transparent;
-    border: none;
-    margin-right: 4px;
-    cursor: pointer;
     color: var(--black);
+    cursor: pointer;
 }
 
-.gh-publish-preview-newtab:hover {
-    background: var(--whitegrey);
+.gh-publish-preview-newtab svg {
+    fill: none;
 }
 
 .gh-publish-preview-newtab span {
@@ -250,6 +247,11 @@
     border-radius: 4px;
 }
 
+.gh-post-copy-url svg {
+    margin-right: .6rem;
+    fill: none;
+}
+
 .gh-post-preview-copy {
     position: absolute;
     top: 2px;
@@ -298,7 +300,8 @@
     transition: all .15s ease;
 }
 
-.gh-post-preview-email-header .gh-email-subject .gh-input-x:focus {
+.gh-post-preview-email-header .gh-email-subject .gh-input-x:focus,
+.gh-post-preview-email-header .gh-post-preview-email-input.gh-input-x:focus {
     background: var(--white);
     cursor: text;
 }
@@ -400,12 +403,26 @@
     width: 100%;
 }
 
-.gh-post-preview-email-test {
+.gh-post-preview-email-test,
+.gh-post-preview-share {
     display: flex;
     gap: .8rem;
 }
 
-.gh-post-preview-email-test .form-group {
+.gh-post-preview-share {
+    flex-direction: column;
+    min-width: 180px;
+}
+
+.gh-post-preview-share svg {
+    fill: none;
+    margin-right: .6rem;
+    width: 16px;
+    height: 16px;
+}
+
+.gh-post-preview-email-test .form-group,
+.gh-post-preview-share .form-group {
     margin: 0;
 }
 
@@ -421,7 +438,8 @@
     line-height: 34px;
 }
 
-.gh-post-preview-email-test-dropdown {
+.gh-post-preview-email-test-dropdown,
+.gh-post-preview-share-dropdown {
     top: calc(100% + 6px);
     right: 0;
     left: auto;
@@ -432,11 +450,13 @@
     animation-fill-mode: forwards;
 }
 
-.gh-post-preview-email-test-dropdown.closed {
+.gh-post-preview-email-test-dropdown.closed,
+.gh-post-preview-share-dropdown.closed {
     z-index: -1;
 }
 
-.gh-post-preview-email-test-dropdown.fade-in-scale {
+.gh-post-preview-email-test-dropdown.fade-in-scale,
+.gh-post-preview-share-dropdown.fade-in-scale {
     animation: fade-in-scale .2s;
     animation-fill-mode: forwards;
 }

@@ -920,6 +920,23 @@ input:focus,
     border: 1px solid var(--grey-850) !important;
 }
 
+.gh-btn.gh-btn-preview {
+    border-color: var(--grey-900);
+}
+
+.gh-btn.gh-btn-preview:hover {
+    background: var(--grey-900);
+}
+
+.gh-tooltip-trigger .gh-tooltip {
+    background: var(--grey-900);
+    color: var(--black);
+}
+
+.gh-tooltip .gh-shortcut-key {
+    background: var(--grey-950);
+}
+
 /* Dark style Lists */
 .gh-list {
     background: var(--dark-main-bg-color) !important;

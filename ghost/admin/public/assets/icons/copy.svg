@@ -1,5 +1,5 @@
-<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
   <title>copy</title>
-  <path fill-rule="evenodd" clip-rule="evenodd" d="M3.333 1.75A1.586 1.586 0 0 0 1.75 3.334v5.833a1.586 1.586 0 0 0 1.584 1.583h3.5a.75.75 0 0 1 0 1.5h-3.5A3.081 3.081 0 0 1 .25 9.167V3.333A3.085 3.085 0 0 1 3.333.25h3.5a3.083 3.083 0 0 1 3.084 3.083V4.5a.75.75 0 0 1-1.5 0V3.333A1.586 1.586 0 0 0 6.833 1.75h-3.5z" fill="none"/>
-  <path fill-rule="evenodd" clip-rule="evenodd" d="M8.389 5.25a.806.806 0 0 0-.806.806v7.388c0 .445.361.806.806.806h5.055c.445 0 .806-.36.806-.806V6.056a.806.806 0 0 0-.806-.806H8.39zm-2.306.806A2.306 2.306 0 0 1 8.389 3.75h5.055a2.305 2.305 0 0 1 2.306 2.306v7.388a2.305 2.305 0 0 1-2.306 2.306H8.39a2.306 2.306 0 0 1-2.306-2.306V6.056z" fill="none"/>
+  <path d="m7,17h-2.5c-.828,0-1.5-.672-1.5-1.5V4.5c0-.828.672-1.5,1.5-1.5h11c.828,0,1.5.672,1.5,1.5v2.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+  <rect x="7" y="7" width="14" height="14" rx="1.5" ry="1.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></rect>
 </svg>
