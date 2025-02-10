@@ -314,6 +314,10 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                     <div data-object-id={object.id}>
                         <div className={`group/article relative`} data-layout='modal' onClick={onClick}>
                             <div className={`z-10 -my-1 grid grid-cols-[auto_1fr] grid-rows-[auto_1fr] gap-3 pb-3 pt-4`} data-test-activity>
+                                {(type === 'Announce') && <div className='z-10 col-span-2 mb-2 flex items-center gap-2 text-grey-700'>
+                                    <div><Icon colorClass='text-grey-700 shrink-0' name='reload' size={'sm'}></Icon></div>
+                                    <span className='flex min-w-0 items-center gap-1'><span className='truncate break-all hover:underline' title={getUsername(actor)} onClick={e => handleProfileClick(actor, e)}>{actor.name}</span> reposted</span>
+                                </div>}
                                 {(showHeader) && <><div className='relative z-10 pt-[3px]'>
                                     <APAvatar author={author}/>
                                 </div>
