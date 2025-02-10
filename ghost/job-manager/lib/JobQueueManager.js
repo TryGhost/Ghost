@@ -222,7 +222,7 @@ class JobQueueManager {
             ...poolStats
         };
         const statsString = JSON.stringify(stats, null, 2);
-        this.logger.info(statsString);
+        this.logger.info(`Job Queue Stats: ${statsString}`);
     }
 
     async shutdown() {

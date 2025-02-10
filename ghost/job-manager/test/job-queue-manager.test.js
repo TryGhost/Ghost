@@ -406,4 +406,20 @@ describe('JobQueueManager', function () {
             clock.restore();
         });
     });
+
+    describe('_doReportStats', function () {
+        it('should log the stats', function () {
+            const loggerInfoStub = sinon.stub(jobQueueManager.logger, 'info');
+            jobQueueManager._doReportStats();
+            const expectedStats = JSON.stringify({
+                totalWorkers: 1,
+                busyWorkers: 0,
+                idleWorkers: 1,
+                activeTasks: 0
+            }, null, 2);
+            const expectedLog = `Job Queue Stats: ${expectedStats}`;
+            expect(loggerInfoStub.calledOnce).to.be.true;
+            expect(loggerInfoStub.calledWith(expectedLog)).to.be.true;
+        });
+    });
 });
