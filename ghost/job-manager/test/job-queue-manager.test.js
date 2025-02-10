@@ -18,6 +18,7 @@ describe('JobQueueManager', function () {
             get: sinon.stub().returns({})
         };
         mockLogger = {
+            debug: sinon.stub(),
             info: sinon.stub(),
             error: sinon.stub()
         };
@@ -145,10 +146,22 @@ describe('JobQueueManager', function () {
     });
 
     describe('createLogger', function () {
-        it('should create a logger with info level', function () {
-            const logger = jobQueueManager.createLogger(mockLogger, 'info');
+        it('should create a logger with debug level', function () {
+            const logger = jobQueueManager.createLogger(mockLogger, 'debug');
+            logger.debug('Test debug');
             logger.info('Test info');
             logger.error('Test error');
+            expect(mockLogger.debug.calledOnce).to.be.true;
+            expect(mockLogger.info.calledOnce).to.be.true;
+            expect(mockLogger.error.calledOnce).to.be.true;
+        });
+
+        it('should create a logger with info level', function () {
+            const logger = jobQueueManager.createLogger(mockLogger, 'info');
+            logger.debug('Test debug');
+            logger.info('Test info');
+            logger.error('Test error');
+            expect(mockLogger.debug.called).to.be.false;
             expect(mockLogger.info.calledOnce).to.be.true;
             expect(mockLogger.error.calledOnce).to.be.true;
         });
