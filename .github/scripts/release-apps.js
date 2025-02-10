@@ -7,7 +7,9 @@ const semver = require('semver');
 
 // Maps a package name to the config key in defaults.json
 const CONFIG_KEYS = {
-    '@tryghost/portal': 'portal'
+    '@tryghost/portal': 'portal',
+    '@tryghost/sodo-search': 'sodoSearch',
+    '@tryghost/comments-ui': 'comments'
 };
 
 const CURRENT_DIR = process.cwd();
