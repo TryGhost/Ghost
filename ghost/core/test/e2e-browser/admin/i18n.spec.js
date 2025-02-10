@@ -12,6 +12,15 @@ async function setLanguage(sharedPage, language) {
     await expect(section.getByLabel('Site language')).toHaveValue(language);
 }
 
+async function resetLanguage(sharedPage) {
+    await sharedPage.goto('/ghost/#/settings/publication-language');
+    const section = sharedPage.getByTestId('publication-language');
+    await section.getByLabel('Site language').fill('en');
+    await section.getByRole('button', {name: 'Save'}).click();
+
+    await expect(section.getByLabel('Site language')).toHaveValue('en');
+}
+
 test.describe('i18n', () => {
     test.describe('Newsletter', () => {
         test('changing the site language immediately translates strings in newsletters', async ({sharedPage}) => {
@@ -35,6 +44,11 @@ test.describe('i18n', () => {
 
             await expect(metaText).toContain('Par Joe Bloggs');
             await expect(metaText).not.toContain('By Joe Bloggs');
+
+            // close the email preview modal
+            await sharedPage.keyboard.press('Escape');
+            // reset language to en
+            await resetLanguage(sharedPage);
         });
     });
 });

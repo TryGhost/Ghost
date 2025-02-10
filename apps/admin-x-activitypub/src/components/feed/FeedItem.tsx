@@ -283,7 +283,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                                     className='ap-note-content line-clamp-[10] text-pretty leading-[1.4285714286] tracking-[-0.006em] text-grey-900'
                                                 ></div>
                                                 {isTruncated && (
-                                                    <button className='mt-1 text-[#2563EB]' type='button'>Show more</button>
+                                                    <button className='mt-1 text-blue-600' type='button'>Show more</button>
                                                 )}
                                                 {renderFeedAttachment(object, layout)}
                                             </div>
