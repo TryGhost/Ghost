@@ -231,6 +231,7 @@ class JobQueueManager {
         };
         const statsString = JSON.stringify(stats, null, 2);
         this.logger.info(`Job Queue Stats: ${statsString}`);
+        this.metricLogger.metric('job_manager_queue', stats);
     }
 
     async shutdown() {

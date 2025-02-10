@@ -413,10 +413,10 @@ describe('JobQueueManager', function () {
     });
 
     describe('_doReportStats', function () {
-        it('should log the stats', function () {
+        it('should log the stats using the logger', function () {
             const loggerInfoStub = sinon.stub(jobQueueManager.logger, 'info');
             jobQueueManager._doReportStats();
-            const expectedStats = JSON.stringify({
+            const expectedStats = {
                 totalWorkers: 1,
                 busyWorkers: 0,
                 idleWorkers: 1,
@@ -424,10 +424,27 @@ describe('JobQueueManager', function () {
                 jobCompletionCount: 0,
                 queueDepth: 0,
                 emailAnalyticsAggregateMemberStatsCount: 0
-            }, null, 2);
-            const expectedLog = `Job Queue Stats: ${expectedStats}`;
+            };
+            const expectedLog = `Job Queue Stats: ${JSON.stringify(expectedStats, null, 2)}`;
             expect(loggerInfoStub.calledOnce).to.be.true;
             expect(loggerInfoStub.calledWith(expectedLog)).to.be.true;
+        });
+
+        it('should log the stats using the metricLogger', function () {
+            jobQueueManager._doReportStats();
+            const expectedStats = {
+                totalWorkers: 1,
+                busyWorkers: 0,
+                idleWorkers: 1,
+                activeTasks: 0,
+                jobCompletionCount: 0,
+                queueDepth: 0,
+                emailAnalyticsAggregateMemberStatsCount: 0
+            };
+            expect(mockMetricLogger.metric.calledOnce).to.be.true;
+            const args = mockMetricLogger.metric.args[0];
+            expect(args[0]).to.equal('job_manager_queue');
+            expect(args[1]).to.deep.equal(expectedStats);
         });
     });
 });
