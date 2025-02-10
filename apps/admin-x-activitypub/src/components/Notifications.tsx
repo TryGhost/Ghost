@@ -303,7 +303,7 @@ const Notifications: React.FC<NotificationsProps> = () => {
 
     return (
         <>
-            <MainNavigation page='activities'/>
+            <MainNavigation page='notifications'/>
             <div className='z-0 flex w-full flex-col items-center'>
                 {
                     isLoading && (<div className='mt-8 flex flex-col items-center justify-center space-y-4 text-center'>
