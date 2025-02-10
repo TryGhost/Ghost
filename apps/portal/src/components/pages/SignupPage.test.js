@@ -1,6 +1,9 @@
-import SignupPage from './SignupPage';
+import {vi} from 'vitest';
 import {getFreeProduct, getProductData, getSiteData} from '../../utils/fixtures-generator';
-import {render, fireEvent, getByTestId} from '../../utils/test-utils';
+import {render, fireEvent, getByTestId, queryByTestId} from '../../utils/test-utils';
+import SignupPage from './SignupPage';
+
+vi.mock('@hcaptcha/react-hcaptcha');
 
 const setup = (overrides) => {
     const {mockOnActionFn, ...utils} = render(
@@ -113,6 +116,141 @@ describe('SignupPage', () => {
 
             const message = getByTestId(document.body, 'members-disabled-notification-text');
             expect(message).toBeInTheDocument();
+        });
+    });
+
+    describe('when site is invite-only', () => {
+        test('blocks signups but offers to sign in', () => {
+            setup({
+                site: getSiteData({
+                    membersSignupAccess: 'invite'
+                })
+            });
+
+            const message = getByTestId(document.body, 'invite-only-notification-text');
+            expect(message).toBeInTheDocument();
+
+            const signinLink = getByTestId(document.body, 'signin-switch');
+            expect(signinLink).toBeInTheDocument();
+        });
+    });
+
+    describe('when site is paid-members only', () => {
+        test('blocks the #/portal/signup/free page, but offers to sign in', () => {
+            setup({
+                site: getSiteData({
+                    membersSignupAccess: 'paid'
+                }),
+                pageQuery: 'free'
+            });
+
+            const message = getByTestId(document.body, 'paid-members-only-notification-text');
+            expect(message).toBeInTheDocument();
+
+            const signinLink = getByTestId(document.body, 'signin-switch');
+            expect(signinLink).toBeInTheDocument();
+        });
+
+        test('blocks signups when only the free plan is available, but offers to sign in', () => {
+            setup({
+                site: getSiteData({
+                    membersSignupAccess: 'paid',
+                    products: [getFreeProduct({})]
+                })
+            });
+
+            const message = getByTestId(document.body, 'invite-only-notification-text');
+            expect(message).toBeInTheDocument();
+
+            const signinLink = getByTestId(document.body, 'signin-switch');
+            expect(signinLink).toBeInTheDocument();
+        });
+
+        test('blocks signups when no plans are available, but offers to sign in', () => {
+            setup({
+                site: getSiteData({
+                    membersSignupAccess: 'paid',
+                    products: []
+                })
+            });
+
+            const message = getByTestId(document.body, 'invite-only-notification-text');
+            expect(message).toBeInTheDocument();
+
+            const signinLink = getByTestId(document.body, 'signin-switch');
+            expect(signinLink).toBeInTheDocument();
+        });
+    });
+
+    describe('when site has memberships disabled', () => {
+        test('blocks signups and signins', () => {
+            setup({
+                site: getSiteData({
+                    membersSignupAccess: 'none'
+                })
+            });
+
+            const message = getByTestId(document.body, 'members-disabled-notification-text');
+            expect(message).toBeInTheDocument();
+
+            const signinLink = queryByTestId(document.body, 'signin-switch');
+            expect(signinLink).toBeNull();
+        });
+    });
+
+    describe('when site is anyone-can-signup, but has no available prices', () => {
+        test('blocks signups, but allows signins', () => {
+            setup({
+                site: getSiteData({
+                    membersSignupAccess: 'all',
+                    products: [],
+                    portalPlans: []
+                })
+            });
+
+            const message = getByTestId(document.body, 'invite-only-notification-text');
+            expect(message).toBeInTheDocument();
+
+            const signinLink = getByTestId(document.body, 'signin-switch');
+            expect(signinLink).toBeInTheDocument();
+        });
+    });
+
+    describe('when captcha is enabled', () => {
+        test('renders', () => {
+            setup({
+                site: getSiteData({
+                    captchaEnabled: true,
+                    captchaSiteKey: '20000000-ffff-ffff-ffff-000000000002',
+                    products: [
+                        getFreeProduct({})
+                    ]
+                })
+            });
+
+            const hcaptchaElement = getByTestId(document.body, 'hcaptcha-mock');
+            expect(hcaptchaElement).toBeInTheDocument();
+        });
+
+        test('uses Captcha when run', () => {
+            const {nameInput, emailInput, chooseButton, mockOnActionFn} = setup({
+                site: getSiteData({
+                    captchaEnabled: true,
+                    captchaSiteKey: '20000000-ffff-ffff-ffff-000000000002'
+                })
+            });
+
+            const nameVal = 'J Smith';
+            const emailVal = 'jsmith@example.com';
+            const planVal = 'free';
+
+            fireEvent.change(nameInput, {target: {value: nameVal}});
+            fireEvent.change(emailInput, {target: {value: emailVal}});
+            expect(nameInput).toHaveValue(nameVal);
+            expect(emailInput).toHaveValue(emailVal);
+
+            fireEvent.click(chooseButton[0]);
+            expect(mockOnActionFn).toHaveBeenCalledWith('signup', {email: emailVal, name: nameVal, plan: planVal, token: 'mocked-token'});
         });
     });
 });

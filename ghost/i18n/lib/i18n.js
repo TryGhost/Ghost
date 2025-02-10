@@ -31,6 +31,7 @@ const SUPPORTED_LOCALES = [
     'ko', // Korean
     'kz', // Kazach
     'lt', // Lithuanian
+    'lv', // Latvian
     'mk', // Macedonian
     'mn', // Mongolian
     'ms', // Malay

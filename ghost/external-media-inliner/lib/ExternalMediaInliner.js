@@ -139,9 +139,9 @@ class ExternalMediaInliner {
      */
     async inlineContent(content, domains) {
         for (const domain of domains) {
-            // NOTE: the src could end with a quote, apostrophe or double-backslash. backlashes are added to content
+            // NOTE: the src could end with a quote, bracket, apostrophe, double-backslash, or encoded quote. backlashes are added to content
             //       as an escape character
-            const srcTerminationSymbols = `"|'|\\\\`;
+            const srcTerminationSymbols = `"|\\)|'| |,|<|\\\\|&quot;`;
             const regex = new RegExp(`(${domain}.*?)(${srcTerminationSymbols})`, 'igm');
             const matches = content.matchAll(regex);
 

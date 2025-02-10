@@ -21,6 +21,9 @@ describe('MagicLink', function () {
                 getSubject: sandbox.stub().returns('SOMESUBJECT'),
                 transporter: {
                     sendMail: sandbox.stub().resolves()
+                },
+                config: {
+                    get: sandbox.stub().resolves()
                 }
             };
             const service = new MagicLink(options);
@@ -53,6 +56,9 @@ describe('MagicLink', function () {
                 getSubject: sandbox.stub().returns('SOMESUBJECT'),
                 transporter: {
                     sendMail: sandbox.stub().resolves()
+                },
+                config: {
+                    get: sandbox.stub().resolves()
                 }
             };
             const service = new MagicLink(options);
@@ -96,6 +102,9 @@ describe('MagicLink', function () {
                 getHTML: sandbox.stub().returns('SOMEHTML'),
                 transporter: {
                     sendMail: sandbox.stub().resolves()
+                },
+                config: {
+                    get: sandbox.stub().resolves()
                 }
             };
             const service = new MagicLink(options);

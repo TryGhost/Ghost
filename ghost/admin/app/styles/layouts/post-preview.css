@@ -220,8 +220,8 @@
     grid-template-columns: 65px 1fr;
 }
 
-.gh-preview-newsletter-trigger,
-.gh-preview-newsletter-trigger:focus {
+.ember-power-select-trigger.gh-preview-newsletter-trigger,
+.ember-power-select-trigger.gh-preview-newsletter-trigger:focus {
     padding: 0;
     border: none;
     cursor: pointer;
