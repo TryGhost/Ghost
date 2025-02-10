@@ -36,7 +36,7 @@
     "reset:data:empty": "cd ghost/core && node index.js generate-data --clear-database --quantities members:0,posts:0 --seed 123",
     "reset:data:xxl": "cd ghost/core && node index.js generate-data --clear-database --quantities members:2000000,posts:0,emails:0,members_stripe_customers:0,members_login_events:0,members_status_events:0 --seed 123",
     "docker": "COMPOSE_PROFILES=${COMPOSE_PROFILES:-full} docker compose run --rm -it ghost",
-    "docker:dev": "COMPOSE_PROFILES=${COMPOSE_PROFILES:-full} docker compose up --attach=ghost --no-log-prefix",
+    "docker:dev": "COMPOSE_PROFILES=${COMPOSE_PROFILES:-full} docker compose up --watch --attach=ghost --no-log-prefix",
     "docker:build": "COMPOSE_PROFILES=${COMPOSE_PROFILES:-full} docker compose build",
     "docker:shell": "COMPOSE_PROFILES=${COMPOSE_PROFILES:-full} docker compose run --rm -it ghost /bin/bash",
     "docker:test:unit": "COMPOSE_PROFILES=${COMPOSE_PROFILES:-full} docker compose run --rm --no-deps ghost yarn test:unit",
@@ -136,5 +136,62 @@
     "rimraf": "5.0.10",
     "ts-node": "10.9.2",
     "typescript": "5.4.5"
+  },
+  "nx": {
+    "targets": {
+      "dev": {
+        "executor": "nx:run-commands",
+        "options": {
+          "commands": [
+            {
+              "description": "Start Ghost",
+              "command": "nx run ghost:dev",
+              "prefix": "[ghost]"
+            },
+            {
+              "description": "Build Ghost Dependencies",
+              "command": "nx watch --projects=ghost --includeDependentProjects -- nx run-many -t build:ts -p \\$NX_PROJECT_NAME --exclude=ghost",
+              "prefix": "[ts]"
+            },
+            {
+              "description": "Build Admin X Dependencies",
+              "command": "nx watch --projects=tag:type:admin-x-app --includeDependentProjects -- nx run-many -t build -p \\$NX_PROJECT_NAME --exclude=tag:type:admin-x-app",
+              "prefix": "[adminX]"
+            },
+            {
+              "description": "Start Admin X",
+              "command": "nx run-many -t dev --projects=tag:type:admin-x-app",
+              "prefix": "[adminX]"
+            },
+            {
+              "description": "Start Portal",
+              "command": "nx run @tryghost/portal:dev",
+              "prefix": "[portal]"
+            },
+            {
+              "description": "Start Announcement Bar",
+              "command": "nx run @tryghost/announcement-bar:dev",
+              "prefix": "[announcement-bar]"
+            },
+            {
+              "description": "Start Signup Form",
+              "command": "nx run @tryghost/signup-form:dev",
+              "prefix": "[signup-form]"
+            },
+            {
+              "description": "Start Comments",
+              "command": "nx run @tryghost/comments-ui:dev",
+              "prefix": "[comments]"
+            },
+            {
+              "description": "Start Search",
+              "command": "nx run @tryghost/sodo-search:dev",
+              "prefix": "[search]"
+            }
+          ],
+          "tty": true
+        }
+      }
+    }
   }
 }

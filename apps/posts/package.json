@@ -15,6 +15,9 @@
     "main": "./dist/posts.umd.cjs",
     "module": "./dist/posts.js",
     "private": true,
+    "tags": [
+      "type:admin-x-app"
+    ],
     "scripts": {
         "dev": "vite build --watch",
         "dev:start": "vite",

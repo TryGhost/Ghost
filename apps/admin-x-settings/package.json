@@ -64,6 +64,9 @@
     "vitest": "0.34.3"
   },
   "nx": {
+    "tags": [
+      "type:admin-x-app"
+    ],
     "targets": {
       "dev": {
         "dependsOn": [

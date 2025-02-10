@@ -6,7 +6,7 @@ services:
       context: .
       dockerfile: ./.docker/Dockerfile
       target: full-devcontainer
-    command: ["yarn", "dev"]
+    command: ["yarn", "nx", "dev"]
     ports:
       - "2368:2368" # Ghost
       - "4200:4200" # Admin
@@ -23,7 +23,7 @@ services:
     profiles: [full]
     develop:
       watch:
-        - action: sync
+        - action: sync+restart
           path: ./ghost
           target: /home/ghost/ghost
           ignore:
@@ -37,6 +37,12 @@ services:
             - node_modules
             - .git
             - .docker
+        - action: rebuild
+          path: package.json
+          target: /home/ghost/package.json
+        - action: rebuild
+          path: yarn.lock
+          target: /home/ghost/yarn.lock
     tty: true
     depends_on:
       mysql:

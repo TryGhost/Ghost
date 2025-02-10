@@ -34,6 +34,9 @@
     "react-dom": "18.3.1"
   },
   "nx": {
+    "tags": [
+      "type:admin-x-app"
+    ],
     "targets": {
       "dev": {
         "dependsOn": [

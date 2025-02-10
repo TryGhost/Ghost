@@ -38,6 +38,9 @@
     "ts-jest": "29.1.5"
   },
   "nx": {
+    "tags": [
+      "type:admin-x-app"
+    ],
     "targets": {
       "build": {
         "dependsOn": [
