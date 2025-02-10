@@ -31,7 +31,6 @@ Object {
       "stripeAutomaticTax": true,
       "superEditors": true,
       "themeErrorsNotification": true,
-      "urlCache": true,
       "webmentions": true,
     },
     "mail": "",
