@@ -27,13 +27,18 @@ class JobQueueManager {
 
     createLogger(logger, logLevel) {
         return {
+            debug: (message) => {
+                if (logLevel === 'debug') {
+                    logger.debug(`[JobQueueManager] ${message}`);
+                }
+            },
             info: (message) => {
-                if (logLevel === 'info') {
+                if (logLevel === 'info' || logLevel === 'debug') {
                     logger.info(`[JobQueueManager] ${message}`);
                 }
             },
             error: (message, error) => {
-                if (logLevel === 'info' || logLevel === 'error') {
+                if (logLevel === 'info' || logLevel === 'error' || logLevel === 'debug') {
                     logger.error(`[JobQueueManager] ${message}`, error);
                 }
             }
@@ -89,7 +94,7 @@ class JobQueueManager {
             }
 
             this.state.isPolling = true;
-            this.logger.info(`Polling for jobs; current interval: ${Math.floor(this.state.currentPollInterval / 1000)}s`);
+            this.logger.debug(`Polling for jobs; current interval: ${Math.floor(this.state.currentPollInterval / 1000)}s`);
 
             try {
                 await this.processPendingJobs();
@@ -110,7 +115,7 @@ class JobQueueManager {
             const entriesToAdd = Math.min(this.config.FETCH_COUNT, this.config.FETCH_COUNT - stats.pendingTasks);
             const {data: jobs, total} = await this.jobsRepository.getQueuedJobs(entriesToAdd);
             this.prometheusClient?.getMetric('job_manager_queue_depth')?.set(total || 0);
-            this.logger.info(`Adding up to ${entriesToAdd} queue entries. Current pending tasks: ${stats.pendingTasks}. Current worker count: ${stats.totalWorkers}. Current depth: ${total}.`);
+            this.logger.debug(`Adding up to ${entriesToAdd} queue entries. Current pending tasks: ${stats.pendingTasks}. Current worker count: ${stats.totalWorkers}. Current depth: ${total}.`);
             this.updatePollInterval(jobs);
             await this.processJobs(jobs);
         }
