@@ -1,4 +1,5 @@
 import React, {useEffect, useRef} from 'react';
+import Skeleton from 'react-loading-skeleton';
 
 import NiceModal from '@ebay/nice-modal-react';
 import {Activity, ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
@@ -237,7 +238,7 @@ const Notifications: React.FC<NotificationsProps> = () => {
             });
 
         return groupActivities(filtered);
-    }) ?? []);
+    }) ?? Array(5).fill({actors: [{}]}));
 
     const observerRef = useRef<IntersectionObserver | null>(null);
     const loadMoreRef = useRef<HTMLDivElement | null>(null);
@@ -306,11 +307,6 @@ const Notifications: React.FC<NotificationsProps> = () => {
             <MainNavigation page='notifications'/>
             <div className='z-0 flex w-full flex-col items-center'>
                 {
-                    isLoading && (<div className='mt-8 flex flex-col items-center justify-center space-y-4 text-center'>
-                        <LoadingIndicator size='lg' />
-                    </div>)
-                }
-                {
                     isLoading === false && groupedActivities.length === 0 && (
                         <div className='mt-8'>
                             <NoValueLabel icon='bell'>
@@ -320,7 +316,7 @@ const Notifications: React.FC<NotificationsProps> = () => {
                     )
                 }
                 {
-                    (isLoading === false && groupedActivities.length > 0) && (
+                    (groupedActivities.length > 0) && (
                         <>
                             <div className='my-8 flex w-full max-w-[560px] flex-col'>
                                 {groupedActivities.map((group, index) => (
@@ -329,14 +325,15 @@ const Notifications: React.FC<NotificationsProps> = () => {
                                             className='hover:bg-gray-100'
                                             onClick={() => handleActivityClick(group, index)}
                                         >
-                                            <NotificationItem.Icon type={getActivityBadge(group)} />
+                                            {!isLoading ? <NotificationItem.Icon type={getActivityBadge(group)} /> : <Skeleton className='rounded-full' containerClassName='flex h-10 w-10' />}
                                             <NotificationItem.Avatars>
                                                 <div className='flex flex-col'>
                                                     <div className='mt-0.5 flex items-center gap-1.5'>
-                                                        {!openStates[group.id || `${group.type}_${index}`] && group.actors.slice(0, maxAvatars).map(actor => (
+                                                        {!openStates[group.id || `${group.type}_${index}`] && group.actors.slice(0, maxAvatars).map((actor: ActorProperties) => (
                                                             <APAvatar
                                                                 key={actor.id}
                                                                 author={actor}
+                                                                isLoading={isLoading}
                                                                 size='notification'
                                                             />
                                                         ))}
@@ -365,7 +362,7 @@ const Notifications: React.FC<NotificationsProps> = () => {
                                                     <div className={`overflow-hidden transition-all duration-300 ease-in-out  ${openStates[group.id || `${group.type}_${index}`] ? 'mb-2 max-h-[1384px] opacity-100' : 'max-h-0 opacity-0'}`}>
                                                         {openStates[group.id || `${group.type}_${index}`] && group.actors.length > 1 && (
                                                             <div className='flex flex-col gap-2 pt-4'>
-                                                                {group.actors.map(actor => (
+                                                                {group.actors.map((actor: ActorProperties) => (
                                                                     <div
                                                                         key={actor.id}
                                                                         className='flex items-center hover:opacity-80'

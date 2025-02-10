@@ -1,4 +1,5 @@
 import React, {useEffect, useRef, useState} from 'react';
+import Skeleton from 'react-loading-skeleton';
 
 import NiceModal from '@ebay/nice-modal-react';
 import {Button, Icon, LoadingIndicator, NoValueLabel, TextField} from '@tryghost/admin-x-design-system';
@@ -95,9 +96,10 @@ const SearchResults: React.FC<SearchResultsProps> = ({results, onUpdate}) => {
 interface SuggestedProfileProps {
     profile: Profile;
     update: (id: string, updated: Partial<Profile>) => void;
+    isLoading: boolean;
 }
 
-const SuggestedProfile: React.FC<SuggestedProfileProps> = ({profile, update}) => {
+const SuggestedProfile: React.FC<SuggestedProfileProps> = ({profile, update, isLoading}) => {
     const onFollow = () => {
         update(profile.actor.id, {
             isFollowing: true,
@@ -121,17 +123,22 @@ const SuggestedProfile: React.FC<SuggestedProfileProps> = ({profile, update}) =>
         >
             <APAvatar author={profile.actor}/>
             <div className='flex flex-col'>
-                <span className='font-semibold text-black'>{profile.actor.name}</span>
-                <span className='text-sm text-gray-700'>{profile.handle}</span>
+                <span className='font-semibold text-black'>{!isLoading ? profile.actor.name : <Skeleton className='w-full max-w-64' />}</span>
+                <span className='text-sm text-gray-700'>{!isLoading ? profile.handle : <Skeleton className='w-24' />}</span>
             </div>
-            <FollowButton
-                className='ml-auto'
-                following={profile.isFollowing}
-                handle={profile.handle}
-                type='secondary'
-                onFollow={onFollow}
-                onUnfollow={onUnfollow}
-            />
+            {!isLoading ?
+                <FollowButton
+                    className='ml-auto'
+                    following={profile.isFollowing}
+                    handle={profile.handle}
+                    type='secondary'
+                    onFollow={onFollow}
+                    onUnfollow={onUnfollow}
+                /> :
+                <div className='inline-flex items-center'>
+                    <Skeleton className='w-12' />
+                </div>
+            }
         </ActivityItem>
     );
 };
@@ -148,15 +155,11 @@ const SuggestedProfiles: React.FC<SuggestedProfilesProps> = ({profiles, isLoadin
             <span className='mb-1 flex w-full max-w-[560px] font-semibold'>
                 Suggested accounts
             </span>
-            {isLoading && (
-                <div className='p-4'>
-                    <LoadingIndicator size='md'/>
-                </div>
-            )}
             {profiles.map((profile, index) => {
                 return (
                     <React.Fragment key={profile.actor.id}>
                         <SuggestedProfile
+                            isLoading={isLoading}
                             profile={profile}
                             update={onUpdate}
                         />
@@ -174,7 +177,13 @@ const Search: React.FC<SearchProps> = ({}) => {
     // Initialise suggested profiles
     const {suggestedProfilesQuery, updateSuggestedProfile} = useSuggestedProfilesForUser('index', 6);
     const {data: suggestedProfilesData, isLoading: isLoadingSuggestedProfiles} = suggestedProfilesQuery;
-    const suggestedProfiles = suggestedProfilesData || [];
+    const suggestedProfiles = suggestedProfilesData || Array(5).fill({
+        actor: {},
+        handle: '',
+        followerCount: 0,
+        followingCount: 0,
+        isFollowing: false
+    });
 
     // Initialise search query
     const queryInputRef = useRef<HTMLInputElement>(null);

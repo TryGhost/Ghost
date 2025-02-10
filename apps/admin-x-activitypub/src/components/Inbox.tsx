@@ -7,6 +7,7 @@ import NewPostModal from './modals/NewPostModal';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useRef} from 'react';
 import Separator from './global/Separator';
+import Skeleton from 'react-loading-skeleton';
 import getName from '../utils/get-name';
 import getUsername from '../utils/get-username';
 import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
@@ -48,7 +49,7 @@ const Inbox: React.FC<InboxProps> = ({layout}) => {
 
     const {data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading} = getActivitiesQuery;
 
-    const activities = (data?.pages.flatMap(page => page.data) ?? [])
+    const activities = (data?.pages.flatMap(page => page.data) ?? Array.from({length: 5}, (_, index) => ({id: `placeholder-${index}`, object: {}})))
         // If there somehow are duplicate activities, filter them out so the list rendering doesn't break
         .filter((activity, index, self) => index === self.findIndex(a => a.id === activity.id))
         // Filter out replies
@@ -59,7 +60,7 @@ const Inbox: React.FC<InboxProps> = ({layout}) => {
     // Initialise suggested profiles
     const {suggestedProfilesQuery} = useSuggestedProfilesForUser('index', 3);
     const {data: suggestedData, isLoading: isLoadingSuggested} = suggestedProfilesQuery;
-    const suggested = suggestedData || [];
+    const suggested = suggestedData || Array(3).fill({actor: {}});
 
     const observerRef = useRef<IntersectionObserver | null>(null);
     const loadMoreRef = useRef<HTMLDivElement | null>(null);
@@ -93,11 +94,7 @@ const Inbox: React.FC<InboxProps> = ({layout}) => {
             <MainNavigation page={layout}/>
             <div className='z-0 mb-5 flex w-full flex-col'>
                 <div className='w-full px-8'>
-                    {isLoading ? (
-                        <div className='flex flex-col items-center justify-center space-y-4 text-center'>
-                            <LoadingIndicator size='lg' />
-                        </div>
-                    ) : activities.length > 0 ? (
+                    {activities.length > 0 ? (
                         <>
                             <div className={`mx-auto flex min-h-[calc(100dvh_-_117px)] items-start gap-11`}>
                                 <div className='flex w-full min-w-0 flex-col items-center'>
@@ -117,6 +114,7 @@ const Inbox: React.FC<InboxProps> = ({layout}) => {
                                                     <FeedItem
                                                         actor={activity.actor}
                                                         commentCount={activity.object.replyCount ?? 0}
+                                                        isLoading={isLoading}
                                                         layout={layout}
                                                         object={activity.object}
                                                         repostCount={activity.object.repostCount ?? 0}
@@ -142,31 +140,27 @@ const Inbox: React.FC<InboxProps> = ({layout}) => {
                                     <h2 className='mb-1.5 text-lg font-semibold'>This is your {layout === 'inbox' ? 'inbox' : 'feed'}</h2>
                                     <p className='mb-6 text-gray-700'>You&apos;ll find {layout === 'inbox' ? 'long-form content' : 'short posts and updates'} from the accounts you follow here.</p>
                                     <h2 className='mb-1 text-lg font-semibold'>You might also like</h2>
-                                    {isLoadingSuggested ? (
-                                        <LoadingIndicator size="sm" />
-                                    ) : (
-                                        <ul className='grow'>
-                                            {suggested.map((profile, index) => {
-                                                const actor = profile.actor;
-                                                return (
-                                                    <React.Fragment key={actor.id}>
-                                                        <li key={actor.id}>
-                                                            <ActivityItem
-                                                                onClick={() => handleProfileClick(actor)}
-                                                            >
-                                                                <APAvatar author={actor} />
-                                                                <div className='flex min-w-0 flex-col'>
-                                                                    <span className='block w-full truncate font-semibold text-black'>{getName(actor)}</span>
-                                                                    <span className='block w-full truncate text-sm text-gray-600'>{getUsername(actor)}</span>
-                                                                </div>
-                                                            </ActivityItem>
-                                                        </li>
-                                                        {index < suggested.length - 1 && <Separator />}
-                                                    </React.Fragment>
-                                                );
-                                            })}
-                                        </ul>
-                                    )}
+                                    <ul className='grow'>
+                                        {suggested.map((profile, index) => {
+                                            const actor = profile.actor;
+                                            return (
+                                                <React.Fragment key={actor.id}>
+                                                    <li key={actor.id}>
+                                                        <ActivityItem
+                                                            onClick={() => handleProfileClick(actor)}
+                                                        >
+                                                            {!isLoadingSuggested ? <APAvatar author={actor} /> : <Skeleton className='z-10 h-10 w-10' />}
+                                                            <div className='flex min-w-0 flex-col'>
+                                                                <span className='block w-full truncate font-semibold text-black'>{!isLoadingSuggested ? getName(actor) : <Skeleton className='w-24' />}</span>
+                                                                <span className='block w-full truncate text-sm text-gray-600'>{!isLoadingSuggested ? getUsername(actor) : <Skeleton className='w-40' />}</span>
+                                                            </div>
+                                                        </ActivityItem>
+                                                    </li>
+                                                    {index < suggested.length - 1 && <Separator />}
+                                                </React.Fragment>
+                                            );
+                                        })}
+                                    </ul>
                                     <Button className='mt-2 w-full' variant='outline' onClick={() => updateRoute('search')}>Explore &rarr;</Button>
                                 </div>
                             </div>

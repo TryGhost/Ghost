@@ -1,5 +1,6 @@
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useState} from 'react';
+import Skeleton from 'react-loading-skeleton';
 import ViewProfileModal from '../modals/ViewProfileModal';
 import clsx from 'clsx';
 import getUsername from '../../utils/get-username';
@@ -17,9 +18,10 @@ interface APAvatarProps {
         handle?: string;
     } | undefined;
     size?: AvatarSize;
+    isLoading?: boolean;
 }
 
-const APAvatar: React.FC<APAvatarProps> = ({author, size}) => {
+const APAvatar: React.FC<APAvatarProps> = ({author, size, isLoading = false}) => {
     let iconSize = 18;
     let containerClass = `shrink-0 items-center justify-center overflow-hidden relative z-10 flex ${size === 'lg' ? '' : 'hover:opacity-80 cursor-pointer'}`;
     let imageClass = 'z-10 object-cover';
@@ -28,10 +30,6 @@ const APAvatar: React.FC<APAvatarProps> = ({author, size}) => {
     useEffect(() => {
         setIconUrl(author?.icon?.url);
     }, [author?.icon?.url]);
-
-    if (!author) {
-        return null;
-    }
 
     switch (size) {
     case '2xs':
@@ -61,6 +59,10 @@ const APAvatar: React.FC<APAvatarProps> = ({author, size}) => {
         containerClass = clsx('h-10 w-10 rounded-lg', containerClass);
         imageClass = clsx('h-10 w-10', imageClass);
         break;
+    }
+
+    if (!author || isLoading) {
+        return <Skeleton className={imageClass} containerClassName={containerClass} />;
     }
 
     if (!iconUrl) {
