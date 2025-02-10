@@ -26,7 +26,7 @@ RUN curl -s https://packages.stripe.dev/api/security/keypair/stripe-cli-gpg/publ
         zsh \
         procps \
         default-mysql-client && \
-    npx -y playwright@1.46.1 install --with-deps
+    npx -y playwright@1.50.1 install --with-deps
 
 ENV NX_DAEMON=true
 ENV YARN_CACHE_FOLDER=$WORKDIR/.yarncache
@@ -53,7 +53,6 @@ ARG WORKDIR=/home/ghost
 WORKDIR $WORKDIR
 COPY . .
 RUN yarn install --frozen-lockfile --prefer-offline --cache-folder $YARN_CACHE_FOLDER
-RUN yarn nx run-many -t build:ts && yarn nx run ghost-admin:build
 
 FROM base-devcontainer AS development
 ARG WORKDIR=/home/ghost

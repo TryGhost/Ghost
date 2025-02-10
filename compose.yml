@@ -5,8 +5,7 @@ services:
     build:
       context: .
       dockerfile: ./.docker/Dockerfile
-      target: full-devcontainer
-    command: ["yarn", "nx", "dev"]
+      target: development
     ports:
       - "2368:2368" # Ghost
       - "4200:4200" # Admin
@@ -21,28 +20,8 @@ services:
       - "7173:7173" # Comments
       - "7174:7174" # Comments HTTPS
     profiles: [full]
-    develop:
-      watch:
-        - action: sync+restart
-          path: ./ghost
-          target: /home/ghost/ghost
-          ignore:
-            - node_modules
-            - .git
-            - .docker
-        - action: sync
-          path: ./apps
-          target: /home/ghost/apps
-          ignore:
-            - node_modules
-            - .git
-            - .docker
-        - action: rebuild
-          path: package.json
-          target: /home/ghost/package.json
-        - action: rebuild
-          path: yarn.lock
-          target: /home/ghost/yarn.lock
+    volumes:
+      - .:/home/ghost
     tty: true
     depends_on:
       mysql:
