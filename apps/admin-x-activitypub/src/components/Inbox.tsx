@@ -10,7 +10,7 @@ import Separator from './global/Separator';
 import getName from '../utils/get-name';
 import getUsername from '../utils/get-username';
 import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
-import {Button, Heading, LoadingIndicator} from '@tryghost/admin-x-design-system';
+import {Button} from '@tryghost/shade';
 import {
     GET_ACTIVITIES_QUERY_KEY_FEED,
     GET_ACTIVITIES_QUERY_KEY_INBOX,
@@ -18,6 +18,7 @@ import {
     useSuggestedProfilesForUser,
     useUserDataForUser
 } from '../hooks/useActivityPubQueries';
+import {Heading, LoadingIndicator} from '@tryghost/admin-x-design-system';
 import {handleProfileClick} from '../utils/handle-profile-click';
 import {handleViewContent} from '../utils/content-handlers';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
@@ -105,7 +106,7 @@ const Inbox: React.FC<InboxProps> = ({layout}) => {
                                             <div className=''>
                                                 <APAvatar author={user as ActorProperties} />
                                             </div>
-                                            <Button aria-label='New post' className='text absolute inset-0 w-full rounded-lg bg-white pl-[64px] text-left text-[1.5rem] tracking-normal text-grey-500 shadow-[0_0_1px_rgba(0,0,0,.32),0_1px_6px_rgba(0,0,0,.03),0_8px_10px_-8px_rgba(0,0,0,.16)] transition-all hover:shadow-[0_0_1px_rgba(0,0,0,.32),0_1px_6px_rgba(0,0,0,.03),0_8px_10px_-8px_rgba(0,0,0,.26)]' label='What&apos;s new?' unstyled onClick={() => NiceModal.show(NewPostModal)} />
+                                            <Button aria-label='New post' className='text absolute inset-0 h-[64px] w-full justify-start rounded-lg bg-white pl-[64px] text-left text-[1.5rem] tracking-normal text-grey-500 shadow-[0_0_1px_rgba(0,0,0,.32),0_1px_6px_rgba(0,0,0,.03),0_8px_10px_-8px_rgba(0,0,0,.16)] transition-all hover:shadow-[0_0_1px_rgba(0,0,0,.32),0_1px_6px_rgba(0,0,0,.03),0_8px_10px_-8px_rgba(0,0,0,.26)]' onClick={() => NiceModal.show(NewPostModal)}>What&apos;s new?</Button>
                                         </div>}
                                         <ul className={`mx-auto flex w-full flex-col ${layout === 'inbox' && 'mt-3'}`}>
                                             {activities.map((activity, index) => (
@@ -166,7 +167,7 @@ const Inbox: React.FC<InboxProps> = ({layout}) => {
                                             })}
                                         </ul>
                                     )}
-                                    <Button className='mt-2' color='green' fullWidth={true} label='Explore &rarr;' link={true} onClick={() => updateRoute('search')} />
+                                    <Button className='mt-2 w-full' variant='outline' onClick={() => updateRoute('search')}>Explore &rarr;</Button>
                                 </div>
                             </div>
                         </>
