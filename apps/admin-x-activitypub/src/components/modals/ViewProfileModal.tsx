@@ -89,7 +89,7 @@ const ActorList: React.FC<ActorListProps> = ({
                                     >
                                         <APAvatar author={actor} />
                                         <div>
-                                            <div className='text-grey-600'>
+                                            <div className='text-gray-600'>
                                                 <span className='mr-1 font-bold text-black'>{getName(actor)}</span>
                                                 <div className='text-sm'>{getUsername(actor)}</div>
                                             </div>
@@ -290,10 +290,10 @@ const ViewProfileModal: React.FC<ViewProfileModalProps> = ({
             size='bleed'
             width={640}
         >
-            <div className='sticky top-0 z-50 border-grey-200 bg-white py-3'>
+            <div className='sticky top-0 z-50 border-gray-200 bg-white py-3'>
                 <div className='grid h-8 grid-cols-3'>
                     <div className='col-[3/4] flex items-center justify-end space-x-6 px-8'>
-                        <Button className='transition-color flex h-10 w-10 items-center justify-center rounded-full bg-white hover:bg-grey-100' icon='close' size='sm' unstyled onClick={() => modal.remove()}/>
+                        <Button className='transition-color flex h-10 w-10 items-center justify-center rounded-full bg-white hover:bg-gray-100' icon='close' size='sm' unstyled onClick={() => modal.remove()}/>
                     </div>
                 </div>
             </div>
@@ -309,7 +309,7 @@ const ViewProfileModal: React.FC<ViewProfileModalProps> = ({
                     )}
                     {!isLoading && profile && (
                         <>
-                            {profile.actor.image && (<div className='h-[200px] w-full overflow-hidden rounded-lg bg-gradient-to-tr from-grey-200 to-grey-100'>
+                            {profile.actor.image && (<div className='h-[200px] w-full overflow-hidden rounded-lg bg-gradient-to-tr from-gray-200 to-gray-100'>
                                 <img
                                     alt={profile.actor.name}
                                     className='h-full w-full object-cover'
@@ -333,7 +333,7 @@ const ViewProfileModal: React.FC<ViewProfileModalProps> = ({
                                     />
                                 </div>
                                 <Heading className='mt-4' level={3}>{profile.actor.name}</Heading>
-                                <a className='group/handle mt-1 flex items-center gap-1 text-[1.5rem] text-grey-800 hover:text-grey-900' href={profile?.actor.url} rel='noopener noreferrer' target='_blank'><span>{profile.handle}</span><Icon className='opacity-0 transition-opacity group-hover/handle:opacity-100' name='arrow-top-right' size='xs'/></a>
+                                <a className='group/handle mt-1 flex items-center gap-1 text-[1.5rem] text-gray-800 hover:text-gray-900' href={profile?.actor.url} rel='noopener noreferrer' target='_blank'><span>{profile.handle}</span><Icon className='opacity-0 transition-opacity group-hover/handle:opacity-100' name='arrow-top-right' size='xs'/></a>
                                 {(profile.actor.summary || attachments.length > 0) && (<div ref={contentRef} className={`ap-profile-content transition-max-height relative text-[1.5rem] duration-300 ease-in-out [&>p]:mb-3 ${isExpanded ? 'max-h-none pb-7' : 'max-h-[160px] overflow-hidden'} relative`}>
                                     <div
                                         dangerouslySetInnerHTML={{__html: profile.actor.summary}}
