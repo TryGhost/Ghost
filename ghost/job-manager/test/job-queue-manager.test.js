@@ -7,6 +7,7 @@ describe('JobQueueManager', function () {
     let mockJobModel;
     let mockConfig;
     let mockLogger;
+    let mockMetricLogger;
     let mockWorkerPool;
     let mockPrometheusClient;
     let metricIncStub;
@@ -21,6 +22,9 @@ describe('JobQueueManager', function () {
             debug: sinon.stub(),
             info: sinon.stub(),
             error: sinon.stub()
+        };
+        mockMetricLogger = {
+            metric: sinon.stub()
         };
         mockPrometheusClient = {
             getMetric: sinon.stub().returns({
@@ -50,6 +54,7 @@ describe('JobQueueManager', function () {
             JobModel: mockJobModel,
             config: mockConfig,
             logger: mockLogger,
+            metricLogger: mockMetricLogger,
             WorkerPool: mockWorkerPool,
             prometheusClient: mockPrometheusClient,
             eventEmitter: mockEventEmitter
@@ -415,7 +420,10 @@ describe('JobQueueManager', function () {
                 totalWorkers: 1,
                 busyWorkers: 0,
                 idleWorkers: 1,
-                activeTasks: 0
+                activeTasks: 0,
+                jobCompletionCount: 0,
+                queueDepth: 0,
+                emailAnalyticsAggregateMemberStatsCount: 0
             }, null, 2);
             const expectedLog = `Job Queue Stats: ${expectedStats}`;
             expect(loggerInfoStub.calledOnce).to.be.true;

@@ -3,9 +3,10 @@ const path = require('path');
 const JobsRepository = require('./JobsRepository');
 const debug = require('@tryghost/debug')('job-manager:JobQueueManager');
 const logging = require('@tryghost/logging');
+const metrics = require('@tryghost/metrics');
 
 class JobQueueManager {
-    constructor({JobModel, config, logger = logging, WorkerPool = workerpool, prometheusClient, eventEmitter}) {
+    constructor({JobModel, config, logger = logging, WorkerPool = workerpool, prometheusClient, eventEmitter, metricLogger = metrics}) {
         this.jobsRepository = new JobsRepository({JobModel});
         this.config = this.initializeConfig(config?.get('services:jobs:queue') || {});
         this.logger = this.createLogger(logger, this.config.logLevel);
@@ -13,7 +14,13 @@ class JobQueueManager {
         this.pool = this.createWorkerPool();
         this.state = this.initializeState();
         this.eventEmitter = eventEmitter;
-        
+        this.metricLogger = metricLogger;
+        this.metricCache = {
+            jobCompletionCount: 0,
+            queueDepth: 0,
+            emailAnalyticsAggregateMemberStatsCount: 0
+        };
+
         this.prometheusClient = prometheusClient;
         if (prometheusClient) {
             this.prometheusClient.registerCounter({
@@ -219,7 +226,8 @@ class JobQueueManager {
     _doReportStats() {
         const poolStats = this.pool.stats();
         const stats = {
-            ...poolStats
+            ...poolStats,
+            ...this.metricCache
         };
         const statsString = JSON.stringify(stats, null, 2);
         this.logger.info(`Job Queue Stats: ${statsString}`);
