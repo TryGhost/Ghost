@@ -18,6 +18,7 @@ import {handleViewContent} from '../utils/content-handlers';
 import APAvatar from './global/APAvatar';
 import ActivityItem from './activities/ActivityItem';
 import FeedItem from './feed/FeedItem';
+import FollowButton from './global/FollowButton';
 import MainNavigation from './navigation/MainNavigation';
 import Separator from './global/Separator';
 import ViewProfileModal from './modals/ViewProfileModal';
@@ -107,7 +108,7 @@ const PostsTab: React.FC = () => {
         emptyStateIcon: 'pen'
     });
 
-    const posts = items.filter(post => post.type === 'Create' && !post.object?.inReplyTo);
+    const posts = items.filter(post => (post.type === 'Announce' || post.type === 'Create') && !post.object?.inReplyTo);
 
     return (
         <>
@@ -206,11 +207,17 @@ const FollowingTab: React.FC = () => {
                                     handle: account.handle
                                 }} />
                                 <div>
-                                    <div className='text-grey-600'>
+                                    <div className='text-gray-600'>
                                         <span className='mr-1 font-bold text-black'>{account.name}</span>
                                         <div className='text-sm'>{account.handle}</div>
                                     </div>
                                 </div>
+                                <FollowButton
+                                    className='ml-auto'
+                                    following={account.isFollowing}
+                                    handle={account.handle}
+                                    type='secondary'
+                                />
                             </ActivityItem>
                             {index < accounts.length - 1 && <Separator />}
                         </React.Fragment>
@@ -248,11 +255,17 @@ const FollowersTab: React.FC = () => {
                                     handle: account.handle
                                 }} />
                                 <div>
-                                    <div className='text-grey-600'>
+                                    <div className='text-gray-600'>
                                         <span className='mr-1 font-bold text-black'>{account.name}</span>
                                         <div className='text-sm'>{account.handle}</div>
                                     </div>
                                 </div>
+                                <FollowButton
+                                    className='ml-auto'
+                                    following={account.isFollowing}
+                                    handle={account.handle}
+                                    type='secondary'
+                                />
                             </ActivityItem>
                             {index < accounts.length - 1 && <Separator />}
                         </React.Fragment>
@@ -348,7 +361,7 @@ const Profile: React.FC<ProfileProps> = ({}) => {
                 <div className='z-0 mx-auto mt-8 flex w-full max-w-[580px] flex-col items-center pb-16'>
                     <div className='mx-auto w-full'>
                         {account?.bannerImageUrl && (
-                            <div className='h-[200px] w-full overflow-hidden rounded-lg bg-gradient-to-tr from-grey-200 to-grey-100'>
+                            <div className='h-[200px] w-full overflow-hidden rounded-lg bg-gradient-to-tr from-gray-200 to-gray-100'>
                                 <img
                                     alt={account?.name}
                                     className='h-full w-full object-cover'
@@ -372,7 +385,7 @@ const Profile: React.FC<ProfileProps> = ({}) => {
                                 </div>
                             </div>
                             <Heading className='mt-4' level={3}>{account?.name}</Heading>
-                            <span className='mt-1 text-[1.5rem] text-grey-800'>
+                            <span className='mt-1 text-[1.5rem] text-gray-800'>
                                 <span>{account?.handle}</span>
                             </span>
                             {(account?.bio || customFields.length > 0) && (

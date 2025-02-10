@@ -307,7 +307,6 @@ textarea.gh-input-x {
 
 .ember-power-select-multiple-trigger {
     padding: 4px;
-    min-height: 38px;
     display: grid;
     grid-template-columns: 1fr 24px;
     position: relative;

@@ -12,7 +12,7 @@ import Separator from './global/Separator';
 import ViewProfileModal from './modals/ViewProfileModal';
 
 import {type Profile} from '../api/activitypub';
-import {useSearchForUser, useSuggestedProfiles} from '../hooks/useActivityPubQueries';
+import {useSearchForUser, useSuggestedProfilesForUser} from '../hooks/useActivityPubQueries';
 
 interface AccountSearchResult {
     id: string;
@@ -57,17 +57,15 @@ const AccountSearchResultItem: React.FC<AccountSearchResultItemProps> = ({accoun
                 name: account.name,
                 handle: account.handle
             }}/>
-            <div>
-                <div className='text-grey-600'>
-                    <span className='font-semibold text-black'>{account.name} </span>{account.handle}
-                </div>
-                <div className='text-sm'>{new Intl.NumberFormat().format(account.followerCount)} followers</div>
+            <div className='flex flex-col'>
+                <span className='font-semibold text-black'>{account.name}</span>
+                <span className='text-sm text-gray-700'>{account.handle}</span>
             </div>
             <FollowButton
                 className='ml-auto'
                 following={account.followedByMe}
                 handle={account.handle}
-                type='link'
+                type='secondary'
                 onFollow={onFollow}
                 onUnfollow={onUnfollow}
             />
@@ -122,17 +120,15 @@ const SuggestedProfile: React.FC<SuggestedProfileProps> = ({profile, update}) =>
             }}
         >
             <APAvatar author={profile.actor}/>
-            <div>
-                <div className='text-grey-600'>
-                    <span className='font-semibold text-black'>{profile.actor.name} </span>{profile.handle}
-                </div>
-                <div className='text-sm'>{new Intl.NumberFormat().format(profile.followerCount)} followers</div>
+            <div className='flex flex-col'>
+                <span className='font-semibold text-black'>{profile.actor.name}</span>
+                <span className='text-sm text-gray-700'>{profile.handle}</span>
             </div>
             <FollowButton
                 className='ml-auto'
                 following={profile.isFollowing}
                 handle={profile.handle}
-                type='link'
+                type='secondary'
                 onFollow={onFollow}
                 onUnfollow={onUnfollow}
             />
@@ -176,7 +172,7 @@ interface SearchProps {}
 
 const Search: React.FC<SearchProps> = ({}) => {
     // Initialise suggested profiles
-    const {suggestedProfilesQuery, updateSuggestedProfile} = useSuggestedProfiles('index', 6);
+    const {suggestedProfilesQuery, updateSuggestedProfile} = useSuggestedProfilesForUser('index', 6);
     const {data: suggestedProfilesData, isLoading: isLoadingSuggestedProfiles} = suggestedProfilesQuery;
     const suggestedProfiles = suggestedProfilesData || [];
 
@@ -204,10 +200,10 @@ const Search: React.FC<SearchProps> = ({}) => {
             <MainNavigation page='search' />
             <div className='z-0 mx-auto flex w-full max-w-[560px] flex-col items-center pt-8'>
                 <div className='relative flex w-full items-center'>
-                    <Icon className='absolute left-3 top-3 z-10' colorClass='text-grey-500' name='magnifying-glass' size='sm' />
+                    <Icon className='absolute left-3 top-3 z-10' colorClass='text-gray-500' name='magnifying-glass' size='sm' />
                     <TextField
                         autoComplete='off'
-                        className='mb-6 mr-12 flex h-10 w-full items-center rounded-lg border border-transparent bg-grey-100 px-[33px] py-1.5 transition-colors focus:border-green focus:bg-white focus:outline-2 dark:border-transparent dark:bg-grey-925 dark:text-white dark:placeholder:text-grey-800 dark:focus:border-green dark:focus:bg-grey-950 tablet:mr-0'
+                        className='mb-6 mr-12 flex h-10 w-full items-center rounded-lg border border-transparent bg-gray-100 px-[33px] py-1.5 transition-colors focus:border-green focus:bg-white focus:outline-2 dark:border-transparent dark:bg-gray-925 dark:text-white dark:placeholder:text-gray-800 dark:focus:border-green dark:focus:bg-gray-950 tablet:mr-0'
                         containerClassName='w-100'
                         inputRef={queryInputRef}
                         placeholder='Enter a handle or account URL...'
@@ -223,7 +219,7 @@ const Search: React.FC<SearchProps> = ({}) => {
                         <Button
                             className='absolute top-3 p-1 sm:right-14 tablet:right-3'
                             icon='close'
-                            iconColorClass='text-grey-700 !w-[10px] !h-[10px]'
+                            iconColorClass='text-gray-700 !w-[10px] !h-[10px]'
                             size='sm'
                             unstyled
                             onClick={() => {

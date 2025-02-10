@@ -450,7 +450,7 @@ class SignupPage extends React.Component {
 
     handleSignup(e) {
         e.preventDefault();
-        this.doSignup();
+        this.doSignupWithChecks();
     }
 
     handleChooseSignup(e, plan) {

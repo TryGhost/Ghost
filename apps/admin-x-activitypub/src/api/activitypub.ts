@@ -44,7 +44,7 @@ export interface ActivityThread {
 
 export type ActivityPubCollectionResponse<T> = {data: T[], next: string | null};
 
-export interface GetFollowersForProfileResponse {
+export interface GetProfileFollowersResponse {
     followers: {
         actor: Actor;
         isFollowing: boolean;
@@ -52,7 +52,7 @@ export interface GetFollowersForProfileResponse {
     next: string | null;
 }
 
-export interface GetFollowingForProfileResponse {
+export interface GetProfileFollowingResponse {
     following: {
         actor: Actor;
         isFollowing: boolean;
@@ -60,7 +60,7 @@ export interface GetFollowingForProfileResponse {
     next: string | null;
 }
 
-export interface GetPostsForProfileResponse {
+export interface GetProfilePostsResponse {
     posts: Activity[];
     next: string | null;
 }
@@ -69,7 +69,7 @@ export type AccountFollowsType = 'following' | 'followers';
 
 type GetAccountResponse = Account
 
-export type FollowAccount = Pick<Account, 'id' | 'name' | 'handle' | 'avatarUrl'>;
+export type FollowAccount = Pick<Account, 'id' | 'name' | 'handle' | 'avatarUrl'> & {isFollowing: true};
 
 export interface GetAccountFollowsResponse {
     accounts: FollowAccount[];
@@ -147,24 +147,6 @@ export class ActivityPubAPI {
         };
     }
 
-    get inboxApiUrl() {
-        return new URL(`.ghost/activitypub/inbox/${this.handle}`, this.apiUrl);
-    }
-
-    async getInbox(): Promise<Activity[]> {
-        const json = await this.fetchJSON(this.inboxApiUrl);
-        if (json === null) {
-            return [];
-        }
-        if ('orderedItems' in json) {
-            return Array.isArray(json.orderedItems) ? json.orderedItems : [json.orderedItems];
-        }
-        if ('items' in json) {
-            return Array.isArray(json.items) ? json.items : [json.items];
-        }
-        return [];
-    }
-
     get outboxApiUrl() {
         return new URL(`.ghost/activitypub/outbox/${this.handle}`, this.apiUrl);
     }
@@ -173,24 +155,14 @@ export class ActivityPubAPI {
         return this.getActivityPubCollection<Activity>(this.outboxApiUrl, cursor);
     }
 
-    get followingApiUrl() {
-        return new URL(`.ghost/activitypub/following/${this.handle}`, this.apiUrl);
-    }
-
-    async getFollowing(cursor?: string): Promise<ActivityPubCollectionResponse<Actor>> {
-        return this.getActivityPubCollection<Actor>(this.followingApiUrl, cursor);
-    }
-
-    get followersApiUrl() {
-        return new URL(`.ghost/activitypub/followers/${this.handle}`, this.apiUrl);
-    }
-
-    async getFollowers(cursor?: string): Promise<ActivityPubCollectionResponse<Actor>> {
-        return this.getActivityPubCollection<Actor>(this.followersApiUrl, cursor);
-    }
-
     async follow(username: string): Promise<Actor> {
         const url = new URL(`.ghost/activitypub/actions/follow/${username}`, this.apiUrl);
+        const json = await this.fetchJSON(url, 'POST');
+        return json as Actor;
+    }
+
+    async unfollow(username: string): Promise<Actor> {
+        const url = new URL(`.ghost/activitypub/actions/unfollow/${username}`, this.apiUrl);
         const json = await this.fetchJSON(url, 'POST');
         return json as Actor;
     }
@@ -210,6 +182,16 @@ export class ActivityPubAPI {
 
     async unlike(id: string): Promise<void> {
         const url = new URL(`.ghost/activitypub/actions/unlike/${encodeURIComponent(id)}`, this.apiUrl);
+        await this.fetchJSON(url, 'POST');
+    }
+
+    async repost(id: string): Promise<void> {
+        const url = new URL(`.ghost/activitypub/actions/repost/${encodeURIComponent(id)}`, this.apiUrl);
+        await this.fetchJSON(url, 'POST');
+    }
+
+    async derepost(id: string): Promise<void> {
+        const url = new URL(`.ghost/activitypub/actions/derepost/${encodeURIComponent(id)}`, this.apiUrl);
         await this.fetchJSON(url, 'POST');
     }
 
@@ -313,7 +295,7 @@ export class ActivityPubAPI {
         return json as Profile;
     }
 
-    async getFollowersForProfile(handle: string, next?: string): Promise<GetFollowersForProfileResponse> {
+    async getProfileFollowers(handle: string, next?: string): Promise<GetProfileFollowersResponse> {
         const url = new URL(`.ghost/activitypub/profile/${handle}/followers`, this.apiUrl);
         if (next) {
             url.searchParams.set('next', next);
@@ -344,7 +326,7 @@ export class ActivityPubAPI {
         };
     }
 
-    async getFollowingForProfile(handle: string, next?: string): Promise<GetFollowingForProfileResponse> {
+    async getProfileFollowing(handle: string, next?: string): Promise<GetProfileFollowingResponse> {
         const url = new URL(`.ghost/activitypub/profile/${handle}/following`, this.apiUrl);
         if (next) {
             url.searchParams.set('next', next);
@@ -375,7 +357,7 @@ export class ActivityPubAPI {
         };
     }
 
-    async getPostsForProfile(handle: string, next?: string): Promise<GetPostsForProfileResponse> {
+    async getProfilePosts(handle: string, next?: string): Promise<GetProfilePostsResponse> {
         const url = new URL(`.ghost/activitypub/profile/${handle}/posts`, this.apiUrl);
         if (next) {
             url.searchParams.set('next', next);
@@ -453,4 +435,3 @@ export class ActivityPubAPI {
         };
     }
 }
-

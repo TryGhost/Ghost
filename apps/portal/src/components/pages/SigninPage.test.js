@@ -1,6 +1,9 @@
+import {vi} from 'vitest';
 import {render, fireEvent, getByTestId} from '../../utils/test-utils';
 import SigninPage from './SigninPage';
 import {getSiteData} from '../../utils/fixtures-generator';
+
+vi.mock('@hcaptcha/react-hcaptcha');
 
 const setup = (overrides) => {
     const {mockOnActionFn, ...utils} = render(
@@ -70,6 +73,35 @@ describe('SigninPage', () => {
 
             const message = getByTestId(document.body, 'members-disabled-notification-text');
             expect(message).toBeInTheDocument();
+        });
+    });
+
+    describe('when captcha is enabled', () => {
+        test('renders captcha', () => {
+            setup({
+                site: getSiteData({
+                    captchaEnabled: true,
+                    captchaSiteKey: '20000000-ffff-ffff-ffff-000000000002'
+                })
+            });
+
+            const hcaptchaElement = getByTestId(document.body, 'hcaptcha-mock');
+            expect(hcaptchaElement).toBeInTheDocument();
+        });
+
+        test('uses Captcha when run', () => {
+            const {emailInput, submitButton, mockOnActionFn} = setup({
+                site: getSiteData({
+                    captchaEnabled: true,
+                    captchaSiteKey: '20000000-ffff-ffff-ffff-000000000002'
+                })
+            });
+
+            fireEvent.change(emailInput, {target: {value: 'member@example.com'}});
+            expect(emailInput).toHaveValue('member@example.com');
+
+            fireEvent.click(submitButton);
+            expect(mockOnActionFn).toHaveBeenCalledWith('signin', {email: 'member@example.com', token: 'mocked-token'});
         });
     });
 });
