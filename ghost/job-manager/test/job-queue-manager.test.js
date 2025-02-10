@@ -33,7 +33,12 @@ describe('JobQueueManager', function () {
         mockWorkerPool = {
             pool: sinon.stub().returns({
                 exec: sinon.stub(),
-                stats: sinon.stub().returns({}),
+                stats: sinon.stub().returns({
+                    totalWorkers: 1,
+                    busyWorkers: 0,
+                    idleWorkers: 1,
+                    activeTasks: 0
+                }),
                 terminate: sinon.stub()
             })
         };
@@ -377,6 +382,28 @@ describe('JobQueueManager', function () {
                 }
             });
             expect(calledUpdateData.finished_at).to.be.instanceOf(Date);
+        });
+    });
+
+    describe('reportStats', function () {
+        it('should log the stats every reportInterval', async function () {
+            const clock = sinon.useFakeTimers();
+            const reportStatsStub = sinon.stub(jobQueueManager, '_doReportStats');
+            jobQueueManager.config.reportInterval = 1000;
+            jobQueueManager.reportStats();
+            await clock.tickAsync(1000);
+            expect(reportStatsStub.calledOnce).to.be.true;
+            clock.restore();
+        });
+
+        it('should not log the stats if reportStats is false', async function () {
+            const clock = sinon.useFakeTimers();
+            jobQueueManager.config.reportStats = false;
+            const reportStatsStub = sinon.stub(jobQueueManager, '_doReportStats');
+            jobQueueManager.reportStats();
+            await clock.tickAsync(2000);
+            expect(reportStatsStub.called).to.be.false;
+            clock.restore();
         });
     });
 });

@@ -212,9 +212,17 @@ class JobQueueManager {
 
     reportStats() {
         setInterval(() => {
-            this.logger.info('-- job queue stats --');
-            this.logger.info(JSON.stringify(this.pool.stats(), null, 2));
+            this._doReportStats();
         }, this.config.reportInterval);
+    }
+
+    _doReportStats() {
+        const poolStats = this.pool.stats();
+        const stats = {
+            ...poolStats
+        };
+        const statsString = JSON.stringify(stats, null, 2);
+        this.logger.info(statsString);
     }
 
     async shutdown() {
