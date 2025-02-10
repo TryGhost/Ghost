@@ -84,7 +84,26 @@ export function renderFeedAttachment(object: ObjectProperties, layout: string) {
         </div>;
     default:
         if (object.image || attachment.type === 'Image') {
-            return <img alt={attachment.name || 'Image'} className={`${object.type === 'Article' ? 'aspect-[16/7.55] w-full rounded-t-md object-cover' : 'mt-3 max-h-[420px] rounded-md outline outline-1 -outline-offset-1 outline-black/10'}`} src={typeof object.image === 'string' ? object.image : object.image?.url} />;
+            const imageClassName = object.type === 'Article'
+                ? 'aspect-[16/7.55] w-full rounded-t-md object-cover'
+                : 'mt-3 max-h-[420px] rounded-md outline outline-1 -outline-offset-1 outline-black/10';
+
+            let imageUrl;
+            if (object.image === undefined) {
+                imageUrl = attachment.url;
+            } else if (typeof object.image === 'string') {
+                imageUrl = object.image;
+            } else {
+                imageUrl = object.image?.url;
+            }
+
+            return (
+                <img
+                    alt={attachment.name || 'Image'}
+                    className={imageClassName}
+                    src={imageUrl}
+                />
+            );
         }
         return null;
     }
