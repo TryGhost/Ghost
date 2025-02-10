@@ -380,7 +380,13 @@ const Notifications: React.FC<NotificationsProps> = () => {
                                             </NotificationItem.Avatars>
                                             <NotificationItem.Content>
                                                 <div className='line-clamp-2 text-pretty text-black'>
-                                                    <NotificationGroupDescription group={group} />
+                                                    {!isLoading ?
+                                                        <NotificationGroupDescription group={group} /> :
+                                                        <>
+                                                            <Skeleton />
+                                                            <Skeleton className='w-full max-w-60' />
+                                                        </>
+                                                    }
                                                 </div>
                                                 {(
                                                     (group.type === ACTIVITY_TYPE.CREATE && group.object?.inReplyTo) ||
