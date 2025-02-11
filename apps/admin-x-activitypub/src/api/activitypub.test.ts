@@ -1339,7 +1339,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/feed`]: {
+                [`https://activitypub.api/.ghost/activitypub/feed?next=abc123`]: {
                     response: JSONResponse({
                         posts: [
                             {
