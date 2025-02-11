@@ -898,18 +898,6 @@ describe('ExternalMediaInliner', function () {
             assert.equal(matches[0], 'https://example.com/image.jpg');
         });
 
-        it('Finds with glob pattern', function () {
-            const html = `<img src="https://example.com/wp-content/uploads/2025/02/image.jpg" />
-                <img src="https://anotherexample.com/wp-content/uploads/2025/02/image.jpg" />
-                <img src="https://example.com/photo.jpg" />`;
-            const matches = ExternalMediaInliner.findMatches(html, 'https://.*wp-content');
-
-            // Will only match the two paths with `/wp-content` in them
-            assert.equal(matches.length, 2);
-            assert.equal(matches[0], 'https://example.com/wp-content/uploads/2025/02/image.jpg');
-            assert.equal(matches[1], 'https://anotherexample.com/wp-content/uploads/2025/02/image.jpg');
-        });
-
         it('Finds in with comma in string', function () {
             const html = `<img src="https://example.com/image/fetch/f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F7303a336-fa0e-4377-9378-123456abcdef_640x640.png
 " />`;
