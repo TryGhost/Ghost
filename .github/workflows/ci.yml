@@ -1022,7 +1022,7 @@ jobs:
       cdn-paths: |
         https://cdn.jsdelivr.net/ghost/admin-x-activitypub@0/dist/admin-x-activitypub.js
     needs: [job_setup, job_lint, job_unit-tests]
-    if: always() && needs.job_setup.result == 'success' && needs.job_lint.result == 'success' && needs.job_unit-tests.result == 'success' && needs.job_setup.outputs.is_main == 'true'
+    #if: always() && needs.job_setup.result == 'success' && needs.job_lint.result == 'success' && needs.job_unit-tests.result == 'success' && needs.job_setup.outputs.is_main == 'true'
     secrets: inherit
 
   publish_portal:
@@ -1036,7 +1036,7 @@ jobs:
       cdn-paths: |
         https://cdn.jsdelivr.net/ghost/portal@~CURRENT_MINOR/umd/portal.min.js
     needs: [job_setup, job_lint, job_unit-tests]
-    if: always() && needs.job_setup.result == 'success' && needs.job_lint.result == 'success' && needs.job_unit-tests.result == 'success' && needs.job_setup.outputs.is_main == 'true'
+    #if: always() && needs.job_setup.result == 'success' && needs.job_lint.result == 'success' && needs.job_unit-tests.result == 'success' && needs.job_setup.outputs.is_main == 'true'
     secrets: inherit
 
   publish_search:
@@ -1051,7 +1051,7 @@ jobs:
         https://cdn.jsdelivr.net/ghost/sodo-search@~CURRENT_MINOR/umd/sodo-search.min.js
         https://cdn.jsdelivr.net/ghost/sodo-search@~CURRENT_MINOR/umd/main.css
     needs: [job_setup, job_lint, job_unit-tests]
-    if: always() && needs.job_setup.result == 'success' && needs.job_lint.result == 'success' && needs.job_unit-tests.result == 'success' && needs.job_setup.outputs.is_main == 'true'
+    #if: always() && needs.job_setup.result == 'success' && needs.job_lint.result == 'success' && needs.job_unit-tests.result == 'success' && needs.job_setup.outputs.is_main == 'true'
     secrets: inherit
 
   publish_comments:

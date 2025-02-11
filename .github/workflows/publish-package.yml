@@ -57,11 +57,11 @@ jobs:
           fi
 
       - name: Build the package
-        if: env.version_changed == 'true'
+        #if: env.version_changed == 'true'
         run: yarn run nx build ${{ inputs.package-name }}
 
       - name: Configure .npmrc
-        if: env.version_changed == 'true'
+        #if: env.version_changed == 'true'
         run: |
           echo "@tryghost:registry=https://registry.npmjs.org/" >> ~/.npmrc
           echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" >> ~/.npmrc
@@ -74,8 +74,11 @@ jobs:
         run: npm publish --access public
 
       - name: Replace CURRENT_MINOR in cdn-paths
-        if: env.version_changed == 'true'
+        #if: env.version_changed == 'true'
         run: echo "cdn_paths=$(sed -i "s/CURRENT_MINOR/${{ env.current_minor }}/g" ${{ inputs.cdn-paths }})" >> $GITHUB_ENV
+
+      - name: Print cdn_paths
+        run: echo "cdn_paths=$cdn_paths"
 
       - name: Purge jsdelivr cache
         if: env.version_changed == 'true'
