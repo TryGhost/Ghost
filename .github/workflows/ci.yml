@@ -1012,264 +1012,58 @@ jobs:
           wait-for-completion-interval: 30s
 
   publish_admin_x_activitypub:
-    needs: [
-      job_setup,
-      job_lint,
-      job_unit-tests
-    ]
-    name: Publish @tryghost/admin-x-activitypub
-    runs-on: ubuntu-latest
+    name: Publish ActivityPub
+    uses: ./.github/workflows/publish-package.yml
+    with:
+      package-name: '@tryghost/admin-x-activitypub'
+      package-path: apps/admin-x-activitypub
+      node-version: ${{ env.NODE_VERSION }}
+      dependency-cache-key: ${{ needs.job_setup.outputs.dependency_cache_key }}
+      cdn-paths: |
+        https://cdn.jsdelivr.net/ghost/admin-x-activitypub@0/dist/admin-x-activitypub.js
+    needs: [job_setup, job_lint, job_unit-tests]
     if: always() && needs.job_setup.result == 'success' && needs.job_lint.result == 'success' && needs.job_unit-tests.result == 'success' && needs.job_setup.outputs.is_main == 'true'
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-
-      - name: Restore caches
-        uses: ./.github/actions/restore-cache
-        env:
-          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
-
-      - name: Build the package
-        run: yarn run nx build @tryghost/admin-x-activitypub
-
-      - name: Check if version changed
-        id: version_check
-        working-directory: apps/admin-x-activitypub
-        run: |
-          CURRENT_VERSION=$(cat package.json | jq -r .version)
-          PUBLISHED_VERSION=$(npm show @tryghost/admin-x-activitypub version || echo "0.0.0")
-          echo "Current version: $CURRENT_VERSION"
-          echo "Published version: $PUBLISHED_VERSION"
-          if [ "$CURRENT_VERSION" = "$PUBLISHED_VERSION" ]; then
-            echo "Version is unchanged."
-            echo "version_changed=false" >> $GITHUB_ENV
-          else
-            echo "Version has changed."
-            echo "version_changed=true" >> $GITHUB_ENV
-          fi
-
-      - name: Configure .npmrc
-        run: |
-          echo "@tryghost:registry=https://registry.npmjs.org/" >> ~/.npmrc
-          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" >> ~/.npmrc
-
-      - name: Publish to npm
-        if: env.version_changed == 'true'
-        working-directory: apps/admin-x-activitypub
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npm publish --access public
-
-      - name: Purge jsdelivr cache
-        if: env.version_changed == 'true'
-        uses: gacts/purge-jsdelivr-cache@v1
-        with:
-          url: |
-            https://cdn.jsdelivr.net/ghost/admin-x-activitypub@0/dist/admin-x-activitypub.js
+    secrets: inherit
 
   publish_portal:
-    needs: [
-      job_setup,
-      job_lint,
-      job_unit-tests
-    ]
-    name: Publish @tryghost/portal
-    runs-on: ubuntu-latest
+    name: Publish Portal
+    uses: ./.github/workflows/publish-package.yml
+    with:
+      package-name: '@tryghost/portal'
+      package-path: apps/portal
+      node-version: ${{ env.NODE_VERSION }}
+      dependency-cache-key: ${{ needs.job_setup.outputs.dependency_cache_key }}
+      cdn-paths: |
+        https://cdn.jsdelivr.net/ghost/portal@~CURRENT_MINOR/umd/portal.min.js
+    needs: [job_setup, job_lint, job_unit-tests]
     if: always() && needs.job_setup.result == 'success' && needs.job_lint.result == 'success' && needs.job_unit-tests.result == 'success' && needs.job_setup.outputs.is_main == 'true'
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-
-      - name: Restore caches
-        uses: ./.github/actions/restore-cache
-        env:
-          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
-
-      - name: Check if version changed
-        id: version_check
-        working-directory: apps/portal
-        run: |
-          CURRENT_VERSION=$(cat package.json | jq -r .version)
-          PUBLISHED_VERSION=$(npm show @tryghost/portal version || echo "0.0.0")
-          echo "Current version: $CURRENT_VERSION"
-          echo "Published version: $PUBLISHED_VERSION"
-
-          CURRENT_MINOR=$(cat package.json | jq -r .version | awk -F. '{print $1"."$2}')
-          echo "current_minor=$CURRENT_MINOR" >> $GITHUB_ENV
-
-          if [ "$CURRENT_VERSION" = "$PUBLISHED_VERSION" ]; then
-            echo "Version is unchanged."
-            echo "version_changed=false" >> $GITHUB_ENV
-          else
-            echo "Version has changed."
-            echo "version_changed=true" >> $GITHUB_ENV
-          fi
-
-      - name: Build the package
-        if: env.version_changed == 'true'
-        run: yarn run nx build @tryghost/portal
-
-      - name: Configure .npmrc
-        if: env.version_changed == 'true'
-        run: |
-          echo "@tryghost:registry=https://registry.npmjs.org/" >> ~/.npmrc
-          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" >> ~/.npmrc
-
-      - name: Publish to npm
-        if: env.version_changed == 'true'
-        working-directory: apps/portal
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npm publish --access public
-
-      - name: Purge jsdelivr cache
-        if: env.version_changed == 'true'
-        uses: gacts/purge-jsdelivr-cache@v1
-        with:
-          url: |
-            https://cdn.jsdelivr.net/ghost/portal@~{{ env.current_minor }}/umd/portal.min.js
+    secrets: inherit
 
   publish_search:
-    needs: [
-      job_setup,
-      job_lint,
-      job_unit-tests
-    ]
-    name: Publish @tryghost/sodo-search
-    runs-on: ubuntu-latest
+    name: Publish Sodo-Search
+    uses: ./.github/workflows/publish-package.yml
+    with:
+      package-name: '@tryghost/sodo-search'
+      package-path: apps/sodo-search
+      node-version: ${{ env.NODE_VERSION }}
+      dependency-cache-key: ${{ needs.job_setup.outputs.dependency_cache_key }}
+      cdn-paths: |
+        https://cdn.jsdelivr.net/ghost/sodo-search@~CURRENT_MINOR/umd/sodo-search.min.js
+        https://cdn.jsdelivr.net/ghost/sodo-search@~CURRENT_MINOR/umd/main.css
+    needs: [job_setup, job_lint, job_unit-tests]
     if: always() && needs.job_setup.result == 'success' && needs.job_lint.result == 'success' && needs.job_unit-tests.result == 'success' && needs.job_setup.outputs.is_main == 'true'
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-
-      - name: Restore caches
-        uses: ./.github/actions/restore-cache
-        env:
-          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
-
-      - name: Check if version changed
-        id: version_check
-        working-directory: apps/sodo-search
-        run: |
-          CURRENT_VERSION=$(cat package.json | jq -r .version)
-          PUBLISHED_VERSION=$(npm show @tryghost/sodo-search version || echo "0.0.0")
-          echo "Current version: $CURRENT_VERSION"
-          echo "Published version: $PUBLISHED_VERSION"
-
-          CURRENT_MINOR=$(cat package.json | jq -r .version | awk -F. '{print $1"."$2}')
-          echo "current_minor=$CURRENT_MINOR" >> $GITHUB_ENV
-
-          if [ "$CURRENT_VERSION" = "$PUBLISHED_VERSION" ]; then
-            echo "Version is unchanged."
-            echo "version_changed=false" >> $GITHUB_ENV
-          else
-            echo "Version has changed."
-            echo "version_changed=true" >> $GITHUB_ENV
-          fi
-
-      - name: Build the package
-        if: env.version_changed == 'true'
-        run: yarn run nx build @tryghost/sodo-search
-
-      - name: Configure .npmrc
-        if: env.version_changed == 'true'
-        run: |
-          echo "@tryghost:registry=https://registry.npmjs.org/" >> ~/.npmrc
-          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" >> ~/.npmrc
-
-      - name: Publish to npm
-        if: env.version_changed == 'true'
-        working-directory: apps/sodo-search
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npm publish --access public
-
-      - name: Purge jsdelivr cache
-        if: env.version_changed == 'true'
-        uses: gacts/purge-jsdelivr-cache@v1
-        with:
-          url: |
-            https://cdn.jsdelivr.net/ghost/sodo-search@~{{ env.current_minor }}/umd/sodo-search.min.js
-            https://cdn.jsdelivr.net/ghost/sodo-search@~{{ env.current_minor }}/umd/main.css
+    secrets: inherit
 
   publish_comments:
-    needs: [
-      job_setup,
-      job_lint,
-      job_unit-tests
-    ]
-    name: Publish @tryghost/comments-ui
-    runs-on: ubuntu-latest
+    name: Publish Comments UI
+    uses: ./.github/workflows/publish-package.yml
+    with:
+      package-name: '@tryghost/comments-ui'
+      package-path: apps/comments-ui
+      node-version: ${{ env.NODE_VERSION }}
+      dependency-cache-key: ${{ needs.job_setup.outputs.dependency_cache_key }}
+      cdn-paths: |
+        https://cdn.jsdelivr.net/ghost/comments-ui@~CURRENT_MINOR/umd/comments-ui.min.js
+    needs: [job_setup, job_lint, job_unit-tests]
     if: always() && needs.job_setup.result == 'success' && needs.job_lint.result == 'success' && needs.job_unit-tests.result == 'success' && needs.job_setup.outputs.is_main == 'true'
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-
-      - name: Restore caches
-        uses: ./.github/actions/restore-cache
-        env:
-          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
-
-      - name: Check if version changed
-        id: version_check
-        working-directory: apps/comments-ui
-        run: |
-          CURRENT_VERSION=$(cat package.json | jq -r .version)
-          PUBLISHED_VERSION=$(npm show @tryghost/comments-ui version || echo "0.0.0")
-          echo "Current version: $CURRENT_VERSION"
-          echo "Published version: $PUBLISHED_VERSION"
-
-          CURRENT_MINOR=$(cat package.json | jq -r .version | awk -F. '{print $1"."$2}')
-          echo "current_minor=$CURRENT_MINOR" >> $GITHUB_ENV
-
-          if [ "$CURRENT_VERSION" = "$PUBLISHED_VERSION" ]; then
-            echo "Version is unchanged."
-            echo "version_changed=false" >> $GITHUB_ENV
-          else
-            echo "Version has changed."
-            echo "version_changed=true" >> $GITHUB_ENV
-          fi
-
-      - name: Build the package
-        if: env.version_changed == 'true'
-        run: yarn run nx build @tryghost/comments-ui
-
-      - name: Configure .npmrc
-        if: env.version_changed == 'true'
-        run: |
-          echo "@tryghost:registry=https://registry.npmjs.org/" >> ~/.npmrc
-          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" >> ~/.npmrc
-
-      - name: Publish to npm
-        if: env.version_changed == 'true'
-        working-directory: apps/comments-ui
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npm publish --access public
-
-      - name: Purge jsdelivr cache
-        if: env.version_changed == 'true'
-        uses: gacts/purge-jsdelivr-cache@v1
-        with:
-          url: |
-            https://cdn.jsdelivr.net/ghost/comments-ui@~{{ env.current_minor }}/umd/comments-ui.min.js
+    secrets: inherit

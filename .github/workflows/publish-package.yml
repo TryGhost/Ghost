@@ -1,0 +1,85 @@
+name: Publish Package
+
+on:
+  workflow_call:
+    inputs:
+      package-name:
+        required: true
+        type: string
+      package-path:
+        type: string
+        required: true
+      cdn-paths:
+        type: string
+        required: true
+      node-version:
+        type: string
+        required: true
+      dependency-cache-key:
+        type: string
+        required: true
+jobs:
+  publish:
+    name: Publish ${{ inputs.package-name }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node-version }}
+
+      - name: Restore caches
+        uses: ./.github/actions/restore-cache
+        env:
+          DEPENDENCY_CACHE_KEY: ${{ inputs.dependency-cache-key }}
+
+      - name: Check if version changed
+        id: version_check
+        working-directory: ${{ inputs.package-path }}
+        run: |
+          CURRENT_VERSION=$(cat package.json | jq -r .version)
+          PUBLISHED_VERSION=$(npm show ${{ inputs.package-name }} version || echo "0.0.0")
+          echo "Current version: $CURRENT_VERSION"
+          echo "Published version: $PUBLISHED_VERSION"
+
+          CURRENT_MINOR=$(cat package.json | jq -r .version | awk -F. '{print $1"."$2}')
+          echo "current_minor=$CURRENT_MINOR" >> $GITHUB_ENV
+
+          if [ "$CURRENT_VERSION" = "$PUBLISHED_VERSION" ]; then
+            echo "Version is unchanged."
+            echo "version_changed=false" >> $GITHUB_ENV
+          else
+            echo "Version has changed."
+            echo "version_changed=true" >> $GITHUB_ENV
+          fi
+
+      - name: Build the package
+        if: env.version_changed == 'true'
+        run: yarn run nx build ${{ inputs.package-name }}
+
+      - name: Configure .npmrc
+        if: env.version_changed == 'true'
+        run: |
+          echo "@tryghost:registry=https://registry.npmjs.org/" >> ~/.npmrc
+          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" >> ~/.npmrc
+
+      - name: Publish to npm
+        if: env.version_changed == 'true'
+        working-directory: ${{ inputs.package-path }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --access public
+
+      - name: Replace CURRENT_MINOR in cdn-paths
+        if: env.version_changed == 'true'
+        run: echo "cdn_paths=$(sed -i "s/CURRENT_MINOR/${{ env.current_minor }}/g" ${{ inputs.cdn-paths }})" >> $GITHUB_ENV
+
+      - name: Purge jsdelivr cache
+        if: env.version_changed == 'true'
+        uses: gacts/purge-jsdelivr-cache@v1
+        with:
+          url: ${{ env.cdn_paths }}
+
