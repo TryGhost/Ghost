@@ -12,6 +12,7 @@ import {
 } from '../api/activitypub';
 import {Activity} from '@tryghost/admin-x-framework/api/activitypub';
 import {
+    type QueryClient,
     type UseInfiniteQueryResult,
     useInfiniteQuery,
     useMutation,
@@ -66,7 +67,7 @@ const QUERY_KEYS = {
     searchResults: (query: string) => ['search_results', query],
     suggestedProfiles: (limit: number) => ['suggested_profiles', limit],
     thread: (id: string) => ['thread', id],
-    feed: (handle: string, postType: PostType) => ['feed', handle, postType]
+    feed: (handle: string, postType: PostType) => ['feed', handle, postType] as string[]
 };
 
 export function useOutboxForUser(handle: string) {
@@ -99,6 +100,36 @@ export function useLikedForUser(handle: string) {
     });
 }
 
+function updateLikedCache(queryClient: QueryClient, queryKey: string[], id: string, liked: boolean) {
+    queryClient.setQueriesData(queryKey, (current?: {pages: {posts: Activity[]}[]}) => {
+        if (current === undefined) {
+            return current;
+        }
+
+        return {
+            ...current,
+            pages: current.pages.map((page: {posts: Activity[]}) => {
+                return {
+                    ...page,
+                    posts: page.posts.map((item: Activity) => {
+                        if (item.object.id === id) {
+                            return {
+                                ...item,
+                                object: {
+                                    ...item.object,
+                                    liked: liked
+                                }
+                            };
+                        }
+
+                        return item;
+                    })
+                };
+            })
+        };
+    });
+}
+
 export function useLikeMutationForUser(handle: string) {
     const queryClient = useQueryClient();
 
@@ -111,35 +142,11 @@ export function useLikeMutationForUser(handle: string) {
         },
         onMutate: (id) => {
             // Update the "liked" property of the activity stored in the feed query cache
-            const queryKey = QUERY_KEYS.feed(handle, PostType.Note);
+            const noteQueryKey = QUERY_KEYS.feed(handle, PostType.Note);
+            const articleQueryKey = QUERY_KEYS.feed(handle, PostType.Article);
 
-            queryClient.setQueriesData(queryKey, (current?: {pages: {posts: Activity[]}[]}) => {
-                if (current === undefined) {
-                    return current;
-                }
-
-                return {
-                    ...current,
-                    pages: current.pages.map((page: {posts: Activity[]}) => {
-                        return {
-                            ...page,
-                            posts: page.posts.map((item: Activity) => {
-                                if (item.object.id === id) {
-                                    return {
-                                        ...item,
-                                        object: {
-                                            ...item.object,
-                                            liked: true
-                                        }
-                                    };
-                                }
-
-                                return item;
-                            })
-                        };
-                    })
-                };
-            });
+            updateLikedCache(queryClient, noteQueryKey, id, true);
+            updateLikedCache(queryClient, articleQueryKey, id, true);
         }
     });
 }
@@ -156,36 +163,43 @@ export function useUnlikeMutationForUser(handle: string) {
         },
         onMutate: (id) => {
             // Update the "liked" property of the activity stored in the feed query cache
-            const queryKey = QUERY_KEYS.feed(handle, PostType.Note);
+            const noteQueryKey = QUERY_KEYS.feed(handle, PostType.Note);
+            const articleQueryKey = QUERY_KEYS.feed(handle, PostType.Article);
 
-            queryClient.setQueriesData(queryKey, (current?: {pages: {posts: Activity[]}[]}) => {
-                if (current === undefined) {
-                    return current;
-                }
+            updateLikedCache(queryClient, noteQueryKey, id, false);
+            updateLikedCache(queryClient, articleQueryKey, id, false);
+        }
+    });
+}
 
+function updateRepostCache(queryClient: QueryClient, queryKey: string[], id: string, reposted: boolean) {
+    queryClient.setQueriesData(queryKey, (current?: {pages: {posts: Activity[]}[]}) => {
+        if (current === undefined) {
+            return current;
+        }
+
+        return {
+            ...current,
+            pages: current.pages.map((page: {posts: Activity[]}) => {
                 return {
-                    ...current,
-                    pages: current.pages.map((page: {posts: Activity[]}) => {
-                        return {
-                            ...page,
-                            posts: page.posts.map((item: Activity) => {
-                                if (item.object.id === id) {
-                                    return {
-                                        ...item,
-                                        object: {
-                                            ...item.object,
-                                            liked: false
-                                        }
-                                    };
+                    ...page,
+                    posts: page.posts.map((item: Activity) => {
+                        if (item.object.id === id) {
+                            return {
+                                ...item,
+                                object: {
+                                    ...item.object,
+                                    reposted: reposted,
+                                    repostCount: Math.max(reposted ? item.object.repostCount + 1 : item.object.repostCount - 1, 0)
                                 }
+                            };
+                        }
 
-                                return item;
-                            })
-                        };
+                        return item;
                     })
                 };
-            });
-        }
+            })
+        };
     });
 }
 
@@ -201,36 +215,11 @@ export function useRepostMutationForUser(handle: string) {
         },
         onMutate: (id) => {
             // Update the "reposted" property of the activity stored in the feed query cache
-            const queryKey = QUERY_KEYS.feed(handle, PostType.Note);
+            const noteQueryKey = QUERY_KEYS.feed(handle, PostType.Note);
+            const articleQueryKey = QUERY_KEYS.feed(handle, PostType.Article);
 
-            queryClient.setQueriesData(queryKey, (current?: {pages: {posts: Activity[]}[]}) => {
-                if (current === undefined) {
-                    return current;
-                }
-
-                return {
-                    ...current,
-                    pages: current.pages.map((page: {posts: Activity[]}) => {
-                        return {
-                            ...page,
-                            posts: page.posts.map((item: Activity) => {
-                                if (item.object.id === id) {
-                                    return {
-                                        ...item,
-                                        object: {
-                                            ...item.object,
-                                            reposted: true,
-                                            repostCount: item.object.repostCount + 1
-                                        }
-                                    };
-                                }
-
-                                return item;
-                            })
-                        };
-                    })
-                };
-            });
+            updateRepostCache(queryClient, noteQueryKey, id, true);
+            updateRepostCache(queryClient, articleQueryKey, id, true);
         }
     });
 }
@@ -247,36 +236,11 @@ export function useDerepostMutationForUser(handle: string) {
         },
         onMutate: (id) => {
             // Update the "reposted" property of the activity stored in the feed query cache
-            const queryKey = QUERY_KEYS.feed(handle, PostType.Note);
+            const noteQueryKey = QUERY_KEYS.feed(handle, PostType.Note);
+            const articleQueryKey = QUERY_KEYS.feed(handle, PostType.Article);
 
-            queryClient.setQueriesData(queryKey, (current?: {pages: {posts: Activity[]}[]}) => {
-                if (current === undefined) {
-                    return current;
-                }
-
-                return {
-                    ...current,
-                    pages: current.pages.map((page: {posts: Activity[]}) => {
-                        return {
-                            ...page,
-                            posts: page.posts.map((item: Activity) => {
-                                if (item.object.id === id) {
-                                    return {
-                                        ...item,
-                                        object: {
-                                            ...item.object,
-                                            reposted: false,
-                                            repostCount: item.object.repostCount - 1 < 0 ? 0 : item.object.repostCount - 1
-                                        }
-                                    };
-                                }
-
-                                return item;
-                            })
-                        };
-                    })
-                };
-            });
+            updateRepostCache(queryClient, noteQueryKey, id, false);
+            updateRepostCache(queryClient, articleQueryKey, id, false);
         }
     });
 }
