@@ -1,4 +1,4 @@
-import {ActivityPubAPI, PostType} from './activitypub';
+import {ActivityPubAPI} from './activitypub';
 
 function NotFound() {
     return new Response(null, {
@@ -1265,7 +1265,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/feed/index?type=${PostType.Article}`]: {
+                [`https://activitypub.api/.ghost/activitypub/feed`]: {
                     response: JSONResponse({
                         posts: [
                             {
@@ -1287,7 +1287,7 @@ describe('ActivityPubAPI', function () {
                 fakeFetch
             );
 
-            const actual = await api.getFeed(PostType.Article);
+            const actual = await api.getFeed();
 
             expect(actual.posts).toEqual([
                 {
@@ -1308,7 +1308,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/feed/index?type=${PostType.Article}`]: {
+                [`https://activitypub.api/.ghost/activitypub/feed`]: {
                     response: JSONResponse({
                         posts: [],
                         next: 'abc123'
@@ -1323,7 +1323,7 @@ describe('ActivityPubAPI', function () {
                 fakeFetch
             );
 
-            const actual = await api.getFeed(PostType.Article);
+            const actual = await api.getFeed();
 
             expect(actual.next).toEqual('abc123');
         });
@@ -1339,7 +1339,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/feed/index?type=${PostType.Article}&next=${next}`]: {
+                [`https://activitypub.api/.ghost/activitypub/feed`]: {
                     response: JSONResponse({
                         posts: [
                             {
@@ -1358,7 +1358,7 @@ describe('ActivityPubAPI', function () {
                 fakeFetch
             );
 
-            const actual = await api.getFeed(PostType.Article, next);
+            const actual = await api.getFeed(next);
             const expected = {
                 posts: [
                     {
@@ -1380,7 +1380,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/feed/index?type=${PostType.Article}`]: {
+                [`https://activitypub.api/.ghost/activitypub/feed`]: {
                     response: JSONResponse(null)
                 }
             });
@@ -1392,7 +1392,7 @@ describe('ActivityPubAPI', function () {
                 fakeFetch
             );
 
-            const actual = await api.getFeed(PostType.Article);
+            const actual = await api.getFeed();
             const expected = {
                 posts: [],
                 next: null
@@ -1410,7 +1410,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/feed/index?type=${PostType.Article}`]: {
+                [`https://activitypub.api/.ghost/activitypub/feed`]: {
                     response: JSONResponse({})
                 }
             });
@@ -1422,7 +1422,7 @@ describe('ActivityPubAPI', function () {
                 fakeFetch
             );
 
-            const actual = await api.getFeed(PostType.Article);
+            const actual = await api.getFeed();
             const expected = {
                 posts: [],
                 next: null
@@ -1440,7 +1440,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/feed/index?type=${PostType.Article}`]: {
+                [`https://activitypub.api/.ghost/activitypub/feed`]: {
                     response: JSONResponse({
                         posts: []
                     })
@@ -1454,7 +1454,7 @@ describe('ActivityPubAPI', function () {
                 fakeFetch
             );
 
-            const actual = await api.getFeed(PostType.Article);
+            const actual = await api.getFeed();
 
             expect(actual.posts).toEqual([]);
         });

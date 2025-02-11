@@ -6,7 +6,6 @@ import {
     ActivityThread,
     FollowAccount,
     type GetAccountFollowsResponse,
-    PostType,
     type Profile,
     type SearchResults
 } from '../api/activitypub';
@@ -658,7 +657,7 @@ export function useNoteMutationForUser(handle: string) {
             });
 
             // Update the activity stored in the feed query cache
-            const feedQueryKey = QUERY_KEYS.feed(handle, PostType.Note);
+            const feedQueryKey = QUERY_KEYS.feed;
 
             queryClient.setQueriesData(feedQueryKey, (current?: {pages: {posts: Activity[]}[]}) => {
                 if (current === undefined) {
