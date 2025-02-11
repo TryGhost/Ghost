@@ -11,16 +11,15 @@ import getName from '../utils/get-name';
 import getUsername from '../utils/get-username';
 import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, Skeleton} from '@tryghost/shade';
-import {
-    GET_ACTIVITIES_QUERY_KEY_FEED,
-    GET_ACTIVITIES_QUERY_KEY_INBOX,
-    useActivitiesForUser,
-    useSuggestedProfilesForUser,
-    useUserDataForUser
-} from '../hooks/useActivityPubQueries';
 import {Heading, LoadingIndicator} from '@tryghost/admin-x-design-system';
 import {handleProfileClick} from '../utils/handle-profile-click';
 import {handleViewContent} from '../utils/content-handlers';
+import {
+    useFeedForUser,
+    useInboxForUser,
+    useSuggestedProfilesForUser,
+    useUserDataForUser
+} from '../hooks/useActivityPubQueries';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 type Layout = 'inbox' | 'feed';
@@ -32,29 +31,14 @@ interface InboxProps {
 const Inbox: React.FC<InboxProps> = ({layout}) => {
     const {updateRoute} = useRouting();
 
-    // Initialise activities for the inbox or feed
-    const typeFilter = layout === 'inbox'
-        ? ['Create:Article', 'Announce:Article']
-        : ['Create:Note', 'Announce:Note'];
+    const {inboxQuery, updateInboxActivity} = useInboxForUser({enabled: layout === 'inbox'});
+    const {feedQuery, updateFeedActivity} = useFeedForUser({enabled: layout === 'feed'});
 
-    const {getActivitiesQuery, updateActivity} = useActivitiesForUser({
-        handle: 'index',
-        includeOwn: true,
-        filter: {
-            type: typeFilter
-        },
-        key: layout === 'inbox' ? GET_ACTIVITIES_QUERY_KEY_INBOX : GET_ACTIVITIES_QUERY_KEY_FEED
-    });
+    const feedQueryData = layout === 'inbox' ? inboxQuery : feedQuery;
+    const updateActivity = layout === 'inbox' ? updateInboxActivity : updateFeedActivity;
+    const {data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading} = feedQueryData;
 
-    const {data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading} = getActivitiesQuery;
-
-    const activities = (data?.pages.flatMap(page => page.data) ?? Array.from({length: 5}, (_, index) => ({id: `placeholder-${index}`, object: {}})))
-        // If there somehow are duplicate activities, filter them out so the list rendering doesn't break
-        .filter((activity, index, self) => index === self.findIndex(a => a.id === activity.id))
-        // Filter out replies
-        .filter((activity) => {
-            return !activity.object.inReplyTo;
-        });
+    const activities = (data?.pages.flatMap(page => page.posts) ?? []);
 
     // Initialise suggested profiles
     const {suggestedProfilesQuery} = useSuggestedProfilesForUser('index', 3);
@@ -107,7 +91,8 @@ const Inbox: React.FC<InboxProps> = ({layout}) => {
                                         <ul className={`mx-auto flex w-full flex-col ${layout === 'inbox' && 'mt-3'}`}>
                                             {activities.map((activity, index) => (
                                                 <li
-                                                    key={activity.id}
+                                                    // eslint-disable-next-line react/no-array-index-key
+                                                    key={`${activity.id}-${activity.type}-${index}`} // We are using index here as activity.id is cannot be guaranteed to be unique at the moment
                                                     data-test-view-article
                                                 >
                                                     <FeedItem
