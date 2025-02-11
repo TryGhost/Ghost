@@ -1,6 +1,7 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, Heading, Icon, Menu, MenuItem, showToast} from '@tryghost/admin-x-design-system';
+import {Skeleton} from '@tryghost/shade';
 
 import APAvatar from '../global/APAvatar';
 
@@ -109,11 +110,15 @@ export function renderFeedAttachment(object: ObjectProperties, layout: string) {
     }
 }
 
-function renderInboxAttachment(object: ObjectProperties) {
+function renderInboxAttachment(object: ObjectProperties, isLoading: boolean | undefined) {
     const attachment = getAttachment(object);
 
     const videoAttachmentStyles = 'ml-8 md:ml-9 shrink-0 rounded-md h-[91px] w-[121px] relative';
     const imageAttachmentStyles = clsx('object-cover outline outline-1 -outline-offset-1 outline-black/[0.05]', videoAttachmentStyles);
+
+    if (isLoading) {
+        return <Skeleton className={`${imageAttachmentStyles} outline-0`} />;
+    }
 
     if (!attachment) {
         return null;
@@ -170,13 +175,14 @@ interface FeedItemProps {
     repostCount?: number;
     showHeader?: boolean;
     last?: boolean;
+    isLoading?: boolean;
     onClick?: () => void;
     onCommentClick: () => void;
 }
 
 const noop = () => {};
 
-const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, commentCount = 0, repostCount = 0, showHeader = true, last, onClick: onClickHandler = noop, onCommentClick}) => {
+const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, commentCount = 0, repostCount = 0, showHeader = true, last, isLoading, onClick: onClickHandler = noop, onCommentClick}) => {
     const timestamp =
         new Date(object?.published ?? new Date()).toLocaleDateString('default', {year: 'numeric', month: 'short', day: '2-digit'}) + ', ' + new Date(object?.published ?? new Date()).toLocaleTimeString('default', {hour: '2-digit', minute: '2-digit'});
 
@@ -190,7 +196,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
         if (element) {
             setIsTruncated(element.scrollHeight > element.clientHeight);
         }
-    }, [object.content]);
+    }, [object?.content]);
 
     const onLikeClick = () => {
         // Do API req or smth
@@ -266,21 +272,23 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                         </div>}
                         <div className={`border-1 flex flex-col gap-2.5`} data-test-activity>
                             <div className='relative z-30 flex min-w-0 items-center gap-3'>
-                                <APAvatar author={author}/>
+                                <APAvatar author={author} />
                                 <div className='flex min-w-0 flex-col gap-0.5'>
                                     <span className='min-w-0 truncate break-all font-semibold leading-[normal] hover:underline'
                                         data-test-activity-heading
                                         onClick={e => handleProfileClick(author, e)}
                                     >
-                                        {author.name}
+                                        {!isLoading ? author.name : <Skeleton className='w-24' />}
                                     </span>
                                     <div className='flex w-full text-gray-700'>
                                         <span className='truncate leading-tight hover:underline'
                                             onClick={e => handleProfileClick(author, e)}
                                         >
-                                            {getUsername(author)}
+                                            {!isLoading ? getUsername(author) : <Skeleton className='w-56' />}
                                         </span>
-                                        <div className='ml-1 leading-tight before:mr-1 before:content-["·"]' title={`${timestamp}`}>{renderTimestamp(object)}</div>
+                                        <div className={`ml-1 leading-tight before:mr-1 ${!isLoading && 'before:content-["·"]'}`} title={`${timestamp}`}>
+                                            {!isLoading ? renderTimestamp(object) : <Skeleton className='w-4' />}
+                                        </div>
                                     </div>
                                 </div>
                                 <Menu items={menuItems} open={menuIsOpen} position='end' setOpen={setMenuIsOpen} trigger={UserMenuTrigger}/>
@@ -296,11 +304,15 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                             </div>
                                         </div> :
                                             <div className='relative'>
-                                                <div
-                                                    dangerouslySetInnerHTML={({__html: object.content ?? ''})}
-                                                    ref={contentRef}
-                                                    className='ap-note-content line-clamp-[10] text-pretty leading-[1.4285714286] tracking-[-0.006em] text-gray-900'
-                                                ></div>
+                                                <div className='ap-note-content line-clamp-[10] text-pretty leading-[1.4285714286] tracking-[-0.006em] text-gray-900'>
+                                                    {!isLoading ?
+                                                        <div dangerouslySetInnerHTML={{
+                                                            __html: object.content ?? ''
+                                                        }} ref={contentRef} />
+                                                        :
+                                                        <Skeleton count={2} />
+                                                    }
+                                                </div>
                                                 {isTruncated && (
                                                     <button className='mt-1 text-blue-600' type='button'>Show more</button>
                                                 )}
@@ -309,15 +321,18 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                         }
                                     </div>
                                     <div className='space-between relative z-[30] ml-[-7px] mt-1 flex'>
-                                        <FeedItemStats
-                                            commentCount={commentCount}
-                                            layout={layout}
-                                            likeCount={1}
-                                            object={object}
-                                            repostCount={repostCount}
-                                            onCommentClick={onCommentClick}
-                                            onLikeClick={onLikeClick}
-                                        />
+                                        {!isLoading ?
+                                            <FeedItemStats
+                                                commentCount={commentCount}
+                                                layout={layout}
+                                                likeCount={1}
+                                                object={object}
+                                                repostCount={repostCount}
+                                                onCommentClick={onCommentClick}
+                                                onLikeClick={onLikeClick}
+                                            /> :
+                                            <Skeleton className='ml-2 w-18' />
+                                        }
                                     </div>
                                 </div>
                             </div>
@@ -439,29 +454,44 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
             <>
                 {object && (
                     <div className='group/article relative -mx-6 -my-px flex min-h-[112px] min-w-0 cursor-pointer items-center justify-between rounded-lg p-6 hover:bg-gray-75' data-layout='inbox' data-object-id={object.id} onClick={onClick}>
-                        <div className='min-w-0'>
+                        <div className='w-full min-w-0'>
                             <div className='z-10 mb-1.5 flex w-full min-w-0 items-center gap-1.5 text-sm group-hover/article:border-transparent'>
-                                <APAvatar author={author} size='2xs'/>
-                                <span className='min-w-0 truncate break-all font-semibold text-gray-900 hover:underline'
-                                    title={getUsername(author)}
-                                    data-test-activity-heading
-                                    onClick={e => handleProfileClick(author, e)}
-                                >{author.name}
-                                </span>
-                                {(type === 'Announce') && <span className='z-10 flex items-center gap-1 text-gray-700'><Icon colorClass='text-gray-700 shrink-0' name='reload' size={'sm'}></Icon><span className='hover:underline' title={getUsername(actor)} onClick={e => handleProfileClick(actor, e)}>{actor.name}</span> reposted</span>}
-                                <span className='shrink-0 whitespace-nowrap text-gray-600 before:mr-1 before:content-["·"]' title={`${timestamp}`}>{renderTimestamp(object)}</span>
+                                {!isLoading ?
+                                    <>
+                                        <APAvatar author={author} size='2xs' />
+                                        <span className='min-w-0 truncate break-all font-semibold text-gray-900 hover:underline'
+                                            title={getUsername(author)}
+                                            data-test-activity-heading
+                                            onClick={e => handleProfileClick(author, e)}
+                                        >{author.name}
+                                        </span>
+                                        {(type === 'Announce') && <span className='z-10 flex items-center gap-1 text-gray-700'><Icon colorClass='text-gray-700 shrink-0' name='reload' size={'sm'}></Icon><span className='hover:underline' title={getUsername(actor)} onClick={e => handleProfileClick(actor, e)}>{actor.name}</span> reposted</span>}
+                                        <span className='shrink-0 whitespace-nowrap text-gray-600 before:mr-1 before:content-["·"]' title={`${timestamp}`}>{renderTimestamp(object)}</span>
+                                    </> :
+                                    <Skeleton className='w-24' />
+                                }
                             </div>
                             <div className='flex'>
                                 <div className='flex min-h-[73px] w-full min-w-0 flex-col items-start justify-start gap-1'>
                                     <Heading className='w-full max-w-[600px] text-pretty text-[1.6rem] font-semibold leading-tight' level={5} data-test-activity-heading>
-                                        {object.name ? object.name : (
+                                        {isLoading ? <Skeleton className='w-full max-w-96' /> : (object.name ? object.name : (
                                             <span dangerouslySetInnerHTML={{
                                                 __html: stripHtml(object.content || '')
                                             }}></span>
-                                        )}
+                                        ))}
                                     </Heading>
-                                    <div dangerouslySetInnerHTML={({__html: stripHtml(object.preview?.content ?? object.content ?? '')})} className='ap-note-content line-clamp-2 w-full max-w-[600px] text-pretty text-base leading-normal text-gray-800'></div>
-                                    <span className='mt-1 shrink-0 whitespace-nowrap text-sm leading-none text-gray-600'>{object.content && `${getReadingTime(object.content)}`}</span>
+                                    <div className='ap-note-content line-clamp-2 w-full max-w-[600px] text-pretty text-base leading-normal text-gray-800'>
+                                        {!isLoading ?
+                                            <div dangerouslySetInnerHTML={{
+                                                __html: stripHtml(object.preview?.content ?? object.content ?? '')
+                                            }} />
+                                            :
+                                            <Skeleton count={2} />
+                                        }
+                                    </div>
+                                    <span className='mt-1 shrink-0 whitespace-nowrap text-sm leading-none text-gray-600'>
+                                        {!isLoading ? (object.content && `${getReadingTime(object.content)}`) : <Skeleton className='w-16' />}
+                                    </span>
                                 </div>
                                 <div className='invisible absolute right-4 top-1/2 z-[49] flex -translate-y-1/2 flex-col rounded-full bg-white p-1 shadow-md group-hover/article:visible'>
                                     <FeedItemStats
@@ -477,7 +507,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                 </div>
                             </div>
                         </div>
-                        {renderInboxAttachment(object)}
+                        {renderInboxAttachment(object, isLoading)}
                     </div>
                 )}
             </>
