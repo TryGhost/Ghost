@@ -67,7 +67,8 @@ const QUERY_KEYS = {
     searchResults: (query: string) => ['search_results', query],
     suggestedProfiles: (limit: number) => ['suggested_profiles', limit],
     thread: (id: string) => ['thread', id],
-    feed: (handle: string, postType: PostType) => ['feed', handle, postType] as string[]
+    feed: ['feed'],
+    inbox: ['inbox']
 };
 
 export function useOutboxForUser(handle: string) {
@@ -141,12 +142,8 @@ export function useLikeMutationForUser(handle: string) {
             return api.like(id);
         },
         onMutate: (id) => {
-            // Update the "liked" property of the activity stored in the feed query cache
-            const noteQueryKey = QUERY_KEYS.feed(handle, PostType.Note);
-            const articleQueryKey = QUERY_KEYS.feed(handle, PostType.Article);
-
-            updateLikedCache(queryClient, noteQueryKey, id, true);
-            updateLikedCache(queryClient, articleQueryKey, id, true);
+            updateLikedCache(queryClient, QUERY_KEYS.feed, id, true);
+            updateLikedCache(queryClient, QUERY_KEYS.inbox, id, true);
         }
     });
 }
@@ -162,12 +159,8 @@ export function useUnlikeMutationForUser(handle: string) {
             return api.unlike(id);
         },
         onMutate: (id) => {
-            // Update the "liked" property of the activity stored in the feed query cache
-            const noteQueryKey = QUERY_KEYS.feed(handle, PostType.Note);
-            const articleQueryKey = QUERY_KEYS.feed(handle, PostType.Article);
-
-            updateLikedCache(queryClient, noteQueryKey, id, false);
-            updateLikedCache(queryClient, articleQueryKey, id, false);
+            updateLikedCache(queryClient, QUERY_KEYS.feed, id, false);
+            updateLikedCache(queryClient, QUERY_KEYS.inbox, id, false);
         }
     });
 }
@@ -214,12 +207,8 @@ export function useRepostMutationForUser(handle: string) {
             return api.repost(id);
         },
         onMutate: (id) => {
-            // Update the "reposted" property of the activity stored in the feed query cache
-            const noteQueryKey = QUERY_KEYS.feed(handle, PostType.Note);
-            const articleQueryKey = QUERY_KEYS.feed(handle, PostType.Article);
-
-            updateRepostCache(queryClient, noteQueryKey, id, true);
-            updateRepostCache(queryClient, articleQueryKey, id, true);
+            updateRepostCache(queryClient, QUERY_KEYS.feed, id, true);
+            updateRepostCache(queryClient, QUERY_KEYS.inbox, id, true);
         }
     });
 }
@@ -235,12 +224,8 @@ export function useDerepostMutationForUser(handle: string) {
             return api.derepost(id);
         },
         onMutate: (id) => {
-            // Update the "reposted" property of the activity stored in the feed query cache
-            const noteQueryKey = QUERY_KEYS.feed(handle, PostType.Note);
-            const articleQueryKey = QUERY_KEYS.feed(handle, PostType.Article);
-
-            updateRepostCache(queryClient, noteQueryKey, id, false);
-            updateRepostCache(queryClient, articleQueryKey, id, false);
+            updateRepostCache(queryClient, QUERY_KEYS.feed, id, false);
+            updateRepostCache(queryClient, QUERY_KEYS.inbox, id, false);
         }
     });
 }
@@ -733,16 +718,17 @@ export function useAccountFollowsForUser(handle: string, type: AccountFollowsTyp
     });
 }
 
-export function useFeedForUser(handle: string, postType: PostType) {
-    const queryKey = QUERY_KEYS.feed(handle, postType);
+export function useFeedForUser(options: {enabled: boolean}) {
+    const queryKey = QUERY_KEYS.feed;
     const queryClient = useQueryClient();
 
     const feedQuery = useInfiniteQuery({
         queryKey,
+        enabled: options.enabled,
         async queryFn({pageParam}: {pageParam?: string}) {
             const siteUrl = await getSiteUrl();
-            const api = createActivityPubAPI(handle, siteUrl);
-            return api.getFeed(postType, pageParam).then((response) => {
+            const api = createActivityPubAPI('index', siteUrl);
+            return api.getFeed(pageParam).then((response) => {
                 return {
                     posts: response.posts.map(mapPostToActivity),
                     next: response.next
@@ -754,7 +740,7 @@ export function useFeedForUser(handle: string, postType: PostType) {
         }
     });
 
-    const updateActivity = (id: string, updated: Partial<Activity>) => {
+    const updateFeedActivity = (id: string, updated: Partial<Activity>) => {
         queryClient.setQueryData(queryKey, (current: {pages: {posts: Activity[]}[]} | undefined) => {
             if (!current) {
                 return current;
@@ -777,5 +763,53 @@ export function useFeedForUser(handle: string, postType: PostType) {
         });
     };
 
-    return {feedQuery, updateActivity};
+    return {feedQuery, updateFeedActivity};
+}
+
+export function useInboxForUser(options: {enabled: boolean}) {
+    const queryKey = QUERY_KEYS.inbox;
+    const queryClient = useQueryClient();
+
+    const inboxQuery = useInfiniteQuery({
+        queryKey,
+        enabled: options.enabled,
+        async queryFn({pageParam}: {pageParam?: string}) {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI('index', siteUrl);
+            return api.getInbox(pageParam).then((response) => {
+                return {
+                    posts: response.posts.map(mapPostToActivity),
+                    next: response.next
+                };
+            });
+        },
+        getNextPageParam(prevPage) {
+            return prevPage.next;
+        }
+    });
+
+    const updateInboxActivity = (id: string, updated: Partial<Activity>) => {
+        queryClient.setQueryData(queryKey, (current: {pages: {posts: Activity[]}[]} | undefined) => {
+            if (!current) {
+                return current;
+            }
+
+            return {
+                ...current,
+                pages: current.pages.map((page: {posts: Activity[]}) => {
+                    return {
+                        ...page,
+                        posts: page.posts.map((item: Activity) => {
+                            if (item.id === id) {
+                                return {...item, ...updated};
+                            }
+                            return item;
+                        })
+                    };
+                })
+            };
+        });
+    };
+
+    return {inboxQuery, updateInboxActivity};
 }

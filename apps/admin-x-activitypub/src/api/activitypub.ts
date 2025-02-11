@@ -473,10 +473,40 @@ export class ActivityPubAPI {
         };
     }
 
-    async getFeed(postType: PostType, next?: string): Promise<GetFeedResponse> {
-        const url = new URL(`.ghost/activitypub/feed/${this.handle}`, this.apiUrl);
+    async getFeed(next?: string): Promise<GetFeedResponse> {
+        const url = new URL(`.ghost/activitypub/feed`, this.apiUrl);
 
-        url.searchParams.set('type', postType.toString());
+        if (next) {
+            url.searchParams.set('next', next);
+        }
+
+        const json = await this.fetchJSON(url);
+
+        if (json === null) {
+            return {
+                posts: [],
+                next: null
+            };
+        }
+
+        if (!('posts' in json)) {
+            return {
+                posts: [],
+                next: null
+            };
+        }
+
+        const posts = Array.isArray(json.posts) ? json.posts : [];
+        const nextPage = 'next' in json && typeof json.next === 'string' ? json.next : null;
+
+        return {
+            posts,
+            next: nextPage
+        };
+    }
+
+    async getInbox(next?: string): Promise<GetFeedResponse> {
+        const url = new URL(`.ghost/activitypub/inbox`, this.apiUrl);
 
         if (next) {
             url.searchParams.set('next', next);

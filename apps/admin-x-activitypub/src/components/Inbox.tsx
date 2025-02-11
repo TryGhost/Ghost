@@ -12,11 +12,11 @@ import getUsername from '../utils/get-username';
 import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, Skeleton} from '@tryghost/shade';
 import {Heading, LoadingIndicator} from '@tryghost/admin-x-design-system';
-import {PostType} from '../api/activitypub';
 import {handleProfileClick} from '../utils/handle-profile-click';
 import {handleViewContent} from '../utils/content-handlers';
 import {
     useFeedForUser,
+    useInboxForUser,
     useSuggestedProfilesForUser,
     useUserDataForUser
 } from '../hooks/useActivityPubQueries';
@@ -31,13 +31,12 @@ interface InboxProps {
 const Inbox: React.FC<InboxProps> = ({layout}) => {
     const {updateRoute} = useRouting();
 
-    // Initialise the feed
-    const postType = layout === 'inbox'
-        ? PostType.Article
-        : PostType.Note;
+    const {inboxQuery, updateInboxActivity} = useInboxForUser({enabled: layout === 'inbox'});
+    const {feedQuery, updateFeedActivity} = useFeedForUser({enabled: layout === 'feed'});
 
-    const {feedQuery, updateActivity} = useFeedForUser('index', postType);
-    const {data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading} = feedQuery;
+    const feedQueryData = layout === 'inbox' ? inboxQuery : feedQuery;
+    const updateActivity = layout === 'inbox' ? updateInboxActivity : updateFeedActivity;
+    const {data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading} = feedQueryData;
 
     const activities = (data?.pages.flatMap(page => page.posts) ?? []);
 
