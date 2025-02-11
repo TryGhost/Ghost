@@ -6,8 +6,7 @@ import articleBodyStyles from '../articleBodyStyles';
 import getUsername from '../../utils/get-username';
 import {OptionProps, SingleValueProps, components} from 'react-select';
 
-import {type Activity} from '../activities/ActivityItem';
-import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
+import {Activity, ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, Icon, LoadingIndicator, Modal, Popover, Select, SelectOption} from '@tryghost/admin-x-design-system';
 import {renderTimestamp} from '../../utils/render-timestamp';
 import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
@@ -371,7 +370,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
 
     const {threadQuery, addToThread} = useThreadForUser('index', activityId);
     const {data: activityThread, isLoading: isLoadingThread} = threadQuery;
-    const activtyThreadActivityIdx = (activityThread?.items ?? []).findIndex(item => item.id === activityId);
+    const activtyThreadActivityIdx = (activityThread?.items ?? []).findIndex(item => item.object.id === activityId);
     const activityThreadChildren = (activityThread?.items ?? []).slice(activtyThreadActivityIdx + 1);
     const activityThreadParents = (activityThread?.items ?? []).slice(0, activtyThreadActivityIdx);
 
@@ -398,12 +397,14 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
             history
         });
     };
-    const navigateForward = (nextActivityId: string, nextObject: ObjectProperties, nextActor: ActorProperties, nextFocusReply: boolean) => {
+    const navigateForward = (_: string, nextObject: ObjectProperties, nextActor: ActorProperties, nextFocusReply: boolean) => {
         // Trigger the modal to show the next activity and add the existing
         // activity to the history so we can navigate back
 
         modal.show({
-            activityId: nextActivityId,
+            // We need to use the object as the API expects an object ID but
+            // returns a full activity object
+            activityId: nextObject.id,
             object: nextObject,
             actor: nextActor,
             updateActivity,
