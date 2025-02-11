@@ -1017,7 +1017,7 @@ jobs:
     with:
       package-name: '@tryghost/admin-x-activitypub'
       package-path: apps/admin-x-activitypub
-      node-version: ${{ env.NODE_VERSION }}
+      node-version: ${{ vars.NODE_VERSION }}
       dependency-cache-key: ${{ needs.job_setup.outputs.dependency_cache_key }}
       cdn-paths: |
         https://cdn.jsdelivr.net/ghost/admin-x-activitypub@0/dist/admin-x-activitypub.js
@@ -1031,7 +1031,7 @@ jobs:
     with:
       package-name: '@tryghost/portal'
       package-path: apps/portal
-      node-version: ${{ env.NODE_VERSION }}
+      node-version: ${{ vars.NODE_VERSION }}
       dependency-cache-key: ${{ needs.job_setup.outputs.dependency_cache_key }}
       cdn-paths: |
         https://cdn.jsdelivr.net/ghost/portal@~CURRENT_MINOR/umd/portal.min.js
@@ -1045,7 +1045,7 @@ jobs:
     with:
       package-name: '@tryghost/sodo-search'
       package-path: apps/sodo-search
-      node-version: ${{ env.NODE_VERSION }}
+      node-version: ${{ vars.NODE_VERSION }}
       dependency-cache-key: ${{ needs.job_setup.outputs.dependency_cache_key }}
       cdn-paths: |
         https://cdn.jsdelivr.net/ghost/sodo-search@~CURRENT_MINOR/umd/sodo-search.min.js
@@ -1060,7 +1060,7 @@ jobs:
     with:
       package-name: '@tryghost/comments-ui'
       package-path: apps/comments-ui
-      node-version: ${{ env.NODE_VERSION }}
+      node-version: ${{ vars.NODE_VERSION }}
       dependency-cache-key: ${{ needs.job_setup.outputs.dependency_cache_key }}
       cdn-paths: |
         https://cdn.jsdelivr.net/ghost/comments-ui@~CURRENT_MINOR/umd/comments-ui.min.js
