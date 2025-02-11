@@ -529,7 +529,19 @@ export function useSuggestedProfilesForUser(handle: string, limit = 3) {
         '@index@ghost.codenamejimmy.com',
         '@index@www.syphoncontinuity.com',
         '@index@www.cosmico.org',
-        '@index@silverhuang.com'
+        '@index@www.nightwater.email',
+        '@index@www.russbrown.design',
+        '@index@www.jeremyajorgensen.com',
+        '@index@www.savingsasaservice.com.au',
+        '@index@blogpocket-week.ghost.io',
+        '@index@www.bramadams.dev',
+        '@index@danielverastiqui.com',
+        '@mike@flipboard.social',
+        '@_elena@mastodon.social',
+        '@Gargron@mastodon.social',
+        '@quillmatiq@mastodon.social',
+        '@chrismessina@mastodon.xyz',
+        '@miaq@flipboard.social'
     ];
 
     const suggestedProfilesQuery = useQuery({
@@ -538,15 +550,20 @@ export function useSuggestedProfilesForUser(handle: string, limit = 3) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
 
+            // Get all profiles and filter out the ones we're following
             return Promise.allSettled(
                 suggestedHandles
                     .sort(() => Math.random() - 0.5)
-                    .slice(0, limit)
                     .map(suggestedHandle => api.getProfile(suggestedHandle))
             ).then((results) => {
-                return results
+                const profiles = results
                     .filter((result): result is PromiseFulfilledResult<Profile> => result.status === 'fulfilled')
-                    .map(result => result.value);
+                    .map(result => result.value)
+                    // Filter out profiles we're already following
+                    .filter(profile => !profile.isFollowing);
+
+                // Return only the requested number of profiles
+                return profiles.slice(0, limit);
             });
         }
     });
