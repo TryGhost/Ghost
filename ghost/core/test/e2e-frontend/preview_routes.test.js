@@ -24,6 +24,7 @@ describe('Frontend Routing: Preview Routes', function () {
         await testUtils.teardownDb();
         await testUtils.initData();
         await testUtils.fixtures.insertPostsAndTags();
+        await testUtils.fixtures.insertGatedPosts();
     }
 
     afterEach(function () {
@@ -62,6 +63,28 @@ describe('Frontend Routing: Preview Routes', function () {
                 // $('.poweredby').text().should.equal('Proudly published with Ghost');
                 // $('body.post-template').length.should.equal(1);
                 // $('article.post').length.should.equal(1);
+            });
+    });
+
+    it('should render draft as free member with ?memberStatus=free', async function () {
+        await request.get('/p/d52c42ae-2755-455c-80ec-70b2ec55c905/?memberStatus=free')
+            .expect('Content-Type', /html/)
+            .expect(200)
+            .expect(assertCorrectFrontendHeaders)
+            .expect((res) => {
+                res.text.should.match(/Before paywall/);
+                res.text.should.not.match(/After paywall/);
+            });
+    });
+
+    it('should render draft as paid member with ?memberStatus=paid', async function () {
+        await request.get('/p/d52c42ae-2755-455c-80ec-70b2ec55c905/?memberStatus=paid')
+            .expect('Content-Type', /html/)
+            .expect(200)
+            .expect(assertCorrectFrontendHeaders)
+            .expect((res) => {
+                res.text.should.match(/Before paywall/);
+                res.text.should.match(/After paywall/);
             });
     });
 
