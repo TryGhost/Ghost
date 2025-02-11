@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import {Button} from '@tryghost/admin-x-design-system';
+import {Button} from '@tryghost/shade';
 import {useEffect, useState} from 'react';
 import {useFollowMutationForUser, useUnfollowMutationForUser} from '../../hooks/useActivityPubQueries';
 
@@ -57,9 +57,9 @@ const FollowButton: React.FC<FollowButtonProps> = ({
         setIsFollowing(following);
     }, [following]);
 
-    const color = (type === 'primary') ? 'black' : 'grey';
-    const size = (type === 'primary') ? 'md' : 'sm';
-    const minWidth = (type === 'primary') ? 'min-w-[96px]' : 'min-w-[88px]';
+    const variant = (isFollowing ? 'outline' : (type === 'primary') ? 'default' : 'secondary');
+    const size = (type === 'primary') ? 'default' : 'sm';
+    const minWidth = (type === 'primary') ? 'min-w-[83.67px]' : 'min-w-[81.15px]';
 
     return (
         <Button
@@ -67,9 +67,8 @@ const FollowButton: React.FC<FollowButtonProps> = ({
                 className,
                 isFollowing && minWidth
             )}
-            color={isFollowing ? 'outline' : color}
-            label={isFollowing ? (isHovered ? 'Unfollow' : 'Following') : 'Follow'}
             size={size}
+            variant={variant}
             onClick={(event) => {
                 event?.preventDefault();
                 event?.stopPropagation();
@@ -77,7 +76,9 @@ const FollowButton: React.FC<FollowButtonProps> = ({
             }}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
-        />
+        >
+            {isFollowing ? (isHovered ? 'Unfollow' : 'Following') : 'Follow'}
+        </Button>
     );
 };
 
