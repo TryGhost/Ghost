@@ -61,8 +61,15 @@ class CaptchaService {
                 if (errorUtils.isGhostError(err)) {
                     return next(err);
                 } else {
+                    const message = 'Failed to verify hCaptcha token';
+
+                    logging.error(new InternalServerError({
+                        message,
+                        err
+                    }));
+
                     return next(new InternalServerError({
-                        message: 'Failed to verify hCaptcha token'
+                        message
                     }));
                 }
             }
