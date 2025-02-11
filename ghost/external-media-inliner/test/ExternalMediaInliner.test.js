@@ -898,6 +898,15 @@ describe('ExternalMediaInliner', function () {
             assert.equal(matches[0], 'https://example.com/image.jpg');
         });
 
+        it('Finds with full domain, http and https', function () {
+            const html = '<img src="http://example.com/image.jpg" /><img src="https://example.com/another-image.jpg" />';
+            const matches = ExternalMediaInliner.findMatches(html, 'https?://example.com');
+
+            assert.equal(matches.length, 2);
+            assert.equal(matches[0], 'http://example.com/image.jpg');
+            assert.equal(matches[1], 'https://example.com/another-image.jpg');
+        });
+
         it('Finds in with comma in string', function () {
             const html = `<img src="https://example.com/image/fetch/f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F7303a336-fa0e-4377-9378-123456abcdef_640x640.png
 " />`;
