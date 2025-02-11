@@ -9,14 +9,16 @@ import {
     type Profile,
     type SearchResults
 } from '../api/activitypub';
-import {Activity} from '../components/activities/ActivityItem';
+import {Activity} from '@tryghost/admin-x-framework/api/activitypub';
 import {
+    type QueryClient,
     type UseInfiniteQueryResult,
     useInfiniteQuery,
     useMutation,
     useQuery,
     useQueryClient
 } from '@tanstack/react-query';
+import {mapPostToActivity} from '../utils/posts';
 
 export type ActivityPubCollectionQueryResult<TData> = UseInfiniteQueryResult<ActivityPubCollectionResponse<TData>>;
 export type AccountFollowsQueryResult = UseInfiniteQueryResult<GetAccountFollowsResponse>;
@@ -63,7 +65,9 @@ const QUERY_KEYS = {
     ) => ['activities', handle, key, options].filter(value => value !== undefined),
     searchResults: (query: string) => ['search_results', query],
     suggestedProfiles: (limit: number) => ['suggested_profiles', limit],
-    thread: (id: string) => ['thread', id]
+    thread: (id: string) => ['thread', id],
+    feed: ['feed'],
+    inbox: ['inbox']
 };
 
 export function useOutboxForUser(handle: string) {
@@ -96,6 +100,36 @@ export function useLikedForUser(handle: string) {
     });
 }
 
+function updateLikedCache(queryClient: QueryClient, queryKey: string[], id: string, liked: boolean) {
+    queryClient.setQueriesData(queryKey, (current?: {pages: {posts: Activity[]}[]}) => {
+        if (current === undefined) {
+            return current;
+        }
+
+        return {
+            ...current,
+            pages: current.pages.map((page: {posts: Activity[]}) => {
+                return {
+                    ...page,
+                    posts: page.posts.map((item: Activity) => {
+                        if (item.object.id === id) {
+                            return {
+                                ...item,
+                                object: {
+                                    ...item.object,
+                                    liked: liked
+                                }
+                            };
+                        }
+
+                        return item;
+                    })
+                };
+            })
+        };
+    });
+}
+
 export function useLikeMutationForUser(handle: string) {
     const queryClient = useQueryClient();
 
@@ -107,35 +141,8 @@ export function useLikeMutationForUser(handle: string) {
             return api.like(id);
         },
         onMutate: (id) => {
-            // Update the "liked" property of the activity stored in the activities query cache
-            const queryKey = QUERY_KEYS.activities(handle);
-
-            queryClient.setQueriesData(queryKey, (current?: {pages: {data: Activity[]}[]}) => {
-                if (current === undefined) {
-                    return current;
-                }
-
-                return {
-                    ...current,
-                    pages: current.pages.map((page: {data: Activity[]}) => {
-                        return {
-                            ...page,
-                            data: page.data.map((item: Activity) => {
-                                if (item.object.id === id) {
-                                    return {
-                                        ...item,
-                                        object: {
-                                            ...item.object,
-                                            liked: true
-                                        }
-                                    };
-                                }
-                                return item;
-                            })
-                        };
-                    })
-                };
-            });
+            updateLikedCache(queryClient, QUERY_KEYS.feed, id, true);
+            updateLikedCache(queryClient, QUERY_KEYS.inbox, id, true);
         }
     });
 }
@@ -151,37 +158,40 @@ export function useUnlikeMutationForUser(handle: string) {
             return api.unlike(id);
         },
         onMutate: (id) => {
-            // Update the "liked" property of the activity stored in the activities query cache
-            const queryKey = QUERY_KEYS.activities(handle);
+            updateLikedCache(queryClient, QUERY_KEYS.feed, id, false);
+            updateLikedCache(queryClient, QUERY_KEYS.inbox, id, false);
+        }
+    });
+}
 
-            queryClient.setQueriesData(queryKey, (current?: {pages: {data: Activity[]}[]}) => {
-                if (current === undefined) {
-                    return current;
-                }
+function updateRepostCache(queryClient: QueryClient, queryKey: string[], id: string, reposted: boolean) {
+    queryClient.setQueriesData(queryKey, (current?: {pages: {posts: Activity[]}[]}) => {
+        if (current === undefined) {
+            return current;
+        }
 
+        return {
+            ...current,
+            pages: current.pages.map((page: {posts: Activity[]}) => {
                 return {
-                    ...current,
-                    pages: current.pages.map((page: {data: Activity[]}) => {
-                        return {
-                            ...page,
-                            data: page.data.map((item: Activity) => {
-                                if (item.object.id === id) {
-                                    return {
-                                        ...item,
-                                        object: {
-                                            ...item.object,
-                                            liked: false
-                                        }
-                                    };
+                    ...page,
+                    posts: page.posts.map((item: Activity) => {
+                        if (item.object.id === id) {
+                            return {
+                                ...item,
+                                object: {
+                                    ...item.object,
+                                    reposted: reposted,
+                                    repostCount: Math.max(reposted ? item.object.repostCount + 1 : item.object.repostCount - 1, 0)
                                 }
+                            };
+                        }
 
-                                return item;
-                            })
-                        };
+                        return item;
                     })
                 };
-            });
-        }
+            })
+        };
     });
 }
 
@@ -196,37 +206,8 @@ export function useRepostMutationForUser(handle: string) {
             return api.repost(id);
         },
         onMutate: (id) => {
-            // Update the "reposted" property of the activity stored in the activities query cache
-            const queryKey = QUERY_KEYS.activities(handle);
-
-            queryClient.setQueriesData(queryKey, (current?: {pages: {data: Activity[]}[]}) => {
-                if (current === undefined) {
-                    return current;
-                }
-
-                return {
-                    ...current,
-                    pages: current.pages.map((page: {data: Activity[]}) => {
-                        return {
-                            ...page,
-                            data: page.data.map((item: Activity) => {
-                                if (item.object.id === id) {
-                                    return {
-                                        ...item,
-                                        object: {
-                                            ...item.object,
-                                            reposted: true,
-                                            repostCount: item.object.repostCount + 1
-                                        }
-                                    };
-                                }
-
-                                return item;
-                            })
-                        };
-                    })
-                };
-            });
+            updateRepostCache(queryClient, QUERY_KEYS.feed, id, true);
+            updateRepostCache(queryClient, QUERY_KEYS.inbox, id, true);
         }
     });
 }
@@ -242,37 +223,8 @@ export function useDerepostMutationForUser(handle: string) {
             return api.derepost(id);
         },
         onMutate: (id) => {
-            // Update the "reposted" property of the activity stored in the activities query cache
-            const queryKey = QUERY_KEYS.activities(handle);
-
-            queryClient.setQueriesData(queryKey, (current?: {pages: {data: Activity[]}[]}) => {
-                if (current === undefined) {
-                    return current;
-                }
-
-                return {
-                    ...current,
-                    pages: current.pages.map((page: {data: Activity[]}) => {
-                        return {
-                            ...page,
-                            data: page.data.map((item: Activity) => {
-                                if (item.object.id === id) {
-                                    return {
-                                        ...item,
-                                        object: {
-                                            ...item.object,
-                                            reposted: false,
-                                            repostCount: item.object.repostCount - 1 < 0 ? 0 : item.object.repostCount - 1
-                                        }
-                                    };
-                                }
-
-                                return item;
-                            })
-                        };
-                    })
-                };
-            });
+            updateRepostCache(queryClient, QUERY_KEYS.feed, id, false);
+            updateRepostCache(queryClient, QUERY_KEYS.inbox, id, false);
         }
     });
 }
@@ -704,21 +656,29 @@ export function useNoteMutationForUser(handle: string) {
                 };
             });
 
-            // Update the activity stored in the activities query cache
-            const activitiesQueryKey = QUERY_KEYS.activities(handle, GET_ACTIVITIES_QUERY_KEY_FEED);
+            // Update the activity stored in the feed query cache
+            const feedQueryKey = QUERY_KEYS.feed;
 
-            queryClient.setQueriesData(activitiesQueryKey, (current?: {pages: {data: Activity[]}[]}) => {
+            queryClient.setQueriesData(feedQueryKey, (current?: {pages: {posts: Activity[]}[]}) => {
                 if (current === undefined) {
                     return current;
                 }
 
                 return {
                     ...current,
-                    pages: current.pages.map((page: {data: Activity[]}, index: number) => {
+                    pages: current.pages.map((page: {posts: Activity[]}, index: number) => {
                         if (index === 0) {
                             return {
                                 ...page,
-                                data: [activity, ...page.data]
+                                posts: [
+                                    {
+                                        ...activity,
+                                        // Use the object id as the post id as when we switchover to using
+                                        // posts fully we will not have access the activity id
+                                        id: activity.object.id
+                                    },
+                                    ...page.posts
+                                ]
                             };
                         }
 
@@ -755,4 +715,100 @@ export function useAccountFollowsForUser(handle: string, type: AccountFollowsTyp
             return prevPage.next;
         }
     });
+}
+
+export function useFeedForUser(options: {enabled: boolean}) {
+    const queryKey = QUERY_KEYS.feed;
+    const queryClient = useQueryClient();
+
+    const feedQuery = useInfiniteQuery({
+        queryKey,
+        enabled: options.enabled,
+        async queryFn({pageParam}: {pageParam?: string}) {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI('index', siteUrl);
+            return api.getFeed(pageParam).then((response) => {
+                return {
+                    posts: response.posts.map(mapPostToActivity),
+                    next: response.next
+                };
+            });
+        },
+        getNextPageParam(prevPage) {
+            return prevPage.next;
+        }
+    });
+
+    const updateFeedActivity = (id: string, updated: Partial<Activity>) => {
+        queryClient.setQueryData(queryKey, (current: {pages: {posts: Activity[]}[]} | undefined) => {
+            if (!current) {
+                return current;
+            }
+
+            return {
+                ...current,
+                pages: current.pages.map((page: {posts: Activity[]}) => {
+                    return {
+                        ...page,
+                        posts: page.posts.map((item: Activity) => {
+                            if (item.id === id) {
+                                return {...item, ...updated};
+                            }
+                            return item;
+                        })
+                    };
+                })
+            };
+        });
+    };
+
+    return {feedQuery, updateFeedActivity};
+}
+
+export function useInboxForUser(options: {enabled: boolean}) {
+    const queryKey = QUERY_KEYS.inbox;
+    const queryClient = useQueryClient();
+
+    const inboxQuery = useInfiniteQuery({
+        queryKey,
+        enabled: options.enabled,
+        async queryFn({pageParam}: {pageParam?: string}) {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI('index', siteUrl);
+            return api.getInbox(pageParam).then((response) => {
+                return {
+                    posts: response.posts.map(mapPostToActivity),
+                    next: response.next
+                };
+            });
+        },
+        getNextPageParam(prevPage) {
+            return prevPage.next;
+        }
+    });
+
+    const updateInboxActivity = (id: string, updated: Partial<Activity>) => {
+        queryClient.setQueryData(queryKey, (current: {pages: {posts: Activity[]}[]} | undefined) => {
+            if (!current) {
+                return current;
+            }
+
+            return {
+                ...current,
+                pages: current.pages.map((page: {posts: Activity[]}) => {
+                    return {
+                        ...page,
+                        posts: page.posts.map((item: Activity) => {
+                            if (item.id === id) {
+                                return {...item, ...updated};
+                            }
+                            return item;
+                        })
+                    };
+                })
+            };
+        });
+    };
+
+    return {inboxQuery, updateInboxActivity};
 }

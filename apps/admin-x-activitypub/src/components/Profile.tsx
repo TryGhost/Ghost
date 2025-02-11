@@ -1,7 +1,7 @@
 import React, {useEffect, useRef, useState} from 'react';
 
 import NiceModal from '@ebay/nice-modal-react';
-import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
+import {Activity,ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, Heading, List, LoadingIndicator, NoValueLabel, Tab, TabView} from '@tryghost/admin-x-design-system';
 import {Skeleton} from '@tryghost/shade';
 
@@ -23,7 +23,6 @@ import FollowButton from './global/FollowButton';
 import MainNavigation from './navigation/MainNavigation';
 import Separator from './global/Separator';
 import ViewProfileModal from './modals/ViewProfileModal';
-import {type Activity} from '../components/activities/ActivityItem';
 
 interface UseInfiniteScrollTabProps<TData> {
     useDataHook: (key: string) => ActivityPubCollectionQueryResult<TData> | AccountFollowsQueryResult;

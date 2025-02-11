@@ -24,7 +24,6 @@ import {handleProfileClick} from '../utils/handle-profile-click';
 
 interface NotificationsProps {}
 
-// eslint-disable-next-line no-shadow
 enum ACTIVITY_TYPE {
     CREATE = 'Create',
     LIKE = 'Like',

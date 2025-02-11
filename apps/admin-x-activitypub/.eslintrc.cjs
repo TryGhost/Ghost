@@ -17,6 +17,9 @@ module.exports = {
         }
     },
     rules: {
+        'no-shadow': 'off',
+        '@typescript-eslint/no-shadow': 'error',
+
         // sort multiple import lines into alphabetical groups
         'ghost/sort-imports-es6-autofix/sort-imports-es6': ['error', {
             memberSyntaxSortOrder: ['none', 'all', 'single', 'multiple']

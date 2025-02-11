@@ -1,6 +1,6 @@
 import ArticleModal from '../components/feed/ArticleModal';
 import NiceModal from '@ebay/nice-modal-react';
-import {type Activity} from '../components/activities/ActivityItem';
+import {type Activity} from '@tryghost/admin-x-framework/api/activitypub';
 
 export const handleViewContent = (
     activity: Activity,
