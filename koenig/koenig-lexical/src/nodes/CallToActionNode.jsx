@@ -13,6 +13,8 @@ export const INSERT_CTA_COMMAND = createCommand();
 export class CallToActionNode extends BaseCallToActionNode {
     __ctaHtmlEditor;
     __ctaHtmlEditorInitialState;
+    __sponsorLabelHtmlEditor;
+    __sponsorLabelHtmlEditorInitialState;
 
     static kgMenu = {
         label: 'Call to Action',
@@ -40,10 +42,14 @@ export class CallToActionNode extends BaseCallToActionNode {
 
         // set up nested editor instances
         setupNestedEditor(this, '__ctaHtmlEditor', {editor: dataset.ctaHtmlEditor, nodes: BASIC_NODES});
+        setupNestedEditor(this, '__sponsorLabelHtmlEditor', {editor: dataset.sponsorLabelHtmlEditor, nodes: BASIC_NODES});
 
         // populate nested editors on initial construction
         if (!dataset.ctaHtmlEditor && dataset.textValue) {
             populateNestedEditor(this, '__ctaHtmlEditor', `${dataset.textValue}`); // we serialize with no wrapper
+        }
+        if (!dataset.sponsorLabelHtmlEditor) {
+            populateNestedEditor(this, '__sponsorLabelHtmlEditor', `${dataset.sponsorLabel || '<p><span style="white-space: pre-wrap;">SPONSORED</span></p>'}`);
         }
     }
 
@@ -53,6 +59,8 @@ export class CallToActionNode extends BaseCallToActionNode {
         const self = this.getLatest();
         dataset.ctaHtmlEditor = self.__ctaHtmlEditor;
         dataset.ctaHtmlEditorInitialState = self.__ctaHtmlEditorInitialState;
+        dataset.sponsorLabelHtmlEditor = self.__sponsorLabelHtmlEditor;
+        dataset.sponsorLabelHtmlEditorInitialState = self.__sponsorLabelHtmlEditorInitialState;
 
         return dataset;
     }
@@ -67,6 +75,14 @@ export class CallToActionNode extends BaseCallToActionNode {
                 const html = $generateHtmlFromNodes(this.__ctaHtmlEditor, null);
                 const cleanedHtml = cleanBasicHtml(html, {allowBr: true});
                 json.textValue = cleanedHtml;
+            });
+        }
+
+        if (this.__sponsorLabelHtmlEditor) {
+            this.__sponsorLabelHtmlEditor.getEditorState().read(() => {
+                const html = $generateHtmlFromNodes(this.__sponsorLabelHtmlEditor, null);
+                const cleanedHtml = cleanBasicHtml(html, {allowBr: false});
+                json.sponsorLabel = cleanedHtml;
             });
         }
 
@@ -93,6 +109,8 @@ export class CallToActionNode extends BaseCallToActionNode {
                     layout={this.layout}
                     nodeKey={this.getKey()}
                     showButton={this.showButton}
+                    sponsorLabelHtmlEditor={this.__sponsorLabelHtmlEditor}
+                    sponsorLabelHtmlEditorInitialState={this.__sponsorLabelHtmlEditorInitialState}
                     textValue={this.textValue}
                 />
             </KoenigCardWrapper>

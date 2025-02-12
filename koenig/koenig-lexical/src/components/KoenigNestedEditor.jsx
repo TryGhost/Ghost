@@ -15,6 +15,7 @@ const Placeholder = ({text = 'Type here', className = ''}) => {
 const KoenigNestedEditor = ({
     initialEditor,
     initialEditorState,
+    initialTheme,
     nodes = 'basic',
     placeholderText = '',
     textClassName = '',
@@ -25,6 +26,7 @@ const KoenigNestedEditor = ({
     hasSettingsPanel = false,
     defaultKoenigEnterBehaviour = false,
     hiddenFormats = [],
+    useDefaultClasses = true,
     dataTestId,
     children
 }) => {
@@ -36,6 +38,7 @@ const KoenigNestedEditor = ({
             initialEditor={initialEditor}
             initialEditorState={initialEditorState}
             initialNodes={initialNodes}
+            initialTheme={initialTheme}
         >
             <KoenigComposableEditor
                 className={textClassName}
@@ -45,6 +48,7 @@ const KoenigNestedEditor = ({
                 isDragEnabled={false}
                 markdownTransformers={markdownTransformers}
                 placeholder={<Placeholder className={placeholderClassName} text={placeholderText} />}
+                useDefaultClasses={useDefaultClasses}
             >
                 {singleParagraph && <RestrictContentPlugin paragraphs={1} />}
 

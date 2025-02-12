@@ -42,6 +42,7 @@ const KoenigComposableEditor = ({
     inheritStyles = false,
     isSnippetsEnabled = true,
     hiddenFormats = [],
+    useDefaultClasses = true,
     dataTestId
 }) => {
     const {historyState} = useSharedHistoryContext();
@@ -89,14 +90,14 @@ const KoenigComposableEditor = ({
     return (
         <div
             ref={onWrapperRef}
-            className={`koenig-lexical ${inheritStyles ? 'kg-inherit-styles' : ''} ${darkMode ? 'dark' : ''} ${className}`}
+            className={`${useDefaultClasses ? 'koenig-lexical' : ''} ${inheritStyles ? 'kg-inherit-styles' : ''} ${darkMode ? 'dark' : ''} ${className}`}
             data-koenig-dnd-disabled={!isDragEnabled}
             data-testid={dataTestId}
         >
             <RichTextPlugin
                 contentEditable={
                     <div ref={onContentEditableRef} data-kg="editor">
-                        <ContentEditable className="kg-prose" readOnly={readOnly} />
+                        <ContentEditable className={useDefaultClasses ? 'kg-prose' : ''} readOnly={readOnly} />
                     </div>
                 }
                 ErrorBoundary={KoenigErrorBoundary}

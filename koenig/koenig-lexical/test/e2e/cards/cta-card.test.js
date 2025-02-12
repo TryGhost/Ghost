@@ -25,6 +25,7 @@ test.describe('Call To Action Card', async () => {
             buttonUrl: 'http://someblog.com/somepost',
             hasImage: true,
             hasSponsorLabel: true,
+            sponsorLabel: '<p><span style="white-space: pre-wrap;">SPONSORED</span></p>',
             imageUrl: '/content/images/2022/11/koenig-lexical.jpg',
             layout: 'minimal',
             showButton: true,
@@ -267,10 +268,54 @@ test.describe('Call To Action Card', async () => {
         await focusEditor(page);
         await insertCard(page, {cardName: 'call-to-action'});
         await page.click('[data-testid="sponsor-label-toggle"]');
-        expect(await page.isVisible('[data-testid="sponsor-label"]')).toBe(false);
-
+        expect(await page.isVisible('[data-testid="sponsor-label-editor"]')).toBe(false);
         await page.click('[data-testid="sponsor-label-toggle"]');
-        expect(await page.isVisible('[data-testid="sponsor-label"]')).toBe(true);
+        expect(await page.isVisible('[data-testid="sponsor-label-editor"]')).toBe(true);
+    });
+
+    test('sponsor label is active by default', async function () {
+        await focusEditor(page);
+        await insertCard(page, {cardName: 'call-to-action'});
+        const sponsorLabel = await page.locator('[data-testid="sponsor-label-editor"]');
+        await expect(sponsorLabel).toBeVisible();
+    });
+
+    test('sponsor label text is SPONSORED by default', async function () {
+        await focusEditor(page);
+        await insertCard(page, {cardName: 'call-to-action'});
+        const sponsorLabel = await page.locator('[data-testid="sponsor-label-editor"]');
+        await expect(sponsorLabel).toContainText('SPONSORED');
+    });
+
+    test('can modify sponsor label text', async function () {
+        await focusEditor(page);
+        await insertCard(page, {cardName: 'call-to-action'});
+        const sponsorEditor = await page.locator('[data-testid="sponsor-label-editor"]');
+        await page.click('[data-testid="sponsor-label-editor"]');
+        // clear the default text by hitting backspace 9 times
+        for (let i = 0; i < 9; i++) {
+            await page.keyboard.press('Backspace');
+        }
+        await expect(sponsorEditor).toContainText('');
+        await page.keyboard.type('Sponsored by Ghost');
+        const content = page.locator('[data-testid="sponsor-label-editor"]');
+        await expect(content).toContainText('Sponsored by Ghost');
+    });
+
+    test('content editor placeholder is visible', async function () {
+        await focusEditor(page);
+        await insertCard(page, {cardName: 'call-to-action'});
+        const contentEditor = await page.locator('[data-testid="cta-card-content-editor"]');
+        await expect(contentEditor).toContainText('Write something worth clicking...');
+    });
+
+    test('can modify content editor text', async function () {
+        await focusEditor(page);
+        await insertCard(page, {cardName: 'call-to-action'});
+        await page.click('[data-testid="cta-card-content-editor"]');
+        await page.keyboard.type('This is a new CTA Card.');
+        const content = page.locator('[data-testid="cta-card-content-editor"]');
+        await expect(content).toContainText('This is a new CTA Card.');
     });
 
     test('can change background colours', async function () {

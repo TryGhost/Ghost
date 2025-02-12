@@ -5,9 +5,11 @@ import PropTypes from 'prop-types';
 import React, {useState} from 'react';
 import ReplacementStringsPlugin from '../../../plugins/ReplacementStringsPlugin';
 import clsx from 'clsx';
+import defaultTheme from '../../../themes/default';
 import {Button} from '../Button';
 import {ButtonGroupSetting, ColorOptionSetting, ColorPickerSetting, InputSetting, InputUrlSetting, MediaUploadSetting, SettingsPanel, ToggleSetting} from '../SettingsPanel';
 import {ReadOnlyOverlay} from '../ReadOnlyOverlay';
+import {RestrictContentPlugin} from '../../../index.js';
 import {VisibilitySettings} from '../VisibilitySettings';
 import {getAccentColor} from '../../../utils/getAccentColor';
 import {textColorForBackgroundColor} from '@tryghost/color-utils';
@@ -20,6 +22,11 @@ export const CTA_COLORS = {
     green: 'bg-green/10 border-transparent',
     yellow: 'bg-yellow/10 border-transparent',
     red: 'bg-red/10 border-transparent'
+};
+
+const sponsoredLabelTheme = {
+    ...defaultTheme,
+    link: 'text-accent'
 };
 
 export const ctaColorPicker = [
@@ -69,6 +76,8 @@ export function CtaCard({
     hasSponsorLabel = false,
     htmlEditor,
     htmlEditorInitialState,
+    sponsorLabelHtmlEditor,
+    sponsorLabelHtmlEditorInitialState,
     imageSrc = '',
     isEditing = false,
     layout = 'immersive',
@@ -212,13 +221,28 @@ export function CtaCard({
                     'pb-3': color === 'none' && hasSponsorLabel
                 }
             )} data-cta-layout={layout}>
+
                 {/* Sponsor label */}
                 {hasSponsorLabel && (
                     <div className={clsx(
-                        'not-kg-prose py-3',
+                        'py-3',
                         {'mx-6': color !== 'none'}
                     )}>
-                        <p className="font-sans text-2xs font-semibold uppercase leading-8 tracking-normal text-grey-900/40 dark:text-grey-100/40" data-testid="sponsor-label">Sponsored</p>
+                        <KoenigNestedEditor
+                            autoFocus={true}
+                            dataTestId={'sponsor-label-editor'}
+                            hasSettingsPanel={true}
+                            initialEditor={sponsorLabelHtmlEditor}
+                            initialEditorState={sponsorLabelHtmlEditorInitialState}
+                            initialTheme={sponsoredLabelTheme}
+                            nodes='basic'
+                            textClassName={clsx(
+                                'not-kg-prose w-full whitespace-normal font-sans !text-xs font-semibold uppercase leading-8 tracking-normal text-grey-900/40 dark:text-grey-100/40'
+                            )}
+                            useDefaultClasses={false}
+                        >
+                            <RestrictContentPlugin allowBr={false} paragraphs={1} />
+                        </KoenigNestedEditor>
                     </div>
                 )}
 
@@ -326,6 +350,31 @@ CtaCard.propTypes = {
     onFileChange: PropTypes.func,
     setFileInputRef: PropTypes.func,
     onRemoveMedia: PropTypes.func,
+    sponsorLabelHtmlEditor: PropTypes.object,
+    sponsorLabelHtmlEditorInitialState: PropTypes.object,
+    visibilityOptions: PropTypes.object,
+    toggleVisibility: PropTypes.func
+};
+
+CtaCard.defaultProps = {
+    buttonText: '',
+    buttonUrl: '',
+    buttonColor: '',
+    buttonTextColor: '',
+    color: 'none',
+    hasSponsorLabel: false,
+    imageSrc: '',
+    isEditing: false,
+    layout: 'immersive',
+    showButton: false,
+    updateHasSponsorLabel: () => {},
+    updateShowButton: () => {},
+    updateLayout: () => {},
+    handleColorChange: () => {},
+    handleButtonColor: () => {},
+    onFileChange: () => {},
+    setFileInputRef: () => {},
+    onRemoveMedia: () => {},
     visibilityOptions: PropTypes.object,
     toggleVisibility: PropTypes.func
 };

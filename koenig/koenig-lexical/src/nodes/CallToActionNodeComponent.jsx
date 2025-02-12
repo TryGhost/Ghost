@@ -23,7 +23,9 @@ export const CallToActionNodeComponent = ({
     buttonColor,
     htmlEditor,
     htmlEditorInitialState,
-    buttonTextColor
+    buttonTextColor,
+    sponsorLabelHtmlEditor,
+    sponsorLabelHtmlEditorInitialState
 }) => {
     const [editor] = useLexicalComposerContext();
     const {isEditing, isSelected, setEditing} = React.useContext(CardContext);
@@ -139,6 +141,8 @@ export const CallToActionNodeComponent = ({
                 setEditing={setEditing}
                 setFileInputRef={ref => fileInputRef.current = ref}
                 showButton={showButton}
+                sponsorLabelHtmlEditor={sponsorLabelHtmlEditor}
+                sponsorLabelHtmlEditorInitialState={sponsorLabelHtmlEditorInitialState}
                 text={textValue}
                 toggleVisibility={toggleVisibility}
                 updateButtonText={handleButtonTextChange}
