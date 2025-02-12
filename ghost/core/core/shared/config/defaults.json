@@ -130,13 +130,13 @@
         "blocked_email_domains": []
     },
     "caching": {
+        "301": {
+            "maxAge": 31536000
+        },
         "frontend": {
             "maxAge": 0
         },
         "publicAssets": {
-            "maxAge": 31536000
-        },
-        "301": {
             "maxAge": 31536000
         },
         "customRedirects": {
@@ -233,18 +233,38 @@
     "gravatar": {
         "url": "https://www.gravatar.com/avatar/{hash}?s={size}&r={rating}&d={_default}"
     },
-    "milestones":
-        {
-            "arr": [
-                {
-                    "currency": "usd",
-                    "values": [0, 100, 1000, 10000, 50000, 100000, 250000, 500000, 1000000]
-                }
-            ],
-            "members": [0, 100, 1000, 10000, 25000, 50000, 100000, 250000, 500000, 1000000],
-            "minDaysSinceImported": 7,
-            "minDaysSinceLastEmail": 14
-        },
+    "milestones": {
+        "arr": [
+            {
+                "currency": "usd",
+                "values": [
+                    0,
+                    100,
+                    1000,
+                    10000,
+                    50000,
+                    100000,
+                    250000,
+                    500000,
+                    1000000
+                ]
+            }
+        ],
+        "members": [
+            0,
+            100,
+            1000,
+            10000,
+            25000,
+            50000,
+            100000,
+            250000,
+            500000,
+            1000000
+        ],
+        "minDaysSinceImported": 7,
+        "minDaysSinceLastEmail": 14
+    },
     "bulkEmail": {
         "batchSize": 1000,
         "captureLinkClickBadMemberUuid": false

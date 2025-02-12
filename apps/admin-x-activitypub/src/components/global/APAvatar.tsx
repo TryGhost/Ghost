@@ -5,6 +5,7 @@ import clsx from 'clsx';
 import getUsername from '../../utils/get-username';
 import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Icon} from '@tryghost/admin-x-design-system';
+import {Skeleton} from '@tryghost/shade';
 
 type AvatarSize = '2xs' | 'xs' | 'sm' | 'lg' | 'notification';
 
@@ -17,9 +18,10 @@ interface APAvatarProps {
         handle?: string;
     } | undefined;
     size?: AvatarSize;
+    isLoading?: boolean;
 }
 
-const APAvatar: React.FC<APAvatarProps> = ({author, size}) => {
+const APAvatar: React.FC<APAvatarProps> = ({author, size, isLoading = false}) => {
     let iconSize = 18;
     let containerClass = `shrink-0 items-center justify-center overflow-hidden relative z-10 flex ${size === 'lg' ? '' : 'hover:opacity-80 cursor-pointer'}`;
     let imageClass = 'z-10 object-cover';
@@ -28,10 +30,6 @@ const APAvatar: React.FC<APAvatarProps> = ({author, size}) => {
     useEffect(() => {
         setIconUrl(author?.icon?.url);
     }, [author?.icon?.url]);
-
-    if (!author) {
-        return null;
-    }
 
     switch (size) {
     case '2xs':
@@ -63,8 +61,12 @@ const APAvatar: React.FC<APAvatarProps> = ({author, size}) => {
         break;
     }
 
+    if (!author || isLoading) {
+        return <Skeleton className={imageClass} containerClassName={containerClass} />;
+    }
+
     if (!iconUrl) {
-        containerClass = clsx(containerClass, 'bg-grey-100');
+        containerClass = clsx(containerClass, 'bg-gray-100');
     }
 
     const handle = author?.handle || getUsername(author as ActorProperties);
@@ -99,7 +101,7 @@ const APAvatar: React.FC<APAvatarProps> = ({author, size}) => {
             onClick={onClick}
         >
             <Icon
-                colorClass='text-grey-600'
+                colorClass='text-gray-600'
                 name='user'
                 size={iconSize}
             />

@@ -65,7 +65,6 @@
 @import "layouts/post-preview.css";
 @import "layouts/dashboard.css";
 @import "layouts/tiers.css";
-@import "layouts/offers.css";
 @import "layouts/explore.css";
 
 :root {
@@ -255,7 +254,7 @@ input:focus,
 }
 
 .gh-btn-black:not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red):hover,
-.gh-btn-primary:not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red):not(.gh-portal-settings-actions .gh-btn-primary):hover {
+.gh-btn-primary:not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red):hover {
     background: var(--black) !important;
 }
 
@@ -702,8 +701,7 @@ input:focus,
 }
 
 .ember-power-select-group .ember-power-select-option[aria-current=true],
-.settings-tag .tag-edit-button.active,
-.gh-portal-site-frame-cover {
+.settings-tag .tag-edit-button.active {
     background: var(--whitegrey);
 }
 
@@ -890,8 +888,7 @@ input:focus,
     border-color: var(--lightgrey)
 }
 
-.gh-members-help-card,
-.gh-offers-help-card {
+.gh-members-help-card {
     background: var(--dark-main-bg-color);
 }
 
@@ -1027,40 +1024,8 @@ input:focus,
     background: var(--white);
 }
 
-/* Offers */
 .gh-btn-green svg {
     fill: #fff !important;
-}
-
-.gh-offers-help-card .gh-btn {
-    background: var(--whitegrey) !important;
-}
-
-/* Portal */
-.gh-portal-settings-maintabs {
-    border: 1px solid color-mod(var(--darkgrey) l(-27%) blackness(+15%));
-}
-
-.gh-portal-page-url-container {
-    color: var(--darkgrey);
-    border-color: color-mod(var(--lightgrey));
-    background: color-mod(var(--lightgrey));
-}
-
-.gh-portal-settings-maintabs li:not(:last-of-type) {
-    border-right: 1px solid color-mod(var(--darkgrey) l(-27%) blackness(+15%));
-}
-
-.gh-portal-settings-main {
-    border-left: 1px solid var(--hairline-color-1);
-}
-
-.gh-portal-setting-sectionheading {
-    border-bottom: 1px solid var(--hairline-color-1);
-}
-
-.gh-portal-links-container {
-    background: var(--main-color-content-greybg)
 }
 
 .gh-dashboard-box {
@@ -1224,7 +1189,6 @@ kbd {
 .gh-posts-placeholder,
 .gh-tags-placeholder,
 .gh-members-empty .gh-members-placeholder,
-.gh-offers-list-cta .discount-bubble,
 .no-posts .gh-members-placeholder {
     fill: var(--midgrey-d2);
 }
@@ -1245,37 +1209,6 @@ kbd {
 
 .explore-permissions {
     background: var(--mainmenu-color-hover-bg);
-}
-
-.gh-offer-type-container {
-    background: var(--lightgrey);
-    border-color: transparent;
-}
-
-.gh-offer-type-container .gh-radio-label {
-    color: var(--black);
-}
-
-.gh-offer-type-container .gh-radio.active .gh-radio-button:before {
-    box-shadow: none;
-    border-color: var(--white);
-}
-
-.gh-offer-type-container .gh-radio:not(:first-child) {
-    border-color: transparent;
-}
-
-.gh-offer-type-container .gh-radio[disabled] {
-    opacity: 1;
-    background: #0e0f11;
-}
-
-.gh-offer-type-container .gh-radio[disabled] .gh-radio-button {
-    opacity: 0.5
-}
-
-.gh-offer-type-container .gh-radio[disabled] .gh-radio-label, .gh-offer-type-container .gh-radio[disabled] .gh-radio-desc {
-    color: #4d4f52;
 }
 
 /* Settings Links */
@@ -1374,16 +1307,6 @@ kbd {
 
 .gh-posts-list-item-group[data-selected]::after {
     opacity: 0.13 !important;
-}
-
-.gh-portal-settings-stripefooter {
-    border-color: var(--lightgrey);
-}
-
-.gh-portal-settings-actions .gh-btn-primary,
-.gh-portal-settings-actions .gh-btn-primary:hover {
-    background: var(--green) !important;
-    color: #fff;
 }
 
 /* Mentions */
