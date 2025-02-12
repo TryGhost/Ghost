@@ -478,7 +478,7 @@ module.exports = class RouterController {
                 ...data
             });
         } else if (type === 'donation') {
-            const rawText = req.body.personalNoteText;
+            const rawText = req.body.personalNoteText || 'Add a personal note';
             if (rawText && typeof rawText !== 'string' || rawText.length > 255) {
                 throw new BadRequestError({
                     message: 'Invalid personalNoteText, possibly an i18n error.'
