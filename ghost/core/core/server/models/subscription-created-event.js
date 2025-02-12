@@ -3,6 +3,7 @@ const ghostBookshelf = require('./base');
 
 const SubscriptionCreatedEvent = ghostBookshelf.Model.extend({
     tableName: 'members_subscription_created_events',
+    hasTimestamps: false, // if true (default), requires an updated_at column and schema changes
 
     member() {
         return this.belongsTo('Member', 'member_id', 'id');
