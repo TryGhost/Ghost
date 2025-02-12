@@ -38,8 +38,8 @@ describe('Media API', function () {
                 .attach('thumbnail', path.join(__dirname, '/../../utils/fixtures/images/ghost-logo.png'))
                 .expect(201);
 
-            res.body.media[0].url.should.match(new RegExp(`${config.get('url')}/content/media/\\d+/\\d+/sample_640x360-\\w{16}\\.mp4`));
-            res.body.media[0].thumbnail_url.should.match(new RegExp(`${config.get('url')}/content/media/\\d+/\\d+/sample_640x360_thumb-\\w{16}\\.png`));
+            res.body.media[0].url.should.match(new RegExp(`${config.get('url')}/content/media/\\d+/\\d+/sample_640x360.mp4`));
+            res.body.media[0].thumbnail_url.should.match(new RegExp(`${config.get('url')}/content/media/\\d+/\\d+/sample_640x360_thumb.png`));
             res.body.media[0].ref.should.equal('https://ghost.org/sample_640x360.mp4');
 
             media.push(res.body.media[0].url.replace(config.get('url'), ''));
@@ -54,7 +54,7 @@ describe('Media API', function () {
                 .attach('file', path.join(__dirname, '/../../utils/fixtures/media/sample_640x360.webm'))
                 .expect(201);
 
-            res.body.media[0].url.should.match(new RegExp(`${config.get('url')}/content/media/\\d+/\\d+/sample_640x360-\\w{16}\\.webm`));
+            res.body.media[0].url.should.match(new RegExp(`${config.get('url')}/content/media/\\d+/\\d+/sample_640x360.webm`));
             should(res.body.media[0].thumbnail_url).eql(null);
             res.body.media[0].ref.should.equal('https://ghost.org/sample_640x360.webm');
 
@@ -70,7 +70,7 @@ describe('Media API', function () {
                 .attach('thumbnail', path.join(__dirname, '/../../utils/fixtures/images/ghost-logo.png'))
                 .expect(201);
 
-            res.body.media[0].url.should.match(new RegExp(`${config.get('url')}/content/media/\\d+/\\d+/sample_640x360-\\w{16}\\.ogv`));
+            res.body.media[0].url.should.match(new RegExp(`${config.get('url')}/content/media/\\d+/\\d+/sample_640x360.ogv`));
             res.body.media[0].ref.should.equal('https://ghost.org/sample_640x360.ogv');
 
             media.push(res.body.media[0].url.replace(config.get('url'), ''));
@@ -84,7 +84,7 @@ describe('Media API', function () {
                 .attach('file', path.join(__dirname, '/../../utils/fixtures/media/sample.mp3'))
                 .expect(201);
 
-            res.body.media[0].url.should.match(new RegExp(`${config.get('url')}/content/media/\\d+/\\d+/sample-\\w{16}\\.mp3`));
+            res.body.media[0].url.should.match(new RegExp(`${config.get('url')}/content/media/\\d+/\\d+/sample.mp3`));
             res.body.media[0].ref.should.equal('audio_file_123');
 
             media.push(res.body.media[0].url.replace(config.get('url'), ''));
@@ -98,7 +98,7 @@ describe('Media API', function () {
                 .attach('file', path.join(__dirname, '/../../utils/fixtures/media/sample.m4a'), {filename: 'audio-mp4.m4a', contentType: 'audio/mp4'})
                 .expect(201);
 
-            res.body.media[0].url.should.match(new RegExp(`${config.get('url')}/content/media/\\d+/\\d+/audio-mp4-\\w{16}\\.m4a`));
+            res.body.media[0].url.should.match(new RegExp(`${config.get('url')}/content/media/\\d+/\\d+/audio-mp4.m4a`));
             res.body.media[0].ref.should.equal('audio_file_mp4');
 
             media.push(res.body.media[0].url.replace(config.get('url'), ''));
@@ -112,7 +112,7 @@ describe('Media API', function () {
                 .attach('file', path.join(__dirname, '/../../utils/fixtures/media/sample.m4a'), {filename: 'audio-x-m4a.m4a', contentType: 'audio/x-m4a'})
                 .expect(201);
 
-            res.body.media[0].url.should.match(new RegExp(`${config.get('url')}/content/media/\\d+/\\d+/audio-x-m4a-\\w{16}\\.m4a`));
+            res.body.media[0].url.should.match(new RegExp(`${config.get('url')}/content/media/\\d+/\\d+/audio-x-m4a.m4a`));
             res.body.media[0].ref.should.equal('audio_file_x_m4a');
 
             media.push(res.body.media[0].url.replace(config.get('url'), ''));
@@ -188,7 +188,7 @@ describe('Media API', function () {
                 .attach('thumbnail', path.join(__dirname, '/../../utils/fixtures/images/ghost-logo.png'))
                 .expect(201);
 
-            res.body.media[0].ref.should.match(/https:\/\/ghost\.org\/sample_640x360.mp4/);
+            res.body.media[0].ref.should.equal('https://ghost.org/sample_640x360.mp4');
 
             media.push(res.body.media[0].url.replace(config.get('url'), ''));
             media.push(res.body.media[0].thumbnail_url.replace(config.get('url'), ''));
@@ -201,8 +201,8 @@ describe('Media API', function () {
                 .attach('file', path.join(__dirname, '/../../utils/fixtures/images/ghosticon.jpg'))
                 .expect(200);
 
-            const mediaUrlWithoutExt = res.body.media[0].url.replace('.mp4', '');
-            thumbnailRes.body.media[0].url.should.match(new RegExp(`${mediaUrlWithoutExt}_thumb-\\w{16}\\.jpg`));
+            const thumbnailUrl = res.body.media[0].url.replace('.mp4', '_thumb.jpg');
+            thumbnailRes.body.media[0].url.should.equal(thumbnailUrl);
             thumbnailRes.body.media[0].ref.should.equal('updated_thumbnail');
             media.push(thumbnailRes.body.media[0].url.replace(config.get('url'), ''));
         });
@@ -225,8 +225,8 @@ describe('Media API', function () {
                 .attach('file', path.join(__dirname, '/../../utils/fixtures/images/ghosticon.jpg'))
                 .expect(200);
 
-            const mediaUrlWithoutExt = res.body.media[0].url.replace('.mp4', '');
-            thumbnailRes.body.media[0].url.should.match(new RegExp(`${mediaUrlWithoutExt}_thumb-\\w{16}\\.jpg`));
+            const thumbnailUrl = res.body.media[0].url.replace('.mp4', '_thumb.jpg');
+            thumbnailRes.body.media[0].url.should.equal(thumbnailUrl);
             thumbnailRes.body.media[0].ref.should.equal('updated_thumbnail_2');
 
             media.push(thumbnailRes.body.media[0].url.replace(config.get('url'), ''));

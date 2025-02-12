@@ -1,4 +1,5 @@
 import React, {useEffect, useRef} from 'react';
+import {Skeleton} from '@tryghost/shade';
 
 import NiceModal from '@ebay/nice-modal-react';
 import {Activity, ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
@@ -21,13 +22,13 @@ import {
 import {type NotificationType} from './activities/NotificationIcon';
 import {handleProfileClick} from '../utils/handle-profile-click';
 
-interface ActivitiesProps {}
+interface NotificationsProps {}
 
-// eslint-disable-next-line no-shadow
 enum ACTIVITY_TYPE {
     CREATE = 'Create',
     LIKE = 'Like',
-    FOLLOW = 'Follow'
+    FOLLOW = 'Follow',
+    REPOST = 'Announce'
 }
 
 interface GroupedActivity {
@@ -37,26 +38,9 @@ interface GroupedActivity {
     id?: string;
 }
 
-const getExtendedDescription = (activity: GroupedActivity): JSX.Element | null => {
-    // If the activity is a reply
-    if (Boolean(activity.type === ACTIVITY_TYPE.CREATE && activity.object?.inReplyTo)) {
-        return (
-            <div
-                dangerouslySetInnerHTML={{__html: stripHtml(activity.object?.content || '')}}
-                className='ap-note-content mt-1 line-clamp-2 text-pretty text-grey-700'
-            />
-        );
-    } else if (activity.type === ACTIVITY_TYPE.LIKE && !activity.object?.name && activity.object?.content) {
-        return (
-            <div
-                dangerouslySetInnerHTML={{__html: stripHtml(activity.object?.content || '')}}
-                className='ap-note-content mt-1 line-clamp-2 text-pretty text-grey-700'
-            ></div>
-        );
-    }
-
-    return null;
-};
+interface NotificationGroupDescriptionProps {
+    group: GroupedActivity;
+}
 
 const getActivityBadge = (activity: GroupedActivity): NotificationType => {
     switch (activity.type) {
@@ -65,12 +49,10 @@ const getActivityBadge = (activity: GroupedActivity): NotificationType => {
     case ACTIVITY_TYPE.FOLLOW:
         return 'follow';
     case ACTIVITY_TYPE.LIKE:
-        if (activity.object) {
-            return 'like';
-        }
+        return 'like';
+    case ACTIVITY_TYPE.REPOST:
+        return 'repost';
     }
-
-    return 'like';
 };
 
 const groupActivities = (activities: Activity[]): GroupedActivity[] => {
@@ -89,6 +71,12 @@ const groupActivities = (activities: Activity[]): GroupedActivity[] => {
             if (activity.object?.id) {
                 // Group likes by the target object
                 groupKey = `like_${activity.object.id}`;
+            }
+            break;
+        case ACTIVITY_TYPE.REPOST:
+            if (activity.object?.id) {
+                // Group reposts by the target object
+                groupKey = `announce_${activity.object.id}`;
             }
             break;
         case ACTIVITY_TYPE.CREATE:
@@ -116,7 +104,7 @@ const groupActivities = (activities: Activity[]): GroupedActivity[] => {
     return Object.values(groups);
 };
 
-const getGroupDescription = (group: GroupedActivity): JSX.Element => {
+const NotificationGroupDescription: React.FC<NotificationGroupDescriptionProps> = ({group}) => {
     const [firstActor, secondActor, ...otherActors] = group.actors;
     const hasOthers = otherActors.length > 0;
 
@@ -145,7 +133,9 @@ const getGroupDescription = (group: GroupedActivity): JSX.Element => {
     case ACTIVITY_TYPE.FOLLOW:
         return <>{actorText} started following you</>;
     case ACTIVITY_TYPE.LIKE:
-        return <>{actorText} liked your post <span className='font-semibold'>{group.object?.name || ''}</span></>;
+        return <>{actorText} liked your {group.object?.type === 'Article' ? 'post' : 'note'} <span className='font-semibold'>{group.object?.name || ''}</span></>;
+    case ACTIVITY_TYPE.REPOST:
+        return <>{actorText} reposted your {group.object?.type === 'Article' ? 'post' : 'note'} <span className='font-semibold'>{group.object?.name || ''}</span></>;
     case ACTIVITY_TYPE.CREATE:
         if (group.object?.inReplyTo && typeof group.object?.inReplyTo !== 'string') {
             let content = stripHtml(group.object.inReplyTo.content || '');
@@ -162,7 +152,7 @@ const getGroupDescription = (group: GroupedActivity): JSX.Element => {
     return <></>;
 };
 
-const Activities: React.FC<ActivitiesProps> = ({}) => {
+const Notifications: React.FC<NotificationsProps> = () => {
     const user = 'index';
 
     const [openStates, setOpenStates] = React.useState<{[key: string]: boolean}>({});
@@ -183,7 +173,7 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
         includeOwn: true,
         includeReplies: true,
         filter: {
-            type: ['Follow', 'Like', `Create:Note`]
+            type: ['Follow', 'Like', `Create:Note`, `Announce:Note`, `Announce:Article`]
         },
         limit: 120,
         key: GET_ACTIVITIES_QUERY_KEY_NOTIFICATIONS
@@ -215,6 +205,14 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
 
                 return true;
             })
+            // Remove reposts that are not for our own posts
+            .filter((activity) => {
+                if (activity.type === ACTIVITY_TYPE.REPOST && activity.object?.attributedTo?.id !== userProfile?.id) {
+                    return false;
+                }
+
+                return true;
+            })
             // Remove create activities that are not replies to our own posts
             .filter((activity) => {
                 if (
@@ -239,7 +237,7 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
             });
 
         return groupActivities(filtered);
-    }) ?? []);
+    }) ?? Array(5).fill({actors: [{}]}));
 
     const observerRef = useRef<IntersectionObserver | null>(null);
     const loadMoreRef = useRef<HTMLDivElement | null>(null);
@@ -292,18 +290,21 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
                 handleProfileClick(group.actors[0]);
             }
             break;
+        case ACTIVITY_TYPE.REPOST:
+            NiceModal.show(ArticleModal, {
+                activityId: group.id,
+                object: group.object,
+                actor: group.object.attributedTo as ActorProperties,
+                width: group.object?.type === 'Article' ? 'wide' : 'narrow'
+            });
+            break;
         }
     };
 
     return (
         <>
-            <MainNavigation page='activities'/>
+            <MainNavigation page='notifications'/>
             <div className='z-0 flex w-full flex-col items-center'>
-                {
-                    isLoading && (<div className='mt-8 flex flex-col items-center justify-center space-y-4 text-center'>
-                        <LoadingIndicator size='lg' />
-                    </div>)
-                }
                 {
                     isLoading === false && groupedActivities.length === 0 && (
                         <div className='mt-8'>
@@ -314,7 +315,7 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
                     )
                 }
                 {
-                    (isLoading === false && groupedActivities.length > 0) && (
+                    (groupedActivities.length > 0) && (
                         <>
                             <div className='my-8 flex w-full max-w-[560px] flex-col'>
                                 {groupedActivities.map((group, index) => (
@@ -323,20 +324,21 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
                                             className='hover:bg-gray-100'
                                             onClick={() => handleActivityClick(group, index)}
                                         >
-                                            <NotificationItem.Icon type={getActivityBadge(group)} />
+                                            {!isLoading ? <NotificationItem.Icon type={getActivityBadge(group)} /> : <Skeleton className='rounded-full' containerClassName='flex h-10 w-10' />}
                                             <NotificationItem.Avatars>
                                                 <div className='flex flex-col'>
                                                     <div className='mt-0.5 flex items-center gap-1.5'>
-                                                        {!openStates[group.id || `${group.type}_${index}`] && group.actors.slice(0, maxAvatars).map(actor => (
+                                                        {!openStates[group.id || `${group.type}_${index}`] && group.actors.slice(0, maxAvatars).map((actor: ActorProperties) => (
                                                             <APAvatar
                                                                 key={actor.id}
                                                                 author={actor}
+                                                                isLoading={isLoading}
                                                                 size='notification'
                                                             />
                                                         ))}
                                                         {group.actors.length > maxAvatars && (!openStates[group.id || `${group.type}_${index}`]) && (
                                                             <div
-                                                                className='flex h-9 w-5 items-center justify-center text-sm text-grey-700'
+                                                                className='flex h-9 w-5 items-center justify-center text-sm text-gray-700'
                                                             >
                                                                 {`+${group.actors.length - maxAvatars}`}
                                                             </div>
@@ -344,7 +346,7 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
 
                                                         {group.actors.length > 1 && (
                                                             <Button
-                                                                className={`transition-color flex h-9 items-center rounded-full bg-transparent text-grey-700 hover:opacity-60 ${openStates[group.id || `${group.type}_${index}`] ? 'w-full justify-start pl-1' : '-ml-2 w-9 justify-center'}`}
+                                                                className={`transition-color flex h-9 items-center rounded-full bg-transparent text-gray-700 hover:opacity-60 ${openStates[group.id || `${group.type}_${index}`] ? 'w-full justify-start pl-1' : '-ml-2 w-9 justify-center'}`}
                                                                 hideLabel={!openStates[group.id || `${group.type}_${index}`]}
                                                                 icon='chevron-down'
                                                                 iconColorClass={`w-[12px] h-[12px] ${openStates[group.id || `${group.type}_${index}`] ? 'rotate-180' : ''}`}
@@ -359,7 +361,7 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
                                                     <div className={`overflow-hidden transition-all duration-300 ease-in-out  ${openStates[group.id || `${group.type}_${index}`] ? 'mb-2 max-h-[1384px] opacity-100' : 'max-h-0 opacity-0'}`}>
                                                         {openStates[group.id || `${group.type}_${index}`] && group.actors.length > 1 && (
                                                             <div className='flex flex-col gap-2 pt-4'>
-                                                                {group.actors.map(actor => (
+                                                                {group.actors.map((actor: ActorProperties) => (
                                                                     <div
                                                                         key={actor.id}
                                                                         className='flex items-center hover:opacity-80'
@@ -367,7 +369,7 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
                                                                     >
                                                                         <APAvatar author={actor} size='xs' />
                                                                         <span className='ml-2 text-base font-semibold'>{actor.name}</span>
-                                                                        <span className='ml-1 text-base text-grey-700'>{getUsername(actor)}</span>
+                                                                        <span className='ml-1 text-base text-gray-700'>{getUsername(actor)}</span>
                                                                     </div>
                                                                 ))}
                                                             </div>
@@ -377,9 +379,24 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
                                             </NotificationItem.Avatars>
                                             <NotificationItem.Content>
                                                 <div className='line-clamp-2 text-pretty text-black'>
-                                                    {getGroupDescription(group)}
+                                                    {!isLoading ?
+                                                        <NotificationGroupDescription group={group} /> :
+                                                        <>
+                                                            <Skeleton />
+                                                            <Skeleton className='w-full max-w-60' />
+                                                        </>
+                                                    }
                                                 </div>
-                                                {getExtendedDescription(group)}
+                                                {(
+                                                    (group.type === ACTIVITY_TYPE.CREATE && group.object?.inReplyTo) ||
+                                                    (group.type === ACTIVITY_TYPE.LIKE && !group.object?.name && group.object?.content) ||
+                                                    (group.type === ACTIVITY_TYPE.REPOST && !group.object?.name && group.object?.content)
+                                                ) && (
+                                                    <div
+                                                        dangerouslySetInnerHTML={{__html: stripHtml(group.object?.content || '')}}
+                                                        className='ap-note-content mt-1 line-clamp-2 text-pretty text-gray-700'
+                                                    />
+                                                )}
                                             </NotificationItem.Content>
                                         </NotificationItem>
                                         {index < groupedActivities.length - 1 && <Separator />}
@@ -400,4 +417,4 @@ const Activities: React.FC<ActivitiesProps> = ({}) => {
     );
 };
 
-export default Activities;
+export default Notifications;
