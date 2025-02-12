@@ -74,7 +74,7 @@ class EventStorage {
                 attribution_type: attribution?.type ?? original.attribution_type,
                 referrer_source: attribution?.referrerSource ?? original.referrer_source,
                 referrer_medium: attribution?.referrerMedium ?? original.referrer_medium,
-                referrer_url: attribution?.referrerUrl ?? original.referrer_url,
+                referrer_url: attribution?.referrerUrl ?? original.referrer_url
             }, {id: subscriptionCreatedEvent.id});
         });
     }
