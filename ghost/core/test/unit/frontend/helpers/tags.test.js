@@ -27,7 +27,10 @@ describe('{{tags}} helper', function () {
         const rendered = tagsHelper.call({tags: tags}, {hash: {autolink: 'false'}});
         should.exist(rendered);
 
-        String(rendered).should.equal('foo, bar');
+        String(rendered).should.equal(
+            '<span class="post-tag">foo</span>' +
+            '<span class="post-tag-separator">, </span>' +
+            '<span class="post-tag">bar</span>');
     });
 
     it('can use a different separator', function () {
@@ -39,7 +42,10 @@ describe('{{tags}} helper', function () {
         const rendered = tagsHelper.call({tags: tags}, {hash: {separator: '|', autolink: 'false'}});
         should.exist(rendered);
 
-        String(rendered).should.equal('haunted|ghost');
+        String(rendered).should.equal(
+            '<span class="post-tag">haunted</span>' +
+            '<span class="post-tag-separator">|</span>' +
+            '<span class="post-tag">ghost</span>');
     });
 
     it('can add a single prefix to multiple tags', function () {
@@ -51,7 +57,11 @@ describe('{{tags}} helper', function () {
         const rendered = tagsHelper.call({tags: tags}, {hash: {prefix: 'on ', autolink: 'false'}});
         should.exist(rendered);
 
-        String(rendered).should.equal('on haunted, ghost');
+        String(rendered).should.equal(
+            '<span class="post-tag-prefix">on </span>' +
+            '<span class="post-tag">haunted</span>' +
+            '<span class="post-tag-separator">, </span>' +
+            '<span class="post-tag">ghost</span>');
     });
 
     it('can add a single suffix to multiple tags', function () {
@@ -63,7 +73,11 @@ describe('{{tags}} helper', function () {
         const rendered = tagsHelper.call({tags: tags}, {hash: {suffix: ' forever', autolink: 'false'}});
         should.exist(rendered);
 
-        String(rendered).should.equal('haunted, ghost forever');
+        String(rendered).should.equal(
+            '<span class="post-tag">haunted</span>' +
+            '<span class="post-tag-separator">, </span>' +
+            '<span class="post-tag">ghost</span>' +
+            '<span class="post-tag-suffix"> forever</span>');
     });
 
     it('can add a prefix and suffix to multiple tags', function () {
@@ -75,7 +89,12 @@ describe('{{tags}} helper', function () {
         const rendered = tagsHelper.call({tags: tags}, {hash: {suffix: ' forever', prefix: 'on ', autolink: 'false'}});
         should.exist(rendered);
 
-        String(rendered).should.equal('on haunted, ghost forever');
+        String(rendered).should.equal(
+            '<span class="post-tag-prefix">on </span>' +
+            '<span class="post-tag">haunted</span>' +
+            '<span class="post-tag-separator">, </span>' +
+            '<span class="post-tag">ghost</span>' +
+            '<span class="post-tag-suffix"> forever</span>');
     });
 
     it('can add a prefix and suffix with HTML', function () {
@@ -87,7 +106,12 @@ describe('{{tags}} helper', function () {
         const rendered = tagsHelper.call({tags: tags}, {hash: {suffix: ' &bull;', prefix: '&hellip; ', autolink: 'false'}});
         should.exist(rendered);
 
-        String(rendered).should.equal('&hellip; haunted, ghost &bull;');
+        String(rendered).should.equal(
+            '<span class="post-tag-prefix">&hellip; </span>' +
+            '<span class="post-tag">haunted</span>' +
+            '<span class="post-tag-separator">, </span>' +
+            '<span class="post-tag">ghost</span>' +
+            '<span class="post-tag-suffix"> &bull;</span>');
     });
 
     it('does not add prefix or suffix if no tags exist', function () {
@@ -109,7 +133,10 @@ describe('{{tags}} helper', function () {
         const rendered = tagsHelper.call({tags: tags});
         should.exist(rendered);
 
-        String(rendered).should.equal('<a href="tag url 1">foo</a>, <a href="tag url 2">bar</a>');
+        String(rendered).should.equal(
+            '<a class="post-tag" href="tag url 1">foo</a>' +
+            '<span class="post-tag-separator">, </span>' +
+            '<a class="post-tag" href="tag url 2">bar</a>');
     });
 
     it('can limit no. tags output to 1', function () {
@@ -123,7 +150,7 @@ describe('{{tags}} helper', function () {
         const rendered = tagsHelper.call({tags: tags}, {hash: {limit: '1'}});
         should.exist(rendered);
 
-        String(rendered).should.equal('<a href="tag url 1">foo</a>');
+        String(rendered).should.equal('<a class="post-tag" href="tag url 1">foo</a>');
     });
 
     it('can list tags from a specified no.', function () {
@@ -137,7 +164,7 @@ describe('{{tags}} helper', function () {
         const rendered = tagsHelper.call({tags: tags}, {hash: {from: '2'}});
         should.exist(rendered);
 
-        String(rendered).should.equal('<a href="tag url 2">bar</a>');
+        String(rendered).should.equal('<a class="post-tag" href="tag url 2">bar</a>');
     });
 
     it('can list tags to a specified no.', function () {
@@ -151,7 +178,7 @@ describe('{{tags}} helper', function () {
         const rendered = tagsHelper.call({tags: tags}, {hash: {to: '1'}});
         should.exist(rendered);
 
-        String(rendered).should.equal('<a href="tag url x">foo</a>');
+        String(rendered).should.equal('<a class="post-tag" href="tag url x">foo</a>');
     });
 
     it('can list tags in a range', function () {
@@ -167,7 +194,10 @@ describe('{{tags}} helper', function () {
         const rendered = tagsHelper.call({tags: tags}, {hash: {from: '2', to: '3'}});
         should.exist(rendered);
 
-        String(rendered).should.equal('<a href="tag url b">bar</a>, <a href="tag url c">baz</a>');
+        String(rendered).should.equal(
+            '<a class="post-tag" href="tag url b">bar</a>' +
+            '<span class="post-tag-separator">, </span>' +
+            '<a class="post-tag" href="tag url c">baz</a>');
     });
 
     it('can limit no. tags and output from 2', function () {
@@ -182,7 +212,7 @@ describe('{{tags}} helper', function () {
         const rendered = tagsHelper.call({tags: tags}, {hash: {from: '2', limit: '1'}});
         should.exist(rendered);
 
-        String(rendered).should.equal('<a href="tag url b">bar</a>');
+        String(rendered).should.equal('<a class="post-tag" href="tag url b">bar</a>');
     });
 
     it('can list tags in a range (ignore limit)', function () {
@@ -199,7 +229,12 @@ describe('{{tags}} helper', function () {
         const rendered = tagsHelper.call({tags: tags}, {hash: {from: '1', to: '3', limit: '2'}});
         should.exist(rendered);
 
-        String(rendered).should.equal('<a href="tag url a">foo</a>, <a href="tag url b">bar</a>, <a href="tag url c">baz</a>');
+        String(rendered).should.equal(
+            '<a class="post-tag" href="tag url a">foo</a>' +
+            '<span class="post-tag-separator">, </span>' +
+            '<a class="post-tag" href="tag url b">bar</a>' +
+            '<span class="post-tag-separator">, </span>' +
+            '<a class="post-tag" href="tag url c">baz</a>');
     });
 
     describe('Internal tags', function () {
@@ -228,10 +263,13 @@ describe('{{tags}} helper', function () {
             const rendered = tagsHelper.call({tags: tags});
 
             String(rendered).should.equal(
-                '<a href="1">foo</a>, ' +
-                '<a href="3">bar</a>, ' +
-                '<a href="4">baz</a>, ' +
-                '<a href="5">buzz</a>'
+                '<a class="post-tag" href="1">foo</a>' +
+                '<span class="post-tag-separator">, </span>' +
+                '<a class="post-tag" href="3">bar</a>' +
+                '<span class="post-tag-separator">, </span>' +
+                '<a class="post-tag" href="4">baz</a>' +
+                '<span class="post-tag-separator">, </span>' +
+                '<a class="post-tag" href="5">buzz</a>'
             );
         });
 
@@ -239,8 +277,9 @@ describe('{{tags}} helper', function () {
             const rendered = tagsHelper.call({tags: tags}, {hash: {from: '2', limit: '2'}});
 
             String(rendered).should.equal(
-                '<a href="3">bar</a>, ' +
-                '<a href="4">baz</a>'
+                '<a class="post-tag" href="3">bar</a>' +
+                '<span class="post-tag-separator">, </span>' +
+                '<a class="post-tag" href="4">baz</a>'
             );
         });
 
@@ -248,11 +287,15 @@ describe('{{tags}} helper', function () {
             const rendered = tagsHelper.call({tags: tags}, {hash: {visibility: 'all'}});
 
             String(rendered).should.equal(
-                '<a href="1">foo</a>, ' +
-                '<a href="2">#bar</a>, ' +
-                '<a href="3">bar</a>, ' +
-                '<a href="4">baz</a>, ' +
-                '<a href="5">buzz</a>'
+                '<a class="post-tag" href="1">foo</a>' +
+                '<span class="post-tag-separator">, </span>' +
+                '<a class="post-tag" href="2">#bar</a>' +
+                '<span class="post-tag-separator">, </span>' +
+                '<a class="post-tag" href="3">bar</a>' +
+                '<span class="post-tag-separator">, </span>' +
+                '<a class="post-tag" href="4">baz</a>' +
+                '<span class="post-tag-separator">, </span>' +
+                '<a class="post-tag" href="5">buzz</a>'
             );
         });
 
@@ -261,11 +304,15 @@ describe('{{tags}} helper', function () {
             should.exist(rendered);
 
             String(rendered).should.equal(
-                '<a href="1">foo</a>, ' +
-                '<a href="2">#bar</a>, ' +
-                '<a href="3">bar</a>, ' +
-                '<a href="4">baz</a>, ' +
-                '<a href="5">buzz</a>'
+                '<a class="post-tag" href="1">foo</a>' +
+                '<span class="post-tag-separator">, </span>' +
+                '<a class="post-tag" href="2">#bar</a>' +
+                '<span class="post-tag-separator">, </span>' +
+                '<a class="post-tag" href="3">bar</a>' +
+                '<span class="post-tag-separator">, </span>' +
+                '<a class="post-tag" href="4">baz</a>' +
+                '<span class="post-tag-separator">, </span>' +
+                '<a class="post-tag" href="5">buzz</a>'
             );
         });
 
@@ -273,7 +320,7 @@ describe('{{tags}} helper', function () {
             const rendered = tagsHelper.call({tags: tags}, {hash: {visibility: 'internal'}});
             should.exist(rendered);
 
-            String(rendered).should.equal('<a href="2">#bar</a>');
+            String(rendered).should.equal('<a class="post-tag" href="2">#bar</a>');
         });
 
         it('should output nothing if all tags are internal', function () {
