@@ -863,7 +863,7 @@ a[data-flickr-embed] img {
 
 .kg-callout-card-white {
     background: #fff;
-    box-shadow: inset 0 0 0 1px #dddedf;
+    border: 1px solid #dddedf;
 }
 
 .kg-callout-card-blue {
@@ -905,9 +905,40 @@ a[data-flickr-embed] img {
 }
 
 .kg-cta-card {
+    margin: 0 0 1.5em 0;
     border-spacing: 24px 0;
     border-radius: 8px;
-    box-shadow: inset 0 0 0 1px #dddedf;
+}
+
+.kg-cta-card.kg-cta-bg-none {
+    border-spacing: 0;
+    border-bottom: 1px solid #dddedf;
+    border-radius: 0;
+}
+
+.kg-cta-bg-white {
+    background: #fff;
+    border: 1px solid #dddedf;
+}
+
+.kg-cta-bg-grey {
+    background: #eef0f2;
+}
+
+.kg-cta-bg-blue {
+    background: #E9F6FB;
+}
+
+.kg-cta-bg-green {
+    background: #E8F8EA;
+}
+
+.kg-cta-bg-yellow {
+    background: #FCF4E3;
+}
+
+.kg-cta-bg-red {
+    background: #FBE9E9;
 }
 
 .kg-cta-sponsor-label {
@@ -918,6 +949,7 @@ a[data-flickr-embed] img {
 .kg-cta-sponsor-label p {
     margin: 0;
     color: rgba(0, 0, 0, 0.4);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
     font-size: 12px;
     font-weight: 600;
     text-transform: uppercase;
@@ -932,28 +964,67 @@ table.kg-cta-content-wrapper {
 }
 
 img.kg-cta-image {
+    display: block;
     border-radius: 6px;
     border: 0;
 }
 
-.kg-cta-immersive .kg-cta-content-inner {
+.kg-cta-minimal img.kg-cta-image {
+    width: 64px;
+    height: 64px;
+    object-fit: cover;
+}
+
+.kg-cta-immersive img.kg-cta-image {
+    margin: 0 auto;
+    height: auto;
+    width: 100%;
+    max-width: 100%;
+}
+
+.post-content .kg-cta-text {
+    font-family: Georgia, serif;
+}
+
+.post-content-sans-serif .kg-cta-text {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+}
+
+.kg-cta-text p {
+    margin-bottom: 1em;
+}
+
+.kg-cta-immersive .kg-cta-text p {
     text-align: center;
 }
 
-.kg-cta-text {
-    font-size: 0.95em;
+.kg-cta-immersive .kg-cta-text p:last-child {
+    margin-bottom: 0;
 }
 
-a.kg-cta-button {
-    display: inline-block; padding: 8px 20px;
-    font-size: 0.95em;
+.kg-cta-minimal a.kg-cta-button {
+    display: inline-block; 
+    padding: 6px 18px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+    font-size: 0.85em;
     font-weight: 600;
     text-decoration: none;
     border-radius: 6px;
 }
 
+.kg-cta-immersive .kg-cta-button-container {
+    padding: 8px 20px;
+    border-radius: 6px;
+}
+
 .kg-cta-immersive a.kg-cta-button {
+    display: inline-block; 
     width: 100%;
+    font-size: 0.85em;
+    font-weight: 600;
+    text-align: center;
+    text-decoration: none;
+    border-radius: 6px;
 }
 
 .kg-header-card {
