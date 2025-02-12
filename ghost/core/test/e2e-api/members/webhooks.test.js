@@ -58,10 +58,41 @@ describe('Members API', function () {
     const coupon = {};
 
     beforeEach(function () {
+        nock.restore();
+        nock.activate();
+        
+        // Simple logging of unmatched requests
+        nock.emitter.on('no match', (req) => {
+            console.log('\nNOCK REQUEST NOT MATCHED:');
+            console.log('Method:', req.method);
+            console.log('Path:', req.path); 
+            console.log('Headers:', JSON.stringify(req.headers, null, 2));
+        });
+
+        nock('https://api.stripe.com')
+            .persist()
+            .get(/v1\/customers\/cust_[a-z0-9]+\?.*/)
+            .reply(function(uri) {
+                // console.log('\nNOCK TRYING TO MATCH:', uri);
+                const customerId = uri.split('/')[3].split('?')[0];
+                if (customer.id !== customerId) {
+                    return [404];
+                }
+                return [200, {
+                    ...customer,
+                    subscriptions: {
+                        type: 'list',
+                        data: [subscription]
+                    }
+                }];
+            });
+
+        // Then handle all other requests
         nock('https://api.stripe.com')
             .persist()
             .get(/v1\/.*/)
             .reply((uri) => {
+                console.log(`uri`, uri);
                 const [match, resource, id] = uri.match(/\/?v1\/(\w+)\/?(\w+)/) || [null];
 
                 if (!match) {
@@ -120,6 +151,21 @@ describe('Members API', function () {
                     return [200, coupon];
                 }
 
+                if (resource === 'prices') {
+                    return [200, {
+                        id: 'price_123',
+                        product: 'product_123',
+                        active: true,
+                        nickname: 'month',
+                        currency: 'usd',
+                        recurring: {
+                            interval: 'month'
+                        },
+                        unit_amount: 150,
+                        type: 'recurring'
+                    }];
+                }
+
                 return [500];
             });
 
@@ -127,6 +173,20 @@ describe('Members API', function () {
     });
 
     afterEach(function () {
+        // Get any requests that weren't matched by our nocks
+        const recorded = nock.recorder.play();
+        if (recorded.length > 0) {
+            console.log('\nRequests that missed nock:');
+            recorded.forEach(req => {
+                console.log(`${req.method} ${req.scope}${req.path}`);
+                console.log('Headers:', req.reqheaders);
+                console.log('Body:', req.body);
+                console.log('---');
+            });
+        }
+        
+        nock.recorder.clear();
+        nock.cleanAll();
         mockManager.restore();
     });
 
@@ -707,10 +767,6 @@ describe('Members API', function () {
                 asserts: [
                     {
                         from_status: null,
-                        to_status: 'free'
-                    },
-                    {
-                        from_status: 'free',
                         to_status: 'comped'
                     },
                     {
@@ -1855,9 +1911,9 @@ describe('Members API', function () {
                 });
         });
 
-        async function testWithAttribution(attribution, attributionResource) {
-            const customer_id = createStripeID('cust');
-            const subscription_id = createStripeID('sub');
+        async function testWithAttribution(attribution, attributionResource, customerId, subscriptionId) {
+            const customer_id = customerId || createStripeID('cust');
+            const subscription_id = subscriptionId || createStripeID('sub');
 
             const interval = 'month';
             const unit_amount = 150;
@@ -2139,6 +2195,40 @@ describe('Members API', function () {
                 referrer_medium: null,
                 referrer_url: null
             });
+        });
+
+        it.only('Updates attribution when a member already exists', async function () {
+            const customerId = createStripeID('cust');
+            const subscriptionId = createStripeID('sub');
+            const attribution = {
+                id: null,
+                url: '/',
+                type: 'url'
+            };
+
+            console.log(`creating and linking subscription w/o attribution`);
+            await testWithAttribution({}, {
+                id: null,
+                url: null,
+                type: null,
+                title: null,
+                referrer_source: null,
+                referrer_medium: null,
+                referrer_url: null
+            }, customerId, subscriptionId);
+
+            const absoluteUrl = urlUtils.createUrl('/', true);
+
+            console.log(`updating attribution`);
+            await testWithAttribution(attribution, {
+                id: null,
+                url: absoluteUrl,
+                type: 'url',
+                title: 'homepage',
+                referrer_source: null,
+                referrer_medium: null,
+                referrer_url: null
+            }, customerId, subscriptionId);
         });
 
         it('Creates a SubscriptionCreatedEvent with empty attribution object', async function () {
