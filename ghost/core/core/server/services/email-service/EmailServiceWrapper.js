@@ -2,6 +2,8 @@ const debug = require('@tryghost/debug')('i18n');
 const logging = require('@tryghost/logging');
 const url = require('../../api/endpoints/utils/serializers/output/utils/url');
 const events = require('../../lib/common/events');
+const MailgunClient = require('@tryghost/mailgun-client');
+const PostmarkClient = require('@tryghost/postmark-client');
 
 class EmailServiceWrapper {
     getPostUrl(post) {
@@ -10,14 +12,27 @@ class EmailServiceWrapper {
         return jsonModel.url;
     }
 
+    getMailClient(settingsCache, configService) {
+        if (settingsCache.get('bulk_email_provider') === 'postmark') {
+            // Postmark client instance for email provider
+            return new PostmarkClient({
+                config: configService, settings: settingsCache
+            });
+        }
+
+        // Mailgun client instance for email provider
+        return new MailgunClient({
+            config: configService, settings: settingsCache
+        });
+    }
+
     init() {
         if (this.service) {
             return;
         }
 
-        const {EmailService, EmailController, EmailRenderer, SendingService, BatchSendingService, EmailSegmenter, MailgunEmailProvider} = require('@tryghost/email-service');
+        const {EmailService, EmailController, EmailRenderer, SendingService, BatchSendingService, EmailSegmenter, BulkEmailProvider} = require('@tryghost/email-service');
         const {Post, Newsletter, Email, EmailBatch, EmailRecipient, Member} = require('../../models');
-        const MailgunClient = require('@tryghost/mailgun-client');
         const configService = require('../../../shared/config');
         const settingsCache = require('../../../shared/settings-cache');
         const settingsHelpers = require('../settings-helpers');
@@ -47,13 +62,16 @@ class EmailServiceWrapper {
             sentry.captureException(error);
         };
 
-        // Mailgun client instance for email provider
-        const mailgunClient = new MailgunClient({
-            config: configService, settings: settingsCache
+        let mailClient = this.getMailClient(settingsCache, configService);
+
+        const bulkEmailProvider = new BulkEmailProvider({
+            mailClient,
+            errorHandler
         });
+
         const i18nLanguage = labs.isSet('i18n') ? settingsCache.get('locale') || 'en' : 'en';
         const i18n = i18nLib(i18nLanguage, 'newsletter');
-        
+
         events.on('settings.labs.edited', () => {
             if (labs.isSet('i18n')) {
                 debug('labs i18n enabled, updating i18n to', settingsCache.get('locale'));
@@ -63,17 +81,12 @@ class EmailServiceWrapper {
                 i18n.changeLanguage('en');
             }
         });
-    
+
         events.on('settings.locale.edited', (model) => {
             if (labs.isSet('i18n')) {
                 debug('locale changed, updating i18n to', model.get('value'));
                 i18n.changeLanguage(model.get('value'));
-            } 
-        });
-
-        const mailgunEmailProvider = new MailgunEmailProvider({
-            mailgunClient,
-            errorHandler
+            }
         });
 
         const emailRenderer = new EmailRenderer({
@@ -99,7 +112,7 @@ class EmailServiceWrapper {
         });
 
         const sendingService = new SendingService({
-            emailProvider: mailgunEmailProvider,
+            emailProvider: bulkEmailProvider,
             emailRenderer
         });
 
