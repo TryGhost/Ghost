@@ -122,19 +122,20 @@ class PaymentsService {
      *
      * @returns {Promise<URL>}
      */
-    async getDonationPaymentLink({member, metadata, successUrl, cancelUrl, email, isAuthenticated}) {
+    async getDonationPaymentLink({member, metadata, successUrl, cancelUrl, email, isAuthenticated, personalNoteText}) {
         let customer = null;
         if (member && isAuthenticated) {
             customer = await this.getCustomerForMember(member);
         }
-
         const data = {
             priceId: (await this.getPriceForDonations()).id,
             metadata,
             successUrl: successUrl,
             cancelUrl: cancelUrl,
             customer,
-            customerEmail: !customer && email ? email : null
+            customerEmail: !customer && email ? email : null,
+            personalNoteText: personalNoteText || 'Add a personal note'
+
         };
 
         const session = await this.stripeAPIService.createDonationCheckoutSession(data);

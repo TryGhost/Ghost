@@ -478,6 +478,7 @@ module.exports = class RouterController {
                 ...data
             });
         } else if (type === 'donation') {
+            options.personalNoteText = req.body.personalNoteText ?? 'Add a personal note'
             response = await this._createDonationCheckoutSession(options);
         }
 
