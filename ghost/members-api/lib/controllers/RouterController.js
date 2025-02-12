@@ -482,7 +482,7 @@ module.exports = class RouterController {
             if (typeof rawText !== 'string' || rawText.length > 255) {
                 throw new BadRequestError({
                     message: 'Invalid personalNoteText, possibly an i18n error.'
-                })
+                });
             }
             options.personalNoteText = rawText ?? 'Add a personal note';
             response = await this._createDonationCheckoutSession(options);
