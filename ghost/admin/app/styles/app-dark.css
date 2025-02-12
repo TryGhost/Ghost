@@ -254,7 +254,7 @@ input:focus,
 }
 
 .gh-btn-black:not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red):hover,
-.gh-btn-primary:not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red):not(.gh-portal-settings-actions .gh-btn-primary):hover {
+.gh-btn-primary:not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red):hover {
     background: var(--black) !important;
 }
 
@@ -701,8 +701,7 @@ input:focus,
 }
 
 .ember-power-select-group .ember-power-select-option[aria-current=true],
-.settings-tag .tag-edit-button.active,
-.gh-portal-site-frame-cover {
+.settings-tag .tag-edit-button.active {
     background: var(--whitegrey);
 }
 
@@ -1029,33 +1028,6 @@ input:focus,
     fill: #fff !important;
 }
 
-/* Portal */
-.gh-portal-settings-maintabs {
-    border: 1px solid color-mod(var(--darkgrey) l(-27%) blackness(+15%));
-}
-
-.gh-portal-page-url-container {
-    color: var(--darkgrey);
-    border-color: color-mod(var(--lightgrey));
-    background: color-mod(var(--lightgrey));
-}
-
-.gh-portal-settings-maintabs li:not(:last-of-type) {
-    border-right: 1px solid color-mod(var(--darkgrey) l(-27%) blackness(+15%));
-}
-
-.gh-portal-settings-main {
-    border-left: 1px solid var(--hairline-color-1);
-}
-
-.gh-portal-setting-sectionheading {
-    border-bottom: 1px solid var(--hairline-color-1);
-}
-
-.gh-portal-links-container {
-    background: var(--main-color-content-greybg)
-}
-
 .gh-dashboard-box {
     flex: 1;
     border: 1px solid var(--lightgrey);
@@ -1335,16 +1307,6 @@ kbd {
 
 .gh-posts-list-item-group[data-selected]::after {
     opacity: 0.13 !important;
-}
-
-.gh-portal-settings-stripefooter {
-    border-color: var(--lightgrey);
-}
-
-.gh-portal-settings-actions .gh-btn-primary,
-.gh-portal-settings-actions .gh-btn-primary:hover {
-    background: var(--green) !important;
-    color: #fff;
 }
 
 /* Mentions */
