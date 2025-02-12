@@ -37,7 +37,8 @@ describe('CallToActionNode', function () {
             hasSponsorLabel: true,
             backgroundColor: 'none',
             hasImage: true,
-            imageUrl: 'http://blog.com/image1.jpg'
+            imageUrl: 'http://blog.com/image1.jpg',
+            href: ''
         };
         exportOptions = {
             exportFormat: 'html',
@@ -67,6 +68,7 @@ describe('CallToActionNode', function () {
             callToActionNode.hasImage.should.equal(dataset.hasImage);
             callToActionNode.imageUrl.should.equal(dataset.imageUrl);
             callToActionNode.visibility.should.deepEqual(utils.visibility.buildDefaultVisibility());
+            callToActionNode.href.should.equal(dataset.href);
         }));
 
         it('has setters for all properties', editorTest(function () {
@@ -119,6 +121,10 @@ describe('CallToActionNode', function () {
             callToActionNode.imageUrl.should.equal('');
             callToActionNode.imageUrl = 'http://blog.com/image1.jpg';
             callToActionNode.imageUrl.should.equal('http://blog.com/image1.jpg');
+
+            callToActionNode.href.should.equal('');
+            callToActionNode.href = 'http://blog.com/post1';
+            callToActionNode.href.should.equal('http://blog.com/post1');
 
             callToActionNode.visibility.should.deepEqual(utils.visibility.buildDefaultVisibility());
             callToActionNode.visibility = {
@@ -307,7 +313,8 @@ describe('CallToActionNode', function () {
                 imageUrl: '/content/images/2022/11/koenig-lexical.jpg',
                 layout: 'minimal',
                 showButton: true,
-                textValue: '<p><span style="white-space: pre-wrap;">This is a new CTA Card.</span></p>'
+                textValue: '<p><span style="white-space: pre-wrap;">This is a new CTA Card.</span></p>',
+                href: ''
             };
             const callToActionNode = new CallToActionNode(dataset);
             const json = callToActionNode.exportJSON();
@@ -327,6 +334,7 @@ describe('CallToActionNode', function () {
                 layout: 'minimal',
                 showButton: true,
                 textValue: '<p><span style="white-space: pre-wrap;">This is a new CTA Card.</span></p>',
+                href: '',
                 visibility: {
                     web: {
                         nonMember: true,

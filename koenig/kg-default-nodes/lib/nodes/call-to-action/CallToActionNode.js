@@ -17,7 +17,8 @@ export class CallToActionNode extends generateDecoratorNode({
         {name: 'sponsorLabel', default: '<p><span style="white-space: pre-wrap;">SPONSORED</span></p>'},
         {name: 'backgroundColor', default: 'grey'},
         {name: 'hasImage', default: false},
-        {name: 'imageUrl', default: ''}
+        {name: 'imageUrl', default: ''},
+        {name: 'href', default: '', urlType: 'url'}
     ]
 }) {
     /* overrides */

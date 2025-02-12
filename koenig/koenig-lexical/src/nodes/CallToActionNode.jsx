@@ -103,6 +103,7 @@ export class CallToActionNode extends BaseCallToActionNode {
                     buttonUrl={this.buttonUrl}
                     hasImage={this.hasImage}
                     hasSponsorLabel={this.hasSponsorLabel}
+                    href={this.href}
                     htmlEditor={this.__ctaHtmlEditor}
                     htmlEditorInitialState={this.__ctaHtmlEditorInitialState}
                     imageUrl={this.imageUrl}
