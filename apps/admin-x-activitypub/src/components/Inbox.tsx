@@ -38,7 +38,7 @@ const Inbox: React.FC<InboxProps> = ({layout}) => {
     const updateActivity = layout === 'inbox' ? updateInboxActivity : updateFeedActivity;
     const {data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading} = feedQueryData;
 
-    const activities = (data?.pages.flatMap(page => page.posts) ?? []);
+    const activities = (data?.pages.flatMap(page => page.posts) ?? Array.from({length: 5}, (_, index) => ({id: `placeholder-${index}`, object: {}})));
 
     // Initialise suggested profiles
     const {suggestedProfilesQuery} = useSuggestedProfilesForUser('index', 3);
