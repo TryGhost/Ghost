@@ -127,6 +127,7 @@ class PaymentsService {
         if (member && isAuthenticated) {
             customer = await this.getCustomerForMember(member);
         }
+        
         const data = {
             priceId: (await this.getPriceForDonations()).id,
             metadata,

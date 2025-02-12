@@ -478,7 +478,13 @@ module.exports = class RouterController {
                 ...data
             });
         } else if (type === 'donation') {
-            options.personalNoteText = req.body.personalNoteText ?? 'Add a personal note';
+            const rawText = req.body.personalNoteText;
+            if (typeof rawText !== 'string' || rawText.length > 255) {
+                throw new BadRequestError({
+                    message: 'Invalid personalNoteText, possibly an i18n error.'
+                })
+            }
+            options.personalNoteText = rawText ?? 'Add a personal note';
             response = await this._createDonationCheckoutSession(options);
         }
 
