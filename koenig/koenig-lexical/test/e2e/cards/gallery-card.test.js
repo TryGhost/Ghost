@@ -167,6 +167,7 @@ test.describe('Gallery card', async () => {
         await fileChooser.setFiles([filePath]);
 
         await page.waitForSelector('[data-gallery="true"]');
+        await expect(page.getByTestId('progress-bar')).not.toBeVisible();
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false" data-kg-card-width="wide">
