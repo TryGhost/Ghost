@@ -21,12 +21,15 @@ services:
       # Mount the source code
       - .:/home/ghost
 
-      # Share the NX daemon socket, workspace data and cache across all container instances
+      # NX Named Volumes
+      ## Share the NX daemon socket, workspace data and cache across all container instances
+      ## This also prevents collisions between host and container caches
       - nx-daemon-socket-dir:/home/ghost/.nxdaemon:delegated
       - nx:/home/ghost/.nx:delegated
       - nx-cache:/home/ghost/.nxcache:delegated
 
-      # Volume exclusions: prevent collisions between host and container node_modules
+      # Volume exclusions: 
+      ## Prevent collisions between host and container node_modules
       - node_modules_ghost_root:/home/ghost/node_modules:delegated
       - node_modules_ghost_activitypub:/home/ghost/ghost/activitypub/node_modules:delegated
       - node_modules_ghost_adapter-cache-memory-ttl:/home/ghost/ghost/adapter-cache-memory-ttl/node_modules:delegated
