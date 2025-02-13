@@ -41,30 +41,12 @@
 }
 
 .gh-migrate-close {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    padding: 2rem;
-    position: absolute;
-    top: 0;
-    right: 0;
+    /* Other styles are classes form the design system */
     z-index: 10000; /* One more than the iframe wrapper */
 }
 
-.gh-migrate-close a {
-    color: var(--middarkgrey);
-}
-
 .gh-migrate-close a svg {
-    stroke: var(--middarkgrey);
-    width: 18px;
-    height: auto;
-}
-
-.gh-migrate-close a svg path {
-    stroke-width: 1px;
-}
-
-.gh-migrate-close a:hover svg {
-    stroke: var(--darkgrey);
+    display: block;
+    width: 2rem;
+    height: 2rem;
 }
