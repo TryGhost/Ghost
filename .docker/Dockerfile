@@ -74,8 +74,6 @@ COPY ghost/bookshelf-repository/package.json ghost/bookshelf-repository/package.
 COPY ghost/bootstrap-socket/package.json ghost/bootstrap-socket/package.json
 COPY ghost/captcha-service/package.json ghost/captcha-service/package.json
 COPY ghost/constants/package.json ghost/constants/package.json
-COPY ghost/core/content/themes/casper/package.json ghost/core/content/themes/casper/package.json
-COPY ghost/core/content/themes/source/package.json ghost/core/content/themes/source/package.json
 COPY ghost/core/package.json ghost/core/package.json
 COPY ghost/custom-fonts/package.json ghost/custom-fonts/package.json
 COPY ghost/custom-theme-settings-service/package.json ghost/custom-theme-settings-service/package.json
@@ -146,6 +144,7 @@ COPY ghost/update-check-service/package.json ghost/update-check-service/package.
 COPY ghost/verification-trigger/package.json ghost/verification-trigger/package.json
 COPY ghost/version-notifications-data-service/package.json ghost/version-notifications-data-service/package.json
 COPY ghost/webmentions/package.json ghost/webmentions/package.json
+
 
 ## Install dependencies
 RUN yarn install --frozen-lockfile --prefer-offline
