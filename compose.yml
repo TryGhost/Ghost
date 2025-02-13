@@ -5,6 +5,8 @@ services:
       context: .
       dockerfile: ./.docker/Dockerfile
       target: development
+    entrypoint: ["/home/ghost/.docker/development.entrypoint.sh"]
+    command: ["yarn", "dev"]
     ports:
       - "2368:2368" # Ghost
       - "4200:4200" # Admin
