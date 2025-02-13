@@ -7,6 +7,7 @@ import {CallToActionCard} from '../components/ui/cards/CallToActionCard.jsx';
 import {LinkInput} from '../components/ui/LinkInput';
 import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
 import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu.jsx';
+import {getImageDimensions} from '../utils/getImageDimensions';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import {useVisibilityToggle} from '../hooks/useVisibilityToggle.js';
 
@@ -91,12 +92,16 @@ export const CallToActionNodeComponent = ({
     };
 
     const handleImageChange = async (files) => {
+        const imgPreviewUrl = URL.createObjectURL(files[0]);
+        const {width, height} = await getImageDimensions(imgPreviewUrl);
         const result = await imageUploader.upload(files);
         // reset original src so it can be replaced with preview and upload progress
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
             node.imageUrl = result?.[0].url;
             node.hasImage = true;
+            node.imageWidth = width;
+            node.imageHeight = height;
         });
     };
 

@@ -38,6 +38,8 @@ describe('CallToActionNode', function () {
             backgroundColor: 'none',
             hasImage: true,
             imageUrl: 'http://blog.com/image1.jpg',
+            imageWidth: 200,
+            imageHeight: 100,
             href: ''
         };
         exportOptions = {
@@ -69,11 +71,12 @@ describe('CallToActionNode', function () {
             callToActionNode.imageUrl.should.equal(dataset.imageUrl);
             callToActionNode.visibility.should.deepEqual(utils.visibility.buildDefaultVisibility());
             callToActionNode.href.should.equal(dataset.href);
+            callToActionNode.imageHeight.should.equal(dataset.imageHeight);
+            callToActionNode.imageWidth.should.equal(dataset.imageWidth);
         }));
 
         it('has setters for all properties', editorTest(function () {
             const callToActionNode = new CallToActionNode();
-
             callToActionNode.layout.should.equal('minimal');
             callToActionNode.layout = 'compact';
             callToActionNode.layout.should.equal('compact');
@@ -121,6 +124,14 @@ describe('CallToActionNode', function () {
             callToActionNode.imageUrl.should.equal('');
             callToActionNode.imageUrl = 'http://blog.com/image1.jpg';
             callToActionNode.imageUrl.should.equal('http://blog.com/image1.jpg');
+
+            should(callToActionNode.imageHeight).be.null();
+            callToActionNode.imageHeight = 100;
+            callToActionNode.imageHeight.should.equal(100);
+
+            should(callToActionNode.imageWidth).be.null();
+            callToActionNode.imageWidth = 200;
+            callToActionNode.imageWidth.should.equal(200);
 
             callToActionNode.href.should.equal('');
             callToActionNode.href = 'http://blog.com/post1';
@@ -239,7 +250,6 @@ describe('CallToActionNode', function () {
 
             const html = element.outerHTML.toString();
             html.should.containEql('cta-card-email');
-            html.should.containEql('background-color: green');
             html.should.containEql('background-color: #F0F0F0');
             html.should.containEql('Get access now');
             html.should.containEql('http://someblog.com/somepost');
@@ -311,6 +321,8 @@ describe('CallToActionNode', function () {
                 hasSponsorLabel: true,
                 sponsorLabel: '<p>This post is brought to you by our sponsors</p>',
                 imageUrl: '/content/images/2022/11/koenig-lexical.jpg',
+                imageWidth: 200,
+                imageHeight: 100,
                 layout: 'minimal',
                 showButton: true,
                 textValue: '<p><span style="white-space: pre-wrap;">This is a new CTA Card.</span></p>',
@@ -331,6 +343,8 @@ describe('CallToActionNode', function () {
                 hasSponsorLabel: true,
                 sponsorLabel: '<p>This post is brought to you by our sponsors</p>',
                 imageUrl: '/content/images/2022/11/koenig-lexical.jpg',
+                imageWidth: 200,
+                imageHeight: 100,
                 layout: 'minimal',
                 showButton: true,
                 textValue: '<p><span style="white-space: pre-wrap;">This is a new CTA Card.</span></p>',

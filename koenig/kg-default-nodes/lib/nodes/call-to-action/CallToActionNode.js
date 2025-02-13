@@ -18,6 +18,8 @@ export class CallToActionNode extends generateDecoratorNode({
         {name: 'backgroundColor', default: 'grey'},
         {name: 'hasImage', default: false},
         {name: 'imageUrl', default: ''},
+        {name: 'imageWidth', default: null},
+        {name: 'imageHeight', default: null},
         {name: 'href', default: '', urlType: 'url'}
     ]
 }) {
