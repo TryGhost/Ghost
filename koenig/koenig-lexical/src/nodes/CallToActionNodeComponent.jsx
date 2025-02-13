@@ -3,7 +3,7 @@ import KoenigComposerContext from '../context/KoenigComposerContext.jsx';
 import React, {useRef} from 'react';
 import {$createNodeSelection, $getNodeByKey, $setSelection} from 'lexical';
 import {ActionToolbar} from '../components/ui/ActionToolbar.jsx';
-import {CtaCard} from '../components/ui/cards/CtaCard';
+import {CallToActionCard} from '../components/ui/cards/CallToActionCard.jsx';
 import {LinkInput} from '../components/ui/LinkInput';
 import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
 import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu.jsx';
@@ -118,7 +118,7 @@ export const CallToActionNodeComponent = ({
         });
     };
 
-    const reselectCTACard = () => {
+    const reselectCallToActionCard = () => {
         editor.update(() => {
             const nodeSelection = $createNodeSelection();
             nodeSelection.add(nodeKey);
@@ -128,7 +128,7 @@ export const CallToActionNodeComponent = ({
 
     const cancelLinkAndReselect = () => {
         setShowLink(false);
-        reselectCTACard();
+        reselectCallToActionCard();
     };
 
     const setHref = (newHref) => {
@@ -144,7 +144,7 @@ export const CallToActionNodeComponent = ({
 
     return (
         <>
-            <CtaCard
+            <CallToActionCard
                 buttonColor={buttonColor}
                 buttonText={buttonText}
                 buttonTextColor={buttonTextColor}

@@ -1,5 +1,5 @@
 import React from 'react';
-import {$createCallToActionNode, CallToActionNode, INSERT_CTA_COMMAND} from '../nodes/CallToActionNode';
+import {$createCallToActionNode, CallToActionNode, INSERT_CALL_TO_ACTION_COMMAND} from '../nodes/CallToActionNode';
 import {COMMAND_PRIORITY_LOW} from 'lexical';
 import {INSERT_CARD_COMMAND} from './KoenigBehaviourPlugin';
 import {mergeRegister} from '@lexical/utils';
@@ -15,7 +15,7 @@ export const CallToActionPlugin = () => {
         }
         return mergeRegister(
             editor.registerCommand(
-                INSERT_CTA_COMMAND,
+                INSERT_CALL_TO_ACTION_COMMAND,
                 async (dataset) => {
                     const cardNode = $createCallToActionNode(dataset);
                     editor.dispatchCommand(INSERT_CARD_COMMAND, {cardNode, openInEditMode: true});

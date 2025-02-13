@@ -1,20 +1,20 @@
 import ImmersiveLayoutIcon from '../../../assets/icons/kg-layout-immersive.svg?react';
-import KoenigNestedEditor from '../../KoenigNestedEditor';
+import KoenigNestedEditor from '../../KoenigNestedEditor.jsx';
 import MinimalLayoutIcon from '../../../assets/icons/kg-layout-minimal.svg?react';
 import PropTypes from 'prop-types';
 import React, {useState} from 'react';
-import ReplacementStringsPlugin from '../../../plugins/ReplacementStringsPlugin';
+import ReplacementStringsPlugin from '../../../plugins/ReplacementStringsPlugin.jsx';
 import clsx from 'clsx';
-import defaultTheme from '../../../themes/default';
-import {Button} from '../Button';
-import {ButtonGroupSetting, ColorOptionSetting, ColorPickerSetting, InputSetting, InputUrlSetting, MediaUploadSetting, SettingsPanel, ToggleSetting} from '../SettingsPanel';
-import {ReadOnlyOverlay} from '../ReadOnlyOverlay';
+import defaultTheme from '../../../themes/default.js';
+import {Button} from '../Button.jsx';
+import {ButtonGroupSetting, ColorOptionSetting, ColorPickerSetting, InputSetting, InputUrlSetting, MediaUploadSetting, SettingsPanel, ToggleSetting} from '../SettingsPanel.jsx';
+import {ReadOnlyOverlay} from '../ReadOnlyOverlay.jsx';
 import {RestrictContentPlugin} from '../../../index.js';
-import {VisibilitySettings} from '../VisibilitySettings';
-import {getAccentColor} from '../../../utils/getAccentColor';
+import {VisibilitySettings} from '../VisibilitySettings.jsx';
+import {getAccentColor} from '../../../utils/getAccentColor.js';
 import {textColorForBackgroundColor} from '@tryghost/color-utils';
 
-export const CTA_COLORS = {
+export const CALLTOACTION_COLORS = {
     none: 'bg-transparent border-transparent',
     white: 'bg-transparent border-grey-900/15 dark:border-grey-100/20',
     grey: 'bg-grey/10 border-transparent',
@@ -29,7 +29,7 @@ const sponsoredLabelTheme = {
     link: 'text-accent'
 };
 
-export const ctaColorPicker = [
+export const callToActionColorPicker = [
     {
         label: 'None',
         name: 'none',
@@ -67,7 +67,7 @@ export const ctaColorPicker = [
     }
 ];
 
-export function CtaCard({
+export function CallToActionCard({
     buttonColor = '',
     buttonText = '',
     buttonTextColor = '',
@@ -125,7 +125,7 @@ export function CtaCard({
         <>
             {/* Color picker */}
             <ColorOptionSetting
-                buttons={ctaColorPicker}
+                buttons={callToActionColorPicker}
                 label='Background'
                 selectedName={color}
                 onClick={handleColorChange}
@@ -215,7 +215,7 @@ export function CtaCard({
         <>
             <div className={clsx(
                 'w-full rounded-lg border',
-                CTA_COLORS[color],
+                CALLTOACTION_COLORS[color],
                 {
                     'py-3': color === 'none' && !hasSponsorLabel,
                     'pb-3': color === 'none' && hasSponsorLabel
@@ -327,7 +327,7 @@ export function CtaCard({
     );
 }
 
-CtaCard.propTypes = {
+CallToActionCard.propTypes = {
     buttonText: PropTypes.string,
     buttonUrl: PropTypes.string,
     buttonColor: PropTypes.string,
@@ -356,7 +356,7 @@ CtaCard.propTypes = {
     toggleVisibility: PropTypes.func
 };
 
-CtaCard.defaultProps = {
+CallToActionCard.defaultProps = {
     buttonText: '',
     buttonUrl: '',
     buttonColor: '',
