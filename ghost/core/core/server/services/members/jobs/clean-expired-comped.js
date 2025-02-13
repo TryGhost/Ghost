@@ -3,6 +3,8 @@ const ObjectId = require('bson-objectid').default;
 const {chunk: chunkArray} = require('lodash');
 const debug = require('@tryghost/debug')('jobs:clean-expired-comped');
 const moment = require('moment');
+const DatabaseInfo = require('@tryghost/database-info');
+
 
 // recurring job to clean expired complimentary subscriptions
 
@@ -31,10 +33,16 @@ if (parentPort) {
     const cleanupStartDate = new Date();
     const db = require('../../../data/db');
     debug(`Starting cleanup of expired comp subscriptions`);
-    const expiredCompedRows = await db.knex('members_products')
-        .where('expiry_at', '<', moment.utc().startOf('day').toISOString())
-        .select('*');
-
+    let expiredCompedRows = [];
+    if (DatabaseInfo.isMySQL(db.knex)) {
+        expiredCompedRows = await db.knex('members_products')
+            .where('expiry_at', '<', moment.utc().startOf('day').toISOString())
+            .select('*');
+    } else {
+        expiredCompedRows = await db.knex('members_products')
+            .where('expiry_at', '<', moment.utc().startOf('day').valueOf())
+            .select('*');
+    }
     let deletedExpiredSubs = 0;
     let updatedMembers = 0;
 
