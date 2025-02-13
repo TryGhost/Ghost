@@ -58,21 +58,16 @@ class EventStorage {
         });
 
         domainEvents.subscribe(SubscriptionAttributionEvent, async (event) => {
-            console.log('SubscriptionAttributionEvent', event.data);
             let attribution = event.data.attribution;
 
             const subscriptionCreatedEvent = await this.models.SubscriptionCreatedEvent
                 .findOne({subscription_id: event.data.subscriptionId}, {require: false, withRelated: []});
 
             if (!subscriptionCreatedEvent) {
-                console.log('no subscriptionCreatedEvent');
                 return;
             }
 
             const original = subscriptionCreatedEvent.toJSON();
-            console.log('original', original);
-
-            console.log(`>>updating attribution for ${subscriptionCreatedEvent.id}`);
             await subscriptionCreatedEvent.save({
                 attribution_id: attribution?.id ?? original.attribution_id,
                 attribution_url: attribution?.url ?? original.attribution_url,
