@@ -120,7 +120,6 @@ module.exports = class CheckoutSessionEventService {
     }
 
     async handleSubscriptionEvent(session) {
-        console.log('handleSubscriptionEvent >> session.subscription', session.subscription);
         const customer = await this.api.getCustomer(session.customer, {
             expand: ['subscriptions.data.default_payment_method']
         });
