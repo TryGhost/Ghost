@@ -107,11 +107,8 @@ async function signin({data, api, state}) {
 async function signup({data, state, api}) {
     try {
         if (hasCaptchaEnabled({site: state.site})) {
-            console.log('Captcha enabled, getting ref');
             const {captchaRef} = state;
-            console.log('Got ref, value: ', captchaRef);
             const {response} = await captchaRef.current.execute({async: true});
-            console.log('Got response: ', response);
             data.token = response;
         }
 
