@@ -1,5 +1,6 @@
 const assert = require('assert/strict');
 const errors = require('@tryghost/errors');
+const sinon = require('sinon');
 const CheckoutSessionEventService = require('../../../../../lib/services/webhook/CheckoutSessionEventService');
 
 describe('CheckoutSessionEventService', function () {
@@ -20,7 +21,10 @@ describe('CheckoutSessionEventService', function () {
             update: sinon.stub(),
             linkSubscription: sinon.stub(),
             upsertCustomer: sinon.stub(),
-            updateSubscriptionAttribution: sinon.stub()
+            updateSubscriptionAttribution: sinon.stub(),
+            getSubscriptionByStripeID: sinon.stub().callsFake((id) => {
+                return {id};
+            })
         };
 
         donationRepository = {
