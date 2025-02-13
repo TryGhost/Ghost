@@ -5,7 +5,6 @@ const debug = require('@tryghost/debug')('jobs:clean-expired-comped');
 const moment = require('moment');
 const DatabaseInfo = require('@tryghost/database-info');
 
-
 // recurring job to clean expired complimentary subscriptions
 
 // Exit early when cancelled to prevent stalling shutdown. No cleanup needed when cancelling as everything is idempotent and will pick up
