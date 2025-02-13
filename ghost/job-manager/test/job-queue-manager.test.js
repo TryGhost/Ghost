@@ -403,7 +403,7 @@ describe('JobQueueManager', function () {
 
     describe('_doReportStats', function () {
         it('should log the stats using the logger', function () {
-            const loggerInfoStub = sinon.stub(jobQueueManager.logger, 'info');
+            const loggerDebugStub = sinon.stub(jobQueueManager.logger, 'debug');
             jobQueueManager._doReportStats();
             const expectedStats = {
                 totalWorkers: 1,
@@ -415,8 +415,8 @@ describe('JobQueueManager', function () {
                 emailAnalyticsAggregateMemberStatsCount: 0
             };
             const expectedLog = `Job Queue Stats: ${JSON.stringify(expectedStats, null, 2)}`;
-            expect(loggerInfoStub.calledOnce).to.be.true;
-            expect(loggerInfoStub.calledWith(expectedLog)).to.be.true;
+            expect(loggerDebugStub.calledOnce).to.be.true;
+            expect(loggerDebugStub.calledWith(expectedLog)).to.be.true;
         });
 
         it('should log the stats using the metricLogger', function () {

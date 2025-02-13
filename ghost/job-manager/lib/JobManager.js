@@ -104,7 +104,7 @@ class JobManager {
     }
 
     #initializeJobQueueManager() {
-        if (this.#config?.get('services:jobs:queue:enabled') === true && !this.#jobQueueManager) {
+        if (this.#config?.get('services:jobs:queue:enabled') === true && !this.#jobQueueManager && this.#JobModel) {
             this.#jobQueueManager = new JobQueueManager({JobModel: this.#JobModel, config: this.#config, eventEmitter: this.#events, metricLogger: metrics});
             this.#jobQueueManager.init();
         }

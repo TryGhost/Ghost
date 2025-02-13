@@ -268,5 +268,19 @@
         "batchSize": 1000,
         "captureLinkClickBadMemberUuid": false
     },
-    "disableJSBackups": false
+    "disableJSBackups": false,
+    "services": {
+        "jobs": {
+            "queue": {
+                "enabled": true,
+                "reportStats": true,
+                "maxWorkers": 1,
+                "logLevel": "info",
+                "pollMinInterval": 1000,
+                "pollMaxInterval": 60000,
+                "queueCapacity": 500,
+                "fetchCount": 500
+            }
+        }
+    }
 }
