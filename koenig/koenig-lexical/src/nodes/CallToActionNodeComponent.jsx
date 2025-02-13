@@ -93,16 +93,20 @@ export const CallToActionNodeComponent = ({
 
     const handleImageChange = async (files) => {
         const imgPreviewUrl = URL.createObjectURL(files[0]);
-        const {width, height} = await getImageDimensions(imgPreviewUrl);
-        const result = await imageUploader.upload(files);
-        // reset original src so it can be replaced with preview and upload progress
-        editor.update(() => {
-            const node = $getNodeByKey(nodeKey);
-            node.imageUrl = result?.[0].url;
-            node.hasImage = true;
-            node.imageWidth = width;
-            node.imageHeight = height;
-        });
+        try {
+            const {width, height} = await getImageDimensions(imgPreviewUrl);
+            const result = await imageUploader.upload(files);
+            // reset original src so it can be replaced with preview and upload progress
+            editor.update(() => {
+                const node = $getNodeByKey(nodeKey);
+                node.imageUrl = result?.[0].url;
+                node.hasImage = true;
+                node.imageWidth = width;
+                node.imageHeight = height;
+            });
+        } finally {
+            URL.revokeObjectURL(imgPreviewUrl);
+        }
     };
 
     const onFileChange = async (e) => {
@@ -114,6 +118,8 @@ export const CallToActionNodeComponent = ({
             const node = $getNodeByKey(nodeKey);
             node.imageUrl = '';
             node.hasImage = false;
+            node.imageWidth = null;
+            node.imageHeight = null;
         });
     };
     const handleUpdatingLayout = (val) => {

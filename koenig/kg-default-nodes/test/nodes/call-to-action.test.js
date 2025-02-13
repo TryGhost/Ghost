@@ -219,7 +219,7 @@ describe('CallToActionNode', function () {
 
             const html = element.outerHTML.toString();
             html.should.containEql('data-layout="minimal"');
-            html.should.containEql('background-color: green');
+            html.should.containEql('kg-cta-bg-green');
             html.should.containEql('background-color: #F0F0F0');
             html.should.containEql('Get access now');
             html.should.containEql('http://someblog.com/somepost');
@@ -249,13 +249,38 @@ describe('CallToActionNode', function () {
             const {element} = callToActionNode.exportDOM(exportOptions);
 
             const html = element.outerHTML.toString();
-            html.should.containEql('cta-card-email');
+            html.should.containEql('kg-cta-bg-green');
             html.should.containEql('background-color: #F0F0F0');
             html.should.containEql('Get access now');
             html.should.containEql('http://someblog.com/somepost');
             html.should.containEql('<p><span style="white-space: pre-wrap;">SPONSORED</span></p>'); // because hasSponsorLabel is true
             html.should.containEql('/content/images/2022/11/koenig-lexical.jpg'); // because hasImage is true
             html.should.containEql('This is a new CTA Card via email.');
+        }));
+
+        it('renders email with img width and height when immersive', editorTest(function () {
+            exportOptions.target = 'email';
+            dataset = {
+                backgroundColor: 'green',
+                buttonColor: '#F0F0F0',
+                buttonText: 'Get access now',
+                buttonTextColor: '#000000',
+                buttonUrl: 'http://someblog.com/somepost',
+                hasImage: true,
+                hasSponsorLabel: true,
+                sponsorLabel: '<p><span style="white-space: pre-wrap;">SPONSORED</span></p>',
+                imageUrl: '/content/images/2022/11/koenig-lexical.jpg',
+                layout: 'immersive',
+                showButton: true,
+                textValue: '<p><span style="white-space: pre-wrap;">This is a new CTA Card via email.</span></p>',
+                imageWidth: 200,
+                imageHeight: 100
+            };
+            const callToActionNode = new CallToActionNode(dataset);
+            const {element} = callToActionNode.exportDOM(exportOptions);
+
+            const html = element.outerHTML.toString();
+            html.should.containEql('<img src="/content/images/2022/11/koenig-lexical.jpg" alt="CTA Image" class="kg-cta-image" width="200" height="100">');
         }));
 
         it('parses textValue correctly', editorTest(function () {
