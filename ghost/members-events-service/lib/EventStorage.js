@@ -40,7 +40,6 @@ class EventStorage {
         });
 
         domainEvents.subscribe(SubscriptionCreatedEvent, async (event) => {
-            console.log('SubscriptionCreatedEvent > subscriptionId', event.data.subscriptionId);
             let attribution = event.data.attribution;
 
             await this.models.SubscriptionCreatedEvent.add({
