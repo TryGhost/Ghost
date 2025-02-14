@@ -192,7 +192,7 @@ module.exports = class CheckoutSessionEventService {
                     await memberRepository.linkSubscription({
                         id: member.id,
                         subscription,
-                        offerId,
+                        offerId
                     });
                 } catch (err) {
                     if (err.code !== 'ER_DUP_ENTRY' && err.code !== 'SQLITE_CONSTRAINT') {
@@ -204,7 +204,8 @@ module.exports = class CheckoutSessionEventService {
                 }
             }
 
-            await memberRepository.updateSubscriptionAttribution(session.subscription, attribution);
+            const subscriptionModel = await memberRepository.getSubscriptionByStripeId(session.subscription);
+            await memberRepository.updateSubscriptionAttribution(subscriptionModel.id, attribution);
         }
 
         if (checkoutType !== 'upgrade') {

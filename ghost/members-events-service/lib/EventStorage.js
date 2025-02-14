@@ -68,14 +68,14 @@ class EventStorage {
 
             const original = subscriptionCreatedEvent.toJSON();
 
-            await this.models.SubscriptionCreatedEvent.edit({
+            await subscriptionCreatedEvent.save({
                 attribution_id: attribution?.id ?? original.attribution_id,
                 attribution_url: attribution?.url ?? original.attribution_url,
                 attribution_type: attribution?.type ?? original.attribution_type,
                 referrer_source: attribution?.referrerSource ?? original.referrer_source,
                 referrer_medium: attribution?.referrerMedium ?? original.referrer_medium,
-                referrer_url: attribution?.referrerUrl ?? original.referrer_url,
-            }, {id: subscriptionCreatedEvent.id});
+                referrer_url: attribution?.referrerUrl ?? original.referrer_url
+            }, {patch: true});
         });
     }
 }

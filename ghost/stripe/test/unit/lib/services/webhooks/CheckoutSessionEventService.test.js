@@ -19,7 +19,9 @@ describe('CheckoutSessionEventService', function () {
             create: sinon.stub(),
             update: sinon.stub(),
             linkSubscription: sinon.stub(),
-            upsertCustomer: sinon.stub()
+            upsertCustomer: sinon.stub(),
+            getSubscriptionByStripeId: sinon.stub().callsFake(id => ({id})),
+            updateSubscriptionAttribution: sinon.stub().resolves()
         };
 
         donationRepository = {
@@ -634,6 +636,15 @@ describe('CheckoutSessionEventService', function () {
             assert.equal(memberData.email, 'customer@example.com');
             assert.equal(memberData.name, 'Metadata Name');
             assert.equal(memberData.newsletters, undefined);
+        });
+
+        it('should update subscription attribution for an existing member', async function () {
+            api.getCustomer.resolves(customer);
+            memberRepository.get.resolves(member);
+
+            await service.handleSubscriptionEvent(session);
+
+            assert(memberRepository.updateSubscriptionAttribution.calledOnce);
         });
 
         it('should update member if found', async function () {
