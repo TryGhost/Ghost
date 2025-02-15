@@ -35,10 +35,10 @@ const SUPPORTED_LOCALES = [
     'mk', // Macedonian
     'mn', // Mongolian
     'ms', // Malay
+    'nb', // Norwegian Bokmål
     'ne', // Nepali
     'nl', // Dutch
     'nn', // Norwegian Nynorsk
-    'no', // Norwegian
     'pl', // Polish
     'pt', // Portuguese
     'pt-BR', // Portuguese (Brazil)
