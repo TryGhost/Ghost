@@ -261,7 +261,7 @@ class PostsService {
             }));
         }, []);
 
-        await options.transacting('posts_tags').insert(postTags);
+        await options.transacting('posts_tags').insert(postTags).onConflict().ignore();
         await this.models.Post.addActions('edited', postRows.map(p => p.id), options);
 
         return {
