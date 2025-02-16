@@ -6,10 +6,9 @@ const settingsCache = require('../../../core/shared/settings-cache');
 const {agentProvider, fixtureManager, mockManager, matchers, configUtils} = require('../../utils/e2e-framework');
 const {stringMatching, anyEtag, anyUuid, anyContentLength, anyContentVersion} = matchers;
 const models = require('../../../core/server/models');
-const {mockLabsDisabled, mockLabsEnabled} = require('../../utils/e2e-framework-mock-manager');
 const {anyErrorId} = matchers;
 
-const CURRENT_SETTINGS_COUNT = 87;
+const CURRENT_SETTINGS_COUNT = 88;
 
 const settingsMatcher = {};
 
@@ -52,7 +51,6 @@ describe('Settings API', function () {
 
     beforeEach(function () {
         mockManager.mockMail();
-        mockLabsDisabled('newEmailAddresses');
     });
 
     afterEach(function () {
@@ -255,37 +253,6 @@ describe('Settings API', function () {
                     assert.equal(emailVerificationRequired.value, false);
                 });
             mockManager.assert.sentEmailCount(0);
-        });
-
-        it('[LEGACY] editing members_support_address triggers email verification flow', async function () {
-            await agent.put('settings/')
-                .body({
-                    settings: [{key: 'members_support_address', value: 'support@example.com'}]
-                })
-                .expectStatus(200)
-                .matchBodySnapshot({
-                    settings: matchSettingsArray(CURRENT_SETTINGS_COUNT)
-                })
-                .matchHeaderSnapshot({
-                    etag: anyEtag,
-                    // Special rule for this test, as the labs setting changes a lot
-                    'content-length': anyContentLength,
-                    'content-version': anyContentVersion
-                })
-                .expect(({body}) => {
-                    const membersSupportAddress = body.settings.find(setting => setting.key === 'members_support_address');
-                    assert.equal(membersSupportAddress.value, 'noreply');
-
-                    assert.deepEqual(body.meta, {
-                        sent_email_verification: ['members_support_address']
-                    });
-                });
-
-            mockManager.assert.sentEmailCount(1);
-            mockManager.assert.sentEmail({
-                subject: 'Verify email address',
-                to: 'support@example.com'
-            });
         });
 
         it('does not trigger email verification flow if members_support_address remains the same', async function () {
@@ -649,7 +616,6 @@ describe('Settings API', function () {
         this.beforeEach(function () {
             configUtils.set('hostSettings:managedEmail:enabled', false);
             configUtils.set('hostSettings:managedEmail:sendingDomain', '');
-            mockLabsEnabled('newEmailAddresses');
         });
 
         it('editing members_support_address does not trigger email verification flow', async function () {
@@ -693,4 +659,47 @@ describe('Settings API', function () {
             mockManager.assert.sentEmailCount(0);
         });
     });
+
+    describe('Settings overrides', function () {
+        this.beforeEach(async function () {
+            const settingsOverrides = {
+                email_track_clicks: false
+            };
+            configUtils.set('hostSettings:settingsOverrides', settingsOverrides);
+            await fixtureManager.init();
+        });
+
+        it('respects settings overrides defined in hostSettings:settingsOverrides', async function () {
+            await agent.get('settings/')
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    settings: matchSettingsArray(CURRENT_SETTINGS_COUNT)
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    'content-length': anyContentLength,
+                    etag: anyEtag
+                });
+        });
+
+        it('prevents modification of overridden settings via API', async function () {
+            await agent.put('settings/')
+                .body({
+                    settings: [{
+                        key: 'email_track_clicks',
+                        value: true
+                    }]
+                })
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    settings: matchSettingsArray(CURRENT_SETTINGS_COUNT)
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    'content-length': anyContentLength,
+                    etag: anyEtag
+                });
+        });
+    });
 });
+

@@ -117,4 +117,45 @@ describe('Account Email Page', () => {
         const {mockOnActionFn} = setup({site: siteData, member: null});
         expect(mockOnActionFn).toHaveBeenCalledWith('switchPage', {page: 'signin'});
     });
+
+    test('newsletters are not visible when newsletters are disabled on the site but has comments enabled', async () => {
+        const newsletterData = getNewslettersData({numOfNewsletters: 2});
+        const siteData = getSiteData({
+            newsletters: newsletterData,
+            editorDefaultEmailRecipients: 'disabled',
+            member: getMemberData({newsletters: newsletterData})
+        });
+        
+        const {getAllByTestId, getByText} = setup({site: siteData});
+        const unsubscribeBtns = getAllByTestId(`toggle-wrapper`);
+
+        expect(getByText('Email preferences')).toBeInTheDocument();
+
+        expect(unsubscribeBtns).toHaveLength(1);
+        expect(unsubscribeBtns[0].textContent).toContain('Get notified when someone replies to your comment');
+    });
+
+    test('newsletters are visible when editor default email recipients is set to visibility', async () => {
+        const newsletterData = getNewslettersData({numOfNewsletters: 2});
+        const siteData = getSiteData({
+            newsletters: newsletterData,
+            editorDefaultEmailRecipients: 'visibility',
+            member: getMemberData({newsletters: newsletterData})
+        });
+        const {getAllByTestId} = setup({site: siteData});
+        const unsubscribeBtns = getAllByTestId(`toggle-wrapper`);
+        expect(unsubscribeBtns).toHaveLength(3);
+    });
+
+    test('newsletters are visible when editor default email recipients is set to filter', async () => {
+        const newsletterData = getNewslettersData({numOfNewsletters: 2});
+        const siteData = getSiteData({
+            newsletters: newsletterData,
+            editorDefaultEmailRecipients: 'filter',
+            member: getMemberData({newsletters: newsletterData})
+        });
+        const {getAllByTestId} = setup({site: siteData});
+        const unsubscribeBtns = getAllByTestId(`toggle-wrapper`);
+        expect(unsubscribeBtns).toHaveLength(3);
+    });
 });

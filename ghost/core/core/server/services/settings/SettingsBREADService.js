@@ -369,20 +369,7 @@ class SettingsBREADService {
      * @private
      */
     async sendEmailVerificationMagicLink({email, key}) {
-        const [,toDomain] = email.split('@');
-
-        let fromEmail = `noreply@${toDomain}`;
-        if (fromEmail === email) {
-            fromEmail = `no-reply@${toDomain}`;
-        }
-
-        if (this.emailAddressService.service.useNewEmailAddresses) {
-            // Gone with the old logic: always use the default email address here
-            // We don't need to validate the FROM address, only the to address
-            // Also because we are not only validating FROM addresses, but also possible REPLY-TO addresses, which we won't send FROM
-            fromEmail = this.emailAddressService.service.defaultFromAddress;
-        }
-
+        const fromEmail = this.emailAddressService.service.defaultFromAddress;
         const {ghostMailer} = this;
 
         this.magicLinkService.transporter = {

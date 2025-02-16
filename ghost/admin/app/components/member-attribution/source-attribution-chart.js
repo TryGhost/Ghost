@@ -78,7 +78,7 @@ export default class SourceAttributionChart extends Component {
                             value = -value;
                         }
 
-                        tooltipTextEl.innerHTML = `<span class="indicator solid" style="background-color: ${data.datasets[tooltipItems.datasetIndex].backgroundColor[tooltipItems.index]}"></span><span class="value">${value}%</span><span class="metric">${label}</span>`;
+                        tooltipTextEl.innerHTML = `<span class="indicator solid" style="background-color: ${data.datasets[tooltipItems.datasetIndex].backgroundColor[tooltipItems.index]}"></span><span class="metric">${label}</span><span class="value">${value}%</span>`;
                     },
                     title: () => {
                         return null;

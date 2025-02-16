@@ -57,4 +57,28 @@ test.describe('Analytics settings', async () => {
         const hasDownloadUrl = lastApiRequests.postsExport?.url?.includes('/posts/export/?limit=1000');
         expect(hasDownloadUrl).toBe(true);
     });
+
+    test('Supports read only settings', async ({page}) => {
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseSettings: {method: 'GET', path: /^\/settings\/\?group=/, response: updatedSettingsResponse([
+                {key: 'members_track_sources', value: false},
+                {key: 'email_track_opens', value: false},
+                {key: 'email_track_clicks', value: false, is_read_only: true},
+                {key: 'outbound_link_tagging', value: false}
+            ])}
+        }});
+
+        await page.goto('/');
+
+        const section = page.getByTestId('analytics');
+
+        await expect(section).toBeVisible();
+
+        const newsletterClicksToggle = await section.getByLabel(/Newsletter clicks/);
+
+        await expect(newsletterClicksToggle).not.toBeChecked();
+
+        await expect(newsletterClicksToggle).toBeDisabled();
+    });
 });

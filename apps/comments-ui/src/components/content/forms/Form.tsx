@@ -1,6 +1,6 @@
 import React from 'react';
 import {Avatar} from '../Avatar';
-import {Comment, OpenCommentForm, useAppContext, useLabs} from '../../../AppContext';
+import {Comment, OpenCommentForm, useAppContext} from '../../../AppContext';
 import {ReactComponent as EditIcon} from '../../../images/icons/edit.svg';
 import {Editor, EditorContent} from '@tiptap/react';
 import {ReactComponent as SpinnerIcon} from '../../../images/icons/spinner.svg';
@@ -22,30 +22,25 @@ export type FormEditorProps = {
     submitText: React.ReactNode;
     submitSize: SubmitSize;
     openForm?: OpenCommentForm;
-    initialHasContent?: boolean;
 };
 
-export const FormEditor: React.FC<FormEditorProps> = ({comment, submit, progress, setProgress, close, isOpen, editor, submitText, submitSize, openForm, initialHasContent}) => {
-    const labs = useLabs();
+export const FormEditor: React.FC<FormEditorProps> = ({comment, submit, progress, setProgress, close, isOpen, editor, submitText, submitSize, openForm}) => {
     const {dispatchAction, t} = useAppContext();
     let buttonIcon = null;
-    const [hasContent, setHasContent] = useState(initialHasContent || false);
 
     useEffect(() => {
-        if (editor) {
+        if (editor && openForm) {
             const checkContent = () => {
-                const editorHasContent = !editor.isEmpty;
-                setHasContent(editorHasContent);
+                const hasUnsavedChanges = comment && openForm.type === 'edit' ?
+                    editor.getHTML() !== comment.html :
+                    !editor.isEmpty;
 
-                if (openForm) {
-                    const hasUnsavedChanges = comment && openForm.type === 'edit' ? editor.getHTML() !== comment.html : editorHasContent;
-
-                    // avoid unnecessary state updates to prevent infinite loops
-                    if (openForm.hasUnsavedChanges !== hasUnsavedChanges) {
-                        dispatchAction('setCommentFormHasUnsavedChanges', {id: openForm.id, hasUnsavedChanges});
-                    }
+                // avoid unnecessary state updates to prevent infinite loops
+                if (openForm.hasUnsavedChanges !== hasUnsavedChanges) {
+                    dispatchAction('setCommentFormHasUnsavedChanges', {id: openForm.id, hasUnsavedChanges});
                 }
             };
+
             editor.on('update', checkContent);
             editor.on('transaction', checkContent);
 
@@ -59,7 +54,7 @@ export const FormEditor: React.FC<FormEditorProps> = ({comment, submit, progress
     }, [editor, comment, openForm, dispatchAction]);
 
     if (progress === 'sending') {
-        buttonIcon = <SpinnerIcon className={`h-[24px] w-[24px] fill-white ${labs.commentImprovements ? '' : 'dark:fill-black'}`} data-testid="button-spinner" />;
+        buttonIcon = <SpinnerIcon className={`h-[24px] w-[24px] fill-white`} data-testid="button-spinner" />;
     }
 
     const stopIfFocused = useCallback((event) => {
@@ -148,28 +143,16 @@ export const FormEditor: React.FC<FormEditorProps> = ({comment, submit, progress
                 {close &&
                     <button className="ml-2.5 font-sans text-sm font-medium text-neutral-900/50 outline-0 transition-all hover:text-neutral-900/70 dark:text-white/60 dark:hover:text-white/75" type="button" onClick={close}>{t('Cancel')}</button>
                 }
-                {labs.commentImprovements ? (
-                    <button
-                        className={`flex w-auto items-center justify-center ${submitSize === 'medium' && 'sm:min-w-[100px]'} ${submitSize === 'small' && 'sm:min-w-[64px]'} h-[40px] rounded-md bg-[var(--gh-accent-color)] px-3 py-2 text-center font-sans text-base font-medium text-white outline-0 transition-colors duration-200 hover:brightness-105 disabled:bg-black/5 disabled:text-neutral-900/30 sm:text-sm dark:disabled:bg-white/15 dark:disabled:text-white/35`}
-                        data-testid="submit-form-button"
-                        disabled={!hasContent}
-                        type="button"
-                        onClick={submitForm}
-                    >
-                        {buttonIcon && <span className="mr-1">{buttonIcon}</span>}
-                        {submitText && <span>{submitText}</span>}
-                    </button>
-                ) : (
-                    <button
-                        className={`flex w-auto items-center justify-center ${submitSize === 'medium' && 'sm:min-w-[100px]'} ${submitSize === 'small' && 'sm:min-w-[64px]'} h-[40px] rounded-[6px] bg-neutral-900 px-3 py-2 text-center font-sans text-base font-medium text-white/95 outline-0 transition-all duration-150 hover:bg-black hover:text-white sm:text-sm dark:bg-white/95 dark:text-neutral-800 dark:hover:bg-white dark:hover:text-neutral-900`}
-                        data-testid="submit-form-button"
-                        type="button"
-                        onClick={submitForm}
-                    >
-                        <span>{buttonIcon}</span>
-                        {submitText && <span>{submitText}</span>}
-                    </button>
-                )}
+                <button
+                    className={`flex w-auto items-center justify-center ${submitSize === 'medium' && 'sm:min-w-[100px]'} ${submitSize === 'small' && 'sm:min-w-[64px]'} h-[40px] rounded-md bg-[var(--gh-accent-color)] px-3 py-2 text-center font-sans text-base font-medium text-white outline-0 transition-colors duration-200 hover:brightness-105 disabled:bg-black/5 disabled:text-neutral-900/30 sm:text-sm dark:disabled:bg-white/15 dark:disabled:text-white/35`}
+                    data-testid="submit-form-button"
+                    disabled={!editor || editor.isEmpty}
+                    type="button"
+                    onClick={submitForm}
+                >
+                    {buttonIcon && <span className="mr-1">{buttonIcon}</span>}
+                    {submitText && <span>{submitText}</span>}
+                </button>
             </div>
         </>
     );
@@ -187,12 +170,12 @@ type FormHeaderProps = {
 
 const FormHeader: React.FC<FormHeaderProps> = ({show, name, expertise, replyingToText, editName, editExpertise}) => {
     const {t} = useAppContext();
-    const labs = useLabs();
 
-    const isReplyingToReply = labs.commentImprovements && replyingToText;
+    const isReplyingToReply = !!replyingToText;
 
     return (
         <Transition
+            data-testid="form-header"
             enter="transition duration-500 delay-100 ease-in-out"
             enterFrom="opacity-0 -translate-x-2"
             enterTo="opacity-100 translate-x-0"
@@ -205,7 +188,7 @@ const FormHeader: React.FC<FormHeaderProps> = ({show, name, expertise, replyingT
                 <div
                     className="w-full font-sans text-base font-bold leading-snug text-neutral-900 sm:w-auto sm:text-sm dark:text-white/85"
                     data-testid="member-name"
-                    onClick={editName}
+                    onMouseDown={editName}
                 >
                     {name ? name : 'Anonymous'}
                 </div>
@@ -214,7 +197,7 @@ const FormHeader: React.FC<FormHeaderProps> = ({show, name, expertise, replyingT
                         className={`group flex items-center justify-start whitespace-nowrap text-left font-sans text-base leading-snug text-neutral-900/50 transition duration-150 hover:text-black/75 sm:text-sm dark:text-white/60 dark:hover:text-white/75 ${!expertise && 'text-black/30 hover:text-black/50 dark:text-white/30 dark:hover:text-white/50'}`}
                         data-testid="expertise-button"
                         type="button"
-                        onClick={editExpertise}
+                        onMouseDown={editExpertise}
                     >
                         <span><span className="mx-[0.3em] hidden sm:inline">·</span>{expertise ? expertise : 'Add your expertise'}</span>
                         {expertise && <EditIcon className="ml-1 h-[12px] w-[12px] translate-x-[-6px] stroke-black/50 opacity-0 transition-all duration-100 ease-out group-hover:translate-x-0 group-hover:stroke-black/75 group-hover:opacity-100 dark:stroke-white/60 dark:group-hover:stroke-white/75" />}
@@ -258,9 +241,6 @@ const Form: React.FC<FormProps> = ({
     const [progress, setProgress] = useState<Progress>('default');
     const formEl = useRef(null);
 
-    // Initialize hasContent to true if we're editing an existing comment
-    const initialHasContent = openForm?.type === 'edit' && !!comment?.html;
-
     const memberName = member?.name ?? comment?.member?.name;
 
     if (progress === 'sending' || (memberName && isAskingDetails)) {
@@ -295,7 +275,6 @@ const Form: React.FC<FormProps> = ({
                 close={close}
                 comment={comment}
                 editor={editor}
-                initialHasContent={initialHasContent}
                 isOpen={isOpen}
                 openForm={openForm}
                 progress={progress}
@@ -327,14 +306,13 @@ const FormWrapper: React.FC<FormWrapperProps> = ({
     children
 }) => {
     const {member, dispatchAction} = useAppContext();
-    const labs = useLabs();
-    
+
     const memberName = member?.name ?? comment?.member?.name;
     const memberExpertise = member?.expertise ?? comment?.member?.expertise;
 
     let openStyles = '';
     if (isOpen) {
-        const isReplyToReply = labs.commentImprovements && !!openForm?.in_reply_to_snippet;
+        const isReplyToReply = !!openForm?.in_reply_to_snippet;
         openStyles = isReplyToReply ? 'pl-[1px] pt-[68px] sm:pl-[44px] sm:pt-[56px]' : 'pl-[1px] pt-[48px] sm:pl-[44px] sm:pt-[40px]';
     }
 

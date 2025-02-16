@@ -82,7 +82,8 @@ export type EditableAppContext = {
     labs: LabsContextType,
     order: string,
     adminApi: AdminApi | null,
-    commentsIsLoading?: boolean
+    commentsIsLoading?: boolean,
+    commentIdToHighlight: string | null
 }
 
 export type TranslationFunction = (key: string, replacements?: Record<string, string | number>) => string;
@@ -119,3 +120,4 @@ export const useLabs = () => {
         return {};
     }
 };
+
