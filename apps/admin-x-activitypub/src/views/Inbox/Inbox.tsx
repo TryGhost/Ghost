@@ -19,7 +19,7 @@ import {
     useInboxForUser,
     useSuggestedProfilesForUser,
     useUserDataForUser
-} from '@hooks/useActivityPubQueries';
+} from '@hooks/use-activity-pub-queries';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 type Layout = 'inbox' | 'feed';
