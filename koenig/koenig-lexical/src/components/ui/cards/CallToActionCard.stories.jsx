@@ -2,8 +2,8 @@ import React from 'react';
 import VisibilityIndicatorIcon from '../../../assets/icons/kg-indicator-visibility.svg?react';
 import populateEditor from '../../../utils/storybook/populate-storybook-editor.js';
 import {BASIC_NODES} from '../../../index.js';
-import {CardWrapper} from '../CardWrapper.jsx';
-import {CtaCard} from './CtaCard';
+import {CallToActionCard} from './CallToActionCard';
+import {CardWrapper} from '../CardWrapper';
 import {createEditor} from 'lexical';
 
 const displayOptions = {
@@ -18,8 +18,8 @@ const layoutOptions = {
 };
 
 const story = {
-    title: 'Primary cards/CTA card',
-    component: CtaCard,
+    title: 'Primary cards/Call to Action card',
+    component: CallToActionCard,
     subcomponent: {CardWrapper},
     argTypes: {
         display: {
@@ -56,37 +56,42 @@ const story = {
 export default story;
 
 const Template = ({display, value, ...args}) => {
+    // Main editor setup
     const htmlEditor = createEditor({nodes: BASIC_NODES});
     populateEditor({editor: htmlEditor, initialHtml: `${value}`});
+
+    // Sponsor label editor setup
+    let sponsorLabelHtmlEditor = null;
+    let sponsorLabelHtmlEditorInitialState = null;
+    
+    if (args.hasSponsorLabel) {
+        sponsorLabelHtmlEditor = createEditor({nodes: BASIC_NODES});
+        sponsorLabelHtmlEditorInitialState = populateEditor({
+            editor: sponsorLabelHtmlEditor, 
+            initialHtml: 'Sponsored'
+        });
+    }
+
     return (
-        <div>
-            <div className="kg-prose">
-                <div className="mx-auto my-8 min-w-[initial] max-w-[740px]">
-                    <CardWrapper
-                        IndicatorIcon={VisibilityIndicatorIcon}
-                        indicatorPosition={{
-                            top: '1.2rem'
-                        }}
-                        {...(args.color === '' && {wrapperStyle: 'wide'})}
-                        {...display}
-                        {...args}
-                    >
-                        <CtaCard {...display} {...args} htmlEditor={htmlEditor} />
-                    </CardWrapper>
-                </div>
+        <div className="kg-prose">
+            <div className="mx-auto my-8 min-w-[initial] max-w-[740px]">
+                <CardWrapper                        
+                    IndicatorIcon={VisibilityIndicatorIcon}
+                    indicatorPosition={{
+                        top: '1.2rem'
+                    }}
+                    {...(args.color === '' && {wrapperStyle: 'wide'})}
+                    {...display}
+                    {...args}>
+                    <CallToActionCard 
+                        {...display} 
+                        {...args} 
+                        htmlEditor={htmlEditor}
+                        sponsorLabelHtmlEditor={sponsorLabelHtmlEditor}
+                        sponsorLabelHtmlEditorInitialState={sponsorLabelHtmlEditorInitialState}
+                    />
+                </CardWrapper>
             </div>
-            {/* <div className="kg-prose dark bg-black px-4 py-8">
-                <div className="mx-auto my-8 min-w-[initial] max-w-[740px]">
-                    <CardWrapper
-                        IndicatorIcon={VisibilityIndicatorIcon}
-                        {...(args.color === 'none' && {wrapperStyle: 'wide'})}
-                        {...display}
-                        {...args}
-                    >
-                        <CtaCard {...display} {...args} htmlEditor={htmlEditor} />
-                    </CardWrapper>
-                </div>
-            </div> */}
         </div>
     );
 };
