@@ -1,8 +1,8 @@
 import React, {useEffect, useState} from 'react';
 import {Button} from '@tryghost/admin-x-design-system';
 import {ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
-import {useAnimatedCounter} from '../../hooks/useAnimatedCounter';
-import {useDerepostMutationForUser, useLikeMutationForUser, useRepostMutationForUser, useUnlikeMutationForUser} from '../../hooks/useActivityPubQueries';
+import {useAnimatedCounter} from '@hooks/use-animated-counter';
+import {useDerepostMutationForUser, useLikeMutationForUser, useRepostMutationForUser, useUnlikeMutationForUser} from '@hooks/use-activity-pub-queries';
 
 interface FeedItemStatsProps {
     object: ObjectProperties;

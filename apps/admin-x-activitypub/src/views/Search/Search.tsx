@@ -13,7 +13,7 @@ import Separator from '@components/global/Separator';
 import ViewProfileModal from '@components/modals/ViewProfileModal';
 
 import {type Profile} from '../../api/activitypub';
-import {useSearchForUser, useSuggestedProfilesForUser} from '@hooks/useActivityPubQueries';
+import {useSearchForUser, useSuggestedProfilesForUser} from '@hooks/use-activity-pub-queries';
 
 interface AccountSearchResult {
     id: string;

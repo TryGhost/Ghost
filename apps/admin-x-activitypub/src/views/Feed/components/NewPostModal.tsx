@@ -3,7 +3,7 @@ import APAvatar from '@components/global/APAvatar';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Modal, showToast} from '@tryghost/admin-x-design-system';
-import {useNoteMutationForUser, useUserDataForUser} from '@hooks/useActivityPubQueries';
+import {useNoteMutationForUser, useUserDataForUser} from '@hooks/use-activity-pub-queries';
 import {useState} from 'react';
 
 const NewPostModal = NiceModal.create(() => {

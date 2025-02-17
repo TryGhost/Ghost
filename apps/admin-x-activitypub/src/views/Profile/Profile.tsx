@@ -12,7 +12,7 @@ import {
     useAccountForUser,
     useLikedForUser,
     useOutboxForUser
-} from '@hooks/useActivityPubQueries';
+} from '@hooks/use-activity-pub-queries';
 import {FollowAccount} from '../../api/activitypub';
 import {handleViewContent} from '@utils/content-handlers';
 

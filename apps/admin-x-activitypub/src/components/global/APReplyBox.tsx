@@ -6,7 +6,7 @@ import clsx from 'clsx';
 import getUsername from '../../utils/get-username';
 import {Activity, ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, showToast} from '@tryghost/admin-x-design-system';
-import {useReplyMutationForUser, useUserDataForUser} from '../../hooks/useActivityPubQueries';
+import {useReplyMutationForUser, useUserDataForUser} from '@hooks/use-activity-pub-queries';
 
 export interface APTextAreaProps extends HTMLProps<HTMLTextAreaElement> {
     title?: string;

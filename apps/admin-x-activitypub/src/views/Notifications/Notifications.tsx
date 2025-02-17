@@ -18,7 +18,7 @@ import {
     GET_ACTIVITIES_QUERY_KEY_NOTIFICATIONS,
     useActivitiesForUser,
     useUserDataForUser
-} from '@hooks/useActivityPubQueries';
+} from '@hooks/use-activity-pub-queries';
 import {type NotificationType} from '@components/activities/NotificationIcon';
 import {handleProfileClick} from '@utils/handle-profile-click';
 
