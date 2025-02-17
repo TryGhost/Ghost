@@ -11,7 +11,7 @@ import {Button, Icon, LoadingIndicator, Modal, Popover, Select, SelectOption} fr
 import {renderTimestamp} from '../../utils/render-timestamp';
 import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
 import {useModal} from '@ebay/nice-modal-react';
-import {useThreadForUser} from '../../hooks/useActivityPubQueries';
+import {useThreadForUser} from '@hooks/use-activity-pub-queries';
 
 import APAvatar from '../global/APAvatar';
 import APReplyBox from '../global/APReplyBox';
