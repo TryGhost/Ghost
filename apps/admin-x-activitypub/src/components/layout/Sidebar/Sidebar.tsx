@@ -1,46 +1,58 @@
 import * as React from 'react';
 import Recommendations from './Recommendations';
-import {Button, Separator, cn} from '@tryghost/shade';
+import SidebarButton from './SidebarButton';
+import {Button, LucideIcon, Separator, cn} from '@tryghost/shade';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
-interface SidebarProps
-    extends React.HTMLAttributes<HTMLDivElement> {}
+interface SidebarProps {
+    route: string;
+}
 
-const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
-    ({className, ...props}, ref) => {
-        const {updateRoute} = useRouting();
+const Sidebar: React.FC<SidebarProps> = ({route}) => {
+    const {updateRoute} = useRouting();
 
-        return (
-            <div
-                ref={ref}
-                className={cn(
-                    'border-l border-gray-200 fixed top-[102px] right-8 w-[294px] min-h-[calc(100vh-102px-32px)]',
-                    'pointer-events-none',
-                    '[&>*]:pointer-events-auto',
-                    className
-                )}
-                {...props}
-            >
-                <div className='flex flex-col gap-8 pl-5 pt-5'>
-                    <div className='flex flex-col gap-2'>
-                        <Button className='justify-start' variant='ghost' onClick={() => updateRoute('inbox')}>Inbox</Button>
-                        <Button className='justify-start' variant='ghost' onClick={() => updateRoute('feed')}>Feed</Button>
-                        <Button className='justify-start' variant='ghost' onClick={() => updateRoute('notifications')}>Notifications</Button>
-                        <Button className='justify-start' variant='ghost' onClick={() => updateRoute('profile')}>Profile</Button>
-                    </div>
-
-                    <div>
-                        <Button onClick={() => updateRoute('feed')}>New note</Button>
-                    </div>
-
-                    <Separator />
-
-                    <Recommendations />
+    return (
+        <div
+            className={cn(
+                'border-l border-gray-200 fixed top-[102px] right-8 w-[294px] min-h-[calc(100vh-102px-32px)]',
+                'pointer-events-none',
+                '[&>*]:pointer-events-auto'
+            )}
+        >
+            <div className='flex flex-col gap-8 pl-5 pt-5'>
+                <div className='flex flex-col gap-px'>
+                    <SidebarButton active={route === 'inbox'} onClick={() => updateRoute('inbox')}>
+                        <LucideIcon.Inbox size={18} strokeWidth={1.5} />
+                            Inbox
+                    </SidebarButton>
+                    <SidebarButton active={route === 'feed'} onClick={() => updateRoute('feed')}>
+                        <LucideIcon.Hash size={18} strokeWidth={1.5} />
+                            Feed
+                    </SidebarButton>
+                    <SidebarButton active={route === 'notifications'} onClick={() => updateRoute('notifications')}>
+                        <LucideIcon.Bell size={18} strokeWidth={1.5} />
+                            Notifications
+                    </SidebarButton>
+                    <SidebarButton active={route === 'profile'} onClick={() => updateRoute('profile')}>
+                        <LucideIcon.User size={18} strokeWidth={1.5} />
+                            Profile
+                    </SidebarButton>
                 </div>
+
+                <div>
+                    <Button className='rounded-full bg-purple-500' onClick={() => updateRoute('feed')}>
+                        <LucideIcon.FilePen />
+                        New note
+                    </Button>
+                </div>
+
+                <Separator />
+
+                <Recommendations />
             </div>
-        );
-    }
-);
+        </div>
+    );
+};
 
 Sidebar.displayName = 'Sidebar';
 

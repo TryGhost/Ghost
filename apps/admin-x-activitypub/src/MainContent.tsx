@@ -35,7 +35,7 @@ const MainContent = () => {
                 <div className='z-0 pt-[102px]'>
                     <Content route={mainRoute} />
                 </div>
-                <Sidebar />
+                <Sidebar route={mainRoute} />
             </div>
         </div>
     );
