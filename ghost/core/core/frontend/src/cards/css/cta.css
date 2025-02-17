@@ -34,6 +34,14 @@
     background: rgba(209, 46, 46, 0.11);
 }
 
+.kg-cta-bg-pink {
+    background: rgba(225, 71, 174, 0.11);
+}
+
+.kg-cta-bg-purple {
+    background: rgba(135, 85, 236, 0.12);
+}
+
 .kg-cta-sponsor-label {
     margin: 0 2.4rem;
     padding: 1.2rem 0;
@@ -47,6 +55,10 @@
 
 .kg-cta-bg-none .kg-cta-sponsor-label {
     margin: 0;
+}
+
+.kg-cta-sponsor-label a {
+    color: rgba(0, 0, 0);
 }
 
 .kg-cta-content {
@@ -103,6 +115,10 @@
 
 .kg-cta-text p + p {
     margin-top: 2rem;
+}
+
+.kg-cta-text a {
+    color: currentColor;
 }
 
 a.kg-cta-button {
