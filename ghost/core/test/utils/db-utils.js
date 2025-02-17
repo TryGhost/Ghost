@@ -139,7 +139,7 @@ const truncateAll = async () => {
                 await db.knex.raw('PRAGMA foreign_keys = OFF;');
             }
 
-            await sequence(tables.map(table => () => { 
+            await sequence(tables.map(table => () => {
                 return db.knex.raw('DELETE FROM ' + table + ';');
             }));
 
@@ -177,16 +177,6 @@ const truncateAll = async () => {
             debug('Database teardown end');
         }
     });
-};
-
-/**
- * @deprecated Use teardown or reset instead
- * Old method for clearing data from the database that also mixes in url service behavior
- */
-module.exports.clearData = async () => {
-    debug('Database reset');
-    await knexMigrator.reset({force: true});
-    urlServiceUtils.reset();
 };
 
 /**
