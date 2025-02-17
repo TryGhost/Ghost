@@ -3,7 +3,7 @@ import ActivityItem from '@components/activities/ActivityItem';
 import ActivityPubWelcomeImage from '@assets/images/ap-welcome.png';
 import FeedItem from '@components/feed/FeedItem';
 import MainNavigation from '@components/navigation/MainNavigation';
-import NewPostModal from '@components/modals/NewPostModal';
+import NewPostModal from '@views/Feed/components/NewPostModal';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useRef} from 'react';
 import Separator from '@components/global/Separator';
