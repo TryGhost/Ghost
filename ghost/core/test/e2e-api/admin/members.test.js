@@ -1755,17 +1755,17 @@ describe('Members API', function () {
         assert.equal(browseBody.members.length, 1, 'The member was not found in browse');
         const browseMember = browseBody.members[0];
 
-        // Ignore attribution for now
-        delete readMember.attribution;
-        for (const sub of readMember.subscriptions) {
-            delete sub.attribution;
-        }
+        // // Ignore attribution for now
+        // delete readMember.attribution;
+        // for (const sub of readMember.subscriptions) {
+        //     delete sub.attribution;
+        // }
 
-        // Ignore attribution for now
-        delete memberWithPaidSubscription.attribution;
-        for (const sub of memberWithPaidSubscription.subscriptions) {
-            delete sub.attribution;
-        }
+        // // Ignore attribution for now
+        // delete memberWithPaidSubscription.attribution;
+        // for (const sub of memberWithPaidSubscription.subscriptions) {
+        //     delete sub.attribution;
+        // }
 
         // Check for this member with a paid subscription that the body results for the patch, get and browse endpoints are 100% identical
         should.deepEqual(browseMember, readMember, 'Browsing a member returns a different format than reading a member');
