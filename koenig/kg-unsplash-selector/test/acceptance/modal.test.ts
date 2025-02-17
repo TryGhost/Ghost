@@ -1,6 +1,18 @@
 import {expect, test} from '@playwright/test';
 
 test.describe('Acceptance test - Unsplash Selector', async () => {
+    test.beforeEach(async ({page}) => {
+        page.route('**', (route) => {
+            const requestURL = route.request().url();
+
+            if (requestURL.match(/http:\/\/localhost:5173/)) {
+                route.continue();
+            } else {
+                route.abort();
+            }
+        });
+    });
+
     test('Can load the unsplash selector modal', async ({page}) => {
         await page.goto('/');
         const modal = await page.waitForSelector('[data-kg-modal="unsplash"]');
