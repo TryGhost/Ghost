@@ -5,15 +5,15 @@ import NiceModal from '@ebay/nice-modal-react';
 import {Button, Icon, LoadingIndicator, NoValueLabel, TextField} from '@tryghost/admin-x-design-system';
 import {useDebounce} from 'use-debounce';
 
-import APAvatar from './global/APAvatar';
-import ActivityItem from './activities/ActivityItem';
-import FollowButton from './global/FollowButton';
-import MainNavigation from './navigation/MainNavigation';
-import Separator from './global/Separator';
-import ViewProfileModal from './modals/ViewProfileModal';
+import APAvatar from '@components/global/APAvatar';
+import ActivityItem from '@components/activities/ActivityItem';
+import FollowButton from '@components/global/FollowButton';
+import MainNavigation from '@components/navigation/MainNavigation';
+import Separator from '@components/global/Separator';
+import ViewProfileModal from '@components/modals/ViewProfileModal';
 
-import {type Profile} from '../api/activitypub';
-import {useSearchForUser, useSuggestedProfilesForUser} from '../hooks/useActivityPubQueries';
+import {type Profile} from '../../api/activitypub';
+import {useSearchForUser, useSuggestedProfilesForUser} from '@hooks/useActivityPubQueries';
 
 interface AccountSearchResult {
     id: string;

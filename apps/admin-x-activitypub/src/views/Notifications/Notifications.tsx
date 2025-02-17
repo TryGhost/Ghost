@@ -5,22 +5,22 @@ import NiceModal from '@ebay/nice-modal-react';
 import {Activity, ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, LoadingIndicator, NoValueLabel} from '@tryghost/admin-x-design-system';
 
-import APAvatar from './global/APAvatar';
-import ArticleModal from './feed/ArticleModal';
-import MainNavigation from './navigation/MainNavigation';
-import NotificationItem from './activities/NotificationItem';
-import Separator from './global/Separator';
+import APAvatar from '@components/global/APAvatar';
+import ArticleModal from '@components/feed/ArticleModal';
+import MainNavigation from '@components/navigation/MainNavigation';
+import NotificationItem from '@components/activities/NotificationItem';
+import Separator from '@components/global/Separator';
 
-import getUsername from '../utils/get-username';
-import stripHtml from '../utils/strip-html';
-import truncate from '../utils/truncate';
+import getUsername from '@utils/get-username';
+import stripHtml from '@utils/strip-html';
+import truncate from '@utils/truncate';
 import {
     GET_ACTIVITIES_QUERY_KEY_NOTIFICATIONS,
     useActivitiesForUser,
     useUserDataForUser
-} from '../hooks/useActivityPubQueries';
-import {type NotificationType} from './activities/NotificationIcon';
-import {handleProfileClick} from '../utils/handle-profile-click';
+} from '@hooks/useActivityPubQueries';
+import {type NotificationType} from '@components/activities/NotificationIcon';
+import {handleProfileClick} from '@utils/handle-profile-click';
 
 interface NotificationsProps {}
 
