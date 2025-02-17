@@ -17,7 +17,7 @@ module.exports = class SubscriptionAttributionEvent {
     }
 
     /**
-     * @param {SubscriptionCreatedEventData} data
+     * @param {SubscriptionAttributionEventData} data
      * @param {Date} [timestamp]
      */
     static create(data, timestamp) {
