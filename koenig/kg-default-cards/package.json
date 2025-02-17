@@ -12,7 +12,7 @@
     "posttest": "yarn lint"
   },
   "engines": {
-    "node": "^18.12.1 || ^20.11.1"
+    "node": "^18.12.1 || ^20.11.1 || ^22.13.1"
   },
   "files": [
     "LICENSE",
