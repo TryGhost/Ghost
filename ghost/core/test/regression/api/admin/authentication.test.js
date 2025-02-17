@@ -536,7 +536,7 @@ describe('Authentication API', function () {
             const sessions = await models.Session.fetchAll();
             assert.equal(sessions.length, 0, 'There should be no sessions left in the DB');
 
-            mockManager.assert.sentEmailCount(2);
+            emailMockReceiver.assertSentEmailCount(2);
 
             mockManager.assert.sentEmail({
                 subject: 'Reset Password',

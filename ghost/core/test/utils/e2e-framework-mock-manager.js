@@ -164,20 +164,6 @@ const mockWebhookRequests = () => {
     return mocks.webhookMockReceiver;
 };
 
-/**
- * @deprecated use emailMockReceiver.assertSentEmailCount(count) instead
- * @param {Number} count number of emails sent
- */
-const sentEmailCount = (count) => {
-    if (!mocks.mail) {
-        throw new errors.IncorrectUsageError({
-            message: 'Cannot assert on mail when mail has not been mocked'
-        });
-    }
-
-    mocks.mockMailReceiver.assertSentEmailCount(count);
-};
-
 const sentEmail = (matchers) => {
     if (!mocks.mail) {
         throw new errors.IncorrectUsageError({
@@ -334,7 +320,6 @@ module.exports = {
     restore,
     stripeMocker,
     assert: {
-        sentEmailCount,
         sentEmail,
         emittedEvent
     },

@@ -9,12 +9,14 @@ const {SubscriptionCancelledEvent, MemberCreatedEvent, SubscriptionActivatedEven
 const {MilestoneCreatedEvent} = require('@tryghost/milestones');
 
 describe('Staff Service:', function () {
+    let emailMockReceiver;
+
     before(function () {
         models.init();
     });
 
     beforeEach(function () {
-        mockManager.mockMail();
+        emailMockReceiver = mockManager.mockMail();
         mockManager.mockSlack();
         mockManager.mockSetting('title', 'The Weekly Roundup');
 
@@ -89,7 +91,7 @@ describe('Staff Service:', function () {
                 to: 'owner@ghost.org',
                 subject: /🥳 Free member signup: Jamie/
             });
-            mockManager.assert.sentEmailCount(1);
+            emailMockReceiver.assertSentEmailCount(1);
         });
 
         it('sends email for api source', async function () {
@@ -105,7 +107,7 @@ describe('Staff Service:', function () {
                 to: 'owner@ghost.org',
                 subject: /🥳 Free member signup: Jamie/
             });
-            mockManager.assert.sentEmailCount(1);
+            emailMockReceiver.assertSentEmailCount(1);
         });
 
         it('does not send email for importer source', async function () {
@@ -117,7 +119,7 @@ describe('Staff Service:', function () {
 
             // Wait for the dispatched events (because this happens async)
             await DomainEvents.allSettled();
-            mockManager.assert.sentEmailCount(0);
+            emailMockReceiver.assertSentEmailCount(0);
         });
     });
 
@@ -146,7 +148,7 @@ describe('Staff Service:', function () {
                 to: 'owner@ghost.org',
                 subject: /💸 Paid subscription started: Jamie/
             });
-            mockManager.assert.sentEmailCount(1);
+            emailMockReceiver.assertSentEmailCount(1);
         });
 
         it('sends email for api source', async function () {
@@ -162,7 +164,7 @@ describe('Staff Service:', function () {
                 to: 'owner@ghost.org',
                 subject: /💸 Paid subscription started: Jamie/
             });
-            mockManager.assert.sentEmailCount(1);
+            emailMockReceiver.assertSentEmailCount(1);
         });
 
         it('does not send email for importer source', async function () {
@@ -174,7 +176,7 @@ describe('Staff Service:', function () {
 
             // Wait for the dispatched events (because this happens async)
             await DomainEvents.allSettled();
-            mockManager.assert.sentEmailCount(0);
+            emailMockReceiver.assertSentEmailCount(0);
         });
     });
 
@@ -198,7 +200,7 @@ describe('Staff Service:', function () {
                 to: 'owner@ghost.org',
                 subject: /⚠️ Cancellation: Jamie/
             });
-            mockManager.assert.sentEmailCount(1);
+            emailMockReceiver.assertSentEmailCount(1);
         });
 
         it('sends email for api source', async function () {
@@ -214,7 +216,7 @@ describe('Staff Service:', function () {
                 to: 'owner@ghost.org',
                 subject: /⚠️ Cancellation: Jamie/
             });
-            mockManager.assert.sentEmailCount(1);
+            emailMockReceiver.assertSentEmailCount(1);
         });
 
         it('does not send email for importer source', async function () {
@@ -226,7 +228,7 @@ describe('Staff Service:', function () {
 
             // Wait for the dispatched events (because this happens async)
             await DomainEvents.allSettled();
-            mockManager.assert.sentEmailCount(0);
+            emailMockReceiver.assertSentEmailCount(0);
         });
     });
 
@@ -249,7 +251,7 @@ describe('Staff Service:', function () {
             // Wait for the dispatched events (because this happens async)
             await DomainEvents.allSettled();
 
-            mockManager.assert.sentEmailCount(1);
+            emailMockReceiver.assertSentEmailCount(1);
 
             mockManager.assert.sentEmail({
                 to: 'owner@ghost.org',
@@ -291,7 +293,7 @@ describe('Staff Service:', function () {
             // Wait for the dispatched events (because this happens async)
             await DomainEvents.allSettled();
 
-            mockManager.assert.sentEmailCount(0);
+            emailMockReceiver.assertSentEmailCount(0);
         });
     });
 });

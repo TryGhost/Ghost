@@ -13,6 +13,7 @@ const {mockManager} = require('../../../utils/e2e-framework');
 const assert = require('assert/strict');
 
 let request;
+let emailMockReceiver;
 
 describe('Members Importer API', function () {
     before(async function () {
@@ -22,7 +23,7 @@ describe('Members Importer API', function () {
     });
 
     beforeEach(function () {
-        mockManager.mockMail();
+        emailMockReceiver = mockManager.mockMail();
     });
 
     afterEach(function () {
@@ -300,7 +301,7 @@ describe('Members Importer API', function () {
         assert(!!settingsCache.get('email_verification_required'), 'Email verification should now be required');
 
         // Don't send another email
-        mockManager.assert.sentEmailCount(0);
+        emailMockReceiver.assertSentEmailCount(0);
     });
 
     it('Can import members with host emailVerification limits for large imports', async function () {
