@@ -1,7 +1,10 @@
 import App from '../App.js';
+import {vi} from 'vitest';
 import {fireEvent, appRender, within} from '../utils/test-utils';
 import {site as FixtureSite} from '../utils/test-fixtures';
 import setupGhostApi from '../utils/api.js';
+
+vi.mock('@hcaptcha/react-hcaptcha');
 
 const setup = async ({site, member = null}) => {
     const ghostApi = setupGhostApi({siteUrl: 'https://example.com'});
@@ -309,6 +312,65 @@ describe('Signin', () => {
                 email: 'jamie@example.com',
                 emailType: 'signin',
                 integrityToken: 'testtoken'
+            });
+        });
+    });
+
+    describe('with captcha enabled', () => {
+        beforeEach(() => {
+            // Mock window.location
+            Object.defineProperty(window, 'location', {
+                value: new URL('https://portal.localhost/#/portal/signin'),
+                writable: true
+            });
+        });
+        afterEach(() => {
+            window.location = realLocation;
+        });
+
+        test('on a simple site', async () => {
+            const {ghostApi, emailInput, submitButton, popupIframeDocument} = await setup({
+                site: Object.assign({}, FixtureSite.singleTier.basic, {
+                    captcha_enabled: true,
+                    captcha_sitekey: '20000000-ffff-ffff-ffff-000000000002'
+                })
+            });
+
+            fireEvent.change(emailInput, {target: {value: 'jamie@example.com'}});
+
+            fireEvent.click(submitButton);
+
+            const magicLink = await within(popupIframeDocument).findByText(/Now check your email/i);
+            expect(magicLink).toBeInTheDocument();
+
+            expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
+                email: 'jamie@example.com',
+                emailType: 'signin',
+                integrityToken: 'testtoken',
+                token: 'mocked-token'
+            });
+        });
+
+        test('with multiple tiers', async () => {
+            const {ghostApi, emailInput, submitButton, popupIframeDocument} = await multiTierSetup({
+                site: Object.assign({}, FixtureSite.multipleTiers.basic, {
+                    captcha_enabled: true,
+                    captcha_sitekey: '20000000-ffff-ffff-ffff-000000000002'
+                })
+            });
+
+            fireEvent.change(emailInput, {target: {value: 'jamie@example.com'}});
+
+            fireEvent.click(submitButton);
+
+            const magicLink = await within(popupIframeDocument).findByText(/Now check your email/i);
+            expect(magicLink).toBeInTheDocument();
+
+            expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
+                email: 'jamie@example.com',
+                emailType: 'signin',
+                integrityToken: 'testtoken',
+                token: 'mocked-token'
             });
         });
     });
