@@ -143,7 +143,7 @@ describe('Incoming Recommendation Emails', function () {
 
         await DomainEvents.allSettled();
 
-        mockManager.assert.sentEmailCount(0);
+        emailMockReceiver.assertSentEmailCount(0);
     });
 
     it('Does not send an email for an unverified webmention', async function () {
@@ -171,6 +171,6 @@ describe('Incoming Recommendation Emails', function () {
 
         await DomainEvents.allSettled();
 
-        mockManager.assert.sentEmailCount(0);
+        emailMockReceiver.assertSentEmailCount(0);
     });
 });
