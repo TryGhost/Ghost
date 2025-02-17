@@ -12,7 +12,7 @@
     "Name": "Név",
     "paid": "fizetve",
     "Subscription details": "Előfizetés részletei",
-    "trialing": "utólag",
+    "trialing": "próbaidőszak alatt",
     "Unsubscribe": "Leiratkozás",
     "View in browser": "Megnyitás a böngészőben",
     "You are receiving this because you are a <strong>%%{status}%% subscriber</strong> to {site}.": "Ezt azért kapod, mert <strong>%%{status}%% előfizető</strong> vagy itt: {site}",
