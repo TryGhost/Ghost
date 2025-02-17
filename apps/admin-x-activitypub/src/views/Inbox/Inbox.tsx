@@ -1,25 +1,25 @@
-import APAvatar from './global/APAvatar';
-import ActivityItem from './activities/ActivityItem';
-import ActivityPubWelcomeImage from '../assets/images/ap-welcome.png';
-import FeedItem from './feed/FeedItem';
-import MainNavigation from './navigation/MainNavigation';
-import NewPostModal from './modals/NewPostModal';
+import APAvatar from '@components/global/APAvatar';
+import ActivityItem from '@components/activities/ActivityItem';
+import ActivityPubWelcomeImage from '@assets/images/ap-welcome.png';
+import FeedItem from '@components/feed/FeedItem';
+import MainNavigation from '@components/navigation/MainNavigation';
+import NewPostModal from '@views/Feed/components/NewPostModal';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useRef} from 'react';
-import Separator from './global/Separator';
-import getName from '../utils/get-name';
-import getUsername from '../utils/get-username';
+import Separator from '@components/global/Separator';
+import getName from '@utils/get-name';
+import getUsername from '@utils/get-username';
 import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, Skeleton} from '@tryghost/shade';
 import {Heading, LoadingIndicator} from '@tryghost/admin-x-design-system';
-import {handleProfileClick} from '../utils/handle-profile-click';
-import {handleViewContent} from '../utils/content-handlers';
+import {handleProfileClick} from '@utils/handle-profile-click';
+import {handleViewContent} from '@utils/content-handlers';
 import {
     useFeedForUser,
     useInboxForUser,
     useSuggestedProfilesForUser,
     useUserDataForUser
-} from '../hooks/useActivityPubQueries';
+} from '@hooks/useActivityPubQueries';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 type Layout = 'inbox' | 'feed';
