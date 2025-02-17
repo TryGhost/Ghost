@@ -20,7 +20,7 @@ describe('CheckoutSessionEventService', function () {
             update: sinon.stub(),
             linkSubscription: sinon.stub(),
             upsertCustomer: sinon.stub(),
-            getSubscriptionByStripeId: sinon.stub().callsFake(id => ({id})),
+            getSubscriptionByStripeID: sinon.stub().callsFake(id => ({id})),
             updateSubscriptionAttribution: sinon.stub().resolves()
         };
 

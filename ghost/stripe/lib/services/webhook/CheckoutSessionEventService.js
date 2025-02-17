@@ -204,7 +204,7 @@ module.exports = class CheckoutSessionEventService {
                 }
             }
 
-            const subscriptionModel = await memberRepository.getSubscriptionByStripeId(session.subscription);
+            const subscriptionModel = await memberRepository.getSubscriptionByStripeID(session.subscription);
             await memberRepository.updateSubscriptionAttribution(subscriptionModel.id, attribution);
         }
 

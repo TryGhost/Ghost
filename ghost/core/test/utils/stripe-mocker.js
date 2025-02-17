@@ -214,8 +214,9 @@ class StripeMocker {
                         mode: 'subscription',
                         customer: customer.id,
                         metadata: {
-                            checkoutType: 'signup'
-                        }
+                            checkoutType: 'signup',
+                        },
+                        subscription: subscription.id
                     }
                 }
             });
