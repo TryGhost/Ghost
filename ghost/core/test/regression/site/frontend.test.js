@@ -36,14 +36,10 @@ describe('Frontend Routing', function () {
         should.exist(res.headers.date);
     }
 
-    function addPosts(done) {
-        testUtils.clearData().then(function () {
-            return testUtils.initData();
-        }).then(function () {
-            return testUtils.fixtures.insertPostsAndTags();
-        }).then(function () {
-            done();
-        });
+    async function addPosts() {
+        await testUtils.teardownDb();
+        await testUtils.initData();
+        await testUtils.fixtures.insertPostsAndTags();
     }
 
     afterEach(function () {
@@ -199,23 +195,19 @@ describe('Frontend Routing', function () {
             });
 
             describe('edit with admin redirects disabled', function () {
-                before(function (done) {
+                before(async function () {
                     configUtils.set('admin:redirects', false);
 
-                    testUtils.startGhost({forceStart: true})
-                        .then(function () {
-                            request = supertest.agent(config.get('url'));
-                            addPosts(done);
-                        });
+                    await testUtils.startGhost({forceStart: true});
+                    request = supertest.agent(config.get('url'));
+                    await addPosts();
                 });
 
-                after(function (done) {
-                    configUtils.restore().then(() => {
-                        return testUtils.startGhost({forceStart: true});
-                    }).then(function () {
-                        request = supertest.agent(config.get('url'));
-                        addPosts(done);
-                    });
+                after(async function () {
+                    configUtils.restore();
+                    await testUtils.startGhost({forceStart: true});
+                    request = supertest.agent(config.get('url'));
+                    await addPosts();
                 });
 
                 it('should redirect without slash', function (done) {
