@@ -1,0 +1,197 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Custom Theme Settings API Browse can fetch settings for current theme 1: [body] 1`] = `
+Object {
+  "custom_theme_settings": Array [
+    Object {
+      "default": "Sans-serif",
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "key": "header_typography",
+      "options": Array [
+        "Serif",
+        "Sans-serif",
+      ],
+      "type": "select",
+      "value": "Serif",
+    },
+    Object {
+      "default": "Full",
+      "group": "homepage",
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "key": "footer_type",
+      "options": Array [
+        "Full",
+        "Minimal",
+        "CTA",
+      ],
+      "type": "select",
+      "value": "Full",
+    },
+  ],
+}
+`;
+
+exports[`Custom Theme Settings API Browse can fetch settings for current theme 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "331",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Custom Theme Settings API Edit can update all settings for current theme 1: [body] 1`] = `
+Object {
+  "custom_theme_settings": Array [
+    Object {
+      "default": "Sans-serif",
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "key": "header_typography",
+      "options": Array [
+        "Serif",
+        "Sans-serif",
+      ],
+      "type": "select",
+      "value": "Sans-serif",
+    },
+    Object {
+      "default": "Full",
+      "group": "homepage",
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "key": "footer_type",
+      "options": Array [
+        "Full",
+        "Minimal",
+        "CTA",
+      ],
+      "type": "select",
+      "value": "Minimal",
+    },
+  ],
+}
+`;
+
+exports[`Custom Theme Settings API Edit can update all settings for current theme 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "339",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-cache-invalidate": "/*",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Custom Theme Settings API Edit can update some settings 1: [body] 1`] = `
+Object {
+  "custom_theme_settings": Array [
+    Object {
+      "default": "Sans-serif",
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "key": "header_typography",
+      "options": Array [
+        "Serif",
+        "Sans-serif",
+      ],
+      "type": "select",
+      "value": "Sans-serif",
+    },
+    Object {
+      "default": "Full",
+      "group": "homepage",
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "key": "footer_type",
+      "options": Array [
+        "Full",
+        "Minimal",
+        "CTA",
+      ],
+      "type": "select",
+      "value": "Minimal",
+    },
+  ],
+}
+`;
+
+exports[`Custom Theme Settings API Edit can update some settings 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "339",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-cache-invalidate": "/*",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Custom Theme Settings API Edit errors for invalid select value 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": "Unallowed value for 'header_typography'. Allowed values: Serif, Sans-serif.",
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Validation error, cannot edit custom_theme_setting.",
+      "property": null,
+      "type": "ValidationError",
+    },
+  ],
+}
+`;
+
+exports[`Custom Theme Settings API Edit errors for invalid select value 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "312",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Custom Theme Settings API Edit errors for unknown key 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": "Unknown setting: unknown.",
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Validation error, cannot edit custom_theme_setting.",
+      "property": null,
+      "type": "ValidationError",
+    },
+  ],
+}
+`;
+
+exports[`Custom Theme Settings API Edit errors for unknown key 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "262",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
