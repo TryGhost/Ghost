@@ -79,8 +79,9 @@ async function initDatabase({config}) {
  * @param {object} options.ghostServer
  * @param {object} options.config
  * @param {object} options.bootLogger
+ * @param {boolean} options.frontend
  */
-async function initCore({ghostServer, config, bootLogger}) {
+async function initCore({ghostServer, config, bootLogger, frontend}) {
     debug('Begin: initCore');
 
     // URL Utils is a bit slow, put it here so the timing is visible separate from models
@@ -117,7 +118,8 @@ async function initCore({ghostServer, config, bootLogger}) {
         onFinished: () => {
             bootLogger.metric('url-service', urlServiceStart);
             bootLogger.log('URL Service Ready');
-        }
+        },
+        urlCache: !frontend // hacky parameter to make the cache initialization kick in as we can't initialize labs before the boot
     });
     debug('End: Url Service');
 
@@ -561,7 +563,7 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
 
         // Step 4 - Load Ghost with all its services
         debug('Begin: Load Ghost Services & Apps');
-        await initCore({ghostServer, config, bootLogger});
+        await initCore({ghostServer, config, bootLogger, frontend});
 
         // Instrument the knex instance and connection pool if prometheus is enabled
         // Needs to be after initCore because the pool is destroyed and recreated in initCore, which removes the event listeners
