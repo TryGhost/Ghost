@@ -7,7 +7,6 @@ import {Button, LoadingIndicator, NoValueLabel} from '@tryghost/admin-x-design-s
 
 import APAvatar from '@components/global/APAvatar';
 import ArticleModal from '@components/feed/ArticleModal';
-import MainNavigation from '@components/navigation/MainNavigation';
 import NotificationItem from '@components/activities/NotificationItem';
 import Separator from '@components/global/Separator';
 
@@ -303,7 +302,6 @@ const Notifications: React.FC<NotificationsProps> = () => {
 
     return (
         <>
-            <MainNavigation page='notifications'/>
             <div className='z-0 flex w-full flex-col items-center'>
                 {
                     isLoading === false && groupedActivities.length === 0 && (
