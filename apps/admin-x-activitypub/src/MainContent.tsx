@@ -26,7 +26,7 @@ const Content: React.FC<ContentProps> = ({route}) => {
 
 const MainContent = () => {
     const {route} = useRouting();
-    const mainRoute = route.split('/')[0];
+    const mainRoute = route.split('/')[0] || 'inbox';
 
     return (
         <div className='mx-auto flex h-screen w-full max-w-page flex-col overflow-y-auto'>
