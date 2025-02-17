@@ -340,7 +340,7 @@ describe('Default Frontend routing', function () {
 
     describe('Site Map', function () {
         before(async function () {
-            await testUtils.clearData();
+            await testUtils.teardownDb();
             await testUtils.initData();
             await testUtils.initFixtures('posts');
         });
