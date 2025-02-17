@@ -1,10 +1,9 @@
 import * as React from 'react';
 import APAvatar from '@components/global/APAvatar';
 import ActivityItem from '@components/activities/ActivityItem';
-import Separator from '@components/global/Separator';
 import getName from '@utils/get-name';
 import getUsername from '@utils/get-username';
-import {Skeleton} from '@tryghost/shade';
+import {H4, LucideIcon, Skeleton} from '@tryghost/shade';
 import {handleProfileClick} from '@utils/handle-profile-click';
 import {useSuggestedProfilesForUser} from '@hooks/use-activity-pub-queries';
 
@@ -14,8 +13,16 @@ const Recommendations: React.FC = () => {
     const suggested = suggestedData || Array(3).fill({actor: {}});
 
     return (
-        <div>
-            <h2 className='mb-1 text-lg font-semibold'>Suggestions to follow</h2>
+        <div className='px-3'>
+            <div className='mb-3 flex flex-col gap-0.5'>
+                <div className='flex items-center gap-2'>
+                    <LucideIcon.Globe className='text-purple-500' size={20} strokeWidth={1.5} />
+                    <H4>Follow suggestions</H4>
+                </div>
+                <span className='text-sm text-gray-600'>
+                    Accounts you might be interested in
+                </span>
+            </div>
             <ul className='grow'>
                 {suggested.map((profile, index) => {
                     const actor = profile.actor;
@@ -26,13 +33,12 @@ const Recommendations: React.FC = () => {
                                     onClick={() => handleProfileClick(actor)}
                                 >
                                     {!isLoadingSuggested ? <APAvatar author={actor} /> : <Skeleton className='z-10 h-10 w-10' />}
-                                    <div className='flex min-w-0 flex-col'>
-                                        <span className='block w-full truncate font-semibold text-black'>{!isLoadingSuggested ? getName(actor) : <Skeleton className='w-24' />}</span>
-                                        <span className='block w-full truncate text-sm text-gray-600'>{!isLoadingSuggested ? getUsername(actor) : <Skeleton className='w-40' />}</span>
+                                    <div className='flex min-w-0  flex-col'>
+                                        <span className='block max-w-[190px] truncate font-semibold text-black'>{!isLoadingSuggested ? getName(actor) : <Skeleton className='w-24' />}</span>
+                                        <span className='block max-w-[190px] truncate text-sm text-gray-600'>{!isLoadingSuggested ? getUsername(actor) : <Skeleton className='w-40' />}</span>
                                     </div>
                                 </ActivityItem>
                             </li>
-                            {index < suggested.length - 1 && <Separator />}
                         </React.Fragment>
                     );
                 })}

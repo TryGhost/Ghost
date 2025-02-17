@@ -60,7 +60,7 @@ const Inbox: React.FC<InboxProps> = ({layout}) => {
 
     return (
         <>
-            <div className='mb-5 mt-4 flex w-full flex-col'>
+            <div className='my-4 flex w-full flex-col'>
                 <div className='w-full'>
                     {activities.length > 0 ? (
                         <>

@@ -19,8 +19,8 @@ const Sidebar: React.FC<SidebarProps> = ({route}) => {
                 '[&>*]:pointer-events-auto'
             )}
         >
-            <div className='flex flex-col gap-8 pl-5 pt-5'>
-                <div className='flex flex-col gap-px'>
+            <div className='flex w-full flex-col items-start gap-8 pl-4 pt-4'>
+                <div className='flex w-full flex-col gap-px'>
                     <SidebarButton active={route === 'inbox'} onClick={() => updateRoute('inbox')}>
                         <LucideIcon.Inbox size={18} strokeWidth={1.5} />
                             Inbox
@@ -38,13 +38,10 @@ const Sidebar: React.FC<SidebarProps> = ({route}) => {
                             Profile
                     </SidebarButton>
                 </div>
-
-                <div>
-                    <Button className='rounded-full bg-purple-500' onClick={() => updateRoute('feed')}>
-                        <LucideIcon.FilePen />
-                        New note
-                    </Button>
-                </div>
+                <Button className='rounded-full bg-purple-500' onClick={() => updateRoute('feed')}>
+                    <LucideIcon.FilePen />
+                    New note
+                </Button>
 
                 <Separator />
 
