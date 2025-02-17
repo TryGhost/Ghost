@@ -17,8 +17,8 @@ module.exports.isFinished = async () => {
 };
 
 // @TODO: unify all the reset/softTeset helpers so they either work how the main code works or the reasons why they are different are clear
-module.exports.init = () => {
-    urlService.init();
+module.exports.init = ({urlCache} = {}) => {
+    urlService.init({urlCache});
 };
 
 module.exports.reset = () => {
