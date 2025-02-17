@@ -430,7 +430,7 @@ jobs:
     if: needs.job_setup.outputs.changed_any_code == 'true'
     strategy:
       matrix:
-        node: [ '18.12.1', '20.11.1' ]
+        node: [ '18.12.1', '20.11.1', '22.13.1' ]
     name: Unit tests (Node ${{ matrix.node }})
     steps:
       - uses: actions/checkout@v4
@@ -473,7 +473,7 @@ jobs:
     if: needs.job_setup.outputs.changed_core == 'true'
     strategy:
       matrix:
-        node: [ '18.12.1', '20.11.1' ]
+        node: [ '18.12.1', '20.11.1', '22.13.1' ]
         env:
           - DB: mysql8
             NODE_ENV: testing-mysql
