@@ -24,7 +24,7 @@ const Recommendations: React.FC = () => {
                 </span>
             </div>
             <ul className='grow'>
-                {suggested.map((profile, index) => {
+                {suggested.map((profile) => {
                     const actor = profile.actor;
                     return (
                         <React.Fragment key={actor.id}>
