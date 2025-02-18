@@ -87,6 +87,12 @@ module.exports = class StripeService {
             get memberRepository(){
                 return membersService.api.members;
             },
+            get productRepository(){
+                return membersService.api.productRepository;
+            },
+            get eventRepository(){
+                return membersService.api.events;
+            },
             get donationRepository(){
                 return donationService.repository;
             },
