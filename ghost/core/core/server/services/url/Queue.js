@@ -154,14 +154,14 @@ class Queue extends EventEmitter {
                 debug('run.ended (zero tolerance)', event, action);
                 this.emit('ended', event);
             } else if (subscribers.length >= this.queue[event].requiredSubscriberCount &&
-                this.toNotify[action].timeoutInMS > this.queue[event].tolerance) {
+                this.toNotify[action].totalSleep > this.queue[event].tolerance) {
                 delete this.toNotify[action];
                 debug('run.ended (tolerance and subscribers)', event, action);
                 this.emit('ended', event);
             } else {
                 debug('run.retry', event, action, this.toNotify[action].timeoutInMS);
 
-                this.toNotify[action].timeoutInMS = this.toNotify[action].timeoutInMS * 1.1;
+                this.toNotify[action].totalSleep += this.toNotify[action].timeoutInMS;
 
                 this.toNotify[action].timeout = setTimeout(() => {
                     this.run(options);
@@ -219,7 +219,8 @@ class Queue extends EventEmitter {
         // @NOTE: reset who was already notified
         this.toNotify[options.action] = {
             event: options.event,
-            timeoutInMS: options.timeoutInMS || 50,
+            timeoutInMS: options.timeoutInMS || 20,
+            totalSleep: 0,
             notified: []
         };
 

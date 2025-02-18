@@ -262,5 +262,37 @@ describe('Unit: services/url/Queue', function () {
                 requiredSubscriberCount: 1
             });
         });
+
+        it('does not wait too long for tolerance', function (done) {
+            const clock = sinon.useFakeTimers();
+            let queueEnded = false;
+
+            queue.addListener('ended', function () {
+                queueEnded = true;
+            });
+
+            queue.start({
+                event: 'nachos',
+                requiredSubscriberCount: 1,
+                tolerance: 50,
+                timeoutInMS: 20
+            });
+
+            // Immediately register a subscriber
+            queue.register({
+                event: 'nachos'
+            }, function () {
+                // Do nothing as a subscriber
+            });
+
+            clock.tick(40);
+            should.equal(queueEnded, false, 'Queue should not have ended yet (time not strictly greater than tolerance)');
+
+            clock.tick(20);
+            should.equal(queueEnded, true, 'Queue should have ended (past tolerance and enough subscribers)');
+
+            clock.restore();
+            done();
+        });
     });
 });
