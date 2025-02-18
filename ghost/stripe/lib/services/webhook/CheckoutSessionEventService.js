@@ -3,12 +3,39 @@ const _ = require('lodash');
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 
+/**
+ * Handles `checkout.session.completed` webhook events
+ * 
+ * The `checkout.session.completed` event is triggered when a customer completes a checkout session.
+ * 
+ * It is triggered for the following scenarios:
+ * - Subscription
+ * - Donation
+ * - Setup intent
+ * 
+ * This service delegates the event to the appropriate handler based on the session mode and metadata.
+ * 
+ * The `session` payload can be found here: https://docs.stripe.com/api/checkout/sessions/object
+ */
 module.exports = class CheckoutSessionEventService {
+    /**
+     * @param {object} deps
+     * @param {import('../StripeAPI')} deps.api
+     * @param {object} deps.memberRepository
+     * @param {object} deps.donationRepository
+     * @param {object} deps.staffServiceEmails
+     * @param {function} deps.sendSignupEmail
+     */
     constructor(deps) {
         this.api = deps.api;
         this.deps = deps;
     }
 
+    /**
+     * Handles a `checkout.session.completed` event
+     * Delegates to the appropriate handler based on the session mode and metadata
+     * @param {import('stripe').Stripe.Checkout.Session} session
+     */
     async handleEvent(session) {
         if (session.mode === 'setup') {
             await this.handleSetupEvent(session);
@@ -23,6 +50,10 @@ module.exports = class CheckoutSessionEventService {
         }
     }
 
+    /**
+     * Handles a `checkout.session.completed` event for a donation
+     * @param {import('stripe').Stripe.Checkout.Session} session
+     */
     async handleDonationEvent(session) {
         const donationField = session.custom_fields?.find(obj => obj?.key === 'donation_message');
         const donationMessage = donationField?.text?.value ? donationField.text.value : null;
@@ -54,6 +85,13 @@ module.exports = class CheckoutSessionEventService {
         await staffServiceEmails.notifyDonationReceived({donationPaymentEvent: data});
     }
 
+    /**
+     * Handles a `checkout.session.completed` event for a setup intent
+     * 
+     * This is used when a customer adds or changes their payment method outside 
+     * of the normal subscription flow.
+     * @param {import('stripe').Stripe.Checkout.Session} session
+     */
     async handleSetupEvent(session) {
         const setupIntent = await this.api.getSetupIntent(session.setup_intent);
 
@@ -119,6 +157,10 @@ module.exports = class CheckoutSessionEventService {
         }
     }
 
+    /**
+     * Handles a `checkout.session.completed` event for a subscription
+     * @param {import('stripe').Stripe.Checkout.Session} session
+     */
     async handleSubscriptionEvent(session) {
         const customer = await this.api.getCustomer(session.customer, {
             expand: ['subscriptions.data.default_payment_method']
