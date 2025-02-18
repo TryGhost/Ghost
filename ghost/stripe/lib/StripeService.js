@@ -9,6 +9,21 @@ const InvoiceEventService = require('./services/webhook/InvoiceEventService');
 const CheckoutSessionEventService = require('./services/webhook/CheckoutSessionEventService');
 
 /**
+ * @typedef {object} IStripeServiceConfig
+ * @prop {string} secretKey The Stripe secret key
+ * @prop {string} publicKey The Stripe publishable key
+ * @prop {boolean} enablePromoCodes Whether to enable promo codes
+ * @prop {boolean} enableAutomaticTax Whether to enable automatic tax
+ * @prop {string} checkoutSessionSuccessUrl The URL to redirect to after successful checkout
+ * @prop {string} checkoutSessionCancelUrl The URL to redirect to if checkout is cancelled
+ * @prop {string} checkoutSetupSessionSuccessUrl The URL to redirect to after successful setup session
+ * @prop {string} checkoutSetupSessionCancelUrl The URL to redirect to if setup session is cancelled
+ * @prop {boolean} testEnv Whether this is a test environment
+ * @prop {string} webhookSecret The Stripe webhook secret
+ * @prop {string} webhookHandlerUrl The URL to handle Stripe webhooks
+ */
+
+/**
  * The `StripeService` contains the core logic for Ghost's Stripe integration.
 
  */
@@ -19,7 +34,7 @@ module.exports = class StripeService {
      * @param {*} deps.membersService
      * @param {*} deps.donationService
      * @param {*} deps.staffService
-     * @param {object} deps.StripeWebhook
+     * @param {import('./WebhookManager').StripeWebhook} deps.StripeWebhook
      * @param {object} deps.models
      * @param {object} deps.models.Product
      * @param {object} deps.models.StripePrice
@@ -128,7 +143,7 @@ module.exports = class StripeService {
 
     /**
      * Configures the Stripe API and registers the webhook with Stripe
-     * @param {import('./StripeAPI').IStripeAPIConfig} config
+     * @param {IStripeServiceConfig} config
      */
     async configure(config) {
         this.api.configure({
