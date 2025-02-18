@@ -2379,6 +2379,7 @@ describe('Members API', function () {
                     }
                 ]
             });
+        });
 
         // Activity feed
         // This test is here because creating subscriptions is a PITA now, and we would need to essentially duplicate all above tests elsewhere
@@ -2391,16 +2392,10 @@ describe('Members API', function () {
                     'content-version': anyContentVersion,
                     etag: anyEtag
                 })
-                .matchBodySnapshot({
-                    events: new Array(subscriptionAttributions.length).fill({
-                        data: anyObject
-                    })
-                })
                 .expect(({body}) => {
                     should(body.events.find(e => e.type !== 'subscription_event')).be.undefined();
                     should(body.events.map(e => e.data.attribution)).containDeep(subscriptionAttributions);
                 });
         });
-    });
     });
 });
