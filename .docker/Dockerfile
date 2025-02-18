@@ -152,6 +152,9 @@ RUN yarn install --frozen-lockfile --prefer-offline
 ## Copy the rest of the code
 COPY . .
 
+## Initialize submodules
+RUN git submodule update --init --recursive
+
 ## Build typescript packages
 RUN yarn nx run-many -t build:ts
 
