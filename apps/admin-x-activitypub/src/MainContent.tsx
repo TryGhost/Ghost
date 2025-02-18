@@ -31,8 +31,8 @@ const MainContent = () => {
     return (
         <div className='mx-auto flex h-screen w-full max-w-page flex-col overflow-y-auto'>
             <Header route={mainRoute} />
-            <div className='grid grid-cols-[auto_326px] items-start px-8'>
-                <div className='z-0 pt-[102px]'>
+            <div className='grid grid-cols-[auto_292px] items-start gap-8 px-8'>
+                <div className='z-0'>
                     <Content route={mainRoute} />
                 </div>
                 <Sidebar route={mainRoute} />

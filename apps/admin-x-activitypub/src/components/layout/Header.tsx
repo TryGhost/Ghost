@@ -36,7 +36,7 @@ const Header: React.FC<HeaderProps> = ({route}) => {
 
     return (
         <div
-            className='fixed left-[320px] right-0 top-0 z-10 bg-white px-8'>
+            className='sticky top-0 z-10 bg-white px-8'>
             <div className='flex h-[102px] items-center justify-between gap-5 border-b border-gray-200'>
                 <H1>{getTitle(route)}</H1>
                 <Button className='h-9 w-[274px] justify-start rounded-full bg-gray-100 text-md text-gray-600 hover:bg-gray-200 hover:text-gray-600 [&_svg]:size-[18px]' variant='ghost' onClick={() => updateRoute('search')}>

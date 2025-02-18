@@ -1,7 +1,7 @@
 import * as React from 'react';
 import Recommendations from './Recommendations';
 import SidebarButton from './SidebarButton';
-import {Button, LucideIcon, Separator, cn} from '@tryghost/shade';
+import {Button, LucideIcon, Separator} from '@tryghost/shade';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 interface SidebarProps {
@@ -12,13 +12,7 @@ const Sidebar: React.FC<SidebarProps> = ({route}) => {
     const {updateRoute} = useRouting();
 
     return (
-        <div
-            className={cn(
-                'border-l border-gray-200 fixed top-[102px] right-8 w-[294px] min-h-[calc(100vh-102px-32px)]',
-                'pointer-events-none',
-                '[&>*]:pointer-events-auto'
-            )}
-        >
+        <div className='sticky top-[102px] min-h-[calc(100vh-102px-32px)] w-[294px] border-l border-gray-200'>
             <div className='flex w-full flex-col items-start gap-8 pl-4 pt-4'>
                 <div className='flex w-full flex-col gap-px'>
                     <SidebarButton active={route === 'inbox'} onClick={() => updateRoute('inbox')}>
