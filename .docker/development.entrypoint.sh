@@ -1,10 +1,10 @@
 #!/bin/bash
 
-# Mounting local code into the container overwrites the `node_modules` directories
-# so we need to install dependencies again
-yarn install --frozen-lockfile --prefer-offline
+# Adjust local configuration
+node /home/ghost/.github/scripts/setup-docker.js
 
-yarn nx run-many -t build:ts
+# Run migrations
+yarn knex-migrator init
 
 # Execute the CMD
 exec "$@"
