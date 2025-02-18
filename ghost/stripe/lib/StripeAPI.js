@@ -52,9 +52,6 @@ const STRIPE_API_VERSION = '2020-08-27';
  * @prop {boolean} testEnv  - indicates if the module is run in test environment (note, NOT the test mode)
  */
 
-/**
- * 
- */
 module.exports = class StripeAPI {
     /**
      * StripeAPI
