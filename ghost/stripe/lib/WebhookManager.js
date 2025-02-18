@@ -1,12 +1,5 @@
 /**
  * @typedef {import('stripe').Stripe.WebhookEndpointCreateParams.EnabledEvent} WebhookEvent
- */
-
-/**
- * @typedef {import('stripe').Stripe.WebhookEndpoint} Webhook
- */
-
-/**
  * @typedef {import('./StripeAPI')} StripeAPI
  */
 
@@ -18,7 +11,7 @@
 
 /**
  * @typedef {object} StripeWebhook
- * @prop {(data: StripeWebhookModel) => Promise<StripeWebhookModel>} save
+ * @prop {(data: StripeWebhookModel) => Promise<void>} save
  * @prop {() => Promise<StripeWebhookModel>} get
  */
 
@@ -57,6 +50,8 @@ module.exports = class WebhookManager {
     ];
 
     /**
+     * Deletes the Stripe Webhook Endpoint and saves null values for the webhook ID and secret.
+     * 
      * @returns {Promise<boolean>}
      */
     async stop() {
@@ -79,6 +74,11 @@ module.exports = class WebhookManager {
         }
     }
 
+    /**
+     * Starts the Stripe Webhook Endpoint and saves the webhook ID and secret.
+     * 
+     * @returns {Promise<void>}
+     */
     async start() {
         if (this.mode !== 'network') {
             return;
@@ -96,6 +96,7 @@ module.exports = class WebhookManager {
     }
 
     /**
+     * Configures the Stripe Webhook Manager.
      * @param {object} config
      * @param {string} [config.webhookSecret] An optional webhook secret for use with stripe-cli, passing this will ensure a webhook is not created in Stripe
      * @param {string} config.webhookHandlerUrl The URL which the Webhook should hit
@@ -111,13 +112,17 @@ module.exports = class WebhookManager {
     }
 
     /**
+     * Setup a new Stripe Webhook Endpoint.
+     * - If the webhook exists, delete it and create a new one
+     * - If the webhook does not exist, create a new one
+     * 
      * @param {string} [id]
      * @param {string} [secret]
      * @param {object} [opts]
      * @param {boolean} [opts.forceCreate]
      * @param {boolean} [opts.skipDelete]
      *
-     * @returns {Promise<Webhook>}
+     * @returns {Promise<{id: string, secret: string}>}
      */
     async setupWebhook(id, secret, opts = {}) {
         if (!id || !secret || opts.forceCreate) {
@@ -158,6 +163,8 @@ module.exports = class WebhookManager {
     }
 
     /**
+     * Parse a Stripe Webhook event.
+     * 
      * @param {string} body
      * @param {string} signature
      * @returns {import('stripe').Stripe.Event}
