@@ -128,16 +128,7 @@ module.exports = class StripeService {
 
     /**
      * Configures the Stripe API and registers the webhook with Stripe
-     * @param {object} config
-     * @param {string} config.secretKey - Stripe secret key
-     * @param {string} config.publicKey - Stripe public key
-     * @param {boolean} config.enablePromoCodes 
-     * @param {boolean} config.enableAutomaticTax
-     * @param {string} config.checkoutSessionSuccessUrl
-     * @param {string} config.checkoutSessionCancelUrl
-     * @param {string} config.checkoutSetupSessionSuccessUrl
-     * @param {string} config.checkoutSetupSessionCancelUrl
-     * @param {boolean} config.testEnv
+     * @param {import('./StripeAPI').IStripeAPIConfig} config
      */
     async configure(config) {
         this.api.configure({
