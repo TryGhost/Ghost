@@ -70,12 +70,12 @@ module.exports = class CheckoutSessionEventService {
             amount,
             currency,
             donationMessage,
-            attributionId: session.metadata.attribution_id ?? null,
-            attributionUrl: session.metadata.attribution_url ?? null,
-            attributionType: session.metadata.attribution_type ?? null,
-            referrerSource: session.metadata.referrer_source ?? null,
-            referrerMedium: session.metadata.referrer_medium ?? null,
-            referrerUrl: session.metadata.referrer_url ?? null
+            attributionId: session.metadata?.attribution_id ?? null,
+            attributionUrl: session.metadata?.attribution_url ?? null,
+            attributionType: session.metadata?.attribution_type ?? null,
+            referrerSource: session.metadata?.referrer_source ?? null,
+            referrerMedium: session.metadata?.referrer_medium ?? null,
+            referrerUrl: session.metadata?.referrer_url ?? null
         });
 
         const donationRepository = this.deps.donationRepository;
@@ -178,12 +178,12 @@ module.exports = class CheckoutSessionEventService {
             const metadataName = _.get(session, 'metadata.name');
             const metadataNewsletters = _.get(session, 'metadata.newsletters');
             const attribution = {
-                id: session.metadata.attribution_id ?? null,
-                url: session.metadata.attribution_url ?? null,
-                type: session.metadata.attribution_type ?? null,
-                referrerSource: session.metadata.referrer_source ?? null,
-                referrerMedium: session.metadata.referrer_medium ?? null,
-                referrerUrl: session.metadata.referrer_url ?? null
+                id: session.metadata?.attribution_id ?? null,
+                url: session.metadata?.attribution_url ?? null,
+                type: session.metadata?.attribution_type ?? null,
+                referrerSource: session.metadata?.referrer_source ?? null,
+                referrerMedium: session.metadata?.referrer_medium ?? null,
+                referrerUrl: session.metadata?.referrer_url ?? null
             };
 
             const payerName = _.get(customer, 'subscriptions.data[0].default_payment_method.billing_details.name');
@@ -211,9 +211,9 @@ module.exports = class CheckoutSessionEventService {
                 id: session.metadata?.attribution_id ?? null,
                 url: session.metadata?.attribution_url ?? null,
                 type: session.metadata?.attribution_type ?? null,
-                referrerSource: session.metadata.referrer_source ?? null,
-                referrerMedium: session.metadata.referrer_medium ?? null,
-                referrerUrl: session.metadata.referrer_url ?? null
+                referrerSource: session.metadata?.referrer_source ?? null,
+                referrerMedium: session.metadata?.referrer_medium ?? null,
+                referrerUrl: session.metadata?.referrer_url ?? null
             };
 
             if (payerName && !member.get('name')) {
