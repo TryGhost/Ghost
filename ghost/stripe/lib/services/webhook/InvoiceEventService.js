@@ -1,11 +1,28 @@
 const errors = require('@tryghost/errors');
 // const _ = require('lodash');
 
+/**
+ * Handles `invoice.payment_succeeded` webhook events
+ * 
+ * The `invoice.payment_succeeded` event is triggered when a customer's payment succeeds.
+ */
 module.exports = class InvoiceEventService {
+    /**
+     * @param {object} deps
+     * @param {import('../../repositories/MemberRepository')} deps.memberRepository
+     * @param {import('../../repositories/EventRepository')} deps.eventRepository
+     * @param {import('../../repositories/ProductRepository')} deps.productRepository
+     */
     constructor(deps) {
         this.deps = deps;
     }
 
+    /**
+     * Handles a `invoice.payment_succeeded` event
+     * 
+     * Inserts a payment event into the database
+     * @param {import('stripe').Stripe.Invoice} invoice
+     */
     async handleInvoiceEvent(invoice) {
         const {api, memberRepository, eventRepository, productRepository} = this.deps;
 
