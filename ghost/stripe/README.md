@@ -29,3 +29,36 @@ The Webhook Controller listens for the following events:
 - `customer.subscription.created`
 - `invoice.payment_succeeded`
 - `checkout.session.completed`
+
+
+## Stripe Flows
+
+### New Subscription Flow
+```mermaid
+sequenceDiagram
+    actor Member as Member
+    participant Portal
+    participant Ghost
+    participant Stripe
+
+    Member->>Portal: Signs up for a paid plan
+    Portal->>Ghost: Create checkout session
+    Ghost->>Stripe: Create checkout session
+    Stripe-->>Ghost: Return session ID
+    Ghost-->>Portal: Return session ID
+    Portal->>Stripe: Redirect to checkout page
+    Note over Portal: Member enters payment details in Stripe's secure portal
+    Stripe-->>Portal: Redirect to success URL
+
+    
+    par Webhook Events
+        Stripe->>Ghost: customer.subscription.created
+        Ghost->>Ghost: Create member subscription
+        Stripe->>Ghost: checkout.session.completed
+        Ghost->>Ghost: Verify subscription created
+        Stripe->>Ghost: customer.subscription.updated
+        Ghost->>Ghost: Update member subscription
+        Stripe->>Ghost: invoice.payment_succeeded
+        Ghost->>Ghost: Record payment
+    end
+```
