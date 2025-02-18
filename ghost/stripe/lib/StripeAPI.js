@@ -36,6 +36,7 @@ const STRIPE_API_VERSION = '2020-08-27';
  * @typedef {import('stripe').Stripe.Checkout.SessionCreateParams} ICheckoutSessionCreateParams
  * @typedef {import('stripe').Stripe.SubscriptionRetrieveParams} ISubscriptionRetrieveParams
  * @typedef {import('stripe').Stripe.Subscription} ISubscription
+ * @typedef {import('stripe').Stripe.Checkout.SessionCreateParams.PaymentMethodType} IPaymentMethodType
  */
 
 /**
@@ -68,7 +69,7 @@ module.exports = class StripeAPI {
     }
 
     /**
-     * @returns {string[]|undefined}
+     * @returns {IPaymentMethodType[]|undefined}
      */
     get PAYMENT_METHOD_TYPES() {
         if (this.labs.isSet('additionalPaymentMethods')) {
@@ -680,6 +681,7 @@ module.exports = class StripeAPI {
 
             // Note: this is required for dynamic payment methods
             // https://docs.stripe.com/api/checkout/sessions/create#create_checkout_session-currency
+            // @ts-ignore
             currency: this.labs.isSet('additionalPaymentMethods') ? options.currency : undefined
         });
 
