@@ -23,13 +23,6 @@ services:
       # Mount the source code
       - .:/home/ghost
 
-      # NX Named Volumes
-      ## Share the NX daemon socket, workspace data and cache across all container instances
-      ## This also prevents collisions between host and container caches
-      - nx-daemon-socket-dir:/home/ghost/.nxdaemon:delegated
-      - nx:/home/ghost/.nx:delegated
-      - nx-cache:/home/ghost/.nxcache:delegated
-
       # Volume exclusions: 
       ## Prevent collisions between host and container node_modules
       - node_modules_ghost_root:/home/ghost/node_modules:delegated
@@ -138,7 +131,6 @@ services:
         condition: service_healthy
     environment:
       - DEBUG=${DEBUG:-}
-      - NX_DAEMON_SOCKET_DIR=/home/ghost/.nxdaemon
       - GHOST_DEV_APP_FLAGS=${GHOST_DEV_APP_FLAGS:-}
       - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY:-}
       - STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY:-}
