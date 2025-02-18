@@ -7,9 +7,17 @@ const Stripe = require('stripe').Stripe;
 /* Stripe has the following rate limits:
 *  - For most APIs, 100 read requests per second in live mode, 25 read requests per second in test mode
 *  - For search, 20 requests per second in both live and test modes
+*
+* For the testing environment, we increase these limits to 10,000 req/s to keep tests fast
 */
 const EXPECTED_API_EFFICIENCY = 0.95;
 const EXPECTED_SEARCH_API_EFFICIENCY = 0.15;
+
+// If we're running in a testing environment, we don't want to rate limit the Stripe API like we do in production
+const isTesting = process.env.NODE_ENV?.includes('testing');
+const TEST_MODE_RATE_LIMIT = isTesting ? 10_000 : 25;
+const LIVE_MODE_RATE_LIMIT = isTesting ? 10_000 : 100;
+const SEARCH_MODE_RATE_LIMIT = isTesting ? 10_000 : 100;
 
 const STRIPE_API_VERSION = '2020-08-27';
 
@@ -86,11 +94,11 @@ module.exports = class StripeAPI {
         this._config = config;
         this._testMode = config.secretKey && config.secretKey.startsWith('sk_test_');
         if (this._testMode) {
-            this._rateLimitBucket = new LeakyBucket(EXPECTED_API_EFFICIENCY * 25, 1);
+            this._rateLimitBucket = new LeakyBucket(EXPECTED_API_EFFICIENCY * TEST_MODE_RATE_LIMIT, 1);
         } else {
-            this._rateLimitBucket = new LeakyBucket(EXPECTED_API_EFFICIENCY * 100, 1);
+            this._rateLimitBucket = new LeakyBucket(EXPECTED_API_EFFICIENCY * LIVE_MODE_RATE_LIMIT, 1);
         }
-        this._searchRateLimitBucket = new LeakyBucket(EXPECTED_SEARCH_API_EFFICIENCY * 100, 1);
+        this._searchRateLimitBucket = new LeakyBucket(EXPECTED_SEARCH_API_EFFICIENCY * SEARCH_MODE_RATE_LIMIT, 1);
         this._configured = true;
     }
 
