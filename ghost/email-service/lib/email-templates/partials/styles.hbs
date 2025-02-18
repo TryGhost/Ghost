@@ -853,8 +853,8 @@ a[data-flickr-embed] img {
 .kg-callout-card {
     display: flex;
     margin: 0 0 1.5em 0;
-    padding: 20px 28px;
-    border-radius: 3px;
+    padding: 24px;
+    border-radius: 8px;
 }
 
 .kg-callout-card-grey {
@@ -863,7 +863,7 @@ a[data-flickr-embed] img {
 
 .kg-callout-card-white {
     background: #fff;
-    box-shadow: inset 0 0 0 1px #dddedf;
+    border: 1px solid #dddedf;
 }
 
 .kg-callout-card-blue {
@@ -902,6 +902,145 @@ a[data-flickr-embed] img {
 .kg-callout-emoji {
     padding-right: 12px;
     font-size: 20px;
+}
+
+.kg-cta-card {
+    margin: 0 0 1.5em 0;
+    border-spacing: 24px 0;
+    border-radius: 8px;
+}
+
+.kg-cta-card.kg-cta-bg-none {
+    border-spacing: 0;
+    border-bottom: 1px solid #dddedf;
+    border-radius: 0;
+}
+
+.kg-cta-bg-white {
+    background: #fff;
+    border: 1px solid #dddedf;
+}
+
+.kg-cta-bg-grey {
+    background: #eef0f2;
+}
+
+.kg-cta-bg-blue {
+    background: #E9F6FB;
+}
+
+.kg-cta-bg-green {
+    background: #E8F8EA;
+}
+
+.kg-cta-bg-yellow {
+    background: #FCF4E3;
+}
+
+.kg-cta-bg-red {
+    background: #FBE9E9;
+}
+
+.kg-cta-bg-pink {
+    background: #FCEEF8;
+}
+
+.kg-cta-bg-purple {
+    background: #F2EDFC;
+}
+
+.kg-cta-sponsor-label {
+    padding: 12px 0;
+    border-bottom: 1px solid #dddedf;
+}
+
+.kg-cta-sponsor-label p {
+    margin: 0;
+    color: rgba(0, 0, 0, 0.4);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.kg-cta-sponsor-label a {
+    color: rgba(0, 0, 0);
+}
+
+table.kg-cta-content-wrapper {
+    border-spacing: 0 24px;
+}
+
+.kg-cta-minimal .kg-cta-image-container {
+    border-right: 24px solid transparent;
+}
+
+img.kg-cta-image {
+    display: block;
+    border-radius: 6px;
+    border: 0;
+}
+
+.kg-cta-minimal img.kg-cta-image {
+    width: 64px;
+    height: 64px;
+    object-fit: cover;
+}
+
+.kg-cta-immersive img.kg-cta-image {
+    margin: 0 auto;
+    height: auto;
+    width: 100%;
+    max-width: 100%;
+}
+
+.post-content .kg-cta-text {
+    font-family: Georgia, serif;
+}
+
+.kg-cta-text a {
+    color: currentColor;
+}
+
+.post-content-sans-serif .kg-cta-text {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+}
+
+.kg-cta-text p {
+    margin-bottom: 1em;
+}
+
+.kg-cta-immersive .kg-cta-text p {
+    text-align: center;
+}
+
+.kg-cta-immersive .kg-cta-text p:last-child {
+    margin-bottom: 0;
+}
+
+.kg-cta-minimal a.kg-cta-button {
+    display: inline-block; 
+    padding: 6px 18px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+    font-size: 0.85em;
+    font-weight: 600;
+    text-decoration: none;
+    border-radius: 6px;
+}
+
+.kg-cta-immersive .kg-cta-button-container {
+    padding: 8px 20px;
+    border-radius: 6px;
+}
+
+.kg-cta-immersive a.kg-cta-button {
+    display: inline-block; 
+    width: 100%;
+    font-size: 0.85em;
+    font-weight: 600;
+    text-align: center;
+    text-decoration: none;
+    border-radius: 6px;
 }
 
 .kg-header-card {

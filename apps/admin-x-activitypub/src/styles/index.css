@@ -1,6 +1,7 @@
+@import '@tryghost/shade/styles.css';
 @import '@tryghost/admin-x-design-system/styles.css';
 
-.admin-x-base.admin-x-activitypub {
+.admin-x-base.shade {
     animation-name: none;
 }
 
@@ -18,7 +19,57 @@
     }
 }
 
-button.ap-like-button:active svg {
+@keyframes slideUp {
+    0% {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+    }
+    50% {
+        opacity: 0;
+        transform: translate3d(0, -100%, 0);
+    }
+    51% {
+        opacity: 0;
+        transform: translate3d(0, 100%, 0);
+    }
+    100% {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+    }
+}
+
+@keyframes slideDown {
+    0% {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+    }
+    50% {
+        opacity: 0;
+        transform: translate3d(0, 100%, 0);
+    }
+    51% {
+        opacity: 0;
+        transform: translate3d(0, -100%, 0);
+    }
+    100% {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+    }
+}
+
+.animate-slide-up {
+    animation: slideUp 0.3s ease-in-out;
+    display: inline-block;
+    will-change: transform, opacity;
+}
+
+.animate-slide-down {
+    animation: slideDown 0.3s ease-in-out;
+    display: inline-block;
+    will-change: transform, opacity;
+}
+
+button.ap-action-button:active svg {
     animation: bump 0.3s ease-in-out;
 }
 
@@ -31,14 +82,13 @@ button.ap-like-button:active svg {
 .ap-note-content a,
 .ap-profile-content a,
 .ap-note-content-large a {
-    color: #2563eb !important;
+    color: #00A4EB !important;
     word-break: break-all;
 }
 
 .ap-note-content a:hover,
 .ap-profile-content a:hover,
 .ap-note-content-large a:hover {
-    color: #1d4ed8 !important;
     text-decoration: underline !important;
 }
 
@@ -60,7 +110,7 @@ button.ap-like-button:active svg {
 }
 
 .ap-note-content-large > * + * {
-    margin-top: 1.6rem !important;
+    margin-top: 1.65rem !important;
 }
 
 .ap-note-content > h1 + *,

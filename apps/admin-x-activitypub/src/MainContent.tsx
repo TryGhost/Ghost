@@ -1,7 +1,7 @@
-import Activities from './components/Activities';
-import Inbox from './components/Inbox';
-import Profile from './components/Profile';
-import Search from './components/Search';
+import Inbox from '@views/Inbox';
+import Notifications from '@views/Notifications';
+import Profile from '@views/Profile';
+import Search from '@views/Search';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 const MainContent = () => {
@@ -10,8 +10,8 @@ const MainContent = () => {
     switch (mainRoute) {
     case 'search':
         return <Search />;
-    case 'activity':
-        return <Activities />;
+    case 'notifications':
+        return <Notifications />;
     case 'profile':
         return <Profile />;
     default:

@@ -1,14 +1,13 @@
-import {useEffect, useState} from 'react';
-
+import clsx from 'clsx';
 import {Button} from '@tryghost/admin-x-design-system';
-
-import {useFollow} from '../../hooks/useActivityPubQueries';
+import {useEffect, useState} from 'react';
+import {useFollowMutationForUser, useUnfollowMutationForUser} from '@hooks/use-activity-pub-queries';
 
 interface FollowButtonProps {
     className?: string;
     following: boolean;
     handle: string;
-    type?: 'button' | 'link';
+    type?: 'primary' | 'secondary';
     onFollow?: () => void;
     onUnfollow?: () => void;
 }
@@ -19,13 +18,22 @@ const FollowButton: React.FC<FollowButtonProps> = ({
     className,
     following,
     handle,
-    type = 'button',
+    type = 'secondary',
     onFollow = noop,
     onUnfollow = noop
 }) => {
     const [isFollowing, setIsFollowing] = useState(following);
+    const [isHovered, setIsHovered] = useState(false);
 
-    const mutation = useFollow('index',
+    const unfollowMutation = useUnfollowMutationForUser('index',
+        noop,
+        () => {
+            setIsFollowing(false);
+            onUnfollow();
+        }
+    );
+
+    const followMutation = useFollowMutationForUser('index',
         noop,
         () => {
             setIsFollowing(false);
@@ -37,13 +45,11 @@ const FollowButton: React.FC<FollowButtonProps> = ({
         if (isFollowing) {
             setIsFollowing(false);
             onUnfollow();
-
-            // @TODO: Implement unfollow mutation
+            unfollowMutation.mutate(handle);
         } else {
             setIsFollowing(true);
             onFollow();
-
-            mutation.mutate(handle);
+            followMutation.mutate(handle);
         }
     };
 
@@ -51,19 +57,26 @@ const FollowButton: React.FC<FollowButtonProps> = ({
         setIsFollowing(following);
     }, [following]);
 
+    const color = (type === 'primary') ? 'black' : 'grey';
+    const size = (type === 'primary') ? 'md' : 'sm';
+    const minWidth = (type === 'primary') ? 'min-w-[96px]' : 'min-w-[88px]';
+
     return (
         <Button
-            className={className}
-            color='black'
-            disabled={isFollowing}
-            label={isFollowing ? 'Following' : 'Follow'}
-            link={type === 'link'}
+            className={clsx(
+                className,
+                isFollowing && minWidth
+            )}
+            color={isFollowing ? 'outline' : color}
+            label={isFollowing ? (isHovered ? 'Unfollow' : 'Following') : 'Follow'}
+            size={size}
             onClick={(event) => {
                 event?.preventDefault();
                 event?.stopPropagation();
-
                 handleClick();
             }}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
         />
     );
 };

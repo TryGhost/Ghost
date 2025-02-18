@@ -1,22 +1,23 @@
 import FeedItem from './FeedItem';
 import FeedItemStats from './FeedItemStats';
 import NiceModal from '@ebay/nice-modal-react';
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import articleBodyStyles from '../articleBodyStyles';
 import getUsername from '../../utils/get-username';
 import {OptionProps, SingleValueProps, components} from 'react-select';
 
-import {type Activity} from '../activities/ActivityItem';
-import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
+import {Activity, ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, Icon, LoadingIndicator, Modal, Popover, Select, SelectOption} from '@tryghost/admin-x-design-system';
 import {renderTimestamp} from '../../utils/render-timestamp';
 import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
 import {useModal} from '@ebay/nice-modal-react';
-import {useThreadForUser} from '../../hooks/useActivityPubQueries';
+import {useThreadForUser} from '@hooks/use-activity-pub-queries';
 
 import APAvatar from '../global/APAvatar';
 import APReplyBox from '../global/APReplyBox';
+import TableOfContents, {TOCItem} from './TableOfContents';
 import getReadingTime from '../../utils/get-reading-time';
+import {useDebounce} from 'use-debounce';
 
 interface ArticleModalProps {
     activityId: string;
@@ -37,14 +38,30 @@ interface IframeWindow extends Window {
     resizeIframe?: () => void;
 }
 
-const ArticleBody: React.FC<{heading: string, image: string|undefined, excerpt: string|undefined, html: string, fontSize: FontSize, lineHeight: string, fontFamily: SelectOption}> = ({
+const FONT_SANS = 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif';
+
+const ArticleBody: React.FC<{
+    heading: string;
+    image: string|undefined;
+    excerpt: string|undefined;
+    html: string;
+    fontSize: FontSize;
+    lineHeight: string;
+    fontFamily: SelectOption;
+    onHeadingsExtracted?: (headings: TOCItem[]) => void;
+    onIframeLoad?: (iframe: HTMLIFrameElement) => void;
+    onLoadingChange?: (isLoading: boolean) => void;
+}> = ({
     heading,
     image,
     excerpt,
     html,
     fontSize,
     lineHeight,
-    fontFamily
+    fontFamily,
+    onHeadingsExtracted,
+    onIframeLoad,
+    onLoadingChange
 }) => {
     const site = useBrowseSite();
     const siteData = site.data?.site;
@@ -62,7 +79,7 @@ const ArticleBody: React.FC<{heading: string, image: string|undefined, excerpt: 
                 :root {
                     --font-size: ${fontSize};
                     --line-height: ${lineHeight};
-                    --font-family: ${fontFamily.value};
+                    --font-family: ${(fontFamily.value === 'sans-serif' ? FONT_SANS : fontFamily.value)};
                     --letter-spacing: ${fontFamily.label === 'Clean sans-serif' ? '-0.013em' : '0'};
                     --content-spacing-factor: ${SPACING_FACTORS[FONT_SIZES.indexOf(fontSize)]};
                 }
@@ -112,7 +129,15 @@ const ArticleBody: React.FC<{heading: string, image: string|undefined, excerpt: 
                 window.addEventListener('DOMContentLoaded', initializeResize);
                 window.addEventListener('load', resizeIframe);
                 window.addEventListener('resize', resizeIframe);
-                new MutationObserver(resizeIframe).observe(document.body, { subtree: true, childList: true });
+
+                if (document.body) {
+                    const observer = new MutationObserver(resizeIframe);
+                    observer.observe(document.body, {
+                        subtree: true,
+                        childList: true,
+                        attributes: true
+                    });
+                }
 
                 window.addEventListener('message', (event) => {
                     if (event.data.type === 'triggerResize') {
@@ -192,11 +217,65 @@ const ArticleBody: React.FC<{heading: string, image: string|undefined, excerpt: 
         if (iframeWindow && typeof iframeWindow.resizeIframe === 'function') {
             iframeWindow.resizeIframe();
         } else {
-            // Fallback: trigger a resize event
             const resizeEvent = new Event('resize');
             iframeDocument.dispatchEvent(resizeEvent);
         }
     }, [fontSize, lineHeight, fontFamily]);
+
+    useEffect(() => {
+        const iframe = iframeRef.current;
+        if (!iframe) {
+            return;
+        }
+
+        const handleLoad = () => {
+            if (!iframe.contentDocument) {
+                return;
+            }
+
+            // Get all headings except the article title
+            const headingElements = Array.from(
+                iframe.contentDocument.querySelectorAll('h1:not(.gh-article-title), h2, h3, h4, h5, h6')
+            );
+
+            if (headingElements.length === 0) {
+                return;
+            }
+
+            // Find the highest level (smallest number) heading
+            const highestLevel = Math.min(
+                ...headingElements.map(el => parseInt(el.tagName[1]))
+            );
+
+            // Map headings and normalize their levels
+            const headings = headingElements.map((el, idx) => {
+                const id = `heading-${idx}`;
+                el.id = id;
+
+                // Calculate normalized level (e.g., if highest is h3, then h3->h1, h4->h2)
+                const actualLevel = parseInt(el.tagName[1]);
+                const normalizedLevel = actualLevel - highestLevel + 1;
+
+                return {
+                    id,
+                    text: el.textContent || '',
+                    level: normalizedLevel,
+                    element: el as HTMLElement
+                };
+            });
+
+            onHeadingsExtracted?.(headings);
+            onIframeLoad?.(iframe);
+        };
+
+        iframe.addEventListener('load', handleLoad);
+        return () => iframe.removeEventListener('load', handleLoad);
+    }, [onHeadingsExtracted, onIframeLoad]);
+
+    // Update parent when loading state changes
+    useEffect(() => {
+        onLoadingChange?.(isLoading);
+    }, [isLoading, onLoadingChange]);
 
     return (
         <div className='w-full pb-6'>
@@ -225,7 +304,7 @@ const ArticleBody: React.FC<{heading: string, image: string|undefined, excerpt: 
 };
 
 const FeedItemDivider: React.FC = () => (
-    <div className="h-px bg-grey-200"></div>
+    <div className="h-px bg-gray-200"></div>
 );
 
 const FONT_SIZES = ['1.5rem', '1.6rem', '1.7rem', '1.8rem', '2rem'] as const;
@@ -263,7 +342,7 @@ const Option: React.FC<OptionProps<FontSelectOption, false>> = ({children, ...pr
     <components.Option {...props}>
         <div className={props.isSelected ? 'relative flex w-full items-center justify-between gap-2' : 'group'} data-testid="select-option" data-value={props.data.value}>
             <div className='flex items-center gap-2.5'>
-                <div className='flex h-8 w-8 items-center justify-center rounded-md bg-grey-150 text-[1.5rem] font-semibold group-hover:bg-grey-250 dark:bg-grey-900 dark:group-hover:bg-grey-800'>Aa</div>
+                <div className='flex h-8 w-8 items-center justify-center rounded-md bg-gray-150 text-[1.5rem] font-semibold group-hover:bg-gray-250 dark:bg-gray-900 dark:group-hover:bg-gray-800'>Aa</div>
                 <span className={`text-md ${props.data.className}`}>{children}</span>
             </div>
             {props.isSelected && <span><Icon name='check' size='xs' /></span>}
@@ -293,7 +372,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
 
     const {threadQuery, addToThread} = useThreadForUser('index', activityId);
     const {data: activityThread, isLoading: isLoadingThread} = threadQuery;
-    const activtyThreadActivityIdx = (activityThread?.items ?? []).findIndex(item => item.id === activityId);
+    const activtyThreadActivityIdx = (activityThread?.items ?? []).findIndex(item => item.object.id === activityId);
     const activityThreadChildren = (activityThread?.items ?? []).slice(activtyThreadActivityIdx + 1);
     const activityThreadParents = (activityThread?.items ?? []).slice(0, activtyThreadActivityIdx);
 
@@ -320,12 +399,14 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
             history
         });
     };
-    const navigateForward = (nextActivityId: string, nextObject: ObjectProperties, nextActor: ActorProperties, nextFocusReply: boolean) => {
+    const navigateForward = (_: string, nextObject: ObjectProperties, nextActor: ActorProperties, nextFocusReply: boolean) => {
         // Trigger the modal to show the next activity and add the existing
         // activity to the history so we can navigate back
 
         modal.show({
-            activityId: nextActivityId,
+            // We need to use the object as the API expects an object ID but
+            // returns a full activity object
+            activityId: nextObject.id,
             object: nextObject,
             actor: nextActor,
             updateActivity,
@@ -401,7 +482,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
     const [fontFamily, setFontFamily] = useState<SelectOption>(() => {
         const saved = localStorage.getItem(STORAGE_KEYS.FONT_FAMILY);
         return saved ? JSON.parse(saved) : {
-            value: 'sans-serif',
+            value: FONT_SANS,
             label: 'Clean sans-serif'
         };
     });
@@ -455,30 +536,158 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
     const currentGridWidth = `${parseInt(currentMaxWidth) - 64}px`;
 
     const [readingProgress, setReadingProgress] = useState(0);
+    const [isLoading, setIsLoading] = useState(true);
+
+    // Add debounced version of setReadingProgress
+    const [debouncedSetReadingProgress] = useDebounce(setReadingProgress, 100);
+
+    const PROGRESS_INCREMENT = 5; // Progress is shown in 5% increments (0%, 5%, 10%, etc.)
 
     useEffect(() => {
         const container = document.querySelector('.overflow-y-auto');
         const article = document.getElementById('object-content');
 
         const handleScroll = () => {
+            if (isLoading) {
+                return;
+            }
+
             if (!container || !article) {
                 return;
             }
 
             const articleRect = article.getBoundingClientRect();
             const containerRect = container.getBoundingClientRect();
+
+            const isContentShorterThanViewport = articleRect.height <= containerRect.height;
+
+            if (isContentShorterThanViewport) {
+                debouncedSetReadingProgress(100);
+                return;
+            }
+
             const scrolledPast = Math.max(0, containerRect.top - articleRect.top);
             const totalHeight = (article as HTMLElement).offsetHeight - (container as HTMLElement).offsetHeight;
 
             const rawProgress = Math.min(Math.max((scrolledPast / totalHeight) * 100, 0), 100);
-            const progress = Math.round(rawProgress / 5) * 5;
+            const progress = Math.round(rawProgress / PROGRESS_INCREMENT) * PROGRESS_INCREMENT;
 
-            setReadingProgress(progress);
+            debouncedSetReadingProgress(progress);
         };
 
+        if (isLoading) {
+            return;
+        }
+
+        const observer = new MutationObserver(handleScroll);
+        if (article) {
+            observer.observe(article, {
+                childList: true,
+                subtree: true,
+                characterData: true
+            });
+        }
+
         container?.addEventListener('scroll', handleScroll);
-        return () => container?.removeEventListener('scroll', handleScroll);
+        handleScroll();
+
+        return () => {
+            container?.removeEventListener('scroll', handleScroll);
+            observer.disconnect();
+        };
+    }, [isLoading, debouncedSetReadingProgress]);
+
+    const [tocItems, setTocItems] = useState<TOCItem[]>([]);
+    const [activeHeadingId, setActiveHeadingId] = useState<string | null>(null);
+    const [iframeElement, setIframeElement] = useState<HTMLIFrameElement | null>(null);
+
+    const handleHeadingsExtracted = useCallback((headings: TOCItem[]) => {
+        setTocItems(headings);
     }, []);
+
+    const handleIframeLoad = useCallback((iframe: HTMLIFrameElement) => {
+        setIframeElement(iframe);
+    }, []);
+
+    const scrollToHeading = useCallback((id: string) => {
+        if (!iframeElement?.contentDocument) {
+            return;
+        }
+
+        const heading = iframeElement.contentDocument.getElementById(id);
+        if (heading) {
+            const container = document.querySelector('.overflow-y-auto');
+            if (!container) {
+                return;
+            }
+
+            const headingOffset = heading.offsetTop;
+
+            container.scrollTo({
+                top: headingOffset - 120,
+                behavior: 'smooth'
+            });
+        }
+    }, [iframeElement]);
+
+    useEffect(() => {
+        if (!iframeElement?.contentDocument || !tocItems.length) {
+            return;
+        }
+
+        const setupObserver = () => {
+            const container = document.querySelector('.overflow-y-auto');
+            if (!container) {
+                return;
+            }
+
+            const handleScroll = () => {
+                const doc = iframeElement.contentDocument;
+                if (!doc || !doc.documentElement) {
+                    return;
+                }
+
+                const headings = tocItems
+                    .map(item => doc.getElementById(item.id))
+                    .filter((el): el is HTMLElement => el !== null)
+                    .map(el => ({
+                        element: el,
+                        id: el.id,
+                        position: el.getBoundingClientRect().top - container.getBoundingClientRect().top
+                    }));
+
+                if (!headings.length) {
+                    return;
+                }
+
+                // Find the last visible heading
+                const viewportCenter = container.clientHeight / 2;
+                const buffer = 100;
+
+                // Find the last heading that's above the viewport center
+                const lastVisibleHeading = headings.reduce((last, current) => {
+                    if (current.position < (viewportCenter + buffer)) {
+                        return current;
+                    }
+                    return last;
+                }, headings[0]);
+
+                if (lastVisibleHeading && lastVisibleHeading.element.id !== activeHeadingId) {
+                    setActiveHeadingId(lastVisibleHeading.element.id);
+                }
+            };
+
+            container.addEventListener('scroll', handleScroll);
+            handleScroll();
+
+            return () => {
+                container.removeEventListener('scroll', handleScroll);
+            };
+        };
+
+        const timeoutId = setTimeout(setupObserver, 100);
+        return () => clearTimeout(timeoutId);
+    }, [iframeElement, tocItems, activeHeadingId]);
 
     return (
         <Modal
@@ -495,7 +704,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
             width={modalSize === MODAL_SIZE_LG ? 'toSidebar' : modalSize}
         >
             <div className='flex h-full flex-col'>
-                <div className='sticky top-0 z-50 flex h-[97px] items-center justify-center border-b border-grey-200 bg-white'>
+                <div className='sticky top-0 z-50 flex h-[97px] items-center justify-center border-b border-gray-200 bg-white'>
                     <div
                         className={`w-full ${modalSize === MODAL_SIZE_LG ? 'grid px-8' : 'flex justify-between gap-2 px-8'}`}
                         style={modalSize === MODAL_SIZE_LG ? {
@@ -504,7 +713,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                     >
                         {(canNavigateBack || (activityThreadParents.length > 0)) ? (
                             <div className='col-[1/2] flex items-center justify-between'>
-                                <Button className='transition-color flex h-10 w-10 items-center justify-center rounded-full bg-white hover:bg-grey-100' icon='arrow-left' size='sm' unstyled onClick={navigateBack}/>
+                                <Button className='transition-color flex h-10 w-10 items-center justify-center rounded-full bg-white hover:bg-gray-100' icon='arrow-left' size='sm' unstyled onClick={navigateBack}/>
                             </div>
                         ) : (<div className='col-[2/3] mx-auto flex w-full items-center gap-3'>
                             <div className='relative z-10 pt-[3px]'>
@@ -512,16 +721,16 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                             </div>
                             <div className='relative z-10 flex w-full min-w-0 flex-col overflow-visible text-[1.5rem]'>
                                 <div className='flex w-full'>
-                                    <span className='min-w-0 truncate whitespace-nowrap font-bold'>{actor.name}</span>
+                                    <span className='min-w-0 truncate whitespace-nowrap font-semibold'>{actor.name}</span>
                                 </div>
                                 <div className='flex w-full'>
-                                    <span className='text-grey-700 after:mx-1 after:font-normal after:text-grey-700 after:content-["·"]'>{getUsername(actor)}</span>
-                                    <span className='text-grey-700'>{renderTimestamp(object)}</span>
+                                    <span className='text-gray-700 after:mx-1 after:font-normal after:text-gray-700 after:content-["·"]'>{getUsername(actor)}</span>
+                                    <span className='text-gray-700'>{renderTimestamp(object)}</span>
                                 </div>
                             </div>
                         </div>)}
                         <div className='col-[3/4] flex items-center justify-end gap-2'>
-                            {modalSize === MODAL_SIZE_LG && object.type === 'Article' && <Popover position='end' trigger={ <Button className='transition-color flex h-10 w-10 items-center justify-center rounded-full bg-white hover:bg-grey-100' icon='typography' size='sm' unstyled onClick={() => {}}/>
+                            {modalSize === MODAL_SIZE_LG && object.type === 'Article' && <Popover position='end' trigger={ <Button className='transition-color flex h-10 w-10 items-center justify-center rounded-full bg-white hover:bg-gray-100' icon='typography' size='sm' unstyled onClick={() => {}}/>
                             }>
                                 <div className='flex min-w-[300px] flex-col p-5'>
                                     <Select
@@ -530,7 +739,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                         controlClasses={{control: '!min-h-[40px] !py-0 !pl-1', option: '!pl-1 !py-[4px]'}}
                                         options={[
                                             {
-                                                value: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif',
+                                                value: FONT_SANS,
                                                 label: 'Clean sans-serif',
                                                 className: 'font-sans'
                                             },
@@ -543,16 +752,16 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                         title='Typeface'
                                         value={fontFamily}
                                         onSelect={option => setFontFamily(option || {
-                                            value: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif',
+                                            value: FONT_SANS,
                                             label: 'Clean sans-serif',
                                             className: 'font-sans'
                                         })}
                                     />
                                     <div className='mb-2 flex items-center justify-between'>
-                                        <span className='text-sm font-medium text-grey-900'>Font size</span>
+                                        <span className='text-sm font-medium text-gray-900'>Font size</span>
                                         <div className='flex items-center'>
                                             <Button
-                                                className={`transition-color flex h-8 w-8 items-center justify-center rounded-full bg-white ${currentFontSizeIndex === 0 ? 'opacity-20 hover:bg-white' : 'hover:bg-grey-100'}`}
+                                                className={`transition-color flex h-8 w-8 items-center justify-center rounded-full bg-white ${currentFontSizeIndex === 0 ? 'opacity-20 hover:bg-white' : 'hover:bg-gray-100'}`}
                                                 disabled={currentFontSizeIndex === 0}
                                                 hideLabel={true}
                                                 icon='substract'
@@ -562,7 +771,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                                 onClick={decreaseFontSize}
                                             />
                                             <Button
-                                                className={`transition-color flex h-8 w-8 items-center justify-center rounded-full bg-white hover:bg-grey-100 ${currentFontSizeIndex === FONT_SIZES.length - 1 ? 'opacity-20 hover:bg-white' : 'hover:bg-grey-100'}`}
+                                                className={`transition-color flex h-8 w-8 items-center justify-center rounded-full bg-white hover:bg-gray-100 ${currentFontSizeIndex === FONT_SIZES.length - 1 ? 'opacity-20 hover:bg-white' : 'hover:bg-gray-100'}`}
                                                 disabled={currentFontSizeIndex === FONT_SIZES.length - 1}
                                                 hideLabel={true}
                                                 icon='add'
@@ -574,10 +783,10 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                         </div>
                                     </div>
                                     <div className='mb-5 flex items-center justify-between'>
-                                        <span className='text-sm font-medium text-grey-900'>Line spacing</span>
+                                        <span className='text-sm font-medium text-gray-900'>Line spacing</span>
                                         <div className='flex items-center'>
                                             <Button
-                                                className={`transition-color flex h-8 w-8 items-center justify-center rounded-full bg-white hover:bg-grey-100 ${currentLineHeightIndex === 0 ? 'opacity-20 hover:bg-white' : 'hover:bg-grey-100'}`}
+                                                className={`transition-color flex h-8 w-8 items-center justify-center rounded-full bg-white hover:bg-gray-100 ${currentLineHeightIndex === 0 ? 'opacity-20 hover:bg-white' : 'hover:bg-gray-100'}`}
                                                 disabled={currentLineHeightIndex === 0}
                                                 hideLabel={true}
                                                 icon='substract'
@@ -587,7 +796,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                                 onClick={decreaseLineHeight}
                                             />
                                             <Button
-                                                className={`transition-color flex h-8 w-8 items-center justify-center rounded-full bg-white hover:bg-grey-100 ${currentLineHeightIndex === LINE_HEIGHTS.length - 1 ? 'opacity-20 hover:bg-white' : 'hover:bg-grey-100'}`}
+                                                className={`transition-color flex h-8 w-8 items-center justify-center rounded-full bg-white hover:bg-gray-100 ${currentLineHeightIndex === LINE_HEIGHTS.length - 1 ? 'opacity-20 hover:bg-white' : 'hover:bg-gray-100'}`}
                                                 disabled={currentLineHeightIndex === LINE_HEIGHTS.length - 1}
                                                 hideLabel={true}
                                                 icon='add'
@@ -599,116 +808,47 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                         </div>
                                     </div>
                                     <Button
-                                        className="text-sm text-grey-600 hover:text-grey-700"
+                                        className="text-sm text-gray-600 hover:text-gray-700"
                                         label="Reset to default"
                                         link={true}
                                         onClick={() => {
                                             setCurrentFontSizeIndex(1); // Default font size
                                             setCurrentLineHeightIndex(1); // Default line height
                                             setFontFamily({
-                                                value: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif',
+                                                value: FONT_SANS,
                                                 label: 'Clean sans-serif'
                                             });
                                         }}
                                     />
                                 </div>
                             </Popover>}
-                            <Button className='transition-color flex h-10 w-10 items-center justify-center rounded-full bg-white hover:bg-grey-100' icon='close' size='sm' unstyled onClick={() => modal.remove()}/>
+                            <Button className='transition-color flex h-10 w-10 items-center justify-center rounded-full bg-white hover:bg-gray-100' icon='close' size='sm' unstyled onClick={() => modal.remove()}/>
                         </div>
                     </div>
                 </div>
-                <div className='grow overflow-y-auto'>
-                    <div className={`mx-auto px-8 pb-10 pt-5`} style={{maxWidth: currentMaxWidth}}>
-                        {activityThreadParents.map((item) => {
-                            return (
-                                <>
-                                    <FeedItem
-                                        actor={item.actor}
-                                        commentCount={item.object.replyCount ?? 0}
-                                        last={false}
-                                        layout='reply'
-                                        object={item.object}
-                                        type='Note'
-                                        onClick={() => {
-                                            navigateForward(item.id, item.object, item.actor, false);
-                                        }}
-                                        onCommentClick={() => {
-                                            navigateForward(item.id, item.object, item.actor, true);
-                                        }}
-                                    />
-                                </>
-                            );
-                        })}
-
-                        {object.type === 'Note' && (
-                            <FeedItem
-                                actor={actor}
-                                commentCount={object.replyCount ?? 0}
-                                last={true}
-                                layout={'modal'}
-                                object={object}
-                                showHeader={(canNavigateBack || (activityThreadParents.length > 0)) ? true : false}
-                                type='Note'
-                                onCommentClick={() => {
-                                    repliesRef.current?.scrollIntoView({
-                                        behavior: 'smooth',
-                                        block: 'center'
-                                    });
-                                }}
-                            />
-                        )}
-                        {object.type === 'Article' && (
-                            <div className='border-b border-grey-200 pb-8' id='object-content'>
-                                <ArticleBody
-                                    excerpt={object?.preview?.content}
-                                    fontFamily={fontFamily}
-                                    fontSize={FONT_SIZES[currentFontSizeIndex]}
-                                    heading={object.name}
-                                    html={object.content}
-                                    image={typeof object.image === 'string' ? object.image : object.image?.url}
-                                    lineHeight={LINE_HEIGHTS[currentLineHeightIndex]}
+                <div className='relative flex-1'>
+                    {modalSize === MODAL_SIZE_LG && object.type === 'Article' && tocItems.length > 0 && (
+                        <div className="!visible absolute inset-y-0 right-7 z-40 hidden lg:!block">
+                            <div className="sticky top-1/2 -translate-y-1/2">
+                                <TableOfContents
+                                    items={tocItems}
+                                    onItemClick={scrollToHeading}
                                 />
-                                <div className='ml-[-7px]'>
-                                    <FeedItemStats
-                                        commentCount={object.replyCount ?? 0}
-                                        layout={'modal'}
-                                        likeCount={1}
-                                        object={object}
-                                        onCommentClick={() => {
-                                            repliesRef.current?.scrollIntoView({
-                                                behavior: 'smooth',
-                                                block: 'center'
-                                            });
-                                        }}
-                                        onLikeClick={onLikeClick}
-                                    />
-                                </div>
                             </div>
-                        )}
-
-                        <div ref={replyBoxRef}>
-                            <APReplyBox
-                                focused={isFocused}
-                                object={object}
-                                onNewReply={handleNewReply}
-                            />
                         </div>
-                        <FeedItemDivider />
-
-                        {isLoadingThread && <LoadingIndicator size='lg' />}
-
-                        <div ref={repliesRef}>
-                            {activityThreadChildren.map((item, index) => {
-                                const showDivider = index !== activityThreadChildren.length - 1;
-
+                    )}
+                    <div className='grow overflow-y-auto'>
+                        <div className={`mx-auto px-8 pb-10 pt-5`} style={{maxWidth: currentMaxWidth}}>
+                            {activityThreadParents.map((item) => {
                                 return (
                                     <>
                                         <FeedItem
                                             actor={item.actor}
                                             commentCount={item.object.replyCount ?? 0}
-                                            last={true}
+                                            last={false}
                                             layout='reply'
                                             object={item.object}
+                                            repostCount={item.object.repostCount ?? 0}
                                             type='Note'
                                             onClick={() => {
                                                 navigateForward(item.id, item.object, item.actor, false);
@@ -717,20 +857,108 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                                 navigateForward(item.id, item.object, item.actor, true);
                                             }}
                                         />
-                                        {showDivider && <FeedItemDivider />}
                                     </>
                                 );
                             })}
+
+                            {object.type === 'Note' && (
+                                <FeedItem
+                                    actor={actor}
+                                    commentCount={object.replyCount ?? 0}
+                                    last={true}
+                                    layout={'modal'}
+                                    object={object}
+                                    repostCount={object.repostCount ?? 0}
+                                    showHeader={(canNavigateBack || (activityThreadParents.length > 0))}
+                                    type='Note'
+                                    onCommentClick={() => {
+                                        repliesRef.current?.scrollIntoView({
+                                            behavior: 'smooth',
+                                            block: 'center'
+                                        });
+                                    }}
+                                />
+                            )}
+                            {object.type === 'Article' && (
+                                <div className='border-b border-gray-200 pb-8' id='object-content'>
+                                    <ArticleBody
+                                        excerpt={object?.preview?.content ?? ''}
+                                        fontFamily={fontFamily}
+                                        fontSize={FONT_SIZES[currentFontSizeIndex]}
+                                        heading={object.name}
+                                        html={object.content ?? ''}
+                                        image={typeof object.image === 'string' ? object.image : object.image?.url}
+                                        lineHeight={LINE_HEIGHTS[currentLineHeightIndex]}
+                                        onHeadingsExtracted={handleHeadingsExtracted}
+                                        onIframeLoad={handleIframeLoad}
+                                        onLoadingChange={setIsLoading}
+                                    />
+                                    <div className='ml-[-7px]'>
+                                        <FeedItemStats
+                                            commentCount={object.replyCount ?? 0}
+                                            layout={'modal'}
+                                            likeCount={1}
+                                            object={object}
+                                            repostCount={object.repostCount ?? 0}
+                                            onCommentClick={() => {
+                                                repliesRef.current?.scrollIntoView({
+                                                    behavior: 'smooth',
+                                                    block: 'center'
+                                                });
+                                            }}
+                                            onLikeClick={onLikeClick}
+                                        />
+                                    </div>
+                                </div>
+                            )}
+
+                            <div ref={replyBoxRef}>
+                                <APReplyBox
+                                    focused={isFocused}
+                                    object={object}
+                                    onNewReply={handleNewReply}
+                                />
+                            </div>
+                            <FeedItemDivider />
+
+                            {isLoadingThread && <LoadingIndicator size='lg' />}
+
+                            <div ref={repliesRef}>
+                                {activityThreadChildren.map((item, index) => {
+                                    const showDivider = index !== activityThreadChildren.length - 1;
+
+                                    return (
+                                        <React.Fragment key={item.id}>
+                                            <FeedItem
+                                                actor={item.actor}
+                                                commentCount={item.object.replyCount ?? 0}
+                                                last={true}
+                                                layout='reply'
+                                                object={item.object}
+                                                repostCount={item.object.repostCount ?? 0}
+                                                type='Note'
+                                                onClick={() => {
+                                                    navigateForward(item.id, item.object, item.actor, false);
+                                                }}
+                                                onCommentClick={() => {
+                                                    navigateForward(item.id, item.object, item.actor, true);
+                                                }}
+                                            />
+                                            {showDivider && <FeedItemDivider />}
+                                        </React.Fragment>
+                                    );
+                                })}
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
             {modalSize === MODAL_SIZE_LG && object.type === 'Article' && (
-                <div className='pointer-events-none sticky bottom-0 flex items-end justify-between px-10 pb-[42px]'>
-                    <div className='pointer-events-auto text-grey-600'>
-                        {getReadingTime(object.content)}
+                <div className='pointer-events-none !visible sticky bottom-0 hidden items-end justify-between px-10 pb-[42px] lg:!flex'>
+                    <div className='pointer-events-auto text-gray-600'>
+                        {getReadingTime(object.content ?? '')}
                     </div>
-                    <div className='pointer-events-auto text-grey-600 transition-all duration-200 ease-out'>
+                    <div className='pointer-events-auto text-gray-600 transition-all duration-200 ease-out'>
                         {readingProgress}%
                     </div>
                 </div>
