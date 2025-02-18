@@ -11,7 +11,7 @@
 
 /**
  * @typedef {object} StripeWebhook
- * @prop {(data: StripeWebhookModel) => Promise<StripeWebhookModel|void>} save
+ * @prop {(data: StripeWebhookModel) => Promise<void>} save
  * @prop {() => Promise<StripeWebhookModel>} get
  */
 

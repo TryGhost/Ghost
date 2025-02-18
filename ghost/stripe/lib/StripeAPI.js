@@ -154,7 +154,7 @@ module.exports = class StripeAPI {
     /**
      * Retrieve the Stripe Product object by ID.
      * @param {string} id
-     * 
+     *
      * @returns {Promise<IProduct>}
      */
     async getProduct(id) {
@@ -167,7 +167,7 @@ module.exports = class StripeAPI {
     /**
      * Create a new Stripe Product.
      * @param {IProductCreateParams} options
-     * 
+     *
      * @returns {Promise<IProduct>}
      */
     async createProduct(options) {
@@ -253,7 +253,7 @@ module.exports = class StripeAPI {
      * 
      * @param {string} id
      * @param {ICustomerRetrieveParams} options
-     * 
+     *
      * @returns {Promise<ICustomer|IDeletedCustomer>}
      * @throws {Error}
      */
