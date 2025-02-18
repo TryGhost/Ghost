@@ -456,7 +456,15 @@ module.exports = class StripeAPI {
             trial_from_plan: true,
             items: [{
                 plan: priceId
-            }]
+            }],
+            metadata: {
+                attribution_id: metadata.attribution_id || null,
+                attribution_url: metadata.attribution_url || null,
+                attribution_type: metadata.attribution_type || null,
+                referrer_source: metadata.referrer_source || null,
+                referrer_medium: metadata.referrer_medium || null,
+                referrer_url: metadata.referrer_url || null
+            }
         };
 
         /**

@@ -1177,13 +1177,22 @@ module.exports = class MemberRepository {
             const context = options?.context || {};
             const source = this._resolveContextSource(context);
 
+            const attribution = {
+                id: data.attribution?.id ?? subscription.metadata?.attribution_id ?? null,
+                url: data.attribution?.url ?? subscription.metadata?.attribution_url ?? null,
+                type: data.attribution?.type ?? subscription.metadata?.attribution_type ?? null,
+                referrerSource: data.attribution?.referrerSource ?? subscription.metadata?.referrer_source ?? null,
+                referrerMedium: data.attribution?.referrerMedium ?? subscription.metadata?.referrer_medium ?? null,
+                referrerUrl: data.attribution?.referrerUrl ?? subscription.metadata?.referrer_url ?? null
+            };
+
             const subscriptionCreatedEvent = SubscriptionCreatedEvent.create({
                 source,
                 tierId: ghostProduct?.get('id'),
                 memberId: member.id,
                 subscriptionId: subscriptionModel.get('id'),
                 offerId: offerId,
-                attribution: data.attribution,
+                attribution: attribution,
                 batchId: options.batch_id
             });
 
