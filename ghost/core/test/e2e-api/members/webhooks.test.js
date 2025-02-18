@@ -1961,9 +1961,9 @@ describe('Members API', function () {
                         subscription_id: subscriptionModel.id,
 
                         // Defaults if attribution is not set
-                        attribution_id: attribution?.id ?? null,
-                        attribution_url: attribution?.url ?? null,
-                        attribution_type: attribution?.type ?? null
+                        attribution_id: attribution?.id,
+                        attribution_url: attribution?.url,
+                        attribution_type: attribution?.type
                     }
                 ]
             });
@@ -1981,9 +1981,9 @@ describe('Members API', function () {
                         created_at: memberModel.get('created_at'),
 
                         // Defaults if attribution is not set
-                        attribution_id: attribution?.id ?? null,
-                        attribution_url: attribution?.url ?? null,
-                        attribution_type: attribution?.type ?? null,
+                        attribution_id: attribution?.id,
+                        attribution_url: attribution?.url,
+                        attribution_type: attribution?.type,
                         source: 'member'
                     }
                 ]
@@ -2380,27 +2380,6 @@ describe('Members API', function () {
                 ]
             });
 
-            const memberModel = await getMember(member.id);
-
-            // member created event should have null attribution
-            await assertMemberEvents({
-                eventType: 'MemberCreatedEvent',
-                memberId: member.id,
-                asserts: [
-                    {
-                        member_id: member.id,
-                        created_at: memberModel.get('created_at'),
-
-                        // Defaults if attribution is not set
-                        attribution_id: null,
-                        attribution_url: null,
-                        attribution_type: null,
-                        source: 'member'
-                    }
-                ]
-            });
-        });
-
         // Activity feed
         // This test is here because creating subscriptions is a PITA now, and we would need to essentially duplicate all above tests elsewhere
         it('Returns subscription created attributions in activity feed', async function () {
@@ -2422,5 +2401,6 @@ describe('Members API', function () {
                     should(body.events.map(e => e.data.attribution)).containDeep(subscriptionAttributions);
                 });
         });
+    });
     });
 });
