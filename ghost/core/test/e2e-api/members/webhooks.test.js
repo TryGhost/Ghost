@@ -2170,7 +2170,7 @@ describe('Members API', function () {
             });
         });
 
-        it.only('The customer.subscription.created webhook should set the attribution metadata', async function () {
+        it('The customer.subscription.created webhook should set the attribution metadata', async function () {
             // set up all necessary resources
             const customer_id = createStripeID('cust');
             const subscription_id = createStripeID('sub');
