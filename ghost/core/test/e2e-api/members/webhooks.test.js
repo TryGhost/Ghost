@@ -1961,9 +1961,9 @@ describe('Members API', function () {
                         subscription_id: subscriptionModel.id,
 
                         // Defaults if attribution is not set
-                        attribution_id: attribution?.id,
-                        attribution_url: attribution?.url,
-                        attribution_type: attribution?.type
+                        attribution_id: attribution?.id || null,
+                        attribution_url: attribution?.url || null,
+                        attribution_type: attribution?.type || null
                     }
                 ]
             });
@@ -1981,9 +1981,9 @@ describe('Members API', function () {
                         created_at: memberModel.get('created_at'),
 
                         // Defaults if attribution is not set
-                        attribution_id: attribution?.id,
-                        attribution_url: attribution?.url,
-                        attribution_type: attribution?.type,
+                        attribution_id: attribution?.id || null,
+                        attribution_url: attribution?.url || null,
+                        attribution_type: attribution?.type || null,
                         source: 'member'
                     }
                 ]
