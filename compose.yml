@@ -25,7 +25,7 @@ services:
       # Mount the source code
       - .:/home/ghost
 
-      # Volume exclusions: 
+      # Volume exclusions:
       ## Prevent collisions between host and container node_modules
       - node_modules_ghost_root:/home/ghost/node_modules:delegated
       - node_modules_ghost_activitypub:/home/ghost/ghost/activitypub/node_modules:delegated
