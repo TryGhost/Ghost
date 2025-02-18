@@ -46,6 +46,14 @@ async function assertSubscription(subscriptionId, asserts) {
     models.Base.Model.prototype.serialize.call(subscription).should.match(asserts);
 }
 
+// Helper methods to update the customer and subscription
+function set(object, newValues) {
+    for (const key of Object.keys(object)) {
+        delete object[key];
+    }
+    Object.assign(object, newValues);
+}
+
 describe('Members API', function () {
     // @todo: Test what happens when a complimentary subscription ends (should create comped -> free event)
     // @todo: Test what happens when a complimentary subscription starts a paid subscription
@@ -144,14 +152,6 @@ describe('Members API', function () {
     afterEach(function () {
         mockManager.restore();
     });
-
-    // Helper methods to update the customer and subscription
-    function set(object, newValues) {
-        for (const key of Object.keys(object)) {
-            delete object[key];
-        }
-        Object.assign(object, newValues);
-    }
 
     describe('/webhooks/stripe/', function () {
         before(async function () {
