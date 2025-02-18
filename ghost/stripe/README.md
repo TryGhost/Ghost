@@ -9,6 +9,13 @@ The `StripeAPI` class is a wrapper around the Stripe API. It is used by the `Str
 ## Stripe Webhooks
 Ghost listens for Stripe webhooks to know when a customer has subscribed to a plan, when a subscription has been cancelled, when a payment has failed, etc.
 
+Things to keep in mind when working with Stripe webhooks:
+- Webhooks can arrive out of order. `checkout.session.completed` webhooks may arrive before or after `customer.subscription.created` webhooks.
+- Webhooks can be received and processed in parallel, so you should not rely on the order of the webhooks to determine the order of operations.
+- Operations in Stripe almost always produce multiple events, increasing the likelihood of race conditions.
+
+See Stripe's [Webhooks Guide](https://docs.stripe.com/webhooks) for more information.
+
 ### Webhook Manager
 This class is responsible for registering the webhook endpoints with Stripe, so Stripe knows where to send the webhooks.
 
