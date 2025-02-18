@@ -8,7 +8,42 @@ const SubscriptionEventService = require('./services/webhook/SubscriptionEventSe
 const InvoiceEventService = require('./services/webhook/InvoiceEventService');
 const CheckoutSessionEventService = require('./services/webhook/CheckoutSessionEventService');
 
+/**
+ * @typedef {object} IStripeServiceConfig
+ * @prop {string} secretKey The Stripe secret key
+ * @prop {string} publicKey The Stripe publishable key
+ * @prop {boolean} enablePromoCodes Whether to enable promo codes
+ * @prop {boolean} enableAutomaticTax Whether to enable automatic tax
+ * @prop {string} checkoutSessionSuccessUrl The URL to redirect to after successful checkout
+ * @prop {string} checkoutSessionCancelUrl The URL to redirect to if checkout is cancelled
+ * @prop {string} checkoutSetupSessionSuccessUrl The URL to redirect to after successful setup session
+ * @prop {string} checkoutSetupSessionCancelUrl The URL to redirect to if setup session is cancelled
+ * @prop {boolean} testEnv Whether this is a test environment
+ * @prop {string} webhookSecret The Stripe webhook secret
+ * @prop {string} webhookHandlerUrl The URL to handle Stripe webhooks
+ */
+
+/**
+ * The `StripeService` contains the core logic for Ghost's Stripe integration.
+
+ */
 module.exports = class StripeService {
+    /**
+     * @param {object} deps
+     * @param {*} deps.labs
+     * @param {*} deps.membersService
+     * @param {*} deps.donationService
+     * @param {*} deps.staffService
+     * @param {import('./WebhookManager').StripeWebhook} deps.StripeWebhook
+     * @param {object} deps.models
+     * @param {object} deps.models.Product
+     * @param {object} deps.models.StripePrice
+     * @param {object} deps.models.StripeCustomerSubscription
+     * @param {object} deps.models.StripeProduct
+     * @param {object} deps.models.MemberStripeCustomer
+     * @param {object} deps.models.Offer
+     * @param {object} deps.models.Settings
+     */
     constructor({
         labs,
         membersService,
@@ -112,6 +147,10 @@ module.exports = class StripeService {
         DomainEvents.dispatch(StripeLiveDisabledEvent.create({message: 'Stripe Live Mode Disabled'}));
     }
 
+    /**
+     * Configures the Stripe API and registers the webhook with Stripe
+     * @param {IStripeServiceConfig} config
+     */
     async configure(config) {
         this.api.configure({
             secretKey: config.secretKey,
