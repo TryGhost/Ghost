@@ -39,8 +39,7 @@ describe('CallToActionNode', function () {
             hasImage: true,
             imageUrl: 'http://blog.com/image1.jpg',
             imageWidth: 200,
-            imageHeight: 100,
-            href: ''
+            imageHeight: 100
         };
         exportOptions = {
             exportFormat: 'html',
@@ -70,7 +69,6 @@ describe('CallToActionNode', function () {
             callToActionNode.hasImage.should.equal(dataset.hasImage);
             callToActionNode.imageUrl.should.equal(dataset.imageUrl);
             callToActionNode.visibility.should.deepEqual(utils.visibility.buildDefaultVisibility());
-            callToActionNode.href.should.equal(dataset.href);
             callToActionNode.imageHeight.should.equal(dataset.imageHeight);
             callToActionNode.imageWidth.should.equal(dataset.imageWidth);
         }));
@@ -132,10 +130,6 @@ describe('CallToActionNode', function () {
             should(callToActionNode.imageWidth).be.null();
             callToActionNode.imageWidth = 200;
             callToActionNode.imageWidth.should.equal(200);
-
-            callToActionNode.href.should.equal('');
-            callToActionNode.href = 'http://blog.com/post1';
-            callToActionNode.href.should.equal('http://blog.com/post1');
 
             callToActionNode.visibility.should.deepEqual(utils.visibility.buildDefaultVisibility());
             callToActionNode.visibility = {
@@ -350,8 +344,7 @@ describe('CallToActionNode', function () {
                 imageHeight: 100,
                 layout: 'minimal',
                 showButton: true,
-                textValue: '<p><span style="white-space: pre-wrap;">This is a new CTA Card.</span></p>',
-                href: ''
+                textValue: '<p><span style="white-space: pre-wrap;">This is a new CTA Card.</span></p>'
             };
             const callToActionNode = new CallToActionNode(dataset);
             const json = callToActionNode.exportJSON();
@@ -373,7 +366,6 @@ describe('CallToActionNode', function () {
                 layout: 'minimal',
                 showButton: true,
                 textValue: '<p><span style="white-space: pre-wrap;">This is a new CTA Card.</span></p>',
-                href: '',
                 visibility: {
                     web: {
                         nonMember: true,

@@ -19,8 +19,7 @@ export class CallToActionNode extends generateDecoratorNode({
         {name: 'hasImage', default: false},
         {name: 'imageUrl', default: ''},
         {name: 'imageWidth', default: null},
-        {name: 'imageHeight', default: null},
-        {name: 'href', default: '', urlType: 'url'}
+        {name: 'imageHeight', default: null}
     ]
 }) {
     /* overrides */

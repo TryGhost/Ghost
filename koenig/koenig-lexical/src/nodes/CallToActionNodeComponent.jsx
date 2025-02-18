@@ -1,10 +1,9 @@
 import CardContext from '../context/CardContext';
 import KoenigComposerContext from '../context/KoenigComposerContext.jsx';
 import React, {useRef} from 'react';
-import {$createNodeSelection, $getNodeByKey, $setSelection} from 'lexical';
+import {$getNodeByKey} from 'lexical';
 import {ActionToolbar} from '../components/ui/ActionToolbar.jsx';
 import {CallToActionCard} from '../components/ui/cards/CallToActionCard.jsx';
-import {LinkInput} from '../components/ui/LinkInput';
 import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
 import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu.jsx';
 import {getImageDimensions} from '../utils/getImageDimensions';
@@ -34,7 +33,6 @@ export const CallToActionNodeComponent = ({
     const {isEditing, isSelected, setEditing} = React.useContext(CardContext);
     const {fileUploader, cardConfig} = React.useContext(KoenigComposerContext);
     const [showSnippetToolbar, setShowSnippetToolbar] = React.useState(false);
-    const [showLink, setShowLink] = React.useState(false);
 
     const {visibilityOptions, toggleVisibility} = useVisibilityToggle(editor, nodeKey, cardConfig);
 
@@ -129,26 +127,6 @@ export const CallToActionNodeComponent = ({
         });
     };
 
-    const reselectCallToActionCard = () => {
-        editor.update(() => {
-            const nodeSelection = $createNodeSelection();
-            nodeSelection.add(nodeKey);
-            $setSelection(nodeSelection);
-        });
-    };
-
-    const cancelLinkAndReselect = () => {
-        setShowLink(false);
-        reselectCallToActionCard();
-    };
-
-    const setHref = (newHref) => {
-        editor.update(() => {
-            const node = $getNodeByKey(nodeKey);
-            node.href = newHref;
-        });
-    };
-
     React.useEffect(() => {
         htmlEditor.setEditable(isEditing);
     }, [isEditing, htmlEditor]);
@@ -196,29 +174,11 @@ export const CallToActionNodeComponent = ({
             </ActionToolbar>
 
             <ActionToolbar
-                data-kg-card-toolbar="link"
-                isVisible={showLink}
-            >
-                <LinkInput
-                    cancel={cancelLinkAndReselect}
-                    href={href}
-                    update={(_href) => {
-                        setHref(_href);
-                        cancelLinkAndReselect();
-                    }}
-                />
-            </ActionToolbar>
-
-            <ActionToolbar
                 data-kg-card-toolbar="button"
-                isVisible={isSelected && !isEditing && !showSnippetToolbar && !showLink}
+                isVisible={isSelected && !isEditing && !showSnippetToolbar}
             >
                 <ToolbarMenu>
                     <ToolbarMenuItem dataTestId="edit-button-card" icon="edit" isActive={false} label="Edit" onClick={handleToolbarEdit} />
-                    <ToolbarMenuSeparator />
-                    <ToolbarMenuItem icon="link" isActive={href || false} label="Link" onClick = {() => {
-                        setShowLink(true);
-                    }} />
                     <ToolbarMenuSeparator hide={!cardConfig.createSnippet} />
                     <ToolbarMenuItem
                         dataTestId="create-snippet"

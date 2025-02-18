@@ -485,24 +485,4 @@ test.describe('Call To Action Card', async () => {
         await expect(page.getByTestId('visibility-toggle-email-freeMembers')).toBeChecked();
         await expect(page.getByTestId('visibility-toggle-email-paidMembers')).not.toBeChecked();
     });
-
-    test('CTA card toolbar has Link button and link input', async function () {
-        await focusEditor(page);
-        await insertCard(page, {cardName: 'call-to-action'});
-        await page.keyboard.press('Escape');
-        const toolbarLinkButton = await page.locator('[aria-label="Link"]');
-        await expect(toolbarLinkButton).toBeVisible();
-        await toolbarLinkButton.click();
-        await expect(page.getByTestId('link-input')).toBeVisible();
-    });
-
-    test('Settings panel does not show when using link editor', async function () {
-        await focusEditor(page);
-        await insertCard(page, {cardName: 'call-to-action'});
-        await page.keyboard.press('Escape');
-        const toolbarLinkButton = await page.locator('[aria-label="Link"]');
-        await toolbarLinkButton.click();
-        await expect(page.getByTestId('link-input')).toBeVisible();
-        await expect(page.getByTestId('button-settings')).not.toBeVisible();
-    });
 });
