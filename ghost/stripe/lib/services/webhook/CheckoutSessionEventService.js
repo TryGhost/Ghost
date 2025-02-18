@@ -21,9 +21,10 @@ module.exports = class CheckoutSessionEventService {
     /**
      * @param {object} deps
      * @param {import('../StripeAPI')} deps.api
-     * @param {import('../../repositories/MemberRepository')} deps.memberRepository
-     * @param {import('../../repositories/DonationRepository')} deps.donationRepository
-     * @param {import('../../services/StaffServiceEmails')} deps.staffServiceEmails
+     * @param {object} deps.memberRepository
+     * @param {object} deps.donationRepository
+     * @param {object} deps.staffServiceEmails
+     * @param {function} deps.sendSignupEmail
      */
     constructor(deps) {
         this.api = deps.api;

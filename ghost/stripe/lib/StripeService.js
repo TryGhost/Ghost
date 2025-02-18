@@ -8,7 +8,27 @@ const SubscriptionEventService = require('./services/webhook/SubscriptionEventSe
 const InvoiceEventService = require('./services/webhook/InvoiceEventService');
 const CheckoutSessionEventService = require('./services/webhook/CheckoutSessionEventService');
 
+/**
+ * The `StripeService` contains the core logic for Ghost's Stripe integration.
+
+ */
 module.exports = class StripeService {
+    /**
+     * @param {object} deps
+     * @param {*} deps.labs
+     * @param {*} deps.membersService
+     * @param {*} deps.donationService
+     * @param {*} deps.staffService
+     * @param {object} deps.StripeWebhook
+     * @param {object} deps.models
+     * @param {object} deps.models.Product
+     * @param {object} deps.models.StripePrice
+     * @param {object} deps.models.StripeCustomerSubscription
+     * @param {object} deps.models.StripeProduct
+     * @param {object} deps.models.MemberStripeCustomer
+     * @param {object} deps.models.Offer
+     * @param {object} deps.models.Settings
+     */
     constructor({
         labs,
         membersService,
@@ -51,12 +71,6 @@ module.exports = class StripeService {
             api,
             get memberRepository(){
                 return membersService.api.members;
-            },
-            get productRepository(){
-                return membersService.api.productRepository;
-            },
-            get eventRepository(){
-                return membersService.api.events;
             },
             get donationRepository(){
                 return donationService.repository;
@@ -112,6 +126,19 @@ module.exports = class StripeService {
         DomainEvents.dispatch(StripeLiveDisabledEvent.create({message: 'Stripe Live Mode Disabled'}));
     }
 
+    /**
+     * Configures the Stripe API and registers the webhook with Stripe
+     * @param {object} config
+     * @param {string} config.secretKey - Stripe secret key
+     * @param {string} config.publicKey - Stripe public key
+     * @param {boolean} config.enablePromoCodes 
+     * @param {boolean} config.enableAutomaticTax
+     * @param {string} config.checkoutSessionSuccessUrl
+     * @param {string} config.checkoutSessionCancelUrl
+     * @param {string} config.checkoutSetupSessionSuccessUrl
+     * @param {string} config.checkoutSetupSessionCancelUrl
+     * @param {boolean} config.testEnv
+     */
     async configure(config) {
         this.api.configure({
             secretKey: config.secretKey,

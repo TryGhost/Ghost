@@ -9,9 +9,10 @@ const errors = require('@tryghost/errors');
 module.exports = class InvoiceEventService {
     /**
      * @param {object} deps
-     * @param {import('../../repositories/MemberRepository')} deps.memberRepository
-     * @param {import('../../repositories/EventRepository')} deps.eventRepository
-     * @param {import('../../repositories/ProductRepository')} deps.productRepository
+     * @param {object} deps.api
+     * @param {object} deps.memberRepository
+     * @param {object} deps.eventRepository
+     * @param {object} deps.productRepository
      */
     constructor(deps) {
         this.deps = deps;
