@@ -22,7 +22,3 @@ The Webhook Controller listens for the following events:
 - `customer.subscription.created`
 - `invoice.payment_succeeded`
 - `checkout.session.completed`
-
-
-
-
