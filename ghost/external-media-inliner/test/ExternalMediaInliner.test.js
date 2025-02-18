@@ -888,5 +888,90 @@ describe('ExternalMediaInliner', function () {
             assert.equal(fileData.extension, '.gif');
         });
     });
-});
 
+    describe('Find matches', function () {
+        it('Finds with full domain', function () {
+            const html = '<img src="https://example.com/image.jpg" /><img src="https://anotherexample.com/image.jpg" />';
+            const matches = ExternalMediaInliner.findMatches(html, 'https://example.com');
+
+            assert.equal(matches.length, 1);
+            assert.equal(matches[0], 'https://example.com/image.jpg');
+        });
+
+        it('Finds with full domain, http and https', function () {
+            const html = '<img src="http://example.com/image.jpg" /><img src="https://example.com/another-image.jpg" />';
+            const matches = ExternalMediaInliner.findMatches(html, 'https?://example.com');
+
+            assert.equal(matches.length, 2);
+            assert.equal(matches[0], 'http://example.com/image.jpg');
+            assert.equal(matches[1], 'https://example.com/another-image.jpg');
+        });
+
+        it('Finds in with comma in string', function () {
+            const html = `<img src="https://example.com/image/fetch/f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F7303a336-fa0e-4377-9378-123456abcdef_640x640.png
+" />`;
+            const matches = ExternalMediaInliner.findMatches(html, 'https://example.com');
+
+            assert.equal(matches.length, 1);
+            assert.equal(matches[0], 'https://example.com/image/fetch/f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F7303a336-fa0e-4377-9378-123456abcdef_640x640.png');
+        });
+
+        it('Finds when seperatd by a comma', function () {
+            const html = `<img srcsct="https://example.com/image/fetch,one.png 1x, https://example.com/image/fetch,two.png 2x,https://example.com/image/fetch,three.png 3x" />`;
+            const matches = ExternalMediaInliner.findMatches(html, 'https://example.com');
+
+            assert.equal(matches.length, 3);
+            assert.equal(matches[0], 'https://example.com/image/fetch,one.png');
+            assert.equal(matches[1], 'https://example.com/image/fetch,two.png');
+            assert.equal(matches[2], 'https://example.com/image/fetch,three.png');
+        });
+
+        it('Finds with parenthesis terminator', function () {
+            const html = `(https://example.com/image/one.png)`;
+            const matches = ExternalMediaInliner.findMatches(html, 'https://example.com');
+
+            assert.equal(matches.length, 1);
+            assert.equal(matches[0], 'https://example.com/image/one.png');
+        });
+
+        it('Finds with apostrophe terminator', function () {
+            const html = `'https://example.com/image/one.png'`;
+            const matches = ExternalMediaInliner.findMatches(html, 'https://example.com');
+
+            assert.equal(matches.length, 1);
+            assert.equal(matches[0], 'https://example.com/image/one.png');
+        });
+
+        it('Finds with space terminator', function () {
+            const html = ` https://example.com/image/one.png `;
+            const matches = ExternalMediaInliner.findMatches(html, 'https://example.com');
+
+            assert.equal(matches.length, 1);
+            assert.equal(matches[0], 'https://example.com/image/one.png');
+        });
+
+        it('Finds with less than terminator', function () {
+            const html = ` https://example.com/image/one.png<`;
+            const matches = ExternalMediaInliner.findMatches(html, 'https://example.com');
+
+            assert.equal(matches.length, 1);
+            assert.equal(matches[0], 'https://example.com/image/one.png');
+        });
+
+        it('Finds with encoded &quot; terminator', function () {
+            const html = '&quot;https://example.com/image/one.png&quot;';
+            const matches = ExternalMediaInliner.findMatches(html, 'https://example.com');
+
+            assert.equal(matches.length, 1);
+            assert.equal(matches[0], 'https://example.com/image/one.png');
+        });
+
+        it('Finds end of string terminator', function () {
+            const html = 'https://example.com/image/one.png';
+            const matches = ExternalMediaInliner.findMatches(html, 'https://example.com');
+
+            assert.equal(matches.length, 1);
+            assert.equal(matches[0], 'https://example.com/image/one.png');
+        });
+    });
+});

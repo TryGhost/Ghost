@@ -11,7 +11,7 @@ import {Button, Icon, LoadingIndicator, Modal, Popover, Select, SelectOption} fr
 import {renderTimestamp} from '../../utils/render-timestamp';
 import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
 import {useModal} from '@ebay/nice-modal-react';
-import {useThreadForUser} from '../../hooks/useActivityPubQueries';
+import {useThreadForUser} from '@hooks/use-activity-pub-queries';
 
 import APAvatar from '../global/APAvatar';
 import APReplyBox from '../global/APReplyBox';
@@ -37,6 +37,8 @@ interface ArticleModalProps {
 interface IframeWindow extends Window {
     resizeIframe?: () => void;
 }
+
+const FONT_SANS = 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif';
 
 const ArticleBody: React.FC<{
     heading: string;
@@ -77,7 +79,7 @@ const ArticleBody: React.FC<{
                 :root {
                     --font-size: ${fontSize};
                     --line-height: ${lineHeight};
-                    --font-family: ${fontFamily.value};
+                    --font-family: ${(fontFamily.value === 'sans-serif' ? FONT_SANS : fontFamily.value)};
                     --letter-spacing: ${fontFamily.label === 'Clean sans-serif' ? '-0.013em' : '0'};
                     --content-spacing-factor: ${SPACING_FACTORS[FONT_SIZES.indexOf(fontSize)]};
                 }
@@ -480,7 +482,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
     const [fontFamily, setFontFamily] = useState<SelectOption>(() => {
         const saved = localStorage.getItem(STORAGE_KEYS.FONT_FAMILY);
         return saved ? JSON.parse(saved) : {
-            value: 'sans-serif',
+            value: FONT_SANS,
             label: 'Clean sans-serif'
         };
     });
@@ -737,7 +739,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                         controlClasses={{control: '!min-h-[40px] !py-0 !pl-1', option: '!pl-1 !py-[4px]'}}
                                         options={[
                                             {
-                                                value: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif',
+                                                value: FONT_SANS,
                                                 label: 'Clean sans-serif',
                                                 className: 'font-sans'
                                             },
@@ -750,7 +752,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                         title='Typeface'
                                         value={fontFamily}
                                         onSelect={option => setFontFamily(option || {
-                                            value: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif',
+                                            value: FONT_SANS,
                                             label: 'Clean sans-serif',
                                             className: 'font-sans'
                                         })}
@@ -813,7 +815,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                             setCurrentFontSizeIndex(1); // Default font size
                                             setCurrentLineHeightIndex(1); // Default line height
                                             setFontFamily({
-                                                value: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif',
+                                                value: FONT_SANS,
                                                 label: 'Clean sans-serif'
                                             });
                                         }}
