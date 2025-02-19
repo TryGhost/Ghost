@@ -96,6 +96,7 @@ function _renderWithEmailVisibility(document, content, emailVisibility) {
     const container = document.createElement('div');
     container.innerHTML = content;
     container.setAttribute('data-gh-segment', memberSegment);
+    container.classList.add('kg-visibility-wrapper');
     return {element: container, type: 'html'};
 }
 
