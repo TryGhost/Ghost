@@ -221,6 +221,7 @@ async function handleStripe() {
         }
         debug('stripe flag found, proceeding');
 
+        console.log('Fetching Stripe webhook secret...');
         let stripeSecret;
         const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
         const apiKeyFlag = stripeSecretKey ? `--api-key ${stripeSecretKey}` : '';
@@ -228,11 +229,15 @@ async function handleStripe() {
             debug('fetching stripe secret');
             const stripeListenCommand = `stripe listen --print-secret ${apiKeyFlag}`;
             debug('stripe listen command', stripeListenCommand);
-            stripeSecret = await exec(stripeListenCommand);
+            stripeSecret = await Promise.race([
+                exec(stripeListenCommand),
+                new Promise((_, reject) => setTimeout(() => reject(new Error('Stripe listen command timed out after 5 seconds')), 5000))
+            ]);
             debug('stripe secret fetched');
         } catch (err) {
-            console.error('Failed to fetch Stripe secret token. Please ensure either STRIPE_SECRET_KEY is set or you are logged in to Stripe CLI by running `stripe login`.', err);
-            return;
+            console.error('Failed to fetch Stripe secret token. Please ensure either STRIPE_SECRET_KEY is set or you are logged in to the Stripe CLI by running `stripe login`.');
+            console.error(err);
+            process.exit(1);
         }
 
         if (!stripeSecret || !stripeSecret.stdout) {
