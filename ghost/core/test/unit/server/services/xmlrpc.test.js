@@ -26,7 +26,7 @@ describe('XMLRPC', function () {
     it('listen() should initialise event correctly', function () {
         xmlrpc.listen();
         eventStub.calledOnce.should.be.true();
-        eventStub.calledWith('post.published', xmlrpc.__get__('listener')).should.be.true();
+        eventStub.calledWith('post.published', xmlrpc.__get__('xmlrpcListener')).should.be.true();
     });
 
     it('listener() calls ping() with toJSONified model', function () {
@@ -40,7 +40,7 @@ describe('XMLRPC', function () {
 
         const pingStub = sinon.stub();
         const resetXmlRpc = xmlrpc.__set__('ping', pingStub);
-        const listener = xmlrpc.__get__('listener');
+        const listener = xmlrpc.__get__('xmlrpcListener');
 
         listener(testModel);
 
@@ -62,7 +62,7 @@ describe('XMLRPC', function () {
 
         const pingStub = sinon.stub();
         const resetXmlRpc = xmlrpc.__set__('ping', pingStub);
-        const listener = xmlrpc.__get__('listener');
+        const listener = xmlrpc.__get__('xmlrpcListener');
 
         listener(testModel, {importing: true});
 
