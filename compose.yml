@@ -133,6 +133,7 @@ services:
         condition: service_healthy
     environment:
       - DEBUG=${DEBUG:-}
+      - GHOST_DEV_IS_DOCKER=true
       - GHOST_DEV_APP_FLAGS=${GHOST_DEV_APP_FLAGS:-}
       - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY:-}
       - STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY:-}
