@@ -225,6 +225,10 @@
     border: none;
 }
 
+/* overrides layout fix (for members filter) that otherwise breaks internal site search */
+.ember-power-select-search .ember-power-select-options li span {
+    display: inline;
+}
 
 /*
     HACK: ember-power-select has no separate class for the loading message
