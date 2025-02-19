@@ -123,8 +123,8 @@ const SuggestedProfile: React.FC<SuggestedProfileProps> = ({profile, update, isL
         >
             <APAvatar author={profile.actor}/>
             <div className='flex grow flex-col'>
-                <span className='font-semibold text-black'>{!isLoading ? profile.actor.name : <Skeleton className='w-full max-w-64' />}</span>
-                <span className='text-sm text-gray-700'>{!isLoading ? profile.handle : <Skeleton className='w-24' />}</span>
+                <span className='font-semibold text-black dark:text-white'>{!isLoading ? profile.actor.name : <Skeleton className='w-full max-w-64' />}</span>
+                <span className='text-sm text-gray-700 dark:text-gray-600'>{!isLoading ? profile.handle : <Skeleton className='w-24' />}</span>
             </div>
             {!isLoading ?
                 <FollowButton
