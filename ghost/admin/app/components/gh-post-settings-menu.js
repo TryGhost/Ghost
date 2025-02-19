@@ -622,6 +622,13 @@ export default class GhPostSettingsMenu extends Component {
     }
 
     @action
+    saveTags() {
+        this.saveTagsTask.perform().catch((error) => {
+            this.showError(error);
+        });
+    }
+
+    @action
     savePost() {
         this.savePostTask.perform().catch((error) => {
             this.showError(error);
