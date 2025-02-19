@@ -3,9 +3,14 @@ import React from 'react';
 function HCaptchaMockBase({onLoad, onVerify, ...props}, ref) {
     // Provide mock execute method
     React.useImperativeHandle(ref, () => ({
-        execute: () => {
-            // Simulate successful CAPTCHA token
+        execute: (options) => {
             onVerify?.('mocked-token');
+
+            if (options.async) {
+                return Promise.resolve({
+                    response: 'mocked-token'
+                });
+            }
         }
     }));
 

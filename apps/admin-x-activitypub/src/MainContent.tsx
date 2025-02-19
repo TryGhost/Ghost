@@ -1,7 +1,7 @@
-import Inbox from './components/Inbox';
-import Notifications from './components/Notifications';
-import Profile from './components/Profile';
-import Search from './components/Search';
+import Inbox from '@views/Inbox';
+import Notifications from '@views/Notifications';
+import Profile from '@views/Profile';
+import Search from '@views/Search';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 const MainContent = () => {

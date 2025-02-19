@@ -1,7 +1,7 @@
 import clsx from 'clsx';
 import {Button} from '@tryghost/admin-x-design-system';
 import {useEffect, useState} from 'react';
-import {useFollowMutationForUser, useUnfollowMutationForUser} from '../../hooks/useActivityPubQueries';
+import {useFollowMutationForUser, useUnfollowMutationForUser} from '@hooks/use-activity-pub-queries';
 
 interface FollowButtonProps {
     className?: string;

@@ -12,17 +12,17 @@ import {
     useAccountForUser,
     useLikedForUser,
     useOutboxForUser
-} from '../hooks/useActivityPubQueries';
-import {FollowAccount} from '../api/activitypub';
-import {handleViewContent} from '../utils/content-handlers';
+} from '@hooks/use-activity-pub-queries';
+import {FollowAccount} from '../../api/activitypub';
+import {handleViewContent} from '@utils/content-handlers';
 
-import APAvatar from './global/APAvatar';
-import ActivityItem from './activities/ActivityItem';
-import FeedItem from './feed/FeedItem';
-import FollowButton from './global/FollowButton';
-import MainNavigation from './navigation/MainNavigation';
-import Separator from './global/Separator';
-import ViewProfileModal from './modals/ViewProfileModal';
+import APAvatar from '@components/global/APAvatar';
+import ActivityItem from '@components/activities/ActivityItem';
+import FeedItem from '@components/feed/FeedItem';
+import FollowButton from '@components/global/FollowButton';
+import MainNavigation from '@components/navigation/MainNavigation';
+import Separator from '@components/global/Separator';
+import ViewProfileModal from '@components/modals/ViewProfileModal';
 
 interface UseInfiniteScrollTabProps<TData> {
     useDataHook: (key: string) => ActivityPubCollectionQueryResult<TData> | AccountFollowsQueryResult;
