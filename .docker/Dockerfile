@@ -11,7 +11,9 @@ RUN apt-get update && \
         jq \
         libjemalloc2 \
         python3 \
-        tar
+        tar && \
+        rm -rf /var/lib/apt/lists/* && \
+        apt clean
 
 # Development Base Image
 ## This stage adds development specific packages like the Stripe CLI, zsh, playwright, etc.
@@ -24,10 +26,9 @@ RUN curl -s https://packages.stripe.dev/api/security/keypair/stripe-cli-gpg/publ
     apt install -y \
         git \
         stripe \
-        zsh \
-        procps \
-        default-mysql-client && \
-    npx -y playwright@1.50.1 install --with-deps
+        procps && \
+        rm -rf /var/lib/apt/lists/* && \
+        apt clean
 
 # DevContainer Stage: Install dependencies and copy the code
 ## This stage is used for local development
@@ -145,9 +146,11 @@ COPY ghost/verification-trigger/package.json ghost/verification-trigger/package.
 COPY ghost/version-notifications-data-service/package.json ghost/version-notifications-data-service/package.json
 COPY ghost/webmentions/package.json ghost/webmentions/package.json
 
-
 ## Install dependencies
 RUN yarn install --frozen-lockfile --prefer-offline
+
+## Install playwright w/ dependencies
+RUN npx -y playwright install --with-deps
 
 ## Copy the rest of the code
 COPY . .
