@@ -24,17 +24,21 @@ function ctaCardTemplate(dataset) {
                         <img src="${dataset.imageUrl}" alt="CTA Image">
                     </div>
                 ` : ''}
-                <div class="kg-cta-content-inner">
-                    <div class="kg-cta-text">
-                        ${dataset.textValue}
-                    </div>
+                ${dataset.textValue || dataset.showButton ? `
+                    <div class="kg-cta-content-inner">
+                    ${dataset.textValue ? `
+                        <div class="kg-cta-text">
+                            ${dataset.textValue}
+                        </div>
+                    ` : ''}
                     ${dataset.showButton ? `
                         <a href="${dataset.buttonUrl}" class="kg-cta-button ${buttonAccent}"
                         ${buttonStyle}>
                             ${dataset.buttonText}
                         </a>
-                    ` : ''}
-                </div>
+                        ` : ''}
+                    </div>
+                ` : ''}
             </div>
         </div>
     `;
@@ -71,16 +75,32 @@ function emailCTATemplate(dataset) {
                                     </td>
                                 ` : ''}
                                 <td class="kg-cta-content-inner">
-                                    <div class="kg-cta-text">
-                                        ${dataset.textValue}
-                                    </div>
-                                    ${dataset.showButton ? `
-                                        <a href="${dataset.buttonUrl}" 
-                                           class="kg-cta-button ${dataset.buttonColor === 'accent' ? 'kg-style-accent' : ''}"
-                                           style="${buttonStyle}">
-                                            ${dataset.buttonText}
-                                        </a>
-                                    ` : ''}
+                                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                        ${dataset.textValue ? `
+                                            <tr>
+                                                <td class="kg-cta-text">
+                                                    ${dataset.textValue}
+                                                </td>
+                                            </tr>
+                                        ` : ''}
+                                        ${dataset.showButton ? `
+                                        <tr>
+                                            <td class="kg-cta-button-container">
+                                                <table border="0" cellpadding="0" cellspacing="0" class="kg-cta-button-wrapper">
+                                                    <tr>
+                                                        <td class="${dataset.buttonColor === 'accent' ? 'kg-style-accent' : ''}" style="${buttonStyle}">
+                                                            <a href="${dataset.buttonUrl}" 
+                                                               class="kg-cta-button ${dataset.buttonColor === 'accent' ? 'kg-style-accent' : ''}"
+                                                               style="${buttonStyle}">
+                                                                ${dataset.buttonText}
+                                                            </a>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                        ` : ''}
+                                    </table>
                                 </td>
                             </tr>
                         </table>
@@ -113,10 +133,10 @@ function emailCTATemplate(dataset) {
                         </tr>
                         ${dataset.showButton ? `
                             <tr>
-                                <td>
+                                <td class="kg-cta-button-container">
                                     <table border="0" cellpadding="0" cellspacing="0" width="100%">
                                         <tr>
-                                            <td class="kg-cta-button-container" style="${buttonStyle}">
+                                            <td class="kg-cta-button-wrapper ${dataset.buttonColor === 'accent' ? 'kg-style-accent' : ''}" style="${buttonStyle}">
                                                 <a href="${dataset.buttonUrl}" 
                                                    class="kg-cta-button ${dataset.buttonColor === 'accent' ? 'kg-style-accent' : ''}"  
                                                    style="${buttonStyle}">
@@ -135,11 +155,17 @@ function emailCTATemplate(dataset) {
     };
 
     return `
-        <table class="kg-card kg-cta-card kg-cta-bg-${dataset.backgroundColor} kg-cta-${dataset.layout}" border="0" cellpadding="0" cellspacing="0" width="100%">
+        <table class="kg-card kg-cta-card kg-cta-bg-${dataset.backgroundColor} kg-cta-${dataset.layout} ${dataset.hasSponsorLabel ? '' : 'kg-cta-no-label'} ${dataset.textValue ? '' : 'kg-cta-no-text'}" border="0" cellpadding="0" cellspacing="0" width="100%">
             ${dataset.hasSponsorLabel ? `
                 <tr>
-                    <td class="kg-cta-sponsor-label">
-                        ${dataset.sponsorLabel}
+                    <td>
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                            <tr>
+                                <td class="kg-cta-sponsor-label">
+                                    ${dataset.sponsorLabel}
+                                </td>
+                            </tr>
+                        </table>
                     </td>
                 </tr>
             ` : ''}
