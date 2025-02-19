@@ -5,12 +5,16 @@ const logging = require('@tryghost/logging');
 const Queue = require('../../../../../core/server/services/url/Queue');
 
 describe('Unit: services/url/Queue', function () {
+    /** @type {Queue} */
     let queue;
+
+    /** @type {sinon.SinonSpy} */
+    let queueRunSpy;
 
     beforeEach(function () {
         queue = new Queue();
 
-        sinon.spy(queue, 'run');
+        queueRunSpy = sinon.spy(queue, 'run');
         sinon.stub(logging, 'error');
     });
 
@@ -50,7 +54,7 @@ describe('Unit: services/url/Queue', function () {
         it('no subscribers', function (done) {
             queue.addListener('ended', function (event) {
                 event.should.eql('nachos');
-                queue.run.callCount.should.eql(1);
+                queueRunSpy.callCount.should.eql(1);
                 done();
             });
 
@@ -64,7 +68,7 @@ describe('Unit: services/url/Queue', function () {
 
             queue.addListener('ended', function (event) {
                 event.should.eql('nachos');
-                queue.run.callCount.should.eql(2);
+                queueRunSpy.callCount.should.eql(2);
                 notified.should.eql(1);
                 done();
             });
@@ -88,7 +92,7 @@ describe('Unit: services/url/Queue', function () {
                 event.should.eql('nachos');
 
                 // 9 subscribers + start triggers run
-                queue.run.callCount.should.eql(10);
+                queueRunSpy.callCount.should.eql(10);
                 notified.should.eql(9);
                 order.should.eql([0, 1, 2, 3, 4, 5, 6, 7, 8]);
                 done();
@@ -113,7 +117,7 @@ describe('Unit: services/url/Queue', function () {
 
             queue.addListener('ended', function (event) {
                 event.should.eql('nachos');
-                queue.run.callCount.should.eql(1);
+                queueRunSpy.callCount.should.eql(1);
                 notified.should.eql(0);
                 done();
             });
@@ -244,7 +248,6 @@ describe('Unit: services/url/Queue', function () {
                 queue.register({
                     event: 'nachos',
                     tolerance: 100,
-                    timeoutInMS: 20,
                     requiredSubscriberCount: 1
                 }, function () {
                     called = called + 1;
