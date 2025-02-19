@@ -48,54 +48,9 @@ debug('site url loaded');
 
 // Pass flags using GHOST_DEV_APP_FLAGS env var or --flag
 debug('loading app flags')
-const availableAppFlags = {
-    'show-flags': 'Show available app flags, then exit',
-    stripe: 'Run `stripe listen` to forward Stripe webhooks to the Ghost instance',
-    all: 'Run all apps',
-    ghost: 'Run only Ghost',
-    admin: 'Run only Admin',
-    'browser-tests': 'Run browser tests',
-    announcementBar: 'Run Announcement Bar',
-    announcementbar: 'Run Announcement Bar',
-    'announcement-bar': 'Run Announcement Bar',
-    portal: 'Run Portal',
-    signup: 'Run Signup Form',
-    search: 'Run Sodo Search',
-    lexical: 'Use your local instance of the Lexical editor running in a separate process',
-    comments: 'Run Comments UI',
-    https: 'Serve apps using HTTPS',
-    offline: 'Run in offline mode (no Stripe webhooks will be forwarded)'
-}
 const DASH_DASH_ARGS = process.argv.filter(a => a.startsWith('--')).map(a => a.slice(2));
 const ENV_ARGS = process.env.GHOST_DEV_APP_FLAGS?.split(',') || [];
-const GHOST_APP_FLAGS = [...ENV_ARGS, ...DASH_DASH_ARGS].filter(flag => flag.trim().length > 0);
-
-function showAvailableAppFlags() {
-    console.log(chalk.blue('App flags can be enabled by setting the GHOST_DEV_APP_FLAGS environment variable to a comma separated list of flags.'));
-    console.log(chalk.blue('Alternatively, flags can be passed directly to `yarn dev`, i.e. `yarn dev --portal'));
-    console.log(chalk.blue('Note: the `yarn docker:dev` command only supports the GHOST_DEV_APP_FLAGS environment variable, as --flags cannot be passed to the docker container.\n'));
-    console.log(chalk.blue('Available app flags:'));
-    for (const [flag, description] of Object.entries(availableAppFlags)) {
-        console.log(chalk.blue(`  ${flag}: ${description}`));
-    }
-}
-
-if (GHOST_APP_FLAGS.includes('show-flags')) {
-    showAvailableAppFlags();
-    process.exit(0);
-}
-
-// Check for invalid flags
-debug('checking for invalid flags', GHOST_APP_FLAGS);
-const invalidFlags = GHOST_APP_FLAGS.filter(flag => !Object.keys(availableAppFlags).includes(flag));
-if (invalidFlags.length > 0) {
-    console.error(chalk.red(`Error: Invalid app flag(s): ${invalidFlags.join(', ')}`));
-    showAvailableAppFlags();
-    process.exit(1);
-}
-debug('invalid flags check passed');
-
-
+const GHOST_APP_FLAGS = [...ENV_ARGS, ...DASH_DASH_ARGS];
 debug('app flags loaded');
 
 debug('loading commands');
