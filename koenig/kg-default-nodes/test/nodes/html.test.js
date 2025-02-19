@@ -271,7 +271,7 @@ describe('HtmlNode', function () {
                         element.value.should.equal(`\n${expectedContents}\n`);
                     } else {
                         type.should.equal('html');
-                        element.outerHTML.should.equal(`<div data-gh-segment="${expectedSegment}">\n${expectedContents}\n</div>`);
+                        element.outerHTML.should.equal(`<div data-gh-segment="${expectedSegment}" class="kg-visibility-wrapper">\n${expectedContents}\n</div>`);
                     }
                 }
 
