@@ -33,7 +33,7 @@ const Sidebar: React.FC<SidebarProps> = ({route}) => {
                             Profile
                         </SidebarButton>
                     </div>
-                    <Button className='rounded-full bg-purple-500 text-white dark:hover:bg-purple-500' onClick={() => updateRoute('feed')}>
+                    <Button className='h-9 rounded-full bg-purple-500 px-3 text-md text-white dark:hover:bg-purple-500' onClick={() => updateRoute('feed')}>
                         <LucideIcon.FilePen />
                     New note
                     </Button>
@@ -42,7 +42,7 @@ const Sidebar: React.FC<SidebarProps> = ({route}) => {
 
                     <Recommendations />
                 </div>
-                <div className='flex items-center gap-2 pl-4 pt-4 text-xs text-gray-400'>
+                <div className='flex items-center gap-2 pl-7 pt-4 text-xs text-gray-400'>
                     <a className='text-xs font-medium text-gray-700 hover:text-black' href="https://forum.ghost.org/t/activitypub-beta-start-here/51780" rel="noreferrer" target="_blank">Feedback</a>
                     &sdot;
                     <a className='text-xs font-medium text-gray-700 hover:text-black' href="https://activitypub.ghost.org/archive" rel="noreferrer"target="_blank">Updates</a>
