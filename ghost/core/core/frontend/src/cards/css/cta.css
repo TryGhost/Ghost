@@ -91,6 +91,10 @@
     border-bottom: 1px solid rgba(124, 139, 154, 0.2);
 }
 
+.kg-cta-bg-none .kg-cta-content:not(.kg-cta-sponsor-label + .kg-cta-content) {
+    border-top: 1px solid rgba(124, 139, 154, 0.2);
+}
+
 @media (max-width: 600px) {
     .kg-cta-bg-none .kg-cta-content {
         padding: 2rem 0;
