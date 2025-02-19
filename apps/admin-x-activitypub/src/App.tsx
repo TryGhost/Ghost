@@ -1,4 +1,4 @@
-import {APP_ROUTE_PREFIX, routes} from './routes';
+import {APP_ROUTE_PREFIX, routes} from '@src/routes';
 import {DesignSystemApp, DesignSystemAppProps} from '@tryghost/admin-x-design-system';
 import {FrameworkProvider, RouterProvider, TopLevelFrameworkProps} from '@tryghost/admin-x-framework';
 import {ShadeApp} from '@tryghost/shade';

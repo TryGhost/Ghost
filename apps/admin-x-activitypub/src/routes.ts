@@ -32,3 +32,12 @@ export const routes: RouteObject[] = [
         Component: Profile
     }
 ];
+
+export const ROUTE_TITLES: Record<string, string> = {
+    '/': 'Inbox',
+    '/inbox': 'Inbox',
+    '/feed': 'Feed',
+    '/search': 'Search',
+    '/notifications': 'Notifications',
+    '/profile': 'Profile'
+};

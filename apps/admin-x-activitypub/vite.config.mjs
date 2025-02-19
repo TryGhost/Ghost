@@ -15,6 +15,7 @@ export default (function viteConfig() {
             },
             resolve: {
                 alias: {
+                    '@src': resolve(__dirname, './src'),
                     '@assets': resolve(__dirname, './src/assets'),
                     '@components': resolve(__dirname, './src/components'),
                     '@hooks': resolve(__dirname, './src/hooks'),

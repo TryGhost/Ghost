@@ -1,31 +1,7 @@
 import * as React from 'react';
 import {Button, H1, LucideIcon} from '@tryghost/shade';
+import {ROUTE_TITLES} from '@src/routes';
 import {useLocation, useNavigate} from '@tryghost/admin-x-framework';
-
-// TODO: is there a nicer solution with React Router
-const getTitle = (route: string) => {
-    switch (route) {
-    case 'inbox':
-        return 'Inbox';
-        break;
-    case 'feed':
-        return 'Feed';
-        break;
-    case 'profile':
-        return 'Profile';
-        break;
-    case 'notifications':
-        return 'Notifications';
-        break;
-    case 'search':
-        return 'Search';
-        break;
-
-    default:
-        return 'Inbox';
-        break;
-    }
-};
 
 interface HeaderTitleProps {
     title: string;
@@ -50,7 +26,9 @@ const HeaderTitle: React.FC<HeaderTitleProps> = ({title, backIcon}) => {
 const Header: React.FC = () => {
     const location = useLocation();
     const navigate = useNavigate();
-    const title = getTitle(location.pathname);
+
+    // Get page title from custom route object
+    const title = ROUTE_TITLES[location.pathname] || 'Inbox';
 
     return (
         <div
