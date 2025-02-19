@@ -20,7 +20,7 @@ services:
       - "6174:6174" # Signup form
       - "7173:7173" # Comments
       - "7174:7174" # Comments HTTPS
-    profiles: [ full ]
+    profiles: [ ghost ]
     volumes:
       # Mount the source code
       - .:/home/ghost
@@ -133,6 +133,7 @@ services:
         condition: service_healthy
     environment:
       - DEBUG=${DEBUG:-}
+      - GHOST_DEV_IS_DOCKER=true
       - GHOST_DEV_APP_FLAGS=${GHOST_DEV_APP_FLAGS:-}
       - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY:-}
       - STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY:-}
