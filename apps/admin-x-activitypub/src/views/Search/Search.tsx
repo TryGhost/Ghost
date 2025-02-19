@@ -8,7 +8,6 @@ import {useDebounce} from 'use-debounce';
 import APAvatar from '@components/global/APAvatar';
 import ActivityItem from '@components/activities/ActivityItem';
 import FollowButton from '@components/global/FollowButton';
-import MainNavigation from '@components/navigation/MainNavigation';
 import Separator from '@components/global/Separator';
 import ViewProfileModal from '@components/modals/ViewProfileModal';
 
@@ -206,7 +205,6 @@ const Search: React.FC<SearchProps> = ({}) => {
 
     return (
         <>
-            <MainNavigation page='search' />
             <div className='z-0 mx-auto flex w-full max-w-[560px] flex-col items-center pt-8'>
                 <div className='relative flex w-full items-center'>
                     <Icon className='absolute left-3 top-3 z-10' colorClass='text-gray-500' name='magnifying-glass' size='sm' />

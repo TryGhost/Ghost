@@ -20,7 +20,6 @@ import APAvatar from '@components/global/APAvatar';
 import ActivityItem from '@components/activities/ActivityItem';
 import FeedItem from '@components/feed/FeedItem';
 import FollowButton from '@components/global/FollowButton';
-import MainNavigation from '@components/navigation/MainNavigation';
 import Separator from '@components/global/Separator';
 import ViewProfileModal from '@components/modals/ViewProfileModal';
 
@@ -375,7 +374,6 @@ const Profile: React.FC<ProfileProps> = ({}) => {
 
     return (
         <>
-            <MainNavigation page='profile' />
             <div className='z-0 mx-auto mt-8 flex w-full max-w-[580px] flex-col items-center pb-16'>
                 <div className='mx-auto w-full'>
                     {account?.bannerImageUrl && (
