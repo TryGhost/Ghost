@@ -168,6 +168,3 @@ EXPOSE 4178
 EXPOSE 6174
 EXPOSE 7173
 EXPOSE 7174
-
-## Start the dev server
-CMD ["yarn", "dev"]
