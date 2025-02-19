@@ -1,7 +1,7 @@
-import MainContent from './MainContent';
+import Layout from '@components/layout';
+import {APP_ROUTE_PREFIX, routes} from './routes';
 import {DesignSystemApp, DesignSystemAppProps} from '@tryghost/admin-x-design-system';
-import {FrameworkProvider, TopLevelFrameworkProps} from '@tryghost/admin-x-framework';
-import {RoutingProvider} from '@tryghost/admin-x-framework/routing';
+import {FrameworkProvider, RouterProvider, TopLevelFrameworkProps} from '@tryghost/admin-x-framework';
 import {ShadeApp} from '@tryghost/shade';
 
 interface AppProps {
@@ -12,13 +12,13 @@ interface AppProps {
 const App: React.FC<AppProps> = ({framework, designSystem}) => {
     return (
         <FrameworkProvider {...framework}>
-            <RoutingProvider basePath='activitypub'>
-                <DesignSystemApp className='shade' {...designSystem}>
-                    <ShadeApp darkMode={designSystem.darkMode} fetchKoenigLexical={null}>
-                        <MainContent />
-                    </ShadeApp>
-                </DesignSystemApp>
-            </RoutingProvider>
+            <DesignSystemApp className='shade' {...designSystem}>
+                <ShadeApp darkMode={designSystem.darkMode} fetchKoenigLexical={null}>
+                    <Layout>
+                        <RouterProvider prefix={APP_ROUTE_PREFIX} routes={routes} />
+                    </Layout>
+                </ShadeApp>
+            </DesignSystemApp>
         </FrameworkProvider>
     );
 };

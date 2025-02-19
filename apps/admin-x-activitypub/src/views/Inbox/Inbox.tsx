@@ -15,13 +15,8 @@ import {
     useUserDataForUser
 } from '@hooks/use-activity-pub-queries';
 
-type Layout = 'inbox' | 'feed';
-
-interface InboxProps {
-    layout: Layout;
-}
-
-const Inbox: React.FC<InboxProps> = ({layout}) => {
+const Inbox: React.FC = () => {
+    const layout = 'inbox';
     const {inboxQuery, updateInboxActivity} = useInboxForUser({enabled: layout === 'inbox'});
     const {feedQuery, updateFeedActivity} = useFeedForUser({enabled: layout === 'feed'});
 
