@@ -153,6 +153,34 @@ describe('StripeAPI', function () {
             should.exist(mockStripe.checkout.sessions.create.firstCall.firstArg.customer);
             should.equal(mockStripe.checkout.sessions.create.firstCall.firstArg.customer, 'cust_mock_123456');
         });
+
+        it('passes attribution data to the subscription metadata if provided', async function () {
+            const mockCustomer = {
+                id: mockCustomerId,
+                email: mockCustomerEmail,
+                name: mockCustomerName
+            };
+
+            await api.createCheckoutSession('priceId', mockCustomer, {
+                metadata: {
+                    attribution_id: '123',
+                    attribution_url: '/',
+                    attribution_type: 'url',
+                    referrer_source: 'source',
+                    referrer_medium: 'medium',
+                    referrer_url: 'https://ghost.org/'
+                }
+            });
+
+            should(mockStripe.checkout.sessions.create.args[0][0].subscription_data.metadata).deepEqual({
+                attribution_id: '123',
+                attribution_url: '/',
+                attribution_type: 'url',
+                referrer_source: 'source',
+                referrer_medium: 'medium',
+                referrer_url: 'https://ghost.org/'
+            });
+        });
     });
 
     describe('createCheckoutSetupSession', function () {
