@@ -12,7 +12,7 @@ const Sidebar: React.FC<SidebarProps> = ({route}) => {
     const {updateRoute} = useRouting();
 
     return (
-        <div className='sticky top-[102px] flex min-h-[calc(100vh-102px-32px)] w-[294px] flex-col border-l border-gray-200'>
+        <div className='sticky top-[102px] flex min-h-[calc(100vh-102px-32px)] w-[294px] flex-col border-l border-gray-200 dark:border-gray-950'>
             <div className='flex grow flex-col justify-between'>
                 <div className='flex w-full flex-col items-start gap-8 pl-4 pt-4'>
                     <div className='flex w-full flex-col gap-px'>
@@ -33,7 +33,7 @@ const Sidebar: React.FC<SidebarProps> = ({route}) => {
                             Profile
                         </SidebarButton>
                     </div>
-                    <Button className='rounded-full bg-purple-500' onClick={() => updateRoute('feed')}>
+                    <Button className='rounded-full bg-purple-500 text-white dark:hover:bg-purple-500' onClick={() => updateRoute('feed')}>
                         <LucideIcon.FilePen />
                     New note
                     </Button>

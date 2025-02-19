@@ -36,7 +36,7 @@ const Recommendations: React.FC = () => {
                                 >
                                     {!isLoadingSuggested ? <APAvatar author={actor} /> : <Skeleton className='z-10 h-10 w-10' />}
                                     <div className='flex min-w-0  flex-col'>
-                                        <span className='block max-w-[190px] truncate font-semibold text-black'>{!isLoadingSuggested ? getName(actor) : <Skeleton className='w-24' />}</span>
+                                        <span className='block max-w-[190px] truncate font-semibold text-black dark:text-white'>{!isLoadingSuggested ? getName(actor) : <Skeleton className='w-24' />}</span>
                                         <span className='block max-w-[190px] truncate text-sm text-gray-600'>{!isLoadingSuggested ? getUsername(actor) : <Skeleton className='w-40' />}</span>
                                     </div>
                                 </ActivityItem>
