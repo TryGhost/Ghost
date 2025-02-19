@@ -37,6 +37,11 @@ FROM development-base AS development
 ARG WORKDIR=/home/ghost
 WORKDIR $WORKDIR
 
+## Add github to known hosts
+### Without this, git submodule updates fail inside the container
+RUN mkdir -p /root/.ssh && \
+    ssh-keyscan github.com >> /root/.ssh/known_hosts
+
 # Enable the NX Daemon
 ENV NX_DAEMON=true
 
