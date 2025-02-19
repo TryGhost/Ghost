@@ -706,7 +706,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
             width={modalSize === MODAL_SIZE_LG ? 'toSidebar' : modalSize}
         >
             <div className='flex h-full flex-col'>
-                <div className='sticky top-0 z-50 flex h-[97px] items-center justify-center border-b border-gray-200 bg-white dark:border-gray-950 dark:bg-black'>
+                <div className='sticky top-0 z-50 flex h-[102px] items-center justify-center border-b border-gray-200 bg-white dark:border-gray-950 dark:bg-black'>
                     <div
                         className={`w-full ${modalSize === MODAL_SIZE_LG ? 'grid px-8' : 'flex justify-between gap-2 px-8'}`}
                         style={modalSize === MODAL_SIZE_LG ? {

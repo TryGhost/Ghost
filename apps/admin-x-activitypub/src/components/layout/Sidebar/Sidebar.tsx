@@ -1,4 +1,6 @@
 import * as React from 'react';
+import NewPostModal from '@views/Feed/components/NewPostModal';
+import NiceModal from '@ebay/nice-modal-react';
 import Recommendations from './Recommendations';
 import SidebarButton from './SidebarButton';
 import {Button, LucideIcon, Separator} from '@tryghost/shade';
@@ -33,9 +35,9 @@ const Sidebar: React.FC<SidebarProps> = ({route}) => {
                             Profile
                         </SidebarButton>
                     </div>
-                    <Button className='h-9 rounded-full bg-purple-500 px-3 text-md text-white dark:hover:bg-purple-500' onClick={() => updateRoute('feed')}>
+                    <Button className='h-9 rounded-full bg-purple-500 px-3 text-md text-white dark:hover:bg-purple-500' onClick={() => NiceModal.show(NewPostModal)}>
                         <LucideIcon.FilePen />
-                    New note
+                        New note
                     </Button>
 
                     <Separator />

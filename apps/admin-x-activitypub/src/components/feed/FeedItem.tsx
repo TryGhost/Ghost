@@ -251,7 +251,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
 
     const UserMenuTrigger = (
         <Button
-            className={`transition-color relative z-[9998] flex h-[34px] w-[34px] items-center justify-center rounded-md bg-white hover:bg-gray-100 dark:bg-black dark:hover:bg-gray-950 ${(layout === 'feed' || layout === 'modal') && 'ml-auto'}`}
+            className={`transition-color relative z-[9998] flex h-[34px] w-[34px] items-center justify-center ${layout === 'feed' ? 'rounded-full' : 'rounded-md'} bg-white hover:bg-gray-100 dark:bg-black dark:hover:bg-gray-950 ${(layout === 'feed' || layout === 'modal') && 'ml-auto'}`}
             hideLabel={true}
             icon='dotdotdot'
             iconColorClass={`${layout === 'inbox' ? 'text-gray-900 w-[12px] h-[12px] dark:text-gray-600' : 'text-gray-500 w-[16px] h-[16px]'}`}
@@ -265,10 +265,10 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
         return (
             <>
                 {object && (
-                    <div className={`group/article relative -mx-4 -my-px cursor-pointer rounded-lg p-6 pb-[18px]`} data-layout='feed' data-object-id={object.id} onClick={onClick}>
+                    <div className={`group/article relative -mx-4 -my-px cursor-pointer rounded-lg p-6 px-8 pb-[18px]`} data-layout='feed' data-object-id={object.id} onClick={onClick}>
                         {(type === 'Announce') && <div className='z-10 mb-2 flex items-center gap-2 text-gray-700 dark:text-gray-600'>
                             <div><Icon colorClass='text-gray-700 shrink-0 dark:text-gray-600' name='reload' size={'sm'}></Icon></div>
-                            <span className='flex min-w-0 items-center gap-1'><span className='truncate break-all hover:underline' title={getUsername(actor)} onClick={e => handleProfileClick(actor, e)}>{actor.name}</span> reposted</span>
+                            <span className='flex min-w-0 items-center gap-1'><span className='truncate break-all text-sm hover:underline' title={getUsername(actor)} onClick={e => handleProfileClick(actor, e)}>{actor.name}</span> reposted</span>
                         </div>}
                         <div className={`border-1 flex flex-col gap-2.5`} data-test-activity>
                             <div className='relative z-30 flex min-w-0 items-center gap-3'>
@@ -280,7 +280,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                     >
                                         {!isLoading ? author.name : <Skeleton className='w-24' />}
                                     </span>
-                                    <div className='flex w-full text-gray-700 dark:text-gray-600'>
+                                    <div className='flex w-full text-sm text-gray-700 dark:text-gray-600'>
                                         <span className='truncate leading-tight hover:underline'
                                             onClick={e => handleProfileClick(author, e)}
                                         >
