@@ -290,10 +290,10 @@ const ViewProfileModal: React.FC<ViewProfileModalProps> = ({
             size='bleed'
             width={640}
         >
-            <div className='sticky top-0 z-50 border-gray-200 bg-white py-3'>
+            <div className='sticky top-0 z-50 border-gray-200 bg-white py-3 dark:border-gray-950 dark:bg-black'>
                 <div className='grid h-8 grid-cols-3'>
                     <div className='col-[3/4] flex items-center justify-end space-x-6 px-8'>
-                        <Button className='transition-color flex h-10 w-10 items-center justify-center rounded-full bg-white hover:bg-gray-100' icon='close' size='sm' unstyled onClick={() => modal.remove()}/>
+                        <Button className='transition-color flex h-10 w-10 items-center justify-center rounded-full bg-white hover:bg-gray-100 dark:bg-black dark:hover:bg-gray-950' icon='close' size='sm' unstyled onClick={() => modal.remove()}/>
                     </div>
                 </div>
             </div>
@@ -318,7 +318,7 @@ const ViewProfileModal: React.FC<ViewProfileModalProps> = ({
                             </div>)}
                             <div className={`${profile.actor.image && '-mt-12'} px-4`}>
                                 <div className='flex items-end justify-between'>
-                                    <div className='rounded-xl outline outline-4 outline-white'>
+                                    <div className='rounded-xl outline outline-4 outline-white dark:outline-black'>
                                         <APAvatar
                                             author={profile.actor}
                                             size='lg'

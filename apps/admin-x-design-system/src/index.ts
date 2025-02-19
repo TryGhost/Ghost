@@ -170,4 +170,4 @@ export {formatUrl} from './utils/formatUrl';
 
 export {default as DesignSystemApp} from './DesignSystemApp';
 export type {DesignSystemAppProps} from './DesignSystemApp';
-export {useFocusContext} from './providers/DesignSystemProvider';
+export {useFocusContext, useDesignSystem} from './providers/DesignSystemProvider';

@@ -86,7 +86,7 @@ const Inbox: React.FC<InboxProps> = ({layout}) => {
                                             <div className=''>
                                                 <APAvatar author={user as ActorProperties} />
                                             </div>
-                                            <Button aria-label='New post' className='text absolute inset-0 h-[64px] w-full justify-start rounded-lg bg-white pl-[64px] text-left text-[1.5rem] tracking-normal text-gray-500 shadow-[0_0_1px_rgba(0,0,0,.32),0_1px_6px_rgba(0,0,0,.03),0_8px_10px_-8px_rgba(0,0,0,.16)] transition-all hover:bg-white hover:shadow-[0_0_1px_rgba(0,0,0,.32),0_1px_6px_rgba(0,0,0,.03),0_8px_10px_-8px_rgba(0,0,0,.26)]' onClick={() => NiceModal.show(NewPostModal)}>What&apos;s new?</Button>
+                                            <Button aria-label='New post' className='text absolute inset-0 h-[64px] w-full justify-start rounded-lg bg-white pl-[64px] text-left text-[1.5rem] tracking-normal text-gray-500 shadow-[0_0_1px_rgba(0,0,0,.32),0_1px_6px_rgba(0,0,0,.03),0_8px_10px_-8px_rgba(0,0,0,.16)] transition-all hover:bg-white hover:shadow-[0_0_1px_rgba(0,0,0,.32),0_1px_6px_rgba(0,0,0,.03),0_8px_10px_-8px_rgba(0,0,0,.26)] dark:border dark:border-gray-950 dark:bg-black dark:shadow-none dark:hover:border-gray-925 dark:hover:bg-black dark:hover:shadow-none' onClick={() => NiceModal.show(NewPostModal)}>What&apos;s new?</Button>
                                         </div>}
                                         <ul className={`mx-auto flex w-full flex-col ${layout === 'inbox' && 'mt-3'}`}>
                                             {activities.map((activity, index) => (
@@ -135,8 +135,8 @@ const Inbox: React.FC<InboxProps> = ({layout}) => {
                                                         >
                                                             {!isLoadingSuggested ? <APAvatar author={actor} /> : <Skeleton className='z-10 h-10 w-10' />}
                                                             <div className='flex min-w-0 flex-col'>
-                                                                <span className='block w-full truncate font-semibold text-black'>{!isLoadingSuggested ? getName(actor) : <Skeleton className='w-24' />}</span>
-                                                                <span className='block w-full truncate text-sm text-gray-600'>{!isLoadingSuggested ? getUsername(actor) : <Skeleton className='w-40' />}</span>
+                                                                <span className='block w-full truncate font-semibold text-black dark:text-white'>{!isLoadingSuggested ? getName(actor) : <Skeleton className='w-24' />}</span>
+                                                                <span className='block w-full truncate text-sm text-gray-600 dark:text-gray-600'>{!isLoadingSuggested ? getUsername(actor) : <Skeleton className='w-40' />}</span>
                                                             </div>
                                                         </ActivityItem>
                                                     </li>
@@ -160,14 +160,14 @@ const Inbox: React.FC<InboxProps> = ({layout}) => {
                                 <Heading className='text-balance' level={2}>
                                     Welcome to ActivityPub Beta
                                 </Heading>
-                                <p className="text-pretty text-gray-800">
+                                <p className="text-pretty text-gray-800 dark:text-gray-600">
                                     {layout === 'inbox'
                                         ? 'Here you\'ll find the latest articles from accounts you\'re following.'
                                         : 'Here you\'ll find the latest posts and updates from accounts you\'re following.'
                                     }
                                     {' Go ahead and find the ones you like using the "Search" tab.'}
                                 </p>
-                                <p className="text-pretty text-gray-800">
+                                <p className="text-pretty text-gray-800 dark:text-gray-600">
                                     For more information about what you can and can&apos;t (yet) do in the beta version, check out the onboarding guide:
                                 </p>
                                 <a className='font-semibold text-green' href='https://forum.ghost.org/t/activitypub-beta-start-here/51780' rel='noopener noreferrer' target='_blank'>Learn more</a>

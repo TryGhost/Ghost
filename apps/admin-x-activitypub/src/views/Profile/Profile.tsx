@@ -389,7 +389,7 @@ const Profile: React.FC<ProfileProps> = ({}) => {
                     )}
                     <div className={`${account?.bannerImageUrl && '-mt-12'} px-4`}>
                         <div className='flex items-end justify-between'>
-                            <div className='rounded-xl outline outline-4 outline-white'>
+                            <div className='rounded-xl outline outline-4 outline-white dark:outline-black'>
                                 <APAvatar
                                     author={account && {
                                         icon: {
@@ -403,7 +403,7 @@ const Profile: React.FC<ProfileProps> = ({}) => {
                             </div>
                         </div>
                         <Heading className='mt-4' level={3}>{!isLoadingAccount ? account?.name : <Skeleton className='w-32' />}</Heading>
-                        <span className='mt-1 text-[1.5rem] text-gray-800'>
+                        <span className='mt-1 text-[1.5rem] text-gray-700 dark:text-gray-600'>
                             <span>{!isLoadingAccount ? account?.handle : <Skeleton className='w-full max-w-56' />}</span>
                         </span>
                         {(account?.bio || customFields.length > 0 || isLoadingAccount) && (
