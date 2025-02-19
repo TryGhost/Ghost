@@ -1,6 +1,4 @@
 const logging = require('@tryghost/logging');
-const JobManager = require('../../services/jobs');
-const path = require('path');
 
 class EmailAnalyticsServiceWrapper {
     init() {
