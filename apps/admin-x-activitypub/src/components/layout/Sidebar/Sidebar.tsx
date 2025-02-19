@@ -4,33 +4,30 @@ import NiceModal from '@ebay/nice-modal-react';
 import Recommendations from './Recommendations';
 import SidebarButton from './SidebarButton';
 import {Button, LucideIcon, Separator} from '@tryghost/shade';
-import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {useLocation, useNavigate} from '@tryghost/admin-x-framework';
 
-interface SidebarProps {
-    route: string;
-}
-
-const Sidebar: React.FC<SidebarProps> = ({route}) => {
-    const {updateRoute} = useRouting();
+const Sidebar: React.FC = () => {
+    const location = useLocation();
+    const navigate = useNavigate();
 
     return (
         <div className='sticky top-[102px] flex min-h-[calc(100vh-102px-32px)] w-[294px] flex-col border-l border-gray-200 dark:border-gray-950'>
             <div className='flex grow flex-col justify-between'>
                 <div className='flex w-full flex-col items-start gap-8 pl-4 pt-4'>
                     <div className='flex w-full flex-col gap-px'>
-                        <SidebarButton active={route === 'inbox'} onClick={() => updateRoute('inbox')}>
+                        <SidebarButton active={location.pathname === '/inbox' || location.pathname === '/'} onClick={() => navigate('/inbox')}>
                             <LucideIcon.Inbox size={18} strokeWidth={1.5} />
                             Inbox
                         </SidebarButton>
-                        <SidebarButton active={route === 'feed'} onClick={() => updateRoute('feed')}>
+                        <SidebarButton active={location.pathname === '/feed'} onClick={() => navigate('/feed')}>
                             <LucideIcon.Hash size={18} strokeWidth={1.5} />
                             Feed
                         </SidebarButton>
-                        <SidebarButton active={route === 'notifications'} onClick={() => updateRoute('notifications')}>
+                        <SidebarButton active={location.pathname === '/notifications'} onClick={() => navigate('/notifications')}>
                             <LucideIcon.Bell size={18} strokeWidth={1.5} />
                             Notifications
                         </SidebarButton>
-                        <SidebarButton active={route === 'profile'} onClick={() => updateRoute('profile')}>
+                        <SidebarButton active={location.pathname === '/profile'} onClick={() => navigate('/profile')}>
                             <LucideIcon.User size={18} strokeWidth={1.5} />
                             Profile
                         </SidebarButton>

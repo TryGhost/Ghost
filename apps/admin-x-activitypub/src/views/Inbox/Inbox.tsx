@@ -1,6 +1,7 @@
 import APAvatar from '@components/global/APAvatar';
 import ActivityPubWelcomeImage from '@assets/images/ap-welcome.png';
 import FeedItem from '@components/feed/FeedItem';
+import Layout from '@components/layout';
 import NewPostModal from '@views/Feed/components/NewPostModal';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useRef} from 'react';
@@ -14,9 +15,11 @@ import {
     useInboxForUser,
     useUserDataForUser
 } from '@hooks/use-activity-pub-queries';
+import {useLocation} from '@tryghost/admin-x-framework';
 
 const Inbox: React.FC = () => {
-    const layout = 'inbox';
+    const location = useLocation();
+    const layout = location.pathname === '/feed' ? 'feed' : 'inbox';
     const {inboxQuery, updateInboxActivity} = useInboxForUser({enabled: layout === 'inbox'});
     const {feedQuery, updateFeedActivity} = useFeedForUser({enabled: layout === 'feed'});
 
@@ -54,7 +57,7 @@ const Inbox: React.FC = () => {
     const {data: user} = useUserDataForUser('index');
 
     return (
-        <>
+        <Layout>
             <div className='my-4 flex w-full flex-col'>
                 <div className='w-full'>
                     {activities.length > 0 ? (
@@ -131,7 +134,7 @@ const Inbox: React.FC = () => {
                     )}
                 </div>
             </div>
-        </>
+        </Layout>
     );
 };
 
