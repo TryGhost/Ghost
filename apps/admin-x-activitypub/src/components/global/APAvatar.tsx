@@ -66,7 +66,7 @@ const APAvatar: React.FC<APAvatarProps> = ({author, size, isLoading = false}) =>
     }
 
     if (!iconUrl) {
-        containerClass = clsx(containerClass, 'bg-gray-100');
+        containerClass = clsx(containerClass, 'bg-gray-100 dark:bg-gray-900');
     }
 
     const handle = author?.handle || getUsername(author as ActorProperties);
