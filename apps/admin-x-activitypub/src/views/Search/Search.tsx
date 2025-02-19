@@ -212,7 +212,7 @@ const Search: React.FC<SearchProps> = ({}) => {
                     <Icon className='absolute left-3 top-3 z-10' colorClass='text-gray-500' name='magnifying-glass' size='sm' />
                     <TextField
                         autoComplete='off'
-                        className='mb-6 mr-12 flex h-10 w-full items-center rounded-lg border border-transparent bg-gray-100 px-[33px] py-1.5 transition-colors focus:border-green focus:bg-white focus:outline-2 dark:border-transparent dark:bg-gray-925 dark:text-white dark:placeholder:text-gray-800 dark:focus:border-green dark:focus:bg-gray-950 tablet:mr-0'
+                        className='mb-6 mr-12 flex h-10 w-full items-center rounded-lg border border-transparent bg-gray-100 px-[33px] py-1.5 transition-colors focus:border-green focus:bg-white focus:outline-2 tablet:mr-0 dark:border-transparent dark:bg-gray-925 dark:text-white dark:placeholder:text-gray-800 dark:focus:border-green dark:focus:bg-gray-950'
                         containerClassName='w-100'
                         inputRef={queryInputRef}
                         placeholder='Enter a handle or account URL...'
