@@ -63,15 +63,20 @@ module.exports = new StripeService({
     staffService
 });
 
+function stripeSettingsChanged(model) {
+    if (['stripe_publishable_key', 'stripe_secret_key', 'stripe_connect_publishable_key', 'stripe_connect_secret_key'].includes(model.get('key'))) {
+        debouncedConfigureApi();
+    }
+}
+
 module.exports.init = async function init() {
     try {
         await configureApi();
     } catch (err) {
         logging.error(err);
     }
-    events.on('settings.edited', function (model) {
-        if (['stripe_publishable_key', 'stripe_secret_key', 'stripe_connect_publishable_key', 'stripe_connect_secret_key'].includes(model.get('key'))) {
-            debouncedConfigureApi();
-        }
-    });
+
+    events
+        .removeListener('settings.edited', stripeSettingsChanged)
+        .on('settings.edited', stripeSettingsChanged);
 };
