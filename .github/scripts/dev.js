@@ -205,11 +205,12 @@ async function handleStripe() {
 
         let stripeSecret;
         const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
+        const apiKeyFlag = stripeSecretKey ? `--api-key ${stripeSecretKey}` : '';
         try {
-            const stripeListenCommand = `stripe listen --print-secret ${stripeSecretKey ? `--api-key ${stripeSecretKey}` : ''}`;
+            const stripeListenCommand = `stripe listen --print-secret ${apiKeyFlag}`;
             stripeSecret = await exec(stripeListenCommand);
         } catch (err) {
-            console.error('Failed to fetch Stripe secret token, do you need to connect Stripe CLI?', err);
+            console.error('Failed to fetch Stripe secret token. Please ensure either STRIPE_SECRET_KEY is set or you are logged in to Stripe CLI by running `stripe login`.', err);
             return;
         }
 
@@ -221,7 +222,7 @@ async function handleStripe() {
         COMMAND_GHOST.env['WEBHOOK_SECRET'] = stripeSecret.stdout.trim();
         commands.push({
             name: 'stripe',
-            command: `stripe listen --forward-to ${siteUrl}members/webhooks/stripe/ ${stripeSecretKey ? `--api-key ${stripeSecretKey}` : ''}`,
+            command: `stripe listen --forward-to ${siteUrl}members/webhooks/stripe/ ${apiKeyFlag}`,
             prefixColor: 'yellow',
             env: {}
         });
