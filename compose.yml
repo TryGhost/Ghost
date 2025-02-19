@@ -22,7 +22,12 @@ services:
     volumes:
       # Mount the source code
       - .:/home/ghost
+
+      ## SSH Agent forwarding
       - ${SSH_AUTH_SOCK}:/ssh-agent
+
+      ## Git config
+      - ${HOME}/.gitconfig:/root/.gitconfig:ro
 
       # Volume exclusions:
       ## Prevent collisions between host and container node_modules
