@@ -315,7 +315,7 @@ const Notifications: React.FC<NotificationsProps> = () => {
                 {
                     (groupedActivities.length > 0) && (
                         <>
-                            <div className='my-8 flex w-full max-w-[560px] flex-col'>
+                            <div className='my-8 flex w-full max-w-[620px] flex-col'>
                                 {groupedActivities.map((group, index) => (
                                     <React.Fragment key={group.id || `${group.type}_${index}`}>
                                         <NotificationItem
