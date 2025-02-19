@@ -7,6 +7,7 @@ const sinon = require('sinon');
 const delay = require('delay');
 const FakeTimers = require('@sinonjs/fake-timers');
 const logging = require('@tryghost/logging');
+const JobsRepository = require('../lib/JobsRepository');
 
 const JobManager = require('../index');
 
@@ -735,5 +736,282 @@ describe('Job Manager', function () {
         });
 
         it('gracefully shuts down the job queue worker pool');
+    });
+
+    describe('Persistent job data', function () {
+        let JobModel;
+
+        beforeEach(function () {
+            JobModel = {
+                findOne: sinon.stub(),
+                add: sinon.stub(),
+                edit: sinon.stub()
+            };
+            jobManager = new JobManager({JobModel, config: stubConfig});
+        });
+
+        describe('getLastJobRunTimestamp', function () {
+            it('returns null when no repository exists', async function () {
+                jobManager = new JobManager({config: stubConfig}); // no JobModel
+                const result = await jobManager.getLastJobRunTimestamp('test-job');
+                should.equal(result, null);
+            });
+
+            it('returns null when job not found', async function () {
+                JobModel.findOne.resolves(null);
+                const result = await jobManager.getLastJobRunTimestamp('test-job');
+                should.equal(result, null);
+            });
+
+            it('returns finished_at when both timestamps exist', async function () {
+                JobModel.findOne.resolves({
+                    finished_at: new Date('2024-01-02'),
+                    started_at: new Date('2024-01-01')
+                });
+                const result = await jobManager.getLastJobRunTimestamp('test-job');
+                should.equal(result.toISOString(), '2024-01-02T00:00:00.000Z');
+            });
+
+            it('returns started_at when finished_at missing', async function () {
+                JobModel.findOne.resolves({
+                    started_at: new Date('2024-01-01')
+                });
+                const result = await jobManager.getLastJobRunTimestamp('test-job');
+                should.equal(result.toISOString(), '2024-01-01T00:00:00.000Z');
+            });
+        });
+
+        describe('setJobTimestamp', function () {
+            it('does nothing when no repository exists', async function () {
+                jobManager = new JobManager({config: stubConfig}); // no JobModel
+                await jobManager.setJobTimestamp('test-job', 'started_at', new Date());
+                should(JobModel.findOne.called).be.false();
+            });
+
+            it('creates new job when not found', async function () {
+                const date = new Date();
+                JobModel.findOne.resolves(null);
+                await jobManager.setJobTimestamp('test-job', 'started_at', date);
+                
+                should(JobModel.add.calledOnce).be.true();
+                should(JobModel.add.firstCall.args[0]).deepEqual({
+                    name: 'test-job',
+                    started_at: date
+                });
+            });
+
+            it('updates existing job', async function () {
+                const date = new Date();
+                JobModel.findOne.resolves({id: 'job1'});
+                await jobManager.setJobTimestamp('test-job', 'finished_at', date);
+                
+                should(JobModel.edit.calledOnce).be.true();
+                should(JobModel.edit.firstCall.args[0]).deepEqual({
+                    finished_at: date
+                });
+            });
+
+            it('throws error for invalid timestamp field', async function () {
+                await assert.rejects(
+                    () => jobManager.setJobTimestamp('test-job', 'invalid_field', new Date()),
+                    {message: 'Invalid timestamp field "invalid_field". Must be either "started_at" or "finished_at"'}
+                );
+            });
+        });
+
+        describe('setJobStatus', function () {
+            it('does nothing when no repository exists', async function () {
+                jobManager = new JobManager({config: stubConfig}); // no JobModel
+                await jobManager.setJobStatus('test-job', 'completed');
+                should(JobModel.findOne.called).be.false();
+            });
+
+            it('creates new job when not found', async function () {
+                JobModel.findOne.resolves(null);
+                await jobManager.setJobStatus('test-job', 'completed');
+                
+                should(JobModel.add.calledOnce).be.true();
+                should(JobModel.add.firstCall.args[0]).deepEqual({
+                    name: 'test-job',
+                    status: 'completed'
+                });
+            });
+
+            it('updates existing job', async function () {
+                JobModel.findOne.resolves({id: 'job1'});
+                await jobManager.setJobStatus('test-job', 'failed');
+                
+                should(JobModel.edit.calledOnce).be.true();
+                should(JobModel.edit.firstCall.args[0]).deepEqual({
+                    status: 'failed'
+                });
+            });
+        });
+    });
+
+    describe('JobsRepository', function () {
+        let JobModel, jobsRepository;
+
+        beforeEach(function () {
+            JobModel = {
+                findOne: sinon.stub(),
+                add: sinon.stub(),
+                edit: sinon.stub(),
+                findPage: sinon.stub(),
+                destroy: sinon.stub(),
+                transaction: sinon.stub()
+            };
+            jobsRepository = new JobsRepository({JobModel});
+        });
+
+        describe('getQueuedJobs', function () {
+            it('retrieves queued jobs with default limit', async function () {
+                const jobs = {
+                    data: [{id: 1}, {id: 2}],
+                    meta: {pagination: {total: 2}}
+                };
+                JobModel.findPage.resolves(jobs);
+
+                const result = await jobsRepository.getQueuedJobs();
+                
+                should(JobModel.findPage.calledOnce).be.true();
+                should(JobModel.findPage.firstCall.args[0]).deepEqual({
+                    filter: 'queue_entry:1',
+                    limit: 50
+                });
+                should(result).deepEqual({data: jobs.data, total: 2});
+            });
+
+            it('retrieves queued jobs with custom limit', async function () {
+                const jobs = {
+                    data: [{id: 1}],
+                    meta: {pagination: {total: 1}}
+                };
+                JobModel.findPage.resolves(jobs);
+
+                await jobsRepository.getQueuedJobs(1);
+                
+                should(JobModel.findPage.firstCall.args[0]).deepEqual({
+                    filter: 'queue_entry:1',
+                    limit: 1
+                });
+            });
+        });
+
+        describe('delete', function () {
+            it('deletes a job and handles errors', async function () {
+                JobModel.destroy.rejects(new Error('Delete failed'));
+                
+                await jobsRepository.delete('job1');
+                
+                should(JobModel.destroy.calledOnce).be.true();
+                should(JobModel.destroy.firstCall.args[0]).deepEqual({id: 'job1'});
+                should(logging.error.calledOnce).be.true();
+            });
+        });
+
+        describe('addQueuedJob', function () {
+            it('adds a queued job with transaction', async function () {
+                const job = {
+                    name: 'test-job',
+                    metadata: {job: '/path/to/job.js', data: {}}
+                };
+
+                JobModel.transaction.callsFake(async (fn) => {
+                    await fn({transacting: true});
+                });
+                JobModel.findOne.resolves(null);
+                JobModel.add.resolves({id: 'new-job'});
+
+                const result = await jobsRepository.addQueuedJob(job);
+
+                should(result).deepEqual({id: 'new-job'});
+                should(JobModel.add.calledOnce).be.true();
+                const addedJob = JobModel.add.firstCall.args[0];
+                should(addedJob).have.properties(['id', 'name', 'status', 'created_at', 'metadata', 'queue_entry']);
+            });
+
+            it('does not add job if it already exists', async function () {
+                const job = {
+                    name: 'test-job',
+                    metadata: {job: '/path/to/job.js', data: {}}
+                };
+
+                JobModel.transaction.callsFake(async (fn) => {
+                    await fn({transacting: true});
+                });
+                JobModel.findOne.resolves({id: 'existing-job'});
+
+                const result = await jobsRepository.addQueuedJob(job);
+
+                should(result).be.undefined();
+                should(JobModel.add.called).be.false();
+            });
+        });
+    });
+
+    describe('JobManager error handling', function () {
+        beforeEach(function () {
+            // Reset the stubs for each test
+            sandbox.restore();
+            sandbox.stub(logging, 'info');
+            sandbox.stub(logging, 'warn');
+            sandbox.stub(logging, 'error');
+        });
+
+        it('handles worker messages without message handler', async function () {
+            jobManager = new JobManager({config: stubConfig}); // no message handler
+            await jobManager._jobMessageHandler({name: 'test-job', message: 'test'});
+            // Should not throw
+        });
+
+        it('handles domain events in worker messages', async function () {
+            const domainEvents = {
+                dispatchRaw: sinon.stub()
+            };
+            jobManager = new JobManager({
+                config: stubConfig,
+                domainEvents
+            });
+
+            await jobManager._jobMessageHandler({
+                name: 'test-job',
+                message: {
+                    event: {
+                        type: 'test.event',
+                        data: {foo: 'bar'}
+                    }
+                }
+            });
+
+            should(domainEvents.dispatchRaw.calledOnce).be.true();
+            should(domainEvents.dispatchRaw.firstCall.args).deepEqual(['test.event', {foo: 'bar'}]);
+        });
+
+        it('handles completion promises rejection', async function () {
+            jobManager = new JobManager({config: stubConfig});
+            const error = new Error('Test error');
+            
+            const promise = jobManager.awaitCompletion('test-job');
+            await jobManager._jobErrorHandler(error, {name: 'test-job'});
+            
+            await assert.rejects(promise, /Test error/);
+        });
+
+        it('handles all jobs completion promises rejection', async function () {
+            jobManager = new JobManager({config: stubConfig});
+            const error = new Error('Test error');
+            
+            // Need to make the queue non-idle for allSettled to create a promise
+            jobManager.addJob({
+                job: () => new Promise(() => {}), // Never resolving promise
+                offloaded: false
+            });
+            
+            const promise = jobManager.allSettled();
+            await jobManager._jobErrorHandler(error, {name: 'test-job'});
+            
+            await assert.rejects(promise, /Test error/);
+        });
     });
 });

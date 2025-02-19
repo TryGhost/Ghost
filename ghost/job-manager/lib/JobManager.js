@@ -473,6 +473,55 @@ class JobManager {
 
         logging.warn('Inline job queue finished');
     }
+
+    /**
+     * Gets job data from the repository
+     * @param {string} name - The name of the job to retrieve
+     * @returns {Promise<Object|null>} The job data if found, null otherwise
+     */
+    async getJobData(name) {
+        if (!this._jobsRepository) {
+            return null;
+        }
+        return await this._jobsRepository.read(name);
+    }
+
+    /**
+     * Gets the timestamp of the last time a job was run
+     * @param {string} name - The name of the job
+     * @returns {Promise<Date|null>} The timestamp of the last run (finished_at or started_at), null if job not found
+     */
+    async getLastJobRunTimestamp(name) {
+        if (!this._jobsRepository) {
+            return null;
+        }
+        return await this._jobsRepository.getLastRunTimestamp(name);
+    }
+
+    /**
+     * Updates or creates a job's timestamp
+     * @param {string} name - The name of the job
+     * @param {'started_at'|'finished_at'} field - The timestamp field to update
+     * @param {Date} date - The timestamp value
+     */
+    async setJobTimestamp(name, field, date) {
+        if (!this._jobsRepository) {
+            return;
+        }
+        await this._jobsRepository.setTimestamp(name, field, date);
+    }
+
+    /**
+     * Updates or creates a job's status
+     * @param {string} name - The name of the job
+     * @param {string} status - The status to set
+     */
+    async setJobStatus(name, status) {
+        if (!this._jobsRepository) {
+            return;
+        }
+        await this._jobsRepository.setStatus(name, status);
+    }
 }
 
 module.exports = JobManager;

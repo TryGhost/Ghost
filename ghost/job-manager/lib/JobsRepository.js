@@ -1,5 +1,6 @@
 const ObjectID = require('bson-objectid').default;
 const logging = require('@tryghost/logging');
+const {IncorrectUsageError} = require('@tryghost/errors');
 
 /**
  * @class JobsRepository
@@ -130,6 +131,51 @@ class JobsRepository {
             await this._JobModel.destroy({id});
         } catch (error) {
             logging.error(`Error deleting job ${id}:`, error);
+        }
+    }
+
+    /**
+     * Gets the timestamp of the last time a job was run
+     * @param {string} name - The name of the job
+     * @returns {Promise<Date|null>} The timestamp of the last run (finished_at or started_at), null if job not found
+     */
+    async getLastRunTimestamp(name) {
+        const job = await this.read(name);
+        return job ? job.finished_at || job.started_at : null;
+    }
+
+    /**
+     * Updates or creates a job's timestamp
+     * @param {string} name - The name of the job
+     * @param {'started_at'|'finished_at'} field - The timestamp field to update
+     * @param {Date} date - The timestamp value
+     */
+    async setTimestamp(name, field, date) {
+        if (field !== 'started_at' && field !== 'finished_at') {
+            throw new IncorrectUsageError({
+                message: `Invalid timestamp field "${field}". Must be either "started_at" or "finished_at"`
+            });
+        }
+
+        const job = await this.read(name);
+        if (!job) {
+            await this.add({name, [field]: date});
+        } else {
+            await this.update(name, {[field]: date});
+        }
+    }
+
+    /**
+     * Updates or creates a job's status
+     * @param {string} name - The name of the job
+     * @param {string} status - The status to set
+     */
+    async setStatus(name, status) {
+        const job = await this.read(name);
+        if (!job) {
+            await this.add({name, status});
+        } else {
+            await this.update(name, {status});
         }
     }
 }
