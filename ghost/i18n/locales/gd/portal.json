@@ -67,7 +67,7 @@
     "Enter your name": "Cuir a-steach d' ainm",
     "Error": "Mearachd",
     "Expires {{expiryDate}}": "Falbhaidh an ùine air: {{expiryDate}}",
-"Failed to cancel subscription, please try again": "Dh’fhàillig dùbhadh às an fho-sgrìobhaidh, feuch a-rithist",
+    "Failed to cancel subscription, please try again": "Dh’fhàillig dùbhadh às an fho-sgrìobhaidh, feuch a-rithist",
     "Failed to log in, please try again": "Dh’fhàillig clàradh a-steach, feuch a-rithist",
     "Failed to log out, please try again": "Dh’fhàillig clàradh a-mach, feuch a-rithist",
     "Failed to process checkout, please try again": "Dh'fhàillig a' cheannachd",
