@@ -11,8 +11,6 @@ services:
       - "2368:2368" # Ghost
       - "4200:4200" # Admin
       - "4201:4201" # Admin tests
-      - "4173:4173" # Lexical
-      - "41730:41730" # Lexical HTTPS
       - "4175:4175" # Portal
       - "4176:4176" # Portal HTTPS
       - "4177:4177" # Announcement bar
