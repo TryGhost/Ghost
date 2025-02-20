@@ -55,7 +55,7 @@ class StaffServiceEmails {
                 staffUrl: staffUrl
             };
             if (!attribution) {
-                this.sentry.captureMessage(`New member signup with no attribution: ${member.id}`);
+                this.sentry?.captureMessage(`New member signup with no attribution: ${member.id}`);
             }
 
             const {html, text} = await this.renderEmailTemplate('new-free-signup', templateData);
@@ -119,7 +119,7 @@ class StaffServiceEmails {
             };
 
             if (!attribution) {
-                this.sentry.captureMessage(`New member signup with no attribution: ${member.id}`);
+                this.sentry?.captureMessage(`New member signup with no attribution: ${member.id}`);
             }
 
             const {html, text} = await this.renderEmailTemplate('new-paid-started', templateData);
