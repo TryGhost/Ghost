@@ -380,6 +380,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
 
     const modalSize = width === 'narrow' ? MODAL_SIZE_SM : MODAL_SIZE_LG;
     const modal = useModal();
+    const {darkMode} = useDesignSystem();
 
     const canNavigateBack = history.length > 0;
     const navigateBack = () => {
@@ -696,7 +697,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
             align='right'
             allowBackgroundInteraction={false}
             animate={true}
-            backDrop={false}
+            backDrop={darkMode && width === 'narrow'}
             backDropClick={true}
             footer={<></>}
             height={'full'}
