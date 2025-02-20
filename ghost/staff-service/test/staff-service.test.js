@@ -349,7 +349,15 @@ describe('StaffService', function () {
                         }
                     },
                     memberAttributionService: {
-                        getSubscriptionCreatedAttribution: sinon.stub().resolves()
+                        getSubscriptionCreatedAttribution: sinon.stub().resolves(),
+                        fetchResource: sinon.stub().callsFake((attribution) => {
+                            return Promise.resolve({
+                                title: attribution.title,
+                                url: attribution.url,
+                                type: attribution.type,
+                                referrerSource: attribution.referrerSource
+                            });
+                        })
                     }
                 });
             });
@@ -393,22 +401,28 @@ describe('StaffService', function () {
                         offerId: 'offer-1',
                         tierId: 'tier-1',
                         attribution: {
-                            referrerSource: 'Twitter',
                             title: 'Welcome Post',
-                            url: 'https://example.com/welcome'
+                            url: 'https://example.com/welcome',
+                            type: 'post',
+                            referrerSource: 'Direct'
                         }
                     }
                 });
 
                 // provided attribution should be used instead of fetching it
                 service.memberAttributionService.getSubscriptionCreatedAttribution.called.should.be.false();
+                service.memberAttributionService.fetchResource.called.should.be.true();
 
                 mailStub.calledWith(
                     sinon.match({subject: '💸 Paid subscription started: Jamie'})
                 ).should.be.true();
 
                 mailStub.calledWith(
-                    sinon.match.has('html', sinon.match('Twitter'))
+                    sinon.match.has('html', sinon.match('Welcome Post'))
+                ).should.be.true();
+
+                mailStub.calledWith(
+                    sinon.match.has('html', sinon.match('Direct'))
                 ).should.be.true();
             });
 
