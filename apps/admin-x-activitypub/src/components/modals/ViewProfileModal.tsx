@@ -317,9 +317,9 @@ const ViewProfileModal: React.FC<ViewProfileModalProps> = ({
                                     src={profile.actor.image.url}
                                 />
                             </div>)}
-                            <div className={`${profile.actor.image && '-mt-12'} px-4`}>
+                            <div className={`${profile.actor.image && '-mt-12'} px-6`}>
                                 <div className='flex items-end justify-between'>
-                                    <div className='rounded-xl outline outline-4 outline-white dark:outline-black'>
+                                    <div className='-ml-2 rounded-full bg-white p-1 dark:bg-black'>
                                         <APAvatar
                                             author={profile.actor}
                                             size='lg'
