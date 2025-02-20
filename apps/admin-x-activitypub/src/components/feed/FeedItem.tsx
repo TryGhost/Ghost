@@ -277,7 +277,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                             <div className='relative z-30 flex min-w-0 items-center gap-3'>
                                 <APAvatar author={author} />
                                 <div className='flex min-w-0 flex-col gap-0.5'>
-                                    <span className='min-w-0 truncate break-all font-semibold leading-[normal] hover:underline'
+                                    <span className='min-w-0 truncate break-all font-semibold leading-[normal] hover:underline dark:text-white'
                                         data-test-activity-heading
                                         onClick={e => handleProfileClick(author, e)}
                                     >

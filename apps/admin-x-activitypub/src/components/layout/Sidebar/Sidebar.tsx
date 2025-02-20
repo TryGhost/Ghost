@@ -45,9 +45,9 @@ const Sidebar: React.FC<SidebarProps> = ({route}) => {
                     <Recommendations />
                 </div>
                 <div className='flex items-center gap-2 pl-7 pt-4 text-xs text-gray-400'>
-                    <a className='text-xs font-medium text-gray-700 hover:text-black' href="https://forum.ghost.org/t/activitypub-beta-start-here/51780" rel="noreferrer" target="_blank">Feedback</a>
+                    <a className='text-xs font-medium text-gray-700 hover:text-black dark:text-gray-800 dark:hover:text-white' href="https://forum.ghost.org/t/activitypub-beta-start-here/51780" rel="noreferrer" target="_blank">Feedback</a>
                     &sdot;
-                    <a className='text-xs font-medium text-gray-700 hover:text-black' href="https://activitypub.ghost.org/archive" rel="noreferrer"target="_blank">Updates</a>
+                    <a className='text-xs font-medium text-gray-700 hover:text-black dark:text-gray-800 dark:hover:text-white' href="https://activitypub.ghost.org/archive" rel="noreferrer"target="_blank">Updates</a>
                 </div>
             </div>
         </div>
