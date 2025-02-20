@@ -179,6 +179,19 @@ class MemberAttributionService {
     }
 
     /**
+     * Fetches the resource for a given attribution without the use of an event model
+     * @param {Object} attribution 
+     * @returns {Promise<import('./AttributionBuilder').AttributionResource|null>}
+     */
+    async fetchResource(attribution) {
+        if (!attribution) {
+            return null;
+        }
+        const _attribution = this.attributionBuilder.build(attribution);
+        return await _attribution.fetchResource();
+    }
+
+    /**
      * Maps the framework context to source string
      * @param {Object} context instance of ghost framework context object
      * @returns {'import' | 'system' | 'api' | 'admin' | 'member'}

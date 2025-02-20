@@ -106,8 +106,10 @@ class StaffService {
                 attribution
             });
         } else if (type === SubscriptionActivatedEvent) {
-            let attribution = event.data?.attribution;
-            if (!attribution) {
+            let attribution;
+            if (event.data?.attribution) {
+                attribution = await this.memberAttributionService.fetchResource(event.data.attribution);
+            } else {
                 try {
                     attribution = await this.memberAttributionService.getSubscriptionCreatedAttribution(event.data.subscriptionId);
                 } catch (e) {
