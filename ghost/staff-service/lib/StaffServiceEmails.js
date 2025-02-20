@@ -5,7 +5,7 @@ const glob = require('glob');
 const {EmailAddressParser} = require('@tryghost/email-addresses');
 
 class StaffServiceEmails {
-    constructor({logging, models, mailer, settingsHelpers, settingsCache, blogIcon, urlUtils, labs, sentry}) {
+    constructor({logging, models, mailer, settingsHelpers, settingsCache, blogIcon, urlUtils, labs}) {
         this.logging = logging;
         this.models = models;
         this.mailer = mailer;
@@ -14,7 +14,6 @@ class StaffServiceEmails {
         this.blogIcon = blogIcon;
         this.urlUtils = urlUtils;
         this.labs = labs;
-        this.sentry = sentry;
 
         this.Handlebars = require('handlebars').create();
         this.registerPartials();
@@ -54,9 +53,6 @@ class StaffServiceEmails {
                 toEmail: to,
                 staffUrl: staffUrl
             };
-            if (!attribution) {
-                this.sentry?.captureMessage(`New member signup with no attribution: ${member.id}`);
-            }
 
             const {html, text} = await this.renderEmailTemplate('new-free-signup', templateData);
 
@@ -117,10 +113,6 @@ class StaffServiceEmails {
                 toEmail: to,
                 staffUrl: staffUrl
             };
-
-            if (!attribution) {
-                this.sentry?.captureMessage(`New member signup with no attribution: ${member.id}`);
-            }
 
             const {html, text} = await this.renderEmailTemplate('new-paid-started', templateData);
 

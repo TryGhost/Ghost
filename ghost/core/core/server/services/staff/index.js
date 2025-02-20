@@ -1,6 +1,6 @@
 const DomainEvents = require('@tryghost/domain-events');
 const labs = require('../../../shared/labs');
-const sentry = require('../../../shared/sentry');
+
 class StaffServiceWrapper {
     init() {
         if (this.api) {
@@ -30,8 +30,7 @@ class StaffServiceWrapper {
             blogIcon,
             DomainEvents,
             memberAttributionService: memberAttribution.service,
-            labs,
-            sentry
+            labs
         });
 
         this.api.subscribeEvents();

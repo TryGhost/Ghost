@@ -4,7 +4,7 @@ const {MilestoneCreatedEvent} = require('@tryghost/milestones');
 // @NOTE: 'StaffService' is a vague name that does not describe what it's actually doing.
 //         Possibly, "StaffNotificationService" or "StaffEventNotificationService" would be a more accurate name
 class StaffService {
-    constructor({logging, models, mailer, settingsCache, settingsHelpers, urlUtils, blogIcon, DomainEvents, labs, memberAttributionService, sentry}) {
+    constructor({logging, models, mailer, settingsCache, settingsHelpers, urlUtils, blogIcon, DomainEvents, labs, memberAttributionService}) {
         this.logging = logging;
         this.labs = labs;
         /** @private */
@@ -12,7 +12,7 @@ class StaffService {
         this.models = models;
         this.DomainEvents = DomainEvents;
         this.memberAttributionService = memberAttributionService;
-        this.sentry = sentry;
+
         const Emails = require('./StaffServiceEmails');
 
         this.emails = new Emails({
@@ -23,8 +23,7 @@ class StaffService {
             settingsCache,
             urlUtils,
             blogIcon,
-            labs,
-            sentry
+            labs
         });
     }
 
