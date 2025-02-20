@@ -6,7 +6,7 @@ export {FrameworkProvider, useFramework} from './providers/FrameworkProvider';
 export type {RouteObject} from 'react-router';
 export type {RouterProviderProps} from './providers/RouterProvider';
 export {RouterProvider, useNavigate} from './providers/RouterProvider';
-export {useLocation, useParams, useSearchParams, Outlet} from 'react-router';
+export {useLocation, useParams, useSearchParams, Outlet, redirect} from 'react-router';
 
 // Data fetching
 export type {InfiniteData} from '@tanstack/react-query';
