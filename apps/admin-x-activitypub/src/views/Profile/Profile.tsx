@@ -374,7 +374,7 @@ const Profile: React.FC<ProfileProps> = ({}) => {
 
     return (
         <div className='relative isolate'>
-            <div className='absolute -right-8 left-0 top-0 z-0 h-[15vw] bg-[linear-gradient(265deg,#FAFAFB_0%,#F4F5F6_100%)]'>
+            <div className='absolute -right-8 left-0 top-0 z-0 h-[15vw] bg-[linear-gradient(265deg,#FAFAFB_0%,#F4F5F6_100%)] dark:bg-[linear-gradient(265deg,#23272C_0%,#202327_100%)]'>
                 {account?.bannerImageUrl &&
                     <div className='h-full w-full'>
                         <img
