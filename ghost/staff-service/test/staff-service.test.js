@@ -350,6 +350,7 @@ describe('StaffService', function () {
                     },
                     memberAttributionService: {
                         getSubscriptionCreatedAttribution: sinon.stub().resolves(),
+                        getMemberCreatedAttribution: sinon.stub().resolves(),
                         fetchResource: sinon.stub().callsFake((attribution) => {
                             return Promise.resolve({
                                 title: attribution.title,
@@ -368,6 +369,30 @@ describe('StaffService', function () {
                         memberId: 'member-1'
                     }
                 });
+
+                service.memberAttributionService.getMemberCreatedAttribution.called.should.be.true();
+
+                mailStub.calledWith(
+                    sinon.match({subject: '🥳 Free member signup: Jamie'})
+                ).should.be.true();
+            });
+            it('handles free member created event with provided attribution', async function () {
+                await service.handleEvent(MemberCreatedEvent, {
+                    data: {
+                        source: 'member',
+                        memberId: 'member-1',
+                        attribution: {
+                            title: 'Welcome Post',
+                            url: 'https://example.com/welcome',
+                            type: 'post',
+                            referrerSource: 'Direct'
+                        }
+                    }
+                });
+
+                // provided attribution should be used instead of fetching it
+                service.memberAttributionService.getMemberCreatedAttribution.called.should.be.false();
+                service.memberAttributionService.fetchResource.called.should.be.true();
 
                 mailStub.calledWith(
                     sinon.match({subject: '🥳 Free member signup: Jamie'})
