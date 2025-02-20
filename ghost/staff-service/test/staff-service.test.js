@@ -347,6 +347,9 @@ describe('StaffService', function () {
                         isSet: () => {
                             return false;
                         }
+                    },
+                    memberAttributionService: {
+                        getSubscriptionCreatedAttribution: sinon.stub().resolves()
                     }
                 });
             });
@@ -374,8 +377,38 @@ describe('StaffService', function () {
                     }
                 });
 
+                service.memberAttributionService.getSubscriptionCreatedAttribution.called.should.be.true();
+
                 mailStub.calledWith(
                     sinon.match({subject: '💸 Paid subscription started: Jamie'})
+                ).should.be.true();
+            });
+
+            it('handles paid member created event with provided attribution', async function () {
+                await service.handleEvent(SubscriptionActivatedEvent, {
+                    data: {
+                        source: 'member',
+                        memberId: 'member-1',
+                        subscriptionId: 'sub-1',
+                        offerId: 'offer-1',
+                        tierId: 'tier-1',
+                        attribution: {
+                            referrerSource: 'Twitter',
+                            title: 'Welcome Post',
+                            url: 'https://example.com/welcome'
+                        }
+                    }
+                });
+
+                // provided attribution should be used instead of fetching it
+                service.memberAttributionService.getSubscriptionCreatedAttribution.called.should.be.false();
+
+                mailStub.calledWith(
+                    sinon.match({subject: '💸 Paid subscription started: Jamie'})
+                ).should.be.true();
+
+                mailStub.calledWith(
+                    sinon.match.has('html', sinon.match('Twitter'))
                 ).should.be.true();
             });
 
@@ -523,7 +556,6 @@ describe('StaffService', function () {
                 tier = {
                     name: 'Test Tier'
                 };
-
                 subscription = {
                     amount: 5000,
                     currency: 'USD',
