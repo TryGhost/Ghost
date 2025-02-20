@@ -2,7 +2,7 @@ import React, {useEffect, useRef, useState} from 'react';
 
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 
-import {Button, Heading, Icon, List, LoadingIndicator, Modal, NoValueLabel, Tab,TabView} from '@tryghost/admin-x-design-system';
+import {Button, Heading, Icon, List, LoadingIndicator, Modal, NoValueLabel, Tab,TabView, useDesignSystem} from '@tryghost/admin-x-design-system';
 import {UseInfiniteQueryResult} from '@tanstack/react-query';
 
 import {type GetProfileFollowersResponse, type GetProfileFollowingResponse} from '../../api/activitypub';
@@ -233,6 +233,7 @@ const ViewProfileModal: React.FC<ViewProfileModalProps> = ({
 }) => {
     const modal = useModal();
     const [selectedTab, setSelectedTab] = useState<ProfileTab>('posts');
+    const {darkMode} = useDesignSystem();
 
     const {data: profile, isLoading} = useProfileForUser('index', handle);
 
@@ -283,7 +284,7 @@ const ViewProfileModal: React.FC<ViewProfileModalProps> = ({
         <Modal
             align='right'
             animate={true}
-            backDrop={false}
+            backDrop={darkMode}
             footer={<></>}
             height={'full'}
             padding={false}
