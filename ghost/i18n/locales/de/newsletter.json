@@ -12,7 +12,7 @@
     "Name": "Name",
     "paid": "zahlendes",
     "Subscription details": "Abo Details",
-    "trialing": "Probe-",
+    "trialing": "Probeabo",
     "Unsubscribe": "Abbestellen",
     "View in browser": "Im Browser ansehen",
     "You are receiving this because you are a <strong>%%{status}%% subscriber</strong> to {site}.": "Du erhältst diese Nachricht weil du <strong>%%{status}%% Mitglied</strong> von {site} bist.",
