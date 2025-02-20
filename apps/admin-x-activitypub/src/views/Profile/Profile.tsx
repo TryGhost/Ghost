@@ -374,7 +374,7 @@ const Profile: React.FC<ProfileProps> = ({}) => {
 
     return (
         <>
-            <div className='z-0 mx-auto mt-8 flex w-full max-w-[580px] flex-col items-center pb-16'>
+            <div className='z-0 mx-auto mt-8 flex w-full max-w-[620px] flex-col items-center pb-16'>
                 <div className='mx-auto w-full'>
                     {account?.bannerImageUrl && (
                         <div className='h-[200px] w-full overflow-hidden rounded-lg bg-gradient-to-tr from-gray-200 to-gray-100'>
@@ -385,7 +385,7 @@ const Profile: React.FC<ProfileProps> = ({}) => {
                             />
                         </div>
                     )}
-                    <div className={`${account?.bannerImageUrl && '-mt-12'} px-4`}>
+                    <div className={`${account?.bannerImageUrl && '-mt-12'}`}>
                         <div className='flex items-end justify-between'>
                             <div className='rounded-xl outline outline-4 outline-white dark:outline-black'>
                                 <APAvatar
