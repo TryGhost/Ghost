@@ -4,10 +4,8 @@ import NiceModal from '@ebay/nice-modal-react';
 import Recommendations from './Recommendations';
 import SidebarButton from './SidebarButton';
 import {Button, LucideIcon, Separator} from '@tryghost/shade';
-import {useNavigate} from '@tryghost/admin-x-framework';
 
 const Sidebar: React.FC = () => {
-    const navigate = useNavigate();
     return (
         <div className='sticky top-[102px] flex min-h-[calc(100vh-102px-32px)] w-[294px] flex-col border-l border-gray-200 dark:border-gray-950'>
             <div className='flex grow flex-col justify-between'>
