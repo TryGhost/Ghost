@@ -1213,6 +1213,7 @@ module.exports = class MemberRepository {
                     memberId: member.id,
                     subscriptionId: subscriptionModel.get('id'),
                     offerId: offerId,
+                    attribution: attribution,
                     batchId: options.batch_id
                 });
                 this.dispatchEvent(activatedEvent, options);

@@ -106,11 +106,13 @@ class StaffService {
                 attribution
             });
         } else if (type === SubscriptionActivatedEvent) {
-            let attribution;
-            try {
-                attribution = await this.memberAttributionService.getSubscriptionCreatedAttribution(event.data.subscriptionId);
-            } catch (e) {
-                this.logging.warn(`Failed to get attribution for member - ${event?.data?.memberId}`);
+            let attribution = event.data?.attribution;
+            if (!attribution) {
+                try {
+                    attribution = await this.memberAttributionService.getSubscriptionCreatedAttribution(event.data.subscriptionId);
+                } catch (e) {
+                    this.logging.warn(`Failed to get attribution for member - ${event?.data?.memberId}`);
+                }
             }
             await this.emails.notifyPaidSubscriptionStarted({
                 member,
