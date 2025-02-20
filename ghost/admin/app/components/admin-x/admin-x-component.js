@@ -266,7 +266,7 @@ export default class AdminXComponent extends Component {
             </div>
         );
         return (
-            <div className={['admin-x-settings-container-', (this.feature.nightShift && 'dark'), this.args.className].filter(Boolean).join(' ')}>
+            <div className={['admin-x-settings-container-', this.args.className].filter(Boolean).join(' ')}>
                 <ErrorHandler>
                     <Suspense fallback={fallback}>
                         <this.AdminXApp
