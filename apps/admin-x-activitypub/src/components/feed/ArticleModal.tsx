@@ -5,7 +5,6 @@ import React, {useCallback, useEffect, useRef, useState} from 'react';
 import articleBodyStyles from '../articleBodyStyles';
 import getUsername from '../../utils/get-username';
 import {OptionProps, SingleValueProps, components} from 'react-select';
-import {useDesignSystem} from '@tryghost/admin-x-design-system';
 
 import {Activity, ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, Icon, LoadingIndicator, Modal, Popover, Select, SelectOption} from '@tryghost/admin-x-design-system';
@@ -380,7 +379,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
 
     const modalSize = width === 'narrow' ? MODAL_SIZE_SM : MODAL_SIZE_LG;
     const modal = useModal();
-    const {darkMode} = useDesignSystem();
+    const darkMode = document.documentElement.classList.contains('dark');
 
     const canNavigateBack = history.length > 0;
     const navigateBack = () => {
