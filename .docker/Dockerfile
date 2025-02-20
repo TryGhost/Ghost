@@ -42,12 +42,6 @@ WORKDIR $WORKDIR
 RUN mkdir -p /root/.ssh && \
     ssh-keyscan github.com >> /root/.ssh/known_hosts
 
-# Enable the NX Daemon
-ENV NX_DAEMON=true
-
-# Disable NX rejection of unknown local cache
-ENV NX_REJECT_UNKNOWN_LOCAL_CACHE=false
-
 # Copy the package.json and yarn.lock files
 COPY package.json yarn.lock ./
 
@@ -153,6 +147,8 @@ COPY ghost/webmentions/package.json ghost/webmentions/package.json
 
 ## Install dependencies
 RUN yarn install --frozen-lockfile --prefer-offline
+
+RUN yarn global add nx@19.8.14
 
 ## Install playwright w/ dependencies
 RUN npx -y playwright install --with-deps
