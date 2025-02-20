@@ -347,6 +347,18 @@ describe('StaffService', function () {
                         isSet: () => {
                             return false;
                         }
+                    },
+                    memberAttributionService: {
+                        getSubscriptionCreatedAttribution: sinon.stub().resolves(),
+                        getMemberCreatedAttribution: sinon.stub().resolves(),
+                        fetchResource: sinon.stub().callsFake((attribution) => {
+                            return Promise.resolve({
+                                title: attribution.title,
+                                url: attribution.url,
+                                type: attribution.type,
+                                referrerSource: attribution.referrerSource
+                            });
+                        })
                     }
                 });
             });
@@ -357,6 +369,30 @@ describe('StaffService', function () {
                         memberId: 'member-1'
                     }
                 });
+
+                service.memberAttributionService.getMemberCreatedAttribution.called.should.be.true();
+
+                mailStub.calledWith(
+                    sinon.match({subject: '🥳 Free member signup: Jamie'})
+                ).should.be.true();
+            });
+            it('handles free member created event with provided attribution', async function () {
+                await service.handleEvent(MemberCreatedEvent, {
+                    data: {
+                        source: 'member',
+                        memberId: 'member-1',
+                        attribution: {
+                            title: 'Welcome Post',
+                            url: 'https://example.com/welcome',
+                            type: 'post',
+                            referrerSource: 'Direct'
+                        }
+                    }
+                });
+
+                // provided attribution should be used instead of fetching it
+                service.memberAttributionService.getMemberCreatedAttribution.called.should.be.false();
+                service.memberAttributionService.fetchResource.called.should.be.true();
 
                 mailStub.calledWith(
                     sinon.match({subject: '🥳 Free member signup: Jamie'})
@@ -374,8 +410,44 @@ describe('StaffService', function () {
                     }
                 });
 
+                service.memberAttributionService.getSubscriptionCreatedAttribution.called.should.be.true();
+
                 mailStub.calledWith(
                     sinon.match({subject: '💸 Paid subscription started: Jamie'})
+                ).should.be.true();
+            });
+
+            it('handles paid member created event with provided attribution', async function () {
+                await service.handleEvent(SubscriptionActivatedEvent, {
+                    data: {
+                        source: 'member',
+                        memberId: 'member-1',
+                        subscriptionId: 'sub-1',
+                        offerId: 'offer-1',
+                        tierId: 'tier-1',
+                        attribution: {
+                            title: 'Welcome Post',
+                            url: 'https://example.com/welcome',
+                            type: 'post',
+                            referrerSource: 'Direct'
+                        }
+                    }
+                });
+
+                // provided attribution should be used instead of fetching it
+                service.memberAttributionService.getSubscriptionCreatedAttribution.called.should.be.false();
+                service.memberAttributionService.fetchResource.called.should.be.true();
+
+                mailStub.calledWith(
+                    sinon.match({subject: '💸 Paid subscription started: Jamie'})
+                ).should.be.true();
+
+                mailStub.calledWith(
+                    sinon.match.has('html', sinon.match('Welcome Post'))
+                ).should.be.true();
+
+                mailStub.calledWith(
+                    sinon.match.has('html', sinon.match('Direct'))
                 ).should.be.true();
             });
 
@@ -523,7 +595,6 @@ describe('StaffService', function () {
                 tier = {
                     name: 'Test Tier'
                 };
-
                 subscription = {
                     amount: 5000,
                     currency: 'USD',

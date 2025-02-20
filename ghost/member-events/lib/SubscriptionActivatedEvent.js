@@ -7,6 +7,7 @@
  * @prop {string} batchId
  * @prop {string} tierId
  * @prop {string} subscriptionId
+ * @prop {string} attribution
  * @prop {string} offerId
  */
 

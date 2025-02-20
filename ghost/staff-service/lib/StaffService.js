@@ -96,10 +96,14 @@ class StaffService {
 
         if (type === MemberCreatedEvent && member.status === 'free') {
             let attribution;
-            try {
-                attribution = await this.memberAttributionService.getMemberCreatedAttribution(event.data.memberId);
-            } catch (e) {
-                this.logging.warn(`Failed to get attribution for member - ${event?.data?.memberId}`);
+            if (event.data?.attribution) {
+                attribution = await this.memberAttributionService.fetchResource(event.data.attribution);
+            } else {
+                try {
+                    attribution = await this.memberAttributionService.getMemberCreatedAttribution(event.data.memberId);
+                } catch (e) {
+                    this.logging.warn(`Failed to get attribution for member - ${event?.data?.memberId}`);
+                }
             }
             await this.emails.notifyFreeMemberSignup({
                 member,
@@ -107,10 +111,14 @@ class StaffService {
             });
         } else if (type === SubscriptionActivatedEvent) {
             let attribution;
-            try {
-                attribution = await this.memberAttributionService.getSubscriptionCreatedAttribution(event.data.subscriptionId);
-            } catch (e) {
-                this.logging.warn(`Failed to get attribution for member - ${event?.data?.memberId}`);
+            if (event.data?.attribution) {
+                attribution = await this.memberAttributionService.fetchResource(event.data.attribution);
+            } else {
+                try {
+                    attribution = await this.memberAttributionService.getSubscriptionCreatedAttribution(event.data.subscriptionId);
+                } catch (e) {
+                    this.logging.warn(`Failed to get attribution for member - ${event?.data?.memberId}`);
+                }
             }
             await this.emails.notifyPaidSubscriptionStarted({
                 member,
