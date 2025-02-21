@@ -38,6 +38,5 @@
             "dependsOn": ["^build:ts"],
             "cache": true
         }
-    },
-    "cacheDirectory": ".nxcache"
+    }
 }
