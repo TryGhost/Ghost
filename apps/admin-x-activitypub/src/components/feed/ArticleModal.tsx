@@ -68,11 +68,12 @@ const ArticleBody: React.FC<{
     const iframeRef = useRef<HTMLIFrameElement>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [iframeHeight, setIframeHeight] = useState('0px');
+    const darkMode = document.documentElement.classList.contains('dark');
 
     const cssContent = articleBodyStyles(siteData?.url.replace(/\/$/, ''));
 
     const htmlContent = `
-        <html>
+        <html class="has-${!darkMode ? 'dark' : 'light'}-text">
         <head>
             ${cssContent}
             <style>
@@ -304,7 +305,7 @@ const ArticleBody: React.FC<{
 };
 
 const FeedItemDivider: React.FC = () => (
-    <div className="h-px bg-gray-200"></div>
+    <div className="h-px bg-gray-200 dark:bg-gray-950"></div>
 );
 
 const FONT_SIZES = ['1.5rem', '1.6rem', '1.7rem', '1.8rem', '2rem'] as const;
@@ -378,6 +379,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
 
     const modalSize = width === 'narrow' ? MODAL_SIZE_SM : MODAL_SIZE_LG;
     const modal = useModal();
+    const darkMode = document.documentElement.classList.contains('dark');
 
     const canNavigateBack = history.length > 0;
     const navigateBack = () => {
@@ -694,7 +696,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
             align='right'
             allowBackgroundInteraction={false}
             animate={true}
-            backDrop={false}
+            backDrop={darkMode && width === 'narrow'}
             backDropClick={true}
             footer={<></>}
             height={'full'}
@@ -704,7 +706,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
             width={modalSize === MODAL_SIZE_LG ? 'toSidebar' : modalSize}
         >
             <div className='flex h-full flex-col'>
-                <div className='sticky top-0 z-50 flex h-[97px] items-center justify-center border-b border-gray-200 bg-white'>
+                <div className='sticky top-0 z-50 flex h-[102px] items-center justify-center border-b border-gray-200 bg-white dark:border-gray-950 dark:bg-black'>
                     <div
                         className={`w-full ${modalSize === MODAL_SIZE_LG ? 'grid px-8' : 'flex justify-between gap-2 px-8'}`}
                         style={modalSize === MODAL_SIZE_LG ? {
@@ -730,13 +732,13 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                             </div>
                         </div>)}
                         <div className='col-[3/4] flex items-center justify-end gap-2'>
-                            {modalSize === MODAL_SIZE_LG && object.type === 'Article' && <Popover position='end' trigger={ <Button className='transition-color flex h-10 w-10 items-center justify-center rounded-full bg-white hover:bg-gray-100' icon='typography' size='sm' unstyled onClick={() => {}}/>
+                            {modalSize === MODAL_SIZE_LG && object.type === 'Article' && <Popover position='end' trigger={ <Button className='transition-color flex h-10 w-10 items-center justify-center rounded-full bg-white hover:bg-gray-100 dark:bg-black dark:hover:bg-gray-950' icon='typography' size='sm' unstyled onClick={() => {}}/>
                             }>
                                 <div className='flex min-w-[300px] flex-col p-5'>
                                     <Select
                                         className='mb-3'
                                         components={{Option, SingleValue}}
-                                        controlClasses={{control: '!min-h-[40px] !py-0 !pl-1', option: '!pl-1 !py-[4px]'}}
+                                        controlClasses={{control: '!min-h-[40px] !py-0 !pl-1 dark:!bg-grey-925', option: '!pl-1 !py-[4px]'}}
                                         options={[
                                             {
                                                 value: FONT_SANS,
@@ -758,10 +760,10 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                         })}
                                     />
                                     <div className='mb-2 flex items-center justify-between'>
-                                        <span className='text-sm font-medium text-gray-900'>Font size</span>
+                                        <span className='text-sm font-medium text-gray-900 dark:text-white'>Font size</span>
                                         <div className='flex items-center'>
                                             <Button
-                                                className={`transition-color flex h-8 w-8 items-center justify-center rounded-full bg-white ${currentFontSizeIndex === 0 ? 'opacity-20 hover:bg-white' : 'hover:bg-gray-100'}`}
+                                                className={`transition-color flex h-8 w-8 items-center justify-center rounded-full bg-white dark:bg-grey-900 dark:hover:bg-grey-925 ${currentFontSizeIndex === 0 ? 'opacity-20 hover:bg-white' : 'hover:bg-gray-100'}`}
                                                 disabled={currentFontSizeIndex === 0}
                                                 hideLabel={true}
                                                 icon='substract'
@@ -771,7 +773,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                                 onClick={decreaseFontSize}
                                             />
                                             <Button
-                                                className={`transition-color flex h-8 w-8 items-center justify-center rounded-full bg-white hover:bg-gray-100 ${currentFontSizeIndex === FONT_SIZES.length - 1 ? 'opacity-20 hover:bg-white' : 'hover:bg-gray-100'}`}
+                                                className={`transition-color flex h-8 w-8 items-center justify-center rounded-full bg-white hover:bg-gray-100 dark:bg-grey-900 dark:hover:bg-grey-925 ${currentFontSizeIndex === FONT_SIZES.length - 1 ? 'opacity-20 hover:bg-white' : 'hover:bg-gray-100'}`}
                                                 disabled={currentFontSizeIndex === FONT_SIZES.length - 1}
                                                 hideLabel={true}
                                                 icon='add'
@@ -783,10 +785,10 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                         </div>
                                     </div>
                                     <div className='mb-5 flex items-center justify-between'>
-                                        <span className='text-sm font-medium text-gray-900'>Line spacing</span>
+                                        <span className='text-sm font-medium text-gray-900 dark:text-white'>Line spacing</span>
                                         <div className='flex items-center'>
                                             <Button
-                                                className={`transition-color flex h-8 w-8 items-center justify-center rounded-full bg-white hover:bg-gray-100 ${currentLineHeightIndex === 0 ? 'opacity-20 hover:bg-white' : 'hover:bg-gray-100'}`}
+                                                className={`transition-color flex h-8 w-8 items-center justify-center rounded-full bg-white hover:bg-gray-100 dark:bg-grey-900 dark:hover:bg-grey-925 ${currentLineHeightIndex === 0 ? 'opacity-20 hover:bg-white' : 'hover:bg-gray-100'}`}
                                                 disabled={currentLineHeightIndex === 0}
                                                 hideLabel={true}
                                                 icon='substract'
@@ -796,7 +798,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                                 onClick={decreaseLineHeight}
                                             />
                                             <Button
-                                                className={`transition-color flex h-8 w-8 items-center justify-center rounded-full bg-white hover:bg-gray-100 ${currentLineHeightIndex === LINE_HEIGHTS.length - 1 ? 'opacity-20 hover:bg-white' : 'hover:bg-gray-100'}`}
+                                                className={`transition-color flex h-8 w-8 items-center justify-center rounded-full bg-white hover:bg-gray-100 dark:bg-grey-900 dark:hover:bg-grey-925 ${currentLineHeightIndex === LINE_HEIGHTS.length - 1 ? 'opacity-20 hover:bg-white' : 'hover:bg-gray-100'}`}
                                                 disabled={currentLineHeightIndex === LINE_HEIGHTS.length - 1}
                                                 hideLabel={true}
                                                 icon='add'
@@ -808,7 +810,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                         </div>
                                     </div>
                                     <Button
-                                        className="text-sm text-gray-600 hover:text-gray-700"
+                                        className="text-sm text-gray-600 hover:text-gray-700 dark:text-gray-500 dark:hover:text-gray-600"
                                         label="Reset to default"
                                         link={true}
                                         onClick={() => {
@@ -822,7 +824,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                     />
                                 </div>
                             </Popover>}
-                            <Button className='transition-color flex h-10 w-10 items-center justify-center rounded-full bg-white hover:bg-gray-100' icon='close' size='sm' unstyled onClick={() => modal.remove()}/>
+                            <Button className='transition-color flex h-10 w-10 items-center justify-center rounded-full bg-white hover:bg-gray-100 dark:bg-black dark:hover:bg-gray-950' icon='close' size='sm' unstyled onClick={() => modal.remove()}/>
                         </div>
                     </div>
                 </div>
@@ -880,7 +882,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                 />
                             )}
                             {object.type === 'Article' && (
-                                <div className='border-b border-gray-200 pb-8' id='object-content'>
+                                <div className='border-b border-gray-200 pb-8 dark:border-gray-950' id='object-content'>
                                     <ArticleBody
                                         excerpt={object?.preview?.content ?? ''}
                                         fontFamily={fontFamily}

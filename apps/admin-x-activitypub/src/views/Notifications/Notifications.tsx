@@ -7,7 +7,6 @@ import {Button, LoadingIndicator, NoValueLabel} from '@tryghost/admin-x-design-s
 
 import APAvatar from '@components/global/APAvatar';
 import ArticleModal from '@components/feed/ArticleModal';
-import MainNavigation from '@components/navigation/MainNavigation';
 import NotificationItem from '@components/activities/NotificationItem';
 import Separator from '@components/global/Separator';
 
@@ -303,7 +302,6 @@ const Notifications: React.FC<NotificationsProps> = () => {
 
     return (
         <>
-            <MainNavigation page='notifications'/>
             <div className='z-0 flex w-full flex-col items-center'>
                 {
                     isLoading === false && groupedActivities.length === 0 && (
@@ -317,11 +315,11 @@ const Notifications: React.FC<NotificationsProps> = () => {
                 {
                     (groupedActivities.length > 0) && (
                         <>
-                            <div className='my-8 flex w-full max-w-[560px] flex-col'>
+                            <div className='my-8 flex w-full max-w-[620px] flex-col'>
                                 {groupedActivities.map((group, index) => (
                                     <React.Fragment key={group.id || `${group.type}_${index}`}>
                                         <NotificationItem
-                                            className='hover:bg-gray-100'
+                                            className='hover:bg-gray-75 dark:hover:bg-gray-950'
                                             onClick={() => handleActivityClick(group, index)}
                                         >
                                             {!isLoading ? <NotificationItem.Icon type={getActivityBadge(group)} /> : <Skeleton className='rounded-full' containerClassName='flex h-10 w-10' />}
@@ -346,7 +344,7 @@ const Notifications: React.FC<NotificationsProps> = () => {
 
                                                         {group.actors.length > 1 && (
                                                             <Button
-                                                                className={`transition-color flex h-9 items-center rounded-full bg-transparent text-gray-700 hover:opacity-60 ${openStates[group.id || `${group.type}_${index}`] ? 'w-full justify-start pl-1' : '-ml-2 w-9 justify-center'}`}
+                                                                className={`transition-color flex h-9 items-center rounded-full bg-transparent text-gray-700 hover:opacity-60 dark:text-gray-600 ${openStates[group.id || `${group.type}_${index}`] ? 'w-full justify-start pl-1' : '-ml-2 w-9 justify-center'}`}
                                                                 hideLabel={!openStates[group.id || `${group.type}_${index}`]}
                                                                 icon='chevron-down'
                                                                 iconColorClass={`w-[12px] h-[12px] ${openStates[group.id || `${group.type}_${index}`] ? 'rotate-180' : ''}`}
@@ -368,8 +366,8 @@ const Notifications: React.FC<NotificationsProps> = () => {
                                                                         onClick={e => handleProfileClick(actor, e)}
                                                                     >
                                                                         <APAvatar author={actor} size='xs' />
-                                                                        <span className='ml-2 text-base font-semibold'>{actor.name}</span>
-                                                                        <span className='ml-1 text-base text-gray-700'>{getUsername(actor)}</span>
+                                                                        <span className='ml-2 text-base font-semibold dark:text-white'>{actor.name}</span>
+                                                                        <span className='ml-1 text-base text-gray-700 dark:text-gray-600'>{getUsername(actor)}</span>
                                                                     </div>
                                                                 ))}
                                                             </div>
@@ -378,7 +376,7 @@ const Notifications: React.FC<NotificationsProps> = () => {
                                                 </div>
                                             </NotificationItem.Avatars>
                                             <NotificationItem.Content>
-                                                <div className='line-clamp-2 text-pretty text-black'>
+                                                <div className='line-clamp-2 text-pretty text-black dark:text-white'>
                                                     {!isLoading ?
                                                         <NotificationGroupDescription group={group} /> :
                                                         <>
@@ -394,7 +392,7 @@ const Notifications: React.FC<NotificationsProps> = () => {
                                                 ) && (
                                                     <div
                                                         dangerouslySetInnerHTML={{__html: stripHtml(group.object?.content || '')}}
-                                                        className='ap-note-content mt-1 line-clamp-2 text-pretty text-gray-700'
+                                                        className='ap-note-content mt-1 line-clamp-2 text-pretty text-gray-700 dark:text-gray-600'
                                                     />
                                                 )}
                                             </NotificationItem.Content>

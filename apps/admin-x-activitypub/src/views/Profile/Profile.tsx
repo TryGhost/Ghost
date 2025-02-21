@@ -20,7 +20,6 @@ import APAvatar from '@components/global/APAvatar';
 import ActivityItem from '@components/activities/ActivityItem';
 import FeedItem from '@components/feed/FeedItem';
 import FollowButton from '@components/global/FollowButton';
-import MainNavigation from '@components/navigation/MainNavigation';
 import Separator from '@components/global/Separator';
 import ViewProfileModal from '@components/modals/ViewProfileModal';
 
@@ -374,22 +373,23 @@ const Profile: React.FC<ProfileProps> = ({}) => {
     }, [isExpanded]);
 
     return (
-        <>
-            <MainNavigation page='profile' />
-            <div className='z-0 mx-auto mt-8 flex w-full max-w-[580px] flex-col items-center pb-16'>
+        <div className='relative isolate'>
+            <div className='absolute -right-8 left-0 top-0 z-0 h-[15vw] bg-[linear-gradient(265deg,#FAFAFB_0%,#F4F5F6_100%)] dark:bg-[linear-gradient(265deg,#23272C_0%,#202327_100%)]'>
+                {account?.bannerImageUrl &&
+                    <div className='h-full w-full'>
+                        <img
+                            alt={account?.name}
+                            className='h-full w-full object-cover'
+                            src={account?.bannerImageUrl}
+                        />
+                    </div>
+                }
+            </div>
+            <div className='relative z-10 mx-auto flex w-full max-w-[620px] flex-col items-center pb-16 pt-[calc(15vw-52px)]'>
                 <div className='mx-auto w-full'>
-                    {account?.bannerImageUrl && (
-                        <div className='h-[200px] w-full overflow-hidden rounded-lg bg-gradient-to-tr from-gray-200 to-gray-100'>
-                            <img
-                                alt={account?.name}
-                                className='h-full w-full object-cover'
-                                src={account?.bannerImageUrl}
-                            />
-                        </div>
-                    )}
-                    <div className={`${account?.bannerImageUrl && '-mt-12'} px-4`}>
+                    <div>
                         <div className='flex items-end justify-between'>
-                            <div className='rounded-xl outline outline-4 outline-white'>
+                            <div className='-ml-2 rounded-full bg-white p-1 dark:bg-black dark:outline-black'>
                                 <APAvatar
                                     author={account && {
                                         icon: {
@@ -403,7 +403,7 @@ const Profile: React.FC<ProfileProps> = ({}) => {
                             </div>
                         </div>
                         <Heading className='mt-4' level={3}>{!isLoadingAccount ? account?.name : <Skeleton className='w-32' />}</Heading>
-                        <span className='mt-1 text-[1.5rem] text-gray-800'>
+                        <span className='mt-1 text-[1.5rem] text-gray-700 dark:text-gray-600'>
                             <span>{!isLoadingAccount ? account?.handle : <Skeleton className='w-full max-w-56' />}</span>
                         </span>
                         {(account?.bio || customFields.length > 0 || isLoadingAccount) && (
@@ -443,7 +443,7 @@ const Profile: React.FC<ProfileProps> = ({}) => {
                     </div>
                 </div>
             </div>
-        </>
+        </div>
     );
 };
 
