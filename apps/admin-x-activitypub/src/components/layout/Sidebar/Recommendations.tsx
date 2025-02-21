@@ -44,7 +44,7 @@ const Recommendations: React.FC = () => {
                     );
                 })}
             </ul>
-            <Link className='mt-5 p-0 py-5 text-md font-semibold text-purple-500' to="/search">Find more &rarr;</Link>
+            <Link className='mt-2 inline-block p-0 py-2 text-md font-semibold text-purple-500' to="/search">Find more &rarr;</Link>
         </div>
     );
 };
