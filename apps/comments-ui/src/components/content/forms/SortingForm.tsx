@@ -49,6 +49,7 @@ export const SortingForm: React.FC = () => {
     return (
         <div ref={dropdownRef} className="relative z-20" data-testid="comments-sorting-form" onClick={stopPropagation}>
             <button
+                aria-label="Sort comments by"
                 className="flex w-full items-center justify-between gap-2 text-sm font-medium text-neutral-900 focus-visible:outline-none dark:text-neutral-100"
                 type="button"
                 onClick={() => setIsOpen(!isOpen)}
