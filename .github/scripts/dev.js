@@ -307,7 +307,7 @@ async function handleStripe() {
     debug('handling stripe');
     await handleStripe();
     debug('stripe handled');
-    
+
     if (!commands.length) {
         debug('no commands provided');
         console.log(`No commands provided`);
