@@ -25399,10 +25399,10 @@ pako@~1.0.5:
   resolved "https://registry.yarnpkg.com/pako/-/pako-1.0.11.tgz#6c9599d340d54dfd3946380252a35705a6b992bf"
   integrity sha512-4hLB8Py4zZce5s4yd9XzopqwVv/yGNhV1Bl8NTmCq1763HeK2+EwVTv+leGeL13Dnh2wfbqowVPXCIO0z4taYw==
 
-papaparse@5.3.2:
-  version "5.3.2"
-  resolved "https://registry.yarnpkg.com/papaparse/-/papaparse-5.3.2.tgz#d1abed498a0ee299f103130a6109720404fbd467"
-  integrity sha512-6dNZu0Ki+gyV0eBsFKJhYr+MdQYAzFUGlBMNj3GNrmHxmz1lfRa24CjFObPXtjcetlOv5Ad299MhIK0znp3afw==
+papaparse@5.5.0:
+  version "5.5.0"
+  resolved "https://registry.yarnpkg.com/papaparse/-/papaparse-5.5.0.tgz#8bfa764273a810c658ce3c8bd4d286836e8e7d8f"
+  integrity sha512-rlVJyYL5QMvue8f/RNGpchWAiTc42GzJD/dqD/YgxJxmQ7TWQh5/7aN3p/aqxkYTRl/BkODi6Qsau1r2bt42JQ==
 
 parallel-transform@^1.1.0:
   version "1.2.0"

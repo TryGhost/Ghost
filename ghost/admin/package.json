@@ -136,7 +136,7 @@
     "miragejs": "0.1.48",
     "moment-timezone": "0.5.45",
     "normalize.css": "3.0.3",
-    "papaparse": "5.3.2",
+    "papaparse": "5.5.0",
     "postcss-color-mod-function": "3.0.3",
     "postcss-custom-media": "7.0.8",
     "postcss-custom-properties": "10.0.0",

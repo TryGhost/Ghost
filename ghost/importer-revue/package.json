@@ -25,7 +25,7 @@
     "@tryghost/kg-default-cards": "10.1.0",
     "@tryghost/string": "0.2.12",
     "lodash": "4.17.21",
-    "papaparse": "5.3.2",
+    "papaparse": "5.5.0",
     "simple-dom": "1.4.0"
   }
 }
