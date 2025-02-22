@@ -3,12 +3,39 @@ const _ = require('lodash');
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 
+/**
+ * Handles `checkout.session.completed` webhook events
+ * 
+ * The `checkout.session.completed` event is triggered when a customer completes a checkout session.
+ * 
+ * It is triggered for the following scenarios:
+ * - Subscription
+ * - Donation
+ * - Setup intent
+ * 
+ * This service delegates the event to the appropriate handler based on the session mode and metadata.
+ * 
+ * The `session` payload can be found here: https://docs.stripe.com/api/checkout/sessions/object
+ */
 module.exports = class CheckoutSessionEventService {
+    /**
+     * @param {object} deps
+     * @param {import('../StripeAPI')} deps.api
+     * @param {object} deps.memberRepository
+     * @param {object} deps.donationRepository
+     * @param {object} deps.staffServiceEmails
+     * @param {function} deps.sendSignupEmail
+     */
     constructor(deps) {
         this.api = deps.api;
         this.deps = deps;
     }
 
+    /**
+     * Handles a `checkout.session.completed` event
+     * Delegates to the appropriate handler based on the session mode and metadata
+     * @param {import('stripe').Stripe.Checkout.Session} session
+     */
     async handleEvent(session) {
         if (session.mode === 'setup') {
             await this.handleSetupEvent(session);
@@ -23,6 +50,10 @@ module.exports = class CheckoutSessionEventService {
         }
     }
 
+    /**
+     * Handles a `checkout.session.completed` event for a donation
+     * @param {import('stripe').Stripe.Checkout.Session} session
+     */
     async handleDonationEvent(session) {
         const donationField = session.custom_fields?.find(obj => obj?.key === 'donation_message');
         const donationMessage = donationField?.text?.value ? donationField.text.value : null;
@@ -39,12 +70,12 @@ module.exports = class CheckoutSessionEventService {
             amount,
             currency,
             donationMessage,
-            attributionId: session.metadata.attribution_id ?? null,
-            attributionUrl: session.metadata.attribution_url ?? null,
-            attributionType: session.metadata.attribution_type ?? null,
-            referrerSource: session.metadata.referrer_source ?? null,
-            referrerMedium: session.metadata.referrer_medium ?? null,
-            referrerUrl: session.metadata.referrer_url ?? null
+            attributionId: session.metadata?.attribution_id ?? null,
+            attributionUrl: session.metadata?.attribution_url ?? null,
+            attributionType: session.metadata?.attribution_type ?? null,
+            referrerSource: session.metadata?.referrer_source ?? null,
+            referrerMedium: session.metadata?.referrer_medium ?? null,
+            referrerUrl: session.metadata?.referrer_url ?? null
         });
 
         const donationRepository = this.deps.donationRepository;
@@ -54,6 +85,13 @@ module.exports = class CheckoutSessionEventService {
         await staffServiceEmails.notifyDonationReceived({donationPaymentEvent: data});
     }
 
+    /**
+     * Handles a `checkout.session.completed` event for a setup intent
+     * 
+     * This is used when a customer adds or changes their payment method outside 
+     * of the normal subscription flow.
+     * @param {import('stripe').Stripe.Checkout.Session} session
+     */
     async handleSetupEvent(session) {
         const setupIntent = await this.api.getSetupIntent(session.setup_intent);
 
@@ -119,6 +157,10 @@ module.exports = class CheckoutSessionEventService {
         }
     }
 
+    /**
+     * Handles a `checkout.session.completed` event for a subscription
+     * @param {import('stripe').Stripe.Checkout.Session} session
+     */
     async handleSubscriptionEvent(session) {
         const customer = await this.api.getCustomer(session.customer, {
             expand: ['subscriptions.data.default_payment_method']
@@ -136,12 +178,12 @@ module.exports = class CheckoutSessionEventService {
             const metadataName = _.get(session, 'metadata.name');
             const metadataNewsletters = _.get(session, 'metadata.newsletters');
             const attribution = {
-                id: session.metadata.attribution_id ?? null,
-                url: session.metadata.attribution_url ?? null,
-                type: session.metadata.attribution_type ?? null,
-                referrerSource: session.metadata.referrer_source ?? null,
-                referrerMedium: session.metadata.referrer_medium ?? null,
-                referrerUrl: session.metadata.referrer_url ?? null
+                id: session.metadata?.attribution_id ?? null,
+                url: session.metadata?.attribution_url ?? null,
+                type: session.metadata?.attribution_type ?? null,
+                referrerSource: session.metadata?.referrer_source ?? null,
+                referrerMedium: session.metadata?.referrer_medium ?? null,
+                referrerUrl: session.metadata?.referrer_url ?? null
             };
 
             const payerName = _.get(customer, 'subscriptions.data[0].default_payment_method.billing_details.name');
@@ -169,9 +211,9 @@ module.exports = class CheckoutSessionEventService {
                 id: session.metadata?.attribution_id ?? null,
                 url: session.metadata?.attribution_url ?? null,
                 type: session.metadata?.attribution_type ?? null,
-                referrerSource: session.metadata.referrer_source ?? null,
-                referrerMedium: session.metadata.referrer_medium ?? null,
-                referrerUrl: session.metadata.referrer_url ?? null
+                referrerSource: session.metadata?.referrer_source ?? null,
+                referrerMedium: session.metadata?.referrer_medium ?? null,
+                referrerUrl: session.metadata?.referrer_url ?? null
             };
 
             if (payerName && !member.get('name')) {

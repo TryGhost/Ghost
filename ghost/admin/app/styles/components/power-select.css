@@ -2,7 +2,7 @@
     padding: 0 12px;
     border: var(--input-border);
     border-radius: var(--border-radius);
-    background: transparent;
+    background: var(--main-bg-color);
 }
 
 .ember-power-select-trigger.gh-btn {
@@ -245,7 +245,7 @@
     background: #fff;
     padding: 4px;
     border: var(--input-border);
-    border-radius: 3px;
+    border-radius: var(--border-radius);
     outline: none;
 }
 
@@ -308,13 +308,26 @@
     margin: 2px;
 }
 
+.ember-power-select-trigger {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-height: 33px;
+}
+
 .ember-power-select-status-icon {
-    top: -4px;
-    right: 13px;
+    position: absolute;
+    right: 12px;
+    top: 12px;
     border: solid var(--midlightgrey);
     border-width: 0 1px 1px 0;
     padding: 3px;
     transform: rotate(45deg);
+    pointer-events: none;
+}
+
+.ember-power-select-trigger:not(.ember-power-select-multiple-trigger) .ember-power-select-status-icon {
+    top: calc(50% - 4px);
 }
 
 .ember-basic-dropdown-trigger[aria-expanded="true"] .ember-power-select-status-icon {
@@ -522,4 +535,28 @@
 .gh-btn-create-snippet svg {
     width: 1.2rem;
     height: 1.2rem;
+}
+
+.ember-power-select-multiple-trigger {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    padding: 2px 28px 2px 2px !important;
+    min-height: 33px;
+}
+
+.ember-power-select-multiple-options {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.ember-power-select-trigger-multiple-input {
+    width: auto !important;
+    padding: 0;
+    margin: 2px;
+    border: none;
+    font-size: 1.4rem;
+    line-height: 1.35em;
+    background: none;
 }

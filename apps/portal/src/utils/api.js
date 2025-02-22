@@ -254,11 +254,15 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             if (res.ok) {
                 return res.text();
             } else {
+                const humanError = await HumanReadableError.fromApiResponse(res);
+                if (humanError) {
+                    throw humanError;
+                }
                 throw new Error('Failed to start a members session');
             }
         },
 
-        async sendMagicLink({email, emailType, labels, name, oldEmail, newsletters, redirect, integrityToken, phonenumber, customUrlHistory, autoRedirect = true}) {
+        async sendMagicLink({email, emailType, labels, name, oldEmail, newsletters, redirect, integrityToken, phonenumber, customUrlHistory, token, autoRedirect = true}) {
             const url = endpointFor({type: 'members', resource: 'send-magic-link'});
             const body = {
                 name,
@@ -270,7 +274,9 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
                 requestSrc: 'portal',
                 redirect,
                 integrityToken,
-                honeypot: phonenumber, // we don't actually use a phone #, this is from a hidden field to prevent bot activity
+                // we don't actually use a phone #, this is from a hidden field to prevent bot activity
+                honeypot: phonenumber,
+                token,
                 autoRedirect
             };
             const urlHistory = customUrlHistory ?? getUrlHistory();
@@ -290,7 +296,6 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             if (res.ok) {
                 return 'Success';
             } else {
-                // Try to read body error message that is human readable and should be shown to the user
                 const humanError = await HumanReadableError.fromApiResponse(res);
                 if (humanError) {
                     throw humanError;

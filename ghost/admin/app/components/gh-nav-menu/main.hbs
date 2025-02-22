@@ -28,7 +28,7 @@
             <ul class="gh-nav-list gh-nav-main">
                 {{#if (feature "ActivityPub")}}
                 <li>
-                    <LinkTo @route="activitypub-x" @current-when="activitypub-x">{{svg-jar "star"}}ActivityPub</LinkTo>
+                    <LinkTo @route="activitypub-x" @current-when="activitypub-x">{{svg-jar "orbit"}}ActivityPub</LinkTo>
                 </li>
                 {{/if}}
                 {{#if (gh-user-can-admin this.session.user)}}

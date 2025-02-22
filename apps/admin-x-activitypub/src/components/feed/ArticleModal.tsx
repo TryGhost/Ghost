@@ -6,18 +6,18 @@ import articleBodyStyles from '../articleBodyStyles';
 import getUsername from '../../utils/get-username';
 import {OptionProps, SingleValueProps, components} from 'react-select';
 
-import {type Activity} from '../activities/ActivityItem';
-import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
+import {Activity, ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, Icon, LoadingIndicator, Modal, Popover, Select, SelectOption} from '@tryghost/admin-x-design-system';
 import {renderTimestamp} from '../../utils/render-timestamp';
 import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
 import {useModal} from '@ebay/nice-modal-react';
-import {useThreadForUser} from '../../hooks/useActivityPubQueries';
+import {useThreadForUser} from '@hooks/use-activity-pub-queries';
 
 import APAvatar from '../global/APAvatar';
 import APReplyBox from '../global/APReplyBox';
 import TableOfContents, {TOCItem} from './TableOfContents';
 import getReadingTime from '../../utils/get-reading-time';
+import {useDebounce} from 'use-debounce';
 
 interface ArticleModalProps {
     activityId: string;
@@ -38,6 +38,8 @@ interface IframeWindow extends Window {
     resizeIframe?: () => void;
 }
 
+const FONT_SANS = 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif';
+
 const ArticleBody: React.FC<{
     heading: string;
     image: string|undefined;
@@ -48,6 +50,7 @@ const ArticleBody: React.FC<{
     fontFamily: SelectOption;
     onHeadingsExtracted?: (headings: TOCItem[]) => void;
     onIframeLoad?: (iframe: HTMLIFrameElement) => void;
+    onLoadingChange?: (isLoading: boolean) => void;
 }> = ({
     heading,
     image,
@@ -57,25 +60,27 @@ const ArticleBody: React.FC<{
     lineHeight,
     fontFamily,
     onHeadingsExtracted,
-    onIframeLoad
+    onIframeLoad,
+    onLoadingChange
 }) => {
     const site = useBrowseSite();
     const siteData = site.data?.site;
     const iframeRef = useRef<HTMLIFrameElement>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [iframeHeight, setIframeHeight] = useState('0px');
+    const darkMode = document.documentElement.classList.contains('dark');
 
     const cssContent = articleBodyStyles(siteData?.url.replace(/\/$/, ''));
 
     const htmlContent = `
-        <html>
+        <html class="has-${!darkMode ? 'dark' : 'light'}-text">
         <head>
             ${cssContent}
             <style>
                 :root {
                     --font-size: ${fontSize};
                     --line-height: ${lineHeight};
-                    --font-family: ${fontFamily.value};
+                    --font-family: ${(fontFamily.value === 'sans-serif' ? FONT_SANS : fontFamily.value)};
                     --letter-spacing: ${fontFamily.label === 'Clean sans-serif' ? '-0.013em' : '0'};
                     --content-spacing-factor: ${SPACING_FACTORS[FONT_SIZES.indexOf(fontSize)]};
                 }
@@ -213,7 +218,6 @@ const ArticleBody: React.FC<{
         if (iframeWindow && typeof iframeWindow.resizeIframe === 'function') {
             iframeWindow.resizeIframe();
         } else {
-            // Fallback: trigger a resize event
             const resizeEvent = new Event('resize');
             iframeDocument.dispatchEvent(resizeEvent);
         }
@@ -269,6 +273,11 @@ const ArticleBody: React.FC<{
         return () => iframe.removeEventListener('load', handleLoad);
     }, [onHeadingsExtracted, onIframeLoad]);
 
+    // Update parent when loading state changes
+    useEffect(() => {
+        onLoadingChange?.(isLoading);
+    }, [isLoading, onLoadingChange]);
+
     return (
         <div className='w-full pb-6'>
             <div className='relative'>
@@ -296,7 +305,7 @@ const ArticleBody: React.FC<{
 };
 
 const FeedItemDivider: React.FC = () => (
-    <div className="h-px bg-grey-200"></div>
+    <div className="h-px bg-gray-200 dark:bg-gray-950"></div>
 );
 
 const FONT_SIZES = ['1.5rem', '1.6rem', '1.7rem', '1.8rem', '2rem'] as const;
@@ -334,7 +343,7 @@ const Option: React.FC<OptionProps<FontSelectOption, false>> = ({children, ...pr
     <components.Option {...props}>
         <div className={props.isSelected ? 'relative flex w-full items-center justify-between gap-2' : 'group'} data-testid="select-option" data-value={props.data.value}>
             <div className='flex items-center gap-2.5'>
-                <div className='flex h-8 w-8 items-center justify-center rounded-md bg-grey-150 text-[1.5rem] font-semibold group-hover:bg-grey-250 dark:bg-grey-900 dark:group-hover:bg-grey-800'>Aa</div>
+                <div className='flex h-8 w-8 items-center justify-center rounded-md bg-gray-150 text-[1.5rem] font-semibold group-hover:bg-gray-250 dark:bg-gray-900 dark:group-hover:bg-gray-800'>Aa</div>
                 <span className={`text-md ${props.data.className}`}>{children}</span>
             </div>
             {props.isSelected && <span><Icon name='check' size='xs' /></span>}
@@ -364,12 +373,13 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
 
     const {threadQuery, addToThread} = useThreadForUser('index', activityId);
     const {data: activityThread, isLoading: isLoadingThread} = threadQuery;
-    const activtyThreadActivityIdx = (activityThread?.items ?? []).findIndex(item => item.id === activityId);
+    const activtyThreadActivityIdx = (activityThread?.items ?? []).findIndex(item => item.object.id === activityId);
     const activityThreadChildren = (activityThread?.items ?? []).slice(activtyThreadActivityIdx + 1);
     const activityThreadParents = (activityThread?.items ?? []).slice(0, activtyThreadActivityIdx);
 
     const modalSize = width === 'narrow' ? MODAL_SIZE_SM : MODAL_SIZE_LG;
     const modal = useModal();
+    const darkMode = document.documentElement.classList.contains('dark');
 
     const canNavigateBack = history.length > 0;
     const navigateBack = () => {
@@ -391,12 +401,14 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
             history
         });
     };
-    const navigateForward = (nextActivityId: string, nextObject: ObjectProperties, nextActor: ActorProperties, nextFocusReply: boolean) => {
+    const navigateForward = (_: string, nextObject: ObjectProperties, nextActor: ActorProperties, nextFocusReply: boolean) => {
         // Trigger the modal to show the next activity and add the existing
         // activity to the history so we can navigate back
 
         modal.show({
-            activityId: nextActivityId,
+            // We need to use the object as the API expects an object ID but
+            // returns a full activity object
+            activityId: nextObject.id,
             object: nextObject,
             actor: nextActor,
             updateActivity,
@@ -472,7 +484,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
     const [fontFamily, setFontFamily] = useState<SelectOption>(() => {
         const saved = localStorage.getItem(STORAGE_KEYS.FONT_FAMILY);
         return saved ? JSON.parse(saved) : {
-            value: 'sans-serif',
+            value: FONT_SANS,
             label: 'Clean sans-serif'
         };
     });
@@ -526,30 +538,66 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
     const currentGridWidth = `${parseInt(currentMaxWidth) - 64}px`;
 
     const [readingProgress, setReadingProgress] = useState(0);
+    const [isLoading, setIsLoading] = useState(true);
+
+    // Add debounced version of setReadingProgress
+    const [debouncedSetReadingProgress] = useDebounce(setReadingProgress, 100);
+
+    const PROGRESS_INCREMENT = 5; // Progress is shown in 5% increments (0%, 5%, 10%, etc.)
 
     useEffect(() => {
         const container = document.querySelector('.overflow-y-auto');
         const article = document.getElementById('object-content');
 
         const handleScroll = () => {
+            if (isLoading) {
+                return;
+            }
+
             if (!container || !article) {
                 return;
             }
 
             const articleRect = article.getBoundingClientRect();
             const containerRect = container.getBoundingClientRect();
+
+            const isContentShorterThanViewport = articleRect.height <= containerRect.height;
+
+            if (isContentShorterThanViewport) {
+                debouncedSetReadingProgress(100);
+                return;
+            }
+
             const scrolledPast = Math.max(0, containerRect.top - articleRect.top);
             const totalHeight = (article as HTMLElement).offsetHeight - (container as HTMLElement).offsetHeight;
 
             const rawProgress = Math.min(Math.max((scrolledPast / totalHeight) * 100, 0), 100);
-            const progress = Math.round(rawProgress / 5) * 5;
+            const progress = Math.round(rawProgress / PROGRESS_INCREMENT) * PROGRESS_INCREMENT;
 
-            setReadingProgress(progress);
+            debouncedSetReadingProgress(progress);
         };
 
+        if (isLoading) {
+            return;
+        }
+
+        const observer = new MutationObserver(handleScroll);
+        if (article) {
+            observer.observe(article, {
+                childList: true,
+                subtree: true,
+                characterData: true
+            });
+        }
+
         container?.addEventListener('scroll', handleScroll);
-        return () => container?.removeEventListener('scroll', handleScroll);
-    }, []);
+        handleScroll();
+
+        return () => {
+            container?.removeEventListener('scroll', handleScroll);
+            observer.disconnect();
+        };
+    }, [isLoading, debouncedSetReadingProgress]);
 
     const [tocItems, setTocItems] = useState<TOCItem[]>([]);
     const [activeHeadingId, setActiveHeadingId] = useState<string | null>(null);
@@ -575,7 +623,6 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                 return;
             }
 
-            // Use offsetTop for absolute position within the document
             const headingOffset = heading.offsetTop;
 
             container.scrollTo({
@@ -602,7 +649,6 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                     return;
                 }
 
-                // Get all heading elements and their positions
                 const headings = tocItems
                     .map(item => doc.getElementById(item.id))
                     .filter((el): el is HTMLElement => el !== null)
@@ -650,7 +696,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
             align='right'
             allowBackgroundInteraction={false}
             animate={true}
-            backDrop={false}
+            backDrop={darkMode && width === 'narrow'}
             backDropClick={true}
             footer={<></>}
             height={'full'}
@@ -660,7 +706,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
             width={modalSize === MODAL_SIZE_LG ? 'toSidebar' : modalSize}
         >
             <div className='flex h-full flex-col'>
-                <div className='sticky top-0 z-50 flex h-[97px] items-center justify-center border-b border-grey-200 bg-white'>
+                <div className='sticky top-0 z-50 flex h-[102px] items-center justify-center border-b border-gray-200 bg-white dark:border-gray-950 dark:bg-black'>
                     <div
                         className={`w-full ${modalSize === MODAL_SIZE_LG ? 'grid px-8' : 'flex justify-between gap-2 px-8'}`}
                         style={modalSize === MODAL_SIZE_LG ? {
@@ -669,7 +715,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                     >
                         {(canNavigateBack || (activityThreadParents.length > 0)) ? (
                             <div className='col-[1/2] flex items-center justify-between'>
-                                <Button className='transition-color flex h-10 w-10 items-center justify-center rounded-full bg-white hover:bg-grey-100' icon='arrow-left' size='sm' unstyled onClick={navigateBack}/>
+                                <Button className='transition-color flex h-10 w-10 items-center justify-center rounded-full bg-white hover:bg-gray-100' icon='arrow-left' size='sm' unstyled onClick={navigateBack}/>
                             </div>
                         ) : (<div className='col-[2/3] mx-auto flex w-full items-center gap-3'>
                             <div className='relative z-10 pt-[3px]'>
@@ -677,25 +723,25 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                             </div>
                             <div className='relative z-10 flex w-full min-w-0 flex-col overflow-visible text-[1.5rem]'>
                                 <div className='flex w-full'>
-                                    <span className='min-w-0 truncate whitespace-nowrap font-bold'>{actor.name}</span>
+                                    <span className='min-w-0 truncate whitespace-nowrap font-semibold'>{actor.name}</span>
                                 </div>
                                 <div className='flex w-full'>
-                                    <span className='text-grey-700 after:mx-1 after:font-normal after:text-grey-700 after:content-["·"]'>{getUsername(actor)}</span>
-                                    <span className='text-grey-700'>{renderTimestamp(object)}</span>
+                                    <span className='text-gray-700 after:mx-1 after:font-normal after:text-gray-700 after:content-["·"]'>{getUsername(actor)}</span>
+                                    <span className='text-gray-700'>{renderTimestamp(object)}</span>
                                 </div>
                             </div>
                         </div>)}
                         <div className='col-[3/4] flex items-center justify-end gap-2'>
-                            {modalSize === MODAL_SIZE_LG && object.type === 'Article' && <Popover position='end' trigger={ <Button className='transition-color flex h-10 w-10 items-center justify-center rounded-full bg-white hover:bg-grey-100' icon='typography' size='sm' unstyled onClick={() => {}}/>
+                            {modalSize === MODAL_SIZE_LG && object.type === 'Article' && <Popover position='end' trigger={ <Button className='transition-color flex h-10 w-10 items-center justify-center rounded-full bg-white hover:bg-gray-100 dark:bg-black dark:hover:bg-gray-950' icon='typography' size='sm' unstyled onClick={() => {}}/>
                             }>
                                 <div className='flex min-w-[300px] flex-col p-5'>
                                     <Select
                                         className='mb-3'
                                         components={{Option, SingleValue}}
-                                        controlClasses={{control: '!min-h-[40px] !py-0 !pl-1', option: '!pl-1 !py-[4px]'}}
+                                        controlClasses={{control: '!min-h-[40px] !py-0 !pl-1 dark:!bg-grey-925', option: '!pl-1 !py-[4px]'}}
                                         options={[
                                             {
-                                                value: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif',
+                                                value: FONT_SANS,
                                                 label: 'Clean sans-serif',
                                                 className: 'font-sans'
                                             },
@@ -708,16 +754,16 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                         title='Typeface'
                                         value={fontFamily}
                                         onSelect={option => setFontFamily(option || {
-                                            value: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif',
+                                            value: FONT_SANS,
                                             label: 'Clean sans-serif',
                                             className: 'font-sans'
                                         })}
                                     />
                                     <div className='mb-2 flex items-center justify-between'>
-                                        <span className='text-sm font-medium text-grey-900'>Font size</span>
+                                        <span className='text-sm font-medium text-gray-900 dark:text-white'>Font size</span>
                                         <div className='flex items-center'>
                                             <Button
-                                                className={`transition-color flex h-8 w-8 items-center justify-center rounded-full bg-white ${currentFontSizeIndex === 0 ? 'opacity-20 hover:bg-white' : 'hover:bg-grey-100'}`}
+                                                className={`transition-color flex h-8 w-8 items-center justify-center rounded-full bg-white dark:bg-grey-900 dark:hover:bg-grey-925 ${currentFontSizeIndex === 0 ? 'opacity-20 hover:bg-white' : 'hover:bg-gray-100'}`}
                                                 disabled={currentFontSizeIndex === 0}
                                                 hideLabel={true}
                                                 icon='substract'
@@ -727,7 +773,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                                 onClick={decreaseFontSize}
                                             />
                                             <Button
-                                                className={`transition-color flex h-8 w-8 items-center justify-center rounded-full bg-white hover:bg-grey-100 ${currentFontSizeIndex === FONT_SIZES.length - 1 ? 'opacity-20 hover:bg-white' : 'hover:bg-grey-100'}`}
+                                                className={`transition-color flex h-8 w-8 items-center justify-center rounded-full bg-white hover:bg-gray-100 dark:bg-grey-900 dark:hover:bg-grey-925 ${currentFontSizeIndex === FONT_SIZES.length - 1 ? 'opacity-20 hover:bg-white' : 'hover:bg-gray-100'}`}
                                                 disabled={currentFontSizeIndex === FONT_SIZES.length - 1}
                                                 hideLabel={true}
                                                 icon='add'
@@ -739,10 +785,10 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                         </div>
                                     </div>
                                     <div className='mb-5 flex items-center justify-between'>
-                                        <span className='text-sm font-medium text-grey-900'>Line spacing</span>
+                                        <span className='text-sm font-medium text-gray-900 dark:text-white'>Line spacing</span>
                                         <div className='flex items-center'>
                                             <Button
-                                                className={`transition-color flex h-8 w-8 items-center justify-center rounded-full bg-white hover:bg-grey-100 ${currentLineHeightIndex === 0 ? 'opacity-20 hover:bg-white' : 'hover:bg-grey-100'}`}
+                                                className={`transition-color flex h-8 w-8 items-center justify-center rounded-full bg-white hover:bg-gray-100 dark:bg-grey-900 dark:hover:bg-grey-925 ${currentLineHeightIndex === 0 ? 'opacity-20 hover:bg-white' : 'hover:bg-gray-100'}`}
                                                 disabled={currentLineHeightIndex === 0}
                                                 hideLabel={true}
                                                 icon='substract'
@@ -752,7 +798,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                                 onClick={decreaseLineHeight}
                                             />
                                             <Button
-                                                className={`transition-color flex h-8 w-8 items-center justify-center rounded-full bg-white hover:bg-grey-100 ${currentLineHeightIndex === LINE_HEIGHTS.length - 1 ? 'opacity-20 hover:bg-white' : 'hover:bg-grey-100'}`}
+                                                className={`transition-color flex h-8 w-8 items-center justify-center rounded-full bg-white hover:bg-gray-100 dark:bg-grey-900 dark:hover:bg-grey-925 ${currentLineHeightIndex === LINE_HEIGHTS.length - 1 ? 'opacity-20 hover:bg-white' : 'hover:bg-gray-100'}`}
                                                 disabled={currentLineHeightIndex === LINE_HEIGHTS.length - 1}
                                                 hideLabel={true}
                                                 icon='add'
@@ -764,21 +810,21 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                         </div>
                                     </div>
                                     <Button
-                                        className="text-sm text-grey-600 hover:text-grey-700"
+                                        className="text-sm text-gray-600 hover:text-gray-700 dark:text-gray-500 dark:hover:text-gray-600"
                                         label="Reset to default"
                                         link={true}
                                         onClick={() => {
                                             setCurrentFontSizeIndex(1); // Default font size
                                             setCurrentLineHeightIndex(1); // Default line height
                                             setFontFamily({
-                                                value: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif',
+                                                value: FONT_SANS,
                                                 label: 'Clean sans-serif'
                                             });
                                         }}
                                     />
                                 </div>
                             </Popover>}
-                            <Button className='transition-color flex h-10 w-10 items-center justify-center rounded-full bg-white hover:bg-grey-100' icon='close' size='sm' unstyled onClick={() => modal.remove()}/>
+                            <Button className='transition-color flex h-10 w-10 items-center justify-center rounded-full bg-white hover:bg-gray-100 dark:bg-black dark:hover:bg-gray-950' icon='close' size='sm' unstyled onClick={() => modal.remove()}/>
                         </div>
                     </div>
                 </div>
@@ -804,6 +850,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                             last={false}
                                             layout='reply'
                                             object={item.object}
+                                            repostCount={item.object.repostCount ?? 0}
                                             type='Note'
                                             onClick={() => {
                                                 navigateForward(item.id, item.object, item.actor, false);
@@ -823,6 +870,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                     last={true}
                                     layout={'modal'}
                                     object={object}
+                                    repostCount={object.repostCount ?? 0}
                                     showHeader={(canNavigateBack || (activityThreadParents.length > 0))}
                                     type='Note'
                                     onCommentClick={() => {
@@ -834,7 +882,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                 />
                             )}
                             {object.type === 'Article' && (
-                                <div className='border-b border-grey-200 pb-8' id='object-content'>
+                                <div className='border-b border-gray-200 pb-8 dark:border-gray-950' id='object-content'>
                                     <ArticleBody
                                         excerpt={object?.preview?.content ?? ''}
                                         fontFamily={fontFamily}
@@ -845,6 +893,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                         lineHeight={LINE_HEIGHTS[currentLineHeightIndex]}
                                         onHeadingsExtracted={handleHeadingsExtracted}
                                         onIframeLoad={handleIframeLoad}
+                                        onLoadingChange={setIsLoading}
                                     />
                                     <div className='ml-[-7px]'>
                                         <FeedItemStats
@@ -852,6 +901,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                             layout={'modal'}
                                             likeCount={1}
                                             object={object}
+                                            repostCount={object.repostCount ?? 0}
                                             onCommentClick={() => {
                                                 repliesRef.current?.scrollIntoView({
                                                     behavior: 'smooth',
@@ -887,6 +937,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                                 last={true}
                                                 layout='reply'
                                                 object={item.object}
+                                                repostCount={item.object.repostCount ?? 0}
                                                 type='Note'
                                                 onClick={() => {
                                                     navigateForward(item.id, item.object, item.actor, false);
@@ -906,10 +957,10 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
             </div>
             {modalSize === MODAL_SIZE_LG && object.type === 'Article' && (
                 <div className='pointer-events-none !visible sticky bottom-0 hidden items-end justify-between px-10 pb-[42px] lg:!flex'>
-                    <div className='pointer-events-auto text-grey-600'>
+                    <div className='pointer-events-auto text-gray-600'>
                         {getReadingTime(object.content ?? '')}
                     </div>
-                    <div className='pointer-events-auto text-grey-600 transition-all duration-200 ease-out'>
+                    <div className='pointer-events-auto text-gray-600 transition-all duration-200 ease-out'>
                         {readingProgress}%
                     </div>
                 </div>

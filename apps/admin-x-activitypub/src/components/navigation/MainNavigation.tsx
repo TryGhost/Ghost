@@ -14,20 +14,35 @@ const MainNavigation: React.FC<MainNavigationProps> = ({page}) => {
         <MainHeader>
             <div className='col-[1/2] flex gap-8 px-8'>
                 <Button
-                    className={`${page === 'inbox' ? 'font-bold text-grey-975' : 'text-grey-700 hover:text-grey-800'}`}
+                    className={`${page === 'inbox' ? 'font-bold text-gray-975 dark:text-white' : 'text-gray-700 hover:text-gray-800 dark:text-gray-600'}`}
                     label='Inbox'
                     unstyled
                     onClick={() => updateRoute('inbox')}
                 />
                 <Button
-                    className={`${page === 'feed' ? 'font-bold text-grey-975' : 'text-grey-700 hover:text-grey-800'}`}
+                    className={`${page === 'feed' ? 'font-bold text-gray-975 dark:text-white' : 'text-gray-700 hover:text-gray-800 dark:text-gray-600'}`}
                     label='Feed'
                     unstyled
                     onClick={() => updateRoute('feed')}
                 />
-                <Button className={`${page === 'activities' ? 'font-bold text-grey-975' : 'text-grey-700 hover:text-grey-800'}`} label='Notifications' unstyled onClick={() => updateRoute('activity')} />
-                <Button className={`${page === 'search' ? 'font-bold text-grey-975' : 'text-grey-700 hover:text-grey-800'}`} label='Search' unstyled onClick={() => updateRoute('search')} />
-                <Button className={`${page === 'profile' ? 'font-bold text-grey-975' : 'text-grey-700 hover:text-grey-800'}`} label='Profile' unstyled onClick={() => updateRoute('profile')} />
+                <Button
+                    className={`${page === 'notifications' ? 'font-bold text-gray-975 dark:text-white' : 'text-gray-700 hover:text-gray-800 dark:text-gray-600'}`}
+                    label='Notifications'
+                    unstyled
+                    onClick={() => updateRoute('notifications')}
+                />
+                <Button
+                    className={`${page === 'search' ? 'font-bold text-gray-975 dark:text-white' : 'text-gray-700 hover:text-gray-800 dark:text-gray-600'}`}
+                    label='Search'
+                    unstyled
+                    onClick={() => updateRoute('search')}
+                />
+                <Button
+                    className={`${page === 'profile' ? 'font-bold text-gray-975 dark:text-white' : 'text-gray-700 hover:text-gray-800 dark:text-gray-600'}`}
+                    label='Profile'
+                    unstyled
+                    onClick={() => updateRoute('profile')}
+                />
             </div>
         </MainHeader>
     );

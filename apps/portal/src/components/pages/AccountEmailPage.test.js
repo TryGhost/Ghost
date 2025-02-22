@@ -134,4 +134,28 @@ describe('Account Email Page', () => {
         expect(unsubscribeBtns).toHaveLength(1);
         expect(unsubscribeBtns[0].textContent).toContain('Get notified when someone replies to your comment');
     });
+
+    test('newsletters are visible when editor default email recipients is set to visibility', async () => {
+        const newsletterData = getNewslettersData({numOfNewsletters: 2});
+        const siteData = getSiteData({
+            newsletters: newsletterData,
+            editorDefaultEmailRecipients: 'visibility',
+            member: getMemberData({newsletters: newsletterData})
+        });
+        const {getAllByTestId} = setup({site: siteData});
+        const unsubscribeBtns = getAllByTestId(`toggle-wrapper`);
+        expect(unsubscribeBtns).toHaveLength(3);
+    });
+
+    test('newsletters are visible when editor default email recipients is set to filter', async () => {
+        const newsletterData = getNewslettersData({numOfNewsletters: 2});
+        const siteData = getSiteData({
+            newsletters: newsletterData,
+            editorDefaultEmailRecipients: 'filter',
+            member: getMemberData({newsletters: newsletterData})
+        });
+        const {getAllByTestId} = setup({site: siteData});
+        const unsubscribeBtns = getAllByTestId(`toggle-wrapper`);
+        expect(unsubscribeBtns).toHaveLength(3);
+    });
 });

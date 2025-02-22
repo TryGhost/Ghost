@@ -167,12 +167,12 @@ describe('MRR Stats Service', function () {
             const ninetyFiveDaysAgo = moment().subtract(95, 'days').startOf('day').format('YYYY-MM-DD');
             const eightyNineDaysAgo = moment().subtract(89, 'days').startOf('day').format('YYYY-MM-DD');
             const today = moment().startOf('day').format('YYYY-MM-DD');
-    
+
             await createMemberWithSubscription('month', 500, 'eur', moment(ninetyDaysAgo).toISOString());
             await createMemberWithSubscription('month', 500, 'eur', moment(ninetyFiveDaysAgo).toISOString());
             await createMemberWithSubscription('month', 1, 'usd', moment(eightyNineDaysAgo).toISOString());
             await createMemberWithSubscription('month', 2, 'usd', moment(today).toISOString());
-    
+
             const results = await statsService.api.mrr.fetchAllDeltas();
             results.length.should.equal(3);
             results.should.match([
@@ -199,14 +199,14 @@ describe('MRR Stats Service', function () {
             const ninetyFiveDaysAgo = moment().subtract(95, 'days').startOf('day');
             const eightyNineDaysAgo = moment().subtract(89, 'days').startOf('day');
             const today = moment().startOf('day');
-    
+
             await createMemberWithSubscription('month', 500, 'eur', ninetyDaysAgo.toISOString());
             await createMemberWithSubscription('month', 500, 'eur', ninetyFiveDaysAgo.toISOString());
             await createMemberWithSubscription('month', 1, 'usd', eightyNineDaysAgo.toISOString());
             await createMemberWithSubscription('month', 2, 'usd', today.toISOString());
-    
+
             const results = await statsService.api.mrr.fetchAllDeltas();
-    
+
             // Check that results are within the last 90 days
             const isWithinLast90Days = (date) => {
                 return moment(date).isBetween(ninetyDaysAgo, today, null, '[]');

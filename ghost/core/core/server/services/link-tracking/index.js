@@ -2,7 +2,6 @@ const LinkClickRepository = require('./LinkClickRepository');
 const PostLinkRepository = require('./PostLinkRepository');
 const errors = require('@tryghost/errors');
 const urlUtils = require('../../../shared/url-utils');
-const config = require('../../../shared/config');
 
 class LinkTrackingServiceWrapper {
     async init() {
@@ -41,8 +40,7 @@ class LinkTrackingServiceWrapper {
             linkClickRepository: this.linkClickRepository,
             postLinkRepository,
             DomainEvents,
-            urlUtils,
-            config
+            urlUtils
         });
 
         await this.service.init();

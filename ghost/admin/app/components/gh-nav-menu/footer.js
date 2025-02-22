@@ -66,4 +66,11 @@ export default class Footer extends Component {
     openWhatsNew() {
         return this.modals.open(WhatsNew);
     }
+
+    @action
+    toggleNightShift() {
+        const newValue = !this.feature.nightShift;
+        this.feature.nightShift = newValue;
+        document.documentElement.classList.toggle('dark', newValue);
+    }
 }

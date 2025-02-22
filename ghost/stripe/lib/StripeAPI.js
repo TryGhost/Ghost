@@ -7,9 +7,17 @@ const Stripe = require('stripe').Stripe;
 /* Stripe has the following rate limits:
 *  - For most APIs, 100 read requests per second in live mode, 25 read requests per second in test mode
 *  - For search, 20 requests per second in both live and test modes
+*
+* For the testing environment, we increase these limits to 10,000 req/s to keep tests fast
 */
 const EXPECTED_API_EFFICIENCY = 0.95;
 const EXPECTED_SEARCH_API_EFFICIENCY = 0.15;
+
+// If we're running in a testing environment, we don't want to rate limit the Stripe API like we do in production
+const isTesting = process.env.NODE_ENV?.includes('testing');
+const TEST_MODE_RATE_LIMIT = isTesting ? 10_000 : 25;
+const LIVE_MODE_RATE_LIMIT = isTesting ? 10_000 : 100;
+const SEARCH_MODE_RATE_LIMIT = isTesting ? 10_000 : 100;
 
 const STRIPE_API_VERSION = '2020-08-27';
 
@@ -20,6 +28,15 @@ const STRIPE_API_VERSION = '2020-08-27';
  * @typedef {import('stripe').Stripe.Plan} IPlan
  * @typedef {import('stripe').Stripe.Price} IPrice
  * @typedef {import('stripe').Stripe.WebhookEndpoint} IWebhookEndpoint
+ * @typedef {import('stripe').Stripe.Coupon} ICoupon
+ * @typedef {import('stripe').Stripe.CouponCreateParams} ICouponCreateParams
+ * @typedef {import('stripe').Stripe.ProductCreateParams} IProductCreateParams
+ * @typedef {import('stripe').Stripe.CustomerRetrieveParams} ICustomerRetrieveParams
+ * @typedef {import('stripe').Stripe.Checkout.Session} ICheckoutSession
+ * @typedef {import('stripe').Stripe.Checkout.SessionCreateParams} ICheckoutSessionCreateParams
+ * @typedef {import('stripe').Stripe.SubscriptionRetrieveParams} ISubscriptionRetrieveParams
+ * @typedef {import('stripe').Stripe.Subscription} ISubscription
+ * @typedef {import('stripe').Stripe.Checkout.SessionCreateParams.PaymentMethodType} IPaymentMethodType
  */
 
 /**
@@ -32,12 +49,14 @@ const STRIPE_API_VERSION = '2020-08-27';
  * @prop {string} checkoutSessionCancelUrl
  * @prop {string} checkoutSetupSessionSuccessUrl
  * @prop {string} checkoutSetupSessionCancelUrl
- * @prop {boolean} param.testEnv  - indicates if the module is run in test environment (note, NOT the test mode)
+ * @prop {boolean} testEnv  - indicates if the module is run in test environment (note, NOT the test mode)
  */
 
 module.exports = class StripeAPI {
     /**
      * StripeAPI
+     * @param {object} deps
+     * @param {object} deps.labs
      */
     constructor(deps) {
         /** @type {Stripe} */
@@ -46,6 +65,9 @@ module.exports = class StripeAPI {
         this.labs = deps.labs;
     }
 
+    /**
+     * @returns {IPaymentMethodType[]|undefined}
+     */
     get PAYMENT_METHOD_TYPES() {
         if (this.labs.isSet('additionalPaymentMethods')) {
             return undefined;
@@ -54,20 +76,41 @@ module.exports = class StripeAPI {
         }
     }
 
+    /**
+     * Returns true if the Stripe API is configured.
+     * @returns {boolean}
+     */
     get configured() {
         return this._configured;
     }
 
+    /**
+     * Returns true if this package is running in a test environment (i.e. browser tests).
+     * 
+     * Note: This is not the same as the Stripe API's test mode.
+     * @returns {boolean}
+     */
     get testEnv() {
         return this._config.testEnv;
     }
 
+    /**
+     * Returns the Stripe API mode (test or live).
+     * 
+     * @returns {string}
+     */
     get mode() {
         return this._testMode ? 'test' : 'live';
     }
 
     /**
+     * Configure the Stripe API.
+     * - Instantiates the Stripe API client
+     * - Sets the Stripe API mode
+     * - Configures rate limiting buckets
+     * 
      * @param {IStripeAPIConfig} config
+     * 
      * @returns {void}
      */
     configure(config) {
@@ -86,16 +129,20 @@ module.exports = class StripeAPI {
         this._config = config;
         this._testMode = config.secretKey && config.secretKey.startsWith('sk_test_');
         if (this._testMode) {
-            this._rateLimitBucket = new LeakyBucket(EXPECTED_API_EFFICIENCY * 25, 1);
+            this._rateLimitBucket = new LeakyBucket(EXPECTED_API_EFFICIENCY * TEST_MODE_RATE_LIMIT, 1);
         } else {
-            this._rateLimitBucket = new LeakyBucket(EXPECTED_API_EFFICIENCY * 100, 1);
+            this._rateLimitBucket = new LeakyBucket(EXPECTED_API_EFFICIENCY * LIVE_MODE_RATE_LIMIT, 1);
         }
-        this._searchRateLimitBucket = new LeakyBucket(EXPECTED_SEARCH_API_EFFICIENCY * 100, 1);
+        this._searchRateLimitBucket = new LeakyBucket(EXPECTED_SEARCH_API_EFFICIENCY * SEARCH_MODE_RATE_LIMIT, 1);
         this._configured = true;
     }
 
     /**
-     * @param {object} options
+     * Create a new Stripe Coupon.
+     * 
+     * @param {ICouponCreateParams} options
+     * 
+     * @returns {Promise<ICoupon>}
      */
     async createCoupon(options) {
         await this._rateLimitBucket.throttle();
@@ -105,6 +152,7 @@ module.exports = class StripeAPI {
     }
 
     /**
+     * Retrieve the Stripe Product object by ID.
      * @param {string} id
      *
      * @returns {Promise<IProduct>}
@@ -117,8 +165,8 @@ module.exports = class StripeAPI {
     }
 
     /**
-     * @param {object} options
-     * @param {string} options.name
+     * Create a new Stripe Product.
+     * @param {IProductCreateParams} options
      *
      * @returns {Promise<IProduct>}
      */
@@ -130,6 +178,8 @@ module.exports = class StripeAPI {
     }
 
     /**
+     * Create a new Stripe Price.
+     * 
      * @param {object} options
      * @param {string} options.product
      * @param {boolean} options.active
@@ -161,6 +211,8 @@ module.exports = class StripeAPI {
     }
 
     /**
+     * Update the Stripe Price object by ID.
+     * 
      * @param {string} id
      * @param {object} options
      * @param {boolean} [options.active]
@@ -179,6 +231,8 @@ module.exports = class StripeAPI {
     }
 
     /**
+     * Update the Stripe Product object by ID.
+     * 
      * @param {string} id
      * @param {object} options
      * @param {string} options.name
@@ -195,10 +249,13 @@ module.exports = class StripeAPI {
     }
 
     /**
+     * Retrieve the Stripe Customer object by ID.
+     * 
      * @param {string} id
-     * @param {import('stripe').Stripe.CustomerRetrieveParams} options
+     * @param {ICustomerRetrieveParams} options
      *
      * @returns {Promise<ICustomer|IDeletedCustomer>}
+     * @throws {Error}
      */
     async getCustomer(id, options = {}) {
         debug(`getCustomer(${id}, ${JSON.stringify(options)})`);
@@ -219,6 +276,8 @@ module.exports = class StripeAPI {
     }
 
     /**
+     * Finds or creates a Stripe Customer for a Member.
+     * 
      * @deprecated
      * @param {any} member
      *
@@ -301,6 +360,8 @@ module.exports = class StripeAPI {
     }
 
     /**
+     * Create a new Stripe Customer.
+     * 
      * @param {import('stripe').Stripe.CustomerCreateParams} options
      *
      * @returns {Promise<ICustomer>}
@@ -319,6 +380,8 @@ module.exports = class StripeAPI {
     }
 
     /**
+     * Update the email address for a Stripe Customer.
+     * 
      * @param {string} id
      * @param {string} email
      *
@@ -338,7 +401,7 @@ module.exports = class StripeAPI {
     }
 
     /**
-     * createWebhook.
+     * Create a new Stripe Webhook Endpoint.
      *
      * @param {string} url
      * @param {import('stripe').Stripe.WebhookEndpointUpdateParams.EnabledEvent[]} events
@@ -363,6 +426,8 @@ module.exports = class StripeAPI {
     }
 
     /**
+     * Delete a Stripe Webhook Endpoint by ID.
+     * 
      * @param {string} id
      *
      * @returns {Promise<void>}
@@ -381,6 +446,8 @@ module.exports = class StripeAPI {
     }
 
     /**
+     * Update a Stripe Webhook Endpoint by ID and URL.
+     * 
      * @param {string} id
      * @param {string} url
      * @param {import('stripe').Stripe.WebhookEndpointUpdateParams.EnabledEvent[]} events
@@ -407,7 +474,7 @@ module.exports = class StripeAPI {
     }
 
     /**
-     * parseWebhook.
+     * Parse a Stripe Webhook event.
      *
      * @param {string} body
      * @param {string} signature
@@ -428,6 +495,8 @@ module.exports = class StripeAPI {
     }
 
     /**
+     * Create a new Stripe Checkout Session for a new subscription.
+     * 
      * @param {string} priceId
      * @param {ICustomer} customer
      *
@@ -439,10 +508,10 @@ module.exports = class StripeAPI {
      * @param {number} options.trialDays
      * @param {string} [options.coupon]
      *
-     * @returns {Promise<import('stripe').Stripe.Checkout.Session>}
+     * @returns {Promise<ICheckoutSession>}
      */
     async createCheckoutSession(priceId, customer, options) {
-        const metadata = options.metadata || undefined;
+        const metadata = options.metadata || undefined; // https://docs.stripe.com/api/metadata some limits to how much can be passed
         const customerId = customer ? customer.id : undefined;
         const customerEmail = customer ? customer.email : options.customerEmail;
 
@@ -456,7 +525,15 @@ module.exports = class StripeAPI {
             trial_from_plan: true,
             items: [{
                 plan: priceId
-            }]
+            }],
+            metadata: { 
+                attribution_id: metadata?.attribution_id,
+                attribution_url: metadata?.attribution_url,
+                attribution_type: metadata?.attribution_type,
+                referrer_source: metadata?.referrer_source,
+                referrer_medium: metadata?.referrer_medium,
+                referrer_url: metadata?.referrer_url
+            }
         };
 
         /**
@@ -510,14 +587,17 @@ module.exports = class StripeAPI {
     }
 
     /**
+     * Create a new Stripe Checkout Session for a donation.
+     * 
      * @param {object} options
-     * @param {Object.<String, any>} options.metadata
+     * @param {string} options.priceId
      * @param {string} options.successUrl
      * @param {string} options.cancelUrl
-     * @param {string} [options.customer]
+     * @param {Object.<String, any>} options.metadata
+     * @param {ICustomer} [options.customer]
      * @param {string} [options.customerEmail]
      *
-     * @returns {Promise<import('stripe').Stripe.Checkout.Session>}
+     * @returns {Promise<ICheckoutSession>}
      */
     async createDonationCheckoutSession({priceId, successUrl, cancelUrl, metadata, customer, customerEmail}) {
         await this._rateLimitBucket.throttle();
@@ -581,12 +661,14 @@ module.exports = class StripeAPI {
     }
 
     /**
+     * Create a new Stripe Checkout Setup Session.
+     * 
      * @param {ICustomer} customer
      * @param {object} options
      * @param {string} options.successUrl
      * @param {string} options.cancelUrl
      * @param {string} options.currency - 3-letter ISO code in lowercase, e.g. `usd`
-     * @returns {Promise<import('stripe').Stripe.Checkout.Session>}
+     * @returns {Promise<ICheckoutSession>}
      */
     async createCheckoutSetupSession(customer, options) {
         await this._rateLimitBucket.throttle();
@@ -604,23 +686,29 @@ module.exports = class StripeAPI {
 
             // Note: this is required for dynamic payment methods
             // https://docs.stripe.com/api/checkout/sessions/create#create_checkout_session-currency
+            // @ts-ignore
             currency: this.labs.isSet('additionalPaymentMethods') ? options.currency : undefined
         });
 
         return session;
     }
 
+    /**
+     * Get the Stripe public key.
+     * 
+     * @returns {string}
+     */
     getPublicKey() {
         return this._config.publicKey;
     }
 
     /**
-     * getPrice
+     * Retrieve the Stripe Price object by ID.
      *
      * @param {string} id
      * @param {object} options
      *
-     * @returns {Promise<import('stripe').Stripe.Price>}
+     * @returns {Promise<IPrice>}
      */
     async getPrice(id, options = {}) {
         debug(`getPrice(${id}, ${JSON.stringify(options)})`);
@@ -629,12 +717,12 @@ module.exports = class StripeAPI {
     }
 
     /**
-     * getSubscription.
+     * Retrieve the Stripe Subscription object by ID.
      *
      * @param {string} id
-     * @param {import('stripe').Stripe.SubscriptionRetrieveParams} options
+     * @param {ISubscriptionRetrieveParams} options
      *
-     * @returns {Promise<import('stripe').Stripe.Subscription>}
+     * @returns {Promise<ISubscription>}
      */
     async getSubscription(id, options = {}) {
         debug(`getSubscription(${id}, ${JSON.stringify(options)})`);
@@ -650,11 +738,11 @@ module.exports = class StripeAPI {
     }
 
     /**
-     * cancelSubscription.
+     * Cancel the Stripe Subscription by ID.
      *
      * @param {string} id
      *
-     * @returns {Promise<import('stripe').Stripe.Subscription>}
+     * @returns {Promise<ISubscription>}
      */
     async cancelSubscription(id) {
         debug(`cancelSubscription(${id})`);
@@ -670,10 +758,12 @@ module.exports = class StripeAPI {
     }
 
     /**
+     * Cancel the Stripe Subscription at the end of the current period by ID.
+     * 
      * @param {string} id - The ID of the Subscription to modify
      * @param {string} [reason=''] - The user defined cancellation reason
      *
-     * @returns {Promise<import('stripe').Stripe.Subscription>}
+     * @returns {Promise<ISubscription>}
      */
     async cancelSubscriptionAtPeriodEnd(id, reason = '') {
         await this._rateLimitBucket.throttle();
@@ -687,9 +777,11 @@ module.exports = class StripeAPI {
     }
 
     /**
+     * Continue the Stripe Subscription at the end of the current period by ID.
+     * 
      * @param {string} id - The ID of the Subscription to modify
      *
-     * @returns {Promise<import('stripe').Stripe.Subscription>}
+     * @returns {Promise<ISubscription>}
      */
     async continueSubscriptionAtPeriodEnd(id) {
         await this._rateLimitBucket.throttle();
@@ -703,9 +795,11 @@ module.exports = class StripeAPI {
     }
 
     /**
+     * Remove the coupon from the Stripe Subscription by ID.
+     * 
      * @param {string} id - The ID of the subscription to remove coupon from
      *
-     * @returns {Promise<import('stripe').Stripe.Subscription>}
+     * @returns {Promise<ISubscription>}
      */
     async removeCouponFromSubscription(id) {
         await this._rateLimitBucket.throttle();
@@ -716,6 +810,9 @@ module.exports = class StripeAPI {
     }
 
     /**
+     * Update the price of the Stripe SubscriptionItem by Subscription ID, 
+     * SubscriptionItem ID, and Price ID.
+     * 
      * @param {string} subscriptionId - The ID of the Subscription to modify
      * @param {string} id - The ID of the SubscriptionItem
      * @param {string} price - The ID of the new Price
@@ -723,7 +820,7 @@ module.exports = class StripeAPI {
      * @param {('always_invoice'|'create_prorations'|'none')} [options.prorationBehavior='always_invoice'] - The proration behavior to use. See [Stripe docs](https://docs.stripe.com/api/subscriptions/update#update_subscription-proration_behavior) for more info
      * @param {string} [options.cancellationReason=null] - The user defined cancellation reason
      *
-     * @returns {Promise<import('stripe').Stripe.Subscription>}
+     * @returns {Promise<ISubscription>}
      */
     async updateSubscriptionItemPrice(subscriptionId, id, price, options = {}) {
         await this._rateLimitBucket.throttle();
@@ -742,10 +839,12 @@ module.exports = class StripeAPI {
     }
 
     /**
+     * Create a new Stripe Subscription for a Customer by ID and Price ID.
+     * 
      * @param {string} customer - The ID of the Customer to create the subscription for
      * @param {string} price - The ID of the new Price
      *
-     * @returns {Promise<import('stripe').Stripe.Subscription>}
+     * @returns {Promise<ISubscription>}
      */
     async createSubscription(customer, price) {
         await this._rateLimitBucket.throttle();
@@ -757,6 +856,8 @@ module.exports = class StripeAPI {
     }
 
     /**
+     * Retrieve the Stripe SetupIntent object by ID.
+     * 
      * @param {string} id
      * @param {import('stripe').Stripe.SetupIntentRetrieveParams} options
      *
@@ -768,6 +869,8 @@ module.exports = class StripeAPI {
     }
 
     /**
+     * Attach a PaymentMethod to a Customer
+     * 
      * @param {string} customer
      * @param {string} paymentMethod
      *
@@ -780,6 +883,8 @@ module.exports = class StripeAPI {
     }
 
     /**
+     * Retrieve the Stripe PaymentMethod object by ID.
+     * 
      * @param {string} id
      *
      * @returns {Promise<import('stripe').Stripe.PaymentMethod|null>}
@@ -795,10 +900,12 @@ module.exports = class StripeAPI {
     }
 
     /**
+     * Update the default PaymentMethod for a Subscription.
+     * 
      * @param {string} subscription
      * @param {string} paymentMethod
      *
-     * @returns {Promise<import('stripe').Stripe.Subscription>}
+     * @returns {Promise<ISubscription>}
      */
     async updateSubscriptionDefaultPaymentMethod(subscription, paymentMethod) {
         await this._rateLimitBucket.throttle();
@@ -808,9 +915,11 @@ module.exports = class StripeAPI {
     }
 
     /**
+     * Cancel the trial for a Stripe Subscription by ID.
+     * 
      * @param {string} id - The ID of the subscription to cancel the trial for
      *
-     * @returns {Promise<import('stripe').Stripe.Subscription>}
+     * @returns {Promise<ISubscription>}
      */
     async cancelSubscriptionTrial(id) {
         await this._rateLimitBucket.throttle();

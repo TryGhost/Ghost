@@ -407,7 +407,7 @@ class SignupPage extends React.Component {
             };
         }, () => {
             const {site, onAction} = this.context;
-            const {name, email, plan, phonenumber, errors} = this.state;
+            const {name, email, plan, phonenumber, token, errors} = this.state;
             const hasFormErrors = (errors && Object.values(errors).filter(d => !!d).length > 0);
 
             // Only scroll checkbox into view if it's the only error
@@ -423,14 +423,14 @@ class SignupPage extends React.Component {
                 if (hasMultipleNewsletters({site})) {
                     this.setState({
                         showNewsletterSelection: true,
-                        pageData: {name, email, plan, phonenumber},
+                        pageData: {name, email, plan, phonenumber, token},
                         errors: {}
                     });
                 } else {
                     this.setState({
                         errors: {}
                     });
-                    onAction('signup', {name, email, phonenumber, plan});
+                    onAction('signup', {name, email, phonenumber, plan, token});
                 }
             }
         });

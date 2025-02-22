@@ -1,6 +1,6 @@
-import SignupPage from './SignupPage';
 import {getFreeProduct, getProductData, getSiteData} from '../../utils/fixtures-generator';
 import {render, fireEvent, getByTestId, queryByTestId} from '../../utils/test-utils';
+import SignupPage from './SignupPage';
 
 const setup = (overrides) => {
     const {mockOnActionFn, ...utils} = render(

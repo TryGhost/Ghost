@@ -1,11 +1,29 @@
 const errors = require('@tryghost/errors');
 const _ = require('lodash');
-const logging = require('@tryghost/logging');
+
+/**
+ * Handles `customer.subscription.*` webhook events
+ * 
+ * The `customer.subscription.*` events are triggered when a customer's subscription status changes.
+ * 
+ * This service is responsible for handling these events and updating the subscription status in Ghost,
+ * although it mostly delegates the responsibility to the `MemberRepository`.
+ */
 module.exports = class SubscriptionEventService {
+    /**
+     * @param {object} deps
+     * @param {import('../../repositories/MemberRepository')} deps.memberRepository
+     */
     constructor(deps) {
         this.deps = deps;
     }
 
+    /**
+     * Handles a `customer.subscription.*` event
+     * 
+     * Looks up the member by the Stripe customer ID and links the subscription to the member.
+     * @param {import('stripe').Stripe.Subscription} subscription
+     */
     async handleSubscriptionEvent(subscription) {
         const subscriptionPriceData = _.get(subscription, 'items.data');
         if (!subscriptionPriceData || subscriptionPriceData.length !== 1) {
@@ -19,35 +37,18 @@ module.exports = class SubscriptionEventService {
             customer_id: subscription.customer
         });
 
-        // After checkout, Stripe sends `customer.subscription.created`, `customer.subscription.updated` and `checkout.session.completed` events
-        // We want to create a member and its related subscription in the database based on the `checkout.session.completed` event as it contains additional information on the subscription (e.g. attribution data)
-        // Therefore, if the member or the subscription does not exist in the database yet, we ignore `customer.subscription.*` events, to avoid creating subscriptions with missing data
-        if (!member) {
-            logging.info(`Ignoring customer.subscription.* event as member does not exist`);
-            return;
-        }
-
-        const memberSubscription = await member.related('stripeSubscriptions').query({
-            where: {
-                subscription_id: subscription.id
+        if (member) {
+            try {
+                await memberRepository.linkSubscription({
+                    id: member.id,
+                    subscription
+                });
+            } catch (err) {
+                if (err.code !== 'ER_DUP_ENTRY' && err.code !== 'SQLITE_CONSTRAINT') {
+                    throw err;
+                }
+                throw new errors.ConflictError({err});
             }
-        }).fetchOne();
-
-        if (!memberSubscription) {
-            logging.info(`Ignoring customer.subscription.* event as member subscription does not exist`);
-            return;
-        }
-
-        try {
-            await memberRepository.linkSubscription({
-                id: member.id,
-                subscription
-            });
-        } catch (err) {
-            if (err.code !== 'ER_DUP_ENTRY' && err.code !== 'SQLITE_CONSTRAINT') {
-                throw err;
-            }
-            throw new errors.ConflictError({err});
         }
     }
 };

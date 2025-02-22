@@ -136,6 +136,7 @@ module.exports = {
                 });
             }
         }
+
         if (!membersApi) {
             membersApi = createMembersApiInstance(membersConfig);
 
