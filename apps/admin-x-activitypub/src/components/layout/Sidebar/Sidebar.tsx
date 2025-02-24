@@ -2,7 +2,7 @@ import * as React from 'react';
 import NewPostModal from '@views/Feed/components/NewPostModal';
 import NiceModal from '@ebay/nice-modal-react';
 import Recommendations from './Recommendations';
-import SidebarButton from './SidebarButton';
+import SidebarMenuLink from './SidebarMenuLink';
 import {Button, LucideIcon, Separator} from '@tryghost/shade';
 
 const Sidebar: React.FC = () => {
@@ -11,22 +11,22 @@ const Sidebar: React.FC = () => {
             <div className='flex grow flex-col justify-between'>
                 <div className='flex w-full flex-col items-start gap-8 pl-4 pt-4'>
                     <div className='flex w-full flex-col gap-px'>
-                        <SidebarButton route='/inbox'>
+                        <SidebarMenuLink to='/inbox'>
                             <LucideIcon.Inbox size={18} strokeWidth={1.5} />
                             Inbox
-                        </SidebarButton>
-                        <SidebarButton route='/feed'>
+                        </SidebarMenuLink>
+                        <SidebarMenuLink to='/feed'>
                             <LucideIcon.Hash size={18} strokeWidth={1.5} />
                             Feed
-                        </SidebarButton>
-                        <SidebarButton route='/notifications'>
+                        </SidebarMenuLink>
+                        <SidebarMenuLink to='/notifications'>
                             <LucideIcon.Bell size={18} strokeWidth={1.5} />
                             Notifications
-                        </SidebarButton>
-                        <SidebarButton route='/profile'>
+                        </SidebarMenuLink>
+                        <SidebarMenuLink to='/profile'>
                             <LucideIcon.User size={18} strokeWidth={1.5} />
                             Profile
-                        </SidebarButton>
+                        </SidebarMenuLink>
                     </div>
                     <Button className='h-9 rounded-full bg-purple-500 px-3 text-md text-white dark:hover:bg-purple-500' onClick={() => NiceModal.show(NewPostModal)}>
                         <LucideIcon.FilePen />
