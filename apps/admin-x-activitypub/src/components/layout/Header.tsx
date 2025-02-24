@@ -1,7 +1,7 @@
 import * as React from 'react';
 import useActiveRoute from '@src/hooks/use-active-route';
 import {Button, H1, LucideIcon} from '@tryghost/shade';
-import {Link, useLocation} from '@tryghost/admin-x-framework';
+import {Link, useLocation, useNavigate, useNavigationStack} from '@tryghost/admin-x-framework';
 
 interface HeaderTitleProps {
     title: string;
@@ -9,12 +9,19 @@ interface HeaderTitleProps {
 }
 
 const HeaderTitle: React.FC<HeaderTitleProps> = ({title, backIcon}) => {
+    const navigate = useNavigate();
+    const {previousPath} = useNavigationStack();
+
     if (backIcon) {
         return (
-            <Button className='-ml-2 h-9 w-auto px-2 dark:text-white [&_svg]:size-6' variant='ghost' asChild>
-                <Link to="/">
-                    <LucideIcon.ArrowLeft size={24} strokeWidth={1} />
-                </Link>
+            <Button className='-ml-2 h-9 w-auto px-2 dark:text-white [&_svg]:size-6' variant='ghost' onClick={() => {
+                if (previousPath) {
+                    navigate(-1);
+                } else {
+                    navigate('/');
+                }
+            }}>
+                <LucideIcon.ArrowLeft size={24} strokeWidth={1} />
             </Button>
         );
     }
