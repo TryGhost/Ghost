@@ -1,6 +1,7 @@
 import APAvatar from '@components/global/APAvatar';
 import ActivityPubWelcomeImage from '@assets/images/ap-welcome.png';
 import FeedItem from '@components/feed/FeedItem';
+import Layout from '@components/layout';
 import NewPostModal from '@views/Feed/components/NewPostModal';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useRef} from 'react';
@@ -14,14 +15,11 @@ import {
     useInboxForUser,
     useUserDataForUser
 } from '@hooks/use-activity-pub-queries';
+import {useLocation} from '@tryghost/admin-x-framework';
 
-type Layout = 'inbox' | 'feed';
-
-interface InboxProps {
-    layout: Layout;
-}
-
-const Inbox: React.FC<InboxProps> = ({layout}) => {
+const Inbox: React.FC = () => {
+    const location = useLocation();
+    const layout = location.pathname === '/feed' ? 'feed' : 'inbox';
     const {inboxQuery, updateInboxActivity} = useInboxForUser({enabled: layout === 'inbox'});
     const {feedQuery, updateFeedActivity} = useFeedForUser({enabled: layout === 'feed'});
 
@@ -59,20 +57,22 @@ const Inbox: React.FC<InboxProps> = ({layout}) => {
     const {data: user} = useUserDataForUser('index');
 
     return (
-        <>
+        <Layout>
             <div className='my-4 flex w-full flex-col'>
                 <div className='w-full'>
                     {activities.length > 0 ? (
                         <>
                             <div className={`mx-auto flex min-h-[calc(100dvh_-_117px)] items-start gap-11`}>
                                 <div className='flex w-full min-w-0 flex-col items-center'>
-                                    <div className={`flex w-full min-w-0 flex-col items-start ${layout !== 'inbox' && 'max-w-[500px]'}`}>
-                                        {layout === 'feed' && <div className='relative mx-[-12px] mb-4 mt-10 flex w-[calc(100%+24px)] items-center p-3'>
-                                            <div className=''>
-                                                <APAvatar author={user as ActorProperties} />
+                                    <div className={`flex w-full min-w-0 flex-col items-start ${layout !== 'inbox' && 'max-w-[620px]'}`}>
+                                        {layout === 'feed' &&
+                                            <div className='relative my-5 w-full'>
+                                                <div className='pointer-events-none absolute left-4 top-4'>
+                                                    <APAvatar author={user as ActorProperties} />
+                                                </div>
+                                                <Button aria-label='New post' className='text inset-0 h-[72px] w-full justify-start rounded-lg bg-white pl-[68px] text-left text-[1.5rem] font-normal tracking-normal text-gray-500 shadow-[0_5px_24px_0px_rgba(0,0,0,0.02),0px_2px_5px_0px_rgba(0,0,0,0.07),0px_0px_1px_0px_rgba(0,0,0,0.25)] transition-all hover:bg-white hover:shadow-[0_5px_24px_0px_rgba(0,0,0,0.05),0px_14px_12px_-9px_rgba(0,0,0,0.07),0px_0px_1px_0px_rgba(0,0,0,0.25)] dark:border dark:border-gray-925 dark:bg-black dark:shadow-none dark:hover:border-gray-800 dark:hover:bg-black dark:hover:shadow-none' onClick={() => NiceModal.show(NewPostModal)}>What&apos;s new?</Button>
                                             </div>
-                                            <Button aria-label='New post' className='text absolute inset-0 h-[64px] w-full justify-start rounded-lg bg-white pl-[64px] text-left text-[1.5rem] tracking-normal text-gray-500 shadow-[0_0_1px_rgba(0,0,0,.32),0_1px_6px_rgba(0,0,0,.03),0_8px_10px_-8px_rgba(0,0,0,.16)] transition-all hover:bg-white hover:shadow-[0_0_1px_rgba(0,0,0,.32),0_1px_6px_rgba(0,0,0,.03),0_8px_10px_-8px_rgba(0,0,0,.26)] dark:border dark:border-gray-950 dark:bg-black dark:shadow-none dark:hover:border-gray-925 dark:hover:bg-black dark:hover:shadow-none' onClick={() => NiceModal.show(NewPostModal)}>What&apos;s new?</Button>
-                                        </div>}
+                                        }
                                         <ul className='mx-auto flex w-full flex-col'>
                                             {activities.map((activity, index) => (
                                                 <li
@@ -134,7 +134,7 @@ const Inbox: React.FC<InboxProps> = ({layout}) => {
                     )}
                 </div>
             </div>
-        </>
+        </Layout>
     );
 };
 

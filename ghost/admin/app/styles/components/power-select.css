@@ -202,6 +202,7 @@
 }
 
 .ember-power-select-group .ember-power-select-option .highlight {
+    display: inline;
     background: #fff6b8;
     border-radius: 1px;
     color: color-mod(var(--darkgrey) l(-10%));

@@ -7,28 +7,26 @@ const errors = require('@tryghost/errors');
 /**
  * ### Purpose of this queue
  *
- * Ghost fetches as earliest as possible the resources from the database. The reason is simply: we
- * want to know all urls as soon as possible.
+ * Ghost fetches the resources as early as possible from the database. The simple reason is: we
+ * want to know all URLs as soon as possible.
  *
- * Parallel to this, the routes are read/prepared and registered in express.
- * So the challenge is to handle both resource availability and route registration.
- * If you start an event, all subscribers of it are executed in a sequence. The queue will wait
- * till the current subscriber has finished it's work.
- * The url service must ensure that each url in the system exists once. The order of
- * subscribers defines who will possibly own an url first.
+ * Parallel to this, the routes are read/prepared and registered in express. So the challenge is
+ * to handle both resource availability and route registration. If you start an event, all subscribers
+ * of it are executed in a sequence. The queue will wait until the current subscriber has finished its work.
  *
- * If an event has finished, the subscribers of this event still remain in the queue.
- * That means:
+ * The URL service must ensure that each URL in the system exists only once. The order of
+ * subscribers defines who will possibly own an URL first.
  *
- * - you can re-run an event
- * - you can add more subscribers to an existing queue
- * - you can order subscribers (helpful if you want to order routers)
+ * If an event has finished, the subscribers of this event still remain in the queue. That means:
+ *  - you can re-run an event
+ *  - you can add more subscribers to an existing queue
+ *  - you can order subscribers (helpful if you want to order routers)
  *
- * Each subscriber represents one instance of the url generator. One url generator represents one router.
+ * Each subscriber represents one instance of the URL generator. One URL generator represents one router.
  *
  * ### Tolerance option
  *
- * You can define a tolerance value per event. If you want to wait an amount of time till you think
+ * You can define a `tolerance` value per event. This allows you to wait an amount of time until you think
  * all subscribers have registered.
  *
  * ### Some examples to understand cases
@@ -63,21 +61,26 @@ const errors = require('@tryghost/errors');
  *   - makes use of `toNotify` to remember who was notified already
  */
 class Queue extends EventEmitter {
-    constructor() {
-        super();
-        this.queue = {};
-        this.toNotify = {};
-    }
+    /** @type {Record<string, {tolerance: number, requiredSubscriberCount: number, subscribers: Array<Function>}>} */
+    queue = {};
+
+    /** @type {Record<string, {event: string, timeoutInMS: number, notified: Array<Function>, timeout?: NodeJS.Timeout | null}>} */
+    toNotify = {};
 
     /**
      * @description Register a subscriber for this queue.
      *
-     * tolerance:
+     * Also initializes the queue for this event if it hasn't already.
+     *
+     * The tolerance is for the event on the queue (milliseconds):
      *   - 0: don't wait for more subscribers [default]
      *   - 100: wait long enough till all subscribers have registered (e.g. bootstrap)
      *
      * @param {Object} options
-     * @param {function} fn
+     * @param {string} options.event
+     * @param {number} [options.tolerance]
+     * @param {number} [options.requiredSubscriberCount]
+     * @param {Function} fn
      */
     register(options, fn) {
         if (!Object.prototype.hasOwnProperty.call(options, 'tolerance')) {
@@ -101,6 +104,9 @@ class Queue extends EventEmitter {
     /**
      * @description The queue runs & executes subscribers one by one (sequentially)
      * @param {Object} options
+     * @param {string} options.event
+     * @param {string} options.action
+     * @param {Object} [options.eventData]
      */
     run(options) {
         const {event, action, eventData} = options;
@@ -145,12 +151,12 @@ class Queue extends EventEmitter {
             // CASE 3: wait for more subscribers, i am still tolerant
             if (this.queue[event].tolerance === 0) {
                 delete this.toNotify[action];
-                debug('run.ended (1)', event, action);
+                debug('run.ended (zero tolerance)', event, action);
                 this.emit('ended', event);
             } else if (subscribers.length >= this.queue[event].requiredSubscriberCount &&
                 this.toNotify[action].timeoutInMS > this.queue[event].tolerance) {
                 delete this.toNotify[action];
-                debug('run.ended (2)', event, action);
+                debug('run.ended (tolerance and subscribers)', event, action);
                 this.emit('ended', event);
             } else {
                 debug('run.retry', event, action, this.toNotify[action].timeoutInMS);
@@ -168,11 +174,15 @@ class Queue extends EventEmitter {
      * @description Start the queue from outside.
      *
      * CASE:
-     *
      *   - resources were fetched from database on bootstrap
      *   - resource was added
      *
-     * @param options
+     * @param {Object} options
+     * @param {string} options.event
+     * @param {number} [options.tolerance]
+     * @param {number} [options.timeoutInMS]
+     * @param {number} [options.requiredSubscriberCount]
+     * @param {string} [options.action]
      */
     start(options) {
         debug('start');

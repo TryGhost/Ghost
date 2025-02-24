@@ -5,10 +5,10 @@ import React, {useCallback, useEffect, useRef, useState} from 'react';
 import articleBodyStyles from '../articleBodyStyles';
 import getUsername from '../../utils/get-username';
 import {OptionProps, SingleValueProps, components} from 'react-select';
-import {useDesignSystem} from '@tryghost/admin-x-design-system';
+import {Popover, PopoverContent, PopoverTrigger, Skeleton} from '@tryghost/shade';
 
 import {Activity, ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
-import {Button, Icon, LoadingIndicator, Modal, Popover, Select, SelectOption} from '@tryghost/admin-x-design-system';
+import {Button, Icon, LoadingIndicator, Modal, Select, SelectOption} from '@tryghost/admin-x-design-system';
 import {renderTimestamp} from '../../utils/render-timestamp';
 import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
 import {useModal} from '@ebay/nice-modal-react';
@@ -69,7 +69,7 @@ const ArticleBody: React.FC<{
     const iframeRef = useRef<HTMLIFrameElement>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [iframeHeight, setIframeHeight] = useState('0px');
-    const {darkMode} = useDesignSystem();
+    const darkMode = document.documentElement.classList.contains('dark');
 
     const cssContent = articleBodyStyles(siteData?.url.replace(/\/$/, ''));
 
@@ -283,8 +283,14 @@ const ArticleBody: React.FC<{
         <div className='w-full pb-6'>
             <div className='relative'>
                 {isLoading && (
-                    <div className='absolute inset-0 flex items-center justify-center bg-white/60'>
-                        <LoadingIndicator />
+                    <div className='mt-6'>
+                        <div className='mb-6 flex flex-col gap-2'>
+                            <Skeleton className='h-8' />
+                            <Skeleton className='h-8 w-full max-w-md' />
+                        </div>
+                        <Skeleton className='mt-2 h-4' count={4} randomize={true} />
+                        <Skeleton className='mt-8 h-[400px]' />
+                        <Skeleton className='mt-2 h-4' containerClassName='block mt-7 mb-4' count={8} randomize={true} />
                     </div>
                 )}
                 <iframe
@@ -380,6 +386,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
 
     const modalSize = width === 'narrow' ? MODAL_SIZE_SM : MODAL_SIZE_LG;
     const modal = useModal();
+    const darkMode = document.documentElement.classList.contains('dark');
 
     const canNavigateBack = history.length > 0;
     const navigateBack = () => {
@@ -696,7 +703,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
             align='right'
             allowBackgroundInteraction={false}
             animate={true}
-            backDrop={false}
+            backDrop={darkMode && width === 'narrow'}
             backDropClick={true}
             footer={<></>}
             height={'full'}
@@ -706,7 +713,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
             width={modalSize === MODAL_SIZE_LG ? 'toSidebar' : modalSize}
         >
             <div className='flex h-full flex-col'>
-                <div className='sticky top-0 z-50 flex h-[97px] items-center justify-center border-b border-gray-200 bg-white dark:border-gray-950 dark:bg-black'>
+                <div className='sticky top-0 z-50 flex h-[102px] items-center justify-center border-b border-gray-200 bg-white dark:border-gray-950 dark:bg-black'>
                     <div
                         className={`w-full ${modalSize === MODAL_SIZE_LG ? 'grid px-8' : 'flex justify-between gap-2 px-8'}`}
                         style={modalSize === MODAL_SIZE_LG ? {
@@ -732,104 +739,109 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                             </div>
                         </div>)}
                         <div className='col-[3/4] flex items-center justify-end gap-2'>
-                            {modalSize === MODAL_SIZE_LG && object.type === 'Article' && <Popover position='end' trigger={ <Button className='transition-color flex h-10 w-10 items-center justify-center rounded-full bg-white hover:bg-gray-100 dark:bg-black dark:hover:bg-gray-950' icon='typography' size='sm' unstyled onClick={() => {}}/>
-                            }>
-                                <div className='flex min-w-[300px] flex-col p-5'>
-                                    <Select
-                                        className='mb-3'
-                                        components={{Option, SingleValue}}
-                                        controlClasses={{control: '!min-h-[40px] !py-0 !pl-1 dark:!bg-grey-925', option: '!pl-1 !py-[4px]'}}
-                                        options={[
-                                            {
+                            {modalSize === MODAL_SIZE_LG && object.type === 'Article' && <Popover modal={false}>
+                                <PopoverTrigger asChild>
+                                    <Button className='transition-color flex h-10 w-10 items-center justify-center rounded-full bg-white hover:bg-gray-100 dark:bg-black dark:hover:bg-gray-950' icon='typography' size='sm' unstyled />
+                                </PopoverTrigger>
+                                <PopoverContent align='end' className='w-[300px]' onCloseAutoFocus={e => e.preventDefault()} onOpenAutoFocus={e => e.preventDefault()}>
+                                    <div className='flex flex-col'>
+                                        <Select
+                                            className='mb-3'
+                                            components={{Option, SingleValue}}
+                                            controlClasses={{control: '!min-h-[40px] !py-0 !pl-1 dark:!bg-grey-925', option: '!pl-1 !py-[4px]'}}
+                                            options={[
+                                                {
+                                                    value: FONT_SANS,
+                                                    label: 'Clean sans-serif',
+                                                    className: 'font-sans'
+                                                },
+                                                {
+                                                    value: 'Georgia, Times, serif',
+                                                    label: 'Elegant serif',
+                                                    className: 'font-serif'
+                                                }
+                                            ]}
+                                            title='Typeface'
+                                            value={fontFamily}
+                                            onFocus={() => {}}
+                                            onSelect={option => setFontFamily(option || {
                                                 value: FONT_SANS,
                                                 label: 'Clean sans-serif',
                                                 className: 'font-sans'
-                                            },
-                                            {
-                                                value: 'Georgia, Times, serif',
-                                                label: 'Elegant serif',
-                                                className: 'font-serif'
-                                            }
-                                        ]}
-                                        title='Typeface'
-                                        value={fontFamily}
-                                        onSelect={option => setFontFamily(option || {
-                                            value: FONT_SANS,
-                                            label: 'Clean sans-serif',
-                                            className: 'font-sans'
-                                        })}
-                                    />
-                                    <div className='mb-2 flex items-center justify-between'>
-                                        <span className='text-sm font-medium text-gray-900 dark:text-white'>Font size</span>
-                                        <div className='flex items-center'>
-                                            <Button
-                                                className={`transition-color flex h-8 w-8 items-center justify-center rounded-full bg-white dark:bg-grey-900 dark:hover:bg-grey-925 ${currentFontSizeIndex === 0 ? 'opacity-20 hover:bg-white' : 'hover:bg-gray-100'}`}
-                                                disabled={currentFontSizeIndex === 0}
-                                                hideLabel={true}
-                                                icon='substract'
-                                                iconSize='xs'
-                                                label='Decrease font size'
-                                                unstyled={true}
-                                                onClick={decreaseFontSize}
-                                            />
-                                            <Button
-                                                className={`transition-color flex h-8 w-8 items-center justify-center rounded-full bg-white hover:bg-gray-100 dark:bg-grey-900 dark:hover:bg-grey-925 ${currentFontSizeIndex === FONT_SIZES.length - 1 ? 'opacity-20 hover:bg-white' : 'hover:bg-gray-100'}`}
-                                                disabled={currentFontSizeIndex === FONT_SIZES.length - 1}
-                                                hideLabel={true}
-                                                icon='add'
-                                                iconSize='xs'
-                                                label='Increase font size'
-                                                unstyled={true}
-                                                onClick={increaseFontSize}
-                                            />
+                                            })}
+                                        />
+                                        <div className='mb-2 flex items-center justify-between'>
+                                            <span className='text-sm font-medium text-gray-900 dark:text-white'>Font size</span>
+                                            <div className='flex items-center'>
+                                                <Button
+                                                    className={`transition-color flex h-8 w-8 items-center justify-center rounded-full bg-white dark:bg-grey-900 dark:hover:bg-grey-925 ${currentFontSizeIndex === 0 ? 'opacity-20 hover:bg-white' : 'hover:bg-gray-100'}`}
+                                                    disabled={currentFontSizeIndex === 0}
+                                                    hideLabel={true}
+                                                    icon='substract'
+                                                    iconSize='xs'
+                                                    label='Decrease font size'
+                                                    unstyled={true}
+                                                    onClick={decreaseFontSize}
+                                                />
+                                                <Button
+                                                    className={`transition-color flex h-8 w-8 items-center justify-center rounded-full bg-white hover:bg-gray-100 dark:bg-grey-900 dark:hover:bg-grey-925 ${currentFontSizeIndex === FONT_SIZES.length - 1 ? 'opacity-20 hover:bg-white' : 'hover:bg-gray-100'}`}
+                                                    disabled={currentFontSizeIndex === FONT_SIZES.length - 1}
+                                                    hideLabel={true}
+                                                    icon='add'
+                                                    iconSize='xs'
+                                                    label='Increase font size'
+                                                    unstyled={true}
+                                                    onClick={increaseFontSize}
+                                                />
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div className='mb-5 flex items-center justify-between'>
-                                        <span className='text-sm font-medium text-gray-900 dark:text-white'>Line spacing</span>
-                                        <div className='flex items-center'>
-                                            <Button
-                                                className={`transition-color flex h-8 w-8 items-center justify-center rounded-full bg-white hover:bg-gray-100 dark:bg-grey-900 dark:hover:bg-grey-925 ${currentLineHeightIndex === 0 ? 'opacity-20 hover:bg-white' : 'hover:bg-gray-100'}`}
-                                                disabled={currentLineHeightIndex === 0}
-                                                hideLabel={true}
-                                                icon='substract'
-                                                iconSize='xs'
-                                                label='Decrease line spacing'
-                                                unstyled={true}
-                                                onClick={decreaseLineHeight}
-                                            />
-                                            <Button
-                                                className={`transition-color flex h-8 w-8 items-center justify-center rounded-full bg-white hover:bg-gray-100 dark:bg-grey-900 dark:hover:bg-grey-925 ${currentLineHeightIndex === LINE_HEIGHTS.length - 1 ? 'opacity-20 hover:bg-white' : 'hover:bg-gray-100'}`}
-                                                disabled={currentLineHeightIndex === LINE_HEIGHTS.length - 1}
-                                                hideLabel={true}
-                                                icon='add'
-                                                iconSize='xs'
-                                                label='Increase line spacing'
-                                                unstyled={true}
-                                                onClick={increaseLineHeight}
-                                            />
+                                        <div className='mb-5 flex items-center justify-between'>
+                                            <span className='text-sm font-medium text-gray-900 dark:text-white'>Line spacing</span>
+                                            <div className='flex items-center'>
+                                                <Button
+                                                    className={`transition-color flex h-8 w-8 items-center justify-center rounded-full bg-white hover:bg-gray-100 dark:bg-grey-900 dark:hover:bg-grey-925 ${currentLineHeightIndex === 0 ? 'opacity-20 hover:bg-white' : 'hover:bg-gray-100'}`}
+                                                    disabled={currentLineHeightIndex === 0}
+                                                    hideLabel={true}
+                                                    icon='substract'
+                                                    iconSize='xs'
+                                                    label='Decrease line spacing'
+                                                    unstyled={true}
+                                                    onClick={decreaseLineHeight}
+                                                />
+                                                <Button
+                                                    className={`transition-color flex h-8 w-8 items-center justify-center rounded-full bg-white hover:bg-gray-100 dark:bg-grey-900 dark:hover:bg-grey-925 ${currentLineHeightIndex === LINE_HEIGHTS.length - 1 ? 'opacity-20 hover:bg-white' : 'hover:bg-gray-100'}`}
+                                                    disabled={currentLineHeightIndex === LINE_HEIGHTS.length - 1}
+                                                    hideLabel={true}
+                                                    icon='add'
+                                                    iconSize='xs'
+                                                    label='Increase line spacing'
+                                                    unstyled={true}
+                                                    onClick={increaseLineHeight}
+                                                />
+                                            </div>
                                         </div>
+                                        <Button
+                                            className="text-sm text-gray-600 hover:text-gray-700 dark:text-gray-500 dark:hover:text-gray-600"
+                                            label="Reset to default"
+                                            link={true}
+                                            onClick={() => {
+                                                setCurrentFontSizeIndex(1); // Default font size
+                                                setCurrentLineHeightIndex(1); // Default line height
+                                                setFontFamily({
+                                                    value: FONT_SANS,
+                                                    label: 'Clean sans-serif'
+                                                });
+                                            }}
+                                        />
                                     </div>
-                                    <Button
-                                        className="text-sm text-gray-600 hover:text-gray-700 dark:text-gray-500 dark:hover:text-gray-600"
-                                        label="Reset to default"
-                                        link={true}
-                                        onClick={() => {
-                                            setCurrentFontSizeIndex(1); // Default font size
-                                            setCurrentLineHeightIndex(1); // Default line height
-                                            setFontFamily({
-                                                value: FONT_SANS,
-                                                label: 'Clean sans-serif'
-                                            });
-                                        }}
-                                    />
-                                </div>
+                                </PopoverContent>
                             </Popover>}
                             <Button className='transition-color flex h-10 w-10 items-center justify-center rounded-full bg-white hover:bg-gray-100 dark:bg-black dark:hover:bg-gray-950' icon='close' size='sm' unstyled onClick={() => modal.remove()}/>
                         </div>
                     </div>
                 </div>
                 <div className='relative flex-1'>
-                    {modalSize === MODAL_SIZE_LG && object.type === 'Article' && tocItems.length > 0 && (
+                    {modalSize === MODAL_SIZE_LG && object.type === 'Article' && tocItems.length > 1 && (
                         <div className="!visible absolute inset-y-0 right-7 z-40 hidden lg:!block">
                             <div className="sticky top-1/2 -translate-y-1/2">
                                 <TableOfContents

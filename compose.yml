@@ -23,6 +23,12 @@ services:
       # Mount the source code
       - .:/home/ghost
 
+      ## SSH Agent forwarding
+      - ${SSH_AUTH_SOCK}:/ssh-agent
+
+      ## Git config
+      - ${HOME}/.gitconfig:/root/.gitconfig:ro
+
       # Volume exclusions:
       ## Prevent collisions between host and container node_modules
       - node_modules_ghost_root:/home/ghost/node_modules:delegated
@@ -131,6 +137,7 @@ services:
         condition: service_healthy
     environment:
       - DEBUG=${DEBUG:-}
+      - SSH_AUTH_SOCK=/ssh-agent
       - GHOST_DEV_IS_DOCKER=true
       - GHOST_DEV_APP_FLAGS=${GHOST_DEV_APP_FLAGS:-}
       - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY:-}
