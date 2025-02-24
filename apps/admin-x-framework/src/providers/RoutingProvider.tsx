@@ -2,6 +2,14 @@ import NiceModal, {NiceModalHocProps} from '@ebay/nice-modal-react';
 import React, {createContext, useCallback, useContext, useEffect, useState} from 'react';
 import {useFramework} from './FrameworkProvider';
 
+/**
+ * OBSOLETE DO NOT USE FOR NEW REACT APPS IN GHOST!
+ *
+ * This is a home-grown routing provider which is only used in Settings and to
+ * be removed from there as well. For new apps use the React Router based
+ * RouterProvider component.
+ */
+
 export type RouteParams = Record<string, string>
 
 export type ExternalLink = {
@@ -63,7 +71,7 @@ const handleNavigation = (basePath: string, currentRoute: string | undefined, lo
     const url = new URL(hash, domain);
 
     const pathName = getHashPath(basePath, url.pathname);
-    
+
     // Return early if we don't have modal configuration
     if (!modalPaths || !loadModals) {
         return {pathName: pathName || ''};

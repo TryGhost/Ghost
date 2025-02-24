@@ -3,16 +3,15 @@ import APAvatar from '@components/global/APAvatar';
 import ActivityItem from '@components/activities/ActivityItem';
 import getName from '@utils/get-name';
 import getUsername from '@utils/get-username';
-import {Button, H4, LucideIcon, Skeleton} from '@tryghost/shade';
+import {H4, LucideIcon, Skeleton} from '@tryghost/shade';
+import {Link} from '@tryghost/admin-x-framework';
 import {handleProfileClick} from '@utils/handle-profile-click';
-import {useRouting} from '@tryghost/admin-x-framework/routing';
 import {useSuggestedProfilesForUser} from '@hooks/use-activity-pub-queries';
 
 const Recommendations: React.FC = () => {
     const {suggestedProfilesQuery} = useSuggestedProfilesForUser('index', 3);
     const {data: suggestedData, isLoading: isLoadingSuggested} = suggestedProfilesQuery;
     const suggested = suggestedData || Array(3).fill({actor: {}});
-    const {updateRoute} = useRouting();
 
     return (
         <div className='px-3'>
@@ -45,7 +44,7 @@ const Recommendations: React.FC = () => {
                     );
                 })}
             </ul>
-            <Button className='mt-2 p-0 text-md font-semibold text-purple-500' variant='link' onClick={() => updateRoute('search')}>Find more &rarr;</Button>
+            <Link className='mt-2 inline-block p-0 py-2 text-md font-semibold text-purple-500' to="/search">Find more &rarr;</Link>
         </div>
     );
 };

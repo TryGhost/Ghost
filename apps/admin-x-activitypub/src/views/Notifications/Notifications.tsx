@@ -10,6 +10,7 @@ import ArticleModal from '@components/feed/ArticleModal';
 import NotificationItem from '@components/activities/NotificationItem';
 import Separator from '@components/global/Separator';
 
+import Layout from '@components/layout';
 import getUsername from '@utils/get-username';
 import stripHtml from '@utils/strip-html';
 import truncate from '@utils/truncate';
@@ -301,7 +302,7 @@ const Notifications: React.FC<NotificationsProps> = () => {
     };
 
     return (
-        <>
+        <Layout>
             <div className='z-0 flex w-full flex-col items-center'>
                 {
                     isLoading === false && groupedActivities.length === 0 && (
@@ -411,7 +412,7 @@ const Notifications: React.FC<NotificationsProps> = () => {
                     )
                 }
             </div>
-        </>
+        </Layout>
     );
 };
 

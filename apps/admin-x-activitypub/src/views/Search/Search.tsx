@@ -11,6 +11,7 @@ import FollowButton from '@components/global/FollowButton';
 import Separator from '@components/global/Separator';
 import ViewProfileModal from '@components/modals/ViewProfileModal';
 
+import Layout from '@components/layout';
 import {type Profile} from '../../api/activitypub';
 import {useSearchForUser, useSuggestedProfilesForUser} from '@hooks/use-activity-pub-queries';
 
@@ -204,8 +205,8 @@ const Search: React.FC<SearchProps> = ({}) => {
     }, []);
 
     return (
-        <>
-            <div className='z-0 mx-auto flex w-full max-w-[620px] flex-col items-center pt-8'>
+        <Layout>
+            <div className='z-0 mx-auto flex w-full max-w-[560px] flex-col items-center pt-8'>
                 <div className='relative flex w-full items-center'>
                     <Icon className='absolute left-3 top-3 z-10' colorClass='text-gray-500' name='magnifying-glass' size='sm' />
                     <TextField
@@ -259,7 +260,7 @@ const Search: React.FC<SearchProps> = ({}) => {
                     />
                 )}
             </div>
-        </>
+        </Layout>
     );
 };
 
