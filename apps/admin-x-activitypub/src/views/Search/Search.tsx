@@ -151,7 +151,7 @@ interface SuggestedProfilesProps {
 const SuggestedProfiles: React.FC<SuggestedProfilesProps> = ({profiles, isLoading, onUpdate}) => {
     return (
         <>
-            <span className='mb-1 flex w-full max-w-[560px] font-semibold'>
+            <span className='mb-1 flex w-full max-w-[620px] font-semibold'>
                 Suggested accounts
             </span>
             {profiles.map((profile, index) => {
@@ -205,7 +205,7 @@ const Search: React.FC<SearchProps> = ({}) => {
 
     return (
         <>
-            <div className='z-0 mx-auto flex w-full max-w-[560px] flex-col items-center pt-8'>
+            <div className='z-0 mx-auto flex w-full max-w-[620px] flex-col items-center pt-8'>
                 <div className='relative flex w-full items-center'>
                     <Icon className='absolute left-3 top-3 z-10' colorClass='text-gray-500' name='magnifying-glass' size='sm' />
                     <TextField

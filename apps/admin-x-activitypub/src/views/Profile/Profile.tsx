@@ -373,21 +373,23 @@ const Profile: React.FC<ProfileProps> = ({}) => {
     }, [isExpanded]);
 
     return (
-        <>
-            <div className='z-0 mx-auto mt-8 flex w-full max-w-[580px] flex-col items-center pb-16'>
+        <div className='relative isolate'>
+            <div className='absolute -right-8 left-0 top-0 z-0 h-[15vw] bg-[linear-gradient(265deg,#FAFAFB_0%,#F4F5F6_100%)] dark:bg-[linear-gradient(265deg,#23272C_0%,#202327_100%)]'>
+                {account?.bannerImageUrl &&
+                    <div className='h-full w-full'>
+                        <img
+                            alt={account?.name}
+                            className='h-full w-full object-cover'
+                            src={account?.bannerImageUrl}
+                        />
+                    </div>
+                }
+            </div>
+            <div className='relative z-10 mx-auto flex w-full max-w-[620px] flex-col items-center pb-16 pt-[calc(15vw-52px)]'>
                 <div className='mx-auto w-full'>
-                    {account?.bannerImageUrl && (
-                        <div className='h-[200px] w-full overflow-hidden rounded-lg bg-gradient-to-tr from-gray-200 to-gray-100'>
-                            <img
-                                alt={account?.name}
-                                className='h-full w-full object-cover'
-                                src={account?.bannerImageUrl}
-                            />
-                        </div>
-                    )}
-                    <div className={`${account?.bannerImageUrl && '-mt-12'} px-4`}>
+                    <div>
                         <div className='flex items-end justify-between'>
-                            <div className='rounded-xl outline outline-4 outline-white dark:outline-black'>
+                            <div className='-ml-2 rounded-full bg-white p-1 dark:bg-black dark:outline-black'>
                                 <APAvatar
                                     author={account && {
                                         icon: {
@@ -441,7 +443,7 @@ const Profile: React.FC<ProfileProps> = ({}) => {
                     </div>
                 </div>
             </div>
-        </>
+        </div>
     );
 };
 
