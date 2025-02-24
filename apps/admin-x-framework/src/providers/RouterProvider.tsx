@@ -5,10 +5,9 @@ import {useFramework} from './FrameworkProvider';
 import {NavigationStackProvider} from './NavigationStackProvider';
 
 /**
- * README
- *
  * This provider uses React Router to provide a router context to React apps
- * in Ghost. For future apps this is the preferred router provider (not RoutingProvider).
+ * in Ghost. For future apps this is the preferred router provider
+ * (not RoutingProvider).
  */
 
 /**
@@ -35,6 +34,7 @@ export function RouterProvider({
         const normalizedPrefix = `/${prefix?.replace(/\/+/g, '/').replace(/^\/|\/$/g, '')}`;
 
         // Create a root route that wraps all routes with NavigationStackProvider
+        // so navigation stack is available by default.
         const rootRoute: RouteObject = {
             element: (
                 <NavigationStackProvider>
