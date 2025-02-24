@@ -29,9 +29,7 @@ const SidebarMenuLink = React.forwardRef<HTMLButtonElement, SidebarButtonProps>(
                 ref={ref}
                 className={linkClass}
                 variant='ghost'
-                onClick={() => {
-                    props.onClick;
-                }}
+                onClick={props.onClick}
                 {...props}
             >
                 {children}
