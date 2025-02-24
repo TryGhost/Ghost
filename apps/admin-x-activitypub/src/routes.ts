@@ -6,38 +6,40 @@ import {RouteObject, redirect} from '@tryghost/admin-x-framework';
 
 export const APP_ROUTE_PREFIX = '/activitypub';
 
-export const routes: RouteObject[] = [
+type CustomRouteObject = RouteObject & {
+    pageTitle?: string;
+};
+
+export const routes: CustomRouteObject[] = [
     {
         path: '',
         loader: () => redirect('inbox'),
-        index: true
+        index: true,
+        pageTitle: 'Inbox'
     },
     {
         path: 'inbox',
-        Component: Inbox
+        Component: Inbox,
+        pageTitle: 'Inbox'
     },
     {
         path: 'feed',
-        Component: Inbox
+        Component: Inbox,
+        pageTitle: 'Feed'
     },
     {
         path: 'search',
-        Component: Search
+        Component: Search,
+        pageTitle: 'Search'
     },
     {
         path: 'notifications',
-        Component: Notifications
+        Component: Notifications,
+        pageTitle: 'Notifications'
     },
     {
         path: 'profile',
-        Component: Profile
+        Component: Profile,
+        pageTitle: 'Profile'
     }
 ];
-
-export const ROUTE_TITLES: Record<string, string> = {
-    '/inbox': 'Inbox',
-    '/feed': 'Feed',
-    '/search': 'Search',
-    '/notifications': 'Notifications',
-    '/profile': 'Profile'
-};
