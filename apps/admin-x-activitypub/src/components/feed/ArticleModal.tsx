@@ -739,7 +739,6 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                             </div>
                         </div>)}
                         <div className='col-[3/4] flex items-center justify-end gap-2'>
-                            {/* {modalSize === MODAL_SIZE_LG && object.type === 'Article' && <Popover position='end' trigger={ <Button className='transition-color flex h-10 w-10 items-center justify-center rounded-full bg-white hover:bg-gray-100 dark:bg-black dark:hover:bg-gray-950' icon='typography' size='sm' unstyled onClick={() => {}}/> */}
                             {modalSize === MODAL_SIZE_LG && object.type === 'Article' && <Popover modal={false}>
                                 <PopoverTrigger asChild>
                                     <Button className='transition-color flex h-10 w-10 items-center justify-center rounded-full bg-white hover:bg-gray-100 dark:bg-black dark:hover:bg-gray-950' icon='typography' size='sm' unstyled />
