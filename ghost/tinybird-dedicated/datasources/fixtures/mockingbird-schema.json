@@ -1,0 +1,48 @@
+{
+    "timestamp": {
+      "type": "mockingbird.datetimeBetween",
+      "params": [
+          {
+              "start": "2024-07-01T00:00:00.000Z",
+              "end": "2024-08-20T12:00:00.000Z"
+          }
+      ]
+    },
+    "session_id": {
+      "type": "string.uuid"
+    },
+    "action": {
+      "type": "mockingbird.pick",
+      "params": [
+        {
+          "values": [
+            "page_hit"
+          ]
+        }
+      ]
+    },
+    "version": {
+      "type": "mockingbird.pick",
+      "params": [
+        {
+          "values": [
+            "1"
+          ]
+        }
+      ]
+    },
+    "payload": {
+      "type": "mockingbird.pickWeighted",
+      "params": [
+        {
+          "values": [
+            {"site_uuid": "mock_site_uuid","user-agent": "Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.5112.79 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)","locale": "en-US","referrer": "https://www.kike.io","pathname": "/coming-soon/","href": "https://web-analytics.ghost.is/coming-soon/", "pathname": "/coming-soon/","href": "https://web-analytics.ghost.is/coming-soon/"}
+          ],
+          "weights": [
+            200, 300, 300, 300, 300, 300, 300, 300, 300, 300, 300, 400,
+            100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100
+          ]
+        }
+      ]
+    }
+  }
