@@ -30,7 +30,8 @@ x-ghost-template: &ghost-template
     - .:/home/ghost
 
     # NX
-    - nx-daemon-socket-dir:/home/nx
+    - nx-cache:/home/ghost/.nxcache
+    - nx:/home/ghost/.nx
 
     ## SSH Agent forwarding
     - ${SSH_AUTH_SOCK}:/ssh-agent
@@ -244,7 +245,6 @@ volumes:
   redis-data: {}
   nx: {}
   nx-cache: {}
-  nx-daemon-socket-dir: {}
   node_modules_ghost_root: {}
   node_modules_ghost_activitypub: {}
   node_modules_ghost_adapter-cache-memory-ttl: {}
