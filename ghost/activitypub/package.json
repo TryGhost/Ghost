@@ -35,5 +35,8 @@
   },
   "dependencies": {
     "bson-objectid": "2.0.4"
+  },
+  "nx": {
+    "tags": ["typescript"]
   }
 }

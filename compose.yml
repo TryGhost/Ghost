@@ -11,13 +11,11 @@ x-ghost-template: &ghost-template
     context: .
     dockerfile: ./.docker/Dockerfile
     target: development
-  entrypoint: ["/home/ghost/.docker/development.entrypoint.sh"]
   tty: true
   environment:
       - DEBUG=${DEBUG:-}
       - NX_DAEMON=false
       - NX_REJECT_UNKNOWN_LOCAL_CACHE=false
-      - NX_VERBOSE=true
       - SSH_AUTH_SOCK=/ssh-agent
       - GHOST_DEV_IS_DOCKER=true
       - GHOST_DEV_APP_FLAGS=${GHOST_DEV_APP_FLAGS:-}
@@ -29,8 +27,8 @@ x-ghost-template: &ghost-template
     - .:/home/ghost
 
     # NX
-    - nx-cache:/home/ghost/.nxcache
     - nx:/home/ghost/.nx
+    - nx-cache:/home/ghost/.nxcache
 
     ## SSH Agent forwarding
     - ${SSH_AUTH_SOCK}:/ssh-agent
@@ -139,20 +137,25 @@ x-ghost-template: &ghost-template
 
 services:
 
-  ts-builder:
+  builder:
     <<: *ghost-template
-    command: ["nx", "run-many", "--target=build:watch", "--projects=@tryghost/post-revisions", "--parallel"]
-    profiles: [ ghost ]
+    entrypoint: ["/home/ghost/.docker/builder.entrypoint.sh"]
+    command: [ "yarn", "nx", "run-many", "--target", "dev", "--parallel", "--projects=tag:typescript" ]
+    restart: on-failure
+    profiles: [ ghost, admin ]
+    healthcheck:
+      test: ["CMD-SHELL", "yarn nx daemon --status | grep 'Nx Daemon is currently running'"]
+      interval: 1s
+      timeout: 5s
+      retries: 1
   ghost:
     <<: *ghost-template
     working_dir: /home/ghost/ghost/core
-    command: sh -c "node --watch --watch-preserve-output index.js"
+    command: [ "node", "--watch", "--watch-preserve-output", "index.js" ]
     ports:
       - "2368:2368" # Ghost
     profiles: [ ghost ]
     depends_on:
-      ts-builder:
-        condition: service_started
       mysql:
         condition: service_healthy
       redis:
@@ -160,11 +163,11 @@ services:
   admin:
     <<: *ghost-template
     working_dir: /home/ghost/ghost/admin
-    command: sh -c "yarn dev"
+    command: [ "yarn", "ember", "serve" ]
     ports:
       - "4200:4200" # Admin
       - "4201:4201" # Admin tests
-    profiles: [ ghost ]
+    profiles: [ ghost, admin ]
   mysql:
     image: mysql:8.0.35
     container_name: ghost-mysql

@@ -7,6 +7,7 @@
   "main": "build/index.js",
   "types": "build/index.d.ts",
   "scripts": {
+    "dev": "tsc --watch --preserveWatchOutput --sourceMap",
     "build": "yarn build:ts",
     "build:ts": "tsc",
     "test:unit": "NODE_ENV=testing c8 --src src --all --check-coverage --100 --reporter text --reporter cobertura -- mocha --reporter dot -r ts-node/register './test/**/*.test.ts'",
@@ -28,5 +29,8 @@
   "dependencies": {
     "@tryghost/mongo-utils": "0.6.2",
     "knex": "2.4.2"
+  },
+  "nx": {
+    "tags": ["typescript"]
   }
 }
