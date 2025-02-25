@@ -36,7 +36,38 @@
       "params": [
         {
           "values": [
-            {"site_uuid": "mock_site_uuid","user-agent": "Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.5112.79 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)","locale": "en-US","referrer": "https://www.kike.io","pathname": "/coming-soon/","href": "https://web-analytics.ghost.is/coming-soon/", "pathname": "/coming-soon/","href": "https://web-analytics.ghost.is/coming-soon/"}
+            {
+                "user-agent": "Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.5112.79 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
+                "locale": "en-US",
+                "referrer": "https://www.kike.io",
+                "pathname": "/coming-soon/",
+                "href": "https://web-analytics.ghost.is/coming-soon/",
+                "site_uuid": "mock_site_uuid"
+            },
+            {
+                "user-agent": "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; Googlebot/2.1; +http://www.google.com/bot.html) Chrome/104.0.5112.79 Safari/537.36",
+                "locale": "en-US",
+                "referrer": "https://www.kike.io",
+                "pathname": "/coming-soon/",
+                "href": "https://web-analytics.ghost.is/coming-soon/",
+                "site_uuid": "mock_site_uuid"
+            },
+            {
+                "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:103.0) Gecko/20100101 Firefox/103.0",
+                "locale": "en-US",
+                "referrer": "https://www.kike.io",
+                "pathname": "/coming-soon/",
+                "href": "https://web-analytics.ghost.is/coming-soon/",
+                "site_uuid": "mock_site_uuid"
+            },
+            {
+                "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.5112.102 Safari/537.36",
+                "locale": "en-US",
+                "referrer": "https://www.kike.io",
+                "pathname": "/coming-soon/",
+                "href": "https://web-analytics.ghost.is/coming-soon/",
+                "site_uuid": "mock_site_uuid"
+            }
           ],
           "weights": [
             200, 300, 300, 300, 300, 300, 300, 300, 300, 300, 300, 400,
