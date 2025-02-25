@@ -148,8 +148,6 @@ COPY ghost/webmentions/package.json ghost/webmentions/package.json
 ## Install dependencies
 RUN yarn install --frozen-lockfile --prefer-offline
 
-RUN yarn global add nx@19.8.14
-
 ## Install playwright w/ dependencies
 RUN npx -y playwright install --with-deps
 
