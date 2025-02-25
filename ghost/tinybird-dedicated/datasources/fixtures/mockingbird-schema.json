@@ -1,12 +1,6 @@
 {
     "timestamp": {
-      "type": "mockingbird.datetimeBetween",
-      "params": [
-          {
-              "start": "2024-07-01T00:00:00.000Z",
-              "end": "2024-08-20T12:00:00.000Z"
-          }
-      ]
+      "type": "mockingbird.datetimeRecent"
     },
     "session_id": {
       "type": "string.uuid"
