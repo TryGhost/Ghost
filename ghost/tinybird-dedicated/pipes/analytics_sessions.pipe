@@ -1,10 +1,12 @@
 VERSION 0
+TOKEN "analytics_sessions__v0_endpoint_read_2877" READ
 
 NODE parsed_hits
 DESCRIPTION >
     Parse raw page_hit events
 
 SQL >
+
     SELECT
         timestamp,
         action,
@@ -19,12 +21,15 @@ SQL >
         payload.member_uuid as member_uuid,
         toString(payload.member_status) as member_status,
         payload.post_uuid as post_uuid,
-        lower(toString(payload.user-agent)) as user_agent
+        lower(toString(getSubcolumn(payload,'user-agent'))) as user_agent
     FROM analytics_events_json_v1
     where action = 'page_hit'
 
+
+
 NODE analytics_hits_data
 SQL >
+
     SELECT
         site_uuid,
         timestamp,
@@ -62,11 +67,14 @@ SQL >
         END as browser
     FROM parsed_hits
 
+
+
 NODE analytics_sessions_1
 DESCRIPTION >
     Aggregate by session_id and calculate session metrics
 
 SQL >
+
     SELECT
         site_uuid,
         toDate(timestamp) AS date,
@@ -86,3 +94,5 @@ SQL >
         countState() AS pageviews
     FROM analytics_hits_data
     GROUP BY date, session_id, site_uuid
+
+
