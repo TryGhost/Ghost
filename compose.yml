@@ -17,7 +17,6 @@ x-ghost-template: &ghost-template
       - DEBUG=${DEBUG:-}
       - NX_DAEMON=false
       - NX_REJECT_UNKNOWN_LOCAL_CACHE=false
-      - NX_DAEMON_SOCKET_DIR=/home/nx
       - NX_VERBOSE=true
       - SSH_AUTH_SOCK=/ssh-agent
       - GHOST_DEV_IS_DOCKER=true
