@@ -61,9 +61,7 @@ Label = ghostBookshelf.Model.extend({
     },
 
     toJSON: function toJSON(unfilteredOptions) {
-        const options = Label.filterOptions(unfilteredOptions, 'toJSON');
-        const attrs = ghostBookshelf.Model.prototype.toJSON.call(this, options);
-
+        const attrs = ghostBookshelf.Model.prototype.toJSON.call(this, unfilteredOptions);
         return attrs;
     }
 }, {
