@@ -138,15 +138,6 @@ x-ghost-template: &ghost-template
     - node_modules_apps_sodo-search:/home/ghost/apps/sodo-search/node_modules:delegated
 
 services:
-  nx-daemon:
-    <<: *ghost-template
-    command: sh -c "nx daemon --start && nx daemon && sleep infinity"
-    profiles: [ daemon ]
-    healthcheck:
-      test: sh -c "nx daemon | grep -q 'Nx Daemon is currently running'"
-      interval: 1s
-      timeout: 5s
-      retries: 10
 
   ts-builder:
     <<: *ghost-template
