@@ -29,19 +29,19 @@ if (parentPort) {
 }
 
 (async () => {
-    const updateCheck = require('./update-check');
+    const updateCheck = require('./');
 
     // INIT required services
-    const models = require('./models');
+    const models = require('../../models');
     models.init();
 
-    const permissions = require('./services/permissions');
+    const permissions = require('../permissions');
     await permissions.init();
 
-    const settings = require('./services/settings/settings-service');
+    const settings = require('../settings/settings-service');
     await settings.init();
 
-    const tiers = require('./services/tiers');
+    const tiers = require('../tiers');
     await tiers.init();
     // Finished INIT
 
