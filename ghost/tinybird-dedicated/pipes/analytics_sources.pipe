@@ -1,4 +1,4 @@
-VERSION 0
+VERSION 1
 
 NODE parsed_hits
 DESCRIPTION >
@@ -59,7 +59,18 @@ SQL >
             when match(user_agent, 'iphone|ipad|safari')
             then 'safari'
             else 'Unknown'
-        END as browser
+        END as browser,
+        case
+            when match(user_agent, 'windows')
+            then 'windows'
+            when match(user_agent, 'mac')
+            then 'mac'
+            when match(user_agent, 'ios')
+            then 'ios'
+            when match(user_agent, 'android')
+            then 'android'
+            else 'Unknown'
+        END as os
     FROM parsed_hits
 
 NODE analytics_sources_1
@@ -80,6 +91,7 @@ SQL >
         toDate(a.timestamp) AS date,
         a.device,
         a.browser,
+        a.os,
         a.location,
         b.source AS source,
         a.pathname,
@@ -88,5 +100,5 @@ SQL >
         countState() AS pageviews
     FROM analytics_hits_data as a
     INNER JOIN sessions AS b ON a.session_id = b.session_id
-    GROUP BY a.site_uuid, toDate(a.timestamp), a.device, a.browser, a.location, b.member_status, b.source, a.pathname
+    GROUP BY a.site_uuid, toDate(a.timestamp), a.device, a.browser, a.os, a.location, b.member_status, b.source, a.pathname
     HAVING b.source != current_domain

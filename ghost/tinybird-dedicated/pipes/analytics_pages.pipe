@@ -1,4 +1,4 @@
-VERSION 0
+VERSION 1
 
 NODE parsed_hits
 DESCRIPTION >
@@ -60,7 +60,18 @@ SQL >
             when match(user_agent, 'iphone|ipad|safari')
             then 'safari'
             else 'Unknown'
-        END as browser
+        END as browser,
+        case
+            when match(user_agent, 'windows')
+            then 'windows'
+            when match(user_agent, 'mac')
+            then 'mac'
+            when match(user_agent, 'ios')
+            then 'ios'
+            when match(user_agent, 'android')
+            then 'android'
+            else 'Unknown'
+        END as os
     FROM parsed_hits
 
 NODE analytics_pages_1
@@ -74,6 +85,7 @@ SQL >
         post_uuid,
         device,
         browser,
+        os,
         location,
         source,
         pathname,
@@ -84,4 +96,4 @@ SQL >
         uniqState(session_id) AS visits,
         countState() AS pageviews
     FROM analytics_hits_data
-    GROUP BY date, device, browser, location, source, pathname, post_uuid,site_uuid
+    GROUP BY date, device, browser, os, location, source, pathname, post_uuid,site_uuid
