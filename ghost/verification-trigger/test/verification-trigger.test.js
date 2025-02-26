@@ -2,7 +2,7 @@
 // const testUtils = require('./utils');
 const sinon = require('sinon');
 const assert = require('assert/strict');
-require('./utils');
+require('should');
 const VerificationTrigger = require('../index');
 const DomainEvents = require('@tryghost/domain-events');
 const {MemberCreatedEvent} = require('@tryghost/member-events');

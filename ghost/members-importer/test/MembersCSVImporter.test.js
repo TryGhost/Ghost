@@ -1,6 +1,4 @@
-// Switch these lines once there are useful utils
-// const testUtils = require('./utils');
-require('./utils');
+require('should');
 
 const Tier = require('@tryghost/tiers/lib/Tier');
 const ObjectID = require('bson-objectid').default;
@@ -231,8 +229,8 @@ describe('MembersCSVImporter', function () {
              * CASE 3: If `subscribe_to_emails` is NULL, the member should remain subscribed (but not added to any additional newsletters)
              * CASE 4: If `subscribe_to_emails` is empty, the member should remain subscribed (but not added to any additional newsletters)
              * CASE 5: If `subscribe_to_emails` is invalid, the member should remain subscribed (but not added to any additional newsletters)
-             * 
-             * 
+             *
+             *
              * For existing members with no newsletter subscriptions:
              * CASE 6: If `subscribe_to_emails` is `true`, the member should remain unsubscribed (as they likely have previously unsubscribed)
              * CASE 7: If `subscribe_to_emails` is `false`, the member should remain unsubscribed
@@ -241,7 +239,7 @@ describe('MembersCSVImporter', function () {
              * CASE 10: If `subscribe_to_emails` is invalid, the member should remain unsubscribed
              *
              * - In summary, an existing member with no pre-existing newsletter subscriptions should _never_ be subscribed to newsletters upon import
-             * 
+             *
              * For new members:
              * CASE 11: If `subscribe_to_emails` is `true`, the member should be created and subscribed
              * CASE 12: If `subscribe_to_emails` is `false`, the member should be created but not subscribed
