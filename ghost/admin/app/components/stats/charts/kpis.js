@@ -26,8 +26,6 @@ export default class KpisComponent extends Component {
             params
         });
 
-        console.log(`chart render kpi ${apiVersion}`);
-
         const LINE_COLOR = statsStaticColors[0];
         const INDEX = 'date';
         const CATEGORY = selected === 'unique_visits' ? 'visits' : selected;
