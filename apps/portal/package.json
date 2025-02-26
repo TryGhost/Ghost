@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/portal",
-  "version": "2.49.2",
+  "version": "2.49.3",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -98,6 +98,6 @@
     "vitest": "0.34.3"
   },
   "dependencies": {
-    "@hcaptcha/react-hcaptcha": "1.11.2"
+    "@hcaptcha/react-hcaptcha": "1.12.0"
   }
 }
