@@ -32,7 +32,6 @@ services:
       # Volume exclusions:
       ## Prevent collisions between host and container node_modules
       - node_modules_ghost_root:/home/ghost/node_modules:delegated
-      - node_modules_ghost_adapter-cache-memory-ttl:/home/ghost/ghost/adapter-cache-memory-ttl/node_modules:delegated
       - node_modules_ghost_adapter-cache-redis:/home/ghost/ghost/adapter-cache-redis/node_modules:delegated
       - node_modules_ghost_adapter-manager:/home/ghost/ghost/adapter-manager/node_modules:delegated
       - node_modules_ghost_admin:/home/ghost/ghost/admin/node_modules:delegated
@@ -200,7 +199,6 @@ volumes:
   mysql-data: {}
   redis-data: {}
   node_modules_ghost_root: {}
-  node_modules_ghost_adapter-cache-memory-ttl: {}
   node_modules_ghost_adapter-cache-redis: {}
   node_modules_ghost_adapter-manager: {}
   node_modules_ghost_admin: {}
