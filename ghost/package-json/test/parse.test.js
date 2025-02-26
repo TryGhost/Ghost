@@ -1,4 +1,4 @@
-require('./utils');
+require('should');
 
 const tmp = require('tmp');
 const fs = require('fs-extra');

@@ -1,6 +1,4 @@
-// Switch these lines once there are useful utils
-// const testUtils = require('./utils');
-require('./utils');
+require('should');
 
 const _ = require('lodash');
 const sinon = require('sinon');

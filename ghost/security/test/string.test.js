@@ -1,4 +1,4 @@
-require('./utils');
+require('should');
 const security = require('../');
 
 describe('Lib: Security - String', function () {

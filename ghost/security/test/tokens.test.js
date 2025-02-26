@@ -1,4 +1,3 @@
-require('./utils');
 const should = require('should');
 const crypto = require('crypto');
 const security = require('../');

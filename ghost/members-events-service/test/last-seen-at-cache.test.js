@@ -1,6 +1,3 @@
-// Switch these lines once there are useful utils
-// const testUtils = require('./utils');
-require('./utils');
 const LastSeenAtCache = require('../lib/LastSeenAtCache');
 const assert = require('assert/strict');
 const sinon = require('sinon');

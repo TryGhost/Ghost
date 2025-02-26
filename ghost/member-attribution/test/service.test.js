@@ -1,6 +1,5 @@
-// Switch these lines once there are useful utils
-// const testUtils = require('./utils');
-require('./utils');
+require('should');
+
 const MemberAttributionService = require('../lib/MemberAttributionService');
 
 describe('MemberAttributionService', function () {

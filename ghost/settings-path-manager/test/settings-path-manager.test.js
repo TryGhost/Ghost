@@ -1,6 +1,5 @@
 // Switch these lines once there are useful utils
 // const testUtils = require('./utils');
-require('./utils');
 const should = require('should');
 const SettingsPathManager = require('../');
 
