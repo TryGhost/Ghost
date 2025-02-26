@@ -19,7 +19,7 @@ const SupportPage = () => {
             const api = setupGhostApi({siteUrl});
 
             try {
-                const response = await api.member.checkoutDonation({successUrl, cancelUrl, personalNoteText: t('Add a personal note')});
+                const response = await api.member.checkoutDonation({successUrl, cancelUrl, personalNote: t('Add a personal note')});
 
                 if (response.url) {
                     window.location.replace(response.url);

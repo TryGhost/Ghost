@@ -122,7 +122,7 @@ class PaymentsService {
      *
      * @returns {Promise<URL>}
      */
-    async getDonationPaymentLink({member, metadata, successUrl, cancelUrl, email, isAuthenticated, personalNoteText}) {
+    async getDonationPaymentLink({member, metadata, successUrl, cancelUrl, email, isAuthenticated, personalNote}) {
         let customer = null;
         if (member && isAuthenticated) {
             customer = await this.getCustomerForMember(member);
@@ -135,7 +135,7 @@ class PaymentsService {
             cancelUrl: cancelUrl,
             customer,
             customerEmail: !customer && email ? email : null,
-            personalNoteText: personalNoteText || 'Add a personal note'
+            personalNote: personalNote 
 
         };
 

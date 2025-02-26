@@ -478,13 +478,7 @@ module.exports = class RouterController {
                 ...data
             });
         } else if (type === 'donation') {
-            const rawText = req.body.personalNoteText || 'Add a personal note';
-            if (rawText && typeof rawText !== 'string' || rawText.length > 255) {
-                throw new BadRequestError({
-                    message: 'Invalid personalNoteText, possibly an i18n error.'
-                });
-            }
-            options.personalNoteText = rawText ?? 'Add a personal note';
+            options.personalNote = parsePersonalNote(req.body.personalNote) ;
             response = await this._createDonationCheckoutSession(options);
         }
 
@@ -652,3 +646,22 @@ module.exports = class RouterController {
         }
     }
 };
+
+function parsePersonalNote(rawText) {
+    let sanitizeHtml = require('sanitize-html');
+    if (rawText && typeof rawText !== 'string' ) {
+        // TODO: log the error?
+        return '';
+    }
+    if (rawText.length > 255) {
+        //TODO: log the error? 
+        return '';
+    }
+
+    const safeInput = sanitizeHtml(rawText, {
+        allowedTags: [],
+        allowedAttributes: {}
+    });
+
+    return safeInput
+}
