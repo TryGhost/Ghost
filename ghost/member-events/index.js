@@ -9,6 +9,7 @@ module.exports = {
     MemberPageViewEvent: require('./lib/MemberPageViewEvent'),
     MemberCommentEvent: require('./lib/MemberCommentEvent'),
     SubscriptionCreatedEvent: require('./lib/SubscriptionCreatedEvent'),
+    SubscriptionAttributionEvent: require('./lib/SubscriptionAttributionEvent'),
     SubscriptionActivatedEvent: require('./lib/SubscriptionActivatedEvent'),
     SubscriptionCancelledEvent: require('./lib/SubscriptionCancelledEvent'),
     OfferRedemptionEvent: require('./lib/OfferRedemptionEvent'),

@@ -1,7 +1,7 @@
 // Switch these lines once there are useful utils
 // const testUtils = require('./utils');
 require('./utils');
-const {MemberCreatedEvent, SubscriptionCreatedEvent} = require('@tryghost/member-events');
+const {MemberCreatedEvent, SubscriptionCreatedEvent, SubscriptionAttributionEvent} = require('@tryghost/member-events');
 const EventStorage = require('../lib/EventStorage');
 
 describe('EventStorage', function () {
@@ -37,7 +37,7 @@ describe('EventStorage', function () {
                 created_at: new Date(0),
                 source: 'test'
             });
-            sinon.assert.calledTwice(subscribeSpy);
+            sinon.assert.calledThrice(subscribeSpy);
         });
 
         it('passes custom attributions', function () {
@@ -73,7 +73,7 @@ describe('EventStorage', function () {
                 attribution_url: 'url',
                 source: 'test'
             });
-            sinon.assert.calledTwice(subscribeSpy);
+            sinon.assert.calledThrice(subscribeSpy);
         });
 
         it('filters if disabled', function () {
@@ -112,7 +112,7 @@ describe('EventStorage', function () {
                 referrer_medium: null,
                 referrer_url: null
             });
-            sinon.assert.calledTwice(subscribeSpy);
+            sinon.assert.calledThrice(subscribeSpy);
         });
     });
 
@@ -142,7 +142,7 @@ describe('EventStorage', function () {
                 subscription_id: '456',
                 created_at: new Date(0)
             });
-            sinon.assert.calledTwice(subscribeSpy);
+            sinon.assert.calledThrice(subscribeSpy);
         });
 
         it('passes custom attributions', function () {
@@ -178,7 +178,7 @@ describe('EventStorage', function () {
                 attribution_type: 'post',
                 attribution_url: 'url'
             });
-            sinon.assert.calledTwice(subscribeSpy);
+            sinon.assert.calledThrice(subscribeSpy);
         });
 
         it('works with flag disabled', function () {
@@ -217,7 +217,70 @@ describe('EventStorage', function () {
                 referrer_medium: null,
                 referrer_url: null
             });
-            sinon.assert.calledTwice(subscribeSpy);
+            sinon.assert.calledThrice(subscribeSpy);
+        });
+    });
+
+    describe('SubscriptionAttributionEvent handling', function () {
+        let DomainEvents, saveStub, SubscriptionCreatedEventModel, eventHandler, subscribeSpy, handlerCallback;
+
+        beforeEach(function () {
+            saveStub = sinon.stub().resolves();
+            DomainEvents = {
+                subscribe: (type, handler) => {
+                    if (type === SubscriptionAttributionEvent) {
+                        handlerCallback = handler;
+                    }
+                }
+            };
+            subscribeSpy = sinon.spy(DomainEvents, 'subscribe');
+            SubscriptionCreatedEventModel = {
+                findOne: sinon.stub()
+            };
+            eventHandler = new EventStorage({
+                models: {SubscriptionCreatedEvent: SubscriptionCreatedEventModel}
+            });
+        });
+
+        it('updates the attribution', async function () {
+            const toJSONStub = sinon.stub().returns({
+                attribution_id: null,
+                attribution_type: null,
+                attribution_url: null,
+                referrer_source: null,
+                referrer_medium: null,
+                referrer_url: null
+            });
+            SubscriptionCreatedEventModel.findOne.resolves({id: '123', toJSON: toJSONStub, save: saveStub});
+
+            eventHandler.subscribe(DomainEvents);
+            await handlerCallback(SubscriptionAttributionEvent.create({
+                memberId: '123',
+                subscriptionId: '456',
+                attribution: {id: '123', type: 'post', url: 'url'}
+            }, new Date(0)));
+
+            sinon.assert.calledOnceWithMatch(SubscriptionCreatedEventModel.findOne, {subscription_id: '456'});
+            sinon.assert.calledOnceWithMatch(saveStub, {
+                attribution_id: '123',
+                attribution_type: 'post',
+                attribution_url: 'url',
+                referrer_source: null,
+                referrer_medium: null,
+                referrer_url: null
+            }, {patch: true});
+            sinon.assert.calledThrice(subscribeSpy);
+        });
+
+        it('does not update if the subscription is not found', async function () {
+            SubscriptionCreatedEventModel.findOne.resolves(null);
+            eventHandler.subscribe(DomainEvents);
+            await handlerCallback(SubscriptionAttributionEvent.create({
+                memberId: '123',
+                subscriptionId: '456',
+                attribution: {id: '123', type: 'post', url: 'url'}
+            }, new Date(0)));
+            sinon.assert.notCalled(saveStub);
         });
     });
 });
