@@ -30,14 +30,14 @@ export default class TechnicalOverview extends Component {
     }
 
     get devicesTabSelected() {
-        return (this.selected === 'devices');
+        return this.selected === 'devices';
     }
 
     get browsersTabSelected() {
-        return (this.selected === 'browsers');
+        return this.selected === 'browsers';
     }
 
     get osTabSelected() {
-        return (this.selected === 'os');
+        return this.selected === 'os';
     }
 }
