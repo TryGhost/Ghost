@@ -1,5 +1,4 @@
-require('./utils');
-
+require('should');
 const sinon = require('sinon');
 const moment = require('moment');
 const crypto = require('crypto');
