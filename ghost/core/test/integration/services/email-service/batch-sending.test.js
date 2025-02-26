@@ -677,21 +677,6 @@ describe('Batch sending tests', function () {
             }
         });
 
-        // Remove this test once outboundLinkTagging goes GA
-        it('Does add outbound refs if disabled but flag is disabled', async function () {
-            mockManager.mockLabsDisabled('outboundLinkTagging');
-            mockManager.mockSetting('outbound_link_tagging', false);
-
-            const {emailModel, html} = await sendEmail(agent);
-            assert.match(html, /\m=/);
-            const links = await linkRedirectRepository.getAll({filter: 'post_id:\'' + emailModel.get('post_id') + '\''});
-
-            for (const link of links) {
-                // Check ref not added to all replaced links
-                assert.match(link.to.search, /ref=/);
-            }
-        });
-
         it('Does not add link tracking if disabled', async function () {
             mockManager.mockSetting('email_track_clicks', false);
 

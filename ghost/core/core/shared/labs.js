@@ -24,7 +24,6 @@ const GA_FEATURES = [
     'audienceFeedback',
     'i18n',
     'themeErrorsNotification',
-    'outboundLinkTagging',
     'announcementBar',
     'customFonts'
 ];
