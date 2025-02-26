@@ -112,7 +112,6 @@ services:
       - node_modules_ghost_stats-service:/home/ghost/ghost/stats-service/node_modules:delegated
       - node_modules_ghost_stripe:/home/ghost/ghost/stripe/node_modules:delegated
       - node_modules_ghost_tiers:/home/ghost/ghost/tiers/node_modules:delegated
-      - node_modules_ghost_verification-trigger:/home/ghost/ghost/verification-trigger/node_modules:delegated
       - node_modules_ghost_version-notifications-data-service:/home/ghost/ghost/version-notifications-data-service/node_modules:delegated
       - node_modules_ghost_webmentions:/home/ghost/ghost/webmentions/node_modules:delegated
       - node_modules_apps_admin-x-activitypub:/home/ghost/apps/admin-x-activitypub/node_modules:delegated
@@ -288,7 +287,6 @@ volumes:
   node_modules_ghost_stats-service: {}
   node_modules_ghost_stripe: {}
   node_modules_ghost_tiers: {}
-  node_modules_ghost_verification-trigger: {}
   node_modules_ghost_version-notifications-data-service: {}
   node_modules_ghost_webmentions: {}
   node_modules_apps_admin-x-activitypub: {}
