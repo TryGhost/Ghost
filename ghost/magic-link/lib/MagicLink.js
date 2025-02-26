@@ -30,6 +30,7 @@ class MagicLink {
      * @param {MailTransporter} options.transporter
      * @param {TokenProvider<Token, TokenData>} options.tokenProvider
      * @param {(token: Token, type: string, referrer?: string) => URL} options.getSigninURL
+     * @param {() => Promise<boolean>} options.getOpenTrackingEnabled
      * @param {typeof defaultGetText} [options.getText]
      * @param {typeof defaultGetHTML} [options.getHTML]
      * @param {typeof defaultGetSubject} [options.getSubject]
@@ -42,6 +43,7 @@ class MagicLink {
         this.transporter = options.transporter;
         this.tokenProvider = options.tokenProvider;
         this.getSigninURL = options.getSigninURL;
+        this.getOpenTrackingEnabled = options.getOpenTrackingEnabled;
         this.getText = options.getText || defaultGetText;
         this.getHTML = options.getHTML || defaultGetHTML;
         this.getSubject = options.getSubject || defaultGetSubject;
@@ -73,12 +75,18 @@ class MagicLink {
 
         const url = this.getSigninURL(token, type, options.referrer);
 
-        const info = await this.transporter.sendMail({
+        const mailObject = {
             to: options.email,
             subject: this.getSubject(type),
             text: this.getText(url, type, options.email),
             html: this.getHTML(url, type, options.email)
-        });
+        };
+
+        if (await this.getOpenTrackingEnabled()) {
+            mailObject['o:tracking-opens'] = true;
+        }
+
+        const info = await this.transporter.sendMail(mailObject);
 
         return {token, info};
     }

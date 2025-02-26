@@ -156,6 +156,7 @@ module.exports = function MembersAPI({
         tokenProvider,
         getSigninURL,
         getText,
+        getOpenTrackingEnabled: () => settingsCache.get('email_track_opens'),
         getHTML,
         getSubject,
         sentry

@@ -413,5 +413,46 @@ describe('sendMagicLink', function () {
                 .expectStatus(201);
         });
     });
-});
 
+    describe('Open tracking', function () {
+        it('Can enable open tracking', async function () {
+            settingsCache.set('email_track_opens', {value: true});
+
+            const email = 'open-tracking-enabled@test.com';
+            await membersAgent.post('/api/send-magic-link')
+                .body({
+                    email,
+                    emailType: 'signup'
+                })
+                .expectEmptyBody()
+                .expectStatus(201);
+
+            // Check email is sent
+            mockManager.assert.sentEmail({
+                to: email,
+                subject: /Complete your sign up to Ghost!/,
+                'o:tracking-opens': true
+            });
+        });
+
+        it('Can disable open tracking', async function () {
+            settingsCache.set('email_track_opens', {value: false});
+
+            const email = 'open-tracking-enabled@test.com';
+            await membersAgent.post('/api/send-magic-link')
+                .body({
+                    email,
+                    emailType: 'signup'
+                })
+                .expectEmptyBody()
+                .expectStatus(201);
+
+            // Check email is sent without open tracking enabled
+            // TODO: This does not validate that `o:tracking-opens` is unset
+            mockManager.assert.sentEmail({
+                to: email,
+                subject: /Complete your sign up to Ghost!/
+            });
+        });
+    });
+});

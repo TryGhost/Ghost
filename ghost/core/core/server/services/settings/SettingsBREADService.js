@@ -79,6 +79,7 @@ class SettingsBREADService {
             transporter,
             tokenProvider: singleUseTokenProvider,
             getSigninURL,
+            getOpenTrackingEnabled: () => settingsCache.get('email_track_opens'),
             getText,
             getHTML,
             getSubject,
