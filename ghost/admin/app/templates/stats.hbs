@@ -2,6 +2,21 @@
     <GhCanvasHeader class="gh-canvas-header gh-stats-header sticky break tablet post-header">
         <GhCustomViewTitle @title="Stats" />
         <div class="view-actions">
+            <PowerSelect
+                @selected={{this.selectedApiVersionOption}}
+                @options={{this.apiVersionOptions}}
+                @searchEnabled={{false}}
+                @onChange={{this.onApiVersionChange}}
+                @triggerComponent={{component "gh-power-select/trigger"}}
+                @triggerClass="gh-btn"
+                @dropdownClass="gh-contentfilter-menu-dropdown is-narrow"
+                @matchTriggerWidth={{false}}
+                @horizontalPosition="right"
+                as |option|
+            >
+                {{#if option.name}}{{option.name}}{{else}}<span class="red">Unknown option</span>{{/if}}
+            </PowerSelect>
+
             <Stats::Parts::AudienceFilter
                 @excludedAudiences={{this.excludedAudiences}}
                 @onChange={{this.onAudienceChange}}
@@ -71,7 +86,9 @@
                 @browser={{this.browser}}
                 @location={{this.location}}
                 @source={{this.source}}
-                @pathname={{this.pathname}}/>
+                @pathname={{this.pathname}}
+                @apiVersion={{this.apiVersion}}
+            />
         </section>
 
         <section class="gh-stats-grid cols-2">
@@ -84,6 +101,7 @@
                     @location={{this.location}}
                     @source={{this.source}}
                     @pathname={{this.pathname}}
+                    @apiVersion={{this.apiVersion}}
                 />
             </div>
             <div class="gh-stats-container">
@@ -95,6 +113,7 @@
                     @location={{this.location}}
                     @source={{this.source}}
                     @pathname={{this.pathname}}
+                    @apiVersion={{this.apiVersion}}
                 />
             </div>
         </section>
@@ -109,6 +128,7 @@
                     @location={{this.location}}
                     @source={{this.source}}
                     @pathname={{this.pathname}}
+                    @apiVersion={{this.apiVersion}}
                 />
             </div>
             <div class="gh-stats-container">
@@ -120,6 +140,7 @@
                         @location={{this.location}}
                         @source={{this.source}}
                         @pathname={{this.pathname}}
+                        @apiVersion={{this.apiVersion}}
                     />
             </div>
         </section>
