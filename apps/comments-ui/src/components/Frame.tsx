@@ -65,7 +65,7 @@ export const CommentsFrame = React.forwardRef<HTMLIFrameElement, React.PropsWith
         height: '400px'
     };
     return (
-        <ResizableFrame ref={ref} style={style} title="comments-frame">
+        <ResizableFrame ref={ref} style={style} title="post comments frame">
             {children}
         </ResizableFrame>
     );
