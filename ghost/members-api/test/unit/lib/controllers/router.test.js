@@ -437,7 +437,53 @@ describe('RouterController', function () {
                         test: 'hello'
                     }
                 })).should.be.true(); 
-            });      
+            });
+            it('strips any html from the personal note', async function () {
+                const routerController = new RouterController({
+                    tiersService,
+                    paymentsService,
+                    offersAPI,
+                    stripeAPIService,
+                    labsService,
+                    settingsCache,
+                    memberAttributionService: {
+                        getAttribution: sinon.stub().resolves({})
+                    }
+                });
+
+                await routerController.createCheckoutSession({
+                    body: {
+                        type: 'donation',
+                        successUrl: 'https://example.com/?type=success',
+                        cancelUrl: 'https://example.com/?type=cancel',
+                        personalNote: 'Leave a <a href="ghost.org">note</a> here',
+                        metadata: {
+                            test: 'hello',
+                            urlHistory: [
+                                {
+                                    path: 'https://example.com/',
+                                    time: Date.now(),
+                                    referrerMedium: null,
+                                    referrerSource: 'ghost-explore',
+                                    referrerUrl: 'https://example.com/blog/'
+                                }
+                            ]
+                        }
+                    }
+                }, {
+                    writeHead: () => {},
+                    end: () => {}
+                });
+                getDonationLinkSpy.calledOnce.should.be.true();
+                getDonationLinkSpy.calledWith(sinon.match({
+                    successUrl: 'https://example.com/?type=success',
+                    cancelUrl: 'https://example.com/?type=cancel',
+                    personalNote: 'Leave a note here',
+                    metadata: {
+                        test: 'hello'
+                    }
+                })).should.be.true(); 
+            });    
         });
 
         afterEach(function () {
