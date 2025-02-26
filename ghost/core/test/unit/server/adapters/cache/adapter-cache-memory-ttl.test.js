@@ -1,5 +1,5 @@
 const assert = require('assert/strict');
-const MemoryTTLCache = require('../index');
+const MemoryTTLCache = require('../../../../../core/server/adapters/cache/AdapterCacheMemoryTTL');
 
 const sleep = ms => (
     new Promise((resolve) => {
@@ -24,6 +24,8 @@ describe('Cache Adapter In Memory with Time To Live', function () {
             assert.equal(cache.get('a'), 'b', 'should get the value from the cache after some time');
         });
 
+        // TODO: fix this test so we can unskip
+        // eslint-disable-next-line ghost/mocha/no-skipped-tests
         it.skip('Can get a value from the cache before TTL kicks in', async function () {
             const cache = new MemoryTTLCache({ttl: 50});
             cache.set('a', 'b');
@@ -41,6 +43,8 @@ describe('Cache Adapter In Memory with Time To Live', function () {
     });
 
     describe('set', function () {
+        // TODO: fix this test so we can unskip
+        // eslint-disable-next-line ghost/mocha/no-skipped-tests
         it.skip('Can set a value in the cache', async function () {
             const cache = new MemoryTTLCache({ttl: 50});
 
@@ -57,6 +61,8 @@ describe('Cache Adapter In Memory with Time To Live', function () {
             assert.equal(cache.get('a'), undefined, 'should NOT get the value from the cache after TTL time');
         });
 
+        // TODO: fix this test so we can unskip
+        // eslint-disable-next-line ghost/mocha/no-skipped-tests
         it.skip('Can override TTL time', async function () {
             const cache = new MemoryTTLCache({ttl: 20});
 
