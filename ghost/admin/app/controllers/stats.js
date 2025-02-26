@@ -8,13 +8,14 @@ import {tracked} from '@glimmer/tracking';
 countries.registerLocale(enLocale);
 
 export default class StatsController extends Controller {
-    queryParams = ['device', 'browser', 'location', 'source', 'pathname', 'apiVersion'];
+    queryParams = ['device', 'browser', 'location', 'source', 'pathname', 'os'];
 
     @tracked device = null;
     @tracked browser = null;
     @tracked location = null;
     @tracked source = null;
     @tracked pathname = null;
+    @tracked os = null;
     @tracked apiVersion = 0;
 
     rangeOptions = RANGE_OPTIONS;
@@ -74,6 +75,7 @@ export default class StatsController extends Controller {
         this.location = null;
         this.source = null;
         this.pathname = null;
+        this.os = null;
     }
 
     get selectedRangeOption() {

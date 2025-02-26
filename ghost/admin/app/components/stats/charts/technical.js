@@ -22,7 +22,6 @@ export default class TechnicalComponent extends Component {
     updateQueryParams(params) {
         const currentRoute = this.router.currentRoute;
         const newQueryParams = {...currentRoute.queryParams, ...params};
-
         this.router.transitionTo({queryParams: newQueryParams});
     }
 
@@ -30,13 +29,10 @@ export default class TechnicalComponent extends Component {
         const {selected, apiVersion} = props;
 
         // If OS is selected but not available, switch to devices
-        console.log(`selected`, selected)
-        console.log(`apiVersion`, apiVersion)
         let effectiveSelected = selected;
         if (selected === 'os' && (!apiVersion || apiVersion < 1)) {
             effectiveSelected = 'devices';
         }
-        console.log(`effectiveSelected`, effectiveSelected)
 
         const colorPalette = statsStaticColors.slice(0, 5);
 
