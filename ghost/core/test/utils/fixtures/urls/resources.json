@@ -1,0 +1,935 @@
+{
+    "posts": [
+        {
+            "_events": {},
+            "_eventsCount": 2,
+            "data": {
+                "id": "6194d3ce51e2700162531a71",
+                "uuid": "928cb7b1-40f1-4e29-a73b-a033ea6451c5",
+                "slug": "integrations",
+                "comment_id": "6194d3ce51e2700162531a71",
+                "feature_image": "https://static.ghost.org/v4.0.0/images/app-integrations.png",
+                "featured": false,
+                "type": "post",
+                "visibility": "public",
+                "email_recipient_filter": "none",
+                "created_at": "2021-11-17T12:56:44.000Z",
+                "created_by": "1",
+                "updated_at": "2021-11-17T12:56:44.000Z",
+                "updated_by": "1",
+                "published_at": "2021-11-17T12:56:44.000Z",
+                "published_by": "1",
+                "canonical_url": null,
+                "tags": [
+                    {
+                        "post_id": "6194d3ce51e2700162531a71",
+                        "visibility": "public",
+                        "id": "6194d3ce51e2700162531a70",
+                        "slug": "getting-started"
+                    }
+                ],
+                "authors": [
+                    {
+                        "post_id": "6194d3ce51e2700162531a71",
+                        "id": "5951f5fca366002ebd5dbef7",
+                        "slug": "ghost"
+                    }
+                ],
+                "author": "5951f5fca366002ebd5dbef7",
+                "primary_author": {
+                    "post_id": "6194d3ce51e2700162531a71",
+                    "id": "5951f5fca366002ebd5dbef7",
+                    "slug": "ghost"
+                },
+                "primary_tag": {
+                    "post_id": "6194d3ce51e2700162531a71",
+                    "visibility": "public",
+                    "id": "6194d3ce51e2700162531a70",
+                    "slug": "getting-started"
+                }
+            },
+            "config": {
+                "type": "posts",
+                "reserved": true
+            }
+        },
+        {
+            "_events": {},
+            "_eventsCount": 2,
+            "data": {
+                "id": "6194d3ce51e2700162531a72",
+                "uuid": "023c62d5-5e76-4e9e-af3a-555f7d451a09",
+                "slug": "grow",
+                "comment_id": "6194d3ce51e2700162531a72",
+                "feature_image": "https://static.ghost.org/v4.0.0/images/admin-settings.png",
+                "featured": false,
+                "type": "post",
+                "visibility": "public",
+                "email_recipient_filter": "none",
+                "created_at": "2021-11-17T12:56:44.000Z",
+                "created_by": "1",
+                "updated_at": "2021-11-17T12:56:44.000Z",
+                "updated_by": "1",
+                "published_at": "2021-11-17T12:56:45.000Z",
+                "published_by": "1",
+                "canonical_url": null,
+                "tags": [
+                    {
+                        "post_id": "6194d3ce51e2700162531a72",
+                        "visibility": "public",
+                        "id": "6194d3ce51e2700162531a70",
+                        "slug": "getting-started"
+                    }
+                ],
+                "authors": [
+                    {
+                        "post_id": "6194d3ce51e2700162531a72",
+                        "id": "5951f5fca366002ebd5dbef7",
+                        "slug": "ghost"
+                    }
+                ],
+                "author": "5951f5fca366002ebd5dbef7",
+                "primary_author": {
+                    "post_id": "6194d3ce51e2700162531a72",
+                    "id": "5951f5fca366002ebd5dbef7",
+                    "slug": "ghost"
+                },
+                "primary_tag": {
+                    "post_id": "6194d3ce51e2700162531a72",
+                    "visibility": "public",
+                    "id": "6194d3ce51e2700162531a70",
+                    "slug": "getting-started"
+                }
+            },
+            "config": {
+                "type": "posts",
+                "reserved": true
+            }
+        },
+        {
+            "_events": {},
+            "_eventsCount": 2,
+            "data": {
+                "id": "6194d3ce51e2700162531a73",
+                "uuid": "40923460-8840-4fdf-bb5e-7b6c62ba1016",
+                "slug": "sell",
+                "comment_id": "6194d3ce51e2700162531a73",
+                "feature_image": "https://static.ghost.org/v4.0.0/images/organizing-your-content.png",
+                "featured": false,
+                "type": "post",
+                "visibility": "paid",
+                "email_recipient_filter": "none",
+                "created_at": "2021-11-17T12:56:44.000Z",
+                "created_by": "1",
+                "updated_at": "2021-11-17T12:56:44.000Z",
+                "updated_by": "1",
+                "published_at": "2021-11-17T12:56:46.000Z",
+                "published_by": "1",
+                "canonical_url": null,
+                "tags": [
+                    {
+                        "post_id": "6194d3ce51e2700162531a73",
+                        "visibility": "public",
+                        "id": "6194d3ce51e2700162531a70",
+                        "slug": "getting-started"
+                    }
+                ],
+                "authors": [
+                    {
+                        "post_id": "6194d3ce51e2700162531a73",
+                        "id": "5951f5fca366002ebd5dbef7",
+                        "slug": "ghost"
+                    }
+                ],
+                "author": "5951f5fca366002ebd5dbef7",
+                "primary_author": {
+                    "post_id": "6194d3ce51e2700162531a73",
+                    "id": "5951f5fca366002ebd5dbef7",
+                    "slug": "ghost"
+                },
+                "primary_tag": {
+                    "post_id": "6194d3ce51e2700162531a73",
+                    "visibility": "public",
+                    "id": "6194d3ce51e2700162531a70",
+                    "slug": "getting-started"
+                }
+            },
+            "config": {
+                "type": "posts",
+                "reserved": true
+            }
+        },
+        {
+            "_events": {},
+            "_eventsCount": 2,
+            "data": {
+                "id": "6194d3ce51e2700162531a74",
+                "uuid": "1885ef09-3b47-4574-8f71-e9fd791b8d81",
+                "slug": "portal",
+                "comment_id": "6194d3ce51e2700162531a74",
+                "feature_image": "https://static.ghost.org/v4.0.0/images/creating-a-custom-theme.png",
+                "featured": false,
+                "type": "post",
+                "visibility": "public",
+                "email_recipient_filter": "none",
+                "created_at": "2021-11-17T12:56:44.000Z",
+                "created_by": "1",
+                "updated_at": "2021-11-17T12:56:44.000Z",
+                "updated_by": "1",
+                "published_at": "2021-11-17T12:56:47.000Z",
+                "published_by": "1",
+                "canonical_url": null,
+                "tags": [
+                    {
+                        "post_id": "6194d3ce51e2700162531a74",
+                        "visibility": "public",
+                        "id": "6194d3ce51e2700162531a70",
+                        "slug": "getting-started"
+                    }
+                ],
+                "authors": [
+                    {
+                        "post_id": "6194d3ce51e2700162531a74",
+                        "id": "5951f5fca366002ebd5dbef7",
+                        "slug": "ghost"
+                    }
+                ],
+                "author": "5951f5fca366002ebd5dbef7",
+                "primary_author": {
+                    "post_id": "6194d3ce51e2700162531a74",
+                    "id": "5951f5fca366002ebd5dbef7",
+                    "slug": "ghost"
+                },
+                "primary_tag": {
+                    "post_id": "6194d3ce51e2700162531a74",
+                    "visibility": "public",
+                    "id": "6194d3ce51e2700162531a70",
+                    "slug": "getting-started"
+                }
+            },
+            "config": {
+                "type": "posts",
+                "reserved": true
+            }
+        },
+        {
+            "_events": {},
+            "_eventsCount": 2,
+            "data": {
+                "id": "6194d3ce51e2700162531a75",
+                "uuid": "8d48eab5-b9c6-4d72-9ba3-d97cf6aa6c17",
+                "slug": "write",
+                "comment_id": "6194d3ce51e2700162531a75",
+                "feature_image": "https://static.ghost.org/v4.0.0/images/writing-posts-with-ghost.png",
+                "featured": false,
+                "type": "post",
+                "visibility": "public",
+                "email_recipient_filter": "none",
+                "created_at": "2021-11-17T12:56:44.000Z",
+                "created_by": "1",
+                "updated_at": "2021-11-17T12:56:44.000Z",
+                "updated_by": "1",
+                "published_at": "2021-11-17T12:56:48.000Z",
+                "published_by": "1",
+                "canonical_url": null,
+                "tags": [
+                    {
+                        "post_id": "6194d3ce51e2700162531a75",
+                        "visibility": "public",
+                        "id": "6194d3ce51e2700162531a70",
+                        "slug": "getting-started"
+                    }
+                ],
+                "authors": [
+                    {
+                        "post_id": "6194d3ce51e2700162531a75",
+                        "id": "5951f5fca366002ebd5dbef7",
+                        "slug": "ghost"
+                    }
+                ],
+                "author": "5951f5fca366002ebd5dbef7",
+                "primary_author": {
+                    "post_id": "6194d3ce51e2700162531a75",
+                    "id": "5951f5fca366002ebd5dbef7",
+                    "slug": "ghost"
+                },
+                "primary_tag": {
+                    "post_id": "6194d3ce51e2700162531a75",
+                    "visibility": "public",
+                    "id": "6194d3ce51e2700162531a70",
+                    "slug": "getting-started"
+                }
+            },
+            "config": {
+                "type": "posts",
+                "reserved": true
+            }
+        },
+        {
+            "_events": {},
+            "_eventsCount": 2,
+            "data": {
+                "id": "6194d3ce51e2700162531a76",
+                "uuid": "9eb83906-b2f2-42e3-8d4f-0068e74fc514",
+                "slug": "design",
+                "comment_id": "6194d3ce51e2700162531a76",
+                "feature_image": "https://static.ghost.org/v4.0.0/images/publishing-options.png",
+                "featured": false,
+                "type": "post",
+                "visibility": "public",
+                "email_recipient_filter": "none",
+                "created_at": "2021-11-17T12:56:45.000Z",
+                "created_by": "1",
+                "updated_at": "2021-11-17T12:56:45.000Z",
+                "updated_by": "1",
+                "published_at": "2021-11-17T12:56:49.000Z",
+                "published_by": "1",
+                "canonical_url": null,
+                "tags": [
+                    {
+                        "post_id": "6194d3ce51e2700162531a76",
+                        "visibility": "public",
+                        "id": "6194d3ce51e2700162531a70",
+                        "slug": "getting-started"
+                    }
+                ],
+                "authors": [
+                    {
+                        "post_id": "6194d3ce51e2700162531a76",
+                        "id": "5951f5fca366002ebd5dbef7",
+                        "slug": "ghost"
+                    }
+                ],
+                "author": "5951f5fca366002ebd5dbef7",
+                "primary_author": {
+                    "post_id": "6194d3ce51e2700162531a76",
+                    "id": "5951f5fca366002ebd5dbef7",
+                    "slug": "ghost"
+                },
+                "primary_tag": {
+                    "post_id": "6194d3ce51e2700162531a76",
+                    "visibility": "public",
+                    "id": "6194d3ce51e2700162531a70",
+                    "slug": "getting-started"
+                }
+            },
+            "config": {
+                "type": "posts",
+                "reserved": true
+            }
+        },
+        {
+            "_events": {},
+            "_eventsCount": 2,
+            "data": {
+                "id": "6194d3ce51e2700162531a77",
+                "uuid": "f7d4ed4a-6c44-4fc5-9721-d6b0f3a19e04",
+                "slug": "welcome",
+                "comment_id": "6194d3ce51e2700162531a77",
+                "feature_image": "https://static.ghost.org/v4.0.0/images/welcome-to-ghost.png",
+                "featured": false,
+                "type": "post",
+                "visibility": "public",
+                "email_recipient_filter": "none",
+                "created_at": "2021-11-17T12:56:45.000Z",
+                "created_by": "1",
+                "updated_at": "2021-11-17T12:56:45.000Z",
+                "updated_by": "1",
+                "published_at": "2021-11-17T12:56:50.000Z",
+                "published_by": "1",
+                "canonical_url": null,
+                "tags": [
+                    {
+                        "post_id": "6194d3ce51e2700162531a77",
+                        "visibility": "public",
+                        "id": "6194d3ce51e2700162531a70",
+                        "slug": "getting-started"
+                    }
+                ],
+                "authors": [
+                    {
+                        "post_id": "6194d3ce51e2700162531a77",
+                        "id": "5951f5fca366002ebd5dbef7",
+                        "slug": "ghost"
+                    }
+                ],
+                "author": "5951f5fca366002ebd5dbef7",
+                "primary_author": {
+                    "post_id": "6194d3ce51e2700162531a77",
+                    "id": "5951f5fca366002ebd5dbef7",
+                    "slug": "ghost"
+                },
+                "primary_tag": {
+                    "post_id": "6194d3ce51e2700162531a77",
+                    "visibility": "public",
+                    "id": "6194d3ce51e2700162531a70",
+                    "slug": "getting-started"
+                }
+            },
+            "config": {
+                "type": "posts",
+                "reserved": true
+            }
+        },
+        {
+            "_events": {},
+            "_eventsCount": 2,
+            "data": {
+                "id": "618ba1ffbe2896088840a6df",
+                "uuid": "5cfc4c42-47d8-46ce-b9fc-0c5eb3da3448",
+                "slug": "html-ipsum",
+                "comment_id": "618ba1ffbe2896088840a6df",
+                "feature_image": "https://example.com/super_photo.jpg",
+                "featured": false,
+                "type": "post",
+                "visibility": "public",
+                "email_recipient_filter": "none",
+                "created_at": "2021-11-17T12:56:41.000Z",
+                "created_by": "1",
+                "updated_at": "2021-11-17T12:56:41.000Z",
+                "updated_by": "1",
+                "published_at": "2015-01-01T00:00:00.000Z",
+                "published_by": "1",
+                "canonical_url": null,
+                "tags": [
+                    {
+                        "id": "618ba1febe2896088840a6db",
+                        "slug": "kitchen-sink"
+                    },
+                    {
+                        "id": "9451f5fca366002ebd5dbea6",
+                        "slug": "bacon"
+                    }
+                ],
+                "posts_meta": {},
+                "author": "1",
+                "primary_author": null,
+                "primary_tag": {
+                    "id": "618ba1febe2896088840a6db",
+                    "slug": "kitchen-sink"
+                }
+            },
+            "config": {
+                "type": "posts",
+                "reserved": true
+            }
+        },
+        {
+            "_events": {},
+            "_eventsCount": 2,
+            "data": {
+                "id": "618ba1ffbe2896088840a6e1",
+                "uuid": "a41ed369-ce37-405b-b6a6-7aabb4b9dcbf",
+                "slug": "ghostly-kitchen-sink",
+                "comment_id": "618ba1ffbe2896088840a6e1",
+                "feature_image": "http://127.0.0.1:2369/content/images/2018/hey.jpg",
+                "featured": false,
+                "type": "post",
+                "visibility": "public",
+                "email_recipient_filter": "none",
+                "created_at": "2021-11-17T12:56:41.000Z",
+                "created_by": "1",
+                "updated_at": "2021-11-17T12:56:41.000Z",
+                "updated_by": "1",
+                "published_at": "2015-01-02T00:00:00.000Z",
+                "published_by": "1",
+                "canonical_url": null,
+                "tags": [
+                    {
+                        "id": "618ba1febe2896088840a6db",
+                        "slug": "kitchen-sink"
+                    },
+                    {
+                        "id": "9451f5fca366002ebd5dbea6",
+                        "slug": "bacon"
+                    }
+                ],
+                "posts_meta": {},
+                "author": "1",
+                "primary_author": null,
+                "primary_tag": {
+                    "id": "618ba1febe2896088840a6db",
+                    "slug": "kitchen-sink"
+                }
+            },
+            "config": {
+                "type": "posts",
+                "reserved": true
+            }
+        },
+        {
+            "_events": {},
+            "_eventsCount": 2,
+            "data": {
+                "id": "618ba1ffbe2896088840a6e3",
+                "uuid": "2ac6b4f6-e1f3-406c-9247-c94a0496d39d",
+                "slug": "short-and-sweet",
+                "comment_id": "618ba1ffbe2896088840a6e3",
+                "feature_image": "http://placekitten.com/500/200",
+                "featured": true,
+                "type": "post",
+                "visibility": "public",
+                "email_recipient_filter": "none",
+                "created_at": "2021-11-17T12:56:41.000Z",
+                "created_by": "1",
+                "updated_at": "2021-11-17T12:56:41.000Z",
+                "updated_by": "1",
+                "published_at": "2015-01-03T00:00:00.000Z",
+                "published_by": "1",
+                "canonical_url": null,
+                "tags": [
+                    {
+                        "id": "618ba1fdbe2896088840a675",
+                        "slug": "chorizo"
+                    }
+                ],
+                "posts_meta": {},
+                "author": "1",
+                "primary_author": null,
+                "primary_tag": {
+                    "id": "618ba1fdbe2896088840a675",
+                    "slug": "chorizo"
+                }
+            },
+            "config": {
+                "type": "posts",
+                "reserved": true
+            }
+        },
+        {
+            "_events": {},
+            "_eventsCount": 2,
+            "data": {
+                "id": "618ba1ffbe2896088840a6e7",
+                "uuid": "cb0878ed-bcc3-424d-98df-1bd90e0d300c",
+                "slug": "not-so-short-bit-complex",
+                "comment_id": "618ba1ffbe2896088840a6e7",
+                "feature_image": null,
+                "featured": true,
+                "type": "post",
+                "visibility": "public",
+                "email_recipient_filter": "none",
+                "created_at": "2021-11-17T12:56:41.000Z",
+                "created_by": "1",
+                "updated_at": "2021-11-17T12:56:41.000Z",
+                "updated_by": "1",
+                "published_at": "2021-11-17T12:56:41.000Z",
+                "published_by": "1",
+                "canonical_url": null,
+                "tags": [],
+                "posts_meta": {},
+                "author": "1",
+                "primary_author": null,
+                "primary_tag": null
+            },
+            "config": {
+                "type": "posts",
+                "reserved": true
+            }
+        }
+    ],
+    "pages": [
+        {
+            "_events": {},
+            "_eventsCount": 2,
+            "data": {
+                "id": "6194d3ce51e2700162531a78",
+                "uuid": "18d57a6f-1b61-4945-9fe1-2e6069930b9b",
+                "slug": "about",
+                "comment_id": "6194d3ce51e2700162531a78",
+                "feature_image": null,
+                "featured": false,
+                "type": "page",
+                "status": "published",
+                "visibility": "public",
+                "email_recipient_filter": "none",
+                "created_at": "2021-11-17T12:56:45.000Z",
+                "created_by": "1",
+                "updated_at": "2021-11-17T12:56:45.000Z",
+                "updated_by": "1",
+                "published_at": "2021-11-17T12:56:51.000Z",
+                "published_by": "1",
+                "canonical_url": null,
+                "author": "5951f5fca366002ebd5dbef7",
+                "primary_author": null,
+                "primary_tag": null
+            },
+            "config": {
+                "type": "pages",
+                "reserved": true
+            }
+        },
+        {
+            "_events": {},
+            "_eventsCount": 2,
+            "data": {
+                "id": "6194d3ce51e2700162531a79",
+                "uuid": "e1180583-455e-4689-8065-06ffde716073",
+                "slug": "contact",
+                "comment_id": "6194d3ce51e2700162531a79",
+                "feature_image": null,
+                "featured": false,
+                "type": "page",
+                "status": "published",
+                "visibility": "public",
+                "email_recipient_filter": "none",
+                "created_at": "2021-11-17T12:56:45.000Z",
+                "created_by": "1",
+                "updated_at": "2021-11-17T12:56:45.000Z",
+                "updated_by": "1",
+                "published_at": "2021-11-17T12:56:52.000Z",
+                "published_by": "1",
+                "canonical_url": null,
+                "author": "5951f5fca366002ebd5dbef7",
+                "primary_author": null,
+                "primary_tag": null
+            },
+            "config": {
+                "type": "pages",
+                "reserved": true
+            }
+        },
+        {
+            "_events": {},
+            "_eventsCount": 2,
+            "data": {
+                "id": "6194d3ce51e2700162531a7a",
+                "uuid": "6627aed7-7ba8-47c2-905f-4aa4b100c1eb",
+                "slug": "privacy",
+                "comment_id": "6194d3ce51e2700162531a7a",
+                "feature_image": null,
+                "featured": false,
+                "type": "page",
+                "status": "published",
+                "visibility": "public",
+                "email_recipient_filter": "none",
+                "created_at": "2021-11-17T12:56:45.000Z",
+                "created_by": "1",
+                "updated_at": "2021-11-17T12:56:45.000Z",
+                "updated_by": "1",
+                "published_at": "2021-11-17T12:56:53.000Z",
+                "published_by": "1",
+                "canonical_url": null,
+                "author": "5951f5fca366002ebd5dbef7",
+                "primary_author": null,
+                "primary_tag": null
+            },
+            "config": {
+                "type": "pages",
+                "reserved": true
+            }
+        },
+        {
+            "_events": {},
+            "_eventsCount": 2,
+            "data": {
+                "id": "6194d3ce51e2700162531a7b",
+                "uuid": "6c608e9c-35d8-41ee-b3a6-2ec8ccae986d",
+                "slug": "contribute",
+                "comment_id": "6194d3ce51e2700162531a7b",
+                "feature_image": null,
+                "featured": false,
+                "type": "page",
+                "status": "published",
+                "visibility": "public",
+                "email_recipient_filter": "none",
+                "created_at": "2021-11-17T12:56:45.000Z",
+                "created_by": "1",
+                "updated_at": "2021-11-17T12:56:45.000Z",
+                "updated_by": "1",
+                "published_at": "2021-11-17T12:56:54.000Z",
+                "published_by": "1",
+                "canonical_url": null,
+                "author": "5951f5fca366002ebd5dbef7",
+                "primary_author": null,
+                "primary_tag": null
+            },
+            "config": {
+                "type": "pages",
+                "reserved": true
+            }
+        },
+        {
+            "_events": {},
+            "_eventsCount": 2,
+            "data": {
+                "id": "618ba1ffbe2896088840a6e9",
+                "uuid": "224e03f3-b931-4dbd-beea-6c0cf1b8fedc",
+                "slug": "static-page-test",
+                "comment_id": "618ba1ffbe2896088840a6e9",
+                "feature_image": null,
+                "featured": false,
+                "type": "page",
+                "status": "published",
+                "visibility": "public",
+                "email_recipient_filter": "none",
+                "created_at": "2021-11-17T12:56:41.000Z",
+                "created_by": "1",
+                "updated_at": "2021-11-17T12:56:41.000Z",
+                "updated_by": "1",
+                "published_at": "2021-11-17T12:56:41.000Z",
+                "published_by": "1",
+                "canonical_url": null,
+                "posts_meta": {},
+                "author": "1"
+            },
+            "config": {
+                "type": "pages",
+                "reserved": true
+            }
+        }
+    ],
+    "tags": [
+        {
+            "_events": {},
+            "_eventsCount": 2,
+            "data": {
+                "id": "6194d3ce51e2700162531a70",
+                "name": "Getting Started",
+                "slug": "getting-started",
+                "feature_image": null,
+                "visibility": "public",
+                "og_image": null,
+                "og_title": null,
+                "og_description": null,
+                "twitter_image": null,
+                "twitter_title": null,
+                "twitter_description": null,
+                "codeinjection_head": null,
+                "codeinjection_foot": null,
+                "canonical_url": null,
+                "accent_color": null,
+                "created_at": "2021-11-17T12:56:43.000Z",
+                "created_by": "1",
+                "updated_at": "2021-11-17T12:56:43.000Z",
+                "updated_by": "1"
+            },
+            "config": {
+                "type": "tags",
+                "reserved": true
+            }
+        },
+        {
+            "_events": {},
+            "_eventsCount": 2,
+            "data": {
+                "id": "618ba1febe2896088840a6db",
+                "name": "kitchen sink",
+                "slug": "kitchen-sink",
+                "feature_image": "https://example.com/super_photo.jpg",
+                "visibility": "public",
+                "og_image": null,
+                "og_title": null,
+                "og_description": null,
+                "twitter_image": null,
+                "twitter_title": null,
+                "twitter_description": null,
+                "codeinjection_head": null,
+                "codeinjection_foot": null,
+                "canonical_url": null,
+                "accent_color": null,
+                "created_at": "2021-11-17T12:56:41.000Z",
+                "created_by": "1",
+                "updated_at": "2021-11-17T12:56:41.000Z",
+                "updated_by": "1"
+            },
+            "config": {
+                "type": "tags",
+                "reserved": true
+            }
+        },
+        {
+            "_events": {},
+            "_eventsCount": 0,
+            "data": {
+                "id": "618ba1febe2896088840a6db",
+                "name": "kitchen sink",
+                "slug": "kitchen-sink",
+                "feature_image": "https://example.com/super_photo.jpg",
+                "visibility": "public",
+                "og_image": null,
+                "og_title": null,
+                "og_description": null,
+                "twitter_image": null,
+                "twitter_title": null,
+                "twitter_description": null,
+                "codeinjection_head": null,
+                "codeinjection_foot": null,
+                "canonical_url": null,
+                "accent_color": null,
+                "created_at": "2021-11-17T12:56:41.000Z",
+                "created_by": "1",
+                "updated_at": "2021-11-17T12:56:41.000Z",
+                "updated_by": "1"
+            },
+            "config": {
+                "type": "tags",
+                "reserved": false
+            }
+        },
+        {
+            "_events": {},
+            "_eventsCount": 2,
+            "data": {
+                "id": "9451f5fca366002ebd5dbea6",
+                "name": "bacon",
+                "slug": "bacon",
+                "feature_image": null,
+                "visibility": "public",
+                "og_image": null,
+                "og_title": null,
+                "og_description": null,
+                "twitter_image": null,
+                "twitter_title": null,
+                "twitter_description": null,
+                "codeinjection_head": null,
+                "codeinjection_foot": null,
+                "canonical_url": null,
+                "accent_color": null,
+                "created_at": "2021-11-17T12:56:41.000Z",
+                "created_by": "1",
+                "updated_at": "2021-11-17T12:56:41.000Z",
+                "updated_by": "1"
+            },
+            "config": {
+                "type": "tags",
+                "reserved": true
+            }
+        },
+        {
+            "_events": {},
+            "_eventsCount": 0,
+            "data": {
+                "id": "9451f5fca366002ebd5dbea6",
+                "name": "bacon",
+                "slug": "bacon",
+                "feature_image": null,
+                "visibility": "public",
+                "og_image": null,
+                "og_title": null,
+                "og_description": null,
+                "twitter_image": null,
+                "twitter_title": null,
+                "twitter_description": null,
+                "codeinjection_head": null,
+                "codeinjection_foot": null,
+                "canonical_url": null,
+                "accent_color": null,
+                "created_at": "2021-11-17T12:56:41.000Z",
+                "created_by": "1",
+                "updated_at": "2021-11-17T12:56:41.000Z",
+                "updated_by": "1"
+            },
+            "config": {
+                "type": "tags",
+                "reserved": false
+            }
+        },
+        {
+            "_events": {},
+            "_eventsCount": 2,
+            "data": {
+                "id": "618ba1fdbe2896088840a675",
+                "name": "chorizo",
+                "slug": "chorizo",
+                "feature_image": null,
+                "visibility": "public",
+                "og_image": null,
+                "og_title": null,
+                "og_description": null,
+                "twitter_image": null,
+                "twitter_title": null,
+                "twitter_description": null,
+                "codeinjection_head": null,
+                "codeinjection_foot": null,
+                "canonical_url": null,
+                "accent_color": null,
+                "created_at": "2021-11-17T12:56:41.000Z",
+                "created_by": "1",
+                "updated_at": "2021-11-17T12:56:41.000Z",
+                "updated_by": "1"
+            },
+            "config": {
+                "type": "tags",
+                "reserved": true
+            }
+        },
+        {
+            "_events": {},
+            "_eventsCount": 0,
+            "data": {
+                "id": "618ba1fdbe2896088840a675",
+                "name": "chorizo",
+                "slug": "chorizo",
+                "feature_image": null,
+                "visibility": "public",
+                "og_image": null,
+                "og_title": null,
+                "og_description": null,
+                "twitter_image": null,
+                "twitter_title": null,
+                "twitter_description": null,
+                "codeinjection_head": null,
+                "codeinjection_foot": null,
+                "canonical_url": null,
+                "accent_color": null,
+                "created_at": "2021-11-17T12:56:41.000Z",
+                "created_by": "1",
+                "updated_at": "2021-11-17T12:56:41.000Z",
+                "updated_by": "1"
+            },
+            "config": {
+                "type": "tags",
+                "reserved": false
+            }
+        }
+    ],
+    "authors": [
+        {
+            "_events": {},
+            "_eventsCount": 2,
+            "data": {
+                "id": "5951f5fca366002ebd5dbef7",
+                "name": "Ghost",
+                "slug": "ghost",
+                "email": "ghost-author@example.com",
+                "profile_image": "https://static.ghost.org/v4.0.0/images/ghost-user.png",
+                "cover_image": null,
+                "status": "active",
+                "visibility": "public",
+                "last_seen": null,
+                "created_at": "2021-11-17T12:56:44.000Z",
+                "created_by": "1",
+                "updated_at": "2021-11-17T12:56:44.000Z",
+                "updated_by": "1"
+            },
+            "config": {
+                "type": "authors",
+                "reserved": true
+            }
+        },
+        {
+            "_events": {},
+            "_eventsCount": 2,
+            "data": {
+                "id": "1",
+                "name": "Joe Bloggs",
+                "slug": "joe-bloggs",
+                "email": "jbloggs@example.com",
+                "profile_image": "https://example.com/super_photo.jpg",
+                "cover_image": null,
+                "status": "active",
+                "visibility": "public",
+                "last_seen": "2021-11-17T12:56:49.000Z",
+                "created_at": "2021-11-17T12:56:48.000Z",
+                "created_by": "1",
+                "updated_at": "2021-11-17T12:56:49.000Z",
+                "updated_by": "1"
+            },
+            "config": {
+                "type": "authors",
+                "reserved": true
+            }
+        }
+    ]
+}
