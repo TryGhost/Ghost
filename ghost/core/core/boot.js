@@ -449,7 +449,7 @@ async function initBackgroundServices({config}) {
         await emailAnalyticsJobs.scheduleRecurringJobs();
     }
 
-    const updateCheck = require('./server/update-check');
+    const updateCheck = require('./server/services/update-check');
     updateCheck.scheduleRecurringJobs();
 
     const milestonesService = require('./server/services/milestones');
