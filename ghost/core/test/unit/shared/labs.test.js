@@ -33,18 +33,18 @@ describe('Labs Service', function () {
         sinon.stub(process.env, 'NODE_ENV').value('production');
         sinon.stub(settingsCache, 'get');
         settingsCache.get.withArgs('labs').returns({
-            NestPlayground: true
+            urlCache: true
         });
 
         // NOTE: this test should be rewritten to test the alpha flag independently of the internal ALPHA_FEATURES list
         //       otherwise we end up in the endless maintenance loop and need to update it every time a feature graduates from alpha
         assert.deepEqual(labs.getAll(), expectedLabsObject({
-            NestPlayground: true,
+            urlCache: true,
             members: true
         }));
 
         assert.equal(labs.isSet('members'), true);
-        assert.equal(labs.isSet('NestPlayground'), true);
+        assert.equal(labs.isSet('urlCache'), true);
     });
 
     it('returns a falsy alpha flag when dev experiments in NOT toggled', function () {
@@ -52,7 +52,7 @@ describe('Labs Service', function () {
         sinon.stub(process.env, 'NODE_ENV').value('production');
         sinon.stub(settingsCache, 'get');
         settingsCache.get.withArgs('labs').returns({
-            NestPlayground: true
+            urlCache: true
         });
 
         // NOTE: this test should be rewritten to test the alpha flag independently of the internal ALPHA_FEATURES list
@@ -62,7 +62,7 @@ describe('Labs Service', function () {
         }));
 
         assert.equal(labs.isSet('members'), true);
-        assert.equal(labs.isSet('NestPlayground'), false);
+        assert.equal(labs.isSet('urlCache'), false);
     });
 
     it('respects the value in config over settings', function () {
