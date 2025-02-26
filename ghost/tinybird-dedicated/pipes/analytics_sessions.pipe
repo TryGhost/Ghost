@@ -12,15 +12,15 @@ SQL >
         action,
         version,
         coalesce(session_id, '0') as session_id,
-        payload.locale as locale,
-        payload.location as location,
+        toString(payload.locale) as locale,
+        toString(payload.location) as location,
         toString(payload.referrer) as referrer,
-        payload.pathname as pathname,
-        payload.href as href,
+        toString(payload.pathname) as pathname,
+        toString(payload.href) as href,
         site_uuid,
-        payload.member_uuid as member_uuid,
+        toString(payload.member_uuid) as member_uuid,
         toString(payload.member_status) as member_status,
-        payload.post_uuid as post_uuid,
+        toString(payload.post_uuid) as post_uuid,
         lower(toString(getSubcolumn(payload,'user-agent'))) as user_agent
     FROM analytics_events_json_v1
     where action = 'page_hit'
