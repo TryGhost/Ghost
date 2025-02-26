@@ -1,5 +1,6 @@
 const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
+const sanitizeHtml = require('sanitize-html');
 const {BadRequestError, NoPermissionError, UnauthorizedError, DisabledFeatureError} = require('@tryghost/errors');
 const errors = require('@tryghost/errors');
 const {isEmail} = require('@tryghost/validator');
@@ -478,7 +479,7 @@ module.exports = class RouterController {
                 ...data
             });
         } else if (type === 'donation') {
-            options.personalNote = parsePersonalNote(req.body.personalNote) ;
+            options.personalNote = parsePersonalNote(req.body.personalNote);
             response = await this._createDonationCheckoutSession(options);
         }
 
@@ -648,13 +649,12 @@ module.exports = class RouterController {
 };
 
 function parsePersonalNote(rawText) {
-    let sanitizeHtml = require('sanitize-html');
-    if (rawText && typeof rawText !== 'string' ) {
-        // TODO: log the error?
+    if (rawText && typeof rawText !== 'string') {
+        logging.warn('Donation personal note is not a string, ignoring');
         return '';
     }
-    if (rawText.length > 255) {
-        //TODO: log the error? 
+    if (rawText && rawText.length > 255) {
+        logging.warn('Donation personal note is too long, ignoring');
         return '';
     }
 
@@ -663,5 +663,5 @@ function parsePersonalNote(rawText) {
         allowedAttributes: {}
     });
 
-    return safeInput
+    return safeInput;
 }
