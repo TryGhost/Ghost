@@ -40,14 +40,15 @@ export default class TechnicalComponent extends Component {
         let endpoint;
         let indexBy;
         let tableHead;
+
         switch (selected) {
         case 'browsers':
-            endpoint = `${this.config.stats.endpoint}/v0/pipes/top_browsers__v${TB_VERSION}.json`;
+            endpoint = `${this.config.stats.endpoint}/v0/pipes/top_browsers__v${props.apiVersion || TB_VERSION}.json`;
             indexBy = 'browser';
             tableHead = 'Browser';
             break;
         default:
-            endpoint = `${this.config.stats.endpoint}/v0/pipes/top_devices__v${TB_VERSION}.json`;
+            endpoint = `${this.config.stats.endpoint}/v0/pipes/top_devices__v${props.apiVersion || TB_VERSION}.json`;
             indexBy = 'device';
             tableHead = 'Device';
         }
