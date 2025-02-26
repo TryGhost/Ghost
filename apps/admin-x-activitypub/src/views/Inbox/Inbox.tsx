@@ -30,7 +30,8 @@ const Inbox: React.FC = () => {
     const activities = (data?.pages.flatMap(page => page.posts) ?? Array.from({length: 5}, (_, index) => ({id: `placeholder-${index}`, object: {}})));
 
     const observerRef = useRef<IntersectionObserver | null>(null);
-    const loadMoreRef = useRef<HTMLDivElement | null>(null);
+    const loadMoreRef = useRef<HTMLLIElement | null>(null);
+    const endLoadMoreRef = useRef<HTMLDivElement | null>(null);
 
     useEffect(() => {
         if (observerRef.current) {
@@ -47,6 +48,10 @@ const Inbox: React.FC = () => {
             observerRef.current.observe(loadMoreRef.current);
         }
 
+        if (endLoadMoreRef.current) {
+            observerRef.current.observe(endLoadMoreRef.current);
+        }
+
         return () => {
             if (observerRef.current) {
                 observerRef.current.disconnect();
@@ -55,6 +60,9 @@ const Inbox: React.FC = () => {
     }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
     const {data: user} = useUserDataForUser('index');
+
+    // Calculate the index at which to place the loadMoreRef - This will place it ~75% through the list
+    const loadMoreIndex = Math.max(0, Math.floor(activities.length * 0.75) - 1);
 
     return (
         <Layout>
@@ -94,15 +102,18 @@ const Inbox: React.FC = () => {
                                                     {index < activities.length - 1 && (
                                                         <Separator />
                                                     )}
+                                                    {index === loadMoreIndex && (
+                                                        <li ref={loadMoreRef} className='h-1'></li>
+                                                    )}
                                                 </li>
                                             ))}
-                                            <div ref={loadMoreRef} className='h-1'></div>
                                             {isFetchingNextPage && (
-                                                <div className='flex flex-col items-center justify-center space-y-4 text-center'>
+                                                <li className='flex flex-col items-center justify-center space-y-4 text-center'>
                                                     <LoadingIndicator size='md' />
-                                                </div>
+                                                </li>
                                             )}
                                         </ul>
+                                        <div ref={endLoadMoreRef} className='h-1'></div>
                                     </div>
                                 </div>
                             </div>
