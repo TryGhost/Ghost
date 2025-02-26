@@ -145,7 +145,7 @@ export function getDateRange(chartRange) {
 }
 
 export function getStatsParams(config, props, additionalParams = {}) {
-    const {chartRange, audience, device, browser, location, source, pathname} = props;
+    const {chartRange, audience, device, browser, location, source, pathname, os} = props;
     const {startDate, endDate} = getDateRange(chartRange);
 
     const params = {
@@ -177,6 +177,10 @@ export function getStatsParams(config, props, additionalParams = {}) {
 
     if (pathname) {
         params.pathname = pathname;
+    }
+
+    if (os) {
+        params.os = os;
     }
 
     return params;
