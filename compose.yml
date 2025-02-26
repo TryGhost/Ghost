@@ -5,8 +5,8 @@ services:
       context: .
       dockerfile: ./.docker/Dockerfile
       target: development
-    entrypoint: ["/home/ghost/.docker/development.entrypoint.sh"]
-    command: ["yarn", "dev"]
+    entrypoint: [ "/home/ghost/.docker/development.entrypoint.sh" ]
+    command: [ "yarn", "dev" ]
     ports:
       - "2368:2368" # Ghost
       - "4200:4200" # Admin
@@ -113,7 +113,6 @@ services:
       - node_modules_ghost_stats-service:/home/ghost/ghost/stats-service/node_modules:delegated
       - node_modules_ghost_stripe:/home/ghost/ghost/stripe/node_modules:delegated
       - node_modules_ghost_tiers:/home/ghost/ghost/tiers/node_modules:delegated
-      - node_modules_ghost_update-check-service:/home/ghost/ghost/update-check-service/node_modules:delegated
       - node_modules_ghost_verification-trigger:/home/ghost/ghost/verification-trigger/node_modules:delegated
       - node_modules_ghost_version-notifications-data-service:/home/ghost/ghost/version-notifications-data-service/node_modules:delegated
       - node_modules_ghost_webmentions:/home/ghost/ghost/webmentions/node_modules:delegated
@@ -146,9 +145,7 @@ services:
   mysql:
     image: mysql:8.0.35
     container_name: ghost-mysql
-    command: --innodb-buffer-pool-size=1G --innodb-log-buffer-size=500M
-      --innodb-change-buffer-max-size=50 --innodb-flush-log-at-trx_commit=0
-      --innodb-flush-method=O_DIRECT
+    command: --innodb-buffer-pool-size=1G --innodb-log-buffer-size=500M --innodb-change-buffer-max-size=50 --innodb-flush-log-at-trx_commit=0 --innodb-flush-method=O_DIRECT
     ports:
       - 3306:3306
     environment:
