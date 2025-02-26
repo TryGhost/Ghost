@@ -47,6 +47,11 @@ export default class TechnicalComponent extends Component {
             indexBy = 'browser';
             tableHead = 'Browser';
             break;
+        case 'os':
+            endpoint = `${this.config.stats.endpoint}/v0/pipes/top_os__v${props.apiVersion || TB_VERSION}.json`;
+            indexBy = 'os';
+            tableHead = 'OS';
+            break;
         default:
             endpoint = `${this.config.stats.endpoint}/v0/pipes/top_devices__v${props.apiVersion || TB_VERSION}.json`;
             indexBy = 'device';
