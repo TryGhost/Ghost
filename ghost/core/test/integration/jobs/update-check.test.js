@@ -5,7 +5,7 @@ const testUtils = require('../../utils');
 const jobService = require('../../../core/server/services/jobs/job-service');
 
 const JOB_NAME = 'update-check';
-const JOB_PATH = path.resolve(__dirname, '../../../core/server/run-update-check.js');
+const JOB_PATH = path.resolve(__dirname, '../../../core/server/services/update-check/run-update-check.js');
 
 describe('Run Update Check', function () {
     let mockUpdateServer;
