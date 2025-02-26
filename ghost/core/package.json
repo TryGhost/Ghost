@@ -159,7 +159,6 @@
     "@tryghost/tpl": "0.1.32",
     "@tryghost/url-utils": "4.4.8",
     "@tryghost/validator": "0.2.14",
-    "@tryghost/verification-trigger": "0.0.0",
     "@tryghost/version": "0.1.30",
     "@tryghost/webmentions": "0.0.0",
     "@tryghost/zip": "1.1.46",
