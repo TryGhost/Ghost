@@ -98,6 +98,6 @@
     "vitest": "0.34.3"
   },
   "dependencies": {
-    "@hcaptcha/react-hcaptcha": "1.11.3"
+    "@hcaptcha/react-hcaptcha": "1.12.0"
   }
 }
