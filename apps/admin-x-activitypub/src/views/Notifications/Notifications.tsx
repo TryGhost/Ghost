@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useRef} from 'react';
 import {LucideIcon, Skeleton} from '@tryghost/shade';
 
 import NiceModal from '@ebay/nice-modal-react';
@@ -264,24 +264,6 @@ const Notifications: React.FC<NotificationsProps> = () => {
         };
     }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-    const [showLoadingMessage, setShowLoadingMessage] = useState(false);
-
-    useEffect(() => {
-        let timeoutID: number;
-
-        if (isLoading) {
-            timeoutID = setTimeout(() => {
-                setShowLoadingMessage(true);
-            }, 3000);
-        } else {
-            setShowLoadingMessage(false);
-        }
-
-        return () => {
-            clearTimeout(timeoutID);
-        };
-    }, [isLoading]);
-
     const handleActivityClick = (group: GroupedActivity, index: number) => {
         switch (group.type) {
         case ACTIVITY_TYPE.CREATE:
@@ -320,123 +302,125 @@ const Notifications: React.FC<NotificationsProps> = () => {
     };
 
     return (
-        <Layout>
-            {isLoading && showLoadingMessage && (
-                <div className='absolute bottom-8 left-8 right-[calc(292px+64px)] flex animate-fade-in items-start justify-center rounded-md bg-grey-100 px-3 py-2 font-medium backdrop-blur-md'>
-                    <LucideIcon.Gauge className='mr-1.5 min-w-5 text-purple' size={20} strokeWidth={1.5} />
-                    Notifications are a little slow at the moment, we&apos;re working on improving the performance.
-                </div>
-            )}
-            <div className='z-0 flex w-full flex-col items-center'>
-                {
-                    isLoading === false && groupedActivities.length === 0 && (
-                        <div className='mt-8'>
-                            <NoValueLabel icon='bell'>
+        <>
+            <Layout>
+                <div className='flex min-h-full flex-col items-center gap-5'>
+                    <div className='z-0 flex w-full grow flex-col items-center'>
+                        {
+                            isLoading === false && groupedActivities.length === 0 && (
+                                <div className='mt-8'>
+                                    <NoValueLabel icon='bell'>
                                 When other Fediverse users interact with you, you&apos;ll see it here.
-                            </NoValueLabel>
-                        </div>
-                    )
-                }
-                {
-                    (groupedActivities.length > 0) && (
-                        <>
-                            <div className='my-8 flex w-full max-w-[620px] flex-col'>
-                                {groupedActivities.map((group, index) => (
-                                    <React.Fragment key={group.id || `${group.type}_${index}`}>
-                                        <NotificationItem
-                                            className='hover:bg-gray-75 dark:hover:bg-gray-950'
-                                            onClick={() => handleActivityClick(group, index)}
-                                        >
-                                            {!isLoading ? <NotificationItem.Icon type={getActivityBadge(group)} /> : <Skeleton className='rounded-full' containerClassName='flex h-10 w-10' />}
-                                            <NotificationItem.Avatars>
-                                                <div className='flex flex-col'>
-                                                    <div className='mt-0.5 flex items-center gap-1.5'>
-                                                        {!openStates[group.id || `${group.type}_${index}`] && group.actors.slice(0, maxAvatars).map((actor: ActorProperties) => (
-                                                            <APAvatar
-                                                                key={actor.id}
-                                                                author={actor}
-                                                                isLoading={isLoading}
-                                                                size='notification'
-                                                            />
-                                                        ))}
-                                                        {group.actors.length > maxAvatars && (!openStates[group.id || `${group.type}_${index}`]) && (
-                                                            <div
-                                                                className='flex h-9 w-5 items-center justify-center text-sm text-gray-700'
-                                                            >
-                                                                {`+${group.actors.length - maxAvatars}`}
-                                                            </div>
-                                                        )}
-
-                                                        {group.actors.length > 1 && (
-                                                            <Button
-                                                                className={`transition-color flex h-9 items-center rounded-full bg-transparent text-gray-700 hover:opacity-60 dark:text-gray-600 ${openStates[group.id || `${group.type}_${index}`] ? 'w-full justify-start pl-1' : '-ml-2 w-9 justify-center'}`}
-                                                                hideLabel={!openStates[group.id || `${group.type}_${index}`]}
-                                                                icon='chevron-down'
-                                                                iconColorClass={`w-[12px] h-[12px] ${openStates[group.id || `${group.type}_${index}`] ? 'rotate-180' : ''}`}
-                                                                label={`${openStates[group.id || `${group.type}_${index}`] ? 'Hide' : 'Show all'}`}
-                                                                unstyled
-                                                                onClick={(event) => {
-                                                                    event?.stopPropagation();
-                                                                    toggleOpen(group.id || `${group.type}_${index}`);
-                                                                }}/>
-                                                        )}
-                                                    </div>
-                                                    <div className={`overflow-hidden transition-all duration-300 ease-in-out  ${openStates[group.id || `${group.type}_${index}`] ? 'mb-2 max-h-[1384px] opacity-100' : 'max-h-0 opacity-0'}`}>
-                                                        {openStates[group.id || `${group.type}_${index}`] && group.actors.length > 1 && (
-                                                            <div className='flex flex-col gap-2 pt-4'>
-                                                                {group.actors.map((actor: ActorProperties) => (
-                                                                    <div
+                                    </NoValueLabel>
+                                </div>
+                            )
+                        }
+                        {
+                            (groupedActivities.length > 0) && (
+                                <>
+                                    <div className='my-8 flex w-full max-w-[620px] flex-col'>
+                                        {groupedActivities.map((group, index) => (
+                                            <React.Fragment key={group.id || `${group.type}_${index}`}>
+                                                <NotificationItem
+                                                    className='hover:bg-gray-75 dark:hover:bg-gray-950'
+                                                    onClick={() => handleActivityClick(group, index)}
+                                                >
+                                                    {!isLoading ? <NotificationItem.Icon type={getActivityBadge(group)} /> : <Skeleton className='rounded-full' containerClassName='flex h-10 w-10' />}
+                                                    <NotificationItem.Avatars>
+                                                        <div className='flex flex-col'>
+                                                            <div className='mt-0.5 flex items-center gap-1.5'>
+                                                                {!openStates[group.id || `${group.type}_${index}`] && group.actors.slice(0, maxAvatars).map((actor: ActorProperties) => (
+                                                                    <APAvatar
                                                                         key={actor.id}
-                                                                        className='flex items-center hover:opacity-80'
-                                                                        onClick={e => handleProfileClick(actor, e)}
-                                                                    >
-                                                                        <APAvatar author={actor} size='xs' />
-                                                                        <span className='ml-2 text-base font-semibold dark:text-white'>{actor.name}</span>
-                                                                        <span className='ml-1 text-base text-gray-700 dark:text-gray-600'>{getUsername(actor)}</span>
-                                                                    </div>
+                                                                        author={actor}
+                                                                        isLoading={isLoading}
+                                                                        size='notification'
+                                                                    />
                                                                 ))}
+                                                                {group.actors.length > maxAvatars && (!openStates[group.id || `${group.type}_${index}`]) && (
+                                                                    <div
+                                                                        className='flex h-9 w-5 items-center justify-center text-sm text-gray-700'
+                                                                    >
+                                                                        {`+${group.actors.length - maxAvatars}`}
+                                                                    </div>
+                                                                )}
+
+                                                                {group.actors.length > 1 && (
+                                                                    <Button
+                                                                        className={`transition-color flex h-9 items-center rounded-full bg-transparent text-gray-700 hover:opacity-60 dark:text-gray-600 ${openStates[group.id || `${group.type}_${index}`] ? 'w-full justify-start pl-1' : '-ml-2 w-9 justify-center'}`}
+                                                                        hideLabel={!openStates[group.id || `${group.type}_${index}`]}
+                                                                        icon='chevron-down'
+                                                                        iconColorClass={`w-[12px] h-[12px] ${openStates[group.id || `${group.type}_${index}`] ? 'rotate-180' : ''}`}
+                                                                        label={`${openStates[group.id || `${group.type}_${index}`] ? 'Hide' : 'Show all'}`}
+                                                                        unstyled
+                                                                        onClick={(event) => {
+                                                                            event?.stopPropagation();
+                                                                            toggleOpen(group.id || `${group.type}_${index}`);
+                                                                        }}/>
+                                                                )}
                                                             </div>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            </NotificationItem.Avatars>
-                                            <NotificationItem.Content>
-                                                <div className='line-clamp-2 text-pretty text-black dark:text-white'>
-                                                    {!isLoading ?
-                                                        <NotificationGroupDescription group={group} /> :
-                                                        <>
-                                                            <Skeleton />
-                                                            <Skeleton className='w-full max-w-60' />
-                                                        </>
-                                                    }
-                                                </div>
-                                                {(
-                                                    (group.type === ACTIVITY_TYPE.CREATE && group.object?.inReplyTo) ||
+                                                            <div className={`overflow-hidden transition-all duration-300 ease-in-out  ${openStates[group.id || `${group.type}_${index}`] ? 'mb-2 max-h-[1384px] opacity-100' : 'max-h-0 opacity-0'}`}>
+                                                                {openStates[group.id || `${group.type}_${index}`] && group.actors.length > 1 && (
+                                                                    <div className='flex flex-col gap-2 pt-4'>
+                                                                        {group.actors.map((actor: ActorProperties) => (
+                                                                            <div
+                                                                                key={actor.id}
+                                                                                className='flex items-center hover:opacity-80'
+                                                                                onClick={e => handleProfileClick(actor, e)}
+                                                                            >
+                                                                                <APAvatar author={actor} size='xs' />
+                                                                                <span className='ml-2 text-base font-semibold dark:text-white'>{actor.name}</span>
+                                                                                <span className='ml-1 text-base text-gray-700 dark:text-gray-600'>{getUsername(actor)}</span>
+                                                                            </div>
+                                                                        ))}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </NotificationItem.Avatars>
+                                                    <NotificationItem.Content>
+                                                        <div className='line-clamp-2 text-pretty text-black dark:text-white'>
+                                                            {!isLoading ?
+                                                                <NotificationGroupDescription group={group} /> :
+                                                                <>
+                                                                    <Skeleton />
+                                                                    <Skeleton className='w-full max-w-60' />
+                                                                </>
+                                                            }
+                                                        </div>
+                                                        {(
+                                                            (group.type === ACTIVITY_TYPE.CREATE && group.object?.inReplyTo) ||
                                                     (group.type === ACTIVITY_TYPE.LIKE && !group.object?.name && group.object?.content) ||
                                                     (group.type === ACTIVITY_TYPE.REPOST && !group.object?.name && group.object?.content)
-                                                ) && (
-                                                    <div
-                                                        dangerouslySetInnerHTML={{__html: stripHtml(group.object?.content || '')}}
-                                                        className='ap-note-content mt-1 line-clamp-2 text-pretty text-gray-700 dark:text-gray-600'
-                                                    />
-                                                )}
-                                            </NotificationItem.Content>
-                                        </NotificationItem>
-                                        {index < groupedActivities.length - 1 && <Separator />}
-                                    </React.Fragment>
-                                ))}
-                            </div>
-                            <div ref={loadMoreRef} className='h-1'></div>
-                            {isFetchingNextPage && (
-                                <div className='flex flex-col items-center justify-center space-y-4 text-center'>
-                                    <LoadingIndicator size='md' />
-                                </div>
-                            )}
-                        </>
-                    )
-                }
-            </div>
-        </Layout>
+                                                        ) && (
+                                                            <div
+                                                                dangerouslySetInnerHTML={{__html: stripHtml(group.object?.content || '')}}
+                                                                className='ap-note-content mt-1 line-clamp-2 text-pretty text-gray-700 dark:text-gray-600'
+                                                            />
+                                                        )}
+                                                    </NotificationItem.Content>
+                                                </NotificationItem>
+                                                {index < groupedActivities.length - 1 && <Separator />}
+                                            </React.Fragment>
+                                        ))}
+                                    </div>
+                                    <div ref={loadMoreRef} className='h-1'></div>
+                                    {isFetchingNextPage && (
+                                        <div className='flex flex-col items-center justify-center space-y-4 text-center'>
+                                            <LoadingIndicator size='md' />
+                                        </div>
+                                    )}
+                                </>
+                            )
+                        }
+                    </div>
+                    <div className='sticky bottom-8 z-10 inline-flex animate-fade-in items-start justify-center rounded-md bg-purple-100/70 px-5 py-2 font-medium backdrop-blur-xl dark:bg-purple-600/30'>
+                        <LucideIcon.Gauge className='mr-1.5 min-w-5 text-purple' size={20} strokeWidth={1.5} />
+                    Notifications are a little slow at the moment, we&apos;re working on improving the performance.
+                    </div>
+                </div>
+            </Layout>
+        </>
     );
 };
 

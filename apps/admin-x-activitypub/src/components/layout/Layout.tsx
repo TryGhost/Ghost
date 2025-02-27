@@ -7,7 +7,7 @@ const Layout: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({children, ...pr
         <div className='relative mx-auto flex h-screen w-full max-w-page flex-col overflow-y-auto' {...props}>
             <Header />
             <div className='grid grid-cols-[auto_292px] items-start gap-8 px-8'>
-                <div className='z-0'>
+                <div className='relative z-0 self-stretch'>
                     {children}
                 </div>
                 <Sidebar />
