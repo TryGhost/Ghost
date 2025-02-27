@@ -1,5 +1,11 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`Create Stripe Checkout Session for Donations Can create a checkout session with a personal note included 1: [body] 1`] = `
+Object {
+  "url": "https://checkout.stripe.com/c/pay/fake-data",
+}
+`;
+
 exports[`Create Stripe Checkout Session for Donations Can create a member checkout session for a donation 1: [body] 1`] = `
 Object {
   "url": "https://checkout.stripe.com/c/pay/fake-data",

@@ -596,10 +596,11 @@ module.exports = class StripeAPI {
      * @param {Object.<String, any>} options.metadata
      * @param {ICustomer} [options.customer]
      * @param {string} [options.customerEmail]
+     * @param {string} [options.personalNote]
      *
      * @returns {Promise<ICheckoutSession>}
      */
-    async createDonationCheckoutSession({priceId, successUrl, cancelUrl, metadata, customer, customerEmail}) {
+    async createDonationCheckoutSession({priceId, successUrl, cancelUrl, metadata, customer, customerEmail, personalNote}) {
         await this._rateLimitBucket.throttle();
 
         /**
@@ -643,7 +644,7 @@ module.exports = class StripeAPI {
                     key: 'donation_message',
                     label: {
                         type: 'custom',
-                        custom: 'Add a personal note'
+                        custom: personalNote || 'Add a personal note'
                     },
                     type: 'text',
                     optional: true

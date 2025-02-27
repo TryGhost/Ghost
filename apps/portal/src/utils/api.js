@@ -456,7 +456,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             });
         },
 
-        async checkoutDonation({successUrl, cancelUrl, metadata = {}} = {}) {
+        async checkoutDonation({successUrl, cancelUrl, metadata = {}, personalNote = ''} = {}) {
             const identity = await api.member.identity();
             const url = endpointFor({type: 'members', resource: 'create-stripe-checkout-session'});
 
@@ -471,7 +471,8 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
                 metadata: metadataObj,
                 successUrl,
                 cancelUrl,
-                type: 'donation'
+                type: 'donation',
+                personalNote
             };
 
             const response = await makeRequest({

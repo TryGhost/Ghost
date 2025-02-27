@@ -30,7 +30,15 @@ describe('i18n', function () {
             }
         }
     });
+    it('does not have too-long strings for the Stripe personal note label', async function () {
+        for (const locale of i18n.SUPPORTED_LOCALES) {
+            const translationFile = require(path.join(`../locales/`, locale, 'portal.json'));
 
+            if (translationFile['Add a personal note']) {
+                assert(translationFile['Add a personal note'].length <= 255, `[${locale}/portal.json] Stripe personal note label is too long`);
+            }
+        }
+    });
     it('is uses default export if available', async function () {
         const translationFile = require(path.join(`../locales/`, 'nl', 'portal.json'));
         translationFile.Name = undefined;

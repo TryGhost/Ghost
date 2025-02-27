@@ -11,11 +11,12 @@ describe('RouterController', function () {
     let stripeAPIService;
     let labsService;
     let getPaymentLinkSpy;
+    let getDonationLinkSpy;
     let settingsCache;
 
     beforeEach(async function () {
         getPaymentLinkSpy = sinon.spy();
-
+        getDonationLinkSpy = sinon.spy();
         tiersService = {
             api: {
                 read: sinon.stub().resolves({
@@ -25,7 +26,11 @@ describe('RouterController', function () {
         };
 
         paymentsService = {
-            getPaymentLink: getPaymentLinkSpy
+            getPaymentLink: getPaymentLinkSpy,
+            stripeAPIService: {
+                configured: true
+            },
+            getDonationPaymentLink: getDonationLinkSpy
         };
 
         offersAPI = {
@@ -246,6 +251,239 @@ describe('RouterController', function () {
                     assert.equal(error.context, 'Tier with id "invalid" not found');
                 }
             });
+        });
+        describe('_createDonationCheckoutSession', function () {
+            it('accepts requests with a personalNote included', async function () {
+                const routerController = new RouterController({
+                    tiersService,
+                    paymentsService,
+                    offersAPI,
+                    stripeAPIService,
+                    labsService,
+                    settingsCache,
+                    memberAttributionService: {
+                        getAttribution: sinon.stub().resolves({})
+                    }
+                });
+
+                await routerController.createCheckoutSession({
+                    body: {
+                        type: 'donation',
+                        successUrl: 'https://example.com/?type=success',
+                        cancelUrl: 'https://example.com/?type=cancel',
+                        personalNote: 'SVP leave a note here',
+                        metadata: {
+                            test: 'hello',
+                            urlHistory: [
+                                {
+                                    path: 'https://example.com/',
+                                    time: Date.now(),
+                                    referrerMedium: null,
+                                    referrerSource: 'ghost-explore',
+                                    referrerUrl: 'https://example.com/blog/'
+                                }
+                            ]
+                        }
+                    }
+                }, {
+                    writeHead: () => {},
+                    end: () => {}
+                });
+                getDonationLinkSpy.calledOnce.should.be.true();
+
+                getDonationLinkSpy.calledWith(sinon.match({
+                    successUrl: 'https://example.com/?type=success',
+                    cancelUrl: 'https://example.com/?type=cancel',
+                    personalNote: 'SVP leave a note here',
+                    metadata: {
+                        test: 'hello'
+                    }
+                })).should.be.true(); 
+            }); 
+            it('accepts requests without a personalNote included', async function () {
+                const routerController = new RouterController({
+                    tiersService,
+                    paymentsService,
+                    offersAPI,
+                    stripeAPIService,
+                    labsService,
+                    settingsCache,
+                    memberAttributionService: {
+                        getAttribution: sinon.stub().resolves({})
+                    }
+                });
+
+                await routerController.createCheckoutSession({
+                    body: {
+                        type: 'donation',
+                        successUrl: 'https://example.com/?type=success',
+                        cancelUrl: 'https://example.com/?type=cancel',
+                        metadata: {
+                            test: 'hello',
+                            urlHistory: [
+                                {
+                                    path: 'https://example.com/',
+                                    time: Date.now(),
+                                    referrerMedium: null,
+                                    referrerSource: 'ghost-explore',
+                                    referrerUrl: 'https://example.com/blog/'
+                                }
+                            ]
+                        }
+                    }
+                }, {
+                    writeHead: () => {},
+                    end: () => {}
+                });
+                getDonationLinkSpy.calledOnce.should.be.true();
+
+                getDonationLinkSpy.calledWith(sinon.match({
+                    successUrl: 'https://example.com/?type=success',
+                    cancelUrl: 'https://example.com/?type=cancel',
+                    personalNote: '',
+                    metadata: {
+                        test: 'hello'
+                    }
+                })).should.be.true(); 
+            });
+            it('silently discards too-long personal notes', async function () {
+                const routerController = new RouterController({
+                    tiersService,
+                    paymentsService,
+                    offersAPI,
+                    stripeAPIService,
+                    labsService,
+                    settingsCache,
+                    memberAttributionService: {
+                        getAttribution: sinon.stub().resolves({})
+                    }
+                });
+
+                await routerController.createCheckoutSession({
+                    body: {
+                        type: 'donation',
+                        successUrl: 'https://example.com/?type=success',
+                        cancelUrl: 'https://example.com/?type=cancel',
+                        personalNote: 'a'.repeat(1000),
+                        metadata: {
+                            test: 'hello',
+                            urlHistory: [
+                                {
+                                    path: 'https://example.com/',
+                                    time: Date.now(),
+                                    referrerMedium: null,
+                                    referrerSource: 'ghost-explore',
+                                    referrerUrl: 'https://example.com/blog/'
+                                }
+                            ]
+                        }
+                    }
+                }, {
+                    writeHead: () => {},
+                    end: () => {}
+                });
+                getDonationLinkSpy.calledOnce.should.be.true();
+                getDonationLinkSpy.calledWith(sinon.match({
+                    successUrl: 'https://example.com/?type=success',
+                    cancelUrl: 'https://example.com/?type=cancel',
+                    personalNote: '',
+                    metadata: {
+                        test: 'hello'
+                    }
+                })).should.be.true(); 
+            });
+            it('silently discards invalid personal notes', async function () {
+                const routerController = new RouterController({
+                    tiersService,
+                    paymentsService,
+                    offersAPI,
+                    stripeAPIService,
+                    labsService,
+                    settingsCache,
+                    memberAttributionService: {
+                        getAttribution: sinon.stub().resolves({})
+                    }
+                });
+
+                await routerController.createCheckoutSession({
+                    body: {
+                        type: 'donation',
+                        successUrl: 'https://example.com/?type=success',
+                        cancelUrl: 'https://example.com/?type=cancel',
+                        personalNote: {hey: 'look! an object!'},
+                        metadata: {
+                            test: 'hello',
+                            urlHistory: [
+                                {
+                                    path: 'https://example.com/',
+                                    time: Date.now(),
+                                    referrerMedium: null,
+                                    referrerSource: 'ghost-explore',
+                                    referrerUrl: 'https://example.com/blog/'
+                                }
+                            ]
+                        }
+                    }
+                }, {
+                    writeHead: () => {},
+                    end: () => {}
+                });
+                getDonationLinkSpy.calledOnce.should.be.true();
+                getDonationLinkSpy.calledWith(sinon.match({
+                    successUrl: 'https://example.com/?type=success',
+                    cancelUrl: 'https://example.com/?type=cancel',
+                    personalNote: '',
+                    metadata: {
+                        test: 'hello'
+                    }
+                })).should.be.true(); 
+            });
+            it('strips any html from the personal note', async function () {
+                const routerController = new RouterController({
+                    tiersService,
+                    paymentsService,
+                    offersAPI,
+                    stripeAPIService,
+                    labsService,
+                    settingsCache,
+                    memberAttributionService: {
+                        getAttribution: sinon.stub().resolves({})
+                    }
+                });
+
+                await routerController.createCheckoutSession({
+                    body: {
+                        type: 'donation',
+                        successUrl: 'https://example.com/?type=success',
+                        cancelUrl: 'https://example.com/?type=cancel',
+                        personalNote: 'Leave a <a href="ghost.org">note</a> here',
+                        metadata: {
+                            test: 'hello',
+                            urlHistory: [
+                                {
+                                    path: 'https://example.com/',
+                                    time: Date.now(),
+                                    referrerMedium: null,
+                                    referrerSource: 'ghost-explore',
+                                    referrerUrl: 'https://example.com/blog/'
+                                }
+                            ]
+                        }
+                    }
+                }, {
+                    writeHead: () => {},
+                    end: () => {}
+                });
+                getDonationLinkSpy.calledOnce.should.be.true();
+                getDonationLinkSpy.calledWith(sinon.match({
+                    successUrl: 'https://example.com/?type=success',
+                    cancelUrl: 'https://example.com/?type=cancel',
+                    personalNote: 'Leave a note here',
+                    metadata: {
+                        test: 'hello'
+                    }
+                })).should.be.true(); 
+            });    
         });
 
         afterEach(function () {
