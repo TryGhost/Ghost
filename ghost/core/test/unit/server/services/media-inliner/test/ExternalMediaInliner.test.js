@@ -4,7 +4,7 @@ const sinon = require('sinon');
 const nock = require('nock');
 const path = require('path');
 const loggingLib = require('@tryghost/logging');
-const ExternalMediaInliner = require('../index');
+const ExternalMediaInliner = require('../../../../../../core/server/services/media-inliner/ExternalMediaInliner');
 
 describe('ExternalMediaInliner', function () {
     let logging;
