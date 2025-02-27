@@ -379,10 +379,10 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
     const [isFocused] = useState(focusReply ? 1 : 0);
 
     const {threadQuery, addToThread} = useThreadForUser('index', activityId);
-    const {data: activityThread, isLoading: isLoadingThread} = threadQuery;
-    const activtyThreadActivityIdx = (activityThread?.items ?? []).findIndex(item => item.object.id === activityId);
-    const activityThreadChildren = (activityThread?.items ?? []).slice(activtyThreadActivityIdx + 1);
-    const activityThreadParents = (activityThread?.items ?? []).slice(0, activtyThreadActivityIdx);
+    const {data: thread, isLoading: isLoadingThread} = threadQuery;
+    const threadPostIdx = (thread?.posts ?? []).findIndex(item => item.object.id === activityId);
+    const threadChildren = (thread?.posts ?? []).slice(threadPostIdx + 1);
+    const threadParents = (thread?.posts ?? []).slice(0, threadPostIdx);
 
     const modalSize = width === 'narrow' ? MODAL_SIZE_SM : MODAL_SIZE_LG;
     const modal = useModal();
@@ -720,7 +720,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                             gridTemplateColumns: `1fr minmax(0,${currentGridWidth}) 1fr`
                         } : undefined}
                     >
-                        {(canNavigateBack || (activityThreadParents.length > 0)) ? (
+                        {(canNavigateBack || (threadParents.length > 0)) ? (
                             <div className='col-[1/2] flex items-center justify-between'>
                                 <Button className='transition-color flex h-10 w-10 items-center justify-center rounded-full bg-white hover:bg-gray-100' icon='arrow-left' size='sm' unstyled onClick={navigateBack}/>
                             </div>
@@ -853,7 +853,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                     )}
                     <div className='grow overflow-y-auto'>
                         <div className={`mx-auto px-8 pb-10 pt-5`} style={{maxWidth: currentMaxWidth}}>
-                            {activityThreadParents.map((item) => {
+                            {threadParents.map((item) => {
                                 return (
                                     <>
                                         <FeedItem
@@ -883,7 +883,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                     layout={'modal'}
                                     object={object}
                                     repostCount={object.repostCount ?? 0}
-                                    showHeader={(canNavigateBack || (activityThreadParents.length > 0))}
+                                    showHeader={(canNavigateBack || (threadParents.length > 0))}
                                     type='Note'
                                     onCommentClick={() => {
                                         repliesRef.current?.scrollIntoView({
@@ -938,8 +938,8 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                             {isLoadingThread && <LoadingIndicator size='lg' />}
 
                             <div ref={repliesRef}>
-                                {activityThreadChildren.map((item, index) => {
-                                    const showDivider = index !== activityThreadChildren.length - 1;
+                                {threadChildren.map((item, index) => {
+                                    const showDivider = index !== threadChildren.length - 1;
 
                                     return (
                                         <React.Fragment key={item.id}>

@@ -38,8 +38,8 @@ export interface SearchResults {
     accounts: AccountSearchResult[];
 }
 
-export interface ActivityThread {
-    items: Activity[];
+export interface Thread {
+    posts: Post[];
 }
 
 export type ActivityPubCollectionResponse<T> = {data: T[], next: string | null};
@@ -426,10 +426,10 @@ export class ActivityPubAPI {
         };
     }
 
-    async getThread(id: string): Promise<ActivityThread> {
+    async getThread(id: string): Promise<Thread> {
         const url = new URL(`.ghost/activitypub/thread/${encodeURIComponent(id)}`, this.apiUrl);
         const json = await this.fetchJSON(url);
-        return json as ActivityThread;
+        return json as Thread;
     }
 
     get accountApiUrl() {
