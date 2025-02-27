@@ -1456,11 +1456,25 @@ describe('{{ghost_head}} helper', function () {
                         scriptUrl: 'https://unpkg.com/@tinybirdco/flock.js',
                         endpoint: 'https://api.tinybird.co',
                         token: 'tinybird_token',
-                        id: 'tb_test_site_uuid'
+                        id: 'tb_test_site_uuid',
+                        datasource: 'analytics_events_json_v1'
                     }
                 }
             });
         });
+
+        it('includes tracker script', async function () {
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+
+            rendered.should.match(/script defer src="\/public\/tracker\.js"/);
+        });
+
         it('with all tb_variables set to undefined on logged out home page', async function () {
             await testGhostHead(testUtils.createHbsResponse({
                 locals: {
@@ -1522,6 +1536,18 @@ describe('{{ghost_head}} helper', function () {
                 }
             }));
         });
+
+        it('includes datasource when set', async function () {
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+
+            rendered.should.match(/data-datasource="analytics_events_json_v1"/);
+        }); 
     });
     describe('respects values from excludes: ', function () {
         it('when excludes is empty', async function () {
