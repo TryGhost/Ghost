@@ -260,10 +260,7 @@ class ExternalMediaInliner {
      * @param {string[]} domains domains to inline media from
      */
     async inline(domains) {
-        const {data: posts} = await this.#PostModel.findPage({
-            limit: 'all',
-            status: 'all'
-        });
+        const posts = await this.#PostModel.findAll({context: {internal: true}});
         const postsInilingFields = [
             'feature_image'
         ];
