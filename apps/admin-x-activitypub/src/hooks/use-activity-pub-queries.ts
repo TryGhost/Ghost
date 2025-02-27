@@ -6,6 +6,7 @@ import {
     ActivityThread,
     FollowAccount,
     type GetAccountFollowsResponse,
+    type Post,
     type Profile,
     type SearchResults
 } from '../api/activitypub';
@@ -632,9 +633,10 @@ export function useNoteMutationForUser(handle: string) {
 
             return api.note(content);
         },
-        onSuccess: (activity: Activity) => {
+        onSuccess: (post: Post) => {
             // Add the activity to the outbox query cache
             const outboxQueryKey = QUERY_KEYS.outbox(handle);
+            const activity = mapPostToActivity(post);
 
             queryClient.setQueryData(outboxQueryKey, (current?: {pages: {data: Activity[]}[]}) => {
                 if (current === undefined) {
