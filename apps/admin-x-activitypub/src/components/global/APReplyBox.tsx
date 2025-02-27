@@ -6,6 +6,8 @@ import clsx from 'clsx';
 import getUsername from '../../utils/get-username';
 import {Activity, ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, showToast} from '@tryghost/admin-x-design-system';
+import {Post} from '../../api/activitypub';
+import {mapPostToActivity} from '../../utils/posts';
 import {useReplyMutationForUser, useUserDataForUser} from '@hooks/use-activity-pub-queries';
 
 export interface APTextAreaProps extends HTMLProps<HTMLTextAreaElement> {
@@ -54,14 +56,14 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
             return;
         }
         await replyMutation.mutate({id: object.id, content: textValue}, {
-            onSuccess(activity: Activity) {
+            onSuccess(post: Post) {
                 setTextValue('');
                 showToast({
                     message: 'Reply sent',
                     type: 'success'
                 });
                 if (onNewReply) {
-                    onNewReply(activity);
+                    onNewReply(mapPostToActivity(post));
                 }
             },
             onError() {
