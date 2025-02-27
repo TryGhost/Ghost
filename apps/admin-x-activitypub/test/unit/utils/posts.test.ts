@@ -18,7 +18,20 @@ describe('mapPostToActivity', function () {
             likedByMe: true,
             replyCount: 3,
             readingTimeMinutes: 4,
-            attachments: [],
+            attachments: [
+                {
+                    type: 'Image',
+                    mediaType: 'image/jpeg',
+                    name: 'test.jpg',
+                    url: 'https://example.com/test.jpg'
+                },
+                {
+                    type: 'Image',
+                    mediaType: 'image/jpeg',
+                    name: 'test1.jpg',
+                    url: 'https://example.com/test1.jpg'
+                }
+            ],
             author: {
                 id: 'https://example.com/users/123',
                 handle: '@testuser@example.com',
@@ -105,5 +118,23 @@ describe('mapPostToActivity', function () {
         expect(object.liked).toBe(true);
         expect(object.reposted).toBe(false);
         expect(object.repostCount).toBe(5);
+    });
+
+    test('it sets the correct attachments', function () {
+        const object = mapPostToActivity(post).object;
+
+        expect(object.attachment).toHaveLength(2);
+        expect(object.attachment[0]).toEqual({
+            type: 'Image',
+            mediaType: 'image/jpeg',
+            name: 'test.jpg',
+            url: 'https://example.com/test.jpg'
+        });
+        expect(object.attachment[1]).toEqual({
+            type: 'Image',
+            mediaType: 'image/jpeg',
+            name: 'test1.jpg',
+            url: 'https://example.com/test1.jpg'
+        });
     });
 });
