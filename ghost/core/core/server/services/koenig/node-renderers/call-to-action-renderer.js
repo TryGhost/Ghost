@@ -1,6 +1,7 @@
 import {addCreateDocumentOption} from '../../utils/add-create-document-option';
 import {renderWithVisibility} from '../../utils/visibility';
-import {resizeImage} from '../../utils/resize-image';
+import {getResizedImageDimensions} from '../../utils/get-resized-image-dimensions';
+import {isLocalContentImage} from '../../utils/is-local-content-image';
 
 function ctaCardTemplate(dataset) {
     // Add validation for buttonColor
@@ -44,7 +45,7 @@ function ctaCardTemplate(dataset) {
     `;
 }
 
-function emailCTATemplate(dataset) {
+function emailCTATemplate(dataset, options = {}) {
     const buttonStyle = dataset.buttonColor === 'accent' 
         ? `color: ${dataset.buttonTextColor};` 
         : `background-color: ${dataset.buttonColor}; color: ${dataset.buttonTextColor};`;
@@ -58,7 +59,15 @@ function emailCTATemplate(dataset) {
         };
 
         if (dataset.imageWidth >= 560) {
-            imageDimensions = resizeImage(imageDimensions, {width: 560});
+            imageDimensions = getResizedImageDimensions(imageDimensions, {width: 560});
+        }
+    }
+
+    if (dataset.layout === 'minimal' && dataset.imageUrl) {
+        if (isLocalContentImage(dataset.imageUrl, options.siteUrl) && options.canTransformImage?.(dataset.imageUrl)) {
+            const [, imagesPath, filename] = dataset.imageUrl.match(/(.*\/content\/images)\/(.*)/);
+            const iconSize = options?.imageOptimization?.internalImageSizes?.['email-cta-minimal-image'] || {width: 256, height: 256}; // default to 256 since we know the image is a square
+            dataset.imageUrl = `${imagesPath}/size/w${iconSize.width}h${iconSize.height}/${filename}`;
         }
     }
 
