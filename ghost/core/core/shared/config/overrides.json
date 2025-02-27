@@ -126,6 +126,9 @@
             "email-latest-posts-image": {"width": 200, "height": 200},
             "email-latest-posts-image-mobile": {"width": 1200, "height": 960},
             "social-image": {"width": 1200}
+        },
+        "emailSizes" : {
+            "ctaMinimal": {"width": 64, "height": 64}
         }
     }
 }
