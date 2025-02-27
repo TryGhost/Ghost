@@ -1,5 +1,5 @@
 const assert = require('assert/strict');
-const MemoryTTLCache = require('../index');
+const MemoryTTLCache = require('../../../../../core/server/adapters/cache/AdapterCacheMemoryTTL');
 
 const sleep = ms => (
     new Promise((resolve) => {

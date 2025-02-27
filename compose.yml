@@ -33,7 +33,6 @@ services:
       ## Prevent collisions between host and container node_modules
       - node_modules_ghost_root:/home/ghost/node_modules:delegated
       - node_modules_ghost_activitypub:/home/ghost/ghost/activitypub/node_modules:delegated
-      - node_modules_ghost_adapter-cache-memory-ttl:/home/ghost/ghost/adapter-cache-memory-ttl/node_modules:delegated
       - node_modules_ghost_adapter-cache-redis:/home/ghost/ghost/adapter-cache-redis/node_modules:delegated
       - node_modules_ghost_adapter-manager:/home/ghost/ghost/adapter-manager/node_modules:delegated
       - node_modules_ghost_admin:/home/ghost/ghost/admin/node_modules:delegated
@@ -60,7 +59,6 @@ services:
       - node_modules_ghost_email-service:/home/ghost/ghost/email-service/node_modules:delegated
       - node_modules_ghost_email-suppression-list:/home/ghost/ghost/email-suppression-list/node_modules:delegated
       - node_modules_ghost_express-dynamic-redirects:/home/ghost/ghost/express-dynamic-redirects/node_modules:delegated
-      - node_modules_ghost_external-media-inliner:/home/ghost/ghost/external-media-inliner/node_modules:delegated
       - node_modules_ghost_ghost:/home/ghost/ghost/ghost/node_modules:delegated
       - node_modules_ghost_html-to-plaintext:/home/ghost/ghost/html-to-plaintext/node_modules:delegated
       - node_modules_ghost_i18n:/home/ghost/ghost/i18n/node_modules:delegated
@@ -208,7 +206,6 @@ volumes:
   redis-data: {}
   node_modules_ghost_root: {}
   node_modules_ghost_activitypub: {}
-  node_modules_ghost_adapter-cache-memory-ttl: {}
   node_modules_ghost_adapter-cache-redis: {}
   node_modules_ghost_adapter-manager: {}
   node_modules_ghost_admin: {}
@@ -235,7 +232,6 @@ volumes:
   node_modules_ghost_email-service: {}
   node_modules_ghost_email-suppression-list: {}
   node_modules_ghost_express-dynamic-redirects: {}
-  node_modules_ghost_external-media-inliner: {}
   node_modules_ghost_ghost: {}
   node_modules_ghost_html-to-plaintext: {}
   node_modules_ghost_i18n: {}
