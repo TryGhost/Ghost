@@ -1,4 +1,4 @@
-export const resizeImage = function (image, {width: desiredWidth, height: desiredHeight} = {}) {
+export const getResizedImageDimensions = function (image, {width: desiredWidth, height: desiredHeight} = {}) {
     const {width, height} = image;
     const ratio = width / height;
 

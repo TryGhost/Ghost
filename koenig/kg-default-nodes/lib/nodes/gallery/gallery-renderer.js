@@ -2,7 +2,7 @@ import {addCreateDocumentOption} from '../../utils/add-create-document-option';
 import {getAvailableImageWidths} from '../../utils/get-available-image-widths';
 import {isLocalContentImage} from '../../utils/is-local-content-image';
 import {isUnsplashImage} from '../../utils/is-unsplash-image';
-import {resizeImage} from '../../utils/resize-image';
+import {getResizedImageDimensions} from '../../utils/get-resized-image-dimensions';
 import {setSrcsetAttribute} from '../../utils/srcset-attribute';
 import {renderEmptyContainer} from '../../utils/render-empty-container';
 
@@ -83,7 +83,7 @@ export function renderGalleryNode(node, options = {}) {
                 canTransformImage &&
                 canTransformImage(image.src)
             ) {
-                const {width, height} = resizeImage(image, {width: defaultMaxWidth});
+                const {width, height} = getResizedImageDimensions(image, {width: defaultMaxWidth});
                 img.setAttribute('width', width);
                 img.setAttribute('height', height);
             }
@@ -107,7 +107,7 @@ export function renderGalleryNode(node, options = {}) {
             if (options.target === 'email') {
                 // only resize if needed, width/height always exists for gallery image unline image cards
                 if (image.width > 600) {
-                    const newImageDimensions = resizeImage(image, {width: 600});
+                    const newImageDimensions = getResizedImageDimensions(image, {width: 600});
                     img.setAttribute('width', newImageDimensions.width);
                     img.setAttribute('height', newImageDimensions.height);
                 }
