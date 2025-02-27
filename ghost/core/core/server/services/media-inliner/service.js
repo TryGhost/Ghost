@@ -1,7 +1,7 @@
 module.exports = {
     async init() {
         const debug = require('@tryghost/debug')('mediaInliner');
-        const MediaInliner = require('@tryghost/external-media-inliner');
+        const MediaInliner = require('./ExternalMediaInliner');
         const models = require('../../models');
         const jobsService = require('../jobs');
 
