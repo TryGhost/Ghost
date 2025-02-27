@@ -3,7 +3,6 @@ import {
     type AccountSearchResult,
     ActivityPubAPI,
     ActivityPubCollectionResponse,
-    ActivityThread,
     FollowAccount,
     type GetAccountFollowsResponse,
     type Profile,
@@ -591,19 +590,23 @@ export function useThreadForUser(handle: string, id: string) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
 
-            return api.getThread(id);
+            return api.getThread(id).then((response) => {
+                return {
+                    posts: response.posts.map(mapPostToActivity)
+                };
+            });
         }
     });
 
     const addToThread = (activity: Activity) => {
         // Add the activity to the thread stored in the thread query cache
-        queryClient.setQueryData(queryKey, (current: ActivityThread | undefined) => {
+        queryClient.setQueryData(queryKey, (current: {posts: Activity[]} | undefined) => {
             if (!current) {
                 return current;
             }
 
             return {
-                items: [...current.items, activity]
+                posts: [...current.posts, activity]
             };
         });
     };
