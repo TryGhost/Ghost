@@ -351,7 +351,7 @@ describe('Create Stripe Checkout Session for Donations', function () {
                         }
                     ]
                 },
-                personalNote: "Please leave a note, gracias!"
+                personalNote: 'Please leave a note, gracias!'
             })
             .expectStatus(200)
             .matchBodySnapshot();
