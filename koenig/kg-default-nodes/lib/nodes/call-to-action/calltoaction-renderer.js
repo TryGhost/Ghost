@@ -20,7 +20,7 @@ function ctaCardTemplate(dataset) {
                 </div>
             ` : ''}
             <div class="kg-cta-content">
-                ${dataset.hasImage ? `
+                ${dataset.imageUrl ? `
                     <div class="kg-cta-image-container">
                         <img src="${dataset.imageUrl}" alt="CTA Image">
                     </div>
@@ -52,7 +52,7 @@ function emailCTATemplate(dataset, options = {}) {
 
     let imageDimensions;
     
-    if (dataset.imageWidth && dataset.imageHeight) {
+    if (dataset.imageUrl && dataset.imageWidth && dataset.imageHeight) {
         imageDimensions = {
             width: dataset.imageWidth,
             height: dataset.imageHeight
@@ -78,7 +78,7 @@ function emailCTATemplate(dataset, options = {}) {
                     <td class="kg-cta-content">
                         <table border="0" cellpadding="0" cellspacing="0" width="100%" class="kg-cta-content-wrapper">
                             <tr>
-                                ${dataset.hasImage ? `
+                                ${dataset.imageUrl ? `
                                     <td class="kg-cta-image-container" width="64">
                                         <img src="${dataset.imageUrl}" alt="CTA Image" class="kg-cta-image" width="64" height="64">
                                     </td>
@@ -122,7 +122,7 @@ function emailCTATemplate(dataset, options = {}) {
             <tr>
                 <td class="kg-cta-content">
                     <table border="0" cellpadding="0" cellspacing="0" width="100%" class="kg-cta-content-wrapper">
-                        ${dataset.hasImage ? `
+                        ${dataset.imageUrl ? `
                             <tr>
                                 <td class="kg-cta-image-container">
                                     <table border="0" cellpadding="0" cellspacing="0" width="100%">
@@ -197,7 +197,6 @@ export function renderCallToActionNode(node, options = {}) {
         hasSponsorLabel: node.hasSponsorLabel,
         backgroundColor: node.backgroundColor,
         sponsorLabel: node.sponsorLabel,
-        hasImage: node.hasImage,
         imageUrl: node.imageUrl,
         imageWidth: node.imageWidth,
         imageHeight: node.imageHeight

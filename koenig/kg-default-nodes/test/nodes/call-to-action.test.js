@@ -36,7 +36,6 @@ describe('CallToActionNode', function () {
             buttonTextColor: 'none',
             hasSponsorLabel: true,
             backgroundColor: 'none',
-            hasImage: true,
             imageUrl: 'http://blog.com/image1.jpg',
             imageWidth: 200,
             imageHeight: 100
@@ -66,7 +65,6 @@ describe('CallToActionNode', function () {
             callToActionNode.hasSponsorLabel.should.equal(dataset.hasSponsorLabel);
             callToActionNode.sponsorLabel.should.equal(dataset.sponsorLabel);
             callToActionNode.backgroundColor.should.equal(dataset.backgroundColor);
-            callToActionNode.hasImage.should.equal(dataset.hasImage);
             callToActionNode.imageUrl.should.equal(dataset.imageUrl);
             callToActionNode.visibility.should.deepEqual(utils.visibility.buildDefaultVisibility());
             callToActionNode.imageHeight.should.equal(dataset.imageHeight);
@@ -115,11 +113,7 @@ describe('CallToActionNode', function () {
             callToActionNode.backgroundColor = '#654321';
             callToActionNode.backgroundColor.should.equal('#654321');
 
-            callToActionNode.hasImage.should.equal(false);
-            callToActionNode.hasImage = true;
-            callToActionNode.hasImage.should.equal(true);
-
-            callToActionNode.imageUrl.should.equal('');
+            should(callToActionNode.imageUrl).be.null();
             callToActionNode.imageUrl = 'http://blog.com/image1.jpg';
             callToActionNode.imageUrl.should.equal('http://blog.com/image1.jpg');
 
@@ -199,7 +193,6 @@ describe('CallToActionNode', function () {
                 buttonText: 'Get access now',
                 buttonTextColor: '#000000',
                 buttonUrl: 'http://someblog.com/somepost',
-                hasImage: true,
                 hasSponsorLabel: true,
                 sponsorLabel: '<p>Sponsored by</p>',
                 imageUrl: '/content/images/2022/11/koenig-lexical.jpg',
@@ -217,7 +210,7 @@ describe('CallToActionNode', function () {
             html.should.containEql('background-color: #F0F0F0');
             html.should.containEql('Get access now');
             html.should.containEql('http://someblog.com/somepost');
-            html.should.containEql('/content/images/2022/11/koenig-lexical.jpg');// because hasImage is true
+            html.should.containEql('/content/images/2022/11/koenig-lexical.jpg');
             html.should.containEql('This is a new CTA Card.');
             html.should.containEql('Sponsored by'); // because hasSponsorLabel is true
             html.should.containEql('cta-card');
@@ -232,7 +225,6 @@ describe('CallToActionNode', function () {
                 buttonText: 'Get access now',
                 buttonTextColor: '#000000',
                 buttonUrl: 'http://someblog.com/somepost',
-                hasImage: true,
                 hasSponsorLabel: true,
                 sponsorLabel: '<p><span style="white-space: pre-wrap;">SPONSORED</span></p>',
                 imageUrl: '/content/images/2022/11/koenig-lexical.jpg',
@@ -249,7 +241,7 @@ describe('CallToActionNode', function () {
             html.should.containEql('Get access now');
             html.should.containEql('http://someblog.com/somepost');
             html.should.containEql('<p><span style="white-space: pre-wrap;">SPONSORED</span></p>'); // because hasSponsorLabel is true
-            html.should.containEql('/content/images/2022/11/koenig-lexical.jpg'); // because hasImage is true
+            html.should.containEql('/content/images/2022/11/koenig-lexical.jpg');
             html.should.containEql('This is a new CTA Card via email.');
         }));
 
@@ -320,7 +312,6 @@ describe('CallToActionNode', function () {
                 buttonText: 'Get access now',
                 buttonTextColor: '#000000',
                 buttonUrl: 'http://someblog.com/somepost',
-                hasImage: true,
                 hasSponsorLabel: true,
                 sponsorLabel: '<p><span style="white-space: pre-wrap;">SPONSORED</span></p>',
                 imageUrl: '/content/images/2022/11/koenig-lexical.jpg',
@@ -345,7 +336,7 @@ describe('CallToActionNode', function () {
             html.should.containEql('This is a cool advertisement');
         }));
 
-        it('renders img tag when hasImage is true', editorTest(function () {
+        it('renders img tag when imageUrl is not null', editorTest(function () {
             const callToActionNode = new CallToActionNode(dataset);
             const {element} = callToActionNode.exportDOM(exportOptions);
 
@@ -353,8 +344,8 @@ describe('CallToActionNode', function () {
             html.should.containEql('<img src="http://blog.com/image1.jpg" alt="CTA Image">');
         }));
 
-        it('does not render img tag when hasImage is false', editorTest(function () {
-            dataset.hasImage = false;
+        it('does not render img tag when imageUrl is null', editorTest(function () {
+            dataset.imageUrl = null;
             const callToActionNode = new CallToActionNode(dataset);
             const {element} = callToActionNode.exportDOM(exportOptions);
 
@@ -396,7 +387,6 @@ describe('CallToActionNode', function () {
                 buttonText: 'Get access now',
                 buttonTextColor: '#000000',
                 buttonUrl: 'http://someblog.com/somepost',
-                hasImage: true,
                 hasSponsorLabel: true,
                 sponsorLabel: '<p>This post is brought to you by our sponsors</p>',
                 imageUrl: '/content/images/2022/11/koenig-lexical.jpg',
@@ -417,7 +407,6 @@ describe('CallToActionNode', function () {
                 buttonText: 'Get access now',
                 buttonTextColor: '#000000',
                 buttonUrl: 'http://someblog.com/somepost',
-                hasImage: true,
                 hasSponsorLabel: true,
                 sponsorLabel: '<p>This post is brought to you by our sponsors</p>',
                 imageUrl: '/content/images/2022/11/koenig-lexical.jpg',
@@ -450,7 +439,6 @@ describe('CallToActionNode', function () {
                         buttonText: 'Get access now',
                         buttonTextColor: '#000000',
                         buttonUrl: 'http://someblog.com/somepost',
-                        hasImage: true,
                         hasSponsorLabel: true,
                         sponsorLabel: '<p>This post is brought to you by our sponsors</p>',
                         imageUrl: '/content/images/2022/11/koenig-lexical.jpg',

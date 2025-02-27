@@ -101,7 +101,6 @@ export class CallToActionNode extends BaseCallToActionNode {
                     buttonText={this.buttonText}
                     buttonTextColor={this.buttonTextColor}
                     buttonUrl={this.buttonUrl}
-                    hasImage={this.hasImage}
                     hasSponsorLabel={this.hasSponsorLabel}
                     href={this.href}
                     htmlEditor={this.__callToActionHtmlEditor}
