@@ -355,26 +355,3 @@ CallToActionCard.propTypes = {
     visibilityOptions: PropTypes.object,
     toggleVisibility: PropTypes.func
 };
-
-CallToActionCard.defaultProps = {
-    buttonText: '',
-    buttonUrl: '',
-    buttonColor: '',
-    buttonTextColor: '',
-    color: 'none',
-    hasSponsorLabel: false,
-    imageSrc: '',
-    isEditing: false,
-    layout: 'immersive',
-    showButton: false,
-    updateHasSponsorLabel: () => {},
-    updateShowButton: () => {},
-    updateLayout: () => {},
-    handleColorChange: () => {},
-    handleButtonColor: () => {},
-    onFileChange: () => {},
-    setFileInputRef: () => {},
-    onRemoveMedia: () => {},
-    visibilityOptions: PropTypes.object,
-    toggleVisibility: PropTypes.func
-};

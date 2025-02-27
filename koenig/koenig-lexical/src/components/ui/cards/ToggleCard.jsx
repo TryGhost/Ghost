@@ -7,11 +7,11 @@ import {ReadOnlyOverlay} from '../ReadOnlyOverlay';
 export function ToggleCard({
     contentEditor,
     contentEditorInitialState,
-    contentPlaceholder,
+    contentPlaceholder = 'Collapsible content',
     headingEditor,
     headingEditorInitialState,
-    headingPlaceholder,
-    isEditing
+    headingPlaceholder = 'Toggle header',
+    isEditing = false
 }) {
     return (
         <>
@@ -57,10 +57,4 @@ ToggleCard.propTypes = {
     isEditing: PropTypes.bool,
     contentEditorInitialState: PropTypes.object,
     headingEditorInitialState: PropTypes.object
-};
-
-ToggleCard.defaultProps = {
-    contentPlaceholder: 'Collapsible content',
-    headingPlaceholder: 'Toggle header',
-    isEditing: false
 };

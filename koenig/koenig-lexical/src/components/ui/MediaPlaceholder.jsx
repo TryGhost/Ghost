@@ -27,7 +27,7 @@ export function MediaPlaceholder({
     icon,
     filePicker,
     size,
-    borderStyle,
+    borderStyle = 'squared',
     isDraggedOver,
     errors = [],
     placeholderRef,
@@ -75,8 +75,4 @@ MediaPlaceholder.propTypes = {
     desc: PropTypes.string,
     size: PropTypes.oneOf(['xsmall', 'small', 'medium', 'large']),
     borderStyle: PropTypes.oneOf(['squared', 'rounded'])
-};
-
-MediaPlaceholder.defaultProps = {
-    borderStyle: 'squared'
 };

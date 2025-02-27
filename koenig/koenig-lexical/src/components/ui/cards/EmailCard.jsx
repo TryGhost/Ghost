@@ -5,7 +5,11 @@ import ReplacementStringsPlugin from '../../../plugins/ReplacementStringsPlugin'
 import {CardVisibilityMessage} from '../CardVisibilityMessage.jsx';
 import {ReadOnlyOverlay} from '../ReadOnlyOverlay';
 
-export function EmailCard({htmlEditor, htmlEditorInitialState, isEditing}) {
+export function EmailCard({
+    htmlEditor,
+    htmlEditorInitialState,
+    isEditing = false
+}) {
     return (
         <>
             <CardVisibilityMessage message="Hidden on website" />
@@ -30,8 +34,4 @@ EmailCard.propTypes = {
     htmlEditor: PropTypes.object,
     isEditing: PropTypes.bool,
     htmlEditorInitialState: PropTypes.object
-};
-
-EmailCard.defaultProps = {
-    isEditing: false
 };

@@ -10,16 +10,16 @@ import {CardVisibilityMessage} from '../CardVisibilityMessage.jsx';
 import {ReadOnlyOverlay} from '../ReadOnlyOverlay';
 
 export function EmailCtaCard({
-    alignment,
-    buttonText,
-    buttonUrl,
+    alignment = 'left',
+    buttonText = '',
+    buttonUrl = '',
     handleSegmentChange,
     htmlEditor,
     htmlEditorInitialState,
-    isEditing,
-    segment,
-    showDividers,
-    showButton,
+    isEditing = false,
+    segment = 'status:free',
+    showDividers = true,
+    showButton = true,
     toggleDividers,
     updateAlignment,
     updateShowButton,
@@ -173,15 +173,4 @@ EmailCtaCard.propTypes = {
     handleSegmentChange: PropTypes.func,
     htmlEditor: PropTypes.object,
     htmlEditorInitialState: PropTypes.object
-};
-
-EmailCtaCard.defaultProps = {
-    alignment: 'left',
-    buttonText: '',
-    buttonUrl: '',
-    isEditing: false,
-    segment: 'status:free',
-    showButton: true,
-    showDividers: true,
-    suggestedUrls: []
 };

@@ -2,7 +2,21 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import clsx from 'clsx';
 
-export function Button({color, dataTestId, href, size, width, rounded, shrink, value, placeholder, type = 'button', disabled = false, target, ...other}) {
+export function Button({
+    color = 'accent',
+    dataTestId,
+    href,
+    size = 'small',
+    width = 'regular',
+    rounded = true,
+    shrink = false,
+    value = '',
+    placeholder = 'Add button text',
+    type = 'button',
+    disabled = false,
+    target,
+    ...other
+}) {
     const Tag = href ? 'a' : 'button';
     const props = {
         type: href ? null : type,
@@ -54,15 +68,4 @@ Button.propTypes = {
     href: PropTypes.string,
     target: PropTypes.string,
     disabled: PropTypes.bool
-};
-
-Button.defaultProps = {
-    color: 'accent',
-    size: 'small',
-    width: 'regular',
-    rounded: true,
-    shrink: false,
-    value: '',
-    placeholder: 'Add button text',
-    disabled: false
 };

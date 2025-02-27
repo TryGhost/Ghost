@@ -5,7 +5,30 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import defaultData from '@emoji-mart/data';
 
-const EmojiPickerPortal = ({onEmojiClick, positionRef, data = defaultData, ...props}) => {
+const EmojiPickerPortal = ({
+    onEmojiClick,
+    positionRef,
+    data = defaultData,
+    autoFocus = true,
+    dynamicWidth = false,
+    emojiButtonRadius = '100%',
+    emojiButtonSize = 36,
+    emojiSize = 24,
+    icons = 'outline',
+    locale = 'en',
+    maxFrequentRows = 1,
+    navPosition = 'bottom',
+    noCountryFlags = false,
+    noResultsEmoji = 'cry',
+    perLine = 9,
+    previewEmoji = null,
+    previewPosition = 'none',
+    searchPosition = 'sticky',
+    set = 'native',
+    skin = 1,
+    skinTonePosition = 'preview',
+    ...props
+}) => {
     const [position, setPosition] = React.useState(null);
     const {darkMode} = React.useContext(KoenigComposerContext);
 
@@ -52,17 +75,29 @@ const EmojiPickerPortal = ({onEmojiClick, positionRef, data = defaultData, ...pr
     };
 
     // https://github.com/missive/emoji-mart#options--props
-    const defaultProps = {
-        autoFocus: true,
-        icons: 'outline',
-        maxFrequentRows: 1,
-        navPosition: 'bottom',
-        noResultsEmoji: 'cry',
-        previewPosition: 'none',
-        theme: darkMode ? 'dark' : 'light'
+    const defaultPickerProps = {
+        theme: darkMode ? 'dark' : 'light',
+        autoFocus,
+        dynamicWidth,
+        emojiButtonRadius,
+        emojiButtonSize,
+        emojiSize,
+        icons,
+        locale,
+        maxFrequentRows,
+        navPosition,
+        noCountryFlags,
+        noResultsEmoji,
+        perLine,
+        previewEmoji,
+        previewPosition,
+        searchPosition,
+        set,
+        skin,
+        skinTonePosition
     };
 
-    const mergedProps = {...defaultProps, ...props};
+    const pickerProps = {...defaultPickerProps, ...props};
 
     return (
         <Portal>
@@ -71,7 +106,7 @@ const EmojiPickerPortal = ({onEmojiClick, positionRef, data = defaultData, ...pr
                     <Picker // https://github.com/missive/emoji-mart#-picker
                         data={data}
                         onEmojiSelect={onEmojiClick}
-                        {...mergedProps}
+                        {...pickerProps}
                     />
                 </div>
             </div>
@@ -106,28 +141,5 @@ EmojiPickerPortal.propTypes = {
     set: PropTypes.oneOf(['native', 'apple', 'facebook', 'google', 'twitter']),
     setInstanceRef: PropTypes.func,
     skin: PropTypes.oneOf([1, 2, 3, 4, 5, 6]),
-    skinTonePosition: PropTypes.oneOf(['preview', 'search', 'none']),
-    theme: PropTypes.oneOf(['auto', 'light', 'dark'])
-};
-
-EmojiPickerPortal.defaultProps = {
-    autoFocus: true,
-    dynamicWidth: false,
-    emojiButtonRadius: '100%',
-    emojiButtonSize: 36,
-    emojiSize: 24,
-    icons: 'outline',
-    locale: 'en',
-    maxFrequentRows: 1,
-    navPosition: 'bottom',
-    noCountryFlags: false,
-    noResultsEmoji: 'cry',
-    perLine: 9,
-    previewEmoji: null,
-    previewPosition: 'none',
-    searchPosition: 'sticky',
-    set: 'native',
-    skin: 1,
-    skinTonePosition: 'preview',
-    theme: 'light'
+    skinTonePosition: PropTypes.oneOf(['preview', 'search', 'none'])
 };

@@ -83,14 +83,14 @@ export const calloutColorPicker = [
 ];
 
 export function CalloutCard({
-    color,
+    color = 'green',
     isEditing,
     setShowEmojiPicker,
     toggleEmoji,
-    hasEmoji,
+    hasEmoji = true,
     handleColorChange,
     changeEmoji,
-    calloutEmoji,
+    calloutEmoji = '💡',
     textEditor,
     textEditorInitialState,
     nodeKey,
@@ -188,10 +188,4 @@ CalloutCard.propTypes = {
     nodeKey: PropTypes.string,
     toggleEmojiPicker: PropTypes.func,
     showEmojiPicker: PropTypes.bool
-};
-
-CalloutCard.defaultProps = {
-    color: 'green',
-    calloutEmoji: '💡',
-    hasEmoji: true
 };
