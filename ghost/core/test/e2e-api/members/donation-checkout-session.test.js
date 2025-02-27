@@ -351,15 +351,7 @@ describe('Create Stripe Checkout Session for Donations', function () {
                         }
                     ]
                 },
-                custom_fields: [{
-                    key: 'donation_message',
-                    label: {
-                        type: 'custom',
-                        custom: 'Bonjour, please leave a note'
-                    },
-                    type: 'text',
-                    optional: true
-                }]
+                personalNote: "Please leave a note, gracias!"
             })
             .expectStatus(200)
             .matchBodySnapshot();

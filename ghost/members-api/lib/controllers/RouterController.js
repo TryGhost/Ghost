@@ -654,7 +654,7 @@ function parsePersonalNote(rawText) {
         return '';
     }
     if (rawText && rawText.length > 255) {
-        logging.warn('Donation personal note is too long, ignoring');
+        logging.warn('Donation personal note is too long, ignoring:', rawText);
         return '';
     }
 
