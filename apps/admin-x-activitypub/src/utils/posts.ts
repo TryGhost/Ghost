@@ -93,6 +93,7 @@ export function mapPostToActivity(post: Post): Activity {
         attributedTo: actor,
         image: post.featureImageUrl ?? '',
         published: post.publishedAt,
+        attachment: post.attachments,
         preview: {
             type: '',
             content: post.excerpt

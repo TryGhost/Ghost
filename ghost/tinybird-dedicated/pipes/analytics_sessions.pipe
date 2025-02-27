@@ -1,4 +1,4 @@
-VERSION 0
+VERSION 1
 TOKEN "analytics_sessions__v0_endpoint_read_2877" READ
 
 NODE parsed_hits
@@ -64,7 +64,18 @@ SQL >
             when match(user_agent, 'iphone|ipad|safari')
             then 'safari'
             else 'Unknown'
-        END as browser
+        END as browser,
+        case
+            when match(user_agent, 'windows')
+            then 'windows'
+            when match(user_agent, 'mac')
+            then 'mac'
+            when match(user_agent, 'ios')
+            then 'ios'
+            when match(user_agent, 'android')
+            then 'android'
+            else 'Unknown'
+        END as os
     FROM parsed_hits
 
 
@@ -86,6 +97,7 @@ SQL >
         anySimpleState(post_uuid) AS post_uuid,
         anySimpleState(device) AS device,
         anySimpleState(browser) AS browser,
+        anySimpleState(os) AS os,
         anySimpleState(location) AS location,
         anySimpleState(source) AS source,
         anySimpleState(pathname) AS pathname,

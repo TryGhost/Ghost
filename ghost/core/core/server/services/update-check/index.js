@@ -1,14 +1,16 @@
+/* eslint-disable max-lines */
+
 const _ = require('lodash');
 
-const api = require('./api').endpoints;
-const config = require('../shared/config');
-const urlUtils = require('./../shared/url-utils');
-const jobsService = require('./services/jobs');
-const databaseInfo = require('./data/db/info');
+const api = require('../../api').endpoints;
+const config = require('../../../shared/config');
+const urlUtils = require('../../../shared/url-utils');
+const jobsService = require('../jobs');
+const databaseInfo = require('../../data/db/info');
 
 const request = require('@tryghost/request');
 const ghostVersion = require('@tryghost/version');
-const UpdateCheckService = require('@tryghost/update-check-service');
+const UpdateCheckService = require('./UpdateCheckService');
 
 /**
  * Initializes and triggers update check
@@ -32,7 +34,7 @@ module.exports = async ({
         }
     }
 
-    const {GhostMailer} = require('./services/mail');
+    const {GhostMailer} = require('../mail');
     const ghostMailer = new GhostMailer();
 
     const updateChecker = new UpdateCheckService({

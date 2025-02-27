@@ -1,12 +1,11 @@
-require('./utils');
-
+require('should');
 const sinon = require('sinon');
 const moment = require('moment');
 const crypto = require('crypto');
 const assert = require('assert/strict');
 
 const logging = require('@tryghost/logging');
-const UpdateCheckService = require('../lib/UpdateCheckService');
+const UpdateCheckService = require('../../../../core/server/services/update-check/UpdateCheckService');
 
 describe('Update Check', function () {
     const internal = {context: {internal: true}};

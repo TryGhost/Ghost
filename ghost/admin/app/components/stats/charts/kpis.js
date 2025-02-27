@@ -13,7 +13,7 @@ export default class KpisComponent extends Component {
     @inject config;
 
     ReactComponent = (props) => {
-        const {chartRange, selected} = props;
+        const {chartRange, selected, apiVersion} = props;
 
         const params = getStatsParams(
             this.config,
@@ -21,7 +21,7 @@ export default class KpisComponent extends Component {
         );
 
         const {data, meta, error, loading} = useQuery({
-            endpoint: `${this.config.stats.endpoint}/v0/pipes/kpis__v${TB_VERSION}.json`,
+            endpoint: `${this.config.stats.endpoint}/v0/pipes/kpis__v${apiVersion || TB_VERSION}.json`,
             token: this.config.stats.token,
             params
         });

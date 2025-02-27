@@ -1,6 +1,6 @@
-// Switch these lines once there are useful utils
-// const testUtils = require('./utils');
-require('./utils');
+require('should');
+const sinon = require('sinon');
+
 const {MemberCreatedEvent, SubscriptionCreatedEvent} = require('@tryghost/member-events');
 const EventStorage = require('../lib/EventStorage');
 
