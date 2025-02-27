@@ -1,3 +1,5 @@
+import {z} from 'zod';
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type Actor = any;
 
@@ -81,38 +83,49 @@ export enum PostType {
     Article = 1,
 }
 
-export interface Post {
-    id: string;
-    type: PostType;
-    title: string;
-    excerpt: string;
-    content: string;
-    url: string;
-    featureImageUrl: string | null;
-    publishedAt: string;
-    likeCount: number;
-    likedByMe: boolean;
-    replyCount: number;
-    readingTimeMinutes: number;
-    attachments: {
-        type: string;
-        mediaType: string;
-        name: string;
-        url: string;
-    }[];
-    author: Pick<Account, 'id' | 'handle' | 'avatarUrl' | 'name' | 'url'>;
-    repostCount: number;
-    repostedByMe: boolean;
-    repostedBy: Pick<
-        Account,
-        'id' | 'handle' | 'avatarUrl' | 'name' | 'url'
-    > | null;
-}
+const AccountSchema = z.object({
+    id: z.string(),
+    handle: z.string(),
+    avatarUrl: z.string(),
+    name: z.string(),
+    url: z.string()
+});
 
-export interface GetFeedResponse {
-    posts: Post[];
-    next: string | null;
-}
+export const PostSchema = z.object({
+    id: z.string(),
+    type: z.union([z.literal(0), z.literal(1)]),
+    title: z.string(),
+    excerpt: z.string(),
+    content: z.string(),
+    url: z.string(),
+    featureImageUrl: z.string().nullable(),
+    publishedAt: z.string(),
+    likeCount: z.number(),
+    likedByMe: z.boolean(),
+    replyCount: z.number(),
+    readingTimeMinutes: z.number(),
+    attachments: z.array(
+        z.object({
+            type: z.string(),
+            mediaType: z.string(),
+            name: z.string(),
+            url: z.string()
+        })
+    ),
+    author: AccountSchema,
+    repostCount: z.number(),
+    repostedByMe: z.boolean(),
+    repostedBy: AccountSchema.nullable()
+});
+
+export type Post = z.infer<typeof PostSchema>;
+
+export const GetFeedResponseSchema = z.object({
+    posts: z.array(PostSchema),
+    next: z.string().nullable()
+});
+
+export type GetFeedResponse = z.infer<typeof GetFeedResponseSchema>;
 
 export class ActivityPubAPI {
     constructor(
@@ -286,16 +299,17 @@ export class ActivityPubAPI {
         };
     }
 
-    async reply(id: string, content: string): Promise<Activity> {
+    async reply(id: string, content: string): Promise<Post> {
         const url = new URL(`.ghost/activitypub/actions/reply/${encodeURIComponent(id)}`, this.apiUrl);
         const response = await this.fetchJSON(url, 'POST', {content});
-        return response;
+
+        return PostSchema.parse(response);
     }
 
-    async note(content: string): Promise<Activity> {
+    async note(content: string): Promise<Post> {
         const url = new URL('.ghost/activitypub/actions/note', this.apiUrl);
         const response = await this.fetchJSON(url, 'POST', {content});
-        return response;
+        return PostSchema.parse(response);
     }
 
     get userApiUrl() {
@@ -482,27 +496,7 @@ export class ActivityPubAPI {
 
         const json = await this.fetchJSON(url);
 
-        if (json === null) {
-            return {
-                posts: [],
-                next: null
-            };
-        }
-
-        if (!('posts' in json)) {
-            return {
-                posts: [],
-                next: null
-            };
-        }
-
-        const posts = Array.isArray(json.posts) ? json.posts : [];
-        const nextPage = 'next' in json && typeof json.next === 'string' ? json.next : null;
-
-        return {
-            posts,
-            next: nextPage
-        };
+        return GetFeedResponseSchema.parse(json);
     }
 
     async getInbox(next?: string): Promise<GetFeedResponse> {
@@ -514,26 +508,6 @@ export class ActivityPubAPI {
 
         const json = await this.fetchJSON(url);
 
-        if (json === null) {
-            return {
-                posts: [],
-                next: null
-            };
-        }
-
-        if (!('posts' in json)) {
-            return {
-                posts: [],
-                next: null
-            };
-        }
-
-        const posts = Array.isArray(json.posts) ? json.posts : [];
-        const nextPage = 'next' in json && typeof json.next === 'string' ? json.next : null;
-
-        return {
-            posts,
-            next: nextPage
-        };
+        return GetFeedResponseSchema.parse(json);
     }
 }
