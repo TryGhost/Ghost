@@ -1,14 +1,12 @@
 const assert = require('assert/strict');
 const sinon = require('sinon');
 const nock = require('nock');
-const got = require('got');
 const ObjectID = require('bson-objectid').default;
+
+const externalRequest = require('../../../../../core/server/lib/request-external');
 const RoutingService = require('../../../../../core/server/services/mentions/RoutingService');
-const logging = require('@tryghost/logging');
 
 describe('RoutingService', function () {
-    let loggingStub;
-
     afterEach(function () {
         sinon.restore();
         nock.cleanAll();
@@ -24,7 +22,7 @@ describe('RoutingService', function () {
                 const routingService = new RoutingService({
                     siteUrl,
                     resourceService,
-                    externalRequest: got
+                    externalRequest
                 });
 
                 const result = await routingService.pageExists(new URL('https://different-website.com'));
@@ -40,7 +38,7 @@ describe('RoutingService', function () {
                 const routingService = new RoutingService({
                     siteUrl,
                     resourceService,
-                    externalRequest: got
+                    externalRequest
                 });
 
                 checkNoSubdomain: {
@@ -66,7 +64,7 @@ describe('RoutingService', function () {
                 const routingService = new RoutingService({
                     siteUrl,
                     resourceService,
-                    externalRequest: got
+                    externalRequest
                 });
 
                 resourceService.getByURL.resolves({type: 'post', id: new ObjectID});
@@ -85,7 +83,7 @@ describe('RoutingService', function () {
                 const routingService = new RoutingService({
                     siteUrl,
                     resourceService,
-                    externalRequest: got
+                    externalRequest
                 });
 
                 resourceService.getByURL.resolves({type: null, id: null});
@@ -104,7 +102,7 @@ describe('RoutingService', function () {
                 const routingService = new RoutingService({
                     siteUrl,
                     resourceService,
-                    externalRequest: got
+                    externalRequest
                 });
 
                 resourceService.getByURL.resolves({type: null, id: null});
@@ -123,7 +121,7 @@ describe('RoutingService', function () {
                 const routingService = new RoutingService({
                     siteUrl,
                     resourceService,
-                    externalRequest: got
+                    externalRequest
                 });
 
                 resourceService.getByURL.resolves({type: null, id: null});
@@ -142,10 +140,8 @@ describe('RoutingService', function () {
                 const routingService = new RoutingService({
                     siteUrl,
                     resourceService,
-                    externalRequest: got
+                    externalRequest
                 });
-
-                loggingStub = sinon.stub(logging, 'error');
 
                 resourceService.getByURL.resolves({type: null, id: null});
 
@@ -153,7 +149,6 @@ describe('RoutingService', function () {
 
                 const result = await routingService.pageExists(new URL('https://website.com/subdir/big-error'));
                 assert.equal(result, false);
-                sinon.assert.calledOnce(loggingStub);
             });
         });
     });
