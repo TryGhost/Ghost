@@ -3,7 +3,7 @@ const sinon = require('sinon');
 const moment = require('moment');
 const crypto = require('crypto');
 const assert = require('assert/strict');
-
+const util = require('util');
 const logging = require('@tryghost/logging');
 const UpdateCheckService = require('../../../../core/server/services/update-check/UpdateCheckService');
 
@@ -26,6 +26,10 @@ describe('Update Check', function () {
                 value: 'casperito'
             }]
         });
+
+        sinon.stub(util, 'promisify').returns(async () => ({
+            stdout: '10.8.2'
+        }));
 
         sinon.stub(logging, 'error');
 
@@ -184,8 +188,7 @@ describe('Update Check', function () {
             data.blog_created_at.should.equal(819846900);
             data.user_count.should.be.equal(2);
             data.post_count.should.be.equal(13);
-            data.npm_version.should.be.a.String();
-            data.npm_version.should.not.be.empty();
+            data.npm_version.should.be.equal('10.8.2');
         });
     });
 
