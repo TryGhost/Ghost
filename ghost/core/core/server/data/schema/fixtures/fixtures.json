@@ -934,7 +934,10 @@
                     "product": ["browse", "read"],
                     "newsletter": ["browse", "read"],
                     "collection": "all",
-                    "recommendation": ["browse", "read"]
+                    "recommendation": ["browse", "read"],
+                    "member": "all",
+                    "member_signin_url": "read"
+
                 },
                 "Author": {
                     "post": ["browse", "read", "edit", "add", "destroy"],

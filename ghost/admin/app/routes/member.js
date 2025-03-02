@@ -1,10 +1,11 @@
 import * as Sentry from '@sentry/ember';
 import AdminRoute from 'ghost-admin/routes/admin';
+import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
 import ConfirmUnsavedChangesModal from '../components/modals/confirm-unsaved-changes';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 
-export default class MembersRoute extends AdminRoute {
+export default class MembersRoute extends AuthenticatedRoute {
     @service feature;
     @service modals;
     @service router;
@@ -20,6 +21,16 @@ export default class MembersRoute extends AdminRoute {
         this.router.on('routeWillChange', (transition) => {
             this.closeImpersonateModal(transition);
         });
+    }
+
+    beforeModel() {
+        super.beforeModel(...arguments);
+        // - TODO: redirect if members is disabled?
+
+        // give editors the ability to reach this route also.
+        if (!this.session.user.isEditor && !this.session.user.isAdmin) {
+            return this.transitionTo('home');
+        }
     }
 
     model(params) {

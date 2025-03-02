@@ -196,11 +196,11 @@ describe('Migrations', function () {
             permissions.should.havePermission('Read identities');
             permissions.should.havePermission('Auth Stripe Connect for Members');
 
-            permissions.should.havePermission('Browse Members');
-            permissions.should.havePermission('Read Members');
-            permissions.should.havePermission('Edit Members');
-            permissions.should.havePermission('Add Members', ['Administrator', 'Admin Integration', 'Self-Serve Migration Integration']);
-            permissions.should.havePermission('Delete Members');
+            permissions.should.havePermission('Browse Members', ['Administrator', 'Admin Integration', 'Editor']);
+            permissions.should.havePermission('Read Members', ['Administrator', 'Admin Integration', 'Editor']);
+            permissions.should.havePermission('Edit Members', ['Administrator', 'Admin Integration', 'Editor']);
+            permissions.should.havePermission('Add Members', ['Administrator', 'Admin Integration', 'Self-Serve Migration Integration', "Editor"]);
+            permissions.should.havePermission('Delete Members', ['Administrator', 'Admin Integration', 'Editor']);
 
             permissions.should.havePermission('Browse offers');
             permissions.should.havePermission('Read offers');
