@@ -2,22 +2,22 @@ const {addPermissionToRole, combineTransactionalMigrations} = require('../../uti
 module.exports = combineTransactionalMigrations(
     addPermissionToRole({
         permission: 'Browse Members',
-        role: 'Editor',
+        role: 'Editor'
     }),
     addPermissionToRole({
         permission: 'Read Members',
-        role: 'Editor',
+        role: 'Editor'
     }),
     addPermissionToRole({
         permission: 'Edit Members',
-        role: 'Editor',
+        role: 'Editor'
     }),
     addPermissionToRole({
         permission: 'Add Members',
-        role: 'Editor',
+        role: 'Editor'
     }),
     addPermissionToRole({
         permission: 'Delete Members',
-        role: 'Editor',
+        role: 'Editor'
     })
 );

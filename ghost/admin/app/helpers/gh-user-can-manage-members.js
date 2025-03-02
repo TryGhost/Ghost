@@ -6,7 +6,6 @@ import {helper} from '@ember/component/helper';
 // @param session.user
 
 export function ghUserCanManageMembers(params) {
-    console.log('check if user can manage members', params[0]);
     return !!(params[0].get('isAdmin')) || !!(params[0].get('isEditor'));
 }
 

@@ -1,5 +1,4 @@
 import * as Sentry from '@sentry/ember';
-import AdminRoute from 'ghost-admin/routes/admin';
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
 import ConfirmUnsavedChangesModal from '../components/modals/confirm-unsaved-changes';
 import {action} from '@ember/object';
