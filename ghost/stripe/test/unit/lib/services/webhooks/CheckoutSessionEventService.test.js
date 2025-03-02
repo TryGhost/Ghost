@@ -1,5 +1,7 @@
 const assert = require('assert/strict');
 const errors = require('@tryghost/errors');
+const sinon = require('sinon');
+
 const CheckoutSessionEventService = require('../../../../../lib/services/webhook/CheckoutSessionEventService');
 
 describe('CheckoutSessionEventService', function () {
@@ -29,7 +31,7 @@ describe('CheckoutSessionEventService', function () {
         staffServiceEmails = {
             notifyDonationReceived: sinon.stub()
         };
-        
+
         sendSignupEmail = sinon.stub();
     });
 
@@ -70,7 +72,7 @@ describe('CheckoutSessionEventService', function () {
             const handleSetupEventStub = sinon.stub(service, 'handleSetupEvent');
             const handleSubscriptionEventStub = sinon.stub(service, 'handleSubscriptionEvent');
             const handleDonationEventStub = sinon.stub(service, 'handleDonationEvent');
-        
+
             await service.handleEvent(session);
 
             assert(!handleSetupEventStub.called);
@@ -170,7 +172,7 @@ describe('CheckoutSessionEventService', function () {
                 get: sinon.stub(),
                 id: 'member_123'
             };
-    
+
             // Stub the `get` method on the member object
             member.get.withArgs('name').returns('Test Name');
             member.get.withArgs('email').returns('member@example.com');
@@ -494,12 +496,12 @@ describe('CheckoutSessionEventService', function () {
             const setupIntent = {metadata: {customer_id: 'cust_123', subscription_id: 'sub_123'}, payment_method: 'pm_123'};
             const member = {id: 'member_123'};
             const updatedSubscription = {id: 'sub_123'};
-    
+
             api.getSetupIntent.resolves(setupIntent);
             memberRepository.get.resolves(member);
             api.updateSubscriptionDefaultPaymentMethod.resolves(updatedSubscription);
             memberRepository.linkSubscription.rejects({code: 'ER_DUP_ENTRY'});
-    
+
             try {
                 await service.handleSetupEvent(session);
                 assert.fail('Expected ConflictError');
@@ -534,7 +536,7 @@ describe('CheckoutSessionEventService', function () {
         let session;
         let customer;
         let member;
-    
+
         beforeEach(function () {
             service = new CheckoutSessionEventService({api, memberRepository, donationRepository, staffServiceEmails, sendSignupEmail});
             session = {
@@ -552,7 +554,7 @@ describe('CheckoutSessionEventService', function () {
                     checkoutType: 'new'
                 }
             };
-    
+
             customer = {
                 email: 'customer@example.com',
                 id: 'cust_123',
@@ -566,7 +568,7 @@ describe('CheckoutSessionEventService', function () {
                     ]
                 }
             };
-    
+
             member = {
                 get: sinon.stub(),
                 id: 'member_123'

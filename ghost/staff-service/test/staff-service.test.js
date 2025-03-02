@@ -7,7 +7,7 @@ const {MilestoneCreatedEvent} = require('@tryghost/milestones');
 // Stuff we are testing
 const DomainEvents = require('@tryghost/domain-events');
 
-require('./utils');
+require('should');
 const StaffService = require('../index');
 
 function testCommonMailData({mailStub, getEmailAlertUsersStub}) {

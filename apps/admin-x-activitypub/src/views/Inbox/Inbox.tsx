@@ -1,6 +1,7 @@
 import APAvatar from '@components/global/APAvatar';
 import ActivityPubWelcomeImage from '@assets/images/ap-welcome.png';
 import FeedItem from '@components/feed/FeedItem';
+import Layout from '@components/layout';
 import NewPostModal from '@views/Feed/components/NewPostModal';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useRef} from 'react';
@@ -14,14 +15,11 @@ import {
     useInboxForUser,
     useUserDataForUser
 } from '@hooks/use-activity-pub-queries';
+import {useLocation} from '@tryghost/admin-x-framework';
 
-type Layout = 'inbox' | 'feed';
-
-interface InboxProps {
-    layout: Layout;
-}
-
-const Inbox: React.FC<InboxProps> = ({layout}) => {
+const Inbox: React.FC = () => {
+    const location = useLocation();
+    const layout = location.pathname === '/feed' ? 'feed' : 'inbox';
     const {inboxQuery, updateInboxActivity} = useInboxForUser({enabled: layout === 'inbox'});
     const {feedQuery, updateFeedActivity} = useFeedForUser({enabled: layout === 'feed'});
 
@@ -33,6 +31,7 @@ const Inbox: React.FC<InboxProps> = ({layout}) => {
 
     const observerRef = useRef<IntersectionObserver | null>(null);
     const loadMoreRef = useRef<HTMLDivElement | null>(null);
+    const endLoadMoreRef = useRef<HTMLDivElement | null>(null);
 
     useEffect(() => {
         if (observerRef.current) {
@@ -49,6 +48,10 @@ const Inbox: React.FC<InboxProps> = ({layout}) => {
             observerRef.current.observe(loadMoreRef.current);
         }
 
+        if (endLoadMoreRef.current) {
+            observerRef.current.observe(endLoadMoreRef.current);
+        }
+
         return () => {
             if (observerRef.current) {
                 observerRef.current.disconnect();
@@ -58,8 +61,11 @@ const Inbox: React.FC<InboxProps> = ({layout}) => {
 
     const {data: user} = useUserDataForUser('index');
 
+    // Calculate the index at which to place the loadMoreRef - This will place it ~75% through the list
+    const loadMoreIndex = Math.max(0, Math.floor(activities.length * 0.75) - 1);
+
     return (
-        <>
+        <Layout>
             <div className='my-4 flex w-full flex-col'>
                 <div className='w-full'>
                     {activities.length > 0 ? (
@@ -96,15 +102,18 @@ const Inbox: React.FC<InboxProps> = ({layout}) => {
                                                     {index < activities.length - 1 && (
                                                         <Separator />
                                                     )}
+                                                    {index === loadMoreIndex && (
+                                                        <div ref={loadMoreRef} className='h-1'></div>
+                                                    )}
                                                 </li>
                                             ))}
-                                            <div ref={loadMoreRef} className='h-1'></div>
                                             {isFetchingNextPage && (
-                                                <div className='flex flex-col items-center justify-center space-y-4 text-center'>
+                                                <li className='flex flex-col items-center justify-center space-y-4 text-center'>
                                                     <LoadingIndicator size='md' />
-                                                </div>
+                                                </li>
                                             )}
                                         </ul>
+                                        <div ref={endLoadMoreRef} className='h-1'></div>
                                     </div>
                                 </div>
                             </div>
@@ -136,7 +145,7 @@ const Inbox: React.FC<InboxProps> = ({layout}) => {
                     )}
                 </div>
             </div>
-        </>
+        </Layout>
     );
 };
 

@@ -1,5 +1,5 @@
-import React, {useEffect, useRef} from 'react';
-import {Skeleton} from '@tryghost/shade';
+import React, {useEffect, useRef, useState} from 'react';
+import {LucideIcon, Skeleton} from '@tryghost/shade';
 
 import NiceModal from '@ebay/nice-modal-react';
 import {Activity, ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
@@ -10,6 +10,7 @@ import ArticleModal from '@components/feed/ArticleModal';
 import NotificationItem from '@components/activities/NotificationItem';
 import Separator from '@components/global/Separator';
 
+import Layout from '@components/layout';
 import getUsername from '@utils/get-username';
 import stripHtml from '@utils/strip-html';
 import truncate from '@utils/truncate';
@@ -263,6 +264,24 @@ const Notifications: React.FC<NotificationsProps> = () => {
         };
     }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
+    const [showLoadingMessage, setShowLoadingMessage] = useState(false);
+
+    useEffect(() => {
+        let timeoutID: number;
+
+        if (isLoading) {
+            timeoutID = setTimeout(() => {
+                setShowLoadingMessage(true);
+            }, 3000);
+        } else {
+            setShowLoadingMessage(false);
+        }
+
+        return () => {
+            clearTimeout(timeoutID);
+        };
+    }, [isLoading]);
+
     const handleActivityClick = (group: GroupedActivity, index: number) => {
         switch (group.type) {
         case ACTIVITY_TYPE.CREATE:
@@ -301,7 +320,13 @@ const Notifications: React.FC<NotificationsProps> = () => {
     };
 
     return (
-        <>
+        <Layout>
+            {isLoading && showLoadingMessage && (
+                <div className='absolute bottom-8 left-8 right-[calc(292px+64px)] flex animate-fade-in items-start justify-center rounded-md bg-grey-100 px-3 py-2 font-medium backdrop-blur-md'>
+                    <LucideIcon.Gauge className='mr-1.5 min-w-5 text-purple' size={20} strokeWidth={1.5} />
+                    Notifications are a little slow at the moment, we&apos;re working on improving the performance.
+                </div>
+            )}
             <div className='z-0 flex w-full flex-col items-center'>
                 {
                     isLoading === false && groupedActivities.length === 0 && (
@@ -411,7 +436,7 @@ const Notifications: React.FC<NotificationsProps> = () => {
                     )
                 }
             </div>
-        </>
+        </Layout>
     );
 };
 
