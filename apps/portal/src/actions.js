@@ -483,11 +483,13 @@ async function updateProfile({data, state, api}) {
         const action = emailUpdate.success ? 'updateProfile:success' : 'updateProfile:failed';
         const status = emailUpdate.success ? 'success' : 'error';
         let message = '';
-        if (emailUpdate.error.message === 'Memberships from this email domain are currently restricted.') {
-            message = chooseBestErrorMessage(emailUpdate.error, t('Memberships from this email domain are currently restricted.'), t);
+
+        if (emailUpdate.error) {
+            message = chooseBestErrorMessage(emailUpdate.error, t('Failed to send verification email'), t);
         } else {
-            message = emailUpdate.success ? t('Check your inbox to verify email update') : t('Failed to send verification email');
+            message = t('Check your inbox to verify email update');
         }
+
         return {
             action,
             ...(emailUpdate.success ? {page: 'accountHome'} : {}),
