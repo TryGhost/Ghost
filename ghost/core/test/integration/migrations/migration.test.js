@@ -196,14 +196,14 @@ describe('Migrations', function () {
             permissions.should.havePermission('Read identities');
             permissions.should.havePermission('Auth Stripe Connect for Members');
 
-            permissions.should.havePermission('Browse Members', ['Administrator', 'Admin Integration', 'Editor']);
-            permissions.should.havePermission('Read Members', ['Administrator', 'Admin Integration', 'Editor']);
-            permissions.should.havePermission('Edit Members', ['Administrator', 'Admin Integration', 'Editor']);
-            permissions.should.havePermission('Add Members', ['Administrator', 'Admin Integration', 'Self-Serve Migration Integration', 'Editor']);
-            permissions.should.havePermission('Delete Members', ['Administrator', 'Admin Integration', 'Editor']);
+            permissions.should.havePermission('Browse Members', ['Administrator', 'Editor', 'Admin Integration']);
+            permissions.should.havePermission('Read Members', ['Administrator', 'Editor', 'Admin Integration']);
+            permissions.should.havePermission('Edit Members', ['Administrator', 'Editor', 'Admin Integration']);
+            permissions.should.havePermission('Add Members', ['Administrator', 'Editor', 'Admin Integration', 'Self-Serve Migration Integration']);
+            permissions.should.havePermission('Delete Members', ['Administrator', 'Editor', 'Admin Integration']);
 
-            permissions.should.havePermission('Browse offers', ['Administrator', 'Admin Integration', 'Editor']);
-            permissions.should.havePermission('Read offers', ['Administrator', 'Admin Integration', 'Editor']);
+            permissions.should.havePermission('Browse offers', ['Administrator', 'Editor', 'Admin Integration']);
+            permissions.should.havePermission('Read offers', ['Administrator', 'Editor', 'Admin Integration']);
             permissions.should.havePermission('Edit offers');
             permissions.should.havePermission('Add offers');
 
@@ -242,7 +242,7 @@ describe('Migrations', function () {
             permissions.should.havePermission('Edit collections', ['Administrator', 'Editor', 'Admin Integration']);
             permissions.should.havePermission('Add collections', ['Administrator', 'Editor', 'Author', 'Admin Integration']);
             permissions.should.havePermission('Delete collections', ['Administrator', 'Editor', 'Admin Integration']);
-            permissions.should.havePermission('Read member signin urls', ['Administrator', 'Admin Integration']);
+            permissions.should.havePermission('Read member signin urls', ['Administrator', 'Editor', 'Admin Integration']);
         });
 
         describe('Populate', function () {
