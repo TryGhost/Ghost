@@ -61,7 +61,7 @@ export function chooseBestErrorMessage(error, alreadyTranslatedDefaultMessage, t
             t('This site only accepts paid members.');
             t('Signups from this email domain are currently restricted.');
             t('Too many sign-up attempts, try again later');
-            t('Emails from this domain are currently restricted.');
+            t('Memberships from this email domain are currently restricted.');
         }
     };
 
