@@ -8,7 +8,6 @@ let sandbox;
 
 describe('Unit: models/single-use-token', function () {
     before(function () {
-        models.init();
         sandbox = sinon.createSandbox();
         clock = sandbox.useFakeTimers();
     });

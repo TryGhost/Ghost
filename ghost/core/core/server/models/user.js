@@ -9,7 +9,6 @@ const errors = require('@tryghost/errors');
 const security = require('@tryghost/security');
 const {pipeline} = require('@tryghost/promise');
 const validatePassword = require('../lib/validate-password');
-const permissions = require('../services/permissions');
 const urlUtils = require('../../shared/url-utils');
 const activeStates = ['active', 'warn-1', 'warn-2', 'warn-3', 'warn-4'];
 const ASSIGNABLE_ROLES = ['Administrator', 'Editor', 'Author', 'Contributor'];
@@ -905,6 +904,7 @@ User = ghostBookshelf.Model.extend({
                         // @NOTE: your role is not the same than the role you try to change (!)
                         // e.g. admin can assign admin role to a user, but not owner
 
+                        const permissions = require('../services/permissions');
                         return permissions.canThis(context).assign.role(role)
                             .then(() => {
                                 if (hasUserPermission && hasApiKeyPermission) {

@@ -1,9 +1,11 @@
 const moment = require('moment-timezone');
 const _ = require('lodash');
-const models = require('../../models');
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
 const {sequence} = require('@tryghost/promise');
+
+const {Post: PostModel} = require('../post');
+const {Settings: SettingsModel} = require('../settings');
 
 // Listen to settings.timezone.edited and settings.notifications.edited to bind extra logic to settings, similar to the bridge and member service
 const events = require('../../lib/common/events');
@@ -36,12 +38,13 @@ events.on('settings.timezone.edited', function (settingModel, options) {
      * We lock the target row on fetch by using the `forUpdate` option.
      * Read more in models/post.js - `onFetching`
      */
-    return models.Base.transaction(async function (transacting) {
+
+    return PostModel.transaction(async function (transacting) {
         options.transacting = transacting;
         options.forUpdate = true;
 
         try {
-            const results = await models.Post.findAll(_.merge({filter: 'status:scheduled'}, options));
+            const results = await PostModel.findAll(_.merge({filter: 'status:scheduled'}, options));
             if (!results.length) {
                 return;
             }
@@ -67,7 +70,7 @@ events.on('settings.timezone.edited', function (settingModel, options) {
                 }
 
                 try {
-                    await models.Post.edit(post.toJSON(), _.merge({id: post.id}, options));
+                    await PostModel.edit(post.toJSON(), _.merge({id: post.id}, options));
                 } catch (err) {
                     logging.error(new errors.InternalServerError({
                         err
@@ -111,7 +114,7 @@ events.on('settings.notifications.edited', function (settingModel) {
         return;
     }
 
-    return models.Settings.edit({
+    return SettingsModel.edit({
         key: 'notifications',
         value: JSON.stringify(allNotifications)
     }, options).catch(function (err) {

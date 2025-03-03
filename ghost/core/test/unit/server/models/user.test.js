@@ -8,10 +8,6 @@ const security = require('@tryghost/security');
 const testUtils = require('../../../utils');
 
 describe('Unit: models/user', function () {
-    before(function () {
-        models.init();
-    });
-
     afterEach(function () {
         sinon.restore();
     });

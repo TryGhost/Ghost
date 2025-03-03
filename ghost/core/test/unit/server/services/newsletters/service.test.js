@@ -28,8 +28,6 @@ describe('NewslettersService', function () {
     let emailMockReceiver;
 
     before(function () {
-        models.init();
-
         tokenProvider = new TestTokenProvider();
 
         limitService = {

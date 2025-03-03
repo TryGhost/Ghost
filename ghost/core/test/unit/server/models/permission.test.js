@@ -4,10 +4,6 @@ const models = require('../../../../core/server/models');
 const configUtils = require('../../../utils/configUtils');
 
 describe('Unit: models/permission', function () {
-    before(function () {
-        models.init();
-    });
-
     after(async function () {
         sinon.restore();
         await configUtils.restore();
