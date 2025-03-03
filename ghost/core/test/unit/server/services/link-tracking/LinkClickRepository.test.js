@@ -4,7 +4,7 @@ const ObjectID = require('bson-objectid').default;
 const configUtils = require('../../../../utils/configUtils');
 
 const LinkClickRepository = require('../../../../../core/server/services/link-tracking/LinkClickRepository');
-const {LinkClick} = require('@tryghost/link-tracking');
+const LinkClick = require('../../../../../core/server/services/link-tracking/ClickEvent');
 
 const linkClicks = [
     new LinkClick({
