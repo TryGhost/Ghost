@@ -94,25 +94,23 @@ function PopulatedVideoCard({
                             label='Loop'
                             onChange={onLoopChange}
                         />
-                        {!isLoopChecked && (
-                            <MediaUploadSetting
-                                alt='Custom thumbnail'
-                                borderStyle={'rounded'}
-                                dataTestId="custom-thumbnail-replace"
-                                errors={customThumbnailUploader.errors}
-                                icon='file'
-                                isDraggedOver={thumbnailDragHandler.isDraggedOver}
-                                isLoading={customThumbnailUploader.isLoading}
-                                label='Custom thumbnail'
-                                mimeTypes={thumbnailMimeTypes}
-                                placeholderRef={thumbnailDragHandler.setRef}
-                                progress={customThumbnailUploader.progress}
-                                size='xsmall'
-                                src={customThumbnail}
-                                onFileChange={onCustomThumbnailChange}
-                                onRemoveMedia={onRemoveCustomThumbnail}
-                            />
-                        )}
+                        <MediaUploadSetting
+                            alt='Custom thumbnail'
+                            borderStyle={'rounded'}
+                            dataTestId="custom-thumbnail-replace"
+                            errors={customThumbnailUploader.errors}
+                            icon='file'
+                            isDraggedOver={thumbnailDragHandler.isDraggedOver}
+                            isLoading={customThumbnailUploader.isLoading}
+                            label='Custom thumbnail'
+                            mimeTypes={thumbnailMimeTypes}
+                            placeholderRef={thumbnailDragHandler.setRef}
+                            progress={customThumbnailUploader.progress}
+                            size='xsmall'
+                            src={customThumbnail}
+                            onFileChange={onCustomThumbnailChange}
+                            onRemoveMedia={onRemoveCustomThumbnail}
+                        />
                     </SettingsPanel>
                 )
             }

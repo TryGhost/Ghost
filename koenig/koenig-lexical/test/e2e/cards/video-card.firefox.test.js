@@ -212,24 +212,6 @@ test.describe('Video card', async () => {
         await expect(await page.getByTestId('media-upload-errors')).toBeVisible();
     });
 
-    test('can hide custom thumbnail if loop enabled', async function () {
-        await focusEditor(page);
-        await uploadVideo(page);
-
-        // Loop toggle should be visible and unchecked
-        const loopButton = await page.getByTestId('loop-video');
-        await expect(loopButton).toBeVisible();
-        await expect(await page.locator('[data-testid="loop-video"] input').isChecked()).toBeFalsy();
-
-        // Custom thumbnail should be visible
-        const emptyThumbnail = await page.getByTestId('media-upload-placeholder');
-        await expect(emptyThumbnail).toBeVisible();
-
-        // Custom thumbnail should be hidden after loop enabled
-        await loopButton.check();
-        await expect(page.getByTestId('media-upload-placeholder')).toBeHidden();
-    });
-
     test('can upload dropped video', async function () {
         const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/video.mp4');
         const fileChooserPromise = page.waitForEvent('filechooser');
