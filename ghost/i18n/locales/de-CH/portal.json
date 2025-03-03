@@ -104,6 +104,7 @@
     "Make sure emails aren't accidentally ending up in the Spam or Promotions folders of your inbox. If they are, click on \"Mark as not spam\" and/or \"Move to inbox\".": "Stellen Sie sicher, dass E-Mails nicht unbeabsichtigt im Spam-Ordner. Wenn das der Fall sein sollte, klicken Sie auf  \"Kein Spam\" und/oder \"In den Posteingang bewegen\".",
     "Manage": "Verwalten",
     "Maybe later": "",
+    "Memberships from this email domain are currently restricted.": "",
     "Memberships unavailable, contact the owner for access.": "Keine Abonnements verfügbar, bitte wenden Sie sich an {{supportAddress}}, um für einen Zugang anzufragen.",
     "month": "",
     "Monthly": "Monatlich",

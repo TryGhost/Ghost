@@ -108,6 +108,24 @@ Object {
 }
 `;
 
+exports[`sendMagicLink blocked email domains blocks changing email to a blocked domain 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": null,
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Memberships from this email domain are currently restricted.",
+      "property": null,
+      "type": "BadRequestError",
+    },
+  ],
+}
+`;
+
 exports[`sendMagicLink blocked email domains blocks signups from blocked email domains in config 1: [body] 1`] = `
 Object {
   "errors": Array [

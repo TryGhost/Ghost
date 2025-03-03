@@ -179,7 +179,8 @@ module.exports = function MembersAPI({
         tiersService,
         StripePrice,
         tokenService,
-        sendEmailWithMagicLink
+        sendEmailWithMagicLink,
+        settingsCache
     });
 
     const routerController = new RouterController({
