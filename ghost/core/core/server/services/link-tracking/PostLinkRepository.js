@@ -1,9 +1,9 @@
-const {FullPostLink} = require('@tryghost/link-tracking');
+const FullPostLink = require('./FullPostLink');
 const _ = require('lodash');
 
 /**
  * @typedef {import('bson-objectid').default} ObjectID
- * @typedef {import('@tryghost/link-tracking/lib/PostLink')} PostLink
+ * @typedef {import('./PostLink')} PostLink
  */
 
 module.exports = class PostLinkRepository {
