@@ -1,7 +1,4 @@
-VERSION 0
-
-TOKEN "_hits_endpoint_read_5411" READ
-
+VERSION 1
 TAGS "json_mv"
 
 NODE parsed_hits

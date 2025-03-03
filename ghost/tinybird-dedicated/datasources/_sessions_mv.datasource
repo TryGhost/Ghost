@@ -1,6 +1,4 @@
 VERSION 0
-
-# Data Source created from Pipe '_sessions'
 TAGS "json_mv"
 
 SCHEMA >

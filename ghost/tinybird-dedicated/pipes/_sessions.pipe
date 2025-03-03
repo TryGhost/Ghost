@@ -1,5 +1,4 @@
-VERSION 0
-
+VERSION 1
 TAGS "json_mv"
 
 NODE _sessions_0
@@ -26,6 +25,6 @@ SQL >
         session_id
 
 TYPE materialized
-DATASOURCE _sessions_mv
+DATASOURCE _sessions_mv_1
 
 
