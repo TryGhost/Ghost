@@ -862,14 +862,6 @@ jobs:
           python-version: 3.11
           architecture: "x64"
           cache: "pip"
-      - name: Check Secret
-        run: |
-          if [[ -n "${{ secrets.TEST_SECRET }}" ]]; then
-            echo "Access to secrets"
-          else
-            echo "No access to secrets"
-            exit 1
-          fi
       - name: Set environment variables
         run: |
           _ENV_FLAGS="${ENV_FLAGS:=--last-partition --wait}"
@@ -887,6 +879,10 @@ jobs:
           fi
       - name: Tinybird CLI Version
         run: tb --version
+      - name: Check all the datafiles syntax
+        run: tb check
+      - name: Check auth
+        run: tb --host=${{ secrets.TB_HOST }} --token=${{ secrets.TB_ADMIN_TOKEN }} auth info
           
 
   job_ghost-cli:
