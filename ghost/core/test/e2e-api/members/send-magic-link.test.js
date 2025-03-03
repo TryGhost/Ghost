@@ -376,6 +376,19 @@ describe('sendMagicLink', function () {
                 .expectEmptyBody()
                 .expectStatus(201);
         });
+
+        it('blocks changing email to a blocked domain', async function () {
+            settingsCache.set('all_blocked_email_domains', {value: ['blocked-domain-setting.com']});
+            const email = 'hello@cool-domain-setting.com';
+            await membersService.api.members.create({email, name: 'Member Test'});
+
+            await membersAgent.post('/api/member/email/')
+                .body({
+                    email: 'hello@blocked-domain-setting.com',
+                    identity: '12345678'
+                })
+                .expectStatus(400); // blocked emails return 400
+        });
     });
 });
 
