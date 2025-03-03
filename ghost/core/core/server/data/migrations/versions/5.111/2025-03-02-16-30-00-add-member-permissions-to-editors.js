@@ -27,5 +27,9 @@ module.exports = combineTransactionalMigrations(
     addPermissionToRole({
         permission: 'Browse offers',
         role: 'Editor'
+    }),
+    addPermissionToRole({
+        permission: 'Read member signin urls',
+        role: 'Editor'
     })
 );
