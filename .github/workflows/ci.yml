@@ -883,6 +883,8 @@ jobs:
         run: tb check
       - name: Check auth
         run: tb --host=${{ secrets.TB_HOST }} --token=${{ secrets.TB_ADMIN_TOKEN }} auth info
+      - name: Check the current workspace
+        run: tb workspace current
           
 
   job_ghost-cli:
