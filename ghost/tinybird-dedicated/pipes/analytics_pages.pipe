@@ -1,10 +1,10 @@
 VERSION 1
-
 NODE parsed_hits
 DESCRIPTION >
     Parse raw page_hit events
 
 SQL >
+
     SELECT
         timestamp,
         action,
@@ -20,12 +20,14 @@ SQL >
         toString(payload.member_status) as member_status,
         toString(payload.post_uuid) as post_uuid,
         lower(toString(getSubcolumn(payload,'user-agent'))) as user_agent
-
     FROM analytics_events_json_v1
     where action = 'page_hit'
 
+
+
 NODE analytics_hits_data
 SQL >
+
     SELECT
         site_uuid,
         timestamp,
@@ -74,11 +76,14 @@ SQL >
         END as os
     FROM parsed_hits
 
+
+
 NODE analytics_pages_1
 DESCRIPTION >
     Aggregate by pathname and calculate session and views
 
 SQL >
+
     SELECT
         site_uuid,
         toDate(timestamp) AS date,
@@ -97,3 +102,5 @@ SQL >
         countState() AS pageviews
     FROM analytics_hits_data
     GROUP BY date, device, browser, os, location, source, pathname, post_uuid,site_uuid
+
+

@@ -1,8 +1,4 @@
-VERSION 0
 NODE parsed_hits
-DESCRIPTION >
-    Parse raw page_hit events
-
 SQL >
 
     SELECT
@@ -67,34 +63,33 @@ SQL >
 
 
 
-NODE analytics_sources_1
-DESCRIPTION >
-    Aggregate by referral and calculate session and views
-
+NODE mv_analytics_hits_2
 SQL >
 
-    WITH (SELECT domainWithoutWWW(href) FROM analytics_hits_data LIMIT 1) AS current_domain,
-    sessions AS (
-        SELECT
-            session_id, argMin(source, timestamp) AS source,
-            maxIf(member_status, member_status IN ('paid', 'free', 'undefined')) AS member_status
-        FROM analytics_hits_data
-        GROUP BY session_id
-    )
     SELECT
-        a.site_uuid,
-        toDate(a.timestamp) AS date,
-        a.device,
-        a.browser,
-        a.location,
-        b.source AS source,
-        a.pathname,
-        b.member_status AS member_status,
-        uniqState(a.session_id) AS visits,
+        site_uuid,
+        toDate(timestamp) AS date,
+        post_uuid,
+        device,
+        browser,
+        location,
+        source,
+        pathname,
+        maxIfState(member_status, member_status IN ('paid', 'free', 'undefined')) AS member_status,
+        uniqState(session_id) AS visits,
         countState() AS pageviews
-    FROM analytics_hits_data as a
-    INNER JOIN sessions AS b ON a.session_id = b.session_id
-    GROUP BY a.site_uuid, toDate(a.timestamp), a.device, a.browser, a.location, b.member_status, b.source, a.pathname
-    HAVING b.source != current_domain
+    FROM analytics_hits_data
+    GROUP BY
+        site_uuid,
+        date,
+        device,
+        browser,
+        location,
+        source,
+        pathname,
+        post_uuid
+
+TYPE materialized
+DATASOURCE mv_analytics_hits_v1_data
 
 
