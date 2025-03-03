@@ -13,7 +13,6 @@ describe('Unit: models/post', function () {
     let tracker;
 
     before(function () {
-        models.init();
         mockDb.mock(knex);
         tracker = mockDb.getTracker();
     });
@@ -355,10 +354,6 @@ describe('Unit: models/post', function () {
 });
 
 describe('Unit: models/post: uses database (@TODO: fix me)', function () {
-    before(function () {
-        models.init();
-    });
-
     beforeEach(function () {
         sinon.stub(security.password, 'hash').resolves('$2a$10$we16f8rpbrFZ34xWj0/ZC.LTPUux8ler7bcdTs5qIleN6srRHhilG');
         sinon.stub(urlService, 'getUrlByResourceId');

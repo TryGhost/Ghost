@@ -4,10 +4,6 @@ const sinon = require('sinon');
 const models = require('../../../../../core/server/models');
 
 describe('Models: crud', function () {
-    before(function () {
-        models.init();
-    });
-
     afterEach(function () {
         sinon.restore();
     });

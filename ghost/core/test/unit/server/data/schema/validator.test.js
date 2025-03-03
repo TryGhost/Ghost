@@ -7,10 +7,6 @@ const models = require('../../../../../core/server/models');
 const validateSchema = require('../../../../../core/server/data/schema/validator');
 
 describe('Validate Schema', function () {
-    before(function () {
-        models.init();
-    });
-
     describe('models.add', function () {
         it('blank model', function () {
             // NOTE: Fields with `defaultTo` are getting ignored. This is handled on the DB level.

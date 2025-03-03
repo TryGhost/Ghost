@@ -7,10 +7,6 @@ const events = require('../../../../core/server/lib/common/events');
 const errors = require('@tryghost/errors');
 
 describe('Unit: models/settings', function () {
-    before(function () {
-        models.init();
-    });
-
     describe('events', function () {
         let tracker;
         let eventSpy;

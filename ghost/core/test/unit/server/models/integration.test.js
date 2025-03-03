@@ -4,10 +4,6 @@ const models = require('../../../../core/server/models');
 const {knex} = require('../../../../core/server/data/db');
 
 describe('Unit: models/integration', function () {
-    before(function () {
-        models.init();
-    });
-
     afterEach(function () {
         sinon.restore();
     });
