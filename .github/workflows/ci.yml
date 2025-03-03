@@ -119,6 +119,10 @@ jobs:
             sodo-search:
               - *shared
               - 'apps/sodo-search/**'
+            tinybird:
+              - *shared
+              - 'ghost/tinybird-dedicated/**'
+              - '!ghost/tinybird-dedicated/**/*.md'
             any-code:
               - '!**/*.md'
 
@@ -192,6 +196,7 @@ jobs:
       changed_portal: ${{ steps.changed.outputs.portal }}
       changed_signup_form: ${{ steps.changed.outputs.signup-form }}
       changed_sodo_search: ${{ steps.changed.outputs.sodo-search }}
+      changed_tinybird: ${{ steps.changed.outputs.tinybird }}
       changed_any_code: ${{ steps.changed.outputs.any-code }}
       changed_new_package: ${{ steps.added.outputs.new-package }}
       base_commit: ${{ env.BASE_COMMIT }}
