@@ -1,4 +1,4 @@
-VERSION 0
+VERSION 1
 TAGS "json_mv"
 
 NODE parsed_hits
@@ -63,5 +63,3 @@ SQL >
             else 'Unknown'
         END as browser
     FROM parsed_hits
-
-
