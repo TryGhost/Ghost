@@ -1,10 +1,10 @@
-VERSION 1
-
+VERSION 0
 NODE parsed_hits
 DESCRIPTION >
     Parse raw page_hit events
 
 SQL >
+
     SELECT
         timestamp,
         action,
@@ -23,8 +23,11 @@ SQL >
     FROM analytics_events_json_v1
     where action = 'page_hit'
 
+
+
 NODE analytics_hits_data
 SQL >
+
     SELECT
         site_uuid,
         timestamp,
@@ -59,25 +62,17 @@ SQL >
             when match(user_agent, 'iphone|ipad|safari')
             then 'safari'
             else 'Unknown'
-        END as browser,
-        case
-            when match(user_agent, 'windows')
-            then 'windows'
-            when match(user_agent, 'mac')
-            then 'mac'
-            when match(user_agent, 'ios')
-            then 'ios'
-            when match(user_agent, 'android')
-            then 'android'
-            else 'Unknown'
-        END as os
+        END as browser
     FROM parsed_hits
+
+
 
 NODE analytics_sources_1
 DESCRIPTION >
     Aggregate by referral and calculate session and views
 
 SQL >
+
     WITH (SELECT domainWithoutWWW(href) FROM analytics_hits_data LIMIT 1) AS current_domain,
     sessions AS (
         SELECT
@@ -91,7 +86,6 @@ SQL >
         toDate(a.timestamp) AS date,
         a.device,
         a.browser,
-        a.os,
         a.location,
         b.source AS source,
         a.pathname,
@@ -100,5 +94,7 @@ SQL >
         countState() AS pageviews
     FROM analytics_hits_data as a
     INNER JOIN sessions AS b ON a.session_id = b.session_id
-    GROUP BY a.site_uuid, toDate(a.timestamp), a.device, a.browser, a.os, a.location, b.member_status, b.source, a.pathname
+    GROUP BY a.site_uuid, toDate(a.timestamp), a.device, a.browser, a.location, b.member_status, b.source, a.pathname
     HAVING b.source != current_domain
+
+

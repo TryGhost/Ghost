@@ -1,4 +1,4 @@
-VERSION 1
+VERSION 0
 TAGS "json_mv"
 
 NODE _top_locations_0
@@ -6,7 +6,7 @@ SQL >
 
     %
             select location, uniqMerge(visits) as visits, countMerge(pageviews) as pageviews
-            from _pages_mv_1
+            from _pages_mv
             where
                 site_uuid = {{String(site_uuid, 'mock_site_uuid', description="Tenant ID", required=True)}}
                 {% if defined(date_from) %}

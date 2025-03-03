@@ -2,6 +2,7 @@ TOKEN "tracker" APPEND
 
 TOKEN "analytics_events_json_m" APPEND
 
+TAGS "json_mv"
 
 SCHEMA >
     `timestamp` DateTime `json:$.timestamp`,
