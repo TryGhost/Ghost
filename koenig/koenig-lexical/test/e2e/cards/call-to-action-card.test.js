@@ -15,7 +15,7 @@ test.describe('Call To Action Card', async () => {
     });
 
     test.beforeEach(async () => {
-        await initialize({page, uri: '/#/?content=false&labs=contentVisibility,contentVisibilityAlpha'});
+        await initialize({page, uri: '/#/?content=false&labs=contentVisibility'});
 
         serializedTestCard = {
             type: 'call-to-action',

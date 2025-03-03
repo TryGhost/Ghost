@@ -25,7 +25,7 @@ export class CallToActionNode extends BaseCallToActionNode {
         priority: 10,
         shortcut: '/cta',
         isHidden: ({config}) => {
-            return !(config?.feature?.contentVisibilityAlpha === true);
+            return !(config?.feature?.contentVisibility === true);
         }
     };
 
