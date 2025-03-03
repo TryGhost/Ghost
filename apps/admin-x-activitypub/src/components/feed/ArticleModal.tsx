@@ -387,6 +387,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
     const modalSize = width === 'narrow' ? MODAL_SIZE_SM : MODAL_SIZE_LG;
     const modal = useModal();
     const darkMode = document.documentElement.classList.contains('dark');
+    const [replyCount, setReplyCount] = useState(object.replyCount ?? 0);
 
     const canNavigateBack = history.length > 0;
     const navigateBack = () => {
@@ -439,6 +440,8 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
 
     function handleNewReply(activity: Activity) {
         // Add the new reply to the thread
+        activity.object.authored = true;
+        activity.id = activity.object.id;
         addToThread(activity);
 
         // Update the replyCount on the activity outside of the context
@@ -452,7 +455,11 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
 
         // Update the replyCount on the current activity loaded in the modal
         // This is used for when we navigate via the history
-        object.replyCount = (object.replyCount ?? 0) + 1;
+        setReplyCount(replyCount + 1);
+    }
+
+    function decrementReplyCount(step: number = 1) {
+        setReplyCount(replyCount - step);
     }
 
     const replyBoxRef = useRef<HTMLDivElement>(null);
@@ -858,6 +865,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                     <>
                                         <FeedItem
                                             actor={item.actor}
+                                            allowDelete={false}
                                             commentCount={item.object.replyCount ?? 0}
                                             last={false}
                                             layout='reply'
@@ -878,7 +886,8 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                             {object.type === 'Note' && (
                                 <FeedItem
                                     actor={actor}
-                                    commentCount={object.replyCount ?? 0}
+                                    allowDelete={false}
+                                    commentCount={replyCount}
                                     last={true}
                                     layout={'modal'}
                                     object={object}
@@ -909,7 +918,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                     />
                                     <div className='ml-[-7px]'>
                                         <FeedItemStats
-                                            commentCount={object.replyCount ?? 0}
+                                            commentCount={replyCount}
                                             layout={'modal'}
                                             likeCount={1}
                                             object={object}
@@ -945,10 +954,12 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                         <React.Fragment key={item.id}>
                                             <FeedItem
                                                 actor={item.actor}
+                                                allowDelete={item.object.authored}
                                                 commentCount={item.object.replyCount ?? 0}
                                                 last={true}
                                                 layout='reply'
                                                 object={item.object}
+                                                parentId={object.id}
                                                 repostCount={item.object.repostCount ?? 0}
                                                 type='Note'
                                                 onClick={() => {
@@ -957,6 +968,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                                 onCommentClick={() => {
                                                     navigateForward(item.id, item.object, item.actor, true);
                                                 }}
+                                                onDelete={decrementReplyCount}
                                             />
                                             {showDivider && <FeedItemDivider />}
                                         </React.Fragment>

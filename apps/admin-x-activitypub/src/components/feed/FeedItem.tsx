@@ -12,6 +12,7 @@ import getUsername from '../../utils/get-username';
 import stripHtml from '../../utils/strip-html';
 import {handleProfileClick} from '../../utils/handle-profile-click';
 import {renderTimestamp} from '../../utils/render-timestamp';
+import {useDeleteMutationForUser} from '../../hooks/use-activity-pub-queries';
 
 function getAttachment(object: ObjectProperties) {
     let attachment;
@@ -168,7 +169,9 @@ function renderInboxAttachment(object: ObjectProperties, isLoading: boolean | un
 
 interface FeedItemProps {
     actor: ActorProperties;
+    allowDelete?: boolean;
     object: ObjectProperties;
+    parentId?: string;
     layout: string;
     type: string;
     commentCount?: number;
@@ -178,11 +181,27 @@ interface FeedItemProps {
     isLoading?: boolean;
     onClick?: () => void;
     onCommentClick: () => void;
+    onDelete?: () => void;
 }
 
 const noop = () => {};
 
-const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, commentCount = 0, repostCount = 0, showHeader = true, last, isLoading, onClick: onClickHandler = noop, onCommentClick}) => {
+const FeedItem: React.FC<FeedItemProps> = ({
+    actor,
+    allowDelete = false,
+    object,
+    parentId = undefined,
+    layout,
+    type,
+    commentCount = 0,
+    repostCount = 0,
+    showHeader = true,
+    last,
+    isLoading,
+    onClick: onClickHandler = noop,
+    onCommentClick,
+    onDelete = noop
+}) => {
     const timestamp =
         new Date(object?.published ?? new Date()).toLocaleDateString('default', {year: 'numeric', month: 'short', day: '2-digit'}) + ', ' + new Date(object?.published ?? new Date()).toLocaleTimeString('default', {hour: '2-digit', minute: '2-digit'});
 
@@ -190,6 +209,8 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
 
     const contentRef = useRef<HTMLDivElement>(null);
     const [isTruncated, setIsTruncated] = useState(false);
+
+    const deleteMutation = useDeleteMutationForUser('index');
 
     useEffect(() => {
         const element = contentRef.current;
@@ -212,9 +233,15 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
         onClickHandler();
     };
 
-    // const handleDelete = () => {
-    //     // Handle delete action
-    // };
+    const handleDelete = (postId: string) => {
+        // @TODO: Show confirmation modal
+        const confirm = window.confirm(`Delete post\n\n${postId}\n\n?`);
+
+        if (confirm) {
+            deleteMutation.mutate({id: postId, parentId});
+            onDelete();
+        }
+    };
 
     const handleCopyLink = async () => {
         if (object?.url) {
@@ -240,6 +267,14 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
         label: 'Copy link to post',
         onClick: handleCopyLink
     });
+
+    if (allowDelete) {
+        menuItems.push({
+            id: 'delete',
+            label: 'Delete post',
+            onClick: () => handleDelete(object.id)
+        });
+    }
 
     // TODO: If this is your own Note/Article, you should be able to delete it
     // menuItems.push({
