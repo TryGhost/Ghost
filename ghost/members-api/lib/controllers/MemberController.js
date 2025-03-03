@@ -2,7 +2,7 @@ const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 
 const messages = {
-    blockedEmailDomain: 'Signups from this email domain are currently restricted.'
+    blockedEmailDomain: 'Memberships from this email domain are currently restricted.'
 };
 
 module.exports = class MemberController {
@@ -52,8 +52,9 @@ module.exports = class MemberController {
         const blockedEmailDomains = this._settingsCache.get('all_blocked_email_domains');
         const emailDomain = req.body.email.split('@')[1]?.toLowerCase();
         if (emailDomain && blockedEmailDomains.includes(emailDomain)) {
-            res.writeHead(400);
-            return res.end(tpl(messages.blockedEmailDomain));
+            throw new errors.BadRequestError({
+                message: tpl(messages.blockedEmailDomain)
+            });
         }
 
         let tokenData = {};
