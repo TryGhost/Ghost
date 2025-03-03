@@ -114,7 +114,6 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
             try {
                 admin = await adminApi.getUser();
                 // unset admin for non-moderator roles. 
-                console.log(admin.roles.some(role => ALLOWED_MODERATORS.includes(role.name)))
                 if (!admin || !(admin.roles.some(role => ALLOWED_MODERATORS.includes(role.name)))) {
                     admin = null;
                 }

@@ -39,7 +39,6 @@ const AnimatedComment: React.FC<AnimatedCommentProps> = ({comment, parent}) => {
 
 export const CommentComponent: React.FC<CommentProps> = ({comment, parent}) => {
     const {dispatchAction, admin} = useAppContext();
-    console.log('admin at commentcomponent is', admin, comment.id);
     const {showDeletedMessage, showHiddenMessage, showCommentContent} = useCommentVisibility(comment, admin);
 
     const openEditMode = useCallback(() => {
@@ -64,7 +63,6 @@ export const CommentComponent: React.FC<CommentProps> = ({comment, parent}) => {
 
 type CommentProps = AnimatedCommentProps;
 const useCommentVisibility = (comment: Comment, admin: boolean) => {
-    console.log('useCommentVisibility', comment.status, admin);
     const hasReplies = comment.replies && comment.replies.length > 0;
     const isDeleted = comment.status === 'deleted';
     const isHidden = comment.status === 'hidden';
@@ -84,7 +82,6 @@ type PublishedCommentProps = CommentProps & {
 }
 const PublishedComment: React.FC<PublishedCommentProps> = ({comment, parent, openEditMode}) => {
     const {dispatchAction, openCommentForms, admin, commentIdToHighlight} = useAppContext();
-    console.log('published comment says admin is', admin, comment.id);
     // Determine if the comment should be displayed with reduced opacity
     const isHidden = admin && comment.status === 'hidden';
     const hiddenClass = isHidden ? 'opacity-30' : '';
