@@ -864,12 +864,14 @@ jobs:
           cache: "pip"
       - name: Check Secret
         run: |
-          if [[ -z "${{ secrets.TEST_SECRET }}" ]]; then
+          if [[ -z "${{ env.TEST_SECRET }}" ]]; then
             echo "No access to secrets"
             exit 1
           else
             echo "Access to secrets"
           fi
+        env:
+          TEST_SECRET: ${{ secrets.TEST_SECRET }}
       - name: Set environment variables
         run: |
           _ENV_FLAGS="${ENV_FLAGS:=--last-partition --wait}"
