@@ -21,11 +21,11 @@ module.exports = combineTransactionalMigrations(
         role: 'Editor'
     }),
     addPermissionToRole({
-        permission: 'Read Offers',
+        permission: 'Read offers',
         role: 'Editor'
     }),
     addPermissionToRole({
-        permission: 'Browse Offers',
+        permission: 'Browse offers',
         role: 'Editor'
     })
 );
