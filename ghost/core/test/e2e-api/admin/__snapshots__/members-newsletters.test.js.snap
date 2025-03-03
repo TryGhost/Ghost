@@ -4,6 +4,15 @@ exports[`Members API - With Newsletters - compat mode Can fetch members who are 
 Object {
   "members": Array [
     Object {
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": null,
+        "referrer_source": "Direct",
+        "referrer_url": null,
+        "title": "/ghostly-kitchen-sink",
+        "type": "url",
+        "url": "http://127.0.0.1:2369/ghostly-kitchen-sink",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -30,6 +39,15 @@ Object {
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     },
     Object {
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": "Social",
+        "referrer_source": "Twitter",
+        "referrer_url": "https://twitter.com",
+        "title": "/html-ipsum",
+        "type": "url",
+        "url": "http://127.0.0.1:2369/html-ipsum",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -73,7 +91,7 @@ exports[`Members API - With Newsletters - compat mode Can fetch members who are 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2407",
+  "content-length": "2793",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -86,6 +104,15 @@ exports[`Members API - With Newsletters - compat mode Can fetch members who are 
 Object {
   "members": Array [
     Object {
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": null,
+        "referrer_source": "Direct",
+        "referrer_url": null,
+        "title": "/short-and-sweet",
+        "type": "url",
+        "url": "http://127.0.0.1:2369/short-and-sweet",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -112,6 +139,15 @@ Object {
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     },
     Object {
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": "Social",
+        "referrer_source": "Twitter",
+        "referrer_url": "https://twitter.com",
+        "title": "/ghostly-kitchen-sink",
+        "type": "url",
+        "url": "http://127.0.0.1:2369/ghostly-kitchen-sink",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -138,6 +174,15 @@ Object {
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     },
     Object {
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": null,
+        "referrer_source": "Direct",
+        "referrer_url": null,
+        "title": "/html-ipsum",
+        "type": "url",
+        "url": "http://127.0.0.1:2369/html-ipsum",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -164,6 +209,15 @@ Object {
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     },
     Object {
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": "Social",
+        "referrer_source": "Twitter",
+        "referrer_url": "https://twitter.com",
+        "title": "/short-and-sweet",
+        "type": "url",
+        "url": "http://127.0.0.1:2369/short-and-sweet",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -190,6 +244,15 @@ Object {
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     },
     Object {
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": null,
+        "referrer_source": "Direct",
+        "referrer_url": null,
+        "title": "/ghostly-kitchen-sink",
+        "type": "url",
+        "url": "http://127.0.0.1:2369/ghostly-kitchen-sink",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -216,6 +279,15 @@ Object {
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     },
     Object {
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": "Social",
+        "referrer_source": "Twitter",
+        "referrer_url": "https://twitter.com",
+        "title": "/html-ipsum",
+        "type": "url",
+        "url": "http://127.0.0.1:2369/html-ipsum",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -259,7 +331,7 @@ exports[`Members API - With Newsletters - compat mode Can fetch members who are 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "8506",
+  "content-length": "10254",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -272,6 +344,15 @@ exports[`Members API - With Newsletters Can fetch members who are NOT subscribed
 Object {
   "members": Array [
     Object {
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": null,
+        "referrer_source": "Direct",
+        "referrer_url": null,
+        "title": "/ghostly-kitchen-sink",
+        "type": "url",
+        "url": "http://127.0.0.1:2369/ghostly-kitchen-sink",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -298,6 +379,15 @@ Object {
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     },
     Object {
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": "Social",
+        "referrer_source": "Twitter",
+        "referrer_url": "https://twitter.com",
+        "title": "/html-ipsum",
+        "type": "url",
+        "url": "http://127.0.0.1:2369/html-ipsum",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -341,7 +431,7 @@ exports[`Members API - With Newsletters Can fetch members who are NOT subscribed
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2407",
+  "content-length": "2793",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -354,6 +444,15 @@ exports[`Members API - With Newsletters Can fetch members who are subscribed 1: 
 Object {
   "members": Array [
     Object {
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": null,
+        "referrer_source": "Direct",
+        "referrer_url": null,
+        "title": "/short-and-sweet",
+        "type": "url",
+        "url": "http://127.0.0.1:2369/short-and-sweet",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -380,6 +479,15 @@ Object {
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     },
     Object {
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": "Social",
+        "referrer_source": "Twitter",
+        "referrer_url": "https://twitter.com",
+        "title": "/ghostly-kitchen-sink",
+        "type": "url",
+        "url": "http://127.0.0.1:2369/ghostly-kitchen-sink",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -406,6 +514,15 @@ Object {
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     },
     Object {
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": null,
+        "referrer_source": "Direct",
+        "referrer_url": null,
+        "title": "/html-ipsum",
+        "type": "url",
+        "url": "http://127.0.0.1:2369/html-ipsum",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -432,6 +549,15 @@ Object {
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     },
     Object {
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": "Social",
+        "referrer_source": "Twitter",
+        "referrer_url": "https://twitter.com",
+        "title": "/short-and-sweet",
+        "type": "url",
+        "url": "http://127.0.0.1:2369/short-and-sweet",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -458,6 +584,15 @@ Object {
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     },
     Object {
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": null,
+        "referrer_source": "Direct",
+        "referrer_url": null,
+        "title": "/ghostly-kitchen-sink",
+        "type": "url",
+        "url": "http://127.0.0.1:2369/ghostly-kitchen-sink",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -484,6 +619,15 @@ Object {
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     },
     Object {
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": "Social",
+        "referrer_source": "Twitter",
+        "referrer_url": "https://twitter.com",
+        "title": "/html-ipsum",
+        "type": "url",
+        "url": "http://127.0.0.1:2369/html-ipsum",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -527,7 +671,7 @@ exports[`Members API - With Newsletters Can fetch members who are subscribed 2: 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "8506",
+  "content-length": "10254",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,

@@ -420,11 +420,16 @@ module.exports = class MemberBREADService {
 
         const bulkSuppressionData = await this.emailSuppressionList.getBulkSuppressionData(page.data.map(member => member.get('email')));
 
-        const data = page.data.map((model, index) => {
+        const data = page.data.map(async (model, index) => {
+            const subscriptionIdMap = new Map();
+            for (const subscription of model.related('stripeSubscriptions')) {
+                subscriptionIdMap.set(subscription.get('subscription_id'), subscription.id);
+            }
             const member = model.toJSON(options);
             member.subscriptions = member.subscriptions.filter(sub => !!sub.price);
             this.attachSubscriptionsToMember(member);
             this.attachOffersToSubscriptions(member, offerMap);
+            await this.attachAttributionsToMember(member, subscriptionIdMap);
             if (!originalWithRelated.includes('products')) {
                 delete member.products;
             }
@@ -435,9 +440,10 @@ module.exports = class MemberBREADService {
             member.unsubscribe_url = this.settingsHelpers.createUnsubscribeUrl(member.uuid);
             return member;
         });
+        const result = await Promise.all(data);
 
         return {
-            data,
+            data: result,
             meta: page.meta
         };
     }

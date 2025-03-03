@@ -1997,6 +1997,15 @@ exports[`Members API Can browse 1: [body] 1`] = `
 Object {
   "members": Array [
     Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6e1",
+        "referrer_medium": null,
+        "referrer_source": "Direct",
+        "referrer_url": null,
+        "title": "Ghostly Kitchen Sink",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/ghostly-kitchen-sink/",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -2023,6 +2032,15 @@ Object {
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     },
     Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6df",
+        "referrer_medium": "Social",
+        "referrer_source": "Twitter",
+        "referrer_url": "https://twitter.com",
+        "title": "HTML Ipsum",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/html-ipsum/",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -2049,6 +2067,15 @@ Object {
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     },
     Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6e3",
+        "referrer_medium": null,
+        "referrer_source": "Direct",
+        "referrer_url": null,
+        "title": "Short and Sweet",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/short-and-sweet/",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -2082,6 +2109,15 @@ Object {
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     },
     Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6e1",
+        "referrer_medium": "Social",
+        "referrer_source": "Twitter",
+        "referrer_url": "https://twitter.com",
+        "title": "Ghostly Kitchen Sink",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/ghostly-kitchen-sink/",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -2121,6 +2157,15 @@ Object {
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     },
     Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6df",
+        "referrer_medium": null,
+        "referrer_source": "Direct",
+        "referrer_url": null,
+        "title": "HTML Ipsum",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/html-ipsum/",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -2154,6 +2199,15 @@ Object {
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     },
     Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6e3",
+        "referrer_medium": "Social",
+        "referrer_source": "Twitter",
+        "referrer_url": "https://twitter.com",
+        "title": "Short and Sweet",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/short-and-sweet/",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -2187,6 +2241,15 @@ Object {
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     },
     Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6e1",
+        "referrer_medium": null,
+        "referrer_source": "Direct",
+        "referrer_url": null,
+        "title": "Ghostly Kitchen Sink",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/ghostly-kitchen-sink/",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -2220,6 +2283,15 @@ Object {
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     },
     Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6df",
+        "referrer_medium": "Social",
+        "referrer_source": "Twitter",
+        "referrer_url": "https://twitter.com",
+        "title": "HTML Ipsum",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/html-ipsum/",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -2270,7 +2342,7 @@ exports[`Members API Can browse 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "10812",
+  "content-length": "13199",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -2283,6 +2355,15 @@ exports[`Members API Can browse with filter 1: [body] 1`] = `
 Object {
   "members": Array [
     Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6df",
+        "referrer_medium": "Social",
+        "referrer_source": "Twitter",
+        "referrer_url": "https://twitter.com",
+        "title": "HTML Ipsum",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/html-ipsum/",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -2333,7 +2414,7 @@ exports[`Members API Can browse with filter 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "919",
+  "content-length": "1136",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -2346,6 +2427,15 @@ exports[`Members API Can browse with limit 1: [body] 1`] = `
 Object {
   "members": Array [
     Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6e1",
+        "referrer_medium": null,
+        "referrer_source": "Direct",
+        "referrer_url": null,
+        "title": "Ghostly Kitchen Sink",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/ghostly-kitchen-sink/",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -2372,6 +2462,15 @@ Object {
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     },
     Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6df",
+        "referrer_medium": "Social",
+        "referrer_source": "Twitter",
+        "referrer_url": "https://twitter.com",
+        "title": "HTML Ipsum",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/html-ipsum/",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -2398,6 +2497,15 @@ Object {
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     },
     Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6e3",
+        "referrer_medium": null,
+        "referrer_source": "Direct",
+        "referrer_url": null,
+        "title": "Short and Sweet",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/short-and-sweet/",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -2448,7 +2556,7 @@ exports[`Members API Can browse with limit 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "3221",
+  "content-length": "3858",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -2461,6 +2569,15 @@ exports[`Members API Can browse with limit=all 1: [body] 1`] = `
 Object {
   "members": Array [
     Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6e1",
+        "referrer_medium": null,
+        "referrer_source": "Direct",
+        "referrer_url": null,
+        "title": "Ghostly Kitchen Sink",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/ghostly-kitchen-sink/",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -2487,6 +2604,15 @@ Object {
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     },
     Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6df",
+        "referrer_medium": "Social",
+        "referrer_source": "Twitter",
+        "referrer_url": "https://twitter.com",
+        "title": "HTML Ipsum",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/html-ipsum/",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -2513,6 +2639,15 @@ Object {
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     },
     Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6e3",
+        "referrer_medium": null,
+        "referrer_source": "Direct",
+        "referrer_url": null,
+        "title": "Short and Sweet",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/short-and-sweet/",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -2546,6 +2681,15 @@ Object {
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     },
     Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6e1",
+        "referrer_medium": "Social",
+        "referrer_source": "Twitter",
+        "referrer_url": "https://twitter.com",
+        "title": "Ghostly Kitchen Sink",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/ghostly-kitchen-sink/",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -2585,6 +2729,15 @@ Object {
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     },
     Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6df",
+        "referrer_medium": null,
+        "referrer_source": "Direct",
+        "referrer_url": null,
+        "title": "HTML Ipsum",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/html-ipsum/",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -2618,6 +2771,15 @@ Object {
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     },
     Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6e3",
+        "referrer_medium": "Social",
+        "referrer_source": "Twitter",
+        "referrer_url": "https://twitter.com",
+        "title": "Short and Sweet",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/short-and-sweet/",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -2651,6 +2813,15 @@ Object {
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     },
     Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6e1",
+        "referrer_medium": null,
+        "referrer_source": "Direct",
+        "referrer_url": null,
+        "title": "Ghostly Kitchen Sink",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/ghostly-kitchen-sink/",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -2684,6 +2855,15 @@ Object {
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     },
     Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6df",
+        "referrer_medium": "Social",
+        "referrer_source": "Twitter",
+        "referrer_url": "https://twitter.com",
+        "title": "HTML Ipsum",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/html-ipsum/",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -2734,7 +2914,7 @@ exports[`Members API Can browse with limit=all 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "10813",
+  "content-length": "13200",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -2747,6 +2927,15 @@ exports[`Members API Can browse with more than maximum allowed limit 1: [body] 1
 Object {
   "members": Array [
     Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6e1",
+        "referrer_medium": null,
+        "referrer_source": "Direct",
+        "referrer_url": null,
+        "title": "Ghostly Kitchen Sink",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/ghostly-kitchen-sink/",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -2773,6 +2962,15 @@ Object {
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     },
     Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6df",
+        "referrer_medium": "Social",
+        "referrer_source": "Twitter",
+        "referrer_url": "https://twitter.com",
+        "title": "HTML Ipsum",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/html-ipsum/",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -2799,6 +2997,15 @@ Object {
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     },
     Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6e3",
+        "referrer_medium": null,
+        "referrer_source": "Direct",
+        "referrer_url": null,
+        "title": "Short and Sweet",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/short-and-sweet/",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -2832,6 +3039,15 @@ Object {
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     },
     Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6e1",
+        "referrer_medium": "Social",
+        "referrer_source": "Twitter",
+        "referrer_url": "https://twitter.com",
+        "title": "Ghostly Kitchen Sink",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/ghostly-kitchen-sink/",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -2871,6 +3087,15 @@ Object {
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     },
     Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6df",
+        "referrer_medium": null,
+        "referrer_source": "Direct",
+        "referrer_url": null,
+        "title": "HTML Ipsum",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/html-ipsum/",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -2904,6 +3129,15 @@ Object {
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     },
     Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6e3",
+        "referrer_medium": "Social",
+        "referrer_source": "Twitter",
+        "referrer_url": "https://twitter.com",
+        "title": "Short and Sweet",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/short-and-sweet/",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -2937,6 +3171,15 @@ Object {
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     },
     Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6e1",
+        "referrer_medium": null,
+        "referrer_source": "Direct",
+        "referrer_url": null,
+        "title": "Ghostly Kitchen Sink",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/ghostly-kitchen-sink/",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -2970,6 +3213,15 @@ Object {
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     },
     Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6df",
+        "referrer_medium": "Social",
+        "referrer_source": "Twitter",
+        "referrer_url": "https://twitter.com",
+        "title": "HTML Ipsum",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/html-ipsum/",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -3020,7 +3272,7 @@ exports[`Members API Can browse with more than maximum allowed limit 2: [headers
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "10813",
+  "content-length": "13200",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -3033,6 +3285,15 @@ exports[`Members API Can browse with search 1: [body] 1`] = `
 Object {
   "members": Array [
     Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6df",
+        "referrer_medium": "Social",
+        "referrer_source": "Twitter",
+        "referrer_url": "https://twitter.com",
+        "title": "HTML Ipsum",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/html-ipsum/",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -3083,7 +3344,7 @@ exports[`Members API Can browse with search 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "919",
+  "content-length": "1136",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -3658,6 +3919,15 @@ exports[`Members API Can filter by conversion attribution 1: [body] 1`] = `
 Object {
   "members": Array [
     Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6df",
+        "referrer_medium": "Social",
+        "referrer_source": "Twitter",
+        "referrer_url": "https://twitter.com",
+        "title": "HTML Ipsum",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/html-ipsum/",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -3708,7 +3978,7 @@ exports[`Members API Can filter by conversion attribution 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "919",
+  "content-length": "1136",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -3721,6 +3991,15 @@ exports[`Members API Can filter by paid status 1: [body] 1`] = `
 Object {
   "members": Array [
     Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6e1",
+        "referrer_medium": null,
+        "referrer_source": "Direct",
+        "referrer_url": null,
+        "title": "Ghostly Kitchen Sink",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/ghostly-kitchen-sink/",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -3747,6 +4026,15 @@ Object {
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     },
     Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6df",
+        "referrer_medium": "Social",
+        "referrer_source": "Twitter",
+        "referrer_url": "https://twitter.com",
+        "title": "HTML Ipsum",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/html-ipsum/",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -3773,6 +4061,15 @@ Object {
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     },
     Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6e1",
+        "referrer_medium": "Social",
+        "referrer_source": "Twitter",
+        "referrer_url": "https://twitter.com",
+        "title": "Ghostly Kitchen Sink",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/ghostly-kitchen-sink/",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -3812,6 +4109,15 @@ Object {
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     },
     Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6df",
+        "referrer_medium": null,
+        "referrer_source": "Direct",
+        "referrer_url": null,
+        "title": "HTML Ipsum",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/html-ipsum/",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -3845,6 +4151,15 @@ Object {
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     },
     Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6e3",
+        "referrer_medium": "Social",
+        "referrer_source": "Twitter",
+        "referrer_url": "https://twitter.com",
+        "title": "Short and Sweet",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/short-and-sweet/",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -3895,7 +4210,7 @@ exports[`Members API Can filter by paid status 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "8511",
+  "content-length": "10261",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -3908,6 +4223,15 @@ exports[`Members API Can filter by signup attribution 1: [body] 1`] = `
 Object {
   "members": Array [
     Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6df",
+        "referrer_medium": "Social",
+        "referrer_source": "Twitter",
+        "referrer_url": "https://twitter.com",
+        "title": "HTML Ipsum",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/html-ipsum/",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -3934,6 +4258,15 @@ Object {
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     },
     Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6df",
+        "referrer_medium": null,
+        "referrer_source": "Direct",
+        "referrer_url": null,
+        "title": "HTML Ipsum",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/html-ipsum/",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -3967,6 +4300,15 @@ Object {
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     },
     Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6df",
+        "referrer_medium": "Social",
+        "referrer_source": "Twitter",
+        "referrer_url": "https://twitter.com",
+        "title": "HTML Ipsum",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/html-ipsum/",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -4017,7 +4359,7 @@ exports[`Members API Can filter by signup attribution 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "3646",
+  "content-length": "4490",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -4092,6 +4434,15 @@ exports[`Members API Can filter by tier id 1: [body] 1`] = `
 Object {
   "members": Array [
     Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6e1",
+        "referrer_medium": null,
+        "referrer_source": "Direct",
+        "referrer_url": null,
+        "title": "Ghostly Kitchen Sink",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/ghostly-kitchen-sink/",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -4118,6 +4469,15 @@ Object {
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     },
     Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6e1",
+        "referrer_medium": "Social",
+        "referrer_source": "Twitter",
+        "referrer_url": "https://twitter.com",
+        "title": "Ghostly Kitchen Sink",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/ghostly-kitchen-sink/",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -4157,6 +4517,15 @@ Object {
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     },
     Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6df",
+        "referrer_medium": null,
+        "referrer_source": "Direct",
+        "referrer_url": null,
+        "title": "HTML Ipsum",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/html-ipsum/",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -4190,6 +4559,15 @@ Object {
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     },
     Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6e3",
+        "referrer_medium": "Social",
+        "referrer_source": "Twitter",
+        "referrer_url": "https://twitter.com",
+        "title": "Short and Sweet",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/short-and-sweet/",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -4240,7 +4618,7 @@ exports[`Members API Can filter by tier id 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "7788",
+  "content-length": "9321",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -4253,6 +4631,15 @@ exports[`Members API Can filter on newsletter slug 1: [body] 1`] = `
 Object {
   "members": Array [
     Object {
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": "Ghost Admin",
+        "referrer_source": "Created manually",
+        "referrer_url": null,
+        "title": null,
+        "type": null,
+        "url": null,
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -4292,6 +4679,15 @@ Object {
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     },
     Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6e3",
+        "referrer_medium": null,
+        "referrer_source": "Direct",
+        "referrer_url": null,
+        "title": "Short and Sweet",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/short-and-sweet/",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -4325,6 +4721,15 @@ Object {
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     },
     Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6e1",
+        "referrer_medium": "Social",
+        "referrer_source": "Twitter",
+        "referrer_url": "https://twitter.com",
+        "title": "Ghostly Kitchen Sink",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/ghostly-kitchen-sink/",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -4381,7 +4786,7 @@ exports[`Members API Can filter on newsletter slug 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "3800",
+  "content-length": "4412",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -4394,6 +4799,15 @@ exports[`Members API Can filter on tier slug 1: [body] 1`] = `
 Object {
   "members": Array [
     Object {
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": "Ghost Admin",
+        "referrer_source": "Created manually",
+        "referrer_url": null,
+        "title": null,
+        "type": null,
+        "url": null,
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -4448,6 +4862,15 @@ Object {
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     },
     Object {
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": "Ghost Admin",
+        "referrer_source": "Created manually",
+        "referrer_url": null,
+        "title": null,
+        "type": null,
+        "url": null,
+      },
       "avatar_image": null,
       "comped": true,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -4502,6 +4925,15 @@ Object {
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     },
     Object {
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": "Ghost Admin",
+        "referrer_source": "Created manually",
+        "referrer_url": null,
+        "title": null,
+        "type": null,
+        "url": null,
+      },
       "avatar_image": null,
       "comped": true,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -4556,6 +4988,15 @@ Object {
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     },
     Object {
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": "Ghost Admin",
+        "referrer_source": "Created manually",
+        "referrer_url": null,
+        "title": null,
+        "type": null,
+        "url": null,
+      },
       "avatar_image": null,
       "comped": true,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -4610,6 +5051,15 @@ Object {
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     },
     Object {
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": "Ghost Admin",
+        "referrer_source": "Created manually",
+        "referrer_url": null,
+        "title": null,
+        "type": null,
+        "url": null,
+      },
       "avatar_image": null,
       "comped": true,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -4664,6 +5114,15 @@ Object {
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     },
     Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6e1",
+        "referrer_medium": null,
+        "referrer_source": "Direct",
+        "referrer_url": null,
+        "title": "Ghostly Kitchen Sink",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/ghostly-kitchen-sink/",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -4711,6 +5170,15 @@ Object {
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     },
     Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6e1",
+        "referrer_medium": "Social",
+        "referrer_source": "Twitter",
+        "referrer_url": "https://twitter.com",
+        "title": "Ghostly Kitchen Sink",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/ghostly-kitchen-sink/",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -4771,6 +5239,15 @@ Object {
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     },
     Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6df",
+        "referrer_medium": "Social",
+        "referrer_source": "Twitter",
+        "referrer_url": "https://twitter.com",
+        "title": "HTML Ipsum",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/html-ipsum/",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -4842,7 +5319,7 @@ exports[`Members API Can filter on tier slug 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "18428",
+  "content-length": "20383",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -4855,6 +5332,15 @@ exports[`Members API Can filter using contains operators 1: [body] 1`] = `
 Object {
   "members": Array [
     Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6df",
+        "referrer_medium": "Social",
+        "referrer_source": "Twitter",
+        "referrer_url": "https://twitter.com",
+        "title": "HTML Ipsum",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/html-ipsum/",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -4898,7 +5384,7 @@ exports[`Members API Can filter using contains operators 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "824",
+  "content-length": "1041",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -4911,6 +5397,15 @@ exports[`Members API Can ignore any unknown includes 1: [body] 1`] = `
 Object {
   "members": Array [
     Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6e1",
+        "referrer_medium": null,
+        "referrer_source": "Direct",
+        "referrer_url": null,
+        "title": "Ghostly Kitchen Sink",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/ghostly-kitchen-sink/",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -4937,6 +5432,15 @@ Object {
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     },
     Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6df",
+        "referrer_medium": "Social",
+        "referrer_source": "Twitter",
+        "referrer_url": "https://twitter.com",
+        "title": "HTML Ipsum",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/html-ipsum/",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -4963,6 +5467,15 @@ Object {
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     },
     Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6e1",
+        "referrer_medium": "Social",
+        "referrer_source": "Twitter",
+        "referrer_url": "https://twitter.com",
+        "title": "Ghostly Kitchen Sink",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/ghostly-kitchen-sink/",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -5002,6 +5515,15 @@ Object {
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     },
     Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6df",
+        "referrer_medium": null,
+        "referrer_source": "Direct",
+        "referrer_url": null,
+        "title": "HTML Ipsum",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/html-ipsum/",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -5035,6 +5557,15 @@ Object {
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     },
     Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6e3",
+        "referrer_medium": "Social",
+        "referrer_source": "Twitter",
+        "referrer_url": "https://twitter.com",
+        "title": "Short and Sweet",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/short-and-sweet/",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -5085,7 +5616,7 @@ exports[`Members API Can ignore any unknown includes 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "8511",
+  "content-length": "10261",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -5111,6 +5642,15 @@ exports[`Members API Can order by email_open_rate 1: [body] 1`] = `
 Object {
   "members": Array [
     Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6e3",
+        "referrer_medium": "Social",
+        "referrer_source": "Twitter",
+        "referrer_url": "https://twitter.com",
+        "title": "Short and Sweet",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/short-and-sweet/",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -5144,6 +5684,15 @@ Object {
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     },
     Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6e1",
+        "referrer_medium": null,
+        "referrer_source": "Direct",
+        "referrer_url": null,
+        "title": "Ghostly Kitchen Sink",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/ghostly-kitchen-sink/",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -5177,6 +5726,15 @@ Object {
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     },
     Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6df",
+        "referrer_medium": "Social",
+        "referrer_source": "Twitter",
+        "referrer_url": "https://twitter.com",
+        "title": "HTML Ipsum",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/html-ipsum/",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -5210,6 +5768,15 @@ Object {
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     },
     Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6df",
+        "referrer_medium": null,
+        "referrer_source": "Direct",
+        "referrer_url": null,
+        "title": "HTML Ipsum",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/html-ipsum/",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -5243,6 +5810,15 @@ Object {
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     },
     Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6e1",
+        "referrer_medium": "Social",
+        "referrer_source": "Twitter",
+        "referrer_url": "https://twitter.com",
+        "title": "Ghostly Kitchen Sink",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/ghostly-kitchen-sink/",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -5282,6 +5858,15 @@ Object {
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     },
     Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6e3",
+        "referrer_medium": null,
+        "referrer_source": "Direct",
+        "referrer_url": null,
+        "title": "Short and Sweet",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/short-and-sweet/",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -5315,6 +5900,15 @@ Object {
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     },
     Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6df",
+        "referrer_medium": "Social",
+        "referrer_source": "Twitter",
+        "referrer_url": "https://twitter.com",
+        "title": "HTML Ipsum",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/html-ipsum/",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -5341,6 +5935,15 @@ Object {
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     },
     Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6e1",
+        "referrer_medium": null,
+        "referrer_source": "Direct",
+        "referrer_url": null,
+        "title": "Ghostly Kitchen Sink",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/ghostly-kitchen-sink/",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -5397,6 +6000,15 @@ exports[`Members API Can order by email_open_rate 3: [body] 1`] = `
 Object {
   "members": Array [
     Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6e1",
+        "referrer_medium": null,
+        "referrer_source": "Direct",
+        "referrer_url": null,
+        "title": "Ghostly Kitchen Sink",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/ghostly-kitchen-sink/",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -5430,6 +6042,15 @@ Object {
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     },
     Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6e3",
+        "referrer_medium": "Social",
+        "referrer_source": "Twitter",
+        "referrer_url": "https://twitter.com",
+        "title": "Short and Sweet",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/short-and-sweet/",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -5463,6 +6084,15 @@ Object {
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     },
     Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6df",
+        "referrer_medium": "Social",
+        "referrer_source": "Twitter",
+        "referrer_url": "https://twitter.com",
+        "title": "HTML Ipsum",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/html-ipsum/",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -5496,6 +6126,15 @@ Object {
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     },
     Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6df",
+        "referrer_medium": null,
+        "referrer_source": "Direct",
+        "referrer_url": null,
+        "title": "HTML Ipsum",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/html-ipsum/",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -5529,6 +6168,15 @@ Object {
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     },
     Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6e1",
+        "referrer_medium": "Social",
+        "referrer_source": "Twitter",
+        "referrer_url": "https://twitter.com",
+        "title": "Ghostly Kitchen Sink",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/ghostly-kitchen-sink/",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -5568,6 +6216,15 @@ Object {
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     },
     Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6e3",
+        "referrer_medium": null,
+        "referrer_source": "Direct",
+        "referrer_url": null,
+        "title": "Short and Sweet",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/short-and-sweet/",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -5601,6 +6258,15 @@ Object {
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     },
     Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6df",
+        "referrer_medium": "Social",
+        "referrer_source": "Twitter",
+        "referrer_url": "https://twitter.com",
+        "title": "HTML Ipsum",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/html-ipsum/",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -5627,6 +6293,15 @@ Object {
       "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     },
     Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6e1",
+        "referrer_medium": null,
+        "referrer_source": "Direct",
+        "referrer_url": null,
+        "title": "Ghostly Kitchen Sink",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/ghostly-kitchen-sink/",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -6482,6 +7157,15 @@ exports[`Members API Search by case-insensitive email MEMBER2 receives member wi
 Object {
   "members": Array [
     Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6e1",
+        "referrer_medium": null,
+        "referrer_source": "Direct",
+        "referrer_url": null,
+        "title": "Ghostly Kitchen Sink",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/ghostly-kitchen-sink/",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -6532,7 +7216,7 @@ exports[`Members API Search by case-insensitive email MEMBER2 receives member wi
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "766",
+  "content-length": "981",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -6545,6 +7229,15 @@ exports[`Members API Search by case-insensitive name egg receives member with na
 Object {
   "members": Array [
     Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6df",
+        "referrer_medium": "Social",
+        "referrer_source": "Twitter",
+        "referrer_url": "https://twitter.com",
+        "title": "HTML Ipsum",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/html-ipsum/",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -6595,7 +7288,7 @@ exports[`Members API Search by case-insensitive name egg receives member with na
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "919",
+  "content-length": "1136",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -6637,6 +7330,15 @@ exports[`Members API Search for paid members retrieves member with email paid@te
 Object {
   "members": Array [
     Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6e3",
+        "referrer_medium": "Social",
+        "referrer_source": "Twitter",
+        "referrer_url": "https://twitter.com",
+        "title": "Short and Sweet",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/short-and-sweet/",
+      },
       "avatar_image": null,
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -6687,7 +7389,7 @@ exports[`Members API Search for paid members retrieves member with email paid@te
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2100",
+  "content-length": "2544",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
