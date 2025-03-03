@@ -1,0 +1,23 @@
+VERSION 0
+
+# Data Source created from Pipe '_sessions'
+TAGS "json_mv"
+
+SCHEMA >
+    `site_uuid` LowCardinality(String),
+    `date` Date,
+    `session_id` String,
+    `member_status` AggregateFunction(maxIf, String, UInt8),
+    `post_uuid` SimpleAggregateFunction(any, String),
+    `device` SimpleAggregateFunction(any, String),
+    `browser` SimpleAggregateFunction(any, String),
+    `location` SimpleAggregateFunction(any, String),
+    `source` SimpleAggregateFunction(any, String),
+    `pathname` SimpleAggregateFunction(any, String),
+    `first_view` SimpleAggregateFunction(min, DateTime),
+    `latest_view` SimpleAggregateFunction(max, DateTime),
+    `pageviews` AggregateFunction(count)
+
+ENGINE "AggregatingMergeTree"
+ENGINE_PARTITION_KEY "toYYYYMM(date)"
+ENGINE_SORTING_KEY "site_uuid, date, session_id"

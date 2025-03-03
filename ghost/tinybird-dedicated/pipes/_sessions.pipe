@@ -1,0 +1,31 @@
+VERSION 0
+
+TAGS "json_mv"
+
+NODE _sessions_0
+SQL >
+
+    SELECT
+        site_uuid,
+        toDate(timestamp) AS date,
+        session_id,
+        maxIfState(member_status, member_status IN ('paid', 'free', 'undefined')) AS member_status,
+        anySimpleState(post_uuid) AS post_uuid,
+        anySimpleState(device) AS device,
+        anySimpleState(browser) AS browser,
+        anySimpleState(location) AS location,
+        anySimpleState(source) AS source,
+        anySimpleState(pathname) AS pathname,
+        minSimpleState(timestamp) AS first_view,
+        maxSimpleState(timestamp) AS latest_view,
+        countState() AS pageviews
+    FROM _hits
+    GROUP BY
+        site_uuid,
+        date,
+        session_id
+
+TYPE materialized
+DATASOURCE _sessions_mv
+
+
