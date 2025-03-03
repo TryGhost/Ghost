@@ -199,7 +199,7 @@ describe('Migrations', function () {
             permissions.should.havePermission('Browse Members', ['Administrator', 'Admin Integration', 'Editor']);
             permissions.should.havePermission('Read Members', ['Administrator', 'Admin Integration', 'Editor']);
             permissions.should.havePermission('Edit Members', ['Administrator', 'Admin Integration', 'Editor']);
-            permissions.should.havePermission('Add Members', ['Administrator', 'Admin Integration', 'Self-Serve Migration Integration', "Editor"]);
+            permissions.should.havePermission('Add Members', ['Administrator', 'Admin Integration', 'Self-Serve Migration Integration', 'Editor']);
             permissions.should.havePermission('Delete Members', ['Administrator', 'Admin Integration', 'Editor']);
 
             permissions.should.havePermission('Browse offers');

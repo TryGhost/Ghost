@@ -19,5 +19,13 @@ module.exports = combineTransactionalMigrations(
     addPermissionToRole({
         permission: 'Delete Members',
         role: 'Editor'
+    }),
+    addPermissionToRole({
+        permission: 'Read Offers',
+        role: 'Editor'
+    }),
+    addPermissionToRole({
+        permission: 'Browse Offers',
+        role: 'Editor'
     })
 );

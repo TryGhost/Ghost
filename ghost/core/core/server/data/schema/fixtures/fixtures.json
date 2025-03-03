@@ -936,7 +936,8 @@
                     "collection": "all",
                     "recommendation": ["browse", "read"],
                     "member": "all",
-                    "member_signin_url": "read"
+                    "member_signin_url": "read",
+                    "offer": ["browse", "read"]
 
                 },
                 "Author": {
