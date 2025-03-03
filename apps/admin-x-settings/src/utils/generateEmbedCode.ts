@@ -19,7 +19,6 @@ export type GenerateCodeOptions = {
     labels: Array<{ name: string }>;
     backgroundColor: string;
     layout: string;
-    i18nEnabled: boolean;
 };
 
 type OptionsType = {
@@ -36,8 +35,7 @@ export const generateCode = ({
     settings,
     labels,
     backgroundColor,
-    layout,
-    i18nEnabled
+    layout
 }: GenerateCodeOptions) => {
     const siteUrl = config.blogUrl;
     const scriptUrl = config.signupForm.url.replace('{version}', config.signupForm.version);
@@ -48,9 +46,7 @@ export const generateCode = ({
         'button-text-color': textColorForBackgroundColor(settings.accentColor).hex()
     };
 
-    if (i18nEnabled && settings.locale) {
-        options.locale = settings.locale;
-    }
+    options.locale = settings.locale || 'en';
 
     for (const [i, label] of labels.entries()) {
         options[`label-${i + 1}`] = label.name;

@@ -1353,9 +1353,7 @@ describe('{{ghost_head}} helper', function () {
             rendered.should.match(/sodo-search@/);
         });
 
-        it('includes locale in search when i18n is enabled', async function () {
-            sinon.stub(labs, 'isSet').withArgs('i18n').returns(true);
-
+        it('includes locale in search', async function () {
             const rendered = await testGhostHead(testUtils.createHbsResponse({
                 locals: {
                     relativeUrl: '/',
@@ -1367,8 +1365,8 @@ describe('{{ghost_head}} helper', function () {
             rendered.should.match(/sodo-search@[^>]*?data-locale="en"/);
         });
 
-        it('does not incldue locale in search when i18n is disabled', async function () {
-            sinon.stub(labs, 'isSet').withArgs('i18n').returns(false);
+        it('includes custom locale in search', async function () {
+            settingsCache.get.withArgs('locale').returns('fr');
 
             const rendered = await testGhostHead(testUtils.createHbsResponse({
                 locals: {
@@ -1378,7 +1376,7 @@ describe('{{ghost_head}} helper', function () {
                 }
             }));
 
-            rendered.should.not.match(/sodo-search@[^>]*?data-locale="en"/);
+            rendered.should.match(/sodo-search@[^>]*?data-locale="fr"/);
         });
     });
 

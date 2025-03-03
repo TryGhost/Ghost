@@ -59,7 +59,7 @@ function getMembersHelper(data, frontendKey, excludeList) {
 
         const colorString = (_.has(data, 'site._preview') && data.site.accent_color) ? data.site.accent_color : '';
         const attributes = {
-            i18n: labs.isSet('i18n'),
+            i18n: true,
             ghost: urlUtils.getSiteUrl(),
             key: frontendKey,
             api: urlUtils.urlFor('api', {type: 'content'}, true),
@@ -95,7 +95,7 @@ function getSearchHelper(frontendKey) {
         key: frontendKey,
         styles: stylesUrl,
         'sodo-search': adminUrl,
-        locale: labs.isSet('i18n') ? (settingsCache.get('locale') || 'en') : undefined
+        locale: settingsCache.get('locale') || 'en'
     };
     const dataAttrs = getDataAttributes(attrs);
     let helper = `<script defer src="${scriptUrl}" ${dataAttrs} crossorigin="anonymous"></script>`;

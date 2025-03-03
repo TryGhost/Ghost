@@ -94,7 +94,7 @@ export default class AllStatsModal extends Component {
             break;
         default:
             endpoint = `${this.config.stats.endpoint}/v0/pipes/top_pages__v${TB_VERSION}.json`;
-            labelText = 'Post or page';
+w            labelText = 'Post or page';
             indexBy = 'pathname';
             break;
         }
