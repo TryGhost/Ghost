@@ -51,7 +51,6 @@ services:
       - node_modules_ghost_data-generator:/home/ghost/ghost/data-generator/node_modules:delegated
       - node_modules_ghost_domain-events:/home/ghost/ghost/domain-events/node_modules:delegated
       - node_modules_ghost_donations:/home/ghost/ghost/donations/node_modules:delegated
-      - node_modules_ghost_dynamic-routing-events:/home/ghost/ghost/dynamic-routing-events/node_modules:delegated
       - node_modules_ghost_email-addresses:/home/ghost/ghost/email-addresses/node_modules:delegated
       - node_modules_ghost_email-analytics-provider-mailgun:/home/ghost/ghost/email-analytics-provider-mailgun/node_modules:delegated
       - node_modules_ghost_email-analytics-service:/home/ghost/ghost/email-analytics-service/node_modules:delegated
@@ -225,7 +224,6 @@ volumes:
   node_modules_ghost_data-generator: {}
   node_modules_ghost_domain-events: {}
   node_modules_ghost_donations: {}
-  node_modules_ghost_dynamic-routing-events: {}
   node_modules_ghost_email-addresses: {}
   node_modules_ghost_email-analytics-provider-mailgun: {}
   node_modules_ghost_email-analytics-service: {}

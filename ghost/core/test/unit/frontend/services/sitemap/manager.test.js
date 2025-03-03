@@ -4,7 +4,7 @@ const assert = require('assert/strict');
 
 // Stuff we are testing
 const DomainEvents = require('@tryghost/domain-events');
-const {URLResourceUpdatedEvent} = require('@tryghost/dynamic-routing-events');
+const URLResourceUpdatedEvent = require('../../../../../core/shared/events/URLResourceUpdatedEvent');
 
 const events = require('../../../../../core/server/lib/common/events');
 

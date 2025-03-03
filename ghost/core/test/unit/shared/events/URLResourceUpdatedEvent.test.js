@@ -1,5 +1,5 @@
 const assert = require('assert/strict');
-const {URLResourceUpdatedEvent} = require('../../index');
+const URLResourceUpdatedEvent = require('../../../../core/shared/events/URLResourceUpdatedEvent');
 
 describe('URLResourceUpdatedEvent', function () {
     it('exports a static create method to create instances', function () {

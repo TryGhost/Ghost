@@ -1,5 +1,5 @@
 const DomainEvents = require('@tryghost/domain-events');
-const {URLResourceUpdatedEvent} = require('@tryghost/dynamic-routing-events');
+const URLResourceUpdatedEvent = require('../../../shared/events/URLResourceUpdatedEvent');
 const IndexMapGenerator = require('./SiteMapIndexGenerator');
 const PagesMapGenerator = require('./PageMapGenerator');
 const PostsMapGenerator = require('./PostMapGenerator');
