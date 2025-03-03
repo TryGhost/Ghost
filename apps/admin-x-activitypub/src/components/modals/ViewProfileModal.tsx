@@ -2,7 +2,7 @@ import React, {useEffect, useRef, useState} from 'react';
 
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 
-import {Button, Heading, Icon, List, LoadingIndicator, Modal, NoValueLabel, Tab,TabView} from '@tryghost/admin-x-design-system';
+import {Button, Heading, Icon, List, LoadingIndicator, Modal, NoValueLabel, Tab,TabView, useDesignSystem} from '@tryghost/admin-x-design-system';
 import {UseInfiniteQueryResult} from '@tanstack/react-query';
 
 import {type GetProfileFollowersResponse, type GetProfileFollowingResponse} from '../../api/activitypub';
@@ -233,6 +233,7 @@ const ViewProfileModal: React.FC<ViewProfileModalProps> = ({
 }) => {
     const modal = useModal();
     const [selectedTab, setSelectedTab] = useState<ProfileTab>('posts');
+    const {darkMode} = useDesignSystem();
 
     const {data: profile, isLoading} = useProfileForUser('index', handle);
 
@@ -283,7 +284,7 @@ const ViewProfileModal: React.FC<ViewProfileModalProps> = ({
         <Modal
             align='right'
             animate={true}
-            backDrop={false}
+            backDrop={darkMode}
             footer={<></>}
             height={'full'}
             padding={false}
@@ -316,9 +317,9 @@ const ViewProfileModal: React.FC<ViewProfileModalProps> = ({
                                     src={profile.actor.image.url}
                                 />
                             </div>)}
-                            <div className={`${profile.actor.image && '-mt-12'} px-4`}>
+                            <div className={`${profile.actor.image && '-mt-12'} px-6`}>
                                 <div className='flex items-end justify-between'>
-                                    <div className='rounded-xl outline outline-4 outline-white dark:outline-black'>
+                                    <div className='-ml-2 rounded-full bg-white p-1 dark:bg-black'>
                                         <APAvatar
                                             author={profile.actor}
                                             size='lg'

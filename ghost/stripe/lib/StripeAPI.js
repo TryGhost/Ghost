@@ -511,7 +511,7 @@ module.exports = class StripeAPI {
      * @returns {Promise<ICheckoutSession>}
      */
     async createCheckoutSession(priceId, customer, options) {
-        const metadata = options.metadata || undefined;
+        const metadata = options.metadata || undefined; // https://docs.stripe.com/api/metadata some limits to how much can be passed
         const customerId = customer ? customer.id : undefined;
         const customerEmail = customer ? customer.email : options.customerEmail;
 
@@ -525,7 +525,15 @@ module.exports = class StripeAPI {
             trial_from_plan: true,
             items: [{
                 plan: priceId
-            }]
+            }],
+            metadata: { 
+                attribution_id: metadata?.attribution_id,
+                attribution_url: metadata?.attribution_url,
+                attribution_type: metadata?.attribution_type,
+                referrer_source: metadata?.referrer_source,
+                referrer_medium: metadata?.referrer_medium,
+                referrer_url: metadata?.referrer_url
+            }
         };
 
         /**
@@ -588,10 +596,11 @@ module.exports = class StripeAPI {
      * @param {Object.<String, any>} options.metadata
      * @param {ICustomer} [options.customer]
      * @param {string} [options.customerEmail]
+     * @param {string} [options.personalNote]
      *
      * @returns {Promise<ICheckoutSession>}
      */
-    async createDonationCheckoutSession({priceId, successUrl, cancelUrl, metadata, customer, customerEmail}) {
+    async createDonationCheckoutSession({priceId, successUrl, cancelUrl, metadata, customer, customerEmail, personalNote}) {
         await this._rateLimitBucket.throttle();
 
         /**
@@ -635,7 +644,7 @@ module.exports = class StripeAPI {
                     key: 'donation_message',
                     label: {
                         type: 'custom',
-                        custom: 'Add a personal note'
+                        custom: personalNote || 'Add a personal note'
                     },
                     type: 'text',
                     optional: true

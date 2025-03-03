@@ -1,4 +1,4 @@
-require('./utils');
+require('should');
 
 const tmp = require('tmp');
 const join = require('path').join;

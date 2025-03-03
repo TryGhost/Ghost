@@ -8,10 +8,10 @@ import {useDebounce} from 'use-debounce';
 import APAvatar from '@components/global/APAvatar';
 import ActivityItem from '@components/activities/ActivityItem';
 import FollowButton from '@components/global/FollowButton';
-import MainNavigation from '@components/navigation/MainNavigation';
 import Separator from '@components/global/Separator';
 import ViewProfileModal from '@components/modals/ViewProfileModal';
 
+import Layout from '@components/layout';
 import {type Profile} from '../../api/activitypub';
 import {useSearchForUser, useSuggestedProfilesForUser} from '@hooks/use-activity-pub-queries';
 
@@ -152,7 +152,7 @@ interface SuggestedProfilesProps {
 const SuggestedProfiles: React.FC<SuggestedProfilesProps> = ({profiles, isLoading, onUpdate}) => {
     return (
         <>
-            <span className='mb-1 flex w-full max-w-[560px] font-semibold'>
+            <span className='mb-1 flex w-full max-w-[620px] font-semibold'>
                 Suggested accounts
             </span>
             {profiles.map((profile, index) => {
@@ -205,8 +205,7 @@ const Search: React.FC<SearchProps> = ({}) => {
     }, []);
 
     return (
-        <>
-            <MainNavigation page='search' />
+        <Layout>
             <div className='z-0 mx-auto flex w-full max-w-[560px] flex-col items-center pt-8'>
                 <div className='relative flex w-full items-center'>
                     <Icon className='absolute left-3 top-3 z-10' colorClass='text-gray-500' name='magnifying-glass' size='sm' />
@@ -261,7 +260,7 @@ const Search: React.FC<SearchProps> = ({}) => {
                     />
                 )}
             </div>
-        </>
+        </Layout>
     );
 };
 

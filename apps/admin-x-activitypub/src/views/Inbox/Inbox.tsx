@@ -1,36 +1,25 @@
 import APAvatar from '@components/global/APAvatar';
-import ActivityItem from '@components/activities/ActivityItem';
 import ActivityPubWelcomeImage from '@assets/images/ap-welcome.png';
 import FeedItem from '@components/feed/FeedItem';
-import MainNavigation from '@components/navigation/MainNavigation';
+import Layout from '@components/layout';
 import NewPostModal from '@views/Feed/components/NewPostModal';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useRef} from 'react';
 import Separator from '@components/global/Separator';
-import getName from '@utils/get-name';
-import getUsername from '@utils/get-username';
 import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
-import {Button, Skeleton} from '@tryghost/shade';
+import {Button} from '@tryghost/shade';
 import {Heading, LoadingIndicator} from '@tryghost/admin-x-design-system';
-import {handleProfileClick} from '@utils/handle-profile-click';
 import {handleViewContent} from '@utils/content-handlers';
 import {
     useFeedForUser,
     useInboxForUser,
-    useSuggestedProfilesForUser,
     useUserDataForUser
 } from '@hooks/use-activity-pub-queries';
-import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {useLocation} from '@tryghost/admin-x-framework';
 
-type Layout = 'inbox' | 'feed';
-
-interface InboxProps {
-    layout: Layout;
-}
-
-const Inbox: React.FC<InboxProps> = ({layout}) => {
-    const {updateRoute} = useRouting();
-
+const Inbox: React.FC = () => {
+    const location = useLocation();
+    const layout = location.pathname === '/feed' ? 'feed' : 'inbox';
     const {inboxQuery, updateInboxActivity} = useInboxForUser({enabled: layout === 'inbox'});
     const {feedQuery, updateFeedActivity} = useFeedForUser({enabled: layout === 'feed'});
 
@@ -40,13 +29,9 @@ const Inbox: React.FC<InboxProps> = ({layout}) => {
 
     const activities = (data?.pages.flatMap(page => page.posts) ?? Array.from({length: 5}, (_, index) => ({id: `placeholder-${index}`, object: {}})));
 
-    // Initialise suggested profiles
-    const {suggestedProfilesQuery} = useSuggestedProfilesForUser('index', 3);
-    const {data: suggestedData, isLoading: isLoadingSuggested} = suggestedProfilesQuery;
-    const suggested = suggestedData || Array(3).fill({actor: {}});
-
     const observerRef = useRef<IntersectionObserver | null>(null);
     const loadMoreRef = useRef<HTMLDivElement | null>(null);
+    const endLoadMoreRef = useRef<HTMLDivElement | null>(null);
 
     useEffect(() => {
         if (observerRef.current) {
@@ -63,6 +48,10 @@ const Inbox: React.FC<InboxProps> = ({layout}) => {
             observerRef.current.observe(loadMoreRef.current);
         }
 
+        if (endLoadMoreRef.current) {
+            observerRef.current.observe(endLoadMoreRef.current);
+        }
+
         return () => {
             if (observerRef.current) {
                 observerRef.current.disconnect();
@@ -72,23 +61,27 @@ const Inbox: React.FC<InboxProps> = ({layout}) => {
 
     const {data: user} = useUserDataForUser('index');
 
+    // Calculate the index at which to place the loadMoreRef - This will place it ~75% through the list
+    const loadMoreIndex = Math.max(0, Math.floor(activities.length * 0.75) - 1);
+
     return (
-        <>
-            <MainNavigation page={layout}/>
-            <div className='z-0 mb-5 flex w-full flex-col'>
-                <div className='w-full px-8'>
+        <Layout>
+            <div className='my-4 flex w-full flex-col'>
+                <div className='w-full'>
                     {activities.length > 0 ? (
                         <>
                             <div className={`mx-auto flex min-h-[calc(100dvh_-_117px)] items-start gap-11`}>
                                 <div className='flex w-full min-w-0 flex-col items-center'>
-                                    <div className={`flex w-full min-w-0 flex-col items-start ${layout === 'inbox' ? 'xxxl:max-w-[800px]' : 'max-w-[500px]'}`}>
-                                        {layout === 'feed' && <div className='relative mx-[-12px] mb-4 mt-10 flex w-[calc(100%+24px)] items-center p-3'>
-                                            <div className=''>
-                                                <APAvatar author={user as ActorProperties} />
+                                    <div className={`flex w-full min-w-0 flex-col items-start ${layout !== 'inbox' && 'max-w-[620px]'}`}>
+                                        {layout === 'feed' &&
+                                            <div className='relative my-5 w-full'>
+                                                <div className='pointer-events-none absolute left-4 top-4'>
+                                                    <APAvatar author={user as ActorProperties} />
+                                                </div>
+                                                <Button aria-label='New post' className='text inset-0 h-[72px] w-full justify-start rounded-lg bg-white pl-[68px] text-left text-[1.5rem] font-normal tracking-normal text-gray-500 shadow-[0_5px_24px_0px_rgba(0,0,0,0.02),0px_2px_5px_0px_rgba(0,0,0,0.07),0px_0px_1px_0px_rgba(0,0,0,0.25)] transition-all hover:bg-white hover:shadow-[0_5px_24px_0px_rgba(0,0,0,0.05),0px_14px_12px_-9px_rgba(0,0,0,0.07),0px_0px_1px_0px_rgba(0,0,0,0.25)] dark:border dark:border-gray-925 dark:bg-black dark:shadow-none dark:hover:border-gray-800 dark:hover:bg-black dark:hover:shadow-none' onClick={() => NiceModal.show(NewPostModal)}>What&apos;s new?</Button>
                                             </div>
-                                            <Button aria-label='New post' className='text absolute inset-0 h-[64px] w-full justify-start rounded-lg bg-white pl-[64px] text-left text-[1.5rem] tracking-normal text-gray-500 shadow-[0_0_1px_rgba(0,0,0,.32),0_1px_6px_rgba(0,0,0,.03),0_8px_10px_-8px_rgba(0,0,0,.16)] transition-all hover:bg-white hover:shadow-[0_0_1px_rgba(0,0,0,.32),0_1px_6px_rgba(0,0,0,.03),0_8px_10px_-8px_rgba(0,0,0,.26)] dark:border dark:border-gray-950 dark:bg-black dark:shadow-none dark:hover:border-gray-925 dark:hover:bg-black dark:hover:shadow-none' onClick={() => NiceModal.show(NewPostModal)}>What&apos;s new?</Button>
-                                        </div>}
-                                        <ul className={`mx-auto flex w-full flex-col ${layout === 'inbox' && 'mt-3'}`}>
+                                        }
+                                        <ul className='mx-auto flex w-full flex-col'>
                                             {activities.map((activity, index) => (
                                                 <li
                                                     // eslint-disable-next-line react/no-array-index-key
@@ -109,43 +102,19 @@ const Inbox: React.FC<InboxProps> = ({layout}) => {
                                                     {index < activities.length - 1 && (
                                                         <Separator />
                                                     )}
+                                                    {index === loadMoreIndex && (
+                                                        <div ref={loadMoreRef} className='h-1'></div>
+                                                    )}
                                                 </li>
                                             ))}
-                                            <div ref={loadMoreRef} className='h-1'></div>
                                             {isFetchingNextPage && (
-                                                <div className='flex flex-col items-center justify-center space-y-4 text-center'>
+                                                <li className='flex flex-col items-center justify-center space-y-4 text-center'>
                                                     <LoadingIndicator size='md' />
-                                                </div>
+                                                </li>
                                             )}
                                         </ul>
+                                        <div ref={endLoadMoreRef} className='h-1'></div>
                                     </div>
-                                </div>
-                                <div className={`sticky top-[133px] ml-auto w-full max-w-[300px] max-lg:hidden xxxl:sticky xxxl:right-[40px]`}>
-                                    <h2 className='mb-1.5 text-lg font-semibold'>This is your {layout === 'inbox' ? 'inbox' : 'feed'}</h2>
-                                    <p className='mb-6 text-gray-700'>You&apos;ll find {layout === 'inbox' ? 'long-form content' : 'short posts and updates'} from the accounts you follow here.</p>
-                                    <h2 className='mb-1 text-lg font-semibold'>You might also like</h2>
-                                    <ul className='grow'>
-                                        {suggested.map((profile, index) => {
-                                            const actor = profile.actor;
-                                            return (
-                                                <React.Fragment key={actor.id}>
-                                                    <li key={actor.id}>
-                                                        <ActivityItem
-                                                            onClick={() => handleProfileClick(actor)}
-                                                        >
-                                                            {!isLoadingSuggested ? <APAvatar author={actor} /> : <Skeleton className='z-10 h-10 w-10' />}
-                                                            <div className='flex min-w-0 flex-col'>
-                                                                <span className='block w-full truncate font-semibold text-black dark:text-white'>{!isLoadingSuggested ? getName(actor) : <Skeleton className='w-24' />}</span>
-                                                                <span className='block w-full truncate text-sm text-gray-600 dark:text-gray-600'>{!isLoadingSuggested ? getUsername(actor) : <Skeleton className='w-40' />}</span>
-                                                            </div>
-                                                        </ActivityItem>
-                                                    </li>
-                                                    {index < suggested.length - 1 && <Separator />}
-                                                </React.Fragment>
-                                            );
-                                        })}
-                                    </ul>
-                                    <Button className='mt-2 w-full' variant='outline' onClick={() => updateRoute('search')}>Explore &rarr;</Button>
                                 </div>
                             </div>
                         </>
@@ -176,7 +145,7 @@ const Inbox: React.FC<InboxProps> = ({layout}) => {
                     )}
                 </div>
             </div>
-        </>
+        </Layout>
     );
 };
 

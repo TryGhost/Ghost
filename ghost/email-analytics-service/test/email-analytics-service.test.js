@@ -1,6 +1,4 @@
-// Switch these lines once there are useful utils
-// const testUtils = require('./utils');
-require('./utils');
+require('should');
 
 const sinon = require('sinon');
 
@@ -11,7 +9,7 @@ const EventProcessingResult = require('../lib/EventProcessingResult');
 
 describe('EmailAnalyticsService', function () {
     let clock;
-    
+
     beforeEach(function () {
         clock = sinon.useFakeTimers(new Date(2024, 0, 1));
     });
@@ -113,7 +111,7 @@ describe('EmailAnalyticsService', function () {
                     providers: [{
                         fetchLatest: fetchLatestSpy
                     }]
-                });                
+                });
                 await service.fetchLatestOpenedEvents();
                 fetchLatestSpy.calledOnce.should.be.true();
                 fetchLatestSpy.getCall(0).args[1].should.have.property('events', ['opened']);
@@ -148,7 +146,7 @@ describe('EmailAnalyticsService', function () {
                     providers: [{
                         fetchLatest: fetchLatestSpy
                     }]
-                });                
+                });
                 await service.fetchLatestNonOpenedEvents();
                 fetchLatestSpy.calledOnce.should.be.true();
                 fetchLatestSpy.getCall(0).args[1].should.have.property('events', ['delivered', 'failed', 'unsubscribed', 'complained']);
@@ -176,7 +174,7 @@ describe('EmailAnalyticsService', function () {
             let aggregateStatsStub;
             let setJobTimestampStub;
             let setJobStatusStub;
-            
+
             beforeEach(function () {
                 setJobTimestampStub = sinon.stub().resolves();
                 setJobStatusStub = sinon.stub().resolves();
@@ -259,10 +257,10 @@ describe('EmailAnalyticsService', function () {
                     end: new Date(2023, 0, 2)
                 });
                 const result = await service.fetchScheduled({maxEvents: 100});
-                result.should.equal(0); 
+                result.should.equal(0);
             });
         });
-        
+
         describe('fetchMissing', function () {
             it('fetches missing events', async function () {
                 const fetchLatestSpy = sinon.spy();
@@ -275,7 +273,7 @@ describe('EmailAnalyticsService', function () {
                     providers: [{
                         fetchLatest: fetchLatestSpy
                     }]
-                });                
+                });
                 await service.fetchMissing();
                 fetchLatestSpy.calledOnce.should.be.true();
             });
@@ -330,7 +328,7 @@ describe('EmailAnalyticsService', function () {
                     };
                 });
             });
-            
+
             it('uses passed-in event processor', async function () {
                 const service = new EmailAnalyticsService({
                     eventProcessor

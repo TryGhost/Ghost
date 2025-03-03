@@ -1,6 +1,4 @@
 const logging = require('@tryghost/logging');
-const JobManager = require('../../services/jobs');
-const path = require('path');
 
 class EmailAnalyticsServiceWrapper {
     init() {
@@ -13,7 +11,6 @@ class EmailAnalyticsServiceWrapper {
         const MailgunProvider = require('@tryghost/email-analytics-provider-mailgun');
         const {EmailRecipientFailure, EmailSpamComplaintEvent, Email} = require('../../models');
         const StartEmailAnalyticsJobEvent = require('./events/StartEmailAnalyticsJobEvent');
-        const {MemberEmailAnalyticsUpdateEvent} = require('@tryghost/member-events');
         const domainEvents = require('@tryghost/domain-events');
         const config = require('../../../shared/config');
         const settings = require('../../../shared/settings-cache');
@@ -61,20 +58,6 @@ class EmailAnalyticsServiceWrapper {
         // So the email analytics jobs simply emits an event.
         domainEvents.subscribe(StartEmailAnalyticsJobEvent, async () => {
             await this.startFetch();
-        });
-
-        domainEvents.subscribe(MemberEmailAnalyticsUpdateEvent, async (event) => {
-            const memberId = event.data.memberId;
-            await JobManager.addQueuedJob({
-                name: `update-member-email-analytics-${memberId}`,
-                metadata: {
-                    job: path.resolve(__dirname, 'jobs/update-member-email-analytics'),
-                    name: 'update-member-email-analytics',
-                    data: {
-                        memberId
-                    }
-                }
-            });
         });
     }
 
