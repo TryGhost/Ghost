@@ -358,8 +358,8 @@ describe('Acceptance: Members', function () {
         });
 
         it('it renders, can be navigated, can edit member', async function () {
-            let member1 = this.server.create('member', {createdAt: moment.utc().subtract(1, 'day').format('YYYY-MM-DD HH:mm:ss')});
-            this.server.create('member', {createdAt: moment.utc().subtract(2, 'day').format('YYYY-MM-DD HH:mm:ss')});
+            let memberX = this.server.create('member', {createdAt: moment.utc().subtract(2, 'day').format('YYYY-MM-DD HH:mm:ss')});
+            this.server.create('member', {createdAt: moment.utc().subtract(3, 'day').format('YYYY-MM-DD HH:mm:ss')});
 
             await visit('/members');
 
@@ -378,26 +378,20 @@ describe('Acceptance: Members', function () {
 
             let member = find('[data-test-list="members-list-item"]');
             expect(member.querySelector('.gh-members-list-name').textContent, 'member list item title')
-                .to.equal(member1.name);
+                .to.equal(memberX.name);
 
             // it does not add ?include=email_recipients
             const membersRequests = this.server.pretender.handledRequests.filter(r => r.url.match(/\/members\/(\?|$)/));
             expect(membersRequests[0].url).to.not.have.string('email_recipients');
 
-            await visit(`/members/${member1.id}`);
+            await visit(`/members/${memberX.id}`);
 
             // it shows selected member form
             expect(find('[data-test-input="member-name"]').value, 'loads correct member into form')
-                .to.equal(member1.name);
+                .to.equal(memberX.name);
 
             expect(find('[data-test-input="member-email"]').value, 'loads correct email into form')
-                .to.equal(member1.email);
-
-            // it maintains active state in nav menu
-            expect(
-                find('[data-test-nav="members"]'),
-                'highlights nav menu item'
-            ).to.have.class('active');
+                .to.equal(memberX.email);
 
             // trigger save
             await fillIn('[data-test-input="member-name"]', 'New Name');

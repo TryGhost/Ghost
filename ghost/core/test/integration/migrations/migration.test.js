@@ -202,8 +202,8 @@ describe('Migrations', function () {
             permissions.should.havePermission('Add Members', ['Administrator', 'Admin Integration', 'Self-Serve Migration Integration', 'Editor']);
             permissions.should.havePermission('Delete Members', ['Administrator', 'Admin Integration', 'Editor']);
 
-            permissions.should.havePermission('Browse offers');
-            permissions.should.havePermission('Read offers');
+            permissions.should.havePermission('Browse offers', ['Administrator', 'Admin Integration', 'Editor']);
+            permissions.should.havePermission('Read offers', ['Administrator', 'Admin Integration', 'Editor']);
             permissions.should.havePermission('Edit offers');
             permissions.should.havePermission('Add offers');
 
