@@ -1,6 +1,6 @@
 import * as React from 'react';
+import Header from './Header';
 import Sidebar from './Sidebar';
-import {Header} from './Header';
 
 const Layout: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({children, ...props}) => {
     return (

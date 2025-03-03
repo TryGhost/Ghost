@@ -19,9 +19,10 @@ interface APAvatarProps {
     } | undefined;
     size?: AvatarSize;
     isLoading?: boolean;
+    onClick?: () => void;
 }
 
-const APAvatar: React.FC<APAvatarProps> = ({author, size, isLoading = false}) => {
+const APAvatar: React.FC<APAvatarProps> = ({author, size, isLoading = false, onClick}) => {
     let iconSize = 18;
     let containerClass = `shrink-0 items-center justify-center rounded-full overflow-hidden relative z-10 flex ${size === 'lg' ? '' : 'hover:opacity-80 cursor-pointer'}`;
     let imageClass = 'z-10 object-cover';
@@ -71,9 +72,10 @@ const APAvatar: React.FC<APAvatarProps> = ({author, size, isLoading = false}) =>
 
     const handle = author?.handle || getUsername(author as ActorProperties);
 
-    const onClick = (e: React.MouseEvent) => {
+    const handleClick = (e: React.MouseEvent) => {
         e.stopPropagation();
         NiceModal.show(ViewProfileModal, {handle});
+        onClick?.();
     };
 
     const title = `${author?.name} ${handle}`;
@@ -83,7 +85,7 @@ const APAvatar: React.FC<APAvatarProps> = ({author, size, isLoading = false}) =>
             <div
                 className={containerClass}
                 title={title}
-                onClick={size === 'lg' ? undefined : onClick}
+                onClick={size === 'lg' ? undefined : handleClick}
             >
                 <img
                     className={imageClass}
@@ -98,7 +100,7 @@ const APAvatar: React.FC<APAvatarProps> = ({author, size, isLoading = false}) =>
         <div
             className={containerClass}
             title={title}
-            onClick={onClick}
+            onClick={handleClick}
         >
             <Icon
                 colorClass='text-gray-600'

@@ -405,6 +405,9 @@ jobs:
           mv hyperfine-v$HYPERFINE_VERSION-x86_64-unknown-linux-gnu/hyperfine /usr/local/bin
           chmod +x /usr/local/bin/hyperfine
 
+      - name: Build TS code
+        run: yarn nx run-many -t build:tsc
+
       - name: Run hyperfine on boot
         working-directory: ghost/core
         run: hyperfine --show-output --warmup 3 'GHOST_CI_SHUTDOWN_AFTER_BOOT=1 node index.js' --export-json boot-perf.json
@@ -831,7 +834,7 @@ jobs:
         env:
           FORCE_COLOR: 0
         with:
-          node-version: '16.14.0'
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: Install Ghost-CLI
         run: npm install -g ghost-cli@latest
@@ -843,11 +846,17 @@ jobs:
 
       - run: node .github/scripts/bump-version.js canary
 
-      - run: npm pack
-        working-directory: ghost/core
+      - run: yarn archive
 
       - run: mv ghost-*.tgz ghost.tgz
         working-directory: ghost/core
+
+      - name: Switch back to Node v16.14.0 (for v4)
+        uses: actions/setup-node@v4
+        env:
+          FORCE_COLOR: 0
+        with:
+          node-version: '16.14.0'
 
       - name: Install latest v4
         run: |
@@ -855,7 +864,8 @@ jobs:
           echo "V4_DIR=$DIR" >> $GITHUB_ENV
           ghost install v4 --local -d $DIR
 
-      - uses: actions/setup-node@v4
+      - name: Switch back to ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
         env:
           FORCE_COLOR: 0
         with:
