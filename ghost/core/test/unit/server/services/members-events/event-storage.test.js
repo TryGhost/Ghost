@@ -2,7 +2,7 @@ require('should');
 const sinon = require('sinon');
 
 const {MemberCreatedEvent, SubscriptionCreatedEvent} = require('@tryghost/member-events');
-const EventStorage = require('../lib/EventStorage');
+const EventStorage = require('../../../../../core/server/services/members-events/EventStorage');
 
 describe('EventStorage', function () {
     describe('Constructor', function () {
