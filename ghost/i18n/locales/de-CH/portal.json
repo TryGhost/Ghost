@@ -1,5 +1,5 @@
 {
-    "(save {{highestYearlyDiscount}}%)": "({{highestYearlyDiscount}}%) sparen)",
+    "(save {{highestYearlyDiscount}}%)": "({{highestYearlyDiscount}}% sparen)",
     "{{amount}} days free": "{{amount}} Tage kostenfrei",
     "{{amount}} off": "{{amount}} Rabatt",
     "{{amount}} off for first {{number}} months.": "{{amount}} Rabatt für die ersten {{number}} Monate.",
@@ -205,7 +205,7 @@
     "You're not receiving emails": "Sie erhalten keine E-Mails.",
     "You're not receiving emails because you either marked a recent message as spam, or because messages could not be delivered to your provided email address.": "Sie erhalten keine E-Mails, weil Sie entweder eine kürzlich empfangene E-Mail von uns als Spam markiert haben oder weil unsere E-Mails nicht an die angegebene E-Mail-Adresse zugestellt werden konnten.",
     "You've successfully signed in.": "Sie haben sich erfolgreich angemeldet.",
-    "You've successfully subscribed to": "Sie haben sich erfolgreich angemeldet bei",
+    "You've successfully subscribed to": "Sie haben sich erfolgreich abonniert bei",
     "Your account": "Ihr Konto",
     "Your email has failed to resubscribe, please try again": "Ihre E-Mail-Adresse konnte nicht angemeldet werden. Bitte versuchen Sie es erneut",
     "Your input helps shape what gets published.": "Ihr Beitrag kann unsere Berichterstattung beeinflussen und mitprägen.",
