@@ -1,5 +1,5 @@
 import React from 'react';
-import Search from '@components/dialogs/Search';
+import Search from '@src/components/modals/Search';
 import SearchInput from './SearchInput';
 import useActiveRoute from '@src/hooks/use-active-route';
 import {Button, Dialog, DialogContent, DialogTrigger, H1, LucideIcon} from '@tryghost/shade';

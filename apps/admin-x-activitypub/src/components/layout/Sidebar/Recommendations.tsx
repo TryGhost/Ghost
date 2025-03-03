@@ -1,7 +1,7 @@
 import * as React from 'react';
 import APAvatar from '@components/global/APAvatar';
 import ActivityItem from '@components/activities/ActivityItem';
-import Search from '@components/dialogs/Search';
+import Search from '@src/components/modals/Search';
 import getName from '@utils/get-name';
 import getUsername from '@utils/get-username';
 import {Dialog, DialogContent, DialogTrigger, H4, LucideIcon, Skeleton} from '@tryghost/shade';
