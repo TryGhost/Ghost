@@ -1,7 +1,8 @@
 import React from 'react';
-import SearchInput from '@components/layout/SearchInput';
+import Search from '@components/dialogs/Search';
+import SearchInput from './SearchInput';
 import useActiveRoute from '@src/hooks/use-active-route';
-import {Button, H1, LucideIcon} from '@tryghost/shade';
+import {Button, Dialog, DialogContent, DialogTrigger, H1, LucideIcon} from '@tryghost/shade';
 import {useLocation, useNavigate, useNavigationStack} from '@tryghost/admin-x-framework';
 
 interface HeaderTitleProps {
@@ -43,12 +44,17 @@ const Header: React.FC = () => {
             className='sticky top-0 z-10 bg-white px-8 dark:bg-black'>
             <div className='flex h-[102px] items-center justify-between gap-5 border-b border-gray-200 dark:border-gray-950'>
                 <HeaderTitle backIcon={location.pathname === '/search'} title={activeRoute?.pageTitle || ''} />
-                <SearchInput open={isSearchOpen} onOpenChange={setIsSearchOpen} />
+                <Dialog open={isSearchOpen} onOpenChange={setIsSearchOpen}>
+                    <DialogTrigger>
+                        <SearchInput />
+                    </DialogTrigger>
+                    <DialogContent>
+                        <Search onOpenChange={setIsSearchOpen} />
+                    </DialogContent>
+                </Dialog>
             </div>
         </div>
     );
 };
 
-Header.displayName = 'Header';
-
-export {Header};
+export default Header;

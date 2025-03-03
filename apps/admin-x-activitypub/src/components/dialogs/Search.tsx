@@ -4,7 +4,7 @@ import FollowButton from '@components/global/FollowButton';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useRef, useState} from 'react';
 import ViewProfileModal from '@components/modals/ViewProfileModal';
-import {Dialog, DialogContent, DialogTrigger, LucideIcon, Skeleton} from '@tryghost/shade';
+import {H4, LucideIcon, Skeleton} from '@tryghost/shade';
 import {LoadingIndicator, NoValueLabel, TextField} from '@tryghost/admin-x-design-system';
 import {type Profile} from '../../api/activitypub';
 import {useDebounce} from 'use-debounce';
@@ -57,8 +57,8 @@ const AccountSearchResultItem: React.FC<AccountSearchResultItemProps & {
                 handle: account.handle
             }}/>
             <div className='flex flex-col'>
-                <span className='font-semibold text-black'>{account.name}</span>
-                <span className='text-sm text-gray-700'>{account.handle}</span>
+                <span className='font-semibold text-black dark:text-white'>{account.name}</span>
+                <span className='text-sm text-gray-700 dark:text-gray-600'>{account.handle}</span>
             </div>
             <FollowButton
                 className='ml-auto'
@@ -80,8 +80,12 @@ interface SearchResultsProps {
 const SearchResults: React.FC<SearchResultsProps & {
     onOpenChange?: (open: boolean) => void;
 }> = ({results, onUpdate, onOpenChange}) => {
+    if (!results.length) {
+        return null;
+    }
+
     return (
-        <>
+        <div className='mt-[-7px]'>
             {results.map(account => (
                 <AccountSearchResultItem
                     key={account.id}
@@ -90,7 +94,7 @@ const SearchResults: React.FC<SearchResultsProps & {
                     onOpenChange={onOpenChange}
                 />
             ))}
-        </>
+        </div>
     );
 };
 
@@ -157,10 +161,8 @@ const SuggestedProfiles: React.FC<SuggestedProfilesProps & {
     onOpenChange?: (open: boolean) => void;
 }> = ({profiles, isLoading, onUpdate, onOpenChange}) => {
     return (
-        <div className='flex flex-col gap-2'>
-            <span className='mb-1 flex w-full max-w-[620px] font-semibold'>
-                Suggested accounts
-            </span>
+        <div className='mb-[-15px] flex flex-col gap-2 pt-2'>
+            <H4>Suggested accounts</H4>
             <div className='flex flex-col'>
                 {profiles.map((profile) => {
                     return (
@@ -179,12 +181,11 @@ const SuggestedProfiles: React.FC<SuggestedProfilesProps & {
     );
 };
 
-interface SearchInputProps extends React.HTMLAttributes<HTMLDivElement> {
-    open?: boolean;
+interface SearchProps {
     onOpenChange?: (open: boolean) => void;
 }
 
-const SearchInput: React.FC<SearchInputProps> = ({open, onOpenChange}) => {
+const Search: React.FC<SearchProps> = ({onOpenChange}) => {
     // Initialise suggested profiles
     const {suggestedProfilesQuery, updateSuggestedProfile} = useSuggestedProfilesForUser('index', 6);
     const {data: suggestedProfilesData, isLoading: isLoadingSuggestedProfiles} = suggestedProfilesQuery;
@@ -216,64 +217,55 @@ const SearchInput: React.FC<SearchInputProps> = ({open, onOpenChange}) => {
     }, []);
 
     return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogTrigger>
-                <div className='inline-flex h-9 w-[274px] items-center justify-start gap-2 rounded-full bg-gray-100 px-3 text-md font-normal text-gray-600 hover:bg-gray-200 hover:text-gray-600 dark:bg-gray-925 dark:text-gray-700 dark:hover:bg-gray-950 [&_svg]:size-[18px]'>
-                    <LucideIcon.Search size={18} strokeWidth={1.5} /> Search
-                </div>
-            </DialogTrigger>
-            <DialogContent>
-                <DialogContent>
-                    <div className='-mt-2 flex items-center gap-2'>
-                        <LucideIcon.Search className='text-gray-600' size={18} strokeWidth={1.5} />
-                        <TextField
-                            autoComplete='off'
-                            className='mr-12 flex h-10 w-full items-center rounded-lg border-0 bg-transparent px-0 py-1.5 transition-colors focus:border-0 focus:bg-transparent focus:outline-0 tablet:mr-0 dark:text-white dark:placeholder:text-gray-800'
-                            containerClassName='w-100'
-                            inputRef={queryInputRef}
-                            placeholder='Enter a handle or account URL...'
-                            title="Search"
-                            type='text'
-                            value={query}
-                            clearBg
-                            hideTitle
-                            unstyled
-                            onChange={e => setQuery(e.target.value)}
-                        />
+        <>
+            <div className='-mx-6 -mt-6 flex items-center gap-2 border-b border-b-gray-150 px-6 pb-[10px] pt-3 dark:border-b-gray-950'>
+                <LucideIcon.Search className='text-gray-600' size={18} strokeWidth={1.5} />
+                <TextField
+                    autoComplete='off'
+                    className='mr-12 flex h-10 w-full items-center rounded-lg border-0 bg-transparent px-0 py-1.5 transition-colors focus:border-0 focus:bg-transparent focus:outline-0 tablet:mr-0 dark:text-white dark:placeholder:text-gray-800'
+                    containerClassName='w-100'
+                    inputRef={queryInputRef}
+                    placeholder='Enter a handle or account URL...'
+                    title="Search"
+                    type='text'
+                    value={query}
+                    clearBg
+                    hideTitle
+                    unstyled
+                    onChange={e => setQuery(e.target.value)}
+                />
+            </div>
+            <div className='min-h-[320px]'>
+                {showLoading && (
+                    <div className='flex h-full items-center justify-center pb-8'>
+                        <LoadingIndicator size='lg' />
                     </div>
-                    <div className='min-h-[320px]'>
-                        {showLoading && (
-                            <div className='flex h-full items-center justify-center pb-8'>
-                                <LoadingIndicator size='lg' />
-                            </div>
-                        )}
-                        {showNoResults && (
-                            <div className='flex h-full items-center justify-center pb-8'>
-                                <NoValueLabel icon='user'>
-                                    No users matching this handle or account URL
-                                </NoValueLabel>
-                            </div>
-                        )}
-                        {!showLoading && !showNoResults && (
-                            <SearchResults
-                                results={results}
-                                onOpenChange={onOpenChange}
-                                onUpdate={updateResult}
-                            />
-                        )}
-                        {showSuggested && (
-                            <SuggestedProfiles
-                                isLoading={isLoadingSuggestedProfiles}
-                                profiles={suggestedProfiles}
-                                onOpenChange={onOpenChange}
-                                onUpdate={updateSuggestedProfile}
-                            />
-                        )}
+                )}
+                {showNoResults && (
+                    <div className='flex h-full items-center justify-center pb-8'>
+                        <NoValueLabel icon='user'>
+                            No users matching this handle or account URL
+                        </NoValueLabel>
                     </div>
-                </DialogContent>
-            </DialogContent>
-        </Dialog>
+                )}
+                {!showLoading && !showNoResults && (
+                    <SearchResults
+                        results={results}
+                        onOpenChange={onOpenChange}
+                        onUpdate={updateResult}
+                    />
+                )}
+                {showSuggested && (
+                    <SuggestedProfiles
+                        isLoading={isLoadingSuggestedProfiles}
+                        profiles={suggestedProfiles}
+                        onOpenChange={onOpenChange}
+                        onUpdate={updateSuggestedProfile}
+                    />
+                )}
+            </div>
+        </>
     );
 };
 
-export default SearchInput;
+export default Search;
