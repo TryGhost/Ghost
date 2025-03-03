@@ -61,7 +61,7 @@ module.exports = function setupMembersApp() {
     }
     
     membersApp.put('/api/member', bodyParser.json({limit: '50mb'}), middleware.updateMemberData);
-    membersApp.post('/api/member/email', bodyParser.json({limit: '50mb'}), (req, res) => membersService.api.middleware.updateEmailAddress(req, res));
+    membersApp.post('/api/member/email', bodyParser.json({limit: '50mb'}), (req, res, next) => membersService.api.middleware.updateEmailAddress(req, res, next));
 
     // Remove email from suppression list
     membersApp.delete('/api/member/suppression', middleware.deleteSuppression);
