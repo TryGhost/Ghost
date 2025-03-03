@@ -35,6 +35,7 @@ const HeaderTitle: React.FC<HeaderTitleProps> = ({title, backIcon}) => {
 const Header: React.FC = () => {
     const location = useLocation();
     const [isSearchOpen, setIsSearchOpen] = React.useState(false);
+    const [searchQuery, setSearchQuery] = React.useState('');
 
     // Get page title from custom route object
     const activeRoute = useActiveRoute();
@@ -49,7 +50,7 @@ const Header: React.FC = () => {
                         <SearchInput />
                     </DialogTrigger>
                     <DialogContent>
-                        <Search onOpenChange={setIsSearchOpen} />
+                        <Search query={searchQuery} setQuery={setSearchQuery} onOpenChange={setIsSearchOpen} />
                     </DialogContent>
                 </Dialog>
             </div>

@@ -2,7 +2,7 @@ import APAvatar from '@components/global/APAvatar';
 import ActivityItem from '@components/activities/ActivityItem';
 import FollowButton from '@components/global/FollowButton';
 import NiceModal from '@ebay/nice-modal-react';
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useRef} from 'react';
 import ViewProfileModal from '@components/modals/ViewProfileModal';
 import {H4, LucideIcon, Skeleton} from '@tryghost/shade';
 import {LoadingIndicator, NoValueLabel, TextField} from '@tryghost/admin-x-design-system';
@@ -183,9 +183,11 @@ const SuggestedProfiles: React.FC<SuggestedProfilesProps & {
 
 interface SearchProps {
     onOpenChange?: (open: boolean) => void;
+    query: string;
+    setQuery: (query: string) => void;
 }
 
-const Search: React.FC<SearchProps> = ({onOpenChange}) => {
+const Search: React.FC<SearchProps> = ({onOpenChange, query, setQuery}) => {
     // Initialise suggested profiles
     const {suggestedProfilesQuery, updateSuggestedProfile} = useSuggestedProfilesForUser('index', 6);
     const {data: suggestedProfilesData, isLoading: isLoadingSuggestedProfiles} = suggestedProfilesQuery;
@@ -199,7 +201,6 @@ const Search: React.FC<SearchProps> = ({onOpenChange}) => {
 
     // Initialise search query
     const queryInputRef = useRef<HTMLInputElement>(null);
-    const [query, setQuery] = useState('');
     const [debouncedQuery] = useDebounce(query, 300);
     const {searchQuery, updateAccountSearchResult: updateResult} = useSearchForUser('index', query !== '' ? debouncedQuery : query);
     const {data, isFetching, isFetched} = searchQuery;
