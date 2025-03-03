@@ -11,10 +11,6 @@ describe('Permissions', function () {
     let findPostSpy;
     let findTagSpy;
 
-    before(function () {
-        models.init();
-    });
-
     beforeEach(function () {
         sinon.stub(models.Permission, 'findAll').callsFake(function () {
             return Promise.resolve(models.Permissions.forge(fakePermissions));

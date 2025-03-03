@@ -3,10 +3,6 @@ const should = require('should');
 const models = require('../../../../core/server/models');
 
 describe('Unit: models/stripe-customer-subscription', function () {
-    before(function () {
-        models.init();
-    });
-
     afterEach(function () {
         sinon.restore();
     });

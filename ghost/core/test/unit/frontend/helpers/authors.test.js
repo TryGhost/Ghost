@@ -2,14 +2,9 @@ const should = require('should');
 const sinon = require('sinon');
 const urlService = require('../../../../core/server/services/url');
 const authorsHelper = require('../../../../core/frontend/helpers/authors');
-const models = require('../../../../core/server/models');
 const testUtils = require('../../../utils');
 
 describe('{{authors}} helper', function () {
-    before(function () {
-        models.init();
-    });
-
     beforeEach(function () {
         sinon.stub(urlService, 'getUrlByResourceId');
     });

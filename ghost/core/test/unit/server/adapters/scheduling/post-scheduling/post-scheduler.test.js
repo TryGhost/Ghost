@@ -14,10 +14,6 @@ const nock = require('nock');
 describe('Scheduling: Post Scheduler', function () {
     let adapter;
 
-    before(function () {
-        models.init();
-    });
-
     beforeEach(function () {
         adapter = new SchedulingDefault();
 

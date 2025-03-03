@@ -6,7 +6,6 @@ const _ = require('lodash');
 const moment = require('moment');
 const testUtils = require('../../../utils');
 const configUtils = require('../../../utils/configUtils');
-const models = require('../../../../core/server/models');
 const imageLib = require('../../../../core/server/lib/image');
 const routing = require('../../../../core/frontend/services/routing');
 const urlService = require('../../../../core/server/services/url');
@@ -358,9 +357,6 @@ describe('{{ghost_head}} helper', function () {
     };
 
     before(function () {
-        // @TODO: remove when visibility is refactored out of models
-        models.init();
-
         keyStub = sinon.stub().resolves('xyz');
         const dataService = {
             getFrontendKey: keyStub

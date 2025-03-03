@@ -3,10 +3,6 @@ const assert = require('assert/strict');
 const errors = require('@tryghost/errors');
 
 describe('Unit: models/milestone', function () {
-    before(function () {
-        models.init();
-    });
-
     describe('validation', function () {
         describe('blank', function () {
             it('throws validation error for mandatory fields', function () {

@@ -3,8 +3,6 @@ const should = require('should');
 const sinon = require('sinon');
 
 describe('Unit: models/api_key', function () {
-    before(models.init);
-
     describe('fn: refreshSecret', function () {
         it('returns a call to edit passing a new admin secret', function () {
             const editStub = sinon.stub(models.ApiKey, 'edit').resolves();
