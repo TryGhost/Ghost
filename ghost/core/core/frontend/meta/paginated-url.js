@@ -1,11 +1,15 @@
 const _ = require('lodash');
 const urlUtils = require('../../shared/url-utils');
+const {fixAnyNonStandardChars} = require('./utils');
 
 function getPaginatedUrl(page, data, absolute) {
     // If we don't have enough information, return null right away
     if (!data || !data.relativeUrl || !data.pagination) {
         return null;
     }
+
+    // rewrite urls that might contain accented characters
+    data.relativeUrl = fixAnyNonStandardChars(data.relativeUrl);
 
     // routeKeywords.page: 'page'
     const pagePath = urlUtils.urlJoin('/page/');
