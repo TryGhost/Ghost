@@ -458,8 +458,8 @@ async function updateProfile({data, state, api}) {
                 })
             };
         }
-        const message = !dataUpdate.success ? t('Failed to update account data') : t('Failed to send verification email');
 
+        const message = !dataUpdate.success ? t('Failed to update account data') : t('Failed to send verification email');
         return {
             action: 'updateProfile:failed',
             ...(dataUpdate.success ? {member: dataUpdate.member} : {}),
@@ -482,7 +482,14 @@ async function updateProfile({data, state, api}) {
     } else if (emailUpdate) {
         const action = emailUpdate.success ? 'updateProfile:success' : 'updateProfile:failed';
         const status = emailUpdate.success ? 'success' : 'error';
-        const message = !emailUpdate.success ? t('Failed to send verification email') : t('Check your inbox to verify email update');
+        let message = '';
+
+        if (emailUpdate.error) {
+            message = chooseBestErrorMessage(emailUpdate.error, t('Failed to send verification email'), t);
+        } else {
+            message = t('Check your inbox to verify email update');
+        }
+
         return {
             action,
             ...(emailUpdate.success ? {page: 'accountHome'} : {}),

@@ -381,11 +381,13 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(body)
-            }).then(function (res) {
+            }).then(async function (res) {
                 if (res.ok) {
                     return 'Success';
                 } else {
-                    throw new Error('Failed to send email address verification email');
+                    const errData = await res.json();
+                    const errMssg = errData?.errors?.[0]?.message || 'Failed to send email address verification email';
+                    throw new Error(errMssg);
                 }
             });
         },
