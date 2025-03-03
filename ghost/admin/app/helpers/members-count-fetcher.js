@@ -34,9 +34,9 @@ export default class MembersCount extends Resource {
 
     @task
     *fetchMembersTask({query} = {}) {
-        // Only Admins/Owners have access to the /members/ endpoint to fetch a count.
+        // Only Admins/Owners AND Editors have access to the /members/ endpoint to fetch a count.
         // For other roles simply leave it as `null` so templates can react accordingly
-        if (!this.session.user.isAdmin) {
+        if (!this.session.user.isAdmin && !this.session.user.isEditor) {
             this.count = null;
             return;
         }

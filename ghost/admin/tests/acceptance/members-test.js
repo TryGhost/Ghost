@@ -7,7 +7,7 @@ import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
 import {visit} from '../helpers/visit';
 
-describe('Acceptance: Members', function () {
+describe('Acceptance: Members 1', function () {
     let hooks = setupApplicationTest();
     setupMirage(hooks);
 
@@ -24,19 +24,19 @@ describe('Acceptance: Members', function () {
 
         await authenticateSession();
         await visit('/members');
-
         expect(currentURL()).to.equal('/site');
         expect(find('[data-test-nav="members"]'), 'sidebar link')
             .to.not.exist;
     });
 
-    describe('as owner', function () {
+    describe('as editor', function () {
         beforeEach(async function () {
+            await invalidateSession();
+
             this.server.loadFixtures('configs');
 
-            let role = this.server.create('role', {name: 'Owner'});
+            let role = this.server.create('role', {name: 'Editor'});
             this.server.create('user', {roles: [role]});
-
             await authenticateSession();
         });
 
@@ -159,6 +159,7 @@ describe('Acceptance: Members', function () {
          * See code: ghost/admin/app/controllers/members.js:isBulkDeletePermitted
          * TODO: delete this block of tests once the guardrail has been removed
         */
+       
         describe('[Temp] Guardrail against bulk deletion', function () {
             it('can bulk delete members if a non-Stripe subscription filter is in use (member tier, status)', async function () {
                 const tier = this.server.create('tier', {id: 'qwerty123456789'});
@@ -166,6 +167,7 @@ describe('Acceptance: Members', function () {
                 this.server.createList('member', 2, {status: 'paid', tiers: [tier]});
 
                 await visit('/members');
+
                 expect(findAll('[data-test-member]').length).to.equal(4);
 
                 // The delete button should not be visible by default
@@ -346,12 +348,13 @@ describe('Acceptance: Members', function () {
             expect(findAll('[data-test-modal]')).to.have.length(0);
             expect(findAll('[data-test-member]')).to.have.length(1);
         });
-    });
-    describe('as editor', function () {
+    }); 
+
+    describe('as owner', function () {
         beforeEach(async function () {
             this.server.loadFixtures('configs');
 
-            let role = this.server.create('role', {name: 'Editor'});
+            let role = this.server.create('role', {name: 'Owner'});
             this.server.create('user', {roles: [role]});
 
             await authenticateSession();
@@ -362,14 +365,11 @@ describe('Acceptance: Members', function () {
             this.server.create('member', {createdAt: moment.utc().subtract(3, 'day').format('YYYY-MM-DD HH:mm:ss')});
 
             await visit('/members');
-
             // lands on correct page
             expect(currentURL(), 'currentURL').to.equal('/members');
-
             // it lists all members
             expect(findAll('[data-test-list="members-list-item"]').length, 'members list count')
                 .to.equal(2);
-
             // it highlights active state in nav menu
             expect(
                 find('[data-test-nav="members"]'),
@@ -404,5 +404,5 @@ describe('Acceptance: Members', function () {
             // lands on correct page
             expect(currentURL(), 'currentURL').to.equal('/members');
         });
-    });
+    }); 
 });

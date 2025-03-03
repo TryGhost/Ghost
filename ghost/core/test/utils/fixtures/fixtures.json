@@ -1104,7 +1104,7 @@
                     "newsletter": ["browse", "read"],
                     "collection": "all",
                     "recommendation": ["browse", "read"],
-                    "member": "all",
+                    "member": ["read", "add", "browse", "edit", "destroy"],
                     "member_signin_url": "read",
                     "offer": ["browse", "read"]
                 },

@@ -935,7 +935,7 @@
                     "newsletter": ["browse", "read"],
                     "collection": "all",
                     "recommendation": ["browse", "read"],
-                    "member": "all",
+                    "member": ["browse", "read", "add", "edit", "destroy"],
                     "member_signin_url": "read",
                     "offer": ["browse", "read"]
 
