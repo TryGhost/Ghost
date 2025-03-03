@@ -18,7 +18,7 @@ describe('LinkRedirectsService', function () {
                 linkRedirectRepository: {
                     getByURL: () => Promise.resolve(undefined)
                 },
-                config: {
+                urlConfig: {
                     baseURL: new URL('https://localhost:2368/')
                 }
             });
@@ -38,7 +38,7 @@ describe('LinkRedirectsService', function () {
                         return Promise.resolve(undefined);
                     }
                 },
-                config: {
+                urlConfig: {
                     baseURL: new URL('https://localhost:2368/')
                 }
             });
@@ -58,7 +58,7 @@ describe('LinkRedirectsService', function () {
             };
             const instance = new LinkRedirectsService({
                 linkRedirectRepository,
-                config: {
+                urlConfig: {
                     baseURL: new URL('https://localhost:2368/')
                 }
             });
@@ -83,7 +83,7 @@ describe('LinkRedirectsService', function () {
             };
             const instance = new LinkRedirectsService({
                 linkRedirectRepository,
-                config: {
+                urlConfig: {
                     baseURL: new URL('https://localhost:2368/')
                 }
             });
@@ -106,7 +106,7 @@ describe('LinkRedirectsService', function () {
             };
             const instance = new LinkRedirectsService({
                 linkRedirectRepository,
-                config: {
+                urlConfig: {
                     baseURL: new URL('https://localhost:2368/')
                 }
             });
@@ -121,7 +121,7 @@ describe('LinkRedirectsService', function () {
 
         it('does not redirect if url does not contain a redirect prefix on site with no subdir', async function () {
             const instance = new LinkRedirectsService({
-                config: {
+                urlConfig: {
                     baseURL: new URL('https://localhost:2368/')
                 }
             });
@@ -138,7 +138,7 @@ describe('LinkRedirectsService', function () {
 
         it('does not redirect if url does not contain a redirect prefix on site with subdir', async function () {
             const instance = new LinkRedirectsService({
-                config: {
+                urlConfig: {
                     baseURL: new URL('https://localhost:2368/blog')
                 }
             });
@@ -151,6 +151,50 @@ describe('LinkRedirectsService', function () {
             await instance.handleRequest(req, res, next);
 
             assert.equal(next.callCount, 1);
+        });
+
+        it('submits a job to the queue to process the click if enabled', async function () {
+            const jobStub = sinon.stub().resolves();
+            const linkRedirectRepository = {
+                getByURL: (url) => {
+                    if (url.href === 'https://localhost:2368/r/a?m=12345678') {
+                        return Promise.resolve({
+                            to: new URL('https://localhost:2368/b')
+                        });
+                    }
+                    return Promise.resolve(undefined);
+                }
+            };
+            const instance = new LinkRedirectsService({
+                linkRedirectRepository,
+                urlConfig: {
+                    baseURL: new URL('https://localhost:2368/')
+                },
+                config: {
+                    get: (key) => {
+                        if (key === 'services:jobs:queue:enabled' || key === 'backgroundJobs:clickTracking') {
+                            return true;
+                        }
+                        return false;
+                    }
+                },
+                submitHandleRedirectJob: jobStub
+            });
+
+            const req = {
+                originalUrl: '/r/a?m=12345678'
+            };
+            const res = {
+                redirect: sinon.fake(),
+                setHeader: sinon.fake()
+            };
+            const next = sinon.fake();
+
+            await instance.handleRequest(req, res, next);
+
+            assert.equal(jobStub.callCount, 1);
+            // redirect is still served
+            assert.equal(res.redirect.callCount, 1);
         });
     });
 });

@@ -176,6 +176,7 @@ class JobQueueManager {
     }
 
     async handleJobError(job, jobMetadata, error) {
+        logging.error('Error in job queue:', error);
         let errorMessage;
         if (error instanceof Error) {
             errorMessage = error.message;
