@@ -2,8 +2,7 @@ import React, {useState} from 'react';
 import clsx from 'clsx';
 import {Button, Heading, Icon} from '@tryghost/admin-x-design-system';
 import {TierFormState} from './TierDetailModal';
-import {currencyToDecimal, getSymbol} from '../../../../utils/currency';
-import {numberWithCommas} from '../../../../utils/helpers';
+import {currencyToDecimal, formatMonetaryAmount, getSymbol} from '../../../../utils/currency';
 
 interface TierDetailPreviewProps {
     tier: TierFormState;
@@ -100,7 +99,7 @@ const TierDetailPreview: React.FC<TierDetailPreviewProps> = ({tier, isFreeTier})
                         <div className="mt-4 flex w-full flex-row flex-wrap items-end justify-between gap-x-1 gap-y-[10px]">
                             <div className={`flex flex-wrap text-black ${((showingYearly && tier?.yearly_price === undefined) || (!showingYearly && tier?.monthly_price === undefined)) && !isFreeTier ? 'opacity-30' : ''}`}>
                                 <span className="self-start text-[2.7rem] font-bold uppercase leading-[1.115]">{currencySymbol}</span>
-                                <span className="break-all text-[3.4rem] font-bold leading-none tracking-tight">{showingYearly ? numberWithCommas(yearlyPrice) : numberWithCommas(monthlyPrice)}</span>
+                                <span className="break-all text-[3.4rem] font-bold leading-none tracking-tight">{showingYearly ? formatMonetaryAmount(yearlyPrice) : formatMonetaryAmount(monthlyPrice)}</span>
                                 {!isFreeTier && <span className="ml-1 self-end text-[1.5rem] leading-snug text-grey-800">/{showingYearly ? 'year' : 'month'}</span>}
                             </div>
                             <TrialDaysLabel trialDays={trialDays} />
