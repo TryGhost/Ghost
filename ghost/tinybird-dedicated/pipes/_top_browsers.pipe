@@ -1,4 +1,4 @@
-VERSION 0
+VERSION 1
 TAGS "json_mv"
 
 NODE _top_browsers_0
@@ -6,7 +6,7 @@ SQL >
 
     %
             select browser, uniq(session_id) as visits, countMerge(pageviews) as pageviews
-            from _sessions_mv
+            from _sessions_mv_1
             where
                 site_uuid = {{String(site_uuid, 'mock_site_uuid', description="Tenant ID", required=True)}}
                 {% if defined(date_from) %}

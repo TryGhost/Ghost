@@ -1,4 +1,4 @@
-VERSION 0
+VERSION 1
 TAGS "json_mv"
 
 NODE timeseries
@@ -96,7 +96,7 @@ SQL >
                     case when min(first_view) = max(latest_view) then 1 else 0 end as is_bounce,
                     max(latest_view) as latest_view_aux,
                     min(first_view) as first_view_aux
-                from _sessions_mv
+                from _sessions_mv_1
                 where
                     {% if defined(date_from) %} date >= {{ Date(date_from) }}
                     {% else %} date >= timestampAdd(today(), interval -7 day)
