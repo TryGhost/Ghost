@@ -178,7 +178,7 @@
     "connect-slashes": "1.4.0",
     "cookie-session": "2.1.0",
     "cors": "2.8.5",
-    "dompurify": "3.2.3",
+    "dompurify": "3.2.4",
     "downsize": "0.0.8",
     "express": "4.21.2",
     "express-brute": "1.0.1",
