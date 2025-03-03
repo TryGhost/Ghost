@@ -77,7 +77,6 @@ services:
       - node_modules_ghost_member-events:/home/ghost/ghost/member-events/node_modules:delegated
       - node_modules_ghost_members-api:/home/ghost/ghost/members-api/node_modules:delegated
       - node_modules_ghost_members-csv:/home/ghost/ghost/members-csv/node_modules:delegated
-      - node_modules_ghost_members-events-service:/home/ghost/ghost/members-events-service/node_modules:delegated
       - node_modules_ghost_members-importer:/home/ghost/ghost/members-importer/node_modules:delegated
       - node_modules_ghost_members-ssr:/home/ghost/ghost/members-ssr/node_modules:delegated
       - node_modules_ghost_mentions-email-report:/home/ghost/ghost/mentions-email-report/node_modules:delegated
@@ -250,7 +249,6 @@ volumes:
   node_modules_ghost_member-events: {}
   node_modules_ghost_members-api: {}
   node_modules_ghost_members-csv: {}
-  node_modules_ghost_members-events-service: {}
   node_modules_ghost_members-importer: {}
   node_modules_ghost_members-ssr: {}
   node_modules_ghost_mentions-email-report: {}

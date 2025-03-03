@@ -1,4 +1,4 @@
-const LastSeenAtCache = require('../lib/LastSeenAtCache');
+const LastSeenAtCache = require('../../../../../core/server/services/members-events/LastSeenAtCache');
 const assert = require('assert/strict');
 const sinon = require('sinon');
 const moment = require('moment-timezone');
