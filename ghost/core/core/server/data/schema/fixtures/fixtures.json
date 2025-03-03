@@ -937,7 +937,8 @@
                     "recommendation": ["browse", "read"],
                     "member": ["browse", "read", "add", "edit", "destroy"],
                     "member_signin_url": "read",
-                    "offer": ["browse", "read"]
+                    "offer": ["browse", "read"],
+                    "comment": "all"
 
                 },
                 "Author": {
