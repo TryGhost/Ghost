@@ -1,7 +1,6 @@
 import Inbox from '@views/Inbox';
 import Notifications from '@views/Notifications';
 import Profile from '@views/Profile';
-import Search from '@views/Search';
 import {RouteObject, redirect} from '@tryghost/admin-x-framework';
 
 export const APP_ROUTE_PREFIX = '/activitypub';
@@ -26,11 +25,6 @@ export const routes: CustomRouteObject[] = [
         path: 'feed',
         Component: Inbox,
         pageTitle: 'Feed'
-    },
-    {
-        path: 'search',
-        Component: Search,
-        pageTitle: 'Search'
     },
     {
         path: 'notifications',
