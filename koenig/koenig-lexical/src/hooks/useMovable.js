@@ -125,12 +125,16 @@ export default function useMovable({adjustOnResize, adjustOnDrag} = {}) {
     // preventing clicks stops any event handlers that may otherwise result in the
     // movable element being closed when the drag finishes
     const disablePointerEvents = useCallback(() => {
-        ref.current.style.pointerEvents = 'none';
+        if (ref.current) {
+            ref.current.style.pointerEvents = 'none';
+        }
         window.addEventListener('click', cancelClick, {capture: true, passive: false});
     }, [ref, cancelClick]);
 
     const enablePointerEvents = useCallback(() => {
-        ref.current.style.pointerEvents = '';
+        if (ref.current) {
+            ref.current.style.pointerEvents = '';
+        }
         window.removeEventListener('click', cancelClick, {capture: true, passive: false});
     }, [ref, cancelClick]);
 

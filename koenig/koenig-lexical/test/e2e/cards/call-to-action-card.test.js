@@ -1,5 +1,6 @@
 import path from 'path';
-import {assertHTML, focusEditor, getEditorStateJSON, html, initialize, insertCard} from '../../utils/e2e';
+import {assertHTML, createDataTransfer, focusEditor, getEditorStateJSON, html, initialize, insertCard} from '../../utils/e2e';
+import {cardBackgroundColorSettings} from '../../utils/background-color-helper';
 import {expect, test} from '@playwright/test';
 import {fileURLToPath} from 'url';
 const __filename = fileURLToPath(import.meta.url);
@@ -118,37 +119,30 @@ test.describe('Call To Action Card', async () => {
         `, {ignoreCardContents: true});
     });
 
-    test('can toggle button on card', async function () {
+    test('button and button settings is visible by default', async function () {
         await focusEditor(page);
         await insertCard(page, {cardName: 'call-to-action'});
-        await page.click('[data-testid="button-settings"]');
         expect(await page.isVisible('[data-testid="cta-button"]')).toBe(true);
-
-        await page.click('[data-testid="button-settings"]');
-
-        expect(await page.isVisible('[data-testid="cta-button"]')).toBe(false);
-    });
-
-    test('button settings expands and collapses when toggled', async function () {
-        await focusEditor(page);
-        await insertCard(page, {cardName: 'call-to-action'});
-        await page.click('[data-testid="button-settings"]');
-        // determine if settings are open byy looking for cta-button-color, button-text & button-url
         expect(await page.isVisible('[data-testid="cta-button-color"]')).toBe(true);
         expect(await page.isVisible('[data-testid="button-text"]')).toBe(true);
         expect(await page.isVisible('[data-testid="button-url"]')).toBe(true);
+    });
+
+    test('can toggle button on card and expands settings', async function () {
+        await focusEditor(page);
+        await insertCard(page, {cardName: 'call-to-action'});
+        expect(await page.isVisible('[data-testid="cta-button"]')).toBe(true);
+        await page.click('[data-testid="button-settings"]');
+        expect(await page.isVisible('[data-testid="cta-button"]')).toBe(false);
 
         await page.click('[data-testid="button-settings"]');
-        // determine if settings are closed by looking for cta-button-color, button-text & button-url
-        expect(await page.isVisible('[data-testid="cta-button-color"]')).toBe(false);
-        expect(await page.isVisible('[data-testid="button-text"]')).toBe(false);
-        expect(await page.isVisible('[data-testid="button-url"]')).toBe(false);
+
+        expect(await page.isVisible('[data-testid="cta-button"]')).toBe(true);
     });
 
     test('can set button text', async function () {
         await focusEditor(page);
         await insertCard(page, {cardName: 'call-to-action'});
-        await page.click('[data-testid="button-settings"]');
         await page.fill('[data-testid="button-text"]', 'Click me');
         expect(await page.textContent('[data-testid="cta-button"]')).toBe('Click me');
     });
@@ -156,7 +150,6 @@ test.describe('Call To Action Card', async () => {
     test('can set button url', async function () {
         await focusEditor(page);
         await insertCard(page, {cardName: 'call-to-action'});
-        await page.click('[data-testid="button-settings"]');
         await page.fill('[data-testid="button-url"]', 'https://example.com/somepost');
         const buttonContainer = await page.$('[data-test-cta-button-current-url]');
         const currentUrl = await buttonContainer.getAttribute('data-test-cta-button-current-url');
@@ -167,7 +160,6 @@ test.describe('Call To Action Card', async () => {
     test('suggested urls display', async function () {
         await focusEditor(page);
         await insertCard(page, {cardName: 'call-to-action'});
-        await page.click('[data-testid="button-settings"]');
 
         const buttonTextInput = await page.getByTestId('button-url');
         await expect(buttonTextInput).toHaveValue('');
@@ -188,7 +180,6 @@ test.describe('Call To Action Card', async () => {
     test('button doesnt disappear when toggled, has text, has url and loses focus', async function () {
         await focusEditor(page);
         await insertCard(page, {cardName: 'call-to-action'});
-        await page.click('[data-testid="button-settings"]');
         await page.fill('[data-testid="button-text"]', 'Click me');
         await page.fill('[data-testid="button-url"]', 'https://example.com/somepost');
         expect(await page.isVisible('[data-testid="cta-button"]')).toBe(true);
@@ -217,16 +208,15 @@ test.describe('Call To Action Card', async () => {
     test('default button colour is accent', async function () {
         await focusEditor(page);
         await insertCard(page, {cardName: 'call-to-action'});
-        await page.click('[data-testid="button-settings"]');
         expect(await page.getAttribute('[data-testid="cta-button"]', 'class')).toContain('bg-accent');
     });
 
     test('can change button colour to black', async function () {
         await focusEditor(page);
         await insertCard(page, {cardName: 'call-to-action'});
-        await page.click('[data-testid="button-settings"]');
         // find the parent element cta-button-color and select child button with title=black
-        await page.click('[data-testid="cta-button-color"] button[title="Black"]');
+        // await page.click('[data-testid="cta-button-color"] button[title="Black"]');
+        await cardBackgroundColorSettings(page, {cardColorPickerTestId: 'cta-button-color', findByColorTitle: 'Black'});
         // check if the button has style="background-color: rgb(0, 0, 0);"
         expect(await page.getAttribute('[data-testid="cta-button"]', 'style')).toContain('background-color: rgb(0, 0, 0);');
     });
@@ -234,9 +224,8 @@ test.describe('Call To Action Card', async () => {
     test('can change button colour to grey', async function () {
         await focusEditor(page);
         await insertCard(page, {cardName: 'call-to-action'});
-        await page.click('[data-testid="button-settings"]');
         // find the parent element cta-button-color and select child button with title=white
-        await page.click('[data-testid="cta-button-color"] button[title="Grey"]');
+        await cardBackgroundColorSettings(page, {cardColorPickerTestId: 'cta-button-color', findByColorTitle: 'Grey'});
         // check if the button has style="background-color: rgb(255, 255, 255);"
         expect(await page.getAttribute('[data-testid="cta-button"]', 'style')).toContain('background-color: rgb(240, 240, 240);');
     });
@@ -244,19 +233,16 @@ test.describe('Call To Action Card', async () => {
     test('can use colour picker to change button colour', async function () {
         await focusEditor(page);
         await insertCard(page, {cardName: 'call-to-action'});
-        await page.click('[data-testid="button-settings"]');
-        await page.click('button[aria-label="Pick color"]');
-        await page.fill('input[aria-label="Color value"]', 'ff0000');
+        await cardBackgroundColorSettings(page, {cardColorPickerTestId: 'cta-button-color', customColor: 'ff0000'});
         expect(await page.getAttribute('[data-testid="cta-button"]', 'style')).toContain('background-color: rgb(255, 0, 0);');
     });
 
     test('button text colour changes with button colour', async function () {
         await focusEditor(page);
         await insertCard(page, {cardName: 'call-to-action'});
-        await page.click('[data-testid="button-settings"]');
         await page.fill('[data-testid="button-text"]', 'Click me');
-        await page.click('button[aria-label="Pick color"]');
-        await page.fill('input[aria-label="Color value"]', 'FFFFFF');
+
+        await cardBackgroundColorSettings(page, {cardColorPickerTestId: 'cta-button-color', customColor: 'FFFFFF'});
         expect(await page.getAttribute('[data-testid="cta-button"]', 'style')).toContain('color: rgb(255, 255, 255);');
 
         // change button colour to black
@@ -326,17 +312,36 @@ test.describe('Call To Action Card', async () => {
             {testId: 'color-picker-green', expectedClass: 'bg-green'},
             {testId: 'color-picker-blue', expectedClass: 'bg-blue'},
             {testId: 'color-picker-yellow', expectedClass: 'bg-yellow'},
-            {testId: 'color-picker-red', expectedClass: 'bg-red'}
+            {testId: 'color-picker-red', expectedClass: 'bg-red'},
+            {testId: 'color-picker-pink', expectedClass: 'bg-pink'},
+            {testId: 'color-picker-purple', expectedClass: 'bg-purple'}
         ];
         await focusEditor(page);
         await insertCard(page, {cardName: 'call-to-action'});
 
         const firstChildSelector = '[data-kg-card="call-to-action"] > :first-child';
-        await expect(page.locator(firstChildSelector)).not.toHaveClass(/bg-(green|blue|yellow|red)/); // shouldn't have any of the classes yet
+        await expect(page.locator(firstChildSelector)).not.toHaveClass(/bg-(green|blue|yellow|red|pink|purple)/); // shouldn't have any of the classes yet
         for (const color of colors) {
-            await page.click(`[data-test-id="${color.testId}"]`);
+            await page.locator('[data-testid="cta-background-color-picker"] button').click();
+            await page.locator(`[data-test-id="${color.testId}"]`).click();
             await expect(page.locator(firstChildSelector)).toHaveClass(new RegExp(color.expectedClass));
         }
+    });
+
+    test('background color popup closes on outside click', async function () {
+        await focusEditor(page);
+        await insertCard(page, {cardName: 'call-to-action'});
+
+        const colorOptions = page.getByTestId('cta-background-color-picker');
+        await colorOptions.getByTestId('color-options-button').click();
+
+        await expect(colorOptions.getByTestId('color-options-popover')).toBeVisible();
+
+        const card = page.locator('[data-kg-card="call-to-action"]');
+        const settings = card.getByTestId('settings-panel');
+        await settings.getByTestId('media-upload-setting').click();
+
+        await expect(colorOptions.getByTestId('color-options-popover')).not.toBeVisible();
     });
 
     test('can add and remove CTA Card image', async function () {
@@ -357,6 +362,23 @@ test.describe('Call To Action Card', async () => {
         await expect(imgElement).toHaveAttribute('src', /blob:/);
         await page.click('[data-testid="media-upload-remove"]');
         await expect(imgLocator).not.toBeVisible();
+    });
+
+    test('can drag and drop image over upload button', async function () {
+        const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.png');
+        await focusEditor(page);
+        await insertCard(page, {cardName: 'call-to-action'});
+
+        // Create and dispatch data transfer
+        const dataTransfer = await createDataTransfer(page, [{filePath, fileName: 'large-image.png', fileType: 'image/png'}]);
+        await page.getByTestId('media-upload-placeholder').dispatchEvent('dragover', {dataTransfer});
+        // Dragover text should be visible
+        // check that "Drop it like it's hot" is visible
+        await expect(await page.locator('[data-kg-card-drag-text="true"]')).toBeVisible();
+
+        await page.getByTestId('media-upload-placeholder').dispatchEvent('drop', {dataTransfer});
+
+        await expect (await page.getByTestId('cta-card-image')).toBeVisible();
     });
 
     test('default layout is minimal', async function () {

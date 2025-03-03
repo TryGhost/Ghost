@@ -507,7 +507,8 @@ test.describe('Gallery card', async () => {
             const fileChooser = await fileChooserPromise;
             await fileChooser.setFiles(filePaths);
 
-            await expect(page.locator('[data-testid="gallery-image"]')).toHaveCount(9);
+            await expect(page.getByTestId('progress-bar')).not.toBeVisible();
+            await expect(page.getByTestId('gallery-image')).toHaveCount(9);
         });
 
         const editorState = await getEditorState(page);

@@ -81,11 +81,11 @@ describe('CallToActionNode', function () {
             callToActionNode.textValue = 'This is a cool advertisement';
             callToActionNode.textValue.should.equal('This is a cool advertisement');
 
-            callToActionNode.showButton.should.equal(false);
-            callToActionNode.showButton = true;
             callToActionNode.showButton.should.equal(true);
+            callToActionNode.showButton = false;
+            callToActionNode.showButton.should.equal(false);
 
-            callToActionNode.buttonText.should.equal('');
+            callToActionNode.buttonText.should.equal('Learn more');
             callToActionNode.buttonText = 'click me';
             callToActionNode.buttonText.should.equal('click me');
 
@@ -97,11 +97,11 @@ describe('CallToActionNode', function () {
             callToActionNode.sponsorLabel = 'This post is brought to you by our sponsors';
             callToActionNode.sponsorLabel.should.equal('This post is brought to you by our sponsors');
 
-            callToActionNode.buttonColor.should.equal('');
-            callToActionNode.buttonColor = 'red';
-            callToActionNode.buttonColor.should.equal('red');
+            callToActionNode.buttonColor.should.equal('#000000');
+            callToActionNode.buttonColor = '#ffffff';
+            callToActionNode.buttonColor.should.equal('#ffffff');
 
-            callToActionNode.buttonTextColor.should.equal('');
+            callToActionNode.buttonTextColor.should.equal('#ffffff');
             callToActionNode.buttonTextColor = 'black';
             callToActionNode.buttonTextColor.should.equal('black');
 
@@ -110,10 +110,10 @@ describe('CallToActionNode', function () {
             callToActionNode.hasSponsorLabel.should.equal(false);
 
             callToActionNode.backgroundColor.should.equal('grey');
-            callToActionNode.backgroundColor = '#654321';
-            callToActionNode.backgroundColor.should.equal('#654321');
+            callToActionNode.backgroundColor = 'red';
+            callToActionNode.backgroundColor.should.equal('red');
 
-            should(callToActionNode.imageUrl).be.null();
+            callToActionNode.imageUrl.should.equal('');
             callToActionNode.imageUrl = 'http://blog.com/image1.jpg';
             callToActionNode.imageUrl.should.equal('http://blog.com/image1.jpg');
 
@@ -259,7 +259,6 @@ describe('CallToActionNode', function () {
                 buttonText: 'Get access now',
                 buttonTextColor: '#000000',
                 buttonUrl: 'http://someblog.com/somepost',
-                hasImage: true,
                 hasSponsorLabel: true,
                 sponsorLabel: '<p><span style="white-space: pre-wrap;">SPONSORED</span></p>',
                 imageUrl: '/content/images/2022/11/koenig-lexical.jpg',
@@ -276,7 +275,7 @@ describe('CallToActionNode', function () {
             html.should.containEql('Get access now');
             html.should.containEql('http://someblog.com/somepost');
             html.should.containEql('<p><span style="white-space: pre-wrap;">SPONSORED</span></p>'); // because hasSponsorLabel is true
-            html.should.containEql('/content/images/size/w64h64/2022/11/koenig-lexical.jpg'); // because hasImage is true
+            html.should.containEql('/content/images/size/w64h64/2022/11/koenig-lexical.jpg');
             html.should.containEql('This is a new CTA Card via email.');
         }));
 
@@ -289,7 +288,6 @@ describe('CallToActionNode', function () {
                 buttonText: 'Get access now',
                 buttonTextColor: '#000000',
                 buttonUrl: 'http://someblog.com/somepost',
-                hasImage: true,
                 hasSponsorLabel: true,
                 sponsorLabel: '<p><span style="white-space: pre-wrap;">SPONSORED</span></p>',
                 imageUrl: '/content/images/2022/11/koenig-lexical.jpg',
@@ -301,7 +299,7 @@ describe('CallToActionNode', function () {
             const {element} = callToActionNode.exportDOM(exportOptions);
 
             const html = element.outerHTML.toString();
-            html.should.containEql('/content/images/size/w256h256/2022/11/koenig-lexical.jpg'); // because hasImage is true
+            html.should.containEql('/content/images/size/w256h256/2022/11/koenig-lexical.jpg');
         }));
 
         it('renders email with img width and height when immersive', editorTest(function () {

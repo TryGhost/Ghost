@@ -43,37 +43,37 @@ export const calloutColorPicker = [
     {
         label: 'Grey',
         name: 'grey',
-        color: 'bg-grey/15 border-black/[0.08] dark:border-white/10'
+        color: 'bg-grey/20 border-black/[0.08] dark:border-white/10'
     },
     {
         label: 'Blue',
         name: 'blue',
-        color: 'bg-blue/15 border-black/[0.08] dark:border-white/10'
+        color: 'bg-blue/20 border-black/[0.08] dark:border-white/10'
     },
     {
         label: 'Green',
         name: 'green',
-        color: 'bg-green/15 border-black/[0.08] dark:border-white/10'
+        color: 'bg-green/20 border-black/[0.08] dark:border-white/10'
     },
     {
         label: 'Yellow',
         name: 'yellow',
-        color: 'bg-yellow/15 border-black/[0.08] dark:border-white/10'
+        color: 'bg-yellow/20 border-black/[0.08] dark:border-white/10'
     },
     {
         label: 'Red',
         name: 'red',
-        color: 'bg-red/15 border-black/[0.08] dark:border-white/10'
+        color: 'bg-red/20 border-black/[0.08] dark:border-white/10'
     },
     {
         label: 'Pink',
         name: 'pink',
-        color: 'bg-pink/15 border-black/[0.08] dark:border-white/10'
+        color: 'bg-pink/20 border-black/[0.08] dark:border-white/10'
     },
     {
         label: 'Purple',
         name: 'purple',
-        color: 'bg-purple/15 border-black/[0.08] dark:border-white/10'
+        color: 'bg-purple/20 border-black/[0.08] dark:border-white/10'
     },
     {
         label: 'Accent',

@@ -981,6 +981,14 @@
     }
 }
 
+.koenig-lexical-cta-label a {
+    @apply !text-grey-900 dark:!text-grey-200 underline;
+}
+
+.koenig-lexical-cta-text a {
+    @apply !text-grey-900 dark:!text-grey-200;
+}
+
 /* stylelint-enable at-rule-disallowed-list */
 
 

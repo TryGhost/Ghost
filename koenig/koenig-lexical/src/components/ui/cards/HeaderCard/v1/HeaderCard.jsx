@@ -178,6 +178,7 @@ export function HeaderCard({isEditing,
                     />
                     <ColorOptionSetting
                         buttons={colorPickerChildren}
+                        dataTestId='header-background-color'
                         label='Style'
                         selectedName={type}
                         onClick={handleColorSelector}

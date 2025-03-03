@@ -8,15 +8,15 @@ export class CallToActionNode extends generateDecoratorNode({
     properties: [
         {name: 'layout', default: 'minimal'},
         {name: 'textValue', default: '', wordCount: true},
-        {name: 'showButton', default: false},
-        {name: 'buttonText', default: ''},
+        {name: 'showButton', default: true},
+        {name: 'buttonText', default: 'Learn more'},
         {name: 'buttonUrl', default: ''},
-        {name: 'buttonColor', default: ''},
-        {name: 'buttonTextColor', default: ''},
+        {name: 'buttonColor', default: '#000000'}, // Where colour is customisable, we should use hex values
+        {name: 'buttonTextColor', default: '#ffffff'},
         {name: 'hasSponsorLabel', default: true},
         {name: 'sponsorLabel', default: '<p><span style="white-space: pre-wrap;">SPONSORED</span></p>'},
-        {name: 'backgroundColor', default: 'grey'},
-        {name: 'imageUrl', default: null},
+        {name: 'backgroundColor', default: 'grey'}, // Since this is one of a few fixed options, we stick to colour names.
+        {name: 'imageUrl', default: ''},
         {name: 'imageWidth', default: null},
         {name: 'imageHeight', default: null}
     ]

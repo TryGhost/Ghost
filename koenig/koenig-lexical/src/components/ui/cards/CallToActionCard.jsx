@@ -7,7 +7,7 @@ import ReplacementStringsPlugin from '../../../plugins/ReplacementStringsPlugin.
 import clsx from 'clsx';
 import defaultTheme from '../../../themes/default.js';
 import {Button} from '../Button.jsx';
-import {ButtonGroupSetting, ColorOptionSetting, ColorPickerSetting, InputSetting, InputUrlSetting, MediaUploadSetting, SettingsPanel, ToggleSetting} from '../SettingsPanel.jsx';
+import {ButtonGroupSettingBeta, ColorOptionSettingBeta, ColorPickerSettingBeta, InputSetting, InputUrlSetting, MediaUploadSettingBeta, SettingsPanel, ToggleSetting} from '../SettingsPanel.jsx';
 import {ReadOnlyOverlay} from '../ReadOnlyOverlay.jsx';
 import {RestrictContentPlugin} from '../../../index.js';
 import {VisibilitySettings} from '../VisibilitySettings.jsx';
@@ -21,7 +21,9 @@ export const CALLTOACTION_COLORS = {
     blue: 'bg-blue/10 border-transparent',
     green: 'bg-green/10 border-transparent',
     yellow: 'bg-yellow/10 border-transparent',
-    red: 'bg-red/10 border-transparent'
+    red: 'bg-red/10 border-transparent',
+    pink: 'bg-pink/10 border-transparent',
+    purple: 'bg-purple/10 border-transparent'
 };
 
 const sponsoredLabelTheme = {
@@ -43,27 +45,37 @@ export const callToActionColorPicker = [
     {
         label: 'Grey',
         name: 'grey',
-        color: 'bg-grey/15 border-black/[.08] dark:border-white/10'
+        color: 'bg-grey/20 border-black/[.08] dark:border-white/10'
     },
     {
         label: 'Blue',
         name: 'blue',
-        color: 'bg-blue/15 border-black/[.08] dark:border-white/10'
+        color: 'bg-blue/20 border-black/[.08] dark:border-white/10'
     },
     {
         label: 'Green',
         name: 'green',
-        color: 'bg-green/15 border-black/[.08] dark:border-white/10'
+        color: 'bg-green/20 border-black/[.08] dark:border-white/10'
     },
     {
         label: 'Yellow',
         name: 'yellow',
-        color: 'bg-yellow/15 border-black/[.08] dark:border-white/10'
+        color: 'bg-yellow/20 border-black/[.08] dark:border-white/10'
     },
     {
         label: 'Red',
         name: 'red',
-        color: 'bg-red/15 border-black/[.08] dark:border-white/10'
+        color: 'bg-red/20 border-black/[.08] dark:border-white/10'
+    },
+    {
+        label: 'Pink',
+        name: 'pink',
+        color: 'bg-pink/20 border-black/[0.08] dark:border-white/10'
+    },
+    {
+        label: 'Purple',
+        name: 'purple',
+        color: 'bg-purple/20 border-black/[0.08] dark:border-white/10'
     }
 ];
 
@@ -93,7 +105,8 @@ export function CallToActionCard({
     updateHasSponsorLabel = () => {},
     updateLayout = () => {},
     updateShowButton = () => {},
-    toggleVisibility = () => {}
+    toggleVisibility = () => {},
+    imageDragHandler = {}
 }) {
     const [buttonColorPickerExpanded, setButtonColorPickerExpanded] = useState(false);
 
@@ -107,13 +120,15 @@ export function CallToActionCard({
             label: 'Minimal',
             name: 'minimal',
             Icon: MinimalLayoutIcon,
-            dataTestId: 'minimal-layout'
+            dataTestId: 'minimal-layout',
+            ariaLabel: 'Left-aligned layout with small, square image'
         },
         {
             label: 'Immersive',
             name: 'immersive',
             Icon: ImmersiveLayoutIcon,
-            dataTestId: 'immersive-layout'
+            dataTestId: 'immersive-layout',
+            ariaLabel: 'Center-aligned layout with full-width image and button'
         }
     ];
 
@@ -123,19 +138,21 @@ export function CallToActionCard({
 
     const designSettings = (
         <>
-            {/* Color picker */}
-            <ColorOptionSetting
-                buttons={callToActionColorPicker}
-                label='Background'
-                selectedName={color}
-                onClick={handleColorChange}
-            />
             {/* Layout settings */}
-            <ButtonGroupSetting
+            <ButtonGroupSettingBeta
                 buttons={layoutOptions}
+                hasTooltip={false}
                 label='Layout'
                 selectedName={layout}
                 onClick={updateLayout}
+            />
+            {/* Color picker */}
+            <ColorOptionSettingBeta
+                buttons={callToActionColorPicker}
+                dataTestId='cta-background-color-picker'
+                label='Background'
+                selectedName={color}
+                onClick={handleColorChange}
             />
             {/* Sponsor label setting */}
             <ToggleSetting
@@ -145,18 +162,23 @@ export function CallToActionCard({
                 onChange={updateHasSponsorLabel}
             />
             {/* Image setting */}
-            <MediaUploadSetting
+            <MediaUploadSettingBeta
                 alt='Image'
                 borderStyle={'rounded'}
+                desc='Upload'
                 icon='file'
+                isDraggedOver={imageDragHandler.isDraggedOver}
+                isLoading={imageDragHandler.isLoading}
                 label='Image'
                 mimeTypes={['image/*']}
+                placeholderRef={imageDragHandler.setRef}
                 setFileInputRef={setFileInputRef}
-                size='xsmall'
                 src={imageSrc}
+                type='button'
                 onFileChange={onFileChange}
                 onRemoveMedia={onRemoveMedia}
             />
+            <hr className="not-kg-prose my-2 block border-t-grey-300 dark:border-t-grey-900" />
             {/* Button settings */}
             <ToggleSetting
                 dataTestId="button-settings"
@@ -166,7 +188,7 @@ export function CallToActionCard({
             />
             {showButton && (
                 <>
-                    <ColorPickerSetting
+                    <ColorPickerSettingBeta
                         dataTestId='cta-button-color'
                         eyedropper={true}
                         isExpanded={buttonColorPickerExpanded}
@@ -237,7 +259,7 @@ export function CallToActionCard({
                             initialTheme={sponsoredLabelTheme}
                             nodes='basic'
                             textClassName={clsx(
-                                'not-kg-prose w-full whitespace-normal font-sans !text-xs font-semibold uppercase leading-8 tracking-normal text-grey-900/40 dark:text-grey-100/40'
+                                'koenig-lexical-cta-label not-kg-prose w-full whitespace-normal font-sans !text-xs font-semibold uppercase leading-8 tracking-normal text-grey-900/50 dark:text-grey-200/40'
                             )}
                             useDefaultClasses={false}
                         >
@@ -264,6 +286,7 @@ export function CallToActionCard({
                                     layout === 'immersive' ? 'h-auto w-full' : 'aspect-square w-16 object-cover',
                                     'rounded-md'
                                 )}
+                                data-testid="cta-card-image"
                                 src={imageSrc}
                             />
                         </div>
@@ -280,7 +303,7 @@ export function CallToActionCard({
                             placeholderClassName={`bg-transparent whitespace-normal font-serif text-xl !text-grey-500 !dark:text-grey-800 ` }
                             placeholderText="Write something worth clicking..."
                             textClassName={clsx(
-                                'w-full whitespace-normal text-pretty bg-transparent font-serif text-xl text-grey-900 dark:text-grey-200',
+                                'koenig-lexical-cta-text w-full whitespace-normal text-pretty bg-transparent font-serif text-xl text-grey-900 dark:text-grey-200',
                                 layout === 'immersive' ? 'text-center' : 'text-left'
                             )}
                         >
@@ -295,8 +318,8 @@ export function CallToActionCard({
                                     dataTestId="cta-button"
                                     placeholder="Add button text"
                                     size={layout === 'immersive' ? 'medium' : 'small'}
-                                    style={buttonColor ? {
-                                        backgroundColor: buttonColor === 'accent' ? 'var(--accent-color)' : buttonColor,
+                                    style={buttonColor !== 'accent' ? {
+                                        backgroundColor: buttonColor,
                                         color: buttonTextColor
                                     } : undefined}
                                     value={buttonText}
@@ -332,7 +355,7 @@ CallToActionCard.propTypes = {
     buttonUrl: PropTypes.string,
     buttonColor: PropTypes.string,
     buttonTextColor: PropTypes.string,
-    color: PropTypes.oneOf(['none', 'grey', 'white', 'blue', 'green', 'yellow', 'red']),
+    color: PropTypes.oneOf(['none', 'grey', 'white', 'blue', 'green', 'yellow', 'red', 'pink', 'purple']),
     hasSponsorLabel: PropTypes.bool,
     imageSrc: PropTypes.string,
     isEditing: PropTypes.bool,
@@ -352,6 +375,8 @@ CallToActionCard.propTypes = {
     onRemoveMedia: PropTypes.func,
     sponsorLabelHtmlEditor: PropTypes.object,
     sponsorLabelHtmlEditorInitialState: PropTypes.object,
-    visibilityOptions: PropTypes.object,
-    toggleVisibility: PropTypes.func
+    visibilityOptions: PropTypes.array,
+    toggleVisibility: PropTypes.func,
+    imageUploadHandler: PropTypes.func,
+    imageDragHandler: PropTypes.object
 };

@@ -3,12 +3,16 @@ import React from 'react';
 import clsx from 'clsx';
 import useSettingsPanelReposition from '../../hooks/useSettingsPanelReposition';
 import {ButtonGroup} from './ButtonGroup';
+import {ButtonGroupBeta} from './ButtonGroupBeta';
 import {ColorIndicator, ColorPicker} from './ColorPicker';
+import {ColorIndicatorBeta} from './ColorPickerBeta';
 import {ColorOptionButtons} from './ColorOptionButtons';
+import {ColorOptionButtonsBeta} from './ColorOptionButtonsBeta.jsx';
 import {Dropdown} from './Dropdown';
 import {Input} from './Input';
 import {InputList, InputListItem} from './InputList.jsx';
 import {MediaUploader} from './MediaUploader';
+import {MediaUploaderBeta} from './MediaUploaderBeta';
 import {MultiSelectDropdown} from './MultiSelectDropdown';
 import {Slider} from './Slider.jsx';
 import {TabView} from './TabView';
@@ -231,6 +235,18 @@ export function ButtonGroupSetting({label, onClick, selectedName, buttons}) {
     );
 }
 
+export function ButtonGroupSettingBeta({label, onClick, selectedName, buttons, hasTooltip}) {
+    return (
+        <div className="flex w-full items-center justify-between text-[1.3rem]">
+            <div className="text-sm font-medium tracking-normal text-grey-900 dark:text-grey-300">{label}</div>
+
+            <div className="shrink-0 pl-2">
+                <ButtonGroupBeta buttons={buttons} hasTooltip={hasTooltip} selectedName={selectedName} onClick={onClick} />
+            </div>
+        </div>
+    );
+}
+
 export function ColorOptionSetting({label, onClick, selectedName, buttons, layout, dataTestId}) {
     return (
         <div className={`flex w-full text-[1.3rem] ${layout === 'stacked' ? 'flex-col' : 'items-center justify-between'}`} data-testid={dataTestId}>
@@ -238,6 +254,18 @@ export function ColorOptionSetting({label, onClick, selectedName, buttons, layou
 
             <div className={`shrink-0 ${layout === 'stacked' ? '-mx-1 pt-[.6rem]' : 'pl-2'}`}>
                 <ColorOptionButtons buttons={buttons} selectedName={selectedName} onClick={onClick} />
+            </div>
+        </div>
+    );
+}
+
+export function ColorOptionSettingBeta({label, onClick, selectedName, buttons, layout, dataTestId}) {
+    return (
+        <div className={`flex w-full text-[1.3rem] ${layout === 'stacked' ? 'flex-col' : 'items-center justify-between'}`} data-testid={dataTestId}>
+            <div className="text-sm font-medium tracking-normal text-grey-900 dark:text-grey-300">{label}</div>
+
+            <div className={`shrink-0 ${layout === 'stacked' ? '-mx-1 pt-[.6rem]' : 'pl-2'}`}>
+                <ColorOptionButtonsBeta buttons={buttons} selectedName={selectedName} onClick={onClick} />
             </div>
         </div>
     );
@@ -286,15 +314,48 @@ export function ColorPickerSetting({label, isExpanded, onSwatchChange, onPickerC
     );
 }
 
-export function MediaUploadSetting({className, label, hideLabel, onFileChange, isDraggedOver, placeholderRef, src, alt, isLoading, errors = [], progress, onRemoveMedia, icon, desc = '', size, stacked, borderStyle, mimeTypes, isPinturaEnabled, openImageEditor, setFileInputRef}) {
+export function ColorPickerSettingBeta({label, isExpanded, onSwatchChange, onPickerChange, onTogglePicker, value, swatches, eyedropper, hasTransparentOption, dataTestId, customToolbarContent, children}) {
+    const markClickedInside = (event) => {
+        event.stopPropagation();
+    };
+
     return (
-        <div className={clsx(className, !stacked && 'flex justify-between')} data-testid="media-upload-setting">
-            <div className={hideLabel ? 'sr-only' : 'mb-2 text-sm font-medium tracking-normal text-grey-900 dark:text-grey-400'}>{label}</div>
+        <div className="flex-col" data-testid={dataTestId} onClick={markClickedInside}>
+            <div className="flex w-full items-center justify-between text-[1.3rem]">
+                <div className="text-sm font-medium tracking-normal text-grey-900 dark:text-grey-300">{label}</div>
+
+                <div className="shrink-0 pl-2">
+                    <ColorIndicatorBeta
+                        eyedropper={eyedropper}
+                        hasTransparentOption={hasTransparentOption}
+                        isExpanded={isExpanded}
+                        swatches={swatches}
+                        value={value}
+                        onChange={onPickerChange}
+                        onSwatchChange={onSwatchChange}
+                        onTogglePicker={onTogglePicker}
+                    >
+                        {children}
+                    </ColorIndicatorBeta>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+export function MediaUploadSetting({className, label, hideLabel, onFileChange, isDraggedOver, placeholderRef, src, alt, isLoading, errors = [], progress, onRemoveMedia, icon, desc, size, type, stacked, borderStyle, mimeTypes, isPinturaEnabled, openImageEditor, setFileInputRef}) {
+    return (
+        <div className={clsx(className, !stacked && 'flex justify-between gap-3')} data-testid="media-upload-setting">
+            <div className={hideLabel ? 'sr-only' : 'mb-2 shrink-0 text-sm font-medium tracking-normal text-grey-900 dark:text-grey-400'}>{label}</div>
 
             <MediaUploader
                 alt={alt}
                 borderStyle={borderStyle}
-                className={clsx(stacked ? 'h-32' : src ? 'h-[5.2rem]' : 'h-[5.2rem] w-[7.2rem]')}
+                className={clsx(
+                    stacked && 'h-32',
+                    !stacked && src && 'h-[5.2rem]',
+                    !stacked && type !== 'button' && !src && 'h-[5.2rem] w-[7.2rem]'
+                )}
                 desc={desc}
                 dragHandler={{isDraggedOver, setRef: placeholderRef}}
                 errors={errors}
@@ -307,6 +368,40 @@ export function MediaUploadSetting({className, label, hideLabel, onFileChange, i
                 setFileInputRef={setFileInputRef}
                 size={size}
                 src={src}
+                type={type}
+                onFileChange={onFileChange}
+                onRemoveMedia={onRemoveMedia}
+            />
+        </div>
+    );
+}
+
+export function MediaUploadSettingBeta({className, label, hideLabel, onFileChange, isDraggedOver, placeholderRef, src, alt, isLoading, errors = [], progress, onRemoveMedia, icon, desc, size, type, stacked, borderStyle, mimeTypes, isPinturaEnabled, openImageEditor, setFileInputRef}) {
+    return (
+        <div className={clsx(className, !stacked && 'flex justify-between gap-3')} data-testid="media-upload-setting">
+            <div className={hideLabel ? 'sr-only' : 'mb-2 shrink-0 text-sm font-medium tracking-normal text-grey-900 dark:text-grey-400'}>{label}</div>
+
+            <MediaUploaderBeta
+                alt={alt}
+                borderStyle={borderStyle}
+                className={clsx(
+                    stacked && 'h-32',
+                    !stacked && src && 'h-[5.2rem]',
+                    !stacked && type !== 'button' && !src && 'h-[5.2rem] w-[7.2rem]'
+                )}
+                desc={desc}
+                dragHandler={{isDraggedOver, setRef: placeholderRef}}
+                errors={errors}
+                icon={icon}
+                isLoading={isLoading}
+                isPinturaEnabled={isPinturaEnabled}
+                mimeTypes={mimeTypes}
+                openImageEditor={openImageEditor}
+                progress={progress}
+                setFileInputRef={setFileInputRef}
+                size={size}
+                src={src}
+                type={type}
                 onFileChange={onFileChange}
                 onRemoveMedia={onRemoveMedia}
             />

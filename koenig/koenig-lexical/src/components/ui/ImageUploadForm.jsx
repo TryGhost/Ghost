@@ -11,6 +11,7 @@ export function ImageUploadForm({onFileChange, fileInputRef, mimeTypes = ['image
                 multiple={multiple}
                 name="image-input"
                 type='file'
+                onClick={e => e.stopPropagation()}
             />
         </form>
     );
