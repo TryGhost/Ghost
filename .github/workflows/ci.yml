@@ -824,6 +824,26 @@ jobs:
           status: ${{ job.status }}
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+  
+  job_tinybird:
+    name: Tinybird Tests
+    runs-on: ubuntu-latest
+    needs: [
+      job_setup
+    ]
+    defaults:
+      run:
+        working-directory: ghost/tinybird-dedicated
+    if: needs.job_setup.outputs.changed_tinybird == 'true'
+    steps:
+      - name: Get User Permission
+        id: checkAccess
+        uses: actions-cool/check-user-permission@v2
+        with:
+          require: write
+          username: ${{ github.triggering_actor }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   job_ghost-cli:
     name: Ghost-CLI tests
