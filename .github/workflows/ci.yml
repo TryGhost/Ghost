@@ -405,6 +405,9 @@ jobs:
           mv hyperfine-v$HYPERFINE_VERSION-x86_64-unknown-linux-gnu/hyperfine /usr/local/bin
           chmod +x /usr/local/bin/hyperfine
 
+      - name: Build TS code
+        run: yarn nx run-many -t build:tsc
+
       - name: Run hyperfine on boot
         working-directory: ghost/core
         run: hyperfine --show-output --warmup 3 'GHOST_CI_SHUTDOWN_AFTER_BOOT=1 node index.js' --export-json boot-perf.json
