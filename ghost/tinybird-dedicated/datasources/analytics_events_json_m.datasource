@@ -1,6 +1,6 @@
 TOKEN "tracker" APPEND
 
-TOKEN "analytics_events_json_xl token" APPEND
+TOKEN "analytics_events_json_m" APPEND
 
 
 SCHEMA >
