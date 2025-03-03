@@ -6,6 +6,7 @@ import getName from '@utils/get-name';
 import getUsername from '@utils/get-username';
 import {Dialog, DialogContent, DialogTrigger, H4, LucideIcon, Skeleton} from '@tryghost/shade';
 import {handleProfileClick} from '@utils/handle-profile-click';
+import {useNavigate} from '@tryghost/admin-x-framework';
 import {useSuggestedProfilesForUser} from '@hooks/use-activity-pub-queries';
 
 const Recommendations: React.FC = () => {
@@ -14,6 +15,7 @@ const Recommendations: React.FC = () => {
     const suggested = suggestedData || Array(3).fill({actor: {}});
     const [isSearchOpen, setIsSearchOpen] = React.useState(false);
     const [searchQuery, setSearchQuery] = React.useState('');
+    const navigate = useNavigate();
 
     return (
         <div className='px-3'>
@@ -33,7 +35,7 @@ const Recommendations: React.FC = () => {
                         <React.Fragment key={actor.id}>
                             <li key={actor.id}>
                                 <ActivityItem
-                                    onClick={() => handleProfileClick(actor)}
+                                    onClick={() => handleProfileClick(actor, navigate)}
                                 >
                                     {!isLoadingSuggested ? <APAvatar author={actor} /> : <Skeleton className='z-10 h-10 w-10' />}
                                     <div className='flex min-w-0  flex-col'>

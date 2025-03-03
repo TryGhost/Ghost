@@ -12,6 +12,7 @@ import getUsername from '../../utils/get-username';
 import stripHtml from '../../utils/strip-html';
 import {handleProfileClick} from '../../utils/handle-profile-click';
 import {renderTimestamp} from '../../utils/render-timestamp';
+import {useNavigate} from '@tryghost/admin-x-framework';
 
 function getAttachment(object: ObjectProperties) {
     let attachment;
@@ -187,6 +188,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
         new Date(object?.published ?? new Date()).toLocaleDateString('default', {year: 'numeric', month: 'short', day: '2-digit'}) + ', ' + new Date(object?.published ?? new Date()).toLocaleTimeString('default', {hour: '2-digit', minute: '2-digit'});
 
     const [, setIsCopied] = useState(false);
+    const navigate = useNavigate();
 
     const contentRef = useRef<HTMLDivElement>(null);
     const [isTruncated, setIsTruncated] = useState(false);
@@ -269,7 +271,9 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                         {(type === 'Announce') && <div className='z-10 mb-2 flex items-center gap-2 text-gray-700 dark:text-gray-600'>
                             <Icon colorClass='text-gray-700 shrink-0 dark:text-gray-600' name='reload' size={'sm'} />
                             <div className='flex min-w-0 items-center gap-1 text-sm'>
-                                <span className='truncate break-all hover:underline' title={getUsername(actor)} onClick={e => handleProfileClick(actor, e)}>{actor.name}</span>
+                                <span className='truncate break-all hover:underline' title={getUsername(actor)}
+                                    onClick={e => handleProfileClick(actor, navigate, e)}
+                                >{actor.name}</span>
                                 reposted
                             </div>
                         </div>}
@@ -279,13 +283,13 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                 <div className='flex min-w-0 flex-col gap-0.5'>
                                     <span className='min-w-0 truncate break-all font-semibold leading-[normal] hover:underline dark:text-white'
                                         data-test-activity-heading
-                                        onClick={e => handleProfileClick(author, e)}
+                                        onClick={e => handleProfileClick(author, navigate, e)}
                                     >
                                         {!isLoading ? author.name : <Skeleton className='w-24' />}
                                     </span>
                                     <div className='flex w-full text-sm text-gray-700 dark:text-gray-600'>
                                         <span className='truncate leading-tight hover:underline'
-                                            onClick={e => handleProfileClick(author, e)}
+                                            onClick={e => handleProfileClick(author, navigate, e)}
                                         >
                                             {!isLoading ? getUsername(author) : <Skeleton className='w-56' />}
                                         </span>
@@ -353,7 +357,9 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                             <div className={`z-10 -my-1 grid grid-cols-[auto_1fr] grid-rows-[auto_1fr] gap-3 pb-3 pt-4`} data-test-activity>
                                 {(type === 'Announce') && <div className='z-10 col-span-2 mb-2 flex items-center gap-2 text-gray-700 dark:text-gray-600'>
                                     <div><Icon colorClass='text-gray-700 shrink-0 dark:text-gray-600' name='reload' size={'sm'}></Icon></div>
-                                    <span className='flex min-w-0 items-center gap-1'><span className='truncate break-all hover:underline' title={getUsername(actor)} onClick={e => handleProfileClick(actor, e)}>{actor.name}</span> reposted</span>
+                                    <span className='flex min-w-0 items-center gap-1'><span className='truncate break-all hover:underline' title={getUsername(actor)}
+                                        onClick={e => handleProfileClick(actor, navigate, e)}
+                                    >{actor.name}</span> reposted</span>
                                 </div>}
                                 {(showHeader) && <><div className='relative z-10 pt-[3px]'>
                                     <APAvatar author={author}/>
@@ -465,10 +471,12 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                         <span className='min-w-0 truncate break-all font-semibold text-gray-900 hover:underline dark:text-gray-600'
                                             title={getUsername(author)}
                                             data-test-activity-heading
-                                            onClick={e => handleProfileClick(author, e)}
+                                            onClick={e => handleProfileClick(author, navigate, e)}
                                         >{author.name}
                                         </span>
-                                        {(type === 'Announce') && <span className='z-10 flex items-center gap-1 text-gray-700 dark:text-gray-600'><Icon colorClass='text-gray-700 shrink-0 dark:text-gray-600' name='reload' size={'sm'}></Icon><span className='hover:underline' title={getUsername(actor)} onClick={e => handleProfileClick(actor, e)}>{actor.name}</span> reposted</span>}
+                                        {(type === 'Announce') && <span className='z-10 flex items-center gap-1 text-gray-700 dark:text-gray-600'><Icon colorClass='text-gray-700 shrink-0 dark:text-gray-600' name='reload' size={'sm'}></Icon><span className='hover:underline' title={getUsername(actor)}
+                                            onClick={e => handleProfileClick(actor, navigate, e)}
+                                        >{actor.name}</span> reposted</span>}
                                         <span className='shrink-0 whitespace-nowrap text-gray-600 before:mr-1 before:content-["·"]' title={`${timestamp}`}>{renderTimestamp(object)}</span>
                                     </> :
                                     <Skeleton className='w-24' />

@@ -35,5 +35,10 @@ export const routes: CustomRouteObject[] = [
         path: 'profile',
         Component: Profile,
         pageTitle: 'Profile'
+    },
+    {
+        path: 'profile/:handle',
+        Component: Profile,
+        pageTitle: 'Profile'
     }
 ];

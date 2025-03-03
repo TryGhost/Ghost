@@ -17,6 +17,7 @@ import getName from '../../utils/get-name';
 import getUsername from '../../utils/get-username';
 import {handleProfileClick} from '../../utils/handle-profile-click';
 import {handleViewContent} from '../../utils/content-handlers';
+import {useNavigate} from '@tryghost/admin-x-framework';
 
 const noop = () => {};
 
@@ -72,6 +73,8 @@ const ActorList: React.FC<ActorListProps> = ({
         };
     }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
+    const navigate = useNavigate();
+
     return (
         <div>
             {
@@ -85,7 +88,7 @@ const ActorList: React.FC<ActorListProps> = ({
                             return (
                                 <React.Fragment key={actor.id}>
                                     <ActivityItem key={actor.id}
-                                        onClick={() => handleProfileClick(actor)}
+                                        onClick={() => handleProfileClick(actor, navigate)}
                                     >
                                         <APAvatar author={actor} />
                                         <div>

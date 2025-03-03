@@ -8,6 +8,7 @@ import {H4, LucideIcon, Skeleton} from '@tryghost/shade';
 import {LoadingIndicator, NoValueLabel, TextField} from '@tryghost/admin-x-design-system';
 import {type Profile} from '../../api/activitypub';
 import {useDebounce} from 'use-debounce';
+import {useNavigate} from '@tryghost/admin-x-framework';
 import {useSearchForUser, useSuggestedProfilesForUser} from '@hooks/use-activity-pub-queries';
 
 interface AccountSearchResult {
@@ -121,12 +122,14 @@ const SuggestedProfile: React.FC<SuggestedProfileProps & {
         });
     };
 
+    const navigate = useNavigate();
+
     return (
         <ActivityItem
             key={profile.actor.id}
             onClick={() => {
                 onOpenChange?.(false);
-                NiceModal.show(ViewProfileModal, {handle: profile.handle, onFollow, onUnfollow});
+                navigate(`/profile/${profile.handle}`);
             }}
         >
             <APAvatar author={profile.actor} onClick={() => onOpenChange?.(false)} />

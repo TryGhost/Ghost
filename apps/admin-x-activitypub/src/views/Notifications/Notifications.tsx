@@ -21,6 +21,7 @@ import {
 } from '@hooks/use-activity-pub-queries';
 import {type NotificationType} from '@components/activities/NotificationIcon';
 import {handleProfileClick} from '@utils/handle-profile-click';
+import {useNavigate} from '@tryghost/admin-x-framework';
 
 interface NotificationsProps {}
 
@@ -109,19 +110,20 @@ const NotificationGroupDescription: React.FC<NotificationGroupDescriptionProps> 
     const hasOthers = otherActors.length > 0;
 
     const actorClass = 'cursor-pointer font-semibold hover:underline';
+    const navigate = useNavigate();
 
     const actorText = (
         <>
             <span
                 className={actorClass}
-                onClick={e => handleProfileClick(firstActor, e)}
+                onClick={e => handleProfileClick(firstActor, navigate, e)}
             >{firstActor.name}</span>
             {secondActor && (
                 <>
                     {hasOthers ? ', ' : ' and '}
                     <span
                         className={actorClass}
-                        onClick={e => handleProfileClick(secondActor, e)}
+                        onClick={e => handleProfileClick(secondActor, navigate, e)}
                     >{secondActor.name}</span>
                 </>
             )}
@@ -282,6 +284,8 @@ const Notifications: React.FC<NotificationsProps> = () => {
         };
     }, [isLoading]);
 
+    const navigate = useNavigate();
+
     const handleActivityClick = (group: GroupedActivity, index: number) => {
         switch (group.type) {
         case ACTIVITY_TYPE.CREATE:
@@ -305,7 +309,7 @@ const Notifications: React.FC<NotificationsProps> = () => {
             if (group.actors.length > 1) {
                 toggleOpen(group.id || `${group.type}_${index}`);
             } else {
-                handleProfileClick(group.actors[0]);
+                handleProfileClick(group.actors[0], navigate);
             }
             break;
         case ACTIVITY_TYPE.REPOST:
@@ -388,7 +392,7 @@ const Notifications: React.FC<NotificationsProps> = () => {
                                                                     <div
                                                                         key={actor.id}
                                                                         className='flex items-center hover:opacity-80'
-                                                                        onClick={e => handleProfileClick(actor, e)}
+                                                                        onClick={e => handleProfileClick(actor, navigate, e)}
                                                                     >
                                                                         <APAvatar author={actor} size='xs' />
                                                                         <span className='ml-2 text-base font-semibold dark:text-white'>{actor.name}</span>
