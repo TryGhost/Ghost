@@ -3,7 +3,7 @@
 
 .gh-publish-trigger,
 .gh-unpublish-trigger {
-    height: max-content;
+    height: 34px;
     cursor: pointer;
 }
 
@@ -220,7 +220,7 @@
     justify-content: space-between;
     height: 34px;
     padding: 0;
-    margin: 30px;
+    margin: 1.2rem 2rem;
     z-index: 799;
 }
 
@@ -242,6 +242,12 @@
     .gh-publish-header .mobile {
         margin-left: 5px;
     }
+}
+
+.gh-publish-header .gh-btn-group-right {
+    display: flex;
+    align-items: center;
+    gap: .8rem;
 }
 
 .gh-publish-back-button {
