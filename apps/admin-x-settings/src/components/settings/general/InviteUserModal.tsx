@@ -163,12 +163,12 @@ const InviteUserModal = NiceModal.create(() => {
             value: 'author'
         },
         {
-            hint: 'Can invite and manage other Authors and Contributors, as well as edit and publish any posts on the site.',
+            hint: 'Can invite and manage other Authors and Contributors, manage members, and edit and publish any posts on the site.',
             label: 'Editor',
             value: 'editor'
         },
         {
-            hint: 'Trusted staff user who should be able to manage all content and users, as well as site settings and options.',
+            hint: 'Trusted staff user who should be able to manage all content, users, and members as well as site settings and options.',
             label: 'Administrator',
             value: 'administrator'
         }
