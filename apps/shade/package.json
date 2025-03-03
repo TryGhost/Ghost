@@ -92,7 +92,7 @@
         "react-select": "5.8.2",
         "recharts": "2.15.1",
         "tailwind-merge": "2.6.0",
-        "tailwindcss": "3.4.14",
+        "tailwindcss": "3.4.17",
         "tailwindcss-animate": "1.0.7"
     },
     "peerDependencies": {
