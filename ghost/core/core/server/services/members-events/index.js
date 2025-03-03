@@ -13,7 +13,9 @@ class MembersEventsServiceWrapper {
         }
 
         // Wire up all the dependencies
-        const {EventStorage, LastSeenAtUpdater, LastSeenAtCache} = require('@tryghost/members-events-service');
+        const EventStorage = require('./EventStorage');
+        const LastSeenAtUpdater = require('./LastSeenAtUpdater');
+        const LastSeenAtCache = require('./LastSeenAtCache');
         const models = require('../../models');
 
         // Listen for events and store them in the database

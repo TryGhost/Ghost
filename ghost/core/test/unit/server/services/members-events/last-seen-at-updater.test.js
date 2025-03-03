@@ -1,6 +1,7 @@
+const should = require('should');
 const assert = require('assert/strict');
 const sinon = require('sinon');
-const {LastSeenAtUpdater} = require('../');
+const LastSeenAtUpdater = require('../../../../../core/server/services/members-events/LastSeenAtUpdater');
 const DomainEvents = require('@tryghost/domain-events');
 const {MemberPageViewEvent, MemberCommentEvent, MemberSubscribeEvent, MemberLinkClickEvent} = require('@tryghost/member-events');
 const moment = require('moment');
