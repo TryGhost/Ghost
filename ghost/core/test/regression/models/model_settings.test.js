@@ -8,7 +8,6 @@ const models = require('../../../core/server/models');
 const SETTINGS_LENGTH = 94;
 
 describe('Settings Model', function () {
-    before(models.init);
     afterEach(testUtils.teardownDb);
 
     describe('defaults', function () {

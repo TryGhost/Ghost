@@ -14,10 +14,6 @@ describe('Members Service Middleware', function () {
         let res;
         let next;
 
-        before(function () {
-            models.init();
-        });
-
         beforeEach(function () {
             req = {};
             res = {};
@@ -197,10 +193,6 @@ describe('Members Service Middleware', function () {
         // let oldMembersService;
         let req;
         let res;
-
-        before(function () {
-            models.init();
-        });
 
         beforeEach(function () {
             req = {body: {newsletters: [], enable_comment_notifications: null}};
