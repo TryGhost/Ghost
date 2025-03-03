@@ -387,7 +387,15 @@ describe('sendMagicLink', function () {
                     email: 'hello@blocked-domain-setting.com',
                     identity: '12345678'
                 })
-                .expectStatus(400); // blocked emails return 400
+                .expectStatus(400)
+                .matchBodySnapshot({
+                    errors: [{
+                        id: anyErrorId,
+                        // Add this here because it is easy to be overlooked (we need a human readable error!)
+                        // 'Please sign up first' should be included only when invite only is disabled.
+                        message: 'Memberships from this email domain are currently restricted.'
+                    }]
+                });
         });
     });
 });
