@@ -17,6 +17,7 @@ type AppProps = {
 };
 
 const App: React.FC<AppProps> = ({scriptTag}) => {
+    const ALLOWED_MODERATORS = ['Owner', 'Administrator', 'Editor'];
     const options = useOptions(scriptTag);
     const [state, setFullState] = useState<EditableAppContext>({
         initStatus: 'running',
@@ -112,6 +113,11 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
             let admin = null;
             try {
                 admin = await adminApi.getUser();
+                // unset admin for non-moderator roles. 
+                console.log(admin.roles.some(role => ALLOWED_MODERATORS.includes(role.name)))
+                if (!admin || !(admin.roles.some(role => ALLOWED_MODERATORS.includes(role.name)))) {
+                    admin = null;
+                }
                 if (admin) {
                     // this is a bit of a hack, but we need to fetch the comments fully populated if the user is an admin
                     const adminComments = await adminApi.browse({page: 1, postId: options.postId, order: state.order, memberUuid: state.member?.uuid});
