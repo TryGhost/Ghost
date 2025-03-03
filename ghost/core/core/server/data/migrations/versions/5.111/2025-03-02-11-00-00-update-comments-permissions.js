@@ -1,4 +1,4 @@
-const {addPermissionToRole, combineTransactionalMigrations, addPermission} = require('../../utils');
+const {addPermissionToRole, combineTransactionalMigrations} = require('../../utils');
 module.exports = combineTransactionalMigrations(
     addPermissionToRole({
         permission: 'Moderate comments',
@@ -35,5 +35,5 @@ module.exports = combineTransactionalMigrations(
     addPermissionToRole({
         permission: 'Report comments',
         role: 'Editor'
-    }),
+    })
 );
