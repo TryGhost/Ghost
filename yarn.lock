@@ -8445,6 +8445,11 @@
   dependencies:
     "@babel/types" "^7.20.7"
 
+"@types/bluebird@*":
+  version "3.5.42"
+  resolved "https://registry.yarnpkg.com/@types/bluebird/-/bluebird-3.5.42.tgz#7ec05f1ce9986d920313c1377a5662b1b563d366"
+  integrity sha512-Jhy+MWRlro6UjVi578V/4ZGNfeCOcNCp0YaFNIUGFKlImowqwb1O/22wDVk3FDGMLqxdpOV3qQHD5fPEH4hK6A==
+
 "@types/body-parser@*":
   version "1.19.2"
   resolved "https://registry.yarnpkg.com/@types/body-parser/-/body-parser-1.19.2.tgz#aea2059e28b7658639081347ac4fab3de166e6f0"
@@ -8452,6 +8457,16 @@
   dependencies:
     "@types/connect" "*"
     "@types/node" "*"
+
+"@types/bookshelf@1.2.9":
+  version "1.2.9"
+  resolved "https://registry.yarnpkg.com/@types/bookshelf/-/bookshelf-1.2.9.tgz#e07356350e9f11faab021f23e59d390d9478b643"
+  integrity sha512-WP1mPCN7pd0DaPYhsy9tgkR5HhZz9Zu1s2/DipNWwC5IfAEQjiEtH+l4PrgvtcTNS1xbUPn4+vfytjJvsZ2+CQ==
+  dependencies:
+    "@types/bluebird" "*"
+    "@types/create-error" "*"
+    "@types/lodash" "*"
+    knex "^0.21.12"
 
 "@types/broccoli-plugin@^1.3.0":
   version "1.3.0"
@@ -8547,6 +8562,11 @@
   version "2.8.12"
   resolved "https://registry.yarnpkg.com/@types/cors/-/cors-2.8.12.tgz#6b2c510a7ad7039e98e7b8d3d6598f4359e5c080"
   integrity sha512-vt+kDhq/M2ayberEtJcIN/hxXy1Pk+59g2FV/ZQceeaTyCtCucjL2Q7FXlFjtWn4n15KCr1NE2lNNFhp0lEThw==
+
+"@types/create-error@*":
+  version "0.3.33"
+  resolved "https://registry.yarnpkg.com/@types/create-error/-/create-error-0.3.33.tgz#5ddf7b183b18a65a8c70e3fb36665cdd5c22612c"
+  integrity sha512-KJW8os1BxoiY9MtyAS0NqSiH4eGDpCC0N/7tQZy3XN3l4YbLnpfFf91jnfW3HXFoyWyPQBTZ4FJICMIFBJ0tKA==
 
 "@types/cross-spawn@^6.0.2":
   version "6.0.2"
@@ -13487,6 +13507,11 @@ colorette@1.1.0:
   resolved "https://registry.yarnpkg.com/colorette/-/colorette-1.1.0.tgz#1f943e5a357fac10b4e0f5aaef3b14cdc1af6ec7"
   integrity sha512-6S062WDQUXi6hOfkO/sBPVwE5ASXY4G2+b4atvhJfSsuUUhIaUKlkjLe9692Ipyt5/a+IPF5aVTu3V5gvXq5cg==
 
+colorette@1.2.1:
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/colorette/-/colorette-1.2.1.tgz#4d0b921325c14faf92633086a536db6e89564b1b"
+  integrity sha512-puCDz0CzydiSYOrnXpz/PKd69zRrribezjtE9yd4zvytoRc8+RY/KJPvtPFKZS3E3wP6neGyMe0vOTlHO5L3Pw==
+
 colorette@2.0.19:
   version "2.0.19"
   resolved "https://registry.yarnpkg.com/colorette/-/colorette-2.0.19.tgz#cdf044f47ad41a0f4b56b3a0d5b4e6e1a2d5a798"
@@ -13564,7 +13589,7 @@ commander@^4.0.0, commander@^4.1.1:
   resolved "https://registry.yarnpkg.com/commander/-/commander-4.1.1.tgz#9fd602bd936294e9e9ef46a3f4d6964044b18068"
   integrity sha512-NOKm8xhkzAjzFx8B2v5OAHT+u5pRQc2UCa2Vq9jYL/31o2wi9mxBA7LIFs3sV5VSC49z6pEhfbMULvShKj26WA==
 
-commander@^6.1.0, commander@^6.2.1:
+commander@^6.1.0, commander@^6.2.0, commander@^6.2.1:
   version "6.2.1"
   resolved "https://registry.yarnpkg.com/commander/-/commander-6.2.1.tgz#0792eb682dfbc325999bb2b84fddddba110ac73c"
   integrity sha512-U7VdrJFnJgo4xjrHpTzu0yrHPGImdsmD95ZlgYSEajAn2JKzDhDTPG9kBTefmObL2w/ngeZnilk+OV9CG3d7UA==
@@ -14610,6 +14635,13 @@ debug@4.1.1:
   integrity sha512-pYAIzeRo8J6KPEaJ0VWOh5Pzkbw/RetuzehGM7QRRX5he4fPHx2rdKMB256ehJCkX+XRQm16eZLqLNS8RSZXZw==
   dependencies:
     ms "^2.1.1"
+
+debug@4.3.1:
+  version "4.3.1"
+  resolved "https://registry.yarnpkg.com/debug/-/debug-4.3.1.tgz#f0d229c505e0c6d8c49ac553d1b13dc183f6b2ee"
+  integrity sha512-doEwdvm4PCeK4K3RQN2ZC2BYUBaxwLARCqZmMjtF8a51J2Rb0xpVloFRnCODwqjpwnAoao4pelN8l3RJdv3gRQ==
+  dependencies:
+    ms "2.1.2"
 
 debug@4.3.4:
   version "4.3.4"
@@ -22407,6 +22439,24 @@ knex@^0.20:
     uuid "^7.0.1"
     v8flags "^3.1.3"
 
+knex@^0.21.12:
+  version "0.21.21"
+  resolved "https://registry.yarnpkg.com/knex/-/knex-0.21.21.tgz#b1335c75afd15ff83371b096e9cc4c4eafab8c05"
+  integrity sha512-cjw5qO1EzVKjbywcVa61IQJMLt7PfYBRI/2NwCA/B9beXgbw652wDNLz+JM+UKKNsfwprq0ugYqBYc9q4JN36A==
+  dependencies:
+    colorette "1.2.1"
+    commander "^6.2.0"
+    debug "4.3.1"
+    esm "^3.2.25"
+    getopts "2.2.5"
+    interpret "^2.2.0"
+    liftoff "3.1.0"
+    lodash "^4.17.20"
+    pg-connection-string "2.4.0"
+    tarn "^3.0.1"
+    tildify "2.0.0"
+    v8flags "^3.2.0"
+
 known-css-properties@^0.28.0:
   version "0.28.0"
   resolved "https://registry.yarnpkg.com/known-css-properties/-/known-css-properties-0.28.0.tgz#8a8be010f368b3036fe6ab0ef4bbbed972bd6274"
@@ -25978,6 +26028,11 @@ pg-connection-string@2.1.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/pg-connection-string/-/pg-connection-string-2.1.0.tgz#e07258f280476540b24818ebb5dca29e101ca502"
   integrity sha512-bhlV7Eq09JrRIvo1eKngpwuqKtJnNhZdpdOlvrPrA4dxqXPjxSrbNrfnIDmTpwMyRszrcV4kU5ZA4mMsQUrjdg==
+
+pg-connection-string@2.4.0:
+  version "2.4.0"
+  resolved "https://registry.yarnpkg.com/pg-connection-string/-/pg-connection-string-2.4.0.tgz#c979922eb47832999a204da5dbe1ebf2341b6a10"
+  integrity sha512-3iBXuv7XKvxeMrIgym7njT+HlZkwZqqGX4Bu9cci8xHZNT+Um1gWKqCsAzcC0d95rcKMU5WBg6YRUcHyV0HZKQ==
 
 pg-connection-string@2.5.0:
   version "2.5.0"
@@ -30745,7 +30800,7 @@ tarn@^2.0.0:
   resolved "https://registry.yarnpkg.com/tarn/-/tarn-2.0.0.tgz#c68499f69881f99ae955b4317ca7d212d942fdee"
   integrity sha512-7rNMCZd3s9bhQh47ksAQd92ADFcJUjjbyOvyFjNLwTPpGieFHMC84S+LOzw0fx1uh6hnDz/19r8CPMnIjJlMMA==
 
-tarn@^3.0.2:
+tarn@^3.0.1, tarn@^3.0.2:
   version "3.0.2"
   resolved "https://registry.yarnpkg.com/tarn/-/tarn-3.0.2.tgz#73b6140fbb881b71559c4f8bfde3d9a4b3d27693"
   integrity sha512-51LAVKUSZSVfI05vjPESNc5vwqqZpbXCsU+/+wxlOrUjk2SnFTt97v9ZgQrD4YmxYW1Px6w2KjaDitCfkvgxMQ==
@@ -32041,7 +32096,7 @@ v8-to-istanbul@^9.0.0, v8-to-istanbul@^9.0.1, v8-to-istanbul@^9.1.0:
     "@types/istanbul-lib-coverage" "^2.0.1"
     convert-source-map "^2.0.0"
 
-v8flags@^3.1.3:
+v8flags@^3.1.3, v8flags@^3.2.0:
   version "3.2.0"
   resolved "https://registry.yarnpkg.com/v8flags/-/v8flags-3.2.0.tgz#b243e3b4dfd731fa774e7492128109a0fe66d656"
   integrity sha512-mH8etigqMfiGWdeXpaaqGfs6BndypxusHHcv2qSHyZkGEznCd/qAXCWWRzeowtL54147cktFOC4P5y+kl8d8Jg==
