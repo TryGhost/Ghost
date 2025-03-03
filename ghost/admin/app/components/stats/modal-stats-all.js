@@ -81,19 +81,19 @@ export default class AllStatsModal extends Component {
         let unknownOption = 'Unknown';
         switch (type) {
         case 'top-sources':
-            endpoint = `${this.config.stats.endpoint}/v0/pipes/top_sources__v${TB_VERSION}.json`;
+            endpoint = `${this.config.stats.endpoint}/v0/pipes/_top_sources__v${TB_VERSION}.json`;
             labelText = 'Source';
             indexBy = 'source';
             unknownOption = 'Direct';
             break;
         case 'top-locations':
-            endpoint = `${this.config.stats.endpoint}/v0/pipes/top_locations__v${TB_VERSION}.json`;
+            endpoint = `${this.config.stats.endpoint}/v0/pipes/_top_locations__v${TB_VERSION}.json`;
             labelText = 'Country';
             indexBy = 'location';
             unknownOption = 'Unknown';
             break;
         default:
-            endpoint = `${this.config.stats.endpoint}/v0/pipes/top_pages__v${TB_VERSION}.json`;
+            endpoint = `${this.config.stats.endpoint}/v0/pipes/_top_pages__v${TB_VERSION}.json`;
             labelText = 'Post or page';
             indexBy = 'pathname';
             break;
