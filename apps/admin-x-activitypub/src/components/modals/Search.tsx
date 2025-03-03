@@ -129,7 +129,7 @@ const SuggestedProfile: React.FC<SuggestedProfileProps & {
                 NiceModal.show(ViewProfileModal, {handle: profile.handle, onFollow, onUnfollow});
             }}
         >
-            <APAvatar author={profile.actor}/>
+            <APAvatar author={profile.actor} onClick={() => onOpenChange?.(false)} />
             <div className='flex grow flex-col'>
                 <span className='font-semibold text-black dark:text-white'>{!isLoading ? profile.actor.name : <Skeleton className='w-full max-w-64' />}</span>
                 <span className='text-sm text-gray-700 dark:text-gray-600'>{!isLoading ? profile.handle : <Skeleton className='w-24' />}</span>
