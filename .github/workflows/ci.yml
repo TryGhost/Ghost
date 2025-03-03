@@ -837,13 +837,57 @@ jobs:
     if: needs.job_setup.outputs.changed_tinybird == 'true'
     steps:
       - name: Get User Permission
-        id: checkAccess
+        id: get-user-permission
         uses: actions-cool/check-user-permission@v2
         with:
           require: write
           username: ${{ github.triggering_actor }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Check User Permission
+        id: check-user-permission
+        if: steps.get-user-permission.outputs.require-result == 'false'
+        run: |
+          echo "${{ github.triggering_actor }} does not have permissions on this repo."
+          echo "Current permission level is ${{ steps.get-user-permission.outputs.user-permission }}"
+          echo "Job originally triggered by ${{ github.actor }}"
+          exit 1
+      - name: Checkout current commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 2
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.11
+          architecture: "x64"
+          cache: "pip"
+      - name: Check Secret
+        run: |
+          if [[ -z "${{ secrets.TEST_SECRET }}" ]]; then
+            echo "No access to secrets"
+            exit 1
+          else
+            echo "Access to secrets"
+          fi
+      - name: Set environment variables
+        run: |
+          _ENV_FLAGS="${ENV_FLAGS:=--last-partition --wait}"
+          _NORMALIZED_BRANCH_NAME=$(echo $DATA_PROJECT_DIR | rev | cut -d "/" -f 1 | rev | tr '.-' '_')
+          GIT_BRANCH=${GITHUB_HEAD_REF}
+          echo "GIT_BRANCH=$GIT_BRANCH" >> $GITHUB_ENV
+          echo "_ENV_FLAGS=$_ENV_FLAGS" >> $GITHUB_ENV
+          echo "_NORMALIZED_BRANCH_NAME=$_NORMALIZED_BRANCH_NAME" >> $GITHUB_ENV
+      - name: Install Tinybird CLI
+        run: |
+          if [ -f "requirements.txt" ]; then
+            pip install -r requirements.txt
+          else
+            pip install tinybird-cli
+          fi
+      - name: Tinybird CLI Version
+        run: tb --version
+          
 
   job_ghost-cli:
     name: Ghost-CLI tests
