@@ -379,7 +379,7 @@ describe('sendMagicLink', function () {
 
         it('blocks changing email to a blocked domain', async function () {
             settingsCache.set('all_blocked_email_domains', {value: ['blocked-domain-setting.com']});
-            const email = 'hello@cool-domain-setting.com';
+            const email = 'hello@original-domain.com';
             await membersService.api.members.create({email, name: 'Member Test'});
 
             await membersAgent.post('/api/member/email/')
@@ -396,6 +396,21 @@ describe('sendMagicLink', function () {
                         message: 'Memberships from this email domain are currently restricted.'
                     }]
                 });
+        });
+
+        it('allows changing email to a non-blocked domain', async function () {
+            settingsCache.set('all_blocked_email_domains', {value: ['blocked-domain-setting.com']});
+
+            const email = 'hello@original-domain-1.com';
+            const member = await membersService.api.members.create({email, name: 'Member Test'});
+            const token = await membersService.api.getMemberIdentityToken(member.get('transient_id'));
+
+            await membersAgent.post('/api/member/email/')
+                .body({
+                    email: 'hello@allowed-domain-setting.com',
+                    identity: token
+                })
+                .expectStatus(201);
         });
     });
 });
