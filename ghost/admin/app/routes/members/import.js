@@ -1,6 +1,4 @@
-//import MembersRoute from 'ghost-admin/routes/members';
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
-
 
 export default class MembersImportRoute extends AuthenticatedRoute {
     beforeModel() {
