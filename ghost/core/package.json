@@ -126,7 +126,6 @@
     "@tryghost/members-offers": "0.0.0",
     "@tryghost/members-ssr": "0.0.0",
     "@tryghost/members-stripe-service": "0.0.0",
-    "@tryghost/mentions-email-report": "0.0.0",
     "@tryghost/metrics": "1.0.37",
     "@tryghost/milestones": "0.0.0",
     "@tryghost/minifier": "0.0.0",
