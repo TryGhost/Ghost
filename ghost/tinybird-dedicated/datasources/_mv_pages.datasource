@@ -10,7 +10,7 @@ SCHEMA >
     `location` String,
     `source` String,
     `pathname` String,
-    `member_status` SimpleAggregateFunction(any, String),
+    `member_status` AggregateFunction(any, String),
     `visits` AggregateFunction(uniq, String),
     `pageviews` AggregateFunction(count)
 
