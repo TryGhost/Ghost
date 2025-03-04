@@ -8851,11 +8851,6 @@
   resolved "https://registry.yarnpkg.com/@types/lodash/-/lodash-4.17.7.tgz#2f776bcb53adc9e13b2c0dfd493dfcbd7de43612"
   integrity sha512-8wTvZawATi/lsmNu10/j2hk1KEP0IvjubqPE3cu1Xz7xfXXt5oCq3SNUz4fMIP4XGF9Ky+Ue2tBA3hcS7LSBlA==
 
-"@types/luxon@3.4.2":
-  version "3.4.2"
-  resolved "https://registry.yarnpkg.com/@types/luxon/-/luxon-3.4.2.tgz#e4fc7214a420173cea47739c33cdf10874694db7"
-  integrity sha512-TifLZlFudklWlMBfhubvgqTXRzLDI5pCbGa4P8a3wPyUQSW+1xQ5eDsreP9DWHX3tjq1ke96uYG/nwundroWcA==
-
 "@types/mdx@^2.0.0":
   version "2.0.5"
   resolved "https://registry.yarnpkg.com/@types/mdx/-/mdx-2.0.5.tgz#9a85a8f70c7c4d9e695a21d5ae5c93645eda64b1"
@@ -9059,13 +9054,6 @@
   dependencies:
     "@types/mime" "*"
     "@types/node" "*"
-
-"@types/sinon@10.0.16":
-  version "10.0.16"
-  resolved "https://registry.yarnpkg.com/@types/sinon/-/sinon-10.0.16.tgz#4bf10313bd9aa8eef1e50ec9f4decd3dd455b4d3"
-  integrity sha512-j2Du5SYpXZjJVJtXBokASpPRj+e2z+VUhCPHmM6WMfe3dpHu6iVKJMU6AiBcMp/XTAYnEj6Wc1trJUWwZ0QaAQ==
-  dependencies:
-    "@types/sinonjs__fake-timers" "*"
 
 "@types/sinon@^17.0.3":
   version "17.0.3"
@@ -24454,7 +24442,7 @@ moment-timezone@0.5.45, moment-timezone@^0.5.23, moment-timezone@^0.5.31, moment
   dependencies:
     moment "^2.29.4"
 
-moment@2.24.0, moment@2.27.0, moment@2.29.1, moment@2.29.3, moment@2.29.4, moment@2.30.1, moment@^2.10.2, moment@^2.18.1, moment@^2.19.3, moment@^2.27.0, moment@^2.29.4:
+moment@2.24.0, moment@2.27.0, moment@2.29.1, moment@2.29.4, moment@2.30.1, moment@^2.10.2, moment@^2.18.1, moment@^2.19.3, moment@^2.27.0, moment@^2.29.4:
   version "2.24.0"
   resolved "https://registry.yarnpkg.com/moment/-/moment-2.24.0.tgz#0d055d53f5052aa653c9f6eb68bb5d12bf5c2b5b"
   integrity sha512-bV7f+6l2QigeBBZSM/6yTNq4P2fNpSWj/0e7jQcy87A8e7o2nAfP/34/2ky5Vw4B9S446EtIhodAzkFCcR4dQg==

@@ -104,7 +104,6 @@ services:
       - node_modules_ghost_session-service:/home/ghost/ghost/session-service/node_modules:delegated
       - node_modules_ghost_settings-path-manager:/home/ghost/ghost/settings-path-manager/node_modules:delegated
       - node_modules_ghost_slack-notifications:/home/ghost/ghost/slack-notifications/node_modules:delegated
-      - node_modules_ghost_stats-service:/home/ghost/ghost/stats-service/node_modules:delegated
       - node_modules_ghost_stripe:/home/ghost/ghost/stripe/node_modules:delegated
       - node_modules_ghost_tiers:/home/ghost/ghost/tiers/node_modules:delegated
       - node_modules_ghost_version-notifications-data-service:/home/ghost/ghost/version-notifications-data-service/node_modules:delegated
@@ -274,7 +273,6 @@ volumes:
   node_modules_ghost_session-service: {}
   node_modules_ghost_settings-path-manager: {}
   node_modules_ghost_slack-notifications: {}
-  node_modules_ghost_stats-service: {}
   node_modules_ghost_stripe: {}
   node_modules_ghost_tiers: {}
   node_modules_ghost_version-notifications-data-service: {}

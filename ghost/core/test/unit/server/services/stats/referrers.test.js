@@ -1,6 +1,6 @@
 const knex = require('knex').default;
 const assert = require('assert/strict');
-const ReferrersStatsService = require('../../lib/ReferrersStatsService');
+const ReferrersStatsService = require('../../../../../core/server/services/stats/ReferrersStatsService');
 const {DateTime} = require('luxon');
 
 describe('ReferrersStatsService', function () {
@@ -40,7 +40,7 @@ describe('ReferrersStatsService', function () {
             const paidInsert = [];
 
             const startDate = DateTime.now().minus({months: 1});
-            
+
             for (let index = 0; index < sources.length; index++) {
                 const day = startDate.plus({days: index}).toISODate();
                 if (index > 0) {

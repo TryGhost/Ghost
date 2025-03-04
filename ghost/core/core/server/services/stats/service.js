@@ -10,7 +10,7 @@ class StatsServiceWrapper {
             return;
         }
 
-        const StatsService = require('@tryghost/stats-service');
+        const StatsService = require('./StatsService');
         const db = require('../../data/db');
 
         this.api = StatsService.create({knex: db.knex});
