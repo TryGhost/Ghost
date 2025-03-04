@@ -12,15 +12,16 @@ interface AppProps {
 const App: React.FC<AppProps> = ({framework, designSystem}) => {
     return (
         <FrameworkProvider {...framework}>
-            <DesignSystemApp className='shade' {...designSystem}>
-                <ShadeApp darkMode={designSystem.darkMode} fetchKoenigLexical={null}>
-                    <RouterProvider prefix={APP_ROUTE_PREFIX} routes={routes}>
+            <RouterProvider prefix={APP_ROUTE_PREFIX} routes={routes}>
+                <DesignSystemApp className='shade' {...designSystem}>
+                    {/* TODO: remove className='' from ShadeApp once DesignSystemApp is removed to apply 'shade' to the main container */}
+                    <ShadeApp className='' darkMode={designSystem.darkMode} fetchKoenigLexical={null}>
                         <FeatureFlagsProvider>
                             <Outlet />
                         </FeatureFlagsProvider>
-                    </RouterProvider>
-                </ShadeApp>
-            </DesignSystemApp>
+                    </ShadeApp>
+                </DesignSystemApp>
+            </RouterProvider>
         </FrameworkProvider>
     );
 };
