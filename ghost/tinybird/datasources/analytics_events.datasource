@@ -8,7 +8,7 @@ SCHEMA >
     `session_id` String `json:$.session_id`,
     `action` LowCardinality(String) `json:$.action`,
     `version` LowCardinality(String) `json:$.version`,
-    `payload` String `json:$.payload`
+    `payload` JSON `json:$.payload`
 
 ENGINE MergeTree
 ENGINE_PARTITION_KEY toYYYYMM(timestamp)
