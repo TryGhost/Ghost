@@ -824,7 +824,7 @@ jobs:
           status: ${{ job.status }}
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-  
+
   job_tinybird:
     name: Tinybird Tests
     runs-on: ubuntu-latest
@@ -953,7 +953,6 @@ jobs:
           else
             echo "Skipping clean up: The Branch '$BRANCH_NAME' does not exist."
           fi
-          
 
   job_ghost-cli:
     name: Ghost-CLI tests
