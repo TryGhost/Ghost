@@ -1,4 +1,4 @@
-const {ActivityPubService} = require('@tryghost/activitypub');
+const {ActivityPubService} = require('./ActivityPubService');
 
 module.exports = class ActivityPubServiceWrapper {
     /** @type ActivityPubService */
