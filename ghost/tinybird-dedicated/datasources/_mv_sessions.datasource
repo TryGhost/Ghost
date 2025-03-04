@@ -1,10 +1,11 @@
-VERSION 1
+VERSION 2
 SCHEMA >
     `site_uuid` String,
     `date` Date,
     `session_id` String,
     `member_status` AggregateFunction(maxIf, String, UInt8),
     `post_uuid` SimpleAggregateFunction(any, String),
+    `post_type` SimpleAggregateFunction(any, String),
     `device` SimpleAggregateFunction(any, String),
     `os` SimpleAggregateFunction(any, String),
     `browser` SimpleAggregateFunction(any, String),
