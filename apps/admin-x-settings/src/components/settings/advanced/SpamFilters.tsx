@@ -67,6 +67,7 @@ const SpamFilters: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     error={!!errors.blockedEmailDomains}
                     hint={errors.blockedEmailDomains || hint}
                     placeholder={`spam.xyz\njunk.com`}
+                    resize="vertical"
                     title='Blocked email domains'
                     value={blockedEmailDomains}
                     onChange={updateBlockedEmailDomainsSetting}
