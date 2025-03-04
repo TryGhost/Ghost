@@ -939,20 +939,20 @@ jobs:
           ./scripts/exec_test.sh
           fi
 
-      # - name: Try to delete previous Branch
-      #   run: |
-      #     output=$(tb --host ${{ secrets.TB_HOST }} --token ${{ secrets.TB_ADMIN_TOKEN }} branch ls)
-      #     BRANCH_NAME="tmp_ci_${_NORMALIZED_BRANCH_NAME}_${{ github.event.pull_request.number }}"
-      #     # Check if the branch name exists in the output
-      #     if echo "$output" | grep -q "\b$BRANCH_NAME\b"; then
-      #       tb \
-      #           --host ${{ secrets.TB_HOST }} \
-      #           --token ${{ secrets.TB_ADMIN_TOKEN }} \
-      #           branch rm $BRANCH_NAME \
-      #           --yes
-      #     else
-      #       echo "Skipping clean up: The Branch '$BRANCH_NAME' does not exist."
-      #     fi
+      - name: Try to delete previous Branch
+        run: |
+          output=$(tb --host ${{ secrets.TB_HOST }} --token ${{ secrets.TB_ADMIN_TOKEN }} branch ls)
+          BRANCH_NAME="tmp_ci_${_NORMALIZED_BRANCH_NAME}_${{ github.event.pull_request.number }}"
+          # Check if the branch name exists in the output
+          if echo "$output" | grep -q "\b$BRANCH_NAME\b"; then
+            tb \
+                --host ${{ secrets.TB_HOST }} \
+                --token ${{ secrets.TB_ADMIN_TOKEN }} \
+                branch rm $BRANCH_NAME \
+                --yes
+          else
+            echo "Skipping clean up: The Branch '$BRANCH_NAME' does not exist."
+          fi
           
 
   job_ghost-cli:
