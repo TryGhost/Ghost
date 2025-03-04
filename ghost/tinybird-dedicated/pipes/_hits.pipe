@@ -1,4 +1,4 @@
-VERSION 0
+VERSION 1
 NODE parsed_hits
 SQL >
 
@@ -17,10 +17,8 @@ SQL >
         toString(payload.member_status) as member_status,
         toString(payload.post_uuid) as post_uuid,
         lower(toString(getSubcolumn(payload,'user-agent'))) as user_agent
-    FROM analytics_events_json_m
+    FROM analytics_events_json_s
     where action = 'page_hit'
-
-
 
 NODE _hits
 SQL >
