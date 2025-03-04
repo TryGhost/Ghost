@@ -120,7 +120,6 @@ jobs:
               - *shared
               - 'apps/sodo-search/**'
             tinybird:
-              - *shared
               - 'ghost/tinybird-dedicated/**'
               - '!ghost/tinybird-dedicated/**/*.md'
             any-code:
@@ -1281,6 +1280,9 @@ jobs:
     ]
     name: Deploy Tinybird
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ghost/tinybird-dedicated
     if: always() && needs.job_setup.outputs.changed_tinybird == 'true' && needs.job_setup.result == 'success' && needs.job_lint.result == 'success' && needs.job_unit-tests.result == 'success' && needs.job_tinybird.result == 'success' && needs.job_setup.outputs.is_main == 'true'
     steps:
       - name: Checkout
@@ -1309,6 +1311,7 @@ jobs:
           DEPLOY_FILE=./deploy/${VERSION}/deploy.sh
           if [ ! -f "$DEPLOY_FILE" ]; then
             echo "$DEPLOY_FILE not found, running default tb push command"
+            tb branch current
             tb deploy
           fi
       - name: Custom deployment to the main Workspace
