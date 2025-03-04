@@ -1,4 +1,4 @@
-VERSION 1
+VERSION 2
 NODE _pages_0
 SQL >
 
@@ -11,6 +11,7 @@ SQL >
         location,
         source,
         pathname,
+        post_type,
         maxIfState(member_status, member_status IN ('paid', 'free', 'undefined')) AS member_status,
         uniqState(session_id) AS visits,
         countState() AS pageviews
@@ -23,9 +24,8 @@ SQL >
         location,
         source,
         pathname,
-        post_uuid
+        post_uuid,
+        post_type
 
 TYPE materialized
 DATASOURCE _pages_mv
-
-

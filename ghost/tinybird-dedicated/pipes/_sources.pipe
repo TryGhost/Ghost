@@ -1,4 +1,4 @@
-VERSION 1
+VERSION 2
 NODE _sources_0
 SQL >
 
@@ -45,5 +45,3 @@ SQL >
 
 TYPE materialized
 DATASOURCE _sources_mv
-
-

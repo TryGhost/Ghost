@@ -1,4 +1,4 @@
-VERSION 1
+VERSION 2
 NODE timeseries
 SQL >
 
@@ -136,5 +136,3 @@ SQL >
     select a.date, b.visits, b.pageviews, b.bounce_rate, b.avg_session_sec
     from timeseries a
     left join data b using date
-
-
