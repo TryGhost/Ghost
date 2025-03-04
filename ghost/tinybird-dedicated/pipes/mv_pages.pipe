@@ -5,6 +5,7 @@ SQL >
     SELECT
         site_uuid,
         toDate(timestamp) AS date,
+        post_type,
         post_uuid,
         device,
         os,
@@ -25,6 +26,7 @@ SQL >
         location,
         source,
         pathname,
+        post_type,
         post_uuid
 
 TYPE materialized

@@ -8,6 +8,7 @@ SQL >
         session_id,
         maxIfState(member_status, member_status IN ('paid', 'free', 'undefined')) AS member_status,
         anySimpleState(post_uuid) AS post_uuid,
+        anySimpleState(post_type) AS post_type,
         anySimpleState(device) AS device,
         anySimpleState(os) AS os,
         anySimpleState(browser) AS browser,
@@ -17,6 +18,7 @@ SQL >
         minSimpleState(timestamp) AS first_view,
         maxSimpleState(timestamp) AS latest_view,
         countState() AS pageviews
+        
     FROM _hits
     GROUP BY
         site_uuid,

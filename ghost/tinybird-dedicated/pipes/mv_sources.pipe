@@ -27,9 +27,12 @@ SQL >
         a.location,
         b.source AS source,
         a.pathname,
+        a.post_type,
+        a.post_uuid,
         b.member_status AS member_status,
         uniqState(a.session_id) AS visits,
         countState() AS pageviews
+
     FROM _hits AS a
     INNER JOIN sessions AS b ON a.session_id = b.session_id
     GROUP BY
@@ -42,7 +45,9 @@ SQL >
         a.location,
         b.member_status,
         b.source,
-        a.pathname
+        a.pathname,
+        a.post_type,
+        a.post_uuid
     HAVING b.source != current_domain
 
 TYPE materialized
