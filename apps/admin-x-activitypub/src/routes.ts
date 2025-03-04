@@ -22,6 +22,11 @@ export const routes: CustomRouteObject[] = [
         pageTitle: 'Inbox'
     },
     {
+        path: 'inbox/:activityId',
+        Component: Inbox,
+        pageTitle: 'Inbox'
+    },
+    {
         path: 'feed',
         Component: Inbox,
         pageTitle: 'Feed'
