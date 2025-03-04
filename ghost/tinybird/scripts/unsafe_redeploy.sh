@@ -7,6 +7,9 @@ if [[ "$@" == *"--force"* ]]; then
     force=true
 fi
 
+# Prompt for version number
+read -p "Enter version number to cleanup (e.g., 0): " version
+
 # Get current branch info
 branch_info=$(tb branch current)
 
@@ -51,24 +54,24 @@ endpoint_pipes=(
     "trend"
 )
 
+# Remove endpoint pipes
+for pipe in "${endpoint_pipes[@]}"; do
+    if echo "$pipes" | grep -q "${pipe}"; then
+        tb pipe rm "${pipe}__v${version}" --yes
+    fi
+done
+
 # Remove materialized views
 for mv in "${materialized_views[@]}"; do
-    if echo "$datasources" | grep -q "$mv"; then
-        tb datasource rm "$mv" --yes
+    if echo "$datasources" | grep -q "${mv}"; then
+        tb datasource rm "${mv}__v${version}" --yes
     fi
 done
 
 # Remove data pipes
 for pipe in "${data_pipes[@]}"; do
-    if echo "$pipes" | grep -q "$pipe"; then
-        tb pipe rm "$pipe" --yes
-    fi
-done
-
-# Remove endpoint pipes
-for pipe in "${endpoint_pipes[@]}"; do
-    if echo "$pipes" | grep -q "$pipe"; then
-        tb pipe rm "$pipe" --yes
+    if echo "$pipes" | grep -q "${pipe}"; then
+        tb pipe rm "${pipe}__v${version}" --yes
     fi
 done
 
