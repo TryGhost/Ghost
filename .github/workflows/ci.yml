@@ -1278,8 +1278,6 @@ jobs:
   deploy_tinybird:
     needs: [
       job_setup,
-      job_lint,
-      job_unit-tests,
       job_tinybird
     ]
     name: Deploy Tinybird
