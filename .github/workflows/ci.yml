@@ -865,11 +865,15 @@ jobs:
       - name: Set environment variables
         run: |
           _ENV_FLAGS="${ENV_FLAGS:=--wait}"
-          _NORMALIZED_BRANCH_NAME=$(echo $DATA_PROJECT_DIR | rev | cut -d "/" -f 1 | rev | tr '.-' '_')
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            TB_BRANCH_NAME="tmp_ci_pr_${{ github.event.pull_request.number }}"
+          else
+            TB_BRANCH_NAME="tmp_ci_main_$(echo ${{ github.sha }} | cut -c1-7)"
+          fi
           GIT_BRANCH=${GITHUB_HEAD_REF}
           echo "GIT_BRANCH=$GIT_BRANCH" >> $GITHUB_ENV
           echo "_ENV_FLAGS=$_ENV_FLAGS" >> $GITHUB_ENV
-          echo "_NORMALIZED_BRANCH_NAME=$_NORMALIZED_BRANCH_NAME" >> $GITHUB_ENV
+          echo "TB_BRANCH_NAME=$TB_BRANCH_NAME" >> $GITHUB_ENV
       - name: Install Tinybird CLI
         run: |
           if [ -f "requirements.txt" ]; then
@@ -886,23 +890,22 @@ jobs:
       - name: Try to delete previous Branch
         run: |
           output=$(tb --host ${{ secrets.TB_HOST }} --token ${{ secrets.TB_ADMIN_TOKEN }} branch ls)
-          BRANCH_NAME="tmp_ci_${_NORMALIZED_BRANCH_NAME}_${{ github.event.pull_request.number }}"
           # Check if the branch name exists in the output
-          if echo "$output" | grep -q "\b$BRANCH_NAME\b"; then
+          if echo "$output" | grep -q "\b$TB_BRANCH_NAME\b"; then
             tb \
             --host ${{ secrets.TB_HOST }} \
             --token ${{ secrets.TB_ADMIN_TOKEN }} \
-            branch rm $BRANCH_NAME \
+            branch rm $TB_BRANCH_NAME \
             --yes
           else
-            echo "Skipping clean up: The Branch '$BRANCH_NAME' does not exist."
+            echo "Skipping clean up: The Branch '$TB_BRANCH_NAME' does not exist."
           fi
       - name: Create new test Branch with data
         run: |
           tb \
           --host ${{ secrets.TB_HOST }} \
           --token ${{ secrets.TB_ADMIN_TOKEN }} \
-          branch create tmp_ci_${_NORMALIZED_BRANCH_NAME}_${{ github.event.pull_request.number }} \
+          branch create $TB_BRANCH_NAME \
           ${_ENV_FLAGS}
       - name: Deploy changes to the test Branch
         run: |
@@ -910,7 +913,7 @@ jobs:
           DEPLOY_FILE=./deploy/${VERSION}/deploy.sh
           if [ ! -f "$DEPLOY_FILE" ]; then
             echo "$DEPLOY_FILE not found, running default tb deploy command"
-            tb deploy ${CI_FLAGS}
+            tb deploy
             tb release ls
           fi
       - name: Custom deployment to the test Branch
@@ -942,16 +945,15 @@ jobs:
       - name: Try to delete previous Branch
         run: |
           output=$(tb --host ${{ secrets.TB_HOST }} --token ${{ secrets.TB_ADMIN_TOKEN }} branch ls)
-          BRANCH_NAME="tmp_ci_${_NORMALIZED_BRANCH_NAME}_${{ github.event.pull_request.number }}"
           # Check if the branch name exists in the output
-          if echo "$output" | grep -q "\b$BRANCH_NAME\b"; then
+          if echo "$output" | grep -q "\b$TB_BRANCH_NAME\b"; then
             tb \
                 --host ${{ secrets.TB_HOST }} \
                 --token ${{ secrets.TB_ADMIN_TOKEN }} \
-                branch rm $BRANCH_NAME \
+                branch rm $TB_BRANCH_NAME \
                 --yes
           else
-            echo "Skipping clean up: The Branch '$BRANCH_NAME' does not exist."
+            echo "Skipping clean up: The Branch '$TB_BRANCH_NAME' does not exist."
           fi
 
   job_ghost-cli:
