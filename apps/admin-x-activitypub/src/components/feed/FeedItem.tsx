@@ -1,6 +1,7 @@
+import FeedItemMenu from './FeedItemMenu';
 import React, {useEffect, useRef, useState} from 'react';
 import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
-import {Button, Heading, Icon, Menu, MenuItem, showToast} from '@tryghost/admin-x-design-system';
+import {Button as ButtonX, Heading, Icon, showToast} from '@tryghost/admin-x-design-system';
 import {Skeleton} from '@tryghost/shade';
 
 import APAvatar from '../global/APAvatar';
@@ -203,18 +204,9 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
         // Don't need to know about setting timeouts or anything like that
     };
 
-    const [menuIsOpen, setMenuIsOpen] = useState(false);
-
     const onClick = () => {
-        if (menuIsOpen) {
-            return;
-        }
         onClickHandler();
     };
-
-    // const handleDelete = () => {
-    //     // Handle delete action
-    // };
 
     const handleCopyLink = async () => {
         if (object?.url) {
@@ -233,13 +225,9 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
         author = typeof object.attributedTo === 'object' ? object.attributedTo as ActorProperties : actor;
     }
 
-    const menuItems: MenuItem[] = [];
+    const handleDelete = () => {
 
-    menuItems.push({
-        id: 'copy-link',
-        label: 'Copy link to post',
-        onClick: handleCopyLink
-    });
+    };
 
     // TODO: If this is your own Note/Article, you should be able to delete it
     // menuItems.push({
@@ -250,8 +238,8 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
     // });
 
     const UserMenuTrigger = (
-        <Button
-            className={`transition-color relative z-[9998] flex h-[34px] w-[34px] items-center justify-center ${layout === 'feed' ? 'rounded-full' : 'rounded-md'} bg-white hover:bg-gray-100 dark:bg-black dark:hover:bg-gray-950 ${(layout === 'feed' || layout === 'modal') && 'ml-auto'}`}
+        <ButtonX
+            className={`transition-color flex h-[34px] w-[34px] items-center justify-center ${layout === 'feed' ? 'rounded-full' : 'rounded-md'} bg-white hover:bg-gray-100 dark:bg-black dark:hover:bg-gray-950 ${(layout === 'feed' || layout === 'modal') && 'ml-auto'}`}
             hideLabel={true}
             icon='dotdotdot'
             iconColorClass={`${layout === 'inbox' ? 'text-gray-900 w-[12px] h-[12px] dark:text-gray-600' : 'text-gray-500 w-[16px] h-[16px]'}`}
@@ -274,9 +262,9 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                             </div>
                         </div>}
                         <div className={`border-1 flex flex-col gap-2.5`} data-test-activity>
-                            <div className='relative z-30 flex min-w-0 items-center gap-3'>
+                            <div className='flex min-w-0 items-center gap-3'>
                                 <APAvatar author={author} />
-                                <div className='flex min-w-0 flex-col gap-0.5'>
+                                <div className='flex min-w-0 grow flex-col gap-0.5'>
                                     <span className='min-w-0 truncate break-all font-semibold leading-[normal] hover:underline dark:text-white'
                                         data-test-activity-heading
                                         onClick={e => handleProfileClick(author, e)}
@@ -294,7 +282,11 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                         </div>
                                     </div>
                                 </div>
-                                <Menu items={menuItems} open={menuIsOpen} position='end' setOpen={setMenuIsOpen} trigger={UserMenuTrigger}/>
+                                <FeedItemMenu
+                                    trigger={UserMenuTrigger}
+                                    onCopyLink={handleCopyLink}
+                                    onDelete={handleDelete}
+                                />
                             </div>
                             <div className={`relative col-start-2 col-end-3 w-full gap-4`}>
                                 <div className='flex flex-col'>
@@ -382,7 +374,11 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                                 onCommentClick={onCommentClick}
                                                 onLikeClick={onLikeClick}
                                             />
-                                            <Menu items={menuItems} open={menuIsOpen} position='end' setOpen={setMenuIsOpen} trigger={UserMenuTrigger}/>
+                                            <FeedItemMenu
+                                                trigger={UserMenuTrigger}
+                                                onCopyLink={handleCopyLink}
+                                                onDelete={handleDelete}
+                                            />
                                         </div>
                                     </div>
                                 </div>
@@ -415,7 +411,11 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                             <span className='truncate text-gray-700'>{getUsername(author)}</span>
                                         </div>
                                     </div>
-                                    <Menu items={menuItems} open={menuIsOpen} position='end' setOpen={setMenuIsOpen} trigger={UserMenuTrigger}/>
+                                    <FeedItemMenu
+                                        trigger={UserMenuTrigger}
+                                        onCopyLink={handleCopyLink}
+                                        onDelete={handleDelete}
+                                    />
                                 </div>
                                 <div className={`relative z-10 col-start-2 col-end-3 w-full gap-4`}>
                                     <div className='flex flex-col'>
@@ -423,7 +423,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                         {object.name && <Heading className='my-1 text-pretty leading-tight' level={5} data-test-activity-heading>{object.name}</Heading>}
                                         {(object.preview && object.type === 'Article') ? <div className='line-clamp-3 leading-tight'>{object.preview.content}</div> : <div dangerouslySetInnerHTML={({__html: object.content ?? ''})} className='ap-note-content text-pretty tracking-[-0.006em] text-gray-900 dark:text-gray-600'></div>}
                                         {(object.type === 'Note') && renderFeedAttachment(object, layout)}
-                                        {(object.type === 'Article') && <Button
+                                        {(object.type === 'Article') && <ButtonX
                                             className={`mt-3 self-start text-gray-900 transition-all hover:opacity-60`}
                                             color='grey'
                                             fullWidth={true}
@@ -506,7 +506,11 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                         onCommentClick={onCommentClick}
                                         onLikeClick={onLikeClick}
                                     />
-                                    <Menu items={menuItems} open={menuIsOpen} position='end' setOpen={setMenuIsOpen} trigger={UserMenuTrigger}/>
+                                    <FeedItemMenu
+                                        trigger={UserMenuTrigger}
+                                        onCopyLink={handleCopyLink}
+                                        onDelete={handleDelete}
+                                    />
                                 </div>
                             </div>
                         </div>
