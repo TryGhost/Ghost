@@ -3,6 +3,10 @@ const models = require('../../../../core/server/models');
 const testUtils = require('../../../utils');
 
 describe('Unit: models/comment', function () {
+    before(function () {
+        models.init();
+    });
+
     afterEach(function () {
         sinon.restore();
     });

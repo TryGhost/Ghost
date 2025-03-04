@@ -25,6 +25,8 @@ const internalContext = {context: {internal: true}};
 (async () => {
     const models = require('../../../../models');
 
+    await models.init();
+
     postParentPortMessage(`Fetching tags`);
     const tags = await models.Tag.findPage(internalContext);
 

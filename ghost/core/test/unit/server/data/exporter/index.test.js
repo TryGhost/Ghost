@@ -13,6 +13,10 @@ describe('Exporter', function () {
     let queryMock;
     let knexMock;
 
+    before(function () {
+        models.init();
+    });
+
     afterEach(function () {
         sinon.restore();
     });

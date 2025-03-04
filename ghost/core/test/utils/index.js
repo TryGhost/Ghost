@@ -8,6 +8,7 @@ const _ = require('lodash');
 
 // Ghost Internals
 const models = require('../../core/server/models');
+models.init();
 
 // Other Test Utilities
 const e2eUtils = require('./e2e-utils');
@@ -47,6 +48,7 @@ const setup = function setup() {
 
     return function innerSetup() {
         debug('Setup start');
+        models.init();
         return initFixtures
             .apply(self, args)
             .finally(() => {

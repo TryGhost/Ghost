@@ -12,6 +12,8 @@ module.exports = class REPL extends Command {
         const models = require('../server/models');
         const knex = require('../server/data/db/connection');
 
+        models.init();
+
         context.models = models;
         context.m = models;
         context.knex = knex;

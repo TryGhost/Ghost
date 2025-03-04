@@ -31,6 +31,10 @@ if (parentPort) {
 (async () => {
     const updateCheck = require('./');
 
+    // INIT required services
+    const models = require('../../models');
+    models.init();
+
     const permissions = require('../permissions');
     await permissions.init();
 

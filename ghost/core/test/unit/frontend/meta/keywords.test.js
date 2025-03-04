@@ -1,8 +1,13 @@
 const should = require('should');
 const sinon = require('sinon');
+const models = require('../../../../core/server/models');
 const getKeywords = require('../../../../core/frontend/meta/keywords');
 
 describe('getKeywords', function () {
+    before(function () {
+        models.init();
+    });
+
     afterEach(function () {
         sinon.restore();
     });

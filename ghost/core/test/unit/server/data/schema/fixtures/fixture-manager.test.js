@@ -9,6 +9,10 @@ const fixtures = require('../../../../../utils/fixtures/fixtures.json');
 const fixtureManager = new FixtureManager(fixtures);
 
 describe('Migration Fixture Utils', function () {
+    beforeEach(function () {
+        models.init();
+    });
+
     afterEach(function () {
         sinon.restore();
     });
