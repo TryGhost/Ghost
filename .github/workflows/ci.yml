@@ -864,7 +864,7 @@ jobs:
           cache: "pip"
       - name: Set environment variables
         run: |
-          _ENV_FLAGS="${ENV_FLAGS:=--last-partition --wait}"
+          _ENV_FLAGS="${ENV_FLAGS:=--wait}"
           _NORMALIZED_BRANCH_NAME=$(echo $DATA_PROJECT_DIR | rev | cut -d "/" -f 1 | rev | tr '.-' '_')
           GIT_BRANCH=${GITHUB_HEAD_REF}
           echo "GIT_BRANCH=$GIT_BRANCH" >> $GITHUB_ENV
