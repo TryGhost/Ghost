@@ -1,4 +1,4 @@
-VERSION 1
+VERSION 2
 NODE _sessions_0
 SQL >
 
@@ -24,5 +24,3 @@ SQL >
 
 TYPE materialized
 DATASOURCE _sessions_mv
-
-

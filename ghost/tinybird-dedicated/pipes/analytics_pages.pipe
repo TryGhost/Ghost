@@ -1,4 +1,4 @@
-VERSION 1
+VERSION 2
 NODE parsed_hits
 DESCRIPTION >
     Parse raw page_hit events
@@ -102,5 +102,3 @@ SQL >
         countState() AS pageviews
     FROM analytics_hits_data
     GROUP BY date, device, browser, os, location, source, pathname, post_uuid,site_uuid
-
-

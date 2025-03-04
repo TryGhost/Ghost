@@ -1,4 +1,4 @@
-VERSION 1
+VERSION 2
 DESCRIPTION >
 	Top traffic sources (domains), ordered by most visits.
     Accepts `date_from` and `date_to` date filter. Defaults to last 7 days.
@@ -43,5 +43,3 @@ SQL >
         group by source
         order by visits desc
         limit {{ Int32(skip, 0) }},{{ Int32(limit, 50) }}
-
-

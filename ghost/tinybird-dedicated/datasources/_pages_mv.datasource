@@ -1,9 +1,10 @@
-VERSION 1
+VERSION 2
 
 SCHEMA >
     `site_uuid` LowCardinality(String),
     `date` Date,
     `post_uuid` String,
+    `post_type` String,
     `device` String,
     `browser` String,
     `location` String,
@@ -15,4 +16,4 @@ SCHEMA >
 
 ENGINE "AggregatingMergeTree"
 ENGINE_PARTITION_KEY "toYYYYMM(date)"
-ENGINE_SORTING_KEY "site_uuid, date, device, browser, location, source, pathname, post_uuid"
+ENGINE_SORTING_KEY "site_uuid, date, device, browser, location, source, pathname, post_uuid, post_type"
