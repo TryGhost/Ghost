@@ -1,4 +1,4 @@
-VERSION 1
+VERSION 2
 NODE parsed_hits
 SQL >
 
@@ -16,6 +16,7 @@ SQL >
         toString(payload.member_uuid) as member_uuid,
         toString(payload.member_status) as member_status,
         toString(payload.post_uuid) as post_uuid,
+        toString(payload.post_type) as post_type,
         lower(toString(getSubcolumn(payload,'user-agent'))) as user_agent
     FROM analytics_events_json_s
     where action = 'page_hit'
@@ -32,6 +33,7 @@ SQL >
         member_uuid,
         member_status,
         post_uuid,
+        post_type,
         location,
         domainWithoutWWW(referrer) as source,
         pathname,

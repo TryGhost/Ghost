@@ -1,4 +1,4 @@
-VERSION 1
+VERSION 2
 
 SCHEMA >
     `site_uuid` String,
@@ -12,7 +12,9 @@ SCHEMA >
     `pathname` String,
     `member_status` AggregateFunction(maxIf, String, UInt8),
     `visits` AggregateFunction(uniq, String),
-    `pageviews` AggregateFunction(count)
+    `pageviews` AggregateFunction(count),
+    `post_type` SimpleAggregateFunction(any, String),
+    `post_uuid` SimpleAggregateFunction(any, String)
 
 ENGINE AggregatingMergeTree
 ENGINE_PARTITION_KEY toYYYYMM(date)

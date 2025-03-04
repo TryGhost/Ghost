@@ -1,4 +1,4 @@
-VERSION 1
+VERSION 2
 DESCRIPTION >
 	Top Operating Systems ordered by most visits.
     Accepts `date_from` and `date_to` date filter. Defaults to last 7 days.
