@@ -966,6 +966,7 @@ jobs:
           fi
 
       - name: Try to delete previous Branch
+        if: always()
         run: |
           output=$(tb --host ${{ secrets.TB_HOST }} --token ${{ secrets.TB_ADMIN_TOKEN }} branch ls)
           # Check if the branch name exists in the output
