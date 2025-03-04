@@ -215,7 +215,7 @@ const FollowingTab: React.FC = () => {
         <>
             <EmptyState />
             {
-                <List>
+                <List className='pt-3'>
                     {accounts.map((account, index) => (
                         <React.Fragment key={account.id}>
                             <ActivityItem
@@ -263,7 +263,7 @@ const FollowersTab: React.FC = () => {
         <>
             <EmptyState />
             {
-                <List>
+                <List className='pt-3'>
                     {accounts.map((account, index) => (
                         <React.Fragment key={account.id}>
                             <ActivityItem
