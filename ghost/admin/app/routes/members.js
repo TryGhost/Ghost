@@ -1,8 +1,9 @@
-import AdminRoute from 'ghost-admin/routes/admin';
+//import AdminRoute from 'ghost-admin/routes/admin';
+import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
 import {didCancel} from 'ember-concurrency';
 import {inject as service} from '@ember/service';
 
-export default class MembersRoute extends AdminRoute {
+export default class MembersRoute extends AuthenticatedRoute {
     @service store;
     @service feature;
 
@@ -18,6 +19,11 @@ export default class MembersRoute extends AdminRoute {
     beforeModel() {
         super.beforeModel(...arguments);
         // - TODO: redirect if members is disabled?
+
+        // give editors the ability to reach this route also.
+        if (!this.session.user.isEditor && !this.session.user.isAdmin) {
+            return this.transitionTo('home');
+        }
     }
 
     model(params) {

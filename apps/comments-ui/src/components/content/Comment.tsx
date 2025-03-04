@@ -82,7 +82,6 @@ type PublishedCommentProps = CommentProps & {
 }
 const PublishedComment: React.FC<PublishedCommentProps> = ({comment, parent, openEditMode}) => {
     const {dispatchAction, openCommentForms, admin, commentIdToHighlight} = useAppContext();
-
     // Determine if the comment should be displayed with reduced opacity
     const isHidden = admin && comment.status === 'hidden';
     const hiddenClass = isHidden ? 'opacity-30' : '';
