@@ -595,5 +595,11 @@
             },
             "type": "boolean"
         }
+    },
+    "security": {
+        "require_email_mfa": {
+            "defaultValue": false,
+            "type": "boolean"
+        }
     }
 }
