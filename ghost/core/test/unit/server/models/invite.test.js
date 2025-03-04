@@ -4,10 +4,6 @@ const models = require('../../../../core/server/models');
 const settingsCache = require('../../../../core/shared/settings-cache');
 
 describe('Unit: models/invite', function () {
-    before(function () {
-        models.init();
-    });
-
     beforeEach(function () {
         sinon.stub(settingsCache, 'get').withArgs('db_hash').returns('12345678');
     });
