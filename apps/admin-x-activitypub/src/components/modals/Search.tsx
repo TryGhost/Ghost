@@ -161,7 +161,7 @@ const SuggestedProfiles: React.FC<SuggestedProfilesProps & {
     onOpenChange?: (open: boolean) => void;
 }> = ({profiles, isLoading, onUpdate, onOpenChange}) => {
     return (
-        <div className='mb-[-15px] flex flex-col gap-2 pt-2'>
+        <div className='mb-[-15px] flex flex-col gap-3 pt-2'>
             <H4>Suggested accounts</H4>
             <div className='flex flex-col'>
                 {profiles.map((profile) => {
