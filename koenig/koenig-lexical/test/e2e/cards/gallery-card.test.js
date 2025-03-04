@@ -511,6 +511,9 @@ test.describe('Gallery card', async () => {
             await expect(page.getByTestId('gallery-image')).toHaveCount(9);
         });
 
+        // give the gallery card time to update the editor state
+        await page.waitForTimeout(200);
+
         const editorState = await getEditorState(page);
 
         expect(editorState.root.children[0].type).toEqual('gallery');
