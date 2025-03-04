@@ -1,7 +1,7 @@
 import Inbox from '@views/Inbox';
 import Notifications from '@views/Notifications';
 import Profile from '@views/Profile';
-import {RouteObject, redirect} from '@tryghost/admin-x-framework';
+import {Navigate, RouteObject} from '@tryghost/admin-x-framework';
 
 export const APP_ROUTE_PREFIX = '/activitypub';
 
@@ -12,28 +12,27 @@ type CustomRouteObject = RouteObject & {
 export const routes: CustomRouteObject[] = [
     {
         path: '',
-        loader: () => redirect('inbox'),
         index: true,
-        pageTitle: 'Inbox'
+        element: <Navigate to="inbox" replace />
     },
     {
         path: 'inbox',
-        Component: Inbox,
+        element: <Inbox />,
         pageTitle: 'Inbox'
     },
     {
         path: 'feed',
-        Component: Inbox,
+        element: <Inbox />,
         pageTitle: 'Feed'
     },
     {
         path: 'notifications',
-        Component: Notifications,
+        element: <Notifications />,
         pageTitle: 'Notifications'
     },
     {
         path: 'profile',
-        Component: Profile,
+        element: <Profile />,
         pageTitle: 'Profile'
     }
 ];
