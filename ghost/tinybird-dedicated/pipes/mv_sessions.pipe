@@ -9,6 +9,7 @@ SQL >
         maxIfState(member_status, member_status IN ('paid', 'free', 'undefined')) AS member_status,
         anySimpleState(post_uuid) AS post_uuid,
         anySimpleState(device) AS device,
+        anySimpleState(os) AS os,
         anySimpleState(browser) AS browser,
         anySimpleState(location) AS location,
         anySimpleState(source) AS source,

@@ -48,6 +48,15 @@ SQL >
             else 'desktop'
         END as device,
         case
+            when match(user_agent, 'windows')
+            then 'windows'
+            when match(user_agent, 'mac')
+            then 'macos'
+            when match(user_agent, 'linux')
+            then 'linux'
+            else 'Unknown'
+        END as os,
+        case
             when match(user_agent, 'firefox')
             then 'firefox'
             when match(user_agent, 'chrome|crios')
