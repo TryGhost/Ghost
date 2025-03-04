@@ -151,7 +151,6 @@
     "@tryghost/settings-path-manager": "0.0.0",
     "@tryghost/slack-notifications": "0.0.0",
     "@tryghost/social-urls": "0.1.43",
-    "@tryghost/stats-service": "0.0.0",
     "@tryghost/string": "0.2.12",
     "@tryghost/tiers": "0.0.0",
     "@tryghost/tpl": "0.1.32",

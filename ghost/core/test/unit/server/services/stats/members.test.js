@@ -1,4 +1,4 @@
-const MembersStatsService = require('../../lib/MembersStatsService');
+const MembersStatsService = require('../../../../../core/server/services/stats/MembersStatsService');
 const knex = require('knex').default;
 const assert = require('assert/strict');
 const moment = require('moment');
