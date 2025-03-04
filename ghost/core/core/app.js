@@ -15,6 +15,8 @@ const isMaintenanceModeEnabled = (req) => {
     return false;
 };
 
+// Adding a comment to trigger a build
+
 // We never want middleware functions to be anonymous
 const maintenanceMiddleware = function maintenanceMiddleware(req, res, next) {
     if (!isMaintenanceModeEnabled(req)) {
