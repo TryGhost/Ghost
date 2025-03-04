@@ -856,7 +856,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha }}
-          fetch-depth: 2
+          fetch-depth: 300
       - uses: actions/setup-python@v5
         with:
           python-version: 3.11
@@ -906,10 +906,12 @@ jobs:
           ${_ENV_FLAGS}
       - name: Deploy changes to the test Branch
         run: |
+          source .tinyenv
           DEPLOY_FILE=./deploy/${VERSION}/deploy.sh
           if [ ! -f "$DEPLOY_FILE" ]; then
-              echo "$DEPLOY_FILE not found, running default tb deploy command"
-              tb deploy
+            echo "$DEPLOY_FILE not found, running default tb deploy command"
+            tb deploy ${CI_FLAGS}
+            tb release ls
           fi
       - name: Custom deployment to the test Branch
         run: |
