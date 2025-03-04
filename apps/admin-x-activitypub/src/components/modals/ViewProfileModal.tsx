@@ -169,6 +169,7 @@ const PostsTab: React.FC<{handle: string}> = ({handle}) => {
                             <div>
                                 <FeedItem
                                     actor={post.actor}
+                                    allowDelete={post.object.authored}
                                     commentCount={post.object.replyCount}
                                     layout='feed'
                                     object={post.object}
