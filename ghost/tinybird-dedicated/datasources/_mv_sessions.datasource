@@ -3,7 +3,7 @@ SCHEMA >
     `site_uuid` String,
     `date` Date,
     `session_id` String,
-    `member_status` SimpleAggregateFunction(any, String),
+    `member_status` AggregateFunction(maxIf, String, UInt8),
     `post_uuid` SimpleAggregateFunction(any, String),
     `device` SimpleAggregateFunction(any, String),
     `os` SimpleAggregateFunction(any, String),
