@@ -1,8 +1,8 @@
-import {ErrorPage} from '@tryghost/shade';
 import React, {useCallback, useMemo} from 'react';
 import {createHashRouter, RouteObject, RouterProvider as ReactRouterProvider, NavigateOptions as ReactRouterNavigateOptions, useNavigate as useReactRouterNavigate, Outlet} from 'react-router';
 import {useFramework} from './FrameworkProvider';
 import {NavigationStackProvider} from './NavigationStackProvider';
+import {ErrorPage} from '@tryghost/shade';
 
 /**
  * This provider uses React Router to provide a router context to React apps
