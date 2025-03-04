@@ -73,7 +73,7 @@ const ActorList: React.FC<ActorListProps> = ({
     }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
     return (
-        <div>
+        <div className='pt-3'>
             {
                 hasNextPage === false && actors.length === 0 ? (
                     <NoValueLabel icon='user-add'>
@@ -81,7 +81,7 @@ const ActorList: React.FC<ActorListProps> = ({
                     </NoValueLabel>
                 ) : (
                     <List>
-                        {actors.map(({actor, isFollowing}, index) => {
+                        {actors.map(({actor, isFollowing}) => {
                             return (
                                 <React.Fragment key={actor.id}>
                                     <ActivityItem key={actor.id}
@@ -101,7 +101,6 @@ const ActorList: React.FC<ActorListProps> = ({
                                             type='secondary'
                                         />
                                     </ActivityItem>
-                                    {index < actors.length - 1 && <Separator />}
                                 </React.Fragment>
                             );
                         })}
