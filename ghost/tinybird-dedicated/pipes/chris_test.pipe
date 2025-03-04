@@ -1,0 +1,13 @@
+VERSION 0
+DESCRIPTION >
+    Test pipe
+
+TOKEN "chris_test" READ
+
+NODE endpoint
+DESCRIPTION >
+    Test endpoint
+
+SQL >
+    %
+        select 1 as test
