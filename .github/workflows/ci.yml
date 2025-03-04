@@ -97,6 +97,8 @@ jobs:
               - *shared
               - 'ghost/**'
               - '!ghost/admin/**'
+              - '!ghost/tinybird-dedicated/**'
+              - '!ghost/tinybird/**'
             admin:
               - *shared
               - 'ghost/admin/**'
