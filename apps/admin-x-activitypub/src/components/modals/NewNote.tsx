@@ -4,7 +4,7 @@ import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, Dialog, DialogContent, DialogFooter, DialogTrigger, Skeleton} from '@tryghost/shade';
 import {showToast} from '@tryghost/admin-x-design-system';
 import {useAccountForUser, useNoteMutationForUser, useUserDataForUser} from '@hooks/use-activity-pub-queries';
-import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {useNavigate} from '@tryghost/admin-x-framework';
 import {useState} from 'react';
 
 interface NewNoteProps {
@@ -14,7 +14,7 @@ interface NewNoteProps {
 const NewNote: React.FC<NewNoteProps> = ({children}) => {
     const {data: user} = useUserDataForUser('index');
     const noteMutation = useNoteMutationForUser('index');
-    const {updateRoute} = useRouting();
+    const navigate = useNavigate();
     const {data: account, isLoading: isLoadingAccount} = useAccountForUser('index');
 
     const [content, setContent] = useState('');
@@ -35,10 +35,9 @@ const NewNote: React.FC<NewNoteProps> = ({children}) => {
                     message: 'Note posted',
                     type: 'success'
                 });
-
-                updateRoute('feed');
-                setIsOpen(false);
+                navigate('/feed');
                 setContent('');
+                setIsOpen(false);
             },
             onError(error) {
                 showToast({

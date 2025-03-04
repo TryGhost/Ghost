@@ -27,6 +27,7 @@ const Sidebar: React.FC = () => {
                             Profile
                         </SidebarMenuLink>
                     </div>
+
                     <NewNote>
                         <Button className='h-9 rounded-full bg-purple-500 px-3 text-md text-white dark:hover:bg-purple-500'>
                             <LucideIcon.FilePen />
