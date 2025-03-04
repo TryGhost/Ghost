@@ -8,7 +8,7 @@ const {MilestoneCreatedEvent} = require('@tryghost/milestones');
 const DomainEvents = require('@tryghost/domain-events');
 
 require('should');
-const StaffService = require('../index');
+const StaffService = require('../../../../../core/server/services/staff/StaffService');
 
 function testCommonMailData({mailStub, getEmailAlertUsersStub}) {
     getEmailAlertUsersStub.calledWith(
