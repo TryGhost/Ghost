@@ -857,12 +857,12 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 300
-      - name: Check if PR is from fork
+      - name: Check secrets
         if: github.event_name == 'pull_request'
         run: |
-          if [ "${{ github.repository }}" != "${{ github.event.pull_request.head.repo.full_name }}" ]; then
-            echo "PR is from a forked repository. Tinybird tests require secrets from the main repository."
-            echo "Please re-open the PR from a branch in the TryGhost/Ghost repository."
+          if [ -z "${{ secrets.TB_ADMIN_TOKEN }}" ]; then
+            echo "Tinybird admin token is not available. Did you open the PR from a fork?"
+            echo "If so, please re-open the PR from a branch in the TryGhost/Ghost repository."
             exit 1
           fi
       - uses: actions/setup-python@v5
