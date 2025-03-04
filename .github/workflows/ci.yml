@@ -852,6 +852,11 @@ jobs:
           echo "Current permission level is ${{ steps.get-user-permission.outputs.user-permission }}"
           echo "Job originally triggered by ${{ github.actor }}"
           exit 1
+      - name: Checkout current commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 300
       - name: Check if PR is from fork
         if: github.event_name == 'pull_request'
         run: |
@@ -860,11 +865,6 @@ jobs:
             echo "Please re-open the PR from a branch in the TryGhost/Ghost repository."
             exit 1
           fi
-      - name: Checkout current commit
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-          fetch-depth: 300
       - uses: actions/setup-python@v5
         with:
           python-version: 3.11
