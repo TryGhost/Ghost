@@ -323,8 +323,8 @@ jobs:
         STRIPE_PUBLISHABLE_KEY: ${{ secrets.STRIPE_PUBLISHABLE_KEY }}
       run: |
         if [ -z "${{ env.STRIPE_PUBLISHABLE_KEY }}" ]; then
-          echo "Stripe Publishable Key is not available. Did you open the PR from a fork?"
-          echo "If so, please re-open the PR from a branch in the TryGhost/Ghost repository."
+          echo "Stripe Publishable Key is not available. Did you open this PR from a fork?"
+          echo "If so, please re-open the PR from a branch in the upstream TryGhost/Ghost repository."
           exit 1
         fi
     - uses: actions/setup-node@v4
@@ -873,8 +873,8 @@ jobs:
           TB_ADMIN_TOKEN: ${{ secrets.TB_ADMIN_TOKEN }}
         run: |
           if [ -z "${{ env.TB_ADMIN_TOKEN }}" ]; then
-            echo "Tinybird admin token is not available. Did you open the PR from a fork?"
-            echo "If so, please re-open the PR from a branch in the TryGhost/Ghost repository."
+            echo "Tinybird admin token is not available. Did you open this PR from a fork?"
+            echo "If so, please re-open the PR from a branch in the upstream TryGhost/Ghost repository."
             exit 1
           fi
       - uses: actions/setup-python@v5
