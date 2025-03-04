@@ -1,8 +1,8 @@
-const MentionEmailReportJob = require('@tryghost/mentions-email-report');
+const MentionEmailReportJob = require('./MentionEmailReportJob');
 
 /**
- * @typedef {import('@tryghost/mentions-email-report/lib/mentions-email-report').MentionReport} MentionReport
- * @typedef {import('@tryghost/mentions-email-report/lib/mentions-email-report').MentionReportRecipient} MentionReportRecipient
+ * @typedef {MentionEmailReportJob.MentionReport} MentionReport
+ * @typedef {MentionEmailReportJob.MentionReportRecipient} MentionReportRecipient
  */
 
 let initialised = false;
