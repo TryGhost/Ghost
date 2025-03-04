@@ -13,7 +13,7 @@ SQL >
             SELECT
                 session_id,
                 argMin(source, timestamp) AS source,
-                maxIf(member_status, member_status IN ('paid', 'free', 'undefined')) AS member_status
+                maxIfState(member_status, member_status IN ('paid', 'free', 'undefined')) AS member_status
             FROM _hits
             GROUP BY session_id
         )
