@@ -1283,7 +1283,7 @@ jobs:
     defaults:
       run:
         working-directory: ghost/tinybird-dedicated
-    if: always() && needs.job_setup.outputs.changed_tinybird == 'true' && needs.job_setup.result == 'success' && needs.job_lint.result == 'success' && needs.job_unit-tests.result == 'success' && needs.job_tinybird.result == 'success'
+    if: always() && needs.job_setup.outputs.changed_tinybird == 'true' && needs.job_setup.result == 'success' && needs.job_lint.result == 'success' && needs.job_unit-tests.result == 'success' && needs.job_tinybird.result == 'success' && needs.job_setup.outputs.is_main == 'true'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
