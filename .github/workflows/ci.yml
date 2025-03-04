@@ -859,8 +859,10 @@ jobs:
           fetch-depth: 300
       - name: Check secrets
         if: github.event_name == 'pull_request'
+        env:
+          TB_ADMIN_TOKEN: ${{ secrets.TB_ADMIN_TOKEN }}
         run: |
-          if [ -z "${{ secrets.TB_ADMIN_TOKEN }}" ]; then
+          if [ -z "${{ env.TB_ADMIN_TOKEN }}" ]; then
             echo "Tinybird admin token is not available. Did you open the PR from a fork?"
             echo "If so, please re-open the PR from a branch in the TryGhost/Ghost repository."
             exit 1
