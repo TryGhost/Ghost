@@ -3,7 +3,7 @@ import NewPostModal from '@views/Feed/components/NewPostModal';
 import NiceModal from '@ebay/nice-modal-react';
 import Recommendations from './Recommendations';
 import SidebarMenuLink from './SidebarMenuLink';
-import {Button, LucideIcon, Separator} from '@tryghost/shade';
+import {Button, LucideIcon, Separator, Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger} from '@tryghost/shade';
 
 const Sidebar: React.FC = () => {
     return (
@@ -32,6 +32,28 @@ const Sidebar: React.FC = () => {
                         <LucideIcon.FilePen />
                         New note
                     </Button>
+
+                    <Sheet>
+                        <SheetTrigger asChild>
+                            <Button className='cursor-pointer'>Open</Button>
+                        </SheetTrigger>
+                        <SheetContent>
+                            <SheetHeader>
+                                <SheetTitle>Edit profile</SheetTitle>
+                                <SheetDescription>
+                            Make changes to your profile here. Click save when you are done.
+                                </SheetDescription>
+                            </SheetHeader>
+                            <div className="grid gap-4 py-4">
+                                contents
+                            </div>
+                            <SheetFooter>
+                                <SheetClose asChild>
+                                    <Button type="submit">Save changes</Button>
+                                </SheetClose>
+                            </SheetFooter>
+                        </SheetContent>
+                    </Sheet>
 
                     <Separator />
 
