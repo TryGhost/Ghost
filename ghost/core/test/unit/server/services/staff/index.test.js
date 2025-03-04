@@ -11,6 +11,10 @@ const {MilestoneCreatedEvent} = require('@tryghost/milestones');
 describe('Staff Service:', function () {
     let emailMockReceiver;
 
+    before(function () {
+        models.init();
+    });
+
     beforeEach(function () {
         emailMockReceiver = mockManager.mockMail();
         mockManager.mockSlack();

@@ -5,6 +5,8 @@ const should = require('should');
 const sinon = require('sinon');
 
 describe('Content API Key Auth', function () {
+    before(models.init);
+
     this.beforeEach(function () {
         const fakeApiKey = {
             id: '1234',

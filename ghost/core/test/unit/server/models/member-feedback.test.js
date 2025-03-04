@@ -4,6 +4,10 @@ const errors = require('@tryghost/errors');
 const models = require('../../../../core/server/models');
 
 describe('Unit: models/MemberFeedback', function () {
+    before(function () {
+        models.init();
+    });
+
     afterEach(function () {
         sinon.restore();
     });

@@ -1,7 +1,12 @@
+const models = require('../../../../../core/server/models');
 const assert = require('assert/strict');
 
 describe('Frontend Data Service', function () {
     let frontendDataService;
+
+    before(function () {
+        models.init();
+    });
 
     it('Provides expected public API', async function () {
         frontendDataService = require('../../../../../core/server/services/frontend-data-service');

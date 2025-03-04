@@ -5,6 +5,10 @@ const models = require('../../../../../core/server/models');
 const providers = require('../../../../../core/server/services/permissions/providers');
 
 describe('Permission Providers', function () {
+    before(function () {
+        models.init();
+    });
+
     afterEach(function () {
         sinon.restore();
     });

@@ -10,6 +10,10 @@ const logging = require('@tryghost/logging');
 describe('Frontend Data Service', function () {
     let service, modelStub, fakeModel;
 
+    before(function () {
+        models.init();
+    });
+
     beforeEach(function () {
         fakeModel = {
             toJSON: () => {

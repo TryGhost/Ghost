@@ -15,6 +15,8 @@ describe('Schedules API', function () {
     let request;
 
     before(function () {
+        models.init();
+
         // @NOTE: mock the post scheduler, otherwise it will auto publish the post
         sinon.stub(SchedulingDefault.prototype, '_pingUrl').resolves();
     });

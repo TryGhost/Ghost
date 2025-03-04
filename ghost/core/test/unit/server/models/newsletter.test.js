@@ -5,6 +5,10 @@ const should = require('should');
 const models = require('../../../../core/server/models');
 
 describe('Unit: models/newsletter', function () {
+    before(function () {
+        models.init();
+    });
+
     after(function () {
         sinon.restore();
     });

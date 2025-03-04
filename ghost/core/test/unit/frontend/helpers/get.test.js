@@ -7,6 +7,7 @@ const loggingLib = require('@tryghost/logging');
 
 // Stuff we are testing
 const get = require('../../../../core/frontend/helpers/get');
+const models = require('../../../../core/server/models');
 const proxy = require('../../../../core/frontend/services/proxy');
 const api = require('../../../../core/server/api').endpoints;
 
@@ -15,6 +16,10 @@ describe('{{#get}} helper', function () {
     let inverse;
     let locals = {};
     let logging;
+
+    before(function () {
+        models.init();
+    });
 
     beforeEach(function () {
         fn = sinon.spy();
