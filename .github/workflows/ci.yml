@@ -1311,7 +1311,6 @@ jobs:
           DEPLOY_FILE=./deploy/${VERSION}/deploy.sh
           if [ ! -f "$DEPLOY_FILE" ]; then
             echo "$DEPLOY_FILE not found, running default tb push command"
-            tb workspace current
             tb branch current
             tb deploy
           fi
