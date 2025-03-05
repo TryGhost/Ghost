@@ -1,8 +1,8 @@
 import FeedItemMenu from './FeedItemMenu';
 import React, {useEffect, useRef, useState} from 'react';
 import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
+import {Button, LucideIcon, Skeleton} from '@tryghost/shade';
 import {Button as ButtonX, Heading, Icon, showToast} from '@tryghost/admin-x-design-system';
-import {Skeleton} from '@tryghost/shade';
 
 import APAvatar from '../global/APAvatar';
 
@@ -238,15 +238,9 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
     // });
 
     const UserMenuTrigger = (
-        <ButtonX
-            className={`transition-color flex h-[34px] w-[34px] items-center justify-center ${layout === 'feed' ? 'rounded-full' : 'rounded-md'} bg-white hover:bg-gray-100 dark:bg-black dark:hover:bg-gray-950 ${(layout === 'feed' || layout === 'modal') && 'ml-auto'}`}
-            hideLabel={true}
-            icon='dotdotdot'
-            iconColorClass={`${layout === 'inbox' ? 'text-gray-900 w-[12px] h-[12px] dark:text-gray-600' : 'text-gray-500 w-[16px] h-[16px]'}`}
-            id='more'
-            size='md'
-            unstyled={true}
-        />
+        <Button className={`h-[34px] w-[34px] ${layout === 'inbox' ? 'text-gray-900 hover:text-gray-900 dark:text-gray-600 dark:hover:text-gray-600' : 'text-gray-500 hover:text-gray-500 [&_svg]:size-5'} ${layout === 'feed' ? 'rounded-full' : 'rounded-md'} dark:bg-black dark:hover:bg-gray-950`} variant='ghost'>
+            <LucideIcon.Ellipsis />
+        </Button>
     );
 
     if (layout === 'feed') {
