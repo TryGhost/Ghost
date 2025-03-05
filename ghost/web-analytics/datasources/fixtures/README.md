@@ -15,5 +15,5 @@ npm install -g @tinybirdco/mockingbird-cli
 The command I'm currently using to generate the data is:
 
 ```
-mockingbird-cli tinybird --schema ghost/tinybird/datasources/fixtures/mockingbird-schema.json --endpoint gcp_europe_west3 --token xxxx --datasource analytics_events --eps 50 --limit 5000
+mockingbird-cli tinybird --schema ghost/web-analytics/datasources/fixtures/mockingbird-schema.json --endpoint gcp_europe_west3 --token xxxx --datasource analytics_events --eps 50 --limit 5000
 ```

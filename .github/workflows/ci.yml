@@ -97,8 +97,7 @@ jobs:
               - *shared
               - 'ghost/**'
               - '!ghost/admin/**'
-              - '!ghost/tinybird-dedicated/**'
-              - '!ghost/tinybird/**'
+              - '!ghost/web-analytics/**'
             admin:
               - *shared
               - 'ghost/admin/**'
@@ -122,8 +121,8 @@ jobs:
               - *shared
               - 'apps/sodo-search/**'
             tinybird:
-              - 'ghost/tinybird-dedicated/**'
-              - '!ghost/tinybird-dedicated/**/*.md'
+              - 'ghost/web-analytics/**'
+              - '!ghost/web-analytics/**/*.md'
             any-code:
               - '!**/*.md'
 
@@ -839,14 +838,14 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
   job_tinybird:
-    name: Tinybird Tests
+    name: Tinybird Tests (Web Analytics)
     runs-on: ubuntu-latest
     needs: [
       job_setup
     ]
     defaults:
       run:
-        working-directory: ghost/tinybird-dedicated
+        working-directory: ghost/web-analytics
     if: needs.job_setup.outputs.changed_tinybird == 'true'
     steps:
       - name: Get User Permission
@@ -1288,7 +1287,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ghost/tinybird-dedicated
+        working-directory: ghost/web-analytics
     if: always() && needs.job_setup.outputs.changed_tinybird == 'true' && needs.job_setup.result == 'success' && needs.job_tinybird.result == 'success' && needs.job_setup.outputs.is_main == 'true'
     steps:
       - name: Checkout
