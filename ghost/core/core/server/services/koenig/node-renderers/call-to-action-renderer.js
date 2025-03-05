@@ -5,6 +5,14 @@ import {isLocalContentImage} from '../../utils/is-local-content-image';
 
 const showButton = dataset => dataset.showButton && dataset.buttonUrl && dataset.buttonText;
 
+const wrapWithLink = (dataset, content) => {
+    if (!showButton(dataset)) {
+        return content;
+    }
+
+    return `<a href="${dataset.buttonUrl}">${content}</a>`;
+};
+
 function ctaCardTemplate(dataset) {
     // Add validation for buttonColor
     if (!dataset.buttonColor || !dataset.buttonColor.match(/^[a-zA-Z\d-]+|#([a-fA-F\d]{3}|[a-fA-F\d]{6})$/)) {
@@ -24,7 +32,7 @@ function ctaCardTemplate(dataset) {
             <div class="kg-cta-content">
                 ${dataset.imageUrl ? `
                     <div class="kg-cta-image-container">
-                        <img src="${dataset.imageUrl}" alt="CTA Image">
+                        ${wrapWithLink(dataset, `<img src="${dataset.imageUrl}" alt="CTA Image">`)}
                     </div>
                 ` : ''}
                 ${dataset.textValue || dataset.showButton ? `
@@ -81,7 +89,7 @@ function emailCTATemplate(dataset, options = {}) {
                             <tr>
                                 ${dataset.imageUrl ? `
                                     <td class="kg-cta-image-container" width="64">
-                                        <img src="${dataset.imageUrl}" alt="CTA Image" class="kg-cta-image" width="64" height="64">
+                                        ${wrapWithLink(dataset, `<img src="${dataset.imageUrl}" alt="CTA Image" class="kg-cta-image" width="64" height="64">`)}
                                     </td>
                                 ` : ''}
                                 <td class="kg-cta-content-inner">
@@ -130,7 +138,7 @@ function emailCTATemplate(dataset, options = {}) {
                                     <table border="0" cellpadding="0" cellspacing="0" width="100%">
                                         <tr>
                                             <td>
-                                                <img src="${dataset.imageUrl}" alt="CTA Image" class="kg-cta-image" ${imageDimensions ? `width="${imageDimensions.width}"` : ''} ${imageDimensions ? `height="${imageDimensions.height}"` : ''}>
+                                                ${wrapWithLink(dataset, `<img src="${dataset.imageUrl}" alt="CTA Image" class="kg-cta-image" ${imageDimensions ? `width="${imageDimensions.width}"` : ''} ${imageDimensions ? `height="${imageDimensions.height}"` : ''}>`)}
                                             </td>
                                         </tr>
                                     </table>
