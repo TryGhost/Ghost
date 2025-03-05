@@ -3,10 +3,11 @@ import TopLevelGroup from '../../TopLevelGroup';
 import clsx from 'clsx';
 import useQueryParams from '../../../hooks/useQueryParams';
 import useStaffUsers from '../../../hooks/useStaffUsers';
-import {Avatar, Button, List, ListItem, NoValueLabel, TabView, showToast, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {Avatar, Button, List, ListItem, NoValueLabel, Separator, TabView, Toggle, showToast, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {User, hasAdminAccess, isContributorUser, isEditorUser} from '@tryghost/admin-x-framework/api/users';
 import {UserInvite, useAddInvite, useDeleteInvite} from '@tryghost/admin-x-framework/api/invites';
 import {generateAvatarColor, getInitials} from '../../../utils/helpers';
+import {getSettingValue, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
@@ -274,6 +275,11 @@ const Users: React.FC<{ keywords: string[], highlight?: boolean }> = ({keywords,
         }
     ];
 
+    const {settings} = useGlobalData();
+    const require2fa = getSettingValue<boolean>(settings, 'require_email_mfa') || false;
+    const {mutateAsync: editSettings} = useEditSettings();
+    const handleError = useHandleError();
+
     return (
         <TopLevelGroup
             customButtons={buttons}
@@ -291,6 +297,25 @@ const Users: React.FC<{ keywords: string[], highlight?: boolean }> = ({keywords,
                 link
                 onClick={() => fetchNextPage()}
             />}
+            <Separator />
+            <Toggle
+                checked={require2fa}
+                direction='rtl'
+                gap='gap-0'
+                label='Require email two-factor authentication on every login'
+                labelClasses='w-full'
+                onChange={async () => {
+                    const newValue = !require2fa;
+                    try {
+                        await editSettings([{
+                            key: 'require_email_mfa',
+                            value: newValue
+                        }]);
+                    } catch (error) {
+                        handleError(error);
+                    }
+                }}
+            />
         </TopLevelGroup>
     );
 };

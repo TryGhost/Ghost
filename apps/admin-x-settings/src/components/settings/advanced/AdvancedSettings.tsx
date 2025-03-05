@@ -4,7 +4,6 @@ import History from './History';
 import Integrations from './Integrations';
 import Labs from './Labs';
 import MigrationTools from './MigrationTools';
-import MultiFactorAuth from './MultiFactorAuth';
 import React from 'react';
 import SearchableSection from '../../SearchableSection';
 import SpamFilters from './SpamFilters';
@@ -16,7 +15,6 @@ export const searchKeywords = {
     labs: ['advanced', 'labs', 'alpha', 'beta', 'flag', 'routes', 'redirect', 'translation', 'editor', 'portal'],
     history: ['advanced', 'history', 'log', 'events', 'user events', 'staff'],
     dangerzone: ['danger', 'danger zone', 'delete', 'content', 'delete all content', 'delete site'],
-    multiFactorAuth: ['advanced', 'security', '2fa', 'two factor authentication', 'two-factor authentication', 'multi factor authentication'],
     spamFilters: ['membership', 'signup', 'sign up', 'spam', 'filters', 'prevention', 'prevent', 'block', 'domains', 'email']
 };
 
@@ -26,7 +24,6 @@ const AdvancedSettings: React.FC = () => {
             <Integrations keywords={searchKeywords.integrations} />
             <MigrationTools keywords={searchKeywords.migrationtools} />
             <SpamFilters keywords={searchKeywords.spamFilters} />
-            <MultiFactorAuth keywords={searchKeywords.multiFactorAuth} />
             <CodeInjection keywords={searchKeywords.codeInjection} />
             <Labs keywords={searchKeywords.labs} />
             <History keywords={searchKeywords.history} />
