@@ -10,7 +10,6 @@ function displayErrorIfElementExists(errorEl, message) {
 }
 
 function handleError(error, form, errorEl, t) {
-    console.log('Submission error:', error);
     form.classList.add('error');
     const defaultMessage = t('There was an error sending the email, please try again');
     displayErrorIfElementExists(errorEl, chooseBestErrorMessage(error, defaultMessage, t));
