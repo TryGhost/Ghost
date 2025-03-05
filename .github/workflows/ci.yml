@@ -1154,7 +1154,10 @@ jobs:
         needs.job_setup.outputs.is_main == 'true'
         || (
           github.event_name == 'pull_request'
-          && needs.job_setup.outputs.member_is_in_org == 'true'
+          && (
+            needs.job_setup.outputs.member_is_in_org == 'true'
+            || github.event.pull_request.user.login == 'renovate[bot]'
+          )
           && contains(github.event.pull_request.labels.*.name, 'deploy-to-staging')
         )
       )
