@@ -1,8 +1,9 @@
 import moment from 'moment-timezone';
 
-export const TB_VERSION = 1;
+export const TB_VERSION = 0;
 
 export const API_VERSION_OPTIONS = [
+    {name: 'v0', value: 0},
     {name: 'v1', value: 1},
     {name: 'v2', value: 2},
     {name: 'v3', value: 3},
@@ -187,6 +188,7 @@ export function getStatsParams(config, props, additionalParams = {}) {
     if (os) {
         params.os = os;
     }
+
     if (postType) {
         params.post_type = postType;
     }
