@@ -146,6 +146,7 @@ const PostsTab: React.FC = () => {
                             >
                                 <FeedItem
                                     actor={activity.actor}
+                                    allowDelete={true}
                                     layout='feed'
                                     object={activity.object}
                                     type={activity.type}
@@ -183,6 +184,7 @@ const LikesTab: React.FC = () => {
                             >
                                 <FeedItem
                                     actor={activity.object?.attributedTo as ActorProperties || activity.actor}
+                                    allowDelete={false}
                                     layout='feed'
                                     object={Object.assign({}, activity.object, {liked: true})}
                                     type={activity.type}
