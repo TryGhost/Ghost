@@ -867,31 +867,27 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                         <div className={`mx-auto px-8 pb-10 pt-5`} style={{maxWidth: currentMaxWidth}}>
                             {threadParents.map((item) => {
                                 return (
-                                    <>
-                                        {
-                                            isEnabled('deleteButton') && item.object.type === 'Tombstone' ? (
-                                                <DeletedFeedItem last={false} />
-                                            ) : (
-                                                <FeedItem
-                                                    actor={item.actor}
-                                                    allowDelete={false}
-                                                    commentCount={item.object.replyCount ?? 0}
-                                                    last={false}
-                                                    layout='reply'
-                                                    object={item.object}
-                                                    repostCount={item.object.repostCount ?? 0}
-                                                    type='Note'
-                                                    onClick={() => {
-                                                        navigateForward(item.id, item.object, item.actor, false);
-                                                    }}
-                                                    onCommentClick={() => {
-                                                        navigateForward(item.id, item.object, item.actor, true);
-                                                        setIsFocused(true);
-                                                    }}
-                                                />
-                                            )
-                                        }
-                                    </>
+                                    isEnabled('deleteButton') && item.object.type === 'Tombstone' ? (
+                                        <DeletedFeedItem last={false} />
+                                    ) : (
+                                        <FeedItem
+                                            actor={item.actor}
+                                            allowDelete={false}
+                                            commentCount={item.object.replyCount ?? 0}
+                                            last={false}
+                                            layout='reply'
+                                            object={item.object}
+                                            repostCount={item.object.repostCount ?? 0}
+                                            type='Note'
+                                            onClick={() => {
+                                                navigateForward(item.id, item.object, item.actor, false);
+                                            }}
+                                            onCommentClick={() => {
+                                                navigateForward(item.id, item.object, item.actor, true);
+                                                setIsFocused(true);
+                                            }}
+                                        />
+                                    )
                                 );
                             })}
 

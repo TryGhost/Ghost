@@ -77,8 +77,6 @@ export function mapPostToActivity(post: Post): Activity {
         };
     }
 
-    // If the post is an article, then the object type is: "Article"
-    // otherwise, we use "Note" as the object type
     let objectType: 'Article' | 'Note' | 'Tombstone' = 'Note';
 
     if (post.type === PostType.Article) {
