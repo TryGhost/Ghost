@@ -1,5 +1,5 @@
 
-<div class="gh-stats-tabs-header" {{did-update this.fetchDataIfNeeded @chartRange @audience @device @browser @location @source @pathname @apiVersion}}>
+<div class="gh-stats-tabs-header" {{did-update this.fetchDataIfNeeded @chartRange @audience @device @browser @location @source @pathname}}>
     <div class="gh-stats-tabs">
         <button type="button" class="gh-stats-tab min-width {{if this.uniqueVisitsTabSelected 'is-selected'}}" {{on "click" this.changeTabToUniqueVisits}}>
             <Stats::Parts::Metric
@@ -54,6 +54,5 @@
         @source={{@source}}
         @pathname={{@pathname}}
         @selected={{this.selected}}
-        @apiVersion={{@apiVersion}}
     />
 </div>
