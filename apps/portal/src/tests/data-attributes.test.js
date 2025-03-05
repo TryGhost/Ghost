@@ -112,38 +112,6 @@ describe('Member Data attributes:', () => {
             return Promise.resolve({});
         });
 
-        jest.spyOn(window, 'fetch').mockImplementation((url) => {
-            if (url.includes('send-magic-link')) {
-                return Promise.resolve({
-                    ok: true,
-                    json: async () => ({success: true})
-                });
-            }
-            if (url.includes('api/integrity-token')) {
-                return Promise.resolve({
-                    ok: true,
-                    text: async () => 'testtoken'
-                });
-            }
-            // Add more cases later for error scenarios
-            return Promise.resolve({});
-        });
-    
-        // Spy on form.classList.add
-        const form = {
-            removeEventListener: jest.fn(),
-            classList: {
-                remove: jest.fn(),
-                add: jest.fn() // Spy to track class additions
-            },
-            dataset: {membersForm: 'signup'},
-            addEventListener: jest.fn()
-        };
-        jest.spyOn(form.classList, 'add');
-    
-        // Mock console.log (optional)
-        jest.spyOn(console, 'log').mockImplementation(() => {});
-
         // Mock global Stripe
         window.Stripe = () => {};
         jest.spyOn(window, 'Stripe').mockImplementation(() => {
@@ -309,56 +277,6 @@ describe('Member Data attributes:', () => {
                 },
                 method: 'POST'
             });
-        });
-    });
-
-    describe('data-members-error', () => {
-        test('displays error message when errorEl exists and network error occurs', async () => {
-            const {event, form, errorEl, siteUrl, submitHandler} = getMockData();
-        
-            // Mock fetch to reject with a network error
-            window.fetch.mockImplementationOnce(() => Promise.reject(new Error('Network error'))
-            );
-
-            await formSubmitHandler({event, form, errorEl, siteUrl, submitHandler});
-
-            expect(errorEl.innerText).toBe('There was an error sending the email, please try again');
-            expect(form.classList.add).toHaveBeenCalledWith('error');
-            expect(window.fetch).toHaveBeenCalledTimes(1);
-        });
-
-        test('handles error gracefully when errorEl is null', async () => {
-            const {event, form, siteUrl, submitHandler} = getMockData();
-
-            window.fetch.mockImplementationOnce(() => Promise.reject(new Error('Network error'))
-            );
-
-            await expect(
-                formSubmitHandler({event, form, errorEl: null, siteUrl, submitHandler})
-            ).resolves.not.toThrow();
-            expect(form.classList.add).toHaveBeenCalledWith('error');
-            expect(window.fetch).toHaveBeenCalledTimes(1);
-        });
-
-        test('handles error when email does not exist', async () => {
-            const {event, form, errorEl, siteUrl, submitHandler} = getMockData();
-
-            window.fetch
-                .mockResolvedValueOnce({
-                    ok: true,
-                    text: async () => 'testtoken'
-                })
-                .mockResolvedValueOnce({
-                    ok: false,
-                    json: async () => ({errors: [{message: 'No member exists with this e-mail address. Please sign up first.'}]}),
-                    status: 400
-                });
-
-            await formSubmitHandler({event, form, errorEl, siteUrl, submitHandler});
-
-            expect(window.fetch).toHaveBeenCalledTimes(2);
-            expect(form.classList.add).toHaveBeenCalledWith('error');
-            expect(errorEl.innerText).toBe('No member exists with this e-mail address. Please sign up first.');
         });
     });
 
@@ -657,6 +575,56 @@ describe('Portal Data attributes:', () => {
             expect(popupFrame).toBeInTheDocument();
             const accountProfileTitle = within(popupFrame.contentDocument).queryByText(/account settings/i);
             expect(accountProfileTitle).toBeInTheDocument();
+        });
+    });
+
+    describe('data-members-error', () => {
+        test('displays error message when errorEl exists and network error occurs', async () => {
+            const {event, form, errorEl, siteUrl, submitHandler} = getMockData();
+
+            // Mock fetch to reject with a network error
+            window.fetch.mockImplementationOnce(() => Promise.reject(new Error('Network error'))
+            );
+
+            await formSubmitHandler({event, form, errorEl, siteUrl, submitHandler});
+
+            expect(errorEl.innerText).toBe('There was an error sending the email, please try again');
+            expect(form.classList.add).toHaveBeenCalledWith('error');
+            expect(window.fetch).toHaveBeenCalledTimes(1);
+        });
+
+        test('handles error gracefully when errorEl is null', async () => {
+            const {event, form, siteUrl, submitHandler} = getMockData();
+
+            window.fetch.mockImplementationOnce(() => Promise.reject(new Error('Network error'))
+            );
+
+            await expect(
+                formSubmitHandler({event, form, errorEl: null, siteUrl, submitHandler})
+            ).resolves.not.toThrow();
+            expect(form.classList.add).toHaveBeenCalledWith('error');
+            expect(window.fetch).toHaveBeenCalledTimes(1);
+        });
+
+        test('handles error when email does not exist', async () => {
+            const {event, form, errorEl, siteUrl, submitHandler} = getMockData();
+
+            window.fetch
+                .mockResolvedValueOnce({
+                    ok: true,
+                    text: async () => 'testtoken'
+                })
+                .mockResolvedValueOnce({
+                    ok: false,
+                    json: async () => ({errors: [{message: 'No member exists with this e-mail address. Please sign up first.'}]}),
+                    status: 400
+                });
+
+            await formSubmitHandler({event, form, errorEl, siteUrl, submitHandler});
+
+            expect(window.fetch).toHaveBeenCalledTimes(2);
+            expect(form.classList.add).toHaveBeenCalledWith('error');
+            expect(errorEl.innerText).toBe('No member exists with this e-mail address. Please sign up first.');
         });
     });
 });
