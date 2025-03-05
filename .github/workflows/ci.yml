@@ -122,7 +122,6 @@ jobs:
               - *shared
               - 'apps/sodo-search/**'
             tinybird:
-              - *shared
               - 'ghost/tinybird-dedicated/**'
               - '!ghost/tinybird-dedicated/**/*.md'
             any-code:
@@ -1286,7 +1285,7 @@ jobs:
       job_setup,
       job_tinybird
     ]
-    if: always() && needs.job_setup.outputs.changed_tinybird == 'true' && needs.job_setup.result == 'success' && needs.job_tinybird.result == 'success'
+    if: always() && needs.job_setup.outputs.changed_tinybird == 'true' && needs.job_setup.result == 'success' && needs.job_tinybird.result == 'success' && needs.job_setup.outputs.is_main == 'true'
     strategy:
       matrix:
         environment: [ 'staging', 'production']
@@ -1326,7 +1325,7 @@ jobs:
           if [ ! -f "$DEPLOY_FILE" ]; then
             echo "$DEPLOY_FILE not found, running default tb push command"
             tb branch current
-            tb deploy --dry-run
+            tb deploy
           fi
       - name: Custom deployment to the main Workspace
         run: |
