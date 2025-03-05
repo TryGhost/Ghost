@@ -17,6 +17,22 @@
                 {{#if option.name}}{{option.name}}{{else}}<span class="red">Unknown option</span>{{/if}}
             </PowerSelect>
 
+            <PowerSelect
+                @selected={{this.selectedPostTypeOption}}
+                @options={{this.postTypeOptions}}
+                @searchEnabled={{false}}
+                @onChange={{this.onPostTypeChange}}
+                @triggerComponent={{component "gh-power-select/trigger"}}
+                @triggerClass="gh-btn"
+                @dropdownClass="gh-contentfilter-menu-dropdown is-narrow"
+                @matchTriggerWidth={{false}}
+                @horizontalPosition="right"
+                as |option|
+            >
+                {{#if option.name}}{{option.name}}{{else}}<span class="red">Unknown option</span>{{/if}}
+            </PowerSelect>
+
+
             <Stats::Parts::AudienceFilter
                 @excludedAudiences={{this.excludedAudiences}}
                 @onChange={{this.onAudienceChange}}
@@ -82,6 +98,7 @@
             <Stats::KpisOverview
                 @chartRange={{this.chartRange}}
                 @audience={{this.audience}}
+                @postType={{this.postType}}
                 @device={{this.device}}
                 @browser={{this.browser}}
                 @location={{this.location}}
@@ -97,6 +114,7 @@
                 <Stats::Charts::TopPages
                     @chartRange={{this.chartRange}}
                     @audience={{this.audience}}
+                    @postType={{this.postType}}
                     @device={{this.device}}
                     @browser={{this.browser}}
                     @location={{this.location}}
@@ -110,6 +128,7 @@
                 <Stats::Charts::TopSources
                     @chartRange={{this.chartRange}}
                     @audience={{this.audience}}
+                    @postType={{this.postType}}
                     @device={{this.device}}
                     @browser={{this.browser}}
                     @location={{this.location}}
@@ -126,6 +145,7 @@
                     <Stats::Charts::TopLocations
                     @chartRange={{this.chartRange}}
                     @audience={{this.audience}}
+                    @postType={{this.postType}}
                     @device={{this.device}}
                     @browser={{this.browser}}
                     @location={{this.location}}
@@ -139,6 +159,7 @@
                     <Stats::TechnicalOverview
                         @chartRange={{this.chartRange}}
                         @audience={{this.audience}}
+                        @postType={{this.postType}}
                         @device={{this.device}}
                         @browser={{this.browser}}
                         @location={{this.location}}

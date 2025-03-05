@@ -15,6 +15,12 @@ export const API_VERSION_OPTIONS = [
     {name: 'v10', value: 10}
 ];
 
+export const POST_TYPE_OPTIONS = [
+    {name: 'All', value: 'all'},
+    {name: 'Posts', value: 'post'},
+    {name: 'Pages', value: 'page'}
+];
+
 export const RANGE_OPTIONS = [
     {name: 'Last 24 hours', value: 1},
     {name: 'Last 7 days', value: 7},
@@ -144,7 +150,7 @@ export function getDateRange(chartRange) {
 }
 
 export function getStatsParams(config, props, additionalParams = {}) {
-    const {chartRange, audience, device, browser, location, source, pathname, os} = props;
+    const {chartRange, audience, device, browser, location, source, pathname, os, postType} = props;
     const {startDate, endDate} = getDateRange(chartRange);
 
     const params = {
@@ -180,6 +186,9 @@ export function getStatsParams(config, props, additionalParams = {}) {
 
     if (os) {
         params.os = os;
+    }
+    if (postType) {
+        params.post_type = postType;
     }
 
     return params;
