@@ -277,6 +277,7 @@ const Users: React.FC<{ keywords: string[], highlight?: boolean }> = ({keywords,
 
     const {settings} = useGlobalData();
     const require2fa = getSettingValue<boolean>(settings, 'require_email_mfa') || false;
+    const labs = JSON.parse(getSettingValue<string>(settings, 'labs') || '{}');
     const {mutateAsync: editSettings} = useEditSettings();
     const handleError = useHandleError();
 
@@ -297,25 +298,29 @@ const Users: React.FC<{ keywords: string[], highlight?: boolean }> = ({keywords,
                 link
                 onClick={() => fetchNextPage()}
             />}
-            <Separator />
-            <Toggle
-                checked={require2fa}
-                direction='rtl'
-                gap='gap-0'
-                label='Require email two-factor authentication on every login'
-                labelClasses='w-full'
-                onChange={async () => {
-                    const newValue = !require2fa;
-                    try {
-                        await editSettings([{
-                            key: 'require_email_mfa',
-                            value: newValue
-                        }]);
-                    } catch (error) {
-                        handleError(error);
-                    }
-                }}
-            />
+            {labs.staff2fa && (
+                <>
+                    <Separator />
+                    <Toggle
+                        checked={require2fa}
+                        direction='rtl'
+                        gap='gap-0'
+                        label='Require email two-factor authentication on every login'
+                        labelClasses='w-full'
+                        onChange={async () => {
+                            const newValue = !require2fa;
+                            try {
+                                await editSettings([{
+                                    key: 'require_email_mfa',
+                                    value: newValue
+                                }]);
+                            } catch (error) {
+                                handleError(error);
+                            }
+                        }}
+                    />
+                </>
+            )}
         </TopLevelGroup>
     );
 };
