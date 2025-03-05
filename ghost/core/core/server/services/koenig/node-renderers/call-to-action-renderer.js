@@ -3,6 +3,8 @@ import {renderWithVisibility} from '../../utils/visibility';
 import {getResizedImageDimensions} from '../../utils/get-resized-image-dimensions';
 import {isLocalContentImage} from '../../utils/is-local-content-image';
 
+const showButton = dataset => dataset.showButton && dataset.buttonUrl && dataset.buttonText;
+
 function ctaCardTemplate(dataset) {
     // Add validation for buttonColor
     if (!dataset.buttonColor || !dataset.buttonColor.match(/^[a-zA-Z\d-]+|#([a-fA-F\d]{3}|[a-fA-F\d]{6})$/)) {
@@ -32,7 +34,7 @@ function ctaCardTemplate(dataset) {
                             ${dataset.textValue}
                         </div>
                     ` : ''}
-                    ${dataset.showButton ? `
+                    ${showButton(dataset) ? `
                         <a href="${dataset.buttonUrl}" class="kg-cta-button ${buttonAccent}" ${buttonStyle}>
                             ${dataset.buttonText}
                         </a>
@@ -91,7 +93,7 @@ function emailCTATemplate(dataset, options = {}) {
                                                 </td>
                                             </tr>
                                         ` : ''}
-                                        ${dataset.showButton ? `
+                                        ${showButton(dataset) ? `
                                         <tr>
                                             <td class="kg-cta-button-container">
                                                 <table border="0" cellpadding="0" cellspacing="0" class="kg-cta-button-wrapper">
@@ -140,7 +142,7 @@ function emailCTATemplate(dataset, options = {}) {
                                 ${dataset.textValue}
                             </td>
                         </tr>
-                        ${dataset.showButton ? `
+                        ${showButton(dataset) ? `
                             <tr>
                                 <td class="kg-cta-button-container">
                                     <table border="0" cellpadding="0" cellspacing="0" width="100%">
