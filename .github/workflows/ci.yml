@@ -838,7 +838,7 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
   job_tinybird:
-    name: Tinybird Tests
+    name: Tinybird Tests (Web Analytics)
     runs-on: ubuntu-latest
     needs: [
       job_setup

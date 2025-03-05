@@ -55,7 +55,7 @@ export default class TopSources extends Component {
 
     ReactComponent = (props) => {
         const {data, meta, error, loading} = useQuery({
-            endpoint: `${this.config.stats.endpoint}/v0/pipes/api_top_sources__v${props.apiVersion || TB_VERSION}.json`,
+            endpoint: `${this.config.stats.endpoint}/v0/pipes/api_top_sources__v${TB_VERSION}.json`,
             token: this.config.stats.token,
             params: getStatsParams(
                 this.config,
