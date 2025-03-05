@@ -1,4 +1,4 @@
-VERSION 0
+VERSION 1
 DESCRIPTION >
     Visits trend over time for the last 30 minutes, filling the blanks.
     Works great for the realtime chart.
@@ -25,6 +25,7 @@ SQL >
         JSONExtractString(payload, 'member_uuid') as member_uuid,
         JSONExtractString(payload, 'member_status') as member_status,
         JSONExtractString(payload, 'post_uuid') as post_uuid,
+        JSONExtractString(payload, 'post_type') as post_type,
         lower(JSONExtractString(payload, 'user-agent')) as user_agent
     FROM analytics_events
     where action = 'page_hit'
