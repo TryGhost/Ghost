@@ -48,6 +48,7 @@ function NewsletterPrefSection({newsletter, subscribedNewsletters, setSubscribed
 }
 
 function NewsletterPrefs({subscribedNewsletters, setSubscribedNewsletters}) {
+    console.log('subscribedNewsletters', subscribedNewsletters);
     const {site, t} = useContext(AppContext);
     const newsletters = getSiteNewsletters({site});
     return newsletters.map((newsletter) => {
@@ -104,13 +105,8 @@ export default function NewsletterSelectionPage({pageData, onBack}) {
                             retry={retry}
                             disabled={disabled}
                             onClick={() => {
-                                let newsletters = subscribedNewsletters.map((d) => {
-                                    return {
-                                        id: d.id
-                                    };
-                                });
                                 const {name, email, plan, phonenumber, offerId} = pageData;
-                                onAction('signup', {name, email, plan, phonenumber, newsletters, offerId});
+                                onAction('signup', {name, email, plan, phonenumber, newsletters: subscribedNewsletters, offerId});
                             }}
                             brandColor={brandColor}
                             label={label}
