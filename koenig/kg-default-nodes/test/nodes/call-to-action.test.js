@@ -370,6 +370,47 @@ describe('CallToActionNode', function () {
                 element.dataset.ghSegment.should.equal('status:free');
             });
         }));
+
+        it('uses default buttonText when created with empty buttonText (web)', editorTest(function () {
+            dataset.showButton = true;
+            dataset.buttonText = '';
+
+            testRender(({html}) => {
+                html.should.containEql('<a href="http://blog.com/post1"');
+                html.should.containEql('Learn more');
+            });
+        }));
+
+        function testButtonSkipOnMissingData(target, layout, {missing = []} = {}) {
+            return editorTest(function () {
+                dataset.layout = layout;
+                dataset.showButton = true;
+                dataset.buttonUrl = 'http://blog.com/post1';
+                dataset.buttonText = 'Click me';
+                exportOptions.target = target;
+
+                // NOTE: does not use testRender() because we need to set button text later to avoid node defaults
+                const callToActionNode = new CallToActionNode(dataset);
+
+                // clear out the missing data
+                missing.forEach((prop) => {
+                    callToActionNode[prop] = '';
+                });
+
+                const {element} = callToActionNode.exportDOM(exportOptions);
+                const html = element.outerHTML.toString();
+
+                html.should.not.containEql('<a href="http://blog.com/post1"');
+                html.should.not.containEql('Click me');
+            });
+        }
+
+        it('skips button when buttonUrl is empty (web, minimal)', testButtonSkipOnMissingData('web', 'minimal', {missing: ['buttonUrl']}));
+        it('skips button when buttonText is empty (web, minimal)', testButtonSkipOnMissingData('web', 'minimal', {missing: ['buttonText']}));
+        it('skips button when buttonUrl is empty (email, minimal)', testButtonSkipOnMissingData('email', 'minimal', {missing: ['buttonUrl']}));
+        it('skips button when buttonUrl is empty (email, immersive)', testButtonSkipOnMissingData('email', 'immersive', {missing: ['buttonUrl']}));
+        it('skips button when buttonText is empty (email, minimal)', testButtonSkipOnMissingData('email', 'minimal', {missing: ['buttonText']}));
+        it('skips button when buttonText is empty (email, immersive)', testButtonSkipOnMissingData('email', 'immersive', {missing: ['buttonText']}));
     });
 
     describe('exportJSON', function () {
