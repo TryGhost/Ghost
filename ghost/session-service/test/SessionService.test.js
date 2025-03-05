@@ -14,6 +14,11 @@ describe('SessionService', function () {
             };
             return req.session;
         };
+        const getSettingsCache = sinon.spy(async (key) => {
+            if (key === 'require_email_mfa') {
+                return false;
+            }
+        });
         const findUserById = sinon.spy(async ({id}) => ({id}));
         const getOriginOfRequest = sinon.stub().returns('origin');
         const labs = {
@@ -24,6 +29,7 @@ describe('SessionService', function () {
             getSession,
             findUserById,
             getOriginOfRequest,
+            getSettingsCache,
             labs
         });
 
@@ -157,6 +163,11 @@ describe('SessionService', function () {
             };
             return req.session;
         };
+        const getSettingsCache = sinon.spy((key) => {
+            if (key === 'require_email_mfa') {
+                return false;
+            }
+        });
         const findUserById = sinon.spy(async ({id}) => ({id}));
         const getOriginOfRequest = sinon.stub().returns('origin');
         const labs = {
@@ -167,6 +178,7 @@ describe('SessionService', function () {
             getSession,
             findUserById,
             getOriginOfRequest,
+            getSettingsCache,
             labs
         });
 
@@ -577,9 +589,11 @@ describe('SessionService', function () {
             };
             return req.session;
         };
-        const getSettingsCache = sinon.spy(async (key) => {
+        const getSettingsCache = sinon.spy((key) => {
             if (key === 'require_email_mfa') {
                 return true;
+            } else {
+                return 'site-title';
             }
         });
         const findUserById = sinon.spy(async ({id}) => ({id}));
@@ -621,10 +635,10 @@ describe('SessionService', function () {
 
         await sessionService.removeUserForSession(req, res);
         should.equal(req.session.user_id, undefined);
-        should.equal(req.session.verified, true);
+        should.equal(req.session.verified, undefined);
 
         await sessionService.createSessionForUser(req, res, user);
         should.equal(req.session.user_id, 'egg');
-        should.equal(req.session.verified, true);
+        should.equal(req.session.verified, undefined);
     });
 });
