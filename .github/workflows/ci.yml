@@ -97,8 +97,7 @@ jobs:
               - *shared
               - 'ghost/**'
               - '!ghost/admin/**'
-              - '!ghost/tinybird-dedicated/**'
-              - '!ghost/tinybird/**'
+              - '!ghost/web-analytics/**'
             admin:
               - *shared
               - 'ghost/admin/**'
@@ -122,8 +121,8 @@ jobs:
               - *shared
               - 'apps/sodo-search/**'
             tinybird:
-              - 'ghost/tinybird-dedicated/**'
-              - '!ghost/tinybird-dedicated/**/*.md'
+              - 'ghost/web-analytics/**'
+              - '!ghost/web-analytics/**/*.md'
             any-code:
               - '!**/*.md'
 
@@ -846,7 +845,7 @@ jobs:
     ]
     defaults:
       run:
-        working-directory: ghost/tinybird-dedicated
+        working-directory: ghost/web-analytics
     if: needs.job_setup.outputs.changed_tinybird == 'true'
     steps:
       - name: Get User Permission
@@ -1292,7 +1291,7 @@ jobs:
     name: Deploy Tinybird
     defaults:
       run:
-        working-directory: ghost/tinybird-dedicated
+        working-directory: ghost/web-analytics
     steps:
       - name: Checkout
         uses: actions/checkout@v4
