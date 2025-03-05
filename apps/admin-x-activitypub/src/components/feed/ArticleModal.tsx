@@ -7,6 +7,7 @@ import getUsername from '../../utils/get-username';
 import {OptionProps, SingleValueProps, components} from 'react-select';
 import {Popover, PopoverContent, PopoverTrigger, Skeleton} from '@tryghost/shade';
 
+import useFocusedState from '@hooks/use-focused-state';
 import {Activity, ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, Icon, LoadingIndicator, Modal, Select, SelectOption} from '@tryghost/admin-x-design-system';
 import {renderTimestamp} from '../../utils/render-timestamp';
@@ -376,8 +377,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
 }) => {
     const MODAL_SIZE_SM = 640;
     const MODAL_SIZE_LG = 1420;
-    const [isFocused, setIsFocused] = useState(focusReply ? 1 : 0);
-    const [focusTimestamp, setFocusTimestamp] = useState<number>(0);
+    const [isFocused, setIsFocused] = useFocusedState(focusReply);
 
     const {threadQuery, addToThread} = useThreadForUser('index', activityId);
     const {data: thread, isLoading: isLoadingThread} = threadQuery;
@@ -870,8 +870,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                             }}
                                             onCommentClick={() => {
                                                 navigateForward(item.id, item.object, item.actor, true);
-                                                setIsFocused(1);
-                                                setFocusTimestamp(Date.now());
+                                                setIsFocused(true);
                                             }}
                                         />
                                     </>
@@ -893,8 +892,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                             behavior: 'smooth',
                                             block: 'center'
                                         });
-                                        setIsFocused(1);
-                                        setFocusTimestamp(Date.now());
+                                        setIsFocused(true);
                                     }}
                                 />
                             )}
@@ -924,8 +922,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                                     behavior: 'smooth',
                                                     block: 'center'
                                                 });
-                                                setIsFocused(1);
-                                                setFocusTimestamp(Date.now());
+                                                setIsFocused(true);
                                             }}
                                             onLikeClick={onLikeClick}
                                         />
@@ -936,7 +933,6 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                             <div ref={replyBoxRef}>
                                 <APReplyBox
                                     focused={isFocused}
-                                    focusTimestamp={focusTimestamp}
                                     object={object}
                                     onNewReply={handleNewReply}
                                 />
@@ -964,8 +960,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                                 }}
                                                 onCommentClick={() => {
                                                     navigateForward(item.id, item.object, item.actor, true);
-                                                    setIsFocused(1);
-                                                    setFocusTimestamp(Date.now());
+                                                    setIsFocused(true);
                                                 }}
                                             />
                                             {showDivider && <FeedItemDivider />}
