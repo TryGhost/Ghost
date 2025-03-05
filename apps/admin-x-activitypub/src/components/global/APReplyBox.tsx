@@ -22,6 +22,21 @@ export interface APTextAreaProps extends HTMLProps<HTMLTextAreaElement> {
     focused: number;
 }
 
+export const useFocusedState = (initialValue: boolean) => {
+    const [state, setUnderlyingState] = useState(initialValue ? 1 : 0);
+
+    const setState = (value: boolean | ((prev: number) => number)) => {
+        if (value === false) {
+            return setUnderlyingState(0);
+        }
+        setUnderlyingState((prev) => {
+            return prev + 1;
+        });
+    };
+
+    return [state, setState] as const;
+};
+
 const APReplyBox: React.FC<APTextAreaProps> = ({
     title,
     value,
