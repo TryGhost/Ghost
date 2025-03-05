@@ -1325,7 +1325,7 @@ jobs:
           if [ ! -f "$DEPLOY_FILE" ]; then
             echo "$DEPLOY_FILE not found, running default tb push command"
             tb branch current
-            tb deploy
+            tb deploy --dry-run
           fi
       - name: Custom deployment to the main Workspace
         run: |
