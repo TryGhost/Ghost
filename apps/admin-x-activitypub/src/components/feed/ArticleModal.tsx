@@ -21,7 +21,6 @@ import DeletedFeedItem from './DeletedFeedItem';
 import TableOfContents, {TOCItem} from './TableOfContents';
 import getReadingTime from '../../utils/get-reading-time';
 import {useDebounce} from 'use-debounce';
-import {useFeatureFlags} from '@src/lib/feature-flags';
 
 interface ArticleModalProps {
     activityId: string;
@@ -708,8 +707,6 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
         return () => clearTimeout(timeoutId);
     }, [iframeElement, tocItems, activeHeadingId]);
 
-    const {isEnabled} = useFeatureFlags();
-
     return (
         <Modal
             align='right'
@@ -867,7 +864,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                         <div className={`mx-auto px-8 pb-10 pt-5`} style={{maxWidth: currentMaxWidth}}>
                             {threadParents.map((item) => {
                                 return (
-                                    isEnabled('deleteButton') && item.object.type === 'Tombstone' ? (
+                                    item.object.type === 'Tombstone' ? (
                                         <DeletedFeedItem last={false} />
                                     ) : (
                                         <FeedItem
@@ -944,7 +941,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                     </div>
                                 </div>
                             )}
-                            {isEnabled('deleteButton') && object.type === 'Tombstone' && (
+                            {object.type === 'Tombstone' && (
                                 <DeletedFeedItem last={true} />
                             )}
 
