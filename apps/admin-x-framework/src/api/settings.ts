@@ -31,7 +31,7 @@ export const useBrowseSettings = createQuery<SettingsResponseType>({
     dataType,
     path: '/settings/',
     defaultSearchParams: {
-        group: 'site,theme,private,members,portal,newsletter,email,amp,labs,slack,unsplash,views,firstpromoter,editor,comments,analytics,announcement,pintura,donations,security'
+        group: 'site,theme,private,members,portal,newsletter,email,amp,labs,slack,unsplash,views,firstpromoter,editor,comments,analytics,announcement,pintura,donations'
     }
 });
 

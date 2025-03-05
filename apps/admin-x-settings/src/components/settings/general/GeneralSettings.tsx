@@ -5,7 +5,6 @@ import LockSite from './LockSite';
 import Metadata from './Metadata';
 import PublicationLanguage from './PublicationLanguage';
 import SearchableSection from '../../SearchableSection';
-import Security from './Security';
 import SocialAccounts from './SocialAccounts';
 import TimeZone from './TimeZone';
 import TitleAndDescription from './TitleAndDescription';
