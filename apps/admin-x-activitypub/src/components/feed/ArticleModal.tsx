@@ -455,11 +455,11 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
 
         // Update the replyCount on the current activity loaded in the modal
         // This is used for when we navigate via the history
-        setReplyCount(replyCount + 1);
+        setReplyCount((current: number) => current + 1);
     }
 
     function decrementReplyCount(step: number = 1) {
-        setReplyCount(replyCount - step);
+        setReplyCount((current: number) => current - step);
     }
 
     const replyBoxRef = useRef<HTMLDivElement>(null);
