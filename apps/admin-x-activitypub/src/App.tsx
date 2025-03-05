@@ -13,14 +13,14 @@ const App: React.FC<AppProps> = ({framework, designSystem}) => {
     return (
         <FrameworkProvider {...framework}>
             <RouterProvider prefix={APP_ROUTE_PREFIX} routes={routes}>
-                <DesignSystemApp className='shade' {...designSystem}>
-                    {/* TODO: remove className='' from ShadeApp once DesignSystemApp is removed to apply 'shade' to the main container */}
-                    <ShadeApp className='' darkMode={designSystem.darkMode} fetchKoenigLexical={null}>
-                        <FeatureFlagsProvider>
+                <FeatureFlagsProvider>
+                    <DesignSystemApp className='shade' {...designSystem}>
+                        {/* TODO: remove className='' from ShadeApp once DesignSystemApp is removed to apply 'shade' to the main container */}
+                        <ShadeApp className='' darkMode={designSystem.darkMode} fetchKoenigLexical={null}>
                             <Outlet />
-                        </FeatureFlagsProvider>
-                    </ShadeApp>
-                </DesignSystemApp>
+                        </ShadeApp>
+                    </DesignSystemApp>
+                </FeatureFlagsProvider>
             </RouterProvider>
         </FrameworkProvider>
     );
