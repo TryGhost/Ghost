@@ -230,13 +230,9 @@ const FeedItem: React.FC<FeedItemProps> = ({
     };
 
     const handleDelete = () => {
-        // @TODO: Show confirmation modal
-        const confirm = window.confirm(`Delete post\n\n${object.id}\n\n?`);
+        deleteMutation.mutate({id: object.id, parentId});
 
-        if (confirm) {
-            deleteMutation.mutate({id: object.id, parentId});
-            onDelete();
-        }
+        onDelete();
     };
 
     const handleCopyLink = async () => {
@@ -296,6 +292,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                     </div>
                                 </div>
                                 <FeedItemMenu
+                                    allowDelete={allowDelete}
                                     trigger={UserMenuTrigger}
                                     onCopyLink={handleCopyLink}
                                     onDelete={handleDelete}
@@ -388,6 +385,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                                 onLikeClick={onLikeClick}
                                             />
                                             <FeedItemMenu
+                                                allowDelete={allowDelete}
                                                 trigger={UserMenuTrigger}
                                                 onCopyLink={handleCopyLink}
                                                 onDelete={handleDelete}
@@ -425,6 +423,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                         </div>
                                     </div>
                                     <FeedItemMenu
+                                        allowDelete={allowDelete}
                                         trigger={UserMenuTrigger}
                                         onCopyLink={handleCopyLink}
                                         onDelete={handleDelete}
@@ -520,6 +519,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                         onLikeClick={onLikeClick}
                                     />
                                     <FeedItemMenu
+                                        allowDelete={allowDelete}
                                         trigger={UserMenuTrigger}
                                         onCopyLink={handleCopyLink}
                                         onDelete={handleDelete}

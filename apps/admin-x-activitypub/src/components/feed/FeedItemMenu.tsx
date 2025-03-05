@@ -21,12 +21,14 @@ interface FeedItemMenuProps {
     trigger: React.ReactNode;
     onCopyLink: () => void;
     onDelete: () => void;
+    allowDelete: boolean;
 }
 
 const FeedItemMenu: React.FC<FeedItemMenuProps> = ({
     trigger,
     onCopyLink,
-    onDelete
+    onDelete,
+    allowDelete = false
 }) => {
     const {isEnabled} = useFeatureFlags();
 
@@ -53,7 +55,7 @@ const FeedItemMenu: React.FC<FeedItemMenuProps> = ({
                                 Copy link
                             </Button>
                         </PopoverClose>
-                        {isEnabled('deleteButton') &&
+                        {isEnabled('deleteButton') && allowDelete &&
                             <AlertDialogTrigger asChild>
                                 <PopoverClose asChild>
                                     <Button
