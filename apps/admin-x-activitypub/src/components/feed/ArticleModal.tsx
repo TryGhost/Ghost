@@ -866,58 +866,54 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                     <div className='grow overflow-y-auto'>
                         <div className={`mx-auto px-8 pb-10 pt-5`} style={{maxWidth: currentMaxWidth}}>
                             {threadParents.map((item) => {
-                                if (isEnabled('deleteButton')) {
-                                    return <DeletedFeedItem last={false} />;
-                                }
-
                                 return (
                                     <>
-                                        <FeedItem
-                                            actor={item.actor}
-                                            allowDelete={false}
-                                            commentCount={item.object.replyCount ?? 0}
-                                            last={false}
-                                            layout='reply'
-                                            object={item.object}
-                                            repostCount={item.object.repostCount ?? 0}
-                                            type='Note'
-                                            onClick={() => {
-                                                navigateForward(item.id, item.object, item.actor, false);
-                                            }}
-                                            onCommentClick={() => {
-                                                navigateForward(item.id, item.object, item.actor, true);
-                                                setIsFocused(true);
-                                            }}
-                                        />
+                                        {
+                                            isEnabled('deleteButton') && item.object.type === 'Tombstone' ? (
+                                                <DeletedFeedItem last={false} />
+                                            ) : (
+                                                <FeedItem
+                                                    actor={item.actor}
+                                                    allowDelete={false}
+                                                    commentCount={item.object.replyCount ?? 0}
+                                                    last={false}
+                                                    layout='reply'
+                                                    object={item.object}
+                                                    repostCount={item.object.repostCount ?? 0}
+                                                    type='Note'
+                                                    onClick={() => {
+                                                        navigateForward(item.id, item.object, item.actor, false);
+                                                    }}
+                                                    onCommentClick={() => {
+                                                        navigateForward(item.id, item.object, item.actor, true);
+                                                        setIsFocused(true);
+                                                    }}
+                                                />
+                                            )
+                                        }
                                     </>
                                 );
                             })}
 
                             {object.type === 'Note' && (
-                                <>
-                                    {isEnabled('deleteButton') ?
-                                        <DeletedFeedItem last={true} />
-                                        :
-                                        <FeedItem
-                                            actor={actor}
-                                            allowDelete={false}
-                                            commentCount={replyCount}
-                                            last={true}
-                                            layout={'modal'}
-                                            object={object}
-                                            repostCount={object.repostCount ?? 0}
-                                            showHeader={(canNavigateBack || (threadParents.length > 0))}
-                                            type='Note'
-                                            onCommentClick={() => {
-                                                repliesRef.current?.scrollIntoView({
-                                                    behavior: 'smooth',
-                                                    block: 'center'
-                                                });
-                                                setIsFocused(true);
-                                            }}
-                                        />
-                                    }
-                                </>
+                                <FeedItem
+                                    actor={actor}
+                                    allowDelete={false}
+                                    commentCount={replyCount}
+                                    last={true}
+                                    layout={'modal'}
+                                    object={object}
+                                    repostCount={object.repostCount ?? 0}
+                                    showHeader={(canNavigateBack || (threadParents.length > 0))}
+                                    type='Note'
+                                    onCommentClick={() => {
+                                        repliesRef.current?.scrollIntoView({
+                                            behavior: 'smooth',
+                                            block: 'center'
+                                        });
+                                        setIsFocused(true);
+                                    }}
+                                />
                             )}
                             {object.type === 'Article' && (
                                 <div className='border-b border-gray-200 pb-8 dark:border-gray-950' id='object-content'>
@@ -951,6 +947,9 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                         />
                                     </div>
                                 </div>
+                            )}
+                            {isEnabled('deleteButton') && object.type === 'Tombstone' && (
+                                <DeletedFeedItem last={true} />
                             )}
 
                             <div ref={replyBoxRef}>
