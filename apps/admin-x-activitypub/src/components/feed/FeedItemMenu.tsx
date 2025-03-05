@@ -15,6 +15,7 @@ import {
     PopoverTrigger,
     buttonVariants
 } from '@tryghost/shade';
+import {useFeatureFlags} from '@src/lib/feature-flags';
 
 interface FeedItemMenuProps {
     trigger: React.ReactNode;
@@ -27,6 +28,8 @@ const FeedItemMenu: React.FC<FeedItemMenuProps> = ({
     onCopyLink,
     onDelete
 }) => {
+    const {isEnabled} = useFeatureFlags();
+
     const handleCopyLinkClick = (e: React.MouseEvent<HTMLElement>) => {
         e.stopPropagation();
         onCopyLink();
@@ -50,17 +53,19 @@ const FeedItemMenu: React.FC<FeedItemMenuProps> = ({
                                 Copy link
                             </Button>
                         </PopoverClose>
-                        <AlertDialogTrigger asChild>
-                            <PopoverClose asChild>
-                                <Button
-                                    className='justify-start text-red hover:bg-red/5 hover:text-red'
-                                    variant='ghost'
-                                    onClick={e => e.stopPropagation()}
-                                >
-                                    Delete
-                                </Button>
-                            </PopoverClose>
-                        </AlertDialogTrigger>
+                        {isEnabled('deleteButton') &&
+                            <AlertDialogTrigger asChild>
+                                <PopoverClose asChild>
+                                    <Button
+                                        className='justify-start text-red hover:bg-red/5 hover:text-red'
+                                        variant='ghost'
+                                        onClick={e => e.stopPropagation()}
+                                    >
+                                        Delete
+                                    </Button>
+                                </PopoverClose>
+                            </AlertDialogTrigger>
+                        }
                     </div>
                 </PopoverContent>
             </Popover>
