@@ -122,9 +122,9 @@ const ArticleBody: React.FC<{
 
                 function initializeResize() {
                     resizeIframe();
+                    isFullyLoaded = true;
 
                     waitForImages().then(() => {
-                        isFullyLoaded = true;
                         resizeIframe();
                     });
                 }
