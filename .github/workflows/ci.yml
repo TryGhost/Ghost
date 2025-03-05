@@ -122,6 +122,7 @@ jobs:
               - *shared
               - 'apps/sodo-search/**'
             tinybird:
+              - *shared
               - 'ghost/tinybird-dedicated/**'
               - '!ghost/tinybird-dedicated/**/*.md'
             any-code:
@@ -1315,10 +1316,10 @@ jobs:
         run: tb --version
       - name: Check auth (staging)
         if: matrix.environment == 'staging'
-        run: tb --host=${{ secrets.TB_HOST_STAGING }} --token=${{ secrets.TB_ADMIN_TOKEN_STAGING }} auth info
+        run: tb --host=${{ secrets.TB_HOST }} --token=${{ secrets.TB_ADMIN_TOKEN_STAGING }} auth info
       - name: Check auth (production)
         if: matrix.environment == 'production'
-        run: tb --host=${{ secrets.TB_HOST_PRODUCTION }} --token=${{ secrets.TB_ADMIN_TOKEN_PRODUCTION }} auth info
+        run: tb --host=${{ secrets.TB_HOST }} --token=${{ secrets.TB_ADMIN_TOKEN_PRODUCTION }} auth info
       - name: Deploy changes to the main Workspace
         run: |
           DEPLOY_FILE=./deploy/${VERSION}/deploy.sh
