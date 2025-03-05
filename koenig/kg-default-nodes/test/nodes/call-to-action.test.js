@@ -186,6 +186,14 @@ describe('CallToActionNode', function () {
     });
 
     describe('exportDOM', function () {
+        const testRender = (assertFn) => {
+            const callToActionNode = new CallToActionNode(dataset);
+            const {element, type} = callToActionNode.exportDOM(exportOptions);
+
+            const html = element.outerHTML.toString();
+            assertFn({element, type, html});
+        };
+
         it('has all data attributes in Web', editorTest(function () {
             dataset = {
                 backgroundColor: 'green',
@@ -201,19 +209,17 @@ describe('CallToActionNode', function () {
                 textValue: '<p><span style="white-space: pre-wrap;">This is a new CTA Card.</span></p>'
             };
 
-            const callToActionNode = new CallToActionNode(dataset);
-            const {element} = callToActionNode.exportDOM(exportOptions);
-
-            const html = element.outerHTML.toString();
-            html.should.containEql('data-layout="minimal"');
-            html.should.containEql('kg-cta-bg-green');
-            html.should.containEql('background-color: #F0F0F0');
-            html.should.containEql('Get access now');
-            html.should.containEql('http://someblog.com/somepost');
-            html.should.containEql('/content/images/2022/11/koenig-lexical.jpg');
-            html.should.containEql('This is a new CTA Card.');
-            html.should.containEql('Sponsored by'); // because hasSponsorLabel is true
-            html.should.containEql('cta-card');
+            testRender(({html}) => {
+                html.should.containEql('data-layout="minimal"');
+                html.should.containEql('kg-cta-bg-green');
+                html.should.containEql('background-color: #F0F0F0');
+                html.should.containEql('Get access now');
+                html.should.containEql('http://someblog.com/somepost');
+                html.should.containEql('/content/images/2022/11/koenig-lexical.jpg');
+                html.should.containEql('This is a new CTA Card.');
+                html.should.containEql('Sponsored by'); // because hasSponsorLabel is true
+                html.should.containEql('cta-card');
+            });
         }));
 
         it('has all data attributes in Email', editorTest(function () {
@@ -232,17 +238,16 @@ describe('CallToActionNode', function () {
                 showButton: true,
                 textValue: '<p><span style="white-space: pre-wrap;">This is a new CTA Card via email.</span></p>'
             };
-            const callToActionNode = new CallToActionNode(dataset);
-            const {element} = callToActionNode.exportDOM(exportOptions);
 
-            const html = element.outerHTML.toString();
-            html.should.containEql('kg-cta-bg-green');
-            html.should.containEql('background-color: #F0F0F0');
-            html.should.containEql('Get access now');
-            html.should.containEql('http://someblog.com/somepost');
-            html.should.containEql('<p><span style="white-space: pre-wrap;">SPONSORED</span></p>'); // because hasSponsorLabel is true
-            html.should.containEql('/content/images/2022/11/koenig-lexical.jpg');
-            html.should.containEql('This is a new CTA Card via email.');
+            testRender(({html}) => {
+                html.should.containEql('kg-cta-bg-green');
+                html.should.containEql('background-color: #F0F0F0');
+                html.should.containEql('Get access now');
+                html.should.containEql('http://someblog.com/somepost');
+                html.should.containEql('<p><span style="white-space: pre-wrap;">SPONSORED</span></p>'); // because hasSponsorLabel is true
+                html.should.containEql('/content/images/2022/11/koenig-lexical.jpg');
+                html.should.containEql('This is a new CTA Card via email.');
+            });
         }));
 
         it('uses cropped image when layout is minimal', editorTest(function () {
@@ -266,17 +271,16 @@ describe('CallToActionNode', function () {
                 showButton: true,
                 textValue: '<p><span style="white-space: pre-wrap;">This is a new CTA Card via email.</span></p>'
             };
-            const callToActionNode = new CallToActionNode(dataset);
-            const {element} = callToActionNode.exportDOM(exportOptions);
 
-            const html = element.outerHTML.toString();
-            html.should.containEql('kg-cta-bg-green');
-            html.should.containEql('background-color: #F0F0F0');
-            html.should.containEql('Get access now');
-            html.should.containEql('http://someblog.com/somepost');
-            html.should.containEql('<p><span style="white-space: pre-wrap;">SPONSORED</span></p>'); // because hasSponsorLabel is true
-            html.should.containEql('/content/images/size/w64h64/2022/11/koenig-lexical.jpg');
-            html.should.containEql('This is a new CTA Card via email.');
+            testRender(({html}) => {
+                html.should.containEql('kg-cta-bg-green');
+                html.should.containEql('background-color: #F0F0F0');
+                html.should.containEql('Get access now');
+                html.should.containEql('http://someblog.com/somepost');
+                html.should.containEql('<p><span style="white-space: pre-wrap;">SPONSORED</span></p>'); // because hasSponsorLabel is true
+                html.should.containEql('/content/images/size/w64h64/2022/11/koenig-lexical.jpg');
+                html.should.containEql('This is a new CTA Card via email.');
+            });
         }));
 
         it('cropped image defaults to 256 if no exportOptions.imageOptimizations are provided', editorTest(function () {
@@ -295,11 +299,10 @@ describe('CallToActionNode', function () {
                 showButton: true,
                 textValue: '<p><span style="white-space: pre-wrap;">This is a new CTA Card via email.</span></p>'
             };
-            const callToActionNode = new CallToActionNode(dataset);
-            const {element} = callToActionNode.exportDOM(exportOptions);
 
-            const html = element.outerHTML.toString();
-            html.should.containEql('/content/images/size/w256h256/2022/11/koenig-lexical.jpg');
+            testRender(({html}) => {
+                html.should.containEql('/content/images/size/w256h256/2022/11/koenig-lexical.jpg');
+            });
         }));
 
         it('renders email with img width and height when immersive', editorTest(function () {
@@ -319,36 +322,30 @@ describe('CallToActionNode', function () {
                 imageWidth: 200,
                 imageHeight: 100
             };
-            const callToActionNode = new CallToActionNode(dataset);
-            const {element} = callToActionNode.exportDOM(exportOptions);
 
-            const html = element.outerHTML.toString();
-            html.should.containEql('<img src="/content/images/2022/11/koenig-lexical.jpg" alt="CTA Image" class="kg-cta-image" width="200" height="100">');
+            testRender(({html}) => {
+                html.should.containEql('<img src="/content/images/2022/11/koenig-lexical.jpg" alt="CTA Image" class="kg-cta-image" width="200" height="100">');
+            });
         }));
 
         it('parses textValue correctly', editorTest(function () {
-            const callToActionNode = new CallToActionNode(dataset);
-            const {element} = callToActionNode.exportDOM(exportOptions);
-
-            const html = element.outerHTML.toString();
-            html.should.containEql('This is a cool advertisement');
+            testRender(({html}) => {
+                html.should.containEql('This is a cool advertisement');
+            });
         }));
 
         it('renders img tag when imageUrl is not null', editorTest(function () {
-            const callToActionNode = new CallToActionNode(dataset);
-            const {element} = callToActionNode.exportDOM(exportOptions);
-
-            const html = element.outerHTML.toString();
-            html.should.containEql('<img src="http://blog.com/image1.jpg" alt="CTA Image">');
+            testRender(({html}) => {
+                html.should.containEql('<img src="http://blog.com/image1.jpg" alt="CTA Image">');
+            });
         }));
 
         it('does not render img tag when imageUrl is null', editorTest(function () {
             dataset.imageUrl = null;
-            const callToActionNode = new CallToActionNode(dataset);
-            const {element} = callToActionNode.exportDOM(exportOptions);
 
-            const html = element.outerHTML.toString();
-            html.should.not.containEql('<img src="http://blog.com/image1.jpg" alt="CTA Image">');
+            testRender(({html}) => {
+                html.should.not.containEql('<img src="http://blog.com/image1.jpg" alt="CTA Image">');
+            });
         }));
 
         // NOTE: Due to the way the package gets built sinon is unable to redefine
@@ -357,23 +354,21 @@ describe('CallToActionNode', function () {
             exportOptions.target = 'web';
             dataset.visibility = {...utils.visibility.buildDefaultVisibility(), web: {nonMember: false, memberSegment: 'status:free,status:-free'}};
 
-            const callToActionNode = new CallToActionNode(dataset);
-            const {element} = callToActionNode.exportDOM(exportOptions);
-
-            element.tagName.should.equal('TEXTAREA');
-            element.value.should.match(/<!--kg-gated-block:begin nonMember:false memberSegment:"status:free,status:-free" -->/);
+            testRender(({element}) => {
+                element.tagName.should.equal('TEXTAREA');
+                element.value.should.match(/<!--kg-gated-block:begin nonMember:false memberSegment:"status:free,status:-free" -->/);
+            });
         }));
 
         it('should render with email visibility', editorTest(function () {
             exportOptions.target = 'email';
             dataset.visibility = {...utils.visibility.buildDefaultVisibility(), email: {memberSegment: 'status:free'}};
 
-            const callToActionNode = new CallToActionNode(dataset);
-            const {element, type} = callToActionNode.exportDOM(exportOptions);
-
-            type.should.equal('html');
-            element.tagName.should.equal('DIV');
-            element.dataset.ghSegment.should.equal('status:free');
+            testRender(({element, type}) => {
+                type.should.equal('html');
+                element.tagName.should.equal('DIV');
+                element.dataset.ghSegment.should.equal('status:free');
+            });
         }));
     });
 
