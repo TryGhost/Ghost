@@ -411,6 +411,40 @@ describe('CallToActionNode', function () {
         it('skips button when buttonUrl is empty (email, immersive)', testButtonSkipOnMissingData('email', 'immersive', {missing: ['buttonUrl']}));
         it('skips button when buttonText is empty (email, minimal)', testButtonSkipOnMissingData('email', 'minimal', {missing: ['buttonText']}));
         it('skips button when buttonText is empty (email, immersive)', testButtonSkipOnMissingData('email', 'immersive', {missing: ['buttonText']}));
+
+        function testImageLink(target, layout) {
+            return editorTest(function () {
+                exportOptions.target = target;
+                dataset.layout = layout;
+                dataset.showButton = true;
+                dataset.buttonUrl = 'http://blog.com/post1';
+
+                testRender(({html}) => {
+                    html.should.containEql('<a href="http://blog.com/post1"><img');
+                });
+            });
+        }
+
+        it('adds link to image when button is present with url (web)', testImageLink('web', 'minimal'));
+        it('adds link to image when button is present with url (email, minimal)', testImageLink('email', 'minimal'));
+        it('adds link to image when button is present with url (email, immersive)', testImageLink('email', 'immersive'));
+
+        function testSkippedImageLink(target, layout) {
+            return editorTest(function () {
+                exportOptions.target = target;
+                dataset.layout = layout;
+                dataset.showButton = false;
+                dataset.buttonUrl = 'http://blog.com/post1';
+
+                testRender(({html}) => {
+                    html.should.not.containEql('<a href="http://blog.com/post1"><img');
+                });
+            });
+        }
+
+        it('skips link to image when button is not shown (web)', testSkippedImageLink('web', 'minimal'));
+        it('skips link to image when button is not shown (email, minimal)', testSkippedImageLink('email', 'minimal'));
+        it('skips link to image when button is not shown (email, immersive)', testSkippedImageLink('email', 'immersive'));
     });
 
     describe('exportJSON', function () {
