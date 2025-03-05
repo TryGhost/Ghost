@@ -17,9 +17,11 @@ import {useThreadForUser} from '@hooks/use-activity-pub-queries';
 
 import APAvatar from '../global/APAvatar';
 import APReplyBox from '../global/APReplyBox';
+import DeletedFeedItem from './DeletedFeedItem';
 import TableOfContents, {TOCItem} from './TableOfContents';
 import getReadingTime from '../../utils/get-reading-time';
 import {useDebounce} from 'use-debounce';
+import {useFeatureFlags} from '@src/lib/feature-flags';
 
 interface ArticleModalProps {
     activityId: string;
@@ -706,6 +708,8 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
         return () => clearTimeout(timeoutId);
     }, [iframeElement, tocItems, activeHeadingId]);
 
+    const {isEnabled} = useFeatureFlags();
+
     return (
         <Modal
             align='right'
@@ -862,6 +866,10 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                     <div className='grow overflow-y-auto'>
                         <div className={`mx-auto px-8 pb-10 pt-5`} style={{maxWidth: currentMaxWidth}}>
                             {threadParents.map((item) => {
+                                if (isEnabled('deleteButton')) {
+                                    return <DeletedFeedItem last={false} />;
+                                }
+
                                 return (
                                     <>
                                         <FeedItem
@@ -886,24 +894,30 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                             })}
 
                             {object.type === 'Note' && (
-                                <FeedItem
-                                    actor={actor}
-                                    allowDelete={false}
-                                    commentCount={replyCount}
-                                    last={true}
-                                    layout={'modal'}
-                                    object={object}
-                                    repostCount={object.repostCount ?? 0}
-                                    showHeader={(canNavigateBack || (threadParents.length > 0))}
-                                    type='Note'
-                                    onCommentClick={() => {
-                                        repliesRef.current?.scrollIntoView({
-                                            behavior: 'smooth',
-                                            block: 'center'
-                                        });
-                                        setIsFocused(true);
-                                    }}
-                                />
+                                <>
+                                    {isEnabled('deleteButton') ?
+                                        <DeletedFeedItem last={true} />
+                                        :
+                                        <FeedItem
+                                            actor={actor}
+                                            allowDelete={false}
+                                            commentCount={replyCount}
+                                            last={true}
+                                            layout={'modal'}
+                                            object={object}
+                                            repostCount={object.repostCount ?? 0}
+                                            showHeader={(canNavigateBack || (threadParents.length > 0))}
+                                            type='Note'
+                                            onCommentClick={() => {
+                                                repliesRef.current?.scrollIntoView({
+                                                    behavior: 'smooth',
+                                                    block: 'center'
+                                                });
+                                                setIsFocused(true);
+                                            }}
+                                        />
+                                    }
+                                </>
                             )}
                             {object.type === 'Article' && (
                                 <div className='border-b border-gray-200 pb-8 dark:border-gray-950' id='object-content'>
