@@ -20,6 +20,7 @@ export interface APTextAreaProps extends HTMLProps<HTMLTextAreaElement> {
     onNewReply?: (activity: Activity) => void;
     object: ObjectProperties;
     focused: number;
+    focusTimestamp?: number;
 }
 
 const APReplyBox: React.FC<APTextAreaProps> = ({
@@ -32,6 +33,7 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
     className,
     object,
     focused,
+    focusTimestamp,
     onNewReply,
     ...props
 }) => {
@@ -47,7 +49,7 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
         if (textareaRef.current && focused) {
             textareaRef.current.focus();
         }
-    }, [focused]);
+    }, [focused, focusTimestamp]);
 
     async function handleClick() {
         if (!textValue) {

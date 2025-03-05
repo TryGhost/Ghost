@@ -376,7 +376,8 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
 }) => {
     const MODAL_SIZE_SM = 640;
     const MODAL_SIZE_LG = 1420;
-    const [isFocused] = useState(focusReply ? 1 : 0);
+    const [isFocused, setIsFocused] = useState(focusReply ? 1 : 0);
+    const [focusTimestamp, setFocusTimestamp] = useState<number>(0);
 
     const {threadQuery, addToThread} = useThreadForUser('index', activityId);
     const {data: thread, isLoading: isLoadingThread} = threadQuery;
@@ -869,6 +870,8 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                             }}
                                             onCommentClick={() => {
                                                 navigateForward(item.id, item.object, item.actor, true);
+                                                setIsFocused(1);
+                                                setFocusTimestamp(Date.now());
                                             }}
                                         />
                                     </>
@@ -890,6 +893,8 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                             behavior: 'smooth',
                                             block: 'center'
                                         });
+                                        setIsFocused(1);
+                                        setFocusTimestamp(Date.now());
                                     }}
                                 />
                             )}
@@ -919,6 +924,8 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                                     behavior: 'smooth',
                                                     block: 'center'
                                                 });
+                                                setIsFocused(1);
+                                                setFocusTimestamp(Date.now());
                                             }}
                                             onLikeClick={onLikeClick}
                                         />
@@ -929,6 +936,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                             <div ref={replyBoxRef}>
                                 <APReplyBox
                                     focused={isFocused}
+                                    focusTimestamp={focusTimestamp}
                                     object={object}
                                     onNewReply={handleNewReply}
                                 />
@@ -956,6 +964,8 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                                 }}
                                                 onCommentClick={() => {
                                                     navigateForward(item.id, item.object, item.actor, true);
+                                                    setIsFocused(1);
+                                                    setFocusTimestamp(Date.now());
                                                 }}
                                             />
                                             {showDivider && <FeedItemDivider />}
