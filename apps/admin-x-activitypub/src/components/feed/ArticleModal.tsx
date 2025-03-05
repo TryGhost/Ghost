@@ -11,6 +11,7 @@ import {Activity, ActorProperties, ObjectProperties} from '@tryghost/admin-x-fra
 import {Button, Icon, LoadingIndicator, Modal, Select, SelectOption} from '@tryghost/admin-x-design-system';
 import {renderTimestamp} from '../../utils/render-timestamp';
 import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
+import {useFocusedState} from '@components/global/APReplyBox';
 import {useModal} from '@ebay/nice-modal-react';
 import {useThreadForUser} from '@hooks/use-activity-pub-queries';
 
@@ -376,7 +377,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
 }) => {
     const MODAL_SIZE_SM = 640;
     const MODAL_SIZE_LG = 1420;
-    const [isFocused] = useState(focusReply ? 1 : 0);
+    const [isFocused, setIsFocused] = useFocusedState(focusReply);
 
     const {threadQuery, addToThread} = useThreadForUser('index', activityId);
     const {data: thread, isLoading: isLoadingThread} = threadQuery;
@@ -869,6 +870,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                             }}
                                             onCommentClick={() => {
                                                 navigateForward(item.id, item.object, item.actor, true);
+                                                setIsFocused(true);
                                             }}
                                         />
                                     </>
@@ -890,6 +892,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                             behavior: 'smooth',
                                             block: 'center'
                                         });
+                                        setIsFocused(true);
                                     }}
                                 />
                             )}
@@ -919,6 +922,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                                     behavior: 'smooth',
                                                     block: 'center'
                                                 });
+                                                setIsFocused(true);
                                             }}
                                             onLikeClick={onLikeClick}
                                         />
@@ -956,6 +960,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                                 }}
                                                 onCommentClick={() => {
                                                     navigateForward(item.id, item.object, item.actor, true);
+                                                    setIsFocused(true);
                                                 }}
                                             />
                                             {showDivider && <FeedItemDivider />}
