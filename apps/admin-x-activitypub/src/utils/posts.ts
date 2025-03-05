@@ -104,6 +104,7 @@ export function mapPostToActivity(post: Post): Activity {
         liked: post.likedByMe,
         reposted: post.repostedByMe,
         repostCount: post.repostCount,
+        authored: post.authoredByMe === true,
         // These are not used but needed to comply with the ObjectProperties type
         '@context': ''
     };

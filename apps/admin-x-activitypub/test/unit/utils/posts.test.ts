@@ -39,6 +39,7 @@ describe('mapPostToActivity', function () {
                 name: 'Test User',
                 url: 'https://example.com/users/123'
             },
+            authoredByMe: true,
             repostCount: 5,
             repostedByMe: false,
             repostedBy: null

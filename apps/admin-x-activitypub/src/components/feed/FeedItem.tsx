@@ -13,6 +13,7 @@ import getUsername from '../../utils/get-username';
 import stripHtml from '../../utils/strip-html';
 import {handleProfileClick} from '../../utils/handle-profile-click';
 import {renderTimestamp} from '../../utils/render-timestamp';
+import {useDeleteMutationForUser} from '../../hooks/use-activity-pub-queries';
 
 function getAttachment(object: ObjectProperties) {
     let attachment;
@@ -169,7 +170,9 @@ function renderInboxAttachment(object: ObjectProperties, isLoading: boolean | un
 
 interface FeedItemProps {
     actor: ActorProperties;
+    allowDelete?: boolean;
     object: ObjectProperties;
+    parentId?: string;
     layout: string;
     type: string;
     commentCount?: number;
@@ -179,11 +182,27 @@ interface FeedItemProps {
     isLoading?: boolean;
     onClick?: () => void;
     onCommentClick: () => void;
+    onDelete?: () => void;
 }
 
 const noop = () => {};
 
-const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, commentCount = 0, repostCount = 0, showHeader = true, last, isLoading, onClick: onClickHandler = noop, onCommentClick}) => {
+const FeedItem: React.FC<FeedItemProps> = ({
+    actor,
+    allowDelete = false,
+    object,
+    parentId = undefined,
+    layout,
+    type,
+    commentCount = 0,
+    repostCount = 0,
+    showHeader = true,
+    last,
+    isLoading,
+    onClick: onClickHandler = noop,
+    onCommentClick,
+    onDelete = noop
+}) => {
     const timestamp =
         new Date(object?.published ?? new Date()).toLocaleDateString('default', {year: 'numeric', month: 'short', day: '2-digit'}) + ', ' + new Date(object?.published ?? new Date()).toLocaleTimeString('default', {hour: '2-digit', minute: '2-digit'});
 
@@ -191,6 +210,8 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
 
     const contentRef = useRef<HTMLDivElement>(null);
     const [isTruncated, setIsTruncated] = useState(false);
+
+    const deleteMutation = useDeleteMutationForUser('index');
 
     useEffect(() => {
         const element = contentRef.current;
@@ -206,6 +227,12 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
 
     const onClick = () => {
         onClickHandler();
+    };
+
+    const handleDelete = () => {
+        deleteMutation.mutate({id: object.id, parentId});
+
+        onDelete();
     };
 
     const handleCopyLink = async () => {
@@ -224,18 +251,6 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
     if (type === 'Announce') {
         author = typeof object.attributedTo === 'object' ? object.attributedTo as ActorProperties : actor;
     }
-
-    const handleDelete = () => {
-
-    };
-
-    // TODO: If this is your own Note/Article, you should be able to delete it
-    // menuItems.push({
-    //     id: 'delete',
-    //     label: 'Delete',
-    //     destructive: true,
-    //     onClick: handleDelete
-    // });
 
     const UserMenuTrigger = (
         <Button className={`h-[34px] w-[34px] ${layout === 'inbox' ? 'text-gray-900 hover:text-gray-900 dark:text-gray-600 dark:hover:text-gray-600' : 'text-gray-500 hover:text-gray-500 [&_svg]:size-5'} ${layout === 'feed' ? 'rounded-full' : 'rounded-md'} dark:bg-black dark:hover:bg-gray-950`} variant='ghost'>
@@ -277,6 +292,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                     </div>
                                 </div>
                                 <FeedItemMenu
+                                    allowDelete={allowDelete}
                                     trigger={UserMenuTrigger}
                                     onCopyLink={handleCopyLink}
                                     onDelete={handleDelete}
@@ -369,6 +385,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                                 onLikeClick={onLikeClick}
                                             />
                                             <FeedItemMenu
+                                                allowDelete={allowDelete}
                                                 trigger={UserMenuTrigger}
                                                 onCopyLink={handleCopyLink}
                                                 onDelete={handleDelete}
@@ -406,6 +423,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                         </div>
                                     </div>
                                     <FeedItemMenu
+                                        allowDelete={allowDelete}
                                         trigger={UserMenuTrigger}
                                         onCopyLink={handleCopyLink}
                                         onDelete={handleDelete}
@@ -501,6 +519,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                         onLikeClick={onLikeClick}
                                     />
                                     <FeedItemMenu
+                                        allowDelete={allowDelete}
                                         trigger={UserMenuTrigger}
                                         onCopyLink={handleCopyLink}
                                         onDelete={handleDelete}
