@@ -1280,16 +1280,19 @@ jobs:
         with:
           url: ${{ steps.cdn_paths.outputs.cdn_paths }}
   deploy_tinybird:
+    runs-on: ubuntu-latest
     needs: [
       job_setup,
       job_tinybird
     ]
+    if: always() && needs.job_setup.outputs.changed_tinybird == 'true' && needs.job_setup.result == 'success' && needs.job_tinybird.result == 'success'
+    strategy:
+      matrix:
+        environment: [ 'staging', 'production']
     name: Deploy Tinybird
-    runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: ghost/tinybird-dedicated
-    if: always() && needs.job_setup.outputs.changed_tinybird == 'true' && needs.job_setup.result == 'success' && needs.job_tinybird.result == 'success' && needs.job_setup.outputs.is_main == 'true'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -1310,8 +1313,12 @@ jobs:
           fi
       - name: Tinybird version
         run: tb --version
-      - name: Check auth
-        run: tb --host=${{ secrets.TB_HOST }} --token=${{ secrets.TB_ADMIN_TOKEN }} auth info
+      - name: Check auth (staging)
+        if: matrix.environment == 'staging'
+        run: tb --host=${{ secrets.TB_HOST_STAGING }} --token=${{ secrets.TB_ADMIN_TOKEN_STAGING }} auth info
+      - name: Check auth (production)
+        if: matrix.environment == 'production'
+        run: tb --host=${{ secrets.TB_HOST_PRODUCTION }} --token=${{ secrets.TB_ADMIN_TOKEN_PRODUCTION }} auth info
       - name: Deploy changes to the main Workspace
         run: |
           DEPLOY_FILE=./deploy/${VERSION}/deploy.sh
