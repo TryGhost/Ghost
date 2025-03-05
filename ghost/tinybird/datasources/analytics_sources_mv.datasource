@@ -1,4 +1,4 @@
-VERSION 0
+VERSION 1
 
 SCHEMA >
     `site_uuid` String,
@@ -9,6 +9,8 @@ SCHEMA >
     `source` String,
     `pathname` String,
     `member_status` SimpleAggregateFunction(any, String),
+    `post_uuid` SimpleAggregateFunction(any, String),
+    `post_type` SimpleAggregateFunction(any, String),
     `visits` AggregateFunction(uniq, String),
     `pageviews` AggregateFunction(count)
 
