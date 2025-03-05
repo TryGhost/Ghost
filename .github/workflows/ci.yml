@@ -63,8 +63,8 @@ jobs:
         id: check_user_org_membership
         if: github.event_name == 'pull_request'
         run: |
-          echo "Looking up: ${{ github.event.pull_request.user.login }}"
-          ENCODED_USERNAME=$(printf '%s' '${{ github.event.pull_request.user.login }}' | jq -sRr @uri)
+          echo "Looking up: ${{ github.triggering_actor }}"
+          ENCODED_USERNAME=$(printf '%s' '${{ github.triggering_actor }}' | jq -sRr @uri)
 
           LOOKUP_USER=$(curl --write-out "%{http_code}" --silent --output /dev/null --location "https://api.github.com/orgs/tryghost/members/$ENCODED_USERNAME" --header "Authorization: Bearer ${{ secrets.CANARY_DOCKER_BUILD }}")
 
