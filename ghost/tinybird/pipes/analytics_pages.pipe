@@ -86,4 +86,4 @@ SQL >
     GROUP BY date, device, browser, location, source, pathname, post_uuid,site_uuid
 
 TYPE MATERIALIZED
-DATASOURCE analytics_pages_mv__v0
+DATASOURCE analytics_pages_mv
