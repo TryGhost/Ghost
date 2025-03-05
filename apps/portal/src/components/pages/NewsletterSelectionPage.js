@@ -48,7 +48,6 @@ function NewsletterPrefSection({newsletter, subscribedNewsletters, setSubscribed
 }
 
 function NewsletterPrefs({subscribedNewsletters, setSubscribedNewsletters}) {
-    console.log('subscribedNewsletters', subscribedNewsletters);
     const {site, t} = useContext(AppContext);
     const newsletters = getSiteNewsletters({site});
     return newsletters.map((newsletter) => {
