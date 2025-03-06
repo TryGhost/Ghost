@@ -1,6 +1,6 @@
 VERSION 0
 
-TAG "v0"
+TAGS "v0"
 
 NODE _sessions_0
 SQL >

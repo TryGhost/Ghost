@@ -1,6 +1,6 @@
 VERSION 0
 
-TAG "v0"
+TAGS "v0"
 
 NODE _top_locations_0
 SQL >

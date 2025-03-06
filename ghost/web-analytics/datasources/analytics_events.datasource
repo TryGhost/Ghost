@@ -1,6 +1,6 @@
 TOKEN "tracker" APPEND
 
-TAG "v0"
+TAGS "v0"
 
 SCHEMA >
     `timestamp` DateTime `json:$.timestamp`,
