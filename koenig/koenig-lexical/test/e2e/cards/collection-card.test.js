@@ -1,5 +1,5 @@
-import {assertHTML, createSnippet, focusEditor, html, initialize} from '../../utils/e2e';
-import {expect, test} from '@playwright/test';
+import {assertHTML, createSnippet, focusEditor, html, initialize, test} from '../../utils/e2e';
+import {expect} from '@playwright/test';
 
 async function insertCollectionCard(page) {
     await page.keyboard.type('/collect');
@@ -11,16 +11,12 @@ async function insertCollectionCard(page) {
 test.describe('Collection card', async () => {
     let page;
 
-    test.beforeAll(async ({browser}) => {
-        page = await browser.newPage();
+    test.beforeAll(async ({sharedPage}) => {
+        page = sharedPage;
     });
 
     test.beforeEach(async () => {
         await initialize({page});
-    });
-
-    test.afterAll(async () => {
-        await page.close();
     });
 
     test('can import serialized collection card nodes', async function () {
@@ -116,7 +112,7 @@ test.describe('Collection card', async () => {
 
         const header = await page.getByTestId('collection-header');
         await expect(header).toHaveText('Latest');
-        
+
         await header.press('Backspace');
         await header.press('Backspace');
         await header.press('Backspace');
@@ -163,7 +159,7 @@ test.describe('Collection card', async () => {
             await page.mouse.down();
             await page.mouse.move(100, 0);
             await page.mouse.up();
-            
+
             await expect(postCount).toHaveText('1');
         });
 
@@ -179,7 +175,7 @@ test.describe('Collection card', async () => {
             await page.mouse.down();
             await page.mouse.move(100, 0);
             await page.mouse.up();
-            
+
             await expect(columns).toHaveText('1');
         });
 
@@ -198,7 +194,7 @@ test.describe('Collection card', async () => {
             await collectionsDropdown.click();
             await page.keyboard.press('ArrowDown');
             await page.keyboard.press('Enter');
-            
+
             await expect(collectionValue).toHaveText('Featured');
             await expect(cardHeader).toHaveText('Featured');
         });

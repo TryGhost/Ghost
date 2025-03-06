@@ -1,19 +1,15 @@
-import {assertHTML, ctrlOrCmd, focusEditor, html, initialize, insertCard} from '../../utils/e2e';
-import {expect, test} from '@playwright/test';
+import {assertHTML, ctrlOrCmd, focusEditor, html, initialize, insertCard, test} from '../../utils/e2e';
+import {expect} from '@playwright/test';
 
 test.describe('Emoji Picker Plugin', async function () {
     let page;
 
-    test.beforeAll(async ({browser}) => {
-        page = await browser.newPage();
+    test.beforeAll(async ({sharedPage}) => {
+        page = sharedPage;
     });
 
     test.beforeEach(async () => {
         await initialize({page});
-    });
-
-    test.afterAll(async () => {
-        await page.close();
     });
 
     test('displays an emoji menu when typing : followed by a character', async function () {

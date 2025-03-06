@@ -1,5 +1,5 @@
-import {assertHTML, focusEditor, html, initialize, pasteText} from '../../utils/e2e';
-import {expect, test} from '@playwright/test';
+import {assertHTML, focusEditor, html, initialize, pasteText, test} from '../../utils/e2e';
+import {expect} from '@playwright/test';
 
 const HEADLINE_TRANSFORMS = [{
     text: '# ',
@@ -61,16 +61,12 @@ const SPECIAL_MARKUP_TRANSFORMS = [{
 test.describe('Markdown', async () => {
     let page;
 
-    test.beforeAll(async ({browser}) => {
-        page = await browser.newPage();
+    test.beforeAll(async ({sharedPage}) => {
+        page = sharedPage;
     });
 
     test.beforeEach(async () => {
         await initialize({page});
-    });
-
-    test.afterAll(async () => {
-        await page.close();
     });
 
     test('converts markdown img to html', async function () {

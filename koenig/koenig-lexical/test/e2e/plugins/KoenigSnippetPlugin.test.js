@@ -1,11 +1,11 @@
-import {expect, test} from '@playwright/test';
-import {focusEditor, initialize} from '../../utils/e2e';
+import {expect} from '@playwright/test';
+import {focusEditor, initialize, test} from '../../utils/e2e';
 
 test.describe('Snippet Plugin', async function () {
     let page;
 
-    test.beforeAll(async ({browser}) => {
-        page = await browser.newPage();
+    test.beforeAll(async ({sharedPage}) => {
+        page = sharedPage;
     });
 
     test.beforeEach(async () => {
@@ -23,10 +23,6 @@ test.describe('Snippet Plugin', async function () {
         }, defaultSnippets);
 
         await page.reload(); // Ensure the page reloads to pick up the new localStorage values
-    });
-
-    test.afterAll(async () => {
-        await page.close();
     });
 
     test('Can Insert a snippet with multiple nodes', async function () {

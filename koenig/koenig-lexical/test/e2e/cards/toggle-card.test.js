@@ -1,5 +1,5 @@
-import {assertHTML, createSnippet, ctrlOrCmd, focusEditor, html, initialize} from '../../utils/e2e';
-import {expect, test} from '@playwright/test';
+import {assertHTML, createSnippet, ctrlOrCmd, focusEditor, html, initialize, test} from '../../utils/e2e';
+import {expect} from '@playwright/test';
 
 async function insertToggleCard(page) {
     await page.keyboard.type('/toggle');
@@ -11,16 +11,12 @@ async function insertToggleCard(page) {
 test.describe('Toggle card', async () => {
     let page;
 
-    test.beforeAll(async ({browser}) => {
-        page = await browser.newPage();
+    test.beforeAll(async ({sharedPage}) => {
+        page = sharedPage;
     });
 
     test.beforeEach(async () => {
         await initialize({page});
-    });
-
-    test.afterAll(async () => {
-        await page.close();
     });
 
     test('can import serialized toggle card nodes', async function () {

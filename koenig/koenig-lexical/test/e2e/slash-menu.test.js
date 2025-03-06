@@ -1,19 +1,15 @@
-import {assertHTML, assertSelection, focusEditor, html, initialize, insertCard} from '../utils/e2e';
-import {expect, test} from '@playwright/test';
+import {assertHTML, assertSelection, focusEditor, html, initialize, insertCard, test} from '../utils/e2e';
+import {expect} from '@playwright/test';
 
 test.describe('Slash menu', async () => {
     let page;
 
-    test.beforeAll(async ({browser}) => {
-        page = await browser.newPage();
+    test.beforeAll(async ({sharedPage}) => {
+        page = sharedPage;
     });
 
     test.beforeEach(async () => {
         await initialize({page});
-    });
-
-    test.afterAll(async () => {
-        await page.close();
     });
 
     test.describe('open/close', function () {

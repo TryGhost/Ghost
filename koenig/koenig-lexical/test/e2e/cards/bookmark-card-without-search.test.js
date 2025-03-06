@@ -1,20 +1,16 @@
-import {assertHTML, createSnippet, focusEditor, html, initialize, insertCard, isMac} from '../../utils/e2e';
-import {expect, test} from '@playwright/test';
+import {assertHTML, createSnippet, focusEditor, html, initialize, insertCard, isMac, test} from '../../utils/e2e';
+import {expect} from '@playwright/test';
 
 test.describe('Bookmark card', async () => {
     const ctrlOrCmd = isMac() ? 'Meta' : 'Control';
     let page;
 
-    test.beforeAll(async ({browser}) => {
-        page = await browser.newPage();
+    test.beforeAll(async ({sharedPage}) => {
+        page = sharedPage;
     });
 
     test.beforeEach(async () => {
         await initialize({page, uri: '/#/?content=false&searchLinks=false'});
-    });
-
-    test.afterAll(async () => {
-        await page.close();
     });
 
     test('can import serialized bookmark card nodes', async function () {

@@ -1,6 +1,6 @@
 import path from 'path';
-import {assertHTML, focusEditor, html, initialize, isMac} from '../../utils/e2e';
-import {expect, test} from '@playwright/test';
+import {assertHTML, focusEditor, html, initialize, isMac, test} from '../../utils/e2e';
+import {expect} from '@playwright/test';
 import {fileURLToPath} from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -26,16 +26,12 @@ test.describe('Header card V1', async () => {
     const ctrlOrCmd = isMac() ? 'Meta' : 'Control';
     let page;
 
-    test.beforeAll(async ({browser}) => {
-        page = await browser.newPage();
+    test.beforeAll(async ({sharedPage}) => {
+        page = sharedPage;
     });
 
     test.beforeEach(async () => {
         await initialize({page});
-    });
-
-    test.afterAll(async () => {
-        await page.close();
     });
 
     test('can import serialized header card nodes', async function () {
@@ -393,16 +389,12 @@ test.describe('Header card V2', () => {
     // const ctrlOrCmd = isMac() ? 'Meta' : 'Control';
     let page;
 
-    test.beforeAll(async ({browser}) => {
-        page = await browser.newPage();
+    test.beforeAll(async ({sharedPage}) => {
+        page = sharedPage;
     });
 
     test.beforeEach(async () => {
         await initialize({page});
-    });
-
-    test.afterAll(async () => {
-        await page.close();
     });
 
     test('can import serialized header card nodes', async function () {
@@ -756,10 +748,10 @@ test.describe('Header card V2', () => {
                             aria-autocomplete="none"
                             aria-readonly="true">
                             <p dir="ltr"><span data-lexical-text="true">Hello world</span>
-                            <br /> 
+                            <br />
                             <span data-lexical-text="true">This is second line</span>
                             </p>
-                        </div>`, 
+                        </div>`,
         {selector: '[data-kg-card="header"] [data-kg="editor"]'});
         await assertHTML(page, html`
                         <div
@@ -770,10 +762,10 @@ test.describe('Header card V2', () => {
                             aria-autocomplete="none"
                             aria-readonly="true">
                             <p dir="ltr"><span data-lexical-text="true">Hello subheader</span>
-                            <br /> 
+                            <br />
                             <span data-lexical-text="true">This is second subheader</span>
                             </p>
                         </div>`,
-        {selector: '[data-kg-card="header"] [data-testid="header-subheader-editor"] [data-kg="editor"]'});    
+        {selector: '[data-kg-card="header"] [data-testid="header-subheader-editor"] [data-kg="editor"]'});
     });
 });

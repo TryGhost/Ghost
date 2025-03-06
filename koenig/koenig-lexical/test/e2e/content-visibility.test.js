@@ -1,15 +1,11 @@
-import {expect, test} from '@playwright/test';
-import {focusEditor,initialize, insertCard} from '../utils/e2e';
+import {expect} from '@playwright/test';
+import {focusEditor, initialize, insertCard, test} from '../utils/e2e';
 
 test.describe('Content Visibility', async () => {
     let page;
 
-    test.beforeAll(async ({browser}) => {
-        page = await browser.newPage();
-    });
-
-    test.afterAll(async () => {
-        await page.close();
+    test.beforeAll(async ({sharedPage}) => {
+        page = sharedPage;
     });
 
     test.describe('HTML card (contentVisibility flag)', async function () {

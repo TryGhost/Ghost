@@ -1,19 +1,14 @@
-import {assertHTML, focusEditor, html, initialize, pasteText} from '../../utils/e2e';
-import {test} from '@playwright/test';
+import {assertHTML, focusEditor, html, initialize, pasteText, test} from '../../utils/e2e';
 
 test.describe('Links', async () => {
     let page;
 
-    test.beforeAll(async ({browser}) => {
-        page = await browser.newPage();
+    test.beforeAll(async ({sharedPage}) => {
+        page = sharedPage;
     });
 
     test.beforeEach(async () => {
         await initialize({page});
-    });
-
-    test.afterAll(async () => {
-        await page.close();
     });
 
     test('converts selected text to link on url paste', async function () {

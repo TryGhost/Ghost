@@ -1,6 +1,6 @@
 import path from 'path';
-import {assertHTML, ctrlOrCmd, focusEditor, html, initialize, insertCard} from '../utils/e2e';
-import {expect, test} from '@playwright/test';
+import {assertHTML, ctrlOrCmd, focusEditor, html, initialize, insertCard, test} from '../utils/e2e';
+import {expect} from '@playwright/test';
 import {fileURLToPath} from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -10,16 +10,12 @@ test.describe('Floating format toolbar', async () => {
     const ctrlOrCmdKey = ctrlOrCmd();
     let page;
 
-    test.beforeAll(async ({browser}) => {
-        page = await browser.newPage();
+    test.beforeAll(async ({sharedPage}) => {
+        page = sharedPage;
     });
 
     test.beforeEach(async () => {
         await initialize({page});
-    });
-
-    test.afterAll(async () => {
-        await page.close();
     });
 
     test('appears on text selection', async function () {

@@ -3,9 +3,16 @@ import jsdom from 'jsdom';
 import prettier from '@prettier/sync';
 import startCase from 'lodash/startCase.js';
 import {E2E_PORT} from '../../playwright.config';
-import {expect} from '@playwright/test';
+import {expect, test as playwrightTest} from '@playwright/test';
 
 const {JSDOM} = jsdom;
+
+export const test = playwrightTest.extend({
+    sharedPage: [async ({browser}, use) => {
+        const page = await browser.newPage();
+        await use(page);
+    }, {scope: 'worker'}]
+});
 
 export async function initialize({page, uri = '/#/?content=false'}) {
     const url = `http://localhost:${E2E_PORT}${uri}`;

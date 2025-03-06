@@ -1,19 +1,15 @@
-import {assertHTML, focusEditor, html, initialize} from '../../utils/e2e';
-import {expect, test} from '@playwright/test';
+import {assertHTML, focusEditor, html, initialize, test} from '../../utils/e2e';
+import {expect} from '@playwright/test';
 
 test.describe('Koening Editor with basic nodes', async function () {
     let page;
 
-    test.beforeAll(async ({browser}) => {
-        page = await browser.newPage();
+    test.beforeAll(async ({sharedPage}) => {
+        page = sharedPage;
     });
 
     test.beforeEach(async () => {
         await initialize({page, uri: '/#/basic?content=false'});
-    });
-
-    test.afterAll(async () => {
-        await page.close();
     });
 
     test('caret does not appear on empty editor', async function () {

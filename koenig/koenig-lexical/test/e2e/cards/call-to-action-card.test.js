@@ -1,8 +1,9 @@
 import path from 'path';
-import {assertHTML, createDataTransfer, focusEditor, getEditorStateJSON, html, initialize, insertCard} from '../../utils/e2e';
+import {assertHTML, createDataTransfer, focusEditor, getEditorStateJSON, html, initialize, insertCard, test} from '../../utils/e2e';
 import {cardBackgroundColorSettings} from '../../utils/background-color-helper';
-import {expect, test} from '@playwright/test';
+import {expect} from '@playwright/test';
 import {fileURLToPath} from 'url';
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -10,8 +11,8 @@ test.describe('Call To Action Card', async () => {
     let page;
     let serializedTestCard;
 
-    test.beforeAll(async ({browser}) => {
-        page = await browser.newPage();
+    test.beforeAll(async ({sharedPage}) => {
+        page = sharedPage;
     });
 
     test.beforeEach(async () => {
@@ -32,10 +33,6 @@ test.describe('Call To Action Card', async () => {
             showButton: true,
             textValue: '<p><span style="white-space: pre-wrap;">This is a new CTA Card.</span></p>'
         };
-    });
-
-    test.afterAll(async () => {
-        await page.close();
     });
 
     test('can import serialized CTA card nodes', async function () {

@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
-import {assertHTML, ctrlOrCmd, focusEditor,html, initialize, insertCard, paste, pasteFiles, pasteFilesWithText, pasteHtml, pasteText} from '../utils/e2e';
-import {expect, test} from '@playwright/test';
+import {assertHTML, ctrlOrCmd, focusEditor,html, initialize, insertCard, paste, pasteFiles, pasteFilesWithText, pasteHtml, pasteText, test} from '../utils/e2e';
+import {expect} from '@playwright/test';
 import {fileURLToPath} from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -9,16 +9,12 @@ const __dirname = path.dirname(__filename);
 test.describe('Paste behaviour', async () => {
     let page;
 
-    test.beforeAll(async ({browser}) => {
-        page = await browser.newPage();
+    test.beforeAll(async ({sharedPage}) => {
+        page = sharedPage;
     });
 
     test.beforeEach(async () => {
         await initialize({page});
-    });
-
-    test.afterAll(async () => {
-        await page.close();
     });
 
     test.describe('Text', function () {

@@ -1,6 +1,6 @@
 import path from 'path';
-import {assertHTML, createDataTransfer, focusEditor, html, initialize} from '../../utils/e2e';
-import {expect, test} from '@playwright/test';
+import {assertHTML, createDataTransfer, focusEditor, html, initialize, test} from '../../utils/e2e';
+import {expect} from '@playwright/test';
 import {fileURLToPath} from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -8,16 +8,12 @@ const __dirname = path.dirname(__filename);
 test.describe('Drag Drop Paste Plugin', async function () {
     let page;
 
-    test.beforeAll(async ({browser}) => {
-        page = await browser.newPage();
+    test.beforeAll(async ({sharedPage}) => {
+        page = sharedPage;
     });
 
     test.beforeEach(async () => {
         await initialize({page});
-    });
-
-    test.afterAll(async () => {
-        await page.close();
     });
 
     test('can drag and drop an image on the editor', async function () {

@@ -7,9 +7,10 @@ import {
     focusEditor,
     html,
     initialize,
-    insertCard
+    insertCard,
+    test
 } from '../../utils/e2e';
-import {expect, test} from '@playwright/test';
+import {expect} from '@playwright/test';
 import {fileURLToPath} from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -20,16 +21,12 @@ const __dirname = path.dirname(__filename);
 test.describe('Video card', async () => {
     let page;
 
-    test.beforeAll(async ({browser}) => {
-        page = await browser.newPage();
+    test.beforeAll(async ({sharedPage}) => {
+        page = sharedPage;
     });
 
     test.beforeEach(async () => {
         await initialize({page});
-    });
-
-    test.afterAll(async () => {
-        await page.close();
     });
 
     test('can import serialized video card nodes', async function () {
