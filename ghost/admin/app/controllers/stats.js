@@ -16,6 +16,7 @@ export default class StatsController extends Controller {
     @tracked source = null;
     @tracked pathname = null;
     @tracked os = null;
+    @tracked mockData = false;
 
     rangeOptions = RANGE_OPTIONS;
     audienceOptions = AUDIENCE_TYPES;
@@ -60,6 +61,11 @@ export default class StatsController extends Controller {
         this.excludedAudiences = '';
         this.audience = this.audienceOptions.map(a => a.value);
         this.showStats = true;
+    }
+
+    @action
+    toggleMockData() {
+        this.mockData = !this.mockData;
     }
 
     @action
