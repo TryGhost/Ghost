@@ -159,8 +159,14 @@ const PostsTab: React.FC<{currentUserAccount: Account | undefined}> = ({currentU
                                         layout='feed'
                                         object={activity.object}
                                         type={activity.type}
-                                        onClick={() => handleViewContent(activity, false)}
-                                        onCommentClick={() => handleViewContent(activity, true)}
+                                        onClick={() => handleViewContent({
+                                            ...activity,
+                                            id: activity.object.id
+                                        }, false)}
+                                        onCommentClick={() => handleViewContent({
+                                            ...activity,
+                                            id: activity.object.id
+                                        }, true)}
                                     />
                                     {index < posts.length - 1 && <Separator />}
                                 </li>
@@ -207,8 +213,14 @@ const LikesTab: React.FC<{currentUserAccount: Account | undefined}> = ({currentU
                                         layout='feed'
                                         object={Object.assign({}, activity.object, {liked: true})}
                                         type={activity.type}
-                                        onClick={() => handleViewContent(activity, false)}
-                                        onCommentClick={() => handleViewContent(activity, true)}
+                                        onClick={() => handleViewContent({
+                                            ...activity,
+                                            id: activity.object.id
+                                        }, false)}
+                                        onCommentClick={() => handleViewContent({
+                                            ...activity,
+                                            id: activity.object.id
+                                        }, true)}
                                     />
                                     {index < liked.length - 1 && <Separator />}
                                 </li>
