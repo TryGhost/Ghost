@@ -253,7 +253,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
     }
 
     const UserMenuTrigger = (
-        <Button className={`h-[34px] w-[34px] ${layout === 'inbox' ? 'text-gray-900 hover:text-gray-900 dark:text-gray-600 dark:hover:text-gray-600' : 'text-gray-500 hover:text-gray-500 [&_svg]:size-5'} ${layout === 'feed' ? 'rounded-full' : 'rounded-md'} dark:bg-black dark:hover:bg-gray-950`} variant='ghost'>
+        <Button className={`relative z-10 h-[34px] w-[34px] rounded-full ${layout === 'inbox' || layout === 'modal' ? 'text-gray-900 hover:text-gray-900 dark:text-gray-600 dark:hover:text-gray-600' : 'text-gray-500 hover:text-gray-500'} dark:bg-black dark:hover:bg-gray-950 [&_svg]:size-5`} variant='ghost'>
             <LucideIcon.Ellipsis />
         </Button>
     );
@@ -386,6 +386,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                             />
                                             <FeedItemMenu
                                                 allowDelete={allowDelete}
+                                                layout='modal'
                                                 trigger={UserMenuTrigger}
                                                 onCopyLink={handleCopyLink}
                                                 onDelete={handleDelete}

@@ -402,6 +402,8 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
             return;
         }
 
+        setReplyCount(prevProps.object.replyCount ?? 0);
+
         modal.show({
             activityId: prevProps.activityId,
             object: prevProps.object,
@@ -414,6 +416,8 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
     const navigateForward = (_: string, nextObject: ObjectProperties, nextActor: ActorProperties, nextFocusReply: boolean) => {
         // Trigger the modal to show the next activity and add the existing
         // activity to the history so we can navigate back
+
+        setReplyCount(nextObject.replyCount ?? 0);
 
         modal.show({
             // We need to use the object as the API expects an object ID but
