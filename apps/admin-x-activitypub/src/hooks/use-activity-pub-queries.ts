@@ -597,6 +597,7 @@ export function useThreadForUser(handle: string, id: string) {
 
     const threadQuery = useQuery({
         queryKey,
+        refetchOnMount: 'always',
         async queryFn() {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
