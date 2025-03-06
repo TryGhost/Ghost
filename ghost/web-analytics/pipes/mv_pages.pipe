@@ -1,4 +1,9 @@
 VERSION 0
+
+TAGS "v0"
+
+INCLUDE "_hits.incl"
+
 NODE _pages_0
 SQL >
 
@@ -16,7 +21,7 @@ SQL >
         maxIfState(member_status, member_status IN ('paid', 'free', 'undefined')) AS member_status,
         uniqState(session_id) AS visits,
         countState() AS pageviews
-    FROM _hits
+    FROM hits
     GROUP BY
         site_uuid,
         date,

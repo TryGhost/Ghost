@@ -908,15 +908,15 @@ jobs:
       - name: Check all the datafiles syntax
         run: tb check
       - name: Check auth
-        run: tb --host=${{ secrets.TB_HOST }} --token=${{ secrets.TB_ADMIN_TOKEN }} auth info
+        run: tb --host=${{ secrets.TB_HOST }} --token=${{ secrets.TB_ADMIN_TOKEN_STAGING }} auth info
       - name: Try to delete previous Branch
         run: |
-          output=$(tb --host ${{ secrets.TB_HOST }} --token ${{ secrets.TB_ADMIN_TOKEN }} branch ls)
+          output=$(tb --host ${{ secrets.TB_HOST }} --token ${{ secrets.TB_ADMIN_TOKEN_STAGING }} branch ls)
           # Check if the branch name exists in the output
           if echo "$output" | grep -q "\b$TB_BRANCH_NAME\b"; then
             tb \
             --host ${{ secrets.TB_HOST }} \
-            --token ${{ secrets.TB_ADMIN_TOKEN }} \
+            --token ${{ secrets.TB_ADMIN_TOKEN_STAGING }} \
             branch rm $TB_BRANCH_NAME \
             --yes
           else
@@ -926,7 +926,7 @@ jobs:
         run: |
           tb \
           --host ${{ secrets.TB_HOST }} \
-          --token ${{ secrets.TB_ADMIN_TOKEN }} \
+          --token ${{ secrets.TB_ADMIN_TOKEN_STAGING }} \
           branch create $TB_BRANCH_NAME \
           ${_ENV_FLAGS}
       - name: Deploy changes to the test Branch
@@ -967,12 +967,12 @@ jobs:
       - name: Try to delete previous Branch
         if: always()
         run: |
-          output=$(tb --host ${{ secrets.TB_HOST }} --token ${{ secrets.TB_ADMIN_TOKEN }} branch ls)
+          output=$(tb --host ${{ secrets.TB_HOST }} --token ${{ secrets.TB_ADMIN_TOKEN_STAGING }} branch ls)
           # Check if the branch name exists in the output
           if echo "$output" | grep -q "\b$TB_BRANCH_NAME\b"; then
             tb \
                 --host ${{ secrets.TB_HOST }} \
-                --token ${{ secrets.TB_ADMIN_TOKEN }} \
+                --token ${{ secrets.TB_ADMIN_TOKEN_STAGING }} \
                 branch rm $TB_BRANCH_NAME \
                 --yes
           else

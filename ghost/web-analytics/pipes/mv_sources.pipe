@@ -1,11 +1,16 @@
 VERSION 0
+
+TAGS "v0"
+
+INCLUDE "_hits.incl"
+
 NODE _sources_0
 SQL >
 
     WITH
         (
             SELECT domainWithoutWWW(href)
-            FROM _hits
+            FROM hits
             LIMIT 1
         ) AS current_domain,
         sessions AS
@@ -14,7 +19,7 @@ SQL >
                 session_id,
                 argMin(source, timestamp) AS source,
                 maxIfState(member_status, member_status IN ('paid', 'free', 'undefined')) AS member_status
-            FROM _hits
+            FROM hits
             GROUP BY session_id
         )
     SELECT
@@ -33,7 +38,7 @@ SQL >
         uniqState(a.session_id) AS visits,
         countState() AS pageviews
 
-    FROM _hits AS a
+    FROM hits AS a
     INNER JOIN sessions AS b ON a.session_id = b.session_id
     GROUP BY
         a.site_uuid,

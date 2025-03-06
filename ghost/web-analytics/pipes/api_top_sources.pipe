@@ -1,4 +1,7 @@
 VERSION 0
+
+TAGS "v0"
+
 TOKEN "_top_sources_endpoint_read_1325" READ
 
 NODE _top_sources_0

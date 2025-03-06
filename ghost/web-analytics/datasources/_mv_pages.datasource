@@ -1,5 +1,7 @@
 VERSION 0
 
+TAGS "v0"
+
 SCHEMA >
     `site_uuid` String,
     `post_uuid` String,

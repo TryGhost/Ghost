@@ -1,0 +1,25 @@
+VERSION 0
+
+TAGS "v0"
+
+NODE parsed_hits
+SQL >
+
+    SELECT
+        timestamp,
+        action,
+        version,
+        coalesce(session_id, '0') as session_id,
+        toString(payload.locale) as locale,
+        toString(payload.location) as location,
+        toString(payload.referrer) as referrer,
+        toString(payload.pathname) as pathname,
+        toString(payload.href) as href,
+        site_uuid,
+        toString(payload.member_uuid) as member_uuid,
+        toString(payload.member_status) as member_status,
+        toString(payload.post_uuid) as post_uuid,
+        toString(payload.post_type) as post_type,
+        lower(toString(getSubcolumn(payload,'user-agent'))) as user_agent
+    FROM analytics_events
+    where action = 'page_hit' 
