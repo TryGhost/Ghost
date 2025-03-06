@@ -61,7 +61,7 @@
     "@lexical/utils": "0.13.1",
     "@lezer/highlight": "^1.2.0",
     "@mdx-js/rollup": "^3.1.0",
-    "@playwright/test": "^1.48.2",
+    "@playwright/test": "^1.50.1",
     "@prettier/sync": "^0.3.0",
     "@sentry/vite-plugin": "2.22.2",
     "@storybook/addon-actions": "^8.5.0",
