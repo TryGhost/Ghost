@@ -489,7 +489,8 @@ export class MockedApi {
                 status: 200,
                 body: JSON.stringify({
                     users: [{
-                        id: '1'
+                        id: '1',
+                        roles: [{name: 'Owner'}]
                     }]
                 })
             });

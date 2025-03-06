@@ -17,10 +17,10 @@ describe('Acceptance: Members activity', function () {
         expect(currentURL()).to.equal('/signin');
     });
 
-    it('redirects non-admins', async function () {
+    it('redirects non-admins/editors', async function () {
         await invalidateSession();
 
-        const role = this.server.create('role', {name: 'Editor'});
+        const role = this.server.create('role', {name: 'Author'});
         this.server.create('user', {roles: [role], slug: 'test-user'});
 
         await authenticateSession();
@@ -41,7 +41,19 @@ describe('Acceptance: Members activity', function () {
             expect(currentURL()).to.equal('/members-activity');
         });
     });
+    describe('as editor', function () {
+        beforeEach(async function () {
+            const role = this.server.create('role', {name: 'Editor'});
+            this.server.create('user', {roles: [role]});
 
+            await authenticateSession();
+        });
+
+        it('renders', async function () {
+            await visit('/members-activity');
+            expect(currentURL()).to.equal('/members-activity');
+        });
+    });
     describe('as owner', function () {
         beforeEach(async function () {
             const role = this.server.create('role', {name: 'Owner'});

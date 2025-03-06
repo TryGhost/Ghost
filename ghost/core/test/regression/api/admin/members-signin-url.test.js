@@ -78,9 +78,9 @@ describe('Members Sigin URL API', function () {
                 .then(function () {
                     return testUtils.createUser({
                         user: testUtils.DataGenerator.forKnex.createUser({
-                            email: 'test+editor@ghost.org'
+                            email: 'test+author@ghost.org'
                         }),
-                        role: testUtils.DataGenerator.Content.roles[1].name
+                        role: testUtils.DataGenerator.Content.roles[2].name
                     });
                 })
                 .then((user) => {
