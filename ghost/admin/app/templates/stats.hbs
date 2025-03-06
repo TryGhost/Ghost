@@ -3,6 +3,7 @@
         <GhCustomViewTitle @title="Stats" />
         <div class="view-actions">
             <button 
+                type="button"
                 class="gh-btn {{if this.mockData "gh-btn-green"}}" 
                 data-test-button="toggle-data-mode" 
                 {{on "click" this.toggleMockData}}
