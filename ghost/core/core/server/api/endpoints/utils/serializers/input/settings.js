@@ -75,7 +75,8 @@ const EDITABLE_SETTINGS = [
     'recommendations_enabled',
     'body_font',
     'heading_font',
-    'blocked_email_domains'
+    'blocked_email_domains',
+    'captcha_enabled'
 ];
 
 module.exports = {
