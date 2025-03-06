@@ -75,9 +75,9 @@ const FeedItemMenu: React.FC<FeedItemMenuProps> = ({
             </Popover>
             <AlertDialogContent>
                 <AlertDialogHeader>
-                    <AlertDialogTitle>Are you sure you want to delete this post?</AlertDialogTitle>
+                    <AlertDialogTitle>Delete this post?</AlertDialogTitle>
                     <AlertDialogDescription>
-                        You&apos;re about to delete this post. This is permanent! We warned you, k?
+                        {layout === 'inbox' ? 'This will remove the post from the Fediverse, but it will remain on your website.' : <>If you delete this post, you won&apos;t be able to restore it.</>}
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
