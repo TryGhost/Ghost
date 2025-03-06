@@ -1,6 +1,6 @@
 import Content from './content/Content';
 import Loading from './content/Loading';
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {ROOT_DIV_ID} from '../utils/constants';
 import {useAppContext} from '../AppContext';
 
@@ -46,7 +46,21 @@ const ContentBox: React.FC<Props> = ({done}) => {
         }
     };
 
-    const containerClass = darkMode() ? 'dark' : '';
+    useEffect(() => {
+        const el = document.getElementById(ROOT_DIV_ID);
+        if (el && el.parentElement) {
+            const observer = new MutationObserver(() => {
+                setContainerClass(darkMode() ? 'dark' : '');
+            });
+            observer.observe(el.parentElement, {
+                attributes: true,
+                attributeFilter: ['style', 'class']
+            });
+        }
+    }, []);
+
+    const [containerClass, setContainerClass] = useState(darkMode() ? 'dark' : '');
+
     const style = {
         '--gh-accent-color': accentColor ?? 'black',
         paddingTop: 0,
