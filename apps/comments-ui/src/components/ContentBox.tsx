@@ -48,7 +48,7 @@ const ContentBox: React.FC<Props> = ({done}) => {
 
     useEffect(() => {
         const el = document.getElementById(ROOT_DIV_ID);
-        if (el && el.parentElement) {
+        if (el?.parentElement) {
             const observer = new MutationObserver(() => {
                 setContainerClass(darkMode() ? 'dark' : '');
             });
@@ -56,6 +56,9 @@ const ContentBox: React.FC<Props> = ({done}) => {
                 attributes: true,
                 attributeFilter: ['style', 'class']
             });
+            return () => {
+                observer.disconnect();
+            };
         }
     }, []);
 
