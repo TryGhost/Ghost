@@ -1,13 +1,12 @@
 import APAvatar from '@components/global/APAvatar';
 import ActivityItem from '@components/activities/ActivityItem';
 import FollowButton from '@components/global/FollowButton';
-import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useRef} from 'react';
-import ViewProfileModal from '@components/modals/ViewProfileModal';
 import {H4, LucideIcon, Skeleton} from '@tryghost/shade';
 import {LoadingIndicator, NoValueLabel, TextField} from '@tryghost/admin-x-design-system';
 import {type Profile} from '../../api/activitypub';
 import {useDebounce} from 'use-debounce';
+import {useNavigate} from '@tryghost/admin-x-framework';
 import {useSearchForUser, useSuggestedProfilesForUser} from '@hooks/use-activity-pub-queries';
 
 interface AccountSearchResult {
@@ -41,12 +40,14 @@ const AccountSearchResultItem: React.FC<AccountSearchResultItemProps & {
         });
     };
 
+    const navigate = useNavigate();
+
     return (
         <ActivityItem
             key={account.id}
             onClick={() => {
                 onOpenChange?.(false);
-                NiceModal.show(ViewProfileModal, {handle: account.handle, onFollow, onUnfollow});
+                navigate(`/profile/${account.handle}`);
             }}
         >
             <APAvatar author={{
@@ -121,12 +122,14 @@ const SuggestedProfile: React.FC<SuggestedProfileProps & {
         });
     };
 
+    const navigate = useNavigate();
+
     return (
         <ActivityItem
             key={profile.actor.id}
             onClick={() => {
                 onOpenChange?.(false);
-                NiceModal.show(ViewProfileModal, {handle: profile.handle, onFollow, onUnfollow});
+                navigate(`/profile/${profile.handle}`);
             }}
         >
             <APAvatar author={profile.actor} onClick={() => onOpenChange?.(false)} />

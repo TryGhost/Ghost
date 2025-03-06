@@ -34,5 +34,10 @@ export const routes: CustomRouteObject[] = [
         path: 'profile',
         element: <Profile />,
         pageTitle: 'Profile'
+    },
+    {
+        path: 'profile/:handle',
+        element: <Profile />,
+        pageTitle: 'Profile'
     }
 ];

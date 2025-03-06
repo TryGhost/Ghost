@@ -75,6 +75,7 @@ const APAvatar: React.FC<APAvatarProps> = ({author, size, isLoading = false, onC
     const handleClick = (e: React.MouseEvent) => {
         e.stopPropagation();
         NiceModal.show(ViewProfileModal, {handle});
+        // navigate(`/profile/${handle}`);
         onClick?.();
     };
 
