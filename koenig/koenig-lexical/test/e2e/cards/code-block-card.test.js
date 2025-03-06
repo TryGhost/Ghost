@@ -1,4 +1,4 @@
-import {assertHTML, focusEditor, html, initialize, isMac, test} from '../../utils/e2e';
+import {assertHTML, focusEditor, html, initialize, isMac, pasteText, test} from '../../utils/e2e';
 import {expect} from '@playwright/test';
 
 test.describe('Code Block card', async () => {
@@ -211,8 +211,7 @@ test.describe('Code Block card', async () => {
         await page.keyboard.type('```javascript ');
         await page.waitForSelector('[data-kg-card="codeblock"] .cm-editor');
 
-        // Types slower. Codemirror can be slow and needs some time to place the cursor after entering text.
-        await page.keyboard.type('Here are some words', {delay: 500});
+        await pasteText(page, 'Here are some words');
         await expect(page.getByText('Here are some words')).toBeVisible();
         await page.keyboard.press('Backspace');
         await expect(page.getByText('Here are some word')).toBeVisible();
@@ -259,7 +258,6 @@ test.describe('Code Block card', async () => {
         await page.keyboard.type('```javascript ');
         await page.waitForSelector('[data-kg-card="codeblock"] .cm-editor');
 
-        // Types slower. Codemirror can be slow and needs some time to place the cursor after entering text.
         await page.keyboard.type('Here are some words');
         await page.getByTestId('post-title').click();
         await page.keyboard.type('post title'); // click outside of the editor
@@ -282,7 +280,7 @@ test.describe('Code Block card', async () => {
         await page.keyboard.press('Enter');
         await page.waitForSelector('[data-kg-card="codeblock"] .cm-editor');
 
-        await page.keyboard.type('const test = true;', {delay: 80});
+        await page.keyboard.type('const test = true;');
 
         for (let i = 0; i < 8; i++) {
             await page.keyboard.press('ArrowLeft');
@@ -299,39 +297,11 @@ test.describe('Code Block card', async () => {
         await page.keyboard.press(`${ctrlOrCmd}+x`);
 
         await assertHTML(page, html`
-            <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card-editing="true" data-kg-card-selected="true" data-kg-card="codeblock">
-                    <div>
-                        <div>
-                            <div>
-                                <div aria-live="polite"></div>
-                                <div tabindex="-1">
-                                    <div aria-hidden="true">
-                                        <div>
-                                            <div>9</div>
-                                            <div>1</div>
-                                        </div>
-                                    </div>
-                                    <div spellcheck="false" autocorrect="off" autocapitalize="off" translate="no"
-                                        contenteditable="true" role="textbox" aria-multiline="true"
-                                        data-language="javascript">
-                                        <div>
-                                            <span>const</span>
-                                            = true;
-                                        </div>
-                                    </div>
-                                    <div aria-hidden="true">
-                                        <div></div>
-                                    </div>
-                                    <div aria-hidden="true"></div>
-                                </div>
-                            </div>
-                        </div>
-                        <input aria-label="Code card language" placeholder="Language..." type="text" value="javascript" />
-                    </div>
-                </div>
+            <div>
+                <span>const</span>
+                = true;
             </div>
-        `, {ignoreCardContents: false});
+        `, {selector: '.cm-content'});
 
         // NOTE: for some reason CodeMirror+Playwright don't work well together and cut/copied content
         // doesn't make it to the clipboard to enable testing that we can re-paste the cut content

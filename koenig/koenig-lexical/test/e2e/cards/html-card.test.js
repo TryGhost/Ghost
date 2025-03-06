@@ -105,7 +105,7 @@ test.describe('Html card', async () => {
         // waiting for html editor
         await expect(page.locator('.cm-content[contenteditable="true"]')).toBeVisible();
         await page.locator('[data-kg-card="html"]').click();
-        await page.keyboard.type('text in html card', {delay: 100});
+        await page.keyboard.type('text in html card');
         await expect(page.getByText('text in html card')).toBeVisible();
         await page.keyboard.press('Escape');
 
@@ -130,8 +130,7 @@ test.describe('Html card', async () => {
         // waiting for html editor
         await expect(page.locator('.cm-content[contenteditable="true"]')).toBeVisible();
 
-        // Types slower. Codemirror can be slow and needs some time to place the cursor after entering text.
-        await page.keyboard.type('Here are some words', {delay: 500});
+        await page.keyboard.type('Here are some words');
         await expect(page.getByText('Here are some words')).toBeVisible();
         await page.keyboard.press('Backspace');
         await expect(page.getByText('Here are some word')).toBeVisible();
@@ -151,7 +150,6 @@ test.describe('Html card', async () => {
         // waiting for html editor
         await expect(page.locator('.cm-content[contenteditable="true"]')).toBeVisible();
 
-        // Types slower. Codemirror can be slow and needs some time to place the cursor after entering text.
         await page.keyboard.type('Here are some words');
         await page.getByTestId('post-title').click();
         await page.keyboard.type('post title'); // click outside of the editor

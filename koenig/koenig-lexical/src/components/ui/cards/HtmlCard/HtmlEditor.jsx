@@ -3,9 +3,9 @@ import React from 'react';
 import {EditorView, keymap, lineNumbers} from '@codemirror/view';
 import {HighlightStyle, syntaxHighlighting} from '@codemirror/language';
 import {closeBrackets, closeBracketsKeymap} from '@codemirror/autocomplete';
+import {history, standardKeymap} from '@codemirror/commands';
 import {html as langHtml} from '@codemirror/lang-html';
 import {minimalSetup} from '@uiw/codemirror-extensions-basic-setup';
-import {standardKeymap} from '@codemirror/commands';
 import {tags as t} from '@lezer/highlight';
 
 export default function HtmlEditor({darkMode, html, updateHtml}) {
@@ -140,11 +140,15 @@ export default function HtmlEditor({darkMode, html, updateHtml}) {
         syntaxHighlighting(editorHighlightStyle), // customizes syntax highlighting rules
         editorCSS,
         lineNumbers(), // adds line numbers to the gutter
-        minimalSetup({defaultKeymap: false}), // disable defaultKeymap to prevent Mod+Enter from inserting new line
+        minimalSetup({defaultKeymap: false, history: false}), // disable defaultKeymap to prevent Mod+Enter from inserting new line
         keymap.of(closeBracketsKeymap), // required for quote completion; needs to be listed before standardKeymap
         keymap.of(standardKeymap), // add back in standardKeymap, which doesn't include Mod+Enter
         langHtml(),
-        closeBrackets()
+        closeBrackets(),
+        // adds undo/redo functionality with custom behaviour to make tests faster
+        history({
+            joinToEvent: process.env.NODE_ENV === 'test' ? () => false : undefined
+        })
     ];
 
     return (

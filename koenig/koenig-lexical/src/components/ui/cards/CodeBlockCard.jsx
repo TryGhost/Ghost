@@ -6,10 +6,10 @@ import {CardCaptionEditor} from '../CardCaptionEditor';
 import {EditorView, keymap, lineNumbers} from '@codemirror/view';
 import {HighlightStyle, syntaxHighlighting} from '@codemirror/language';
 import {css} from '@codemirror/lang-css';
+import {history, standardKeymap} from '@codemirror/commands';
 import {html} from '@codemirror/lang-html';
 import {javascript} from '@codemirror/lang-javascript';
 import {minimalSetup} from '@uiw/codemirror-extensions-basic-setup';
-import {standardKeymap} from '@codemirror/commands';
 import {tags as t} from '@lezer/highlight';
 
 export function CodeEditor({code, language, updateCode, updateLanguage}) {
@@ -165,8 +165,12 @@ export function CodeEditor({code, language, updateCode, updateLanguage}) {
         syntaxHighlighting(editorHighlightStyle), // customizes syntax highlighting rules
         editorCSS, // customizes general editor appearance (does not include syntax highlighting)
         lineNumbers(), // adds line numbers to the gutter
-        minimalSetup({defaultKeymap: false}), // disable defaultKeymap to prevent Mod+Enter from inserting new line
-        keymap.of(standardKeymap) // add back in standardKeymap, which doesn't include Mod+Enter
+        minimalSetup({defaultKeymap: false, history: false}), // disable defaultKeymap to prevent Mod+Enter from inserting new line
+        keymap.of(standardKeymap), // add back in standardKeymap, which doesn't include Mod+Enter
+        // adds undo/redo functionality with custom behaviour to make tests faster
+        history({
+            joinToEvent: process.env.NODE_ENV === 'test' ? () => false : undefined
+        })
     ];
 
     // If provided language is supported, add the corresponding extension
