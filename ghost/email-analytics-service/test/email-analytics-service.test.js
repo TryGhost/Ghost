@@ -227,6 +227,7 @@ describe('EmailAnalyticsService', function () {
 
                 result.should.equal(10);
                 setJobStatusStub.calledOnce.should.be.true();
+                setJobStatusStub.getCall(0).args[1].should.equal('finished');
                 processEventBatchStub.calledOnce.should.be.true();
             });
 
