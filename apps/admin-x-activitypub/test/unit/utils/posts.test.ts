@@ -102,6 +102,13 @@ describe('mapPostToActivity', function () {
                 type: PostType.Note
             }).object.type
         ).toBe('Note');
+
+        expect(
+            mapPostToActivity({
+                ...post,
+                type: PostType.Tombstone
+            }).object.type
+        ).toBe('Tombstone');
     });
 
     test('it sets the correct object', function () {

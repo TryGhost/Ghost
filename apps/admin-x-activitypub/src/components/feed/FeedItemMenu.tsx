@@ -22,13 +22,15 @@ interface FeedItemMenuProps {
     onCopyLink: () => void;
     onDelete: () => void;
     allowDelete: boolean;
+    layout?: string;
 }
 
 const FeedItemMenu: React.FC<FeedItemMenuProps> = ({
     trigger,
     onCopyLink,
     onDelete,
-    allowDelete = false
+    allowDelete = false,
+    layout
 }) => {
     const {isEnabled} = useFeatureFlags();
 
@@ -48,7 +50,7 @@ const FeedItemMenu: React.FC<FeedItemMenuProps> = ({
                 <PopoverTrigger asChild onClick={e => e.stopPropagation()}>
                     {trigger}
                 </PopoverTrigger>
-                <PopoverContent align='end' className='p-2'>
+                <PopoverContent align={`${layout === 'modal' ? 'start' : 'end'}`} alignOffset={layout === 'modal' ? -12 : 0} className='p-2'>
                     <div className='flex w-48 flex-col'>
                         <PopoverClose asChild>
                             <Button className='justify-start' variant='ghost' onClick={handleCopyLinkClick}>
@@ -71,11 +73,11 @@ const FeedItemMenu: React.FC<FeedItemMenuProps> = ({
                     </div>
                 </PopoverContent>
             </Popover>
-            <AlertDialogContent>
+            <AlertDialogContent onClick={e => e.stopPropagation()}>
                 <AlertDialogHeader>
-                    <AlertDialogTitle>Are you sure you want to delete this post?</AlertDialogTitle>
+                    <AlertDialogTitle>Delete this post?</AlertDialogTitle>
                     <AlertDialogDescription>
-                        You&apos;re about to delete this post. This is permanent! We warned you, k?
+                        {layout === 'inbox' ? 'This will remove the post from the Fediverse, but it will remain on your website.' : <>If you delete this post, you won&apos;t be able to restore it.</>}
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
