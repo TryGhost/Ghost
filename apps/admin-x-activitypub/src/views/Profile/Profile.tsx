@@ -124,7 +124,7 @@ const useInfiniteScrollTab = <TData,>({useDataHook, emptyStateLabel, emptyStateI
     return {items, EmptyState, LoadingState};
 };
 
-const PostsTab: React.FC = () => {
+const PostsTab: React.FC<{currentUserAccount: Account | undefined}> = ({currentUserAccount}) => {
     const {items, EmptyState, LoadingState} = useInfiniteScrollTab<Activity>({
         useDataHook: useOutboxForUser,
         emptyStateLabel: 'You haven\'t posted anything yet.',
@@ -139,23 +139,39 @@ const PostsTab: React.FC = () => {
             {
                 posts.length > 0 && (
                     <ul className='mx-auto flex max-w-[640px] flex-col'>
-                        {posts.map((activity, index) => (
-                            <li
-                                key={activity.id}
-                                data-test-view-article
-                            >
-                                <FeedItem
-                                    actor={activity.actor}
-                                    allowDelete={true}
-                                    layout='feed'
-                                    object={activity.object}
-                                    type={activity.type}
-                                    onClick={() => handleViewContent(activity, false)}
-                                    onCommentClick={() => handleViewContent(activity, true)}
-                                />
-                                {index < posts.length - 1 && <Separator />}
-                            </li>
-                        ))}
+                        {posts.map((activity, index) => {
+                            let canDelete = false;
+
+                            const attributedTo = activity.object?.attributedTo;
+
+                            if (typeof attributedTo === 'object' && 'id' in attributedTo) {
+                                canDelete = currentUserAccount?.id === attributedTo.id;
+                            }
+
+                            return (
+                                <li
+                                    key={activity.id}
+                                    data-test-view-article
+                                >
+                                    <FeedItem
+                                        actor={activity.actor}
+                                        allowDelete={canDelete}
+                                        layout='feed'
+                                        object={activity.object}
+                                        type={activity.type}
+                                        onClick={() => handleViewContent({
+                                            ...activity,
+                                            id: activity.object.id
+                                        }, false)}
+                                        onCommentClick={() => handleViewContent({
+                                            ...activity,
+                                            id: activity.object.id
+                                        }, true)}
+                                    />
+                                    {index < posts.length - 1 && <Separator />}
+                                </li>
+                            );
+                        })}
                     </ul>
                 )
             }
@@ -197,8 +213,14 @@ const LikesTab: React.FC<{currentUserAccount: Account | undefined}> = ({currentU
                                         layout='feed'
                                         object={Object.assign({}, activity.object, {liked: true})}
                                         type={activity.type}
-                                        onClick={() => handleViewContent(activity, false)}
-                                        onCommentClick={() => handleViewContent(activity, true)}
+                                        onClick={() => handleViewContent({
+                                            ...activity,
+                                            id: activity.object.id
+                                        }, false)}
+                                        onCommentClick={() => handleViewContent({
+                                            ...activity,
+                                            id: activity.object.id
+                                        }, true)}
                                     />
                                     {index < liked.length - 1 && <Separator />}
                                 </li>
@@ -327,7 +349,7 @@ const Profile: React.FC<ProfileProps> = ({}) => {
             title: 'Posts',
             contents: (
                 <div className='ap-posts'>
-                    <PostsTab />
+                    <PostsTab currentUserAccount={account} />
                 </div>
             )
         },
