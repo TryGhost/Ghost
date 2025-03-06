@@ -52,7 +52,7 @@
     "main:monorepo": "git checkout main && git pull ${GHOST_UPSTREAM:-origin} main && yarn",
     "main:submodules": "git submodule sync && git submodule update && git submodule foreach \"git checkout main && git pull ${GHOST_UPSTREAM:-origin} main\"",
     "prepare": "husky install .github/hooks",
-    "tb": "docker run --rm -v $(pwd):/ghost -w /ghost/ghost/tinybird -it tinybirdco/tinybird-cli-docker",
+    "tb": "docker run --rm -v $(pwd):/ghost -w /ghost/ghost/web-analytics -it tinybirdco/tinybird-cli-docker",
     "tb:update": "docker pull tinybirdco/tinybird-cli-docker"
   },
   "resolutions": {

@@ -90,6 +90,7 @@ const Inbox: React.FC = () => {
                                                 >
                                                     <FeedItem
                                                         actor={activity.actor}
+                                                        allowDelete={activity.object.authored}
                                                         commentCount={activity.object.replyCount ?? 0}
                                                         isLoading={isLoading}
                                                         layout={layout}
