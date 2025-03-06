@@ -1,6 +1,6 @@
-VERSION 0
+VERSION 1
 
-TAGS "v0"
+TAGS "v1"
 
 SCHEMA >
     `site_uuid` String,
