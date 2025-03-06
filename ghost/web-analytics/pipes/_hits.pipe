@@ -1,4 +1,7 @@
 VERSION 0
+
+TAG "v0"
+
 NODE parsed_hits
 SQL >
 
