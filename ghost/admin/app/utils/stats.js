@@ -141,9 +141,6 @@ export function getStatsParams(config, props, additionalParams = {}) {
         ...additionalParams
     };
 
-    console.log(`props`, props);
-    console.log(`params`, params);
-
     if (audience.length > 0) {
         params.member_status = audience.join(',');
     }
