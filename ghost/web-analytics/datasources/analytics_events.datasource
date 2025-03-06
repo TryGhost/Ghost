@@ -7,7 +7,7 @@ SCHEMA >
     `session_id` String `json:$.session_id`,
     `action` LowCardinality(String) `json:$.action`,
     `version` LowCardinality(String) `json:$.version`,
-    `payload` JSON(max_dynamic_types=4, max_dynamic_paths=32) `json:$.payload`,
+    `payload` JSON `json:$.payload` (max_dynamic_types=4, max_dynamic_paths=32),
     `site_uuid` LowCardinality(String) `json:$.payload.site_uuid`
 
 ENGINE "MergeTree"
