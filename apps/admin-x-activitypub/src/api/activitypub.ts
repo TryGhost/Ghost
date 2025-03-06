@@ -77,8 +77,9 @@ export interface GetAccountFollowsResponse {
 }
 
 export enum PostType {
+    Note = 0,
     Article = 1,
-    Note = 2,
+    Tombstone = 2
 }
 
 export interface Post {

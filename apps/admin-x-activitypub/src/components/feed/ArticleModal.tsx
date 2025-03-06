@@ -17,6 +17,7 @@ import {useThreadForUser} from '@hooks/use-activity-pub-queries';
 
 import APAvatar from '../global/APAvatar';
 import APReplyBox from '../global/APReplyBox';
+import DeletedFeedItem from './DeletedFeedItem';
 import TableOfContents, {TOCItem} from './TableOfContents';
 import getReadingTime from '../../utils/get-reading-time';
 import {useDebounce} from 'use-debounce';
@@ -867,7 +868,9 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                         <div className={`mx-auto px-8 pb-10 pt-5`} style={{maxWidth: currentMaxWidth}}>
                             {threadParents.map((item) => {
                                 return (
-                                    <>
+                                    item.object.type === 'Tombstone' ? (
+                                        <DeletedFeedItem last={false} />
+                                    ) : (
                                         <FeedItem
                                             actor={item.actor}
                                             allowDelete={false}
@@ -885,7 +888,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                                 setIsFocused(true);
                                             }}
                                         />
-                                    </>
+                                    )
                                 );
                             })}
 
@@ -941,6 +944,9 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                         />
                                     </div>
                                 </div>
+                            )}
+                            {object.type === 'Tombstone' && (
+                                <DeletedFeedItem last={true} />
                             )}
 
                             <div ref={replyBoxRef}>

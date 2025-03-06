@@ -286,7 +286,7 @@ const Notifications: React.FC<NotificationsProps> = () => {
         switch (group.type) {
         case ACTIVITY_TYPE.CREATE:
             NiceModal.show(ArticleModal, {
-                activityId: group.id,
+                activityId: group.object.id,
                 object: group.object,
                 actor: group.actors[0],
                 focusReplies: true,
