@@ -15,7 +15,6 @@ import {
     PopoverTrigger,
     buttonVariants
 } from '@tryghost/shade';
-import {useFeatureFlags} from '@src/lib/feature-flags';
 
 interface FeedItemMenuProps {
     trigger: React.ReactNode;
@@ -32,8 +31,6 @@ const FeedItemMenu: React.FC<FeedItemMenuProps> = ({
     allowDelete = false,
     layout
 }) => {
-    const {isEnabled} = useFeatureFlags();
-
     const handleCopyLinkClick = (e: React.MouseEvent<HTMLElement>) => {
         e.stopPropagation();
         onCopyLink();
@@ -57,7 +54,7 @@ const FeedItemMenu: React.FC<FeedItemMenuProps> = ({
                                 Copy link
                             </Button>
                         </PopoverClose>
-                        {isEnabled('deleteButton') && allowDelete &&
+                        {allowDelete &&
                             <AlertDialogTrigger asChild>
                                 <PopoverClose asChild>
                                     <Button
