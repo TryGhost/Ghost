@@ -1,6 +1,8 @@
-VERSION 1
+VERSION 0
 
-TAGS "v1"
+TAGS "v0"
+
+INCLUDE "_parsed_hits.incl"
 
 NODE timeseries
 SQL >
@@ -68,17 +70,37 @@ SQL >
                         toStartOfHour(timestamp) as date,
                         session_id,
                         member_status,
-                        device,
-                        browser,
+                        case
+                            when match(user_agent, 'wget|ahrefsbot|curl|urllib|bitdiscovery|\+https://|googlebot')
+                            then 'bot'
+                            when match(user_agent, 'android')
+                            then 'mobile-android'
+                            when match(user_agent, 'ipad|iphone|ipod')
+                            then 'mobile-ios'
+                            else 'desktop'
+                        END as device,
+                        case
+                            when match(user_agent, 'firefox')
+                            then 'firefox'
+                            when match(user_agent, 'chrome|crios')
+                            then 'chrome'
+                            when match(user_agent, 'opera')
+                            then 'opera'
+                            when match(user_agent, 'msie|trident')
+                            then 'ie'
+                            when match(user_agent, 'iphone|ipad|safari')
+                            then 'safari'
+                            else 'Unknown'
+                        END as browser,
                         location,
-                        source,
+                        domainWithoutWWW(referrer) as source,
                         pathname,
                         uniq(session_id) as visits,
                         count() as pageviews,
                         case when min(timestamp) = max(timestamp) then 1 else 0 end as is_bounce,
                         max(timestamp) as latest_view_aux,
                         min(timestamp) as first_view_aux
-                    from _hits
+                    from parsed_hits
                     where toDate(timestamp) = {{ Date(date_from) }}
                     group by toStartOfHour(timestamp), session_id, site_uuid, member_status, device, browser, location, source, pathname
                 {% else %}
@@ -139,5 +161,3 @@ SQL >
     select a.date, b.visits, b.pageviews, b.bounce_rate, b.avg_session_sec
     from timeseries a
     left join data b using date
-
-
