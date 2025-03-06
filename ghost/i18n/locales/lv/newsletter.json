@@ -1,4 +1,6 @@
 {
+    "{date}": "{date}",
+    "Become a paid member of {site} to get access to all premium content.": "",
     "By {authors}": "Autors: {authors}",
     "Comment": "komentēt",
     "complimentary": "bezmaksas",
@@ -14,6 +16,8 @@
     "Subscription details": "Informācija par abonementu",
     "trialing": "izmēģinājums",
     "Unsubscribe": "Anulēt abonementu",
+    "Upgrade": "",
+    "Upgrade to continue reading.": "",
     "View in browser": "Skatīt pārlūkprogrammā",
     "You are receiving this because you are a <strong>%%{status}%% subscriber</strong> to {site}.": "Jūs to saņemat, jo esat <strong>%%{status}%% abonents</strong> vietnē {site}.",
     "Your free trial ends on {date}, at which time you will be charged the regular price. You can always cancel before then.": "Jūsu bezmaksas izmēģinājuma periods beidzas {date}, un tad no jums tiks iekasēta parastā cena. Jūs vienmēr varat atcelt pirms tam.",
