@@ -73,7 +73,7 @@ const FeedItemMenu: React.FC<FeedItemMenuProps> = ({
                     </div>
                 </PopoverContent>
             </Popover>
-            <AlertDialogContent>
+            <AlertDialogContent onClick={e => e.stopPropagation()}>
                 <AlertDialogHeader>
                     <AlertDialogTitle>Delete this post?</AlertDialogTitle>
                     <AlertDialogDescription>
