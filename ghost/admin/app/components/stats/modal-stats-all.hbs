@@ -7,7 +7,7 @@
 
     <button type="button" class="close" title="Close" {{on "click" @close}} data-test-button="close-publish-flow">{{svg-jar "close"}}<span class="hidden">Close</span></button>
 
-    <div class="gh-stats-all-container" {{react-render this.ReactComponent props=(hash chartRange=this.chartRange audience=this.audience type=this.type)}}></div>
+    <div class="gh-stats-all-container" {{react-render this.ReactComponent props=(hash chartRange=this.chartRange audience=this.audience type=this.type mockData=this.mockData)}}></div>
 
     <footer class="modal-footer">
         <button

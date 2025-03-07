@@ -59,7 +59,7 @@ export default class KpisOverview extends Component {
                 args
             ));
 
-            const endpoint = `${this.config.stats.endpoint}/v0/pipes/kpis__v${args.apiVersion || TB_VERSION}.json?${params}`;
+            const endpoint = `${this.config.stats.endpoint}/v0/pipes/api_kpis__v${TB_VERSION}.json?${params}`;
 
             const response = yield fetch(endpoint, {
                 method: 'GET',

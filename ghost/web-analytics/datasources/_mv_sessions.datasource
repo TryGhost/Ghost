@@ -1,0 +1,24 @@
+VERSION 0
+
+TAGS "v0"
+
+SCHEMA >
+    `site_uuid` String,
+    `date` Date,
+    `session_id` String,
+    `member_status` AggregateFunction(maxIf, String, UInt8),
+    `post_uuid` SimpleAggregateFunction(any, String),
+    `post_type` SimpleAggregateFunction(any, String),
+    `device` SimpleAggregateFunction(any, String),
+    `os` SimpleAggregateFunction(any, String),
+    `browser` SimpleAggregateFunction(any, String),
+    `location` SimpleAggregateFunction(any, String),
+    `source` SimpleAggregateFunction(any, String),
+    `pathname` SimpleAggregateFunction(any, String),
+    `first_view` SimpleAggregateFunction(min, DateTime),
+    `latest_view` SimpleAggregateFunction(max, DateTime),
+    `pageviews` AggregateFunction(count)
+
+ENGINE AggregatingMergeTree
+ENGINE_PARTITION_KEY toYYYYMM(date)
+ENGINE_SORTING_KEY site_uuid, date, session_id

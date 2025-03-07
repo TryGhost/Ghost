@@ -26,13 +26,10 @@ export default class TechnicalComponent extends Component {
     }
 
     ReactComponent = (props) => {
-        const {selected, apiVersion} = props;
+        const {selected} = props;
 
         // If OS is selected but not available, switch to devices
         let effectiveSelected = selected;
-        if (selected === 'os' && (!apiVersion || apiVersion < 1)) {
-            effectiveSelected = 'devices';
-        }
 
         const colorPalette = statsStaticColors.slice(0, 5);
 
@@ -48,17 +45,17 @@ export default class TechnicalComponent extends Component {
 
         switch (effectiveSelected) {
         case 'browsers':
-            endpoint = `${this.config.stats.endpoint}/v0/pipes/top_browsers__v${apiVersion || TB_VERSION}.json`;
+            endpoint = `${this.config.stats.endpoint}/v0/pipes/api_top_browsers__v${TB_VERSION}.json`;
             indexBy = 'browser';
             tableHead = 'Browser';
             break;
         case 'os':
-            endpoint = `${this.config.stats.endpoint}/v0/pipes/top_os__v${apiVersion || TB_VERSION}.json`;
+            endpoint = `${this.config.stats.endpoint}/v0/pipes/api_top_os__v${TB_VERSION}.json`;
             indexBy = 'os';
             tableHead = 'OS';
             break;
         default:
-            endpoint = `${this.config.stats.endpoint}/v0/pipes/top_devices__v${apiVersion || TB_VERSION}.json`;
+            endpoint = `${this.config.stats.endpoint}/v0/pipes/api_top_devices__v${TB_VERSION}.json`;
             indexBy = 'device';
             tableHead = 'Device';
         }

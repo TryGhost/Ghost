@@ -1,4 +1,4 @@
-const {LinkClick} = require('@tryghost/link-tracking');
+const LinkClick = require('./ClickEvent');
 const ObjectID = require('bson-objectid').default;
 const sentry = require('../../../shared/sentry');
 const config = require('../../../shared/config');
