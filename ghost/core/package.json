@@ -237,7 +237,7 @@
   },
   "devDependencies": {
     "@actions/core": "1.11.1",
-    "@playwright/test": "1.50.1",
+    "@playwright/test": "1.51.0",
     "@tryghost/express-test": "0.13.15",
     "@tryghost/webhook-mock-receiver": "0.2.14",
     "@types/bookshelf": "1.2.9",
