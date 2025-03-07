@@ -48,5 +48,6 @@ module.exports = {
     default_email_address: 'default_email_address',
     support_email_address: 'support_email_address',
     editor_default_email_recipients: 'editor_default_email_recipients',
+    captcha_enabled: 'captcha_enabled',
     labs: 'labs'
 };

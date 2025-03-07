@@ -1358,6 +1358,7 @@ Object {
   "settings": Object {
     "accent_color": "#FF1A75",
     "allow_self_signup": true,
+    "captcha_enabled": null,
     "codeinjection_foot": null,
     "codeinjection_head": null,
     "comments_enabled": "off",
@@ -1463,6 +1464,7 @@ Object {
   "settings": Object {
     "accent_color": "#FF1A75",
     "allow_self_signup": true,
+    "captcha_enabled": null,
     "codeinjection_foot": null,
     "codeinjection_head": null,
     "comments_enabled": "off",
