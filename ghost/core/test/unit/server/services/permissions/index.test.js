@@ -9,10 +9,6 @@ const permissions = require('../../../../../core/server/services/permissions');
 describe('Permissions', function () {
     let fakePermissions = [];
 
-    before(function () {
-        models.init();
-    });
-
     beforeEach(function () {
         sinon.stub(models.Permission, 'findAll').callsFake(function () {
             return Promise.resolve(models.Permissions.forge(fakePermissions));
