@@ -28,7 +28,7 @@ export const CAMPAIGN_OPTIONS = [
 ];
 
 export const AUDIENCE_TYPES = [
-    {name: 'Logged out visitors', value: 'undefined'},
+    {name: 'Anonymous visitors', value: 'undefined'},
     {name: 'Free members', value: 'free'},
     {name: 'Paid members', value: 'paid'}
 ];

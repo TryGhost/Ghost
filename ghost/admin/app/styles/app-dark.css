@@ -258,12 +258,12 @@ input:focus,
     background: var(--black) !important;
 }
 
-.gh-btn:not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red):not(.gh-btn-primary):not(.gh-btn-black):not(.gh-btn-text):not(.gh-btn-accent):not(.gh-btn-link):not(.gh-editor-preview-trigger):not(.gh-expandable-header .gh-btn):not(.gh-btn.gh-post-preview-mode) {
+.gh-btn:not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red):not(.gh-btn-primary):not(.gh-btn-black):not(.gh-btn-text):not(.gh-btn-accent):not(.gh-btn-link):not(.gh-expandable-header .gh-btn):not(.gh-btn.gh-post-preview-mode):not(.gh-btn-editor):not(.gh-btn-preview) {
     border: 1px solid var(--grey-900);
     color: var(--black);
 }
 
-.gh-btn:not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red):not(.gh-btn-primary):not(.gh-btn-black):not(.gh-btn-text):not(.gh-btn-accent):not(.gh-btn-link):not(.gh-editor-preview-trigger):hover {
+.gh-btn:not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red):not(.gh-btn-primary):not(.gh-btn-black):not(.gh-btn-text):not(.gh-btn-accent):not(.gh-btn-link):not(.gh-btn-editor):not(.gh-btn-preview):hover {
     background: var(--lightgrey-d1);
     color: var(--black);
 }
@@ -386,6 +386,10 @@ input:focus,
 
 .gh-date-time-picker input {
     color: var(--darkgrey);
+}
+
+.gh-publish-header .gh-btn:hover {
+    background: var(--grey-900) !important;
 }
 
 .gh-publish-setting {
@@ -774,12 +778,13 @@ input:focus,
 }
 
 .gh-btn-editor {
-    background: var(--white) !important;
+    background: var(--white);
 }
 
-.gh-btn-editor.active,
-.gh-btn-editor:hover {
-    background: var(--lightgrey) !important;
+.gh-btn-editor:hover,
+.gh-post-preview-url:hover,
+.gh-post-preview-header .gh-btn-editor:hover {
+    background: var(--grey-900);
 }
 
 .gh-editor-post-status {
@@ -837,8 +842,98 @@ input:focus,
 }
 
 /* Post preview modal */
-.gh-post-preview-browser-footer {
-    border-top: 1px solid var(--hairline-color-1);
+.gh-post-preview-modal,
+.gh-post-preview-header,
+.fullscreen-modal-total-overlay .gh-pe-mobile-container {
+    background: var(--white);
+}
+
+.gh-post-preview-email-header {
+    background: var(--grey-925);
+}
+
+.gh-post-preview-email-header .gh-input-x {
+    background: var(--grey-850);
+    border-color: transparent;
+}
+
+.gh-post-preview-email-header .gh-input-x:hover:not(:focus) {
+    background: var(--grey-900);
+}
+
+.gh-preview-newsletter-trigger.gh-input-x.ember-basic-dropdown-trigger--below.ember-power-select-trigger[aria-expanded=true],
+.gh-preview-newsletter-trigger.gh-input-x.ember-power-select-trigger:focus {
+    background-color: var(--grey-850);
+}
+
+.gh-post-preview-email-header hr {
+    border-color: var(--midlightgrey-d2);
+}
+
+.gh-publish-preview-newtab:hover {
+    background: var(--grey-900);
+}
+
+.gh-contentfilter-divider {
+    background: var(--midlightgrey-d1);
+}
+
+.gh-post-preview-btn-group .gh-btn-group span:not(.gh-btn-group .gh-btn-group-selected span) {
+    color: var(--middarkgrey);
+}
+
+.gh-post-preview-mode svg {
+    color: var(--middarkgrey);
+}
+
+.gh-post-preview-btn-group .gh-btn-group span:hover {
+    background: var(--grey-900) !important;
+}
+
+.gh-select.gh-web-preview-segment,
+.gh-select.gh-web-preview-segment .gh-preview-segment-trigger {
+    background: transparent;
+}
+
+.gh-select.gh-web-preview-segment .gh-preview-segment-trigger:hover {
+    background: var(--grey-900);
+}
+
+.gh-preview-segment-dropdown .ember-power-select-options {
+    background: var(--grey-950);
+}
+
+.gh-preview-segment-dropdown .ember-power-select-option:hover,
+.ember-power-select-option[aria-current=true] {
+    background: var(--grey-900);
+}
+
+.gh-post-preview-email-trigger {
+    background: transparent;
+    border: 1px solid transparent !important;
+}
+
+.gh-post-preview-email-trigger:hover,
+.gh-post-preview-email-trigger.open {
+    background: var(--grey-850) !important;
+    border: 1px solid var(--grey-850) !important;
+}
+
+.gh-btn.gh-btn-preview {
+    border-color: var(--grey-900);
+}
+
+.gh-btn.gh-btn-preview:hover {
+    background: var(--grey-900);
+}
+
+.gh-tooltip-trigger .gh-tooltip {
+    background: var(--grey-900);
+    color: var(--black);
+}
+
+.gh-tooltip .gh-shortcut-key {
+    background: var(--grey-950);
 }
 
 /* Dark style Lists */
@@ -1470,6 +1565,11 @@ New form styles */
 .gh-input-x:focus-visible {
     background-color: var(--grey-950);
     border: 1px solid var(--green);
+}
+
+.gh-input-x.ember-basic-dropdown-trigger--below.ember-power-select-trigger[aria-expanded=true],
+.gh-input-x.ember-power-select-trigger:focus {
+    background-color: var(--grey-900);
 }
 
 .settings-menu-container select,

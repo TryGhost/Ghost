@@ -205,7 +205,13 @@ button, .btn-base {
 }
 
 .tooltip-delayed:before {
-    transition: all 200ms ease 0.4s;
+    opacity: 0;
+    transition: opacity 200ms ease 0s;
+}
+
+.tooltip-delayed:hover:before {
+    opacity: 1;
+    transition: opacity 200ms ease .8s;
 }
 
 .tooltip-left:before {
@@ -220,7 +226,7 @@ button, .btn-base {
 }
 
 .tooltip-bottom:before {
-    bottom: calc(-100% - 4px);
+    bottom: calc(-94%);
     left: 50%;
     transform: translate(-50%, -5px);
 }
@@ -252,6 +258,80 @@ button, .btn-base {
     transform: translate(0, 0);
 }
 
+
+/* Shortcut tooltip
+---------------------------------------------------------- */
+
+/* Add this class to the parent element */
+.gh-tooltip-trigger {
+    position: relative;
+}
+
+.gh-tooltip-trigger .gh-tooltip {
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    position: absolute;
+    bottom: calc(100% + 4px);
+    left: 50%;
+    height: auto;
+    visibility: hidden;
+    overflow: initial;
+    white-space: nowrap;
+    padding: 4px 4px 4px 10px;
+    border-radius: 6px;
+    background-color: var(--black);
+    color: var(--white);
+    text-align: center;
+    font-size: 1.2rem;
+    font-weight: 400;
+    line-height: 1.4em;
+    letter-spacing: 0.1px;
+    transform: translate(-50%, 5px);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 200ms ease 0s;
+}
+
+.gh-tooltip-trigger.no-text .gh-tooltip {
+    padding: 4px;
+}
+
+.gh-tooltip-trigger.no-shortcut .gh-tooltip {
+    padding: 6px 10px;
+}
+
+*:hover > .gh-tooltip {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, 0);
+    transition: opacity 200ms ease .8s;
+}
+
+/* Add tooltip-bottom to the parent element */
+.tooltip-bottom .gh-tooltip {
+    bottom: auto;
+    top: calc(100% + 4px);
+    transform: translate(-50%, -5px);
+}
+
+*:hover > .tooltip-bottom .gh-tooltip {
+    transform: translate(-50%, 0);
+}
+
+.gh-tooltip .gh-shortcut-key {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 24px;
+    padding: 2px 8px;
+    margin: 0;
+    background: var(--darkgrey-l1);
+    font-size: 1.2rem;
+    border-radius: 4px;
+    line-height: 1.4em;
+}
 
 /* Errors
 ---------------------------------------------------------- */
