@@ -1,4 +1,6 @@
 {
+    "{date}": "{date}",
+    "Become a paid member of {site} to get access to all premium content.": "",
     "By {authors}": "بواسطة {authors}",
     "Comment": "تعليق",
     "complimentary": "مجاملة",
@@ -14,6 +16,8 @@
     "Subscription details": "تفاصيل الاشتراك",
     "trialing": "فنرة تجريبية",
     "Unsubscribe": "إلغاء الاشتراك",
+    "Upgrade": "",
+    "Upgrade to continue reading.": "",
     "View in browser": "شاهد فى المتصفح",
     "You are receiving this because you are a <strong>%%{status}%% subscriber</strong> to {site}.": "انت تتلقى هذه الرسالة لأنك <strong>%%{status}%% مشترك</strong> فى {site}.",
     "Your free trial ends on {date}, at which time you will be charged the regular price. You can always cancel before then.": "سيتم انتهاء فترتك التجريبية فى {date} وبحلول هذا الوقت سيتم محاسبتك على السعر الطبيعيى، بالطبع يمكنك إلغاء الاشتراك قبل هذا التاريخ.",

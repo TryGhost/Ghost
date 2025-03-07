@@ -1,4 +1,6 @@
 {
+    "{date}": "{date}",
+    "Become a paid member of {site} to get access to all premium content.": "",
     "By {authors}": "{authors} 작성",
     "Comment": "댓글",
     "complimentary": "무료",
@@ -14,6 +16,8 @@
     "Subscription details": "구독 상세정보",
     "trialing": "체험 중",
     "Unsubscribe": "구독 취소",
+    "Upgrade": "",
+    "Upgrade to continue reading.": "",
     "View in browser": "브라우저에서 보기",
     "You are receiving this because you are a <strong>%%{status}%% subscriber</strong> to {site}.": "{site}의 <strong>%%{status}%% 구독자</strong>이기 때문에 이 메일을 받고 계세요.",
     "Your free trial ends on {date}, at which time you will be charged the regular price. You can always cancel before then.": "무료 체험은 {date}에 종료되며, 이후 정상 가격이 청구돼요. 그 전에 언제든 취소할 수 있어요.",
