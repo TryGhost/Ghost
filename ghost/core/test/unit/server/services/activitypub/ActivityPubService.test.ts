@@ -1,5 +1,5 @@
 import assert from 'assert/strict';
-import {ActivityPubService} from '../src';
+import {ActivityPubService} from '../../../../../core/server/services/activitypub/ActivityPubService';
 import knex, {Knex} from 'knex';
 import {IdentityTokenService} from '@tryghost/identity-token-service';
 import nock from 'nock';
