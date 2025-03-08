@@ -11,6 +11,7 @@ const {pipeline} = require('@tryghost/promise');
 const validatePassword = require('../lib/validate-password');
 const permissions = require('../services/permissions');
 const urlUtils = require('../../shared/url-utils');
+const { checkUserPermissionsForRole } = require('./role-utils');
 const activeStates = ['active', 'warn-1', 'warn-2', 'warn-3', 'warn-4'];
 const ASSIGNABLE_ROLES = ['Administrator', 'Editor', 'Author', 'Contributor'];
 
@@ -828,8 +829,9 @@ User = ghostBookshelf.Model.extend({
                 hasUserPermission = true;
             } else if (loadedPermissions.user && userModel.hasRole('Owner')) {
                 // Owner can only be edited by owner
-                hasUserPermission = loadedPermissions.user && _.some(loadedPermissions.user.roles, {name: 'Owner'});
-            } else if (loadedPermissions.user && _.some(loadedPermissions.user.roles, {name: 'Editor'})) {
+                hasUserPermission = checkUserPermissionsForRole(loadedPermissions, 'Owner');
+            } else if (checkUserPermissionsForRole(loadedPermissions, 'Editor') 
+                || checkUserPermissionsForRole(loadedPermissions, 'Super Editor')) {
                 // If the user we are trying to edit is an Author or Contributor, allow it
                 hasUserPermission = userModel.hasRole('Author') || userModel.hasRole('Contributor');
             }
@@ -844,7 +846,8 @@ User = ghostBookshelf.Model.extend({
             }
 
             // Users with the role 'Editor' have complex permissions when the action === 'destroy'
-            if (loadedPermissions.user && _.some(loadedPermissions.user.roles, {name: 'Editor'})) {
+            if (checkUserPermissionsForRole(loadedPermissions, 'Editor')
+                || checkUserPermissionsForRole(loadedPermissions, 'Super Editor')) {
                 // Alternatively, if the user we are trying to edit is an Author, allow it
                 hasUserPermission = context.user === userModel.get('id') || userModel.hasRole('Author') || userModel.hasRole('Contributor');
             }

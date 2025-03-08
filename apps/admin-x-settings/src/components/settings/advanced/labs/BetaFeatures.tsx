@@ -15,6 +15,10 @@ const BetaFeatures: React.FC = () => {
 
     return (
         <List titleSeparator={false}>
+            <LabItem 
+                action={<FeatureToggle flag="superEditors" />}
+                detail={<>Allows "super editors" to manage members and comments in addition to regular roles.</>}
+                title='Super Editor role' />
             <LabItem
                 action={<FeatureToggle flag="editorExcerpt" />}
                 detail={<>Adds the excerpt input below the post title in the editor</>}
