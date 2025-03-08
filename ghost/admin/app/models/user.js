@@ -64,15 +64,15 @@ export default BaseModel.extend(ValidationEngine, {
     isSuperEditor: equal('role.name', 'Super Editor'),
     isAnyEditor: or('isEditor', 'isSuperEditor'),
 
-    // adding some permisions-like properties, to facilitate future
-    // switch to using the permissions system instead of role-based
-    // hard-coded permissions
-    canManageMembers: or('isAdminOnly', 'isOwnerOnly', 'isSuperEditor'),
-    canManageComments: or('isAdminOnly', 'isOwnerOnly', 'isSuperEditor'),
-
     // These are used in enough places that it's useful to throw them here
     isAdmin: or('isOwnerOnly', 'isAdminOnly'),
     isAuthorOrContributor: or('isAuthor', 'isContributor'),
+
+    // adding some permisions-like properties, to facilitate future
+    // switch to using the permissions system instead of role-based
+    // hard-coded permissions
+    canManageMembers: or('isAdmin', 'isSuperEditor'),
+    canManageComments: or('isAdmin', 'isSuperEditor'),
 
     isLoggedIn: computed('id', 'session.user.id', function () {
         return this.id === this.get('session.user.id');

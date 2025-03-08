@@ -28,6 +28,7 @@ export default class MembersRoute extends AuthenticatedRoute {
 
         // give editors the ability to reach this route also.
         if (!this.session.user.canManageMembers) {
+            console.log('cannot have access to member, you are ', this.session.user);
             return this.transitionTo('home');
         }
     }
