@@ -201,7 +201,7 @@ describe('Migration Fixture Utils', function () {
                 permsAllStub.calledOnce.should.be.true();
                 rolesAllStub.calledOnce.should.be.true();
                 dataMethodStub.filter.callCount.should.eql(FIXTURE_COUNT);
-                dataMethodStub.find.callCount.should.eql(9);
+                dataMethodStub.find.callCount.should.eql(10);
                 baseUtilAttachStub.callCount.should.eql(FIXTURE_COUNT);
 
                 fromItem.related.callCount.should.eql(FIXTURE_COUNT);
