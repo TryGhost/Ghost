@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const constants = require('@tryghost/constants');
@@ -6,6 +5,7 @@ const security = require('@tryghost/security');
 const settingsCache = require('../../shared/settings-cache');
 const limitService = require('../services/limits');
 const ghostBookshelf = require('./base');
+const {checkUserPermissionsForRole} = require('./role-utils');
 
 const messages = {
     notEnoughPermission: 'You do not have permission to perform this action',
@@ -86,10 +86,9 @@ Invite = ghostBookshelf.Model.extend({
 
                 let allowed = [];
                 if (loadedPermissions.user) {
-                    if (_.some(loadedPermissions.user.roles, {name: 'Owner'}) ||
-                        _.some(loadedPermissions.user.roles, {name: 'Administrator'})) {
+                    if (checkUserPermissionsForRole(loadedPermissions, 'Owner') || checkUserPermissionsForRole(loadedPermissions, 'Administrator')) {
                         allowed = ['Administrator', 'Editor', 'Author', 'Contributor'];
-                    } else if (_.some(loadedPermissions.user.roles, {name: 'Editor'})) {
+                    } else if (checkUserPermissionsForRole(loadedPermissions, 'Editor') || checkUserPermissionsForRole(loadedPermissions, 'Super Editor')) {
                         allowed = ['Author', 'Contributor'];
                     }
                 } else if (loadedPermissions.apiKey) {

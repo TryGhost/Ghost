@@ -296,6 +296,11 @@ DataGenerator.Content = {
             id: ObjectId().toHexString(),
             name: 'Admin Integration',
             description: 'External Apps'
+        },
+        {
+            id: ObjectId().toHexString(),
+            name: 'Super Editor',
+            description: 'Super Editor'
         }
     ],
 
