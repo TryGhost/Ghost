@@ -3,7 +3,6 @@ const crypto = require('crypto');
 const ObjectId = require('bson-objectid').default;
 const moment = require('moment');
 const constants = require('@tryghost/constants');
-const { password } = require('@tryghost/security');
 const DataGenerator = {};
 
 DataGenerator.markdownToMobiledoc = function markdownToMobiledoc(content) {
@@ -1496,7 +1495,7 @@ DataGenerator.forKnex = (function () {
             user_id: DataGenerator.Content.users[7].id,
             role_id: DataGenerator.Content.roles[4].id
         },
-        {    // super editor
+        {   // super editor
             id: ObjectId().toHexString(),
             role_name: 'Super Editor',
             user_id: DataGenerator.Content.users[9].id,

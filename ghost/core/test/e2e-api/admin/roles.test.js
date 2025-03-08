@@ -1,11 +1,11 @@
 const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
-const {anyContentVersion, anyEtag, anyISODateTime, anyObjectId, } = matchers;
+const {anyContentVersion, anyEtag, anyISODateTime, anyObjectId} = matchers;
 
 const rolesObjectMatcher = {
     id: anyObjectId,
     created_at: anyISODateTime,
     updated_at: anyISODateTime
-}
+};
 
 describe('Roles API', function () {
     /** @type {import('../../utils/agents').AdminAPITestAgent} */
