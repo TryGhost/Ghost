@@ -98,7 +98,7 @@
     "In the event a permanent failure is received when attempting to send a newsletter, emails will be disabled on the account.": "Im Falle eines dauerhaften Fehlers beim Versuch, einen Newsletter zu senden, werden E-Mails auf dem Konto deaktiviert.",
     "In your email client add {{senderEmail}} to your contacts list. This signals to your mail provider that emails sent from this address should be trusted.": "Fügen Sie {{senderEmail}} in Ihrem E-Mail-Client zu Ihren Kontakten hinzu. So signalisieren Sie Ihrem Mail-Anbieter, dass E-Mails von dieser Adresse vertrauenswürdig sind.",
     "Invalid email address": "Ungültige E-Mail-Adresse",
-    "Jamie Larson": "Jamie Larson",
+    "Jamie Larson": "Peter Müller",
     "jamie@example.com": "jamie@example.com",
     "Less like this": "Weniger davon",
     "Make sure emails aren't accidentally ending up in the Spam or Promotions folders of your inbox. If they are, click on \"Mark as not spam\" and/or \"Move to inbox\".": "Stellen Sie sicher, dass E-Mails nicht unbeabsichtigt im Spam-Ordner landen. Wenn das der Fall sein sollte, klicken Sie auf  \"Kein Spam\" und/oder \"In den Posteingang bewegen\".",
