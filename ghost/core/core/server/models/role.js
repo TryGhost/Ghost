@@ -87,7 +87,6 @@ Role = ghostBookshelf.Model.extend({
             } else if (isAdmin) {
                 checkAgainst = ['Administrator', 'Super Editor', 'Editor', 'Author', 'Contributor'];
             } else if (isEitherEditor) {
-
                 checkAgainst = ['Author', 'Contributor'];
             }
 
