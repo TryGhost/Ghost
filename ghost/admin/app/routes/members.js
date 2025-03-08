@@ -18,6 +18,7 @@ export default class MembersRoute extends AuthenticatedRoute {
     beforeModel() {
         super.beforeModel(...arguments);
         // - TODO: redirect if members is disabled?
+        
         if (!this.session.user.canManageMembers) {
             return this.transitionTo('home');
         }
