@@ -1,5 +1,4 @@
-import AuthenticatedRoute
- from "../authenticated";
+import AuthenticatedRoute from '../authenticated';
 export default class MembersImportRoute extends AuthenticatedRoute {
     beforeModel() {
         super.beforeModel(...arguments);

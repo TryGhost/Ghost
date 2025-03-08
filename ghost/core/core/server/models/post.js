@@ -21,11 +21,7 @@ const {BadRequestError} = require('@tryghost/errors');
 const {PostRevisions} = require('@tryghost/post-revisions');
 const {mobiledocToLexical} = require('@tryghost/kg-converters');
 const labs = require('../../shared/labs');
-<<<<<<< HEAD
 const {setIsRoles} = require('./role-utils');
-=======
-const checkUserPermissionsForRole = require('./role-utils').checkUserPermissionsForRole;
->>>>>>> b0927037c7 (need testing)
 
 const messages = {
     isAlreadyPublished: 'Your post is already published, please reload your page.',
@@ -1501,6 +1497,10 @@ Post = ghostBookshelf.Model.extend({
             return postModel.get('status') === 'draft';
         }
 
+        isContributor = checkUserPermissionsForRole(loadedPermissions, 'Contributor');
+        isOwner = checkUserPermissionsForRole(loadedPermissions, 'Owner');
+        isAdmin = checkUserPermissionsForRole(loadedPermissions, 'Administrator');
+        isEditor = checkUserPermissionsForRole(loadedPermissions, 'Editor') || checkUserPermissionsForRole(loadedPermissions, 'SuperEditor');
         isIntegration = loadedPermissions.apiKey && _.some(loadedPermissions.apiKey.roles, {name: 'Admin Integration'});
 
         isEdit = (action === 'edit');

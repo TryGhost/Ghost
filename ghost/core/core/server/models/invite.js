@@ -6,6 +6,7 @@ const settingsCache = require('../../shared/settings-cache');
 const limitService = require('../services/limits');
 const ghostBookshelf = require('./base');
 const {setIsRoles} = require('./role-utils');
+
 const messages = {
     notEnoughPermission: 'You do not have permission to perform this action',
     roleNotFound: 'Role not found',
@@ -85,16 +86,10 @@ Invite = ghostBookshelf.Model.extend({
 
                 let allowed = [];
                 if (loadedPermissions.user) {
-<<<<<<< HEAD
                     const {isOwner, isAdmin, isEitherEditor} = setIsRoles(loadedPermissions);
                     if (isOwner || isAdmin) {
-                        allowed = ['Administrator', 'Editor', 'Author', 'Contributor'];
+                        allowed = ['Administrator', 'Editor', 'Author', 'Contributor, Super Editor'];
                     } else if (isEitherEditor) {
-=======
-                    if (checkUserPermissionsForRole(loadedPermissions, 'Owner') || checkUserPermissionsForRole(loadedPermissions, 'Administrator')) {
-                        allowed = ['Administrator', 'Editor', 'Author', 'Contributor'];
-                    } else if (checkUserPermissionsForRole(loadedPermissions, 'Editor') || checkUserPermissionsForRole(loadedPermissions, 'Super Editor')) {
->>>>>>> b0927037c7 (need testing)
                         allowed = ['Author', 'Contributor'];
                     }
                 } else if (loadedPermissions.apiKey) {
