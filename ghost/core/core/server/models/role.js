@@ -2,7 +2,11 @@ const _ = require('lodash');
 const ghostBookshelf = require('./base');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
+<<<<<<< HEAD
 const {setIsRoles} = require('./role-utils');
+=======
+const { hasRole } = require('./role-utils');
+>>>>>>> b0927037c7 (need testing)
 
 const messages = {
     roleNotFound: 'Role not found',

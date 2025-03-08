@@ -11,6 +11,7 @@ const {pipeline} = require('@tryghost/promise');
 const validatePassword = require('../lib/validate-password');
 const permissions = require('../services/permissions');
 const urlUtils = require('../../shared/url-utils');
+const { checkUserPermissionsForRole } = require('./role-utils');
 const activeStates = ['active', 'warn-1', 'warn-2', 'warn-3', 'warn-4'];
 const ASSIGNABLE_ROLES = ['Administrator', 'Super Editor', 'Editor', 'Author', 'Contributor'];
 const {setIsRoles} = require('./role-utils');
@@ -830,8 +831,14 @@ User = ghostBookshelf.Model.extend({
                 hasUserPermission = true;
             } else if (isOwner) {
                 // Owner can only be edited by owner
+<<<<<<< HEAD
                 hasUserPermission = loadedPermissions.user && _.some(loadedPermissions.user.roles, {name: 'Owner'});
             } else if (isEitherEditor) {
+=======
+                hasUserPermission = checkUserPermissionsForRole(loadedPermissions, 'Owner');
+            } else if (checkUserPermissionsForRole(loadedPermissions, 'Editor') 
+                || checkUserPermissionsForRole(loadedPermissions, 'Super Editor')) {
+>>>>>>> b0927037c7 (need testing)
                 // If the user we are trying to edit is an Author or Contributor, allow it
                 hasUserPermission = userModel.hasRole('Author') || userModel.hasRole('Contributor');
             }
@@ -846,7 +853,12 @@ User = ghostBookshelf.Model.extend({
             }
 
             // Users with the role 'Editor' have complex permissions when the action === 'destroy'
+<<<<<<< HEAD
             if (isEitherEditor) {
+=======
+            if (checkUserPermissionsForRole(loadedPermissions, 'Editor')
+                || checkUserPermissionsForRole(loadedPermissions, 'Super Editor')) {
+>>>>>>> b0927037c7 (need testing)
                 // Alternatively, if the user we are trying to edit is an Author, allow it
                 hasUserPermission = context.user === userModel.get('id') || userModel.hasRole('Author') || userModel.hasRole('Contributor');
             }

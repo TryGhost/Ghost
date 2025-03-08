@@ -21,7 +21,11 @@ const {BadRequestError} = require('@tryghost/errors');
 const {PostRevisions} = require('@tryghost/post-revisions');
 const {mobiledocToLexical} = require('@tryghost/kg-converters');
 const labs = require('../../shared/labs');
+<<<<<<< HEAD
 const {setIsRoles} = require('./role-utils');
+=======
+const checkUserPermissionsForRole = require('./role-utils').checkUserPermissionsForRole;
+>>>>>>> b0927037c7 (need testing)
 
 const messages = {
     isAlreadyPublished: 'Your post is already published, please reload your page.',

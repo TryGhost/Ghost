@@ -61,6 +61,14 @@ export default BaseModel.extend(ValidationEngine, {
     isEditor: equal('role.name', 'Editor'),
     isAdminOnly: equal('role.name', 'Administrator'),
     isOwnerOnly: equal('role.name', 'Owner'),
+    isSuperEditor: equal('role.name', 'Super Editor'),
+    isAnyEditor: or('isEditor', 'isSuperEditor'),
+
+    // adding some permisions-like properties, to facilitate future
+    // switch to using the permissions system instead of role-based
+    // hard-coded permissions
+    canManageMembers: or('isAdminOnly', 'isOwnerOnly', 'isSuperEditor'),
+    canManageComments: or('isAdminOnly', 'isOwnerOnly', 'isSuperEditor'),
 
     // These are used in enough places that it's useful to throw them here
     isAdmin: or('isOwnerOnly', 'isAdminOnly'),

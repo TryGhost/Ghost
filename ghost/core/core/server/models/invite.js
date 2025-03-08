@@ -85,10 +85,16 @@ Invite = ghostBookshelf.Model.extend({
 
                 let allowed = [];
                 if (loadedPermissions.user) {
+<<<<<<< HEAD
                     const {isOwner, isAdmin, isEitherEditor} = setIsRoles(loadedPermissions);
                     if (isOwner || isAdmin) {
                         allowed = ['Administrator', 'Editor', 'Author', 'Contributor'];
                     } else if (isEitherEditor) {
+=======
+                    if (checkUserPermissionsForRole(loadedPermissions, 'Owner') || checkUserPermissionsForRole(loadedPermissions, 'Administrator')) {
+                        allowed = ['Administrator', 'Editor', 'Author', 'Contributor'];
+                    } else if (checkUserPermissionsForRole(loadedPermissions, 'Editor') || checkUserPermissionsForRole(loadedPermissions, 'Super Editor')) {
+>>>>>>> b0927037c7 (need testing)
                         allowed = ['Author', 'Contributor'];
                     }
                 } else if (loadedPermissions.apiKey) {
