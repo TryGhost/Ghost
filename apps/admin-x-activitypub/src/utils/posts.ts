@@ -122,3 +122,74 @@ export function mapPostToActivity(post: Post): Activity {
         to: ''
     };
 }
+
+/**
+ * Map an ActivityPub activity to a Post
+ *
+ * @param activity The ActivityPub activity to map to a Post
+ */
+export function mapActivityToPost(activity: Activity): Post {
+    const isRepost = activity.type === 'Announce';
+
+    const object = activity.object;
+
+    let postType = PostType.Note;
+
+    if (object.type === 'Article') {
+        postType = PostType.Article;
+    } else if (object.type === 'Tombstone') {
+        postType = PostType.Tombstone;
+    }
+
+    const author = {
+        id: object.attributedTo.id,
+        name: object.attributedTo.name,
+        handle: `@${object.attributedTo.preferredUsername}@${new URL(object.attributedTo.id).hostname}`,
+        url: object.attributedTo.id,
+        avatarUrl: object.attributedTo.icon?.url || ''
+    };
+
+    let repostedBy = null;
+
+    if (isRepost) {
+        repostedBy = {
+            id: activity.actor.id,
+            name: activity.actor.name,
+            handle: `@${activity.actor.preferredUsername}@${new URL(activity.actor.id).hostname}`,
+            url: activity.actor.id,
+            avatarUrl: activity.actor.icon?.url || ''
+        };
+    }
+
+    return {
+        id: object.id,
+        type: postType,
+        title: object.name || '',
+        excerpt: object.preview?.content || '',
+        content: object.content || '',
+        url: object.url || '',
+        featureImageUrl: object.image || null,
+        publishedAt: object.published || '',
+        likeCount: object.liked ? 1 : 0,
+        likedByMe: object.liked || false,
+        replyCount: object.replyCount || 0,
+        readingTimeMinutes: calculateReadingTime(object.content || ''),
+        attachments: object.attachment || [],
+        author,
+        authoredByMe: object.authored || false,
+        repostCount: object.repostCount || 0,
+        repostedByMe: object.reposted || false,
+        repostedBy
+    };
+}
+
+function calculateReadingTime(content: string): number {
+    const wordsPerMinute = 275;
+
+    const wordCount = content.replace(/<[^>]*>/g, '')
+        .split(/\s+/)
+        .filter(word => word.length > 0)
+        .length;
+
+    return Math.ceil(wordCount / wordsPerMinute);
+}

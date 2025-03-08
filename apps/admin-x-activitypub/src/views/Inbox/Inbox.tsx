@@ -10,24 +10,35 @@ import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button} from '@tryghost/shade';
 import {Heading, LoadingIndicator} from '@tryghost/admin-x-design-system';
 import {handleViewContent} from '@utils/content-handlers';
-import {
-    useFeedForUser,
-    useInboxForUser,
-    useUserDataForUser
-} from '@hooks/use-activity-pub-queries';
 import {useLocation} from '@tryghost/admin-x-framework';
+import {useUserDataForUser} from '@hooks/use-activity-pub-queries';
+
+import {mapPostToActivity} from '../../utils/posts';
+import {useFeed, useInbox} from '../../state/post';
 
 const Inbox: React.FC = () => {
     const location = useLocation();
     const layout = location.pathname === '/feed' ? 'feed' : 'inbox';
-    const {inboxQuery, updateInboxActivity} = useInboxForUser({enabled: layout === 'inbox'});
-    const {feedQuery, updateFeedActivity} = useFeedForUser({enabled: layout === 'feed'});
 
-    const feedQueryData = layout === 'inbox' ? inboxQuery : feedQuery;
-    const updateActivity = layout === 'inbox' ? updateInboxActivity : updateFeedActivity;
-    const {data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading} = feedQueryData;
+    const inbox = useInbox({
+        handle: 'index',
+        disableQuery: layout !== 'inbox'
+    });
 
-    const activities = (data?.pages.flatMap(page => page.posts) ?? Array.from({length: 5}, (_, index) => ({id: `placeholder-${index}`, object: {}})));
+    const feed = useFeed({
+        handle: 'index',
+        disableQuery: layout !== 'feed'
+    });
+
+    const {
+        posts,
+        fetchMore: fetchNextPage,
+        hasMore: hasNextPage,
+        isFetchingMore: isFetchingNextPage,
+        isLoading
+    } = layout === 'inbox' ? inbox : feed;
+
+    const activities = posts.map(post => mapPostToActivity(post));
 
     const observerRef = useRef<IntersectionObserver | null>(null);
     const loadMoreRef = useRef<HTMLDivElement | null>(null);
@@ -97,8 +108,8 @@ const Inbox: React.FC = () => {
                                                         object={activity.object}
                                                         repostCount={activity.object.repostCount ?? 0}
                                                         type={activity.type}
-                                                        onClick={() => handleViewContent(activity, false, updateActivity)}
-                                                        onCommentClick={() => handleViewContent(activity, true, updateActivity)}
+                                                        onClick={() => handleViewContent(activity, false)}
+                                                        onCommentClick={() => handleViewContent(activity, true)}
                                                     />
                                                     {index < activities.length - 1 && (
                                                         <Separator />

@@ -7,20 +7,22 @@ import getUsername from '../../utils/get-username';
 import {OptionProps, SingleValueProps, components} from 'react-select';
 import {Popover, PopoverContent, PopoverTrigger, Skeleton} from '@tryghost/shade';
 
-import {Activity, ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
+import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, Icon, LoadingIndicator, Modal, Select, SelectOption} from '@tryghost/admin-x-design-system';
 import {renderTimestamp} from '../../utils/render-timestamp';
 import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
 import {useFocusedState} from '@components/global/APReplyBox';
 import {useModal} from '@ebay/nice-modal-react';
-import {useThreadForUser} from '@hooks/use-activity-pub-queries';
+import {useThread} from '../../state/post/hooks';
 
 import APAvatar from '../global/APAvatar';
 import APReplyBox from '../global/APReplyBox';
 import DeletedFeedItem from './DeletedFeedItem';
 import TableOfContents, {TOCItem} from './TableOfContents';
 import getReadingTime from '../../utils/get-reading-time';
+import {mapPostToActivity} from '../../utils/posts';
 import {useDebounce} from 'use-debounce';
+import {usePostStore} from '../../state/post';
 
 interface ArticleModalProps {
     activityId: string;
@@ -29,7 +31,6 @@ interface ArticleModalProps {
     focusReply: boolean;
     focusReplies: boolean;
     width?: 'narrow' | 'wide';
-    updateActivity: (id: string, updated: Partial<Activity>) => void;
     history: {
         activityId: string;
         object: ObjectProperties;
@@ -368,28 +369,34 @@ interface FontSelectOption {
 
 const ArticleModal: React.FC<ArticleModalProps> = ({
     activityId,
-    object,
+    object: initialObject,
     actor,
     focusReply,
     focusReplies,
     width = 'narrow',
-    updateActivity = () => {},
     history = []
 }) => {
     const MODAL_SIZE_SM = 640;
     const MODAL_SIZE_LG = 1420;
     const [isFocused, setIsFocused] = useFocusedState(focusReply);
 
-    const {threadQuery, addToThread} = useThreadForUser('index', activityId);
-    const {data: thread, isLoading: isLoadingThread} = threadQuery;
-    const threadPostIdx = (thread?.posts ?? []).findIndex(item => item.object.id === activityId);
-    const threadChildren = (thread?.posts ?? []).slice(threadPostIdx + 1);
-    const threadParents = (thread?.posts ?? []).slice(0, threadPostIdx);
+    const postStore = usePostStore();
+    const post = postStore.getById(activityId);
+    const object = post ? mapPostToActivity(post).object : initialObject;
+
+    const {
+        posts,
+        isLoading: isLoadingThread
+    } = useThread({handle: 'index', postId: activityId});
+    const thread = posts.map(mapPostToActivity);
+
+    const threadPostIdx = thread.findIndex(item => item.object.id === activityId);
+    const threadChildren = thread.slice(threadPostIdx + 1);
+    const threadParents = thread.slice(0, threadPostIdx);
 
     const modalSize = width === 'narrow' ? MODAL_SIZE_SM : MODAL_SIZE_LG;
     const modal = useModal();
     const darkMode = document.documentElement.classList.contains('dark');
-    const [replyCount, setReplyCount] = useState(object.replyCount ?? 0);
 
     const canNavigateBack = history.length > 0;
     const navigateBack = () => {
@@ -402,13 +409,10 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
             return;
         }
 
-        setReplyCount(prevProps.object.replyCount ?? 0);
-
         modal.show({
             activityId: prevProps.activityId,
             object: prevProps.object,
             actor: prevProps.actor,
-            updateActivity,
             width,
             history
         });
@@ -417,15 +421,12 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
         // Trigger the modal to show the next activity and add the existing
         // activity to the history so we can navigate back
 
-        setReplyCount(nextObject.replyCount ?? 0);
-
         modal.show({
             // We need to use the object as the API expects an object ID but
             // returns a full activity object
             activityId: nextObject.id,
             object: nextObject,
             actor: nextActor,
-            updateActivity,
             width,
             focusReply: nextFocusReply,
             history: [
@@ -438,35 +439,6 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
             ]
         });
     };
-
-    const onLikeClick = () => {
-        // Do API req or smth
-        // Don't need to know about setting timeouts or anything like that
-    };
-
-    function handleNewReply(activity: Activity) {
-        // Add the new reply to the thread
-        activity.object.authored = true;
-        activity.id = activity.object.id;
-        addToThread(activity);
-
-        // Update the replyCount on the activity outside of the context
-        // of this component
-        updateActivity(activityId, {
-            object: {
-                ...object,
-                replyCount: (object.replyCount ?? 0) + 1
-            }
-        } as Partial<Activity>);
-
-        // Update the replyCount on the current activity loaded in the modal
-        // This is used for when we navigate via the history
-        setReplyCount((current: number) => current + 1);
-    }
-
-    function decrementReplyCount(step: number = 1) {
-        setReplyCount((current: number) => current - step);
-    }
 
     const replyBoxRef = useRef<HTMLDivElement>(null);
     const repliesRef = useRef<HTMLDivElement>(null);
@@ -896,7 +868,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                 <FeedItem
                                     actor={actor}
                                     allowDelete={false}
-                                    commentCount={replyCount}
+                                    commentCount={object.replyCount ?? 0}
                                     last={true}
                                     layout={'modal'}
                                     object={object}
@@ -928,7 +900,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                     />
                                     <div className='ml-[-7px]'>
                                         <FeedItemStats
-                                            commentCount={replyCount}
+                                            commentCount={object.replyCount ?? 0}
                                             layout={'modal'}
                                             likeCount={1}
                                             object={object}
@@ -940,7 +912,6 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                                 });
                                                 setIsFocused(true);
                                             }}
-                                            onLikeClick={onLikeClick}
                                         />
                                     </div>
                                 </div>
@@ -953,7 +924,6 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                 <APReplyBox
                                     focused={isFocused}
                                     object={object}
-                                    onNewReply={handleNewReply}
                                 />
                             </div>
                             <FeedItemDivider />
@@ -983,7 +953,6 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                                     navigateForward(item.id, item.object, item.actor, true);
                                                     setIsFocused(true);
                                                 }}
-                                                onDelete={decrementReplyCount}
                                             />
                                             {showDivider && <FeedItemDivider />}
                                         </React.Fragment>

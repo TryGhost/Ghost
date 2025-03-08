@@ -10,7 +10,6 @@ import {
     type AccountFollowsQueryResult,
     type ActivityPubCollectionQueryResult,
     useAccountFollowsForUser,
-    useAccountForUser,
     useLikedForUser,
     useOutboxForUser
 } from '@hooks/use-activity-pub-queries';
@@ -23,6 +22,7 @@ import FollowButton from '@components/global/FollowButton';
 import Layout from '@components/layout';
 import Separator from '@components/global/Separator';
 import ViewProfileModal from '@components/modals/ViewProfileModal';
+import {useUserAccount} from '../../state/user';
 
 interface UseInfiniteScrollTabProps<TData> {
     useDataHook: (key: string) => ActivityPubCollectionQueryResult<TData> | AccountFollowsQueryResult;
@@ -339,7 +339,7 @@ type ProfileTab = 'posts' | 'likes' | 'following' | 'followers';
 interface ProfileProps {}
 
 const Profile: React.FC<ProfileProps> = ({}) => {
-    const {data: account, isLoading: isLoadingAccount} = useAccountForUser('index');
+    const {account, isLoading: isLoadingAccount} = useUserAccount({handle: 'index'});
 
     const [selectedTab, setSelectedTab] = useState<ProfileTab>('posts');
 

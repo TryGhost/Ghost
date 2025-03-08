@@ -13,7 +13,7 @@ import getUsername from '../../utils/get-username';
 import stripHtml from '../../utils/strip-html';
 import {handleProfileClick} from '../../utils/handle-profile-click';
 import {renderTimestamp} from '../../utils/render-timestamp';
-import {useDeleteMutationForUser} from '../../hooks/use-activity-pub-queries';
+import {useDelete} from '../../state/post/hooks';
 
 function getAttachment(object: ObjectProperties) {
     let attachment;
@@ -200,8 +200,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
     last,
     isLoading,
     onClick: onClickHandler = noop,
-    onCommentClick,
-    onDelete = noop
+    onCommentClick
 }) => {
     const timestamp =
         new Date(object?.published ?? new Date()).toLocaleDateString('default', {year: 'numeric', month: 'short', day: '2-digit'}) + ', ' + new Date(object?.published ?? new Date()).toLocaleTimeString('default', {hour: '2-digit', minute: '2-digit'});
@@ -211,7 +210,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
     const contentRef = useRef<HTMLDivElement>(null);
     const [isTruncated, setIsTruncated] = useState(false);
 
-    const deleteMutation = useDeleteMutationForUser('index');
+    const {delete: deletePost} = useDelete({handle: 'index'});
 
     useEffect(() => {
         const element = contentRef.current;
@@ -230,9 +229,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
     };
 
     const handleDelete = () => {
-        deleteMutation.mutate({id: object.id, parentId});
-
-        onDelete();
+        deletePost({id: object.id, parent: parentId});
     };
 
     const handleCopyLink = async () => {

@@ -4,9 +4,10 @@ import * as FormPrimitive from '@radix-ui/react-form';
 import APAvatar from './APAvatar';
 import clsx from 'clsx';
 import getUsername from '../../utils/get-username';
-import {Activity, ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
+import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, showToast} from '@tryghost/admin-x-design-system';
-import {useReplyMutationForUser, useUserDataForUser} from '@hooks/use-activity-pub-queries';
+import {useReply} from '../../state/post';
+import {useUserDataForUser} from '@hooks/use-activity-pub-queries';
 
 export interface APTextAreaProps extends HTMLProps<HTMLTextAreaElement> {
     title?: string;
@@ -17,7 +18,6 @@ export interface APTextAreaProps extends HTMLProps<HTMLTextAreaElement> {
     hint?: React.ReactNode;
     className?: string;
     onChange?: (event: React.ChangeEvent<HTMLTextAreaElement>) => void;
-    onNewReply?: (activity: Activity) => void;
     object: ObjectProperties;
     focused: number;
 }
@@ -47,12 +47,11 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
     className,
     object,
     focused,
-    onNewReply,
     ...props
 }) => {
     const id = useId();
     const [textValue, setTextValue] = useState(value); // Manage the textarea value with state
-    const replyMutation = useReplyMutationForUser('index');
+    const {reply, isReplying} = useReply({handle: 'index'});
 
     const {data: user} = useUserDataForUser('index');
 
@@ -68,16 +67,13 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
         if (!textValue) {
             return;
         }
-        await replyMutation.mutate({id: object.id, content: textValue}, {
-            onSuccess(activity: Activity) {
+        reply({inReplyTo: object.id, content: textValue}, {
+            onSuccess() {
                 setTextValue('');
                 showToast({
                     message: 'Reply sent',
                     type: 'success'
                 });
-                if (onNewReply) {
-                    onNewReply(activity);
-                }
             },
             onError() {
                 showToast({
@@ -114,7 +110,7 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
     );
 
     // We disable the button if either the textbox isn't focused, or the reply is currently being sent.
-    const buttonDisabled = !isFocused || replyMutation.isLoading;
+    const buttonDisabled = !isFocused || isReplying;
 
     let placeholder = 'Reply...';
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -134,7 +130,7 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
                                 <textarea
                                     ref={textareaRef}
                                     className={styles}
-                                    disabled={replyMutation.isLoading}
+                                    disabled={isReplying}
                                     id={id}
                                     maxLength={maxLength}
                                     placeholder={placeholder}
@@ -152,7 +148,7 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
                     </div>
                 </FormPrimitive.Root>
                 <div className='absolute bottom-[3px] right-0 flex space-x-4 transition-[opacity] duration-150'>
-                    <Button color='black' disabled={buttonDisabled} id='post' label='Post' loading={replyMutation.isLoading} size='md' onMouseDown={handleClick} />
+                    <Button color='black' disabled={buttonDisabled} id='post' label='Post' loading={isReplying} size='md' onMouseDown={handleClick} />
                 </div>
             </div>
         </div>

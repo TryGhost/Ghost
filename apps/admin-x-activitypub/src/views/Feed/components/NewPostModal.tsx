@@ -4,20 +4,24 @@ import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Modal, showToast} from '@tryghost/admin-x-design-system';
 import {Skeleton} from '@tryghost/shade';
-import {useAccountForUser, useNoteMutationForUser, useUserDataForUser} from '@hooks/use-activity-pub-queries';
+import {useUserDataForUser} from '@hooks/use-activity-pub-queries';
+
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 import {useState} from 'react';
+
+import {useCreate} from '../../../state/post/hooks';
+import {useUserAccount} from '../../../state/user';
 
 const NewPostModal = NiceModal.create(() => {
     const modal = useModal();
     const {data: user} = useUserDataForUser('index');
-    const noteMutation = useNoteMutationForUser('index');
+    const {create, isCreating} = useCreate({handle: 'index'});
     const {updateRoute} = useRouting();
-    const {data: account, isLoading: isLoadingAccount} = useAccountForUser('index');
+    const {account, isLoading: isLoadingAccount} = useUserAccount({handle: 'index'});
 
     const [content, setContent] = useState('');
 
-    const isDisabled = noteMutation.isLoading || !content.trim();
+    const isDisabled = isCreating || !content.trim();
 
     const handlePost = async () => {
         const trimmedContent = content.trim();
@@ -26,7 +30,7 @@ const NewPostModal = NiceModal.create(() => {
             return;
         }
 
-        noteMutation.mutate({content: trimmedContent}, {
+        create(trimmedContent, {
             onSuccess() {
                 showToast({
                     message: 'Note posted',
@@ -36,7 +40,7 @@ const NewPostModal = NiceModal.create(() => {
                 updateRoute('feed');
                 modal.remove();
             },
-            onError(error) {
+            onError(error: unknown) {
                 showToast({
                     message: 'An error occurred while posting your note.',
                     type: 'error'
@@ -82,7 +86,7 @@ const NewPostModal = NiceModal.create(() => {
                                 <textarea
                                     autoFocus={true}
                                     className='ap-textarea w-full resize-none bg-transparent text-[1.5rem]'
-                                    disabled={noteMutation.isLoading}
+                                    disabled={isCreating}
                                     placeholder='What&apos;s new?'
                                     rows={3}
                                     value={content}

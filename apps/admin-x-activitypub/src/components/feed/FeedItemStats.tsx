@@ -2,7 +2,8 @@ import React, {useEffect, useState} from 'react';
 import {Button} from '@tryghost/admin-x-design-system';
 import {ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {useAnimatedCounter} from '@hooks/use-animated-counter';
-import {useDerepostMutationForUser, useLikeMutationForUser, useRepostMutationForUser, useUnlikeMutationForUser} from '@hooks/use-activity-pub-queries';
+import {useDerepostMutationForUser, useRepostMutationForUser} from '@hooks/use-activity-pub-queries';
+import {useLike} from '../../state/post/hooks';
 
 interface FeedItemStatsProps {
     object: ObjectProperties;
@@ -10,7 +11,7 @@ interface FeedItemStatsProps {
     commentCount: number;
     repostCount: number;
     layout: string;
-    onLikeClick: () => void;
+    onLikeClick?: () => void;
     onCommentClick: () => void;
 }
 
@@ -43,8 +44,7 @@ const FeedItemStats: React.FC<FeedItemStatsProps> = ({
         }
     }, [initialRepostCount]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    const likeMutation = useLikeMutationForUser('index');
-    const unlikeMutation = useUnlikeMutationForUser('index');
+    const {like, unlike} = useLike({handle: 'index'});
     const repostMutation = useRepostMutationForUser('index');
     const derepostMutation = useDerepostMutationForUser('index');
     const {
@@ -57,12 +57,12 @@ const FeedItemStats: React.FC<FeedItemStatsProps> = ({
     const handleLikeClick = async (e: React.MouseEvent<HTMLElement>) => {
         e.stopPropagation();
         if (!isLiked) {
-            likeMutation.mutate(object.id);
+            like(object.id);
         } else {
-            unlikeMutation.mutate(object.id);
+            unlike(object.id);
         }
         setIsLiked(!isLiked);
-        onLikeClick();
+        onLikeClick?.();
     };
 
     const buttonClassName = `transition-color flex p-2 ap-action-button items-center justify-center rounded-md bg-white text-gray-900 leading-none hover:bg-gray-100 dark:bg-black dark:hover:bg-gray-950 dark:text-gray-600`;
