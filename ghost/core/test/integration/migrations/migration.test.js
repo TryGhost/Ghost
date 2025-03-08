@@ -108,50 +108,50 @@ describe('Migrations', function () {
 
             permissions.should.havePermission('Send mail', ['Administrator', 'Admin Integration']);
 
-            permissions.should.havePermission('Browse notifications', ['Administrator', 'Editor', 'Admin Integration']);
-            permissions.should.havePermission('Add notifications', ['Administrator', 'Editor', 'Admin Integration']);
-            permissions.should.havePermission('Delete notifications', ['Administrator', 'Editor', 'Admin Integration']);
+            permissions.should.havePermission('Browse notifications', ['Administrator', 'Editor', 'Admin Integration', 'Super Editor']);
+            permissions.should.havePermission('Add notifications', ['Administrator', 'Editor', 'Admin Integration', 'Super Editor']);
+            permissions.should.havePermission('Delete notifications', ['Administrator', 'Editor', 'Admin Integration', 'Super Editor']);
 
-            permissions.should.havePermission('Browse posts', ['Administrator', 'Editor', 'Author', 'Contributor', 'Admin Integration']);
-            permissions.should.havePermission('Read posts', ['Administrator', 'Editor', 'Author', 'Contributor', 'Admin Integration']);
-            permissions.should.havePermission('Edit posts', ['Administrator', 'Editor', 'Author', 'Contributor', 'Admin Integration']);
-            permissions.should.havePermission('Add posts', ['Administrator', 'Editor', 'Author', 'Contributor', 'Admin Integration']);
-            permissions.should.havePermission('Delete posts', ['Administrator', 'Editor', 'Author', 'Contributor', 'Admin Integration']);
-            permissions.should.havePermission('Publish posts', ['Administrator', 'Editor', 'Admin Integration', 'Scheduler Integration']);
+            permissions.should.havePermission('Browse posts', ['Administrator', 'Editor', 'Author', 'Contributor', 'Admin Integration', 'Super Editor']);
+            permissions.should.havePermission('Read posts', ['Administrator', 'Editor', 'Author', 'Contributor', 'Admin Integration', 'Super Editor']);
+            permissions.should.havePermission('Edit posts', ['Administrator', 'Editor', 'Author', 'Contributor', 'Admin Integration', 'Super Editor']);
+            permissions.should.havePermission('Add posts', ['Administrator', 'Editor', 'Author', 'Contributor', 'Admin Integration', 'Super Editor']);
+            permissions.should.havePermission('Delete posts', ['Administrator', 'Editor', 'Author', 'Contributor', 'Admin Integration', 'Super Editor']);
+            permissions.should.havePermission('Publish posts', ['Administrator', 'Editor', 'Admin Integration', 'Scheduler Integration', 'Super Editor']);
 
-            permissions.should.havePermission('Browse settings', ['Administrator', 'Editor', 'Author', 'Contributor', 'Admin Integration']);
-            permissions.should.havePermission('Read settings', ['Administrator', 'Editor', 'Author', 'Contributor', 'Admin Integration']);
+            permissions.should.havePermission('Browse settings', ['Administrator', 'Editor', 'Author', 'Contributor', 'Admin Integration', 'Super Editor']);
+            permissions.should.havePermission('Read settings', ['Administrator', 'Editor', 'Author', 'Contributor', 'Admin Integration', 'Super Editor']);
             permissions.should.havePermission('Edit settings', ['Administrator', 'Admin Integration']);
 
             permissions.should.havePermission('Generate slugs', ['Administrator', 'Editor', 'Author', 'Contributor', 'Admin Integration']);
 
-            permissions.should.havePermission('Browse tags', ['Administrator', 'Editor', 'Author', 'Contributor', 'Admin Integration']);
-            permissions.should.havePermission('Read tags', ['Administrator', 'Editor', 'Author', 'Contributor', 'Admin Integration', 'Self-Serve Migration Integration']);
-            permissions.should.havePermission('Edit tags', ['Administrator', 'Editor', 'Admin Integration']);
-            permissions.should.havePermission('Add tags', ['Administrator', 'Editor', 'Author', 'Admin Integration']);
-            permissions.should.havePermission('Delete tags', ['Administrator', 'Editor', 'Admin Integration']);
+            permissions.should.havePermission('Browse tags', ['Administrator', 'Editor', 'Author', 'Contributor', 'Admin Integration', 'Super Editor']);
+            permissions.should.havePermission('Read tags', ['Administrator', 'Editor', 'Author', 'Contributor', 'Admin Integration', 'Self-Serve Migration Integration', 'Super Editor']);
+            permissions.should.havePermission('Edit tags', ['Administrator', 'Editor', 'Admin Integration', 'Super Editor']);
+            permissions.should.havePermission('Add tags', ['Administrator', 'Editor', 'Author', 'Admin Integration', 'Super Editor']);
+            permissions.should.havePermission('Delete tags', ['Administrator', 'Editor', 'Admin Integration', 'Super Editor']);
 
-            permissions.should.havePermission('Browse themes', ['Administrator', 'Editor', 'Author', 'Contributor', 'Admin Integration']);
+            permissions.should.havePermission('Browse themes', ['Administrator', 'Editor', 'Author', 'Contributor', 'Admin Integration', 'Super Editor']);
             permissions.should.havePermission('Edit themes', ['Administrator', 'Admin Integration']);
             permissions.should.havePermission('Activate themes', ['Administrator', 'Admin Integration']);
-            permissions.should.havePermission('View active theme details', ['Administrator', 'Editor', 'Author', 'Admin Integration']);
+            permissions.should.havePermission('View active theme details', ['Administrator', 'Editor', 'Author', 'Admin Integration', 'Super Editor']);
             permissions.should.havePermission('Upload themes', ['Administrator', 'Admin Integration']);
             permissions.should.havePermission('Download themes', ['Administrator', 'Admin Integration']);
             permissions.should.havePermission('Delete themes', ['Administrator', 'Admin Integration']);
 
-            permissions.should.havePermission('Browse users', ['Administrator', 'Editor', 'Author', 'Contributor', 'Admin Integration']);
-            permissions.should.havePermission('Read users', ['Administrator', 'Editor', 'Author', 'Contributor', 'Admin Integration']);
-            permissions.should.havePermission('Edit users', ['Administrator', 'Editor', 'Admin Integration']);
-            permissions.should.havePermission('Add users', ['Administrator', 'Editor', 'Admin Integration']);
-            permissions.should.havePermission('Delete users', ['Administrator', 'Editor', 'Admin Integration']);
+            permissions.should.havePermission('Browse users', ['Administrator', 'Editor', 'Author', 'Contributor', 'Admin Integration', 'Super Editor']);
+            permissions.should.havePermission('Read users', ['Administrator', 'Editor', 'Author', 'Contributor', 'Admin Integration', 'Super Editor']);
+            permissions.should.havePermission('Edit users', ['Administrator', 'Editor', 'Admin Integration', 'Super Editor']);
+            permissions.should.havePermission('Add users', ['Administrator', 'Editor', 'Admin Integration', 'Super Editor']);
+            permissions.should.havePermission('Delete users', ['Administrator', 'Editor', 'Admin Integration', 'Super Editor']);
 
-            permissions.should.havePermission('Assign a role', ['Administrator', 'Editor', 'Admin Integration']);
-            permissions.should.havePermission('Browse roles', ['Administrator', 'Editor', 'Author', 'Contributor', 'Admin Integration']);
-            permissions.should.havePermission('Browse invites', ['Administrator', 'Editor', 'Admin Integration']);
-            permissions.should.havePermission('Read invites', ['Administrator', 'Editor', 'Admin Integration']);
-            permissions.should.havePermission('Edit invites', ['Administrator', 'Editor', 'Admin Integration']);
-            permissions.should.havePermission('Add invites', ['Administrator', 'Editor', 'Admin Integration']);
-            permissions.should.havePermission('Delete invites', ['Administrator', 'Editor', 'Admin Integration']);
+            permissions.should.havePermission('Assign a role', ['Administrator', 'Editor', 'Admin Integration', 'Super Editor']);
+            permissions.should.havePermission('Browse roles', ['Administrator', 'Editor', 'Author', 'Contributor', 'Admin Integration', 'Super Editor']);
+            permissions.should.havePermission('Browse invites', ['Administrator', 'Editor', 'Admin Integration', 'Super Editor']);
+            permissions.should.havePermission('Read invites', ['Administrator', 'Editor', 'Admin Integration', 'Super Editor']);
+            permissions.should.havePermission('Edit invites', ['Administrator', 'Editor', 'Admin Integration', 'Super Editor']);
+            permissions.should.havePermission('Add invites', ['Administrator', 'Editor', 'Admin Integration', 'Super Editor']);
+            permissions.should.havePermission('Delete invites', ['Administrator', 'Editor', 'Admin Integration', 'Super Editor']);
 
             permissions.should.havePermission('Download redirects', ['Administrator', 'Admin Integration']);
             permissions.should.havePermission('Upload redirects', ['Administrator', 'Admin Integration']);
@@ -174,20 +174,20 @@ describe('Migrations', function () {
 
             permissions.should.havePermission('Browse Actions', ['Administrator', 'Admin Integration']);
 
-            permissions.should.havePermission('Email preview', ['Administrator', 'Editor', 'Author', 'Contributor', 'Admin Integration']);
-            permissions.should.havePermission('Send test email', ['Administrator', 'Editor', 'Admin Integration']);
-            permissions.should.havePermission('Browse emails', ['Administrator', 'Editor', 'Admin Integration']);
-            permissions.should.havePermission('Read emails', ['Administrator', 'Editor', 'Author', 'Contributor', 'Admin Integration']);
-            permissions.should.havePermission('Retry emails', ['Administrator', 'Editor', 'Admin Integration']);
+            permissions.should.havePermission('Email preview', ['Administrator', 'Editor', 'Author', 'Contributor', 'Admin Integration', 'Super Editor']);
+            permissions.should.havePermission('Send test email', ['Administrator', 'Editor', 'Admin Integration', 'Super Editor']);
+            permissions.should.havePermission('Browse emails', ['Administrator', 'Editor', 'Admin Integration', 'Super Editor']);
+            permissions.should.havePermission('Read emails', ['Administrator', 'Editor', 'Author', 'Contributor', 'Admin Integration', 'Super Editor']);
+            permissions.should.havePermission('Retry emails', ['Administrator', 'Editor', 'Admin Integration', 'Super Editor']);
 
-            permissions.should.havePermission('Browse snippets', ['Administrator', 'Editor', 'Author', 'Contributor', 'Admin Integration']);
-            permissions.should.havePermission('Read snippets', ['Administrator', 'Editor', 'Author', 'Contributor', 'Admin Integration']);
-            permissions.should.havePermission('Edit snippets', ['Administrator', 'Editor', 'Admin Integration']);
-            permissions.should.havePermission('Add snippets', ['Administrator', 'Editor', 'Admin Integration']);
-            permissions.should.havePermission('Delete snippets', ['Administrator', 'Editor', 'Admin Integration']);
+            permissions.should.havePermission('Browse snippets', ['Administrator', 'Editor', 'Author', 'Contributor', 'Admin Integration', 'Super Editor']);
+            permissions.should.havePermission('Read snippets', ['Administrator', 'Editor', 'Author', 'Contributor', 'Admin Integration', 'Super Editor']);
+            permissions.should.havePermission('Edit snippets', ['Administrator', 'Editor', 'Admin Integration', 'Super Editor']);
+            permissions.should.havePermission('Add snippets', ['Administrator', 'Editor', 'Admin Integration', 'Super Editor']);
+            permissions.should.havePermission('Delete snippets', ['Administrator', 'Editor', 'Admin Integration', 'Super Editor']);
 
-            permissions.should.havePermission('Browse labels', ['Administrator', 'Editor', 'Author', 'Admin Integration']);
-            permissions.should.havePermission('Read labels', ['Administrator', 'Editor', 'Author', 'Admin Integration']);
+            permissions.should.havePermission('Browse labels', ['Administrator', 'Editor', 'Author', 'Admin Integration', 'Super Editor']);
+            permissions.should.havePermission('Read labels', ['Administrator', 'Editor', 'Author', 'Admin Integration', 'Super Editor']);
             permissions.should.havePermission('Edit labels', ['Administrator', 'Admin Integration']);
             permissions.should.havePermission('Add labels', ['Administrator', 'Admin Integration']);
             permissions.should.havePermission('Delete labels', ['Administrator', 'Admin Integration']);
@@ -199,7 +199,7 @@ describe('Migrations', function () {
             permissions.should.havePermission('Browse Members');
             permissions.should.havePermission('Read Members');
             permissions.should.havePermission('Edit Members');
-            permissions.should.havePermission('Add Members', ['Administrator', 'Admin Integration', 'Self-Serve Migration Integration']);
+            permissions.should.havePermission('Add Members', ['Administrator', 'Admin Integration', 'Self-Serve Migration Integration', 'Super Editor']);
             permissions.should.havePermission('Delete Members');
 
             permissions.should.havePermission('Browse offers');
@@ -207,8 +207,8 @@ describe('Migrations', function () {
             permissions.should.havePermission('Edit offers');
             permissions.should.havePermission('Add offers');
 
-            permissions.should.havePermission('Browse Products', ['Administrator', 'Editor', 'Author', 'Admin Integration']);
-            permissions.should.havePermission('Read Products', ['Administrator', 'Editor', 'Author', 'Admin Integration']);
+            permissions.should.havePermission('Browse Products', ['Administrator', 'Editor', 'Author', 'Admin Integration', 'Super Editor']);
+            permissions.should.havePermission('Read Products', ['Administrator', 'Editor', 'Author', 'Admin Integration', 'Super Editor']);
             permissions.should.havePermission('Edit Products', ['Administrator', 'Admin Integration']);
             permissions.should.havePermission('Add Products', ['Administrator', 'Admin Integration']);
             permissions.should.havePermission('Delete Products', ['Administrator']);
@@ -218,31 +218,31 @@ describe('Migrations', function () {
             permissions.should.havePermission('Browse custom theme settings', ['Administrator']);
             permissions.should.havePermission('Edit custom theme settings', ['Administrator']);
 
-            permissions.should.havePermission('Browse newsletters', ['Administrator', 'Editor', 'Author', 'Admin Integration']);
-            permissions.should.havePermission('Read newsletters', ['Administrator', 'Editor', 'Author', 'Admin Integration']);
+            permissions.should.havePermission('Browse newsletters', ['Administrator', 'Editor', 'Author', 'Admin Integration', 'Super Editor']);
+            permissions.should.havePermission('Read newsletters', ['Administrator', 'Editor', 'Author', 'Admin Integration', 'Super Editor']);
             permissions.should.havePermission('Edit newsletters', ['Administrator', 'Admin Integration']);
             permissions.should.havePermission('Add newsletters', ['Administrator', 'Admin Integration']);
 
             permissions.should.havePermission('Read explore data', ['Administrator', 'Admin Integration', 'Ghost Explore Integration']);
 
-            permissions.should.havePermission('Browse comments', ['Administrator', 'Admin Integration']);
-            permissions.should.havePermission('Read comments', ['Administrator', 'Admin Integration']);
-            permissions.should.havePermission('Edit comments', ['Administrator', 'Admin Integration']);
-            permissions.should.havePermission('Add comments', ['Administrator', 'Admin Integration']);
-            permissions.should.havePermission('Delete comments', ['Administrator', 'Admin Integration']);
-            permissions.should.havePermission('Moderate comments', ['Administrator', 'Admin Integration']);
-            permissions.should.havePermission('Like comments', ['Administrator', 'Admin Integration']);
-            permissions.should.havePermission('Unlike comments', ['Administrator', 'Admin Integration']);
-            permissions.should.havePermission('Report comments', ['Administrator', 'Admin Integration']);
+            permissions.should.havePermission('Browse comments', ['Administrator', 'Admin Integration', 'Super Editor']);
+            permissions.should.havePermission('Read comments', ['Administrator', 'Admin Integration', 'Super Editor']);
+            permissions.should.havePermission('Edit comments', ['Administrator', 'Admin Integration', 'Super Editor']);
+            permissions.should.havePermission('Add comments', ['Administrator', 'Admin Integration', 'Super Editor']);
+            permissions.should.havePermission('Delete comments', ['Administrator', 'Admin Integration', 'Super Editor']);
+            permissions.should.havePermission('Moderate comments', ['Administrator', 'Admin Integration', 'Super Editor']);
+            permissions.should.havePermission('Like comments', ['Administrator', 'Admin Integration', 'Super Editor']);
+            permissions.should.havePermission('Unlike comments', ['Administrator', 'Admin Integration', 'Super Editor']);
+            permissions.should.havePermission('Report comments', ['Administrator', 'Admin Integration', 'Super Editor']);
             permissions.should.havePermission('Browse links', ['Administrator', 'Admin Integration']);
             permissions.should.havePermission('Browse mentions', ['Administrator', 'Admin Integration']);
 
-            permissions.should.havePermission('Browse collections', ['Administrator', 'Editor', 'Author', 'Contributor', 'Admin Integration']);
-            permissions.should.havePermission('Read collections', ['Administrator', 'Editor', 'Author', 'Contributor', 'Admin Integration']);
-            permissions.should.havePermission('Edit collections', ['Administrator', 'Editor', 'Admin Integration']);
-            permissions.should.havePermission('Add collections', ['Administrator', 'Editor', 'Author', 'Admin Integration']);
-            permissions.should.havePermission('Delete collections', ['Administrator', 'Editor', 'Admin Integration']);
-            permissions.should.havePermission('Read member signin urls', ['Administrator', 'Admin Integration']);
+            permissions.should.havePermission('Browse collections', ['Administrator', 'Editor', 'Author', 'Contributor', 'Admin Integration', 'Super Editor']);
+            permissions.should.havePermission('Read collections', ['Administrator', 'Editor', 'Author', 'Contributor', 'Admin Integration', 'Super Editor']);
+            permissions.should.havePermission('Edit collections', ['Administrator', 'Editor', 'Admin Integration', 'Super Editor']);
+            permissions.should.havePermission('Add collections', ['Administrator', 'Editor', 'Author', 'Admin Integration', 'Super Editor']);
+            permissions.should.havePermission('Delete collections', ['Administrator', 'Editor', 'Admin Integration', 'Super Editor']);
+            permissions.should.havePermission('Read member signin urls', ['Administrator', 'Admin Integration', 'Super Editor']);
         });
 
         describe('Populate', function () {
