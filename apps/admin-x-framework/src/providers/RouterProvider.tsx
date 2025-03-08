@@ -1,8 +1,8 @@
-import {ErrorPage} from '@tryghost/shade';
 import React, {useCallback, useMemo} from 'react';
-import {createHashRouter, RouteObject, RouterProvider as ReactRouterProvider, NavigateOptions as ReactRouterNavigateOptions, useNavigate as useReactRouterNavigate, Outlet} from 'react-router';
+import {createHashRouter, RouteObject, RouterProvider as ReactRouterProvider, NavigateOptions as ReactRouterNavigateOptions, useNavigate as useReactRouterNavigate} from 'react-router';
 import {useFramework} from './FrameworkProvider';
 import {NavigationStackProvider} from './NavigationStackProvider';
+import {ErrorPage} from '@tryghost/shade';
 
 /**
  * This provider uses React Router to provide a router context to React apps
@@ -21,12 +21,14 @@ export interface RouterProviderProps {
 
     // Custom routing props
     errorElement?: React.ReactNode;
+    children?: React.ReactNode;
 }
 
 export function RouterProvider({
     routes,
     prefix,
-    errorElement
+    errorElement,
+    children
 }: RouterProviderProps) {
     // Memoize the router to avoid re-creating it on every render
     const router = useMemo(() => {
@@ -34,11 +36,11 @@ export function RouterProvider({
         const normalizedPrefix = `/${prefix?.replace(/\/+/g, '/').replace(/^\/|\/$/g, '')}`;
 
         // Create a root route that wraps all routes with NavigationStackProvider
-        // so navigation stack is available by default.
+        // and any additional children (providers) so they have access to routing
         const rootRoute: RouteObject = {
             element: (
                 <NavigationStackProvider>
-                    <Outlet />
+                    {children}
                 </NavigationStackProvider>
             ),
             children: routes.map(route => ({
@@ -47,13 +49,10 @@ export function RouterProvider({
             }))
         };
 
-        // Add default error element if not provided
-        // const finalRoutes = routes.map();
-
         return createHashRouter([rootRoute], {
             basename: normalizedPrefix
         });
-    }, [routes, prefix, errorElement]);
+    }, [routes, prefix, errorElement, children]);
 
     return (
         <ReactRouterProvider router={router} />

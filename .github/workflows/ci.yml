@@ -63,8 +63,8 @@ jobs:
         id: check_user_org_membership
         if: github.event_name == 'pull_request'
         run: |
-          echo "Looking up: ${{ github.event.pull_request.user.login }}"
-          ENCODED_USERNAME=$(printf '%s' '${{ github.event.pull_request.user.login }}' | jq -sRr @uri)
+          echo "Looking up: ${{ github.triggering_actor }}"
+          ENCODED_USERNAME=$(printf '%s' '${{ github.triggering_actor }}' | jq -sRr @uri)
 
           LOOKUP_USER=$(curl --write-out "%{http_code}" --silent --output /dev/null --location "https://api.github.com/orgs/tryghost/members/$ENCODED_USERNAME" --header "Authorization: Bearer ${{ secrets.CANARY_DOCKER_BUILD }}")
 
@@ -97,6 +97,7 @@ jobs:
               - *shared
               - 'ghost/**'
               - '!ghost/admin/**'
+              - '!ghost/web-analytics/**'
             admin:
               - *shared
               - 'ghost/admin/**'
@@ -119,6 +120,9 @@ jobs:
             sodo-search:
               - *shared
               - 'apps/sodo-search/**'
+            tinybird:
+              - 'ghost/web-analytics/**'
+              - '!ghost/web-analytics/**/*.md'
             any-code:
               - '!**/*.md'
 
@@ -192,6 +196,7 @@ jobs:
       changed_portal: ${{ steps.changed.outputs.portal }}
       changed_signup_form: ${{ steps.changed.outputs.signup-form }}
       changed_sodo_search: ${{ steps.changed.outputs.sodo-search }}
+      changed_tinybird: ${{ steps.changed.outputs.tinybird }}
       changed_any_code: ${{ steps.changed.outputs.any-code }}
       changed_new_package: ${{ steps.added.outputs.new-package }}
       base_commit: ${{ env.BASE_COMMIT }}
@@ -312,6 +317,16 @@ jobs:
     - uses: actions/checkout@v4
       with:
         submodules: true
+    - name: Check secrets
+      if: github.event_name == 'pull_request'
+      env:
+        STRIPE_PUBLISHABLE_KEY: ${{ secrets.STRIPE_PUBLISHABLE_KEY }}
+      run: |
+        if [ -z "${{ env.STRIPE_PUBLISHABLE_KEY }}" ]; then
+          echo "Stripe Publishable Key is not available. Did you open this PR from a fork?"
+          echo "If so, please re-open the PR from a branch in the upstream TryGhost/Ghost repository."
+          exit 1
+        fi
     - uses: actions/setup-node@v4
       env:
         FORCE_COLOR: 0
@@ -503,6 +518,7 @@ jobs:
 
       - uses: daniellockyer/mysql-action@main
         if: matrix.env.DB == 'mysql8'
+        timeout-minutes: 3
         with:
           authentication plugin: 'caching_sha2_password'
           mysql version: '8.0'
@@ -631,6 +647,7 @@ jobs:
 
       - uses: daniellockyer/mysql-action@main
         if: matrix.env.DB == 'mysql8'
+        timeout-minutes: 3
         with:
           authentication plugin: 'caching_sha2_password'
           mysql version: '8.0'
@@ -820,6 +837,148 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
+  job_tinybird:
+    name: Tinybird Tests (Web Analytics)
+    runs-on: ubuntu-latest
+    needs: [
+      job_setup
+    ]
+    defaults:
+      run:
+        working-directory: ghost/web-analytics
+    if: needs.job_setup.outputs.changed_tinybird == 'true'
+    steps:
+      - name: Get User Permission
+        id: get-user-permission
+        uses: actions-cool/check-user-permission@v2
+        with:
+          require: write
+          username: ${{ github.triggering_actor }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Check User Permission
+        id: check-user-permission
+        if: steps.get-user-permission.outputs.require-result == 'false'
+        run: |
+          echo "${{ github.triggering_actor }} does not have permissions on this repo."
+          echo "Current permission level is ${{ steps.get-user-permission.outputs.user-permission }}"
+          echo "Job originally triggered by ${{ github.actor }}"
+          exit 1
+      - name: Checkout current commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 300
+      - name: Check secrets
+        if: github.event_name == 'pull_request'
+        env:
+          TB_ADMIN_TOKEN: ${{ secrets.TB_ADMIN_TOKEN_STAGING }}
+        run: |
+          if [ -z "${{ env.TB_ADMIN_TOKEN }}" ]; then
+            echo "Tinybird admin token is not available. Did you open this PR from a fork?"
+            echo "If so, please re-open the PR from a branch in the upstream TryGhost/Ghost repository."
+            exit 1
+          fi
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.11
+          architecture: "x64"
+          cache: "pip"
+      - name: Set environment variables
+        run: |
+          _ENV_FLAGS="${ENV_FLAGS:=--wait}"
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            TB_BRANCH_NAME="tmp_ci_pr_${{ github.event.pull_request.number }}"
+          else
+            TB_BRANCH_NAME="tmp_ci_main_$(echo ${{ github.sha }} | cut -c1-7)"
+          fi
+          GIT_BRANCH=${GITHUB_HEAD_REF}
+          echo "GIT_BRANCH=$GIT_BRANCH" >> $GITHUB_ENV
+          echo "_ENV_FLAGS=$_ENV_FLAGS" >> $GITHUB_ENV
+          echo "TB_BRANCH_NAME=$TB_BRANCH_NAME" >> $GITHUB_ENV
+      - name: Install Tinybird CLI
+        run: |
+          if [ -f "requirements.txt" ]; then
+            pip install -r requirements.txt
+          else
+            pip install tinybird-cli
+          fi
+      - name: Tinybird CLI Version
+        run: tb --version
+      - name: Check all the datafiles syntax
+        run: tb check
+      - name: Check auth
+        run: tb --host=${{ secrets.TB_HOST }} --token=${{ secrets.TB_ADMIN_TOKEN_STAGING }} auth info
+      - name: Try to delete previous Branch
+        run: |
+          output=$(tb --host ${{ secrets.TB_HOST }} --token ${{ secrets.TB_ADMIN_TOKEN_STAGING }} branch ls)
+          # Check if the branch name exists in the output
+          if echo "$output" | grep -q "\b$TB_BRANCH_NAME\b"; then
+            tb \
+            --host ${{ secrets.TB_HOST }} \
+            --token ${{ secrets.TB_ADMIN_TOKEN_STAGING }} \
+            branch rm $TB_BRANCH_NAME \
+            --yes
+          else
+            echo "Skipping clean up: The Branch '$TB_BRANCH_NAME' does not exist."
+          fi
+      - name: Create new test Branch with data
+        run: |
+          tb \
+          --host ${{ secrets.TB_HOST }} \
+          --token ${{ secrets.TB_ADMIN_TOKEN_STAGING }} \
+          branch create $TB_BRANCH_NAME \
+          ${_ENV_FLAGS}
+      - name: Deploy changes to the test Branch
+        run: |
+          source .tinyenv
+          DEPLOY_FILE=./deploy/${VERSION}/deploy.sh
+          if [ ! -f "$DEPLOY_FILE" ]; then
+            echo "$DEPLOY_FILE not found, running default tb deploy command"
+            tb deploy
+            tb release ls
+          fi
+      - name: Custom deployment to the test Branch
+        run: |
+          DEPLOY_FILE=./deploy/${VERSION}/deploy.sh
+          if [ -f "$DEPLOY_FILE" ]; then
+              echo "$DEPLOY_FILE found"
+              if ! [ -x "$DEPLOY_FILE" ]; then
+                echo "Error: You do not have permission to execute '$DEPLOY_FILE'. Run:"
+                echo "> chmod +x $DEPLOY_FILE"
+                echo "and commit your changes"
+                exit 1
+              else
+                $DEPLOY_FILE
+              fi
+          fi
+      - name: Append fixtures
+        run: |
+          if [ -f ./scripts/append_fixtures.sh ]; then
+          echo "append_fixtures script found"
+          ./scripts/append_fixtures.sh
+          fi
+      - name: Run fixture tests
+        run: |
+          if [ -f ./scripts/exec_test.sh ]; then
+          ./scripts/exec_test.sh
+          fi
+
+      - name: Try to delete previous Branch
+        if: always()
+        run: |
+          output=$(tb --host ${{ secrets.TB_HOST }} --token ${{ secrets.TB_ADMIN_TOKEN_STAGING }} branch ls)
+          # Check if the branch name exists in the output
+          if echo "$output" | grep -q "\b$TB_BRANCH_NAME\b"; then
+            tb \
+                --host ${{ secrets.TB_HOST }} \
+                --token ${{ secrets.TB_ADMIN_TOKEN_STAGING }} \
+                branch rm $TB_BRANCH_NAME \
+                --yes
+          else
+            echo "Skipping clean up: The Branch '$TB_BRANCH_NAME' does not exist."
+          fi
+
   job_ghost-cli:
     name: Ghost-CLI tests
     needs: [job_setup]
@@ -994,7 +1153,10 @@ jobs:
         needs.job_setup.outputs.is_main == 'true'
         || (
           github.event_name == 'pull_request'
-          && needs.job_setup.outputs.member_is_in_org == 'true'
+          && (
+            needs.job_setup.outputs.member_is_in_org == 'true'
+            || github.event.pull_request.user.login == 'renovate[bot]'
+          )
           && contains(github.event.pull_request.labels.*.name, 'deploy-to-staging')
         )
       )
@@ -1116,3 +1278,65 @@ jobs:
         uses: gacts/purge-jsdelivr-cache@v1
         with:
           url: ${{ steps.cdn_paths.outputs.cdn_paths }}
+  deploy_tinybird:
+    runs-on: ubuntu-latest
+    needs: [
+      job_setup,
+      job_tinybird
+    ]
+    if: always() && needs.job_setup.outputs.changed_tinybird == 'true' && needs.job_setup.result == 'success' && needs.job_tinybird.result == 'success' && needs.job_setup.outputs.is_main == 'true'
+    strategy:
+      matrix:
+        environment: [ 'staging', 'production']
+    name: Deploy Tinybird
+    defaults:
+      run:
+        working-directory: ghost/web-analytics
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 300
+          submodules: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.11
+          architecture: "x64"
+          cache: "pip"
+      - name: Install Tinybird CLI
+        run: |
+          if [ -f "requirements.txt" ]; then
+            pip install -r requirements.txt
+          else
+            pip install tinybird-cli
+          fi
+      - name: Tinybird version
+        run: tb --version
+      - name: Check auth (staging)
+        if: matrix.environment == 'staging'
+        run: tb --host=${{ secrets.TB_HOST }} --token=${{ secrets.TB_ADMIN_TOKEN_STAGING }} auth info
+      - name: Check auth (production)
+        if: matrix.environment == 'production'
+        run: tb --host=${{ secrets.TB_HOST }} --token=${{ secrets.TB_ADMIN_TOKEN_PRODUCTION }} auth info
+      - name: Deploy changes to the main Workspace
+        run: |
+          DEPLOY_FILE=./deploy/${VERSION}/deploy.sh
+          if [ ! -f "$DEPLOY_FILE" ]; then
+            echo "$DEPLOY_FILE not found, running default tb push command"
+            tb branch current
+            tb deploy
+          fi
+      - name: Custom deployment to the main Workspace
+        run: |
+            DEPLOY_FILE=./deploy/${VERSION}/deploy.sh
+            if [ -f "$DEPLOY_FILE" ]; then
+              echo "$DEPLOY_FILE found"
+              if ! [ -x "$DEPLOY_FILE" ]; then
+                  echo "Error: You don't have permission to execute '$DEPLOY_FILE'. Run:"
+                  echo "> chmod +x $DEPLOY_FILE"
+                  echo "and commit your changes"
+                  exit 1
+              else
+                  $DEPLOY_FILE
+              fi
+            fi

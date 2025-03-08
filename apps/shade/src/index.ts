@@ -1,4 +1,5 @@
 // UI components
+export * from './components/ui/alert-dialog';
 export * from './components/ui/avatar';
 export * from './components/ui/badge';
 export * from './components/ui/breadcrumb';
@@ -20,7 +21,7 @@ export * from './components/ui/tooltip';
 
 // Layout components
 export * from './components/layout/page';
-export * from './components/layout/error-page';
+export {ErrorPage} from './components/layout/error-page';
 export * from './components/layout/heading';
 
 // Third party components

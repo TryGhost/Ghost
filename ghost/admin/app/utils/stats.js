@@ -2,20 +2,6 @@ import moment from 'moment-timezone';
 
 export const TB_VERSION = 0;
 
-export const API_VERSION_OPTIONS = [
-    {name: 'v0', value: 0},
-    {name: 'v1', value: 1},
-    {name: 'v2', value: 2},
-    {name: 'v3', value: 3},
-    {name: 'v4', value: 4},
-    {name: 'v5', value: 5},
-    {name: 'v6', value: 6},
-    {name: 'v7', value: 7},
-    {name: 'v8', value: 8},
-    {name: 'v9', value: 9},
-    {name: 'v10', value: 10}
-];
-
 export const RANGE_OPTIONS = [
     {name: 'Last 24 hours', value: 1},
     {name: 'Last 7 days', value: 7},
@@ -149,7 +135,7 @@ export function getStatsParams(config, props, additionalParams = {}) {
     const {startDate, endDate} = getDateRange(chartRange);
 
     const params = {
-        site_uuid: config.stats.id,
+        site_uuid: props.mockData ? 'mock_site_uuid' : config.stats.id,
         date_from: startDate.format('YYYY-MM-DD'),
         date_to: endDate.format('YYYY-MM-DD'),
         ...additionalParams

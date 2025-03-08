@@ -1,4 +1,5 @@
 import {
+    type Account,
     type AccountFollowsType,
     type AccountSearchResult,
     ActivityPubAPI,
@@ -47,7 +48,12 @@ const QUERY_KEYS = {
     liked: (handle: string) => ['liked', handle],
     user: (handle: string) => ['user', handle],
     profile: (handle: string) => ['profile', handle],
-    profilePosts: (profileHandle: string) => ['profile_posts', profileHandle],
+    profilePosts: (profileHandle: string | null) => {
+        if (profileHandle === null) {
+            return ['profile_posts'];
+        }
+        return ['profile_posts', profileHandle];
+    },
     profileFollowers: (profileHandle: string) => ['profile_followers', profileHandle],
     profileFollowing: (profileHandle: string) => ['profile_following', profileHandle],
     account: (handle: string) => ['account', handle],
@@ -64,7 +70,12 @@ const QUERY_KEYS = {
     ) => ['activities', handle, key, options].filter(value => value !== undefined),
     searchResults: (query: string) => ['search_results', query],
     suggestedProfiles: (limit: number) => ['suggested_profiles', limit],
-    thread: (id: string) => ['thread', id],
+    thread: (id: string | null) => {
+        if (id === null) {
+            return ['thread'];
+        }
+        return ['thread', id];
+    },
     feed: ['feed'],
     inbox: ['inbox']
 };
@@ -586,6 +597,7 @@ export function useThreadForUser(handle: string, id: string) {
 
     const threadQuery = useQuery({
         queryKey,
+        refetchOnMount: 'always',
         async queryFn() {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
@@ -636,6 +648,9 @@ export function useNoteMutationForUser(handle: string) {
             return api.note(content);
         },
         onSuccess: (activity: Activity) => {
+            activity.object.authored = true;
+            activity.id = activity.object.id;
+
             // Add the activity to the outbox query cache
             const outboxQueryKey = QUERY_KEYS.outbox(handle);
 
@@ -814,4 +829,248 @@ export function useInboxForUser(options: {enabled: boolean}) {
     };
 
     return {inboxQuery, updateInboxActivity};
+}
+
+export function useDeleteMutationForUser(handle: string) {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        async mutationFn(mutationData: {id: string, parentId?: string}) {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI(handle, siteUrl);
+
+            return api.delete(mutationData.id);
+        },
+        onMutate: ({id, parentId}) => {
+            // Update the feed cache:
+            // - Remove the post from the feed
+            // - Decrement the reply count of the parent post if applicable
+            const previousFeed = queryClient.getQueryData<{pages: {posts: Activity[]}[]}>(QUERY_KEYS.feed);
+
+            queryClient.setQueryData(QUERY_KEYS.feed, (current?: {pages: {posts: Activity[]}[]}) => {
+                if (!current) {
+                    return current;
+                }
+
+                return {
+                    ...current,
+                    pages: current.pages.map((page: {posts: Activity[]}) => {
+                        return {
+                            ...page,
+                            posts: page.posts
+                                .filter((item: Activity) => item.id !== id)
+                                .map((item: Activity) => {
+                                    if (item.object.id === parentId) {
+                                        return {
+                                            ...item,
+                                            object: {
+                                                ...item.object,
+                                                replyCount: item.object.replyCount - 1
+                                            }
+                                        };
+                                    }
+                                    return item;
+                                })
+                        };
+                    })
+                };
+            });
+
+            // Update the inbox cache:
+            // - Remove the post from the inbox
+            // - Decrement the reply count of the parent post if applicable
+            const previousInbox = queryClient.getQueryData<{pages: {posts: Activity[]}[]}>(QUERY_KEYS.inbox);
+
+            queryClient.setQueryData(QUERY_KEYS.inbox, (current?: {pages: {posts: Activity[]}[]}) => {
+                if (!current) {
+                    return current;
+                }
+
+                return {
+                    ...current,
+                    pages: current.pages.map((page: {posts: Activity[]}) => {
+                        return {
+                            ...page,
+                            posts: page.posts
+                                .filter((item: Activity) => item.id !== id)
+                                .map((item: Activity) => {
+                                    if (item.object.id === parentId) {
+                                        return {
+                                            ...item,
+                                            object: {
+                                                ...item.object,
+                                                replyCount: item.object.replyCount - 1
+                                            }
+                                        };
+                                    }
+                                    return item;
+                                })
+                        };
+                    })
+                };
+            });
+
+            // Update the thread cache:
+            // - Remove the post from the thread
+            // - Decrement the reply count of the parent post if applicable
+            const threadQueryKey = QUERY_KEYS.thread(null);
+            const previousThreads = queryClient.getQueriesData<{posts: Activity[]}>(threadQueryKey);
+
+            queryClient.setQueriesData(threadQueryKey, (current?: {posts: Activity[]}) => {
+                if (!current) {
+                    return current;
+                }
+
+                return {
+                    posts: current.posts.filter((activity: Activity) => activity.id !== id)
+                        .map((activity: Activity) => {
+                            if (activity.object.id === parentId) {
+                                return {
+                                    ...activity,
+                                    object: {
+                                        ...activity.object,
+                                        replyCount: activity.object.replyCount - 1
+                                    }
+                                };
+                            }
+                            return activity;
+                        })
+                };
+            });
+
+            // Update the outbox cache:
+            // - Remove the post from the outbox
+            const outboxQueryKey = QUERY_KEYS.outbox(handle);
+            const previousOutbox = queryClient.getQueryData<{pages: {data: Activity[]}[]}>(outboxQueryKey);
+
+            queryClient.setQueryData(outboxQueryKey, (current?: {pages: {data: Activity[]}[]}) => {
+                if (!current) {
+                    return current;
+                }
+
+                return {
+                    ...current,
+                    pages: current.pages.map((page: {data: Activity[]}) => {
+                        return {
+                            ...page,
+                            data: page.data.filter((item: Activity) => item.object.id !== id)
+                        };
+                    })
+                };
+            });
+
+            // Update the liked cache:
+            // - Remove the post from the liked collection
+            const likedQueryKey = QUERY_KEYS.liked(handle);
+            const previousLiked = queryClient.getQueryData<{pages: {data: Activity[]}[]}>(likedQueryKey);
+            let removedFromLiked = false;
+
+            queryClient.setQueryData(likedQueryKey, (current?: {pages: {data: Activity[]}[]}) => {
+                if (!current) {
+                    return current;
+                }
+
+                return {
+                    ...current,
+                    pages: current.pages.map((page: {data: Activity[]}) => {
+                        removedFromLiked = page.data.some((item: Activity) => item.object.id === id);
+
+                        return {
+                            ...page,
+                            data: page.data.filter((item: Activity) => item.object.id !== id)
+                        };
+                    })
+                };
+            });
+
+            // Update the profile posts cache:
+            // - Remove the post from any profile posts collections it may be in
+            const profilePostsQueryKey = QUERY_KEYS.profilePosts(null);
+            const previousProfilePosts = queryClient.getQueriesData<{pages: {posts: Activity[]}[]}>(profilePostsQueryKey);
+
+            queryClient.setQueriesData(profilePostsQueryKey, (current?: {pages: {posts: Activity[]}[]}) => {
+                if (!current) {
+                    return current;
+                }
+
+                return {
+                    ...current,
+                    pages: current.pages.map((page: {posts: Activity[]}) => {
+                        return {
+                            ...page,
+                            posts: page.posts.filter((item: Activity) => item.object.id !== id)
+                        };
+                    })
+                };
+            });
+
+            // Update the account cache:
+            // - Decrement liked post count if the removed post was in the liked collection
+            let accountQueryKey: string[] = [];
+            let previousAccount: Account | undefined;
+
+            if (removedFromLiked) {
+                accountQueryKey = QUERY_KEYS.account(handle);
+                previousAccount = queryClient.getQueryData<Account>(accountQueryKey);
+
+                queryClient.setQueryData(accountQueryKey, (currentAccount?: {likedCount: number}) => {
+                    if (!currentAccount) {
+                        return currentAccount;
+                    }
+
+                    return {
+                        ...currentAccount,
+                        likedCount: currentAccount.likedCount - 1 < 0 ? 0 : currentAccount.likedCount - 1
+                    };
+                });
+            }
+
+            return {
+                previousFeed: {
+                    key: QUERY_KEYS.feed,
+                    data: previousFeed
+                },
+                previousInbox: {
+                    key: QUERY_KEYS.inbox,
+                    data: previousInbox
+                },
+                previousThreads: {
+                    key: threadQueryKey,
+                    data: previousThreads
+                },
+                previousOutbox: {
+                    key: outboxQueryKey,
+                    data: previousOutbox
+                },
+                previousLiked: {
+                    key: likedQueryKey,
+                    data: previousLiked
+                },
+                previousProfilePosts: {
+                    key: profilePostsQueryKey,
+                    data: previousProfilePosts
+                },
+                previousAccount: removedFromLiked ? {
+                    key: accountQueryKey,
+                    data: previousAccount
+                } : null
+            };
+        },
+        onError: (_err, _variables, context) => {
+            if (!context) {
+                return;
+            }
+
+            queryClient.setQueryData(context.previousFeed.key, context.previousFeed.data);
+            queryClient.setQueryData(context.previousInbox.key, context.previousInbox.data);
+            queryClient.setQueriesData(context.previousThreads.key, context.previousThreads.data);
+            queryClient.setQueryData(context.previousOutbox.key, context.previousOutbox.data);
+            queryClient.setQueryData(context.previousLiked.key, context.previousLiked.data);
+            queryClient.setQueriesData(context.previousProfilePosts.key, context.previousProfilePosts.data);
+
+            if (context.previousAccount) {
+                queryClient.setQueryData(context.previousAccount.key, context.previousAccount.data);
+            }
+        }
+    });
 }

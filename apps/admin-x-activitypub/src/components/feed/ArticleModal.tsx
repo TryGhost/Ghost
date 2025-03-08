@@ -11,11 +11,13 @@ import {Activity, ActorProperties, ObjectProperties} from '@tryghost/admin-x-fra
 import {Button, Icon, LoadingIndicator, Modal, Select, SelectOption} from '@tryghost/admin-x-design-system';
 import {renderTimestamp} from '../../utils/render-timestamp';
 import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
+import {useFocusedState} from '@components/global/APReplyBox';
 import {useModal} from '@ebay/nice-modal-react';
 import {useThreadForUser} from '@hooks/use-activity-pub-queries';
 
 import APAvatar from '../global/APAvatar';
 import APReplyBox from '../global/APReplyBox';
+import DeletedFeedItem from './DeletedFeedItem';
 import TableOfContents, {TOCItem} from './TableOfContents';
 import getReadingTime from '../../utils/get-reading-time';
 import {useDebounce} from 'use-debounce';
@@ -121,9 +123,9 @@ const ArticleBody: React.FC<{
 
                 function initializeResize() {
                     resizeIframe();
+                    isFullyLoaded = true;
 
                     waitForImages().then(() => {
-                        isFullyLoaded = true;
                         resizeIframe();
                     });
                 }
@@ -376,7 +378,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
 }) => {
     const MODAL_SIZE_SM = 640;
     const MODAL_SIZE_LG = 1420;
-    const [isFocused] = useState(focusReply ? 1 : 0);
+    const [isFocused, setIsFocused] = useFocusedState(focusReply);
 
     const {threadQuery, addToThread} = useThreadForUser('index', activityId);
     const {data: thread, isLoading: isLoadingThread} = threadQuery;
@@ -387,6 +389,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
     const modalSize = width === 'narrow' ? MODAL_SIZE_SM : MODAL_SIZE_LG;
     const modal = useModal();
     const darkMode = document.documentElement.classList.contains('dark');
+    const [replyCount, setReplyCount] = useState(object.replyCount ?? 0);
 
     const canNavigateBack = history.length > 0;
     const navigateBack = () => {
@@ -398,6 +401,8 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
 
             return;
         }
+
+        setReplyCount(prevProps.object.replyCount ?? 0);
 
         modal.show({
             activityId: prevProps.activityId,
@@ -411,6 +416,8 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
     const navigateForward = (_: string, nextObject: ObjectProperties, nextActor: ActorProperties, nextFocusReply: boolean) => {
         // Trigger the modal to show the next activity and add the existing
         // activity to the history so we can navigate back
+
+        setReplyCount(nextObject.replyCount ?? 0);
 
         modal.show({
             // We need to use the object as the API expects an object ID but
@@ -439,6 +446,8 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
 
     function handleNewReply(activity: Activity) {
         // Add the new reply to the thread
+        activity.object.authored = true;
+        activity.id = activity.object.id;
         addToThread(activity);
 
         // Update the replyCount on the activity outside of the context
@@ -452,7 +461,11 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
 
         // Update the replyCount on the current activity loaded in the modal
         // This is used for when we navigate via the history
-        object.replyCount = (object.replyCount ?? 0) + 1;
+        setReplyCount((current: number) => current + 1);
+    }
+
+    function decrementReplyCount(step: number = 1) {
+        setReplyCount((current: number) => current - step);
     }
 
     const replyBoxRef = useRef<HTMLDivElement>(null);
@@ -855,9 +868,12 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                         <div className={`mx-auto px-8 pb-10 pt-5`} style={{maxWidth: currentMaxWidth}}>
                             {threadParents.map((item) => {
                                 return (
-                                    <>
+                                    item.object.type === 'Tombstone' ? (
+                                        <DeletedFeedItem last={false} />
+                                    ) : (
                                         <FeedItem
                                             actor={item.actor}
+                                            allowDelete={false}
                                             commentCount={item.object.replyCount ?? 0}
                                             last={false}
                                             layout='reply'
@@ -869,16 +885,18 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                             }}
                                             onCommentClick={() => {
                                                 navigateForward(item.id, item.object, item.actor, true);
+                                                setIsFocused(true);
                                             }}
                                         />
-                                    </>
+                                    )
                                 );
                             })}
 
                             {object.type === 'Note' && (
                                 <FeedItem
                                     actor={actor}
-                                    commentCount={object.replyCount ?? 0}
+                                    allowDelete={false}
+                                    commentCount={replyCount}
                                     last={true}
                                     layout={'modal'}
                                     object={object}
@@ -890,6 +908,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                             behavior: 'smooth',
                                             block: 'center'
                                         });
+                                        setIsFocused(true);
                                     }}
                                 />
                             )}
@@ -909,7 +928,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                     />
                                     <div className='ml-[-7px]'>
                                         <FeedItemStats
-                                            commentCount={object.replyCount ?? 0}
+                                            commentCount={replyCount}
                                             layout={'modal'}
                                             likeCount={1}
                                             object={object}
@@ -919,11 +938,15 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                                     behavior: 'smooth',
                                                     block: 'center'
                                                 });
+                                                setIsFocused(true);
                                             }}
                                             onLikeClick={onLikeClick}
                                         />
                                     </div>
                                 </div>
+                            )}
+                            {object.type === 'Tombstone' && (
+                                <DeletedFeedItem last={true} />
                             )}
 
                             <div ref={replyBoxRef}>
@@ -945,10 +968,12 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                         <React.Fragment key={item.id}>
                                             <FeedItem
                                                 actor={item.actor}
+                                                allowDelete={item.object.authored}
                                                 commentCount={item.object.replyCount ?? 0}
                                                 last={true}
                                                 layout='reply'
                                                 object={item.object}
+                                                parentId={object.id}
                                                 repostCount={item.object.repostCount ?? 0}
                                                 type='Note'
                                                 onClick={() => {
@@ -956,7 +981,9 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                                 }}
                                                 onCommentClick={() => {
                                                     navigateForward(item.id, item.object, item.actor, true);
+                                                    setIsFocused(true);
                                                 }}
+                                                onDelete={decrementReplyCount}
                                             />
                                             {showDivider && <FeedItemDivider />}
                                         </React.Fragment>

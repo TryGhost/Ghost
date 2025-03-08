@@ -39,6 +39,7 @@ describe('mapPostToActivity', function () {
                 name: 'Test User',
                 url: 'https://example.com/users/123'
             },
+            authoredByMe: true,
             repostCount: 5,
             repostedByMe: false,
             repostedBy: null
@@ -101,6 +102,13 @@ describe('mapPostToActivity', function () {
                 type: PostType.Note
             }).object.type
         ).toBe('Note');
+
+        expect(
+            mapPostToActivity({
+                ...post,
+                type: PostType.Tombstone
+            }).object.type
+        ).toBe('Tombstone');
     });
 
     test('it sets the correct object', function () {
