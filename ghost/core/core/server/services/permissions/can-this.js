@@ -5,7 +5,7 @@ const tpl = require('@tryghost/tpl');
 const providers = require('./providers');
 const parseContext = require('./parse-context');
 const actionsMap = require('./actions-map-cache');
-const { checkUserPermissionsForRole } = require('../../models/role-utils');
+const {checkUserPermissionsForRole} = require('../../models/role-utils');
 
 const messages = {
     noPermissionToAction: 'You do not have permission to perform this action',

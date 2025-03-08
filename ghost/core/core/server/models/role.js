@@ -2,7 +2,7 @@ const _ = require('lodash');
 const ghostBookshelf = require('./base');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
-const { hasRole } = require('./role-utils');
+const {checkUserPermissionsForRole} = require('./role-utils');
 
 const messages = {
     roleNotFound: 'Role not found',
@@ -80,11 +80,11 @@ Role = ghostBookshelf.Model.extend({
 
         if (action === 'assign' && loadedPermissions.user) {
             let checkAgainst;
-            if (hasRole(loadedPermissions, 'Owner')) {
+            if (checkUserPermissionsForRole(loadedPermissions, 'Owner')) {
                 checkAgainst = ['Owner', 'Administrator', 'Editor', 'Author', 'Contributor'];
-            } else if (hasRole(loadedPermissions, 'Administrator')) {
+            } else if (checkUserPermissionsForRole(loadedPermissions, 'Administrator')) {
                 checkAgainst = ['Administrator', 'Editor', 'Author', 'Contributor'];
-            } else if (hasRole(loadedPermissions, 'Editor') || hasRole(loadedPermissions, 'Super Editor')) {
+            } else if (checkUserPermissionsForRole(loadedPermissions, 'Editor') || hasRole(loadedPermissions, 'Super Editor')) {
                 checkAgainst = ['Author', 'Contributor'];
             }
 

@@ -1,6 +1,5 @@
 import {helper} from '@ember/component/helper';
 
-
 // e.g - {{#if (gh-user-can-manage-members session.user)}} 'block content' {{/if}}
 // @param session.user
 

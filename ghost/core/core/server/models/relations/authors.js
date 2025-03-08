@@ -2,8 +2,7 @@ const _ = require('lodash');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const {sequence} = require('@tryghost/promise');
-const { check } = require('gscan');
-const { checkUserPermissionsForRole } = require('../role-utils');
+const {checkUserPermissionsForRole} = require('../role-utils');
 
 const messages = {
     noUserFound: 'No user found',

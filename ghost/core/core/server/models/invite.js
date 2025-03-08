@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const constants = require('@tryghost/constants');
@@ -6,7 +5,7 @@ const security = require('@tryghost/security');
 const settingsCache = require('../../shared/settings-cache');
 const limitService = require('../services/limits');
 const ghostBookshelf = require('./base');
-const checkUserPermissionsForRole= require('./role-utils').checkUserPermissionsForRole;
+const {checkUserPermissionsForRole} = require('./role-utils');
 
 const messages = {
     notEnoughPermission: 'You do not have permission to perform this action',
