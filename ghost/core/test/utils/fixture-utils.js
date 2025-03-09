@@ -92,13 +92,16 @@ const fixtures = {
 
             // Let's insert posts for each staff member, two each.
             for (i = 0; i < count; i += 1) {
-                const author = users[i % users.length];
+                // hard-coding 5 because otherwise things break.
+                //const author = users[i % users.length];
+                const author = users[i % 5];
                 posts.push(DataGenerator.forKnex.createGenericPost(k, null, null, [{id: author}]));
                 k = k + 1;
             }
 
             return Promise.all(posts.map((post, index) => {
                 posts[index].authors = [{id: posts[index].authors[0].id}];
+                console.log('create post with author', posts[index].authors[0].id);
                 posts[index].tags = [tags[Math.floor(Math.random() * (tags.length - 1))]];
                 return models.Post.add(posts[index], context.internal);
             }));
