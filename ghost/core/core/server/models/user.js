@@ -785,7 +785,7 @@ User = ghostBookshelf.Model.extend({
         const self = this;
         const userModel = userModelOrId;
         let origArgs;
-        const {isOwner, isAdmin, isEitherEditor} = setIsRoles(loadedPermissions);
+        const {isOwner, isEitherEditor} = setIsRoles(loadedPermissions);
         // If we passed in a model without its related roles, we need to fetch it again
         if (_.isObject(userModelOrId) && !_.isObject(userModelOrId.related('roles'))) {
             userModelOrId = userModelOrId.id;

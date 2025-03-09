@@ -2,7 +2,6 @@
 // so that we can stop writing this everywhere:
 //_.some(loadedPermissions.user.roles, {name: 'Administrator'})
 
-const { is } = require('cheerio/lib/api/traversing');
 const _ = require('lodash');
 
 function checkUserPermissionsForRole(loadedPermissions, roleName) {
@@ -23,7 +22,7 @@ function setIsRoles(loadedPermissions) {
         isContributor: false,
         isSuperEditor: false,
         isEitherEditor: false
-    }
+    };
     if (!loadedPermissions?.user?.roles) {
         return resultsObject;
     }
