@@ -11,7 +11,7 @@ const {pipeline} = require('@tryghost/promise');
 const validatePassword = require('../lib/validate-password');
 const permissions = require('../services/permissions');
 const urlUtils = require('../../shared/url-utils');
-const {checkUserPermissionsForRole} = require('./role-utils');
+const {setIsRoles} = require('./role-utils');
 const activeStates = ['active', 'warn-1', 'warn-2', 'warn-3', 'warn-4'];
 const ASSIGNABLE_ROLES = ['Administrator', 'Editor', 'Author', 'Contributor'];
 
@@ -785,7 +785,7 @@ User = ghostBookshelf.Model.extend({
         const self = this;
         const userModel = userModelOrId;
         let origArgs;
-
+        const {isOwner, isAdmin, isEitherEditor} = setIsRoles(loadedPermissions);
         // If we passed in a model without its related roles, we need to fetch it again
         if (_.isObject(userModelOrId) && !_.isObject(userModelOrId.related('roles'))) {
             userModelOrId = userModelOrId.id;
@@ -829,9 +829,8 @@ User = ghostBookshelf.Model.extend({
                 hasUserPermission = true;
             } else if (loadedPermissions.user && userModel.hasRole('Owner')) {
                 // Owner can only be edited by owner
-                hasUserPermission = checkUserPermissionsForRole(loadedPermissions, 'Owner');
-            } else if (checkUserPermissionsForRole(loadedPermissions, 'Editor') 
-                || checkUserPermissionsForRole(loadedPermissions, 'Super Editor')) {
+                hasUserPermission = isOwner;
+            } else if (isEitherEditor) {
                 // If the user we are trying to edit is an Author or Contributor, allow it
                 hasUserPermission = userModel.hasRole('Author') || userModel.hasRole('Contributor');
             }
@@ -846,8 +845,7 @@ User = ghostBookshelf.Model.extend({
             }
 
             // Users with the role 'Editor' have complex permissions when the action === 'destroy'
-            if (checkUserPermissionsForRole(loadedPermissions, 'Editor')
-                || checkUserPermissionsForRole(loadedPermissions, 'Super Editor')) {
+            if (isEitherEditor) {
                 // Alternatively, if the user we are trying to edit is an Author, allow it
                 hasUserPermission = context.user === userModel.get('id') || userModel.hasRole('Author') || userModel.hasRole('Contributor');
             }

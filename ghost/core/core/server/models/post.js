@@ -21,7 +21,7 @@ const {BadRequestError} = require('@tryghost/errors');
 const {PostRevisions} = require('@tryghost/post-revisions');
 const {mobiledocToLexical} = require('@tryghost/kg-converters');
 const labs = require('../../shared/labs');
-const checkUserPermissionsForRole = require('./role-utils').checkUserPermissionsForRole;
+const {setIsRoles}= require('./role-utils');
 
 const messages = {
     isAlreadyPublished: 'Your post is already published, please reload your page.',
@@ -1479,14 +1479,11 @@ Post = ghostBookshelf.Model.extend({
 
     // NOTE: the `authors` extension is the parent of the post model. It also has a permissible function.
     permissible: async function permissible(postModel, action, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasApiKeyPermission) {
-        let isContributor;
-        let isOwner;
-        let isAdmin;
-        let isEditor;
         let isIntegration;
         let isEdit;
         let isAdd;
         let isDestroy;
+        let {isContributor, isOwner, isAdmin, isEitherEditor} = setIsRoles(loadedPermissions);
 
         function isChanging(attr) {
             return unsafeAttrs[attr] && unsafeAttrs[attr] !== postModel.get(attr);
@@ -1500,10 +1497,6 @@ Post = ghostBookshelf.Model.extend({
             return postModel.get('status') === 'draft';
         }
 
-        isContributor = checkUserPermissionsForRole(loadedPermissions, 'Contributor');
-        isOwner = checkUserPermissionsForRole(loadedPermissions, 'Owner');
-        isAdmin = checkUserPermissionsForRole(loadedPermissions, 'Administrator');
-        isEditor = checkUserPermissionsForRole(loadedPermissions, 'Editor') || checkUserPermissionsForRole(loadedPermissions, 'Super Editor');
         isIntegration = loadedPermissions.apiKey && _.some(loadedPermissions.apiKey.roles, {name: 'Admin Integration'});
 
         isEdit = (action === 'edit');
@@ -1526,7 +1519,7 @@ Post = ghostBookshelf.Model.extend({
         } else if (isContributor && isDestroy) {
             // If destroying, only allow contributor to destroy their own draft posts
             hasUserPermission = isDraft();
-        } else if (!(isOwner || isAdmin || isEditor || isIntegration)) {
+        } else if (!(isOwner || isAdmin || isEitherEditor || isIntegration)) {
             hasUserPermission = !isChanging('visibility');
         }
 
