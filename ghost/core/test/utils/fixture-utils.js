@@ -63,12 +63,12 @@ const fixtures = {
     },
 
     insertMultiAuthorPosts: function insertMultiAuthorPosts() {
+        // Creates two posts per staff member.
+        // (It used to create 10, but then other tests assumed two per staff member)
+
         let i;
         let k = 0;
         let posts = [];
-
-        // NOTE: this variable should become a parameter as test logic depends on it
-        //const count = 10;
 
         // insert users of different roles
         return Promise.resolve(fixtures.createUsersWithRoles()).then(function () {
@@ -90,13 +90,10 @@ const fixtures = {
             users = users.toJSON();
             users = _.map(users, 'id');
 
-            // Let's insert posts with random authors
+            // Let's insert posts for each staff member, two each.
             for (i = 0; i < count; i += 1) {
-                // hard-coding 5 because otherwise things break.
-                //const author = users[i % users.length];
                 const author = users[i % users.length];
                 posts.push(DataGenerator.forKnex.createGenericPost(k, null, null, [{id: author}]));
-                console.log('made a post for author')
                 k = k + 1;
             }
 
