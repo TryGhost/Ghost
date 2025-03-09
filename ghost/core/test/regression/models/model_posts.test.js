@@ -1613,8 +1613,8 @@ describe('Post Model', function () {
             };
 
             const preReassignPosts = await models.Post.findAll({context: {internal: true}});
-            // There are 10 posts created by posts:mu fixture
-            preReassignPosts.length.should.equal(10);
+            // The posts:mu fixture creates two posts per staff member.
+            preReassignPosts.length.should.equal(12);
 
             const preReassignOwnerWithPosts = await models.Post.findAll({
                 filter: `authors:${ownerData.slug}`,
@@ -1626,7 +1626,7 @@ describe('Post Model', function () {
 
             const postReassignPosts = await models.Post.findAll({context: {internal: true}});
             // All 10 should remain
-            postReassignPosts.length.should.equal(10);
+            postReassignPosts.length.should.equal(12);
 
             const postReassignOwnerWithPosts = await models.Post.findAll({
                 filter: `authors:${ownerData.slug}`,

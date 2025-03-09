@@ -68,7 +68,7 @@ const fixtures = {
         let posts = [];
 
         // NOTE: this variable should become a parameter as test logic depends on it
-        const count = 10;
+        //const count = 10;
 
         // insert users of different roles
         return Promise.resolve(fixtures.createUsersWithRoles()).then(function () {
@@ -82,6 +82,7 @@ const fixtures = {
             ]);
         }).then(function (results) {
             let users = results[0];
+            const count = users.length * 2;
             let tags = results[1];
 
             tags = tags.toJSON();
@@ -93,8 +94,9 @@ const fixtures = {
             for (i = 0; i < count; i += 1) {
                 // hard-coding 5 because otherwise things break.
                 //const author = users[i % users.length];
-                const author = users[i % 5];
+                const author = users[i % users.length];
                 posts.push(DataGenerator.forKnex.createGenericPost(k, null, null, [{id: author}]));
+                console.log('made a post for author')
                 k = k + 1;
             }
 
