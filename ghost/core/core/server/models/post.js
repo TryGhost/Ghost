@@ -1500,7 +1500,7 @@ Post = ghostBookshelf.Model.extend({
         isContributor = checkUserPermissionsForRole(loadedPermissions, 'Contributor');
         isOwner = checkUserPermissionsForRole(loadedPermissions, 'Owner');
         isAdmin = checkUserPermissionsForRole(loadedPermissions, 'Administrator');
-        isEditor = checkUserPermissionsForRole(loadedPermissions, 'Editor') || checkUserPermissionsForRole(loadedPermissions, 'SuperEditor');
+        isEditor = checkUserPermissionsForRole(loadedPermissions, 'Editor') || checkUserPermissionsForRole(loadedPermissions, 'Super Editor');
         isIntegration = loadedPermissions.apiKey && _.some(loadedPermissions.apiKey.roles, {name: 'Admin Integration'});
 
         isEdit = (action === 'edit');
