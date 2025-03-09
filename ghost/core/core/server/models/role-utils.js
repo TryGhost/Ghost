@@ -7,7 +7,6 @@ function checkUserPermissionsForRole(loadedPermissions, roleName) {
         return false;
     }
 
-<<<<<<< HEAD
     return loadedPermissions.user.roles.some(role => role.name === roleName);
 }
 
@@ -37,9 +36,3 @@ function setIsRoles(loadedPermissions) {
 
 exports.setIsRoles = setIsRoles;
 exports.checkUserPermissionsForRole = checkUserPermissionsForRole;
-=======
-    return _.some(loadedPermissions.user.roles, {name: roleName});
-}
-
-exports.checkUserPermissionsForRole = checkUserPermissionsForRole;
->>>>>>> b0927037c7 (need testing)
