@@ -100,7 +100,6 @@ const fixtures = {
 
             return Promise.all(posts.map((post, index) => {
                 posts[index].authors = [{id: posts[index].authors[0].id}];
-                console.log('create post with author', posts[index].authors[0].id);
                 posts[index].tags = [tags[Math.floor(Math.random() * (tags.length - 1))]];
                 return models.Post.add(posts[index], context.internal);
             }));
