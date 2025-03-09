@@ -92,11 +92,8 @@ const fixtures = {
 
             // Let's insert posts for each staff member, two each.
             for (i = 0; i < count; i += 1) {
-                // hard-coding 5 because otherwise things break.
-                //const author = users[i % users.length];
                 const author = users[i % users.length];
                 posts.push(DataGenerator.forKnex.createGenericPost(k, null, null, [{id: author}]));
-                console.log('made a post for author')
                 k = k + 1;
             }
 
