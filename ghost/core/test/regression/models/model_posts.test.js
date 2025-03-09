@@ -1614,7 +1614,8 @@ describe('Post Model', function () {
             const staffCount = testUtils.DataGenerator.forKnex.users.length;
 
             const preReassignPosts = await models.Post.findAll({context: {internal: true}});
-            // There are 10 posts created by posts:mu fixture
+
+            // The posts:mu fixture creates two posts per staff member.            // There are 10 posts created by posts:mu fixture
             preReassignPosts.length.should.equal(2 * staffCount);
 
             const preReassignOwnerWithPosts = await models.Post.findAll({
