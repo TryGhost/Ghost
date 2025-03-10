@@ -308,6 +308,12 @@ module.exports = function createSessionService({
      */
     async function removeUserForSession(req, res) {
         const session = await getSession(req, res);
+
+        const requireMfa = getSettingsCache('require_email_mfa');
+        if (requireMfa) {
+            session.verified = undefined;
+        }
+
         session.user_id = undefined;
     }
 
