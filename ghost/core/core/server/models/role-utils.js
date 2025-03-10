@@ -5,6 +5,7 @@
 const _ = require('lodash');
 
 function checkUserPermissionsForRole(loadedPermissions, roleName) {
+    console.log('received permissions: ', loadedPermissions);
     if (!loadedPermissions?.user?.roles) {
         return false;
     }
