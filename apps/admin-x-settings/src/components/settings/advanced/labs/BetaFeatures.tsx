@@ -5,6 +5,7 @@ import {Button, FileUpload, List, showToast} from '@tryghost/admin-x-design-syst
 import {downloadRedirects, useUploadRedirects} from '@tryghost/admin-x-framework/api/redirects';
 import {downloadRoutes, useUploadRoutes} from '@tryghost/admin-x-framework/api/routes';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
+import useStaffUsers from '../../../../hooks/useStaffUsers';
 
 const BetaFeatures: React.FC = () => {
     const {mutateAsync: uploadRedirects} = useUploadRedirects();
@@ -12,13 +13,13 @@ const BetaFeatures: React.FC = () => {
     const handleError = useHandleError();
     const [redirectsUploading, setRedirectsUploading] = useState(false);
     const [routesUploading, setRoutesUploading] = useState(false);
-
     return (
         <List titleSeparator={false}>
             <LabItem 
-                action={<FeatureToggle flag="superEditors" />}
-                detail={<>Allows &quot;super editors&quot; to manage members and comments in addition to regular roles.</>}
-                title='Super Editor role' />
+                action={<FeatureToggle flag="superEditors"  />}
+                detail={<>Allows newsly-assigned editors to manage members and comments in addition to regular roles.</>}
+                title='Enhanced Editor role' 
+                />
             <LabItem
                 action={<FeatureToggle flag="editorExcerpt" />}
                 detail={<>Adds the excerpt input below the post title in the editor</>}
