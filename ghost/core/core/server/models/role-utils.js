@@ -3,6 +3,7 @@
 //_.some(loadedPermissions.user.roles, {name: 'Administrator'})
 
 function checkUserPermissionsForRole(loadedPermissions, roleName) {
+    console.log('received permissions: ', loadedPermissions);
     if (!loadedPermissions?.user?.roles) {
         return false;
     }
