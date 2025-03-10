@@ -22,12 +22,14 @@ export default class TechnicalComponent extends Component {
     updateQueryParams(params) {
         const currentRoute = this.router.currentRoute;
         const newQueryParams = {...currentRoute.queryParams, ...params};
-
         this.router.transitionTo({queryParams: newQueryParams});
     }
 
     ReactComponent = (props) => {
         const {selected} = props;
+
+        // If OS is selected but not available, switch to devices
+        let effectiveSelected = selected;
 
         const colorPalette = statsStaticColors.slice(0, 5);
 
@@ -40,14 +42,20 @@ export default class TechnicalComponent extends Component {
         let endpoint;
         let indexBy;
         let tableHead;
-        switch (selected) {
+
+        switch (effectiveSelected) {
         case 'browsers':
-            endpoint = `${this.config.stats.endpoint}/v0/pipes/top_browsers__v${TB_VERSION}.json`;
+            endpoint = `${this.config.stats.endpoint}/v0/pipes/api_top_browsers__v${TB_VERSION}.json`;
             indexBy = 'browser';
             tableHead = 'Browser';
             break;
+        case 'os':
+            endpoint = `${this.config.stats.endpoint}/v0/pipes/api_top_os__v${TB_VERSION}.json`;
+            indexBy = 'os';
+            tableHead = 'OS';
+            break;
         default:
-            endpoint = `${this.config.stats.endpoint}/v0/pipes/top_devices__v${TB_VERSION}.json`;
+            endpoint = `${this.config.stats.endpoint}/v0/pipes/api_top_devices__v${TB_VERSION}.json`;
             indexBy = 'device';
             tableHead = 'Device';
         }

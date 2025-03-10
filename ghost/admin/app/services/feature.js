@@ -152,7 +152,7 @@ export default class FeatureService extends Service {
             nightShift = enabled || this.nightShift;
         }
 
-        document.documentElement.classList.toggle('dark', nightShift);
+        document.documentElement.classList.toggle('dark', nightShift ?? false);
 
         return this.lazyLoader.loadStyle('dark', 'assets/ghost-dark.css', true).then(() => {
             $('link[title=dark]').prop('disabled', !nightShift);

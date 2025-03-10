@@ -2,6 +2,15 @@
     <GhCanvasHeader class="gh-canvas-header gh-stats-header sticky break tablet post-header">
         <GhCustomViewTitle @title="Stats" />
         <div class="view-actions">
+            <button 
+                type="button"
+                class="gh-btn {{if this.mockData "gh-btn-green"}}" 
+                data-test-button="toggle-data-mode" 
+                {{on "click" this.toggleMockData}}
+            >
+                <span>{{if this.mockData "Using Test Data" "Using Live Data"}}</span>
+            </button>
+
             <Stats::Parts::AudienceFilter
                 @excludedAudiences={{this.excludedAudiences}}
                 @onChange={{this.onAudienceChange}}
@@ -71,7 +80,10 @@
                 @browser={{this.browser}}
                 @location={{this.location}}
                 @source={{this.source}}
-                @pathname={{this.pathname}}/>
+                @pathname={{this.pathname}}
+                @os={{this.os}}
+                @mockData={{this.mockData}}
+            />
         </section>
 
         <section class="gh-stats-grid cols-2">
@@ -84,6 +96,8 @@
                     @location={{this.location}}
                     @source={{this.source}}
                     @pathname={{this.pathname}}
+                    @os={{this.os}}
+                    @mockData={{this.mockData}}
                 />
             </div>
             <div class="gh-stats-container">
@@ -95,6 +109,8 @@
                     @location={{this.location}}
                     @source={{this.source}}
                     @pathname={{this.pathname}}
+                    @os={{this.os}}
+                    @mockData={{this.mockData}}
                 />
             </div>
         </section>
@@ -109,6 +125,8 @@
                     @location={{this.location}}
                     @source={{this.source}}
                     @pathname={{this.pathname}}
+                    @os={{this.os}}
+                    @mockData={{this.mockData}}
                 />
             </div>
             <div class="gh-stats-container">
@@ -120,6 +138,8 @@
                         @location={{this.location}}
                         @source={{this.source}}
                         @pathname={{this.pathname}}
+                        @os={{this.os}}
+                        @mockData={{this.mockData}}
                     />
             </div>
         </section>

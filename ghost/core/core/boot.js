@@ -10,6 +10,9 @@
 // The only global requires here should be overrides + debug so we can monitor timings with DEBUG = ghost: boot * node ghost
 require('./server/overrides');
 const debug = require('@tryghost/debug')('boot');
+
+// Temporarily require the demo file to test the TypeScript compatibility
+require('./demo');
 // END OF GLOBAL REQUIRES
 
 /**
@@ -449,7 +452,7 @@ async function initBackgroundServices({config}) {
         await emailAnalyticsJobs.scheduleRecurringJobs();
     }
 
-    const updateCheck = require('./server/update-check');
+    const updateCheck = require('./server/services/update-check');
     updateCheck.scheduleRecurringJobs();
 
     const milestonesService = require('./server/services/milestones');

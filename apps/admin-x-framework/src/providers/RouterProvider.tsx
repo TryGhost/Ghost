@@ -1,16 +1,13 @@
-import {ErrorPage} from '@tryghost/shade';
 import React, {useCallback, useMemo} from 'react';
 import {createHashRouter, RouteObject, RouterProvider as ReactRouterProvider, NavigateOptions as ReactRouterNavigateOptions, useNavigate as useReactRouterNavigate} from 'react-router';
 import {useFramework} from './FrameworkProvider';
+import {NavigationStackProvider} from './NavigationStackProvider';
+import {ErrorPage} from '@tryghost/shade';
 
 /**
- * READ THIS BEFORE USING THIS PROVIDER
- *
- * This is an experimental provider that tests using React Router to provide
- * a router context to React apps in Ghost.
- *
- * It is not ready for production yet. For apps in production, use the custom
- * RoutingProvider.
+ * This provider uses React Router to provide a router context to React apps
+ * in Ghost. For future apps this is the preferred router provider
+ * (not RoutingProvider).
  */
 
 /**
@@ -24,33 +21,41 @@ export interface RouterProviderProps {
 
     // Custom routing props
     errorElement?: React.ReactNode;
+    children?: React.ReactNode;
 }
 
 export function RouterProvider({
     routes,
     prefix,
-    errorElement
+    errorElement,
+    children
 }: RouterProviderProps) {
     // Memoize the router to avoid re-creating it on every render
     const router = useMemo(() => {
         // Ensure prefix has a leading slash and no double+ or trailing slashes
         const normalizedPrefix = `/${prefix?.replace(/\/+/g, '/').replace(/^\/|\/$/g, '')}`;
 
-        // Add default error element if not provided
-        const finalRoutes = routes.map(route => ({
-            ...route,
-            errorElement: route.errorElement || errorElement || <ErrorPage />
-        }));
+        // Create a root route that wraps all routes with NavigationStackProvider
+        // and any additional children (providers) so they have access to routing
+        const rootRoute: RouteObject = {
+            element: (
+                <NavigationStackProvider>
+                    {children}
+                </NavigationStackProvider>
+            ),
+            children: routes.map(route => ({
+                ...route,
+                errorElement: route.errorElement || errorElement || <ErrorPage />
+            }))
+        };
 
-        return createHashRouter(finalRoutes, {
+        return createHashRouter([rootRoute], {
             basename: normalizedPrefix
         });
-    }, [routes, prefix, errorElement]);
+    }, [routes, prefix, errorElement, children]);
 
     return (
-        <ReactRouterProvider
-            router={router}
-        />
+        <ReactRouterProvider router={router} />
     );
 }
 
@@ -68,9 +73,14 @@ export function useNavigate() {
     const {externalNavigate} = useFramework();
 
     return useCallback((
-        to: string,
+        to: string | number,
         options?: NavigateOptions
     ) => {
+        if (typeof to === 'number') {
+            navigate(to);
+            return;
+        }
+
         if (options?.crossApp) {
             externalNavigate({route: to, isExternal: true});
             return;

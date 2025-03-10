@@ -73,7 +73,7 @@ const ActorList: React.FC<ActorListProps> = ({
     }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
     return (
-        <div>
+        <div className='pt-3'>
             {
                 hasNextPage === false && actors.length === 0 ? (
                     <NoValueLabel icon='user-add'>
@@ -81,7 +81,7 @@ const ActorList: React.FC<ActorListProps> = ({
                     </NoValueLabel>
                 ) : (
                     <List>
-                        {actors.map(({actor, isFollowing}, index) => {
+                        {actors.map(({actor, isFollowing}) => {
                             return (
                                 <React.Fragment key={actor.id}>
                                     <ActivityItem key={actor.id}
@@ -101,7 +101,6 @@ const ActorList: React.FC<ActorListProps> = ({
                                             type='secondary'
                                         />
                                     </ActivityItem>
-                                    {index < actors.length - 1 && <Separator />}
                                 </React.Fragment>
                             );
                         })}
@@ -170,13 +169,20 @@ const PostsTab: React.FC<{handle: string}> = ({handle}) => {
                             <div>
                                 <FeedItem
                                     actor={post.actor}
+                                    allowDelete={post.object.authored}
                                     commentCount={post.object.replyCount}
                                     layout='feed'
                                     object={post.object}
                                     repostCount={post.object.repostCount}
                                     type={post.type}
-                                    onClick={() => handleViewContent(post, false)}
-                                    onCommentClick={() => handleViewContent(post, true)}
+                                    onClick={() => handleViewContent({
+                                        ...post,
+                                        id: post.object.id
+                                    }, false)}
+                                    onCommentClick={() => handleViewContent({
+                                        ...post,
+                                        id: post.object.id
+                                    }, true)}
                                 />
                                 {index < posts.length - 1 && <Separator />}
                             </div>

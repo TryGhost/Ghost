@@ -27,7 +27,6 @@ Object {
       "lexicalIndicators": true,
       "mailEvents": true,
       "members": true,
-      "outboundLinkTagging": true,
       "postsX": true,
       "stripeAutomaticTax": true,
       "themeErrorsNotification": true,

@@ -66,7 +66,7 @@
 
 
 .kg-cta-sponsor-label p span:not(a span) {
-    color: color-mix(in srgb, currentColor 40%, transparent);
+    color: color-mix(in srgb, currentColor 45%, transparent);
 }
 
 .kg-cta-sponsor-label a {
@@ -170,15 +170,23 @@ a.kg-cta-button {
     display: flex;
     position: static;
     align-items: center;
-    padding: 0 2rem;
-    height: 2.4em;
     justify-content: center;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
-    font-size: 0.95em;
-    font-weight: 600;
+    font-weight: 500;
+    line-height: 1.65;
     text-decoration: none;
     border-radius: 6px;
     transition: opacity 0.2s ease-in-out;
+}
+
+.kg-cta-minimal a.kg-cta-button {
+    padding: 0 2rem;
+    height: 2.4em;
+    font-size: 0.95em;
+}
+
+.kg-cta-immersive a.kg-cta-button {
+    padding: .8rem 2rem;
 }
 
 a.kg-cta-button:hover {
