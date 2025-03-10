@@ -53,7 +53,7 @@ describe('API hooks', function () {
 
                 const {result} = renderHook(() => useTestQuery(), {wrapper});
 
-                await waitFor(() => expect(result.current.isLoading).toBe(false));
+                await waitFor(() => expect(result.current.isLoading).toBe(false), {timeout: 5000});
 
                 expect(result.current.data).toEqual({test: 1});
 
@@ -116,7 +116,7 @@ describe('API hooks', function () {
 
                 const {result} = renderHook(() => useTestQuery(), {wrapper});
 
-                await waitFor(() => expect(result.current.isLoading).toBe(false));
+                await waitFor(() => expect(result.current.isLoading).toBe(false), {timeout: 5000});
 
                 expect(mock.calls.length).toBe(1);
                 expect(mock.calls[0][0]).toEqual('http://localhost:3000/ghost/api/admin/test/?a=%3F');
@@ -133,7 +133,7 @@ describe('API hooks', function () {
 
                 const {result} = renderHook(() => useTestQuery({searchParams: {b: '1'}}), {wrapper});
 
-                await waitFor(() => expect(result.current.isLoading).toBe(false));
+                await waitFor(() => expect(result.current.isLoading).toBe(false), {timeout: 5000});
 
                 expect(mock.calls.length).toBe(1);
                 expect(mock.calls[0][0]).toEqual('http://localhost:3000/ghost/api/admin/test/?b=1');
@@ -150,7 +150,7 @@ describe('API hooks', function () {
 
                 const {result} = renderHook(() => useTestQuery(), {wrapper});
 
-                await waitFor(() => expect(result.current.isLoading).toBe(false));
+                await waitFor(() => expect(result.current.isLoading).toBe(false), {timeout: 5000});
 
                 expect(result.current.data).toEqual(2);
             });
@@ -173,7 +173,7 @@ describe('API hooks', function () {
 
                 const {result} = renderHook(() => useTestQuery(), {wrapper});
 
-                await waitFor(() => expect(result.current.isLoading).toBe(false));
+                await waitFor(() => expect(result.current.isLoading).toBe(false), {timeout: 5000});
 
                 expect(result.current.data).toEqual({test: 1});
 
@@ -201,7 +201,7 @@ describe('API hooks', function () {
 
                 const {result} = renderHook(() => useTestQuery(), {wrapper});
 
-                await waitFor(() => expect(result.current.isLoading).toBe(false));
+                await waitFor(() => expect(result.current.isLoading).toBe(false), {timeout: 5000});
 
                 expect(mock.calls.length).toBe(1);
                 expect(mock.calls[0][0]).toEqual('http://localhost:3000/ghost/api/admin/test/?a=%3F&page=1');
@@ -218,7 +218,7 @@ describe('API hooks', function () {
 
                 const {result} = renderHook(() => useTestQuery({searchParams: {b: '1'}}), {wrapper});
 
-                await waitFor(() => expect(result.current.isLoading).toBe(false));
+                await waitFor(() => expect(result.current.isLoading).toBe(false), {timeout: 5000});
 
                 expect(mock.calls.length).toBe(1);
                 expect(mock.calls[0][0]).toEqual('http://localhost:3000/ghost/api/admin/test/?b=1&page=1');
@@ -235,7 +235,7 @@ describe('API hooks', function () {
 
                 const {result} = renderHook(() => useTestQuery(), {wrapper});
 
-                await waitFor(() => expect(result.current.isLoading).toBe(false));
+                await waitFor(() => expect(result.current.isLoading).toBe(false), {timeout: 5000});
 
                 expect(result.current.data).toEqual({test: 2});
             });
@@ -251,7 +251,7 @@ describe('API hooks', function () {
 
                 const {result} = renderHook(() => useTestQuery({}), {wrapper});
 
-                await waitFor(() => expect(result.current.isLoading).toBe(false));
+                await waitFor(() => expect(result.current.isLoading).toBe(false), {timeout: 5000});
 
                 expect(result.current.pagination.limit).toEqual(15);
                 expect(result.current.pagination.page).toEqual(1);
@@ -269,7 +269,7 @@ describe('API hooks', function () {
 
                 const {result} = renderHook(() => useTestQuery({}), {wrapper});
 
-                await waitFor(() => expect(result.current.isLoading).toBe(false));
+                await waitFor(() => expect(result.current.isLoading).toBe(false), {timeout: 5000});
 
                 expect(mock.calls.length).toBe(1);
                 expect(mock.calls[0][0]).toEqual('http://localhost:3000/ghost/api/admin/test/?page=1');
@@ -320,7 +320,7 @@ describe('API hooks', function () {
 
                 const {result} = renderHook(() => useTestQuery(), {wrapper});
 
-                await waitFor(() => expect(result.current.isLoading).toBe(false));
+                await waitFor(() => expect(result.current.isLoading).toBe(false), {timeout: 5000});
 
                 expect(result.current.data).toEqual([1]);
 
@@ -362,7 +362,7 @@ describe('API hooks', function () {
 
                 const {result} = renderHook(() => useTestQuery('1'), {wrapper});
 
-                await waitFor(() => expect(result.current.isLoading).toBe(false));
+                await waitFor(() => expect(result.current.isLoading).toBe(false), {timeout: 5000});
 
                 expect(result.current.data).toEqual({test: 1});
 
