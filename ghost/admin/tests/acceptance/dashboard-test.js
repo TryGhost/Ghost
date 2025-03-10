@@ -44,7 +44,6 @@ describe('Acceptance: Dashboard', function () {
         });
 
         it('is not accessible to authors', async function () {
-
             let role = this.server.create('role', {name: 'Author'});
             this.server.create('user', {roles: [role]});
 
@@ -72,7 +71,7 @@ describe('Acceptance: Dashboard', function () {
             this.server.create('user', {roles: [role]});
             await authenticateSession();
         });
-        
+
         it('can visit /dashboard', async function () {
             await visit('/dashboard');
             expect(currentURL()).to.equal('/dashboard');
