@@ -6,6 +6,9 @@ import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
 import {visit} from '../helpers/visit';
 
+// this whole test suite was tending to fail with claims about not being able to find various imports. 
+// I bumped up the timouts to increase the pass rate, but it isn't consistently enough.
+
 describe('Acceptance: Dashboard', function () {
     const hooks = setupApplicationTest();
     setupMirage(hooks);
