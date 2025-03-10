@@ -1,5 +1,6 @@
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
-import {currentURL, visit} from '@ember/test-helpers';
+import {currentURL, pauseTest} from '@ember/test-helpers';
+import {visit} from '../helpers/visit';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
@@ -46,10 +47,29 @@ describe('Acceptance: Dashboard', function () {
 
             await authenticateSession();
             await visit('/dashboard');
+            console.log('Current URL:', currentURL());
+
             expect(currentURL()).to.equal('/dashboard');
         });
 
+        it('is not accessible to editors', async function () {
+            await invalidateSession();
+            this.server.db.users.remove();
+
+            let role = this.server.create('role', {name: 'Editor'});
+            this.server.create('user', {roles: [role]});
+
+            await authenticateSession();
+            await visit('/dashboard');
+
+            console.log('Current URL:', currentURL());
+
+            expect(currentURL()).to.equal('/site');
+        });
+
         it('is not accessible to authors', async function () {
+            await invalidateSession();
+
             let role = this.server.create('role', {name: 'Author'});
             this.server.create('user', {roles: [role]});
 
@@ -66,6 +86,26 @@ describe('Acceptance: Dashboard', function () {
             await visit('/dashboard');
 
             expect(currentURL()).to.equal('/site');
+        });
+    });
+    describe('as admin', async function () {
+        beforeEach(async function () {
+            await invalidateSession();
+            this.server.db.users.remove();
+
+            let role = this.server.create('role', {name: 'Administrator'});
+            this.server.create('user', {roles: [role]});
+    
+            await authenticateSession();
+        });
+        it('can visit /dashboard', async function () {
+            await visit('/dashboard');
+            expect(currentURL()).to.equal('/dashboard');
+        });
+
+        it('/ redirects to /dashboard', async function () {
+            await visit('/');
+            expect(currentURL()).to.equal('/dashboard');
         });
     });
 });
