@@ -114,7 +114,6 @@ describe('Unit: Model: user', function () {
         expect(model.get('canManageMembers')).to.not.be.ok;
         expect(model.get('isSuperEditor')).to.not.be.ok;
         expect(model.get('canManageComments')).to.not.be.ok;
-
     });
 
     it('isAdminOnly property is correct', function () {
