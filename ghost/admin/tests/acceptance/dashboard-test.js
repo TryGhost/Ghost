@@ -40,15 +40,30 @@ describe('Acceptance: Dashboard', function () {
             expect(currentURL()).to.equal('/signin');
         });
 
+        it('is accessible to owners', async function () {
+            let role = this.server.create('role', {name: 'Owner'});
+            this.server.create('user', {roles: [role]});
+
+            await authenticateSession();
+            await visit('/dashboard');
+            expect(currentURL()).to.equal('/dashboard');
+        });
+
+        it('is not accessible to authors', async function () {
+            let role = this.server.create('role', {name: 'Author'});
+            this.server.create('user', {roles: [role]});
+
+            await authenticateSession();
+            await visit('/dashboard');
+            expect(currentURL()).to.equal('/site');
+        });
+
         it('is not accessible to super editors', async function () {
             let role = this.server.create('role', {name: 'Super Editor'});
             this.server.create('user', {roles: [role]});
 
             await authenticateSession();
             await visit('/dashboard');
-            // pause 100ms
-
-            this.pauseTest(0.01);
 
             expect(currentURL()).to.equal('/site');
         });
