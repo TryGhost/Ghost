@@ -4,7 +4,7 @@ import * as FormPrimitive from '@radix-ui/react-form';
 import APAvatar from './APAvatar';
 import clsx from 'clsx';
 import getUsername from '../../utils/get-username';
-import {Activity, ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
+import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, showToast} from '@tryghost/admin-x-design-system';
 import {useReplyMutationForUser, useUserDataForUser} from '@hooks/use-activity-pub-queries';
 
@@ -17,7 +17,6 @@ export interface APTextAreaProps extends HTMLProps<HTMLTextAreaElement> {
     hint?: React.ReactNode;
     className?: string;
     onChange?: (event: React.ChangeEvent<HTMLTextAreaElement>) => void;
-    onNewReply?: (activity: Activity) => void;
     object: ObjectProperties;
     focused: number;
 }
@@ -47,7 +46,6 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
     className,
     object,
     focused,
-    onNewReply,
     ...props
 }) => {
     const id = useId();
@@ -69,15 +67,12 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
             return;
         }
         await replyMutation.mutate({id: object.id, content: textValue}, {
-            onSuccess(activity: Activity) {
+            onSuccess() {
                 setTextValue('');
                 showToast({
                     message: 'Reply sent',
                     type: 'success'
                 });
-                if (onNewReply) {
-                    onNewReply(activity);
-                }
             },
             onError() {
                 showToast({

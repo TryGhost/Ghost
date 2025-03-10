@@ -20,12 +20,14 @@ import {useLocation} from '@tryghost/admin-x-framework';
 const Inbox: React.FC = () => {
     const location = useLocation();
     const layout = location.pathname === '/feed' ? 'feed' : 'inbox';
-    const {inboxQuery, updateInboxActivity} = useInboxForUser({enabled: layout === 'inbox'});
-    const {feedQuery, updateFeedActivity} = useFeedForUser({enabled: layout === 'feed'});
+    const {data: inboxData, fetchNextPage: fetchNextInboxPage, hasNextPage: hasNextInboxPage, isFetchingNextPage: isFetchingNextInboxPage, isLoading: isLoadingInbox} = useInboxForUser({enabled: layout === 'inbox'});
+    const {data: feedData, fetchNextPage: fetchNextFeedPage, hasNextPage: hasNextFeedPage, isFetchingNextPage: isFetchingNextFeedPage, isLoading: isLoadingFeed} = useFeedForUser({enabled: layout === 'feed'});
 
-    const feedQueryData = layout === 'inbox' ? inboxQuery : feedQuery;
-    const updateActivity = layout === 'inbox' ? updateInboxActivity : updateFeedActivity;
-    const {data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading} = feedQueryData;
+    const data = layout === 'inbox' ? inboxData : feedData;
+    const fetchNextPage = layout === 'inbox' ? fetchNextInboxPage : fetchNextFeedPage;
+    const hasNextPage = layout === 'inbox' ? hasNextInboxPage : hasNextFeedPage;
+    const isFetchingNextPage = layout === 'inbox' ? isFetchingNextInboxPage : isFetchingNextFeedPage;
+    const isLoading = layout === 'inbox' ? isLoadingInbox : isLoadingFeed;
 
     const activities = (data?.pages.flatMap(page => page.posts) ?? Array.from({length: 5}, (_, index) => ({id: `placeholder-${index}`, object: {}})));
 
@@ -97,8 +99,8 @@ const Inbox: React.FC = () => {
                                                         object={activity.object}
                                                         repostCount={activity.object.repostCount ?? 0}
                                                         type={activity.type}
-                                                        onClick={() => handleViewContent(activity, false, updateActivity)}
-                                                        onCommentClick={() => handleViewContent(activity, true, updateActivity)}
+                                                        onClick={() => handleViewContent(activity, false)}
+                                                        onCommentClick={() => handleViewContent(activity, true)}
                                                     />
                                                     {index < activities.length - 1 && (
                                                         <Separator />

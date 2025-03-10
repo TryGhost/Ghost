@@ -373,15 +373,13 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
     focusReply,
     focusReplies,
     width = 'narrow',
-    updateActivity = () => {},
     history = []
 }) => {
     const MODAL_SIZE_SM = 640;
     const MODAL_SIZE_LG = 1420;
     const [isFocused, setIsFocused] = useFocusedState(focusReply);
 
-    const {threadQuery, addToThread} = useThreadForUser('index', activityId);
-    const {data: thread, isLoading: isLoadingThread} = threadQuery;
+    const {data: thread, isLoading: isLoadingThread} = useThreadForUser('index', activityId);
     const threadPostIdx = (thread?.posts ?? []).findIndex(item => item.object.id === activityId);
     const threadChildren = (thread?.posts ?? []).slice(threadPostIdx + 1);
     const threadParents = (thread?.posts ?? []).slice(0, threadPostIdx);
@@ -408,7 +406,6 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
             activityId: prevProps.activityId,
             object: prevProps.object,
             actor: prevProps.actor,
-            updateActivity,
             width,
             history
         });
@@ -425,7 +422,6 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
             activityId: nextObject.id,
             object: nextObject,
             actor: nextActor,
-            updateActivity,
             width,
             focusReply: nextFocusReply,
             history: [
@@ -443,30 +439,6 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
         // Do API req or smth
         // Don't need to know about setting timeouts or anything like that
     };
-
-    function handleNewReply(activity: Activity) {
-        // Add the new reply to the thread
-        activity.object.authored = true;
-        activity.id = activity.object.id;
-        addToThread(activity);
-
-        // Update the replyCount on the activity outside of the context
-        // of this component
-        updateActivity(activityId, {
-            object: {
-                ...object,
-                replyCount: (object.replyCount ?? 0) + 1
-            }
-        } as Partial<Activity>);
-
-        // Update the replyCount on the current activity loaded in the modal
-        // This is used for when we navigate via the history
-        setReplyCount((current: number) => current + 1);
-    }
-
-    function decrementReplyCount(step: number = 1) {
-        setReplyCount((current: number) => current - step);
-    }
 
     const replyBoxRef = useRef<HTMLDivElement>(null);
     const repliesRef = useRef<HTMLDivElement>(null);
@@ -953,7 +925,6 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                 <APReplyBox
                                     focused={isFocused}
                                     object={object}
-                                    onNewReply={handleNewReply}
                                 />
                             </div>
                             <FeedItemDivider />
@@ -983,7 +954,6 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                                     navigateForward(item.id, item.object, item.actor, true);
                                                     setIsFocused(true);
                                                 }}
-                                                onDelete={decrementReplyCount}
                                             />
                                             {showDivider && <FeedItemDivider />}
                                         </React.Fragment>

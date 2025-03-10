@@ -200,8 +200,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
     last,
     isLoading,
     onClick: onClickHandler = noop,
-    onCommentClick,
-    onDelete = noop
+    onCommentClick
 }) => {
     const timestamp =
         new Date(object?.published ?? new Date()).toLocaleDateString('default', {year: 'numeric', month: 'short', day: '2-digit'}) + ', ' + new Date(object?.published ?? new Date()).toLocaleTimeString('default', {hour: '2-digit', minute: '2-digit'});
@@ -231,8 +230,6 @@ const FeedItem: React.FC<FeedItemProps> = ({
 
     const handleDelete = () => {
         deleteMutation.mutate({id: object.id, parentId});
-
-        onDelete();
     };
 
     const handleCopyLink = async () => {
