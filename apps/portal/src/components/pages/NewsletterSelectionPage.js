@@ -104,8 +104,11 @@ export default function NewsletterSelectionPage({pageData, onBack}) {
                             retry={retry}
                             disabled={disabled}
                             onClick={() => {
+                                let newsletters = subscribedNewsletters.map((d) => {
+                                    return {name: d.name};
+                                });
                                 const {name, email, plan, phonenumber, offerId} = pageData;
-                                onAction('signup', {name, email, plan, phonenumber, newsletters: subscribedNewsletters, offerId});
+                                onAction('signup', {name, email, plan, phonenumber, newsletters, offerId});
                             }}
                             brandColor={brandColor}
                             label={label}
