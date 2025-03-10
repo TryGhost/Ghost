@@ -1,9 +1,8 @@
-import Form from './Form';
 import {Comment, OpenCommentForm, useAppContext} from '../../../AppContext';
-import {getEditorConfig} from '../../../utils/editor';
+import {Form} from './Form';
 import {isMobile} from '../../../utils/helpers';
-import {useCallback, useEffect} from 'react';
-import {useEditor} from '@tiptap/react';
+import {useCallback, useEffect, useMemo} from 'react';
+import {useEditor} from '../../../utils/hooks';
 
 type Props = {
     openForm: OpenCommentForm;
@@ -14,17 +13,15 @@ type Props = {
 const EditForm: React.FC<Props> = ({comment, openForm, parent}) => {
     const {dispatchAction, t} = useAppContext();
 
-    const config = {
+    const editorConfig = useMemo(() => ({
         placeholder: t('Edit this comment'),
         // warning: we cannot use autofocus on the edit field, because that sets
         // the cursor position at the beginning of the text field instead of the end
         autofocus: false,
         content: comment.html
-    };
+    }), [comment]);
 
-    const editor = useEditor({
-        ...getEditorConfig(config)
-    });
+    const {editor} = useEditor(editorConfig);
 
     // Instead of autofocusing, we focus and jump to end manually
     useEffect(() => {
@@ -60,20 +57,18 @@ const EditForm: React.FC<Props> = ({comment, openForm, parent}) => {
     }, [dispatchAction, openForm]);
 
     return (
-        <div className='px-2 pb-2 pt-3'>
-            <div className='mt-[-16px] pr-3'>
-                <Form
-                    close={close}
-                    comment={comment}
-                    editor={editor}
-                    isOpen={true}
-                    openForm={openForm}
-                    reduced={isMobile()}
-                    submit={submit}
-                    submitSize={'small'}
-                    submitText={t('Save')}
-                />
-            </div>
+        <div className="relative w-full">
+            <Form
+                close={close}
+                comment={comment}
+                editor={editor}
+                isOpen={true}
+                openForm={openForm}
+                reduced={isMobile()}
+                submit={submit}
+                submitSize={'small'}
+                submitText={t('Save')}
+            />
         </div>
     );
 };

@@ -20,6 +20,8 @@ const handleResponse = async (response: Response) => {
             throw new VersionMismatchError(response, data);
         } else if (data.errors?.[0]?.type === 'ValidationError') {
             throw new ValidationError(response, data);
+        } else if (data.errors?.[0]?.type === 'NoPermissionError') {
+            throw new ValidationError(response, data);
         } else if (data.errors?.[0]?.type === 'ThemeValidationError') {
             throw new ThemeValidationError(response, data);
         } else if (data.errors?.[0]?.type === 'HostLimitError') {

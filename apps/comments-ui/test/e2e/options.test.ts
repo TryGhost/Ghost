@@ -193,7 +193,15 @@ test.describe('Options', async () => {
 
         test('Uses 100 avatarSaturation', async ({page}) => {
             const mockedApi = new MockedApi({});
-            mockedApi.addComment();
+            mockedApi.addComment({
+                member: {
+                    id: 'test-id',
+                    uuid: 'test-uuid',
+                    name: 'Test User',
+                    avatar: '',
+                    expertise: ''
+                }
+            });
 
             const {frame} = await initialize({
                 mockedApi,

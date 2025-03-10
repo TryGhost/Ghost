@@ -1,5 +1,5 @@
 import {ReactComponent as ReplyIcon} from '../../../images/icons/reply.svg';
-import {useAppContext, useLabs} from '../../../AppContext';
+import {useAppContext} from '../../../AppContext';
 
 type Props = {
     disabled?: boolean;
@@ -9,14 +9,13 @@ type Props = {
 
 const ReplyButton: React.FC<Props> = ({disabled, isReplying, openReplyForm}) => {
     const {member, t, dispatchAction, commentsEnabled} = useAppContext();
-    const labs = useLabs();
 
     const paidOnly = commentsEnabled === 'paid';
     const isPaidMember = member && !!member.paid;
     const canReply = member && (isPaidMember || !paidOnly);
 
     const handleClick = () => {
-        if (!canReply && labs && labs.commentImprovements) {
+        if (!canReply) {
             dispatchAction('openPopup', {
                 type: 'ctaPopup'
             });
@@ -24,10 +23,6 @@ const ReplyButton: React.FC<Props> = ({disabled, isReplying, openReplyForm}) => 
         }
         openReplyForm();
     };
-
-    if (!member && !labs?.commentImprovements) {
-        return null;
-    }
 
     return (
         <button

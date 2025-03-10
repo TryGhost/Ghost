@@ -64,7 +64,7 @@ const DeletePopup = ({comment}: {comment: Comment}) => {
     };
 
     return (
-        <div className="shadow-modal relative h-screen w-screen rounded-none bg-white p-[28px] text-center sm:h-auto sm:w-[500px] sm:rounded-xl sm:p-8 sm:text-left" onMouseDown={stopPropagation}>
+        <div className="shadow-modal relative h-screen w-screen rounded-none bg-white p-[28px] text-center sm:h-auto sm:w-[500px] sm:rounded-xl sm:p-8 sm:text-left" data-testid="delete-popup" onMouseDown={stopPropagation}>
             <div className="flex h-full flex-col justify-center pt-10 sm:justify-normal sm:pt-0">
                 <h1 className="mb-1.5 font-sans text-[2.2rem] font-bold tracking-tight text-black">
                     <span>{t('Are you sure?')}</span>
@@ -73,6 +73,7 @@ const DeletePopup = ({comment}: {comment: Comment}) => {
                 <div className="mt-auto flex flex-col items-center justify-start gap-4 sm:mt-8 sm:flex-row">
                     <button
                         className={`text-md flex h-[44px] w-full items-center justify-center rounded-md px-4 font-sans font-medium text-white transition duration-200 ease-linear sm:w-fit ${buttonColor} opacity-100 hover:opacity-90`}
+                        data-testid="delete-popup-confirm"
                         disabled={isSubmitting}
                         type="button"
                         onClick={submit}

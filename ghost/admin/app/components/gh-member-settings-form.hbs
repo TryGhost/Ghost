@@ -3,12 +3,13 @@
         <GhMemberDetails @member={{@member}} />
 
         <div class="gh-main-section-block span-2">
-            <div class="gh-main-section-content grey">
+            <div class="gh-main-section-content bordered">
                 <div>
                     <div class="gh-cp-member-email-name">
                         <GhFormGroup class="max-width" @errors={{this.member.errors}} @hasValidated={{this.member.hasValidated}} @property="name">
                             <label for="member-name">Name</label>
                             <GhTextInput
+                                @class="gh-input-x"
                                 @id="member-name"
                                 @name="name"
                                 @value={{this.scratchMember.name}}
@@ -23,6 +24,7 @@
                         <GhFormGroup class="max-width" @errors={{this.member.errors}} @hasValidated={{this.member.hasValidated}} @property="email">
                             <label for="member-email">Email</label>
                             <GhTextInput
+                                @class="gh-input-x"
                                 @value={{this.scratchMember.email}}
                                 @id="member-email"
                                 @name="email"
@@ -40,6 +42,7 @@
                     <GhFormGroup class="gh-member-labels">
                         <label for="label-input">Labels</label>
                         <GhMemberLabelInput
+                            @triggerClass="gh-input-x"
                             @onChange={{this.setLabels}}
                             @allowEdit={{true}}
                             @onLabelEdit={{@onLabelEdit}}
@@ -51,11 +54,11 @@
                     </GhFormGroup>
 
                     <GhFormGroup @errors={{this.member.errors}} @hasValidated={{this.member.hasValidated}} @property="note" class="mb0 gh-member-note">
-                        <label for="member-note">Note <span class="midgrey-d1 fw4">(not visible to member)</span></label>
+                        <label for="member-note">Note <span class="middarkgrey fw4">(not visible to member)</span></label>
                         <GhTextarea
                             @id="member-note"
                             @name="note"
-                            @class="gh-member-details-textarea"
+                            @class="gh-member-details-textarea gh-input-x"
                             @tabindex="3"
                             @value={{this.scratchMember.note}}
                             {{on "input" this.updateProperty}}
@@ -80,7 +83,7 @@
                 <h4 class="gh-main-section-header small bn">Subscriptions</h4>
 
                 {{#unless this.tiers}}
-                    <div class="gh-main-section-content grey">
+                    <div class="gh-main-section-content bordered">
                         <div class="gh-cp-membertier-notier">
                             {{#unless this.isCreatingComplimentary}}
                                 <div class="gh-members-no-data gh-members-no-subs">
@@ -107,148 +110,150 @@
                     </div>
                 {{/unless}}
 
-                {{#each this.tiers as |tier|}}
-                    <div class="gh-main-section-content grey gh-member-tier-container" data-test-tier={{tier.id}}>
-                        <div class="gh-main-content-card gh-cp-membertier gh-cp-membertier-attribution gh-membertier-subscription {{if (gt tier.subscriptions.length 1) "multiple-subs" ""}}">
-                            {{#each tier.subscriptions as |sub index|}}
-                                <div class="gh-tier-card-header flex items-center">
-                                    <div class="gh-tier-card-price">
-                                        <div class="flex items-start">
-                                            <span class="currency-symbol">{{sub.price.currencySymbol}}</span>
-                                            <span class="amount">{{format-number sub.price.nonDecimalAmount}}</span>
-                                        </div>
-                                        <div class="period">{{if (eq sub.price.interval "year") "yearly" "monthly"}}</div>
-                                    </div>
-                                    <div style="margin-left: 16px; flex-grow: 1;">
-                                        <h3 class="gh-membertier-name" data-test-text="tier-name" style="align-items:center !important; justify-content:flex-start !important;">
-                                            {{tier.name}}
-                                            {{#if (eq sub.status "canceled")}}
-                                                <span class="gh-badge archived" data-test-text="member-subscription-status">Canceled</span>
-                                            {{else if sub.cancel_at_period_end}}
-                                                <span class="gh-badge archived" data-test-text="member-subscription-status">Canceled</span>
-                                            {{else if sub.compExpiry}}
-                                                <span class="gh-badge active" data-test-text="member-subscription-status">Active</span>
-                                            {{else if sub.trialUntil}}
-                                                <span class="gh-badge active" data-test-text="member-subscription-status">Active</span>
-                                            {{else}}
-                                                <span class="gh-badge active" data-test-text="member-subscription-status">Active</span>
-                                            {{/if}}
-                                            {{#if (gt tier.subscriptions.length 1)}}
-                                                <span class="gh-membertier-subcount">{{tier.subscriptions.length}} subscriptions</span>
-                                            {{/if}}
-                                        </h3>
-                                        <div>
-                                            <span class="gh-cp-membertier-pricelabel">{{sub.priceLabel}}</span>
-                                            <span class="gh-cp-membertier-renewal">{{sub.validityDetails}}</span>
-                                        </div>
-                                        <Member::SubscriptionDetailBox @sub={{sub}} @index={{index}} />
-                                    </div>
-                                    {{#if sub.isComplimentary}}
-                                        <span class="action-menu">
-                                            <GhDropdownButton
-                                                @dropdownName="subscription-menu-complimentary"
-                                                @classNames="gh-btn gh-btn-outline gh-btn-icon fill gh-btn-subscription-action icon-only"
-                                                @title="Actions"
-                                                data-test-button="subscription-actions"
-                                            >
-                                                <span>
-                                                    {{svg-jar "dotdotdot"}}
-                                                    <span class="hidden">Subscription menu</span>
-                                                </span>
-                                            </GhDropdownButton>
-                                            <GhDropdown
-                                                @name="subscription-menu-complimentary"
-                                                @tagName="ul"
-                                                @classNames="tier-actions-menu dropdown-menu dropdown-align-right"
-                                            >
-                                                <li>
-                                                    <button
-                                                        type="button"
-                                                        {{on "click" (fn this.removeComplimentary (or tier.id tier.tier_id))}}
-                                                        data-test-button="remove-complimentary"
-                                                    >
-                                                        <span class="red">Remove complimentary subscription</span>
-                                                    </button>
-                                                </li>
-                                            </GhDropdown>
-                                        </span>
-                                    {{else}}
-                                        <span class="action-menu">
-                                            <GhDropdownButton @dropdownName="subscription-menu-{{sub.id}}" @classNames="gh-btn gh-btn-outline gh-btn-icon fill gh-btn-subscription-action icon-only" @title="Actions">
-                                                <span>
-                                                    {{svg-jar "dotdotdot"}}
-                                                    <span class="hidden">Subscription menu</span>
-                                                </span>
-                                            </GhDropdownButton>
-                                            <GhDropdown @name="subscription-menu-{{sub.id}}" @tagName="ul" @classNames="tier-actions-menu dropdown-menu dropdown-align-right">
-                                                <li>
-                                                    <a href="https://dashboard.stripe.com/customers/{{sub.customer.id}}" target="_blank" rel="noopener noreferrer">
-                                                        View Stripe customer
-                                                    </a>
-                                                </li>
-                                                <li class="divider"></li>
-                                                <li>
-                                                    <a href="https://dashboard.stripe.com/subscriptions/{{sub.id}}" target="_blank" rel="noopener noreferrer">
-                                                        View Stripe subscription
-                                                    </a>
-                                                </li>
-                                                <li>
-                                                {{#if (not-eq sub.status "canceled")}}
-                                                    {{#if sub.cancel_at_period_end}}
-                                                        <button type="button" {{on "click" (fn this.continueSubscription sub.id)}}>
-                                                            <span>Continue subscription</span>
-                                                        </button>
-                                                    {{else}}
-                                                        <button type="button" {{on "click" (fn this.cancelSubscription sub.id)}}>
-                                                            <span class="red">Cancel subscription</span>
-                                                        </button>
-                                                    {{/if}}
-                                                {{/if}}
-                                                </li>
-                                            </GhDropdown>
-                                        </span>
-                                    {{/if}}
-                                </div>
-                            {{/each}}
-
-                            {{#if (eq tier.subscriptions.length 0)}}
-                                <div class="gh-membertier-subscription">
-                                    <div>
-                                        <div>
-                                            <span class="gh-cp-membertier-pricelabel">Complimentary</span>
-                                            <span class="gh-badge active">Active</span>
-                                        </div>
-                                        <div class="gh-membertier-created">Created on</div>
-                                    </div>
-                                    <div class="flex items-center">
+                {{#if this.tiers}}
+                    <div class="gh-main-section-content bordered gh-member-tier-container">
+                        <div class="gh-main-content-card gh-cp-membertier gh-cp-membertier-attribution gh-membertier-subscription">
+                            {{#each this.tiers as |tier|}}
+                                {{#each tier.subscriptions as |sub index|}}
+                                    <div class="gh-tier-card-header flex items-center" data-test-tier={{tier.id}}>
                                         <div class="gh-tier-card-price">
                                             <div class="flex items-start">
-                                                <span class="currency-symbol">$</span>
-                                                <span class="amount">0</span>
+                                                <span class="currency-symbol">{{sub.price.currencySymbol}}</span>
+                                                <span class="amount">{{format-number sub.price.nonDecimalAmount}}</span>
                                             </div>
-                                            <div class="period">yearly</div>
+                                            <div class="period">{{if (eq sub.price.interval "year") "yearly" "monthly"}}</div>
                                         </div>
-                                        <span class="action-menu">
-                                            <GhDropdownButton @dropdownName="subscription-menu-complimentary" @classNames="gh-btn gh-btn-outline gh-btn-icon fill gh-btn-subscription-action icon-only" @title="Actions">
-                                                <span>
-                                                    {{svg-jar "dotdotdot"}}
-                                                    <span class="hidden">Subscription menu</span>
-                                                </span>
-                                            </GhDropdownButton>
-                                            <GhDropdown @name="subscription-menu-complimentary" @tagName="ul" @classNames="tier-actions-menu dropdown-menu dropdown-align-right">
-                                                <li>
-                                                    <button type="button" {{on "click" (fn this.removeComplimentary tier.id)}}>
-                                                        <span class="red">Remove complimentary subscription</span>
-                                                    </button>
-                                                </li>
-                                            </GhDropdown>
-                                        </span>
+                                        <div class="gh-cp-membertier-container">
+                                            <h3 class="gh-membertier-name" data-test-text="tier-name" style="align-items:center !important; justify-content:flex-start !important;">
+                                                {{tier.name}}
+                                                {{#if (eq sub.status "canceled")}}
+                                                    <span class="gh-badge archived" data-test-text="member-subscription-status">Canceled</span>
+                                                {{else if sub.cancel_at_period_end}}
+                                                    <span class="gh-badge archived" data-test-text="member-subscription-status">Canceled</span>
+                                                {{else if sub.compExpiry}}
+                                                    <span class="gh-badge active" data-test-text="member-subscription-status">Active</span>
+                                                {{else if sub.trialUntil}}
+                                                    <span class="gh-badge active" data-test-text="member-subscription-status">Active</span>
+                                                {{else}}
+                                                    <span class="gh-badge active" data-test-text="member-subscription-status">Active</span>
+                                                {{/if}}
+                                                {{#if (gt tier.subscriptions.length 1)}}
+                                                    <span class="gh-membertier-subcount">{{tier.subscriptions.length}} subscriptions</span>
+                                                {{/if}}
+                                            </h3>
+                                            <div>
+                                                <span class="gh-cp-membertier-pricelabel">{{sub.priceLabel}}</span>
+                                                <span class="gh-cp-membertier-renewal">{{sub.validityDetails}}</span>
+                                            </div>
+                                            <Member::SubscriptionDetailBox @sub={{sub}} @index={{index}} />
+                                        </div>
+                                        {{#if sub.isComplimentary}}
+                                            <span class="action-menu">
+                                                <GhDropdownButton
+                                                    @dropdownName="subscription-menu-complimentary"
+                                                    @classNames="gh-btn gh-btn-outline gh-btn-icon fill gh-btn-subscription-action icon-only"
+                                                    @title="Actions"
+                                                    data-test-button="subscription-actions"
+                                                >
+                                                    <span>
+                                                        {{svg-jar "dotdotdot"}}
+                                                        <span class="hidden">Subscription menu</span>
+                                                    </span>
+                                                </GhDropdownButton>
+                                                <GhDropdown
+                                                    @name="subscription-menu-complimentary"
+                                                    @tagName="ul"
+                                                    @classNames="tier-actions-menu dropdown-menu dropdown-align-right"
+                                                >
+                                                    <li>
+                                                        <button
+                                                            type="button"
+                                                            {{on "click" (fn this.removeComplimentary (or tier.id tier.tier_id))}}
+                                                            data-test-button="remove-complimentary"
+                                                        >
+                                                            <span class="red">Remove complimentary subscription</span>
+                                                        </button>
+                                                    </li>
+                                                </GhDropdown>
+                                            </span>
+                                        {{else}}
+                                            <span class="action-menu">
+                                                <GhDropdownButton @dropdownName="subscription-menu-{{sub.id}}" @classNames="gh-btn gh-btn-outline gh-btn-icon fill gh-btn-subscription-action icon-only" @title="Actions">
+                                                    <span>
+                                                        {{svg-jar "dotdotdot"}}
+                                                        <span class="hidden">Subscription menu</span>
+                                                    </span>
+                                                </GhDropdownButton>
+                                                <GhDropdown @name="subscription-menu-{{sub.id}}" @tagName="ul" @classNames="tier-actions-menu dropdown-menu dropdown-align-right">
+                                                    <li>
+                                                        <a href="https://dashboard.stripe.com/customers/{{sub.customer.id}}" target="_blank" rel="noopener noreferrer">
+                                                            View Stripe customer
+                                                        </a>
+                                                    </li>
+                                                    <li class="divider"></li>
+                                                    <li>
+                                                        <a href="https://dashboard.stripe.com/subscriptions/{{sub.id}}" target="_blank" rel="noopener noreferrer">
+                                                            View Stripe subscription
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                    {{#if (not-eq sub.status "canceled")}}
+                                                        {{#if sub.cancel_at_period_end}}
+                                                            <button type="button" {{on "click" (fn this.continueSubscription sub.id)}}>
+                                                                <span>Continue subscription</span>
+                                                            </button>
+                                                        {{else}}
+                                                            <button type="button" {{on "click" (fn this.cancelSubscription sub.id)}}>
+                                                                <span class="red">Cancel subscription</span>
+                                                            </button>
+                                                        {{/if}}
+                                                    {{/if}}
+                                                    </li>
+                                                </GhDropdown>
+                                            </span>
+                                        {{/if}}
                                     </div>
-                                </div>
-                            {{/if}}
+                                {{/each}}
+
+                                {{#if (eq tier.subscriptions.length 0)}}
+                                    <div class="gh-membertier-subscription">
+                                        <div>
+                                            <div>
+                                                <span class="gh-cp-membertier-pricelabel">Complimentary</span>
+                                                <span class="gh-badge active">Active</span>
+                                            </div>
+                                            <div class="gh-membertier-created">Created on</div>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <div class="gh-tier-card-price">
+                                                <div class="flex items-start">
+                                                    <span class="currency-symbol">$</span>
+                                                    <span class="amount">0</span>
+                                                </div>
+                                                <div class="period">yearly</div>
+                                            </div>
+                                            <span class="action-menu">
+                                                <GhDropdownButton @dropdownName="subscription-menu-complimentary" @classNames="gh-btn gh-btn-outline gh-btn-icon fill gh-btn-subscription-action icon-only" @title="Actions">
+                                                    <span>
+                                                        {{svg-jar "dotdotdot"}}
+                                                        <span class="hidden">Subscription menu</span>
+                                                    </span>
+                                                </GhDropdownButton>
+                                                <GhDropdown @name="subscription-menu-complimentary" @tagName="ul" @classNames="tier-actions-menu dropdown-menu dropdown-align-right">
+                                                    <li>
+                                                        <button type="button" {{on "click" (fn this.removeComplimentary tier.id)}}>
+                                                            <span class="red">Remove complimentary subscription</span>
+                                                        </button>
+                                                    </li>
+                                                </GhDropdown>
+                                            </span>
+                                        </div>
+                                    </div>
+                                {{/if}}
+                            {{/each}}
                         </div>
                     </div>
-                {{/each}}
+                {{/if}}
 
                 {{#if (and this.tiers this.isAddComplimentaryAllowed)}}
                     <div class="gh-membertier-list-footer {{if this.isCreatingComplimentary "min-height" ""}}">

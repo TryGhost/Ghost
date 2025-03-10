@@ -3,6 +3,7 @@ const path = require('path');
 const configUtils = require('../../utils/configUtils');
 const models = require('../../../core/server/models');
 const testUtils = require('../../utils/');
+const events = require('../../../core/server/lib/common/events');
 
 // Helper function to wait for job completion
 async function waitForJobCompletion(jobName, maxWaitTimeMs = 5000, checkIntervalMs = 50) {
@@ -53,10 +54,40 @@ describe('Job Queue', function () {
             // Wait for the job to complete
             await waitForJobCompletion(job.name, 8000); // Increase wait time
 
-            // Check job status
-            const jobEntry = await models.Job.findOne({name: job.name});
-
             // Verify that the job no longer exists in the queue
+            const jobEntry = await models.Job.findOne({name: job.name});
+            assert.equal(jobEntry, null);
+        });
+
+        it('should emit events if present in result', async function () {
+            this.timeout(10000);
+            const job = {
+                name: `emit-events-${Date.now()}`,
+                metadata: {
+                    job: path.resolve(__dirname, './test-job-events.js'),
+                    data: {}
+                }
+            };
+
+            let eventEmitted = false;
+            let eventData = null;
+
+            // Set up the event listener
+            events.on('member.edited', (data) => {
+                eventEmitted = true;
+                eventData = data;
+            });
+
+            const result = await jobService.addQueuedJob(job);
+            assert.ok(result);
+
+            await waitForJobCompletion(job.name, 8000); // Increase wait time
+
+            // Assert that the event was emitted
+            assert.ok(eventEmitted, 'Expected job.completed event to be emitted');
+            assert.ok(eventData, 'Expected event data to be captured');
+
+            const jobEntry = await models.Job.findOne({name: job.name});
             assert.equal(jobEntry, null);
         });
     });

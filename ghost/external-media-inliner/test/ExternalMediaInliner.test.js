@@ -28,9 +28,7 @@ describe('ExternalMediaInliner', function () {
         };
 
         postModelStub = {
-            findPage: sinon.stub().resolves({
-                data: []
-            }),
+            findAll: sinon.stub().resolves([]),
             edit: sinon.stub().resolves()
         };
         postMetaModelStub = {
@@ -78,9 +76,7 @@ describe('ExternalMediaInliner', function () {
                 get: postStub
             };
             postModelStub = {
-                findPage: sinon.stub().returns({
-                    data: [postModelInstanceStub]
-                }),
+                findAll: sinon.stub().returns([postModelInstanceStub]),
                 edit: sinon.stub().resolves()
             };
 
@@ -129,9 +125,7 @@ describe('ExternalMediaInliner', function () {
             };
 
             postModelStub = {
-                findPage: sinon.stub().returns({
-                    data: [postModelInstanceStub]
-                }),
+                findAll: sinon.stub().returns([postModelInstanceStub]),
                 edit: sinon.stub().resolves()
             };
 
@@ -180,9 +174,7 @@ describe('ExternalMediaInliner', function () {
                 get: postStub
             };
             postModelStub = {
-                findPage: sinon.stub().returns({
-                    data: [postModelInstanceStub]
-                }),
+                findAll: sinon.stub().returns([postModelInstanceStub]),
                 edit: sinon.stub().resolves()
             };
 
@@ -231,9 +223,7 @@ describe('ExternalMediaInliner', function () {
             };
 
             postModelStub = {
-                findPage: sinon.stub().returns({
-                    data: [postModelInstanceStub]
-                }),
+                findAll: sinon.stub().returns([postModelInstanceStub]),
                 edit: sinon.stub().resolves()
             };
 
@@ -267,6 +257,60 @@ describe('ExternalMediaInliner', function () {
             });
         });
 
+        it('inlines srcset images in a lexical html card', async function () {
+            const requestMock = nock('https://example.com')
+                .get('/path/to/landscape-1x.jpg')
+                .reply(200, GIF1x1)
+                .get('/path/to/landscape-2x.jpg')
+                .reply(200, GIF1x1)
+                .get('/path/to/landscape-original.jpg')
+                .reply(200, GIF1x1);
+
+            const postStub = sinon.stub();
+            postStub.withArgs('mobiledoc').returns(null);
+            postStub.withArgs('lexical').returns(`{"root":{"children":[{"type":"html","version":1,"html":"<img srcset="https://example.com/path/to/landscape-1x.jpg, https://example.com/path/to/landscape-2x.jpg 2x" src="https://example.com/path/to/landscape-original.jpg" />"}],"direction":null,"format":"","indent":0,"type":"root","version":1}}`);
+
+            const postModelInstanceStub = {
+                id: 'inlined-post-with-htmlcard-id',
+                get: postStub
+            };
+
+            postModelStub = {
+                findAll: sinon.stub().returns([postModelInstanceStub]),
+                edit: sinon.stub().resolves()
+            };
+
+            sinon.stub(path, 'relative')
+                .withArgs('/content/images', '/content/images/unique-image.jpg')
+                .returns('unique-image.jpg');
+            const inliner = new ExternalMediaInliner({
+                PostModel: postModelStub,
+                PostMetaModel: postMetaModelStub,
+                TagModel: tagModelStub,
+                UserModel: userModelStub,
+                getMediaStorage: sinon.stub().withArgs('.jpg').returns({
+                    getTargetDir: () => '/content/images',
+                    getUniqueFileName: () => '/content/images/unique-image.jpg',
+                    saveRaw: () => '/content/images/unique-image.jpg'
+                })
+            });
+
+            await inliner.inline(['https://example.com']);
+
+            assert.ok(requestMock.isDone());
+            assert.ok(postModelStub.edit.calledOnce);
+            // NOTE: The file names all being the same as a limitation in how this is stubbed. In production, each image is unique
+            assert.deepEqual(postModelStub.edit.args[0][0], {
+                lexical: `{"root":{"children":[{"type":"html","version":1,"html":"<img srcset="__GHOST_URL__/content/images/unique-image.jpg, __GHOST_URL__/content/images/unique-image.jpg 2x" src="__GHOST_URL__/content/images/unique-image.jpg" />"}],"direction":null,"format":"","indent":0,"type":"root","version":1}}`
+            });
+            assert.deepEqual(postModelStub.edit.args[0][1], {
+                id: 'inlined-post-with-htmlcard-id',
+                context: {
+                    internal: true
+                }
+            });
+        });
+
         it('inlines image in the post\'s mobiledoc & lexical content', async function () {
             const imageURL = 'https://img.stockfresh.com/files/f/image.jpg';
             const requestMock = nock('https://img.stockfresh.com')
@@ -284,9 +328,7 @@ describe('ExternalMediaInliner', function () {
                 get: postStub
             };
             postModelStub = {
-                findPage: sinon.stub().returns({
-                    data: [postModelInstanceStub]
-                }),
+                findAll: sinon.stub().returns([postModelInstanceStub]),
                 edit: sinon.stub().resolves()
             };
 
@@ -333,9 +375,7 @@ describe('ExternalMediaInliner', function () {
             };
 
             postModelStub = {
-                findPage: sinon.stub().returns({
-                    data: [postModelInstanceStub]
-                })
+                findAll: sinon.stub().returns([postModelInstanceStub])
             };
 
             const inliner = new ExternalMediaInliner({
@@ -395,9 +435,7 @@ describe('ExternalMediaInliner', function () {
                     .returns(`{"version":"0.3.1","atoms":[],"cards":[["image",{"src":"${fileURL}"}]]}`)
             };
             postModelStub = {
-                findPage: sinon.stub().returns({
-                    data: [postModelInstanceStub]
-                }),
+                findAll: sinon.stub().returns([postModelInstanceStub]),
                 edit: sinon.stub().resolves()
             };
             const inliner = new ExternalMediaInliner({
@@ -430,9 +468,7 @@ describe('ExternalMediaInliner', function () {
                 get: postStub
             };
             postModelStub = {
-                findPage: sinon.stub().returns({
-                    data: [postModelStub]
-                }),
+                findAll: sinon.stub().returns([postModelStub]),
                 edit: sinon.stub().throws(new Error('Error saving the post'))
             };
             sinon.stub(path, 'relative')
@@ -513,9 +549,7 @@ describe('ExternalMediaInliner', function () {
                     .returns(imageURL)
             };
             const postModelMock = {
-                findPage: sinon.stub().returns({
-                    data: [postModelStub]
-                }),
+                findAll: sinon.stub().returns([postModelStub]),
                 edit: sinon.stub().resolves()
             };
             sinon.stub(path, 'relative')
@@ -832,5 +866,90 @@ describe('ExternalMediaInliner', function () {
             assert.equal(fileData.extension, '.gif');
         });
     });
-});
 
+    describe('Find matches', function () {
+        it('Finds with full domain', function () {
+            const html = '<img src="https://example.com/image.jpg" /><img src="https://anotherexample.com/image.jpg" />';
+            const matches = ExternalMediaInliner.findMatches(html, 'https://example.com');
+
+            assert.equal(matches.length, 1);
+            assert.equal(matches[0], 'https://example.com/image.jpg');
+        });
+
+        it('Finds with full domain, http and https', function () {
+            const html = '<img src="http://example.com/image.jpg" /><img src="https://example.com/another-image.jpg" />';
+            const matches = ExternalMediaInliner.findMatches(html, 'https?://example.com');
+
+            assert.equal(matches.length, 2);
+            assert.equal(matches[0], 'http://example.com/image.jpg');
+            assert.equal(matches[1], 'https://example.com/another-image.jpg');
+        });
+
+        it('Finds in with comma in string', function () {
+            const html = `<img src="https://example.com/image/fetch/f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F7303a336-fa0e-4377-9378-123456abcdef_640x640.png
+" />`;
+            const matches = ExternalMediaInliner.findMatches(html, 'https://example.com');
+
+            assert.equal(matches.length, 1);
+            assert.equal(matches[0], 'https://example.com/image/fetch/f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F7303a336-fa0e-4377-9378-123456abcdef_640x640.png');
+        });
+
+        it('Finds when seperatd by a comma', function () {
+            const html = `<img srcsct="https://example.com/image/fetch,one.png 1x, https://example.com/image/fetch,two.png 2x,https://example.com/image/fetch,three.png 3x" />`;
+            const matches = ExternalMediaInliner.findMatches(html, 'https://example.com');
+
+            assert.equal(matches.length, 3);
+            assert.equal(matches[0], 'https://example.com/image/fetch,one.png');
+            assert.equal(matches[1], 'https://example.com/image/fetch,two.png');
+            assert.equal(matches[2], 'https://example.com/image/fetch,three.png');
+        });
+
+        it('Finds with parenthesis terminator', function () {
+            const html = `(https://example.com/image/one.png)`;
+            const matches = ExternalMediaInliner.findMatches(html, 'https://example.com');
+
+            assert.equal(matches.length, 1);
+            assert.equal(matches[0], 'https://example.com/image/one.png');
+        });
+
+        it('Finds with apostrophe terminator', function () {
+            const html = `'https://example.com/image/one.png'`;
+            const matches = ExternalMediaInliner.findMatches(html, 'https://example.com');
+
+            assert.equal(matches.length, 1);
+            assert.equal(matches[0], 'https://example.com/image/one.png');
+        });
+
+        it('Finds with space terminator', function () {
+            const html = ` https://example.com/image/one.png `;
+            const matches = ExternalMediaInliner.findMatches(html, 'https://example.com');
+
+            assert.equal(matches.length, 1);
+            assert.equal(matches[0], 'https://example.com/image/one.png');
+        });
+
+        it('Finds with less than terminator', function () {
+            const html = ` https://example.com/image/one.png<`;
+            const matches = ExternalMediaInliner.findMatches(html, 'https://example.com');
+
+            assert.equal(matches.length, 1);
+            assert.equal(matches[0], 'https://example.com/image/one.png');
+        });
+
+        it('Finds with encoded &quot; terminator', function () {
+            const html = '&quot;https://example.com/image/one.png&quot;';
+            const matches = ExternalMediaInliner.findMatches(html, 'https://example.com');
+
+            assert.equal(matches.length, 1);
+            assert.equal(matches[0], 'https://example.com/image/one.png');
+        });
+
+        it('Finds end of string terminator', function () {
+            const html = 'https://example.com/image/one.png';
+            const matches = ExternalMediaInliner.findMatches(html, 'https://example.com');
+
+            assert.equal(matches.length, 1);
+            assert.equal(matches[0], 'https://example.com/image/one.png');
+        });
+    });
+});

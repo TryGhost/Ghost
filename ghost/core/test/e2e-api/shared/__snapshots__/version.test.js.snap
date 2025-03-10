@@ -1358,6 +1358,7 @@ Object {
   "settings": Object {
     "accent_color": "#FF1A75",
     "allow_self_signup": true,
+    "captcha_enabled": null,
     "codeinjection_foot": null,
     "codeinjection_head": null,
     "comments_enabled": "off",
@@ -1374,6 +1375,7 @@ Object {
     "logo": null,
     "members_enabled": true,
     "members_invite_only": false,
+    "members_signup_access": "all",
     "members_support_address": "noreply",
     "meta_description": null,
     "meta_title": null,
@@ -1462,6 +1464,7 @@ Object {
   "settings": Object {
     "accent_color": "#FF1A75",
     "allow_self_signup": true,
+    "captcha_enabled": null,
     "codeinjection_foot": null,
     "codeinjection_head": null,
     "comments_enabled": "off",
@@ -1478,6 +1481,7 @@ Object {
     "logo": null,
     "members_enabled": true,
     "members_invite_only": false,
+    "members_signup_access": "all",
     "members_support_address": "noreply",
     "meta_description": null,
     "meta_title": null,

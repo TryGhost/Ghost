@@ -23,6 +23,7 @@ import EmailReceivingFAQ from './pages/EmailReceivingFAQ.css';
 import {TipsAndDonationsSuccessStyle} from './pages/SupportSuccess';
 import {TipsAndDonationsErrorStyle} from './pages/SupportError';
 import {RecommendationsPageStyles} from './pages/RecommendationsPage';
+import NotificationStyle from './Notification.styles';
 
 // Global styles
 const FrameStyles = `
@@ -998,7 +999,7 @@ const MobileStyles = `
         margin-bottom: 0;
     }
 
-    .preview .gh-portal-invite-only-notification + .gh-portal-signup-message {
+    .preview .gh-portal-invite-only-notification + .gh-portal-signup-message, .preview .gh-portal-paid-members-only-notification + .gh-portal-signup-message {
         margin-bottom: 16px;
     }
 
@@ -1275,6 +1276,7 @@ export function getFrameStyles({site}) {
         MagicLinkStyles +
         SignupPageStyles +
         OfferPageStyles({site}) +
+        NotificationStyle +
         PopupNotificationStyles +
         MobileStyles +
         MultipleProductsGlobalStyles +

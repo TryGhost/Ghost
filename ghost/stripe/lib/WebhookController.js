@@ -22,13 +22,16 @@ module.exports = class WebhookController {
         };
     }
 
+    /**
+     * Handles a Stripe webhook event.
+     * - Parses the webhook event
+     * - Delegates the event to the appropriate handler
+     * - Returns a 200 response to Stripe to confirm receipt of the event, or an error response if the event is not handled or if an error occurs
+     * @param {import('express').Request} req
+     * @param {import('express').Response} res
+     * @returns {Promise<void>}
+     */
     async handle(req, res) {
-        // if (!apiService.configured) {
-        //     logging.error(`Stripe not configured, not handling webhook`);
-        //     res.writeHead(400);
-        //     return res.end();
-        // }
-
         if (!req.body || !req.headers['stripe-signature']) {
             res.writeHead(400);
             return res.end();
@@ -55,7 +58,10 @@ module.exports = class WebhookController {
     }
 
     /**
+     * Accepts a webhook's event payload and delegates it to the appropriate handler based on the event type
      * @private
+     * @param {import('stripe').Stripe.Event} event
+     * @returns {Promise<void>}
      */
     async handleEvent(event) {
         if (!this.handlers[event.type]) {
@@ -66,6 +72,8 @@ module.exports = class WebhookController {
     }
 
     /**
+     * Delegates any `customer.subscription.*` events to the `subscriptionEventService`
+     * @param {import('stripe').Stripe.Subscription} subscription
      * @private
      */
     async subscriptionEvent(subscription) {
@@ -73,6 +81,7 @@ module.exports = class WebhookController {
     }
 
     /**
+     * Delegates any `invoice.*` events to the `invoiceEventService`
      * @param {import('stripe').Stripe.Invoice} invoice
      * @private
      */
@@ -81,6 +90,8 @@ module.exports = class WebhookController {
     }
 
     /**
+     * Delegates any `checkout.session.*` events to the `checkoutSessionEventService`
+     * @param {import('stripe').Stripe.Checkout.Session} session
      * @private
      */
     async checkoutSessionEvent(session) {

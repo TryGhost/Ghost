@@ -16,17 +16,14 @@ function getMockData({newsletterQuerySelectorResult = null} = {}) {
     const siteUrl = 'https://portal.localhost';
     const submitHandler = () => {};
     const clickHandler = () => {};
+
     const form = {
-        removeEventListener: () => {},
-        classList: {
-            remove: () => {},
-            add: () => {}
-        },
-        dataset: {
-            membersForm: 'signup'
-        },
-        addEventListener: () => {}
+        removeEventListener: jest.fn(),
+        classList: {remove: jest.fn(), add: jest.fn()},
+        dataset: {membersForm: 'signup'},
+        addEventListener: jest.fn()
     };
+    jest.spyOn(form.classList, 'add');
 
     const element = {
         removeEventListener: () => {},
@@ -136,6 +133,16 @@ describe('Member Data attributes:', () => {
             }];
         });
 
+        // Mock hCaptcha
+        window.hcaptcha = {
+            execute: () => { }
+        };
+        jest.spyOn(window.hcaptcha, 'execute').mockImplementation(() => {
+            return Promise.resolve({
+                response: 'testresponse'
+            });
+        });
+
         // Mock window.location
         let locationMock = jest.fn();
         delete window.location;
@@ -165,6 +172,31 @@ describe('Member Data attributes:', () => {
                     refUrl: 'https://example.com/blog/',
                     time: 1611234567890
                 }],
+                integrityToken: 'testtoken'
+            });
+            expect(window.fetch).toHaveBeenLastCalledWith('https://portal.localhost/members/api/send-magic-link/', {body: expectedBody, headers: {'Content-Type': 'application/json'}, method: 'POST'});
+        });
+
+        test('submits captcha response if captcha id specified', async () => {
+            const {event, form, errorEl, siteUrl, submitHandler} = getMockData();
+
+            await formSubmitHandler({event, form, errorEl, siteUrl, submitHandler, captchaId: '123123'});
+
+            expect(window.fetch).toHaveBeenCalledTimes(2);
+            const expectedBody = JSON.stringify({
+                email: 'jamie@example.com',
+                emailType: 'signup',
+                labels: ['Gold'],
+                name: 'Jamie Larsen',
+                autoRedirect: true,
+                urlHistory: [{
+                    path: '/blog/',
+                    refMedium: null,
+                    refSource: 'ghost-explore',
+                    refUrl: 'https://example.com/blog/',
+                    time: 1611234567890
+                }],
+                token: 'testresponse',
                 integrityToken: 'testtoken'
             });
             expect(window.fetch).toHaveBeenLastCalledWith('https://portal.localhost/members/api/send-magic-link/', {body: expectedBody, headers: {'Content-Type': 'application/json'}, method: 'POST'});
@@ -543,6 +575,56 @@ describe('Portal Data attributes:', () => {
             expect(popupFrame).toBeInTheDocument();
             const accountProfileTitle = within(popupFrame.contentDocument).queryByText(/account settings/i);
             expect(accountProfileTitle).toBeInTheDocument();
+        });
+    });
+
+    describe('data-members-error', () => {
+        test('displays error message when errorEl exists and network error occurs', async () => {
+            const {event, form, errorEl, siteUrl, submitHandler} = getMockData();
+
+            // Mock fetch to reject with a network error
+            window.fetch.mockImplementationOnce(() => Promise.reject(new Error('Network error'))
+            );
+
+            await formSubmitHandler({event, form, errorEl, siteUrl, submitHandler});
+
+            expect(errorEl.innerText).toBe('There was an error sending the email, please try again');
+            expect(form.classList.add).toHaveBeenCalledWith('error');
+            expect(window.fetch).toHaveBeenCalledTimes(1);
+        });
+
+        test('handles error gracefully when errorEl is null', async () => {
+            const {event, form, siteUrl, submitHandler} = getMockData();
+
+            window.fetch.mockImplementationOnce(() => Promise.reject(new Error('Network error'))
+            );
+
+            await expect(
+                formSubmitHandler({event, form, errorEl: null, siteUrl, submitHandler})
+            ).resolves.not.toThrow();
+            expect(form.classList.add).toHaveBeenCalledWith('error');
+            expect(window.fetch).toHaveBeenCalledTimes(1);
+        });
+
+        test('handles error when email does not exist', async () => {
+            const {event, form, errorEl, siteUrl, submitHandler} = getMockData();
+
+            window.fetch
+                .mockResolvedValueOnce({
+                    ok: true,
+                    text: async () => 'testtoken'
+                })
+                .mockResolvedValueOnce({
+                    ok: false,
+                    json: async () => ({errors: [{message: 'No member exists with this e-mail address. Please sign up first.'}]}),
+                    status: 400
+                });
+
+            await formSubmitHandler({event, form, errorEl, siteUrl, submitHandler});
+
+            expect(window.fetch).toHaveBeenCalledTimes(2);
+            expect(form.classList.add).toHaveBeenCalledWith('error');
+            expect(errorEl.innerText).toBe('No member exists with this e-mail address. Please sign up first.');
         });
     });
 });

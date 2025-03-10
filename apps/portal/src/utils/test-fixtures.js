@@ -183,6 +183,10 @@ export const site = {
             ...baseSingleTierSite,
             members_signup_access: 'invite'
         },
+        paidMembersOnly: {
+            ...baseSingleTierSite,
+            members_signup_access: 'paid'
+        },
         membersDisabled: {
             ...baseSingleTierSite,
             members_signup_access: 'none'

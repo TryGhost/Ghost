@@ -2,10 +2,15 @@ const path = require('path');
 const os = require('os');
 const multer = require('multer');
 const fs = require('fs-extra');
+const zlib = require('zlib');
+const util = require('util');
 const errors = require('@tryghost/errors');
 const config = require('../../../../shared/config');
 const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
+
+const gunzip = util.promisify(zlib.gunzip);
+const gzip = util.promisify(zlib.gzip);
 
 const messages = {
     db: {
@@ -31,6 +36,10 @@ const messages = {
     images: {
         missingFile: 'Please select an image.',
         invalidFile: 'Please select a valid image.'
+    },
+    svg: {
+        missingFile: 'Please select a SVG image.',
+        invalidFile: 'Please select a valid SVG image'
     },
     icons: {
         missingFile: 'Please select an icon.',
@@ -144,39 +153,99 @@ const checkFileExists = (fileData) => {
 
 const checkFileIsValid = (fileData, types, extensions) => {
     const type = fileData.mimetype;
+
     if (types.includes(type) && extensions.includes(fileData.ext)) {
         return true;
     }
+
     return false;
 };
 
 /**
  *
  * @param {String} filepath
- * @returns {Boolean}
+ * @returns {String | null}
  *
- * Checks for the presence of <script> tags or 'on' attributes in an SVG file
- *
+ * Reads the SVG file, sanitizes it, and writes the sanitized content back to the file.
+ * Returns the sanitized content or null if the SVG could not be sanitized.
  */
-const isSvgSafe = (filepath) => {
-    const {JSDOM} = require('jsdom');
 
-    const fileContent = fs.readFileSync(filepath, 'utf8');
-    const document = new JSDOM(fileContent).window.document;
-    document.body.innerHTML = fileContent;
-    const svgEl = document.body.firstElementChild;
+const sanitizeSvg = async (filepath, isZipped = false) => {
+    try {
+        const original = await readSvg(filepath, isZipped);
+        const sanitized = sanitizeSvgContent(original);
 
-    if (!svgEl) {
-        return false;
+        if (!sanitized) {
+            return null;
+        }
+
+        await writeSvg(filepath, sanitized, isZipped);
+        return sanitized;
+    } catch (error) {
+        logging.error('Error sanitizing SVG:', error);
+        return null;
     }
-
-    const attributes = Array.from(svgEl.attributes).map(({name}) => name);
-    const hasScriptAttr = !!attributes.find(attr => attr.startsWith('on'));
-    const scripts = svgEl.getElementsByTagName('script');
-
-    return scripts.length === 0 && !hasScriptAttr ? true : false;
 };
 
+/**
+ *
+ * @param {String} content
+ * @returns {String | null}
+ *
+ * Returns sanitized SVG content, or null if the content is invalid.
+ *
+ */
+const sanitizeSvgContent = (content) => {
+    const {JSDOM} = require('jsdom');
+    const createDOMPurify = require('dompurify');
+    const window = new JSDOM('').window;
+    const DOMPurify = createDOMPurify(window);
+
+    const sanitized = DOMPurify.sanitize(content, {USE_PROFILES: {svg: true, svgFilters: true}});
+
+    // Check whether the sanitized content still contains a non-empty <svg> tag
+    const validSvgTag = sanitized?.match(/<svg[^>]*>\s*[\S]+[\S\s]*<\/svg>/);
+    if (!sanitized || sanitized.trim() === '' || !validSvgTag) {
+        return null;
+    }
+
+    return sanitized;
+};
+
+/**
+ *
+ * @param {String} filepath
+ * @param {Boolean} isZipped
+ * @returns {String | null}
+ *
+ * Reads .svg or .svgz files and returns the content as a string.
+ *
+ */
+const readSvg = async (filepath, isZipped = false) => {
+    if (isZipped) {
+        const compressed = await fs.readFile(filepath);
+        return (await gunzip(compressed)).toString();
+    }
+
+    return await fs.readFile(filepath, 'utf8');
+};
+
+/**
+ *
+ * @param {String} filepath
+ * @param {String} content
+ * @param {Boolean} isZipped
+ *
+ * Writes SVG content to a .svg or .svgz file.
+ */
+const writeSvg = async (filepath, content, isZipped = false) => {
+    if (isZipped) {
+        const compressed = await gzip(content);
+        return await fs.writeFile(filepath, compressed);
+    }
+
+    return await fs.writeFile(filepath, content);
+};
 /**
  *
  * @param {Object} options
@@ -191,7 +260,7 @@ const validation = function ({type}) {
      * @param {import('express').Response} res
      * @param {import('express').NextFunction} next
      */
-    return function uploadValidation(req, res, next) {
+    return async function uploadValidation(req, res, next) {
         const extensions = (config.get('uploads')[type] && config.get('uploads')[type].extensions) || [];
         const contentTypes = (config.get('uploads')[type] && config.get('uploads')[type].contentTypes) || [];
 
@@ -215,10 +284,13 @@ const validation = function ({type}) {
             }));
         }
 
-        if (req.file.ext === '.svg') {
-            if (!isSvgSafe(req.file.path)) {
+        // Sanitize SVG files
+        if (req.file.ext === '.svg' || req.file.ext === '.svgz') {
+            const sanitized = await sanitizeSvg(req.file.path, req.file.ext === '.svgz');
+
+            if (!sanitized) {
                 return next(new errors.UnsupportedMediaTypeError({
-                    message: 'SVG files cannot contain <script> tags or "on" attributes.'
+                    message: tpl(messages.svg.invalidFile)
                 }));
             }
         }
@@ -295,5 +367,5 @@ module.exports = {
 module.exports._test = {
     checkFileExists,
     checkFileIsValid,
-    isSvgSafe
+    sanitizeSvgContent
 };

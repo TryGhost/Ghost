@@ -4,10 +4,9 @@ import * as FormPrimitive from '@radix-ui/react-form';
 import APAvatar from './APAvatar';
 import clsx from 'clsx';
 import getUsername from '../../utils/get-username';
-import {Activity} from '../activities/ActivityItem';
-import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
+import {Activity, ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, showToast} from '@tryghost/admin-x-design-system';
-import {useReplyMutationForUser, useUserDataForUser} from '../../hooks/useActivityPubQueries';
+import {useReplyMutationForUser, useUserDataForUser} from '@hooks/use-activity-pub-queries';
 
 export interface APTextAreaProps extends HTMLProps<HTMLTextAreaElement> {
     title?: string;
@@ -22,6 +21,21 @@ export interface APTextAreaProps extends HTMLProps<HTMLTextAreaElement> {
     object: ObjectProperties;
     focused: number;
 }
+
+export const useFocusedState = (initialValue: boolean) => {
+    const [state, setUnderlyingState] = useState(initialValue ? 1 : 0);
+
+    const setState = (value: boolean | ((prev: number) => number)) => {
+        if (value === false) {
+            return setUnderlyingState(0);
+        }
+        setUnderlyingState((prev) => {
+            return prev + 1;
+        });
+    };
+
+    return [state, setState] as const;
+};
 
 const APReplyBox: React.FC<APTextAreaProps> = ({
     title,
@@ -94,7 +108,7 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
 
     const styles = clsx(
         `ap-textarea order-2 w-full resize-none rounded-lg border bg-transparent py-2 pr-3 text-[1.5rem] transition-all dark:text-white ${isFocused && 'pb-12'}`,
-        error ? 'border-red' : 'border-transparent placeholder:text-grey-500 dark:placeholder:text-grey-800',
+        error ? 'border-red' : 'border-transparent placeholder:text-gray-500 dark:placeholder:text-gray-800',
         title && 'mt-1.5',
         className
     );
@@ -137,7 +151,7 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
                         {hint}
                     </div>
                 </FormPrimitive.Root>
-                <div className='absolute bottom-[3px] right-[9px] flex space-x-4 transition-[opacity] duration-150'>
+                <div className='absolute bottom-[3px] right-0 flex space-x-4 transition-[opacity] duration-150'>
                     <Button color='black' disabled={buttonDisabled} id='post' label='Post' loading={replyMutation.isLoading} size='md' onMouseDown={handleClick} />
                 </div>
             </div>

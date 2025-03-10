@@ -191,6 +191,7 @@ describe('Can send cards via email', function () {
             'extended-text', // not a card
             'extended-quote', // not a card
             'extended-heading', // not a card
+            'call-to-action', // behind the contentVisibility labs flag
             // not a card and shouldn't be present in published posts / emails
             'tk',
             'at-link',

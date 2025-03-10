@@ -19,9 +19,9 @@ test.describe('CTA', async () => {
         await expect(ctaBox).toContainText('Become a member of Publisher Weekly to start commenting');
         await expect(ctaBox).toContainText('Sign in');
 
-        // Does not show the reply buttons if not logged in
+        // Show the reply buttons if not logged in
         const replyButton = frame.getByTestId('reply-button');
-        await expect(replyButton).toHaveCount(0);
+        await expect(replyButton).toHaveCount(2);
 
         // Does not show the main form
         const form = frame.getByTestId('form');
@@ -66,9 +66,9 @@ test.describe('CTA', async () => {
         // Don't show sign in button
         await expect(ctaBox).not.toContainText('Sign in');
 
-        // No replies or comments possible
+        // Shows replies buttons
         const replyButton = frame.getByTestId('reply-button');
-        await expect(replyButton).toHaveCount(0);
+        await expect(replyButton).toHaveCount(2);
 
         const form = frame.getByTestId('form');
         await expect(form).toHaveCount(0);

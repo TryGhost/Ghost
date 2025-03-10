@@ -36,7 +36,7 @@
   "dependencies": {
     "@codemirror/lang-html": "6.4.9",
     "@tryghost/color-utils": "0.2.2",
-    "@tryghost/kg-unsplash-selector": "0.2.6",
+    "@tryghost/kg-unsplash-selector": "0.3.0",
     "@tryghost/limit-service": "1.2.14",
     "@tryghost/nql": "0.12.7",
     "@tryghost/timezone-data": "0.4.4",
@@ -45,7 +45,7 @@
     "validator": "7.2.0"
   },
   "devDependencies": {
-    "@playwright/test": "1.46.1",
+    "@playwright/test": "1.50.1",
     "@testing-library/react": "14.3.1",
     "@tryghost/admin-x-design-system": "0.0.0",
     "@tryghost/admin-x-framework": "0.0.0",

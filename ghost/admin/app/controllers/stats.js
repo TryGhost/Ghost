@@ -8,16 +8,19 @@ import {tracked} from '@glimmer/tracking';
 countries.registerLocale(enLocale);
 
 export default class StatsController extends Controller {
-    queryParams = ['device', 'browser', 'location', 'source', 'pathname'];
+    queryParams = ['device', 'browser', 'location', 'source', 'pathname', 'os'];
 
     @tracked device = null;
     @tracked browser = null;
     @tracked location = null;
     @tracked source = null;
     @tracked pathname = null;
+    @tracked os = null;
+    @tracked mockData = false;
 
     rangeOptions = RANGE_OPTIONS;
     audienceOptions = AUDIENCE_TYPES;
+
     /**
      * @type {number|'all'}
      * Date range to load for member count and MRR related charts
@@ -61,12 +64,18 @@ export default class StatsController extends Controller {
     }
 
     @action
+    toggleMockData() {
+        this.mockData = !this.mockData;
+    }
+
+    @action
     clearFilters() {
         this.device = null;
         this.browser = null;
         this.location = null;
         this.source = null;
         this.pathname = null;
+        this.os = null;
     }
 
     get selectedRangeOption() {

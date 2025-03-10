@@ -261,11 +261,6 @@ export default class LexicalEditorController extends Controller {
         });
     }
 
-    @computed
-    get collections() {
-        return this.store.peekAll('collection');
-    }
-
     @computed('session.user.{isAdmin,isEditor}')
     get canManageSnippets() {
         let {user} = this.session;
@@ -986,10 +981,6 @@ export default class LexicalEditorController extends Controller {
     *backgroundLoaderTask() {
         yield this.store.query('snippet', {limit: 'all'});
 
-        if (this.post?.displayName === 'page' && this.feature.get('collections') && this.feature.get('collectionsCard')) {
-            yield this.store.query('collection', {limit: 'all'});
-        }
-
         this.search.refreshContentTask.perform();
         this.syncMobiledocSnippets();
     }
@@ -1235,7 +1226,7 @@ export default class LexicalEditorController extends Controller {
             const isDraft = this.post.get('status') === 'draft';
             const slugContainsUntitled = slug.includes('untitled');
             const isTitleSet = title && title.trim() !== '' && title !== DEFAULT_TITLE;
-    
+
             if (isDraft && slugContainsUntitled && isTitleSet) {
                 Sentry.captureException(new Error('Draft post has title set with untitled slug'), {
                     extra: {

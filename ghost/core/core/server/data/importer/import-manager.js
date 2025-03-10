@@ -225,6 +225,10 @@ class ImportManager {
 
         try {
             await extract(filePath, tmpDir);
+            
+            // Set permissions for all extracted files
+            const files = glob.sync('**/*', {cwd: tmpDir, nodir: true});
+            await Promise.all(files.map(file => fs.chmod(path.join(tmpDir, file), 0o644)));
         } catch (err) {
             if (err.message.startsWith('ENAMETOOLONG:')) {
                 // The file was probably zipped with MacOS zip utility. Which doesn't correctly set UTF-8 encoding flag.

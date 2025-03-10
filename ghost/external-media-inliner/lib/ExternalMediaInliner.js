@@ -129,6 +129,24 @@ class ExternalMediaInliner {
         }
     }
 
+    static findMatches(content, domain) {
+        // NOTE: the src could end with a quote, bracket, apostrophe, double-backslash, or encoded quote.
+        //     Backlashes are added to content as an escape character
+        const srcTerminationSymbols = `("|\\)|'|(?=(?:,https?))| |<|\\\\|&quot;|$)`;
+        const regex = new RegExp(`(${domain}.*?)(${srcTerminationSymbols})`, 'igm');
+        const matches = content.matchAll(regex);
+
+        // Simplify the matches so we only get the result needed
+        let matchesArray = Array.from(matches, m => m[1]);
+
+        // Trim trailing commas from each match
+        matchesArray = matchesArray.map((item) => {
+            return item.replace(/,$/, '');
+        });
+
+        return matchesArray;
+    }
+
     /**
      * Find & inline external media from a JSON sting.
      * This works with both Lexical & Mobiledoc, so no separate methods are needed here.
@@ -139,13 +157,9 @@ class ExternalMediaInliner {
      */
     async inlineContent(content, domains) {
         for (const domain of domains) {
-            // NOTE: the src could end with a quote, apostrophe or double-backslash. backlashes are added to content
-            //       as an escape character
-            const srcTerminationSymbols = `"|'|\\\\`;
-            const regex = new RegExp(`(${domain}.*?)(${srcTerminationSymbols})`, 'igm');
-            const matches = content.matchAll(regex);
+            const matches = this.constructor.findMatches(content, domain);
 
-            for (const [,src] of matches) {
+            for (const src of matches) {
                 const response = await this.getRemoteMedia(src);
 
                 let media;
@@ -246,10 +260,7 @@ class ExternalMediaInliner {
      * @param {string[]} domains domains to inline media from
      */
     async inline(domains) {
-        const {data: posts} = await this.#PostModel.findPage({
-            limit: 'all',
-            status: 'all'
-        });
+        const posts = await this.#PostModel.findAll({context: {internal: true}});
         const postsInilingFields = [
             'feature_image'
         ];

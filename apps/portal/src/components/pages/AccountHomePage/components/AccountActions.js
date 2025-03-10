@@ -6,6 +6,22 @@ import PaidAccountActions from './PaidAccountActions';
 import EmailNewsletterAction from './EmailNewsletterAction';
 import EmailPreferencesAction from './EmailPreferencesAction';
 
+const shouldShowEmailPreferences = (site, member) => {
+    return (
+        hasMultipleNewsletters({site}) && hasNewsletterSendingEnabled({site}) ||
+    hasCommentsEnabled({site}) ||
+    isEmailSuppressed({member})
+    );
+};
+
+const shouldShowEmailNewsletterAction = (site) => {
+    return (
+        !hasMultipleNewsletters({site}) &&
+    hasNewsletterSendingEnabled({site}) &&
+    !hasCommentsEnabled({site})
+    );
+};
+
 const AccountActions = () => {
     const {member, onAction, site, t} = useContext(AppContext);
     const {name, email} = member;
@@ -17,9 +33,10 @@ const AccountActions = () => {
         });
     };
 
-    const showEmailPreferences = hasMultipleNewsletters({site}) || hasCommentsEnabled({site}) || isEmailSuppressed({member});
+    // Extract helper functions for complex conditions
 
-    const showEmailUnsubscribe = hasNewsletterSendingEnabled({site});
+    const showEmailPreferences = shouldShowEmailPreferences(site, member);
+    const showEmailNewsletterAction = shouldShowEmailNewsletterAction(site);
 
     return (
         <div>
@@ -39,20 +56,10 @@ const AccountActions = () => {
                 </section>
 
                 <PaidAccountActions />
-                {
-                    showEmailPreferences
-                        ? <EmailPreferencesAction />
-                        : <></>
-                }
-
-                {
-                    showEmailUnsubscribe && !showEmailPreferences
-                        ? <EmailNewsletterAction />
-                        : <></>
-                }
-
+                {showEmailPreferences && <EmailPreferencesAction />}
+                {showEmailNewsletterAction && <EmailNewsletterAction />}
             </div>
-            {/* <ProductList openUpdatePlan={openUpdatePlan}></ProductList> */}
+
         </div>
     );
 };

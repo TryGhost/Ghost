@@ -1,8 +1,8 @@
 import Component from '@glimmer/component';
 import fetch from 'fetch';
+import {TB_VERSION, getStatsParams} from 'ghost-admin/utils/stats';
 import {action} from '@ember/object';
 import {formatNumber} from 'ghost-admin/helpers/format-number';
-import {getStatsParams} from 'ghost-admin/utils/stats';
 import {inject} from 'ghost-admin/decorators/inject';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
@@ -59,7 +59,9 @@ export default class KpisOverview extends Component {
                 args
             ));
 
-            const response = yield fetch(`${this.config.stats.endpoint}/v0/pipes/kpis.json?${params}`, {
+            const endpoint = `${this.config.stats.endpoint}/v0/pipes/api_kpis__v${TB_VERSION}.json?${params}`;
+
+            const response = yield fetch(endpoint, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -75,6 +77,7 @@ export default class KpisOverview extends Component {
 
             this.totals = this.processData(rawData.data);
         } catch (error) {
+            this.totals = null; // reset totals if the endpoint doesn't exist/fails
             // console.error('Error fetching KPI data:', error);
             // Handle error (e.g., set an error state, show a notification)
         }

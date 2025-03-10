@@ -7,7 +7,7 @@ import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import i18nLib from '@tryghost/i18n';
 import setupGhostApi from './utils/api';
 import {ActionHandler, SyncActionHandler, isSyncAction} from './actions';
-import {AppContext, DispatchActionType, EditableAppContext, LabsContextType} from './AppContext';
+import {AppContext, DispatchActionType, EditableAppContext} from './AppContext';
 import {CommentsFrame} from './components/Frame';
 import {setupAdminAPI} from './utils/adminApi';
 import {useOptions} from './utils/options';
@@ -29,7 +29,9 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
         popup: null,
         labs: {},
         order: 'count__likes desc, created_at desc',
-        adminApi: null
+        adminApi: null,
+        commentsIsLoading: false,
+        commentIdToHighlight: null
     });
 
     const iframeRef = React.createRef<HTMLIFrameElement>();
@@ -41,8 +43,6 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
             apiKey: options.apiKey!
         });
     }, [options]);
-
-    // const [adminApi, setAdminApi] = useState<AdminApi|null>(null);
 
     const setState = useCallback((newState: Partial<EditableAppContext> | ((state: EditableAppContext) => Partial<EditableAppContext>)) => {
         setFullState((state) => {
@@ -75,7 +75,7 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
         // allow for async actions within it's updater function so this is the best option.
         return new Promise((resolve) => {
             setState((state) => {
-                ActionHandler({action, data, state, api, adminApi: state.adminApi!, options}).then((updatedState) => {
+                ActionHandler({action, data, state, api, adminApi: state.adminApi!, options, dispatchAction: dispatchAction as DispatchActionType}).then((updatedState) => {
                     const newState = {...updatedState};
                     resolve(newState);
                     setState(newState);
@@ -112,15 +112,14 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
             let admin = null;
             try {
                 admin = await adminApi.getUser();
-                if (admin && state.labs.commentImprovements) {
+                if (admin) {
                     // this is a bit of a hack, but we need to fetch the comments fully populated if the user is an admin
-                    const adminComments = await adminApi.browse({page: 1, postId: options.postId, order: state.order});
+                    const adminComments = await adminApi.browse({page: 1, postId: options.postId, order: state.order, memberUuid: state.member?.uuid});
                     setState({
                         ...state,
                         adminApi: adminApi,
                         comments: adminComments.comments,
-                        pagination: adminComments.meta.pagination,
-                        commentCount: adminComments.meta.pagination.total
+                        pagination: adminComments.meta.pagination
                     });
                 }
             } catch (e) {
@@ -140,14 +139,8 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
     };
 
     /** Fetch first few comments  */
-    const fetchComments = async (labs: LabsContextType) => {
-        let dataPromise;
-        if (labs?.commentImprovements) {
-            dataPromise = api.comments.browse({page: 1, postId: options.postId, order: state.order});
-        } else {
-            dataPromise = api.comments.browse({page: 1, postId: options.postId});
-        }
-
+    const fetchComments = async () => {
+        const dataPromise = api.comments.browse({page: 1, postId: options.postId, order: state.order});
         const countPromise = api.comments.count({postId: options.postId});
 
         const [data, count] = await Promise.all([dataPromise, countPromise]);
@@ -164,16 +157,17 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
         try {
             // Fetch data from API, links, preview, dev sources
             const {member, labs} = await api.init();
-            const {comments, pagination, count} = await fetchComments(labs);
-            const order = labs.commentImprovements ? 'count__likes desc, created_at desc' : 'created_at desc';
+            const {comments, pagination, count} = await fetchComments();
             const state = {
                 member,
                 initStatus: 'success',
                 comments,
                 pagination,
                 commentCount: count,
-                order,
-                labs: labs
+                order: 'count__likes desc, created_at desc',
+                labs: labs,
+                commentsIsLoading: false,
+                commentIdToHighlight: null
             };
 
             setState(state);

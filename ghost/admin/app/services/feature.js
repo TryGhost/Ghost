@@ -59,8 +59,6 @@ export default class FeatureService extends Service {
     @feature('referralInviteDismissed', {user: true}) referralInviteDismissed;
 
     // labs flags
-    @feature('urlCache') urlCache;
-    @feature('lexicalMultiplayer') lexicalMultiplayer;
     @feature('audienceFeedback') audienceFeedback;
     @feature('webmentions') webmentions;
     @feature('stripeAutomaticTax') stripeAutomaticTax;
@@ -68,7 +66,6 @@ export default class FeatureService extends Service {
     @feature('i18n') i18n;
     @feature('announcementBar') announcementBar;
     @feature('signupCard') signupCard;
-    @feature('collections') collections;
     @feature('mailEvents') mailEvents;
     @feature('collectionsCard') collectionsCard;
     @feature('importMemberTier') importMemberTier;
@@ -77,7 +74,8 @@ export default class FeatureService extends Service {
     @feature('ActivityPub') ActivityPub;
     @feature('editorExcerpt') editorExcerpt;
     @feature('contentVisibility') contentVisibility;
-    @feature('commentImprovements') commentImprovements;
+    @feature('contentVisibilityAlpha') contentVisibilityAlpha;
+    @feature('postsX') postsX;
 
     _user = null;
 
@@ -154,11 +152,14 @@ export default class FeatureService extends Service {
             nightShift = enabled || this.nightShift;
         }
 
+        document.documentElement.classList.toggle('dark', nightShift ?? false);
+
         return this.lazyLoader.loadStyle('dark', 'assets/ghost-dark.css', true).then(() => {
             $('link[title=dark]').prop('disabled', !nightShift);
         }).catch(() => {
             //TODO: Also disable toggle from settings and Labs hover
             $('link[title=dark]').prop('disabled', true);
+            document.documentElement.classList.remove('dark');
         });
     }
 }

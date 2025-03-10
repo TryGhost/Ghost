@@ -1,0 +1,6 @@
+<svg width="500" height="500" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <text x="20" y="35">test</text>
+    <foreignObject width="500" height="500">
+        <iframe xmlns="http://www.w3.org/1999/xhtml" src="javascript:confirm(document.domain);" width="400" height="250"/>
+    </foreignObject>
+</svg>

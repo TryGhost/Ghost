@@ -72,8 +72,23 @@ const uploadImageCheck = async ({path, filename, contentType, expectedFileName, 
 
     // Check the image is saved to disk
     const saved = await fs.readFile(originalFilePath);
-    assert.equal(saved.length, fileContents.length);
-    assert.deepEqual(saved, fileContents);
+
+    // Check the content of the saved image:
+    // - SVGs are sanitized before save, so their content is smaller or equal than the original file
+    // - Non-SVGs are saved as-is, so their content should be the same as the original file
+    if (contentType.includes('svg')) {
+        assert.ok(saved.length <= fileContents.length);
+        assert.ok(!saved.includes('<script'));
+        assert.ok(!saved.includes('<foreignObject'));
+        assert.ok(!saved.includes('<iframe'));
+        assert.ok(!saved.includes('<embed'));
+        assert.ok(!saved.includes('onclick'));
+        assert.ok(!saved.includes('href'));
+        assert.ok(!saved.includes('xlink:href'));
+    } else {
+        assert.equal(saved.length, fileContents.length);
+        assert.deepEqual(saved, fileContents);
+    }
 
     const savedResized = await fs.readFile(filePath);
     assert.ok(savedResized.length <= fileContents.length); // should always be smaller
@@ -176,9 +191,50 @@ describe('Images API', function () {
         await uploadImageCheck({path: originalFilePath, filename: 'ghosticon.webp', contentType: 'image/webp'});
     });
 
-    it('Can upload a svg', async function () {
+    it('Can upload a valid svg', async function () {
         const originalFilePath = p.join(__dirname, '/../../utils/fixtures/images/ghost-logo.svg');
-        await uploadImageCheck({path: originalFilePath, filename: 'ghost.svg', contentType: 'image/svg+xml', skipOriginal: true});
+        await uploadImageCheck({path: originalFilePath, filename: 'ghost-logo.svg', contentType: 'image/svg+xml', skipOriginal: true});
+    });
+
+    it('Can upload a svg that needs sanitization', async function () {
+        const originalFilePath = p.join(__dirname, '/../../utils/fixtures/images/svg-with-unsafe-script.svg');
+        await uploadImageCheck({path: originalFilePath, filename: 'svg-with-unsafe-script.svg', contentType: 'image/svg+xml', skipOriginal: true});
+    });
+
+    it('Errors when uploading an invalid SVG', async function () {
+        const originalFilePath = p.join(__dirname, '/../../utils/fixtures/images/svg-malformed.svg');
+        const fileContents = await fs.readFile(originalFilePath);
+        await uploadImageRequest({fileContents, filename: 'svg-malformed.svg', contentType: 'image/svg+xml'})
+            .expectStatus(415)
+            .matchBodySnapshot({
+                errors: [{
+                    id: anyErrorId,
+                    message: 'Please select a valid SVG image'
+                }]
+            });
+    });
+
+    it('Can upload a valid zipped SVG', async function () {
+        const originalFilePath = p.join(__dirname, '/../../utils/fixtures/images/ghost-logo.svgz');
+        await uploadImageCheck({path: originalFilePath, filename: 'ghost-logo.svgz', contentType: 'image/svg+xml', skipOriginal: true});
+    });
+
+    it('Can upload a zipped svg that needs sanitization', async function () {
+        const originalFilePath = p.join(__dirname, '/../../utils/fixtures/images/svgz-with-unsafe-script.svgz');
+        await uploadImageCheck({path: originalFilePath, filename: 'svg-with-unsafe-script.svgz', contentType: 'image/svg+xml', skipOriginal: true});
+    });
+
+    it('Errors when uploading an invalid zipped SVG', async function () {
+        const originalFilePath = p.join(__dirname, '/../../utils/fixtures/images/svgz-malformed.svgz');
+        const fileContents = await fs.readFile(originalFilePath);
+        await uploadImageRequest({fileContents, filename: 'svgz-malformed.svgz', contentType: 'image/svg+xml'})
+            .expectStatus(415)
+            .matchBodySnapshot({
+                errors: [{
+                    id: anyErrorId,
+                    message: 'Please select a valid SVG image'
+                }]
+            });
     });
 
     it('Can upload a square profile image', async function () {

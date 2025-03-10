@@ -8,22 +8,43 @@ test.describe('2FA', () => {
         await sharedPage.goto('/ghost');
         await sharedPage.locator('.gh-nav a[href="#/settings/"]').click();
 
-        const section = sharedPage.getByTestId('labs');
-        await section.getByRole('button', {name: 'Open'}).click();
+        // Make an API call to get settings
+        const adminUrl = new URL(sharedPage.url()).origin + '/ghost';
+        const settingsResponse = await sharedPage.request.get(`${adminUrl}/api/admin/settings/`);
+        const settingsData = await settingsResponse.json();
+        // Add staff2fa flag to labs settings
+        const settings = settingsData.settings;
+        const labsSetting = settings.find(s => s.key === 'labs');
+        const labsValue = JSON.parse(labsSetting.value);
+        labsValue.staff2fa = true;
+        labsSetting.value = JSON.stringify(labsValue);
 
-        await section.getByRole('tab', {name: 'Alpha features'}).click();
-        await section.getByLabel('Staff 2FA').click();
+        // Update settings
+        await sharedPage.request.put(`${adminUrl}/api/admin/settings/`, {
+            data: {
+                settings
+            }
+        });
     });
 
     test.afterAll(async ({sharedPage}) => {
-        await sharedPage.goto('/ghost');
-        await sharedPage.locator('.gh-nav a[href="#/settings/"]').click();
+        // Make an API call to get settings
+        const adminUrl = new URL(sharedPage.url()).origin + '/ghost';
+        const settingsResponse = await sharedPage.request.get(`${adminUrl}/api/admin/settings/`);
+        const settingsData = await settingsResponse.json();
+        // Remove staff2fa flag from labs settings
+        const settings = settingsData.settings;
+        const labsSetting = settings.find(s => s.key === 'labs');
+        const labsValue = JSON.parse(labsSetting.value);
+        delete labsValue.staff2fa;
+        labsSetting.value = JSON.stringify(labsValue);
 
-        const section = sharedPage.getByTestId('labs');
-        await section.getByRole('button', {name: 'Open'}).click();
-
-        await section.getByRole('tab', {name: 'Alpha features'}).click();
-        await section.getByLabel('Staff 2FA').click();
+        // Update settings
+        await sharedPage.request.put(`${adminUrl}/api/admin/settings/`, {
+            data: {
+                settings
+            }
+        });
     });
 
     test('Logging in with 2FA works', async ({page, verificationToken}) => {

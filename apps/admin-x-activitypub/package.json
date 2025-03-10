@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/admin-x-activitypub",
-  "version": "0.3.24",
+  "version": "0.5.2",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -29,7 +29,7 @@
     "preview": "vite preview"
   },
   "devDependencies": {
-    "@playwright/test": "1.46.1",
+    "@playwright/test": "1.50.1",
     "@testing-library/react": "14.3.1",
     "@types/jest": "29.5.12",
     "@types/react": "18.3.3",
@@ -66,6 +66,7 @@
   "dependencies": {
     "@radix-ui/react-form": "0.0.3",
     "@tryghost/admin-x-design-system": "0.0.0",
+    "@tryghost/shade": "0.0.0",
     "@tryghost/admin-x-framework": "0.0.0",
     "clsx": "2.1.1",
     "react": "18.3.1",

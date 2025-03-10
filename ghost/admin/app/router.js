@@ -48,12 +48,12 @@ Router.map(function () {
     this.route('tag.new', {path: '/tags/new'});
     this.route('tag', {path: '/tags/:tag_slug'});
 
-    this.route('collections');
-    this.route('collection.new', {path: '/collections/new'});
-    this.route('collection', {path: '/collections/:collection_slug'});
-
     this.route('demo-x', function () {
         this.route('demo-x', {path: '/*sub'});
+    });
+
+    this.route('posts-x', function () {
+        this.route('posts-x', {path: '/*sub'});
     });
 
     this.route('settings-x', {path: '/settings'}, function () {
@@ -86,11 +86,6 @@ Router.map(function () {
     this.route('member.new', {path: '/members/new'});
     this.route('member', {path: '/members/:member_id'});
     this.route('members-activity');
-
-    // this.route('offers');
-
-    // this.route('offer.new', {path: '/offers/new'});
-    // this.route('offer', {path: '/offers/:offer_id'});
 
     this.route('error404', {path: '/*path'});
 

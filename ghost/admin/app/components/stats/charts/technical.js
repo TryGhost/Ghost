@@ -3,9 +3,9 @@
 import Component from '@glimmer/component';
 import React from 'react';
 import {DonutChart, useQuery} from '@tinybirdco/charts';
+import {TB_VERSION, getStatsParams, statsStaticColors} from 'ghost-admin/utils/stats';
 import {action} from '@ember/object';
-import {formatNumber} from '../../../helpers/format-number';
-import {getStatsParams, statsStaticColors} from 'ghost-admin/utils/stats';
+import {formatNumber} from 'ghost-admin/helpers/format-number';
 import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 
@@ -22,12 +22,14 @@ export default class TechnicalComponent extends Component {
     updateQueryParams(params) {
         const currentRoute = this.router.currentRoute;
         const newQueryParams = {...currentRoute.queryParams, ...params};
-
         this.router.transitionTo({queryParams: newQueryParams});
     }
 
     ReactComponent = (props) => {
         const {selected} = props;
+
+        // If OS is selected but not available, switch to devices
+        let effectiveSelected = selected;
 
         const colorPalette = statsStaticColors.slice(0, 5);
 
@@ -40,14 +42,20 @@ export default class TechnicalComponent extends Component {
         let endpoint;
         let indexBy;
         let tableHead;
-        switch (selected) {
+
+        switch (effectiveSelected) {
         case 'browsers':
-            endpoint = `${this.config.stats.endpoint}/v0/pipes/top_browsers.json`;
+            endpoint = `${this.config.stats.endpoint}/v0/pipes/api_top_browsers__v${TB_VERSION}.json`;
             indexBy = 'browser';
             tableHead = 'Browser';
             break;
+        case 'os':
+            endpoint = `${this.config.stats.endpoint}/v0/pipes/api_top_os__v${TB_VERSION}.json`;
+            indexBy = 'os';
+            tableHead = 'OS';
+            break;
         default:
-            endpoint = `${this.config.stats.endpoint}/v0/pipes/top_devices.json`;
+            endpoint = `${this.config.stats.endpoint}/v0/pipes/api_top_devices__v${TB_VERSION}.json`;
             indexBy = 'device';
             tableHead = 'Device';
         }

@@ -1,6 +1,5 @@
-// Switch these lines once there are useful utils
-// const testUtils = require('./utils');
-require('./utils');
+require('should');
+
 const path = require('path');
 const fs = require('fs').promises;
 const os = require('os');
@@ -35,7 +34,7 @@ describe('Minifier', function () {
 
         it('match glob range e.g. css/bookmark.css and css/empty.css (css/@(bookmark|empty).css)', async function () {
             let result = await minifier.getMatchingFiles('css/@(bookmark|empty).css');
-            
+
             result.should.be.an.Array().with.lengthOf(2);
             result[0].should.eql(path.join('test','fixtures','basic-cards','css','bookmark.css'));
             result[1].should.eql(path.join('test','fixtures','basic-cards','css','empty.css'));

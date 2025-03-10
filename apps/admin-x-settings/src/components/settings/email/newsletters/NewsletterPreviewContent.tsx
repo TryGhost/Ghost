@@ -3,7 +3,6 @@ import LatestPosts1 from '../../../../assets/images/latest-posts-1.png';
 import LatestPosts2 from '../../../../assets/images/latest-posts-2.png';
 import LatestPosts3 from '../../../../assets/images/latest-posts-3.png';
 import clsx from 'clsx';
-import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import {GhostOrb, Icon} from '@tryghost/admin-x-design-system';
 import {isManagedEmail} from '@tryghost/admin-x-framework/api/config';
 import {textColorForBackgroundColor} from '@tryghost/color-utils';
@@ -76,7 +75,6 @@ const NewsletterPreviewContent: React.FC<{
 }) => {
     const showHeader = headerIcon || headerTitle;
     const {config} = useGlobalData();
-    const hasNewEmailAddresses = useFeatureFlag('newEmailAddresses');
 
     const currentDate = new Date().toLocaleDateString('default', {
         year: 'numeric',
@@ -89,7 +87,7 @@ const NewsletterPreviewContent: React.FC<{
 
     let emailHeader;
 
-    if ({hasNewEmailAddresses} || isManagedEmail(config)) {
+    if (isManagedEmail(config)) {
         emailHeader = <><p className="leading-normal"><span className="font-semibold text-grey-900">From: </span><span>{senderName} ({senderEmail})</span></p>
             <p className="leading-normal">
                 <span className="font-semibold text-grey-900">Reply-to: </span>{senderReplyTo ? senderReplyTo : senderEmail}

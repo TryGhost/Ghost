@@ -11,6 +11,8 @@ services:
       context: ../
       dockerfile: .docker/Dockerfile
       target: base-devcontainer
+      args:
+        WORKDIR: /workspaces/ghost
     pull_policy: never
     environment:
       - DEVCONTAINER=true
@@ -21,30 +23,16 @@ services:
       redis:
         condition: service_healthy
   mysql:
-    image: mysql:8.0.35
-    # We'll need to look into how we can further fine tune the memory usage/performance here
-    command: --innodb-buffer-pool-size=1G --innodb-log-buffer-size=500M --innodb-change-buffer-max-size=50 --innodb-flush-log-at-trx_commit=0 --innodb-flush-method=O_DIRECT
-    ports:
-      - "3306"
-    environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: ghost
-    restart: always
-    volumes:
-      - mysql-data:/var/lib/mysql
-    healthcheck:
-      test: "mysql -uroot -proot ghost -e 'select 1'"
-      interval: 1s
-      retries: 120
+    extends:
+      file: ../compose.yml
+      service: mysql
+    container_name: ghost-devcontainer-mysql
   redis:
-    image: redis:7.0
-    ports:
-      - "6379"
-    restart: always
-    healthcheck:
-      test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
-      interval: 1s
-      retries: 120
+    extends:
+      file: ../compose.yml
+      service: redis
+    container_name: ghost-devcontainer-redis
 
 volumes:
   mysql-data:
+  redis-data:

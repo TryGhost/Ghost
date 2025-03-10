@@ -145,42 +145,10 @@
         </LinkTo>
     {{/if}}
 
-    {{!-- Opened / Signups column --}}
-    {{#if (and @post.showEmailOpenAnalytics @post.showEmailClickAnalytics) }}
-        <LinkTo @route="members" @query={{hash filterParam=(concat "opened_emails.post_id:" @post.id) }} class="permalink gh-list-data gh-post-list-metrics">
-            <span class="gh-content-email-stats-value">
-                {{#if this.isHovered}}
-                    {{format-number @post.email.openedCount}}
-                {{else}}
-                    {{@post.email.openRate}}<sup>%</sup>
-                {{/if}}
-            </span>
-            <span class="gh-content-email-stats">
-                opened
-            </span>
-        </LinkTo>
-    {{else}}
-        <LinkTo @route={{this.editorRoute}} @models={{array this.post.displayName this.post.id}} class="permalink gh-list-data">
-            {{!-- Empty on purpose --}}
-        </LinkTo>
-    {{/if}}
-
-    {{!-- Clicked / Conversions column --}}
-    {{#if @post.showEmailClickAnalytics }}
-        <LinkTo @route="members" @query={{hash filterParam=(concat "clicked_links.post_id:" @post.id) }} class="permalink gh-list-data gh-post-list-metrics">
-            <span class="gh-content-email-stats-value">
-                {{#if this.isHovered}}
-                    {{format-number @post.count.clicks}}
-                {{else}}
-                    {{@post.clickRate}}<sup>%</sup>
-                {{/if}}
-            </span>
-            <span class="gh-content-email-stats">
-                clicked
-            </span>
-        </LinkTo>
-    {{else}}
-        {{#if @post.showEmailOpenAnalytics }}
+    {{!-- Metrics columns wrapper --}}
+    <div class="gh-post-list-metrics-container">
+        {{!-- Opened / Signups column --}}
+        {{#if (and @post.showEmailOpenAnalytics @post.showEmailClickAnalytics) }}
             <LinkTo @route="members" @query={{hash filterParam=(concat "opened_emails.post_id:" @post.id) }} class="permalink gh-list-data gh-post-list-metrics">
                 <span class="gh-content-email-stats-value">
                     {{#if this.isHovered}}
@@ -198,7 +166,42 @@
                 {{!-- Empty on purpose --}}
             </LinkTo>
         {{/if}}
-    {{/if}}
+
+        {{!-- Clicked / Conversions column --}}
+        {{#if @post.showEmailClickAnalytics }}
+            <LinkTo @route="members" @query={{hash filterParam=(concat "clicked_links.post_id:" @post.id) }} class="permalink gh-list-data gh-post-list-metrics">
+                <span class="gh-content-email-stats-value">
+                    {{#if this.isHovered}}
+                        {{format-number @post.count.clicks}}
+                    {{else}}
+                        {{@post.clickRate}}<sup>%</sup>
+                    {{/if}}
+                </span>
+                <span class="gh-content-email-stats">
+                    clicked
+                </span>
+            </LinkTo>
+        {{else}}
+            {{#if @post.showEmailOpenAnalytics }}
+                <LinkTo @route="members" @query={{hash filterParam=(concat "opened_emails.post_id:" @post.id) }} class="permalink gh-list-data gh-post-list-metrics">
+                    <span class="gh-content-email-stats-value">
+                        {{#if this.isHovered}}
+                            {{format-number @post.email.openedCount}}
+                        {{else}}
+                            {{@post.email.openRate}}<sup>%</sup>
+                        {{/if}}
+                    </span>
+                    <span class="gh-content-email-stats">
+                        opened
+                    </span>
+                </LinkTo>
+            {{else}}
+                <LinkTo @route={{this.editorRoute}} @models={{array this.post.displayName this.post.id}} class="permalink gh-list-data">
+                    {{!-- Empty on purpose --}}
+                </LinkTo>
+            {{/if}}
+        {{/if}}
+    </div>
 
     {{!-- Button column --}}
     {{#if @post.hasAnalyticsPage }}

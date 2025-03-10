@@ -56,6 +56,8 @@
                     @type="submit"
                     @useAccentColor={{true}}
                     data-test-button="verify" />
+                
+                <p class="main-notification">Not receiving the emails? <a href="https://ghost.org/docs/config/#mail" target="_blank" rel="noopener noreferrer">Learn more</a></p>
             </form>
 
             {{#let (or this.flowErrors this.verifyData.validationMessage) as |error|}}
