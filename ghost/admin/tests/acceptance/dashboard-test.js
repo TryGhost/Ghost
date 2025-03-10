@@ -46,6 +46,10 @@ describe('Acceptance: Dashboard', function () {
 
             await authenticateSession();
             await visit('/dashboard');
+            // pause 100ms
+
+            this.pauseTest(0.01);
+
             expect(currentURL()).to.equal('/site');
         });
     });
