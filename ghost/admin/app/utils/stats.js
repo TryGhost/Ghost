@@ -1,6 +1,6 @@
 import moment from 'moment-timezone';
 
-export const TB_VERSION = 1;
+export const TB_VERSION = 0;
 
 export const RANGE_OPTIONS = [
     {name: 'Last 24 hours', value: 1},
@@ -135,7 +135,7 @@ export function getStatsParams(config, props, additionalParams = {}) {
     const {startDate, endDate} = getDateRange(chartRange);
 
     const params = {
-        site_uuid: config.stats.id,
+        site_uuid: props.mockData ? 'mock_site_uuid' : config.stats.id,
         date_from: startDate.format('YYYY-MM-DD'),
         date_to: endDate.format('YYYY-MM-DD'),
         ...additionalParams

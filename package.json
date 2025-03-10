@@ -52,8 +52,10 @@
     "main:monorepo": "git checkout main && git pull ${GHOST_UPSTREAM:-origin} main && yarn",
     "main:submodules": "git submodule sync && git submodule update && git submodule foreach \"git checkout main && git pull ${GHOST_UPSTREAM:-origin} main\"",
     "prepare": "husky install .github/hooks",
-    "tb": "docker run --rm -v $(pwd):/ghost -w /ghost/ghost/web-analytics -it tinybirdco/tinybird-cli-docker",
-    "tb:update": "docker pull tinybirdco/tinybird-cli-docker"
+    "tb": "docker run --rm -v $(pwd):/ghost -w /ghost/ghost/web-analytics -it tinybirdco/tinybird-cli-docker /bin/bash --init-file /ghost/ghost/web-analytics/entrypoint.sh",
+    "tb:update": "docker pull tinybirdco/tinybird-cli-docker",
+    "tb:local": "docker start tinybird-local 2>/dev/null || docker run --platform linux/amd64 -p 7181:7181 --name tinybird-local -d tinybirdco/tinybird-local:latest && echo 'Waiting for Tinybird to be ready...' && until curl -s http://localhost:7181/tokens > /dev/null; do sleep 1; done && docker run --rm -v $(pwd):/ghost -w /ghost/ghost/web-analytics -it tinybirdco/tinybird-cli-docker /bin/sh -c '(command -v curl >/dev/null && command -v jq >/dev/null) || (apt-get update && apt-get install -y curl jq) && TOKEN=$(curl -s http://host.docker.internal:7181/tokens | jq -r .workspace_admin_token) && tb auth --host http://host.docker.internal:7181 --token \"$TOKEN\" && /bin/sh'",
+    "tb:local:stop": "docker stop tinybird-local && docker rm tinybird-local"
   },
   "resolutions": {
     "@tryghost/errors": "1.3.5",

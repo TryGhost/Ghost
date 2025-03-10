@@ -338,11 +338,10 @@ module.exports = async function get(resource, options) {
                     errorDetails: {
                         api: `${controllerName}.${action}`,
                         apiOptions,
+                        time: totalMs,
                         returnedRows: returnedRowsCount
                     }
-                }), {
-                    time: totalMs
-                });
+                }));
             }
         }
     }

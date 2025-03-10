@@ -14,6 +14,11 @@ describe('SessionService', function () {
             };
             return req.session;
         };
+        const getSettingsCache = sinon.spy(async (key) => {
+            if (key === 'require_email_mfa') {
+                return false;
+            }
+        });
         const findUserById = sinon.spy(async ({id}) => ({id}));
         const getOriginOfRequest = sinon.stub().returns('origin');
         const labs = {
@@ -24,6 +29,7 @@ describe('SessionService', function () {
             getSession,
             findUserById,
             getOriginOfRequest,
+            getSettingsCache,
             labs
         });
 
@@ -157,6 +163,11 @@ describe('SessionService', function () {
             };
             return req.session;
         };
+        const getSettingsCache = sinon.spy((key) => {
+            if (key === 'require_email_mfa') {
+                return false;
+            }
+        });
         const findUserById = sinon.spy(async ({id}) => ({id}));
         const getOriginOfRequest = sinon.stub().returns('origin');
         const labs = {
@@ -167,6 +178,7 @@ describe('SessionService', function () {
             getSession,
             findUserById,
             getOriginOfRequest,
+            getSettingsCache,
             labs
         });
 
@@ -565,5 +577,68 @@ describe('SessionService', function () {
             .rejectedWith({
                 message: 'Could not fetch user from the session.'
             });
+    });
+
+    it('Can remove verified session', async function () {
+        const getSession = async (req) => {
+            if (req.session) {
+                return req.session;
+            }
+            req.session = {
+                destroy: sinon.spy(cb => cb())
+            };
+            return req.session;
+        };
+        const getSettingsCache = sinon.spy((key) => {
+            if (key === 'require_email_mfa') {
+                return true;
+            } else {
+                return 'site-title';
+            }
+        });
+        const findUserById = sinon.spy(async ({id}) => ({id}));
+        const getOriginOfRequest = sinon.stub().returns('origin');
+        const labs = {
+            isSet: () => true
+        };
+
+        const sessionService = SessionService({
+            getSession,
+            findUserById,
+            getOriginOfRequest,
+            getSettingsCache,
+            labs
+        });
+
+        const req = Object.create(express.request, {
+            ip: {
+                value: '0.0.0.0'
+            },
+            headers: {
+                value: {
+                    cookie: 'thing'
+                }
+            },
+            get: {
+                value: () => 'Fake'
+            }
+        });
+        const res = Object.create(express.response);
+        const user = {id: 'egg'};
+
+        await sessionService.createSessionForUser(req, res, user);
+        should.equal(req.session.user_id, 'egg');
+        should.equal(req.session.verified, undefined);
+
+        await sessionService.verifySession(req, res);
+        should.equal(req.session.verified, true);
+
+        await sessionService.removeUserForSession(req, res);
+        should.equal(req.session.user_id, undefined);
+        should.equal(req.session.verified, undefined);
+
+        await sessionService.createSessionForUser(req, res, user);
+        should.equal(req.session.user_id, 'egg');
+        should.equal(req.session.verified, undefined);
     });
 });

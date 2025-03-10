@@ -27941,10 +27941,10 @@ react-remove-scroll@^2.6.1, react-remove-scroll@^2.6.3:
     use-callback-ref "^1.3.3"
     use-sidecar "^1.1.3"
 
-react-router@7.2.0:
-  version "7.2.0"
-  resolved "https://registry.yarnpkg.com/react-router/-/react-router-7.2.0.tgz#a8f2729d39f634a7a870d14dd906a1b406f39d6f"
-  integrity sha512-fXyqzPgCPZbqhrk7k3hPcCpYIlQ2ugIXDboHUzhJISFVy2DEPsmHgN588MyGmkIOv3jDgNfUE3kJi83L28s/LQ==
+react-router@7.3.0:
+  version "7.3.0"
+  resolved "https://registry.yarnpkg.com/react-router/-/react-router-7.3.0.tgz#14fb630f088d919386e97f91199a2bc4abcdd85d"
+  integrity sha512-466f2W7HIWaNXTKM5nHTqNxLrHTyXybm7R0eBlVSt0k/u55tTCDO194OIx/NrYD4TS5SXKTNekXfT37kMKUjgw==
   dependencies:
     "@types/cookie" "^0.6.0"
     cookie "^1.0.1"

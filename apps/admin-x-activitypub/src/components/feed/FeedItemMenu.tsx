@@ -15,7 +15,6 @@ import {
     PopoverTrigger,
     buttonVariants
 } from '@tryghost/shade';
-import {useFeatureFlags} from '@src/lib/feature-flags';
 
 interface FeedItemMenuProps {
     trigger: React.ReactNode;
@@ -32,8 +31,6 @@ const FeedItemMenu: React.FC<FeedItemMenuProps> = ({
     allowDelete = false,
     layout
 }) => {
-    const {isEnabled} = useFeatureFlags();
-
     const handleCopyLinkClick = (e: React.MouseEvent<HTMLElement>) => {
         e.stopPropagation();
         onCopyLink();
@@ -57,7 +54,7 @@ const FeedItemMenu: React.FC<FeedItemMenuProps> = ({
                                 Copy link
                             </Button>
                         </PopoverClose>
-                        {isEnabled('deleteButton') && allowDelete &&
+                        {allowDelete &&
                             <AlertDialogTrigger asChild>
                                 <PopoverClose asChild>
                                     <Button
@@ -77,7 +74,7 @@ const FeedItemMenu: React.FC<FeedItemMenuProps> = ({
                 <AlertDialogHeader>
                     <AlertDialogTitle>Delete this post?</AlertDialogTitle>
                     <AlertDialogDescription>
-                        {layout === 'inbox' ? 'This will remove the post from the Fediverse, but it will remain on your website.' : <>If you delete this post, you won&apos;t be able to restore it.</>}
+                        {layout === 'inbox' ? 'This will remove the post from the ActivityPub network, but it will remain on your website.' : <>If you delete this post, you won&apos;t be able to restore it.</>}
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
