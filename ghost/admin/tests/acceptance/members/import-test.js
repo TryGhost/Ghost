@@ -112,3 +112,62 @@ testemail@example.com,Test Email,This is a test template for importing your memb
         expect(apiLabels).to.equal(label1.name);
     });
 });
+describe('Acceptance: Members import for super-editors', function () {
+    let hooks = setupApplicationTest();
+    setupMirage(hooks);
+
+    beforeEach(async function () {
+        this.server.loadFixtures('configs');
+
+        let role = this.server.create('role', {name: 'Owner'});
+        this.server.create('user', {roles: [role]});
+
+        await authenticateSession();
+    });
+
+    it('Super editor can access members import', async function () {
+        await visit('/members/import');
+
+        expect(currentURL()).to.equal('/members/import');
+    }
+    );
+    it('Super editor can access members import from members page', async function () {
+        await visit('/members');
+
+        expect(currentURL()).to.equal('/members');
+
+        await click('[data-test-button="members-actions"]');
+        await click('[data-test-link="import-csv"]');
+
+        expect(currentURL()).to.equal('/members/import');
+    });
+
+    it('Super editor can access members import from settings page', async function () {
+        await visit('/settings/labs');
+
+        expect(currentURL()).to.equal('/settings/labs');
+
+        await click('[data-test-button="members-import"]');
+
+        expect(currentURL()).to.equal('/members/import');
+    });
+});
+describe('Acceptance: Members import not available to editors', function () {
+    let hooks = setupApplicationTest();
+    setupMirage(hooks);
+
+    beforeEach(async function () {
+        this.server.loadFixtures('configs');
+
+        let role = this.server.create('role', {name: 'Editor'});
+        this.server.create('user', {roles: [role]});
+
+        await authenticateSession();
+    });
+
+    it('Editor cannot access members import', async function () {
+        await visit('/members/import');
+
+        expect(currentURL()).to.equal('/site');
+    });
+});

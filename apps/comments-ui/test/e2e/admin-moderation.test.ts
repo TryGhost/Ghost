@@ -18,7 +18,9 @@ test.describe('Admin moderation', async () => {
         member?: any; // eslint-disable-line @typescript-eslint/no-explicit-any
     };
     async function initializeTest(page, options: InitializeTestOptions = {}) {
+        // "isAdmin" is actually closer to "canModerateComments"
         options = {isAdmin: true, labs: false, member: {id: '1', uuid: '12345'}, ...options};
+
         if (options.isAdmin) {
             await mockAdminAuthFrame({page, admin});
         } else {

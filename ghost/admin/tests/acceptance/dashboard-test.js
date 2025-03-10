@@ -39,5 +39,14 @@ describe('Acceptance: Dashboard', function () {
             await visit('/dashboard');
             expect(currentURL()).to.equal('/signin');
         });
+
+        it('is not accessible to super editors', async function () {
+            let role = this.server.create('role', {name: 'Super Editor'});
+            this.server.create('user', {roles: [role]});
+
+            await authenticateSession();
+            await visit('/dashboard');
+            expect(currentURL()).to.equal('/site');
+        });
     });
 });
