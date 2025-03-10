@@ -78,25 +78,6 @@ describe('Unit: Controller: lexical-editor', function () {
             expect(controller.get('post.slug')).to.equal('title-slug');
         });
 
-        it('should not add -2 to slug if whitespace is added to existing ', async function () {
-            let controller = this.owner.lookup('controller:lexical-editor');
-            controller.set('slugGenerator', EmberObject.create({
-                generateSlug(slugType, str) {
-                    return RSVP.resolve(`${str}-slug`);
-                }
-            }));
-            controller.set('post', createPost({slug: ''}));
-
-            controller.set('post.titleScratch', 'title');
-            await settled();
-
-            expect(controller.get('post.slug')).to.equal('');
-
-            await controller.generateSlugTask.perform();
-
-            expect(controller.get('post.slug')).to.equal('title-slug');
-        });
-
         it('should generate a new slug if the previous title ended with (Copy)', async function () {
             let controller = this.owner.lookup('controller:lexical-editor');
             controller.set('slugGenerator', EmberObject.create({
