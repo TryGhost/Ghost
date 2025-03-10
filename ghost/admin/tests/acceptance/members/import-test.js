@@ -1,5 +1,5 @@
 import {Response} from 'miragejs';
-import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
+import {authenticateSession} from 'ember-simple-auth/test-support';
 import {click, currentURL, find, findAll} from '@ember/test-helpers';
 import {expect} from 'chai';
 import {fileUpload} from '../../helpers/file-upload';
@@ -112,7 +112,6 @@ testemail@example.com,Test Email,This is a test template for importing your memb
         });
     });
     describe ('super editors functions', function () {
-
         beforeEach(async function () {
             this.server.loadFixtures('configs');
 
@@ -228,6 +227,3 @@ testemail@example.com,Test Email,This is a test template for importing your memb
         });
     });
 });
-
-
-
