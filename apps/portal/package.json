@@ -22,6 +22,7 @@
     "build:watch": "vite build --watch",
     "preview": "vite preview",
     "test": "vitest run",
+    "test:watch": "vitest",
     "test:ci": "yarn test --coverage",
     "test:unit": "yarn test:ci",
     "lint": "eslint src --ext .js --cache",
