@@ -1,10 +1,10 @@
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
-import {currentURL, pauseTest} from '@ember/test-helpers';
-import {visit} from '../helpers/visit';
+import {currentURL} from '@ember/test-helpers';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
+import {visit} from '../helpers/visit';
 
 describe('Acceptance: Dashboard', function () {
     const hooks = setupApplicationTest();
@@ -47,7 +47,6 @@ describe('Acceptance: Dashboard', function () {
 
             await authenticateSession();
             await visit('/dashboard');
-            console.log('Current URL:', currentURL());
 
             expect(currentURL()).to.equal('/dashboard');
         });
@@ -61,8 +60,6 @@ describe('Acceptance: Dashboard', function () {
 
             await authenticateSession();
             await visit('/dashboard');
-
-            console.log('Current URL:', currentURL());
 
             expect(currentURL()).to.equal('/site');
         });
@@ -88,7 +85,7 @@ describe('Acceptance: Dashboard', function () {
             expect(currentURL()).to.equal('/site');
         });
     });
-    describe('as admin', async function () {
+    describe('as admin', function () {
         beforeEach(async function () {
             await invalidateSession();
             this.server.db.users.remove();
