@@ -36,10 +36,6 @@ const features = [{
     description: 'Wires up the Ghost NestJS App to the Admin API (also needs GHOST_ENABLE_NEST_FRAMEWORK=1 env var)',
     flag: 'NestPlayground'
 },{
-    title: 'ActivityPub',
-    description: '(Highly) Experimental support for ActivityPub.',
-    flag: 'ActivityPub'
-},{
     title: 'Content Visibility (Beta)',
     description: 'Enables content visibility in Emails - Changes already released to beta testers',
     flag: 'contentVisibility'
