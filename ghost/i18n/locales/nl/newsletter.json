@@ -1,4 +1,6 @@
 {
+    "{date}": "{date}",
+    "Become a paid member of {site} to get access to all premium content.": "",
     "By {authors}": "Door {authors}",
     "Comment": "Reageer",
     "complimentary": "gratis",
@@ -14,6 +16,8 @@
     "Subscription details": "Abonnementsgegevens",
     "trialing": "proefperiode",
     "Unsubscribe": "Afmelden",
+    "Upgrade": "",
+    "Upgrade to continue reading.": "",
     "View in browser": "Bekijk in browser",
     "You are receiving this because you are a <strong>%%{status}%% subscriber</strong> to {site}.": "Je ontvangt dit omdat je een <strong>%%{status}%%-abonnee</strong> bent van {site}.",
     "Your free trial ends on {date}, at which time you will be charged the regular price. You can always cancel before then.": "Je gratis proefperiode eindigt op {date}, waarna de reguliere prijs in rekening wordt gebracht. Je kunt altijd voor die tijd annuleren.",

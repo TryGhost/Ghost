@@ -105,9 +105,7 @@ export default function NewsletterSelectionPage({pageData, onBack}) {
                             disabled={disabled}
                             onClick={() => {
                                 let newsletters = subscribedNewsletters.map((d) => {
-                                    return {
-                                        id: d.id
-                                    };
+                                    return {name: d.name};
                                 });
                                 const {name, email, plan, phonenumber, offerId} = pageData;
                                 onAction('signup', {name, email, plan, phonenumber, newsletters, offerId});
