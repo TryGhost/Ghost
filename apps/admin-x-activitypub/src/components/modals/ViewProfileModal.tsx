@@ -169,13 +169,20 @@ const PostsTab: React.FC<{handle: string}> = ({handle}) => {
                             <div>
                                 <FeedItem
                                     actor={post.actor}
+                                    allowDelete={post.object.authored}
                                     commentCount={post.object.replyCount}
                                     layout='feed'
                                     object={post.object}
                                     repostCount={post.object.repostCount}
                                     type={post.type}
-                                    onClick={() => handleViewContent(post, false)}
-                                    onCommentClick={() => handleViewContent(post, true)}
+                                    onClick={() => handleViewContent({
+                                        ...post,
+                                        id: post.object.id
+                                    }, false)}
+                                    onCommentClick={() => handleViewContent({
+                                        ...post,
+                                        id: post.object.id
+                                    }, true)}
                                 />
                                 {index < posts.length - 1 && <Separator />}
                             </div>

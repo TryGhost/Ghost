@@ -11,12 +11,10 @@
                     @label="Browsers" />
             </button>
 
-            {{#if (gt @apiVersion 0)}}
-                <button type="button" class="gh-stats-tab {{if this.osTabSelected 'is-selected'}}" {{on "click" this.changeTabToOSs}}>
-                    <Stats::Parts::Metric
-                        @label="OS" />
-                </button>
-            {{/if}}
+            <button type="button" class="gh-stats-tab {{if this.osTabSelected 'is-selected'}}" {{on "click" this.changeTabToOSs}}>
+                <Stats::Parts::Metric
+                    @label="OS" />
+            </button>
         </div>
     </div>
 
@@ -29,6 +27,6 @@
         @source={{@source}}
         @pathname={{@pathname}}
         @selected={{this.selected}}
-        @apiVersion={{@apiVersion}}
+        @mockData={{@mockData}}
     />
 </div>

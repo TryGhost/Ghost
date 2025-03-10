@@ -1,7 +1,7 @@
 import Controller from '@ember/controller';
 import countries from 'i18n-iso-countries';
 import enLocale from 'i18n-iso-countries/langs/en.json';
-import {API_VERSION_OPTIONS, AUDIENCE_TYPES, RANGE_OPTIONS} from 'ghost-admin/utils/stats';
+import {AUDIENCE_TYPES, RANGE_OPTIONS} from 'ghost-admin/utils/stats';
 import {action} from '@ember/object';
 import {tracked} from '@glimmer/tracking';
 
@@ -16,11 +16,11 @@ export default class StatsController extends Controller {
     @tracked source = null;
     @tracked pathname = null;
     @tracked os = null;
-    @tracked apiVersion = 0;
+    @tracked mockData = false;
 
     rangeOptions = RANGE_OPTIONS;
     audienceOptions = AUDIENCE_TYPES;
-    apiVersionOptions = API_VERSION_OPTIONS;
+
     /**
      * @type {number|'all'}
      * Date range to load for member count and MRR related charts
@@ -38,11 +38,6 @@ export default class StatsController extends Controller {
     @action
     onRangeChange(selected) {
         this.chartRange = selected.value;
-    }
-
-    @action
-    onApiVersionChange(selected) {
-        this.apiVersion = selected.value;
     }
 
     @action
@@ -69,6 +64,11 @@ export default class StatsController extends Controller {
     }
 
     @action
+    toggleMockData() {
+        this.mockData = !this.mockData;
+    }
+
+    @action
     clearFilters() {
         this.device = null;
         this.browser = null;
@@ -84,9 +84,5 @@ export default class StatsController extends Controller {
 
     get humanReadableLocation() {
         return this.location ? (countries.getName(this.location, 'en') || 'Unknown') : null;
-    }
-
-    get selectedApiVersionOption() {
-        return this.apiVersionOptions.find(option => option.value === this.apiVersion) || this.apiVersionOptions[0];
     }
 }

@@ -2,12 +2,12 @@ import React, {createContext, useContext, useEffect, useState} from 'react';
 import {useLocation} from '@tryghost/admin-x-framework';
 
 // Define all available feature flags here
-export const FEATURE_FLAGS = ['deleteButton'] as const;
+export const FEATURE_FLAGS = [] as const;
 
 // ---
-export type FeatureFlag = typeof FEATURE_FLAGS[number];
+export type FeatureFlag = typeof FEATURE_FLAGS[number] | string;
 
-type FeatureFlagsState = Record<FeatureFlag, boolean>;
+type FeatureFlagsState = Partial<Record<FeatureFlag, boolean>>;
 
 type FeatureFlagsContextType = {
     isEnabled: (flag: FeatureFlag) => boolean;
@@ -43,7 +43,7 @@ export const FeatureFlagsProvider: React.FC<{children: React.ReactNode}> = ({chi
         }
     }, [location.search]);
 
-    const isEnabled = (flag: FeatureFlag): boolean => flags[flag];
+    const isEnabled = (flag: FeatureFlag): boolean => flags[flag] ?? false;
 
     const value = {
         isEnabled,

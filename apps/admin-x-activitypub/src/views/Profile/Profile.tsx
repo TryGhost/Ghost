@@ -5,6 +5,7 @@ import {Activity,ActorProperties} from '@tryghost/admin-x-framework/api/activity
 import {Button, Heading, List, LoadingIndicator, NoValueLabel, Tab, TabView} from '@tryghost/admin-x-design-system';
 import {Skeleton} from '@tryghost/shade';
 
+import {Account, FollowAccount} from '../../api/activitypub';
 import {
     type AccountFollowsQueryResult,
     type ActivityPubCollectionQueryResult,
@@ -13,7 +14,6 @@ import {
     useLikedForUser,
     useOutboxForUser
 } from '@hooks/use-activity-pub-queries';
-import {FollowAccount} from '../../api/activitypub';
 import {handleViewContent} from '@utils/content-handlers';
 
 import APAvatar from '@components/global/APAvatar';
@@ -124,7 +124,7 @@ const useInfiniteScrollTab = <TData,>({useDataHook, emptyStateLabel, emptyStateI
     return {items, EmptyState, LoadingState};
 };
 
-const PostsTab: React.FC = () => {
+const PostsTab: React.FC<{currentUserAccount: Account | undefined}> = ({currentUserAccount}) => {
     const {items, EmptyState, LoadingState} = useInfiniteScrollTab<Activity>({
         useDataHook: useOutboxForUser,
         emptyStateLabel: 'You haven\'t posted anything yet.',
@@ -139,22 +139,39 @@ const PostsTab: React.FC = () => {
             {
                 posts.length > 0 && (
                     <ul className='mx-auto flex max-w-[640px] flex-col'>
-                        {posts.map((activity, index) => (
-                            <li
-                                key={activity.id}
-                                data-test-view-article
-                            >
-                                <FeedItem
-                                    actor={activity.actor}
-                                    layout='feed'
-                                    object={activity.object}
-                                    type={activity.type}
-                                    onClick={() => handleViewContent(activity, false)}
-                                    onCommentClick={() => handleViewContent(activity, true)}
-                                />
-                                {index < posts.length - 1 && <Separator />}
-                            </li>
-                        ))}
+                        {posts.map((activity, index) => {
+                            let canDelete = false;
+
+                            const attributedTo = activity.object?.attributedTo;
+
+                            if (typeof attributedTo === 'object' && 'id' in attributedTo) {
+                                canDelete = currentUserAccount?.id === attributedTo.id;
+                            }
+
+                            return (
+                                <li
+                                    key={activity.id}
+                                    data-test-view-article
+                                >
+                                    <FeedItem
+                                        actor={activity.actor}
+                                        allowDelete={canDelete}
+                                        layout='feed'
+                                        object={activity.object}
+                                        type={activity.type}
+                                        onClick={() => handleViewContent({
+                                            ...activity,
+                                            id: activity.object.id
+                                        }, false)}
+                                        onCommentClick={() => handleViewContent({
+                                            ...activity,
+                                            id: activity.object.id
+                                        }, true)}
+                                    />
+                                    {index < posts.length - 1 && <Separator />}
+                                </li>
+                            );
+                        })}
                     </ul>
                 )
             }
@@ -163,7 +180,7 @@ const PostsTab: React.FC = () => {
     );
 };
 
-const LikesTab: React.FC = () => {
+const LikesTab: React.FC<{currentUserAccount: Account | undefined}> = ({currentUserAccount}) => {
     const {items: liked, EmptyState, LoadingState} = useInfiniteScrollTab<Activity>({
         useDataHook: useLikedForUser,
         emptyStateLabel: 'You haven\'t liked anything yet.',
@@ -176,22 +193,39 @@ const LikesTab: React.FC = () => {
             {
                 liked.length > 0 && (
                     <ul className='mx-auto flex max-w-[640px] flex-col'>
-                        {liked.map((activity, index) => (
-                            <li
-                                key={activity.id}
-                                data-test-view-article
-                            >
-                                <FeedItem
-                                    actor={activity.object?.attributedTo as ActorProperties || activity.actor}
-                                    layout='feed'
-                                    object={Object.assign({}, activity.object, {liked: true})}
-                                    type={activity.type}
-                                    onClick={() => handleViewContent(activity, false)}
-                                    onCommentClick={() => handleViewContent(activity, true)}
-                                />
-                                {index < liked.length - 1 && <Separator />}
-                            </li>
-                        ))}
+                        {liked.map((activity, index) => {
+                            let canDelete = false;
+
+                            const attributedTo = activity.object?.attributedTo;
+
+                            if (typeof attributedTo === 'object' && 'id' in attributedTo) {
+                                canDelete = currentUserAccount?.id === attributedTo.id;
+                            }
+
+                            return (
+                                <li
+                                    key={activity.id}
+                                    data-test-view-article
+                                >
+                                    <FeedItem
+                                        actor={activity.object?.attributedTo as ActorProperties || activity.actor}
+                                        allowDelete={canDelete}
+                                        layout='feed'
+                                        object={Object.assign({}, activity.object, {liked: true})}
+                                        type={activity.type}
+                                        onClick={() => handleViewContent({
+                                            ...activity,
+                                            id: activity.object.id
+                                        }, false)}
+                                        onCommentClick={() => handleViewContent({
+                                            ...activity,
+                                            id: activity.object.id
+                                        }, true)}
+                                    />
+                                    {index < liked.length - 1 && <Separator />}
+                                </li>
+                            );
+                        })}
                     </ul>
                 )
             }
@@ -315,7 +349,7 @@ const Profile: React.FC<ProfileProps> = ({}) => {
             title: 'Posts',
             contents: (
                 <div className='ap-posts'>
-                    <PostsTab />
+                    <PostsTab currentUserAccount={account} />
                 </div>
             )
         },
@@ -324,7 +358,7 @@ const Profile: React.FC<ProfileProps> = ({}) => {
             title: 'Likes',
             contents: (
                 <div className='ap-likes'>
-                    <LikesTab />
+                    <LikesTab currentUserAccount={account} />
                 </div>
             ),
             counter: account?.likedCount || 0

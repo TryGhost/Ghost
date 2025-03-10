@@ -19,7 +19,7 @@
     "**/ghost.map": true,
     "**/node_modules": true,
     "ghost/core/core/built/**": true,
-    "ghost/tinybird-dedicated/.diff_tmp/**": true
+    "ghost/web-analytics/.diff_tmp/**": true
   },
   "tailwindCSS.experimental.classRegex": [
     ["clsx\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"]

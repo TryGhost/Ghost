@@ -1,4 +1,6 @@
 {
+    "{date}": "{date}",
+    "Become a paid member of {site} to get access to all premium content.": "",
     "By {authors}": "Le {authors}",
     "Comment": "Fàg beachd air",
     "complimentary": "an-asgaidh",
@@ -14,6 +16,8 @@
     "Subscription details": "Fiosrachadh an fho-sgrìobhaidh",
     "trialing": "'fo dheuchainn",
     "Unsubscribe": "Dì-sgrìobh",
+    "Upgrade": "",
+    "Upgrade to continue reading.": "",
     "View in browser": "Fosgail anns a' bhrabhsair",
     "You are receiving this because you are a <strong>%%{status}%% subscriber</strong> to {site}.": "Tha thu air seo fhaighinn o chionn 's gu bheil fo-sgrìobhadh <strong>%%{status}%%</strong> ris an làrach-lìn, {site}.",
     "Your free trial ends on {date}, at which time you will be charged the regular price. You can always cancel before then.": "Falbhaidh an ùine air an tionndadh triail agad {date}, agus bidh agad ris a' phrìs abhaisteach a phàigheadh. Faodaidh tu stad a chur air an fho-sgrìobhadh agad ron a sheo ge-tà.",
