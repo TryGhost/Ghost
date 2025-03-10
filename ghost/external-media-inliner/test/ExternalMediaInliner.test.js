@@ -28,9 +28,7 @@ describe('ExternalMediaInliner', function () {
         };
 
         postModelStub = {
-            findPage: sinon.stub().resolves({
-                data: []
-            }),
+            findAll: sinon.stub().resolves([]),
             edit: sinon.stub().resolves()
         };
         postMetaModelStub = {
@@ -78,9 +76,7 @@ describe('ExternalMediaInliner', function () {
                 get: postStub
             };
             postModelStub = {
-                findPage: sinon.stub().returns({
-                    data: [postModelInstanceStub]
-                }),
+                findAll: sinon.stub().returns([postModelInstanceStub]),
                 edit: sinon.stub().resolves()
             };
 
@@ -129,9 +125,7 @@ describe('ExternalMediaInliner', function () {
             };
 
             postModelStub = {
-                findPage: sinon.stub().returns({
-                    data: [postModelInstanceStub]
-                }),
+                findAll: sinon.stub().returns([postModelInstanceStub]),
                 edit: sinon.stub().resolves()
             };
 
@@ -180,9 +174,7 @@ describe('ExternalMediaInliner', function () {
                 get: postStub
             };
             postModelStub = {
-                findPage: sinon.stub().returns({
-                    data: [postModelInstanceStub]
-                }),
+                findAll: sinon.stub().returns([postModelInstanceStub]),
                 edit: sinon.stub().resolves()
             };
 
@@ -231,9 +223,7 @@ describe('ExternalMediaInliner', function () {
             };
 
             postModelStub = {
-                findPage: sinon.stub().returns({
-                    data: [postModelInstanceStub]
-                }),
+                findAll: sinon.stub().returns([postModelInstanceStub]),
                 edit: sinon.stub().resolves()
             };
 
@@ -286,9 +276,7 @@ describe('ExternalMediaInliner', function () {
             };
 
             postModelStub = {
-                findPage: sinon.stub().returns({
-                    data: [postModelInstanceStub]
-                }),
+                findAll: sinon.stub().returns([postModelInstanceStub]),
                 edit: sinon.stub().resolves()
             };
 
@@ -340,9 +328,7 @@ describe('ExternalMediaInliner', function () {
                 get: postStub
             };
             postModelStub = {
-                findPage: sinon.stub().returns({
-                    data: [postModelInstanceStub]
-                }),
+                findAll: sinon.stub().returns([postModelInstanceStub]),
                 edit: sinon.stub().resolves()
             };
 
@@ -389,9 +375,7 @@ describe('ExternalMediaInliner', function () {
             };
 
             postModelStub = {
-                findPage: sinon.stub().returns({
-                    data: [postModelInstanceStub]
-                })
+                findAll: sinon.stub().returns([postModelInstanceStub])
             };
 
             const inliner = new ExternalMediaInliner({
@@ -451,9 +435,7 @@ describe('ExternalMediaInliner', function () {
                     .returns(`{"version":"0.3.1","atoms":[],"cards":[["image",{"src":"${fileURL}"}]]}`)
             };
             postModelStub = {
-                findPage: sinon.stub().returns({
-                    data: [postModelInstanceStub]
-                }),
+                findAll: sinon.stub().returns([postModelInstanceStub]),
                 edit: sinon.stub().resolves()
             };
             const inliner = new ExternalMediaInliner({
@@ -486,9 +468,7 @@ describe('ExternalMediaInliner', function () {
                 get: postStub
             };
             postModelStub = {
-                findPage: sinon.stub().returns({
-                    data: [postModelStub]
-                }),
+                findAll: sinon.stub().returns([postModelStub]),
                 edit: sinon.stub().throws(new Error('Error saving the post'))
             };
             sinon.stub(path, 'relative')
@@ -569,9 +549,7 @@ describe('ExternalMediaInliner', function () {
                     .returns(imageURL)
             };
             const postModelMock = {
-                findPage: sinon.stub().returns({
-                    data: [postModelStub]
-                }),
+                findAll: sinon.stub().returns([postModelStub]),
                 edit: sinon.stub().resolves()
             };
             sinon.stub(path, 'relative')

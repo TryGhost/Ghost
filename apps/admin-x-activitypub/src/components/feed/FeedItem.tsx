@@ -1,7 +1,8 @@
+import FeedItemMenu from './FeedItemMenu';
 import React, {useEffect, useRef, useState} from 'react';
 import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
-import {Button, Heading, Icon, Menu, MenuItem, showToast} from '@tryghost/admin-x-design-system';
-import {Skeleton} from '@tryghost/shade';
+import {Button, LucideIcon, Skeleton} from '@tryghost/shade';
+import {Button as ButtonX, Heading, Icon, showToast} from '@tryghost/admin-x-design-system';
 
 import APAvatar from '../global/APAvatar';
 
@@ -12,6 +13,7 @@ import getUsername from '../../utils/get-username';
 import stripHtml from '../../utils/strip-html';
 import {handleProfileClick} from '../../utils/handle-profile-click';
 import {renderTimestamp} from '../../utils/render-timestamp';
+import {useDeleteMutationForUser} from '../../hooks/use-activity-pub-queries';
 
 function getAttachment(object: ObjectProperties) {
     let attachment;
@@ -168,7 +170,9 @@ function renderInboxAttachment(object: ObjectProperties, isLoading: boolean | un
 
 interface FeedItemProps {
     actor: ActorProperties;
+    allowDelete?: boolean;
     object: ObjectProperties;
+    parentId?: string;
     layout: string;
     type: string;
     commentCount?: number;
@@ -178,11 +182,27 @@ interface FeedItemProps {
     isLoading?: boolean;
     onClick?: () => void;
     onCommentClick: () => void;
+    onDelete?: () => void;
 }
 
 const noop = () => {};
 
-const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, commentCount = 0, repostCount = 0, showHeader = true, last, isLoading, onClick: onClickHandler = noop, onCommentClick}) => {
+const FeedItem: React.FC<FeedItemProps> = ({
+    actor,
+    allowDelete = false,
+    object,
+    parentId = undefined,
+    layout,
+    type,
+    commentCount = 0,
+    repostCount = 0,
+    showHeader = true,
+    last,
+    isLoading,
+    onClick: onClickHandler = noop,
+    onCommentClick,
+    onDelete = noop
+}) => {
     const timestamp =
         new Date(object?.published ?? new Date()).toLocaleDateString('default', {year: 'numeric', month: 'short', day: '2-digit'}) + ', ' + new Date(object?.published ?? new Date()).toLocaleTimeString('default', {hour: '2-digit', minute: '2-digit'});
 
@@ -190,6 +210,8 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
 
     const contentRef = useRef<HTMLDivElement>(null);
     const [isTruncated, setIsTruncated] = useState(false);
+
+    const deleteMutation = useDeleteMutationForUser('index');
 
     useEffect(() => {
         const element = contentRef.current;
@@ -203,18 +225,15 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
         // Don't need to know about setting timeouts or anything like that
     };
 
-    const [menuIsOpen, setMenuIsOpen] = useState(false);
-
     const onClick = () => {
-        if (menuIsOpen) {
-            return;
-        }
         onClickHandler();
     };
 
-    // const handleDelete = () => {
-    //     // Handle delete action
-    // };
+    const handleDelete = () => {
+        deleteMutation.mutate({id: object.id, parentId});
+
+        onDelete();
+    };
 
     const handleCopyLink = async () => {
         if (object?.url) {
@@ -233,54 +252,35 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
         author = typeof object.attributedTo === 'object' ? object.attributedTo as ActorProperties : actor;
     }
 
-    const menuItems: MenuItem[] = [];
-
-    menuItems.push({
-        id: 'copy-link',
-        label: 'Copy link to post',
-        onClick: handleCopyLink
-    });
-
-    // TODO: If this is your own Note/Article, you should be able to delete it
-    // menuItems.push({
-    //     id: 'delete',
-    //     label: 'Delete',
-    //     destructive: true,
-    //     onClick: handleDelete
-    // });
-
     const UserMenuTrigger = (
-        <Button
-            className={`transition-color relative z-[9998] flex h-[34px] w-[34px] items-center justify-center rounded-full bg-white hover:bg-gray-100 ${(layout === 'feed' || layout === 'modal') && 'ml-auto'}`}
-            hideLabel={true}
-            icon='dotdotdot'
-            iconColorClass={`${layout === 'inbox' ? 'text-gray-900 w-[12px] h-[12px]' : 'text-gray-500 w-[16px] h-[16px]'}`}
-            id='more'
-            size='md'
-            unstyled={true}
-        />
+        <Button className={`relative z-10 h-[34px] w-[34px] rounded-md ${layout === 'inbox' || layout === 'modal' ? 'text-gray-900 hover:text-gray-900 dark:text-gray-600 dark:hover:text-gray-600' : 'text-gray-500 hover:text-gray-500'} dark:bg-black dark:hover:bg-gray-950 [&_svg]:size-5`} variant='ghost'>
+            <LucideIcon.Ellipsis />
+        </Button>
     );
 
     if (layout === 'feed') {
         return (
             <>
                 {object && (
-                    <div className={`group/article relative -mx-6 -my-px cursor-pointer rounded-lg p-6 pb-[18px]`} data-layout='feed' data-object-id={object.id} onClick={onClick}>
-                        {(type === 'Announce') && <div className='z-10 mb-2 flex items-center gap-2 text-gray-700'>
-                            <div><Icon colorClass='text-gray-700 shrink-0' name='reload' size={'sm'}></Icon></div>
-                            <span className='flex min-w-0 items-center gap-1'><span className='truncate break-all hover:underline' title={getUsername(actor)} onClick={e => handleProfileClick(actor, e)}>{actor.name}</span> reposted</span>
+                    <div className={`group/article relative -mx-4 -my-px cursor-pointer rounded-lg p-6 px-8 pb-[18px]`} data-layout='feed' data-object-id={object.id} onClick={onClick}>
+                        {(type === 'Announce') && <div className='z-10 mb-2 flex items-center gap-2 text-gray-700 dark:text-gray-600'>
+                            <Icon colorClass='text-gray-700 shrink-0 dark:text-gray-600' name='reload' size={'sm'} />
+                            <div className='flex min-w-0 items-center gap-1 text-sm'>
+                                <span className='truncate break-all hover:underline' title={getUsername(actor)} onClick={e => handleProfileClick(actor, e)}>{actor.name}</span>
+                                reposted
+                            </div>
                         </div>}
                         <div className={`border-1 flex flex-col gap-2.5`} data-test-activity>
-                            <div className='relative z-30 flex min-w-0 items-center gap-3'>
+                            <div className='flex min-w-0 items-center gap-3'>
                                 <APAvatar author={author} />
-                                <div className='flex min-w-0 flex-col gap-0.5'>
-                                    <span className='min-w-0 truncate break-all font-semibold leading-[normal] hover:underline'
+                                <div className='flex min-w-0 grow flex-col gap-0.5'>
+                                    <span className='min-w-0 truncate break-all font-semibold leading-[normal] hover:underline dark:text-white'
                                         data-test-activity-heading
                                         onClick={e => handleProfileClick(author, e)}
                                     >
                                         {!isLoading ? author.name : <Skeleton className='w-24' />}
                                     </span>
-                                    <div className='flex w-full text-gray-700'>
+                                    <div className='flex w-full text-sm text-gray-700 dark:text-gray-600'>
                                         <span className='truncate leading-tight hover:underline'
                                             onClick={e => handleProfileClick(author, e)}
                                         >
@@ -291,12 +291,18 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                         </div>
                                     </div>
                                 </div>
-                                <Menu items={menuItems} open={menuIsOpen} position='end' setOpen={setMenuIsOpen} trigger={UserMenuTrigger}/>
+                                <FeedItemMenu
+                                    allowDelete={allowDelete}
+                                    layout='feed'
+                                    trigger={UserMenuTrigger}
+                                    onCopyLink={handleCopyLink}
+                                    onDelete={handleDelete}
+                                />
                             </div>
                             <div className={`relative col-start-2 col-end-3 w-full gap-4`}>
                                 <div className='flex flex-col'>
                                     <div className=''>
-                                        {(object.type === 'Article') ? <div className='rounded-md border border-gray-150 transition-colors hover:bg-gray-75'>
+                                        {(object.type === 'Article') ? <div className='rounded-md border border-gray-150 transition-colors hover:bg-gray-75 dark:border-gray-950 dark:hover:bg-gray-950'>
                                             {renderFeedAttachment(object, layout)}
                                             <div className='p-4'>
                                                 <Heading className='mb-1 text-pretty leading-tight' level={5} data-test-activity-heading>{object.name}</Heading>
@@ -304,7 +310,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                             </div>
                                         </div> :
                                             <div className='relative'>
-                                                <div className='ap-note-content line-clamp-[10] text-pretty leading-[1.4285714286] tracking-[-0.006em] text-gray-900'>
+                                                <div className='ap-note-content line-clamp-[10] text-pretty leading-[1.4285714286] tracking-[-0.006em] text-gray-900 dark:text-gray-600'>
                                                     {!isLoading ?
                                                         <div dangerouslySetInnerHTML={{
                                                             __html: object.content ?? ''
@@ -348,8 +354,8 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                     <div data-object-id={object.id}>
                         <div className={`group/article relative`} data-layout='modal' onClick={onClick}>
                             <div className={`z-10 -my-1 grid grid-cols-[auto_1fr] grid-rows-[auto_1fr] gap-3 pb-3 pt-4`} data-test-activity>
-                                {(type === 'Announce') && <div className='z-10 col-span-2 mb-2 flex items-center gap-2 text-gray-700'>
-                                    <div><Icon colorClass='text-gray-700 shrink-0' name='reload' size={'sm'}></Icon></div>
+                                {(type === 'Announce') && <div className='z-10 col-span-2 mb-2 flex items-center gap-2 text-gray-700 dark:text-gray-600'>
+                                    <div><Icon colorClass='text-gray-700 shrink-0 dark:text-gray-600' name='reload' size={'sm'}></Icon></div>
                                     <span className='flex min-w-0 items-center gap-1'><span className='truncate break-all hover:underline' title={getUsername(actor)} onClick={e => handleProfileClick(actor, e)}>{actor.name}</span> reposted</span>
                                 </div>}
                                 {(showHeader) && <><div className='relative z-10 pt-[3px]'>
@@ -357,17 +363,17 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                 </div>
                                 <div className='relative z-10 flex w-full min-w-0 flex-col overflow-visible text-[1.5rem]'>
                                     <div className='flex w-full'>
-                                        <span className='min-w-0 truncate whitespace-nowrap font-semibold after:mx-1 after:font-normal after:text-gray-700 after:content-["·"]' data-test-activity-heading>{author.name}</span>
+                                        <span className='min-w-0 truncate whitespace-nowrap font-semibold after:mx-1 after:font-normal after:text-gray-700 after:content-["·"] after:dark:text-gray-600' data-test-activity-heading>{author.name}</span>
                                         <div>{renderTimestamp(object)}</div>
                                     </div>
                                     <div className='flex w-full'>
-                                        <span className='min-w-0 truncate text-gray-700'>{getUsername(author)}</span>
+                                        <span className='min-w-0 truncate text-gray-700 dark:text-gray-600'>{getUsername(author)}</span>
                                     </div>
                                 </div></>}
                                 <div className={`relative z-10 col-start-1 col-end-3 w-full gap-4`}>
                                     <div className='flex flex-col'>
                                         {object.name && <Heading className='mb-1 leading-tight' level={4} data-test-activity-heading>{object.name}</Heading>}
-                                        <div dangerouslySetInnerHTML={({__html: object.content ?? ''})} className='ap-note-content-large text-pretty text-[1.6rem] tracking-[-0.011em] text-gray-900'></div>
+                                        <div dangerouslySetInnerHTML={({__html: object.content ?? ''})} className='ap-note-content-large text-pretty text-[1.6rem] tracking-[-0.011em] text-gray-900 dark:text-gray-600'></div>
                                         {renderFeedAttachment(object, layout)}
                                         <div className='space-between ml-[-7px] mt-3 flex'>
                                             <FeedItemStats
@@ -379,14 +385,20 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                                 onCommentClick={onCommentClick}
                                                 onLikeClick={onLikeClick}
                                             />
-                                            <Menu items={menuItems} open={menuIsOpen} position='end' setOpen={setMenuIsOpen} trigger={UserMenuTrigger}/>
+                                            <FeedItemMenu
+                                                allowDelete={allowDelete}
+                                                layout='modal'
+                                                trigger={UserMenuTrigger}
+                                                onCopyLink={handleCopyLink}
+                                                onDelete={handleDelete}
+                                            />
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             <div className={`absolute -inset-x-3 -inset-y-0 z-0 rounded transition-colors`}></div>
                         </div>
-                        <div className="mt-3 h-px bg-gray-200"></div>
+                        <div className="mt-3 h-px bg-gray-200 dark:bg-gray-950"></div>
                     </div>
 
                 )}
@@ -412,15 +424,21 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                             <span className='truncate text-gray-700'>{getUsername(author)}</span>
                                         </div>
                                     </div>
-                                    <Menu items={menuItems} open={menuIsOpen} position='end' setOpen={setMenuIsOpen} trigger={UserMenuTrigger}/>
+                                    <FeedItemMenu
+                                        allowDelete={allowDelete}
+                                        layout='reply'
+                                        trigger={UserMenuTrigger}
+                                        onCopyLink={handleCopyLink}
+                                        onDelete={handleDelete}
+                                    />
                                 </div>
                                 <div className={`relative z-10 col-start-2 col-end-3 w-full gap-4`}>
                                     <div className='flex flex-col'>
                                         {(object.type === 'Article') && renderFeedAttachment(object, layout)}
                                         {object.name && <Heading className='my-1 text-pretty leading-tight' level={5} data-test-activity-heading>{object.name}</Heading>}
-                                        {(object.preview && object.type === 'Article') ? <div className='line-clamp-3 leading-tight'>{object.preview.content}</div> : <div dangerouslySetInnerHTML={({__html: object.content ?? ''})} className='ap-note-content text-pretty tracking-[-0.006em] text-gray-900'></div>}
+                                        {(object.preview && object.type === 'Article') ? <div className='line-clamp-3 leading-tight'>{object.preview.content}</div> : <div dangerouslySetInnerHTML={({__html: object.content ?? ''})} className='ap-note-content text-pretty tracking-[-0.006em] text-gray-900 dark:text-gray-600'></div>}
                                         {(object.type === 'Note') && renderFeedAttachment(object, layout)}
-                                        {(object.type === 'Article') && <Button
+                                        {(object.type === 'Article') && <ButtonX
                                             className={`mt-3 self-start text-gray-900 transition-all hover:opacity-60`}
                                             color='grey'
                                             fullWidth={true}
@@ -453,19 +471,19 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
         return (
             <>
                 {object && (
-                    <div className='group/article relative -mx-6 -my-px flex min-h-[112px] min-w-0 cursor-pointer items-center justify-between rounded-lg p-6 hover:bg-gray-75' data-layout='inbox' data-object-id={object.id} onClick={onClick}>
+                    <div className='group/article relative -mx-4 -my-px flex min-h-[112px] min-w-0 cursor-pointer items-center justify-between rounded-lg p-6 hover:bg-gray-75 dark:hover:bg-gray-950' data-layout='inbox' data-object-id={object.id} onClick={onClick}>
                         <div className='w-full min-w-0'>
                             <div className='z-10 mb-1.5 flex w-full min-w-0 items-center gap-1.5 text-sm group-hover/article:border-transparent'>
                                 {!isLoading ?
                                     <>
                                         <APAvatar author={author} size='2xs' />
-                                        <span className='min-w-0 truncate break-all font-semibold text-gray-900 hover:underline'
+                                        <span className='min-w-0 truncate break-all font-semibold text-gray-900 hover:underline dark:text-gray-600'
                                             title={getUsername(author)}
                                             data-test-activity-heading
                                             onClick={e => handleProfileClick(author, e)}
                                         >{author.name}
                                         </span>
-                                        {(type === 'Announce') && <span className='z-10 flex items-center gap-1 text-gray-700'><Icon colorClass='text-gray-700 shrink-0' name='reload' size={'sm'}></Icon><span className='hover:underline' title={getUsername(actor)} onClick={e => handleProfileClick(actor, e)}>{actor.name}</span> reposted</span>}
+                                        {(type === 'Announce') && <span className='z-10 flex items-center gap-1 text-gray-700 dark:text-gray-600'><Icon colorClass='text-gray-700 shrink-0 dark:text-gray-600' name='reload' size={'sm'}></Icon><span className='hover:underline' title={getUsername(actor)} onClick={e => handleProfileClick(actor, e)}>{actor.name}</span> reposted</span>}
                                         <span className='shrink-0 whitespace-nowrap text-gray-600 before:mr-1 before:content-["·"]' title={`${timestamp}`}>{renderTimestamp(object)}</span>
                                     </> :
                                     <Skeleton className='w-24' />
@@ -480,7 +498,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                             }}></span>
                                         ))}
                                     </Heading>
-                                    <div className='ap-note-content line-clamp-2 w-full max-w-[600px] text-pretty text-base leading-normal text-gray-800'>
+                                    <div className='ap-note-content line-clamp-2 w-full max-w-[600px] text-pretty text-base leading-normal text-gray-800 dark:text-gray-600'>
                                         {!isLoading ?
                                             <div dangerouslySetInnerHTML={{
                                                 __html: stripHtml(object.preview?.content ?? object.content ?? '')
@@ -493,7 +511,7 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                         {!isLoading ? (object.content && `${getReadingTime(object.content)}`) : <Skeleton className='w-16' />}
                                     </span>
                                 </div>
-                                <div className='invisible absolute right-4 top-1/2 z-[49] flex -translate-y-1/2 flex-col rounded-full bg-white p-1 shadow-md group-hover/article:visible'>
+                                <div className='invisible absolute right-3 top-8 z-[49] flex -translate-y-1/2 rounded-lg bg-white p-1 shadow-md group-hover/article:visible dark:bg-black'>
                                     <FeedItemStats
                                         commentCount={commentCount}
                                         layout={layout}
@@ -503,7 +521,13 @@ const FeedItem: React.FC<FeedItemProps> = ({actor, object, layout, type, comment
                                         onCommentClick={onCommentClick}
                                         onLikeClick={onLikeClick}
                                     />
-                                    <Menu items={menuItems} open={menuIsOpen} position='end' setOpen={setMenuIsOpen} trigger={UserMenuTrigger}/>
+                                    <FeedItemMenu
+                                        allowDelete={allowDelete}
+                                        layout='inbox'
+                                        trigger={UserMenuTrigger}
+                                        onCopyLink={handleCopyLink}
+                                        onDelete={handleDelete}
+                                    />
                                 </div>
                             </div>
                         </div>

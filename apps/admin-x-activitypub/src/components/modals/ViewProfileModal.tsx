@@ -2,7 +2,7 @@ import React, {useEffect, useRef, useState} from 'react';
 
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 
-import {Button, Heading, Icon, List, LoadingIndicator, Modal, NoValueLabel, Tab,TabView} from '@tryghost/admin-x-design-system';
+import {Button, Heading, Icon, List, LoadingIndicator, Modal, NoValueLabel, Tab,TabView, useDesignSystem} from '@tryghost/admin-x-design-system';
 import {UseInfiniteQueryResult} from '@tanstack/react-query';
 
 import {type GetProfileFollowersResponse, type GetProfileFollowingResponse} from '../../api/activitypub';
@@ -73,7 +73,7 @@ const ActorList: React.FC<ActorListProps> = ({
     }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
     return (
-        <div>
+        <div className='pt-3'>
             {
                 hasNextPage === false && actors.length === 0 ? (
                     <NoValueLabel icon='user-add'>
@@ -81,7 +81,7 @@ const ActorList: React.FC<ActorListProps> = ({
                     </NoValueLabel>
                 ) : (
                     <List>
-                        {actors.map(({actor, isFollowing}, index) => {
+                        {actors.map(({actor, isFollowing}) => {
                             return (
                                 <React.Fragment key={actor.id}>
                                     <ActivityItem key={actor.id}
@@ -101,7 +101,6 @@ const ActorList: React.FC<ActorListProps> = ({
                                             type='secondary'
                                         />
                                     </ActivityItem>
-                                    {index < actors.length - 1 && <Separator />}
                                 </React.Fragment>
                             );
                         })}
@@ -170,13 +169,20 @@ const PostsTab: React.FC<{handle: string}> = ({handle}) => {
                             <div>
                                 <FeedItem
                                     actor={post.actor}
+                                    allowDelete={post.object.authored}
                                     commentCount={post.object.replyCount}
                                     layout='feed'
                                     object={post.object}
                                     repostCount={post.object.repostCount}
                                     type={post.type}
-                                    onClick={() => handleViewContent(post, false)}
-                                    onCommentClick={() => handleViewContent(post, true)}
+                                    onClick={() => handleViewContent({
+                                        ...post,
+                                        id: post.object.id
+                                    }, false)}
+                                    onCommentClick={() => handleViewContent({
+                                        ...post,
+                                        id: post.object.id
+                                    }, true)}
                                 />
                                 {index < posts.length - 1 && <Separator />}
                             </div>
@@ -233,6 +239,7 @@ const ViewProfileModal: React.FC<ViewProfileModalProps> = ({
 }) => {
     const modal = useModal();
     const [selectedTab, setSelectedTab] = useState<ProfileTab>('posts');
+    const {darkMode} = useDesignSystem();
 
     const {data: profile, isLoading} = useProfileForUser('index', handle);
 
@@ -283,17 +290,17 @@ const ViewProfileModal: React.FC<ViewProfileModalProps> = ({
         <Modal
             align='right'
             animate={true}
-            backDrop={false}
+            backDrop={darkMode}
             footer={<></>}
             height={'full'}
             padding={false}
             size='bleed'
             width={640}
         >
-            <div className='sticky top-0 z-50 border-gray-200 bg-white py-3'>
+            <div className='sticky top-0 z-50 border-gray-200 bg-white py-3 dark:border-gray-950 dark:bg-black'>
                 <div className='grid h-8 grid-cols-3'>
                     <div className='col-[3/4] flex items-center justify-end space-x-6 px-8'>
-                        <Button className='transition-color flex h-10 w-10 items-center justify-center rounded-full bg-white hover:bg-gray-100' icon='close' size='sm' unstyled onClick={() => modal.remove()}/>
+                        <Button className='transition-color flex h-10 w-10 items-center justify-center rounded-full bg-white hover:bg-gray-100 dark:bg-black dark:hover:bg-gray-950' icon='close' size='sm' unstyled onClick={() => modal.remove()}/>
                     </div>
                 </div>
             </div>
@@ -316,9 +323,9 @@ const ViewProfileModal: React.FC<ViewProfileModalProps> = ({
                                     src={profile.actor.image.url}
                                 />
                             </div>)}
-                            <div className={`${profile.actor.image && '-mt-12'} px-4`}>
+                            <div className={`${profile.actor.image && '-mt-12'} px-6`}>
                                 <div className='flex items-end justify-between'>
-                                    <div className='rounded-xl outline outline-4 outline-white'>
+                                    <div className='-ml-2 rounded-full bg-white p-1 dark:bg-black'>
                                         <APAvatar
                                             author={profile.actor}
                                             size='lg'

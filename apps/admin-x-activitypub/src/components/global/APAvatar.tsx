@@ -19,11 +19,12 @@ interface APAvatarProps {
     } | undefined;
     size?: AvatarSize;
     isLoading?: boolean;
+    onClick?: () => void;
 }
 
-const APAvatar: React.FC<APAvatarProps> = ({author, size, isLoading = false}) => {
+const APAvatar: React.FC<APAvatarProps> = ({author, size, isLoading = false, onClick}) => {
     let iconSize = 18;
-    let containerClass = `shrink-0 items-center justify-center overflow-hidden relative z-10 flex ${size === 'lg' ? '' : 'hover:opacity-80 cursor-pointer'}`;
+    let containerClass = `shrink-0 items-center justify-center rounded-full overflow-hidden relative z-10 flex ${size === 'lg' ? '' : 'hover:opacity-80 cursor-pointer'}`;
     let imageClass = 'z-10 object-cover';
     const [iconUrl, setIconUrl] = useState(author?.icon?.url);
 
@@ -34,29 +35,29 @@ const APAvatar: React.FC<APAvatarProps> = ({author, size, isLoading = false}) =>
     switch (size) {
     case '2xs':
         iconSize = 10;
-        containerClass = clsx('h-4 w-4 rounded-md', containerClass);
+        containerClass = clsx('h-4 w-4', containerClass);
         imageClass = clsx('h-4 w-4', imageClass);
         break;
     case 'xs':
         iconSize = 12;
-        containerClass = clsx('h-6 w-6 rounded-lg', containerClass);
+        containerClass = clsx('h-6 w-6', containerClass);
         imageClass = clsx('h-6 w-6', imageClass);
         break;
     case 'notification':
         iconSize = 12;
-        containerClass = clsx('h-9 w-9 rounded-lg', containerClass);
+        containerClass = clsx('h-9 w-9', containerClass);
         imageClass = clsx('h-9 w-9', imageClass);
         break;
     case 'sm':
-        containerClass = clsx('h-10 w-10 rounded-xl', containerClass);
+        containerClass = clsx('h-10 w-10', containerClass);
         imageClass = clsx('h-10 w-10', imageClass);
         break;
     case 'lg':
-        containerClass = clsx('h-22 w-22 rounded-xl', containerClass);
+        containerClass = clsx('h-22 w-22', containerClass);
         imageClass = clsx('h-22 w-22', imageClass);
         break;
     default:
-        containerClass = clsx('h-10 w-10 rounded-lg', containerClass);
+        containerClass = clsx('h-10 w-10', containerClass);
         imageClass = clsx('h-10 w-10', imageClass);
         break;
     }
@@ -66,14 +67,15 @@ const APAvatar: React.FC<APAvatarProps> = ({author, size, isLoading = false}) =>
     }
 
     if (!iconUrl) {
-        containerClass = clsx(containerClass, 'bg-gray-100');
+        containerClass = clsx(containerClass, 'bg-gray-100 dark:bg-gray-900');
     }
 
     const handle = author?.handle || getUsername(author as ActorProperties);
 
-    const onClick = (e: React.MouseEvent) => {
+    const handleClick = (e: React.MouseEvent) => {
         e.stopPropagation();
         NiceModal.show(ViewProfileModal, {handle});
+        onClick?.();
     };
 
     const title = `${author?.name} ${handle}`;
@@ -83,7 +85,7 @@ const APAvatar: React.FC<APAvatarProps> = ({author, size, isLoading = false}) =>
             <div
                 className={containerClass}
                 title={title}
-                onClick={size === 'lg' ? undefined : onClick}
+                onClick={size === 'lg' ? undefined : handleClick}
             >
                 <img
                     className={imageClass}
@@ -98,7 +100,7 @@ const APAvatar: React.FC<APAvatarProps> = ({author, size, isLoading = false}) =>
         <div
             className={containerClass}
             title={title}
-            onClick={onClick}
+            onClick={handleClick}
         >
             <Icon
                 colorClass='text-gray-600'

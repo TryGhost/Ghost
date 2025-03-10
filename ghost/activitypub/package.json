@@ -23,11 +23,11 @@
   ],
   "devDependencies": {
     "@tryghost/identity-token-service": "0.0.0",
-    "@tryghost/logging": "2.4.20",
+    "@tryghost/logging": "2.4.21",
     "c8": "10.1.2",
     "knex": "3.1.0",
     "mocha": "10.8.2",
-    "nock": "13.5.5",
+    "nock": "13.5.6",
     "sinon": "19.0.2",
     "sqlite3": "5.1.7",
     "ts-node": "10.9.2",

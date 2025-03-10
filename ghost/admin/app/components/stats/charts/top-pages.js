@@ -60,7 +60,7 @@ export default class TopPages extends Component {
         );
 
         const {data, meta, error, loading} = useQuery({
-            endpoint: `${this.config.stats.endpoint}/v0/pipes/top_pages__v${TB_VERSION}.json`,
+            endpoint: `${this.config.stats.endpoint}/v0/pipes/api_top_pages__v${TB_VERSION}.json`,
             token: this.config.stats.token,
             params
         });

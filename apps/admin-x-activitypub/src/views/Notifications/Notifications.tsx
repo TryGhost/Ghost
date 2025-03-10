@@ -1,5 +1,5 @@
-import React, {useEffect, useRef} from 'react';
-import {Skeleton} from '@tryghost/shade';
+import React, {useEffect, useRef, useState} from 'react';
+import {LucideIcon, Skeleton} from '@tryghost/shade';
 
 import NiceModal from '@ebay/nice-modal-react';
 import {Activity, ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
@@ -7,10 +7,10 @@ import {Button, LoadingIndicator, NoValueLabel} from '@tryghost/admin-x-design-s
 
 import APAvatar from '@components/global/APAvatar';
 import ArticleModal from '@components/feed/ArticleModal';
-import MainNavigation from '@components/navigation/MainNavigation';
 import NotificationItem from '@components/activities/NotificationItem';
 import Separator from '@components/global/Separator';
 
+import Layout from '@components/layout';
 import getUsername from '@utils/get-username';
 import stripHtml from '@utils/strip-html';
 import truncate from '@utils/truncate';
@@ -264,11 +264,29 @@ const Notifications: React.FC<NotificationsProps> = () => {
         };
     }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
+    const [showLoadingMessage, setShowLoadingMessage] = useState(false);
+
+    useEffect(() => {
+        let timeoutID: number;
+
+        if (isLoading) {
+            timeoutID = setTimeout(() => {
+                setShowLoadingMessage(true);
+            }, 3000);
+        } else {
+            setShowLoadingMessage(false);
+        }
+
+        return () => {
+            clearTimeout(timeoutID);
+        };
+    }, [isLoading]);
+
     const handleActivityClick = (group: GroupedActivity, index: number) => {
         switch (group.type) {
         case ACTIVITY_TYPE.CREATE:
             NiceModal.show(ArticleModal, {
-                activityId: group.id,
+                activityId: group.object.id,
                 object: group.object,
                 actor: group.actors[0],
                 focusReplies: true,
@@ -302,8 +320,13 @@ const Notifications: React.FC<NotificationsProps> = () => {
     };
 
     return (
-        <>
-            <MainNavigation page='notifications'/>
+        <Layout>
+            {isLoading && showLoadingMessage && (
+                <div className='absolute bottom-8 left-8 right-[calc(292px+64px)] flex animate-fade-in items-start justify-center rounded-md bg-grey-100 px-3 py-2 font-medium backdrop-blur-md'>
+                    <LucideIcon.Gauge className='mr-1.5 min-w-5 text-purple' size={20} strokeWidth={1.5} />
+                    Notifications are a little slow at the moment, we&apos;re working on improving the performance.
+                </div>
+            )}
             <div className='z-0 flex w-full flex-col items-center'>
                 {
                     isLoading === false && groupedActivities.length === 0 && (
@@ -317,11 +340,11 @@ const Notifications: React.FC<NotificationsProps> = () => {
                 {
                     (groupedActivities.length > 0) && (
                         <>
-                            <div className='my-8 flex w-full max-w-[560px] flex-col'>
+                            <div className='my-8 flex w-full max-w-[620px] flex-col'>
                                 {groupedActivities.map((group, index) => (
                                     <React.Fragment key={group.id || `${group.type}_${index}`}>
                                         <NotificationItem
-                                            className='hover:bg-gray-100'
+                                            className='hover:bg-gray-75 dark:hover:bg-gray-950'
                                             onClick={() => handleActivityClick(group, index)}
                                         >
                                             {!isLoading ? <NotificationItem.Icon type={getActivityBadge(group)} /> : <Skeleton className='rounded-full' containerClassName='flex h-10 w-10' />}
@@ -346,7 +369,7 @@ const Notifications: React.FC<NotificationsProps> = () => {
 
                                                         {group.actors.length > 1 && (
                                                             <Button
-                                                                className={`transition-color flex h-9 items-center rounded-full bg-transparent text-gray-700 hover:opacity-60 ${openStates[group.id || `${group.type}_${index}`] ? 'w-full justify-start pl-1' : '-ml-2 w-9 justify-center'}`}
+                                                                className={`transition-color flex h-9 items-center rounded-full bg-transparent text-gray-700 hover:opacity-60 dark:text-gray-600 ${openStates[group.id || `${group.type}_${index}`] ? 'w-full justify-start pl-1' : '-ml-2 w-9 justify-center'}`}
                                                                 hideLabel={!openStates[group.id || `${group.type}_${index}`]}
                                                                 icon='chevron-down'
                                                                 iconColorClass={`w-[12px] h-[12px] ${openStates[group.id || `${group.type}_${index}`] ? 'rotate-180' : ''}`}
@@ -368,8 +391,8 @@ const Notifications: React.FC<NotificationsProps> = () => {
                                                                         onClick={e => handleProfileClick(actor, e)}
                                                                     >
                                                                         <APAvatar author={actor} size='xs' />
-                                                                        <span className='ml-2 text-base font-semibold'>{actor.name}</span>
-                                                                        <span className='ml-1 text-base text-gray-700'>{getUsername(actor)}</span>
+                                                                        <span className='ml-2 text-base font-semibold dark:text-white'>{actor.name}</span>
+                                                                        <span className='ml-1 text-base text-gray-700 dark:text-gray-600'>{getUsername(actor)}</span>
                                                                     </div>
                                                                 ))}
                                                             </div>
@@ -378,7 +401,7 @@ const Notifications: React.FC<NotificationsProps> = () => {
                                                 </div>
                                             </NotificationItem.Avatars>
                                             <NotificationItem.Content>
-                                                <div className='line-clamp-2 text-pretty text-black'>
+                                                <div className='line-clamp-2 text-pretty text-black dark:text-white'>
                                                     {!isLoading ?
                                                         <NotificationGroupDescription group={group} /> :
                                                         <>
@@ -394,7 +417,7 @@ const Notifications: React.FC<NotificationsProps> = () => {
                                                 ) && (
                                                     <div
                                                         dangerouslySetInnerHTML={{__html: stripHtml(group.object?.content || '')}}
-                                                        className='ap-note-content mt-1 line-clamp-2 text-pretty text-gray-700'
+                                                        className='ap-note-content mt-1 line-clamp-2 text-pretty text-gray-700 dark:text-gray-600'
                                                     />
                                                 )}
                                             </NotificationItem.Content>
@@ -413,7 +436,7 @@ const Notifications: React.FC<NotificationsProps> = () => {
                     )
                 }
             </div>
-        </>
+        </Layout>
     );
 };
 

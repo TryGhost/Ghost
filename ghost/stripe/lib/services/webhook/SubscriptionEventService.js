@@ -1,10 +1,29 @@
 const errors = require('@tryghost/errors');
 const _ = require('lodash');
+
+/**
+ * Handles `customer.subscription.*` webhook events
+ * 
+ * The `customer.subscription.*` events are triggered when a customer's subscription status changes.
+ * 
+ * This service is responsible for handling these events and updating the subscription status in Ghost,
+ * although it mostly delegates the responsibility to the `MemberRepository`.
+ */
 module.exports = class SubscriptionEventService {
+    /**
+     * @param {object} deps
+     * @param {import('../../repositories/MemberRepository')} deps.memberRepository
+     */
     constructor(deps) {
         this.deps = deps;
     }
 
+    /**
+     * Handles a `customer.subscription.*` event
+     * 
+     * Looks up the member by the Stripe customer ID and links the subscription to the member.
+     * @param {import('stripe').Stripe.Subscription} subscription
+     */
     async handleSubscriptionEvent(subscription) {
         const subscriptionPriceData = _.get(subscription, 'items.data');
         if (!subscriptionPriceData || subscriptionPriceData.length !== 1) {

@@ -12,7 +12,7 @@ export interface Profile {
     isFollowing: boolean;
 }
 
-interface Account {
+export interface Account {
     id: string;
     name: string;
     handle: string;
@@ -38,8 +38,8 @@ export interface SearchResults {
     accounts: AccountSearchResult[];
 }
 
-export interface ActivityThread {
-    items: Activity[];
+export interface Thread {
+    posts: Post[];
 }
 
 export type ActivityPubCollectionResponse<T> = {data: T[], next: string | null};
@@ -77,8 +77,9 @@ export interface GetAccountFollowsResponse {
 }
 
 export enum PostType {
+    Note = 0,
     Article = 1,
-    Note = 2,
+    Tombstone = 2
 }
 
 export interface Post {
@@ -101,6 +102,7 @@ export interface Post {
         url: string;
     }[];
     author: Pick<Account, 'id' | 'handle' | 'avatarUrl' | 'name' | 'url'>;
+    authoredByMe: boolean;
     repostCount: number;
     repostedByMe: boolean;
     repostedBy: Pick<
@@ -133,7 +135,7 @@ export class ActivityPubAPI {
         }
     }
 
-    private async fetchJSON(url: URL, method: 'GET' | 'POST' = 'GET', body?: object): Promise<object | null> {
+    private async fetchJSON(url: URL, method: 'DELETE' | 'GET' | 'POST' = 'GET', body?: object): Promise<object | null> {
         const token = await this.getToken();
         const options: RequestInit = {
             method,
@@ -147,6 +149,11 @@ export class ActivityPubAPI {
             (options.headers! as Record<string, string>)['Content-Type'] = 'application/json';
         }
         const response = await this.fetch(url, options);
+
+        if (response.status === 204) {
+            return null;
+        }
+
         const json = await response.json();
         return json;
     }
@@ -298,6 +305,11 @@ export class ActivityPubAPI {
         return response;
     }
 
+    async delete(id: string): Promise<void> {
+        const url = new URL(`.ghost/activitypub/post/${encodeURIComponent(id)}`, this.apiUrl);
+        await this.fetchJSON(url, 'DELETE');
+    }
+
     get userApiUrl() {
         return new URL(`.ghost/activitypub/users/${this.handle}`, this.apiUrl);
     }
@@ -426,10 +438,10 @@ export class ActivityPubAPI {
         };
     }
 
-    async getThread(id: string): Promise<ActivityThread> {
+    async getThread(id: string): Promise<Thread> {
         const url = new URL(`.ghost/activitypub/thread/${encodeURIComponent(id)}`, this.apiUrl);
         const json = await this.fetchJSON(url);
-        return json as ActivityThread;
+        return json as Thread;
     }
 
     get accountApiUrl() {

@@ -7,11 +7,12 @@ const labs = require('../../../shared/labs');
 const getCaptchaSettings = () => {
     if (labs.isSet('captcha')) {
         return {
-            captcha_enabled: config.get('captcha:enabled'),
             captcha_sitekey: config.get('captcha:siteKey')
         };
     } else {
-        return {};
+        return {
+            captcha_enabled: false
+        };
     }
 };
 

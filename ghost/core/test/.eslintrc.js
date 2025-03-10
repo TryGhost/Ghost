@@ -11,6 +11,15 @@ module.exports = {
         'eslint:recommended',
         'plugin:ghost/test'
     ],
+    overrides: [
+        {
+            files: ['**/*.ts'],
+            parser: '@typescript-eslint/parser',
+            extends: [
+                'plugin:ghost/test'
+            ]
+        }
+    ],
     rules: {
         // TODO: remove this rule once it's turned into "error" in the base plugin
         'no-shadow': 'error',

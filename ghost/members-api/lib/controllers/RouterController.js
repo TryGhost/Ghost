@@ -1,5 +1,6 @@
 const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
+const sanitizeHtml = require('sanitize-html');
 const {BadRequestError, NoPermissionError, UnauthorizedError, DisabledFeatureError} = require('@tryghost/errors');
 const errors = require('@tryghost/errors');
 const {isEmail} = require('@tryghost/validator');
@@ -478,6 +479,7 @@ module.exports = class RouterController {
                 ...data
             });
         } else if (type === 'donation') {
+            options.personalNote = parsePersonalNote(req.body.personalNote);
             response = await this._createDonationCheckoutSession(options);
         }
 
@@ -645,3 +647,21 @@ module.exports = class RouterController {
         }
     }
 };
+
+function parsePersonalNote(rawText) {
+    if (rawText && typeof rawText !== 'string') {
+        logging.warn('Donation personal note is not a string, ignoring');
+        return '';
+    }
+    if (rawText && rawText.length > 255) {
+        logging.warn('Donation personal note is too long, ignoring:', rawText);
+        return '';
+    }
+
+    const safeInput = sanitizeHtml(rawText, {
+        allowedTags: [],
+        allowedAttributes: {}
+    });
+
+    return safeInput;
+}

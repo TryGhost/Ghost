@@ -1,6 +1,5 @@
-// Switch these lines once there are useful utils
-// const testUtils = require('./utils');
-require('./utils');
+require('should');
+
 const knex = require('knex');
 const importers = require('../lib/importers');
 const ProductsImporter = importers.find(i => i.table === 'products');

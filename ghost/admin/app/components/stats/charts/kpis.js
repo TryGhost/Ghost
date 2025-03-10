@@ -21,7 +21,7 @@ export default class KpisComponent extends Component {
         );
 
         const {data, meta, error, loading} = useQuery({
-            endpoint: `${this.config.stats.endpoint}/v0/pipes/kpis__v${TB_VERSION}.json`,
+            endpoint: `${this.config.stats.endpoint}/v0/pipes/api_kpis__v${TB_VERSION}.json`,
             token: this.config.stats.token,
             params
         });

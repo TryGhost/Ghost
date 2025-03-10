@@ -293,7 +293,7 @@ export const RepliedToSnippet: React.FC<{comment: Comment}> = ({comment}) => {
 
     const linkToReply = inReplyToComment && inReplyToComment.status === 'published';
 
-    const className = 'font-medium text-neutral-900/60 transition-colors dark:text-white/70';
+    const className = 'font-medium text-neutral-900/60 break-all transition-colors dark:text-white/70';
 
     return (
         linkToReply

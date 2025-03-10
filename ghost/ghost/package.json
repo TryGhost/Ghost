@@ -40,6 +40,6 @@
     "bson-objectid": "2.0.4",
     "express": "4.21.2",
     "reflect-metadata": "0.1.14",
-    "rxjs": "7.8.1"
+    "rxjs": "7.8.2"
   }
 }

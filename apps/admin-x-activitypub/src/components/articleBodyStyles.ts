@@ -16,6 +16,7 @@ const articleBodyStyles = (siteUrl: string|undefined) => {
     --color-secondary-text: rgb(0 0 0 / 0.55);
     --color-border: rgb(0 0 0 / 0.08);
     --color-dark-border: rgb(0 0 0 / 0.55);
+    --background-color: #fff;
     --font-sans: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
     --font-serif: "EB Garamond", Georgia, Times, serif;
     --font-serif-alt: Georgia, Times, serif;
@@ -33,6 +34,7 @@ const articleBodyStyles = (siteUrl: string|undefined) => {
     --color-secondary-text: rgb(255 255 255 / 0.64);
     --color-border: rgb(255 255 255 / 0.15);
     --color-dark-border: rgb(255 255 255 / 0.5);
+    --background-color: #15171a;
 }
 
 /* 2. Resets
