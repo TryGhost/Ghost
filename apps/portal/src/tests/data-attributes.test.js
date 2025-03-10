@@ -3,7 +3,8 @@ import {site as FixturesSite, member as FixtureMember} from '../utils/test-fixtu
 import {fireEvent, appRender, within} from '../utils/test-utils';
 import setupGhostApi from '../utils/api';
 import * as helpers from '../utils/helpers';
-import {formSubmitHandler, planClickHandler} from '../data-attributes';
+import {formSubmitHandler, planClickHandler, handleDataAttributes} from '../data-attributes';
+import * as i18nLib from '@tryghost/i18n';
 
 // Mock data
 function getMockData({newsletterQuerySelectorResult = null} = {}) {
@@ -241,9 +242,25 @@ describe('Member Data attributes:', () => {
                 }
             );
         });
-    });
 
-    describe('data-members-plan', () => {
+        test('sets correct i18n language based on site locale', async () => {
+            const {event, errorEl, siteUrl, clickHandler, site, member, element} = getMockData();
+            // Override the site locale to 'de'
+            site.locale = 'de';
+
+            // Mock i18nLib to verify it's called with correct parameters
+            const mockI18n = {
+                t: jest.fn(str => str)
+            };
+            jest.spyOn(i18nLib, 'default').mockImplementation(() => mockI18n);
+
+            await planClickHandler({event, errorEl, siteUrl, clickHandler, site, member, el: element});
+
+            // Verify i18nLib was called with correct locale
+            expect(i18nLib.default).toHaveBeenCalledWith('de', 'portal');
+            expect(mockI18n.t).toBeDefined();
+        });
+
         test('allows free member upgrade via direct checkout', async () => {
             let {event, errorEl, siteUrl, clickHandler, site, member, element} = getMockData();
             member = FixtureMember.free;
@@ -625,6 +642,26 @@ describe('Portal Data attributes:', () => {
             expect(window.fetch).toHaveBeenCalledTimes(2);
             expect(form.classList.add).toHaveBeenCalledWith('error');
             expect(errorEl.innerText).toBe('No member exists with this e-mail address. Please sign up first.');
+        });
+    });
+
+    describe('handleDataAttributes', () => {
+        test('sets correct i18n language based on site locale', () => {
+            const {siteUrl, site, member} = getMockData();
+            // Override the site locale to 'de'
+            site.locale = 'de';
+
+            // Mock i18nLib to verify it's called with correct parameters
+            const mockI18n = {
+                t: jest.fn(str => str)
+            };
+            jest.spyOn(i18nLib, 'default').mockImplementation(() => mockI18n);
+
+            handleDataAttributes({siteUrl, site, member});
+
+            // Verify i18nLib was called with correct locale
+            expect(i18nLib.default).toHaveBeenCalledWith('de', 'portal');
+            expect(mockI18n.t).toBeDefined();
         });
     });
 });
