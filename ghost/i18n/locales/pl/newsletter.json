@@ -1,4 +1,6 @@
 {
+    "{date}": "{date}",
+    "Become a paid member of {site} to get access to all premium content.": "",
     "By {authors}": "",
     "Comment": "",
     "complimentary": "",
@@ -14,6 +16,8 @@
     "Subscription details": "",
     "trialing": "",
     "Unsubscribe": "",
+    "Upgrade": "",
+    "Upgrade to continue reading.": "",
     "View in browser": "",
     "You are receiving this because you are a <strong>%%{status}%% subscriber</strong> to {site}.": "",
     "Your free trial ends on {date}, at which time you will be charged the regular price. You can always cancel before then.": "",
