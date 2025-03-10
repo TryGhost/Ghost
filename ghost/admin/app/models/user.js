@@ -62,7 +62,7 @@ export default BaseModel.extend(ValidationEngine, {
     isAdminOnly: equal('role.name', 'Administrator'),
     isOwnerOnly: equal('role.name', 'Owner'),
     isSuperEditor: equal('role.name', 'Super Editor'),
-    isAnyEditor: or('isEditor', 'isSuperEditor'),
+    isEitherEditor: or('isEditor', 'isSuperEditor'),
 
     // These are used in enough places that it's useful to throw them here
     isAdmin: or('isOwnerOnly', 'isAdminOnly'),
