@@ -1,4 +1,6 @@
 {
+    "{date}": "{date}",
+    "Become a paid member of {site} to get access to all premium content.": "",
     "By {authors}": "Avtorji: {authors}",
     "Comment": "Komentar",
     "complimentary": "promocijski",
@@ -14,6 +16,8 @@
     "Subscription details": "Podrobnosti naročnine",
     "trialing": "poskusni",
     "Unsubscribe": "Odjava",
+    "Upgrade": "",
+    "Upgrade to continue reading.": "",
     "View in browser": "Ogled v brskalniku",
     "You are receiving this because you are a <strong>%%{status}%% subscriber</strong> to {site}.": "To prejemate, ker ste <strong>%%{status}%% naročnik</strong> na {site}.",
     "Your free trial ends on {date}, at which time you will be charged the regular price. You can always cancel before then.": "Vaše brezplačno poskusno obdobje se konča {date}, nato vam bo zaračunana redna cena. Naročnino lahko vedno prekličete pred tem datumom.",

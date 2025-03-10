@@ -1,4 +1,6 @@
 {
+    "{date}": "{date}",
+    "Become a paid member of {site} to get access to all premium content.": "",
     "By {authors}": "od",
     "Comment": "Komentovať",
     "complimentary": "bezplatný",
@@ -14,6 +16,8 @@
     "Subscription details": "Podrobnosti odberu",
     "trialing": "skúšobné",
     "Unsubscribe": "Zrušiť odber",
+    "Upgrade": "",
+    "Upgrade to continue reading.": "",
     "View in browser": "Zobraziť v prehliadači",
     "You are receiving this because you are a <strong>%%{status}%% subscriber</strong> to {site}.": "Tento email ste dostali lebo ste <strong>%%{status}%% odberateľom</strong> na {site}.",
     "Your free trial ends on {date}, at which time you will be charged the regular price. You can always cancel before then.": "Vaše bezplatné skúšobné obdobie skončí {date} a v tom čase vám bude účtovaný poplatok za predplatné. Môžete to pred tým zrušiť.",

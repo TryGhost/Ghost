@@ -1,4 +1,6 @@
 {
+    "{date}": "{date}",
+    "Become a paid member of {site} to get access to all premium content.": "",
     "By {authors}": "Per {authors}",
     "Comment": "Comenta",
     "complimentary": "cortesia",
@@ -14,6 +16,8 @@
     "Subscription details": "Detalls de la subscripció",
     "trialing": "de prova",
     "Unsubscribe": "Dona'm de baixa",
+    "Upgrade": "",
+    "Upgrade to continue reading.": "",
     "View in browser": "Veure-ho al navegador",
     "You are receiving this because you are a <strong>%%{status}%% subscriber</strong> to {site}.": "Estàs rebent aquest missatge perquè ets <strong>subscriptor/a %%{status}%%</strong> de {site}.",
     "Your free trial ends on {date}, at which time you will be charged the regular price. You can always cancel before then.": "El teu període de prova s'acaba el {date}. A partir d'aleshores, se't cobrarà el preu estipulat. Sempre pots cancel·lar la teva subscripció abans que això passi.",

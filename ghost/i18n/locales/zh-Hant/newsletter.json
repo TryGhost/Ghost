@@ -1,4 +1,6 @@
 {
+    "{date}": "{date}",
+    "Become a paid member of {site} to get access to all premium content.": "",
     "By {authors}": "作者：{authors}",
     "Comment": "留言",
     "complimentary": "免費贈送的",
@@ -14,6 +16,8 @@
     "Subscription details": "訂閱資訊",
     "trialing": "試用",
     "Unsubscribe": "取消訂閱",
+    "Upgrade": "",
+    "Upgrade to continue reading.": "",
     "View in browser": "由瀏覽器閱讀",
     "You are receiving this because you are a <strong>%%{status}%% subscriber</strong> to {site}.": "你會收到此封電子報因為你是{site}的<strong>%%{status}%% 訂閱者</strong>。",
     "Your free trial ends on {date}, at which time you will be charged the regular price. You can always cancel before then.": "你的免費試用將會在{date}結束，結束後你將會被收取原價。你可以在試用期結束前取消。",
