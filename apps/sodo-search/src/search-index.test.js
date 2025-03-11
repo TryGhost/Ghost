@@ -254,7 +254,7 @@ describe('search index', function () {
         expect(searchResults.posts.length).toEqual(0);
     });
 
-     test('searching handles hebrew characters correctly', async () => {
+    test('searching handles hebrew characters correctly', async () => {
         const adminUrl = 'http://localhost:3000';
         const apiKey = '69010382388f9de5869ad6e558';
         const searchIndex = new SearchIndex({adminUrl, apiKey, storage: localStorage});
