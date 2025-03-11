@@ -6,14 +6,20 @@ import {Button, Heading, List, LoadingIndicator, NoValueLabel, Tab, TabView} fro
 import {Skeleton} from '@tryghost/shade';
 import {UseInfiniteQueryResult} from '@tanstack/react-query';
 
-import {Account, FollowAccount} from '../../api/activitypub';
+import {
+    Account,
+    ActivityPubCollectionResponse,
+    FollowAccount,
+    GetAccountFollowsResponse,
+    GetProfilePostsResponse
+} from '../../api/activitypub';
+import {handleViewContent} from '@utils/content-handlers';
 import {
     useAccountFollowsForUser,
     useAccountForUser,
     useLikedForUser,
     useProfilePostsForUser
 } from '@hooks/use-activity-pub-queries';
-import {handleViewContent} from '@utils/content-handlers';
 
 import APAvatar from '@components/global/APAvatar';
 import ActivityItem from '@components/activities/ActivityItem';
@@ -24,7 +30,7 @@ import Separator from '@components/global/Separator';
 import ViewProfileModal from '@components/modals/ViewProfileModal';
 
 interface UseInfiniteScrollTabProps<TData> {
-    useDataHook: (key: string) => UseInfiniteQueryResult<any>;
+    useDataHook: (key: string) => UseInfiniteQueryResult<GetProfilePostsResponse | GetAccountFollowsResponse | ActivityPubCollectionResponse<TData>>;
     emptyStateLabel: string;
     emptyStateIcon: string;
 }
@@ -45,12 +51,12 @@ const useInfiniteScrollTab = <TData,>({useDataHook, emptyStateLabel, emptyStateI
         if ('data' in page) {
             return page.data;
         } else if ('accounts' in page) {
-            return page.accounts as TData[];
+            return page.accounts;
         } else if ('posts' in page) {
-            return page.posts as TData[];
+            return page.posts;
         }
         return [];
-    }) ?? []);
+    }) ?? []) as TData[];
 
     const observerRef = useRef<IntersectionObserver | null>(null);
     const loadMoreRef = useRef<HTMLDivElement | null>(null);
