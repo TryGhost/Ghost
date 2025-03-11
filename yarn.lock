@@ -23830,6 +23830,13 @@ merge@^1.2.0:
   resolved "https://registry.yarnpkg.com/merge/-/merge-1.2.1.tgz#38bebf80c3220a8a487b6fcfb3941bb11720c145"
   integrity sha512-VjFo4P5Whtj4vsLzsYBu5ayHhoHJ0UqNm7ibvShmbmoz7tGi0vXaoJbGdB+GmDMLUdg8DpQXEIeVDAe8MaABvQ==
 
+metascraper-amazon@5.45.10:
+  version "5.45.10"
+  resolved "https://registry.yarnpkg.com/metascraper-amazon/-/metascraper-amazon-5.45.10.tgz#8de0755781efd52e1f87bd53481ef85bb8ada753"
+  integrity sha512-dL4ZUOFWsfXlgROp9Eow8lgUAe4DkyaYOFAHQLekPMPE37cueAV+PM6fZNl2mwCd5hHlc0mjNNW3lf1Lf5KHrA==
+  dependencies:
+    "@metascraper/helpers" "^5.45.10"
+
 metascraper-author@5.45.10:
   version "5.45.10"
   resolved "https://registry.yarnpkg.com/metascraper-author/-/metascraper-author-5.45.10.tgz#c0ae6952513d7ba2fe4eff9dce8dbd073b565901"
