@@ -36,7 +36,7 @@ export default class MembersCount extends Resource {
     *fetchMembersTask({query} = {}) {
         // Only roles with permissions to manage members should fetch a count
         // For other roles simply leave it as `null` so templates can react accordingly
-        if (!this.session.user.isAdmin && !this.session.user.isOwner && !this.session.user.isSuperEditor) {
+        if (!this.session.user.canManageMembers) {
             this.count = null;
             return;
         }
