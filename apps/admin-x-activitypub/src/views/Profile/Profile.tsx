@@ -218,10 +218,10 @@ const LikesTab: React.FC<{currentUserAccount: Account | undefined}> = ({currentU
                                     <FeedItem
                                         actor={activity.object?.attributedTo as ActorProperties || activity.actor}
                                         allowDelete={canDelete}
+                                        commentCount={activity.object.replyCount}
                                         layout='feed'
                                         object={Object.assign({}, activity.object, {liked: true})}
                                         repostCount={activity.object.repostCount}
-                                        commentCount={activity.object.replyCount}
                                         type={activity.type}
                                         onClick={() => handleViewContent({
                                             ...activity,
