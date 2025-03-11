@@ -11,7 +11,7 @@ import {
     type ActivityPubCollectionQueryResult,
     useAccountFollowsForUser,
     useAccountForUser,
-    useLikedForUser,
+    usePostsLikedByAccount,
     useOutboxForUser
 } from '@hooks/use-activity-pub-queries';
 import {handleViewContent} from '@utils/content-handlers';
@@ -156,6 +156,8 @@ const PostsTab: React.FC<{currentUserAccount: Account | undefined}> = ({currentU
                                     <FeedItem
                                         actor={activity.actor}
                                         allowDelete={canDelete}
+                                        commentCount={activity.object.replyCount}
+                                        repostCount={activity.object.repostCount}
                                         layout='feed'
                                         object={activity.object}
                                         type={activity.type}
@@ -181,55 +183,69 @@ const PostsTab: React.FC<{currentUserAccount: Account | undefined}> = ({currentU
 };
 
 const LikesTab: React.FC<{currentUserAccount: Account | undefined}> = ({currentUserAccount}) => {
-    const {items: liked, EmptyState, LoadingState} = useInfiniteScrollTab<Activity>({
-        useDataHook: useLikedForUser,
-        emptyStateLabel: 'You haven\'t liked anything yet.',
-        emptyStateIcon: 'heart'
-    });
+    const {postsLikedByAccountQuery, updatePostsLikedByAccount} = usePostsLikedByAccount({enabled: true});
+    const {data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading} = postsLikedByAccountQuery;
+
+    const posts = (data?.pages.flatMap(page => page.posts) ?? []);
+
+    const observerRef = useRef<IntersectionObserver | null>(null);
+    const loadMoreRef = useRef<HTMLDivElement | null>(null);
+
+    useEffect(() => {
+        if (observerRef.current) {
+            observerRef.current.disconnect();
+        }
+
+        observerRef.current = new IntersectionObserver((entries) => {
+            if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+                fetchNextPage();
+            }
+        });
+
+        if (loadMoreRef.current) {
+            observerRef.current.observe(loadMoreRef.current);
+        }
+
+        return () => {
+            if (observerRef.current) {
+                observerRef.current.disconnect();
+            }
+        };
+    }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
     return (
         <>
-            <EmptyState />
-            {
-                liked.length > 0 && (
-                    <ul className='mx-auto flex max-w-[640px] flex-col'>
-                        {liked.map((activity, index) => {
-                            let canDelete = false;
-
-                            const attributedTo = activity.object?.attributedTo;
-
-                            if (typeof attributedTo === 'object' && 'id' in attributedTo) {
-                                canDelete = currentUserAccount?.id === attributedTo.id;
-                            }
-
-                            return (
-                                <li
-                                    key={activity.id}
-                                    data-test-view-article
-                                >
-                                    <FeedItem
-                                        actor={activity.object?.attributedTo as ActorProperties || activity.actor}
-                                        allowDelete={canDelete}
-                                        layout='feed'
-                                        object={Object.assign({}, activity.object, {liked: true})}
-                                        type={activity.type}
-                                        onClick={() => handleViewContent({
-                                            ...activity,
-                                            id: activity.object.id
-                                        }, false)}
-                                        onCommentClick={() => handleViewContent({
-                                            ...activity,
-                                            id: activity.object.id
-                                        }, true)}
-                                    />
-                                    {index < liked.length - 1 && <Separator />}
-                                </li>
-                            );
-                        })}
-                    </ul>
-                )
-            }
-            <LoadingState />
+            {hasNextPage === false && posts.length === 0 && (
+                <NoValueLabel icon='heart'>
+                    You haven't liked anything yet.
+                </NoValueLabel>
+            )}
+            {posts.length > 0 && (
+                <ul className='mx-auto flex max-w-[640px] flex-col'>
+                    {posts.map((activity, index) => (
+                        <li key={activity.id} data-test-view-article>
+                            <FeedItem
+                                actor={activity.actor}
+                                allowDelete={false}
+                                commentCount={activity.object.replyCount}
+                                layout='feed'
+                                object={Object.assign({}, activity.object, {liked: true})}
+                                repostCount={activity.object.repostCount}
+                                type={activity.type}
+                                onClick={() => handleViewContent(activity, false, updatePostsLikedByAccount)}
+                                onCommentClick={() => handleViewContent(activity, true, updatePostsLikedByAccount)}
+                            />
+                            {index < posts.length - 1 && <Separator />}
+                        </li>
+                    ))}
+                </ul>
+            )}
+            <div ref={loadMoreRef} className='h-1'></div>
+            {(isFetchingNextPage || isLoading) && (
+                <div className='mt-6 flex flex-col items-center justify-center space-y-4 text-center'>
+                    <LoadingIndicator size='md' />
+                </div>
+            )}
         </>
     );
 };

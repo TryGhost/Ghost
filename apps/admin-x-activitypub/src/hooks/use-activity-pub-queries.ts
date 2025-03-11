@@ -77,7 +77,8 @@ const QUERY_KEYS = {
         return ['thread', id];
     },
     feed: ['feed'],
-    inbox: ['inbox']
+    inbox: ['inbox'],
+    postsLikedByAccount: ['posts_liked_by_account']
 };
 
 export function useOutboxForUser(handle: string) {
@@ -829,6 +830,54 @@ export function useInboxForUser(options: {enabled: boolean}) {
     };
 
     return {inboxQuery, updateInboxActivity};
+}
+
+export function usePostsLikedByAccount(options: {enabled: boolean}) {
+    const queryKey = QUERY_KEYS.postsLikedByAccount;
+    const queryClient = useQueryClient();
+
+    const postsLikedByAccountQuery = useInfiniteQuery({
+        queryKey,
+        enabled: options.enabled,
+        async queryFn({pageParam}: {pageParam?: string}) {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI('index', siteUrl);
+            return api.getPostsLikedByAccount(pageParam).then((response) => {
+                return {
+                    posts: response.posts.map(mapPostToActivity),
+                    next: response.next
+                };
+            });
+        },
+        getNextPageParam(prevPage) {
+            return prevPage.next;
+        }
+    });
+
+    const updatePostsLikedByAccount = (id: string, updated: Partial<Activity>) => {
+        queryClient.setQueryData(queryKey, (current: {pages: {posts: Activity[]}[]} | undefined) => {
+            if (!current) {
+                return current;
+            }
+
+            return {
+                ...current,
+                pages: current.pages.map((page: {posts: Activity[]}) => {
+                    return {
+                        ...page,
+                        posts: page.posts.map((item: Activity) => {
+                            if (item.id === id) {
+                                return {...item, ...updated};
+                            }
+                            return item;
+                        })
+                    };
+                })
+            };
+        });
+    };
+
+    return {postsLikedByAccountQuery, updatePostsLikedByAccount};
 }
 
 export function useDeleteMutationForUser(handle: string) {
