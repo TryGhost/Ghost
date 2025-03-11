@@ -934,7 +934,7 @@
                     "email_preview": "all",
                     "email": "all",
                     "snippet": "all",
-                    "label": ["browse", "read"],
+                    "label": ["browse", "read", "edit", "add", "destroy"],
                     "product": ["browse", "read"],
                     "newsletter": ["browse", "read"],
                     "collection": "all",
