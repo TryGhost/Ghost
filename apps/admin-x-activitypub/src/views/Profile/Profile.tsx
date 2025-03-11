@@ -4,15 +4,14 @@ import NiceModal from '@ebay/nice-modal-react';
 import {Activity,ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, Heading, List, LoadingIndicator, NoValueLabel, Tab, TabView} from '@tryghost/admin-x-design-system';
 import {Skeleton} from '@tryghost/shade';
+import {UseInfiniteQueryResult} from '@tanstack/react-query';
 
 import {Account, FollowAccount} from '../../api/activitypub';
 import {
-    type AccountFollowsQueryResult,
-    type ActivityPubCollectionQueryResult,
     useAccountFollowsForUser,
     useAccountForUser,
     useLikedForUser,
-    useOutboxForUser
+    useProfilePostsForUser
 } from '@hooks/use-activity-pub-queries';
 import {handleViewContent} from '@utils/content-handlers';
 
@@ -25,7 +24,7 @@ import Separator from '@components/global/Separator';
 import ViewProfileModal from '@components/modals/ViewProfileModal';
 
 interface UseInfiniteScrollTabProps<TData> {
-    useDataHook: (key: string) => ActivityPubCollectionQueryResult<TData> | AccountFollowsQueryResult;
+    useDataHook: (key: string) => UseInfiniteQueryResult<any>;
     emptyStateLabel: string;
     emptyStateIcon: string;
 }
@@ -47,8 +46,9 @@ const useInfiniteScrollTab = <TData,>({useDataHook, emptyStateLabel, emptyStateI
             return page.data;
         } else if ('accounts' in page) {
             return page.accounts as TData[];
+        } else if ('posts' in page) {
+            return page.posts as TData[];
         }
-
         return [];
     }) ?? []);
 
@@ -126,7 +126,7 @@ const useInfiniteScrollTab = <TData,>({useDataHook, emptyStateLabel, emptyStateI
 
 const PostsTab: React.FC<{currentUserAccount: Account | undefined}> = ({currentUserAccount}) => {
     const {items, EmptyState, LoadingState} = useInfiniteScrollTab<Activity>({
-        useDataHook: useOutboxForUser,
+        useDataHook: (key: string) => useProfilePostsForUser(key, currentUserAccount?.handle || ''),
         emptyStateLabel: 'You haven\'t posted anything yet.',
         emptyStateIcon: 'pen'
     });
@@ -156,8 +156,10 @@ const PostsTab: React.FC<{currentUserAccount: Account | undefined}> = ({currentU
                                     <FeedItem
                                         actor={activity.actor}
                                         allowDelete={canDelete}
+                                        commentCount={activity.object.replyCount}
                                         layout='feed'
                                         object={activity.object}
+                                        repostCount={activity.object.repostCount}
                                         type={activity.type}
                                         onClick={() => handleViewContent({
                                             ...activity,
