@@ -1,8 +1,8 @@
-import AuthenticatedRoute from './authenticated';
+import MembersManagementRoute from './members-management';
 import {didCancel} from 'ember-concurrency';
 import {inject as service} from '@ember/service';
 
-export default class MembersRoute extends AuthenticatedRoute {
+export default class MembersRoute extends MembersManagementRoute {
     @service store;
     @service feature;
 
@@ -14,15 +14,6 @@ export default class MembersRoute extends AuthenticatedRoute {
         filterParam: {refreshModel: true},
         postAnalytics: {refreshModel: false}
     };
-
-    beforeModel() {
-        super.beforeModel(...arguments);
-        // - TODO: redirect if members is disabled?
-        
-        if (!this.session.user.canManageMembers) {
-            return this.transitionTo('home');
-        }
-    }
 
     model(params) {
         this.controllerFor('members').resetFilters(params);
