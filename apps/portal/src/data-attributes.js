@@ -103,7 +103,7 @@ export async function formSubmitHandler(
 }
 
 export function planClickHandler({event, el, errorEl, siteUrl, site, member, clickHandler}) {
-    const i18nLanguage = site.locale | 'en';
+    const i18nLanguage = site.locale || 'en';
     const i18n = i18nLib(i18nLanguage, 'portal');
     const t = i18n.t;
     el.removeEventListener('click', clickHandler);
@@ -186,7 +186,7 @@ export function planClickHandler({event, el, errorEl, siteUrl, site, member, cli
 }
 
 export function handleDataAttributes({siteUrl, site, member}) {
-    const i18nLanguage = site.locale | 'en';
+    const i18nLanguage = site.locale || 'en';
     const i18n = i18nLib(i18nLanguage, 'portal');
     const t = i18n.t;
     if (!siteUrl) {

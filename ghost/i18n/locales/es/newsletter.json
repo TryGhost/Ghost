@@ -1,4 +1,6 @@
 {
+    "{date}": "{date}",
+    "Become a paid member of {site} to get access to all premium content.": "",
     "By {authors}": "Por {authors}",
     "Comment": "Comentar",
     "complimentary": "de cortesía",
@@ -14,6 +16,8 @@
     "Subscription details": "Detalles de tu suscripción",
     "trialing": "de prueba",
     "Unsubscribe": "Darse de baja",
+    "Upgrade": "",
+    "Upgrade to continue reading.": "",
     "View in browser": "Ver en el navegador",
     "You are receiving this because you are a <strong>%%{status}%% subscriber</strong> to {site}.": "Recibes este mensaje porque tienes una suscripción <strong>%%{status}%%</strong> a {site}.",
     "Your free trial ends on {date}, at which time you will be charged the regular price. You can always cancel before then.": "Tu prueba gratuita termina el {date}, fecha en la que se te aplicará la cuota normal. Puedes cancelar en cualquier momento antes de esa fecha.",
