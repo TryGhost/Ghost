@@ -74,7 +74,7 @@ const FeedItemMenu: React.FC<FeedItemMenuProps> = ({
                 <AlertDialogHeader>
                     <AlertDialogTitle>Delete this post?</AlertDialogTitle>
                     <AlertDialogDescription>
-                        {layout === 'inbox' ? 'This will remove the post from the Fediverse, but it will remain on your website.' : <>If you delete this post, you won&apos;t be able to restore it.</>}
+                        {layout === 'inbox' ? 'This will remove the post from the ActivityPub network, but it will remain on your website.' : <>If you delete this post, you won&apos;t be able to restore it.</>}
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>

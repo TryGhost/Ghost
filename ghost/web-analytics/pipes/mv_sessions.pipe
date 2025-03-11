@@ -1,4 +1,9 @@
 VERSION 0
+
+TAGS "v0"
+
+INCLUDE "_hits.incl"
+
 NODE _sessions_0
 SQL >
 
@@ -19,7 +24,7 @@ SQL >
         maxSimpleState(timestamp) AS latest_view,
         countState() AS pageviews
 
-    FROM _hits
+    FROM hits
     GROUP BY
         site_uuid,
         date,

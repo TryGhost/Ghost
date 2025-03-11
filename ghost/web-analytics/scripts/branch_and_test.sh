@@ -19,6 +19,7 @@ done
 
 # Allow version to be passed in or default to 0
 export TB_VERSION=${TB_VERSION:-0}
+echo "Using TB_VERSION: $TB_VERSION"
 
 # Attempt to create the branch and check for errors
 if ! tb branch create "$BRANCH_NAME"; then
