@@ -1611,7 +1611,7 @@ describe('Post Model', function () {
                 id: testUtils.DataGenerator.Content.users[0].id,
                 slug: testUtils.DataGenerator.Content.users[0].slug
             };
-            const staffCount = testUtils.DataGenerator.Content.users.length;
+            const staffCount = testUtils.DataGenerator.forKnex.users.length;
             console.log('staffCount is', staffCount);
 
             const preReassignPosts = await models.Post.findAll({context: {internal: true}});
