@@ -25,6 +25,7 @@ describe('NewslettersService', function () {
     let newsletterService, getStub, tokenProvider;
     /** @type {NewslettersService.ILimitService} */
     let limitService;
+    let emailMockReceiver;
 
     before(function () {
         models.init();
@@ -73,7 +74,7 @@ describe('NewslettersService', function () {
         getStub.withArgs('id').returns('test');
         sinon.spy(tokenProvider, 'create');
         sinon.spy(tokenProvider, 'validate');
-        mockManager.mockMail();
+        emailMockReceiver = mockManager.mockMail();
     });
 
     afterEach(function () {
@@ -193,7 +194,7 @@ describe('NewslettersService', function () {
             });
 
             sinon.assert.calledOnceWithExactly(addStub, {name: 'hello world', sort_order: 1}, options);
-            mockManager.assert.sentEmailCount(0);
+            emailMockReceiver.assertSentEmailCount(0);
             sinon.assert.calledOnce(fetchMembersStub);
             sinon.assert.calledOnceWithExactly(findOneStub, {id: 'test'}, {opt_in_existing: true, transacting: options.transacting, require: true});
         });
@@ -211,7 +212,7 @@ describe('NewslettersService', function () {
             });
 
             sinon.assert.calledOnceWithExactly(addStub, {name: 'hello world', sort_order: 1}, options);
-            mockManager.assert.sentEmailCount(0);
+            emailMockReceiver.assertSentEmailCount(0);
             sinon.assert.calledOnceWithExactly(fetchMembersStub, {transacting: 'foo'});
             sinon.assert.calledOnceWithExactly(subscribeStub, fakeMemberIds, options);
         });

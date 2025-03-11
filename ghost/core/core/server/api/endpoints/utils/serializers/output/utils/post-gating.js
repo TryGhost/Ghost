@@ -1,4 +1,5 @@
 const membersService = require('../../../../../../services/members');
+const labs = require('../../../../../../../shared/labs');
 const htmlToPlaintext = require('@tryghost/html-to-plaintext');
 
 const {PERMIT_ACCESS} = membersService.contentGating;
@@ -106,11 +107,13 @@ const forPost = (attrs, frame) => {
         }
     }
 
-    const hasGatedBlocks = HAS_GATED_BLOCKS_REGEX.test(attrs.html);
-    if (hasGatedBlocks) {
-        attrs.html = module.exports.stripGatedBlocks(attrs.html, frame.original.context.member);
-        _updatePlaintext(attrs);
-        _updateExcerpt(attrs);
+    if (labs.isSet('contentVisibility')) {
+        const hasGatedBlocks = HAS_GATED_BLOCKS_REGEX.test(attrs.html);
+        if (hasGatedBlocks) {
+            attrs.html = module.exports.stripGatedBlocks(attrs.html, frame.original.context.member);
+            _updatePlaintext(attrs);
+            _updateExcerpt(attrs);
+        }
     }
 
     if (!Object.prototype.hasOwnProperty.call(frame.options, 'columns') || (frame.options.columns.includes('access'))) {

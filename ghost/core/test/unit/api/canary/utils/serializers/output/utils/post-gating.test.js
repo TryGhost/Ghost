@@ -2,6 +2,7 @@ const assert = require('assert/strict');
 const sinon = require('sinon');
 const gating = require('../../../../../../../../core/server/api/endpoints/utils/serializers/output/utils/post-gating');
 const membersContentGating = require('../../../../../../../../core/server/services/members/content-gating');
+const labs = require('../../../../../../../../core/shared/labs');
 
 describe('Unit: endpoints/utils/serializers/output/utils/post-gating', function () {
     afterEach(function () {
@@ -90,45 +91,73 @@ describe('Unit: endpoints/utils/serializers/output/utils/post-gating', function 
             assert.equal(attrs.html, '<p>Can read this</p>');
         });
 
-        it('does not call stripGatedBlocks when a post has no gated blocks', function () {
-            const attrs = {
-                visibility: 'public',
-                html: '<p>no gated blocks</p>'
-            };
+        describe('contentVisibility', function () {
+            let contentVisibilityStub;
 
-            const stripGatedBlocksStub = sinon.stub(gating, 'stripGatedBlocks');
-            gating.forPost(attrs, frame);
-            sinon.assert.notCalled(stripGatedBlocksStub);
-        });
+            beforeEach(function () {
+                contentVisibilityStub = sinon.stub(labs, 'isSet').withArgs('contentVisibility').returns(true);
+            });
 
-        it('calls stripGatedBlocks when a post has gated blocks', function () {
-            const attrs = {
-                visibility: 'public',
-                html: '<!--kg-gated-block:begin nonMember:true--><p>gated block</p><!--kg-gated-block:end-->'
-            };
+            afterEach(function () {
+                sinon.restore();
+            });
 
-            const stripGatedBlocksStub = sinon.stub(gating, 'stripGatedBlocks');
-            gating.forPost(attrs, frame);
-            sinon.assert.calledOnce(stripGatedBlocksStub);
-        });
+            it('does not call stripGatedBlocks when a post has no gated blocks', function () {
+                const attrs = {
+                    visibility: 'public',
+                    html: '<p>no gated blocks</p>'
+                };
 
-        it('updates html, plaintext, and excerpt when a post has gated blocks', function () {
-            const attrs = {
-                visibility: 'public',
-                html: `
-                <!--kg-gated-block:begin nonMember:false memberSegment:"status:free,status:-free"--><p>Members only.</p><!--kg-gated-block:end-->
-                <p>Everyone can see this.</p>
-                <!--kg-gated-block:begin nonMember:true--><p>Anonymous only.</p><!--kg-gated-block:end-->
-                `,
-                plaintext: 'Members only. Everyone can see this. Anonymous only.',
-                excerpt: 'Members only. Everyone can see this. Anonymous only.'
-            };
+                const stripGatedBlocksStub = sinon.stub(gating, 'stripGatedBlocks');
+                gating.forPost(attrs, frame);
+                sinon.assert.notCalled(stripGatedBlocksStub);
+            });
 
-            gating.forPost(attrs, frame);
+            it('calls stripGatedBlocks when a post has gated blocks', function () {
+                const attrs = {
+                    visibility: 'public',
+                    html: '<!--kg-gated-block:begin nonMember:true--><p>gated block</p><!--kg-gated-block:end-->'
+                };
 
-            assert.match(attrs.html, /<p>Everyone can see this\.<\/p>\n\s+<p>Anonymous only.<\/p>/);
-            assert.match(attrs.plaintext, /^\n+Everyone can see this.\n+Anonymous only.\n$/);
-            assert.match(attrs.excerpt, /^\n+Everyone can see this.\n+Anonymous only.\n$/);
+                const stripGatedBlocksStub = sinon.stub(gating, 'stripGatedBlocks');
+                gating.forPost(attrs, frame);
+                sinon.assert.calledOnce(stripGatedBlocksStub);
+            });
+
+            it('updates html, plaintext, and excerpt when a post has gated blocks', function () {
+                const attrs = {
+                    visibility: 'public',
+                    html: `
+                    <!--kg-gated-block:begin nonMember:false memberSegment:"status:free,status:-free"--><p>Members only.</p><!--kg-gated-block:end-->
+                    <p>Everyone can see this.</p>
+                    <!--kg-gated-block:begin nonMember:true--><p>Anonymous only.</p><!--kg-gated-block:end-->
+                    `,
+                    plaintext: 'Members only. Everyone can see this. Anonymous only.',
+                    excerpt: 'Members only. Everyone can see this. Anonymous only.'
+                };
+
+                gating.forPost(attrs, frame);
+
+                assert.match(attrs.html, /<p>Everyone can see this\.<\/p>\n\s+<p>Anonymous only.<\/p>/);
+                assert.match(attrs.plaintext, /^\n+Everyone can see this.\n+Anonymous only.\n$/);
+                assert.match(attrs.excerpt, /^\n+Everyone can see this.\n+Anonymous only.\n$/);
+            });
+
+            it('does not process gated blocks with contentVisibility flag disabled', function () {
+                contentVisibilityStub.returns(false);
+
+                const regexSpy = sinon.spy(RegExp.prototype, 'test');
+                const stripGatedBlocksStub = sinon.stub(gating, 'stripGatedBlocks');
+
+                const attrs = {
+                    visibility: 'public',
+                    html: '<!--kg-gated-block:begin nonMember:true--><p>gated block</p><!--kg-gated-block:end-->'
+                };
+                gating.forPost(attrs, frame);
+
+                sinon.assert.notCalled(regexSpy);
+                sinon.assert.notCalled(stripGatedBlocksStub);
+            });
         });
     });
 

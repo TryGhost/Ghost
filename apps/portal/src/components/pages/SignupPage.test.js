@@ -1,6 +1,6 @@
-import SignupPage from './SignupPage';
 import {getFreeProduct, getProductData, getSiteData} from '../../utils/fixtures-generator';
-import {render, fireEvent, getByTestId, queryByTestId, queryByAttribute} from '../../utils/test-utils';
+import {render, fireEvent, getByTestId, queryByTestId} from '../../utils/test-utils';
+import SignupPage from './SignupPage';
 
 const setup = (overrides) => {
     const {mockOnActionFn, ...utils} = render(
@@ -210,23 +210,6 @@ describe('SignupPage', () => {
 
             const signinLink = getByTestId(document.body, 'signin-switch');
             expect(signinLink).toBeInTheDocument();
-        });
-    });
-
-    // Cannot test using hCaptcha component, as it cannot run in a test environment
-    describe('when captcha is enabled', () => {
-        test('renders', () => {
-            setup({
-                site: getSiteData({
-                    captchaEnabled: true,
-                    captchaSiteKey: '20000000-ffff-ffff-ffff-000000000002'
-                })
-            });
-
-            const getById = queryByAttribute.bind(null, 'id');
-
-            const hcaptchaElement = getById(document.body, 'hcaptcha-signup');
-            expect(hcaptchaElement).toBeInTheDocument();
         });
     });
 });

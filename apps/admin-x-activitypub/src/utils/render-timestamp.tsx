@@ -3,11 +3,11 @@ import {ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 
 export function formatTimestamp(date: Date): string {
     return new Date(date).toLocaleDateString('default', {
-        year: 'numeric', 
-        month: 'short', 
+        year: 'numeric',
+        month: 'short',
         day: '2-digit'
     }) + ', ' + new Date(date).toLocaleTimeString('default', {
-        hour: '2-digit', 
+        hour: '2-digit',
         minute: '2-digit'
     });
 }
@@ -15,14 +15,14 @@ export function formatTimestamp(date: Date): string {
 export function renderTimestamp(object: ObjectProperties) {
     const date = new Date(object?.published ?? new Date());
     const timestamp = formatTimestamp(date);
-    
+
     return (
-        <a 
-            className='whitespace-nowrap text-grey-700 hover:underline' 
-            href={object.url} 
+        <a
+            className='whitespace-nowrap text-gray-700 hover:underline'
+            href={object.url}
             title={timestamp}
         >
             {getRelativeTimestamp(date)}
         </a>
     );
-} 
+}

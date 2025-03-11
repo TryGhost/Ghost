@@ -71,8 +71,7 @@ const controller = {
                 await store.save({
                     ...frame.file,
                     path: originalPath,
-                    name: imageTransform.generateOriginalImageName(processedImageName),
-                    keepOriginalName: true // Don't generate a new filename on save
+                    name: imageTransform.generateOriginalImageName(processedImageName)
                 }, processedImageDir);
 
                 return processedImageUrl;

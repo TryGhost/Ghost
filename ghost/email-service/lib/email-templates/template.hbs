@@ -91,7 +91,7 @@
                                                     <table class="post-meta-wrapper" role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="padding-bottom: 32px;">
                                                         <tr>
                                                             <td height="20" class="{{classes.meta}}" style="padding: 0;">
-                                                                {{{t 'By {authors}' authors=post.authors }}} • <span class="post-meta-date">{{post.publishedAt}} </span>
+                                                                {{{t 'By {authors}' authors=post.authors }}} • <span class="post-meta-date">{{t '{date}' date=post.publishedAt}} </span>
                                                             </td>
                                                             <td class="{{classes.meta}} view-online desktop">
                                                                 <a href="{{post.url}}" class="view-online-link">{{t 'View in browser'}}</a>
@@ -153,7 +153,7 @@
 
                             {{#if (or feedbackButtons newsletter.showCommentCta) }}
                                 <tr>
-                                    <td dir="ltr" width="100%" style="background-color: #ffffff; text-align: center; padding: 32px 0 24px; border-bottom: 1px solid #e5eff5;" align="center">
+                                    <td dir="ltr" width="100%" style="background-color: #ffffff; text-align: center; padding: 32px 0 24px; border-bottom: 1px solid #e0e7eb;" align="center">
                                         <table class="feedback-buttons" role="presentation" border="0" cellpadding="0" cellspacing="0">
                                             <tr>
                                                 {{#if feedbackButtons }}
@@ -171,7 +171,7 @@
 
                              {{#if latestPosts.length}}
                                 <tr>
-                                    <td style="padding: 24px 0; border-bottom: 1px solid #e5eff5;">
+                                    <td style="padding: 24px 0; border-bottom: 1px solid #e0e7eb;">
                                         <h3 class="latest-posts-header">{{t 'Keep reading'}}</h3>
                                         {{> latestPosts}}
                                     </td>

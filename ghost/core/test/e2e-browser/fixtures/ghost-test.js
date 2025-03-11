@@ -12,7 +12,7 @@ const configUtils = require('../../utils/configUtils');
 
 const startWebhookServer = (port) => {
     const isCI = process.env.CI;
-    const isDocker = process.env.COMPOSE_PROFILES === 'full';
+    const isDocker = process.env.GHOST_DEV_IS_DOCKER === 'true';
     const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
     const command = `stripe listen --forward-connect-to http://127.0.0.1:${port}/members/webhooks/stripe/ ${isDocker || isCI ? `--api-key ${stripeSecretKey}` : ''}`.trim();
     const webhookServer = spawn(command.split(' ')[0], command.split(' ').slice(1));
@@ -26,7 +26,7 @@ const startWebhookServer = (port) => {
 
 const getWebhookSecret = async () => {
     const isCI = process.env.CI;
-    const isDocker = process.env.COMPOSE_PROFILES === 'full';
+    const isDocker = process.env.GHOST_DEV_IS_DOCKER === 'true';
     const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
     const command = `stripe listen --print-secret ${isDocker || isCI ? `--api-key ${stripeSecretKey}` : ''}`.trim();
     const webhookSecret = (await promisify(exec)(command)).stdout;

@@ -43,30 +43,23 @@ class LocalStorageBase extends StorageBase {
      * Saves the file to storage (the file system)
      * - returns a promise which ultimately returns the full url to the uploaded file
      *
-     * @param {Object} file
-     * @param {String} [file.path] -- The original path of the file
-     * @param {String} [file.name] -- The original name of the file
-     * @param {Boolean} [file.keepOriginalName] -- If true, skip generating a new filename
+     * @param {StorageBase.Image} file
      * @param {String} targetDir
      * @returns {Promise<String>}
      */
     async save(file, targetDir) {
-        // The base implementation of `getTargetDir` returns the format this.storagePath/YYYY/MM, e.g. /content/images/2025/01
-        const directory = targetDir || this.getTargetDir(this.storagePath);
-        const originalFilePath = file.path;
+        let targetFilename;
 
-        // If the `keepOriginalName` flag is set, don't generate a new filename
-        // Otherwise, generate a unique secure filename, composed of a 16-character random hash and truncated to be under 255 bytes, e.g. image-a1b2c3d4e5f6g789.png
-        let targetFilePath;
-        if (file.keepOriginalName) {
-            targetFilePath = path.join(directory, file.name);
-        } else {
-            targetFilePath = this.getUniqueSecureFilePath(file, directory);
-        }
+        // NOTE: the base implementation of `getTargetDir` returns the format this.storagePath/YYYY/MM
+        targetDir = targetDir || this.getTargetDir(this.storagePath);
+
+        const filename = await this.getUniqueFileName(file, targetDir);
+
+        targetFilename = filename;
+        await fs.mkdirs(targetDir);
 
         try {
-            await fs.mkdirs(directory);
-            await fs.copy(originalFilePath, targetFilePath);
+            await fs.copy(file.path, targetFilename);
         } catch (err) {
             if (err.code === 'ENAMETOOLONG') {
                 throw new errors.BadRequestError({err});
@@ -81,7 +74,7 @@ class LocalStorageBase extends StorageBase {
             urlUtils.urlJoin('/',
                 urlUtils.getSubdir(),
                 this.staticFileURLPrefix,
-                path.relative(this.storagePath, targetFilePath))
+                path.relative(this.storagePath, targetFilename))
         ).replace(new RegExp(`\\${path.sep}`, 'g'), '/');
 
         return fullUrl;

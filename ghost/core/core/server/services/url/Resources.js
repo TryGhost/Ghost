@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const debug = require('@tryghost/debug')('services:url:resources');
 const DomainEvents = require('@tryghost/domain-events');
-const {URLResourceUpdatedEvent} = require('@tryghost/dynamic-routing-events');
+const URLResourceUpdatedEvent = require('../../../shared/events/URLResourceUpdatedEvent');
 const Resource = require('./Resource');
 const config = require('../../../shared/config');
 const models = require('../../models');
@@ -446,7 +446,11 @@ class Resources {
      * @returns {Object}
      */
     getByIdAndType(type, id) {
-        return _.find(this.data[type], {data: {id: id}});
+        if (!this.data[type]) {
+            return undefined;
+        }
+
+        return this.data[type].find(r => r.data.id === id);
     }
 
     /**

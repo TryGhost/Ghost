@@ -1,7 +1,7 @@
 import clsx from 'clsx';
 import {Button} from '@tryghost/admin-x-design-system';
 import {useEffect, useState} from 'react';
-import {useFollow, useUnfollow} from '../../hooks/useActivityPubQueries';
+import {useFollowMutationForUser, useUnfollowMutationForUser} from '@hooks/use-activity-pub-queries';
 
 interface FollowButtonProps {
     className?: string;
@@ -25,7 +25,7 @@ const FollowButton: React.FC<FollowButtonProps> = ({
     const [isFollowing, setIsFollowing] = useState(following);
     const [isHovered, setIsHovered] = useState(false);
 
-    const unfollowMutation = useUnfollow('index',
+    const unfollowMutation = useUnfollowMutationForUser('index',
         noop,
         () => {
             setIsFollowing(false);
@@ -33,7 +33,7 @@ const FollowButton: React.FC<FollowButtonProps> = ({
         }
     );
 
-    const followMutation = useFollow('index',
+    const followMutation = useFollowMutationForUser('index',
         noop,
         () => {
             setIsFollowing(false);

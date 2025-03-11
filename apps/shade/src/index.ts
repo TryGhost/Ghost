@@ -1,4 +1,5 @@
 // UI components
+export * from './components/ui/alert-dialog';
 export * from './components/ui/avatar';
 export * from './components/ui/badge';
 export * from './components/ui/breadcrumb';
@@ -8,6 +9,7 @@ export * from './components/ui/chart';
 export * from './components/ui/dialog';
 export * from './components/ui/dropdown-menu';
 export * from './components/ui/input';
+export * from './components/ui/popover';
 export * from './components/ui/separator';
 export * from './components/ui/sheet';
 export * from './components/ui/sidebar';
@@ -19,7 +21,7 @@ export * from './components/ui/tooltip';
 
 // Layout components
 export * from './components/layout/page';
-export * from './components/layout/error-page';
+export {ErrorPage} from './components/layout/error-page';
 export * from './components/layout/heading';
 
 // Third party components

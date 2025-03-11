@@ -4,10 +4,8 @@ const os = require('os');
 const fs = require('fs');
 
 const logging = require('@tryghost/logging');
-const metrics = require('@tryghost/metrics');
 const config = require('../../../shared/config');
 const errors = require('@tryghost/errors');
-const ConnectionPoolInstrumentation = require('./ConnectionPoolInstrumentation');
 let knexInstance;
 
 // @TODO:
@@ -64,10 +62,6 @@ function configure(dbConfig) {
 
 if (!knexInstance && config.get('database') && config.get('database').client) {
     knexInstance = knex(configure(config.get('database')));
-    if (config.get('telemetry:connectionPool')) {
-        const instrumentation = new ConnectionPoolInstrumentation({knex: knexInstance, logging, metrics, config});
-        instrumentation.instrument();
-    }
 }
 
 module.exports = knexInstance;

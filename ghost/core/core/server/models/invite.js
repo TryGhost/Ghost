@@ -20,8 +20,7 @@ Invite = ghostBookshelf.Model.extend({
     tableName: 'invites',
 
     toJSON: function (unfilteredOptions) {
-        const options = Invite.filterOptions(unfilteredOptions, 'toJSON');
-        const attrs = ghostBookshelf.Model.prototype.toJSON.call(this, options);
+        const attrs = ghostBookshelf.Model.prototype.toJSON.call(this, unfilteredOptions);
 
         delete attrs.token;
         return attrs;

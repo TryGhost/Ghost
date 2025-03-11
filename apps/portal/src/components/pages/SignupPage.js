@@ -7,10 +7,9 @@ import NewsletterSelectionPage from './NewsletterSelectionPage';
 import ProductsSection from '../common/ProductsSection';
 import InputForm from '../common/InputForm';
 import {ValidateInputForm} from '../../utils/form';
-import {getSiteProducts, getSitePrices, hasAvailablePrices, hasOnlyFreePlan, isInviteOnly, isFreeSignupAllowed, isPaidMembersOnly, freeHasBenefitsOrDescription, hasMultipleNewsletters, hasFreeTrialTier, isSignupAllowed, isSigninAllowed, hasCaptchaEnabled, getCaptchaSitekey} from '../../utils/helpers';
+import {getSiteProducts, getSitePrices, hasAvailablePrices, hasOnlyFreePlan, isInviteOnly, isFreeSignupAllowed, isPaidMembersOnly, freeHasBenefitsOrDescription, hasMultipleNewsletters, hasFreeTrialTier, isSignupAllowed, isSigninAllowed} from '../../utils/helpers';
 import {ReactComponent as InvitationIcon} from '../../images/icons/invitation.svg';
 import {interceptAnchorClicks} from '../../utils/links';
-import HCaptcha from '@hcaptcha/react-hcaptcha';
 
 export const SignupPageStyles = `
 .gh-portal-back-sitetitle {
@@ -357,7 +356,6 @@ class SignupPage extends React.Component {
         };
 
         this.termsRef = React.createRef();
-        this.captchaRef = React.createRef();
     }
 
     componentDidMount() {
@@ -400,16 +398,6 @@ class SignupPage extends React.Component {
             ...ValidateInputForm({fields: this.getInputFields({state}), t: this.context.t}),
             checkbox: checkboxError
         };
-    }
-
-    doSignupWithChecks() {
-        const {site} = this.context;
-        if (hasCaptchaEnabled({site})) {
-            // hCaptcha's callback will call doSignup
-            return this.captchaRef.current.execute();
-        } else {
-            this.doSignup();
-        }
     }
 
     doSignup() {
@@ -456,7 +444,7 @@ class SignupPage extends React.Component {
     handleChooseSignup(e, plan) {
         e.preventDefault();
         this.setState({plan}, () => {
-            this.doSignupWithChecks();
+            this.doSignup();
         });
     }
 
@@ -488,7 +476,7 @@ class SignupPage extends React.Component {
     }
 
     getSelectedPriceId(prices = [], selectedPriceId) {
-        if (!prices || prices.length === 0) {
+        if (!prices || prices.length === 0 || selectedPriceId === 'free') {
             return 'free';
         }
         const hasSelectedPlan = prices.some((p) => {
@@ -744,16 +732,6 @@ class SignupPage extends React.Component {
                             onChange={(e, field) => this.handleInputChange(e, field)}
                             onKeyDown={e => this.onKeyDown(e)}
                         />
-                        {(hasCaptchaEnabled({site}) &&
-                            <HCaptcha
-                                size="invisible"
-                                sitekey={getCaptchaSitekey({site})}
-                                onLoad={() => this.setState({captchaLoaded: true})}
-                                onVerify={token => this.setState({token: token}, this.doSignup)}
-                                ref={this.captchaRef}
-                                id="hcaptcha-signup"
-                            />
-                        )}
                     </div>
                     <div>
                         {(hasOnlyFree ?

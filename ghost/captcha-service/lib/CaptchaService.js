@@ -45,7 +45,11 @@ class CaptchaService {
 
                 captchaResponse = await hcaptcha.verify(secretKey, req.body.token, req.ip);
 
-                if (captchaResponse.score < scoreThreshold) {
+                if ('score' in captchaResponse && captchaResponse.score < scoreThreshold) {
+                    // Using hCaptcha enterprise, so score is present
+                    next();
+                } else if (!('score' in captchaResponse) && captchaResponse.success) {
+                    // Using regular hCaptcha, so challenge-based
                     next();
                 } else {
                     logging.error(`Blocking request due to high score (${captchaResponse.score})`);
@@ -57,8 +61,15 @@ class CaptchaService {
                 if (errorUtils.isGhostError(err)) {
                     return next(err);
                 } else {
+                    const message = 'Failed to verify hCaptcha token';
+
+                    logging.error(new InternalServerError({
+                        message,
+                        err
+                    }));
+
                     return next(new InternalServerError({
-                        message: 'Failed to verify hCaptcha token'
+                        message
                     }));
                 }
             }
