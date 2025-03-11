@@ -141,23 +141,23 @@ module.exports = combineTransactionalMigrations(
         role: 'Super Editor'
     }),
     addPermissionToRole({
-        permission: "Browse invites",
+        permission: 'Browse invites',
         role: 'Super Editor'
     }),
     addPermissionToRole({
-        permission: "Read invites",
+        permission: 'Read invites',
         role: 'Super Editor'
     }),
     addPermissionToRole({
-        permission: "Add invites",
+        permission: 'Add invites',
         role: 'Super Editor'
     }),
     addPermissionToRole({
-        permission: "Delete invites",
+        permission: 'Delete invites',
         role: 'Super Editor'
     }),
     addPermissionToRole({
-        permission: "Edit invites",
+        permission: 'Edit invites',
         role: 'Super Editor'
     }),
     addPermissionToRole({
