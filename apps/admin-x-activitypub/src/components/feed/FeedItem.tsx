@@ -310,7 +310,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                             </div>
                                         </div> :
                                             <div className='relative'>
-                                                <div className='ap-note-content line-clamp-[10] text-pretty leading-[1.4285714286] tracking-[-0.006em] text-gray-900 dark:text-gray-600'>
+                                                <div className='ap-note-content line-clamp-[10] text-pretty leading-[1.4285714286] tracking-[-0.006em] text-gray-900 dark:text-gray-600 [&_p+p]:mt-3'>
                                                     {!isLoading ?
                                                         <div dangerouslySetInnerHTML={{
                                                             __html: object.content ?? ''
@@ -373,7 +373,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                 <div className={`relative z-10 col-start-1 col-end-3 w-full gap-4`}>
                                     <div className='flex flex-col items-start'>
                                         {object.name && <Heading className='mb-1 leading-tight' level={4} data-test-activity-heading>{object.name}</Heading>}
-                                        <div dangerouslySetInnerHTML={({__html: object.content ?? ''})} className='ap-note-content-large text-pretty text-[1.6rem] tracking-[-0.011em] text-gray-900 dark:text-gray-600'></div>
+                                        <div dangerouslySetInnerHTML={({__html: object.content ?? ''})} className='ap-note-content-large text-pretty text-[1.6rem] tracking-[-0.011em] text-gray-900 dark:text-gray-600 [&_p+p]:mt-3'></div>
                                         {renderFeedAttachment(object)}
                                         <div className='space-between ml-[-7px] mt-3 flex'>
                                             <FeedItemStats
@@ -436,7 +436,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                     <div className='flex flex-col'>
                                         {(object.type === 'Article') && renderFeedAttachment(object)}
                                         {object.name && <Heading className='my-1 text-pretty leading-tight' level={5} data-test-activity-heading>{object.name}</Heading>}
-                                        {(object.preview && object.type === 'Article') ? <div className='line-clamp-3 leading-tight'>{object.preview.content}</div> : <div dangerouslySetInnerHTML={({__html: object.content ?? ''})} className='ap-note-content text-pretty tracking-[-0.006em] text-gray-900 dark:text-gray-600'></div>}
+                                        {(object.preview && object.type === 'Article') ? <div className='line-clamp-3 leading-tight'>{object.preview.content}</div> : <div dangerouslySetInnerHTML={({__html: object.content ?? ''})} className='ap-note-content text-pretty tracking-[-0.006em] text-gray-900 dark:text-gray-600 [&_p+p]:mt-3'></div>}
                                         {(object.type === 'Note') && renderFeedAttachment(object)}
                                         {(object.type === 'Article') && <ButtonX
                                             className={`mt-3 self-start text-gray-900 transition-all hover:opacity-60`}
@@ -498,7 +498,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                             }}></span>
                                         ))}
                                     </Heading>
-                                    <div className='ap-note-content line-clamp-2 w-full max-w-[600px] text-pretty text-base leading-normal text-gray-800 dark:text-gray-600'>
+                                    <div className='ap-note-content line-clamp-2 w-full max-w-[600px] text-pretty text-base leading-normal text-gray-800 dark:text-gray-600 [&_p+p]:mt-3'>
                                         {!isLoading ?
                                             <div dangerouslySetInnerHTML={{
                                                 __html: stripHtml(object.preview?.content ?? object.content ?? '')
