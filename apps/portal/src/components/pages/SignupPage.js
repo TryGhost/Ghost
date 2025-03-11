@@ -476,7 +476,7 @@ class SignupPage extends React.Component {
     }
 
     getSelectedPriceId(prices = [], selectedPriceId) {
-        if (!prices || prices.length === 0) {
+        if (!prices || prices.length === 0 || selectedPriceId === 'free') {
             return 'free';
         }
         const hasSelectedPlan = prices.some((p) => {
