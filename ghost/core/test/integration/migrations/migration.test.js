@@ -285,7 +285,7 @@ describe('Migrations', function () {
 
                 // Roles
                 should.exist(roles);
-                roles.length.should.eql(11);
+                roles.length.should.eql(10);
                 roles.at(0).get('name').should.eql('Administrator');
                 roles.at(1).get('name').should.eql('Editor');
                 roles.at(2).get('name').should.eql('Author');
