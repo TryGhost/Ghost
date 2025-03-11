@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const constants = require('@tryghost/constants');
