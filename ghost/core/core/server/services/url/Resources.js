@@ -446,7 +446,11 @@ class Resources {
      * @returns {Object}
      */
     getByIdAndType(type, id) {
-        return _.find(this.data[type], {data: {id: id}});
+        if (!this.data[type]) {
+            return undefined;
+        }
+
+        return this.data[type].find(r => r.data.id === id);
     }
 
     /**
