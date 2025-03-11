@@ -1611,10 +1611,11 @@ describe('Post Model', function () {
                 id: testUtils.DataGenerator.Content.users[0].id,
                 slug: testUtils.DataGenerator.Content.users[0].slug
             };
+            const staffCount = testUtils.DataGenerator.forKnex.users.length;
 
             const preReassignPosts = await models.Post.findAll({context: {internal: true}});
             // There are 10 posts created by posts:mu fixture
-            preReassignPosts.length.should.equal(10);
+            preReassignPosts.length.should.equal(2 * staffCount);
 
             const preReassignOwnerWithPosts = await models.Post.findAll({
                 filter: `authors:${ownerData.slug}`,
@@ -1626,7 +1627,7 @@ describe('Post Model', function () {
 
             const postReassignPosts = await models.Post.findAll({context: {internal: true}});
             // All 10 should remain
-            postReassignPosts.length.should.equal(10);
+            postReassignPosts.length.should.equal(2 * staffCount);
 
             const postReassignOwnerWithPosts = await models.Post.findAll({
                 filter: `authors:${ownerData.slug}`,
