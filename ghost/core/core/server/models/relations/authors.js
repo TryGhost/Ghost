@@ -2,6 +2,7 @@ const _ = require('lodash');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const {sequence} = require('@tryghost/promise');
+const {setIsRoles} = require('../role-utils');
 
 const messages = {
     noUserFound: 'No user found',
@@ -305,8 +306,7 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
             const self = this;
             const postModel = postModelOrId;
             let origArgs;
-            let isContributor;
-            let isAuthor;
+            const {isContributor, isAuthor} = setIsRoles(loadedPermissions);
             let isEdit;
             let isAdd;
             let isDestroy;
