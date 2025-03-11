@@ -106,6 +106,10 @@
                 {
                     "name": "Scheduler Integration",
                     "description": "Internal Scheduler Client"
+                },
+                {
+                    "name": "Super Editor",
+                    "description": "Super Editor"
                 }
             ]
         },
