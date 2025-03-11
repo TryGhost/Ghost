@@ -269,10 +269,11 @@ export function CallToActionCard({
                 )}
 
                 <div className={clsx(
-                    'flex gap-6 pt-6',
+                    'flex gap-6',
+                    hasSponsorLabel && color !== 'none' && (imageSrc && layout === 'immersive') ? '' : 'pt-6',
                     imageSrc && !showButton ? 'pb-8' : 'pb-7',
                     layout === 'immersive' ? 'flex-col' : 'flex-row',
-                    color === 'none' || hasSponsorLabel ? 'border-t border-grey-900/15 dark:border-grey-100/20' : '',
+                    color === 'none' || (hasSponsorLabel && !(imageSrc && layout === 'immersive')) ? 'border-t border-grey-900/15 dark:border-grey-100/20' : '',
                     color === 'none' ? 'border-b border-grey-900/15 dark:border-grey-100/20' : 'mx-6'
                 )}>
                     {imageSrc && (
@@ -302,10 +303,7 @@ export function CallToActionCard({
                             nodes='basic'
                             placeholderClassName={`bg-transparent whitespace-normal font-serif text-xl !text-grey-500 !dark:text-grey-800 ` }
                             placeholderText="Write something worth clicking..."
-                            textClassName={clsx(
-                                'koenig-lexical-cta-text w-full whitespace-normal text-pretty bg-transparent font-serif text-xl text-grey-900 dark:text-grey-200',
-                                layout === 'immersive' ? 'text-center' : 'text-left'
-                            )}
+                            textClassName="koenig-lexical-cta-text w-full whitespace-normal text-pretty bg-transparent font-serif text-xl text-grey-900 dark:text-grey-200"
                         >
                             <ReplacementStringsPlugin />
                         </KoenigNestedEditor>
