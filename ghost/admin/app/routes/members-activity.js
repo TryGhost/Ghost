@@ -1,13 +1,6 @@
-import AuthenticatedRoute from './authenticated';
+import MembersManagementRoute from './members-management';
 
-export default class MembersActivityRoute extends AuthenticatedRoute {
-    beforeModel() {
-        super.beforeModel(...arguments);
-
-        if (!this.session.user.canManageMembers) {
-            return this.transitionTo('home');
-        }
-    }
+export default class MembersActivityRoute extends MembersManagementRoute {
     buildRouteInfoMetadata() {
         return {
             titleToken: 'Activity',
