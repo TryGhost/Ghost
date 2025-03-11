@@ -54,7 +54,7 @@
                     <LinkTo @route="stats">{{svg-jar "stats-outline"}}Stats</LinkTo>
                 </li>
                 {{/if}}
-                {{#if (gh-user-can-admin this.session.user)}}
+                {{#if (and (gh-user-can-admin this.session.user) (not (feature "ActivityPub")))}}
                 <li class="relative">
                     <a href="javascript:void(0)" class={{if this.explore.exploreWindowOpen "active" }} {{on "click" (fn
                         this.toggleExploreWindow "" )}} data-test-nav="explore">
