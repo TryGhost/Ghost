@@ -53,12 +53,12 @@ export function renderFeedAttachment(object: ObjectProperties, layout: string) {
         const attachmentCount = attachment.length;
 
         let gridClass = '';
-        if (layout === 'modal') {
+        if (attachmentCount === 1) {
             gridClass = 'grid-cols-1'; // Single image, full width
-        } else if (attachmentCount === 2) {
-            gridClass = 'grid-cols-2 auto-rows-[150px]'; // Two images, side by side
-        } else if (attachmentCount === 3 || attachmentCount === 4) {
-            gridClass = 'grid-cols-2 auto-rows-[150px]'; // Three or four images, two per row
+        } else if (attachmentCount >= 2 && attachmentCount <= 4) {
+            gridClass = 'grid-cols-2 auto-rows-[150px]'; // 2-4 images, two per row
+        } else if (attachmentCount > 4) {
+            gridClass = 'grid-cols-3 auto-rows-[150px]'; // >4 images, three per row
         }
 
         return (
