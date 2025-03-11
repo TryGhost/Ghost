@@ -35,4 +35,6 @@ function setIsRoles(loadedPermissions) {
 }
 
 exports.setIsRoles = setIsRoles;
+
 exports.checkUserPermissionsForRole = checkUserPermissionsForRole;
+
