@@ -1015,7 +1015,7 @@ jobs:
         env:
           FORCE_COLOR: 0
         with:
-          node-version: '16.14.0'
+          node-version: '16.20.2'
 
       - name: Install latest v4
         run: |
