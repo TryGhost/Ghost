@@ -375,7 +375,8 @@ const fixtures = {
             Author: DataGenerator.Content.roles[2].id,
             Owner: DataGenerator.Content.roles[3].id,
             Contributor: DataGenerator.Content.roles[4].id,
-            'Admin Integration': DataGenerator.Content.roles[5].id
+            'Admin Integration': DataGenerator.Content.roles[5].id,
+            'Super Editor': DataGenerator.Content.foles[6].id
         };
 
         // CASE: if empty db will throw SQLITE_MISUSE, hard to debug
