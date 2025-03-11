@@ -224,5 +224,34 @@ describe('oembed-service', function () {
 
             await oembedService.fetchOembedDataFromUrl('https://youtube.com/live/1234?param=existing');
         });
+
+        it('should return amazon metadata', async function () {
+            nock('https://www.amazon.com')
+                .get('/dp/DUMMY_CODE')
+                .query(true)
+                .reply(200, `
+                <html>
+                <head>
+                    <meta charset="utf-8" />
+                    <meta name="description" content="Description" />
+                </head>               
+                <body>
+                    <p id="productTitle">Title</p>
+                    <p id="bylineInfo">Author</p>
+                    <div class="a-dynamic-image" data-old-hires="https://m.media-amazon.com/images/I/Thumb.jpg" />
+                </body>
+                </html>`);
+
+            const response = await oembedService.fetchOembedDataFromUrl('https://www.amazon.com/dp/DUMMY_CODE');
+
+            assert.equal(response.version, '1.0');
+            assert.equal(response.type, 'bookmark');
+            assert.equal(response.url, 'https://www.amazon.com/dp/DUMMY_CODE');
+            assert.equal(response.metadata.title, 'Title');
+            assert.equal(response.metadata.author, 'Author');
+            assert.equal(response.metadata.publisher, 'Amazon');
+            assert.equal(response.metadata.description, 'Description');
+            assert.equal(response.metadata.thumbnail, 'https://m.media-amazon.com/images/I/Thumb.jpg');
+        });
     });
 });
