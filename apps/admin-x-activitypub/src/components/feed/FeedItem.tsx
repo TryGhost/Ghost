@@ -371,7 +371,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                     </div>
                                 </div></>}
                                 <div className={`relative z-10 col-start-1 col-end-3 w-full gap-4`}>
-                                    <div className='flex flex-col'>
+                                    <div className='flex flex-col items-start'>
                                         {object.name && <Heading className='mb-1 leading-tight' level={4} data-test-activity-heading>{object.name}</Heading>}
                                         <div dangerouslySetInnerHTML={({__html: object.content ?? ''})} className='ap-note-content-large text-pretty text-[1.6rem] tracking-[-0.011em] text-gray-900 dark:text-gray-600'></div>
                                         {renderFeedAttachment(object, layout)}
