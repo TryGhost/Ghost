@@ -1,6 +1,6 @@
 import * as Sentry from '@sentry/ember';
-import MembersManagementRoute from './members-management';
 import ConfirmUnsavedChangesModal from '../components/modals/confirm-unsaved-changes';
+import MembersManagementRoute from './members-management';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 

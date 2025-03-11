@@ -1484,7 +1484,6 @@ Post = ghostBookshelf.Model.extend({
         let isEdit;
         let isAdd;
         let isDestroy;
-        let {isContributor, isOwner, isAdmin, isEitherEditor} = setIsRoles(loadedPermissions);
 
         function isChanging(attr) {
             return unsafeAttrs[attr] && unsafeAttrs[attr] !== postModel.get(attr);

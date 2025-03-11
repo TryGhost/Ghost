@@ -9,7 +9,6 @@ export default class MembersManagementRoute extends AuthenticatedRoute {
 
     beforeModel() {
         super.beforeModel(...arguments);
-        console.log(this.settings)
         /* if (this.settings.get('membersEnabled') === false) {
             return this.transitionTo('home');
         } */
