@@ -1612,7 +1612,6 @@ describe('Post Model', function () {
                 slug: testUtils.DataGenerator.Content.users[0].slug
             };
             const staffCount = testUtils.DataGenerator.forKnex.users.length;
-            console.log('staffCount is', staffCount);
 
             const preReassignPosts = await models.Post.findAll({context: {internal: true}});
             // There are 10 posts created by posts:mu fixture
