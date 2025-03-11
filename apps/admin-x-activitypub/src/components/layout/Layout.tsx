@@ -3,10 +3,14 @@ import Header from './Header';
 import Onboarding, {useOnboardingStatus} from './Onboarding';
 import Sidebar from './Sidebar';
 import {useCurrentUser} from '@tryghost/admin-x-framework/api/currentUser';
+import {useFeatureFlags} from '@src/lib/feature-flags';
 
 const Layout: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({children, ...props}) => {
-    const {isOnboarded} = useOnboardingStatus();
+    const {isEnabled} = useFeatureFlags();
+    const {isOnboarded: onboardingStatus} = useOnboardingStatus();
     const {data: currentUser, isLoading} = useCurrentUser();
+
+    const isOnboarded = isEnabled('onboarding') ? onboardingStatus : true;
 
     if (isLoading || !currentUser) {
         return null;
