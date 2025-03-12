@@ -2,7 +2,7 @@ import EarthIcon from '../assets/icons/kg-earth.svg?react';
 import React from 'react';
 import debounce from 'lodash/debounce';
 
-const DEBOUNCE_MS = process.env.NODE_ENV === 'test' ? 10 : 100;
+const DEBOUNCE_MS = 100;
 const URL_QUERY_REGEX = /^http|^#|^\/|^mailto:|^tel:/;
 
 function urlQueryOptions(query) {
