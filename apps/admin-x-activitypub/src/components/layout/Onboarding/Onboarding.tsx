@@ -46,7 +46,7 @@ const Onboarding: React.FC = () => {
     };
 
     return (
-        <div className='h-full px-14 pt-14'>
+        <div className='h-full pt-14'>
             {currentStep === 1 && (
                 <Step1 onNext={() => setCurrentStep(2)} />
             )}

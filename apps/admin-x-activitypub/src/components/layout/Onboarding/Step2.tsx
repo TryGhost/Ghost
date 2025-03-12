@@ -60,9 +60,8 @@ const Reaction: React.FC<{
 };
 
 const Step2: React.FC<{onNext: () => void}> = ({onNext}) => {
-    // TODO: add overflow-hidden
     return (
-        <div className='flex h-full max-h-screen w-full flex-col gap-4'>
+        <div className='flex h-full max-h-screen w-full flex-col gap-4 overflow-hidden px-14'>
             <Header>
                 <div className='flex flex-col justify-between gap-4 text-xl font-medium'>
                     <h1 className='max-w-[680px]'>Feel the network effect.</h1>
