@@ -156,3 +156,5 @@ describe('setIsRoles function behavior', function () {
         result.isEitherEditor.should.equal(false);
     });
 });
+
+
