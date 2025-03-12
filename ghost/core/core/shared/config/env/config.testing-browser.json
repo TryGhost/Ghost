@@ -15,7 +15,7 @@
         "port": 9417
     },
     "logging": {
-        "level": "fatal"
+        "level": "info"
     },
     "spam": {
         "user_login": {
