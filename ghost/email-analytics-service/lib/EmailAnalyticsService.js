@@ -274,7 +274,7 @@ module.exports = class EmailAnalyticsService {
             };
         }
 
-        this.queries.setJobTimestamp(this.#fetchScheduledData.jobName, 'completed', this.#fetchScheduledData.lastEventTimestamp);
+        this.queries.setJobTimestamp(this.#fetchScheduledData.jobName, 'finished', this.#fetchScheduledData.lastEventTimestamp);
         return count;
     }
     /**
@@ -374,13 +374,13 @@ module.exports = class EmailAnalyticsService {
         if (!error && eventCount > 0 && eventCount < maxEvents && fetchData.lastEventTimestamp && fetchData.lastEventTimestamp.getTime() < Date.now() - 2000) {
             logging.info('[EmailAnalytics] Reached end of new events, increasing lastEventTimestamp with one second');
             // set the data on the db so we can store it for fetching after reboot
-            await this.queries.setJobTimestamp(fetchData.jobName, 'completed', new Date(fetchData.lastEventTimestamp.getTime()));
+            await this.queries.setJobTimestamp(fetchData.jobName, 'finished', new Date(fetchData.lastEventTimestamp.getTime()));
             // increment and store in local memory
             fetchData.lastEventTimestamp = new Date(fetchData.lastEventTimestamp.getTime() + 1000);
         } else {
             logging.info('[EmailAnalytics] No new events found');
             // set job status to finished
-            await this.queries.setJobStatus(fetchData.jobName, 'completed');
+            await this.queries.setJobStatus(fetchData.jobName, 'finished');
         }
 
         fetchData.running = false;

@@ -19,6 +19,42 @@ const RoleSelector: React.FC<{ user: User; setUserData: (user: User) => void; }>
             </>
         );
     }
+    let optionsArray = [
+        {
+            hint: 'Can create and edit their own posts, but cannot publish. An Editor needs to approve and publish for them.',
+            label: 'Contributor',
+            value: 'contributor'
+        },
+        {
+            hint: 'A trusted user who can create, edit and publish their own posts, but can’t modify others.',
+            label: 'Author',
+            value: 'author'
+        },
+        {
+            hint: 'Can invite and manage other Authors and Contributors, as well as edit and publish any posts on the site.',
+            label: 'Editor',
+            value: 'editor'
+        },
+        {
+            hint: 'Trusted staff user who should be able to manage all content and users, as well as site settings and options.',
+            label: 'Administrator',
+            value: 'administrator'
+        }
+    ];
+    // if the editor beta is enabled, replace the editor role with super editor
+    if (editorBeta) {
+        optionsArray = optionsArray.map((option) => {
+            if (option.value === 'editor') {
+                return {
+                    ...option,
+                    label: 'Editor (beta mode)',
+                    value: 'super editor',
+                    hint: 'Can invite and manage other Authors and Contributors, as well as edit and publish any posts on the site. Can manage members and moderate comments.'
+                };
+            }
+            return option;
+        });
+    }
 
     let optionsArray = [
         {
