@@ -1,4 +1,4 @@
-const MrrStatsService = require('../../lib/MrrStatsService');
+const MrrStatsService = require('../../../../../core/server/services/stats/MrrStatsService');
 const moment = require('moment');
 const sinon = require('sinon');
 const knex = require('knex').default;

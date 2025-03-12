@@ -1,5 +1,6 @@
 import React, {useState} from 'react';
 import Step1 from './Step1';
+import Step3 from './Step3';
 import {Button} from '@tryghost/shade';
 import {parseAccessibilitySettings, updateAccessibilitySettings} from '@utils/accessibility';
 import {useCurrentUser} from '@tryghost/admin-x-framework/api/currentUser';
@@ -50,23 +51,6 @@ const Step2: React.FC<{onNext: () => void}> = ({onNext}) => (
         </div>
         <div className='mt-20'>
             Step 2 content
-        </div>
-    </div>
-);
-
-const Step3: React.FC<{onComplete: () => Promise<void>}> = ({onComplete}) => (
-    <div className='relative h-full'>
-        <div className='relative flex justify-between'>
-            <div className='flex flex-col gap-4 text-xl font-medium'>
-                <h1>Find inspiration & follow what you love.</h1>
-                <div className='flex max-w-[600px] flex-col gap-4'>
-                    <p className='text-gray-800 dark:text-gray-600'>Follow-back your community to connect with them directly, or subscribe to your peers for inspiration to fuel your next idea. You now have a native social web reader inside Ghost for keeping track of your favourite creators across different platforms. </p>
-                </div>
-            </div>
-            <Button className='min-w-60 bg-gradient-to-r from-purple-500 to-purple-600' size='lg' onClick={onComplete}>Next →</Button>
-        </div>
-        <div className='mt-20'>
-            Step 3 content
         </div>
     </div>
 );
