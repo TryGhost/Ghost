@@ -49,11 +49,13 @@ const FeedItemMenu: React.FC<FeedItemMenuProps> = ({
                 </PopoverTrigger>
                 <PopoverContent align={`${layout === 'modal' ? 'start' : 'end'}`} alignOffset={layout === 'modal' ? -12 : 0} className='p-2'>
                     <div className='flex w-48 flex-col'>
-                        <PopoverClose asChild>
-                            <Button className='justify-start' variant='ghost' onClick={handleCopyLinkClick}>
-                                Copy link
-                            </Button>
-                        </PopoverClose>
+                        {(!allowDelete || layout === 'inbox') &&
+                            <PopoverClose asChild>
+                                <Button className='justify-start' variant='ghost' onClick={handleCopyLinkClick}>
+                                    Copy link
+                                </Button>
+                            </PopoverClose>
+                        }
                         {allowDelete &&
                             <AlertDialogTrigger asChild>
                                 <PopoverClose asChild>
