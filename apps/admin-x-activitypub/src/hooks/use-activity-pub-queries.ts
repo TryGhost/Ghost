@@ -617,8 +617,15 @@ export function useThreadForUser(handle: string, id: string) {
                 return current;
             }
 
+            // Find the parent post index
+            const parentIndex = current.posts.findIndex(post => post.object.id === id);
+
+            // Create a new array with the activity inserted after the parent
+            const newPosts = [...current.posts];
+            newPosts.splice(parentIndex + 1, 0, activity);
+
             return {
-                posts: [...current.posts, activity]
+                posts: newPosts
             };
         });
     };
