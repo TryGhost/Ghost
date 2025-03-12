@@ -255,7 +255,7 @@
     "jwks-rsa": "3.1.0",
     "mocha": "10.2.0",
     "mocha-slow-test-reporter": "0.1.2",
-    "mock-knex": "TryGhost/mock-knex#d8b93b1c20d4820323477f2c60db016ab3e73192",
+    "mock-knex": "TryGhost/mock-knex#46c66584fc12f8a210a7642a868a9f9f55f31844",
     "nock": "13.5.6",
     "papaparse": "5.3.2",
     "parse-prometheus-text-format": "1.1.1",
