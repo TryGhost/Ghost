@@ -1,4 +1,5 @@
 import React, {useState} from 'react';
+import Step1 from './Step1';
 import Step3 from './Step3';
 import {Button} from '@tryghost/shade';
 import {parseAccessibilitySettings, updateAccessibilitySettings} from '@utils/accessibility';
@@ -36,28 +37,20 @@ export const useOnboardingStatus = () => {
     return {isOnboarded, setOnboarded};
 };
 
-const Step1: React.FC<{onNext: () => void}> = ({onNext}) => (
-    <div className='flex h-full flex-col gap-4 p-8'>
-        <div className=''>
-            <h2>Increase your reach, with the social web.</h2>
-            <p>In addition to your website, email newsletter and RSS feeds, Ghost now shares posts to the social web – so millions of users across Flipboard, Mastodon, Threads, Bluesky and WordPress can find & follow your work.</p>
-            <p>404Media is now part of the world’s largest open network.</p>
-        </div>
-        <div className='text-right'>
-            <Button onClick={onNext}>Next</Button>
-        </div>
-    </div>
-);
-
 const Step2: React.FC<{onNext: () => void}> = ({onNext}) => (
-    <div className='flex h-full flex-col gap-4 p-8'>
-        <div>
-            <h2>Feel the network effect.</h2>
-            <p>People who follow you can like, reply, repost and interact with your posts. Their followers will see those interactions too, distributing your content even more widely, to a brand new audience.</p>
-            <p>Best of all, you get realtime feedback and visibility when something you’ve created is spreading fast across the social web.</p>
+    <div className='relative h-full'>
+        <div className='relative flex justify-between'>
+            <div className='flex flex-col gap-4 text-xl font-medium'>
+                <h1>Feel the network effect.</h1>
+                <div className='flex max-w-[600px] flex-col gap-4'>
+                    <p className='text-gray-800 dark:text-gray-600'>People who follow you can like, reply, repost & interact with your work. Their followers will see those interactions too, distributing your content even more widely, to a brand new audience.</p>
+                    <p className='text-gray-800 dark:text-gray-600'>Best of all, you get realtime feedback and visibility when something you’ve created is spreading fast across the social web.</p>
+                </div>
+            </div>
+            <Button className='min-w-60 bg-gradient-to-r from-purple-500 to-purple-600' size='lg' onClick={onNext}>Next →</Button>
         </div>
-        <div className='text-right'>
-            <Button onClick={onNext}>Next</Button>
+        <div className='mt-20'>
+            Step 2 content
         </div>
     </div>
 );
