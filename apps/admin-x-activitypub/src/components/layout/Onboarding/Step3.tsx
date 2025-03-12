@@ -1,5 +1,5 @@
 import Header from './components/Header';
-import React, {ReactNode, useState} from 'react';
+import React, {ReactNode, useEffect, useState} from 'react';
 import {Button, H1, LucideIcon, Separator} from '@tryghost/shade';
 
 const MenuItem: React.FC<{
@@ -13,19 +13,32 @@ const MenuItem: React.FC<{
     );
 };
 
-const TabButton: React.FC<{children?: ReactNode, selected?: boolean, onClick: () => void}> = ({children, selected, onClick}) => {
+const TabButton: React.FC<{
+    children?: ReactNode,
+    selected?: boolean,
+    onClick: () => void,
+    onMouseEnter: () => void,
+    onMouseLeave: () => void
+}> = ({children, selected, onClick, onMouseEnter, onMouseLeave}) => {
     return (
-        <Button className={`h-auto rounded-full px-3 py-0.5 font-mono text-xs font-medium uppercase tracking-wide ${!selected && 'bg-transparent text-gray-700'}`} onClick={onClick}>{children}</Button>
+        <Button
+            className={`h-auto rounded-full px-3 py-0.5 font-mono text-xs font-medium uppercase tracking-wide ${!selected && 'bg-transparent text-gray-700'}`}
+            onClick={onClick}
+            onMouseEnter={onMouseEnter}
+            onMouseLeave={onMouseLeave}
+        >
+            {children}
+        </Button>
     );
 };
 
-const Sidebar: React.FC = () => {
+const Sidebar: React.FC<{selectedTab?: number}> = ({selectedTab}) => {
     return (
         <div className='flex h-full flex-col gap-px border-l border-gray-200 pl-4 pt-4'>
-            <MenuItem selected>
+            <MenuItem selected={selectedTab === 1}>
                 <LucideIcon.Inbox size={16} strokeWidth={1.5} /> Inbox
             </MenuItem>
-            <MenuItem>
+            <MenuItem selected={selectedTab === 2}>
                 <LucideIcon.Hash size={16} strokeWidth={1.5} /> Feed
             </MenuItem>
             <MenuItem>
@@ -116,7 +129,7 @@ const LongFormContent: React.FC = () => {
                         </div>
                     ))}
                 </div>
-                <Sidebar />
+                <Sidebar selectedTab={1} />
             </div>
         </>
     );
@@ -214,7 +227,7 @@ const ShortFormContent: React.FC = () => {
                         </>
                     ))}
                 </div>
-                <Sidebar />
+                <Sidebar selectedTab={2} />
             </div>
         </>
     );
@@ -245,27 +258,82 @@ const Reader: React.FC = () => {
 };
 
 const Step3: React.FC<{onComplete: () => Promise<void>}> = ({onComplete}) => {
-    const [activeTab, setActiveTab] = useState(3);
+    const [activeTab, setActiveTab] = useState(1);
+    const [isHovering, setIsHovering] = useState(false);
 
+    useEffect(() => {
+        if (isHovering) {
+            return;
+        }
+
+        const interval = setInterval(() => {
+            setActiveTab(current => (current === 3 ? 1 : current + 1));
+        }, 3000);
+
+        return () => clearInterval(interval);
+    }, [isHovering]);
+
+    // TODO: add overflow-hidden
     return (
-        <div className='flex h-full w-full flex-col gap-4'>
+        <div className='flex h-full max-h-screen w-full flex-col gap-4'>
             <Header>
-                <H1>Find inspiration & follow what you love.</H1>
-                <Button onClick={onComplete}>Done</Button>
-            </Header>
-            <div className='mt-10 h-full'>
-                <div className='flex items-center justify-center gap-2'>
-                    <TabButton selected={activeTab === 1} onClick={() => {
-                        setActiveTab(1);
-                    }}>Long form content</TabButton>
-                    <TabButton selected={activeTab === 2} onClick={() => {
-                        setActiveTab(2);
-                    }}>Short form content</TabButton>
-                    <TabButton selected={activeTab === 3} onClick={() => {
-                        setActiveTab(3);
-                    }}>Integrated reader</TabButton>
+                <div className='flex flex-col justify-between gap-4 text-xl font-medium'>
+                    <h1 className='max-w-[680px]'>Find inspiration & follow what you love.</h1>
+                    <div className='flex max-w-[680px] flex-col gap-4'>
+                        <p className='tracking-tight text-gray-700 dark:text-gray-600'>Follow-back your community to connect with them directly, or subscribe to your peers for inspiration to fuel your next idea. You now have a native <span className='font-semibold text-black'>social web reader</span> inside Ghost for keeping track of your favourite creators across different platforms.</p>
+                    </div>
                 </div>
-                <div className='relative -mx-14 mt-5 w-[calc(100%+112px)] overflow-y-hidden px-14'>
+                <Button className='min-w-60 bg-gradient-to-r from-purple-500 to-purple-600' size='lg' onClick={onComplete}>Next &rarr;</Button>
+            </Header>
+            <div className='mt-8 flex h-full max-h-[760px] flex-col items-stretch justify-end'>
+                <div className='flex items-center justify-center gap-2'>
+                    <TabButton
+                        selected={activeTab === 1}
+                        onClick={() => {
+                            setActiveTab(1);
+                        }}
+                        onMouseEnter={() => {
+                            setIsHovering(true);
+                            setActiveTab(1);
+                        }}
+                        onMouseLeave={() => {
+                            setIsHovering(false);
+                        }}
+                    >
+                        Long form content
+                    </TabButton>
+                    <TabButton
+                        selected={activeTab === 2}
+                        onClick={() => {
+                            setActiveTab(2);
+                        }}
+                        onMouseEnter={() => {
+                            setIsHovering(true);
+                            setActiveTab(2);
+                        }}
+                        onMouseLeave={() => {
+                            setIsHovering(false);
+                        }}
+                    >
+                        Short form content
+                    </TabButton>
+                    <TabButton
+                        selected={activeTab === 3}
+                        onClick={() => {
+                            setActiveTab(3);
+                        }}
+                        onMouseEnter={() => {
+                            setIsHovering(true);
+                            setActiveTab(3);
+                        }}
+                        onMouseLeave={() => {
+                            setIsHovering(false);
+                        }}
+                    >
+                        Integrated reader
+                    </TabButton>
+                </div>
+                <div className='pointer-events-none relative -mx-14 mt-5 w-[calc(100%+112px)] overflow-y-hidden px-14'>
                     <div className='mx-auto h-[694px] w-full max-w-6xl overflow-hidden rounded-md bg-white shadow-xl'>
                         <div className='flex h-5 w-full items-center gap-1.5 bg-gray-100 pl-2'>
                             <div className='h-2 w-2 rounded-full bg-gray-300'></div>
