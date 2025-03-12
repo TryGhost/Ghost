@@ -1438,5 +1438,33 @@ function testPaginatedApiEndpoint(methodName: string, endpoint: string) {
 
             expect(actual).toEqual(expected);
         });
+
+        test('It returns an empty array of posts if posts in the response is not an array', async function () {
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                [`https://activitypub.api/${endpoint}`]: {
+                    response: JSONResponse({
+                        posts: []
+                    })
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const actual = await (api[methodName as keyof typeof api] as (next?: string) => Promise<GetFeedResponse>)();
+
+            expect(actual.posts).toEqual([]);
+        });
     });
 }
