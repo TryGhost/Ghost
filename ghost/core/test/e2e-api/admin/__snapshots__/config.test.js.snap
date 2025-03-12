@@ -29,6 +29,7 @@ Object {
       "members": true,
       "postsX": true,
       "stripeAutomaticTax": true,
+      "superEditors": true,
       "themeErrorsNotification": true,
       "urlCache": true,
       "webmentions": true,
