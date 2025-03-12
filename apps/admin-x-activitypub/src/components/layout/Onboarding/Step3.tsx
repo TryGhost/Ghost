@@ -1,5 +1,20 @@
 import Header from './components/Header';
 import React, {ReactNode, useEffect, useState} from 'react';
+import caseyAvatar from '@assets/images/onboarding/avatar-casey.png';
+import creatorScienceAvatar from '@assets/images/onboarding/avatar-creator-science.png';
+import creatorScienceCover from '@assets/images/onboarding/cover-creator-science.png';
+import evanAvatar from '@assets/images/onboarding/avatar-evan.png';
+import flipboardAvatar from '@assets/images/onboarding/avatar-flipboard.png';
+import fourOFourAvatar from '@assets/images/onboarding/avatar-404.png';
+import goneAvatar from '@assets/images/onboarding/avatar-gone.png';
+import goneCover from '@assets/images/onboarding/cover-gone.png';
+import leverAvatar from '@assets/images/onboarding/avatar-lever.png';
+import leverCover from '@assets/images/onboarding/cover-lever.png';
+import platformerAvatar from '@assets/images/onboarding/avatar-platformer.png';
+import platformerCover from '@assets/images/onboarding/cover-platformer.png';
+import readerCover from '@assets/images/onboarding/cover-reader.png';
+import tangleAvatar from '@assets/images/onboarding/avatar-tangle.png';
+import tangleCover from '@assets/images/onboarding/cover-tangle.png';
 import {Button, H1, LucideIcon, Separator} from '@tryghost/shade';
 
 const MenuItem: React.FC<{
@@ -16,9 +31,9 @@ const MenuItem: React.FC<{
 const TabButton: React.FC<{
     children?: ReactNode,
     selected?: boolean,
-    onClick: () => void,
-    onMouseEnter: () => void,
-    onMouseLeave: () => void
+    onClick?: () => void,
+    onMouseEnter?: () => void,
+    onMouseLeave?: () => void
 }> = ({children, selected, onClick, onMouseEnter, onMouseLeave}) => {
     return (
         <Button
@@ -62,40 +77,40 @@ const Sidebar: React.FC<{selectedTab?: number}> = ({selectedTab}) => {
 const LongFormContent: React.FC = () => {
     const inboxList = [
         {
-            avatar: '',
+            avatar: tangleAvatar,
             publisher: 'Tangle',
             title: 'The Sunday — February 23',
             excerpt: 'This is the Tangle Sunday Edition, a brief roundup of our independent politics coverage plus some extra features for your Sunday morning reading.',
-            cover: ''
+            cover: tangleCover
         },
         {
-            avatar: '',
+            avatar: creatorScienceAvatar,
             publisher: 'Creator Science',
             title: `A lesson from basketball's 3-point line`,
             excerpt: `The NBA was formed in 1949 after the merger of the National Basketball League (founded in 1937) and the
             Basketball Association of America (founded in 1946).`,
-            cover: ''
+            cover: creatorScienceCover
         },
         {
-            avatar: '',
+            avatar: goneAvatar,
             publisher: 'Gone with the Wynns',
             title: 'How far can our electric boat go?',
             excerpt: `Does an electric tender actually have the stamina needed to work for cruising life?  Until now, we honestly didn't know how long or far we could go with our electric jet propulsion. I guess we just haven't been...`,
-            cover: ''
+            cover: goneCover
         },
         {
-            avatar: '',
+            avatar: platformerAvatar,
             publisher: 'Platformer',
             title: 'Manus of the hour',
             excerpt: 'What the hype cycle around a new Chinese AI model tells us about the state of competition in agents',
-            cover: ''
+            cover: platformerCover
         },
         {
-            avatar: '',
+            avatar: leverAvatar,
             publisher: 'The Lever',
             title: 'Is It Still Safe To Fly?',
             excerpt: `Aviation and antitrust expert Bill McGee breaks down recent airplane disasters and reveals the real risks to our airspace.`,
-            cover: ''
+            cover: leverCover
         }
     ];
 
@@ -113,7 +128,9 @@ const LongFormContent: React.FC = () => {
                         <div key={item.publisher} className='flex items-center justify-between gap-8 border-b border-gray-200 py-4'>
                             <div className='flex flex-col gap-1'>
                                 <div className='flex items-center gap-1.5 text-sm font-semibold'>
-                                    <div className='h-4 w-4 rounded-full bg-gray-100'></div>
+                                    <div className='h-4 w-4 rounded-full bg-cover bg-center bg-no-repeat' style={{
+                                        backgroundImage: `url(${item.avatar})`
+                                    }}></div>
                                     {item.publisher}
                                 </div>
                                 <div className='font-semibold'>
@@ -124,7 +141,9 @@ const LongFormContent: React.FC = () => {
                                 </div>
                             </div>
                             <div>
-                                <div className='h-20 w-[120px] min-w-[120px] rounded-sm bg-gray-100'></div>
+                                <div className='h-20 w-[120px] min-w-[120px] rounded-sm bg-cover bg-center bg-no-repeat'style={{
+                                    backgroundImage: `url(${item.cover})`
+                                }}></div>
                             </div>
                         </div>
                     ))}
@@ -138,7 +157,7 @@ const LongFormContent: React.FC = () => {
 const ShortFormContent: React.FC = () => {
     const feedList = [
         {
-            avatar: '',
+            avatar: flipboardAvatar,
             publisher: 'Flibboard',
             handle: '@flipboard@flipboard.social — 17m',
             post: (
@@ -152,8 +171,8 @@ const ShortFormContent: React.FC = () => {
             liked: false
         },
         {
-            avatar: '',
-            publisher: 'Creator Science',
+            avatar: caseyAvatar,
+            publisher: 'Casey Newton',
             handle: `@caseynewton@mastodon.social — 2h`,
             post: (
                 <div>
@@ -166,7 +185,7 @@ const ShortFormContent: React.FC = () => {
             liked: true
         },
         {
-            avatar: '',
+            avatar: evanAvatar,
             publisher: 'Evan Prodromou',
             handle: '@evan@cosocial.ca — 2h',
             post: (
@@ -198,7 +217,10 @@ const ShortFormContent: React.FC = () => {
                     {feedList.map(item => (
                         <>
                             <div className='flex w-full items-start gap-3 px-3'>
-                                <div className='h-9 max-h-9 min-h-9 w-9 min-w-9 max-w-9 rounded-full bg-gray-100'></div>
+                                <div className='h-9 max-h-9 min-h-9 w-9 min-w-9 max-w-9 rounded-full bg-cover bg-center bg-no-repeat'
+                                    style={{
+                                        backgroundImage: `url(${item.avatar})`
+                                    }}></div>
                                 <div className='flex flex-col gap-3 text-sm'>
                                     <div className='mt-0.5 flex flex-col gap-0.5'>
                                         <div className='font-semibold leading-tighter'>{item.publisher}</div>
@@ -238,7 +260,10 @@ const Reader: React.FC = () => {
         <>
             <div className='flex w-full justify-center border-b border-gray-200 py-5'>
                 <div className='flex w-full max-w-[520px] items-center gap-3 text-sm'>
-                    <div className='h-9 max-h-9 min-h-9 w-9 min-w-9 max-w-9 rounded-full bg-gray-100'></div>
+                    <div className='h-9 max-h-9 min-h-9 w-9 min-w-9 max-w-9 rounded-full bg-cover bg-center bg-no-repeat'
+                        style={{
+                            backgroundImage: `url(${fourOFourAvatar})`
+                        }}></div>
                     <div className='mt-0.5 flex flex-col gap-0.5'>
                         <div className='font-semibold leading-tighter'>404 Media</div>
                         <div className='leading-tighter text-gray-700'>@index@404media.co — Yesterday</div>
@@ -248,7 +273,10 @@ const Reader: React.FC = () => {
             <div className='mt-8 flex w-full flex-col items-center'>
                 <div className='flex w-full max-w-[610px] flex-col gap-5'>
                     <H1 className='mx-auto max-w-[520px]'>Decentralized Social Media Is the Only Alternative to the Tech Oligarchy</H1>
-                    <div className='h-[320px] w-full bg-gray-100'></div>
+                    <div className='h-[320px] w-full bg-cover bg-center bg-no-repeat'
+                        style={{
+                            backgroundImage: `url(${readerCover})`
+                        }}></div>
                     <div className='mx-auto max-w-[520px] font-serif text-lg'>The TikTok ban and Donald Trump&apos;s rise to power show how fragile our social media accounts are. We must normalize and invest in decentralized social media.</div>
                     <div className='mx-auto max-w-[520px] font-serif'>If it wasn’t already obvious, the last 72 hours have made it crystal clear that it is urgent to build and mainstream alternative, decentralized social media platforms that are resistant to government censorship and control, are not owned by oligarchs and dominated by their algorithms, and in which users own their follower list and can port it elsewhere easily and without restriction.</div>
                 </div>
@@ -286,18 +314,19 @@ const Step3: React.FC<{onComplete: () => Promise<void>}> = ({onComplete}) => {
                 <Button className='min-w-60 bg-gradient-to-r from-purple-500 to-purple-600' size='lg' onClick={onComplete}>Next &rarr;</Button>
             </Header>
             <div className='mt-8 flex h-full max-h-[760px] flex-col items-stretch justify-end'>
-                <div className='flex items-center justify-center gap-2'>
+                <div
+                    className='flex items-center justify-center gap-2'
+                    onMouseEnter={() => {
+                        setIsHovering(true);
+                    }}
+                    onMouseLeave={() => {
+                        setIsHovering(false);
+                    }}
+                >
                     <TabButton
                         selected={activeTab === 1}
                         onClick={() => {
                             setActiveTab(1);
-                        }}
-                        onMouseEnter={() => {
-                            setIsHovering(true);
-                            setActiveTab(1);
-                        }}
-                        onMouseLeave={() => {
-                            setIsHovering(false);
                         }}
                     >
                         Long form content
@@ -307,13 +336,6 @@ const Step3: React.FC<{onComplete: () => Promise<void>}> = ({onComplete}) => {
                         onClick={() => {
                             setActiveTab(2);
                         }}
-                        onMouseEnter={() => {
-                            setIsHovering(true);
-                            setActiveTab(2);
-                        }}
-                        onMouseLeave={() => {
-                            setIsHovering(false);
-                        }}
                     >
                         Short form content
                     </TabButton>
@@ -321,13 +343,6 @@ const Step3: React.FC<{onComplete: () => Promise<void>}> = ({onComplete}) => {
                         selected={activeTab === 3}
                         onClick={() => {
                             setActiveTab(3);
-                        }}
-                        onMouseEnter={() => {
-                            setIsHovering(true);
-                            setActiveTab(3);
-                        }}
-                        onMouseLeave={() => {
-                            setIsHovering(false);
                         }}
                     >
                         Integrated reader
