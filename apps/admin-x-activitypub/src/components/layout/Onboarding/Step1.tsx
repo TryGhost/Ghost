@@ -12,7 +12,6 @@ const Step1: React.FC<{ onNext: () => void }> = ({onNext}) => {
 
     return (
         <div className='relative h-full'>
-            {/* <div className='absolute inset-0 -mx-14 -mt-14 bg-[url(/ghost/assets/img/ap-nodes.png)] bg-cover bg-center bg-no-repeat' /> */}
             <div className='isolate flex h-full flex-col items-stretch justify-between'>
                 <div className='relative z-20 flex justify-between px-14'>
                     <div className='flex flex-col gap-4 pb-20 text-xl font-medium'>
@@ -22,11 +21,11 @@ const Step1: React.FC<{ onNext: () => void }> = ({onNext}) => {
                             <p><strong>{account?.name}</strong> is now part of the world’s largest open network.</p>
                         </div>
                     </div>
-                    <Button className={`min-w-60 bg-gradient-to-r from-purple-500 to-purple-600 ${!usersLoading && 'animate-onboarding-next-button'} opacity-0`} size='lg' onClick={onNext}>Next &rarr;</Button>
+                    <Button className={`min-w-60 bg-gradient-to-r from-purple-500 to-purple-600`} size='lg' onClick={onNext}>Next &rarr;</Button>
                 </div>
                 <div className='relative z-10 h-full'>
-                    <img className='absolute left-1/2 top-[calc(-300px)] w-full min-w-[1240px] -translate-x-1/2' src={apNodes} />
-                    <div className='relative mx-auto mt-0 flex w-96 flex-col gap-3 rounded-lg bg-white p-6 shadow-xl xxl:mt-[calc(-300px+20vw)] min-[1800px]:mt-14'>
+                    <img className='absolute left-1/2 top-[calc(-280px)] w-full min-w-[1240px] max-w-[1300px] -translate-x-1/2' src={apNodes} />
+                    <div className='relative mx-auto mt-0 flex w-96 flex-col gap-3 rounded-lg bg-white p-6 shadow-xl xxl:mt-[calc(-280px+20vw)] min-[1800px]:mt-14'>
                         <div className='flex items-start justify-between'>
                             <APAvatar
                                 author={account && {

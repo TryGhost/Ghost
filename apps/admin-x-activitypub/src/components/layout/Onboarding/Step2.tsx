@@ -66,15 +66,19 @@ const Step2: React.FC<{onNext: () => void}> = ({onNext}) => {
                 <div className='flex flex-col justify-between gap-4 text-xl font-medium'>
                     <h1 className='max-w-[680px]'>Feel the network effect.</h1>
                     <div className='flex max-w-[680px] flex-col gap-4'>
-                        <p className='tracking-tight text-gray-700 dark:text-gray-600'>People who follow you can like, reply, repost and interact with your posts. Their followers will see those interactions too, distributing your content even more widely, to a brand new audience.</p>
+                        <p className='tracking-tight text-gray-700 dark:text-gray-600'>People who follow you can <span className='font-semibold text-black'>like, reply, repost and interact</span> with your posts. Their followers will see those interactions too, distributing your content even more widely, to a brand new audience.</p>
                         <p className='tracking-tight text-gray-700 dark:text-gray-600'>Best of all, you get realtime feedback and visibility when something you’ve created is spreading fast across the social web.</p>
                     </div>
                 </div>
                 <Button className='min-w-60 bg-gradient-to-r from-purple-500 to-purple-600' size='lg' onClick={onNext}>Next &rarr;</Button>
             </Header>
             <div className='mt-8 flex h-full max-h-[670px] flex-col items-stretch justify-end'>
-                <div className='relative -mx-14 mt-5 w-[calc(100%+112px)] overflow-y-hidden px-14'>
-                    <div className='mx-auto h-[694px] w-full max-w-xl overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-xl'>
+                <div className='relative -mx-14 mt-5 w-[calc(100%+112px)] overflow-y-hidden px-14 pt-8'>
+                    <div className='relative mx-auto h-[694px] w-full max-w-xl rounded-2xl border border-gray-200/70 bg-white shadow-xl'>
+                        <div className='absolute -right-8 -top-4 flex h-8 animate-onboarding-followers items-center gap-1.5 rounded-full bg-gradient-to-t from-black to-gray-900 px-3 font-semibold text-white opacity-0'>
+                            <LucideIcon.TrendingUp size={18} />
+                            270 followers this week
+                        </div>
                         <div className='flex h-full flex-col items-stretch gap-6 p-8'>
                             <Reply avatarNo={40} handle='@conan@obrian.com' name='Conan OBrian' timestamp='just now'>
                                 Do you see any Teletubbies in here? Do you see a slender plastic tag clipped to my shirt with my name printed on it?
