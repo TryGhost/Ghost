@@ -1260,8 +1260,6 @@ describe('ActivityPubAPI', function () {
     testPaginatedApiEndpoint('getInbox', '.ghost/activitypub/inbox');
     testPaginatedApiEndpoint('getPostsByAccount', '.ghost/activitypub/posts');
     testPaginatedApiEndpoint('getPostsLikedByAccount', '.ghost/activitypub/posts/liked');
-
-    
 });
 
 function testPaginatedApiEndpoint(methodName: string, endpoint: string) {
