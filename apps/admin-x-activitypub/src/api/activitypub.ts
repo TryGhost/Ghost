@@ -158,48 +158,6 @@ export class ActivityPubAPI {
         return json;
     }
 
-    private async getActivityPubCollection<T>(collectionUrl: URL, cursor?: string): Promise<ActivityPubCollectionResponse<T>> {
-        const url = new URL(collectionUrl);
-        url.searchParams.set('cursor', cursor || '0');
-
-        const json = await this.fetchJSON(url);
-
-        if (json === null) {
-            return {
-                data: [],
-                next: null
-            };
-        }
-
-        if (!('orderedItems' in json)) {
-            return {
-                data: [],
-                next: null
-            };
-        }
-
-        const data = Array.isArray(json.orderedItems) ? json.orderedItems : [];
-        let next = 'next' in json && typeof json.next === 'string' ? json.next : null;
-
-        if (next !== null) {
-            const nextUrl = new URL(next);
-            next = nextUrl.searchParams.get('cursor') || null;
-        }
-
-        return {
-            data,
-            next
-        };
-    }
-
-    get outboxApiUrl() {
-        return new URL(`.ghost/activitypub/outbox/${this.handle}`, this.apiUrl);
-    }
-
-    async getOutbox(cursor?: string): Promise<ActivityPubCollectionResponse<Activity>> {
-        return this.getActivityPubCollection<Activity>(this.outboxApiUrl, cursor);
-    }
-
     async follow(username: string): Promise<Actor> {
         const url = new URL(`.ghost/activitypub/actions/follow/${username}`, this.apiUrl);
         const json = await this.fetchJSON(url, 'POST');
@@ -210,14 +168,6 @@ export class ActivityPubAPI {
         const url = new URL(`.ghost/activitypub/actions/unfollow/${username}`, this.apiUrl);
         const json = await this.fetchJSON(url, 'POST');
         return json as Actor;
-    }
-
-    get likedApiUrl() {
-        return new URL(`.ghost/activitypub/liked/${this.handle}`, this.apiUrl);
-    }
-
-    async getLiked(cursor?: string): Promise<ActivityPubCollectionResponse<Activity>> {
-        return this.getActivityPubCollection<Activity>(this.likedApiUrl, cursor);
     }
 
     async like(id: string): Promise<void> {

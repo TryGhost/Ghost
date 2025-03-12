@@ -82,36 +82,6 @@ const QUERY_KEYS = {
     postsLikedByAccount: ['posts_liked_by_account']
 };
 
-export function useOutboxForUser(handle: string) {
-    return useInfiniteQuery({
-        queryKey: QUERY_KEYS.outbox(handle),
-        async queryFn({pageParam}: {pageParam?: string}) {
-            const siteUrl = await getSiteUrl();
-            const api = createActivityPubAPI(handle, siteUrl);
-
-            return api.getOutbox(pageParam);
-        },
-        getNextPageParam(prevPage) {
-            return prevPage.next;
-        }
-    });
-}
-
-export function useLikedForUser(handle: string) {
-    return useInfiniteQuery({
-        queryKey: QUERY_KEYS.liked(handle),
-        async queryFn({pageParam}: {pageParam?: string}) {
-            const siteUrl = await getSiteUrl();
-            const api = createActivityPubAPI(handle, siteUrl);
-
-            return api.getLiked(pageParam);
-        },
-        getNextPageParam(prevPage) {
-            return prevPage.next;
-        }
-    });
-}
-
 function updateLikedCache(queryClient: QueryClient, queryKey: string[], id: string, liked: boolean) {
     queryClient.setQueriesData(queryKey, (current?: {pages: {posts: Activity[]}[]}) => {
         if (current === undefined) {
