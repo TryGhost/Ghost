@@ -49,10 +49,6 @@ module.exports = combineTransactionalMigrations(
         role: 'Super Editor'
     }),
     addPermissionToRole({
-        permission: 'Retry emails',
-        role: 'Super Editor'
-    }),
-    addPermissionToRole({
         permission: 'Browse posts',
         role: 'Super Editor'
     }),
