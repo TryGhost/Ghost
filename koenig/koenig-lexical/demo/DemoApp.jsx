@@ -100,7 +100,7 @@ const defaultCardConfig = {
                 }
 
                 resolve(groups);
-            }, 250);
+            }, process.env.NODE_ENV === 'test' ? 25 : 250);
         });
     }
 };

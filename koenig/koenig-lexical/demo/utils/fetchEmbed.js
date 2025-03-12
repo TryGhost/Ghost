@@ -4,7 +4,7 @@ export async function fetchEmbed(url, {type}) {
     if (!urlObject) {
         throw new Error('No URL specified.');
     }
-    await delay(1500);
+    await delay(process.env.NODE_ENV === 'test' ? 50 : 1500);
     // let html = await (await fetch(url)).text();
     try {
         if (type === 'bookmark') {
