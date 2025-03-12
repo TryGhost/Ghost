@@ -132,6 +132,7 @@ const PostsTab: React.FC = () => {
 
     const observerRef = useRef<IntersectionObserver | null>(null);
     const loadMoreRef = useRef<HTMLDivElement | null>(null);
+    const endLoadMoreRef = useRef<HTMLDivElement | null>(null);
 
     useEffect(() => {
         if (observerRef.current) {
@@ -146,6 +147,9 @@ const PostsTab: React.FC = () => {
 
         if (loadMoreRef.current) {
             observerRef.current.observe(loadMoreRef.current);
+        }
+        if (endLoadMoreRef.current) {
+            observerRef.current.observe(endLoadMoreRef.current);
         }
 
         return () => {
@@ -197,6 +201,7 @@ const PostsTab: React.FC = () => {
                     <LoadingIndicator size='md' />
                 </div>
             )}
+            <div ref={endLoadMoreRef} className='h-1'></div>
         </>
     );
 };
@@ -209,6 +214,7 @@ const LikesTab: React.FC = () => {
 
     const observerRef = useRef<IntersectionObserver | null>(null);
     const loadMoreRef = useRef<HTMLDivElement | null>(null);
+    const endLoadMoreRef = useRef<HTMLDivElement | null>(null);
 
     useEffect(() => {
         if (observerRef.current) {
@@ -223,6 +229,9 @@ const LikesTab: React.FC = () => {
 
         if (loadMoreRef.current) {
             observerRef.current.observe(loadMoreRef.current);
+        }
+        if (endLoadMoreRef.current) {
+            observerRef.current.observe(endLoadMoreRef.current);
         }
 
         return () => {
@@ -265,6 +274,7 @@ const LikesTab: React.FC = () => {
                     <LoadingIndicator size='md' />
                 </div>
             )}
+            <div ref={endLoadMoreRef} className='h-1'></div>
         </>
     );
 };
