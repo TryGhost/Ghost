@@ -87,6 +87,7 @@ class JobQueueManager {
     async startQueueProcessor() {
         const poll = async () => {
             if (this.state.isPolling) {
+                this.logger.debug('Already polling, skipping this cycle');
                 return;
             }
 
@@ -109,6 +110,7 @@ class JobQueueManager {
     async processPendingJobs() {
         const stats = await this.getStats();
         if (stats.pendingTasks <= this.config.QUEUE_CAPACITY) {
+            this.logger.debug('Processing pending jobs');
             const entriesToAdd = Math.min(this.config.FETCH_COUNT, this.config.FETCH_COUNT - stats.pendingTasks);
             const {data: jobs, total} = await this.jobsRepository.getQueuedJobs(entriesToAdd);
             this.metricCache.queueDepth = total || 0;
@@ -186,13 +188,13 @@ class JobQueueManager {
         }
     
         const updateData = {
-            status: 'error',
+            status: 'failed',
             finished_at: new Date(),
-            metadata: {
+            metadata: JSON.stringify({
                 ...jobMetadata,
                 error: errorMessage,
                 retries: (jobMetadata.retries || 0) + 1
-            }
+            })
         };
     
         await this.jobsRepository.update(job.id, updateData);
