@@ -99,7 +99,7 @@ module.exports = {
     /**
      * Sets the timestamp of the last seen event for the specified email analytics events.
      * @param {EmailAnalyticsJobName} jobName - The name of the job to update.
-     * @param {'completed'|'started'} field - The field to update.
+     * @param {'finished'|'started'} field - The field to update.
      * @param {Date} date - The timestamp of the last seen event.
      * @returns {Promise<void>}
      * @description
@@ -110,8 +110,8 @@ module.exports = {
         // Convert string dates to Date objects for SQLite compatibility
         try {
             debug(`Setting ${field} timestamp for job ${jobName} to ${date}`);
-            const updateField = field === 'completed' ? 'finished_at' : 'started_at';
-            const status = field === 'completed' ? 'finished' : 'started';
+            const updateField = field === 'finished' ? 'finished_at' : 'started_at';
+            const status = field === 'finished' ? 'finished' : 'started';
             const result = await db.knex('jobs').update({[updateField]: date, updated_at: new Date(), status: status}).where('name', jobName);
             if (result === 0) {
                 await db.knex('jobs').insert({

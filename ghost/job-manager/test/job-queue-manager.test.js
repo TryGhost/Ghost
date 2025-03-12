@@ -369,11 +369,11 @@ describe('JobQueueManager', function () {
             
             expect(calledId).to.equal('1');
             expect(calledUpdateData).to.deep.include({
-                status: 'error',
-                metadata: {
-                    error: 'Test error',
-                    retries: 1
-                }
+                status: 'failed',
+                metadata: JSON.stringify({
+                    retries: 1,
+                    error: 'Test error'
+                })
             });
             expect(calledUpdateData.finished_at).to.be.instanceOf(Date);
         });
