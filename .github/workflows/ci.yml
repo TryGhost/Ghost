@@ -472,7 +472,7 @@ jobs:
 
       # Build any remaining assets not covered by job_setup
       - name: Build remaining assets
-        run: yarn nx run-many -t build
+        run: yarn nx run-many -t build --exclude=ghost-admin
 
       # Run tests with better error reporting
       - run: yarn nx affected -t test:unit --base=${{ needs.job_setup.outputs.BASE_COMMIT }} --verbose
