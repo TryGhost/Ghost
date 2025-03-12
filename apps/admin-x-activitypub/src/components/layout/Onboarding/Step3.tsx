@@ -316,7 +316,7 @@ const Step3: React.FC<{onComplete: () => Promise<void>}> = ({onComplete}) => {
                         <p className='tracking-tight text-gray-700 dark:text-gray-600'>Follow-back your community to connect with them directly, or subscribe to your peers for inspiration to fuel your next idea. You now have a native <span className='font-semibold text-black'>social web reader</span> inside Ghost for keeping track of your favourite creators across different platforms.</p>
                     </div>
                 </div>
-                <Button className='min-w-60 bg-gradient-to-r from-purple-500 to-purple-600' size='lg' onClick={onComplete}>Next &rarr;</Button>
+                <Button className='min-w-60 bg-gradient-to-r from-purple-500 to-[#6A1AD6] hover:opacity-90' size='lg' onClick={onComplete}>Next &rarr;</Button>
             </Header>
             <div className='mt-8 flex h-full max-h-[760px] flex-col items-stretch justify-end'>
                 <div

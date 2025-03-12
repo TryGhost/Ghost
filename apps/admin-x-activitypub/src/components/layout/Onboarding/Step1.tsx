@@ -21,7 +21,7 @@ const Step1: React.FC<{ onNext: () => void }> = ({onNext}) => {
                             <p><strong>{account?.name}</strong> is now part of the world’s largest open network.</p>
                         </div>
                     </div>
-                    <Button className={`min-w-60 bg-gradient-to-r from-purple-500 to-purple-600`} size='lg' onClick={onNext}>Next &rarr;</Button>
+                    <Button className={`min-w-60 bg-gradient-to-r from-purple-500 to-[#6A1AD6] hover:opacity-90`} size='lg' onClick={onNext}>Next &rarr;</Button>
                 </div>
                 <div className='relative z-10 h-full'>
                     <img className='absolute left-1/2 top-[calc(-280px)] w-full min-w-[1240px] max-w-[1300px] -translate-x-1/2' src={apNodes} />
