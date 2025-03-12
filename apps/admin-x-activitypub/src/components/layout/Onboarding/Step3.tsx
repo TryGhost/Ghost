@@ -15,7 +15,8 @@ import platformerCover from '@assets/images/onboarding/cover-platformer.png';
 import readerCover from '@assets/images/onboarding/cover-reader.png';
 import tangleAvatar from '@assets/images/onboarding/avatar-tangle.png';
 import tangleCover from '@assets/images/onboarding/cover-tangle.png';
-import {Button, H1, LucideIcon, Separator} from '@tryghost/shade';
+import {Avatar, AvatarFallback, AvatarImage, Button, H1, LucideIcon, Separator} from '@tryghost/shade';
+import {useAccountForUser} from '@src/hooks/use-activity-pub-queries';
 
 const MenuItem: React.FC<{
     children?: ReactNode,
@@ -37,7 +38,7 @@ const TabButton: React.FC<{
 }> = ({children, selected, onClick, onMouseEnter, onMouseLeave}) => {
     return (
         <Button
-            className={`h-auto rounded-full px-3 py-0.5 font-mono text-xs font-medium uppercase tracking-wide ${!selected && 'bg-transparent text-gray-700'}`}
+            className={`h-auto rounded-full px-3 py-0.5 font-mono text-sm font-medium uppercase tracking-wide ${!selected && 'bg-transparent text-gray-700'}`}
             onClick={onClick}
             onMouseEnter={onMouseEnter}
             onMouseLeave={onMouseLeave}
@@ -200,6 +201,8 @@ const ShortFormContent: React.FC = () => {
         }
     ];
 
+    const {data: account} = useAccountForUser('index');
+
     return (
         <>
             <div className='flex w-full justify-between border-b border-gray-200 py-5'>
@@ -211,7 +214,10 @@ const ShortFormContent: React.FC = () => {
             <div className='grid h-full grid-cols-[auto_248px] gap-4'>
                 <div className='mx-auto flex w-full max-w-[524px] flex-col items-center gap-4 pt-8'>
                     <div className='mb-5 flex w-full items-center gap-3 rounded-md bg-white p-3 text-gray-600 shadow-sm'>
-                        <div className='h-9 w-9 rounded-full bg-gray-100'></div>
+                        <Avatar className='h-9 w-9'>
+                            <AvatarImage src={account?.avatarUrl} />
+                            <AvatarFallback><LucideIcon.User strokeWidth={1.5} /></AvatarFallback>
+                        </Avatar>
                         What&apos;s new?
                     </div>
                     {feedList.map(item => (
@@ -301,9 +307,8 @@ const Step3: React.FC<{onComplete: () => Promise<void>}> = ({onComplete}) => {
         return () => clearInterval(interval);
     }, [isHovering]);
 
-    // TODO: add overflow-hidden
     return (
-        <div className='flex h-full max-h-screen w-full flex-col gap-4'>
+        <div className='flex h-full max-h-screen w-full flex-col gap-4 overflow-hidden px-14'>
             <Header>
                 <div className='flex flex-col justify-between gap-4 text-xl font-medium'>
                     <h1 className='max-w-[680px]'>Find inspiration & follow what you love.</h1>
@@ -311,7 +316,7 @@ const Step3: React.FC<{onComplete: () => Promise<void>}> = ({onComplete}) => {
                         <p className='tracking-tight text-gray-700 dark:text-gray-600'>Follow-back your community to connect with them directly, or subscribe to your peers for inspiration to fuel your next idea. You now have a native <span className='font-semibold text-black'>social web reader</span> inside Ghost for keeping track of your favourite creators across different platforms.</p>
                     </div>
                 </div>
-                <Button className='min-w-60 bg-gradient-to-r from-purple-500 to-purple-600' size='lg' onClick={onComplete}>Next &rarr;</Button>
+                <Button className='min-w-60 bg-gradient-to-r from-purple-500 to-[#6A1AD6] hover:opacity-90' size='lg' onClick={onComplete}>Next &rarr;</Button>
             </Header>
             <div className='mt-8 flex h-full max-h-[760px] flex-col items-stretch justify-end'>
                 <div

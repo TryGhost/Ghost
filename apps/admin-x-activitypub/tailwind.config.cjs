@@ -18,10 +18,11 @@ module.exports = {
                 }
             },
             animation: {
-                'onboarding-handle-bg': 'fadeIn 0.3s ease-in 1s forwards',
-                'onboarding-handle-line': 'lineExpand 0.8s ease-in-out 1.2s forwards',
-                'onboarding-handle-label': 'fadeIn 0.3s ease-in 2s forwards',
-                'onboarding-next-button': 'fadeIn 0.3s ease-in 2.5s forwards'
+                'onboarding-handle-bg': 'fadeIn 0.2s ease-in 0.5s forwards',
+                'onboarding-handle-line': 'lineExpand 0.2s ease-in-out 0.7s forwards',
+                'onboarding-handle-label': 'fadeIn 0.2s ease-in 1.2s forwards',
+                'onboarding-next-button': 'fadeIn 0.2s ease-in 2s forwards',
+                'onboarding-followers': 'fadeIn 0.2s ease-in 0.5s forwards'
             }
         }
     }
