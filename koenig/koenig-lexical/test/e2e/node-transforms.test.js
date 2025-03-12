@@ -1,15 +1,20 @@
-import {assertHTML, html, initialize, test} from '../utils/e2e';
+import {assertHTML, html, initialize} from '../utils/e2e';
 // import {calloutColorPicker} from '../../../src/components/ui/cards/CalloutCardx';
+import {test} from '@playwright/test';
 
 test.describe('Node transforms', async () => {
     let page;
 
-    test.beforeAll(async ({sharedPage}) => {
-        page = sharedPage;
+    test.beforeAll(async ({browser}) => {
+        page = await browser.newPage();
     });
 
     test.beforeEach(async () => {
         await initialize({page});
+    });
+
+    test.afterAll(async () => {
+        await page.close();
     });
 
     test('nested elements in paragraph nodes 1', async function () {

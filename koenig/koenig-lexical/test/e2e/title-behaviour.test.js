@@ -1,15 +1,19 @@
-import {assertHTML, assertSelection, focusEditor, html, initialize, test} from '../utils/e2e';
-import {expect} from '@playwright/test';
+import {assertHTML, assertSelection, focusEditor, html, initialize} from '../utils/e2e';
+import {expect, test} from '@playwright/test';
 
 test.describe('Title behaviour (ExternalControlPlugin)', async () => {
     let page;
 
-    test.beforeAll(async ({sharedPage}) => {
-        page = sharedPage;
+    test.beforeAll(async ({browser}) => {
+        page = await browser.newPage();
     });
 
     test.beforeEach(async () => {
         await initialize({page});
+    });
+
+    test.afterAll(async () => {
+        await page.close();
     });
 
     test.describe('in title', function () {

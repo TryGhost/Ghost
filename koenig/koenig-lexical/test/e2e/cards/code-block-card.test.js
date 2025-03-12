@@ -1,16 +1,20 @@
-import {assertHTML, focusEditor, html, initialize, isMac, pasteText, test} from '../../utils/e2e';
-import {expect} from '@playwright/test';
+import {assertHTML, focusEditor, html, initialize, isMac, pasteText} from '../../utils/e2e';
+import {expect, test} from '@playwright/test';
 
 test.describe('Code Block card', async () => {
     const ctrlOrCmd = isMac() ? 'Meta' : 'Control';
     let page;
 
-    test.beforeAll(async ({sharedPage}) => {
-        page = sharedPage;
+    test.beforeAll(async ({browser}) => {
+        page = await browser.newPage();
     });
 
     test.beforeEach(async () => {
         await initialize({page});
+    });
+
+    test.afterAll(async () => {
+        await page.close();
     });
 
     test('can import serialized code block card nodes', async function () {

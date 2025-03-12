@@ -1,14 +1,19 @@
-import {assertHTML, focusEditor, html, initialize, test} from '../../utils/e2e';
+import {assertHTML, focusEditor, html, initialize} from '../../utils/e2e';
+import {test} from '@playwright/test';
 
 test.describe('Text transforms > Headings', async () => {
     let page;
 
-    test.beforeAll(async ({sharedPage}) => {
-        page = sharedPage;
+    test.beforeAll(async ({browser}) => {
+        page = await browser.newPage();
     });
 
     test.beforeEach(async () => {
         await initialize({page});
+    });
+
+    test.afterAll(async () => {
+        await page.close();
     });
 
     test.describe('on blank paragraph', function () {

@@ -1,14 +1,19 @@
-import {assertHTML, focusEditor, html, initialize, test} from '../../utils/e2e';
+import {assertHTML, focusEditor, html, initialize} from '../../utils/e2e';
+import {test} from '@playwright/test';
 
 test.describe('Renders code block node', async () => {
     let page;
 
-    test.beforeAll(async ({sharedPage}) => {
-        page = sharedPage;
+    test.beforeAll(async ({browser}) => {
+        page = await browser.newPage();
     });
 
     test.beforeEach(async () => {
         await initialize({page});
+    });
+
+    test.afterAll(async () => {
+        await page.close();
     });
 
     test('renders code block node in edit mode', async function () {

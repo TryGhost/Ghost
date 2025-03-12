@@ -1,15 +1,19 @@
-import {assertHTML, assertPosition, assertSelection, focusEditor, html, initialize, insertCard, test} from '../utils/e2e';
-import {expect} from '@playwright/test';
+import {assertHTML, assertPosition, assertSelection, focusEditor, html, initialize, insertCard} from '../utils/e2e';
+import {expect, test} from '@playwright/test';
 
 test.describe('Plus button', async () => {
     let page;
 
-    test.beforeAll(async ({sharedPage}) => {
-        page = sharedPage;
+    test.beforeAll(async ({browser}) => {
+        page = await browser.newPage();
     });
 
     test.beforeEach(async () => {
         await initialize({page});
+    });
+
+    test.afterAll(async () => {
+        await page.close();
     });
 
     test.describe('with caret', function () {

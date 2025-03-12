@@ -1,15 +1,19 @@
-import {assertHTML, focusEditor, html, initialize, isMac, pasteText, test} from '../../utils/e2e';
-import {expect} from '@playwright/test';
+import {assertHTML, focusEditor, html, initialize, isMac, pasteText} from '../../utils/e2e';
+import {expect, test} from '@playwright/test';
 
 test.describe('Html Output Plugin', async function () {
     let page;
 
-    test.beforeAll(async ({sharedPage}) => {
-        page = sharedPage;
+    test.beforeAll(async ({browser}) => {
+        page = await browser.newPage();
     });
 
     test.beforeEach(async () => {
         await initialize({page, uri: '/#/html-output'});
+    });
+
+    test.afterAll(async () => {
+        await page.close();
     });
 
     test('can render html to editor', async function () {

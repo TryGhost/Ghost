@@ -1,17 +1,21 @@
-import {assertHTML, focusEditor, html, initialize, pasteText, test} from '../utils/e2e';
-import {expect} from '@playwright/test';
+import {assertHTML, focusEditor, html, initialize, pasteText} from '../utils/e2e';
+import {expect, test} from '@playwright/test';
 
 test.describe('Linking', async () => {
     let page;
 
-    test.beforeAll(async ({sharedPage}) => {
-        page = sharedPage;
+    test.beforeAll(async ({browser}) => {
+        page = await browser.newPage();
     });
 
     test.beforeEach(async () => {
         // searchLinks (and therefore internal linking) is provided by default,
         // can be turned off with /#/?searchLinks=false
         await initialize({page});
+    });
+
+    test.afterAll(async () => {
+        await page.close();
     });
 
     test.describe('with toolbar', function () {

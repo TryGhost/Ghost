@@ -1,16 +1,20 @@
-import {assertHTML, assertSelection, ctrlOrCmd, focusEditor, html, initialize, insertCard, pasteText, test} from '../utils/e2e';
-import {expect} from '@playwright/test';
+import {assertHTML, assertSelection, ctrlOrCmd, focusEditor, html, initialize, insertCard, pasteText} from '../utils/e2e';
+import {expect, test} from '@playwright/test';
 
 test.describe('Card behaviour', async () => {
     let page;
 
-    test.beforeAll(async ({sharedPage}) => {
-        page = sharedPage;
+    test.beforeAll(async ({browser}) => {
+        page = await browser.newPage();
     });
 
     test.beforeEach(async ({context}) => {
         await context.grantPermissions(['clipboard-read', 'clipboard-write']);
         await initialize({page});
+    });
+
+    test.afterAll(async () => {
+        await page.close();
     });
 
     test.describe('CLICKS', function () {

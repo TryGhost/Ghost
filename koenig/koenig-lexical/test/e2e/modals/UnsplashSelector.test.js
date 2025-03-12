@@ -1,16 +1,20 @@
 // TODO: Switch to mocked API. Currently uses real Unsplash API so the asserted test data isn't stable
-import {expect} from '@playwright/test';
-import {focusEditor, initialize, test} from '../../utils/e2e';
+import {expect, test} from '@playwright/test';
+import {focusEditor, initialize} from '../../utils/e2e';
 
 test.describe('Modals', async () => {
     let page;
 
-    test.beforeAll(async ({sharedPage}) => {
-        page = sharedPage;
+    test.beforeAll(async ({browser}) => {
+        page = await browser.newPage();
     });
 
     test.beforeEach(async () => {
         await initialize({page});
+    });
+
+    test.afterAll(async () => {
+        await page.close();
     });
 
     test.skip('can open selector', async () => {

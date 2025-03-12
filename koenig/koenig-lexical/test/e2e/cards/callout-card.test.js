@@ -1,18 +1,22 @@
-import {assertHTML, createSnippet, focusEditor, html, initialize, insertCard, isMac, test} from '../../utils/e2e';
+import {assertHTML, createSnippet, focusEditor, html, initialize, insertCard, isMac} from '../../utils/e2e';
 // import {calloutColorPicker} from '../../../src/components/ui/cards/CalloutCardx';
-import {expect} from '@playwright/test';
+import {expect, test} from '@playwright/test';
 
 test.describe('Callout Card', async () => {
     const ctrlOrCmd = isMac() ? 'Meta' : 'Control';
 
     let page;
 
-    test.beforeAll(async ({sharedPage}) => {
-        page = sharedPage;
+    test.beforeAll(async ({browser}) => {
+        page = await browser.newPage();
     });
 
     test.beforeEach(async () => {
         await initialize({page});
+    });
+
+    test.afterAll(async () => {
+        await page.close();
     });
 
     test('can import serialized callout card nodes', async function () {

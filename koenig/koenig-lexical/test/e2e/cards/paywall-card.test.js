@@ -1,4 +1,5 @@
-import {assertHTML, focusEditor, html, initialize, test} from '../../utils/e2e';
+import {assertHTML, focusEditor, html, initialize} from '../../utils/e2e';
+import {test} from '@playwright/test';
 
 async function insertPaywallCard(page) {
     await page.keyboard.type('/paywall');
@@ -9,12 +10,16 @@ async function insertPaywallCard(page) {
 test.describe('Paywall card', async () => {
     let page;
 
-    test.beforeAll(async ({sharedPage}) => {
-        page = sharedPage;
+    test.beforeAll(async ({browser}) => {
+        page = await browser.newPage();
     });
 
     test.beforeEach(async () => {
         await initialize({page});
+    });
+
+    test.afterAll(async () => {
+        await page.close();
     });
 
     test('can import serialized paywall card nodes', async function () {

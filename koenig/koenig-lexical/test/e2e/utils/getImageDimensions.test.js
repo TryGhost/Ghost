@@ -1,7 +1,7 @@
 import path from 'path';
-import {expect} from '@playwright/test';
+import {expect, test} from '@playwright/test';
 import {fileURLToPath} from 'url';
-import {focusEditor, initialize, test} from '../../utils/e2e';
+import {focusEditor, initialize} from '../../utils/e2e';
 import {getImageDimensions} from '../../../src/utils/getImageDimensions';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -9,12 +9,16 @@ const __dirname = path.dirname(__filename);
 test.describe('Image card', async () => {
     let page;
 
-    test.beforeAll(async ({sharedPage}) => {
-        page = sharedPage;
+    test.beforeAll(async ({browser}) => {
+        page = await browser.newPage();
     });
 
     test.beforeEach(async () => {
         await initialize({page});
+    });
+
+    test.afterAll(async () => {
+        await page.close();
     });
 
     test('can get image height and width', async function () {
