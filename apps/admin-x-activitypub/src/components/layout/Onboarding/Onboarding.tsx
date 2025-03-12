@@ -64,7 +64,7 @@ const Step2: React.FC<{onNext: () => void}> = ({onNext}) => (
 
 const Onboarding: React.FC = () => {
     const {setOnboarded} = useOnboardingStatus();
-    const [currentStep, setCurrentStep] = useState(3);
+    const [currentStep, setCurrentStep] = useState(1);
 
     const handleComplete = async () => {
         await setOnboarded(true);
