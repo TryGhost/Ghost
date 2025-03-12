@@ -24,7 +24,7 @@ const Reply: React.FC<{
                             <span>Replied to your post {timestamp}</span>
                         </div>
                     </div>
-                    <div>
+                    <div className='text-md'>
                         {children}
                     </div>
                 </div>
@@ -81,7 +81,7 @@ const Step2: React.FC<{onNext: () => void}> = ({onNext}) => {
                                 Do you see any Teletubbies in here? Do you see a slender plastic tag clipped to my shirt with my name printed on it?
                             </Reply>
                             <Separator />
-                            <Reaction names='Snoop Dogg and 9 others' timestamp='Yesterday' type='like'>
+                            <Reaction names='Ryan Reynolds and 2 others' timestamp='Just now' type='like'>
                                 <div className='isolate flex items-center'>
                                     <Avatar className='z-30 h-9 w-9 border border-white'>
                                         <AvatarImage src='' />
@@ -102,7 +102,7 @@ const Step2: React.FC<{onNext: () => void}> = ({onNext}) => {
                                 Well I can’t blame him! I mean if you release a casette you’d better give your followers something to play it on, right? 😎
                             </Reply>
                             <Separator />
-                            <Reaction names='Snoop Dogg and 9 others' timestamp='Yesterday' type='repost'>
+                            <Reaction names='Snoop Dogg and 4 others' timestamp='Yesterday' type='repost'>
                                 <div className='isolate flex items-center'>
                                     <Avatar className='z-50 h-9 w-9 border border-white'>
                                         <AvatarImage src='https://i.pravatar.cc/150?img=3' />
@@ -127,7 +127,7 @@ const Step2: React.FC<{onNext: () => void}> = ({onNext}) => {
                                 </div>
                             </Reaction>
                             <Separator />
-                            <Reaction names='Snoop Dogg and 9 others' timestamp='Yesterday' type='like'>
+                            <Reaction names='Holly Flax and Michael Scott' timestamp='Yesterday' type='like'>
                                 <div className='isolate flex items-center'>
                                     <Avatar className='z-20 h-9 w-9 border border-white'>
                                         <AvatarImage src='https://i.pravatar.cc/150?img=8' />
