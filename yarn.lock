@@ -24438,10 +24438,10 @@ mocha@^2.5.3:
     supports-color "1.2.0"
     to-iso-string "0.0.2"
 
-mock-knex@TryGhost/mock-knex#46c66584fc12f8a210a7642a868a9f9f55f31844:
+mock-knex@TryGhost/mock-knex#68948e11b0ea4fe63456098dfdc169bea7f62009:
   version "0.4.13"
-  uid "46c66584fc12f8a210a7642a868a9f9f55f31844"
-  resolved "https://codeload.github.com/TryGhost/mock-knex/tar.gz/46c66584fc12f8a210a7642a868a9f9f55f31844"
+  uid "68948e11b0ea4fe63456098dfdc169bea7f62009"
+  resolved "https://codeload.github.com/TryGhost/mock-knex/tar.gz/68948e11b0ea4fe63456098dfdc169bea7f62009"
   dependencies:
     bluebird "^3.4.1"
     lodash "^4.14.2"
