@@ -11,8 +11,8 @@ import {
     type ActivityPubCollectionQueryResult,
     useAccountFollowsForUser,
     useAccountForUser,
-    usePostsLikedByAccount,
-    useOutboxForUser
+    usePostsByAccount,
+    usePostsLikedByAccount
 } from '@hooks/use-activity-pub-queries';
 import {handleViewContent} from '@utils/content-handlers';
 
@@ -125,59 +125,79 @@ const useInfiniteScrollTab = <TData,>({useDataHook, emptyStateLabel, emptyStateI
 };
 
 const PostsTab: React.FC<{currentUserAccount: Account | undefined}> = ({currentUserAccount}) => {
-    const {items, EmptyState, LoadingState} = useInfiniteScrollTab<Activity>({
-        useDataHook: useOutboxForUser,
-        emptyStateLabel: 'You haven\'t posted anything yet.',
-        emptyStateIcon: 'pen'
-    });
+    const {postsByAccountQuery, updatePostsByAccount} = usePostsByAccount({enabled: true});
+    const {data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading} = postsByAccountQuery;
 
-    const posts = items.filter(post => (post.type === 'Announce' || post.type === 'Create') && !post.object?.inReplyTo);
+    const posts = (data?.pages.flatMap(page => page.posts) ?? [])
+        .filter(post => (post.type === 'Announce' || post.type === 'Create') && !post.object?.inReplyTo);
+
+    const observerRef = useRef<IntersectionObserver | null>(null);
+    const loadMoreRef = useRef<HTMLDivElement | null>(null);
+
+    useEffect(() => {
+        if (observerRef.current) {
+            observerRef.current.disconnect();
+        }
+
+        observerRef.current = new IntersectionObserver((entries) => {
+            if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+                fetchNextPage();
+            }
+        });
+
+        if (loadMoreRef.current) {
+            observerRef.current.observe(loadMoreRef.current);
+        }
+
+        return () => {
+            if (observerRef.current) {
+                observerRef.current.disconnect();
+            }
+        };
+    }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
     return (
         <>
-            <EmptyState />
-            {
-                posts.length > 0 && (
-                    <ul className='mx-auto flex max-w-[640px] flex-col'>
-                        {posts.map((activity, index) => {
-                            let canDelete = false;
-
-                            const attributedTo = activity.object?.attributedTo;
-
-                            if (typeof attributedTo === 'object' && 'id' in attributedTo) {
-                                canDelete = currentUserAccount?.id === attributedTo.id;
-                            }
-
-                            return (
-                                <li
-                                    key={activity.id}
-                                    data-test-view-article
-                                >
-                                    <FeedItem
-                                        actor={activity.actor}
-                                        allowDelete={canDelete}
-                                        commentCount={activity.object.replyCount}
-                                        repostCount={activity.object.repostCount}
-                                        layout='feed'
-                                        object={activity.object}
-                                        type={activity.type}
-                                        onClick={() => handleViewContent({
-                                            ...activity,
-                                            id: activity.object.id
-                                        }, false)}
-                                        onCommentClick={() => handleViewContent({
-                                            ...activity,
-                                            id: activity.object.id
-                                        }, true)}
-                                    />
-                                    {index < posts.length - 1 && <Separator />}
-                                </li>
-                            );
-                        })}
-                    </ul>
-                )
-            }
-            <LoadingState />
+            {hasNextPage === false && posts.length === 0 && (
+                <NoValueLabel icon='pen'>
+                    You haven't posted anything yet.
+                </NoValueLabel>
+            )}
+            {posts.length > 0 && (
+                <ul className='mx-auto flex max-w-[640px] flex-col'>
+                    {posts.map((activity, index) => (
+                        <li
+                            key={activity.id}
+                            data-test-view-article
+                        >
+                            <FeedItem
+                                actor={activity.actor}
+                                allowDelete={activity.object.authored}
+                                commentCount={activity.object.replyCount}
+                                repostCount={activity.object.repostCount}
+                                layout='feed'
+                                object={activity.object}
+                                type={activity.type}
+                                onClick={() => handleViewContent({
+                                    ...activity,
+                                    id: activity.object.id
+                                }, false, updatePostsByAccount)}
+                                onCommentClick={() => handleViewContent({
+                                    ...activity,
+                                    id: activity.object.id
+                                }, true, updatePostsByAccount)}
+                            />
+                            {index < posts.length - 1 && <Separator />}
+                        </li>
+                    ))}
+                </ul>
+            )}
+            <div ref={loadMoreRef} className='h-1'></div>
+            {(isFetchingNextPage || isLoading) && (
+                <div className='mt-6 flex flex-col items-center justify-center space-y-4 text-center'>
+                    <LoadingIndicator size='md' />
+                </div>
+            )}
         </>
     );
 };
@@ -226,7 +246,7 @@ const LikesTab: React.FC<{currentUserAccount: Account | undefined}> = ({currentU
                         <li key={activity.id} data-test-view-article>
                             <FeedItem
                                 actor={activity.actor}
-                                allowDelete={false}
+                                allowDelete={activity.object.authored}
                                 commentCount={activity.object.replyCount}
                                 layout='feed'
                                 object={Object.assign({}, activity.object, {liked: true})}

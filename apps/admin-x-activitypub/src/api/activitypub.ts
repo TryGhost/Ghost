@@ -549,6 +549,38 @@ export class ActivityPubAPI {
         };
     }
 
+    async getPostsByAccount(next?: string): Promise<GetFeedResponse> {
+        const url = new URL(`.ghost/activitypub/posts`, this.apiUrl);
+
+        if (next) {
+            url.searchParams.set('next', next);
+        }
+
+        const json = await this.fetchJSON(url);
+
+        if (json === null) {
+            return {
+                posts: [],
+                next: null
+            };
+        }
+
+        if (!('posts' in json)) {
+            return {
+                posts: [],
+                next: null
+            };
+        }
+
+        const posts = Array.isArray(json.posts) ? json.posts : [];
+        const nextPage = 'next' in json && typeof json.next === 'string' ? json.next : null;
+
+        return {
+            posts,
+            next: nextPage
+        };
+    }
+
     async getPostsLikedByAccount(next?: string): Promise<GetFeedResponse> {
         const url = new URL(`.ghost/activitypub/posts/liked`, this.apiUrl);
 

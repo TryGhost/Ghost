@@ -78,6 +78,7 @@ const QUERY_KEYS = {
     },
     feed: ['feed'],
     inbox: ['inbox'],
+    postsByAccount: ['posts_by_account'],
     postsLikedByAccount: ['posts_liked_by_account']
 };
 
@@ -830,6 +831,54 @@ export function useInboxForUser(options: {enabled: boolean}) {
     };
 
     return {inboxQuery, updateInboxActivity};
+}
+
+export function usePostsByAccount(options: {enabled: boolean}) {
+    const queryKey = QUERY_KEYS.postsByAccount;
+    const queryClient = useQueryClient();
+
+    const postsByAccountQuery = useInfiniteQuery({
+        queryKey,
+        enabled: options.enabled,
+        async queryFn({pageParam}: {pageParam?: string}) {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI('index', siteUrl);
+            return api.getPostsByAccount(pageParam).then((response) => {
+                return {
+                    posts: response.posts.map(mapPostToActivity),
+                    next: response.next
+                };
+            });
+        },
+        getNextPageParam(prevPage) {
+            return prevPage.next;
+        }
+    });
+
+    const updatePostsByAccount = (id: string, updated: Partial<Activity>) => {
+        queryClient.setQueryData(queryKey, (current: {pages: {posts: Activity[]}[]} | undefined) => {
+            if (!current) {
+                return current;
+            }
+
+            return {
+                ...current,
+                pages: current.pages.map((page: {posts: Activity[]}) => {
+                    return {
+                        ...page,
+                        posts: page.posts.map((item: Activity) => {
+                            if (item.id === id) {
+                                return {...item, ...updated};
+                            }
+                            return item;
+                        })
+                    };
+                })
+            };
+        });
+    };
+
+    return {postsByAccountQuery, updatePostsByAccount};
 }
 
 export function usePostsLikedByAccount(options: {enabled: boolean}) {
