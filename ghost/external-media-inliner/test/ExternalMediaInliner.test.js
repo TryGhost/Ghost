@@ -790,7 +790,7 @@ describe('ExternalMediaInliner', function () {
 
         it('Handles URLs with no scheme', async function () {
             const imageURL = '//img.stockfresh.com/files/f/ghost-logo.png';
-            const requestMock = nock('https://img.stockfresh.com')
+            const requestMock = nock('http://img.stockfresh.com')
                 .get('/files/f/ghost-logo.png')
                 .reply(200, ghostLogoPng);
 
