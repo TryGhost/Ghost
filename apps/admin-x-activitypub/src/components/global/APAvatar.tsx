@@ -53,8 +53,8 @@ const APAvatar: React.FC<APAvatarProps> = ({author, size, isLoading = false, onC
         imageClass = clsx('h-10 w-10', imageClass);
         break;
     case 'md':
-        containerClass = clsx('h-16 w-16', containerClass);
-        imageClass = clsx('h-16 w-16', imageClass);
+        containerClass = clsx('h-[60px] w-[60px]', containerClass);
+        imageClass = clsx('h-[60px] w-[60px]', imageClass);
         break;
     case 'lg':
         containerClass = clsx('h-22 w-22', containerClass);
