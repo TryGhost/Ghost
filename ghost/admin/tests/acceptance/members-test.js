@@ -18,7 +18,7 @@ describe('Acceptance: Members Test', function () {
         expect(currentURL()).to.equal('/signin');
     });
 
-    it('redirects non-admins/non-super editor to site', async function () {
+    it('redirects roles without member management permission to site', async function () {
         let role = this.server.create('role', {name: 'Editor'});
         this.server.create('user', {roles: [role]});
 
