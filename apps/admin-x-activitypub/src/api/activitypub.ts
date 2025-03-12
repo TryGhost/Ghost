@@ -486,103 +486,23 @@ export class ActivityPubAPI {
     }
 
     async getFeed(next?: string): Promise<GetFeedResponse> {
-        const url = new URL(`.ghost/activitypub/feed`, this.apiUrl);
-
-        if (next) {
-            url.searchParams.set('next', next);
-        }
-
-        const json = await this.fetchJSON(url);
-
-        if (json === null) {
-            return {
-                posts: [],
-                next: null
-            };
-        }
-
-        if (!('posts' in json)) {
-            return {
-                posts: [],
-                next: null
-            };
-        }
-
-        const posts = Array.isArray(json.posts) ? json.posts : [];
-        const nextPage = 'next' in json && typeof json.next === 'string' ? json.next : null;
-
-        return {
-            posts,
-            next: nextPage
-        };
+        return this.getPaginatedPosts('.ghost/activitypub/feed', next);
     }
 
     async getInbox(next?: string): Promise<GetFeedResponse> {
-        const url = new URL(`.ghost/activitypub/inbox`, this.apiUrl);
-
-        if (next) {
-            url.searchParams.set('next', next);
-        }
-
-        const json = await this.fetchJSON(url);
-
-        if (json === null) {
-            return {
-                posts: [],
-                next: null
-            };
-        }
-
-        if (!('posts' in json)) {
-            return {
-                posts: [],
-                next: null
-            };
-        }
-
-        const posts = Array.isArray(json.posts) ? json.posts : [];
-        const nextPage = 'next' in json && typeof json.next === 'string' ? json.next : null;
-
-        return {
-            posts,
-            next: nextPage
-        };
+        return this.getPaginatedPosts('.ghost/activitypub/inbox', next);
     }
 
     async getPostsByAccount(next?: string): Promise<GetFeedResponse> {
-        const url = new URL(`.ghost/activitypub/posts`, this.apiUrl);
-
-        if (next) {
-            url.searchParams.set('next', next);
-        }
-
-        const json = await this.fetchJSON(url);
-
-        if (json === null) {
-            return {
-                posts: [],
-                next: null
-            };
-        }
-
-        if (!('posts' in json)) {
-            return {
-                posts: [],
-                next: null
-            };
-        }
-
-        const posts = Array.isArray(json.posts) ? json.posts : [];
-        const nextPage = 'next' in json && typeof json.next === 'string' ? json.next : null;
-
-        return {
-            posts,
-            next: nextPage
-        };
+        return this.getPaginatedPosts('.ghost/activitypub/posts', next);
     }
 
     async getPostsLikedByAccount(next?: string): Promise<GetFeedResponse> {
-        const url = new URL(`.ghost/activitypub/posts/liked`, this.apiUrl);
+        return this.getPaginatedPosts('.ghost/activitypub/posts/liked', next);
+    }
+
+    private async getPaginatedPosts(endpoint: string, next?: string): Promise<GetFeedResponse> {
+        const url = new URL(endpoint, this.apiUrl);
 
         if (next) {
             url.searchParams.set('next', next);
@@ -590,14 +510,7 @@ export class ActivityPubAPI {
 
         const json = await this.fetchJSON(url);
 
-        if (json === null) {
-            return {
-                posts: [],
-                next: null
-            };
-        }
-
-        if (!('posts' in json)) {
+        if (json === null || !('posts' in json)) {
             return {
                 posts: [],
                 next: null
