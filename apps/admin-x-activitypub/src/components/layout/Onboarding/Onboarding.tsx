@@ -1,4 +1,5 @@
 import React, {useState} from 'react';
+import Step3 from './Step3';
 import {Button} from '@tryghost/shade';
 import {parseAccessibilitySettings, updateAccessibilitySettings} from '@utils/accessibility';
 import {useCurrentUser} from '@tryghost/admin-x-framework/api/currentUser';
@@ -61,28 +62,16 @@ const Step2: React.FC<{onNext: () => void}> = ({onNext}) => (
     </div>
 );
 
-const Step3: React.FC<{onComplete: () => Promise<void>}> = ({onComplete}) => (
-    <div className='flex h-full flex-col gap-4 p-8'>
-        <div>
-            <h2>Find inspiration & follow what you love.</h2>
-            <p>Follow-back your community to connect with them directly, or subscribe to your peers for inspiration to fuel your next idea. You now have a native social web reader inside Ghost for keeping track of your favourite creators across different platforms. </p>
-        </div>
-        <div className='text-right'>
-            <Button onClick={onComplete}>Done</Button>
-        </div>
-    </div>
-);
-
 const Onboarding: React.FC = () => {
     const {setOnboarded} = useOnboardingStatus();
-    const [currentStep, setCurrentStep] = useState(1);
+    const [currentStep, setCurrentStep] = useState(3);
 
     const handleComplete = async () => {
         await setOnboarded(true);
     };
 
     return (
-        <div className='max-w-xl'>
+        <div className='h-full px-14 pt-14'>
             {currentStep === 1 && (
                 <Step1 onNext={() => setCurrentStep(2)} />
             )}
