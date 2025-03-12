@@ -6,6 +6,7 @@ const settingsCache = require('../../shared/settings-cache');
 const limitService = require('../services/limits');
 const ghostBookshelf = require('./base');
 const {setIsRoles} = require('./role-utils');
+const labs = require('../../shared/labs');
 const messages = {
     notEnoughPermission: 'You do not have permission to perform this action',
     roleNotFound: 'Role not found',
@@ -62,6 +63,7 @@ Invite = ghostBookshelf.Model.extend({
         }
 
         // CASE: make sure user is allowed to add a user with this role
+        console.log(`labs.isSet('superEditors')`, labs.isSet('superEditors'));
         return ghostBookshelf.model('Role')
             .findOne({id: unsafeAttrs.role_id})
             .then(async (roleToInvite) => {
@@ -87,12 +89,20 @@ Invite = ghostBookshelf.Model.extend({
                 if (loadedPermissions.user) {
                     const {isOwner, isAdmin, isEitherEditor} = setIsRoles(loadedPermissions);
                     if (isOwner || isAdmin) {
-                        allowed = ['Administrator', 'Editor', 'Author', 'Contributor', 'Super Editor'];
+                        if (labs.isSet('superEditors')) {
+                            allowed = ['Administrator', 'Editor', 'Author', 'Contributor', 'Super Editor'];
+                        } else {
+                            allowed = ['Administrator', 'Editor', 'Author', 'Contributor'];
+                        }
                     } else if (isEitherEditor) {
-                        allowed = ['Author', 'Contributor', 'Super Editor'];
+                        allowed = ['Author', 'Contributor'];
                     }
                 } else if (loadedPermissions.apiKey) {
-                    allowed = ['Editor', 'Author', 'Contributor', 'Super Editor'];
+                    if (labs.isSet('superEditors')) {
+                        allowed = ['Editor', 'Author', 'Contributor', 'Super Editor'];
+                    } else {
+                        allowed = ['Editor', 'Author', 'Contributor'];
+                    }
                 }
 
                 if (allowed.indexOf(roleToInvite.get('name')) === -1) {
