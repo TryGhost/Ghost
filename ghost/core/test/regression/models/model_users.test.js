@@ -205,7 +205,7 @@ describe('User Model', function run() {
                 results.meta.pagination.page.should.equal(1);
                 results.meta.pagination.limit.should.equal('all');
                 results.meta.pagination.pages.should.equal(1);
-                results.data.length.should.equal(9);
+                results.data.length.should.equal(10);
             });
         });
 
