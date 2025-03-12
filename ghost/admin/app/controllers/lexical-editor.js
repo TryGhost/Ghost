@@ -261,10 +261,10 @@ export default class LexicalEditorController extends Controller {
         });
     }
 
-    @computed('session.user.{isAdmin,isEditor}')
+    @computed('session.user.{isAdmin,isEitherEditor}')
     get canManageSnippets() {
         let {user} = this.session;
-        if (user.get('isAdmin') || user.get('isEditor')) {
+        if (user.get('isAdmin') || user.get('isEitherEditor')) {
             return true;
         }
         return false;
