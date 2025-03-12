@@ -67,7 +67,6 @@ class TwitterOEmbedProvider {
                         Authorization: `Bearer ${this.dependencies.config.bearerToken}`
                     }
                 }).json();
-
                 oembedData.tweet_data = body.data;
                 oembedData.tweet_data.includes = body.includes;
             } catch (err) {
