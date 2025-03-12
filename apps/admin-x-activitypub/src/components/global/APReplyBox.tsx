@@ -113,8 +113,7 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
         className
     );
 
-    // We disable the button if either the textbox isn't focused, or the reply is currently being sent.
-    const buttonDisabled = !isFocused || replyMutation.isLoading;
+    const buttonDisabled = !textValue || replyMutation.isLoading;
 
     let placeholder = 'Reply...';
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
