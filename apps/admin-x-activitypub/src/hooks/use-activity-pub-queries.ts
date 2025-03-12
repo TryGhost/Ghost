@@ -610,26 +610,22 @@ export function useThreadForUser(handle: string, id: string) {
         }
     });
 
-    const addToThread = (activity: Activity, addToTop: boolean = false) => {
+    const addToThread = (activity: Activity) => {
         // Add the activity to the thread stored in the thread query cache
         queryClient.setQueryData(queryKey, (current: {posts: Activity[]} | undefined) => {
             if (!current) {
                 return current;
             }
 
-            if (addToTop) {
-                // Find the parent post index
-                const parentIndex = current.posts.findIndex(post => post.object.id === id);
-                // Create a new array with the activity inserted after the parent
-                const newPosts = [...current.posts];
-                newPosts.splice(parentIndex + 1, 0, activity);
-                return {
-                    posts: newPosts
-                };
-            }
+            // Find the parent post index
+            const parentIndex = current.posts.findIndex(post => post.object.id === id);
+
+            // Create a new array with the activity inserted after the parent
+            const newPosts = [...current.posts];
+            newPosts.splice(parentIndex + 1, 0, activity);
 
             return {
-                posts: [...current.posts, activity]
+                posts: newPosts
             };
         });
     };

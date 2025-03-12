@@ -448,7 +448,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
         // Add the new reply to the thread
         activity.object.authored = true;
         activity.id = activity.object.id;
-        addToThread(activity, true);
+        addToThread(activity);
 
         // Update the replyCount on the activity outside of the context
         // of this component
