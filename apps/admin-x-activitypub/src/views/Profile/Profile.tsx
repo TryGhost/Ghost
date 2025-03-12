@@ -1,11 +1,9 @@
 import React, {useEffect, useRef, useState} from 'react';
 
 import NiceModal from '@ebay/nice-modal-react';
-import {Activity,ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, Heading, List, LoadingIndicator, NoValueLabel, Tab, TabView} from '@tryghost/admin-x-design-system';
 import {Skeleton} from '@tryghost/shade';
 
-import {Account, FollowAccount} from '../../api/activitypub';
 import {
     type AccountFollowsQueryResult,
     type ActivityPubCollectionQueryResult,
@@ -14,6 +12,7 @@ import {
     usePostsByAccount,
     usePostsLikedByAccount
 } from '@hooks/use-activity-pub-queries';
+import {FollowAccount} from '../../api/activitypub';
 import {handleViewContent} from '@utils/content-handlers';
 
 import APAvatar from '@components/global/APAvatar';
@@ -124,7 +123,7 @@ const useInfiniteScrollTab = <TData,>({useDataHook, emptyStateLabel, emptyStateI
     return {items, EmptyState, LoadingState};
 };
 
-const PostsTab: React.FC<{currentUserAccount: Account | undefined}> = ({currentUserAccount}) => {
+const PostsTab: React.FC = () => {
     const {postsByAccountQuery, updatePostsByAccount} = usePostsByAccount({enabled: true});
     const {data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading} = postsByAccountQuery;
 
@@ -160,7 +159,7 @@ const PostsTab: React.FC<{currentUserAccount: Account | undefined}> = ({currentU
         <>
             {hasNextPage === false && posts.length === 0 && (
                 <NoValueLabel icon='pen'>
-                    You haven't posted anything yet.
+                    You haven&apos;t posted anything yet.
                 </NoValueLabel>
             )}
             {posts.length > 0 && (
@@ -174,9 +173,9 @@ const PostsTab: React.FC<{currentUserAccount: Account | undefined}> = ({currentU
                                 actor={activity.actor}
                                 allowDelete={activity.object.authored}
                                 commentCount={activity.object.replyCount}
-                                repostCount={activity.object.repostCount}
                                 layout='feed'
                                 object={activity.object}
+                                repostCount={activity.object.repostCount}
                                 type={activity.type}
                                 onClick={() => handleViewContent({
                                     ...activity,
@@ -202,7 +201,7 @@ const PostsTab: React.FC<{currentUserAccount: Account | undefined}> = ({currentU
     );
 };
 
-const LikesTab: React.FC<{currentUserAccount: Account | undefined}> = ({currentUserAccount}) => {
+const LikesTab: React.FC = () => {
     const {postsLikedByAccountQuery, updatePostsLikedByAccount} = usePostsLikedByAccount({enabled: true});
     const {data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading} = postsLikedByAccountQuery;
 
@@ -237,7 +236,7 @@ const LikesTab: React.FC<{currentUserAccount: Account | undefined}> = ({currentU
         <>
             {hasNextPage === false && posts.length === 0 && (
                 <NoValueLabel icon='heart'>
-                    You haven't liked anything yet.
+                    You haven&apos;t liked anything yet.
                 </NoValueLabel>
             )}
             {posts.length > 0 && (
@@ -385,7 +384,7 @@ const Profile: React.FC<ProfileProps> = ({}) => {
             title: 'Posts',
             contents: (
                 <div className='ap-posts'>
-                    <PostsTab currentUserAccount={account} />
+                    <PostsTab />
                 </div>
             )
         },
@@ -394,7 +393,7 @@ const Profile: React.FC<ProfileProps> = ({}) => {
             title: 'Likes',
             contents: (
                 <div className='ap-likes'>
-                    <LikesTab currentUserAccount={account} />
+                    <LikesTab />
                 </div>
             ),
             counter: account?.likedCount || 0
