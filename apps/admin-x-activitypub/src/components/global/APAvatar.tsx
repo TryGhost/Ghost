@@ -7,7 +7,7 @@ import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Icon} from '@tryghost/admin-x-design-system';
 import {Skeleton} from '@tryghost/shade';
 
-type AvatarSize = '2xs' | 'xs' | 'sm' | 'lg' | 'notification';
+type AvatarSize = '2xs' | 'xs' | 'sm' | 'md' | 'lg' | 'notification';
 
 interface APAvatarProps {
     author: {
@@ -51,6 +51,10 @@ const APAvatar: React.FC<APAvatarProps> = ({author, size, isLoading = false, onC
     case 'sm':
         containerClass = clsx('h-10 w-10', containerClass);
         imageClass = clsx('h-10 w-10', imageClass);
+        break;
+    case 'md':
+        containerClass = clsx('h-16 w-16', containerClass);
+        imageClass = clsx('h-16 w-16', imageClass);
         break;
     case 'lg':
         containerClass = clsx('h-22 w-22', containerClass);
