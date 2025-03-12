@@ -1,6 +1,6 @@
 import {KoenigDecoratorNode} from './KoenigDecoratorNode';
 import readTextContent from './utils/read-text-content';
-import {ALL_MEMBERS_SEGMENT, buildDefaultVisibility, migrateOldVisibilityFormat, usesOldVisibilityFormat} from './utils/visibility';
+import {buildDefaultVisibility, isVisibilityRestricted, migrateOldVisibilityFormat} from './utils/visibility';
 /**
  * Validates the required arguments passed to `generateDecoratorNode`
 */
@@ -148,10 +148,7 @@ export function generateDecoratorNode({nodeType, properties = [], version = 1, h
             const data = {};
 
             // migrate older nodes that were saved with an earlier version of the visibility format
-            const visibility = serializedNode.visibility;
-            if (visibility && usesOldVisibilityFormat(visibility)) {
-                migrateOldVisibilityFormat(visibility);
-            }
+            serializedNode.visibility = migrateOldVisibilityFormat(serializedNode.visibility);
 
             properties.forEach((prop) => {
                 data[prop.name] = serializedNode[prop.name];
@@ -249,15 +246,7 @@ export function generateDecoratorNode({nodeType, properties = [], version = 1, h
             const self = this.getLatest();
             const visibility = self.__visibility;
 
-            if (usesOldVisibilityFormat(visibility)) {
-                return visibility.showOnEmail === false
-                    || visibility.showOnWeb === false
-                    || visibility.segment !== '';
-            } else {
-                return visibility.web.nonMember === false
-                    || visibility.web.memberSegment !== ALL_MEMBERS_SEGMENT
-                    || visibility.email.memberSegment !== ALL_MEMBERS_SEGMENT;
-            }
+            return isVisibilityRestricted(visibility);
         }
     }
 
