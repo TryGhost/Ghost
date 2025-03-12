@@ -178,6 +178,7 @@ jobs:
           FORCE_COLOR: 0
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: yarn
 
       - name: Install dependencies
         run: yarn install --prefer-offline --frozen-lockfile
@@ -458,7 +459,6 @@ jobs:
           FORCE_COLOR: 0
         with:
           node-version: ${{ matrix.node }}
-          cache: yarn
 
       - name: Restore caches
         uses: ./.github/actions/restore-cache
@@ -470,12 +470,11 @@ jobs:
         with:
           timezoneLinux: "America/New_York"
 
-      # Build any remaining assets not covered by job_setup
+      # Ensure all built packages are built before running tests (admin is built in job_setup)
       - name: Build remaining assets
         run: yarn nx run-many -t build --exclude=ghost-admin
 
-      # Run tests with better error reporting
-      - run: yarn nx affected -t test:unit --base=${{ needs.job_setup.outputs.BASE_COMMIT }} --verbose
+      - run: yarn nx affected -t test:unit --base=${{ needs.job_setup.outputs.BASE_COMMIT }}
 
       - uses: actions/upload-artifact@v4
         if: startsWith(matrix.node, '18')
