@@ -375,7 +375,7 @@ const Step3: React.FC = () => {
                             {activeTab === 3 && <Reader />}
                         </div>
                     </div>
-                    <div className='absolute inset-x-0 bottom-0 h-[192px] bg-gradient-to-t from-white via-[rgba(255,255,255,0.71)] to-[rgba(255,255,255,0)]'></div>
+                    <div className='absolute inset-x-0 bottom-0 h-18 bg-gradient-to-t from-white via-[rgba(255,255,255,0.71)] to-[rgba(255,255,255,0)]'></div>
                 </div>
             </div>
         </div>
