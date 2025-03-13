@@ -113,7 +113,7 @@ export interface Post {
     > | null;
 }
 
-export interface GetFeedResponse {
+export interface PaginatedPostsResponse {
     posts: Post[];
     next: string | null;
 }
@@ -160,48 +160,6 @@ export class ActivityPubAPI {
         return json;
     }
 
-    private async getActivityPubCollection<T>(collectionUrl: URL, cursor?: string): Promise<ActivityPubCollectionResponse<T>> {
-        const url = new URL(collectionUrl);
-        url.searchParams.set('cursor', cursor || '0');
-
-        const json = await this.fetchJSON(url);
-
-        if (json === null) {
-            return {
-                data: [],
-                next: null
-            };
-        }
-
-        if (!('orderedItems' in json)) {
-            return {
-                data: [],
-                next: null
-            };
-        }
-
-        const data = Array.isArray(json.orderedItems) ? json.orderedItems : [];
-        let next = 'next' in json && typeof json.next === 'string' ? json.next : null;
-
-        if (next !== null) {
-            const nextUrl = new URL(next);
-            next = nextUrl.searchParams.get('cursor') || null;
-        }
-
-        return {
-            data,
-            next
-        };
-    }
-
-    get outboxApiUrl() {
-        return new URL(`.ghost/activitypub/outbox/${this.handle}`, this.apiUrl);
-    }
-
-    async getOutbox(cursor?: string): Promise<ActivityPubCollectionResponse<Activity>> {
-        return this.getActivityPubCollection<Activity>(this.outboxApiUrl, cursor);
-    }
-
     async follow(username: string): Promise<Actor> {
         const url = new URL(`.ghost/activitypub/actions/follow/${username}`, this.apiUrl);
         const json = await this.fetchJSON(url, 'POST');
@@ -212,14 +170,6 @@ export class ActivityPubAPI {
         const url = new URL(`.ghost/activitypub/actions/unfollow/${username}`, this.apiUrl);
         const json = await this.fetchJSON(url, 'POST');
         return json as Actor;
-    }
-
-    get likedApiUrl() {
-        return new URL(`.ghost/activitypub/liked/${this.handle}`, this.apiUrl);
-    }
-
-    async getLiked(cursor?: string): Promise<ActivityPubCollectionResponse<Activity>> {
-        return this.getActivityPubCollection<Activity>(this.likedApiUrl, cursor);
     }
 
     async like(id: string): Promise<void> {
@@ -487,40 +437,24 @@ export class ActivityPubAPI {
         };
     }
 
-    async getFeed(next?: string): Promise<GetFeedResponse> {
-        const url = new URL(`.ghost/activitypub/feed`, this.apiUrl);
-
-        if (next) {
-            url.searchParams.set('next', next);
-        }
-
-        const json = await this.fetchJSON(url);
-
-        if (json === null) {
-            return {
-                posts: [],
-                next: null
-            };
-        }
-
-        if (!('posts' in json)) {
-            return {
-                posts: [],
-                next: null
-            };
-        }
-
-        const posts = Array.isArray(json.posts) ? json.posts : [];
-        const nextPage = 'next' in json && typeof json.next === 'string' ? json.next : null;
-
-        return {
-            posts,
-            next: nextPage
-        };
+    async getFeed(next?: string): Promise<PaginatedPostsResponse> {
+        return this.getPaginatedPosts('.ghost/activitypub/feed', next);
     }
 
-    async getInbox(next?: string): Promise<GetFeedResponse> {
-        const url = new URL(`.ghost/activitypub/inbox`, this.apiUrl);
+    async getInbox(next?: string): Promise<PaginatedPostsResponse> {
+        return this.getPaginatedPosts('.ghost/activitypub/inbox', next);
+    }
+
+    async getPostsByAccount(next?: string): Promise<PaginatedPostsResponse> {
+        return this.getPaginatedPosts('.ghost/activitypub/posts', next);
+    }
+
+    async getPostsLikedByAccount(next?: string): Promise<PaginatedPostsResponse> {
+        return this.getPaginatedPosts('.ghost/activitypub/posts/liked', next);
+    }
+
+    private async getPaginatedPosts(endpoint: string, next?: string): Promise<PaginatedPostsResponse> {
+        const url = new URL(endpoint, this.apiUrl);
 
         if (next) {
             url.searchParams.set('next', next);
@@ -528,14 +462,7 @@ export class ActivityPubAPI {
 
         const json = await this.fetchJSON(url);
 
-        if (json === null) {
-            return {
-                posts: [],
-                next: null
-            };
-        }
-
-        if (!('posts' in json)) {
+        if (json === null || !('posts' in json)) {
             return {
                 posts: [],
                 next: null
