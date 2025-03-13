@@ -1010,7 +1010,6 @@ export function useInboxForUser(options: {enabled: boolean}) {
     const inboxQuery = useInfiniteQuery({
         queryKey,
         enabled: options.enabled,
-        staleTime: 20000,
         async queryFn({pageParam}: {pageParam?: string}) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI('index', siteUrl);
