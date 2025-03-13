@@ -3,6 +3,7 @@ import {ApOnboardingSettings, parseAccessibilitySettings, updateAccessibilitySet
 import {Outlet} from '@tryghost/admin-x-framework';
 import {useCurrentUser} from '@tryghost/admin-x-framework/api/currentUser';
 import {useEditUser} from '@tryghost/admin-x-framework/api/users';
+import {useNavigate} from '@tryghost/admin-x-framework';
 
 export const useOnboardingStatus = () => {
     const {data: currentUser} = useCurrentUser();
