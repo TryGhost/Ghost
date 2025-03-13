@@ -4,11 +4,13 @@ import apNodes from '@assets/images/onboarding/ap-nodes.png';
 import {Button, H3, LucideIcon} from '@tryghost/shade';
 import {useAccountForUser} from '@src/hooks/use-activity-pub-queries';
 import {useBrowseUsers} from '@tryghost/admin-x-framework/api/users';
+import {useNavigate} from '@tryghost/admin-x-framework';
 
-const Step1: React.FC<{ onNext: () => void }> = ({onNext}) => {
+const Step1: React.FC = () => {
     const {data: account} = useAccountForUser('index');
     const {data: {users, meta} = {users: []}, isLoading: usersLoading} = useBrowseUsers();
     const firstThreeUsers = users.slice(0, 3);
+    const navigate = useNavigate();
 
     return (
         <div className='relative h-full'>
@@ -21,7 +23,7 @@ const Step1: React.FC<{ onNext: () => void }> = ({onNext}) => {
                             <p><strong>{account?.name}</strong> is now part of the world’s largest open network.</p>
                         </div>
                     </div>
-                    <Button className={`min-w-60 bg-gradient-to-r from-purple-500 to-[#6A1AD6] hover:opacity-90`} size='lg' onClick={onNext}>Next &rarr;</Button>
+                    <Button className={`min-w-60 bg-gradient-to-r from-purple-500 to-[#6A1AD6] hover:opacity-90`} size='lg' onClick={() => navigate('/welcome/2')}>Next &rarr;</Button>
                 </div>
                 <div className='relative z-10 h-full'>
                     <img className='absolute left-1/2 top-[calc(-280px)] w-full min-w-[1240px] max-w-[1300px] -translate-x-1/2' src={apNodes} />
