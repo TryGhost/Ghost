@@ -18,6 +18,7 @@ import {
     useQuery,
     useQueryClient
 } from '@tanstack/react-query';
+import {exploreSites} from '@src/lib/explore-sites';
 import {formatPendingActivityContent, generatePendingActivity, generatePendingActivityId} from '../utils/pending-activity';
 import {mapPostToActivity} from '../utils/posts';
 import {showToast} from '@tryghost/admin-x-design-system';
@@ -72,6 +73,7 @@ const QUERY_KEYS = {
     ) => ['activities', handle, key, options].filter(value => value !== undefined),
     searchResults: (query: string) => ['search_results', query],
     suggestedProfiles: (limit: number) => ['suggested_profiles', limit],
+    exploreProfiles: (handle: string) => ['explore_profiles', handle],
     thread: (id: string | null) => {
         if (id === null) {
             return ['thread'];
@@ -480,6 +482,36 @@ export function useSearchForUser(handle: string, query: string) {
     };
 
     return {searchQuery, updateAccountSearchResult};
+}
+
+export function useExploreProfilesForUser(handle: string) {
+    const queryKey = QUERY_KEYS.exploreProfiles(handle);
+
+    const exploreProfilesQuery = useQuery({
+        queryKey,
+        async queryFn() {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI(handle, siteUrl);
+            const results: Record<string, { categoryName: string; sites: Profile[] }> = {};
+
+            for (const [key, category] of Object.entries(exploreSites)) {
+                const settledResults = await Promise.allSettled(
+                    category.sites.map(suggestedHandle => api.getProfile(suggestedHandle))
+                );
+
+                results[key] = {
+                    categoryName: category.categoryName,
+                    sites: settledResults
+                        .filter((result): result is PromiseFulfilledResult<Profile> => result.status === 'fulfilled')
+                        .map(result => result.value)
+                };
+            }
+
+            return results;
+        }
+    });
+
+    return {exploreProfilesQuery};
 }
 
 export function useSuggestedProfilesForUser(handle: string, limit = 3) {
