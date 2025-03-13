@@ -6,7 +6,6 @@ const settingsCache = require('../../shared/settings-cache');
 const limitService = require('../services/limits');
 const ghostBookshelf = require('./base');
 const {setIsRoles} = require('./role-utils');
-
 const messages = {
     notEnoughPermission: 'You do not have permission to perform this action',
     roleNotFound: 'Role not found',

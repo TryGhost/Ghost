@@ -175,6 +175,7 @@ const InviteUserModal = NiceModal.create(() => {
             value: 'administrator'
         }
     ];
+    
     // If the editor beta is enabled, replace the editor role option with super editor options.
     // This gets a little weird, because we aren't changing what is actually assigned based on the toggle.
     // So, a site could have the editor beta enabled, but that doesn't automatically convert their editors.

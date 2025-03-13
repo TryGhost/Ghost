@@ -12,6 +12,7 @@ const BetaFeatures: React.FC = () => {
     const handleError = useHandleError();
     const [redirectsUploading, setRedirectsUploading] = useState(false);
     const [routesUploading, setRoutesUploading] = useState(false);
+
     return (
         <List titleSeparator={false}>
             <LabItem 
