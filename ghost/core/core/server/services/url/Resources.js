@@ -9,6 +9,8 @@ const models = require('../../models');
 // This listens to all manner of model events to find new content that needs a URL...
 const events = require('../../lib/common/events');
 
+/** @typedef {'posts' | 'pages' | 'tags' | 'authors'} ResourceType */
+
 /**
  * @description At the moment the resources class is directly responsible for data population
  * for URLs...but because it's actually a storage cache of all published
@@ -227,7 +229,7 @@ class Resources {
      * all subscribers sequentially. The first generator, where the conditions match the resource, will
      * own the resource and it's url.
      *
-     * @param {String} type (post,user...)
+     * @param {ResourceType} type
      * @param {import('bookshelf').Model} model
      * @private
      */
@@ -306,7 +308,7 @@ class Resources {
      *   - but the data changed and is maybe no longer owned?
      *   - e.g. featured:false changes and your filter requires featured posts
      *
-     * @param {String} type (post,user...)
+     * @param {ResourceType} type
      * @param {import('bookshelf').Model} model
      * @private
      */
@@ -389,7 +391,7 @@ class Resources {
 
     /**
      * @description Listener for "model removed" event.
-     * @param {String} type (post,user...)
+     * @param {ResourceType} type
      * @param {import('bookshelf').Model} model
      * @private
      */
@@ -432,7 +434,7 @@ class Resources {
 
     /**
      * @description Get all cached resourced by type.
-     * @param {String} type (post, user...)
+     * @param {ResourceType} type
      * @returns {Object}
      */
     getAllByType(type) {
@@ -441,8 +443,8 @@ class Resources {
 
     /**
      * @description Get all cached resourced by resource id and type.
-     * @param {String} type (post, user...)
-     * @param {String} id
+     * @param {ResourceType} type
+     * @param {string} id
      * @returns {Object}
      */
     getByIdAndType(type, id) {
