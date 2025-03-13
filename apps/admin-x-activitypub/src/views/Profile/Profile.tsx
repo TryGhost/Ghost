@@ -127,10 +127,8 @@ const PostsTab: React.FC = () => {
     const {postsByAccountQuery} = usePostsByAccount({enabled: true});
     const {data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading} = postsByAccountQuery;
 
-    const posts = isLoading ? 
-        Array.from({length: 5}, (_, index) => ({id: `placeholder-${index}`, object: {}})) :
-        (data?.pages.flatMap(page => page.posts) ?? [])
-            .filter(post => (post.type === 'Announce' || post.type === 'Create') && !post.object?.inReplyTo);
+    const posts = data?.pages.flatMap(page => page.posts) ?? Array.from({length: 5}, (_, index) => ({id: `placeholder-${index}`, object: {}}));
+
 
     const observerRef = useRef<IntersectionObserver | null>(null);
     const loadMoreRef = useRef<HTMLDivElement | null>(null);
