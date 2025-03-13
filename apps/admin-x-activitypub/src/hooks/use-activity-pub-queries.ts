@@ -18,9 +18,11 @@ import {
     useQuery,
     useQueryClient
 } from '@tanstack/react-query';
+import {exploreSites} from '@src/lib/explore-sites';
 import {formatPendingActivityContent, generatePendingActivity, generatePendingActivityId} from '../utils/pending-activity';
 import {mapPostToActivity} from '../utils/posts';
 import {showToast} from '@tryghost/admin-x-design-system';
+import {useCallback} from 'react';
 
 export type ActivityPubCollectionQueryResult<TData> = UseInfiniteQueryResult<ActivityPubCollectionResponse<TData>>;
 export type AccountFollowsQueryResult = UseInfiniteQueryResult<GetAccountFollowsResponse>;
@@ -72,6 +74,7 @@ const QUERY_KEYS = {
     ) => ['activities', handle, key, options].filter(value => value !== undefined),
     searchResults: (query: string) => ['search_results', query],
     suggestedProfiles: (limit: number) => ['suggested_profiles', limit],
+    exploreProfiles: (handle: string) => ['explore_profiles', handle],
     thread: (id: string | null) => {
         if (id === null) {
             return ['thread'];
@@ -482,6 +485,49 @@ export function useSearchForUser(handle: string, query: string) {
     return {searchQuery, updateAccountSearchResult};
 }
 
+export function useExploreProfilesForUser(handle: string) {
+    const queryClient = useQueryClient();
+    const queryKey = QUERY_KEYS.exploreProfiles(handle);
+
+    const fetchExploreProfiles = useCallback(async () => {
+        const siteUrl = await getSiteUrl();
+        const api = createActivityPubAPI(handle, siteUrl);
+        const results: Record<string, { categoryName: string; sites: Profile[] }> = {};
+
+        for (const [key, category] of Object.entries(exploreSites)) {
+            const settledResults = await Promise.allSettled(
+                category.sites.map(suggestedHandle => api.getProfile(suggestedHandle))
+            );
+
+            results[key] = {
+                categoryName: category.categoryName,
+                sites: settledResults
+                    .filter((result): result is PromiseFulfilledResult<Profile> => result.status === 'fulfilled')
+                    .map(result => result.value)
+            };
+        }
+
+        return results;
+    }, [handle]);
+
+    const exploreProfilesQuery = useQuery({
+        queryKey,
+        queryFn: fetchExploreProfiles
+    });
+
+    const prefetchExploreProfiles = useCallback(() => {
+        return queryClient.prefetchQuery({
+            queryKey,
+            queryFn: fetchExploreProfiles
+        });
+    }, [queryClient, fetchExploreProfiles, queryKey]);
+
+    return {
+        exploreProfilesQuery,
+        prefetchExploreProfiles
+    };
+}
+
 export function useSuggestedProfilesForUser(handle: string, limit = 3) {
     const queryClient = useQueryClient();
     const queryKey = QUERY_KEYS.suggestedProfiles(limit);
@@ -493,7 +539,7 @@ export function useSuggestedProfilesForUser(handle: string, limit = 3) {
         '@index@ghost.codenamejimmy.com',
         '@index@www.syphoncontinuity.com',
         '@index@www.cosmico.org',
-        '@index@silverhuang.com'
+        '@index@www.russbrown.design'
     ];
 
     const suggestedProfilesQuery = useQuery({

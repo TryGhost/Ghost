@@ -1,3 +1,4 @@
+import Explore from '@views/Explore';
 import Inbox from '@views/Inbox';
 import Notifications from '@views/Notifications';
 import Onboarding from '@components/layout/Onboarding';
@@ -33,6 +34,11 @@ export const routes: CustomRouteObject[] = [
         path: 'notifications',
         element: <Notifications />,
         pageTitle: 'Notifications'
+    },
+    {
+        path: 'explore',
+        element: <Explore />,
+        pageTitle: 'Explore'
     },
     {
         path: 'profile',
