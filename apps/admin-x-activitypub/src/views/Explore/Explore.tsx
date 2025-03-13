@@ -72,7 +72,7 @@ export const ExploreProfile: React.FC<ExploreProfileProps & {
     );
 };
 
-const Profile: React.FC = () => {
+const Explore: React.FC = () => {
     const {isExplainerClosed, setExplainerClosed} = useOnboardingStatus();
     const {exploreProfilesQuery} = useExploreProfilesForUser('index');
     const {data: exploreProfilesData, isLoading: isLoadingExploreProfiles} = exploreProfilesQuery;
@@ -139,4 +139,4 @@ const Profile: React.FC = () => {
     );
 };
 
-export default Profile;
+export default Explore;
