@@ -10,6 +10,7 @@ import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button} from '@tryghost/shade';
 import {Heading, LoadingIndicator} from '@tryghost/admin-x-design-system';
 import {handleViewContent} from '@utils/content-handlers';
+import {isPendingActivity} from '@utils/pending-activity';
 import {
     useFeedForUser,
     useInboxForUser,
@@ -20,11 +21,10 @@ import {useLocation} from '@tryghost/admin-x-framework';
 const Inbox: React.FC = () => {
     const location = useLocation();
     const layout = location.pathname === '/feed' ? 'feed' : 'inbox';
-    const {inboxQuery, updateInboxActivity} = useInboxForUser({enabled: layout === 'inbox'});
-    const {feedQuery, updateFeedActivity} = useFeedForUser({enabled: layout === 'feed'});
+    const {inboxQuery} = useInboxForUser({enabled: layout === 'inbox'});
+    const {feedQuery} = useFeedForUser({enabled: layout === 'feed'});
 
     const feedQueryData = layout === 'inbox' ? inboxQuery : feedQuery;
-    const updateActivity = layout === 'inbox' ? updateInboxActivity : updateFeedActivity;
     const {data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading} = feedQueryData;
 
     const activities = (data?.pages.flatMap(page => page.posts) ?? Array.from({length: 5}, (_, index) => ({id: `placeholder-${index}`, object: {}})));
@@ -93,12 +93,13 @@ const Inbox: React.FC = () => {
                                                         allowDelete={activity.object.authored}
                                                         commentCount={activity.object.replyCount ?? 0}
                                                         isLoading={isLoading}
+                                                        isPending={isPendingActivity(activity.id)}
                                                         layout={layout}
                                                         object={activity.object}
                                                         repostCount={activity.object.repostCount ?? 0}
                                                         type={activity.type}
-                                                        onClick={() => handleViewContent(activity, false, updateActivity)}
-                                                        onCommentClick={() => handleViewContent(activity, true, updateActivity)}
+                                                        onClick={() => handleViewContent(activity, false)}
+                                                        onCommentClick={() => handleViewContent(activity, true)}
                                                     />
                                                     {index < activities.length - 1 && (
                                                         <Separator />

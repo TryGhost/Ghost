@@ -1,3 +1,5 @@
+import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type Actor = any;
 
@@ -266,7 +268,7 @@ export class ActivityPubAPI {
 
     async getUser() {
         const json = await this.fetchJSON(this.userApiUrl);
-        return json;
+        return json as ActorProperties;
     }
 
     get searchApiUrl() {

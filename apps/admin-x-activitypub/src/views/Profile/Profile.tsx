@@ -22,6 +22,7 @@ import FollowButton from '@components/global/FollowButton';
 import Layout from '@components/layout';
 import Separator from '@components/global/Separator';
 import ViewProfileModal from '@components/modals/ViewProfileModal';
+import {isPendingActivity} from '@utils/pending-activity';
 
 interface UseInfiniteScrollTabProps<TData> {
     useDataHook: (key: string) => ActivityPubCollectionQueryResult<TData> | AccountFollowsQueryResult;

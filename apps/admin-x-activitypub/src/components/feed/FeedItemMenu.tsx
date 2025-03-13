@@ -21,6 +21,7 @@ interface FeedItemMenuProps {
     onCopyLink: () => void;
     onDelete: () => void;
     allowDelete: boolean;
+    disabled?: boolean;
     layout?: string;
 }
 
@@ -29,6 +30,7 @@ const FeedItemMenu: React.FC<FeedItemMenuProps> = ({
     onCopyLink,
     onDelete,
     allowDelete = false,
+    disabled = false,
     layout
 }) => {
     const handleCopyLinkClick = (e: React.MouseEvent<HTMLElement>) => {
@@ -44,16 +46,18 @@ const FeedItemMenu: React.FC<FeedItemMenuProps> = ({
     return (
         <AlertDialog>
             <Popover>
-                <PopoverTrigger asChild onClick={e => e.stopPropagation()}>
+                <PopoverTrigger disabled={disabled} asChild onClick={e => e.stopPropagation()}>
                     {trigger}
                 </PopoverTrigger>
                 <PopoverContent align={`${layout === 'modal' ? 'start' : 'end'}`} alignOffset={layout === 'modal' ? -12 : 0} className='p-2'>
                     <div className='flex w-48 flex-col'>
-                        <PopoverClose asChild>
-                            <Button className='justify-start' variant='ghost' onClick={handleCopyLinkClick}>
-                                Copy link
-                            </Button>
-                        </PopoverClose>
+                        {(!allowDelete || layout === 'inbox') &&
+                            <PopoverClose asChild>
+                                <Button className='justify-start' variant='ghost' onClick={handleCopyLinkClick}>
+                                    Copy link
+                                </Button>
+                            </PopoverClose>
+                        }
                         {allowDelete &&
                             <AlertDialogTrigger asChild>
                                 <PopoverClose asChild>
