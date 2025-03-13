@@ -398,30 +398,18 @@ class Resources {
     _onResourceRemoved(type, model) {
         debug('_onResourceRemoved', type);
 
-        let index = null;
-        let resource;
+        const resourceId = model._previousAttributes.id;
+        const index = this.data[type].findIndex(resource => resource.data.id === resourceId);
 
-        // CASE: search for the cached resource and stop if it was found
-        this.data[type].every((_resource, _index) => {
-            if (_resource.data.id === model._previousAttributes.id) {
-                resource = _resource;
-                index = _index;
-                // break!
-                return false;
-            }
-
-            return true;
-        });
-
-        // CASE: there are possible cases that the resource was not fetched e.g. visibility is internal
-        if (index === null) {
-            debug('can\'t find resource', model._previousAttributes.id);
+        // Resource might not be in cache if e.g. visibility was internal
+        if (index === -1) {
+            debug('Resource not found in cache', resourceId);
             return;
         }
 
         // remove the resource from cache
-        this.data[type].splice(index, 1);
-        resource.remove();
+        const [removedResource] = this.data[type].splice(index, 1);
+        removedResource.remove();
     }
 
     /**
