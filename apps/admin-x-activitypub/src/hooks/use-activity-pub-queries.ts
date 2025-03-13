@@ -493,27 +493,7 @@ export function useSuggestedProfilesForUser(handle: string, limit = 3) {
         '@index@ghost.codenamejimmy.com',
         '@index@www.syphoncontinuity.com',
         '@index@www.cosmico.org',
-        '@index@www.russbrown.design',
-        '@index@danielverastiqui.com',
-        '@index@www.nightwater.email',
-        '@index@www.jeremyajorgensen.com',
-        '@index@securinglaravel.com',
-        '@index@www.augment.ink',
-        '@index@internet.exchangepoint.tech',
-        '@index@leif.me',
-        '@index@numericcitizen.me',
-        '@index@www.bramadams.dev',
-        '@index@blogpocket-week.ghost.io',
-        '@index@www.savingsasaservice.com.au',
-        '@index@www.danielmcglynn.com',
-        '@index@www.anew.social',
-        '@index@erreur2000.info',
-        '@index@allthings.how',
-        '@index@neunetz.com',
-        '@index@toisto.net',
-        '@index@www.mecsekimuzli.com',
-        '@index@www.edony.ink',
-        '@index@www.davidimel.com'
+        '@index@www.russbrown.design'
     ];
 
     const suggestedProfilesQuery = useQuery({
