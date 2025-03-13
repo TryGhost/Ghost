@@ -1,5 +1,4 @@
 import APAvatar from '@components/global/APAvatar';
-import ActivityPubWelcomeImage from '@assets/images/ap-welcome.png';
 import FeedItem from '@components/feed/FeedItem';
 import Layout from '@components/layout';
 import NewPostModal from '@views/Feed/components/NewPostModal';
@@ -7,24 +6,38 @@ import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useRef} from 'react';
 import Separator from '@components/global/Separator';
 import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
-import {Button} from '@tryghost/shade';
-import {Heading, LoadingIndicator} from '@tryghost/admin-x-design-system';
+import {Button, LucideIcon} from '@tryghost/shade';
+import {EmptyViewIcon, EmptyViewIndicator} from '@src/components/global/EmptyViewIndicator';
+import {LoadingIndicator} from '@tryghost/admin-x-design-system';
 import {handleViewContent} from '@utils/content-handlers';
+import {isPendingActivity} from '@utils/pending-activity';
 import {
     useFeedForUser,
     useInboxForUser,
     useUserDataForUser
 } from '@hooks/use-activity-pub-queries';
-import {useLocation} from '@tryghost/admin-x-framework';
+import {useLocation, useNavigate} from '@tryghost/admin-x-framework';
+
+const FeedInput: React.FC<{user?: ActorProperties}> = ({user}) => {
+    return (
+        <>
+            <div className='relative my-5 w-full'>
+                <div className='pointer-events-none absolute left-4 top-4'>
+                    <APAvatar author={user as ActorProperties} />
+                </div>
+                <Button aria-label='New post' className='text inset-0 h-[72px] w-full justify-start rounded-lg bg-white pl-[68px] text-left text-[1.5rem] font-normal tracking-normal text-gray-500 shadow-[0_5px_24px_0px_rgba(0,0,0,0.02),0px_2px_5px_0px_rgba(0,0,0,0.07),0px_0px_1px_0px_rgba(0,0,0,0.25)] transition-all hover:bg-white hover:shadow-[0_5px_24px_0px_rgba(0,0,0,0.05),0px_14px_12px_-9px_rgba(0,0,0,0.07),0px_0px_1px_0px_rgba(0,0,0,0.25)] dark:border dark:border-gray-925 dark:bg-black dark:shadow-none dark:hover:border-gray-800 dark:hover:bg-black dark:hover:shadow-none' onClick={() => NiceModal.show(NewPostModal)}>What&apos;s new?</Button>
+            </div>
+        </>
+    );
+};
 
 const Inbox: React.FC = () => {
     const location = useLocation();
     const layout = location.pathname === '/feed' ? 'feed' : 'inbox';
-    const {inboxQuery, updateInboxActivity} = useInboxForUser({enabled: layout === 'inbox'});
-    const {feedQuery, updateFeedActivity} = useFeedForUser({enabled: layout === 'feed'});
+    const {inboxQuery} = useInboxForUser({enabled: layout === 'inbox'});
+    const {feedQuery} = useFeedForUser({enabled: layout === 'feed'});
 
     const feedQueryData = layout === 'inbox' ? inboxQuery : feedQuery;
-    const updateActivity = layout === 'inbox' ? updateInboxActivity : updateFeedActivity;
     const {data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading} = feedQueryData;
 
     const activities = (data?.pages.flatMap(page => page.posts) ?? Array.from({length: 5}, (_, index) => ({id: `placeholder-${index}`, object: {}})));
@@ -64,23 +77,18 @@ const Inbox: React.FC = () => {
     // Calculate the index at which to place the loadMoreRef - This will place it ~75% through the list
     const loadMoreIndex = Math.max(0, Math.floor(activities.length * 0.75) - 1);
 
+    const navigate = useNavigate();
+
     return (
         <Layout>
-            <div className='my-4 flex w-full flex-col'>
+            <div className='flex w-full flex-col'>
                 <div className='w-full'>
                     {activities.length > 0 ? (
-                        <>
+                        <div className='my-4'>
                             <div className={`mx-auto flex min-h-[calc(100dvh_-_117px)] items-start gap-11`}>
                                 <div className='flex w-full min-w-0 flex-col items-center'>
                                     <div className={`flex w-full min-w-0 flex-col items-start ${layout !== 'inbox' && 'max-w-[620px]'}`}>
-                                        {layout === 'feed' &&
-                                            <div className='relative my-5 w-full'>
-                                                <div className='pointer-events-none absolute left-4 top-4'>
-                                                    <APAvatar author={user as ActorProperties} />
-                                                </div>
-                                                <Button aria-label='New post' className='text inset-0 h-[72px] w-full justify-start rounded-lg bg-white pl-[68px] text-left text-[1.5rem] font-normal tracking-normal text-gray-500 shadow-[0_5px_24px_0px_rgba(0,0,0,0.02),0px_2px_5px_0px_rgba(0,0,0,0.07),0px_0px_1px_0px_rgba(0,0,0,0.25)] transition-all hover:bg-white hover:shadow-[0_5px_24px_0px_rgba(0,0,0,0.05),0px_14px_12px_-9px_rgba(0,0,0,0.07),0px_0px_1px_0px_rgba(0,0,0,0.25)] dark:border dark:border-gray-925 dark:bg-black dark:shadow-none dark:hover:border-gray-800 dark:hover:bg-black dark:hover:shadow-none' onClick={() => NiceModal.show(NewPostModal)}>What&apos;s new?</Button>
-                                            </div>
-                                        }
+                                        {layout === 'feed' && <FeedInput user={user} />}
                                         <ul className='mx-auto flex w-full flex-col'>
                                             {activities.map((activity, index) => (
                                                 <li
@@ -93,12 +101,13 @@ const Inbox: React.FC = () => {
                                                         allowDelete={activity.object.authored}
                                                         commentCount={activity.object.replyCount ?? 0}
                                                         isLoading={isLoading}
+                                                        isPending={isPendingActivity(activity.id)}
                                                         layout={layout}
                                                         object={activity.object}
                                                         repostCount={activity.object.repostCount ?? 0}
                                                         type={activity.type}
-                                                        onClick={() => handleViewContent(activity, false, updateActivity)}
-                                                        onCommentClick={() => handleViewContent(activity, true, updateActivity)}
+                                                        onClick={() => handleViewContent(activity, false)}
+                                                        onCommentClick={() => handleViewContent(activity, true)}
                                                     />
                                                     {index < activities.length - 1 && (
                                                         <Separator />
@@ -118,30 +127,36 @@ const Inbox: React.FC = () => {
                                     </div>
                                 </div>
                             </div>
-                        </>
+                        </div>
                     ) : (
-                        <div className='flex items-center justify-center text-center'>
-                            <div className='flex max-w-[32em] flex-col items-center justify-center gap-4'>
-                                <img
-                                    alt='Ghost site logos'
-                                    className='w-[220px]'
-                                    src={ActivityPubWelcomeImage}
-                                />
-                                <Heading className='text-balance' level={2}>
-                                    Welcome to ActivityPub Beta
-                                </Heading>
-                                <p className="text-pretty text-gray-800 dark:text-gray-600">
-                                    {layout === 'inbox'
-                                        ? 'Here you\'ll find the latest articles from accounts you\'re following.'
-                                        : 'Here you\'ll find the latest posts and updates from accounts you\'re following.'
-                                    }
-                                    {' Go ahead and find the ones you like using the "Search" tab.'}
-                                </p>
-                                <p className="text-pretty text-gray-800 dark:text-gray-600">
-                                    For more information about what you can and can&apos;t (yet) do in the beta version, check out the onboarding guide:
-                                </p>
-                                <a className='font-semibold text-green' href='https://forum.ghost.org/t/activitypub-beta-start-here/51780' rel='noopener noreferrer' target='_blank'>Learn more</a>
-                            </div>
+                        <div className='flex w-full flex-col items-center gap-10'>
+                            {layout === 'inbox' ?
+                                <div className='flex w-full max-w-[620px] flex-col items-center'>
+                                    <EmptyViewIndicator>
+                                        <EmptyViewIcon><LucideIcon.Inbox /></EmptyViewIcon>
+                                        <div>Your inbox is the home for <span className='text-black'>long-form posts</span>. It’s empty for now, but posts will show up as soon as the people you follow share something.</div>
+                                        <Button className='text-white' onClick={() => {
+                                            navigate('/explore');
+                                        }}>
+                                        Find accounts to follow &rarr;
+                                        </Button>
+                                    </EmptyViewIndicator>
+                                </div>
+                                :
+                                <div className='mt-4 flex w-full max-w-[620px] flex-col items-center'>
+                                    <FeedInput user={user} />
+                                    <div className='mt-[-128px]'>
+                                        <EmptyViewIndicator>
+                                            <EmptyViewIcon><LucideIcon.Hash /></EmptyViewIcon>
+                                            <div>The Feed is the stream of thoughts and <span className='text-black'>bite-sized updates</span> from people you follow in the Social Web. It is looking a little empty right now but once the people you follow start posting, their updates will show up here.</div>
+                                            <Button className='text-white' onClick={() => NiceModal.show(NewPostModal)}>
+                                                <LucideIcon.FilePen />
+                                                Write your first note
+                                            </Button>
+                                        </EmptyViewIndicator>
+                                    </div>
+                                </div>
+                            }
                         </div>
                     )}
                 </div>

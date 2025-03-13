@@ -27,6 +27,14 @@ function getUsersByRole(users: User[], role: string): User[] {
     });
 }
 
+function getUsersByRoles(users: User[], roles: string[]): User[] {
+    return users.filter((user) => {
+        return user.roles.find((userRole) => {
+            return roles.includes(userRole.name);
+        });
+    });
+}
+
 function getOwnerUser(users: User[]): User {
     return getUsersByRole(users, 'Owner')[0];
 }
@@ -39,7 +47,7 @@ const useStaffUsers = (): UsersHook => {
 
     const ownerUser = useMemo(() => getOwnerUser(users), [users]);
     const adminUsers = useMemo(() => getUsersByRole(users, 'Administrator'), [users]);
-    const editorUsers = useMemo(() => getUsersByRole(users, 'Editor'), [users]);
+    const editorUsers = useMemo(() => getUsersByRoles(users, ['Editor', 'Super Editor']), [users]);
     const authorUsers = useMemo(() => getUsersByRole(users, 'Author'), [users]);
     const contributorUsers = useMemo(() => getUsersByRole(users, 'Contributor'), [users]);
     const mappedInvites = useMemo(() => invites.map((invite) => {

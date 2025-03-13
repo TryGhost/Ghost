@@ -12,17 +12,26 @@ export function formatTimestamp(date: Date): string {
     });
 }
 
-export function renderTimestamp(object: ObjectProperties) {
+export function renderTimestamp(object: ObjectProperties, asLink = true) {
     const date = new Date(object?.published ?? new Date());
     const timestamp = formatTimestamp(date);
+    const relativeTimestamp = getRelativeTimestamp(date);
+
+    if (asLink) {
+        return (
+            <a
+                className='whitespace-nowrap text-gray-700 hover:underline'
+                href={object.url}
+                title={timestamp}
+            >
+                {relativeTimestamp}
+            </a>
+        );
+    }
 
     return (
-        <a
-            className='whitespace-nowrap text-gray-700 hover:underline'
-            href={object.url}
-            title={timestamp}
-        >
-            {getRelativeTimestamp(date)}
-        </a>
+        <span className='whitespace-nowrap text-gray-700'>
+            {relativeTimestamp}
+        </span>
     );
 }
