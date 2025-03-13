@@ -4,7 +4,6 @@ import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
 import {visit} from '../../helpers/visit';
-import { resolve } from 'path-browserify';
 
 async function selectTextWithHover(element, start = 0, end = element.textContent.length) {
     const range = document.createRange();
@@ -25,8 +24,7 @@ async function selectTextWithHover(element, start = 0, end = element.textContent
     await settled();
     await triggerEvent(element,'mouseenter');
     await settled();
-
-    return resolve();
+    return;
 }
 
 describe('Editor tests with roles', function () {

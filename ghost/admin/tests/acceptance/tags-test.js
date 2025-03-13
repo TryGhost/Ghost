@@ -167,7 +167,7 @@ describe('Acceptance: Tags', function () {
     });
     describe('as a super editor', function () {
         beforeEach(async function () {
-            let role = this.server.create('role', {name: 'Administrator'});
+            let role = this.server.create('role', {name: 'Super editor'});
             this.server.create('user', {roles: [role]});
 
             await authenticateSession();
@@ -176,6 +176,57 @@ describe('Acceptance: Tags', function () {
             await visit('tags');
             expect(currentURL()).to.equal('tags');
             expect(find('[data-test-nav="tags"]')).to.have.class('active');
+        });
+        it('can edit tags', async function () {
+            const tag = this.server.create('tag', {name: 'To be edited', slug: 'to-be-edited'});
+
+            await visit('tags');
+            await click(`[data-test-tag="${tag.id}"] [data-test-tag-name]`);
+
+            // it maintains active state in nav menu
+            expect(find('[data-test-nav="tags"]'), 'highlights nav menu item')
+                .to.have.class('active');
+
+            expect(currentURL()).to.equal('/tags/to-be-edited');
+
+            expect(find('[data-test-input="tag-name"]')).to.have.value('To be edited');
+            expect(find('[data-test-input="tag-slug"]')).to.have.value('to-be-edited');
+
+            await fillIn('[data-test-input="tag-name"]', 'New tag name');
+            await fillIn('[data-test-input="tag-slug"]', 'new-tag-slug');
+            await click('[data-test-button="save"]');
+
+            const savedTag = this.server.db.tags.find(tag.id);
+            expect(savedTag.name, 'saved tag name').to.equal('New tag name');
+            expect(savedTag.slug, 'saved tag slug').to.equal('new-tag-slug');
+
+            await click('[data-test-link="tags-back"]');
+
+            const tagListItem = find('[data-test-tag]');
+            expect(tagListItem.querySelector('[data-test-tag-name]')).to.have.trimmed.text('New tag name');
+            expect(tagListItem.querySelector('[data-test-tag-slug]')).to.have.trimmed.text('new-tag-slug');
+        });
+
+        it('can delete tags', async function () {
+            const tag = this.server.create('tag', {name: 'To be edited', slug: 'to-be-edited'});
+            this.server.create('post', {tags: [tag]});
+
+            await visit('tags');
+            await click(`[data-test-tag="${tag.id}"] [data-test-tag-name]`);
+
+            await click('[data-test-button="delete-tag"]');
+
+            const tagModal = '[data-test-modal="confirm-delete-tag"]';
+
+            expect(find(tagModal)).to.exist;
+            expect(find(`${tagModal} [data-test-text="posts-count"]`))
+                .to.have.trimmed.text('1 post');
+
+            await click(`${tagModal} [data-test-button="confirm"]`);
+
+            expect(find(tagModal)).to.not.exist;
+            expect(currentURL()).to.equal('/tags');
+            expect(findAll('[data-test-tag]')).to.have.length(0);
         });
     });
 });
