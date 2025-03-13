@@ -186,14 +186,8 @@ const PostsTab: React.FC = () => {
                             object={activity.object}
                             repostCount={activity.object.repostCount}
                             type={activity.type}
-                            onClick={() => handleViewContent({
-                                ...activity,
-                                id: activity.object.id
-                            }, false, updatePostsByAccount)}
-                            onCommentClick={() => handleViewContent({
-                                ...activity,
-                                id: activity.object.id
-                            }, true, updatePostsByAccount)}
+                            onClick={() => handleViewContent(activity, false, updatePostsByAccount)}
+                            onCommentClick={() => handleViewContent(activity, true, updatePostsByAccount)}
                         />
                         {index < posts.length - 1 && <Separator />}
                         {index === loadMoreIndex && (
@@ -269,7 +263,7 @@ const LikesTab: React.FC = () => {
                             commentCount={activity.object.replyCount}
                             isLoading={isLoading}
                             layout='feed'
-                            object={Object.assign({}, activity.object, {liked: true})}
+                            object={activity.object}
                             repostCount={activity.object.repostCount}
                             type={activity.type}
                             onClick={() => handleViewContent(activity, false, updatePostsLikedByAccount)}
