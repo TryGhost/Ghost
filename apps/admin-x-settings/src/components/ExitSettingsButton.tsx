@@ -1,11 +1,13 @@
 import React from 'react';
+import useFeatureFlag from '../hooks/useFeatureFlag';
 import {Button, confirmIfDirty, useGlobalDirtyState} from '@tryghost/admin-x-design-system';
 
 const ExitSettingsButton: React.FC = () => {
     const {isDirty} = useGlobalDirtyState();
+    const hasActivityPub = useFeatureFlag('ActivityPub');
 
     const navigateAway = () => {
-        window.location.hash = '/dashboard';
+        window.location.hash = hasActivityPub ? '/activitypub' : '/dashboard';
     };
 
     return (
