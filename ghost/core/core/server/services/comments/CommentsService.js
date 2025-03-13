@@ -515,7 +515,7 @@ class CommentsService {
 
         // Instead of returning the model, fetch it again, so we have all the relations properly fetched
         return await this.models.Comment.findOne({id: model.id}, {...options, require: true});
-
+    };
     async getMemberIdByUUID(uuid, options) {
         const member = await this.models.Member.findOne({uuid}, options);
 
