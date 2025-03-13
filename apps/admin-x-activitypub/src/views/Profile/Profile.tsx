@@ -127,12 +127,17 @@ const PostsTab: React.FC = () => {
     const {postsByAccountQuery, updatePostsByAccount} = usePostsByAccount({enabled: true});
     const {data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading} = postsByAccountQuery;
 
-    const posts = (data?.pages.flatMap(page => page.posts) ?? [])
-        .filter(post => (post.type === 'Announce' || post.type === 'Create') && !post.object?.inReplyTo);
+    const posts = isLoading ? 
+        Array.from({length: 5}, (_, index) => ({id: `placeholder-${index}`, object: {}})) :
+        (data?.pages.flatMap(page => page.posts) ?? [])
+            .filter(post => (post.type === 'Announce' || post.type === 'Create') && !post.object?.inReplyTo);
 
     const observerRef = useRef<IntersectionObserver | null>(null);
     const loadMoreRef = useRef<HTMLDivElement | null>(null);
     const endLoadMoreRef = useRef<HTMLDivElement | null>(null);
+
+    // Calculate the index at which to place the loadMoreRef - This will place it ~75% through the list
+    const loadMoreIndex = Math.max(0, Math.floor(posts.length * 0.75) - 1);
 
     useEffect(() => {
         if (observerRef.current) {
@@ -166,41 +171,42 @@ const PostsTab: React.FC = () => {
                     You haven&apos;t posted anything yet.
                 </NoValueLabel>
             )}
-            {posts.length > 0 && (
-                <ul className='mx-auto flex max-w-[640px] flex-col'>
-                    {posts.map((activity, index) => (
-                        <li
-                            key={activity.id}
-                            data-test-view-article
-                        >
-                            <FeedItem
-                                actor={activity.actor}
-                                allowDelete={activity.object.authored}
-                                commentCount={activity.object.replyCount}
-                                layout='feed'
-                                object={activity.object}
-                                repostCount={activity.object.repostCount}
-                                type={activity.type}
-                                onClick={() => handleViewContent({
-                                    ...activity,
-                                    id: activity.object.id
-                                }, false, updatePostsByAccount)}
-                                onCommentClick={() => handleViewContent({
-                                    ...activity,
-                                    id: activity.object.id
-                                }, true, updatePostsByAccount)}
-                            />
-                            {index < posts.length - 1 && <Separator />}
-                        </li>
-                    ))}
-                </ul>
-            )}
-            <div ref={loadMoreRef} className='h-1'></div>
-            {(isFetchingNextPage || isLoading) && (
-                <div className='mt-6 flex flex-col items-center justify-center space-y-4 text-center'>
-                    <LoadingIndicator size='md' />
-                </div>
-            )}
+            <ul className='mx-auto flex max-w-[640px] flex-col'>
+                {posts.map((activity, index) => (
+                    <li
+                        key={activity.id}
+                        data-test-view-article
+                    >
+                        <FeedItem
+                            actor={activity.actor}
+                            allowDelete={activity.object.authored}
+                            commentCount={activity.object.replyCount}
+                            isLoading={isLoading}
+                            layout='feed'
+                            object={activity.object}
+                            repostCount={activity.object.repostCount}
+                            type={activity.type}
+                            onClick={() => handleViewContent({
+                                ...activity,
+                                id: activity.object.id
+                            }, false, updatePostsByAccount)}
+                            onCommentClick={() => handleViewContent({
+                                ...activity,
+                                id: activity.object.id
+                            }, true, updatePostsByAccount)}
+                        />
+                        {index < posts.length - 1 && <Separator />}
+                        {index === loadMoreIndex && (
+                            <div ref={loadMoreRef} className='h-1'></div>
+                        )}
+                    </li>
+                ))}
+                {isFetchingNextPage && (
+                    <li className='flex flex-col items-center justify-center space-y-4 text-center'>
+                        <LoadingIndicator size='md' />
+                    </li>
+                )}
+            </ul>
             <div ref={endLoadMoreRef} className='h-1'></div>
         </>
     );
@@ -210,11 +216,14 @@ const LikesTab: React.FC = () => {
     const {postsLikedByAccountQuery, updatePostsLikedByAccount} = usePostsLikedByAccount({enabled: true});
     const {data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading} = postsLikedByAccountQuery;
 
-    const posts = (data?.pages.flatMap(page => page.posts) ?? []);
+    const posts = data?.pages.flatMap(page => page.posts) ?? Array.from({length: 5}, (_, index) => ({id: `placeholder-${index}`, object: {}}));
 
     const observerRef = useRef<IntersectionObserver | null>(null);
     const loadMoreRef = useRef<HTMLDivElement | null>(null);
     const endLoadMoreRef = useRef<HTMLDivElement | null>(null);
+
+    // Calculate the index at which to place the loadMoreRef - This will place it ~75% through the list
+    const loadMoreIndex = Math.max(0, Math.floor(posts.length * 0.75) - 1);
 
     useEffect(() => {
         if (observerRef.current) {
@@ -248,32 +257,36 @@ const LikesTab: React.FC = () => {
                     You haven&apos;t liked anything yet.
                 </NoValueLabel>
             )}
-            {posts.length > 0 && (
-                <ul className='mx-auto flex max-w-[640px] flex-col'>
-                    {posts.map((activity, index) => (
-                        <li key={activity.id} data-test-view-article>
-                            <FeedItem
-                                actor={activity.actor}
-                                allowDelete={activity.object.authored}
-                                commentCount={activity.object.replyCount}
-                                layout='feed'
-                                object={Object.assign({}, activity.object, {liked: true})}
-                                repostCount={activity.object.repostCount}
-                                type={activity.type}
-                                onClick={() => handleViewContent(activity, false, updatePostsLikedByAccount)}
-                                onCommentClick={() => handleViewContent(activity, true, updatePostsLikedByAccount)}
-                            />
-                            {index < posts.length - 1 && <Separator />}
-                        </li>
-                    ))}
-                </ul>
-            )}
-            <div ref={loadMoreRef} className='h-1'></div>
-            {(isFetchingNextPage || isLoading) && (
-                <div className='mt-6 flex flex-col items-center justify-center space-y-4 text-center'>
-                    <LoadingIndicator size='md' />
-                </div>
-            )}
+            <ul className='mx-auto flex max-w-[640px] flex-col'>
+                {posts.map((activity, index) => (
+                    <li
+                        key={activity.id}
+                        data-test-view-article
+                    >
+                        <FeedItem
+                            actor={activity.actor}
+                            allowDelete={activity.object.authored}
+                            commentCount={activity.object.replyCount}
+                            isLoading={isLoading}
+                            layout='feed'
+                            object={Object.assign({}, activity.object, {liked: true})}
+                            repostCount={activity.object.repostCount}
+                            type={activity.type}
+                            onClick={() => handleViewContent(activity, false, updatePostsLikedByAccount)}
+                            onCommentClick={() => handleViewContent(activity, true, updatePostsLikedByAccount)}
+                        />
+                        {index < posts.length - 1 && <Separator />}
+                        {index === loadMoreIndex && (
+                            <div ref={loadMoreRef} className='h-1'></div>
+                        )}
+                    </li>
+                ))}
+                {isFetchingNextPage && (
+                    <li className='flex flex-col items-center justify-center space-y-4 text-center'>
+                        <LoadingIndicator size='md' />
+                    </li>
+                )}
+            </ul>
             <div ref={endLoadMoreRef} className='h-1'></div>
         </>
     );
