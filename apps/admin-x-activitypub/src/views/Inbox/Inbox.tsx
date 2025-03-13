@@ -16,7 +16,7 @@ import {
     useInboxForUser,
     useUserDataForUser
 } from '@hooks/use-activity-pub-queries';
-import {useLocation} from '@tryghost/admin-x-framework';
+import {useLocation, useNavigate} from '@tryghost/admin-x-framework';
 
 const FeedInput: React.FC<{user?: ActorProperties}> = ({user}) => {
     return (
@@ -77,6 +77,8 @@ const Inbox: React.FC = () => {
     // Calculate the index at which to place the loadMoreRef - This will place it ~75% through the list
     const loadMoreIndex = Math.max(0, Math.floor(activities.length * 0.75) - 1);
 
+    const navigate = useNavigate();
+
     return (
         <Layout>
             <div className='flex w-full flex-col'>
@@ -127,23 +129,32 @@ const Inbox: React.FC = () => {
                             </div>
                         </div>
                     ) : (
-                        <div className='flex w-full items-center justify-center text-center'>
+                        <div className='flex w-full flex-col items-center gap-10'>
                             {layout === 'inbox' ?
-                                <EmptyViewIndicator>
-                                    <EmptyViewIcon><LucideIcon.Inbox /></EmptyViewIcon>
-                                    <div>Your inbox is the home for <span className='text-black'>long-form posts</span>. It’s empty for now, but posts will show up as soon as the people you follow share something.</div>
-                                </EmptyViewIndicator>
+                                <div className='flex w-full max-w-[620px] flex-col items-center'>
+                                    <EmptyViewIndicator>
+                                        <EmptyViewIcon><LucideIcon.Inbox /></EmptyViewIcon>
+                                        <div>Your inbox is the home for <span className='text-black'>long-form posts</span>. It’s empty for now, but posts will show up as soon as the people you follow share something.</div>
+                                        <Button className='text-white' onClick={() => {
+                                            navigate('/explore');
+                                        }}>
+                                        Find accounts to follow &rarr;
+                                        </Button>
+                                    </EmptyViewIndicator>
+                                </div>
                                 :
                                 <div className='mt-4 flex w-full max-w-[620px] flex-col items-center'>
                                     <FeedInput user={user} />
-                                    <EmptyViewIndicator>
-                                        <EmptyViewIcon><LucideIcon.Hash /></EmptyViewIcon>
-                                        <div>The Feed is the stream of thoughts and <span className='text-black'>bite-sized updates</span> from people you follow in the Social Web. It is looking a little empty right now but once the people you follow start posting, their updates will show up here.</div>
-                                        <Button className='text-white' onClick={() => NiceModal.show(NewPostModal)}>
-                                            <LucideIcon.FilePen />
+                                    <div className='mt-[-128px]'>
+                                        <EmptyViewIndicator>
+                                            <EmptyViewIcon><LucideIcon.Hash /></EmptyViewIcon>
+                                            <div>The Feed is the stream of thoughts and <span className='text-black'>bite-sized updates</span> from people you follow in the Social Web. It is looking a little empty right now but once the people you follow start posting, their updates will show up here.</div>
+                                            <Button className='text-white' onClick={() => NiceModal.show(NewPostModal)}>
+                                                <LucideIcon.FilePen />
                                                 Write your first note
-                                        </Button>
-                                    </EmptyViewIndicator>
+                                            </Button>
+                                        </EmptyViewIndicator>
+                                    </div>
                                 </div>
                             }
                         </div>

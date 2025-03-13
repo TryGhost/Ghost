@@ -9,7 +9,7 @@ export const EmptyViewIcon: React.FC<{children?: ReactNode}> = ({children}) => {
 
 export const EmptyViewIndicator: React.FC<{children?: ReactNode}> = ({children}) => {
     return (
-        <div className='mt-24 flex max-w-[500px] flex-col items-center gap-5 text-center text-gray-700'>
+        <div className='mx-auto mt-[24vh] flex max-w-[500px] flex-col items-center gap-5 text-center text-gray-700'>
             {children}
         </div>
     );
