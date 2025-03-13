@@ -1,5 +1,8 @@
 import Header from './components/Header';
 import React, {ReactNode} from 'react';
+import apDashedLines from '@assets/images/onboarding/ap-dashed-lines.png';
+import flipboardAvatar from '@assets/images/onboarding/avatar-flipboard.png';
+import vergeAvatar from '@assets/images/onboarding/avatar-verge.png';
 import {Avatar, AvatarFallback, AvatarImage, Button, LucideIcon, Separator} from '@tryghost/shade';
 import {useNavigate} from '@tryghost/admin-x-framework';
 
@@ -64,13 +67,14 @@ const Step2: React.FC = () => {
     const navigate = useNavigate();
 
     return (
-        <div className='flex h-full max-h-screen w-full flex-col gap-4 overflow-hidden px-14'>
+        <div className='relative flex h-full max-h-screen w-full flex-col gap-4 overflow-hidden px-14'>
+            <img className='absolute left-1/2 top-[120px] w-full min-w-[1240px] max-w-[1300px] -translate-x-1/2' src={apDashedLines} />
             <Header>
                 <div className='flex flex-col justify-between gap-4 text-xl font-medium'>
                     <h1 className='max-w-[680px]'>Feel the network effect.</h1>
                     <div className='flex max-w-[680px] flex-col gap-4'>
                         <p className='tracking-tight text-gray-700 dark:text-gray-600'>People who follow you can <span className='font-semibold text-black'>like, reply, repost and interact</span> with your posts. Their followers will see those interactions too, distributing your content even more widely, to a brand new audience.</p>
-                        <p className='tracking-tight text-gray-700 dark:text-gray-600'>Best of all, you get realtime feedback and visibility when something you’ve created is spreading fast across the social web.</p>
+                        <p className='tracking-tight text-gray-700 dark:text-gray-600'>Best of all, you get realtime feedback and visibility when something you published is spreading fast across the social web.</p>
                     </div>
                 </div>
                 <Button className='min-w-60 bg-gradient-to-r from-purple-500 to-[#6A1AD6] hover:opacity-90' size='lg' onClick={() => navigate('/welcome/3')}>Next &rarr;</Button>
@@ -83,15 +87,15 @@ const Step2: React.FC = () => {
                             270 followers this week
                         </div>
                         <div className='flex h-full flex-col items-stretch gap-6 p-8'>
-                            <Reply avatarNo={40} handle='@conan@obrian.com' name='Conan OBrian' timestamp='just now'>
-                                Do you see any Teletubbies in here? Do you see a slender plastic tag clipped to my shirt with my name printed on it?
+                            <Reply avatarNo={40} handle='@jamie@larson.com' name='Jamie Larson' timestamp='just now'>
+                                This resonates with me on so many levels. Especially the part about the difficulty of challenges that you can&apost anticipate!
                             </Reply>
                             <Separator />
-                            <Reaction names='Ryan Reynolds and 2 others' timestamp='Just now' type='like'>
+                            <Reaction names='The Verge and 22 others' timestamp='Just now' type='like'>
                                 <div className='isolate flex items-center'>
                                     <Avatar className='z-30 h-9 w-9 border border-white'>
-                                        <AvatarImage src='' />
-                                        <AvatarFallback className='bg-[#BAB890] font-semibold text-white'>RR</AvatarFallback>
+                                        <AvatarImage src={vergeAvatar} />
+                                        <AvatarFallback className='bg-[#BAB890] font-semibold text-white'>TV</AvatarFallback>
                                     </Avatar>
                                     <Avatar className='z-20 -ml-3 h-9 w-9 border border-white'>
                                         <AvatarImage src='https://i.pravatar.cc/150?img=1' />
@@ -104,14 +108,14 @@ const Step2: React.FC = () => {
                                 </div>
                             </Reaction>
                             <Separator />
-                            <Reply avatarNo={41} handle='@jimmy@jimmyfallon.com' name='Jimmy Fallon' timestamp='2 hours ago'>
-                                Well I can’t blame him! I mean if you release a casette you’d better give your followers something to play it on, right? 😎
+                            <Reply avatarNo={41} handle='@chris@best.com' name='Chris' timestamp='2 hours ago'>
+                                This is incredible. <strong>@jairaj</strong> maybe we should join the fediverse?
                             </Reply>
                             <Separator />
-                            <Reaction names='Snoop Dogg and 4 others' timestamp='Yesterday' type='repost'>
+                            <Reaction names='Flipboard and 4 others' timestamp='Yesterday' type='repost'>
                                 <div className='isolate flex items-center'>
                                     <Avatar className='z-50 h-9 w-9 border border-white'>
-                                        <AvatarImage src='https://i.pravatar.cc/150?img=3' />
+                                        <AvatarImage src={flipboardAvatar} />
                                         <AvatarFallback className='bg-yellow font-semibold text-white'>CN</AvatarFallback>
                                     </Avatar>
                                     <Avatar className='z-40 -ml-3 h-9 w-9 border border-white'>
@@ -147,7 +151,7 @@ const Step2: React.FC = () => {
                             </Reaction>
                         </div>
                     </div>
-                    <div className='absolute inset-x-0 bottom-0 h-[192px] bg-gradient-to-t from-white via-[rgba(255,255,255,0.71)] to-[rgba(255,255,255,0)]'></div>
+                    <div className='absolute inset-x-0 bottom-0 h-18 bg-gradient-to-t from-white via-[rgba(255,255,255,0.71)] to-[rgba(255,255,255,0)]'></div>
                 </div>
             </div>
         </div>
