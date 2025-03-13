@@ -6,9 +6,9 @@ import {useOnboardingStatus} from '@src/components/layout/Onboarding';
 import {useSuggestedProfilesForUser} from '@hooks/use-activity-pub-queries';
 
 const Profile: React.FC = ({ }) => {
-    const {suggestedProfilesQuery, updateSuggestedProfile} = useSuggestedProfilesForUser('index', 20);
+    const {suggestedProfilesQuery, updateSuggestedProfile} = useSuggestedProfilesForUser('index', 30);
     const {data: suggestedProfilesData, isLoading: isLoadingSuggestedProfiles} = suggestedProfilesQuery;
-    const suggestedProfiles = suggestedProfilesData || Array(5).fill({
+    const suggestedProfiles = suggestedProfilesData || Array(20).fill({
         actor: {},
         handle: '',
         followerCount: 0,
