@@ -14,9 +14,9 @@ const FeedbackBox: React.FC = () => {
                         <H4>Beta feedback</H4>
                     </div>
                     <span className='text-sm text-gray-700'>
-                    Something not working?
+                    Something not working? Let us know
                     </span>
-                    <Button className='mt-2' variant='secondary'>Send feedback</Button>
+                    <Button className='mt-2' variant='secondary' onClick={() => {}}>Send feedback</Button>
                 </div>
             }
             <div className='-mb-1 ml-3 flex items-center gap-1.5 pt-4 text-xs text-gray-400'>
