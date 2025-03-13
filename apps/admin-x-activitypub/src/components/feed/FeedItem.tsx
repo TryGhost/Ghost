@@ -385,13 +385,6 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                                 onCommentClick={onCommentClick}
                                                 onLikeClick={onLikeClick}
                                             />
-                                            <FeedItemMenu
-                                                allowDelete={allowDelete}
-                                                layout='modal'
-                                                trigger={UserMenuTrigger}
-                                                onCopyLink={handleCopyLink}
-                                                onDelete={handleDelete}
-                                            />
                                         </div>
                                     </div>
                                 </div>
