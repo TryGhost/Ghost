@@ -9,7 +9,7 @@ import {
     type Profile,
     type SearchResults
 } from '../api/activitypub';
-import {Activity} from '@tryghost/admin-x-framework/api/activitypub';
+import {Activity, ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {
     type QueryClient,
     type UseInfiniteQueryResult,
@@ -18,7 +18,11 @@ import {
     useQuery,
     useQueryClient
 } from '@tanstack/react-query';
+import {exploreSites} from '@src/lib/explore-sites';
+import {formatPendingActivityContent, generatePendingActivity, generatePendingActivityId} from '../utils/pending-activity';
 import {mapPostToActivity} from '../utils/posts';
+import {showToast} from '@tryghost/admin-x-design-system';
+import {useCallback} from 'react';
 
 export type ActivityPubCollectionQueryResult<TData> = UseInfiniteQueryResult<ActivityPubCollectionResponse<TData>>;
 export type AccountFollowsQueryResult = UseInfiniteQueryResult<GetAccountFollowsResponse>;
@@ -70,6 +74,7 @@ const QUERY_KEYS = {
     ) => ['activities', handle, key, options].filter(value => value !== undefined),
     searchResults: (query: string) => ['search_results', query],
     suggestedProfiles: (limit: number) => ['suggested_profiles', limit],
+    exploreProfiles: (handle: string) => ['explore_profiles', handle],
     thread: (id: string | null) => {
         if (id === null) {
             return ['thread'];
@@ -77,38 +82,10 @@ const QUERY_KEYS = {
         return ['thread', id];
     },
     feed: ['feed'],
-    inbox: ['inbox']
+    inbox: ['inbox'],
+    postsByAccount: ['account_posts'],
+    postsLikedByAccount: ['account_liked_posts']
 };
-
-export function useOutboxForUser(handle: string) {
-    return useInfiniteQuery({
-        queryKey: QUERY_KEYS.outbox(handle),
-        async queryFn({pageParam}: {pageParam?: string}) {
-            const siteUrl = await getSiteUrl();
-            const api = createActivityPubAPI(handle, siteUrl);
-
-            return api.getOutbox(pageParam);
-        },
-        getNextPageParam(prevPage) {
-            return prevPage.next;
-        }
-    });
-}
-
-export function useLikedForUser(handle: string) {
-    return useInfiniteQuery({
-        queryKey: QUERY_KEYS.liked(handle),
-        async queryFn({pageParam}: {pageParam?: string}) {
-            const siteUrl = await getSiteUrl();
-            const api = createActivityPubAPI(handle, siteUrl);
-
-            return api.getLiked(pageParam);
-        },
-        getNextPageParam(prevPage) {
-            return prevPage.next;
-        }
-    });
-}
 
 function updateLikedCache(queryClient: QueryClient, queryKey: string[], id: string, liked: boolean) {
     queryClient.setQueriesData(queryKey, (current?: {pages: {posts: Activity[]}[]}) => {
@@ -480,6 +457,49 @@ export function useSearchForUser(handle: string, query: string) {
     return {searchQuery, updateAccountSearchResult};
 }
 
+export function useExploreProfilesForUser(handle: string) {
+    const queryClient = useQueryClient();
+    const queryKey = QUERY_KEYS.exploreProfiles(handle);
+
+    const fetchExploreProfiles = useCallback(async () => {
+        const siteUrl = await getSiteUrl();
+        const api = createActivityPubAPI(handle, siteUrl);
+        const results: Record<string, { categoryName: string; sites: Profile[] }> = {};
+
+        for (const [key, category] of Object.entries(exploreSites)) {
+            const settledResults = await Promise.allSettled(
+                category.sites.map(suggestedHandle => api.getProfile(suggestedHandle))
+            );
+
+            results[key] = {
+                categoryName: category.categoryName,
+                sites: settledResults
+                    .filter((result): result is PromiseFulfilledResult<Profile> => result.status === 'fulfilled')
+                    .map(result => result.value)
+            };
+        }
+
+        return results;
+    }, [handle]);
+
+    const exploreProfilesQuery = useQuery({
+        queryKey,
+        queryFn: fetchExploreProfiles
+    });
+
+    const prefetchExploreProfiles = useCallback(() => {
+        return queryClient.prefetchQuery({
+            queryKey,
+            queryFn: fetchExploreProfiles
+        });
+    }, [queryClient, fetchExploreProfiles, queryKey]);
+
+    return {
+        exploreProfilesQuery,
+        prefetchExploreProfiles
+    };
+}
+
 export function useSuggestedProfilesForUser(handle: string, limit = 3) {
     const queryClient = useQueryClient();
     const queryKey = QUERY_KEYS.suggestedProfiles(limit);
@@ -491,7 +511,7 @@ export function useSuggestedProfilesForUser(handle: string, limit = 3) {
         '@index@ghost.codenamejimmy.com',
         '@index@www.syphoncontinuity.com',
         '@index@www.cosmico.org',
-        '@index@silverhuang.com'
+        '@index@www.russbrown.design'
     ];
 
     const suggestedProfilesQuery = useQuery({
@@ -592,11 +612,8 @@ export function useProfileFollowingForUser(handle: string, profileHandle: string
 }
 
 export function useThreadForUser(handle: string, id: string) {
-    const queryClient = useQueryClient();
-    const queryKey = QUERY_KEYS.thread(id);
-
-    const threadQuery = useQuery({
-        queryKey,
+    return useQuery({
+        queryKey: QUERY_KEYS.thread(id),
         refetchOnMount: 'always',
         async queryFn() {
             const siteUrl = await getSiteUrl();
@@ -609,100 +626,321 @@ export function useThreadForUser(handle: string, id: string) {
             });
         }
     });
-
-    const addToThread = (activity: Activity) => {
-        // Add the activity to the thread stored in the thread query cache
-        queryClient.setQueryData(queryKey, (current: {posts: Activity[]} | undefined) => {
-            if (!current) {
-                return current;
-            }
-
-            return {
-                posts: [...current.posts, activity]
-            };
-        });
-    };
-
-    return {threadQuery, addToThread};
 }
 
-export function useReplyMutationForUser(handle: string) {
+function prependActivityToPaginatedCollection(
+    queryClient: QueryClient,
+    queryKey: string[],
+    collection: 'posts' | 'data',
+    activity: Activity
+) {
+    queryClient.setQueryData(queryKey, (current: {
+        pages: Array<{
+            [key: string]: Activity[]
+        }>
+    } | undefined) => {
+        if (!current) {
+            return current;
+        }
+
+        return {
+            ...current,
+            pages: current.pages.map((page, idx: number) => {
+                if (idx === 0) {
+                    return {
+                        ...page,
+                        [collection]: [activity, ...page[collection]]
+                    };
+                }
+                return page;
+            })
+        };
+    });
+}
+
+function addActivityToCollection(
+    queryClient: QueryClient,
+    queryKey: string[],
+    collection: 'posts',
+    activity: Activity,
+    after?: string
+) {
+    queryClient.setQueryData(queryKey, (current: {
+        [key: string]: Activity[]
+    } | undefined) => {
+        if (!current) {
+            return current;
+        }
+
+        let afterIdx = 0;
+
+        if (after) {
+            afterIdx = current[collection].findIndex(item => item.id === after);
+
+            if (afterIdx === -1) {
+                return current;
+            }
+        }
+
+        return {
+            ...current,
+            [collection]: [
+                ...current[collection].slice(0, afterIdx + 1),
+                activity,
+                ...current[collection].slice(afterIdx + 1)
+            ]
+        };
+    });
+}
+
+function updateActivityInPaginatedCollection(
+    queryClient: QueryClient,
+    queryKey: string[],
+    collection: 'posts' | 'data',
+    id: string,
+    update: (activity: Activity) => Activity
+) {
+    queryClient.setQueryData(queryKey, (current: {
+        pages: Array<{
+            [key: string]: Activity[]
+        }>
+    } | undefined) => {
+        if (!current) {
+            return current;
+        }
+
+        return {
+            ...current,
+            pages: current.pages.map((page) => {
+                return {
+                    ...page,
+                    [collection]: page[collection].map((item: Activity) => {
+                        if (item.id === id) {
+                            return update(item);
+                        }
+                        return item;
+                    })
+                };
+            })
+        };
+    });
+}
+
+function updateActivityInCollection(
+    queryClient: QueryClient,
+    queryKey: string[],
+    collection: 'posts',
+    id: string,
+    update: (activity: Activity) => Activity
+) {
+    queryClient.setQueryData(queryKey, (current: {
+        [key: string]: Activity[]
+    } | undefined) => {
+        if (!current) {
+            return current;
+        }
+
+        return {
+            ...current,
+            [collection]: current[collection].map((item: Activity) => {
+                if (item.id === id) {
+                    return update(item);
+                }
+                return item;
+            })
+        };
+    });
+}
+
+function removeActivityFromPaginatedCollection(
+    queryClient: QueryClient,
+    queryKey: string[],
+    collection: 'posts' | 'data',
+    id: string
+) {
+    queryClient.setQueryData(queryKey, (current: {
+        pages: Array<{
+            [key: string]: Activity[]
+        }>
+    } | undefined) => {
+        if (!current) {
+            return current;
+        }
+
+        return {
+            ...current,
+            pages: current.pages.map((page) => {
+                return {
+                    ...page,
+                    [collection]: page[collection].filter(item => item.id !== id)
+                };
+            })
+        };
+    });
+}
+
+function removeActivityFromCollection(
+    queryClient: QueryClient,
+    queryKey: string[],
+    collection: 'posts',
+    id: string
+) {
+    queryClient.setQueryData(queryKey, (current: {
+        [key: string]: Activity[]
+    } | undefined) => {
+        if (!current) {
+            return current;
+        }
+
+        return {
+            ...current,
+            [collection]: current[collection].filter((item: Activity) => item.id !== id)
+        };
+    });
+}
+
+function prepareNewActivity(activity: Activity) {
+    return {
+        ...activity,
+        // Update the id of the activity to the id of the activity object
+        // as this is the id that will be used to perform actions on the
+        // activity (i.e like, delete, etc)
+        id: activity.object.id,
+        object: {
+            ...activity.object,
+            // Set the authored flag to true as we know this is an activity created
+            // by the user but the returned activity object does not have this
+            // flag set
+            authored: true,
+            // Set the URL property to be the id of the object as this is not
+            // included in the object returned from the API
+            url: activity.object.id,
+            // Set the replyCount property to 0 so that it can be incremented
+            replyCount: 0
+        }
+    };
+}
+
+export function useReplyMutationForUser(handle: string, actorProps?: ActorProperties) {
+    const queryClient = useQueryClient();
+
     return useMutation({
-        async mutationFn({id, content}: {id: string, content: string}) {
+        async mutationFn({inReplyTo, content}: {inReplyTo: string, content: string}) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
 
-            return api.reply(id, content);
+            return api.reply(inReplyTo, content);
+        },
+        onMutate: ({inReplyTo, content}) => {
+            if (!actorProps) {
+                throw new Error('Cannot create reply without actor props');
+            }
+
+            const formattedContent = formatPendingActivityContent(content);
+
+            const id = generatePendingActivityId();
+            const activity = generatePendingActivity(actorProps, id, formattedContent);
+
+            // Add pending activity to the thread after the inReplyTo post
+            addActivityToCollection(queryClient, QUERY_KEYS.thread(inReplyTo), 'posts', activity, inReplyTo);
+
+            // Increment the reply count of the inReplyTo post in the feed
+            updateActivityInPaginatedCollection(queryClient, QUERY_KEYS.feed, 'posts', inReplyTo, currentActivity => ({
+                ...currentActivity,
+                object: {
+                    ...currentActivity.object,
+                    replyCount: currentActivity.object.replyCount + 1
+                }
+            }));
+
+            // We do not need to increment the reply count of the inReplyTo post
+            // in the thread as this is handled locally in the ArticleModal component
+
+            return {id};
+        },
+        onSuccess: (activity: Activity, variables, context) => {
+            if (activity.id === undefined) {
+                throw new Error('Activity returned from API has no id');
+            }
+
+            const preparedActivity = prepareNewActivity(activity);
+
+            updateActivityInCollection(queryClient, QUERY_KEYS.thread(variables.inReplyTo), 'posts', context?.id ?? '', () => preparedActivity);
+        },
+        onError: (error, variables, context) => {
+            // eslint-disable-next-line no-console
+            console.error(error);
+
+            // Remove the pending activity from the thread
+            removeActivityFromCollection(queryClient, QUERY_KEYS.thread(variables.inReplyTo), 'posts', context?.id ?? '');
+
+            // Decrement the reply count of the inReplyTo post in the feed
+            updateActivityInPaginatedCollection(queryClient, QUERY_KEYS.feed, 'posts', variables.inReplyTo, currentActivity => ({
+                ...currentActivity,
+                object: {
+                    ...currentActivity.object,
+                    replyCount: currentActivity.object.replyCount - 1
+                }
+            }));
+
+            // We do not need to decrement the reply count of the inReplyTo post
+            // in the thread as this is handled locally in the ArticleModal component
+
+            showToast({
+                message: 'An error occurred while sending your reply.',
+                type: 'error'
+            });
         }
     });
 }
 
-export function useNoteMutationForUser(handle: string) {
+export function useNoteMutationForUser(handle: string, actorProps?: ActorProperties) {
     const queryClient = useQueryClient();
+    const queryKeyFeed = QUERY_KEYS.feed;
+    const queryKeyOutbox = QUERY_KEYS.outbox(handle);
 
     return useMutation({
-        async mutationFn({content}: {content: string}) {
+        async mutationFn(content: string) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
 
             return api.note(content);
         },
-        onSuccess: (activity: Activity) => {
-            activity.object.authored = true;
-            activity.id = activity.object.id;
+        onMutate: (content: string) => {
+            if (!actorProps) {
+                throw new Error('Cannot create note without actor props');
+            }
 
-            // Add the activity to the outbox query cache
-            const outboxQueryKey = QUERY_KEYS.outbox(handle);
+            const formattedContent = formatPendingActivityContent(content);
 
-            queryClient.setQueryData(outboxQueryKey, (current?: {pages: {data: Activity[]}[]}) => {
-                if (current === undefined) {
-                    return current;
-                }
+            const id = generatePendingActivityId();
+            const activity = generatePendingActivity(actorProps, id, formattedContent);
 
-                return {
-                    ...current,
-                    pages: current.pages.map((page: {data: Activity[]}, index: number) => {
-                        if (index === 0) {
-                            return {
-                                ...page,
-                                data: [activity, ...page.data]
-                            };
-                        }
+            prependActivityToPaginatedCollection(queryClient, queryKeyFeed, 'posts', activity);
+            prependActivityToPaginatedCollection(queryClient, queryKeyOutbox, 'data', activity);
 
-                        return page;
-                    })
-                };
-            });
+            return {id};
+        },
+        onSuccess: (activity: Activity, _variables, context) => {
+            if (activity.id === undefined) {
+                throw new Error('Actvitiy returned from API has no id');
+            }
 
-            // Update the activity stored in the feed query cache
-            const feedQueryKey = QUERY_KEYS.feed;
+            const preparedActivity = prepareNewActivity(activity);
 
-            queryClient.setQueriesData(feedQueryKey, (current?: {pages: {posts: Activity[]}[]}) => {
-                if (current === undefined) {
-                    return current;
-                }
+            updateActivityInPaginatedCollection(queryClient, queryKeyFeed, 'posts', context?.id ?? '', () => preparedActivity);
+            updateActivityInPaginatedCollection(queryClient, queryKeyOutbox, 'data', context?.id ?? '', () => preparedActivity);
+        },
+        onError(error, _variables, context) {
+            // eslint-disable-next-line no-console
+            console.error(error);
 
-                return {
-                    ...current,
-                    pages: current.pages.map((page: {posts: Activity[]}, index: number) => {
-                        if (index === 0) {
-                            return {
-                                ...page,
-                                posts: [
-                                    {
-                                        ...activity,
-                                        // Use the object id as the post id as when we switchover to using
-                                        // posts fully we will not have access the activity id
-                                        id: activity.object.id
-                                    },
-                                    ...page.posts
-                                ]
-                            };
-                        }
+            removeActivityFromPaginatedCollection(queryClient, queryKeyFeed, 'posts', context?.id ?? '');
+            removeActivityFromPaginatedCollection(queryClient, queryKeyOutbox, 'data', context?.id ?? '');
 
-                        return page;
-                    })
-                };
+            showToast({
+                message: 'An error occurred while posting your note.',
+                type: 'error'
             });
         }
     });
@@ -758,26 +996,13 @@ export function useFeedForUser(options: {enabled: boolean}) {
     });
 
     const updateFeedActivity = (id: string, updated: Partial<Activity>) => {
-        queryClient.setQueryData(queryKey, (current: {pages: {posts: Activity[]}[]} | undefined) => {
-            if (!current) {
-                return current;
-            }
-
-            return {
-                ...current,
-                pages: current.pages.map((page: {posts: Activity[]}) => {
-                    return {
-                        ...page,
-                        posts: page.posts.map((item: Activity) => {
-                            if (item.id === id) {
-                                return {...item, ...updated};
-                            }
-                            return item;
-                        })
-                    };
-                })
-            };
-        });
+        updateActivityInPaginatedCollection(
+            queryClient,
+            queryKey,
+            'posts',
+            id,
+            activity => ({...activity, ...updated})
+        );
     };
 
     return {feedQuery, updateFeedActivity};
@@ -806,29 +1031,86 @@ export function useInboxForUser(options: {enabled: boolean}) {
     });
 
     const updateInboxActivity = (id: string, updated: Partial<Activity>) => {
-        queryClient.setQueryData(queryKey, (current: {pages: {posts: Activity[]}[]} | undefined) => {
-            if (!current) {
-                return current;
-            }
-
-            return {
-                ...current,
-                pages: current.pages.map((page: {posts: Activity[]}) => {
-                    return {
-                        ...page,
-                        posts: page.posts.map((item: Activity) => {
-                            if (item.id === id) {
-                                return {...item, ...updated};
-                            }
-                            return item;
-                        })
-                    };
-                })
-            };
-        });
+        updateActivityInPaginatedCollection(
+            queryClient,
+            queryKey,
+            'posts',
+            id,
+            activity => ({...activity, ...updated})
+        );
     };
 
     return {inboxQuery, updateInboxActivity};
+}
+
+export function usePostsByAccount(options: {enabled: boolean}) {
+    const queryKey = QUERY_KEYS.postsByAccount;
+    const queryClient = useQueryClient();
+
+    const postsByAccountQuery = useInfiniteQuery({
+        queryKey,
+        enabled: options.enabled,
+        async queryFn({pageParam}: {pageParam?: string}) {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI('index', siteUrl);
+            return api.getPostsByAccount(pageParam).then((response) => {
+                return {
+                    posts: response.posts.map(mapPostToActivity),
+                    next: response.next
+                };
+            });
+        },
+        getNextPageParam(prevPage) {
+            return prevPage.next;
+        }
+    });
+
+    const updatePostsByAccount = (id: string, updated: Partial<Activity>) => {
+        updateActivityInPaginatedCollection(
+            queryClient,
+            queryKey,
+            'posts',
+            id,
+            activity => ({...activity, ...updated})
+        );
+    };
+
+    return {postsByAccountQuery, updatePostsByAccount};
+}
+
+export function usePostsLikedByAccount(options: {enabled: boolean}) {
+    const queryKey = QUERY_KEYS.postsLikedByAccount;
+    const queryClient = useQueryClient();
+
+    const postsLikedByAccountQuery = useInfiniteQuery({
+        queryKey,
+        enabled: options.enabled,
+        async queryFn({pageParam}: {pageParam?: string}) {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI('index', siteUrl);
+            return api.getPostsLikedByAccount(pageParam).then((response) => {
+                return {
+                    posts: response.posts.map(mapPostToActivity),
+                    next: response.next
+                };
+            });
+        },
+        getNextPageParam(prevPage) {
+            return prevPage.next;
+        }
+    });
+
+    const updatePostsLikedByAccount = (id: string, updated: Partial<Activity>) => {
+        updateActivityInPaginatedCollection(
+            queryClient,
+            queryKey,
+            'posts',
+            id,
+            activity => ({...activity, ...updated})
+        );
+    };
+
+    return {postsLikedByAccountQuery, updatePostsLikedByAccount};
 }
 
 export function useDeleteMutationForUser(handle: string) {
@@ -1025,6 +1307,42 @@ export function useDeleteMutationForUser(handle: string) {
                 });
             }
 
+            // Update the posts by account cache
+            const postsByAccountKey = QUERY_KEYS.postsByAccount;
+            const previousPostsByAccount = queryClient.getQueryData<{pages: {posts: Activity[]}[]}>(postsByAccountKey);
+
+            queryClient.setQueryData(postsByAccountKey, (current?: {pages: {posts: Activity[]}[]}) => {
+                if (!current) {
+                    return current;
+                }
+
+                return {
+                    ...current,
+                    pages: current.pages.map((page: {posts: Activity[]}) => ({
+                        ...page,
+                        posts: page.posts.filter((item: Activity) => item.object.id !== id)
+                    }))
+                };
+            });
+
+            // Update the liked posts cache
+            const postsLikedByAccountKey = QUERY_KEYS.postsLikedByAccount;
+            const previousPostsLikedByAccount = queryClient.getQueryData<{pages: {posts: Activity[]}[]}>(postsLikedByAccountKey);
+
+            queryClient.setQueryData(postsLikedByAccountKey, (current?: {pages: {posts: Activity[]}[]}) => {
+                if (!current) {
+                    return current;
+                }
+
+                return {
+                    ...current,
+                    pages: current.pages.map((page: {posts: Activity[]}) => ({
+                        ...page,
+                        posts: page.posts.filter((item: Activity) => item.object.id !== id)
+                    }))
+                };
+            });
+
             return {
                 previousFeed: {
                     key: QUERY_KEYS.feed,
@@ -1053,7 +1371,15 @@ export function useDeleteMutationForUser(handle: string) {
                 previousAccount: removedFromLiked ? {
                     key: accountQueryKey,
                     data: previousAccount
-                } : null
+                } : null,
+                previousPostsByAccount: {
+                    key: QUERY_KEYS.postsByAccount,
+                    data: previousPostsByAccount
+                },
+                previousPostsLikedByAccount: {
+                    key: QUERY_KEYS.postsLikedByAccount,
+                    data: previousPostsLikedByAccount
+                }
             };
         },
         onError: (_err, _variables, context) => {
@@ -1070,6 +1396,13 @@ export function useDeleteMutationForUser(handle: string) {
 
             if (context.previousAccount) {
                 queryClient.setQueryData(context.previousAccount.key, context.previousAccount.data);
+            }
+
+            if (context.previousPostsByAccount) {
+                queryClient.setQueryData(QUERY_KEYS.postsByAccount, context.previousPostsByAccount);
+            }
+            if (context.previousPostsLikedByAccount) {
+                queryClient.setQueryData(QUERY_KEYS.postsLikedByAccount, context.previousPostsLikedByAccount);
             }
         }
     });

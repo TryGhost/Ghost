@@ -200,6 +200,14 @@ DataGenerator.Content = {
             slug: 'contrib-2',
             email: 'contributor2@ghost.org',
             password: 'Sl1m3rson99'
+        },
+        {
+            // super editor
+            id: '6193c6cde792de832cd08148',
+            name: 'Super Editor',
+            slug: 'super-editor',
+            email: 'supersuper@ghost.org',
+            password: 'Sl1m3rson99'
         }
     ],
 
@@ -296,6 +304,11 @@ DataGenerator.Content = {
             id: ObjectId().toHexString(),
             name: 'Admin Integration',
             description: 'External Apps'
+        },
+        {
+            id: ObjectId().toHexString(),
+            name: 'Super Editor',
+            description: 'Super Editor'
         }
     ],
 
@@ -1433,7 +1446,8 @@ DataGenerator.forKnex = (function () {
         createBasic(DataGenerator.Content.roles[2]),
         createBasic(DataGenerator.Content.roles[3]),
         createBasic(DataGenerator.Content.roles[4]),
-        createBasic(DataGenerator.Content.roles[5])
+        createBasic(DataGenerator.Content.roles[5]),
+        createBasic(DataGenerator.Content.roles[6])
     ];
 
     const users = [
@@ -1441,7 +1455,8 @@ DataGenerator.forKnex = (function () {
         createUser(DataGenerator.Content.users[1]),
         createUser(DataGenerator.Content.users[2]),
         createUser(DataGenerator.Content.users[3]),
-        createUser(DataGenerator.Content.users[7])
+        createUser(DataGenerator.Content.users[7]),
+        createUser(DataGenerator.Content.users[9])
     ];
 
     const roles_users = [
@@ -1479,6 +1494,13 @@ DataGenerator.forKnex = (function () {
             role_name: 'Contributor',
             user_id: DataGenerator.Content.users[7].id,
             role_id: DataGenerator.Content.roles[4].id
+        },
+        {
+            // super editor
+            id: ObjectId().toHexString(),
+            role_name: 'Super Editor',
+            user_id: DataGenerator.Content.users[9].id,
+            role_id: DataGenerator.Content.roles[6].id
         }
     ];
 

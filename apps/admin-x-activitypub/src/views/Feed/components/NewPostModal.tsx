@@ -2,7 +2,7 @@ import * as FormPrimitive from '@radix-ui/react-form';
 import APAvatar from '@components/global/APAvatar';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
-import {Modal, showToast} from '@tryghost/admin-x-design-system';
+import {Modal} from '@tryghost/admin-x-design-system';
 import {Skeleton} from '@tryghost/shade';
 import {useAccountForUser, useNoteMutationForUser, useUserDataForUser} from '@hooks/use-activity-pub-queries';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
@@ -11,41 +11,26 @@ import {useState} from 'react';
 const NewPostModal = NiceModal.create(() => {
     const modal = useModal();
     const {data: user} = useUserDataForUser('index');
-    const noteMutation = useNoteMutationForUser('index');
+    const noteMutation = useNoteMutationForUser('index', user);
     const {updateRoute} = useRouting();
     const {data: account, isLoading: isLoadingAccount} = useAccountForUser('index');
 
     const [content, setContent] = useState('');
 
-    const isDisabled = noteMutation.isLoading || !content.trim();
+    const isDisabled = !content.trim() || !user;
 
     const handlePost = async () => {
         const trimmedContent = content.trim();
 
-        if (!trimmedContent) {
+        if (!trimmedContent || !user) {
             return;
         }
 
-        noteMutation.mutate({content: trimmedContent}, {
-            onSuccess() {
-                showToast({
-                    message: 'Note posted',
-                    type: 'success'
-                });
+        noteMutation.mutate(trimmedContent);
 
-                updateRoute('feed');
-                modal.remove();
-            },
-            onError(error) {
-                showToast({
-                    message: 'An error occurred while posting your note.',
-                    type: 'error'
-                });
+        updateRoute('feed');
 
-                // eslint-disable-next-line no-console
-                console.error(error);
-            }
-        });
+        modal.remove();
     };
 
     const handleCancel = () => {
@@ -82,7 +67,6 @@ const NewPostModal = NiceModal.create(() => {
                                 <textarea
                                     autoFocus={true}
                                     className='ap-textarea w-full resize-none bg-transparent text-[1.5rem]'
-                                    disabled={noteMutation.isLoading}
                                     placeholder='What&apos;s new?'
                                     rows={3}
                                     value={content}
