@@ -27,7 +27,7 @@ const Step1: React.FC = () => {
             await navigator.clipboard.writeText(account.handle);
             setTimeout(() => setCopied(false), 2000);
         }
-    }
+    };
 
     return (
         <div className='relative h-full'>
