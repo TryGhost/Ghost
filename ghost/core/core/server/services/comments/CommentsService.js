@@ -402,7 +402,6 @@ class CommentsService {
         return model;
     }
 
-
     /**
      * @param {string} post - The ID of the Post to comment on
      * @param {string} member - The member object. May contain id, uuid, email, etc for matching.
@@ -515,7 +514,7 @@ class CommentsService {
 
         // Instead of returning the model, fetch it again, so we have all the relations properly fetched
         return await this.models.Comment.findOne({id: model.id}, {...options, require: true});
-    };
+    }
     async getMemberIdByUUID(uuid, options) {
         const member = await this.models.Member.findOne({uuid}, options);
 
@@ -526,7 +525,6 @@ class CommentsService {
         }
 
         return member.id;
-
     }
 }
 
