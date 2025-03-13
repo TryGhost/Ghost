@@ -7,6 +7,10 @@ const errors = require('@tryghost/errors');
 const events = require('../../lib/common/events');
 
 /**
+ * @typedef {{url: string, generatorId: string, resource: import('./Resource')}} Url
+ */
+
+/**
  * This class keeps track of all urls in the system.
  * Each resource has exactly one url. Each url is owned by exactly one url generator id.
  * This is a connector for url generator and resources.
@@ -19,18 +23,14 @@ const events = require('../../lib/common/events');
  * You can easily ask `this.urls[resourceId]`.
  */
 class Urls {
-    /** @type {Object<string, {url: string, generatorId: string, resource: import('./Resource')}>} */
+    /** @type {Object<string, Url>} */
     urls = {};
 
     /**
      * @description Add a url to the system.
-     * @param {Object} options
-     * @param {import('./Resource')} options.resource - instance of the Resource class
-     * @param {string} options.generatorId
-     * @param {string} options.url
+     * @param {Url} options
      */
-    add(options) {
-        const {url, generatorId, resource} = options;
+    add({url, generatorId, resource}) {
         debug('add', resource.data.id, url);
 
         if (this.urls[resource.data.id]) {
@@ -69,7 +69,7 @@ class Urls {
     /**
      * @description Get url by resource id.
      * @param {String} id
-     * @returns {Object}
+     * @returns {Url}
      */
     getByResourceId(id) {
         return this.urls[id];
@@ -78,7 +78,7 @@ class Urls {
     /**
      * @description Get all urls by generator id.
      * @param {String} generatorId
-     * @returns {Array}
+     * @returns {Url[]}
      */
     getByGeneratorId(generatorId) {
         return Object.values(this.urls).filter(url => url.generatorId === generatorId);
@@ -97,6 +97,7 @@ class Urls {
      *  because the router it belongs to was registered first.
      *
      *  @param {string} urlToLookup
+     *  @returns {Url[]}
      */
     getByUrl(urlToLookup) {
         return Object.values(this.urls).filter(url => url.url === urlToLookup);
@@ -104,7 +105,7 @@ class Urls {
 
     /**
      * @description Remove url.
-     * @param id
+     * @param {string} id
      */
     removeResourceId(id) {
         if (!this.urls[id]) {
