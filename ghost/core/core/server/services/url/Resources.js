@@ -173,7 +173,7 @@ class Resources {
      * If we resolve (https://github.com/TryGhost/Ghost/issues/10360) and talk to the Content API,
      * we could pass on e.g. `?include=authors&fields=authors.id,authors.slug`, but the API has to support it.
      *
-     * @param {Bookshelf-Model} model
+     * @param {import('bookshelf').Model} model
      * @param {Object} resourceConfig
      * @private
      */
@@ -228,7 +228,7 @@ class Resources {
      * own the resource and it's url.
      *
      * @param {String} type (post,user...)
-     * @param {Bookshelf-Model} model
+     * @param {import('bookshelf').Model} model
      * @private
      */
     async _onResourceAdded(type, model) {
@@ -307,7 +307,7 @@ class Resources {
      *   - e.g. featured:false changes and your filter requires featured posts
      *
      * @param {String} type (post,user...)
-     * @param {Bookshelf-Model} model
+     * @param {import('bookshelf').Model} model
      * @private
      */
     async _onResourceUpdated(type, model) {
@@ -390,7 +390,7 @@ class Resources {
     /**
      * @description Listener for "model removed" event.
      * @param {String} type (post,user...)
-     * @param {Bookshelf-Model} model
+     * @param {import('bookshelf').Model} model
      * @private
      */
     _onResourceRemoved(type, model) {
