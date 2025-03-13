@@ -46,7 +46,7 @@ const Sidebar: React.FC = () => {
                     {allFlags.map((flag) => {
                         if (flags[flag]) {
                             return (
-                                <div key={flag} className="flex items-center justify-between gap-1">
+                                <div key={flag} className="flex items-center justify-between gap-1 pl-3 opacity-50">
                                     <span className="font-mono text-xs">{flag}</span>
                                     <span className='text-green-800 inline-flex items-center rounded bg-green-100 px-1 py-0.5 text-xs font-medium'>
                                             ON
