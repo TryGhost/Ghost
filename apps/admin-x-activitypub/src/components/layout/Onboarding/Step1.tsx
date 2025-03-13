@@ -30,7 +30,7 @@ const Step1: React.FC = () => {
     };
 
     return (
-        <div className='relative h-full'>
+        <div className='relative h-full overflow-hidden'>
             <div className='isolate flex h-full flex-col items-stretch justify-between'>
                 <div className='relative z-20 flex justify-between px-14'>
                     <div className='flex flex-col gap-4 pb-20 text-xl font-medium'>

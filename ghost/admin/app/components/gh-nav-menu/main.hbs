@@ -28,13 +28,19 @@
             <ul class="gh-nav-list gh-nav-main">
                 {{#if (and (feature "ActivityPub") this.session.user.isOwnerOnly)}}
                     <li>
-                        <LinkTo @route="activitypub-x" @current-when="activitypub-x">{{svg-jar "orbit"}}ActivityPub</LinkTo>
+                        <LinkTo @route="activitypub-x" @current-when="activitypub-x">{{svg-jar "house"}}Home</LinkTo>
                     </li>
                 {{/if}}
                 {{#if (gh-user-can-admin this.session.user)}}
                     <li class="relative gh-nav-list-home">
-                        <LinkTo @route="dashboard" @alt="Dashboard" data-test-nav="dashboard">{{svg-jar
-                            "house"}} Dashboard</LinkTo>
+                        <LinkTo @route="dashboard" @alt="Dashboard" data-test-nav="dashboard">
+                            {{#if (and (feature "ActivityPub") this.session.user.isOwnerOnly)}}
+                                {{svg-jar "gauge"}}
+                            {{else}}
+                                {{svg-jar "house"}}
+                            {{/if}}
+                            Dashboard
+                        </LinkTo>
                     </li>
                 {{/if}}
                 <li class="relative">
