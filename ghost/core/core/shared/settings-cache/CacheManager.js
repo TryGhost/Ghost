@@ -54,7 +54,7 @@ class CacheManager {
         if (!this.settingsCache) {
             return;
         }
-        
+
         let override;
         if (this.settingsOverrides && Object.keys(this.settingsOverrides).includes(key)) {
             // Wrap the override value in an object in case it's a boolean
@@ -181,8 +181,8 @@ class CacheManager {
      *
      * Optionally takes a collection of settings & can populate the cache with these.
      *
-     * @param {EventEmitter} events
-     * @param {Bookshelf.Collection<Settings>} settingsCollection
+     * @param {import('events').EventEmitter} events
+     * @param {import('bookshelf').Collection<import('bookshelf').Model>} settingsCollection
      * @param {Array} calculatedFields
      * @param {Object} cacheStore - cache storage instance base on Cache Base Adapter
      * @param {Object} settingsOverrides - key/value pairs of settings which are overridden (i.e. via config)
@@ -219,7 +219,7 @@ class CacheManager {
 
     /**
      * Reset both the cache and the listeners, must be called during init
-     * @param {EventEmitter} events
+     * @param {import('events').EventEmitter} events
      */
     reset(events) {
         if (this.settingsCache) {
