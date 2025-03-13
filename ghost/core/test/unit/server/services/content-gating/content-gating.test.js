@@ -1,52 +1,43 @@
 const should = require('should');
-const {checkPostAccess, checkGatedBlockAccess} = require('../../../../../core/server/services/members/content-gating');
+const {checkPostAccess, checkGatedBlockAccess} = require('../../../../../core/server/services/content-gating');
 
-describe('Members Service - Content gating', function () {
+describe('Content gating service', function () {
     describe('checkPostAccess', function () {
-        let post;
-        let member;
-        let access;
-
         it('should allow access to public posts without member', async function () {
-            post = {visibility: 'public'};
-            member = null;
-            access = checkPostAccess(post, member);
-            should(access).be.true();
+            const post = {visibility: 'public'};
+            const member = null;
+            checkPostAccess(post, member).should.be.true();
         });
 
         it('should allow access to public posts with member', async function () {
-            post = {visibility: 'public'};
-            member = {id: 'test'};
-            access = checkPostAccess(post, member);
-            should(access).be.true();
+            const post = {visibility: 'public'};
+            const member = {id: 'test'};
+            checkPostAccess(post, member).should.be.true();
         });
 
         it('should allow access to members only post with member', async function () {
-            post = {visibility: 'members'};
-            member = {id: 'test'};
-            access = checkPostAccess(post, member);
-            should(access).be.true();
+            const post = {visibility: 'members'};
+            const member = {id: 'test'};
+            checkPostAccess(post, member).should.be.true();
         });
 
         it('should allow access to paid members only posts for paid members', async function () {
-            post = {visibility: 'paid'};
-            member = {id: 'test', status: 'paid'};
-            access = checkPostAccess(post, member);
-            should(access).be.true();
+            const post = {visibility: 'paid'};
+            const member = {id: 'test', status: 'paid'};
+            checkPostAccess(post, member).should.be.true();
         });
 
         it('should allow access to tiers only post for members on allowed tier', async function () {
-            post = {visibility: 'tiers', tiers: [{slug: 'test-tier'}]};
-            member = {id: 'test', status: 'paid', products: [{
+            const post = {visibility: 'tiers', tiers: [{slug: 'test-tier'}]};
+            const member = {id: 'test', status: 'paid', products: [{
                 slug: 'test-tier'
             }]};
-            access = checkPostAccess(post, member);
-            should(access).be.true();
+            checkPostAccess(post, member).should.be.true();
         });
 
         it('should not error out if the slug associated with a tier is only 1 character in length', async function () {
-            post = {visibility: 'tiers', tiers: [{slug: 'x'}]};
-            member = {id: 'test', status: 'paid', products: [{
+            const post = {visibility: 'tiers', tiers: [{slug: 'x'}]};
+            const member = {id: 'test', status: 'paid', products: [{
                 slug: 'x'
             }]};
 
@@ -54,40 +45,35 @@ describe('Members Service - Content gating', function () {
         });
 
         it('should block access to members only post without member', async function () {
-            post = {visibility: 'members'};
-            member = null;
-            access = checkPostAccess(post, member);
-            should(access).be.false();
+            const post = {visibility: 'members'};
+            const member = null;
+            checkPostAccess(post, member).should.be.false();
         });
 
         it('should block access to paid members only post without member', async function () {
-            post = {visibility: 'paid'};
-            member = null;
-            access = checkPostAccess(post, member);
-            should(access).be.false();
+            const post = {visibility: 'paid'};
+            const member = null;
+            checkPostAccess(post, member).should.be.false();
         });
 
         it('should block access to paid members only posts for free members', async function () {
-            post = {visibility: 'paid'};
-            member = {id: 'test', status: 'free'};
-            access = checkPostAccess(post, member);
-            should(access).be.false();
+            const post = {visibility: 'paid'};
+            const member = {id: 'test', status: 'free'};
+            checkPostAccess(post, member).should.be.false();
         });
 
         it('should block access to specific tiers only post without tiers list', async function () {
-            post = {visibility: 'tiers'};
-            member = {id: 'test'};
-            access = checkPostAccess(post, member);
-            should(access).be.false();
+            const post = {visibility: 'tiers'};
+            const member = {id: 'test'};
+            checkPostAccess(post, member).should.be.false();
         });
 
         it('should block access to tiers only post for members not on allowed tier', async function () {
-            post = {visibility: 'tiers', tiers: [{slug: 'test-tier'}]};
-            member = {id: 'test', status: 'paid', products: [{
+            const post = {visibility: 'tiers', tiers: [{slug: 'test-tier'}]};
+            const member = {id: 'test', status: 'paid', products: [{
                 slug: 'test-tier-2'
             }]};
-            access = checkPostAccess(post, member);
-            should(access).be.false();
+            checkPostAccess(post, member).should.be.false();
         });
     });
 

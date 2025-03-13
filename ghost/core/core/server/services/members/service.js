@@ -179,7 +179,6 @@ module.exports = {
         // Schedule daily cron job to clean expired tokens
         memberJobs.scheduleTokenCleanupJob();
     },
-    contentGating: require('./content-gating'),
 
     config: membersConfig,
 

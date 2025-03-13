@@ -1,7 +1,7 @@
 const assert = require('assert/strict');
 const sinon = require('sinon');
 const gating = require('../../../../../../../../core/server/api/endpoints/utils/serializers/output/utils/post-gating');
-const membersContentGating = require('../../../../../../../../core/server/services/members/content-gating');
+const contentGatingService = require('../../../../../../../../core/server/services/content-gating');
 const labs = require('../../../../../../../../core/shared/labs');
 
 describe('Unit: endpoints/utils/serializers/output/utils/post-gating', function () {
@@ -233,7 +233,7 @@ describe('Unit: endpoints/utils/serializers/output/utils/post-gating', function 
 
     describe('stripGatedBlocks', function () {
         function stubCheckGatedBlockAccess(permitAccess) {
-            return sinon.stub(membersContentGating, 'checkGatedBlockAccess').returns(permitAccess);
+            return sinon.stub(contentGatingService, 'checkGatedBlockAccess').returns(permitAccess);
         }
 
         it('handles content with no gated blocks', function () {
@@ -277,7 +277,7 @@ describe('Unit: endpoints/utils/serializers/output/utils/post-gating', function 
         });
 
         it('handles mix of permitted and denied blocks', function () {
-            const checkGatedBlockAccessStub = sinon.stub(membersContentGating, 'checkGatedBlockAccess')
+            const checkGatedBlockAccessStub = sinon.stub(contentGatingService, 'checkGatedBlockAccess')
                 .onFirstCall().returns(false)
                 .onSecondCall().returns(true);
             const html = `

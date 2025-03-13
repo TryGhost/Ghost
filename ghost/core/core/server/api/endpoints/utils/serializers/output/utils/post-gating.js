@@ -1,8 +1,8 @@
-const membersService = require('../../../../../../services/members');
+const contentGatingService = require('../../../../../../services/content-gating');
 const labs = require('../../../../../../../shared/labs');
 const htmlToPlaintext = require('@tryghost/html-to-plaintext');
 
-const {PERMIT_ACCESS} = membersService.contentGating;
+const {PERMIT_ACCESS} = contentGatingService;
 
 // Match the start of a gated block - fast regex as a pre-check before doing full regex+loop
 const HAS_GATED_BLOCKS_REGEX = /<!--\s*kg-gated-block:begin/;
@@ -59,7 +59,7 @@ const parseGatedBlockParams = function (paramsString) {
 const stripGatedBlocks = function (html, member) {
     return html.replace(GATED_BLOCK_REGEX, (match, params, content) => {
         const gatedBlockParams = module.exports.parseGatedBlockParams(params);
-        const checkResult = membersService.contentGating.checkGatedBlockAccess(gatedBlockParams, member);
+        const checkResult = contentGatingService.checkGatedBlockAccess(gatedBlockParams, member);
 
         if (checkResult === PERMIT_ACCESS) {
             // return content rather than match to avoid rendering gated block wrapping comments
@@ -89,7 +89,7 @@ const forPost = (attrs, frame) => {
         attrs.access = true;
     }
 
-    const memberHasAccess = membersService.contentGating.checkPostAccess(attrs, frame.original.context.member);
+    const memberHasAccess = contentGatingService.checkPostAccess(attrs, frame.original.context.member);
 
     if (!memberHasAccess) {
         const paywallIndex = (attrs.html || '').indexOf('<!--members-only-->');
