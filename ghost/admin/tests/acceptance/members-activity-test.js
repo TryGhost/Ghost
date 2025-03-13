@@ -18,7 +18,6 @@ describe('Acceptance: Members activity', function () {
     });
 
     it('redirects roles w/o manage members permission', async function () {
-
         await invalidateSession();
 
         const role = this.server.create('role', {name: 'Editor'});

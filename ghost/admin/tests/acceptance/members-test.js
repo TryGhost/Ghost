@@ -45,6 +45,7 @@ describe('Acceptance: Members Test', function () {
             this.server.create('member', {createdAt: moment.utc().subtract(2, 'day').format('YYYY-MM-DD HH:mm:ss')});
 
             await visit('/members');
+
             // lands on correct page
             expect(currentURL(), 'currentURL').to.equal('/members');
 
@@ -240,6 +241,7 @@ describe('Acceptance: Members Test', function () {
             this.server.createList('member', 5, {labels: [label]});
 
             await visit('/members');
+
             expect(findAll('[data-test-member]').length).to.equal(11);
 
             await click('[data-test-button="members-actions"]');
@@ -249,7 +251,6 @@ describe('Acceptance: Members Test', function () {
             // a filter is needed for the delete-selected button to show
             await click('[data-test-button="members-filter-actions"]');
             await fillIn('[data-test-members-filter="0"] [data-test-select="members-filter"]', 'label');
-            
             await click('.gh-member-label-input input');
             await click(`[data-test-label-filter="${label.name}"]`);
             await click(`[data-test-button="members-apply-filter"]`);

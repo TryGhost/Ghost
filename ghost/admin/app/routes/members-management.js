@@ -1,5 +1,4 @@
 import AuthenticatedRoute from './authenticated';
-
 export default class MembersManagementRoute extends AuthenticatedRoute {
     beforeModel() {
         super.beforeModel(...arguments);
@@ -9,4 +8,3 @@ export default class MembersManagementRoute extends AuthenticatedRoute {
         }
     }
 }
-
