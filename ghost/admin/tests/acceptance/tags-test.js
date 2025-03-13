@@ -38,7 +38,7 @@ describe('Acceptance: Tags', function () {
         expect(currentURL(), 'currentURL').to.equal('/site');
     });
 
-    describe('when logged in', function () {
+    describe('when logged in as administrator', function () {
         beforeEach(async function () {
             let role = this.server.create('role', {name: 'Administrator'});
             this.server.create('user', {roles: [role]});
@@ -163,6 +163,19 @@ describe('Acceptance: Tags', function () {
             expect(currentURL()).to.equal('tags/new');
             expect(find('[data-test-nav="tags"]'), 'highlights nav menu item')
                 .to.have.class('active');
+        });
+    });
+    describe('as a super editor', function () {
+        beforeEach(async function () {
+            let role = this.server.create('role', {name: 'Administrator'});
+            this.server.create('user', {roles: [role]});
+
+            await authenticateSession();
+        });
+        it('can visit the tags page', async function () {
+            await visit('tags');
+            expect(currentURL()).to.equal('tags');
+            expect(find('[data-test-nav="tags"]')).to.have.class('active');
         });
     });
 });
