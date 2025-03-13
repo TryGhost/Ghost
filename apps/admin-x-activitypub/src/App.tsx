@@ -7,14 +7,9 @@ import {ShadeApp} from '@tryghost/shade';
 interface AppProps {
     framework: TopLevelFrameworkProps;
     designSystem: DesignSystemAppProps;
-    activityPubEnabled?: boolean;
 }
 
-const App: React.FC<AppProps> = ({framework, designSystem, activityPubEnabled}) => {
-    if (activityPubEnabled === false) {
-        return null;
-    }
-
+const App: React.FC<AppProps> = ({framework, designSystem}) => {
     return (
         <FrameworkProvider {...framework}>
             <RouterProvider prefix={APP_ROUTE_PREFIX} routes={routes}>
