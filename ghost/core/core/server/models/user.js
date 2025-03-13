@@ -827,7 +827,7 @@ User = ghostBookshelf.Model.extend({
             if (context.user === userModel.get('id')) {
                 // If this is the same user that requests the operation allow it.
                 hasUserPermission = true;
-            } else if (isOwner) {
+            } else if (loadedPermissions.user && userModel.hasRole('Owner')) {
                 // Owner can only be edited by owner
                 hasUserPermission = isOwner;
             } else if (isEitherEditor) {

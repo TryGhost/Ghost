@@ -1628,7 +1628,6 @@ describe('Post Model', function () {
 
             const postReassignPosts = await models.Post.findAll({context: {internal: true}});
             // All posts should remain
-
             postReassignPosts.length.should.equal(2 * staffCount);
 
             const postReassignOwnerWithPosts = await models.Post.findAll({
