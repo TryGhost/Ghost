@@ -113,7 +113,7 @@ export interface Post {
     > | null;
 }
 
-export interface GetFeedResponse {
+export interface PaginatedPostsResponse {
     posts: Post[];
     next: string | null;
 }
@@ -437,23 +437,23 @@ export class ActivityPubAPI {
         };
     }
 
-    async getFeed(next?: string): Promise<GetFeedResponse> {
+    async getFeed(next?: string): Promise<PaginatedPostsResponse> {
         return this.getPaginatedPosts('.ghost/activitypub/feed', next);
     }
 
-    async getInbox(next?: string): Promise<GetFeedResponse> {
+    async getInbox(next?: string): Promise<PaginatedPostsResponse> {
         return this.getPaginatedPosts('.ghost/activitypub/inbox', next);
     }
 
-    async getPostsByAccount(next?: string): Promise<GetFeedResponse> {
+    async getPostsByAccount(next?: string): Promise<PaginatedPostsResponse> {
         return this.getPaginatedPosts('.ghost/activitypub/posts', next);
     }
 
-    async getPostsLikedByAccount(next?: string): Promise<GetFeedResponse> {
+    async getPostsLikedByAccount(next?: string): Promise<PaginatedPostsResponse> {
         return this.getPaginatedPosts('.ghost/activitypub/posts/liked', next);
     }
 
-    private async getPaginatedPosts(endpoint: string, next?: string): Promise<GetFeedResponse> {
+    private async getPaginatedPosts(endpoint: string, next?: string): Promise<PaginatedPostsResponse> {
         const url = new URL(endpoint, this.apiUrl);
 
         if (next) {

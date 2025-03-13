@@ -80,8 +80,8 @@ const QUERY_KEYS = {
     },
     feed: ['feed'],
     inbox: ['inbox'],
-    postsByAccount: ['posts_by_account'],
-    postsLikedByAccount: ['posts_liked_by_account']
+    postsByAccount: ['account_posts'],
+    postsLikedByAccount: ['account_liked_posts']
 };
 
 function updateLikedCache(queryClient: QueryClient, queryKey: string[], id: string, liked: boolean) {
@@ -927,29 +927,6 @@ export function useAccountFollowsForUser(handle: string, type: AccountFollowsTyp
     });
 }
 
-function updateActivityInCache(queryClient: QueryClient, queryKey: unknown[], id: string, updated: Partial<Activity>) {
-    queryClient.setQueryData(queryKey, (current: {pages: {posts: Activity[]}[]} | undefined) => {
-        if (!current) {
-            return current;
-        }
-
-        return {
-            ...current,
-            pages: current.pages.map((page: {posts: Activity[]}) => {
-                return {
-                    ...page,
-                    posts: page.posts.map((item: Activity) => {
-                        if (item.id === id) {
-                            return {...item, ...updated};
-                        }
-                        return item;
-                    })
-                };
-            })
-        };
-    });
-}
-
 export function useFeedForUser(options: {enabled: boolean}) {
     const queryKey = QUERY_KEYS.feed;
     const queryClient = useQueryClient();
@@ -973,7 +950,13 @@ export function useFeedForUser(options: {enabled: boolean}) {
     });
 
     const updateFeedActivity = (id: string, updated: Partial<Activity>) => {
-        updateActivityInCache(queryClient, queryKey, id, updated);
+        updateActivityInPaginatedCollection(
+            queryClient,
+            queryKey,
+            'posts',
+            id,
+            activity => ({...activity, ...updated})
+        );
     };
 
     return {feedQuery, updateFeedActivity};
@@ -1002,7 +985,13 @@ export function useInboxForUser(options: {enabled: boolean}) {
     });
 
     const updateInboxActivity = (id: string, updated: Partial<Activity>) => {
-        updateActivityInCache(queryClient, queryKey, id, updated);
+        updateActivityInPaginatedCollection(
+            queryClient,
+            queryKey,
+            'posts',
+            id,
+            activity => ({...activity, ...updated})
+        );
     };
 
     return {inboxQuery, updateInboxActivity};
@@ -1031,7 +1020,13 @@ export function usePostsByAccount(options: {enabled: boolean}) {
     });
 
     const updatePostsByAccount = (id: string, updated: Partial<Activity>) => {
-        updateActivityInCache(queryClient, queryKey, id, updated);
+        updateActivityInPaginatedCollection(
+            queryClient,
+            queryKey,
+            'posts',
+            id,
+            activity => ({...activity, ...updated})
+        );
     };
 
     return {postsByAccountQuery, updatePostsByAccount};
@@ -1060,7 +1055,13 @@ export function usePostsLikedByAccount(options: {enabled: boolean}) {
     });
 
     const updatePostsLikedByAccount = (id: string, updated: Partial<Activity>) => {
-        updateActivityInCache(queryClient, queryKey, id, updated);
+        updateActivityInPaginatedCollection(
+            queryClient,
+            queryKey,
+            'posts',
+            id,
+            activity => ({...activity, ...updated})
+        );
     };
 
     return {postsLikedByAccountQuery, updatePostsLikedByAccount};
