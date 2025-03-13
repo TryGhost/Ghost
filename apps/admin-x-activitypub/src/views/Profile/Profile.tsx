@@ -23,6 +23,7 @@ import FollowButton from '@components/global/FollowButton';
 import Layout from '@components/layout';
 import Separator from '@components/global/Separator';
 import ViewProfileModal from '@components/modals/ViewProfileModal';
+import {isPendingActivity} from '@utils/pending-activity';
 
 interface UseInfiniteScrollTabProps<TData> {
     useDataHook: (key: string) => ActivityPubCollectionQueryResult<TData> | AccountFollowsQueryResult;
@@ -156,6 +157,7 @@ const PostsTab: React.FC<{currentUserAccount: Account | undefined}> = ({currentU
                                     <FeedItem
                                         actor={activity.actor}
                                         allowDelete={canDelete}
+                                        isPending={isPendingActivity(activity.id)}
                                         layout='feed'
                                         object={activity.object}
                                         type={activity.type}
