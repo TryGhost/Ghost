@@ -54,7 +54,7 @@ class UrlService {
         this.queue.addListener('started', this._onQueueStartedListener);
 
         this._onQueueEndedListener = this._onQueueEnded.bind(this);
-        this.queue.addListener('ended', this._onQueueEnded.bind(this));
+        this.queue.addListener('ended', this._onQueueEndedListener);
     }
 
     /**
