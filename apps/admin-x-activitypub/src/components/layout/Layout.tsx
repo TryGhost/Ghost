@@ -2,6 +2,7 @@ import * as React from 'react';
 import Header from './Header';
 import Onboarding, {useOnboardingStatus} from './Onboarding';
 import Sidebar from './Sidebar';
+import {Navigate} from '@tryghost/admin-x-framework';
 import {useCurrentUser} from '@tryghost/admin-x-framework/api/currentUser';
 import {useFeatureFlags} from '@src/lib/feature-flags';
 
@@ -14,6 +15,10 @@ const Layout: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({children, ...pr
 
     if (isLoading || !currentUser) {
         return null;
+    }
+
+    if (!isOnboarded) {
+        return <Navigate to={`/welcome`} replace />;
     }
 
     return (
