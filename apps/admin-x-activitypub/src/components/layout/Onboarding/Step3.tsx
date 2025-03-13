@@ -266,7 +266,7 @@ const ShortFormContent: React.FC = () => {
 const Reader: React.FC = () => {
     return (
         <>
-            <div className='flex w-full justify-center border-b border-gray-200 py-5'>
+            <div className='relative flex w-full items-center justify-center border-b border-gray-200 py-5'>
                 <div className='flex w-full max-w-[520px] items-center gap-3 text-sm'>
                     <div className='h-9 max-h-9 min-h-9 w-9 min-w-9 max-w-9 rounded-full bg-cover bg-center bg-no-repeat'
                         style={{
@@ -276,6 +276,10 @@ const Reader: React.FC = () => {
                         <div className='font-semibold leading-tighter'>404 Media</div>
                         <div className='leading-tighter text-gray-700'>@index@404media.co — Yesterday</div>
                     </div>
+                </div>
+                <div className='absolute right-0 flex items-center gap-4 text-gray-500'>
+                    <LucideIcon.ALargeSmall size={28} strokeWidth={1} />
+                    <LucideIcon.X size={22} strokeWidth={1.15} />
                 </div>
             </div>
             <div className='mt-8 flex w-full flex-col items-center'>
