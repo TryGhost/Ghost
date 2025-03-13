@@ -7,7 +7,7 @@ import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
 import {visit} from '../helpers/visit';
 
-describe('Acceptance: Members', function () {
+describe('Acceptance: Members Test', function () {
     let hooks = setupApplicationTest();
     setupMirage(hooks);
 
@@ -18,7 +18,7 @@ describe('Acceptance: Members', function () {
         expect(currentURL()).to.equal('/signin');
     });
 
-    it('redirects non-admins to site', async function () {
+    it('redirects roles without member management permission to site', async function () {
         let role = this.server.create('role', {name: 'Editor'});
         this.server.create('user', {roles: [role]});
 
@@ -345,6 +345,119 @@ describe('Acceptance: Members', function () {
             expect(currentURL()).to.equal('/members');
             expect(findAll('[data-test-modal]')).to.have.length(0);
             expect(findAll('[data-test-member]')).to.have.length(1);
+        });
+    });
+    describe('as super editor', function () {
+        beforeEach(async function () {
+            this.server.loadFixtures('configs');
+
+            let role = this.server.create('role', {name: 'Super Editor'});
+            this.server.create('user', {roles: [role]});
+
+            await authenticateSession();
+        });
+
+        it('it renders, can be navigated, can edit member', async function () {
+            let member1 = this.server.create('member', {createdAt: moment.utc().subtract(1, 'day').format('YYYY-MM-DD HH:mm:ss')});
+            this.server.create('member', {createdAt: moment.utc().subtract(2, 'day').format('YYYY-MM-DD HH:mm:ss')});
+
+            await visit('/members');
+
+            // lands on correct page
+            expect(currentURL(), 'currentURL').to.equal('/members');
+
+            // it lists all members
+            expect(findAll('[data-test-list="members-list-item"]').length, 'members list count')
+                .to.equal(2);
+
+            // it highlights active state in nav menu
+            expect(
+                find('[data-test-nav="members"]'),
+                'highlights nav menu item'
+            ).to.have.class('active');
+
+            let member = find('[data-test-list="members-list-item"]');
+            expect(member.querySelector('.gh-members-list-name').textContent, 'member list item title')
+                .to.equal(member1.name);
+
+            // it does not add ?include=email_recipients
+            const membersRequests = this.server.pretender.handledRequests.filter(r => r.url.match(/\/members\/(\?|$)/));
+            expect(membersRequests[0].url).to.not.have.string('email_recipients');
+
+            await visit(`/members/${member1.id}`);
+
+            // it shows selected member form
+            expect(find('[data-test-input="member-name"]').value, 'loads correct member into form')
+                .to.equal(member1.name);
+
+            expect(find('[data-test-input="member-email"]').value, 'loads correct email into form')
+                .to.equal(member1.email);
+
+            // it maintains active state in nav menu
+            expect(
+                find('[data-test-nav="members"]'),
+                'highlights nav menu item'
+            ).to.have.class('active');
+
+            // trigger save
+            await fillIn('[data-test-input="member-name"]', 'New Name');
+            await blur('[data-test-input="member-name"]');
+
+            await click('[data-test-button="save"]');
+
+            await click('[data-test-link="members-back"]');
+
+            // lands on correct page
+            expect(currentURL(), 'currentURL').to.equal('/members');
+        });
+
+        it('can create a new member', async function () {
+            this.server.create('member', {createdAt: moment.utc().subtract(1, 'day').format('YYYY-MM-DD HH:mm:ss')});
+
+            await visit('/members');
+
+            // lands on correct page
+            expect(currentURL(), 'currentURL').to.equal('/members');
+
+            // it lists all members
+            expect(findAll('[data-test-list="members-list-item"]').length, 'members list count')
+                .to.equal(1);
+
+            //  start new member
+            await click('[data-test-new-member-button="true"]');
+
+            // it navigates to the new member route
+            expect(currentURL(), 'new member URL').to.equal('/members/new');
+            // it displays the new member form
+            expect(find('.gh-canvas-header h2').textContent, 'settings pane title')
+                .to.contain('New');
+
+            // it highlights active state in nav menu
+            expect(
+                find('[data-test-nav="members"]'),
+                'highlights nav menu item'
+            ).to.have.class('active');
+
+            // all fields start blank
+            findAll('.gh-member-settings-primary .gh-input').forEach(function (elem) {
+                expect(elem.value, `input field for ${elem.getAttribute('name')}`)
+                    .to.be.empty;
+            });
+
+            // save new member
+            await fillIn('[data-test-input="member-name"]', 'New Name');
+            await blur('[data-test-input="member-name"]');
+
+            await fillIn('[data-test-input="member-email"]', 'example@domain.com');
+            await blur('[data-test-input="member-email"]');
+
+            await click('[data-test-button="save"]');
+
+            expect(find('[data-test-input="member-name"]').value, 'name has been preserved')
+                .to.equal('New Name');
+
+            expect(find('[data-test-input="member-email"]').value, 'email has been preserved')
+                .to.equal('example@domain.com');
         });
     });
 });

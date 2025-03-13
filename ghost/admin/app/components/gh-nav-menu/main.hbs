@@ -134,7 +134,7 @@
                     </LinkTo>
                 </li>
                 {{/if}}
-                {{#if (gh-user-can-admin this.session.user)}}
+                {{#if (gh-user-can-manage-members this.session.user)}}
                 <li class="relative">
                     {{#if (eq this.router.currentRouteName "members.index")}}
                     <LinkTo @route="members" @current-when="members member member.new"

@@ -149,7 +149,7 @@ export function isAdminUser(user: User) {
 
 export function isEditorUser(user: User) {
     const isAnyEditor = user.roles.some(role => role.name === 'Editor') 
-    || user.roles.some(role => role.name === 'Super Editor');
+        || user.roles.some(role => role.name === 'Super Editor');
     return isAnyEditor;
 }
 
