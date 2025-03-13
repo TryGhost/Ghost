@@ -10,6 +10,7 @@ export const exploreSites = {
     news: {
         categoryName: 'News & journalism',
         sites: [
+            '@abc@flipboard.com',
             '@404mediaco@mastodon.social',
             '@index@www.coffeeandcomplexity.com',
             '@index@www.syphoncontinuity.com',
