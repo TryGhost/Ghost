@@ -1,11 +1,11 @@
-import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
-import {click, currentURL, waitFor, find} from '@ember/test-helpers';
+import loginAsRole from '../helpers/login-as-role';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
+import {find} from '@ember/test-helpers';
+import {invalidateSession} from 'ember-simple-auth/test-support';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
 import {visit} from '../helpers/visit';
-import loginAsRole from '../helpers/login-as-role';
 
 describe('Acceptance: Settings button', function () {
     const hooks = setupApplicationTest();
@@ -20,7 +20,6 @@ describe('Acceptance: Settings button', function () {
             await loginAsRole('Editor', this.server);
             await visit('site');
             expect(find('[data-test-nav="settings"]')).to.exist;
-
         });
         it('is not present for authors', async function () {
             await loginAsRole('Author', this.server);

@@ -1,6 +1,6 @@
 import loginAsRole from '../../helpers/login-as-role';
-import {find, settled, waitFor, waitUntil, triggerEvent} from '@ember/test-helpers';
 import {expect} from 'chai';
+import {find, settled, triggerEvent, waitFor, waitUntil} from '@ember/test-helpers';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
 import {visit} from '../../helpers/visit';
@@ -21,9 +21,7 @@ async function selectTextWithHover(element, start = 0, end = element.textContent
   
     // Simulate moving the mouse over the selection
     await triggerEvent(element, 'mouseover');
-    await settled();
     await triggerEvent(element,'mouseenter');
-    await settled();
     return;
 }
 
