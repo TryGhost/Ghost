@@ -5,6 +5,7 @@ const tpl = require('@tryghost/tpl');
 const providers = require('./providers');
 const parseContext = require('./parse-context');
 const actionsMap = require('./actions-map-cache');
+const {setIsRoles} = require('../../models/role-utils');
 
 const messages = {
     noPermissionToAction: 'You do not have permission to perform this action',
@@ -66,8 +67,8 @@ class CanThisResult {
 
                         return true;
                     };
-
-                    if (loadedPermissions.user && _.some(loadedPermissions.user.roles, {name: 'Owner'})) {
+                    const {isOwner} = setIsRoles(loadedPermissions);
+                    if (isOwner) {
                         hasUserPermission = true;
                     } else if (!_.isEmpty(userPermissions)) {
                         hasUserPermission = _.some(userPermissions, checkPermission);
