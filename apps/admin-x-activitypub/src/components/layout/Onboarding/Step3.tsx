@@ -317,7 +317,7 @@ const Step3: React.FC = () => {
 
     const handleComplete = async () => {
         await setOnboarded(true);
-        navigate('/inbox');
+        navigate('/explore');
     };
 
     return (
