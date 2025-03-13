@@ -1,0 +1,56 @@
+VERSION 0
+
+TAGS "v0"
+
+INCLUDE "_parsed_hits.incl"
+
+NODE hits
+SQL >
+
+    SELECT
+        site_uuid,
+        timestamp,
+        action,
+        version,
+        session_id,
+        member_uuid,
+        member_status,
+        post_uuid,
+        post_type,
+        location,
+        domainWithoutWWW(referrer) as source,
+        pathname,
+        href,
+        case
+            when match(user_agent, 'wget|ahrefsbot|curl|urllib|bitdiscovery|\+https://|googlebot')
+            then 'bot'
+            when match(user_agent, 'android')
+            then 'mobile-android'
+            when match(user_agent, 'ipad|iphone|ipod')
+            then 'mobile-ios'
+            else 'desktop'
+        END as device,
+        case
+            when match(user_agent, 'windows')
+            then 'windows'
+            when match(user_agent, 'mac')
+            then 'macos'
+            when match(user_agent, 'linux')
+            then 'linux'
+            else 'Unknown'
+        END as os,
+        case
+            when match(user_agent, 'firefox')
+            then 'firefox'
+            when match(user_agent, 'chrome|crios')
+            then 'chrome'
+            when match(user_agent, 'opera')
+            then 'opera'
+            when match(user_agent, 'msie|trident')
+            then 'ie'
+            when match(user_agent, 'iphone|ipad|safari')
+            then 'safari'
+            else 'Unknown'
+        END as browser
+    FROM parsed_hits
+

@@ -1,6 +1,7 @@
+@import '@tryghost/shade/styles.css';
 @import '@tryghost/admin-x-design-system/styles.css';
 
-.admin-x-base.admin-x-activitypub {
+.admin-x-base.shade {
     animation-name: none;
 }
 

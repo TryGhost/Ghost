@@ -35,304 +35,6 @@ function Fetch(specs: Record<string, Spec>) {
 }
 
 describe('ActivityPubAPI', function () {
-    describe('getOutbox', function () {
-        test('It passes the token to the outbox collection endpoint', async function () {
-            const fakeFetch = Fetch({
-                'https://auth.api/': {
-                    response: JSONResponse({
-                        identities: [{
-                            token: 'fake-token'
-                        }]
-                    })
-                },
-                'https://activitypub.api/.ghost/activitypub/outbox/index?cursor=0': {
-                    async assert(_resource, init) {
-                        const headers = new Headers(init?.headers);
-                        expect(headers.get('Authorization')).toContain('fake-token');
-                    },
-                    response: JSONResponse({
-                        type: 'OrderedCollection',
-                        orderedItems: []
-                    })
-                }
-            });
-            const api = new ActivityPubAPI(
-                new URL('https://activitypub.api'),
-                new URL('https://auth.api'),
-                'index',
-                fakeFetch
-            );
-
-            await api.getOutbox();
-        });
-
-        test('It returns an array of activities in the outbox collection', async function () {
-            const fakeFetch = Fetch({
-                [`https://activitypub.api/.ghost/activitypub/outbox/index?cursor=0`]: {
-                    response: JSONResponse({
-                        type: 'OrderedCollection',
-                        orderedItems: [
-                            {id: 'https://example.com/activity/1'},
-                            {id: 'https://example.com/activity/2'}
-                        ],
-                        next: null
-                    })
-                }
-            });
-
-            const api = new ActivityPubAPI(
-                new URL('https://activitypub.api'),
-                new URL('https://auth.api'),
-                'index',
-                fakeFetch
-            );
-
-            const actual = await api.getOutbox();
-
-            expect(actual.data).toEqual([
-                {id: 'https://example.com/activity/1'},
-                {id: 'https://example.com/activity/2'}
-            ]);
-        });
-
-        test('It returns next if it is present in the response', async function () {
-            const fakeFetch = Fetch({
-                [`https://activitypub.api/.ghost/activitypub/outbox/index?cursor=0`]: {
-                    response: JSONResponse({
-                        type: 'OrderedCollection',
-                        orderedItems: [],
-                        next: 'https://activitypub.api/.ghost/activitypub/outbox/index?cursor=2'
-                    })
-                }
-            });
-
-            const api = new ActivityPubAPI(
-                new URL('https://activitypub.api'),
-                new URL('https://auth.api'),
-                'index',
-                fakeFetch
-            );
-
-            const actual = await api.getOutbox();
-
-            expect(actual.next).toEqual('2');
-        });
-
-        test('It returns a default return value when the response is null', async function () {
-            const fakeFetch = Fetch({
-                [`https://activitypub.api/.ghost/activitypub/outbox/index?cursor=0`]: {
-                    response: JSONResponse(null)
-                }
-            });
-
-            const api = new ActivityPubAPI(
-                new URL('https://activitypub.api'),
-                new URL('https://auth.api'),
-                'index',
-                fakeFetch
-            );
-
-            const actual = await api.getOutbox();
-            const expected = {
-                data: [],
-                next: null
-            };
-
-            expect(actual).toEqual(expected);
-        });
-
-        test('It returns a default return value if orderedItems is not present in the response', async function () {
-            const fakeFetch = Fetch({
-                [`https://activitypub.api/.ghost/activitypub/outbox/index?cursor=0`]: {
-                    response: JSONResponse({})
-                }
-            });
-
-            const api = new ActivityPubAPI(
-                new URL('https://activitypub.api'),
-                new URL('https://auth.api'),
-                'index',
-                fakeFetch
-            );
-
-            const actual = await api.getOutbox();
-            const expected = {
-                data: [],
-                next: null
-            };
-
-            expect(actual).toEqual(expected);
-        });
-
-        test('It returns an empty array if orderedItems in the response is not an array', async function () {
-            const fakeFetch = Fetch({
-                [`https://activitypub.api/.ghost/activitypub/outbox/index?cursor=0`]: {
-                    response: JSONResponse({})
-                }
-            });
-
-            const api = new ActivityPubAPI(
-                new URL('https://activitypub.api'),
-                new URL('https://auth.api'),
-                'index',
-                fakeFetch
-            );
-
-            const actual = await api.getOutbox();
-
-            expect(actual.data).toEqual([]);
-        });
-    });
-
-    describe('getLiked', function () {
-        test('It passes the token to the liked collection endpoint', async function () {
-            const fakeFetch = Fetch({
-                'https://auth.api/': {
-                    response: JSONResponse({
-                        identities: [{
-                            token: 'fake-token'
-                        }]
-                    })
-                },
-                'https://activitypub.api/.ghost/activitypub/liked/index?cursor=0': {
-                    async assert(_resource, init) {
-                        const headers = new Headers(init?.headers);
-                        expect(headers.get('Authorization')).toContain('fake-token');
-                    },
-                    response: JSONResponse({
-                        type: 'OrderedCollection',
-                        orderedItems: []
-                    })
-                }
-            });
-            const api = new ActivityPubAPI(
-                new URL('https://activitypub.api'),
-                new URL('https://auth.api'),
-                'index',
-                fakeFetch
-            );
-
-            await api.getLiked();
-        });
-
-        test('It returns an array of liked activities in the liked collection', async function () {
-            const fakeFetch = Fetch({
-                [`https://activitypub.api/.ghost/activitypub/liked/index?cursor=0`]: {
-                    response: JSONResponse({
-                        type: 'OrderedCollection',
-                        orderedItems: [
-                            {id: 'https://example.com/activity/1'},
-                            {id: 'https://example.com/activity/2'}
-                        ],
-                        next: null
-                    })
-                }
-            });
-
-            const api = new ActivityPubAPI(
-                new URL('https://activitypub.api'),
-                new URL('https://auth.api'),
-                'index',
-                fakeFetch
-            );
-
-            const actual = await api.getLiked();
-
-            expect(actual.data).toEqual([
-                {id: 'https://example.com/activity/1'},
-                {id: 'https://example.com/activity/2'}
-            ]);
-        });
-
-        test('It returns next if it is present in the response', async function () {
-            const fakeFetch = Fetch({
-                [`https://activitypub.api/.ghost/activitypub/liked/index?cursor=0`]: {
-                    response: JSONResponse({
-                        type: 'OrderedCollection',
-                        orderedItems: [],
-                        next: 'https://activitypub.api/.ghost/activitypub/following/index?cursor=2'
-                    })
-                }
-            });
-
-            const api = new ActivityPubAPI(
-                new URL('https://activitypub.api'),
-                new URL('https://auth.api'),
-                'index',
-                fakeFetch
-            );
-
-            const actual = await api.getLiked();
-
-            expect(actual.next).toEqual('2');
-        });
-
-        test('It returns a default return value when the response is null', async function () {
-            const fakeFetch = Fetch({
-                [`https://activitypub.api/.ghost/activitypub/liked/index?cursor=0`]: {
-                    response: JSONResponse(null)
-                }
-            });
-
-            const api = new ActivityPubAPI(
-                new URL('https://activitypub.api'),
-                new URL('https://auth.api'),
-                'index',
-                fakeFetch
-            );
-
-            const actual = await api.getLiked();
-            const expected = {
-                data: [],
-                next: null
-            };
-
-            expect(actual).toEqual(expected);
-        });
-
-        test('It returns a default return value if orderedItems is not present in the response', async function () {
-            const fakeFetch = Fetch({
-                [`https://activitypub.api/.ghost/activitypub/liked/index?cursor=0`]: {
-                    response: JSONResponse({})
-                }
-            });
-
-            const api = new ActivityPubAPI(
-                new URL('https://activitypub.api'),
-                new URL('https://auth.api'),
-                'index',
-                fakeFetch
-            );
-
-            const actual = await api.getLiked();
-            const expected = {
-                data: [],
-                next: null
-            };
-
-            expect(actual).toEqual(expected);
-        });
-
-        test('It returns an empty array if orderedItems in the response is not an array', async function () {
-            const fakeFetch = Fetch({
-                [`https://activitypub.api/.ghost/activitypub/liked/index?cursor=0`]: {
-                    response: JSONResponse({})
-                }
-            });
-
-            const api = new ActivityPubAPI(
-                new URL('https://activitypub.api'),
-                new URL('https://auth.api'),
-                'index',
-                fakeFetch
-            );
-
-            const actual = await api.getLiked();
-
-            expect(actual.data).toEqual([]);
-        });
-    });
-
     describe('follow', function () {
         test('It passes the token to the follow endpoint', async function () {
             const fakeFetch = Fetch({
@@ -1252,6 +954,824 @@ describe('ActivityPubAPI', function () {
             };
 
             expect(actual).toEqual(expected);
+        });
+    });
+
+    describe('getFeed', function () {
+        test('It returns an array of posts', async function () {
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                [`https://activitypub.api/.ghost/activitypub/feed`]: {
+                    response: JSONResponse({
+                        posts: [
+                            {
+                                id: 'https://example.com/posts/abc123'
+                            },
+                            {
+                                id: 'https://example.com/posts/def456'
+                            }
+                        ],
+                        next: null
+                    })
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const actual = await api.getFeed();
+
+            expect(actual.posts).toEqual([
+                {
+                    id: 'https://example.com/posts/abc123'
+                },
+                {
+                    id: 'https://example.com/posts/def456'
+                }
+            ]);
+        });
+
+        test('It returns next if it is present in the response', async function () {
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                [`https://activitypub.api/.ghost/activitypub/feed`]: {
+                    response: JSONResponse({
+                        posts: [],
+                        next: 'abc123'
+                    })
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const actual = await api.getFeed();
+            expect(actual.next).toEqual('abc123');
+        });
+
+        test('It includes next in the query when provided', async function () {
+            const next = 'abc123';
+
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                [`https://activitypub.api/.ghost/activitypub/feed?next=${next}`]: {
+                    response: JSONResponse({
+                        posts: [
+                            {
+                                id: 'https://example.com/posts/def456'
+                            }
+                        ],
+                        next: null
+                    })
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const actual = await api.getFeed(next);
+            const expected = {
+                posts: [
+                    {
+                        id: 'https://example.com/posts/def456'
+                    }
+                ],
+                next: null
+            };
+
+            expect(actual).toEqual(expected);
+        });
+
+        test('It returns a default return value when the response is null', async function () {
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                [`https://activitypub.api/.ghost/activitypub/feed`]: {
+                    response: JSONResponse(null)
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const actual = await api.getFeed();
+            const expected = {
+                posts: [],
+                next: null
+            };
+
+            expect(actual).toEqual(expected);
+        });
+
+        test('It returns a default return value if posts is not present in the response', async function () {
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                [`https://activitypub.api/.ghost/activitypub/feed`]: {
+                    response: JSONResponse({})
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const actual = await api.getFeed();
+            const expected = {
+                posts: [],
+                next: null
+            };
+
+            expect(actual).toEqual(expected);
+        });
+
+        test('It returns an empty array of posts if posts in the response is not an array', async function () {
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                [`https://activitypub.api/.ghost/activitypub/feed`]: {
+                    response: JSONResponse({
+                        posts: []
+                    })
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const actual = await api.getFeed();
+            expect(actual.posts).toEqual([]);
+        });
+    });
+
+    describe('getInbox', function () {
+        test('It returns an array of posts', async function () {
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                [`https://activitypub.api/.ghost/activitypub/inbox`]: {
+                    response: JSONResponse({
+                        posts: [
+                            {
+                                id: 'https://example.com/posts/abc123'
+                            },
+                            {
+                                id: 'https://example.com/posts/def456'
+                            }
+                        ],
+                        next: null
+                    })
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const actual = await api.getInbox();
+
+            expect(actual.posts).toEqual([
+                {
+                    id: 'https://example.com/posts/abc123'
+                },
+                {
+                    id: 'https://example.com/posts/def456'
+                }
+            ]);
+        });
+
+        test('It returns next if it is present in the response', async function () {
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                [`https://activitypub.api/.ghost/activitypub/inbox`]: {
+                    response: JSONResponse({
+                        posts: [],
+                        next: 'abc123'
+                    })
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const actual = await api.getInbox();
+
+            expect(actual.next).toEqual('abc123');
+        });
+
+        test('It includes next in the query when provided', async function () {
+            const next = 'abc123';
+
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                [`https://activitypub.api/.ghost/activitypub/inbox?next=${next}`]: {
+                    response: JSONResponse({
+                        posts: [
+                            {
+                                id: 'https://example.com/posts/def456'
+                            }
+                        ],
+                        next: null
+                    })
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const actual = await api.getInbox(next);
+            const expected = {
+                posts: [
+                    {
+                        id: 'https://example.com/posts/def456'
+                    }
+                ],
+                next: null
+            };
+
+            expect(actual).toEqual(expected);
+        });
+
+        test('It returns a default return value when the response is null', async function () {
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                [`https://activitypub.api/.ghost/activitypub/inbox`]: {
+                    response: JSONResponse(null)
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const actual = await api.getInbox();
+            const expected = {
+                posts: [],
+                next: null
+            };
+
+            expect(actual).toEqual(expected);
+        });
+
+        test('It returns a default return value if posts is not present in the response', async function () {
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                [`https://activitypub.api/.ghost/activitypub/inbox`]: {
+                    response: JSONResponse({})
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const actual = await api.getInbox();
+            const expected = {
+                posts: [],
+                next: null
+            };
+
+            expect(actual).toEqual(expected);
+        });
+
+        test('It returns an empty array of posts if posts in the response is not an array', async function () {
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                [`https://activitypub.api/.ghost/activitypub/inbox`]: {
+                    response: JSONResponse({
+                        posts: []
+                    })
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const actual = await api.getInbox();
+
+            expect(actual.posts).toEqual([]);
+        });
+    });
+
+    describe('getPostsByAccount', function () {
+        test('It returns an array of posts', async function () {
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                [`https://activitypub.api/.ghost/activitypub/posts`]: {
+                    response: JSONResponse({
+                        posts: [
+                            {
+                                id: 'https://example.com/posts/abc123'
+                            },
+                            {
+                                id: 'https://example.com/posts/def456'
+                            }
+                        ],
+                        next: null
+                    })
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const actual = await api.getPostsByAccount();
+
+            expect(actual.posts).toEqual([
+                {
+                    id: 'https://example.com/posts/abc123'
+                },
+                {
+                    id: 'https://example.com/posts/def456'
+                }
+            ]);
+        });
+
+        test('It returns next if it is present in the response', async function () {
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                [`https://activitypub.api/.ghost/activitypub/posts`]: {
+                    response: JSONResponse({
+                        posts: [],
+                        next: 'abc123'
+                    })
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const actual = await api.getPostsByAccount();
+
+            expect(actual.next).toEqual('abc123');
+        });
+
+        test('It includes next in the query when provided', async function () {
+            const next = 'abc123';
+
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                [`https://activitypub.api/.ghost/activitypub/posts?next=${next}`]: {
+                    response: JSONResponse({
+                        posts: [
+                            {
+                                id: 'https://example.com/posts/def456'
+                            }
+                        ],
+                        next: null
+                    })
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const actual = await api.getPostsByAccount(next);
+            const expected = {
+                posts: [
+                    {
+                        id: 'https://example.com/posts/def456'
+                    }
+                ],
+                next: null
+            };
+
+            expect(actual).toEqual(expected);
+        });
+
+        test('It returns a default return value when the response is null', async function () {
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                [`https://activitypub.api/.ghost/activitypub/posts`]: {
+                    response: JSONResponse(null)
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const actual = await api.getPostsByAccount();
+            const expected = {
+                posts: [],
+                next: null
+            };
+
+            expect(actual).toEqual(expected);
+        });
+
+        test('It returns a default return value if posts is not present in the response', async function () {
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                [`https://activitypub.api/.ghost/activitypub/posts`]: {
+                    response: JSONResponse({})
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const actual = await api.getPostsByAccount();
+            const expected = {
+                posts: [],
+                next: null
+            };
+
+            expect(actual).toEqual(expected);
+        });
+
+        test('It returns an empty array of posts if posts in the response is not an array', async function () {
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                [`https://activitypub.api/.ghost/activitypub/posts`]: {
+                    response: JSONResponse({
+                        posts: []
+                    })
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const actual = await api.getPostsByAccount();
+
+            expect(actual.posts).toEqual([]);
+        });
+    });
+
+    describe('getPostsLikedByAccount', function () {
+        test('It returns an array of posts', async function () {
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                [`https://activitypub.api/.ghost/activitypub/posts/liked`]: {
+                    response: JSONResponse({
+                        posts: [
+                            {
+                                id: 'https://example.com/posts/abc123'
+                            },
+                            {
+                                id: 'https://example.com/posts/def456'
+                            }
+                        ],
+                        next: null
+                    })
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const actual = await api.getPostsLikedByAccount();
+
+            expect(actual.posts).toEqual([
+                {
+                    id: 'https://example.com/posts/abc123'
+                },
+                {
+                    id: 'https://example.com/posts/def456'
+                }
+            ]);
+        });
+
+        test('It returns next if it is present in the response', async function () {
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                [`https://activitypub.api/.ghost/activitypub/posts/liked`]: {
+                    response: JSONResponse({
+                        posts: [],
+                        next: 'abc123'
+                    })
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const actual = await api.getPostsLikedByAccount();
+
+            expect(actual.next).toEqual('abc123');
+        });
+
+        test('It includes next in the query when provided', async function () {
+            const next = 'abc123';
+
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                [`https://activitypub.api/.ghost/activitypub/posts/liked?next=${next}`]: {
+                    response: JSONResponse({
+                        posts: [
+                            {
+                                id: 'https://example.com/posts/def456'
+                            }
+                        ],
+                        next: null
+                    })
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const actual = await api.getPostsLikedByAccount(next);
+            const expected = {
+                posts: [
+                    {
+                        id: 'https://example.com/posts/def456'
+                    }
+                ],
+                next: null
+            };
+
+            expect(actual).toEqual(expected);
+        });
+
+        test('It returns a default return value when the response is null', async function () {
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                [`https://activitypub.api/.ghost/activitypub/posts/liked`]: {
+                    response: JSONResponse(null)
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const actual = await api.getPostsLikedByAccount();
+            const expected = {
+                posts: [],
+                next: null
+            };
+
+            expect(actual).toEqual(expected);
+        });
+
+        test('It returns a default return value if posts is not present in the response', async function () {
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                [`https://activitypub.api/.ghost/activitypub/posts/liked`]: {
+                    response: JSONResponse({})
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const actual = await api.getPostsLikedByAccount();
+            const expected = {
+                posts: [],
+                next: null
+            };
+
+            expect(actual).toEqual(expected);
+        });
+
+        test('It returns an empty array of posts if posts in the response is not an array', async function () {
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                [`https://activitypub.api/.ghost/activitypub/posts/liked`]: {
+                    response: JSONResponse({
+                        posts: []
+                    })
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const actual = await api.getPostsLikedByAccount();
+
+            expect(actual.posts).toEqual([]);
         });
     });
 });

@@ -261,10 +261,10 @@ export default class LexicalEditorController extends Controller {
         });
     }
 
-    @computed('session.user.{isAdmin,isEditor}')
+    @computed('session.user.{isAdmin,isEitherEditor}')
     get canManageSnippets() {
         let {user} = this.session;
-        if (user.get('isAdmin') || user.get('isEditor')) {
+        if (user.get('isAdmin') || user.get('isEitherEditor')) {
             return true;
         }
         return false;
@@ -949,6 +949,17 @@ export default class LexicalEditorController extends Controller {
 
         // Only set an "untitled" slug once per post
         if (newTitle === DEFAULT_TITLE && currentSlug) {
+            return;
+        }
+
+        // Prevent slug regeneration when only whitespace changes are made to the title.
+        // This check compares the trimmed versions of the current and new titles to ensure
+        // that differences in leading or trailing spaces do not trigger unnecessary slug updates.
+        // Without this, adding or removing spaces would incorrectly generate a new slug,
+        // even though the meaningful content of the title hasn't changed.
+        const trimmedCurrentTitle = currentTitle?.trim();
+        const trimmedNewTitle = newTitle?.trim();
+        if (trimmedCurrentTitle === trimmedNewTitle) {
             return;
         }
 

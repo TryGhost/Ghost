@@ -6,7 +6,8 @@ import {getFrameStyles} from './Frame.styles';
 import Pages, {getActivePage} from '../pages';
 import PopupNotification from './common/PopupNotification';
 import PoweredBy from './common/PoweredBy';
-import {getSiteProducts, hasAvailablePrices, isInviteOnly, isCookiesDisabled, hasFreeProductPrice} from '../utils/helpers';
+import {getSiteProducts, hasAvailablePrices, isInviteOnly, isCookiesDisabled, hasFreeProductPrice, hasCaptchaEnabled, getCaptchaSitekey} from '../utils/helpers';
+import HCaptcha from '@hcaptcha/react-hcaptcha';
 
 const StylesWrapper = () => {
     return {
@@ -131,6 +132,25 @@ class PopupContent extends React.Component {
         );
     }
 
+    renderHCaptcha() {
+        const {site, captchaRef} = this.context;
+
+        if (hasCaptchaEnabled({site})) {
+            return (
+                <HCaptcha
+                    size="invisible"
+                    sitekey={getCaptchaSitekey({site})}
+                    onVerify={token => this.context.onAction('verifyCaptcha', {token})}
+                    onError={error => this.context.onAction('captchaError', {error})}
+                    ref={captchaRef}
+                    id="hcaptcha-portal"
+                />
+            );
+        } else {
+            return null;
+        }
+    }
+
     sendPortalPreviewReadyEvent() {
         if (window.self !== window.parent) {
             window.parent.postMessage({
@@ -216,6 +236,7 @@ class PopupContent extends React.Component {
             <>
                 <div className={'gh-portal-popup-wrapper ' + pageClass} onClick={e => this.handlePopupClose(e)}>
                     {this.renderPopupNotification()}
+                    {this.renderHCaptcha()}
                     <div className={containerClassName} style={pageStyle} ref={node => (this.node = node)} tabIndex={-1}>
                         <CookieDisabledBanner message={cookieBannerText} />
                         {this.renderActivePage()}

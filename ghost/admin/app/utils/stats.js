@@ -131,11 +131,11 @@ export function getDateRange(chartRange) {
 }
 
 export function getStatsParams(config, props, additionalParams = {}) {
-    const {chartRange, audience, device, browser, location, source, pathname} = props;
+    const {chartRange, audience, device, browser, location, source, pathname, os} = props;
     const {startDate, endDate} = getDateRange(chartRange);
 
     const params = {
-        site_uuid: config.stats.id,
+        site_uuid: props.mockData ? 'mock_site_uuid' : config.stats.id,
         date_from: startDate.format('YYYY-MM-DD'),
         date_to: endDate.format('YYYY-MM-DD'),
         ...additionalParams
@@ -163,6 +163,10 @@ export function getStatsParams(config, props, additionalParams = {}) {
 
     if (pathname) {
         params.pathname = pathname;
+    }
+
+    if (os) {
+        params.os = os;
     }
 
     return params;

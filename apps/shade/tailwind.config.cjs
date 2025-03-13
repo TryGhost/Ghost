@@ -6,7 +6,7 @@ module.exports = {
     corePlugins: {
         preflight: false // we're providing our own scoped CSS reset
     },
-    darkMode: ['class', 'class'],
+    darkMode: 'selector',
     theme: {
         screens: {
             sm: '480px',
@@ -23,6 +23,29 @@ module.exports = {
             accent: 'var(--accent-color, #ff0095)',
             white: '#FFF',
             black: '#15171A',
+
+            // `grey` is part of the config because of legacy reasons. The old design
+            // system uses it but the official grey color name in Shade is "gray" — use that!
+            grey: {
+                50: '#FAFAFB',
+                75: '#F9FAFB',
+                100: '#F4F5F6',
+                150: '#F1F3F4',
+                200: '#EBEEF0',
+                250: '#E5E9ED',
+                300: '#DDE1E5',
+                400: '#CED4D9',
+                500: '#AEB7C1',
+                600: '#95A1AD',
+                700: '#7C8B9A',
+                800: '#626D79',
+                900: '#394047',
+                925: '#2E3338',
+                950: '#222427',
+                975: '#191B1E',
+                DEFAULT: '#ABB4BE'
+            },
+
             gray: {
                 50: '#FAFAFB',
                 75: '#F9FAFB',
@@ -60,7 +83,7 @@ module.exports = {
                 100: '#EDE0FF',
                 400: '#A366FF',
                 500: '#8E42FF',
-                600: '7B1FFF',
+                600: '#7B1FFF',
                 DEFAULT: '#8E42FF'
             },
             pink: {

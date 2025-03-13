@@ -1,4 +1,5 @@
-require('./utils');
+require('should');
+
 const packageJSON = require('../');
 
 describe('package-json filter', function () {
