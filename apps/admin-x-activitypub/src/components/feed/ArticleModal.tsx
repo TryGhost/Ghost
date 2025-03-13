@@ -7,7 +7,7 @@ import getUsername from '../../utils/get-username';
 import {OptionProps, SingleValueProps, components} from 'react-select';
 import {Popover, PopoverContent, PopoverTrigger, Skeleton} from '@tryghost/shade';
 
-import {Activity, ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
+import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, Icon, LoadingIndicator, Modal, Select, SelectOption} from '@tryghost/admin-x-design-system';
 import {renderTimestamp} from '../../utils/render-timestamp';
 import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
@@ -20,6 +20,7 @@ import APReplyBox from '../global/APReplyBox';
 import DeletedFeedItem from './DeletedFeedItem';
 import TableOfContents, {TOCItem} from './TableOfContents';
 import getReadingTime from '../../utils/get-reading-time';
+import {isPendingActivity} from '../../utils/pending-activity';
 import {useDebounce} from 'use-debounce';
 
 interface ArticleModalProps {
@@ -29,7 +30,6 @@ interface ArticleModalProps {
     focusReply: boolean;
     focusReplies: boolean;
     width?: 'narrow' | 'wide';
-    updateActivity: (id: string, updated: Partial<Activity>) => void;
     history: {
         activityId: string;
         object: ObjectProperties;
@@ -373,15 +373,13 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
     focusReply,
     focusReplies,
     width = 'narrow',
-    updateActivity = () => {},
     history = []
 }) => {
     const MODAL_SIZE_SM = 640;
     const MODAL_SIZE_LG = 1420;
     const [isFocused, setIsFocused] = useFocusedState(focusReply);
 
-    const {threadQuery, addToThread} = useThreadForUser('index', activityId);
-    const {data: thread, isLoading: isLoadingThread} = threadQuery;
+    const {data: thread, isLoading: isLoadingThread} = useThreadForUser('index', activityId);
     const threadPostIdx = (thread?.posts ?? []).findIndex(item => item.object.id === activityId);
     const threadChildren = (thread?.posts ?? []).slice(threadPostIdx + 1);
     const threadParents = (thread?.posts ?? []).slice(0, threadPostIdx);
@@ -408,7 +406,6 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
             activityId: prevProps.activityId,
             object: prevProps.object,
             actor: prevProps.actor,
-            updateActivity,
             width,
             history
         });
@@ -425,7 +422,6 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
             activityId: nextObject.id,
             object: nextObject,
             actor: nextActor,
-            updateActivity,
             width,
             focusReply: nextFocusReply,
             history: [
@@ -444,24 +440,8 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
         // Don't need to know about setting timeouts or anything like that
     };
 
-    function handleNewReply(activity: Activity) {
-        // Add the new reply to the thread
-        activity.object.authored = true;
-        activity.id = activity.object.id;
-        addToThread(activity);
-
-        // Update the replyCount on the activity outside of the context
-        // of this component
-        updateActivity(activityId, {
-            object: {
-                ...object,
-                replyCount: (object.replyCount ?? 0) + 1
-            }
-        } as Partial<Activity>);
-
-        // Update the replyCount on the current activity loaded in the modal
-        // This is used for when we navigate via the history
-        setReplyCount((current: number) => current + 1);
+    function incrementReplyCount(step: number = 1) {
+        setReplyCount((current: number) => current + step);
     }
 
     function decrementReplyCount(step: number = 1) {
@@ -953,7 +933,8 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                 <APReplyBox
                                     focused={isFocused}
                                     object={object}
-                                    onNewReply={handleNewReply}
+                                    onReply={incrementReplyCount}
+                                    onReplyError={decrementReplyCount}
                                 />
                             </div>
                             <FeedItemDivider />
@@ -970,6 +951,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                                 actor={item.actor}
                                                 allowDelete={item.object.authored}
                                                 commentCount={item.object.replyCount ?? 0}
+                                                isPending={isPendingActivity(item.id)}
                                                 last={true}
                                                 layout='reply'
                                                 object={item.object}

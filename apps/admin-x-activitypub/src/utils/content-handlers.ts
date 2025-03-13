@@ -4,8 +4,7 @@ import {type Activity} from '@tryghost/admin-x-framework/api/activitypub';
 
 export const handleViewContent = (
     activity: Activity,
-    focusReply = false,
-    updateActivity: (id: string, updated: Partial<Activity>) => void = () => {}
+    focusReply = false
 ) => {
     const authorActor = getContentAuthor(activity);
     NiceModal.show(ArticleModal, {
@@ -13,8 +12,7 @@ export const handleViewContent = (
         object: activity.object,
         actor: authorActor,
         focusReply,
-        width: activity.object.type === 'Article' ? 'wide' : 'narrow',
-        updateActivity
+        width: activity.object.type === 'Article' ? 'wide' : 'narrow'
     });
 };
 
