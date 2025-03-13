@@ -129,7 +129,6 @@ const PostsTab: React.FC = () => {
 
     const posts = data?.pages.flatMap(page => page.posts) ?? Array.from({length: 5}, (_, index) => ({id: `placeholder-${index}`, object: {}}));
 
-
     const observerRef = useRef<IntersectionObserver | null>(null);
     const loadMoreRef = useRef<HTMLDivElement | null>(null);
     const endLoadMoreRef = useRef<HTMLDivElement | null>(null);
