@@ -22,7 +22,6 @@ import FollowButton from '@components/global/FollowButton';
 import Layout from '@components/layout';
 import Separator from '@components/global/Separator';
 import ViewProfileModal from '@components/modals/ViewProfileModal';
-import {isPendingActivity} from '@utils/pending-activity';
 
 interface UseInfiniteScrollTabProps<TData> {
     useDataHook: (key: string) => ActivityPubCollectionQueryResult<TData> | AccountFollowsQueryResult;
@@ -125,7 +124,7 @@ const useInfiniteScrollTab = <TData,>({useDataHook, emptyStateLabel, emptyStateI
 };
 
 const PostsTab: React.FC = () => {
-    const {postsByAccountQuery, updatePostsByAccount} = usePostsByAccount({enabled: true});
+    const {postsByAccountQuery} = usePostsByAccount({enabled: true});
     const {data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading} = postsByAccountQuery;
 
     const posts = isLoading ? 
@@ -187,8 +186,8 @@ const PostsTab: React.FC = () => {
                             object={activity.object}
                             repostCount={activity.object.repostCount}
                             type={activity.type}
-                            onClick={() => handleViewContent(activity, false, updatePostsByAccount)}
-                            onCommentClick={() => handleViewContent(activity, true, updatePostsByAccount)}
+                            onClick={() => handleViewContent(activity, false)}
+                            onCommentClick={() => handleViewContent(activity, true)}
                         />
                         {index < posts.length - 1 && <Separator />}
                         {index === loadMoreIndex && (
@@ -208,7 +207,7 @@ const PostsTab: React.FC = () => {
 };
 
 const LikesTab: React.FC = () => {
-    const {postsLikedByAccountQuery, updatePostsLikedByAccount} = usePostsLikedByAccount({enabled: true});
+    const {postsLikedByAccountQuery} = usePostsLikedByAccount({enabled: true});
     const {data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading} = postsLikedByAccountQuery;
 
     const posts = data?.pages.flatMap(page => page.posts) ?? Array.from({length: 5}, (_, index) => ({id: `placeholder-${index}`, object: {}}));
@@ -267,8 +266,8 @@ const LikesTab: React.FC = () => {
                             object={activity.object}
                             repostCount={activity.object.repostCount}
                             type={activity.type}
-                            onClick={() => handleViewContent(activity, false, updatePostsLikedByAccount)}
-                            onCommentClick={() => handleViewContent(activity, true, updatePostsLikedByAccount)}
+                            onClick={() => handleViewContent(activity, false)}
+                            onCommentClick={() => handleViewContent(activity, true)}
                         />
                         {index < posts.length - 1 && <Separator />}
                         {index === loadMoreIndex && (
