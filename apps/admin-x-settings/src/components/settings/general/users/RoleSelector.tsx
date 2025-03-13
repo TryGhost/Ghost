@@ -56,21 +56,6 @@ const RoleSelector: React.FC<{ user: User; setUserData: (user: User) => void; }>
         });
     }
 
-    // if the editor beta is enabled, replace the editor role with super editor
-    if (editorBeta) {
-        optionsArray = optionsArray.map((option) => {
-            if (option.value === 'editor') {
-                return {
-                    ...option,
-                    label: 'Editor (beta mode)',
-                    value: 'super editor',
-                    hint: 'Can invite and manage other Authors and Contributors, as well as edit and publish any posts on the site. Can manage members and moderate comments.'
-                };
-            }
-            return option;
-        });
-    }
-
     return (
         <Radio
             id='role'
