@@ -184,6 +184,7 @@ interface FeedItemProps {
     onClick?: () => void;
     onCommentClick: () => void;
     onDelete?: () => void;
+    showStats?: boolean;
 }
 
 const noop = () => {};
@@ -203,7 +204,8 @@ const FeedItem: React.FC<FeedItemProps> = ({
     isPending = false,
     onClick: onClickHandler = noop,
     onCommentClick,
-    onDelete = noop
+    onDelete = noop,
+    showStats = true
 }) => {
     const timestamp =
         new Date(object?.published ?? new Date()).toLocaleDateString('default', {year: 'numeric', month: 'short', day: '2-digit'}) + ', ' + new Date(object?.published ?? new Date()).toLocaleTimeString('default', {hour: '2-digit', minute: '2-digit'});
@@ -335,7 +337,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                     </div>
                                     <div className='space-between relative z-[30] ml-[-7px] mt-1 flex'>
                                         {!isLoading ?
-                                            <FeedItemStats
+                                            showStats && <FeedItemStats
                                                 commentCount={commentCount}
                                                 disabled={isPending}
                                                 layout={layout}
@@ -384,7 +386,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                         <div dangerouslySetInnerHTML={({__html: object.content ?? ''})} className='ap-note-content-large text-pretty text-[1.6rem] tracking-[-0.011em] text-gray-900 dark:text-gray-600 [&_p+p]:mt-3'></div>
                                         {renderFeedAttachment(object)}
                                         <div className='space-between ml-[-7px] mt-3 flex'>
-                                            <FeedItemStats
+                                            {showStats && <FeedItemStats
                                                 commentCount={commentCount}
                                                 layout={layout}
                                                 likeCount={1}
@@ -392,7 +394,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                                 repostCount={repostCount}
                                                 onCommentClick={onCommentClick}
                                                 onLikeClick={onLikeClick}
-                                            />
+                                            />}
                                         </div>
                                     </div>
                                 </div>
@@ -449,7 +451,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                             size='md'
                                         />}
                                         <div className='space-between ml-[-7px] mt-2 flex'>
-                                            <FeedItemStats
+                                            {showStats && <FeedItemStats
                                                 commentCount={commentCount}
                                                 disabled={isPending}
                                                 layout={layout}
@@ -458,7 +460,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                                 repostCount={repostCount}
                                                 onCommentClick={onCommentClick}
                                                 onLikeClick={onLikeClick}
-                                            />
+                                            />}
                                         </div>
                                     </div>
                                 </div>
@@ -515,7 +517,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                     </span>
                                 </div>
                                 <div className='invisible absolute right-3 top-8 z-[49] flex -translate-y-1/2 rounded-lg bg-white p-1 shadow-md group-hover/article:visible dark:bg-black'>
-                                    <FeedItemStats
+                                    {showStats && <FeedItemStats
                                         commentCount={commentCount}
                                         layout={layout}
                                         likeCount={1}
@@ -523,7 +525,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                         repostCount={repostCount}
                                         onCommentClick={onCommentClick}
                                         onLikeClick={onLikeClick}
-                                    />
+                                    />}
                                     <FeedItemMenu
                                         allowDelete={allowDelete}
                                         layout='inbox'
