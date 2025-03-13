@@ -78,6 +78,7 @@ describe('Acceptance: Editor', function () {
 
         expect(currentURL(), 'currentURL').to.equal('/editor/post/1');
     });
+
     it('displays 404 when post does not exist', async function () {
         let role = this.server.create('role', {name: 'Editor'});
         this.server.create('user', {roles: [role], slug: 'test-user'});

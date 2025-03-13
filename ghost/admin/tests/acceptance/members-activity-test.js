@@ -17,7 +17,8 @@ describe('Acceptance: Members activity', function () {
         expect(currentURL()).to.equal('/signin');
     });
 
-    it('redirects non-admins / not-super editor', async function () {
+    it('redirects roles w/o manage members permission', async function () {
+
         await invalidateSession();
 
         const role = this.server.create('role', {name: 'Editor'});
