@@ -360,6 +360,7 @@ export function MediaUploadSetting({className, label, hideLabel, onFileChange, i
                 dragHandler={{isDraggedOver, setRef: placeholderRef}}
                 errors={errors}
                 icon={icon}
+                imgClassName={clsx(stacked && 'w-full')}
                 isLoading={isLoading}
                 isPinturaEnabled={isPinturaEnabled}
                 mimeTypes={mimeTypes}

@@ -364,6 +364,27 @@ test.describe('Call To Action Card', async () => {
         await expect(imgLocator).not.toBeVisible();
     });
 
+    test('has a progress bar while uploading', async function () {
+        const filePath = path.relative(process.cwd(), __dirname + `/../fixtures/large-image.jpeg`);
+    
+        await focusEditor(page);
+        await insertCard(page, {cardName: 'call-to-action'});
+        const fileChooserPromise = page.waitForEvent('filechooser');
+        await page.click('[data-testid="media-upload-placeholder"]');
+        const fileChooser = await fileChooserPromise;
+        await fileChooser.setFiles([filePath]);
+        const progressBar = page.locator('[data-testid="progress-bar"]');
+        await expect(progressBar).toBeVisible();
+
+        const imgLocator = page.locator('[data-kg-card="call-to-action"] img[src^="blob:"]');
+        const imgElement = await imgLocator.first();
+        await expect(imgElement).toHaveAttribute('src', /blob:/);
+
+        // check for progress bar to disappear
+
+        await expect(progressBar).not.toBeVisible();
+    });
+
     test('can drag and drop image over upload button', async function () {
         const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.png');
         await focusEditor(page);

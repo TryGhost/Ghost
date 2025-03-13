@@ -106,9 +106,12 @@ export function CallToActionCard({
     updateLayout = () => {},
     updateShowButton = () => {},
     toggleVisibility = () => {},
-    imageDragHandler = {}
+    imageDragHandler = {},
+    imageUploader = () => {}
 }) {
     const [buttonColorPickerExpanded, setButtonColorPickerExpanded] = useState(false);
+
+    const {isLoading, progress} = imageUploader || {};
 
     const tabs = [
         {id: 'design', label: 'Design'},
@@ -168,10 +171,11 @@ export function CallToActionCard({
                 desc='Upload'
                 icon='file'
                 isDraggedOver={imageDragHandler.isDraggedOver}
-                isLoading={imageDragHandler.isLoading}
+                isLoading={isLoading}
                 label='Image'
                 mimeTypes={['image/*']}
                 placeholderRef={imageDragHandler.setRef}
+                progress={progress}
                 setFileInputRef={setFileInputRef}
                 src={imageSrc}
                 type='button'
@@ -376,5 +380,6 @@ CallToActionCard.propTypes = {
     visibilityOptions: PropTypes.array,
     toggleVisibility: PropTypes.func,
     imageUploadHandler: PropTypes.func,
-    imageDragHandler: PropTypes.object
+    imageDragHandler: PropTypes.object,
+    imageUploader: PropTypes.object
 };

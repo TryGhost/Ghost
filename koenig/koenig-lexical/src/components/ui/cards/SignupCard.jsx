@@ -225,6 +225,7 @@ export function SignupCard({alignment,
                             </>}
                             alt='Background image'
                             backgroundSize={backgroundSize}
+                            borderStyle='squared'
                             className={clsx(
                                 'sm:w-1/2',
                                 (correctedBackgroundSize === 'contain') && 'sm:my-10 md:my-14',

@@ -76,11 +76,11 @@ export function MediaUploader({
     }
 
     return (
-        <div className={clsx('group/image relative flex items-center justify-center', borderStyle === 'dashed' && 'rounded', className)} data-testid="media-upload-filled">
+        <div className={clsx('group/image relative flex items-center justify-center', borderStyle === 'rounded' && 'rounded', className)} data-testid="media-upload-filled">
             {src && (
                 <>
-                    <img alt={alt} className={clsx('mx-auto h-full w-auto rounded-lg', backgroundSize === 'cover' ? 'object-cover' : 'object-contain', imgClassName)} src={src} />
-                    <div className={clsx('absolute inset-0 rounded-lg bg-gradient-to-t from-black/0 via-black/5 to-black/30 opacity-0 transition-all group-hover/image:opacity-100', borderStyle === 'dashed' && 'rounded-lg')}></div>
+                    <img alt={alt} className={clsx('mx-auto h-full w-auto', borderStyle === 'rounded' && 'rounded-lg', backgroundSize === 'cover' ? 'object-cover' : 'object-contain', imgClassName)} src={src} />
+                    <div className={clsx('absolute inset-0 bg-gradient-to-t from-black/0 via-black/5 to-black/30 opacity-0 transition-all group-hover/image:opacity-100', borderStyle === 'rounded' && 'rounded-lg')}></div>
                 </>
             )}
 

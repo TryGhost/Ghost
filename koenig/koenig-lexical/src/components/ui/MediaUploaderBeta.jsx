@@ -78,11 +78,16 @@ export function MediaUploaderBeta({
     }
 
     return (
-        <div className={clsx('group/image relative flex items-center justify-center', borderStyle === 'rounded' && 'rounded', className)} data-testid="media-upload-filled">
+        <div className={clsx(
+            'group/image relative flex items-center justify-center', 
+            isLoading ? 'min-w-[6.8rem]' : 'min-w-[5.2rem]',
+            borderStyle === 'rounded' && 'rounded', 
+            className
+        )} data-testid="media-upload-filled">
             {src && (
                 <>
-                    <img alt={alt} className={clsx('mx-auto h-full w-auto rounded-lg', backgroundSize === 'cover' ? 'object-cover' : 'object-contain', imgClassName)} src={src} />
-                    <div className={clsx('absolute inset-0 rounded-lg bg-gradient-to-t from-black/0 via-black/5 to-black/30 opacity-0 transition-all group-hover/image:opacity-100', borderStyle === 'rounded' && 'rounded-lg')}></div>
+                    <img alt={alt} className={clsx('mx-auto h-full w-auto min-w-[5.2rem]', borderStyle === 'rounded' && 'rounded-lg', backgroundSize === 'cover' ? 'object-cover' : 'object-contain', imgClassName)} src={src} />
+                    <div className={clsx('absolute inset-0 bg-gradient-to-t from-black/0 via-black/5 to-black/30 opacity-0 transition-all group-hover/image:opacity-100', borderStyle === 'rounded' && 'rounded-lg')}></div>
                 </>
             )}
 
@@ -105,7 +110,7 @@ export function MediaUploaderBeta({
 
             {isLoading && (
                 <div
-                    className={clsx('absolute inset-0 flex min-w-full items-center justify-center overflow-hidden border border-grey-100 bg-grey-75', borderStyle === 'rounded' && 'rounded-lg')}
+                    className={clsx('absolute inset-0 flex min-w-full items-center justify-center overflow-hidden bg-grey-100', borderStyle === 'rounded' && 'rounded-lg')}
                     data-testid="custom-thumbnail-progress"
                 >
                     <ProgressBar style={progressStyle} />
