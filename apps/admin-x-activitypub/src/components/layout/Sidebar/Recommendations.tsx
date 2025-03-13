@@ -5,6 +5,7 @@ import getName from '@utils/get-name';
 import getUsername from '@utils/get-username';
 import {Button, H4, LucideIcon, Skeleton} from '@tryghost/shade';
 import {handleProfileClick} from '@utils/handle-profile-click';
+import {useFeatureFlags} from '@src/lib/feature-flags';
 import {useNavigate} from '@tryghost/admin-x-framework';
 import {useSuggestedProfilesForUser} from '@hooks/use-activity-pub-queries';
 
@@ -14,9 +15,12 @@ const Recommendations: React.FC = () => {
     const suggested = suggestedData || Array(3).fill({actor: {}});
     const navigate = useNavigate();
     let i = 0;
+    const {isEnabled} = useFeatureFlags();
+
+    const hideClassName = isEnabled('feedback') ? '[@media(max-height:740px)]:hidden' : '';
 
     return (
-        <div className='border-t border-gray-200 px-3 pt-6 [@media(max-height:780px)]:hidden'>
+        <div className={`border-t border-gray-200 px-3 pt-6 ${hideClassName}`}>
             <div className='mb-3 flex flex-col gap-0.5'>
                 <div className='flex items-center gap-2'>
                     <LucideIcon.Globe className='text-purple-500' size={20} strokeWidth={1.5} />
@@ -32,16 +36,20 @@ const Recommendations: React.FC = () => {
                     let className;
                     switch (i) {
                     case 0:
-                        className = '[@media(max-height:780px)]:hidden';
+                        className = '[@media(max-height:740px)]:hidden';
                         break;
                     case 1:
-                        className = '[@media(max-height:840px)]:hidden';
+                        className = '[@media(max-height:800px)]:hidden';
                         break;
                     case 2:
-                        className = '[@media(max-height:920px)]:hidden';
+                        className = '[@media(max-height:860px)]:hidden';
                         break;
                     }
                     i = i + 1;
+
+                    if (!isEnabled('feedback')) {
+                        className = '';
+                    }
 
                     return (
                         <React.Fragment key={actor.id}>
