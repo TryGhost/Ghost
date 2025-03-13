@@ -4,7 +4,7 @@ const sinon = require('sinon');
 const nock = require('nock');
 const path = require('path');
 const loggingLib = require('@tryghost/logging');
-const ExternalMediaInliner = require('../index');
+const ExternalMediaInliner = require('../../../../../../core/server/services/media-inliner/ExternalMediaInliner');
 
 describe('ExternalMediaInliner', function () {
     let logging;
@@ -790,7 +790,7 @@ describe('ExternalMediaInliner', function () {
 
         it('Handles URLs with no scheme', async function () {
             const imageURL = '//img.stockfresh.com/files/f/ghost-logo.png';
-            const requestMock = nock('https://img.stockfresh.com')
+            const requestMock = nock('http://img.stockfresh.com')
                 .get('/files/f/ghost-logo.png')
                 .reply(200, ghostLogoPng);
 

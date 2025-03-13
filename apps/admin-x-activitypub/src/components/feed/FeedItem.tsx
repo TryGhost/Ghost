@@ -180,6 +180,7 @@ interface FeedItemProps {
     showHeader?: boolean;
     last?: boolean;
     isLoading?: boolean;
+    isPending?: boolean;
     onClick?: () => void;
     onCommentClick: () => void;
     onDelete?: () => void;
@@ -199,6 +200,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
     showHeader = true,
     last,
     isLoading,
+    isPending = false,
     onClick: onClickHandler = noop,
     onCommentClick,
     onDelete = noop
@@ -226,6 +228,10 @@ const FeedItem: React.FC<FeedItemProps> = ({
     };
 
     const onClick = () => {
+        if (isPending) {
+            return;
+        }
+
         onClickHandler();
     };
 
@@ -262,7 +268,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
         return (
             <>
                 {object && (
-                    <div className={`group/article relative -mx-4 -my-px cursor-pointer rounded-lg p-6 px-8 pb-[18px]`} data-layout='feed' data-object-id={object.id} onClick={onClick}>
+                    <div className={`group/article relative -mx-4 -my-px ${!isPending ? 'cursor-pointer' : 'pointer-events-none opacity-50'} rounded-lg p-6 px-8 pb-[18px]`} data-layout='feed' data-object-id={object.id} onClick={onClick}>
                         {(type === 'Announce') && <div className='z-10 mb-2 flex items-center gap-2 text-gray-700 dark:text-gray-600'>
                             <Icon colorClass='text-gray-700 shrink-0 dark:text-gray-600' name='reload' size={'sm'} />
                             <div className='flex min-w-0 items-center gap-1 text-sm'>
@@ -272,27 +278,28 @@ const FeedItem: React.FC<FeedItemProps> = ({
                         </div>}
                         <div className={`border-1 flex flex-col gap-2.5`} data-test-activity>
                             <div className='flex min-w-0 items-center gap-3'>
-                                <APAvatar author={author} />
+                                <APAvatar author={author} disabled={isPending} />
                                 <div className='flex min-w-0 grow flex-col gap-0.5'>
-                                    <span className='min-w-0 truncate break-all font-semibold leading-[normal] hover:underline dark:text-white'
+                                    <span className={`min-w-0 truncate break-all font-semibold leading-[normal] ${!isPending ? 'hover-underline' : ''} dark:text-white`}
                                         data-test-activity-heading
-                                        onClick={e => handleProfileClick(author, e)}
+                                        onClick={e => !isPending && handleProfileClick(author, e)}
                                     >
                                         {!isLoading ? author.name : <Skeleton className='w-24' />}
                                     </span>
                                     <div className='flex w-full text-sm text-gray-700 dark:text-gray-600'>
-                                        <span className='truncate leading-tight hover:underline'
-                                            onClick={e => handleProfileClick(author, e)}
+                                        <span className={`truncate leading-tight ${!isPending ? 'hover-underline' : ''}`}
+                                            onClick={e => !isPending && handleProfileClick(author, e)}
                                         >
                                             {!isLoading ? getUsername(author) : <Skeleton className='w-56' />}
                                         </span>
                                         <div className={`ml-1 leading-tight before:mr-1 ${!isLoading && 'before:content-["·"]'}`} title={`${timestamp}`}>
-                                            {!isLoading ? renderTimestamp(object) : <Skeleton className='w-4' />}
+                                            {!isLoading ? renderTimestamp(object, isPending === false) : <Skeleton className='w-4' />}
                                         </div>
                                     </div>
                                 </div>
                                 <FeedItemMenu
                                     allowDelete={allowDelete}
+                                    disabled={isPending}
                                     layout='feed'
                                     trigger={UserMenuTrigger}
                                     onCopyLink={handleCopyLink}
@@ -330,6 +337,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                         {!isLoading ?
                                             <FeedItemStats
                                                 commentCount={commentCount}
+                                                disabled={isPending}
                                                 layout={layout}
                                                 likeCount={1}
                                                 object={object}
@@ -385,13 +393,6 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                                 onCommentClick={onCommentClick}
                                                 onLikeClick={onLikeClick}
                                             />
-                                            <FeedItemMenu
-                                                allowDelete={allowDelete}
-                                                layout='modal'
-                                                trigger={UserMenuTrigger}
-                                                onCopyLink={handleCopyLink}
-                                                onDelete={handleDelete}
-                                            />
                                         </div>
                                     </div>
                                 </div>
@@ -408,17 +409,17 @@ const FeedItem: React.FC<FeedItemProps> = ({
         return (
             <>
                 {object && (
-                    <div className={`group/article relative cursor-pointer py-5`} data-layout='reply' data-object-id={object.id} onClick={onClick}>
+                    <div className={`group/article relative py-5 ${!isPending ? 'cursor-pointer' : 'pointer-events-none opacity-50'}`} data-layout='reply' data-object-id={object.id} onClick={onClick}>
                         <div className={`border-1 z-10 flex items-start gap-3 border-b-gray-200`} data-test-activity>
                             <div className='relative z-10 pt-[3px]'>
-                                <APAvatar author={author}/>
+                                <APAvatar author={author} disabled={isPending} />
                             </div>
                             <div className='flex w-full min-w-0 flex-col gap-2'>
                                 <div className='flex w-full items-center justify-between'>
                                     <div className='relative z-10 flex w-full min-w-0 flex-col overflow-visible'>
                                         <div className='flex'>
                                             <span className='min-w-0 truncate whitespace-nowrap font-semibold after:mx-1 after:font-normal after:text-gray-700 after:content-["·"]' data-test-activity-heading>{author.name}</span>
-                                            <div>{renderTimestamp(object)}</div>
+                                            <div>{renderTimestamp(object, isPending === false)}</div>
                                         </div>
                                         <div className='flex'>
                                             <span className='truncate text-gray-700'>{getUsername(author)}</span>
@@ -426,6 +427,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                     </div>
                                     <FeedItemMenu
                                         allowDelete={allowDelete}
+                                        disabled={isPending}
                                         layout='reply'
                                         trigger={UserMenuTrigger}
                                         onCopyLink={handleCopyLink}
@@ -449,6 +451,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                         <div className='space-between ml-[-7px] mt-2 flex'>
                                             <FeedItemStats
                                                 commentCount={commentCount}
+                                                disabled={isPending}
                                                 layout={layout}
                                                 likeCount={1}
                                                 object={object}

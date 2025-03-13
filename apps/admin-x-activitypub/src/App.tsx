@@ -7,11 +7,11 @@ import {ShadeApp} from '@tryghost/shade';
 interface AppProps {
     framework: TopLevelFrameworkProps;
     designSystem: DesignSystemAppProps;
-    activityPubEnabled: boolean;
+    activityPubEnabled?: boolean;
 }
 
 const App: React.FC<AppProps> = ({framework, designSystem, activityPubEnabled}) => {
-    if (!activityPubEnabled) {
+    if (activityPubEnabled === false) {
         return null;
     }
 
