@@ -50,15 +50,15 @@ export const routes: CustomRouteObject[] = [
             },
             {
                 path: '1',
-                element: <OnboardingStep1 onNext={() => {}} />
+                element: <OnboardingStep1 />
             },
             {
                 path: '2',
-                element: <OnboardingStep2 onNext={() => {}} />
+                element: <OnboardingStep2 />
             },
             {
                 path: '3',
-                element: <OnboardingStep3 onComplete={async () => {}} />
+                element: <OnboardingStep3 />
             },
             {
                 path: '*',
