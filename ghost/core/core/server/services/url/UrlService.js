@@ -263,17 +263,7 @@ class UrlService {
     owns(routerId, id) {
         debug('owns', routerId, id);
 
-        let urlGenerator;
-
-        this.urlGenerators.every((_urlGenerator) => {
-            if (_urlGenerator.identifier === routerId) {
-                urlGenerator = _urlGenerator;
-                return false;
-            }
-
-            return true;
-        });
-
+        const urlGenerator = this.urlGenerators.find(g => g.identifier === routerId);
         if (!urlGenerator) {
             return false;
         }
