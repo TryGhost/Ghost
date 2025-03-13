@@ -1,5 +1,10 @@
-interface AccessibilitySettings {
-    apOnboarded?: boolean;
+export interface ApOnboardingSettings {
+    welcomeStepsFinished?: boolean;
+    exploreExplainerClosed?: boolean;
+}
+
+export interface AccessibilitySettings {
+    apOnboarding?: ApOnboardingSettings;
 }
 
 export function parseAccessibilitySettings(accessibilityString: string | null): AccessibilitySettings {
