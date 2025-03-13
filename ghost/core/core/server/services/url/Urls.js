@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const debug = require('@tryghost/debug')('services:url:urls');
 const urlUtils = require('../../../shared/url-utils');
 const logging = require('@tryghost/logging');
@@ -20,14 +19,8 @@ const events = require('../../lib/common/events');
  * You can easily ask `this.urls[resourceId]`.
  */
 class Urls {
-    /**
-     *
-     * @param {Object} [options]
-     * @param {Object} [options.urls] map of available URLs with their resources
-     */
-    constructor({urls = {}} = {}) {
-        this.urls = urls;
-    }
+    /** @type {Object<string, {url: string, generatorId: string, resource: import('./Resource')}>} */
+    urls = {};
 
     /**
      * @description Add a url to the system.
@@ -88,13 +81,7 @@ class Urls {
      * @returns {Array}
      */
     getByGeneratorId(generatorId) {
-        return _.reduce(Object.keys(this.urls), (toReturn, resourceId) => {
-            if (this.urls[resourceId].generatorId === generatorId) {
-                toReturn.push(this.urls[resourceId]);
-            }
-
-            return toReturn;
-        }, []);
+        return Object.values(this.urls).filter(url => url.generatorId === generatorId);
     }
 
     /**
@@ -108,15 +95,11 @@ class Urls {
      *
      *  But depending on the routing registration, you will always serve e.g. resource1,
      *  because the router it belongs to was registered first.
+     *
+     *  @param {string} urlToLookup
      */
-    getByUrl(url) {
-        return _.reduce(Object.keys(this.urls), (toReturn, resourceId) => {
-            if (this.urls[resourceId].url === url) {
-                toReturn.push(this.urls[resourceId]);
-            }
-
-            return toReturn;
-        }, []);
+    getByUrl(urlToLookup) {
+        return Object.values(this.urls).filter(url => url.url === urlToLookup);
     }
 
     /**
