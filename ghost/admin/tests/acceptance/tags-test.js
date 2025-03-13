@@ -265,7 +265,6 @@ describe('Acceptance: Tags', function () {
     describe('as a super editor', function () {
         beforeEach(async function () {
             let role = this.server.create('role', {name: 'Super Editor'});
-            console.log('role is', role)
             this.server.create('user', {roles: [role]});
 
             await authenticateSession();
