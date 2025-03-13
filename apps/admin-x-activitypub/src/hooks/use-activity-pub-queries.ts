@@ -82,38 +82,10 @@ const QUERY_KEYS = {
         return ['thread', id];
     },
     feed: ['feed'],
-    inbox: ['inbox']
+    inbox: ['inbox'],
+    postsByAccount: ['account_posts'],
+    postsLikedByAccount: ['account_liked_posts']
 };
-
-export function useOutboxForUser(handle: string) {
-    return useInfiniteQuery({
-        queryKey: QUERY_KEYS.outbox(handle),
-        async queryFn({pageParam}: {pageParam?: string}) {
-            const siteUrl = await getSiteUrl();
-            const api = createActivityPubAPI(handle, siteUrl);
-
-            return api.getOutbox(pageParam);
-        },
-        getNextPageParam(prevPage) {
-            return prevPage.next;
-        }
-    });
-}
-
-export function useLikedForUser(handle: string) {
-    return useInfiniteQuery({
-        queryKey: QUERY_KEYS.liked(handle),
-        async queryFn({pageParam}: {pageParam?: string}) {
-            const siteUrl = await getSiteUrl();
-            const api = createActivityPubAPI(handle, siteUrl);
-
-            return api.getLiked(pageParam);
-        },
-        getNextPageParam(prevPage) {
-            return prevPage.next;
-        }
-    });
-}
 
 function updateLikedCache(queryClient: QueryClient, queryKey: string[], id: string, liked: boolean) {
     queryClient.setQueriesData(queryKey, (current?: {pages: {posts: Activity[]}[]}) => {
@@ -1034,26 +1006,13 @@ export function useFeedForUser(options: {enabled: boolean}) {
     });
 
     const updateFeedActivity = (id: string, updated: Partial<Activity>) => {
-        queryClient.setQueryData(queryKey, (current: {pages: {posts: Activity[]}[]} | undefined) => {
-            if (!current) {
-                return current;
-            }
-
-            return {
-                ...current,
-                pages: current.pages.map((page: {posts: Activity[]}) => {
-                    return {
-                        ...page,
-                        posts: page.posts.map((item: Activity) => {
-                            if (item.id === id) {
-                                return {...item, ...updated};
-                            }
-                            return item;
-                        })
-                    };
-                })
-            };
-        });
+        updateActivityInPaginatedCollection(
+            queryClient,
+            queryKey,
+            'posts',
+            id,
+            activity => ({...activity, ...updated})
+        );
     };
 
     return {feedQuery, updateFeedActivity};
@@ -1082,29 +1041,86 @@ export function useInboxForUser(options: {enabled: boolean}) {
     });
 
     const updateInboxActivity = (id: string, updated: Partial<Activity>) => {
-        queryClient.setQueryData(queryKey, (current: {pages: {posts: Activity[]}[]} | undefined) => {
-            if (!current) {
-                return current;
-            }
-
-            return {
-                ...current,
-                pages: current.pages.map((page: {posts: Activity[]}) => {
-                    return {
-                        ...page,
-                        posts: page.posts.map((item: Activity) => {
-                            if (item.id === id) {
-                                return {...item, ...updated};
-                            }
-                            return item;
-                        })
-                    };
-                })
-            };
-        });
+        updateActivityInPaginatedCollection(
+            queryClient,
+            queryKey,
+            'posts',
+            id,
+            activity => ({...activity, ...updated})
+        );
     };
 
     return {inboxQuery, updateInboxActivity};
+}
+
+export function usePostsByAccount(options: {enabled: boolean}) {
+    const queryKey = QUERY_KEYS.postsByAccount;
+    const queryClient = useQueryClient();
+
+    const postsByAccountQuery = useInfiniteQuery({
+        queryKey,
+        enabled: options.enabled,
+        async queryFn({pageParam}: {pageParam?: string}) {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI('index', siteUrl);
+            return api.getPostsByAccount(pageParam).then((response) => {
+                return {
+                    posts: response.posts.map(mapPostToActivity),
+                    next: response.next
+                };
+            });
+        },
+        getNextPageParam(prevPage) {
+            return prevPage.next;
+        }
+    });
+
+    const updatePostsByAccount = (id: string, updated: Partial<Activity>) => {
+        updateActivityInPaginatedCollection(
+            queryClient,
+            queryKey,
+            'posts',
+            id,
+            activity => ({...activity, ...updated})
+        );
+    };
+
+    return {postsByAccountQuery, updatePostsByAccount};
+}
+
+export function usePostsLikedByAccount(options: {enabled: boolean}) {
+    const queryKey = QUERY_KEYS.postsLikedByAccount;
+    const queryClient = useQueryClient();
+
+    const postsLikedByAccountQuery = useInfiniteQuery({
+        queryKey,
+        enabled: options.enabled,
+        async queryFn({pageParam}: {pageParam?: string}) {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI('index', siteUrl);
+            return api.getPostsLikedByAccount(pageParam).then((response) => {
+                return {
+                    posts: response.posts.map(mapPostToActivity),
+                    next: response.next
+                };
+            });
+        },
+        getNextPageParam(prevPage) {
+            return prevPage.next;
+        }
+    });
+
+    const updatePostsLikedByAccount = (id: string, updated: Partial<Activity>) => {
+        updateActivityInPaginatedCollection(
+            queryClient,
+            queryKey,
+            'posts',
+            id,
+            activity => ({...activity, ...updated})
+        );
+    };
+
+    return {postsLikedByAccountQuery, updatePostsLikedByAccount};
 }
 
 export function useDeleteMutationForUser(handle: string) {
@@ -1301,6 +1317,42 @@ export function useDeleteMutationForUser(handle: string) {
                 });
             }
 
+            // Update the posts by account cache
+            const postsByAccountKey = QUERY_KEYS.postsByAccount;
+            const previousPostsByAccount = queryClient.getQueryData<{pages: {posts: Activity[]}[]}>(postsByAccountKey);
+
+            queryClient.setQueryData(postsByAccountKey, (current?: {pages: {posts: Activity[]}[]}) => {
+                if (!current) {
+                    return current;
+                }
+
+                return {
+                    ...current,
+                    pages: current.pages.map((page: {posts: Activity[]}) => ({
+                        ...page,
+                        posts: page.posts.filter((item: Activity) => item.object.id !== id)
+                    }))
+                };
+            });
+
+            // Update the liked posts cache
+            const postsLikedByAccountKey = QUERY_KEYS.postsLikedByAccount;
+            const previousPostsLikedByAccount = queryClient.getQueryData<{pages: {posts: Activity[]}[]}>(postsLikedByAccountKey);
+
+            queryClient.setQueryData(postsLikedByAccountKey, (current?: {pages: {posts: Activity[]}[]}) => {
+                if (!current) {
+                    return current;
+                }
+
+                return {
+                    ...current,
+                    pages: current.pages.map((page: {posts: Activity[]}) => ({
+                        ...page,
+                        posts: page.posts.filter((item: Activity) => item.object.id !== id)
+                    }))
+                };
+            });
+
             return {
                 previousFeed: {
                     key: QUERY_KEYS.feed,
@@ -1329,7 +1381,15 @@ export function useDeleteMutationForUser(handle: string) {
                 previousAccount: removedFromLiked ? {
                     key: accountQueryKey,
                     data: previousAccount
-                } : null
+                } : null,
+                previousPostsByAccount: {
+                    key: QUERY_KEYS.postsByAccount,
+                    data: previousPostsByAccount
+                },
+                previousPostsLikedByAccount: {
+                    key: QUERY_KEYS.postsLikedByAccount,
+                    data: previousPostsLikedByAccount
+                }
             };
         },
         onError: (_err, _variables, context) => {
@@ -1346,6 +1406,13 @@ export function useDeleteMutationForUser(handle: string) {
 
             if (context.previousAccount) {
                 queryClient.setQueryData(context.previousAccount.key, context.previousAccount.data);
+            }
+
+            if (context.previousPostsByAccount) {
+                queryClient.setQueryData(QUERY_KEYS.postsByAccount, context.previousPostsByAccount);
+            }
+            if (context.previousPostsLikedByAccount) {
+                queryClient.setQueryData(QUERY_KEYS.postsLikedByAccount, context.previousPostsLikedByAccount);
             }
         }
     });
