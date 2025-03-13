@@ -2,18 +2,36 @@ export const exploreSites = {
     featured: {
         categoryName: 'Featured',
         sites: [
-            '@index@ghost.codenamejimmy.com',
+            '@index@activitypub.ghost.org',
+            '@index@john.onolan.org',
+            '@caseynewton@mastodon.social'
+        ]
+    },
+    news: {
+        categoryName: 'News & journalism',
+        sites: [
+            '@404mediaco@mastodon.social',
+            '@index@www.coffeeandcomplexity.com',
             '@index@www.syphoncontinuity.com',
-            '@index@www.cosmico.org',
-            '@index@www.russbrown.design'
+            '@Flipboard@flipboard.social'
         ]
     },
     technology: {
         categoryName: 'Technology',
         sites: [
-            '@index@activitypub.ghost.org',
-            '@index@john.onolan.org',
-            '@index@www.coffeeandcomplexity.com'
+            '@swf@socialwebfoundation.org',
+            '@index@www.russbrown.design',
+            '@index@ghost.codenamejimmy.com',
+            '@arstechnica@mastodon.social',
+            '@Gargron@mastodon.social'
+        ]
+    },
+    business: {
+        categoryName: 'Business',
+        sites: [
+            '@Forbes@newsie.social',
+            '@index@www.cosmico.org',
+            '@katienotopoulos@threads.net'
         ]
     }
 };

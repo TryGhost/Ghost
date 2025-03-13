@@ -22,6 +22,7 @@ import {exploreSites} from '@src/lib/explore-sites';
 import {formatPendingActivityContent, generatePendingActivity, generatePendingActivityId} from '../utils/pending-activity';
 import {mapPostToActivity} from '../utils/posts';
 import {showToast} from '@tryghost/admin-x-design-system';
+import {useCallback} from 'react';
 
 export type ActivityPubCollectionQueryResult<TData> = UseInfiniteQueryResult<ActivityPubCollectionResponse<TData>>;
 export type AccountFollowsQueryResult = UseInfiniteQueryResult<GetAccountFollowsResponse>;
@@ -485,33 +486,46 @@ export function useSearchForUser(handle: string, query: string) {
 }
 
 export function useExploreProfilesForUser(handle: string) {
+    const queryClient = useQueryClient();
     const queryKey = QUERY_KEYS.exploreProfiles(handle);
+
+    const fetchExploreProfiles = useCallback(async () => {
+        const siteUrl = await getSiteUrl();
+        const api = createActivityPubAPI(handle, siteUrl);
+        const results: Record<string, { categoryName: string; sites: Profile[] }> = {};
+
+        for (const [key, category] of Object.entries(exploreSites)) {
+            const settledResults = await Promise.allSettled(
+                category.sites.map(suggestedHandle => api.getProfile(suggestedHandle))
+            );
+
+            results[key] = {
+                categoryName: category.categoryName,
+                sites: settledResults
+                    .filter((result): result is PromiseFulfilledResult<Profile> => result.status === 'fulfilled')
+                    .map(result => result.value)
+            };
+        }
+
+        return results;
+    }, [handle]);
 
     const exploreProfilesQuery = useQuery({
         queryKey,
-        async queryFn() {
-            const siteUrl = await getSiteUrl();
-            const api = createActivityPubAPI(handle, siteUrl);
-            const results: Record<string, { categoryName: string; sites: Profile[] }> = {};
-
-            for (const [key, category] of Object.entries(exploreSites)) {
-                const settledResults = await Promise.allSettled(
-                    category.sites.map(suggestedHandle => api.getProfile(suggestedHandle))
-                );
-
-                results[key] = {
-                    categoryName: category.categoryName,
-                    sites: settledResults
-                        .filter((result): result is PromiseFulfilledResult<Profile> => result.status === 'fulfilled')
-                        .map(result => result.value)
-                };
-            }
-
-            return results;
-        }
+        queryFn: fetchExploreProfiles
     });
 
-    return {exploreProfilesQuery};
+    const prefetchExploreProfiles = useCallback(() => {
+        return queryClient.prefetchQuery({
+            queryKey,
+            queryFn: fetchExploreProfiles
+        });
+    }, [queryClient, fetchExploreProfiles, queryKey]);
+
+    return {
+        exploreProfilesQuery,
+        prefetchExploreProfiles
+    };
 }
 
 export function useSuggestedProfilesForUser(handle: string, limit = 3) {
