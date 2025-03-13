@@ -1,19 +1,18 @@
 import * as React from 'react';
 import APAvatar from '@components/global/APAvatar';
 import ActivityItem from '@components/activities/ActivityItem';
-import Search from '@src/components/modals/Search';
 import getName from '@utils/get-name';
 import getUsername from '@utils/get-username';
-import {Dialog, DialogContent, DialogTrigger, H4, LucideIcon, Skeleton} from '@tryghost/shade';
+import {Button, H4, LucideIcon, Skeleton} from '@tryghost/shade';
 import {handleProfileClick} from '@utils/handle-profile-click';
+import {useNavigate} from '@tryghost/admin-x-framework';
 import {useSuggestedProfilesForUser} from '@hooks/use-activity-pub-queries';
 
 const Recommendations: React.FC = () => {
     const {suggestedProfilesQuery} = useSuggestedProfilesForUser('index', 3);
     const {data: suggestedData, isLoading: isLoadingSuggested} = suggestedProfilesQuery;
     const suggested = suggestedData || Array(3).fill({actor: {}});
-    const [isSearchOpen, setIsSearchOpen] = React.useState(false);
-    const [searchQuery, setSearchQuery] = React.useState('');
+    const navigate = useNavigate();
 
     return (
         <div className='px-3'>
@@ -46,14 +45,9 @@ const Recommendations: React.FC = () => {
                     );
                 })}
             </ul>
-            <Dialog open={isSearchOpen} onOpenChange={setIsSearchOpen}>
-                <DialogTrigger>
-                    <span className='mt-2 inline-block p-0 py-2 text-md font-semibold text-purple-500'>Find more &rarr;</span>
-                </DialogTrigger>
-                <DialogContent>
-                    <Search query={searchQuery} setQuery={setSearchQuery} onOpenChange={setIsSearchOpen} />
-                </DialogContent>
-            </Dialog>
+            <Button className='px-0 font-medium text-purple' variant='link' onClick={() => {
+                navigate('/explore');
+            }}>Find more &rarr;</Button>
         </div>
     );
 };

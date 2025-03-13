@@ -64,7 +64,7 @@ export const ExploreProfile: React.FC<ExploreProfileProps & {
                 {profile.actor.summary &&
                     <div
                         dangerouslySetInnerHTML={{__html: profile.actor.summary}}
-                        className='ap-profile-content mt-0 max-w-[500px]'
+                        className='ap-profile-content pointer-events-none mt-0 max-w-[500px]'
                     />
                 }
             </div>
@@ -74,7 +74,7 @@ export const ExploreProfile: React.FC<ExploreProfileProps & {
 
 const Explore: React.FC = () => {
     const {isExplainerClosed, setExplainerClosed} = useOnboardingStatus();
-    const {exploreProfilesQuery} = useExploreProfilesForUser('index');
+    const {exploreProfilesQuery, updateExploreProfile} = useExploreProfilesForUser('index');
     const {data: exploreProfilesData, isLoading: isLoadingExploreProfiles} = exploreProfilesQuery;
 
     const emptyProfiles = Array(5).fill({
@@ -107,7 +107,6 @@ const Explore: React.FC = () => {
                                         isLoading={isLoadingExploreProfiles}
                                         profile={profile}
                                         update={() => {}}
-                                        onOpenChange={() => {}}
                                     />
                                 </div>
                             ))}
@@ -124,8 +123,7 @@ const Explore: React.FC = () => {
                                             <ExploreProfile
                                                 isLoading={false}
                                                 profile={profile}
-                                                update={() => {}}
-                                                onOpenChange={() => {}}
+                                                update={updateExploreProfile}
                                             />
                                         </React.Fragment>
                                     ))}

@@ -4,11 +4,11 @@ import FollowButton from '@components/global/FollowButton';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useRef} from 'react';
 import ViewProfileModal from '@components/modals/ViewProfileModal';
-import {H4, LucideIcon, Skeleton} from '@tryghost/shade';
+import {H4, LucideIcon} from '@tryghost/shade';
 import {LoadingIndicator, NoValueLabel, TextField} from '@tryghost/admin-x-design-system';
-import {type Profile} from '../../api/activitypub';
+import {SuggestedProfiles} from '../global/SuggestedProfiles';
 import {useDebounce} from 'use-debounce';
-import {useSearchForUser, useSuggestedProfilesForUser} from '@hooks/use-activity-pub-queries';
+import {useSearchForUser} from '@hooks/use-activity-pub-queries';
 
 interface AccountSearchResult {
     id: string;
@@ -98,89 +98,6 @@ const SearchResults: React.FC<SearchResultsProps & {
     );
 };
 
-interface SuggestedProfileProps {
-    profile: Profile;
-    update: (id: string, updated: Partial<Profile>) => void;
-    isLoading: boolean;
-}
-
-export const SuggestedProfile: React.FC<SuggestedProfileProps & {
-    onOpenChange?: (open: boolean) => void;
-}> = ({profile, update, isLoading, onOpenChange}) => {
-    const onFollow = () => {
-        update(profile.actor.id, {
-            isFollowing: true,
-            followerCount: profile.followerCount + 1
-        });
-    };
-
-    const onUnfollow = () => {
-        update(profile.actor.id, {
-            isFollowing: false,
-            followerCount: profile.followerCount - 1
-        });
-    };
-
-    return (
-        <ActivityItem
-            key={profile.actor.id}
-            onClick={() => {
-                onOpenChange?.(false);
-                NiceModal.show(ViewProfileModal, {handle: profile.handle, onFollow, onUnfollow});
-            }}
-        >
-            <APAvatar author={profile.actor} onClick={() => onOpenChange?.(false)} />
-            <div className='flex grow flex-col'>
-                <span className='font-semibold text-black dark:text-white'>{!isLoading ? profile.actor.name : <Skeleton className='w-full max-w-64' />}</span>
-                <span className='text-sm text-gray-700 dark:text-gray-600'>{!isLoading ? profile.handle : <Skeleton className='w-24' />}</span>
-            </div>
-            {!isLoading ?
-                <FollowButton
-                    className='ml-auto'
-                    following={profile.isFollowing}
-                    handle={profile.handle}
-                    type='secondary'
-                    onFollow={onFollow}
-                    onUnfollow={onUnfollow}
-                /> :
-                <div className='inline-flex items-center'>
-                    <Skeleton className='w-12' />
-                </div>
-            }
-        </ActivityItem>
-    );
-};
-
-interface SuggestedProfilesProps {
-    profiles: Profile[];
-    isLoading: boolean;
-    onUpdate: (id: string, updated: Partial<Profile>) => void;
-}
-
-const SuggestedProfiles: React.FC<SuggestedProfilesProps & {
-    onOpenChange?: (open: boolean) => void;
-}> = ({profiles, isLoading, onUpdate, onOpenChange}) => {
-    return (
-        <div className='mb-[-15px] flex flex-col gap-3 pt-2'>
-            <H4>Suggested accounts</H4>
-            <div className='flex flex-col'>
-                {profiles.map((profile) => {
-                    return (
-                        <React.Fragment key={profile.actor.id}>
-                            <SuggestedProfile
-                                isLoading={isLoading}
-                                profile={profile}
-                                update={onUpdate}
-                                onOpenChange={onOpenChange}
-                            />
-                        </React.Fragment>
-                    );
-                })}
-            </div>
-        </div>
-    );
-};
-
 interface SearchProps {
     onOpenChange?: (open: boolean) => void;
     query: string;
@@ -188,17 +105,6 @@ interface SearchProps {
 }
 
 const Search: React.FC<SearchProps> = ({onOpenChange, query, setQuery}) => {
-    // Initialise suggested profiles
-    const {suggestedProfilesQuery, updateSuggestedProfile} = useSuggestedProfilesForUser('index', 6);
-    const {data: suggestedProfilesData, isLoading: isLoadingSuggestedProfiles} = suggestedProfilesQuery;
-    const suggestedProfiles = suggestedProfilesData || Array(5).fill({
-        actor: {},
-        handle: '',
-        followerCount: 0,
-        followingCount: 0,
-        isFollowing: false
-    });
-
     // Initialise search query
     const queryInputRef = useRef<HTMLInputElement>(null);
     const [debouncedQuery] = useDebounce(query, 300);
@@ -257,12 +163,12 @@ const Search: React.FC<SearchProps> = ({onOpenChange, query, setQuery}) => {
                     />
                 )}
                 {showSuggested && (
-                    <SuggestedProfiles
-                        isLoading={isLoadingSuggestedProfiles}
-                        profiles={suggestedProfiles}
-                        onOpenChange={onOpenChange}
-                        onUpdate={updateSuggestedProfile}
-                    />
+                    <>
+                        <H4>Suggested accounts</H4>
+                        <SuggestedProfiles
+                            onOpenChange={onOpenChange}
+                        />
+                    </>
                 )}
             </div>
         </>

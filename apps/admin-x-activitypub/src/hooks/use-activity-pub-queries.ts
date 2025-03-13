@@ -522,9 +522,27 @@ export function useExploreProfilesForUser(handle: string) {
         });
     }, [queryClient, fetchExploreProfiles, queryKey]);
 
+    const updateExploreProfile = (id: string, updated: Partial<Profile>) => {
+        // Update the suggested profiles stored in the suggested profiles query cache
+        queryClient.setQueryData(queryKey, (current: Profile[] | undefined) => {
+            if (!current) {
+                return current;
+            }
+
+            return current.map((item: Profile) => {
+                if (item.actor.id === id) {
+                    return {...item, ...updated};
+                }
+
+                return item;
+            });
+        });
+    };
+
     return {
         exploreProfilesQuery,
-        prefetchExploreProfiles
+        prefetchExploreProfiles,
+        updateExploreProfile
     };
 }
 
@@ -532,15 +550,7 @@ export function useSuggestedProfilesForUser(handle: string, limit = 3) {
     const queryClient = useQueryClient();
     const queryKey = QUERY_KEYS.suggestedProfiles(limit);
 
-    const suggestedHandles = [
-        '@index@activitypub.ghost.org',
-        '@index@john.onolan.org',
-        '@index@www.coffeeandcomplexity.com',
-        '@index@ghost.codenamejimmy.com',
-        '@index@www.syphoncontinuity.com',
-        '@index@www.cosmico.org',
-        '@index@www.russbrown.design'
-    ];
+    const suggestedHandles = Object.values(exploreSites).flatMap(category => category.sites);
 
     const suggestedProfilesQuery = useQuery({
         queryKey,
