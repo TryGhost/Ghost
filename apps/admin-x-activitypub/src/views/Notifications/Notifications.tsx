@@ -3,7 +3,7 @@ import {LucideIcon, Skeleton} from '@tryghost/shade';
 
 import NiceModal from '@ebay/nice-modal-react';
 import {Activity, ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
-import {Button, LoadingIndicator, NoValueLabel} from '@tryghost/admin-x-design-system';
+import {Button, LoadingIndicator} from '@tryghost/admin-x-design-system';
 
 import APAvatar from '@components/global/APAvatar';
 import ArticleModal from '@components/feed/ArticleModal';
@@ -14,6 +14,7 @@ import Layout from '@components/layout';
 import getUsername from '@utils/get-username';
 import stripHtml from '@utils/strip-html';
 import truncate from '@utils/truncate';
+import {EmptyViewIcon, EmptyViewIndicator} from '@src/components/global/EmptyViewIndicator';
 import {
     GET_ACTIVITIES_QUERY_KEY_NOTIFICATIONS,
     useActivitiesForUser,
@@ -330,11 +331,10 @@ const Notifications: React.FC<NotificationsProps> = () => {
             <div className='z-0 flex w-full flex-col items-center'>
                 {
                     isLoading === false && groupedActivities.length === 0 && (
-                        <div className='mt-8'>
-                            <NoValueLabel icon='bell'>
-                                When other Fediverse users interact with you, you&apos;ll see it here.
-                            </NoValueLabel>
-                        </div>
+                        <EmptyViewIndicator>
+                            <EmptyViewIcon><LucideIcon.Bell /></EmptyViewIcon>
+                            Quiet for now, but not for long! When someone likes, boosts, or replies to you, you&apos;ll find it here.
+                        </EmptyViewIndicator>
                     )
                 }
                 {
