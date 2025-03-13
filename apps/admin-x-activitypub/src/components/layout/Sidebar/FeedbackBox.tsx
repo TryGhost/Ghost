@@ -39,9 +39,9 @@ const FeedbackBox: React.FC = () => {
     }
 
     return (
-        <div className='sticky bottom-0 z-20 w-full bg-white'>
+        <div className='sticky bottom-0 z-20 w-full bg-white dark:bg-black'>
             {isEnabled('feedback') &&
-                <div className='flex w-full flex-col gap-0.5 border-t border-gray-200 bg-white px-3 pt-6'>
+                <div className='flex w-full flex-col gap-0.5 border-t border-gray-200 bg-white px-3 pt-6 dark:border-gray-950 dark:bg-black'>
                     <div className='flex items-center gap-2'>
                         <LucideIcon.MessageSquare className='text-purple-500' size={20} strokeWidth={1.5} />
                         <H4>Beta feedback</H4>
@@ -49,7 +49,7 @@ const FeedbackBox: React.FC = () => {
                     <span className='text-sm text-gray-700'>
                     Something not working? Let us know
                     </span>
-                    <Button className='mt-2' variant='secondary' onClick={showFeedbackReply}>Send feedback</Button>
+                    <Button className='mt-2 dark:bg-gray-925/70 dark:hover:bg-gray-900' variant='secondary' onClick={showFeedbackReply}>Send feedback</Button>
                 </div>
             }
             <div className='-mb-1 ml-3 flex items-center gap-1.5 pt-4 text-xs text-gray-400'>

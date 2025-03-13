@@ -57,7 +57,7 @@ const Sidebar: React.FC = () => {
                         return (<></>);
                     })}
                 </div>
-                <div className='sticky bottom-0 -mb-4 flex items-center gap-2 bg-white pb-4 pl-4'>
+                <div className='sticky bottom-0 -mb-4 flex items-center gap-2 bg-white pb-4 pl-4 dark:bg-black'>
                     <FeedbackBox />
                 </div>
             </div>

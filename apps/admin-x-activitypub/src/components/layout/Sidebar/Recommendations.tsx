@@ -20,7 +20,7 @@ const Recommendations: React.FC = () => {
     const hideClassName = isEnabled('feedback') ? '[@media(max-height:740px)]:hidden' : '';
 
     return (
-        <div className={`border-t border-gray-200 px-3 pt-6 ${hideClassName}`}>
+        <div className={`border-t border-gray-200 px-3 pt-6 dark:border-gray-950 ${hideClassName}`}>
             <div className='mb-3 flex flex-col gap-0.5'>
                 <div className='flex items-center gap-2'>
                     <LucideIcon.Globe className='text-purple-500' size={20} strokeWidth={1.5} />

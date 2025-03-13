@@ -476,7 +476,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
         return (
             <>
                 {object && (
-                    <div className='group/article relative -mx-4 -my-px flex min-h-[112px] min-w-0 cursor-pointer items-center justify-between rounded-lg p-6 hover:bg-gray-75 dark:hover:bg-gray-950' data-layout='inbox' data-object-id={object.id} onClick={onClick}>
+                    <div className='group/article relative -mx-4 -my-px flex min-h-[112px] min-w-0 cursor-pointer items-center justify-between rounded-lg p-6 hover:bg-gray-75 dark:hover:bg-gray-950/50' data-layout='inbox' data-object-id={object.id} onClick={onClick}>
                         <div className='w-full min-w-0'>
                             <div className='z-10 mb-1.5 flex w-full min-w-0 items-center gap-1.5 text-sm group-hover/article:border-transparent'>
                                 {!isLoading ?
