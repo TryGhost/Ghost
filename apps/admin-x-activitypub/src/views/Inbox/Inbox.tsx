@@ -83,7 +83,7 @@ const Inbox: React.FC = () => {
         <Layout>
             <div className='flex w-full flex-col'>
                 <div className='w-full'>
-                    {activities.length > 0 ? (
+                    {activities.length === 0 ? (
                         <div className='my-4'>
                             <div className={`mx-auto flex min-h-[calc(100dvh_-_117px)] items-start gap-11`}>
                                 <div className='flex w-full min-w-0 flex-col items-center'>
@@ -134,8 +134,8 @@ const Inbox: React.FC = () => {
                                 <div className='flex w-full max-w-[620px] flex-col items-center'>
                                     <EmptyViewIndicator>
                                         <EmptyViewIcon><LucideIcon.Inbox /></EmptyViewIcon>
-                                        <div>Your inbox is the home for <span className='text-black'>long-form posts</span>. It’s empty for now, but posts will show up as soon as the people you follow share something.</div>
-                                        <Button className='text-white' onClick={() => {
+                                        <div>Your inbox is the home for <span className='text-black dark:text-white'>long-form posts</span>. It’s empty for now, but posts will show up as soon as the people you follow share something.</div>
+                                        <Button className='text-white dark:text-black' onClick={() => {
                                             navigate('/explore');
                                         }}>
                                         Find accounts to follow &rarr;
@@ -148,8 +148,8 @@ const Inbox: React.FC = () => {
                                     <div className='mt-[-128px]'>
                                         <EmptyViewIndicator>
                                             <EmptyViewIcon><LucideIcon.Hash /></EmptyViewIcon>
-                                            <div>The Feed is the stream of thoughts and <span className='text-black'>bite-sized updates</span> from people you follow in the Social Web. It is looking a little empty right now but once the people you follow start posting, their updates will show up here.</div>
-                                            <Button className='text-white' onClick={() => NiceModal.show(NewPostModal)}>
+                                            <div>The Feed is the stream of thoughts and <span className='text-black dark:text-white'>bite-sized updates</span> from people you follow in the Social Web. It&apos;s looking a little empty right now but once the people you follow start posting, their updates will show up here.</div>
+                                            <Button className='text-white dark:text-black' onClick={() => NiceModal.show(NewPostModal)}>
                                                 <LucideIcon.FilePen />
                                                 Write your first note
                                             </Button>
