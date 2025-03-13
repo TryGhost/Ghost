@@ -104,7 +104,7 @@ interface SuggestedProfileProps {
     isLoading: boolean;
 }
 
-const SuggestedProfile: React.FC<SuggestedProfileProps & {
+export const SuggestedProfile: React.FC<SuggestedProfileProps & {
     onOpenChange?: (open: boolean) => void;
 }> = ({profile, update, isLoading, onOpenChange}) => {
     const onFollow = () => {
@@ -157,7 +157,7 @@ interface SuggestedProfilesProps {
     onUpdate: (id: string, updated: Partial<Profile>) => void;
 }
 
-export const SuggestedProfiles: React.FC<SuggestedProfilesProps & {
+const SuggestedProfiles: React.FC<SuggestedProfilesProps & {
     onOpenChange?: (open: boolean) => void;
 }> = ({profiles, isLoading, onUpdate, onOpenChange}) => {
     return (

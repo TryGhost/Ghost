@@ -1,7 +1,7 @@
 import Layout from '@components/layout';
 import React from 'react';
 import {Button, LucideIcon} from '@tryghost/shade';
-import {SuggestedProfiles} from '@src/components/modals/Search';
+import {SuggestedProfile} from '@src/components/modals/Search';
 import {useOnboardingStatus} from '@src/components/layout/Onboarding';
 import {useSuggestedProfilesForUser} from '@hooks/use-activity-pub-queries';
 
@@ -26,12 +26,20 @@ const Profile: React.FC = ({ }) => {
                     <Button variant='ghost' onClick={() => setExplainerClosed(true)}><LucideIcon.X /></Button>
                 </div>
             }
-            <SuggestedProfiles
-                isLoading={isLoadingSuggestedProfiles}
-                profiles={suggestedProfiles}
-                onOpenChange={() => {}}
-                onUpdate={updateSuggestedProfile}
-            />
+            <div className='flex flex-col items-center'>
+                {
+                    suggestedProfiles.map(profile => (
+                        <React.Fragment key={profile.actor.id}>
+                            <SuggestedProfile
+                                isLoading={isLoadingSuggestedProfiles}
+                                profile={profile}
+                                update={updateSuggestedProfile}
+                                onOpenChange={() => {}}
+                            />
+                        </React.Fragment>
+                    ))
+                }
+            </div>
         </Layout>
     );
 };
