@@ -1,5 +1,5 @@
 import APAvatar from '@src/components/global/APAvatar';
-import React from 'react';
+import React, {useState} from 'react';
 import apNodes from '@assets/images/onboarding/ap-nodes.png';
 import {Button, H3, LucideIcon} from '@tryghost/shade';
 import {useAccountForUser} from '@src/hooks/use-activity-pub-queries';
@@ -9,8 +9,25 @@ import {useNavigate} from '@tryghost/admin-x-framework';
 const Step1: React.FC = () => {
     const {data: account} = useAccountForUser('index');
     const {data: {users, meta} = {users: []}, isLoading: usersLoading} = useBrowseUsers();
-    const firstThreeUsers = users.slice(0, 3);
     const navigate = useNavigate();
+    const [copied, setCopied] = useState(false);
+
+    const firstThreeUsers = users.slice(0, 3);
+    const transformedUsers = firstThreeUsers.map(user => ({
+        id: user.id,
+        icon: {
+            url: user.profile_image as string
+        },
+        name: user.name
+    }));
+
+    const handleCopy = async () => {
+        if (account?.handle) {
+            setCopied(true);
+            await navigator.clipboard.writeText(account.handle);
+            setTimeout(() => setCopied(false), 2000);
+        }
+    }
 
     return (
         <div className='relative h-full'>
@@ -49,21 +66,21 @@ const Step1: React.FC = () => {
                             <div className={`relative -ml-3 h-8 px-3 text-lg font-medium before:absolute before:inset-0 before:rounded-full before:bg-gradient-to-r before:from-[#CFB0FF66] before:to-[#B6E8FF66] before:opacity-0 ${!usersLoading && 'before:animate-onboarding-handle-bg'}`}>
                                 <div className='relative flex h-full items-center gap-1'>
                                     <span className='max-w-[316px] truncate'>{account?.handle}</span>
-                                    <LucideIcon.Copy size={16} />
+                                    <Button className='h-6 w-6 p-0 hover:opacity-80' variant='link' onClick={handleCopy}>
+                                        {!copied ?
+                                            <LucideIcon.Copy size={16} /> :
+                                            <LucideIcon.Check size={16} />
+                                        }
+                                    </Button>
                                     <span className={`absolute right-full flex items-center gap-3 text-nowrap font-mono text-sm font-medium uppercase text-purple after:mr-3 after:h-[1.5px] after:w-24 after:scale-0 after:bg-purple after:content-[""] ${!usersLoading && 'after:animate-onboarding-handle-line'}`}><span className={`opacity-0 ${!usersLoading && 'animate-onboarding-handle-label'}`}>Your social web handle</span></span>
                                 </div>
                             </div>
                         </div>
                         <p className='leading-tight text-gray-800 dark:text-gray-600'>{account?.bio}</p>
                         <div className='mt-1 flex gap-2 text-sm text-gray-800 dark:text-gray-600'>
-                            <div className='flex [&>*:nth-child(1)]:z-30 [&>*:nth-child(2)]:z-20 [&>*:nth-child(3)]:z-10'>
-                                {firstThreeUsers.map((user, index) => (
-                                    <img
-                                        key={user.id}
-                                        alt={user.name}
-                                        className={`${index > 0 && '-ml-2'} relative h-5 w-5 rounded-full border border-white`}
-                                        src={user.profile_image || '/default-avatar.png'}
-                                    />
+                            <div className='flex [&>*:not(:first-child)]:-ml-2 [&>*:nth-child(1)]:z-30 [&>*:nth-child(2)]:z-20 [&>*:nth-child(3)]:z-10 [&>*]:h-5 [&>*]:w-5 [&>*]:border [&>*]:border-white [&_img]:h-5 [&_img]:w-5'>
+                                {transformedUsers.map(user => (
+                                    <APAvatar key={user.id} author={user} size='xs' />
                                 ))}
                             </div>
                         Authored by {firstThreeUsers[0]?.name}{(meta?.pagination.total ?? 0) > 1 && ` and ${(meta?.pagination.total ?? 1) - 1} others`}
