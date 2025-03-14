@@ -495,19 +495,26 @@ export function useExploreProfilesForUser(handle: string) {
     }, [queryClient, fetchExploreProfiles, queryKey]);
 
     const updateExploreProfile = (id: string, updated: Partial<Profile>) => {
-        // Update the suggested profiles stored in the suggested profiles query cache
-        queryClient.setQueryData(queryKey, (current: Profile[] | undefined) => {
+        // Update the suggested profiles stored in explore profiles query cache
+        queryClient.setQueryData(queryKey, (current: Record<string, { categoryName: string; sites: Profile[] }> | undefined) => {
             if (!current) {
                 return current;
             }
 
-            return current.map((item: Profile) => {
-                if (item.actor.id === id) {
-                    return {...item, ...updated};
-                }
-
-                return item;
-            });
+            return Object.fromEntries(
+                Object.entries(current).map(([key, category]) => [
+                    key,
+                    {
+                        ...category,
+                        sites: category.sites.map((item: Profile) => {
+                            if (item.actor.id === id) {
+                                return {...item, ...updated};
+                            }
+                            return item;
+                        })
+                    }
+                ])
+            );
         });
     };
 
