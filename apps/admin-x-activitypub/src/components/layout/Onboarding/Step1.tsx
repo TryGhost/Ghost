@@ -1,6 +1,7 @@
 import APAvatar from '@src/components/global/APAvatar';
 import React, {useState} from 'react';
 import apNodes from '@assets/images/onboarding/ap-nodes.png';
+import apNodesDark from '@assets/images/onboarding/ap-nodes-dark.png';
 import {Button, H3, LucideIcon} from '@tryghost/shade';
 import {useAccountForUser} from '@src/hooks/use-activity-pub-queries';
 import {useBrowseUsers} from '@tryghost/admin-x-framework/api/users';
@@ -40,11 +41,12 @@ const Step1: React.FC = () => {
                             <p><strong>{account?.name}</strong> is now part of the world’s largest open network.</p>
                         </div>
                     </div>
-                    <Button className={`min-w-60 bg-gradient-to-r from-purple-500 to-[#6A1AD6] hover:opacity-90`} size='lg' onClick={() => navigate('/welcome/2')}>Next &rarr;</Button>
+                    <Button className={`min-w-60 bg-gradient-to-r from-purple-500 to-[#6A1AD6] hover:opacity-90 dark:text-white`} size='lg' onClick={() => navigate('/welcome/2')}>Next &rarr;</Button>
                 </div>
                 <div className='relative z-10 h-full'>
-                    <img className='absolute left-1/2 top-[calc(-280px)] w-full min-w-[1240px] max-w-[1300px] -translate-x-1/2' src={apNodes} />
-                    <div className='relative mx-auto mt-0 flex w-96 flex-col gap-3 rounded-lg bg-white p-6 shadow-xl xxl:mt-[calc(-280px+20vw)] min-[1800px]:mt-14'>
+                    <img className='absolute left-1/2 top-[calc(-280px)] w-full min-w-[1240px] max-w-[1300px] -translate-x-1/2 dark:hidden' src={apNodes} />
+                    <img className='absolute left-1/2 top-[calc(-280px)] hidden w-full min-w-[1240px] max-w-[1300px] -translate-x-1/2 dark:!visible dark:!block' src={apNodesDark} />
+                    <div className='relative mx-auto mt-0 flex w-96 flex-col gap-3 rounded-lg bg-white p-6 shadow-xl before:absolute before:inset-[80px] before:-z-10 before:rounded-full before:bg-[radial-gradient(circle,#4b5563,#6b7280,#9ca3af)] before:blur-[1000px] xxl:mt-[calc(-280px+20vw)] min-[1800px]:mt-14 dark:border dark:border-gray-950 dark:bg-[#101114] dark:shadow-[#1e1b4b]/5 dark:before:bg-[radial-gradient(circle,#6366f1,#a855f7,#ec4899)]'>
                         <div className='flex items-start justify-between'>
                             <APAvatar
                                 author={account && {
@@ -63,7 +65,7 @@ const Step1: React.FC = () => {
                         </div>
                         <div className='flex flex-col items-start gap-1'>
                             <H3>{account?.name}</H3>
-                            <div className={`relative -ml-3 h-8 px-3 text-lg font-medium before:absolute before:inset-0 before:rounded-full before:bg-gradient-to-r before:from-[#CFB0FF66] before:to-[#B6E8FF66] before:opacity-0 ${!usersLoading && 'before:animate-onboarding-handle-bg'}`}>
+                            <div className={`relative -ml-3 h-8 px-3 text-lg font-medium before:absolute before:inset-0 before:rounded-full before:bg-gradient-to-r before:from-[#CFB0FF66] before:to-[#B6E8FF66] before:opacity-0 ${!usersLoading && 'before:animate-onboarding-handle-bg'} dark:before:from-[#CFB0FF20] dark:before:to-[#B6E8FF20]`}>
                                 <div className='relative flex h-full items-center gap-1'>
                                     <span className='max-w-[316px] truncate'>{account?.handle}</span>
                                     <Button className='h-6 w-6 p-0 hover:opacity-80' variant='link' onClick={handleCopy}>
@@ -78,7 +80,7 @@ const Step1: React.FC = () => {
                         </div>
                         <p className='leading-tight text-gray-800 dark:text-gray-600'>{account?.bio}</p>
                         <div className='mt-1 flex gap-2 text-sm text-gray-800 dark:text-gray-600'>
-                            <div className='flex [&>*:not(:first-child)]:-ml-2 [&>*:nth-child(1)]:z-30 [&>*:nth-child(2)]:z-20 [&>*:nth-child(3)]:z-10 [&>*]:h-5 [&>*]:w-5 [&>*]:border [&>*]:border-white [&_img]:h-5 [&_img]:w-5'>
+                            <div className='flex [&>*:not(:first-child)]:-ml-2 [&>*:nth-child(1)]:z-30 [&>*:nth-child(2)]:z-20 [&>*:nth-child(3)]:z-10 [&>*]:h-5 [&>*]:w-5 [&>*]:border [&>*]:border-white dark:[&>*]:border-[#101114] [&_img]:h-5 [&_img]:w-5'>
                                 {transformedUsers.map(user => (
                                     <APAvatar key={user.id} author={user} size='xs' />
                                 ))}
