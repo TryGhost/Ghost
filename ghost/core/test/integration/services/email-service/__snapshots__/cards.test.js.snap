@@ -2169,7 +2169,7 @@ Ghost: Independent technology for modern publishingBeautiful, modern publishing 
             <!--[endif]-->
 
             <!--[if vml]>
-            <v:group xmlns:v=\\"urn:schemas-microsoft-com:vml\\" xmlns:w=\\"urn:schemas-microsoft-com:office:word\\" coordsize=\\"600,338\\" coordorigin=\\"0,0\\" href=\\"http://127.0.0.1:2369/404/\\" style=\\"width:600px;height:338px;\\">
+            <v:group xmlns:v=\\"urn:schemas-microsoft-com:vml\\" xmlns:w=\\"urn:schemas-microsoft-com:office:word\\" coordsize=\\"600,338\\" coordorigin=\\"0,0\\" href=\\"http://127.0.0.1:2369/a-random-test-post-4/\\" style=\\"width:600px;height:338px;\\">
                 <v:rect fill=\\"t\\" stroked=\\"f\\" style=\\"position:absolute;width:600;height:338;\\"><v:fill src=\\"https://main.ghost.org/content/media/2023/12/sample_640x360_thumb.jpg\\" type=\\"frame\\"/></v:rect>
                 <v:oval fill=\\"t\\" strokecolor=\\"white\\" strokeweight=\\"4px\\" style=\\"position:absolute;left:261;top:130;width:78;height:78\\"><v:fill color=\\"black\\" opacity=\\"30%\\" /></v:oval>
                 <v:shape coordsize=\\"24,32\\" path=\\"m,l,32,24,16,xe\\" fillcolor=\\"white\\" stroked=\\"f\\" style=\\"position:absolute;left:289;top:152;width:30;height:34;\\" />
@@ -3429,7 +3429,7 @@ Ghost: Independent technology for modern publishingBeautiful, modern publishing 
             <!--[endif]-->
 
             <!--[if vml]>
-            <v:group xmlns:v=\\"urn:schemas-microsoft-com:vml\\" xmlns:w=\\"urn:schemas-microsoft-com:office:word\\" coordsize=\\"600,338\\" coordorigin=\\"0,0\\" href=\\"http://127.0.0.1:2369/404/\\" style=\\"width:600px;height:338px;\\">
+            <v:group xmlns:v=\\"urn:schemas-microsoft-com:vml\\" xmlns:w=\\"urn:schemas-microsoft-com:office:word\\" coordsize=\\"600,338\\" coordorigin=\\"0,0\\" href=\\"http://127.0.0.1:2369/a-random-test-post-3/\\" style=\\"width:600px;height:338px;\\">
                 <v:rect fill=\\"t\\" stroked=\\"f\\" style=\\"position:absolute;width:600;height:338;\\"><v:fill src=\\"https://main.ghost.org/content/media/2023/12/sample_640x360_thumb.jpg\\" type=\\"frame\\"/></v:rect>
                 <v:oval fill=\\"t\\" strokecolor=\\"white\\" strokeweight=\\"4px\\" style=\\"position:absolute;left:261;top:130;width:78;height:78\\"><v:fill color=\\"black\\" opacity=\\"30%\\" /></v:oval>
                 <v:shape coordsize=\\"24,32\\" path=\\"m,l,32,24,16,xe\\" fillcolor=\\"white\\" stroked=\\"f\\" style=\\"position:absolute;left:289;top:152;width:30;height:34;\\" />
