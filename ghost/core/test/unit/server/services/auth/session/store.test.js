@@ -6,9 +6,6 @@ const sinon = require('sinon');
 const should = require('should');
 
 describe('Auth Service SessionStore', function () {
-    before(function () {
-        models.init();
-    });
     afterEach(function () {
         sinon.restore();
     });

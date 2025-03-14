@@ -6,10 +6,6 @@ const should = require('should');
 const labs = require('../../../../../../core/shared/labs');
 
 describe('Session Service', function () {
-    before(function () {
-        models.init();
-    });
-
     afterEach(function () {
         sinon.restore();
     });

@@ -9,8 +9,6 @@ describe('Admin API Key Auth', function () {
     const ADMIN_API_URL_VERSIONED = '/ghost/api/v4/admin/';
     const ADMIN_API_URL_NON_VERSIONED = '/ghost/api/admin/';
 
-    before(models.init);
-
     beforeEach(function () {
         const fakeApiKey = {
             id: '1234',
