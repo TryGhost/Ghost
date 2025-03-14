@@ -13,7 +13,11 @@ export default class HomeRoute extends Route {
             return this.router.transitionTo('setup.done');
         }
 
-        this.router.transitionTo('dashboard');
+        if (this.feature.ActivityPub) {
+            this.router.transitionTo('activitypub-x');
+        } else {
+            this.router.transitionTo('dashboard');
+        }
     }
 
     resetController(controller) {
