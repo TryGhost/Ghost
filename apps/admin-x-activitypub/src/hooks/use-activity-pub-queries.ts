@@ -464,20 +464,36 @@ export function useExploreProfilesForUser(handle: string) {
     const fetchExploreProfiles = useCallback(async () => {
         const siteUrl = await getSiteUrl();
         const api = createActivityPubAPI(handle, siteUrl);
+
+        // Collect all handles with their category info
+        const allHandles = Object.entries(exploreSites).flatMap(([key, category]) => category.sites.map(profileHandle => ({
+            key,
+            categoryName: category.categoryName,
+            profileHandle
+        })));
+
+        // Fetch all profiles in parallel
+        const allResults = await Promise.allSettled(
+            allHandles.map(item => api.getProfile(item.profileHandle)
+                .then(profile => ({...item, profile}))
+            )
+        );
+
+        // Organize results back into categories
         const results: Record<string, { categoryName: string; sites: Profile[] }> = {};
 
-        for (const [key, category] of Object.entries(exploreSites)) {
-            const settledResults = await Promise.allSettled(
-                category.sites.map(suggestedHandle => api.getProfile(suggestedHandle))
-            );
+        allResults
+            .filter((result): result is PromiseFulfilledResult<typeof allHandles[0] & { profile: Profile }> => result.status === 'fulfilled'
+            )
+            .forEach((result) => {
+                const {key, categoryName, profile} = result.value;
 
-            results[key] = {
-                categoryName: category.categoryName,
-                sites: settledResults
-                    .filter((result): result is PromiseFulfilledResult<Profile> => result.status === 'fulfilled')
-                    .map(result => result.value)
-            };
-        }
+                if (!results[key]) {
+                    results[key] = {categoryName, sites: []};
+                }
+
+                results[key].sites.push(profile);
+            });
 
         return results;
     }, [handle]);
