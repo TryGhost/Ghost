@@ -41,7 +41,7 @@ export const ExploreProfile: React.FC<ExploreProfileProps & {
             }}
         >
             <APAvatar author={profile.actor} onClick={() => onOpenChange?.(false)} />
-            <div className='flex w-full flex-col gap-2 border-b border-gray-200 pb-4'>
+            <div className='flex w-full flex-col gap-2 border-b border-gray-200 pb-4 dark:border-gray-950'>
                 <div className='flex items-center justify-between gap-3'>
                     <div className='flex grow flex-col'>
                         <span className='font-semibold text-black dark:text-white'>{!isLoading ? profile.actor.name : <Skeleton className='w-full max-w-64' />}</span>
@@ -88,13 +88,15 @@ const Explore: React.FC = () => {
     return (
         <Layout>
             {!isExplainerClosed &&
-                <div className='relative mt-6 flex items-center gap-1 rounded-md bg-gradient-to-r from-[#CFB0FF66] to-[#B6E8FF66] p-5'>
-                    <LucideIcon.Sprout className='text-purple' size={42} strokeWidth={0.75} />
-                    <div className='mt-1 flex flex-col gap-[2px]'>
-                        <H4>The fastest way to grow your followers, is to follow others!</H4>
-                        <p className='text-sm text-gray-800'>Here are some recommendations to get you started, from Ghost publishers and other great accounts from around the social web.</p>
+                <div className='relative mt-6 flex items-start gap-1 rounded-md bg-gradient-to-r from-[#CFB0FF66] to-[#B6E8FF66] p-4 pr-10 dark:from-[#CFB0FF20] dark:to-[#B6E8FF20]'>
+                    <div className='min-w-[46px]'>
+                        <LucideIcon.Sprout className='text-purple' size={46} strokeWidth={0.75} />
                     </div>
-                    <Button className='absolute right-3 top-3 h-6 w-6 opacity-40' variant='link' onClick={() => setExplainerClosed(true)}><LucideIcon.X size={20} /></Button>
+                    <div className='mt-1 flex flex-col gap-[2px]'>
+                        <H4 className='text-pretty'>The fastest way to grow your followers, is to follow others!</H4>
+                        <p className='2xl:text-pretty text-balance text-sm text-black/60 dark:text-white/60'>Here are some recommendations to get you started, from Ghost publishers and other great accounts from around the social web.</p>
+                    </div>
+                    <Button className='absolute right-4 top-[17px] h-6 w-6 opacity-40' variant='link' onClick={() => setExplainerClosed(true)}><LucideIcon.X size={20} /></Button>
                 </div>
             }
             <div className='mt-12 flex flex-col gap-12 pb-20'>
@@ -114,7 +116,7 @@ const Explore: React.FC = () => {
                     ) : (
                         exploreProfilesData && Object.entries(exploreProfilesData).map(([category, data]) => (
                             <div key={category} className='mx-auto flex w-full max-w-[640px] flex-col items-center'>
-                                <H4 className='w-full border-b border-gray-200 pb-2 text-xs font-medium uppercase tracking-wider text-gray-800'>
+                                <H4 className='w-full border-b border-gray-200 pb-2 text-xs font-medium uppercase tracking-wider text-gray-800 dark:border-gray-900'>
                                     {data.categoryName}
                                 </H4>
                                 <div className='w-full'>

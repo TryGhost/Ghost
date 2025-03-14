@@ -30,6 +30,7 @@ interface ArticleModalProps {
     focusReply: boolean;
     focusReplies: boolean;
     width?: 'narrow' | 'wide';
+    disableStats?: boolean;
     history: {
         activityId: string;
         object: ObjectProperties;
@@ -373,6 +374,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
     focusReply,
     focusReplies,
     width = 'narrow',
+    disableStats = false,
     history = []
 }) => {
     const MODAL_SIZE_SM = 640;
@@ -882,6 +884,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                     object={object}
                                     repostCount={object.repostCount ?? 0}
                                     showHeader={(canNavigateBack || (threadParents.length > 0))}
+                                    showStats={!disableStats}
                                     type='Note'
                                     onCommentClick={() => {
                                         repliesRef.current?.scrollIntoView({

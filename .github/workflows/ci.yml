@@ -999,6 +999,9 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
+      - name: Install npm v8 # downgrade from v10 to v8 due to https://github.com/npm/cli/issues/6738
+        run: npm install -g npm@8
+
       - name: Install Ghost-CLI
         run: npm install -g ghost-cli@latest
 
