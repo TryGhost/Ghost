@@ -1,6 +1,6 @@
 import React from 'react';
 import {Avatar} from '../Avatar';
-import {Comment, useAppContext} from '../../../AppContext';
+import {Comment, OpenCommentForm, useAppContext} from '../../../AppContext';
 import {ReactComponent as EditIcon} from '../../../images/icons/edit.svg';
 import {Editor, EditorContent} from '@tiptap/react';
 import {ReactComponent as SpinnerIcon} from '../../../images/icons/spinner.svg';
@@ -8,9 +8,10 @@ import {Transition} from '@headlessui/react';
 import {useCallback, useEffect, useRef, useState} from 'react';
 import {usePopupOpen} from '../../../utils/hooks';
 
-type Progress = 'default' | 'sending' | 'sent' | 'error';
+export type Progress = 'default' | 'sending' | 'sent' | 'error';
 export type SubmitSize = 'small' | 'medium' | 'large';
-type FormEditorProps = {
+export type FormEditorProps = {
+    comment?: Comment;
     submit: (data: {html: string}) => Promise<void>;
     progress: Progress;
     setProgress: (progress: Progress) => void;
@@ -18,16 +19,42 @@ type FormEditorProps = {
     reduced?: boolean;
     isOpen: boolean;
     editor: Editor | null;
-    submitText: JSX.Element | null;
+    submitText: React.ReactNode;
     submitSize: SubmitSize;
+    openForm?: OpenCommentForm;
 };
-const FormEditor: React.FC<FormEditorProps> = ({submit, progress, setProgress, close, reduced, isOpen, editor, submitText, submitSize}) => {
-    const {t} = useAppContext();
+
+export const FormEditor: React.FC<FormEditorProps> = ({comment, submit, progress, setProgress, close, isOpen, editor, submitText, submitSize, openForm}) => {
+    const {dispatchAction, t} = useAppContext();
     let buttonIcon = null;
 
+    useEffect(() => {
+        if (editor && openForm) {
+            const checkContent = () => {
+                const hasUnsavedChanges = comment && openForm.type === 'edit' ?
+                    editor.getHTML() !== comment.html :
+                    !editor.isEmpty;
+
+                // avoid unnecessary state updates to prevent infinite loops
+                if (openForm.hasUnsavedChanges !== hasUnsavedChanges) {
+                    dispatchAction('setCommentFormHasUnsavedChanges', {id: openForm.id, hasUnsavedChanges});
+                }
+            };
+
+            editor.on('update', checkContent);
+            editor.on('transaction', checkContent);
+
+            checkContent();
+
+            return () => {
+                editor.off('update', checkContent);
+                editor.off('transaction', checkContent);
+            };
+        }
+    }, [editor, comment, openForm, dispatchAction]);
+
     if (progress === 'sending') {
-        submitText = null;
-        buttonIcon = <SpinnerIcon className="h-[24px] w-[24px] fill-white dark:fill-black" />;
+        buttonIcon = <SpinnerIcon className={`h-[24px] w-[24px] fill-white`} data-testid="button-spinner" />;
     }
 
     const stopIfFocused = useCallback((event) => {
@@ -103,31 +130,31 @@ const FormEditor: React.FC<FormEditorProps> = ({submit, progress, setProgress, c
     }, [editor, close, submitForm]);
 
     return (
-        <div className={`relative w-full pl-[52px] transition-[padding] delay-100 duration-150 ${reduced && 'pl-0'} ${isOpen && 'pl-[1px] pt-[64px] sm:pl-[52px]'}`}>
+        <>
             <div
-                className={`shadow-form hover:shadow-formxl w-full rounded-md border border-none border-slate-50 bg-[rgba(255,255,255,0.9)] px-3 py-4 font-sans text-[16.5px] leading-normal transition-all delay-100 duration-150 focus:outline-0 dark:border-none dark:bg-[rgba(255,255,255,0.08)] dark:text-neutral-300 dark:shadow-transparent ${isOpen ? 'min-h-[144px] cursor-text pb-[68px] pt-2' : 'min-h-[48px] cursor-pointer overflow-hidden hover:border-slate-300'}
-            `}
+                className={`text-md min-h-[120px] w-full rounded-lg border border-black/10 bg-white/75 p-2 pb-[68px] font-sans leading-normal transition-all delay-100 duration-150 focus:outline-0 sm:px-3 sm:text-lg dark:bg-white/10 dark:text-neutral-300 ${isOpen ? 'cursor-text' : 'cursor-pointer'}`}
                 data-testid="form-editor">
                 <EditorContent
                     editor={editor} onMouseDown={stopIfFocused}
                     onTouchStart={stopIfFocused}
                 />
             </div>
-            <div className="absolute bottom-[9px] right-[9px] flex space-x-4 transition-[opacity] duration-150">
+            <div className="absolute bottom-1 right-1 flex space-x-4 transition-[opacity] duration-150 sm:bottom-2 sm:right-2">
                 {close &&
-                    <button className="ml-2.5 font-sans text-sm font-medium text-neutral-500 outline-0 dark:text-neutral-400" type="button" onClick={close}>{t('Cancel')}</button>
+                    <button className="ml-2.5 font-sans text-sm font-medium text-neutral-900/50 outline-0 transition-all hover:text-neutral-900/70 dark:text-white/60 dark:hover:text-white/75" type="button" onClick={close}>{t('Cancel')}</button>
                 }
                 <button
-                    className={`flex w-auto items-center justify-center sm:min-w-[128px] ${submitSize === 'medium' && 'sm:min-w-[100px]'} ${submitSize === 'small' && 'sm:min-w-[64px]'} h-[39px] rounded-[6px] border bg-neutral-900 px-3 py-2 text-center font-sans text-sm font-semibold text-white outline-0 transition-[opacity] duration-150 dark:bg-[rgba(255,255,255,0.9)] dark:text-neutral-800`}
+                    className={`flex w-auto items-center justify-center ${submitSize === 'medium' && 'sm:min-w-[100px]'} ${submitSize === 'small' && 'sm:min-w-[64px]'} h-[40px] rounded-md bg-[var(--gh-accent-color)] px-3 py-2 text-center font-sans text-base font-medium text-white outline-0 transition-colors duration-200 hover:brightness-105 disabled:bg-black/5 disabled:text-neutral-900/30 sm:text-sm dark:disabled:bg-white/15 dark:disabled:text-white/35`}
                     data-testid="submit-form-button"
+                    disabled={!editor || editor.isEmpty}
                     type="button"
                     onClick={submitForm}
                 >
-                    <span>{buttonIcon}</span>
+                    {buttonIcon && <span className="mr-1">{buttonIcon}</span>}
                     {submitText && <span>{submitText}</span>}
                 </button>
             </div>
-        </div>
+        </>
     );
 };
 
@@ -135,13 +162,20 @@ type FormHeaderProps = {
     show: boolean;
     name: string | null;
     expertise: string | null;
+    replyingToId?: string;
+    replyingToText?: string;
     editName: () => void;
     editExpertise: () => void;
 };
 
-const FormHeader: React.FC<FormHeaderProps> = ({show, name, expertise, editName, editExpertise}) => {
+const FormHeader: React.FC<FormHeaderProps> = ({show, name, expertise, replyingToText, editName, editExpertise}) => {
+    const {t} = useAppContext();
+
+    const isReplyingToReply = !!replyingToText;
+
     return (
         <Transition
+            data-testid="form-header"
             enter="transition duration-500 delay-100 ease-in-out"
             enterFrom="opacity-0 -translate-x-2"
             enterTo="opacity-100 translate-x-0"
@@ -150,47 +184,64 @@ const FormHeader: React.FC<FormHeaderProps> = ({show, name, expertise, editName,
             leaveTo="opacity-0"
             show={show}
         >
-            <div
-                className="font-sans text-[17px] font-bold tracking-tight text-[rgb(23,23,23)] dark:text-[rgba(255,255,255,0.85)]"
-                data-testid="member-name"
-                onClick={editName}
-            >
-                {name ? name : 'Anonymous'}
-            </div>
-            <div className="flex items-baseline justify-start">
-                <button
-                    className={`group flex max-w-[80%] items-center justify-start whitespace-nowrap text-left font-sans text-[14px] tracking-tight text-[rgba(0,0,0,0.5)] transition duration-150 hover:text-[rgba(0,0,0,0.75)] sm:max-w-[90%] dark:text-[rgba(255,255,255,0.5)] dark:hover:text-[rgba(255,255,255,0.4)] ${!expertise && 'text-[rgba(0,0,0,0.3)] hover:text-[rgba(0,0,0,0.5)] dark:text-[rgba(255,255,255,0.3)]'}`}
-                    data-testid="expertise-button"
-                    type="button"
-                    onClick={editExpertise}
+            <div className="flex flex-wrap">
+                <div
+                    className="w-full font-sans text-base font-bold leading-snug text-neutral-900 sm:w-auto sm:text-sm dark:text-white/85"
+                    data-testid="member-name"
+                    onMouseDown={editName}
                 >
-                    <span className="... overflow-hidden text-ellipsis">{expertise ? expertise : 'Add your expertise'}</span>
-                    {expertise && <EditIcon className="ml-1 h-[12px] w-[12px] translate-x-[-6px] stroke-[rgba(0,0,0,0.5)] opacity-0 transition-all duration-100 ease-out group-hover:translate-x-0 group-hover:stroke-[rgba(0,0,0,0.75)] group-hover:opacity-100 dark:stroke-[rgba(255,255,255,0.5)] dark:group-hover:stroke-[rgba(255,255,255,0.3)]" />}
-                </button>
+                    {name ? name : 'Anonymous'}
+                </div>
+                <div className="flex items-baseline justify-start">
+                    <button
+                        className={`group flex items-center justify-start whitespace-nowrap text-left font-sans text-base leading-snug text-neutral-900/50 transition duration-150 hover:text-black/75 sm:text-sm dark:text-white/60 dark:hover:text-white/75 ${!expertise && 'text-black/30 hover:text-black/50 dark:text-white/30 dark:hover:text-white/50'}`}
+                        data-testid="expertise-button"
+                        type="button"
+                        onMouseDown={editExpertise}
+                    >
+                        <span><span className="mx-[0.3em] hidden sm:inline">·</span>{expertise ? expertise : 'Add your expertise'}</span>
+                        {expertise && <EditIcon className="ml-1 h-[12px] w-[12px] translate-x-[-6px] stroke-black/50 opacity-0 transition-all duration-100 ease-out group-hover:translate-x-0 group-hover:stroke-black/75 group-hover:opacity-100 dark:stroke-white/60 dark:group-hover:stroke-white/75" />}
+                    </button>
+                </div>
             </div>
+            {isReplyingToReply && (
+                <div className="mt-0.5 line-clamp-1 font-sans text-base leading-snug text-neutral-900/50 sm:text-sm dark:text-white/60" data-testid="replying-to">
+                    <span>{t('Reply to')}:</span>&nbsp;<span className="font-semibold text-neutral-900/60 dark:text-white/70">{replyingToText}</span>
+                </div>
+            )}
         </Transition>
     );
 };
 
 type FormProps = {
     comment?: Comment;
+    editor: Editor | null;
     submit: (data: {html: string}) => Promise<void>;
-    submitText: JSX.Element;
+    submitText: React.ReactNode;
     submitSize: SubmitSize;
     close?: () => void;
-    editor: Editor | null;
-    reduced: boolean;
     isOpen: boolean;
+    reduced: boolean;
+    openForm?: OpenCommentForm;
 };
 
-const Form: React.FC<FormProps> = ({comment, submit, submitText, submitSize, close, editor, reduced, isOpen}) => {
-    const {member, dispatchAction} = useAppContext();
+const Form: React.FC<FormProps> = ({
+    comment,
+    submit,
+    submitText,
+    submitSize,
+    close,
+    editor,
+    reduced,
+    isOpen,
+    openForm
+}) => {
+    const {member} = useAppContext();
     const isAskingDetails = usePopupOpen('addDetailsPopup');
     const [progress, setProgress] = useState<Progress>('default');
     const formEl = useRef(null);
 
     const memberName = member?.name ?? comment?.member?.name;
-    const memberExpertise = member?.expertise ?? comment?.member?.expertise;
 
     if (progress === 'sending' || (memberName && isAskingDetails)) {
         // Force open
@@ -204,6 +255,67 @@ const Form: React.FC<FormProps> = ({comment, submit, submitText, submitSize, clo
         }
     };
 
+    useEffect(() => {
+        if (!editor) {
+            return;
+        }
+
+        // Disable editing if the member doesn't have a name or when we are submitting the form
+        editor.setEditable(!!memberName && progress !== 'sending');
+    }, [editor, memberName, progress]);
+
+    return (
+        <form
+            ref={formEl}
+            data-testid="form"
+            onMouseDown={preventIfFocused}
+            onTouchStart={preventIfFocused}
+        >
+            <FormEditor
+                close={close}
+                comment={comment}
+                editor={editor}
+                isOpen={isOpen}
+                openForm={openForm}
+                progress={progress}
+                reduced={reduced}
+                setProgress={setProgress}
+                submit={submit}
+                submitSize={submitSize}
+                submitText={submitText}
+            />
+        </form>
+    );
+};
+
+type FormWrapperProps = {
+    comment?: Comment;
+    editor: Editor | null;
+    isOpen: boolean;
+    reduced: boolean;
+    openForm?: OpenCommentForm;
+    children: React.ReactNode;
+};
+
+const FormWrapper: React.FC<FormWrapperProps> = ({
+    comment,
+    editor,
+    isOpen,
+    reduced,
+    openForm,
+    children
+}) => {
+    const {member, dispatchAction} = useAppContext();
+
+    const memberName = member?.name ?? comment?.member?.name;
+    const memberExpertise = member?.expertise ?? comment?.member?.expertise;
+
+    let openStyles = '';
+    if (isOpen) {
+        const isReplyToReply = !!openForm?.in_reply_to_snippet;
+        openStyles = isReplyToReply ? 'pl-[1px] pt-[68px] sm:pl-[44px] sm:pt-[56px]' : 'pl-[1px] pt-[48px] sm:pl-[44px] sm:pt-[40px]';
+    }
+
     const openEditDetails = useCallback((options) => {
         editor?.commands?.blur();
 
@@ -211,21 +323,19 @@ const Form: React.FC<FormProps> = ({comment, submit, submitText, submitSize, clo
             type: 'addDetailsPopup',
             expertiseAutofocus: options.expertiseAutofocus ?? false,
             callback: function (succeeded: boolean) {
-                if (!editor || !formEl.current) {
+                if (!editor) {
                     return;
                 }
 
-                // Don't use focusEditor to avoid loop
                 if (!succeeded) {
                     return;
                 }
 
-                // useEffect is not fast enought to enable it
                 editor.setEditable(true);
                 editor.commands.focus();
             }
         });
-    }, [editor, dispatchAction, formEl]);
+    }, [editor, dispatchAction]);
 
     const editName = useCallback(() => {
         openEditDetails({expertiseAutofocus: false});
@@ -253,32 +363,34 @@ const Form: React.FC<FormProps> = ({comment, submit, submitText, submitSize, clo
         editor.commands.focus();
     }, [editor, editName, memberName]);
 
-    useEffect(() => {
-        if (!editor) {
-            return;
-        }
-
-        // Disable editing if the member doesn't have a name or when we are submitting the form
-        editor.setEditable(!!memberName && progress !== 'sending');
-    }, [editor, memberName, progress]);
-
     return (
-        <form ref={formEl} className={`-mx-3 mb-10 mt-[-10px] rounded-md px-3 pb-2 pt-3 transition duration-200 ${isOpen ? 'cursor-default' : 'cursor-pointer'} ${reduced && 'pl-1'}`} data-testid="form" onClick={focusEditor} onMouseDown={preventIfFocused} onTouchStart={preventIfFocused}>
-            <div className="relative w-full">
+        <div className={`-mx-2 mt-[-10px] rounded-md transition duration-200 ${isOpen ? 'cursor-default' : 'cursor-pointer'}`}>
+            <div className="relative w-full" onClick={focusEditor}>
                 <div className="pr-[1px] font-sans leading-normal dark:text-neutral-300">
-                    <FormEditor close={close} editor={editor} isOpen={isOpen} progress={progress} reduced={reduced} setProgress={setProgress} submit={submit} submitSize={submitSize} submitText={submitText} />
-                </div>
-                <div className='absolute left-0 top-1 flex h-12 w-full items-center justify-start'>
-                    <div className="pointer-events-none mr-3 grow-0">
-                        <Avatar comment={comment} />
+                    <div className={`relative mb-7 w-full pl-[40px] transition-[padding] delay-100 duration-150 sm:pl-[44px] ${reduced && 'pl-0'} ${openStyles}`}>
+                        {children}
                     </div>
-                    <div className="grow-1 w-full">
-                        <FormHeader editExpertise={editExpertise} editName={editName} expertise={memberExpertise} name={memberName} show={isOpen} />
+                </div>
+                <div className='absolute left-0 top-1 flex h-11 w-full items-start justify-start sm:h-12'>
+                    <div className="pointer-events-none mr-2 grow-0 sm:mr-3">
+                        <Avatar member={member} />
+                    </div>
+                    <div className="grow-1 mt-0.5 w-full">
+                        <FormHeader
+                            editExpertise={editExpertise}
+                            editName={editName}
+                            expertise={memberExpertise}
+                            name={memberName}
+                            replyingToId={openForm?.in_reply_to_id}
+                            replyingToText={openForm?.in_reply_to_snippet}
+                            show={isOpen}
+                        />
                     </div>
                 </div>
             </div>
-        </form>
+        </div>
     );
 };
 
+export {Form, FormWrapper};
 export default Form;

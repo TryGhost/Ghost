@@ -1,0 +1,226 @@
+{
+  "timestamp": {
+    "type": "mockingbird.datetimeBetween",
+    "params": [
+      {
+        "start": "2024-03-01T00:00:00Z",
+        "end": "2025-03-01T00:00:00Z"
+      }
+    ]
+  },
+  "session_id": {
+    "type": "string.uuid"
+  },
+  "action": {
+    "type": "mockingbird.pick",
+    "params": [
+      {
+        "values": [
+          "page_hit"
+        ]
+      }
+    ]
+  },
+  "version": {
+    "type": "mockingbird.pick",
+    "params": [
+      {
+        "values": [
+          "1"
+        ]
+      }
+    ]
+  },
+  "payload": {
+    "type": "mockingbird.pickWeighted",
+    "params": [
+      {
+        "values": [
+          {
+              "user-agent": "Mozilla/5.0 (Linux; Android 5.1.1; SM-G9350FG Build/LMY47X) AppleWebKit/537.39 (KHTML, like Gecko)  Chrome/47.0.1565.292 Mobile Safari/603.6",
+              "locale": "en-US",
+              "referrer": "https://www.google.com",
+              "pathname": "/coming-soon/",
+              "href": "https://web-analytics.ghost.is/coming-soon/",
+              "site_uuid": "mock_site_uuid"
+          },
+          {
+              "user-agent": "Mozilla/5.0 (Windows; Windows NT 10.0; WOW64) AppleWebKit/533.50 (KHTML, like Gecko) Chrome/50.0.2369.356 Safari/535",
+              "locale": "en-US",
+              "referrer": "https://www.kike.io",
+              "pathname": "/about/",
+              "href": "https://web-analytics.ghost.is/about/",
+              "site_uuid": "mock_site_uuid"
+          },
+          {
+              "user-agent": "Mozilla/5.0 (Windows; U; Windows NT 10.3; WOW64) AppleWebKit/601.49 (KHTML, like Gecko) Chrome/54.0.3700.314 Safari/536.8 Edge/14.54794",
+              "locale": "en-US",
+              "referrer": "https://www.ghost.org",
+              "pathname": "/team/",
+              "href": "https://web-analytics.ghost.is/team/",
+              "site_uuid": "mock_site_uuid"
+          },
+          {
+              "user-agent": "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_3_7; en-US) AppleWebKit/537.1 (KHTML, like Gecko) Chrome/54.0.1911.130 Safari/534",
+              "locale": "en-US",
+              "referrer": "https://www.example.com",
+              "pathname": "/contact/",
+              "href": "https://web-analytics.ghost.is/contact/",
+              "site_uuid": "mock_site_uuid"
+          },
+          {
+            "user-agent": "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 8_4_1) Gecko/20100101 Firefox/57.8",
+            "locale": "en-US",
+            "referrer": "https://www.bing.com",
+            "pathname": "/coming-soon/",
+            "href": "https://web-analytics.ghost.is/coming-soon/",
+            "site_uuid": "mock_site_uuid"
+          },
+          {
+            "user-agent": "Mozilla/5.0 (compatible; MSIE 7.0; Windows; Windows NT 6.2; x64 Trident/4.0)",
+            "locale": "en-US",
+            "referrer": "https://www.yahoo.com",
+            "pathname": "/a-great-post/",
+            "href": "https://web-analytics.ghost.is/a-great-post/",
+            "site_uuid": "mock_site_uuid"
+          },
+          {
+            "user-agent": "Mozilla/5.0 (Android; Android 7.1; LG-H900 Build/NRD90M) AppleWebKit/536.18 (KHTML, like Gecko)  Chrome/47.0.1429.244 Mobile Safari/534.5",
+            "locale": "en-US",
+            "referrer": "https://www.kagi.com",
+            "pathname": "/a-really-bad-post/",
+            "href": "https://web-analytics.ghost.is/a-really-bad-post/",
+            "site_uuid": "mock_site_uuid"
+          },
+          {
+            "user-agent": "Mozilla/5.0 (Windows NT 6.3; Win64; x64) Gecko/20100101 Firefox/56.9",
+            "locale": "en-US",
+            "referrer": "https://www.duckduckgo.com",
+            "pathname": "/a-meh-post/",
+            "href": "https://web-analytics.ghost.is/a-meh-post/",
+            "site_uuid": "mock_site_uuid"
+          },
+          {
+            "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.5112.102 Safari/537.36",
+            "locale": "en-US",
+            "referrer": "https://www.google.com",
+            "pathname": "/a-really-long-page/",
+            "href": "https://web-analytics.ghost.is/a-really-long-page/",
+            "site_uuid": "mock_site_uuid"
+          },
+          {
+            "user-agent": "Mozilla/5.0 (Windows; U; Windows NT 10.0; WOW64; en-US) AppleWebKit/535.28 (KHTML, like Gecko) Chrome/53.0.1437.218 Safari/533.8 Edge/10.69755",
+            "locale": "en-US",
+            "referrer": "https://www.ghost.org",
+            "pathname": "/coming-soon/",
+            "href": "https://web-analytics.ghost.is/coming-soon/",
+            "site_uuid": "mock_site_uuid"
+          },
+          {
+            "user-agent": "Mozilla/5.0 (U; Linux i575 ; en-US) AppleWebKit/536.4 (KHTML, like Gecko) Chrome/50.0.3748.367 Safari/534",
+            "locale": "en-US",
+            "referrer": "https://www.ghost.org",
+            "pathname": "/about/",
+            "href": "https://web-analytics.ghost.is/about/",
+            "site_uuid": "mock_site_uuid"
+          },
+          {
+            "user-agent": "Mozilla/5.0 (Linux; Linux i652 x86_64) AppleWebKit/533.44 (KHTML, like Gecko) Chrome/50.0.1821.103 Safari/603",
+            "locale": "en-US",
+            "referrer": "https://www.google.com",
+            "pathname": "/",
+            "href": "https://web-analytics.ghost.is/",
+            "site_uuid": "mock_site_uuid"
+          },
+          {
+            "user-agent": "Mozilla/5.0 (Linux; U; Linux x86_64) AppleWebKit/536.28 (KHTML, like Gecko) Chrome/55.0.1576.204 Safari/600",
+            "locale": "en-US",
+            "referrer": "https://www.x.com",
+            "pathname": "/analytics/",
+            "href": "https://web-analytics.ghost.is/analytics/",
+            "site_uuid": "mock_site_uuid"
+          },
+          {
+            "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.5112.102 Safari/537.36",
+            "locale": "en-US",
+            "referrer": "https://www.kike.io",
+            "pathname": "/how-to-use-ghost/",
+            "href": "https://web-analytics.ghost.is/how-to-use-ghost/",
+            "site_uuid": "mock_site_uuid"
+          },
+          {
+            "user-agent": "Mozilla/5.0 (Windows; Windows NT 10.3; Win64; x64) AppleWebKit/603.33 (KHTML, like Gecko) Chrome/52.0.2733.193 Safari/535",
+            "locale": "en-US",
+            "referrer": "https://www.facebook.com",
+            "pathname": "/why-ghost/",
+            "href": "https://web-analytics.ghost.is/why-ghost/",
+            "site_uuid": "mock_site_uuid"
+          },
+          {
+            "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 9_1_9) AppleWebKit/602.15 (KHTML, like Gecko) Chrome/48.0.3693.118 Safari/534",
+            "locale": "en-US",
+            "referrer": "https://www.bsky.app",
+            "pathname": "/open-source/",
+            "href": "https://web-analytics.ghost.is/open-source/",
+            "site_uuid": "mock_site_uuid"
+          },
+          {
+            "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 9_1_9) AppleWebKit/602.15 (KHTML, like Gecko) Chrome/48.0.3693.118 Safari/534",
+            "locale": "en-US",
+            "referrer": "https://www.chatgpt.com",
+            "pathname": "/how-to-make-cheese/",
+            "href": "https://web-analytics.ghost.is/how-to-make-cheese/",
+            "site_uuid": "mock_site_uuid"
+          },
+          {
+            "user-agent": "Mozilla/5.0 (U; Linux i666 x86_64) AppleWebKit/537.12 (KHTML, like Gecko) Chrome/51.0.3006.181 Safari/534",
+            "locale": "en-US",
+            "referrer": "https://www.youtube.com",
+            "pathname": "/recipes/",
+            "href": "https://web-analytics.ghost.is/recipes/",
+            "site_uuid": "mock_site_uuid"
+          },
+          {
+            "user-agent": "Mozilla/5.0 (Windows; Windows NT 10.3; Win64; x64) AppleWebKit/603.33 (KHTML, like Gecko) Chrome/52.0.2733.193 Safari/535",
+            "locale": "en-US",
+            "referrer": "https://www.ghost.org",
+            "pathname": "/terms-of-service/",
+            "href": "https://web-analytics-medium.ghost.is/terms-of-service/",
+            "site_uuid": "mock_site_uuid_medium"
+          },
+          {
+            "user-agent": "Mozilla/5.0 (U; Linux i666 x86_64) AppleWebKit/537.12 (KHTML, like Gecko) Chrome/51.0.3006.181 Safari/534",
+            "locale": "en-US",
+            "referrer": "https://www.google.com",
+            "pathname": "/new-features/",
+            "href": "https://web-analytics-small.ghost.is/new-features/",
+            "site_uuid": "mock_site_uuid_small"
+          }
+        ],
+        "weights": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ]
+      }
+    ]
+  }
+}

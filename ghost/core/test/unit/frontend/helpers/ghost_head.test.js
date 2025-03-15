@@ -10,6 +10,8 @@ const models = require('../../../../core/server/models');
 const imageLib = require('../../../../core/server/lib/image');
 const routing = require('../../../../core/frontend/services/routing');
 const urlService = require('../../../../core/server/services/url');
+const {cardAssets} = require('../../../../core/frontend/services/assets-minification');
+const logging = require('@tryghost/logging');
 
 const ghost_head = require('../../../../core/frontend/helpers/ghost_head');
 const proxy = require('../../../../core/frontend/services/proxy');
@@ -340,6 +342,19 @@ describe('{{ghost_head}} helper', function () {
             published_at: new Date(0),
             updated_at: new Date(0)
         }));
+
+        posts.push(createPost({ // Post 10
+            title: 'Testing stats',
+            uuid: 'post_uuid',
+            excerpt: 'Creating stats for the site',
+            mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('Creating stats for the site'),
+            authors: [
+                authors[3]
+            ],
+            primary_author: authors[3],
+            published_at: new Date(0),
+            updated_at: new Date(0)
+        }));
     };
 
     before(function () {
@@ -380,12 +395,19 @@ describe('{{ghost_head}} helper', function () {
     });
 
     describe('without Code Injection', function () {
+        let loggingErrorStub; // assert # of calls if test throws errors, do not globally stub
+
         beforeEach(function () {
             configUtils.set({url: 'http://localhost:65530/'});
         });
 
+        afterEach(function () {
+            sinon.restore();
+        });
+
         it('returns meta tag string on paginated index page without structured data and schema', async function () {
             // @TODO: later we can extend this fn with an `meta` object e.g. locals.meta
+            loggingErrorStub = sinon.stub(logging, 'error');
             await testGhostHead(testUtils.createHbsResponse({
                 locals: {
                     relativeUrl: '/page/2/',
@@ -393,6 +415,7 @@ describe('{{ghost_head}} helper', function () {
                     safeVersion: '0.3'
                 }
             }));
+            sinon.assert.calledOnce(loggingErrorStub);
         });
 
         it('returns structured data on first index page', async function () {
@@ -758,19 +781,27 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('disallows indexing for preview pages', async function () {
+            loggingErrorStub = sinon.stub(logging, 'error');
             await testGhostHead(testUtils.createHbsResponse({
                 locals: {
                     context: ['preview', 'post']
                 }
             }));
+            // Unknown Request error for favico
+            // TypeError for primary_author being undefined
+            sinon.assert.calledOnce(loggingErrorStub);
         });
 
         it('implicit indexing settings for non-preview pages', async function () {
+            loggingErrorStub = sinon.stub(logging, 'error');
             await testGhostHead(testUtils.createHbsResponse({
                 locals: {
                     context: ['featured', 'paged', 'index', 'post', 'amp', 'home', 'unicorn']
                 }
             }));
+            // Unknown Request error for favico
+            // TypeError for primary_author being undefined
+            sinon.assert.calledOnce(loggingErrorStub);
         });
 
         it('outputs structured data but not schema for custom collection', async function () {
@@ -938,6 +969,8 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('does not contain amphtml link', async function () {
+            let loggingErrorStub = sinon.stub(logging, 'error');
+
             const renderObject = {
                 post: posts[1]
             };
@@ -950,6 +983,8 @@ describe('{{ghost_head}} helper', function () {
                     safeVersion: '0.3'
                 }
             }));
+
+            sinon.assert.calledOnce(loggingErrorStub);
         });
     });
 
@@ -1065,11 +1100,196 @@ describe('{{ghost_head}} helper', function () {
                 }
             }));
         });
+
+        it('does not override code injection', async function () {
+            settingsCache.get.withArgs('codeinjection_head').returns('<style>:root {--ghost-accent-color: #site-code-injection}</style>');
+
+            const renderObject = {
+                post: Object.assign({}, posts[1], {codeinjection_head: '<style>:root {--ghost-accent-color: #post-code-injection}</style>'})
+            };
+
+            const templateOptions = {
+                site: {
+                    accent_color: '#site-setting'
+                }
+            };
+
+            await testGhostHead(testUtils.createHbsResponse({
+                templateOptions,
+                renderObject: renderObject,
+                locals: {
+                    relativeUrl: '/post/amp/',
+                    context: null,
+                    safeVersion: '0.3'
+                }
+            }));
+        });
+    });
+
+    describe('custom fonts', function () {
+        it('includes custom font when set in options data object and preview is set', async function () {
+            const renderObject = {
+                post: posts[1]
+            };
+
+            const templateOptions = {
+                site: {
+                    heading_font: 'Space Grotesk',
+                    body_font: 'Poppins',
+                    _preview: 'test'
+                }
+            };
+
+            await testGhostHead(testUtils.createHbsResponse({
+                templateOptions,
+                renderObject: renderObject,
+                locals: {
+                    relativeUrl: '/post/',
+                    context: ['post'],
+                    safeVersion: '0.3'
+                }
+            }));
+        });
+
+        it('includes custom font when set in settings cache and no preview', async function () {
+            settingsCache.get.withArgs('heading_font').returns('Playfair Display');
+            settingsCache.get.withArgs('body_font').returns('Lora');
+
+            const renderObject = {
+                post: posts[1]
+            };
+
+            await testGhostHead(testUtils.createHbsResponse({
+                templateOptions: {site: {}},
+                renderObject: renderObject,
+                locals: {
+                    relativeUrl: '/post/',
+                    context: ['post'],
+                    safeVersion: '0.3'
+                }
+            }));
+        });
+
+        it('does not include custom font when not set', async function () {
+            settingsCache.get.withArgs('heading_font').returns(null);
+            settingsCache.get.withArgs('body_font').returns('');
+
+            const renderObject = {
+                post: posts[1]
+            };
+
+            await testGhostHead(testUtils.createHbsResponse({
+                templateOptions: {site: {}},
+                renderObject,
+                locals: {
+                    relativeUrl: '/post/',
+                    context: ['post'],
+                    safeVersion: '0.3'
+                }
+            }));
+        });
+
+        it('does not include custom font when invalid', async function () {
+            settingsCache.get.withArgs('heading_font').returns(null);
+            settingsCache.get.withArgs('body_font').returns('Wendy Sans');
+
+            const templateOptions = {
+                site: {
+                    heading_font: 'Comic Sans',
+                    body_font: ''
+                }
+            };
+
+            const renderObject = {
+                post: posts[1]
+            };
+
+            await testGhostHead(testUtils.createHbsResponse({
+                templateOptions,
+                renderObject,
+                locals: {
+                    relativeUrl: '/post/',
+                    context: ['post'],
+                    safeVersion: '0.3'
+                }
+            }));
+        });
+
+        it('does not inject custom fonts when preview is set and default font was selected (empty string)', async function () {
+            // The site has fonts set up, but we override them with Theme default fonts (empty string)
+            settingsCache.get.withArgs('heading_font').returns('Playfair Display');
+            settingsCache.get.withArgs('body_font').returns('Lora');
+
+            const renderObject = {
+                post: posts[1]
+            };
+
+            await testGhostHead(testUtils.createHbsResponse({
+                templateOptions: {site: {
+                    heading_font: '',
+                    body_font: '',
+                    _preview: 'test'
+                }},
+                renderObject,
+                locals: {
+                    relativeUrl: '/post/',
+                    context: ['post'],
+                    safeVersion: '0.3'
+                }
+            }));
+        });
+
+        it('can handle preview being set and custom font keys missing', async function () {
+            // The site has fonts set up, but we override them with Theme default fonts (empty string)
+            settingsCache.get.withArgs('heading_font').returns('Playfair Display');
+            settingsCache.get.withArgs('body_font').returns('Lora');
+
+            const renderObject = {
+                post: posts[1]
+            };
+
+            await testGhostHead(testUtils.createHbsResponse({
+                templateOptions: {site: {
+                    // No keys for custom fonts set
+                    _preview: 'test'
+                }},
+                renderObject,
+                locals: {
+                    relativeUrl: '/post/',
+                    context: ['post'],
+                    safeVersion: '0.3'
+                }
+            }));
+        });
     });
 
     describe('members scripts', function () {
         it('includes portal when members enabled', async function () {
             settingsCache.get.withArgs('members_enabled').returns(true);
+
+            await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+        });
+
+        it('includes portal when recommendations enabled', async function () {
+            settingsCache.get.withArgs('recommendations_enabled').returns(true);
+
+            await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+        });
+
+        it('includes portal when donations enabled', async function () {
+            settingsCache.get.withArgs('donations_enabled').returns(true);
 
             await testGhostHead(testUtils.createHbsResponse({
                 locals: {
@@ -1121,16 +1341,82 @@ describe('{{ghost_head}} helper', function () {
     });
 
     describe('search scripts', function () {
-        it('includes search when labs flag enabled', async function () {
-            sinon.stub(labs, 'isSet').returns(true);
-
-            await testGhostHead(testUtils.createHbsResponse({
+        it('includes search', async function () {
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
                 locals: {
                     relativeUrl: '/',
                     context: ['home', 'index'],
                     safeVersion: '4.3'
                 }
             }));
+
+            rendered.should.match(/sodo-search@/);
+        });
+
+        it('includes locale in search when i18n is enabled', async function () {
+            sinon.stub(labs, 'isSet').withArgs('i18n').returns(true);
+
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+
+            rendered.should.match(/sodo-search@[^>]*?data-locale="en"/);
+        });
+
+        it('does not incldue locale in search when i18n is disabled', async function () {
+            sinon.stub(labs, 'isSet').withArgs('i18n').returns(false);
+
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+
+            rendered.should.not.match(/sodo-search@[^>]*?data-locale="en"/);
+        });
+    });
+
+    describe('CAPTCHA', function () {
+        beforeEach(function () {
+            configUtils.set({
+                captcha: {
+                    enabled: true
+                }
+            });
+        });
+
+        it('returns CAPTCHA script when enabled', async function () {
+            sinon.stub(labs, 'isSet').withArgs('captcha').returns(true);
+
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+
+            rendered.should.match(/hcaptcha/);
+        });
+
+        it('does not return CAPTCHA script when disabled', async function () {
+            sinon.stub(labs, 'isSet').withArgs('captcha').returns(false);
+
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+
+            rendered.should.not.match(/hcaptcha/);
         });
     });
 
@@ -1159,6 +1445,290 @@ describe('{{ghost_head}} helper', function () {
                     safeVersion: '4.3'
                 }
             }));
+        });
+    });
+
+    describe('includes tinybird tracker script when config is set', function () {
+        beforeEach(function () {
+            configUtils.set({
+                tinybird: {
+                    tracker: {
+                        scriptUrl: 'https://unpkg.com/@tinybirdco/flock.js',
+                        endpoint: 'https://api.tinybird.co',
+                        token: 'tinybird_token',
+                        id: 'tb_test_site_uuid',
+                        datasource: 'analytics_events_json_v1'
+                    }
+                }
+            });
+        });
+
+        it('includes tracker script', async function () {
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+
+            rendered.should.match(/script defer src="\/public\/tracker\.js"/);
+        });
+
+        it('with all tb_variables set to undefined on logged out home page', async function () {
+            await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+        });
+
+        it('Sets tb_post_uuid on post page', async function () {
+            const renderObject = {
+                post: posts[10]
+            };
+
+            await testGhostHead(testUtils.createHbsResponse({
+                renderObject: renderObject,
+                locals: {
+                    relativeUrl: '/post/',
+                    context: ['post'],
+                    safeVersion: '0.3'
+                }
+            }));
+        });
+
+        it('sets tb_member_x variables on logged in home page', async function () {
+            const renderObject = {
+                member: {
+                    uuid: 'member_uuid',
+                    status: 'paid'
+                }
+            };
+
+            await testGhostHead(testUtils.createHbsResponse({
+                renderObject: renderObject,
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+        });
+
+        it('sets both tb_member_x variables and tb_post_uuid on logged in post page', async function () {
+            const renderObject = {
+                member: {
+                    uuid: 'member_uuid',
+                    status: 'free'
+                },
+                post: posts[10]
+            };
+
+            await testGhostHead(testUtils.createHbsResponse({
+                renderObject: renderObject,
+                locals: {
+                    relativeUrl: '/post/',
+                    context: ['post'],
+                    safeVersion: '4.3'
+                }
+            }));
+        });
+
+        it('includes datasource when set', async function () {
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+
+            rendered.should.match(/data-datasource="analytics_events_json_v1"/);
+        }); 
+    });
+    describe('respects values from excludes: ', function () {
+        it('when excludes is empty', async function () {
+            settingsCache.get.withArgs('members_enabled').returns(true);
+            settingsCache.get.withArgs('paid_members_enabled').returns(true);
+
+            let rendered = await testGhostHead({hash: {exclude: ''}, ...testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            })});
+            rendered.should.match(/portal@/);
+            rendered.should.match(/sodo-search@/);
+            rendered.should.match(/js.stripe.com/);
+        });
+        it('when exclude contains search', async function () {
+            settingsCache.get.withArgs('members_enabled').returns(true);
+            settingsCache.get.withArgs('paid_members_enabled').returns(true);
+
+            let rendered = await testGhostHead({hash: {exclude: 'search'}, ...testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            })});
+            rendered.should.not.match(/sodo-search@/);
+            rendered.should.match(/portal@/);
+            rendered.should.match(/js.stripe.com/);
+        });
+        it('when exclude contains portal', async function () {
+            settingsCache.get.withArgs('members_enabled').returns(true);
+            settingsCache.get.withArgs('paid_members_enabled').returns(true);
+
+            let rendered = await testGhostHead({hash: {exclude: 'portal'}, ...testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            })});
+            rendered.should.match(/sodo-search@/);
+            rendered.should.not.match(/portal@/);
+            rendered.should.match(/js.stripe.com/);
+        });
+        it('can handle multiple excludes', async function () {
+            settingsCache.get.withArgs('members_enabled').returns(true);
+            settingsCache.get.withArgs('paid_members_enabled').returns(true);
+
+            let rendered = await testGhostHead({hash: {exclude: 'portal,search'}, ...testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            })});
+            rendered.should.not.match(/sodo-search@/);
+            rendered.should.not.match(/portal@/);
+            rendered.should.match(/js.stripe.com/);
+        });
+
+        it('shows the announcement when exclude does not contain announcement', async function () {
+            settingsCache.get.withArgs('members_enabled').returns(true);
+            settingsCache.get.withArgs('paid_members_enabled').returns(true);
+            settingsCache.get.withArgs('announcement_content').returns('Hello world');
+            settingsCache.get.withArgs('announcement_visibility').returns('visitors');
+
+            let rendered = await testGhostHead({hash: {exclude: ''}, ...testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            })});
+            rendered.should.match(/sodo-search@/);
+            rendered.should.match(/portal@/);
+            rendered.should.match(/js.stripe.com/);
+            rendered.should.match(/announcement-bar@/);
+        });
+        it('does not show the announcement when exclude contains announcement', async function () {
+            settingsCache.get.withArgs('members_enabled').returns(true);
+            settingsCache.get.withArgs('paid_members_enabled').returns(true);
+            settingsCache.get.withArgs('announcement_content').returns('Hello world');
+            settingsCache.get.withArgs('announcement_visibility').returns('visitors');
+
+            let rendered = await testGhostHead({hash: {exclude: 'announcement'}, ...testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            })});
+            rendered.should.match(/sodo-search@/);
+            rendered.should.match(/portal@/);
+            rendered.should.match(/js.stripe.com/);
+            rendered.should.match(/generator/);
+            rendered.should.not.match(/announcement-bar@/);
+        });
+
+        it('does not load the comments script when exclude contains comment_counts', async function () {
+            settingsCache.get.withArgs('comments_enabled').returns('all');
+            let rendered = await testGhostHead({hash: {exclude: 'comment_counts'}, ...testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '0.3'
+                }
+            })});
+            rendered.should.not.match(/comment-counts.min.js/);
+        });
+
+        it('loads card assets when not excluded', async function () {
+            // mock the card assets cardAssets.hasFile('js', 'cards.min.js').returns(true);
+            sinon.stub(cardAssets, 'hasFile').returns(true);
+
+            let rendered = await testGhostHead({...testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '0.3'
+                }
+            })});
+            rendered.should.match(/cards.min.js/);
+            rendered.should.match(/cards.min.css/);
+        });
+        it('does not load card assets when excluded with card_assets', async function () {
+            sinon.stub(cardAssets, 'hasFile').returns(true);
+            let rendered = await testGhostHead({hash: {exclude: 'card_assets'}, ...testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '0.3'
+                }
+            })});
+            rendered.should.not.match(/cards.min.js/);
+            rendered.should.not.match(/cards.min.css/);
+        });
+        it('does not load meta tags when excluded with metadata', async function () {
+            let rendered = await testGhostHead({hash: {exclude: 'metadata'}, ...testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '0.3'
+                }
+            })});
+            rendered.should.not.match(/<link rel="canonical"/);
+        });
+        it('does not load schema when excluded with schema', async function () {
+            let rendered = await testGhostHead({hash: {exclude: 'schema'}, ...testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '0.3'
+                }
+            })});
+            rendered.should.not.match(/<script type="application\/ld\+json"/);
+        });
+        it('does not load og: or twitter: attributes when excludd with social_data', async function () {
+            let rendered = await testGhostHead({hash: {exclude: 'social_data'}, ...testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '0.3'
+                }
+            })});
+            rendered.should.not.match(/<meta property="og:/);
+            rendered.should.not.match(/<meta property="twitter:/);
+        });
+        it('does not load cta styles when excluded with cta_styles', async function () {
+            settingsCache.get.withArgs('members_enabled').returns(true);
+            settingsCache.get.withArgs('paid_members_enabled').returns(true);
+            let rendered = await testGhostHead({hash: {exclude: 'cta_styles'}, ...testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '0.3'
+                }
+            })});
+            rendered.should.not.match(/.gh-post-upgrade-cta-content/);
         });
     });
 });

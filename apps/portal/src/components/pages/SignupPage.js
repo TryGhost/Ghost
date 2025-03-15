@@ -7,7 +7,7 @@ import NewsletterSelectionPage from './NewsletterSelectionPage';
 import ProductsSection from '../common/ProductsSection';
 import InputForm from '../common/InputForm';
 import {ValidateInputForm} from '../../utils/form';
-import {getSiteProducts, getSitePrices, hasOnlyFreePlan, isInviteOnlySite, freeHasBenefitsOrDescription, hasOnlyFreeProduct, getFreeProductBenefits, getFreeTierDescription, hasMultipleNewsletters, hasFreeTrialTier, isSignupAllowed} from '../../utils/helpers';
+import {getSiteProducts, getSitePrices, hasAvailablePrices, hasOnlyFreePlan, isInviteOnly, isFreeSignupAllowed, isPaidMembersOnly, freeHasBenefitsOrDescription, hasMultipleNewsletters, hasFreeTrialTier, isSignupAllowed, isSigninAllowed} from '../../utils/helpers';
 import {ReactComponent as InvitationIcon} from '../../images/icons/invitation.svg';
 import {interceptAnchorClicks} from '../../utils/links';
 
@@ -16,6 +16,10 @@ export const SignupPageStyles = `
     position: absolute;
     top: 35px;
     left: 32px;
+}
+html[dir="rtl"] .gh-portal-back-sitetitle {
+    left: unset;
+    right: 32px;
 }
 
 .gh-portal-back-sitetitle .gh-portal-btn {
@@ -109,7 +113,7 @@ export const SignupPageStyles = `
 .gh-portal-signup-message button {
     font-size: 1.4rem;
     font-weight: 600;
-    margin-left: 4px !important;
+    margin-inline-start: 4px !important;
     margin-bottom: -1px;
 }
 
@@ -173,7 +177,7 @@ footer.gh-portal-signup-footer.invite-only .gh-portal-signup-message {
     margin-top: 0;
 }
 
-.gh-portal-invite-only-notification, .gh-portal-members-disabled-notification {
+.gh-portal-invite-only-notification, .gh-portal-members-disabled-notification, .gh-portal-paid-members-only-notification {
     margin: 8px 32px 24px;
     padding: 0;
     text-align: center;
@@ -190,7 +194,7 @@ footer.gh-portal-signup-footer.invite-only .gh-portal-signup-message {
     padding-bottom: 32px;
 }
 
-.gh-portal-invite-only-notification + .gh-portal-signup-message {
+.gh-portal-invite-only-notification + .gh-portal-signup-message, .gh-portal-paid-members-only-notification + .gh-portal-signup-message {
     margin-bottom: 12px;
 }
 
@@ -216,11 +220,11 @@ footer.gh-portal-signup-footer.invite-only .gh-portal-signup-message {
 }
 
 .gh-portal-signup-terms {
-    margin: -16px 0 36px;
+    margin: 0 0 36px;
 }
 
 .gh-portal-signup-terms-wrapper.free-only .gh-portal-signup-terms {
-    margin: -16px 0 24px;
+    margin: 0 0 24px;
 }
 
 .gh-portal-products:has(.gh-portal-product-card) + .gh-portal-signup-terms-wrapper.free-only {
@@ -244,7 +248,7 @@ footer.gh-portal-signup-footer.invite-only .gh-portal-signup-message {
 
 .gh-portal-signup-terms .checkbox {
     position: relative;
-    top: 1px;
+    top: -1px;
     flex-shrink: 0;
     display: inline-block;
     float: left;
@@ -255,6 +259,9 @@ footer.gh-portal-signup-footer.invite-only .gh-portal-signup-message {
     border: 1px solid var(--grey10);
     border-radius: 4px;
     transition: background 0.15s ease-in-out, border-color 0.15s ease-in-out;
+}
+html[dir=rtl] .gh-portal-signup-terms .checkbox {
+    float: right;
 }
 
 .gh-portal-signup-terms label:hover input:not(:checked) + .checkbox {
@@ -274,6 +281,10 @@ footer.gh-portal-signup-footer.invite-only .gh-portal-signup-message {
     opacity: 0;
     transition: opacity 0.15s ease-in-out;
     transform: rotate(-45deg);
+}
+html[dir=rtl] .gh-portal-signup-terms .checkbox:before {
+    left: unset;
+    right: 3px;
 }
 
 .gh-portal-signup-terms input:checked + .checkbox {
@@ -295,14 +306,11 @@ footer.gh-portal-signup-footer.invite-only .gh-portal-signup-message {
     box-shadow: none;
 }
 
-.gh-portal-signup-terms-content {
-    color: var(--grey4);
-    font-size: 1.5rem;
-    line-height: 1.5em;
-}
-
 .gh-portal-signup-terms-content p {
     margin-bottom: 0;
+    color: var(--grey4);
+    font-size: 1.4rem;
+    line-height: 1.25em;
 }
 
 .gh-portal-error .gh-portal-signup-terms-content {
@@ -346,6 +354,8 @@ class SignupPage extends React.Component {
             showNewsletterSelection: false,
             termsCheckboxChecked: false
         };
+
+        this.termsRef = React.createRef();
     }
 
     componentDidMount() {
@@ -385,7 +395,7 @@ class SignupPage extends React.Component {
         const checkboxError = checkboxRequired && !state.termsCheckboxChecked;
 
         return {
-            ...ValidateInputForm({fields: this.getInputFields({state})}),
+            ...ValidateInputForm({fields: this.getInputFields({state}), t: this.context.t}),
             checkbox: checkboxError
         };
     }
@@ -397,20 +407,30 @@ class SignupPage extends React.Component {
             };
         }, () => {
             const {site, onAction} = this.context;
-            const {name, email, plan, errors} = this.state;
+            const {name, email, plan, phonenumber, token, errors} = this.state;
             const hasFormErrors = (errors && Object.values(errors).filter(d => !!d).length > 0);
+
+            // Only scroll checkbox into view if it's the only error
+            const otherErrors = {...errors};
+            delete otherErrors.checkbox;
+            const hasOnlyCheckboxError = errors?.checkbox && Object.values(otherErrors).every(error => !error);
+
+            if (hasOnlyCheckboxError && this.termsRef.current) {
+                this.termsRef.current.scrollIntoView({behavior: 'smooth', block: 'center'});
+            }
+
             if (!hasFormErrors) {
                 if (hasMultipleNewsletters({site})) {
                     this.setState({
                         showNewsletterSelection: true,
-                        pageData: {name, email, plan},
+                        pageData: {name, email, plan, phonenumber, token},
                         errors: {}
                     });
                 } else {
                     this.setState({
                         errors: {}
                     });
-                    onAction('signup', {name, email, plan});
+                    onAction('signup', {name, email, phonenumber, plan, token});
                 }
             }
         });
@@ -456,7 +476,7 @@ class SignupPage extends React.Component {
     }
 
     getSelectedPriceId(prices = [], selectedPriceId) {
-        if (!prices || prices.length === 0) {
+        if (!prices || prices.length === 0 || selectedPriceId === 'free') {
             return 'free';
         }
         const hasSelectedPlan = prices.some((p) => {
@@ -478,12 +498,24 @@ class SignupPage extends React.Component {
             {
                 type: 'email',
                 value: state.email,
-                placeholder: 'jamie@example.com',
+                placeholder: t('jamie@example.com'),
                 label: t('Email'),
                 name: 'email',
                 required: true,
                 tabindex: 2,
                 errorMessage: errors.email || ''
+            },
+            {
+                type: 'text',
+                value: state.phonenumber,
+                placeholder: t('+1 (123) 456-7890'),
+                // Doesn't need translation, hidden field
+                label: t('Phone number'),
+                name: 'phonenumber',
+                required: false,
+                tabindex: -1,
+                autocomplete: 'off',
+                hidden: true
             }
         ];
 
@@ -492,7 +524,7 @@ class SignupPage extends React.Component {
             fields.unshift({
                 type: 'text',
                 value: state.name,
-                placeholder: 'Jamie Larson',
+                placeholder: t('Jamie Larson'),
                 label: t('Name'),
                 name: 'name',
                 required: true,
@@ -546,7 +578,7 @@ class SignupPage extends React.Component {
         const className = `gh-portal-signup-terms ${errorClassName}`;
 
         return (
-            <div className={className} onClick={interceptAnchorClicks}>
+            <div className={className} onClick={interceptAnchorClicks} ref={this.termsRef}>
                 {signupTerms}
             </div>
         );
@@ -555,12 +587,12 @@ class SignupPage extends React.Component {
     renderSubmitButton() {
         const {action, site, brandColor, pageQuery, t} = this.context;
 
-        if (isInviteOnlySite({site, pageQuery})) {
+        if (isInviteOnly({site}) || !hasAvailablePrices({site, pageQuery})) {
             return null;
         }
 
         let label = t('Continue');
-        const showOnlyFree = pageQuery === 'free';
+        const showOnlyFree = pageQuery === 'free' && isFreeSignupAllowed({site});
 
         if (hasOnlyFreePlan({site}) || showOnlyFree) {
             label = t('Sign up');
@@ -619,7 +651,7 @@ class SignupPage extends React.Component {
 
     renderFreeTrialMessage() {
         const {site, t, pageQuery} = this.context;
-        if (hasFreeTrialTier({site, pageQuery}) && !isInviteOnlySite({site})) {
+        if (hasFreeTrialTier({site, pageQuery}) && !isInviteOnly({site}) && hasAvailablePrices({site, pageQuery})) {
             return (
                 <p className='gh-portal-free-trial-notification' data-testid="free-trial-notification-text">
                     {t('After a free trial ends, you will be charged the regular price for the tier you\'ve chosen. You can always cancel before then.')}
@@ -638,6 +670,7 @@ class SignupPage extends React.Component {
                     <div>{t('Already a member?')}</div>
                     <button
                         data-test-button='signin-switch'
+                        data-testid='signin-switch'
                         className='gh-portal-btn gh-portal-btn-link'
                         style={{color: brandColor}}
                         onClick={() => onAction('switchPage', {page: 'signin'})}
@@ -651,7 +684,7 @@ class SignupPage extends React.Component {
 
     renderForm() {
         const fields = this.getInputFields({state: this.state});
-        const {site, pageQuery, t} = this.context;
+        const {site, pageQuery} = this.context;
 
         if (this.state.showNewsletterSelection) {
             return (
@@ -666,42 +699,27 @@ class SignupPage extends React.Component {
             );
         }
 
-        if (isInviteOnlySite({site, pageQuery})) {
-            return (
-                <section>
-                    <div className='gh-portal-section'>
-                        <p
-                            className='gh-portal-invite-only-notification'
-                            data-testid="invite-only-notification-text"
-                        >
-                            {t('This site is invite-only, contact the owner for access.')}
-                        </p>
-                        {this.renderLoginMessage()}
-                    </div>
-                </section>
-            );
+        // Invite-only site: block signups, offer to sign in
+        if (isInviteOnly({site})) {
+            return this.renderInviteOnlyMessage();
         }
 
-        if (!isSignupAllowed({site})) {
-            return (
-                <section>
-                    <div className='gh-portal-section'>
-                        <p
-                            className='gh-portal-members-disabled-notification'
-                            data-testid="members-disabled-notification-text"
-                        >
-                            {t('Memberships unavailable, contact the owner for access.')}
-                        </p>
-                    </div>
-                </section>
-            );
+        // Paid-members-only site: block free signups, offer to sign in
+        if (isPaidMembersOnly({site}) && pageQuery === 'free') {
+            return this.renderPaidMembersOnlyMessage();
         }
 
-        const freeBenefits = getFreeProductBenefits({site});
-        const freeDescription = getFreeTierDescription({site});
-        const showOnlyFree = pageQuery === 'free';
-        const hasOnlyFree = hasOnlyFreeProduct({site}) || showOnlyFree;
-        const sticky = !showOnlyFree && (freeBenefits.length || freeDescription);
+        // Signup is not allowed or no prices are available: block signup with the relevant message, offer signin when available
+        if (!isSignupAllowed({site}) || !hasAvailablePrices({site, pageQuery})) {
+            if (!isSigninAllowed({site})) {
+                return this.renderMembersDisabledMessage();
+            }
+
+            return this.renderInviteOnlyMessage();
+        }
+
+        const showOnlyFree = pageQuery === 'free' && isFreeSignupAllowed({site});
+        const hasOnlyFree = hasOnlyFreePlan({site}) || showOnlyFree;
 
         const signupTerms = this.renderSignupTerms();
 
@@ -735,7 +753,7 @@ class SignupPage extends React.Component {
                             </>)}
 
                         {(hasOnlyFree ?
-                            <div className={'gh-portal-btn-container' + (sticky ? ' sticky m24' : '')}>
+                            <div className='gh-portal-btn-container'>
                                 <div className='gh-portal-logged-out-form-container'>
                                     {this.renderSubmitButton()}
                                     {this.renderLoginMessage()}
@@ -749,6 +767,56 @@ class SignupPage extends React.Component {
         );
     }
 
+    renderPaidMembersOnlyMessage() {
+        const {t} = this.context;
+        return (
+            <section>
+                <div className='gh-portal-section'>
+                    <p
+                        className='gh-portal-paid-members-only-notification'
+                        data-testid="paid-members-only-notification-text"
+                    >
+                        {t('This site only accepts paid members.')}
+                    </p>
+                    {this.renderLoginMessage()}
+                </div>
+            </section>
+        );
+    }
+
+    renderInviteOnlyMessage() {
+        const {t} = this.context;
+        return (
+            <section>
+                <div className='gh-portal-section'>
+                    <p
+                        className='gh-portal-invite-only-notification'
+                        data-testid="invite-only-notification-text"
+                    >
+                        {t('This site is invite-only, contact the owner for access.')}
+                    </p>
+                    {this.renderLoginMessage()}
+                </div>
+            </section>
+        );
+    }
+
+    renderMembersDisabledMessage() {
+        const {t} = this.context;
+        return (
+            <section>
+                <div className='gh-portal-section'>
+                    <p
+                        className='gh-portal-members-disabled-notification'
+                        data-testid="members-disabled-notification-text"
+                    >
+                        {t('Memberships unavailable, contact the owner for access.')}
+                    </p>
+                </div>
+            </section>
+        );
+    }
+
     renderSiteIcon() {
         const {site, pageQuery} = this.context;
         const siteIcon = site.icon;
@@ -757,15 +825,14 @@ class SignupPage extends React.Component {
             return (
                 <img className='gh-portal-signup-logo' src={siteIcon} alt={site.title} />
             );
-        } else if (isInviteOnlySite({site, pageQuery})) {
-            return (
-                <InvitationIcon className='gh-portal-icon gh-portal-icon-invitation' />
-            );
-        } else if (!isSignupAllowed({site})) {
+        }
+
+        if (!hasAvailablePrices({site, pageQuery}) || isInviteOnly({site}) || !isSignupAllowed({site})) {
             return (
                 <InvitationIcon className='gh-portal-icon gh-portal-icon-invitation' />
             );
         }
+
         return null;
     }
 
@@ -787,13 +854,13 @@ class SignupPage extends React.Component {
         let sectionClass = '';
         let footerClass = '';
 
-        if (plansData.length <= 1 || isInviteOnlySite({site})) {
-            if ((plansData.length === 1 && plansData[0].type === 'free') || isInviteOnlySite({site, pageQuery})) {
+        if (plansData.length <= 1 || isInviteOnly({site})) {
+            if ((plansData.length === 1 && plansData[0].type === 'free') || isInviteOnly({site, pageQuery})) {
                 sectionClass = freeHasBenefitsOrDescription({site}) ? 'singleplan' : 'noplan';
                 if (fields.length === 1) {
                     sectionClass = 'single-field';
                 }
-                if (isInviteOnlySite({site})) {
+                if (isInviteOnly({site})) {
                     footerClass = 'invite-only';
                     sectionClass = 'invite-only';
                 }

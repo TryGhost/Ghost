@@ -880,3 +880,235 @@
     height: 20px;
     margin-right: 6px;
 }
+
+/* Publish flow modal
+/* ---------------------------------------------------------- */
+
+.modal-post-success {
+    max-width: 600px;
+    --padding: 36px;
+    --radius: 12px;
+}
+
+.modal-post-success .modal-content {
+    padding: var(--padding);
+    border-radius: var(--radius);
+}
+
+.modal-post-success a {
+    text-decoration: none;
+    color: inherit;
+}
+
+.modal-post-success a:hover .gh-post-card {
+    background: var(--whitegrey-l2);
+}
+
+.modal-post-success .gh-post-card {
+    border-radius: 8px;
+    border: 1px solid var(--lightgrey-l1);
+    box-sizing: border-box;
+    margin: 24px 0 0 0;
+}
+
+.modal-post-success .modal-image {
+    aspect-ratio: 16 / 7.55;
+    overflow: hidden;
+}
+
+.modal-post-success .modal-image img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 7px 7px 0 0;
+    box-sizing: border-box;
+}
+
+.modal-post-success .modal-header {
+    margin: 0;
+}
+
+.modal-post-success .modal-header h1 {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    font-size: 3.2rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+}
+
+.modal-post-success .modal-header h1 span:has(+ span) {
+    color: var(--green);
+}
+
+.modal-post-success .modal-body {
+    margin-top: 10px;
+    font-size: 1.6rem;
+    line-height: 1.4;
+    letter-spacing: -0.01em;
+    text-wrap: pretty;
+    padding: 16px 24px 16px 24px;
+}
+
+.modal-post-success .modal-body p {
+    font-size: 1.6rem;
+    line-height: 1.5em;
+}
+
+.modal-post-success .modal-body p.post-excerpt {
+    -webkit-line-clamp: 2;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin: 0 0 16px 0;
+}
+
+.modal-post-success .email {
+    font-size: 1.6rem;
+    padding: 0;
+}
+
+.modal-post-success .modal-body .gh-post-details {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 16px;
+    font-size: 1.4rem;
+}
+
+.modal-post-success .modal-body .gh-post-details .gh-post-bookmark-site-name {
+    font-weight: 600;
+    flex-shrink: 0;
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.modal-post-success .modal-body .gh-post-bookmark-authors::before {
+    margin-left: 4px;
+}
+
+.modal-post-success .modal-body .gh-post-bookmark-site-icon {
+    width: 24px;
+    height: 24px;
+}
+
+.modal-post-success .modal-body strong.nowrap {
+    text-wrap: nowrap;
+}
+
+.modal-post-success .modal-footer {
+    margin-top: 16px;
+    gap: 16px;
+    padding: 0;
+}
+
+
+.modal-post-success .modal-footer-email {
+    background: var(--white);
+    margin-top: 36px;
+    gap: 16px;
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    text-align: right;
+}
+
+.modal-post-success .modal-footer .share-buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    align-items: center;
+    gap: 16px;
+}
+
+.modal-post-success .modal-footer .gh-btn {
+    min-width: 64px;
+    height: 40px;
+    border-radius: var(--border-radius);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-post-success .modal-footer .copy-preview-link {
+    background: var(--whitegrey-l1);
+}
+
+.modal-post-success .modal-footer .gh-btn:not(:first-child) {
+    margin: 0;
+}
+
+.modal-post-success .modal-footer .gh-btn span {
+    padding-inline: 18px;
+    font-size: 1.4rem;
+    height: 100%;
+    align-content: center;
+}
+
+.modal-post-success .modal-footer .gh-btn-primary {
+    min-width: 80px;
+}
+
+.modal-post-success .modal-footer:has(.twitter) .gh-btn-primary {
+    flex-grow: 1;
+}
+
+.modal-post-success .modal-footer .gh-btn:is(.twitter, .threads, .facebook, .linkedin) {
+    width: 56px;
+    background: var(--whitegrey-l1);
+    border-color: transparent;
+}
+
+.modal-post-success .modal-footer .gh-btn:is(.twitter, .threads, .facebook, .linkedin, .copy-link, .copy-preview-link):hover {
+    background: var(--whitegrey);
+}
+
+.modal-post-success .modal-footer .gh-btn:is(.twitter, .threads, .facebook, .linkedin) span {
+    font-size: 0;
+}
+
+.modal-post-success .modal-footer .gh-btn svg {
+    width: 18px;
+    height: 18px;
+}
+
+.modal-post-success .modal-footer .gh-btn.twitter svg path {
+    fill: black;
+}
+
+.modal-post-success .close {
+    top: 24px;
+    right: 24px;
+}
+
+@media (max-width: 500px) {
+    .modal-post-success .modal-header h1 {
+        font-size: 2.4rem;
+    }
+
+    .modal-post-success .modal-footer {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .modal-post-success .modal-footer .share-buttons {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .modal-post-success .modal-footer .copy-link,
+    .modal-post-success .modal-footer .copy-preview-link {
+        width: 100%!important;
+    }
+}
+
+@media (max-width: 600px) {
+    .modal-post-success .modal-footer:has(.share-buttons) {
+        flex-direction: column;
+    }
+
+    .modal-post-success .modal-footer .gh-btn:is(.twitter, .threads, .facebook, .linkedin) {
+        width: auto;
+    }
+}

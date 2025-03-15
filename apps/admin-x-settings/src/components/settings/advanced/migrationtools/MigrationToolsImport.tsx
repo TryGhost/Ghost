@@ -6,6 +6,7 @@ import {Icon} from '@tryghost/admin-x-design-system';
 import {ReactComponent as MailchimpIcon} from '../../../../assets/icons/mailchimp.svg';
 import {ReactComponent as MediumIcon} from '../../../../assets/icons/medium.svg';
 import {ReactComponent as SubstackIcon} from '../../../../assets/icons/substack.svg';
+import {ReactComponent as WordPressIcon} from '../../../../assets/icons/wordpress.svg';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 const ImportButton: React.FC<{
@@ -47,6 +48,13 @@ const MigrationToolsImport: React.FC = () => {
                 }
                 title='Substack'
                 onClick={() => updateRoute({isExternal: true, route: '/migrate/substack'})}
+            />
+            <ImportButton
+                icon={
+                    <WordPressIcon className='h-[18px] w-auto' />
+                }
+                title='WordPress'
+                onClick={() => updateRoute({isExternal: true, route: '/migrate/wordpress'})}
             />
             <ImportButton
                 icon={

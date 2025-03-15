@@ -5,6 +5,7 @@ const {obfuscatedSetting, isSecretSetting, hideValueIfSecret} = require('./setti
 const logging = require('@tryghost/logging');
 const MagicLink = require('@tryghost/magic-link');
 const verifyEmailTemplate = require('./emails/verify-email');
+const sentry = require('../../../shared/sentry');
 
 const EMAIL_KEYS = ['members_support_address'];
 const messages = {
@@ -80,7 +81,8 @@ class SettingsBREADService {
             getSigninURL,
             getText,
             getHTML,
-            getSubject
+            getSubject,
+            sentry
         });
     }
 
@@ -225,21 +227,6 @@ class SettingsBREADService {
         const {filteredSettings: refilteredSettings, emailsToVerify} = await this.prepSettingsForEmailVerification(filteredSettings, getSetting);
 
         const modelArray = await this.SettingsModel.edit(refilteredSettings, options).then((result) => {
-            // TODO: temporary fix for starting/stopping lexicalMultiplayer service when labs flag is changed
-            //       this should be removed along with the flag, or set up in a more generic way
-            const labsSetting = result.find(setting => setting.get('key') === 'labs');
-            if (labsSetting) {
-                const lexicalMultiplayer = require('../lexical-multiplayer');
-                const previous = JSON.parse(labsSetting.previousAttributes().value);
-                const current = JSON.parse(labsSetting.get('value'));
-
-                if (!previous.lexicalMultiplayer && current.lexicalMultiplayer) {
-                    lexicalMultiplayer.enable();
-                } else if (previous.lexicalMultiplayer && !current.lexicalMultiplayer) {
-                    lexicalMultiplayer.disable();
-                }
-            }
-
             return this._formatBrowse(_.keyBy(_.invokeMap(result, 'toJSON'), 'key'), options.context);
         });
 
@@ -382,20 +369,7 @@ class SettingsBREADService {
      * @private
      */
     async sendEmailVerificationMagicLink({email, key}) {
-        const [,toDomain] = email.split('@');
-
-        let fromEmail = `noreply@${toDomain}`;
-        if (fromEmail === email) {
-            fromEmail = `no-reply@${toDomain}`;
-        }
-
-        if (this.emailAddressService.service.useNewEmailAddresses) {
-            // Gone with the old logic: always use the default email address here
-            // We don't need to validate the FROM address, only the to address
-            // Also because we are not only validating FROM addresses, but also possible REPLY-TO addresses, which we won't send FROM
-            fromEmail = this.emailAddressService.service.defaultFromAddress;
-        }
-
+        const fromEmail = this.emailAddressService.service.defaultFromAddress;
         const {ghostMailer} = this;
 
         this.magicLinkService.transporter = {

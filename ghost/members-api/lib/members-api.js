@@ -71,7 +71,10 @@ module.exports = function MembersAPI({
     newslettersService,
     memberAttributionService,
     emailSuppressionList,
-    settingsCache
+    settingsCache,
+    sentry,
+    settingsHelpers,
+    captchaService
 }) {
     const tokenService = new TokenService({
         privateKey,
@@ -122,7 +125,8 @@ module.exports = function MembersAPI({
         EmailSpamComplaintEvent,
         Comment,
         labsService,
-        memberAttributionService
+        memberAttributionService,
+        MemberEmailChangeEvent
     });
 
     const memberBREADService = new MemberBREADService({
@@ -142,7 +146,8 @@ module.exports = function MembersAPI({
         labsService,
         stripeService: stripeAPIService,
         memberAttributionService,
-        emailSuppressionList
+        emailSuppressionList,
+        settingsHelpers
     });
 
     const geolocationService = new GeolocationService();
@@ -153,7 +158,8 @@ module.exports = function MembersAPI({
         getSigninURL,
         getText,
         getHTML,
-        getSubject
+        getSubject,
+        sentry
     });
 
     const paymentsService = new PaymentsService({
@@ -173,7 +179,8 @@ module.exports = function MembersAPI({
         tiersService,
         StripePrice,
         tokenService,
-        sendEmailWithMagicLink
+        sendEmailWithMagicLink,
+        settingsCache
     });
 
     const routerController = new RouterController({
@@ -189,7 +196,9 @@ module.exports = function MembersAPI({
         sendEmailWithMagicLink,
         memberAttributionService,
         labsService,
-        newslettersService
+        newslettersService,
+        settingsCache,
+        sentry
     });
 
     const wellKnownController = new WellKnownController({
@@ -328,6 +337,7 @@ module.exports = function MembersAPI({
     const middleware = {
         sendMagicLink: Router().use(
             body.json(),
+            captchaService.getMiddleware(),
             forwardError((req, res) => routerController.sendMagicLink(req, res))
         ),
         createCheckoutSession: Router().use(

@@ -1,7 +1,0 @@
-'affects:i18n':
-  - 'ghost/i18n/**'
-'affects:admin':
-  - 'ghost/admin/**'
-  - 'apps/admin-x-*/**'
-'affects:portal':
-  - 'apps/portal/**'

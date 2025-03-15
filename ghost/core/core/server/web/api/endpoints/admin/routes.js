@@ -5,7 +5,6 @@ const apiMw = require('../../middleware');
 const mw = require('./middleware');
 
 const shared = require('../../../shared');
-const labs = require('../../../../../shared/labs');
 
 /**
  * @returns {import('express').Router}
@@ -21,14 +20,6 @@ module.exports = function apiRoutes() {
     // ## Public
     router.get('/site', mw.publicAdminApi, http(api.site.read));
     router.post('/mail_events', mw.publicAdminApi, http(api.mailEvents.add));
-
-    // ## Collections
-    router.get('/collections', mw.authAdminApi, http(api.collections.browse));
-    router.get('/collections/:id', mw.authAdminApi, http(api.collections.read));
-    router.get('/collections/slug/:slug', mw.authAdminApi, http(api.collections.read));
-    router.post('/collections', mw.authAdminApi, labs.enabledMiddleware('collections'), http(api.collections.add));
-    router.put('/collections/:id', mw.authAdminApi, labs.enabledMiddleware('collections'), http(api.collections.edit));
-    router.del('/collections/:id', mw.authAdminApi, labs.enabledMiddleware('collections'), http(api.collections.destroy));
 
     // ## Configuration
     router.get('/config', mw.authAdminApi, http(api.config.read));
@@ -51,6 +42,9 @@ module.exports = function apiRoutes() {
 
     router.get('/mentions', mw.authAdminApi, http(api.mentions.browse));
 
+    router.get('/comments/:id', mw.authAdminApi, http(api.commentReplies.read));
+    router.get('/comments/:id/replies', mw.authAdminApi, http(api.commentReplies.browse));
+    router.get('/comments/post/:post_id', mw.authAdminApi, http(api.comments.browse));
     router.put('/comments/:id', mw.authAdminApi, http(api.comments.edit));
 
     // ## Pages
@@ -243,6 +237,8 @@ module.exports = function apiRoutes() {
         http(api.session.add)
     );
     router.del('/session', mw.authAdminApi, http(api.session.delete));
+    router.post('/session/verify', shared.middleware.brute.sendVerificationCode, http(api.session.sendVerification));
+    router.put('/session/verify', shared.middleware.brute.userVerification, http(api.session.verify));
 
     // ## Identity
     router.get('/identities', mw.authAdminApi, http(api.identities.read));

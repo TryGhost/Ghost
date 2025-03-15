@@ -1,7 +1,6 @@
-import NiceModal, {useModal} from '@ebay/nice-modal-react';
+import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useRef} from 'react';
 import TierDetailPreview from './TierDetailPreview';
-import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
 import {Button, ButtonProps, ConfirmationModal, CurrencyField, Form, Heading, Icon, Modal, Select, SortableList, TextField, Toggle, URLTextField, showToast, useSortableIndexedList} from '@tryghost/admin-x-design-system';
 import {ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -17,7 +16,6 @@ export type TierFormState = Partial<Omit<Tier, 'trial_days'>> & {
 const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
     const isFreeTier = tier?.type === 'free';
 
-    const modal = useModal();
     const {updateRoute} = useRouting();
     const {mutateAsync: updateTier} = useEditTier();
     const {mutateAsync: createTier} = useAddTier();
@@ -26,8 +24,6 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
     const handleError = useHandleError();
     const {localSettings, siteData} = useSettingGroup();
     const [portalPlansJson] = getSettingValues(localSettings, ['portal_plans']) as string[];
-    const hasPortalImprovements = useFeatureFlag('portalImprovements');
-    const allowNameChange = !isFreeTier || hasPortalImprovements;
     const portalPlans = JSON.parse(portalPlansJson?.toString() || '[]') as string[];
 
     const validators: {[key in keyof Tier]?: () => string | undefined} = {
@@ -71,7 +67,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
             } else {
                 await createTier(values);
             }
-            if (isFreeTier && hasPortalImprovements) {
+            if (isFreeTier) {
                 // If we changed the visibility, we also need to update Portal settings in some situations
                 // Like the free tier is a special case, and should also be present/absent in portal_plans
                 const visible = formState.visibility === 'public';
@@ -96,10 +92,6 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                     ]);
                 }
             }
-        },
-        onSavedStateReset: () => {
-            modal.remove();
-            updateRoute('tiers');
         },
         onSaveError: handleError
     });
@@ -185,10 +177,11 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
             updateRoute('tiers');
         }}
         buttonsDisabled={okProps.disabled}
+        cancelLabel='Close'
         dirty={saveState === 'unsaved'}
         leftButtonProps={leftButtonProps}
         okColor={okProps.color}
-        okLabel={okProps.label || 'Save & close'}
+        okLabel={okProps.label || 'Save'}
         size='lg'
         testId='tier-detail-modal'
         title={(tier ? (tier.active ? 'Edit tier' : 'Edit archived tier') : 'New tier')}
@@ -200,7 +193,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
         <div className='-mb-8 mt-8 flex items-start gap-8'>
             <div className='flex grow flex-col gap-8'>
                 <Form marginBottom={false} title='Basic' grouped>
-                    {allowNameChange && <TextField
+                    <TextField
                         autoComplete='off'
                         error={Boolean(errors.name)}
                         hint={errors.name}
@@ -211,7 +204,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                         autoFocus
                         onChange={e => updateForm(state => ({...state, name: e.target.value}))}
                         onKeyDown={() => clearError('name')}
-                    />}
+                    />
                     <TextField
                         autoComplete='off'
                         autoFocus={isFreeTier}
@@ -275,7 +268,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                                 <TextField
                                     disabled={!hasFreeTrial}
                                     hint={<div className='mt-1'>
-                                    Members will be subscribed at full price once the trial ends. <a className='text-green' href="https://ghost.org/" rel="noreferrer" target="_blank">Learn more</a>
+                                    Members will be subscribed at full price once the trial ends. <a className='text-green' href="https://ghost.org/help/free-trials/" rel="noreferrer" target="_blank">Learn more</a>
                                     </div>}
                                     placeholder='0'
                                     rightPlaceholder='days'

@@ -104,12 +104,14 @@
                                         </button>
                                     </li>
                                 {{/if}}
-                                <li class="divider"></li>
-                                <li>
-                                    <button class="mr2" data-test-button="delete-selected" type="button" {{on "click" this.bulkDelete}}>
-                                        <span class="red">Delete selected members ({{this.members.length}})</span>
-                                    </button>
-                                </li>
+                                {{#if this.isBulkDeletePermitted}}
+                                    <li class="divider"></li>
+                                    <li>
+                                        <button class="mr2" data-test-button="delete-selected" type="button" {{on "click" this.bulkDelete}}>
+                                            <span class="red">Delete selected members ({{this.members.length}})</span>
+                                        </button>
+                                    </li>
+                                {{/if}}
                             {{/if}}
                         </GhDropdown>
                     </span>
@@ -143,7 +145,7 @@
                                 {{/each}}
                             </tr>
                         </thead>
-                        <VerticalCollection @tagName="tbody" @items={{this.members}} @key="id" @containerSelector=".gh-list-scrolling" @estimateHeight={{69}} @staticHeight={{true}} @bufferSize={{20}} as |member|>
+                        <VerticalCollection @tagName="tbody" @items={{this.members}} @key="id" @containerSelector=".gh-list-scrolling" @estimateHeight={{75}} @staticHeight={{true}} @bufferSize={{5}} @renderAll={{false}} as |member|>
                             {{#if member.is_loading}}
                                 <Members::ListItemLoading
                                     @newsletterEnabled={{and (not-eq this.settings.editorDefaultEmailRecipients "disabled") this.settings.emailTrackOpens}}
@@ -178,7 +180,7 @@
                 <div class="gh-main-section gh-members-help">
                     <h2 class="gh-main-section-header small bn">Get started with memberships</h2>
                     <div class="gh-main-section-block">
-                        <div class="gh-main-section-content grey">
+                        <div class="gh-main-section-content bordered">
                             <a href="https://ghost.org/resources/build-audience-subscriber-signups/" target="_blank" class="gh-members-help-card" rel="noopener noreferrer">
                                 <div class="gh-members-help-content">
                                     <div class="thumbnail" style="background-image: url(assets/img/marketing/members-1.jpg);"></div>

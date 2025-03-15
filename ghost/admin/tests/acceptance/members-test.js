@@ -7,7 +7,7 @@ import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
 import {visit} from '../helpers/visit';
 
-describe('Acceptance: Members', function () {
+describe('Acceptance: Members Test', function () {
     let hooks = setupApplicationTest();
     setupMirage(hooks);
 
@@ -18,7 +18,7 @@ describe('Acceptance: Members', function () {
         expect(currentURL()).to.equal('/signin');
     });
 
-    it('redirects non-admins to site', async function () {
+    it('redirects roles without member management permission to site', async function () {
         let role = this.server.create('role', {name: 'Editor'});
         this.server.create('user', {roles: [role]});
 
@@ -37,7 +37,7 @@ describe('Acceptance: Members', function () {
             let role = this.server.create('role', {name: 'Owner'});
             this.server.create('user', {roles: [role]});
 
-            return await authenticateSession();
+            await authenticateSession();
         });
 
         it('it renders, can be navigated, can edit member', async function () {
@@ -143,6 +143,95 @@ describe('Acceptance: Members', function () {
                 .to.equal('example@domain.com');
         });
 
+        /*
+         * Due to a limitation with NQL, member bulk deletion is not permitted if any of the following Stripe subscription filters is used:
+         *     - Billing period
+         *     - Stripe subscription status
+         *     - Paid start date
+         *     - Next billing date
+         *     - Subscription started on post/page
+         *     - Offers
+         *
+         * For more context, see:
+         * - https://linear.app/tryghost/issue/ENG-1484
+         * - https://linear.app/tryghost/issue/ENG-1466
+         *
+         * See code: ghost/admin/app/controllers/members.js:isBulkDeletePermitted
+         * TODO: delete this block of tests once the guardrail has been removed
+        */
+        describe('[Temp] Guardrail against bulk deletion', function () {
+            it('can bulk delete members if a non-Stripe subscription filter is in use (member tier, status)', async function () {
+                const tier = this.server.create('tier', {id: 'qwerty123456789'});
+                this.server.createList('member', 2, {status: 'free'});
+                this.server.createList('member', 2, {status: 'paid', tiers: [tier]});
+
+                await visit('/members');
+                expect(findAll('[data-test-member]').length).to.equal(4);
+
+                // The delete button should not be visible by default
+                await click('[data-test-button="members-actions"]');
+                expect(find('[data-test-button="delete-selected"]')).to.not.exist;
+
+                // 1) Membership tier filter: permitted
+                await visit(`/members?filter=tier_id:[${tier.id}]`);
+                expect(findAll('[data-test-member]').length).to.equal(2);
+                await click('[data-test-button="members-actions"]');
+                expect(find('[data-test-button="delete-selected"]')).to.exist;
+
+                // 2) Member status filter: permitted
+                await visit('/members?filter=status%3Afree');
+                expect(findAll('[data-test-member]').length).to.equal(2);
+                await click('[data-test-button="members-actions"]');
+                expect(find('[data-test-button="delete-selected"]')).to.exist;
+            });
+
+            it('cannot bulk delete members if a Stripe subscription filter is in use', async function () {
+                // Create free and paid members
+                const tier = this.server.create('tier');
+                const offer = this.server.create('offer', {tier: {id: tier.id}, createdAt: moment.utc().subtract(1, 'day').valueOf()});
+                this.server.createList('member', 2, {status: 'free'});
+                this.server.createList('member', 2, {status: 'paid'}).forEach(member => this.server.create('subscription', {member, planInterval: 'month', status: 'active', start_date: '2000-01-01T00:00:00.000Z', current_period_end: '2000-02-01T00:00:00.000Z', offer: offer, tier: tier}));
+                this.server.createList('member', 2, {status: 'paid'}).forEach(member => this.server.create('subscription', {member, planInterval: 'year', status: 'active'}));
+
+                await visit('/members');
+                expect(findAll('[data-test-member]').length).to.equal(6);
+
+                // The delete button should not be visible by default
+                await click('[data-test-button="members-actions"]');
+                expect(find('[data-test-button="delete-selected"]')).to.not.exist;
+
+                // 1) Stripe billing period filter: not permitted
+                await visit('/members?filter=subscriptions.plan_interval%3Amonth');
+                expect(findAll('[data-test-member]').length).to.equal(2);
+                await click('[data-test-button="members-actions"]');
+                expect(find('[data-test-button="delete-selected"]')).to.not.exist;
+
+                // 2) Stripe subscription status filter: not permitted
+                await visit('/members?filter=subscriptions.status%3Aactive');
+                expect(findAll('[data-test-member]').length).to.equal(4);
+                await click('[data-test-button="members-actions"]');
+                expect(find('[data-test-button="delete-selected"]')).to.not.exist;
+
+                // 3) Stripe paid start date filter: not permitted
+                await visit(`/members?filter=subscriptions.start_date%3A>'1999-01-01%2005%3A59%3A59'`);
+                expect(findAll('[data-test-member]').length).to.equal(2);
+                await click('[data-test-button="members-actions"]');
+                expect(find('[data-test-button="delete-selected"]')).to.not.exist;
+
+                // 4) Next billing date filter: not permitted
+                await visit(`/members?filter=subscriptions.current_period_end%3A>'2000-01-01%2005%3A59%3A59'`);
+                expect(findAll('[data-test-member]').length).to.equal(2);
+                await click('[data-test-button="members-actions"]');
+                expect(find('[data-test-button="delete-selected"]')).to.not.exist;
+
+                // 5) Offers redeemed filter: not permitted
+                await visit('/members?filter=' + encodeURIComponent(`offer_redemptions:'${offer.id}'`));
+                expect(findAll('[data-test-member]').length).to.equal(2);
+                await click('[data-test-button="members-actions"]');
+                expect(find('[data-test-button="delete-selected"]')).to.not.exist;
+            });
+        });
+
         it('can bulk delete members', async function () {
             // members to be kept
             this.server.createList('member', 6);
@@ -167,7 +256,7 @@ describe('Acceptance: Members', function () {
             await click(`[data-test-button="members-apply-filter"]`);
 
             expect(findAll('[data-test-member]').length).to.equal(5);
-            expect(currentURL()).to.equal('/members?filter=label%3A%5Blabel-0%5D');
+            expect(currentURL()).to.equal(`/members?filter=label%3A%5B${label.slug}%5D`);
 
             await click('[data-test-button="members-actions"]');
 
@@ -256,6 +345,119 @@ describe('Acceptance: Members', function () {
             expect(currentURL()).to.equal('/members');
             expect(findAll('[data-test-modal]')).to.have.length(0);
             expect(findAll('[data-test-member]')).to.have.length(1);
+        });
+    });
+    describe('as super editor', function () {
+        beforeEach(async function () {
+            this.server.loadFixtures('configs');
+
+            let role = this.server.create('role', {name: 'Super Editor'});
+            this.server.create('user', {roles: [role]});
+
+            await authenticateSession();
+        });
+
+        it('it renders, can be navigated, can edit member', async function () {
+            let member1 = this.server.create('member', {createdAt: moment.utc().subtract(1, 'day').format('YYYY-MM-DD HH:mm:ss')});
+            this.server.create('member', {createdAt: moment.utc().subtract(2, 'day').format('YYYY-MM-DD HH:mm:ss')});
+
+            await visit('/members');
+
+            // lands on correct page
+            expect(currentURL(), 'currentURL').to.equal('/members');
+
+            // it lists all members
+            expect(findAll('[data-test-list="members-list-item"]').length, 'members list count')
+                .to.equal(2);
+
+            // it highlights active state in nav menu
+            expect(
+                find('[data-test-nav="members"]'),
+                'highlights nav menu item'
+            ).to.have.class('active');
+
+            let member = find('[data-test-list="members-list-item"]');
+            expect(member.querySelector('.gh-members-list-name').textContent, 'member list item title')
+                .to.equal(member1.name);
+
+            // it does not add ?include=email_recipients
+            const membersRequests = this.server.pretender.handledRequests.filter(r => r.url.match(/\/members\/(\?|$)/));
+            expect(membersRequests[0].url).to.not.have.string('email_recipients');
+
+            await visit(`/members/${member1.id}`);
+
+            // it shows selected member form
+            expect(find('[data-test-input="member-name"]').value, 'loads correct member into form')
+                .to.equal(member1.name);
+
+            expect(find('[data-test-input="member-email"]').value, 'loads correct email into form')
+                .to.equal(member1.email);
+
+            // it maintains active state in nav menu
+            expect(
+                find('[data-test-nav="members"]'),
+                'highlights nav menu item'
+            ).to.have.class('active');
+
+            // trigger save
+            await fillIn('[data-test-input="member-name"]', 'New Name');
+            await blur('[data-test-input="member-name"]');
+
+            await click('[data-test-button="save"]');
+
+            await click('[data-test-link="members-back"]');
+
+            // lands on correct page
+            expect(currentURL(), 'currentURL').to.equal('/members');
+        });
+
+        it('can create a new member', async function () {
+            this.server.create('member', {createdAt: moment.utc().subtract(1, 'day').format('YYYY-MM-DD HH:mm:ss')});
+
+            await visit('/members');
+
+            // lands on correct page
+            expect(currentURL(), 'currentURL').to.equal('/members');
+
+            // it lists all members
+            expect(findAll('[data-test-list="members-list-item"]').length, 'members list count')
+                .to.equal(1);
+
+            //  start new member
+            await click('[data-test-new-member-button="true"]');
+
+            // it navigates to the new member route
+            expect(currentURL(), 'new member URL').to.equal('/members/new');
+            // it displays the new member form
+            expect(find('.gh-canvas-header h2').textContent, 'settings pane title')
+                .to.contain('New');
+
+            // it highlights active state in nav menu
+            expect(
+                find('[data-test-nav="members"]'),
+                'highlights nav menu item'
+            ).to.have.class('active');
+
+            // all fields start blank
+            findAll('.gh-member-settings-primary .gh-input').forEach(function (elem) {
+                expect(elem.value, `input field for ${elem.getAttribute('name')}`)
+                    .to.be.empty;
+            });
+
+            // save new member
+            await fillIn('[data-test-input="member-name"]', 'New Name');
+            await blur('[data-test-input="member-name"]');
+
+            await fillIn('[data-test-input="member-email"]', 'example@domain.com');
+            await blur('[data-test-input="member-email"]');
+
+            await click('[data-test-button="save"]');
+
+            expect(find('[data-test-input="member-name"]').value, 'name has been preserved')
+                .to.equal('New Name');
+
+            expect(find('[data-test-input="member-email"]').value, 'email has been preserved')
+                .to.equal('example@domain.com');
         });
     });
 });

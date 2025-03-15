@@ -1,6 +1,7 @@
 import Component from '@glimmer/component';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
+import {tracked} from '@glimmer/tracking';
 
 export default class PostActivityFeed extends Component {
     @service feature;
@@ -13,6 +14,16 @@ export default class PostActivityFeed extends Component {
         feedback: ['feedback_event'],
         conversion: ['subscription_event', 'signup_event']
     };
+
+    @tracked savedEventsFetcher = null;
+
+    @action
+    saveEvents(fetcher) {
+        if (fetcher && fetcher.data && fetcher.data.length > 0) {
+            this.savedEventsFetcher = fetcher;
+        }
+        return null;
+    }
 
     get getEventTypes() {
         return this._eventTypes[this.args.eventType];

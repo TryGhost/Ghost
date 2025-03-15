@@ -6,34 +6,46 @@ class EmailEventStorage {
     #membersRepository;
     #models;
     #emailSuppressionList;
+    #prometheusClient;
 
-    constructor({db, models, membersRepository, emailSuppressionList}) {
+    constructor({db, models, membersRepository, emailSuppressionList, prometheusClient}) {
         this.#db = db;
         this.#models = models;
         this.#membersRepository = membersRepository;
         this.#emailSuppressionList = emailSuppressionList;
+        this.#prometheusClient = prometheusClient;
+
+        if (this.#prometheusClient) {
+            this.#prometheusClient.registerCounter({
+                name: 'email_analytics_events_stored',
+                help: 'Number of email analytics events stored',
+                labelNames: ['event']
+            });
+        }
     }
 
     async handleDelivered(event) {
         // To properly handle events that are received out of order (this happens because of polling)
         // only set if delivered_at is null
-        await this.#db.knex('email_recipients')
+        const rowCount = await this.#db.knex('email_recipients')
             .where('id', '=', event.emailRecipientId)
             .whereNull('delivered_at')
             .update({
                 delivered_at: moment.utc(event.timestamp).format('YYYY-MM-DD HH:mm:ss')
             });
+        this.recordEventStored('delivered', rowCount);
     }
 
     async handleOpened(event) {
         // To properly handle events that are received out of order (this happens because of polling)
         // only set if opened_at is null
-        await this.#db.knex('email_recipients')
+        const rowCount = await this.#db.knex('email_recipients')
             .where('id', '=', event.emailRecipientId)
             .whereNull('opened_at')
             .update({
                 opened_at: moment.utc(event.timestamp).format('YYYY-MM-DD HH:mm:ss')
             });
+        this.recordEventStored('opened', rowCount);
     }
 
     async handlePermanentFailed(event) {
@@ -155,6 +167,19 @@ class EmailEventStorage {
         } catch (err) {
             logging.error(err);
             return [];
+        }
+    }
+
+    /**
+     * Record event stored
+     * @param {string} event
+     * @param {number} count
+     */
+    recordEventStored(event, count = 1) {
+        try {
+            this.#prometheusClient?.getMetric('email_analytics_events_stored')?.inc({event}, count);
+        } catch (err) {
+            logging.error('Error recording email analytics event stored', err);
         }
     }
 }

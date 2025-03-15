@@ -6,7 +6,6 @@ import AddIntegrationModal from '../../settings/advanced/integrations/AddIntegra
 import AddNewsletterModal from '../../settings/email/newsletters/AddNewsletterModal';
 // import AddOfferModal from '../../settings/growth/offers/AddOfferModal';
 import AddRecommendationModal from '../../settings/growth/recommendations/AddRecommendationModal';
-import AmpModal from '../../settings/advanced/integrations/AmpModal';
 import AnnouncementBarModal from '../../settings/site/AnnouncementBarModal';
 import CustomIntegrationModal from '../../settings/advanced/integrations/CustomIntegrationModal';
 import DesignAndThemeModal from '../../settings/site/DesignAndThemeModal';
@@ -34,7 +33,6 @@ const modals = {
     AddIntegrationModal,
     AddNewsletterModal,
     AddRecommendationModal,
-    AmpModal,
     CustomIntegrationModal,
     DesignAndThemeModal,
     EditRecommendationModal,

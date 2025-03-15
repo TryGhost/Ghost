@@ -27,10 +27,6 @@ const EditRecommendationModal: React.FC<RoutingModalProps & EditRecommendationMo
         onSave: async (state) => {
             await editRecommendation(state);
         },
-        onSavedStateReset: () => {
-            modal.remove();
-            updateRoute('recommendations');
-        },
         onSaveError: handleError,
         onValidate: (state) => {
             const newErrors = validateDescriptionForm(state);
@@ -76,10 +72,10 @@ const EditRecommendationModal: React.FC<RoutingModalProps & EditRecommendationMo
         animate={animate ?? true}
         backDropClick={false}
         buttonsDisabled={okProps.disabled}
-        cancelLabel={'Cancel'}
+        cancelLabel={'Close'}
         leftButtonProps={leftButtonProps}
         okColor={okProps.color}
-        okLabel={okProps.label || 'Save & close'}
+        okLabel={okProps.label || 'Save'}
         size='sm'
         testId='edit-recommendation-modal'
         title={'Edit recommendation'}

@@ -122,8 +122,26 @@ class ProductsImporter extends BaseImporter {
         this.dataToImport = this.dataToImport.filter(item => !duplicateProducts.includes(item.id));
     }
 
+    preventInvalidFree() {
+        let invalidFreeProducts = [];
+        _.each(this.dataToImport, (product) => {
+            // A free product must not have any pricing data (otherwise it wouldn't be free, duh!)
+            if (product.type === 'free' && product.currency && product.monthly_price && product.yearly_price) {
+                this.problems.push({
+                    message: 'Entry was not imported and ignored. Detected invalid entry.',
+                    help: this.modelName,
+                    context: JSON.stringify({product})
+                });
+                invalidFreeProducts.push(product.id);
+            }
+        });
+        // ignore invalid free products
+        this.dataToImport = this.dataToImport.filter(item => !invalidFreeProducts.includes(item.id));
+    }
+
     beforeImport() {
         this.populatePriceData();
+        this.preventInvalidFree();
         return super.beforeImport();
     }
 

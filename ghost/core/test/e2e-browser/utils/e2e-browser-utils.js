@@ -43,12 +43,7 @@ const setupGhost = async (page) => {
     const ownerUser = DataGenerator.Content.users.find(user => user.id === '1');
 
     if (action === actions.signin) {
-        // Fill email + password
-        await page.locator('#identification').fill(ownerUser.email);
-        await page.locator('#password').fill(ownerUser.password);
-        await page.getByRole('button', {name: 'Sign in'}).click();
-        // Confirm we have reached Ghost Admin
-        await page.locator('.gh-nav').waitFor(options);
+        await signInAsUserById(page, '1');
     } else if (action === actions.setup) {
         // Complete setup process
         await page.getByPlaceholder('The Daily Awesome').click();
@@ -63,6 +58,25 @@ const setupGhost = async (page) => {
 
         await page.locator('.gh-nav').waitFor(options);
     }
+};
+
+const signInAsUserById = async (page, userId) => {
+    await page.goto('/ghost');
+    // Add owner user data from usual fixture
+    const user = DataGenerator.Content.users.find(u => u.id === userId);
+
+    // Fill email + password
+    await page.locator('#identification').fill(user.email);
+    await page.locator('#password').fill(user.password);
+    await page.getByRole('button', {name: 'Sign in'}).click();
+    // Confirm we have reached Ghost Admin
+    await page.locator('.gh-nav').waitFor({state: 'visible', timeout: 10000});
+};
+
+const signOutCurrentUser = async (page) => {
+    await page.goto('/ghost/#/signout');
+    await page.waitForLoadState('networkidle');
+    await page.locator('.gh-signin').waitFor({state: 'visible', timeout: 10000});
 };
 
 const disconnectStripe = async (page) => {
@@ -125,7 +139,6 @@ const enableLabs = async (page) => {
 
     await section.getByRole('tab', {name: 'Alpha features'}).click();
     await section.getByLabel('Webmentions').click();
-    await section.getByLabel('Tips & donations').click();
 
     await page.getByTestId('exit-settings').click();
 };
@@ -195,7 +208,8 @@ const createTier = async (page, {name, monthlyPrice, yearlyPrice, trialDays}, en
             await page.getByTestId('tier-detail-modal').getByRole('button', {name: 'Archive tier'}).click();
             await page.getByTestId('confirmation-modal').getByRole('button', {name: 'Archive'}).click();
             await page.getByTestId('tier-detail-modal').getByRole('button', {name: 'Reactivate tier'}).waitFor();
-            await page.getByTestId('tier-detail-modal').getByRole('button', {name: 'Save & close'}).click();
+            await page.getByTestId('tier-detail-modal').getByRole('button', {name: 'Save'}).click();
+            await page.getByTestId('tier-detail-modal').getByRole('button', {name: 'Close'}).click();
         }
 
         // Add the tier
@@ -209,7 +223,8 @@ const createTier = async (page, {name, monthlyPrice, yearlyPrice, trialDays}, en
             await modal.getByLabel('Add a free trial').check();
             await modal.getByLabel('Trial days').fill(`${trialDays}`);
         }
-        await modal.getByRole('button', {name: 'Save & close'}).click();
+        await modal.getByRole('button', {name: 'Save'}).click();
+        await modal.getByRole('button', {name: 'Close'}).click();
         await page.locator('[data-testid="tier-card"]:visible').filter({hasText: name}).waitFor();
 
         // Enable the tier in portal
@@ -267,7 +282,7 @@ const createOffer = async (page, {name, tierName, offerType, amount, discountTyp
         // only one of these buttons is ever available - either 'Add offer' or 'Manage offers'
         const hasExistingOffers = await page.getByTestId('offers').getByRole('button', {name: 'Manage offers'}).isVisible();
         const isCTA = await page.getByTestId('offers').getByRole('button', {name: 'Add offer'}).isVisible();
-        
+
         // Archive other offers to keep the list tidy
         // We only need 1 offer to be active at a time
         // Either the list of active offers loads, or the CTA when no offers exist
@@ -332,7 +347,7 @@ const fillInputIfExists = async (page, selector, value) => {
     }
 };
 
-const completeStripeSubscription = async (page) => {
+const completeStripeSubscription = async (page, {awaitNetworkIdle = true} = {}) => {
     await page.locator('#cardNumber').fill('4242 4242 4242 4242');
     await page.locator('#cardExpiry').fill('04 / 26');
     await page.locator('#cardCvc').fill('424');
@@ -357,7 +372,9 @@ const completeStripeSubscription = async (page) => {
 
     await page.getByTestId('hosted-payment-submit-button').click();
 
-    await page.waitForLoadState('networkidle');
+    if (awaitNetworkIdle) {
+        await page.waitForLoadState('networkidle');
+    }
 };
 
 /**
@@ -421,12 +438,13 @@ const createPostDraft = async (page, {title = 'Hello world', body = 'This is my 
     await page.locator('[data-test-editor-title-input]').fill(title);
 
     // wait for editor to be ready
-    await expect(page.locator('[data-lexical-editor="true"]')).toBeVisible();
+    await expect(page.locator('[data-lexical-editor="true"]').first()).toBeVisible();
 
     // Continue to the body by pressing enter
     await page.keyboard.press('Enter');
 
-    await page.waitForTimeout(100); // allow new->draft switch to occur fully, without this some initial typing events can be missed
+    const postStatus = await page.locator('[data-test-editor-post-status]');
+    await expect(postStatus).toHaveText('Draft - Saved');
     await page.keyboard.type(body);
 };
 
@@ -526,6 +544,8 @@ module.exports = {
     generateStripeIntegrationToken,
     setupMailgun,
     deleteAllMembers,
+    signInAsUserById,
+    signOutCurrentUser,
     createTier,
     createOffer,
     createMember,

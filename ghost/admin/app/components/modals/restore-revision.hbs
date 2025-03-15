@@ -1,4 +1,4 @@
-<div class="modal-content" {{on-key "Enter" (perform this.restoreRevisionTask)}}>
+<div class="modal-content" {{on-key "Enter" (perform this.restoreRevisionTask)}} data-test-modal="restore-revision">
     <header class="modal-header">
         <h1>{{this.title}}</h1>
     </header>
@@ -15,6 +15,7 @@
             @successText="Restored"
             @task={{this.restoreRevisionTask}}
             @class="gh-btn gh-btn-black gh-btn-icon"
+            data-test-button="restore"
         />
     </div>
 </div>

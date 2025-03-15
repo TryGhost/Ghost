@@ -111,6 +111,11 @@ class MembersSSR {
     _removeSessionCookie(req, res) {
         const cookies = this._getCookies(req, res);
         cookies.set(this.sessionCookieName, null, this.sessionCookieOptions);
+        // If members caching cookies are set, remove them
+        if (cookies.get('ghost-access') || cookies.get('ghost-access-hmac')) {
+            cookies.set('ghost-access', null, {...this.sessionCookieOptions, signed: false});
+            cookies.set('ghost-access-hmac', null, {...this.sessionCookieOptions, signed: false});
+        }
     }
 
     /**

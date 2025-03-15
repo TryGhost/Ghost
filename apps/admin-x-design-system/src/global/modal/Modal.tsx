@@ -16,8 +16,9 @@ export interface ModalProps {
      * Possible values are: `sm`, `md`, `lg`, `xl, `full`, `bleed`. Yu can also use any number to set an arbitrary width.
      */
     size?: ModalSize;
-    width?: 'full' | number;
+    width?: 'full' | 'toSidebar' | number;
     height?: 'full' | number;
+    align?: 'center' | 'left' | 'right';
 
     testId?: string;
     title?: string;
@@ -27,6 +28,7 @@ export interface ModalProps {
     cancelLabel?: string;
     leftButtonProps?: ButtonProps;
     buttonsDisabled?: boolean;
+    okDisabled?: boolean;
     footer?: boolean | React.ReactNode;
     header?: boolean;
     padding?: boolean;
@@ -45,12 +47,14 @@ export interface ModalProps {
     animate?: boolean;
     formSheet?: boolean;
     enableCMDS?: boolean;
+    allowBackgroundInteraction?: boolean;
 }
 
 export const topLevelBackdropClasses = 'bg-[rgba(98,109,121,0.2)] backdrop-blur-[3px]';
 
 const Modal: React.FC<ModalProps> = ({
     size = 'md',
+    align = 'center',
     width,
     height,
     testId,
@@ -62,6 +66,7 @@ const Modal: React.FC<ModalProps> = ({
     header,
     leftButtonProps,
     buttonsDisabled,
+    okDisabled,
     padding = true,
     onOk,
     okColor = 'black',
@@ -78,7 +83,8 @@ const Modal: React.FC<ModalProps> = ({
     dirty = false,
     animate = true,
     formSheet = false,
-    enableCMDS = true
+    enableCMDS = true,
+    allowBackgroundInteraction = false
 }) => {
     const modal = useModal();
     const {setGlobalDirtyState} = useGlobalDirtyState();
@@ -179,23 +185,28 @@ const Modal: React.FC<ModalProps> = ({
                 color: okColor,
                 className: 'min-w-[80px]',
                 onClick: onOk,
-                disabled: buttonsDisabled,
+                disabled: buttonsDisabled || okDisabled,
                 loading: okLoading
             });
         }
     }
 
     let modalClasses = clsx(
-        'relative z-50 mx-auto flex max-h-[100%] w-full flex-col justify-between overflow-x-hidden bg-white dark:bg-black',
+        'relative z-50 flex max-h-[100%] w-full flex-col justify-between overflow-x-hidden bg-white dark:bg-black',
+        align === 'center' && 'mx-auto',
+        align === 'left' && 'mr-auto',
+        align === 'right' && 'ml-auto',
         size !== 'bleed' && 'rounded',
         formSheet ? 'shadow-md' : 'shadow-xl',
-        (animate && !formSheet && !animationFinished) && 'animate-modal-in',
+        (animate && !formSheet && !animationFinished && align === 'center') && 'animate-modal-in',
+        (animate && !formSheet && !animationFinished && align === 'right') && 'animate-modal-in-from-right',
         (formSheet && !animationFinished) && 'animate-modal-in-reverse',
         scrolling ? 'overflow-y-auto' : 'overflow-y-hidden'
     );
 
     let backdropClasses = clsx(
-        'fixed inset-0 z-[1000] h-[100vh] w-[100vw]'
+        'fixed inset-0 z-[1000] h-[100dvh] w-[100dvw]',
+        allowBackgroundInteraction && 'pointer-events-none'
     );
 
     let paddingClasses = '';
@@ -206,7 +217,7 @@ const Modal: React.FC<ModalProps> = ({
     if (stickyHeader) {
         headerClasses = clsx(
             headerClasses,
-            'sticky top-0 z-[200] -mb-4 bg-white !pb-4 dark:bg-black'
+            'sticky top-0 z-[300] -mb-4 bg-white !pb-4 dark:bg-black'
         );
     }
 
@@ -367,6 +378,11 @@ const Modal: React.FC<ModalProps> = ({
             modalClasses,
             'w-full'
         );
+    } else if (width === 'toSidebar') {
+        modalClasses = clsx(
+            modalClasses,
+            'w-full max-w-[calc(100dvw_-_280px)] lg:max-w-full min-[1280px]:max-w-[calc(100dvw_-_320px)]'
+        );
     }
 
     if (typeof height === 'number') {
@@ -414,7 +430,10 @@ const Modal: React.FC<ModalProps> = ({
                 (backDrop && !formSheet) && topLevelBackdropClasses,
                 formSheet && 'bg-[rgba(98,109,121,0.08)]'
             )}></div>
-            <section className={modalClasses} data-testid={testId} style={modalStyles}>
+            <section className={clsx(
+                modalClasses,
+                allowBackgroundInteraction && 'pointer-events-auto'
+            )} data-testid={testId} style={modalStyles}>
                 {header === false ? '' : (!topRightContent || topRightContent === 'close' ?
                     (<header className={headerClasses}>
                         {title && <Heading level={3}>{title}</Heading>}

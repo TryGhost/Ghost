@@ -1,7 +1,6 @@
 const _ = require('lodash').runInContext();
 const fs = require('fs-extra');
 const path = require('path');
-const htmlToText = require('html-to-text');
 
 _.templateSettings.interpolate = /{{([\s\S]+?)}}/g;
 
@@ -41,7 +40,8 @@ class EmailContentGenerator {
         const compiled = _.template(content);
         const htmlContent = compiled(data);
 
-        // generate a plain-text version of the same email
+        // lazyload the lib, and generate a plain-text version of the same email
+        const htmlToText = require('html-to-text');
         const textContent = htmlToText.fromString(htmlContent);
 
         return {

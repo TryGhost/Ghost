@@ -1,10 +1,26 @@
 import AppContext from '../../../../AppContext';
 import {useContext} from 'react';
-import {hasCommentsEnabled, hasMultipleNewsletters, isEmailSuppressed} from '../../../../utils/helpers';
+import {hasCommentsEnabled, hasMultipleNewsletters, isEmailSuppressed, hasNewsletterSendingEnabled} from '../../../../utils/helpers';
 
 import PaidAccountActions from './PaidAccountActions';
 import EmailNewsletterAction from './EmailNewsletterAction';
 import EmailPreferencesAction from './EmailPreferencesAction';
+
+const shouldShowEmailPreferences = (site, member) => {
+    return (
+        hasMultipleNewsletters({site}) && hasNewsletterSendingEnabled({site}) ||
+    hasCommentsEnabled({site}) ||
+    isEmailSuppressed({member})
+    );
+};
+
+const shouldShowEmailNewsletterAction = (site) => {
+    return (
+        !hasMultipleNewsletters({site}) &&
+    hasNewsletterSendingEnabled({site}) &&
+    !hasCommentsEnabled({site})
+    );
+};
 
 const AccountActions = () => {
     const {member, onAction, site, t} = useContext(AppContext);
@@ -17,14 +33,17 @@ const AccountActions = () => {
         });
     };
 
-    const showEmailPreferences = hasMultipleNewsletters({site}) || hasCommentsEnabled({site}) || isEmailSuppressed({member});
+    // Extract helper functions for complex conditions
+
+    const showEmailPreferences = shouldShowEmailPreferences(site, member);
+    const showEmailNewsletterAction = shouldShowEmailNewsletterAction(site);
 
     return (
         <div>
             <div className='gh-portal-list'>
                 <section>
                     <div className='gh-portal-list-detail'>
-                        <h3>{(name ? name : 'Account')}</h3>
+                        <h3>{(name ? name : t('Account'))}</h3>
                         <p>{email}</p>
                     </div>
                     <button
@@ -37,14 +56,10 @@ const AccountActions = () => {
                 </section>
 
                 <PaidAccountActions />
-                {
-                    showEmailPreferences
-                        ? <EmailPreferencesAction />
-                        : <EmailNewsletterAction />
-                }
-
+                {showEmailPreferences && <EmailPreferencesAction />}
+                {showEmailNewsletterAction && <EmailNewsletterAction />}
             </div>
-            {/* <ProductList openUpdatePlan={openUpdatePlan}></ProductList> */}
+
         </div>
     );
 };

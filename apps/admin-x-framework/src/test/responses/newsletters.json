@@ -19,6 +19,7 @@
             "show_header_title": true,
             "title_font_category": "serif",
             "title_alignment": "center",
+            "show_excerpt": true,
             "show_feature_image": true,
             "body_font_category": "serif",
             "footer_content": "",

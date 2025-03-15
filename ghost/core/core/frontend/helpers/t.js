@@ -11,18 +11,11 @@
 // {{tags prefix=(t " on ")}}
 
 const {themeI18n} = require('../services/handlebars');
-const errors = require('@tryghost/errors');
-const tpl = require('@tryghost/tpl');
 
-const messages = {
-    oopsErrorTemplateHasError: 'Oops, seems there is an error in the template.'
-};
-
-module.exports = function t(text, options) {
-    if (text === undefined && options === undefined) {
-        throw new errors.IncorrectUsageError({
-            message: tpl(messages.oopsErrorTemplateHasError)
-        });
+module.exports = function t(text, options = {}) {
+    if (!text || text.length === 0) {
+        // no-op: translation key is missing, return an empty string
+        return '';
     }
 
     const bindings = {};

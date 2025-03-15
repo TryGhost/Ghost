@@ -3,7 +3,6 @@ const path = require('path');
 const express = require('../../shared/express');
 const DomainEvents = require('@tryghost/domain-events');
 const {MemberPageViewEvent} = require('@tryghost/member-events');
-const GhostNestApp = require('@tryghost/ghost');
 
 // App requires
 const config = require('../../shared/config');
@@ -17,12 +16,11 @@ const membersService = require('../../server/services/members');
 const offersService = require('../../server/services/offers');
 const customRedirects = require('../../server/services/custom-redirects');
 const linkRedirects = require('../../server/services/link-redirection');
+const {cardAssets, commentCountsAssets, memberAttributionAssets} = require('../services/assets-minification');
 const siteRoutes = require('./routes');
 const shared = require('../../server/web/shared');
 const errorHandler = require('@tryghost/mw-error-handler');
 const mw = require('./middleware');
-const labs = require('../../shared/labs');
-const bodyParser = require('body-parser');
 
 const STATIC_IMAGE_URL_PREFIX = `/${urlUtils.STATIC_IMAGE_URL_PREFIX}`;
 const STATIC_MEDIA_URL_PREFIX = `/${constants.STATIC_MEDIA_URL_PREFIX}`;
@@ -51,36 +49,6 @@ module.exports = function setupSiteApp(routerConfig) {
     // enable CORS headers (allows admin client to hit front-end when configured on separate URLs)
     siteApp.use(mw.cors);
 
-    const jsonParser = bodyParser.json({
-        type: ['application/activity+json', 'application/ld+json', 'application/ld+json; profile="https://www.w3.org/ns/activitystreams"'],
-        // TODO: The @RawBody decorator in nest isn't working without this atm...
-        verify: function (req, res, buf) {
-            req.rawBody = buf;
-        }
-    });
-    siteApp.use(async function nestBodyParser(req, res, next) {
-        if (labs.isSet('NestPlayground') || labs.isSet('ActivityPub')) {
-            jsonParser(req, res, next);
-            return;
-        }
-        return next();
-    });
-
-    siteApp.use(async function nestApp(req, res, next) {
-        if (labs.isSet('NestPlayground') || labs.isSet('ActivityPub')) {
-            const originalExpressApp = req.app;
-            const app = await GhostNestApp.getApp();
-
-            const instance = app.getHttpAdapter().getInstance();
-            instance(req, res, function (err) {
-                req.app = originalExpressApp;
-                next(err);
-            });
-            return;
-        }
-        return next();
-    });
-
     siteApp.use(offersService.middleware);
 
     siteApp.use(linkRedirects.service.handleRequest);
@@ -103,16 +71,17 @@ module.exports = function setupSiteApp(routerConfig) {
     // Serve stylesheets for default templates
     siteApp.use(mw.servePublicFile('static', 'public/ghost.css', 'text/css', config.get('caching:publicAssets:maxAge')));
     siteApp.use(mw.servePublicFile('static', 'public/ghost.min.css', 'text/css', config.get('caching:publicAssets:maxAge')));
+    siteApp.use(mw.servePublicFile('static', 'public/tracker.js', 'application/javascript', config.get('caching:publicAssets:maxAge')));
 
     // Card assets
-    siteApp.use(mw.servePublicFile('built', 'public/cards.min.css', 'text/css', config.get('caching:publicAssets:maxAge')));
-    siteApp.use(mw.servePublicFile('built', 'public/cards.min.js', 'application/javascript', config.get('caching:publicAssets:maxAge')));
+    siteApp.use(cardAssets.serveMiddleware(), mw.servePublicFile('built', 'public/cards.min.css', 'text/css', config.get('caching:publicAssets:maxAge')));
+    siteApp.use(cardAssets.serveMiddleware(), mw.servePublicFile('built', 'public/cards.min.js', 'application/javascript', config.get('caching:publicAssets:maxAge')));
 
     // Comment counts
-    siteApp.use(mw.servePublicFile('built', 'public/comment-counts.min.js', 'application/javascript', config.get('caching:publicAssets:maxAge')));
+    siteApp.use(commentCountsAssets.serveMiddleware(), mw.servePublicFile('built', 'public/comment-counts.min.js', 'application/javascript', config.get('caching:publicAssets:maxAge')));
 
     // Member attribution
-    siteApp.use(mw.servePublicFile('built', 'public/member-attribution.min.js', 'application/javascript', config.get('caching:publicAssets:maxAge')));
+    siteApp.use(memberAttributionAssets.serveMiddleware(), mw.servePublicFile('built', 'public/member-attribution.min.js', 'application/javascript', config.get('caching:publicAssets:maxAge')));
 
     // Serve site images using the storage adapter
     siteApp.use(STATIC_IMAGE_URL_PREFIX, mw.handleImageSizes, storage.getStorage('images').serve());
@@ -169,12 +138,12 @@ module.exports = function setupSiteApp(routerConfig) {
     siteApp.use(shared.middleware.prettyUrls);
 
     // ### Caching
-    siteApp.use(function frontendCaching(req, res, next) {
-        // Site frontend is cacheable UNLESS request made by a member or site is in private mode
-        if (req.member || res.isPrivateBlog) {
-            return shared.middleware.cacheControl('private')(req, res, next);
-        } else {
-            return shared.middleware.cacheControl('public', {maxAge: config.get('caching:frontend:maxAge')})(req, res, next);
+    siteApp.use(async function frontendCaching(req, res, next) {
+        try {
+            const middleware = await mw.frontendCaching.getMiddleware();
+            return middleware(req, res, next);
+        } catch {
+            return next();
         }
     });
 

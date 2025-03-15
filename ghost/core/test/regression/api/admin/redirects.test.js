@@ -3,7 +3,7 @@ const supertest = require('supertest');
 const fs = require('fs-extra');
 const path = require('path');
 const os = require('os');
-const uuid = require('uuid');
+const crypto = require('crypto');
 const localUtils = require('./utils');
 const config = require('../../../../core/shared/config');
 
@@ -23,7 +23,7 @@ describe('Redirects API', function () {
                 //       which is currently impossible with available test utils.
                 //       The test itself should be broken down into a unit test for the
                 //       Redirects service class.
-                const contentFolder = path.join(os.tmpdir(), uuid.v4(), 'ghost-test');
+                const contentFolder = path.join(os.tmpdir(), crypto.randomUUID(), 'ghost-test');
                 fs.ensureDirSync(contentFolder);
                 fs.ensureDirSync(path.join(contentFolder, 'data'));
                 fs.writeFileSync(path.join(contentFolder, 'data', 'redirects.json'), JSON.stringify([]));

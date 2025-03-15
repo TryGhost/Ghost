@@ -14,13 +14,16 @@
             </div>
 
             <section class="view-actions">
-                <GhTaskButton
-                    @task={{this.saveTask}}
-                    @type="button"
-                    @class="gh-btn gh-btn-primary gh-btn-icon"
-                    @data-test-button="save"
-                    {{on-key "cmd+s"}}
-                />
+                <div class="view-actions-bottom-row">
+                    <a href={{this.tagURL}} target="_blank" rel="noopener noreferrer" class="gh-btn gh-btn-icon-right gh-btn-action-icon"><span>View{{svg-jar "arrow-top-right"}}</span></a>
+                    <GhTaskButton
+                        @task={{this.saveTask}}
+                        @type="button"
+                        @class="gh-btn gh-btn-primary gh-btn-icon"
+                        @data-test-button="save"
+                        {{on-key "cmd+s"}}
+                    />
+                </div>
             </section>
         </GhCanvasHeader>
 

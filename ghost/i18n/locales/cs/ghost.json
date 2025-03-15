@@ -4,7 +4,7 @@
     "Complete your sign up to {{siteTitle}}!": "Dokončete registraci k {{siteTitle}}!",
     "Confirm email address": "Potvrďte e-mailovou adresu",
     "Confirm signup": "Potvrďte přihlášení",
-    "Confirm your email address": "",
+    "Confirm your email address": "Potvrďte svou e-mailovou adresu",
     "Confirm your email update for {{siteTitle}}!": "Potvrďte změnu e-mailu pro {{siteTitle}}!",
     "Confirm your subscription to {{siteTitle}}": "Potvrďte odběr na {{siteTitle}}!",
     "For your security, the link will expire in 24 hours time.": "Pro vaši bezpečnost bude odkaz platný 24 hodin.",
@@ -30,5 +30,5 @@
     "You will not be signed up, and no account will be created for you.": "Nebudete registrováni a nebudou pro vás vytvořeny žádné účty.",
     "You will not be subscribed.": "Nebudete odebírat.",
     "You're one tap away from subscribing to {{siteTitle}} — please confirm your email address with this link:": "Stačí jedno kliknutí a odebíráte {{siteTitle}}. Potvrďte prosím svou e-mailovou adresu kliknutím na následující odkaz:",
-    "You're one tap away from subscribing to {{siteTitle}}!": ""
+    "You're one tap away from subscribing to {{siteTitle}}!": "Jste jen krok od odběru {{siteTitle}}!"
 }

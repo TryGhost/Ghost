@@ -20,9 +20,11 @@ export interface Meta {
 interface QueryOptions<ResponseData> {
     dataType: string
     path: string
+    headers?: Record<string, string>;
     defaultSearchParams?: Record<string, string>;
     permissions?: string[];
     returnData?: (originalData: unknown) => ResponseData;
+    useActivityPub?: boolean;
 }
 
 type QueryHookOptions<ResponseData> = UseQueryOptions<ResponseData> & {
@@ -31,14 +33,14 @@ type QueryHookOptions<ResponseData> = UseQueryOptions<ResponseData> & {
 };
 
 export const createQuery = <ResponseData>(options: QueryOptions<ResponseData>) => ({searchParams, ...query}: QueryHookOptions<ResponseData> = {}): Omit<UseQueryResult<ResponseData>, 'data'> & {data: ResponseData | undefined} => {
-    const url = apiUrl(options.path, searchParams || options.defaultSearchParams);
+    const url = apiUrl(options.path, searchParams || options.defaultSearchParams, options?.useActivityPub);
     const fetchApi = useFetchApi();
     const handleError = useHandleError();
 
     const result = useQuery<ResponseData>({
         enabled: options.permissions ? usePermission(options.permissions) : true,
         queryKey: [options.dataType, url],
-        queryFn: () => fetchApi(url),
+        queryFn: () => fetchApi(url, {...options}),
         ...query
     });
 
@@ -65,7 +67,7 @@ export const createPaginatedQuery = <ResponseData extends {meta?: Meta}>(options
     const paginatedSearchParams = searchParams || options.defaultSearchParams || {};
     paginatedSearchParams.page = page.toString();
 
-    const url = apiUrl(options.path, paginatedSearchParams);
+    const url = apiUrl(options.path, paginatedSearchParams, options?.useActivityPub);
     const fetchApi = useFetchApi();
     const handleError = useHandleError();
 
@@ -118,8 +120,8 @@ export const createInfiniteQuery = <ResponseData>(options: InfiniteQueryOptions<
     const nextPageParams = getNextPageParams || options.defaultNextPageParams || (() => ({}));
 
     const result = useInfiniteQuery<ResponseData>({
-        queryKey: [options.dataType, apiUrl(options.path, searchParams || options.defaultSearchParams)],
-        queryFn: ({pageParam}) => fetchApi(apiUrl(options.path, pageParam || searchParams || options.defaultSearchParams)),
+        queryKey: [options.dataType, apiUrl(options.path, searchParams || options.defaultSearchParams, options?.useActivityPub)],
+        queryFn: ({pageParam}) => fetchApi(apiUrl(options.path, pageParam || searchParams || options.defaultSearchParams, options?.useActivityPub)),
         getNextPageParam: data => nextPageParams(data, searchParams || options.defaultSearchParams || {}),
         ...query
     });
@@ -145,6 +147,7 @@ export const createQueryWithId = <ResponseData>(options: Omit<QueryOptions<Respo
 
 interface MutationOptions<ResponseData, Payload> extends Omit<QueryOptions<ResponseData>, 'dataType' | 'path'>, Omit<RequestOptions, 'body'> {
     path: (payload: Payload) => string;
+    headers?: Record<string, string>;
     body?: (payload: Payload) => FormData | object;
     searchParams?: (payload: Payload) => { [key: string]: string; };
     invalidateQueries?: { dataType: string; };
@@ -159,7 +162,7 @@ const mutate = <ResponseData, Payload>({fetchApi, path, payload, searchParams, o
     options: Omit<MutationOptions<ResponseData, Payload>, 'path'>
 }) => {
     const {defaultSearchParams, body, ...requestOptions} = options;
-    const url = apiUrl(path, searchParams || defaultSearchParams);
+    const url = apiUrl(path, searchParams || defaultSearchParams, options?.useActivityPub);
     const generatedBody = payload && body?.(payload);
 
     let requestBody: string | FormData | undefined = undefined;

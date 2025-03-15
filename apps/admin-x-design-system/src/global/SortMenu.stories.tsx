@@ -22,7 +22,7 @@ export const Default: Story = {
         items: items,
         onSortChange: () => {},
         onDirectionChange: () => {},
-        position: 'left'
+        position: 'start'
     },
     decorators: [
         ThisStory => (

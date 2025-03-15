@@ -33,10 +33,10 @@ const Labs: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     <SettingGroupHeader description='This is a testing ground for new or experimental features. They may change, break or inexplicably disappear at any time.' title='Labs' />
                     {
                         !isOpen ?
-                            <Button color='green' label='Open' link linkWithPadding onClick={() => {
+                            <Button className='mt-[-5px]' color='clear' label='Open' size='sm' onClick={() => {
                                 setIsOpen(true);
                             }} /> :
-                            <Button color='green' label='Close' link linkWithPadding onClick={() => {
+                            <Button className='mt-[-5px]' color='grey' label='Close' size='sm' onClick={() => {
                                 setIsOpen(false);
                             }} />
                     }

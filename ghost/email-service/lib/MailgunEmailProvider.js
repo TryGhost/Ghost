@@ -19,6 +19,7 @@ const debug = require('@tryghost/debug')('email-service:mailgun-provider-service
  * @typedef {object} EmailSendingOptions
  * @prop {boolean} clickTrackingEnabled
  * @prop {boolean} openTrackingEnabled
+ * @prop {Date} deliveryTime
  */
 
 /**
@@ -111,6 +112,10 @@ class MailgunEmailProvider {
                 track_clicks: !!options.clickTrackingEnabled
             };
 
+            if (options.deliveryTime && options.deliveryTime instanceof Date) {
+                messageData.deliveryTime = options.deliveryTime;
+            }
+
             // create recipient data for Mailgun using replacement definitions
             const recipientData = recipients.reduce((acc, recipient) => {
                 acc[recipient.email] = this.#createRecipientData(recipient.replacements);
@@ -171,6 +176,15 @@ class MailgunEmailProvider {
 
     getMaximumRecipients() {
         return this.#mailgunClient.getBatchSize();
+    }
+
+    /**
+     * Returns the configured delay between batches in milliseconds
+     * 
+     * @returns {number}
+     */
+    getTargetDeliveryWindow() {
+        return this.#mailgunClient.getTargetDeliveryWindow();
     }
 }
 

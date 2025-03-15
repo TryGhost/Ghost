@@ -1,10 +1,13 @@
 import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import moment from 'moment-timezone';
 import sinon from 'sinon';
+import {Response} from 'miragejs';
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
 import {beforeEach, describe, it} from 'mocha';
-import {blur, click, currentRouteName, currentURL, fillIn, find, findAll, triggerEvent, typeIn} from '@ember/test-helpers';
+import {blur, click, currentRouteName, currentURL, fillIn, find, findAll, triggerEvent, typeIn, waitFor} from '@ember/test-helpers';
 import {datepickerSelect} from 'ember-power-datepicker/test-support';
+import {editorSelector, pasteInEditor, titleSelector} from '../helpers/editor';
+import {enableLabsFlag} from '../helpers/labs-flag';
 import {expect} from 'chai';
 import {selectChoose} from 'ember-power-select/test-support';
 import {setupApplicationTest} from 'ember-mocha';
@@ -65,6 +68,17 @@ describe('Acceptance: Editor', function () {
         expect(currentURL(), 'currentURL').to.equal('/editor/post/1');
     });
 
+    it('does not redirect to staff page when authenticated as super editor', async function () {
+        let role = this.server.create('role', {name: 'Super Editor'});
+        let author = this.server.create('user', {roles: [role], slug: 'test-user'});
+        this.server.create('post', {authors: [author]});
+
+        await authenticateSession();
+        await visit('/editor/post/1');
+
+        expect(currentURL(), 'currentURL').to.equal('/editor/post/1');
+    });
+    
     it('displays 404 when post does not exist', async function () {
         let role = this.server.create('role', {name: 'Editor'});
         this.server.create('user', {roles: [role], slug: 'test-user'});
@@ -113,11 +127,11 @@ describe('Acceptance: Editor', function () {
         let author;
 
         beforeEach(async function () {
+            this.server.loadFixtures();
             let role = this.server.create('role', {name: 'Administrator'});
             author = this.server.create('user', {roles: [role]});
-            this.server.loadFixtures('settings');
 
-            return await authenticateSession();
+            await authenticateSession();
         });
 
         describe('post settings menu', function () {
@@ -490,6 +504,38 @@ describe('Acceptance: Editor', function () {
             ).to.equal(0);
         });
 
+        it('handles in-editor excerpt update and validation', async function () {
+            enableLabsFlag(this.server, 'editorExcerpt');
+
+            let post = this.server.create('post', {authors: [author], customExcerpt: 'Existing excerpt'});
+
+            await visit(`/editor/post/${post.id}`);
+
+            expect(find('[data-test-textarea="excerpt"]'), 'initial textarea').to.be.visible;
+            expect(find('[data-test-textarea="excerpt"]'), 'initial textarea').to.have.value('Existing excerpt');
+
+            await fillIn('[data-test-textarea="excerpt"]', 'New excerpt');
+            expect(find('[data-test-textarea="excerpt"]'), 'updated textarea').to.have.value('New excerpt');
+
+            await triggerEvent('[data-test-textarea="excerpt"]', 'keydown', {
+                key: 's',
+                keyCode: 83, // s
+                metaKey: ctrlOrCmd === 'command',
+                ctrlKey: ctrlOrCmd === 'ctrl'
+            });
+
+            expect(post.customExcerpt, 'saved excerpt').to.equal('New excerpt');
+
+            await fillIn('[data-test-textarea="excerpt"]', Array(302).join('a'));
+
+            expect(find('[data-test-error="excerpt"]'), 'excerpt error').to.exist;
+            expect(find('[data-test-error="excerpt"]')).to.have.trimmed.text('Excerpt cannot be longer than 300 characters.');
+
+            await fillIn('[data-test-textarea="excerpt"]', Array(300).join('a'));
+
+            expect(find('[data-test-error="excerpt"]'), 'excerpt error').to.not.exist;
+        });
+
         // https://github.com/TryGhost/Ghost/issues/11786
         // NOTE: Flaky test with moving to Lexical editor, skipping for now
         it.skip('save shortcut works when tags/authors field is focused', async function () {
@@ -571,6 +617,41 @@ describe('Acceptance: Editor', function () {
             ).to.equal(`/ghost/posts/analytics/${post.id}`);
         });
 
+        it('does not render analytics breadcrumb for a new post', async function () {
+            const post = this.server.create('post', {
+                authors: [author],
+                status: 'published',
+                title: 'Published Post'
+            });
+
+            // visit the analytics page for the post
+            await visit(`/posts/analytics/${post.id}`);
+            // start a new post
+            await visit('/editor/post');
+
+            // Breadcrumbs should not contain Analytics link
+            expect(find('[data-test-breadcrumb]'), 'breadcrumb text').to.contain.text('Posts');
+            expect(find('[data-test-editor-post-status]')).to.contain.text('New');
+        });
+
+        it('updates slug when title changes without blur', async function () {
+            let post = this.server.create('post', {authors: [author]});
+
+            await visit(`/editor/post/${post.id}`);
+            await fillIn('[data-test-editor-title-input]', 'Test Title');
+
+            await triggerEvent('[data-test-editor-title-input]', 'keydown', {
+                keyCode: 83, // s
+                metaKey: ctrlOrCmd === 'command',
+                ctrlKey: ctrlOrCmd === 'ctrl'
+            });
+
+            let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
+            let body = JSON.parse(lastRequest.requestBody);
+            expect(body.posts[0].slug).to.equal('test-title');
+            expect(post.slug).to.equal('test-title');
+        });
+
         it('handles TKs in title', async function () {
             let post = this.server.create('post', {authors: [author]});
 
@@ -601,6 +682,106 @@ describe('Acceptance: Editor', function () {
                 find('[data-test-modal="tk-reminder"]'),
                 'TK reminder modal'
             ).to.exist;
+        });
+
+        it('handles TKs in excerpt', async function () {
+            enableLabsFlag(this.server, 'editorExcerpt');
+
+            const post = this.server.create('post', {authors: [author]});
+
+            await visit(`/editor/post/${post.id}`);
+
+            expect(
+                find('[data-test-textarea="excerpt"]').value,
+                'initial excerpt'
+            ).to.equal('');
+
+            await fillIn('[data-test-textarea="excerpt"]', 'Test TK excerpt');
+
+            expect(
+                find('[data-test-textarea="excerpt"]').value,
+                'excerpt after typing'
+            ).to.equal('Test TK excerpt');
+
+            // check for TK indicator
+            expect(
+                find('[data-testid="tk-indicator-excerpt"]'),
+                'TK indicator text'
+            ).to.exist;
+
+            // click publish to see if confirmation comes up
+            await click('[data-test-button="publish-flow"]');
+
+            expect(
+                find('[data-test-modal="tk-reminder"]'),
+                'TK reminder modal'
+            ).to.exist;
+        });
+
+        // We shouldn't ever see 404s from the API but we do/have had a bug where
+        // a new post can enter a state where it appears saved but hasn't hit
+        // the API to create the post meaning it has no ID but the store is
+        // making PUT requests rather than a POST request in which case it's
+        // hitting `/posts/` rather than `/posts/:id` and receiving a 404. On top
+        // of that our application error handler was erroring because there was
+        // no transition alongside the error so this test makes sure that works
+        // and we enter a visible error state rather than letting unsaved changes
+        // pile up and contributing to larger potential data loss.
+        it('handles 404 from invalid PUT API request', async function () {
+            this.server.put('/posts/', () => {
+                return new Response(404, {}, {
+                    errors: [
+                        {
+                            message: 'Resource could not be found.',
+                            errorType: 'NotFoundError',
+                            statusCode: 404
+                        }
+                    ]
+                });
+            });
+
+            await visit('/editor/post');
+            await waitFor(editorSelector);
+
+            // simulate the bad state where a post.save will trigger a PUT with no id
+            const controller = this.owner.lookup('controller:lexical-editor');
+            controller.post.transitionTo('updated.uncommitted');
+
+            // this will trigger an autosave which will hit our simulated 404
+            await pasteInEditor('Testing');
+
+            // we should see an error - previously this was failing silently
+            // error message comes from editor's own handling rather than our generic API error fallback
+            expect(find('.gh-alert-content')).to.have.trimmed.text('Saving failed: Editor has crashed. Please copy your content and start a new post.');
+        });
+
+        it('handles 404 from valid PUT API request', async function () {
+            // this doesn't match what we're actually seeing in the above mentioned
+            // bug state but it's a good enough simulation for testing our error handler
+            this.server.put('/posts/:id/', () => {
+                return new Response(404, {}, {
+                    errors: [
+                        {
+                            message: 'Resource could not be found.',
+                            errorType: 'NotFoundError',
+                            statusCode: 404
+                        }
+                    ]
+                });
+            });
+
+            await visit('/editor/post');
+            await waitFor(editorSelector);
+            await fillIn(titleSelector, 'Test 404 handling');
+            // this triggers the initial creation request - in the actual bug this doesn't happen
+            await blur(titleSelector);
+            expect(currentRouteName()).to.equal('lexical-editor.edit');
+            // this will trigger an autosave which will hit our simulated 404
+            await pasteInEditor('Testing');
+
+            // we should see an error - previously this was failing silently
+            // error message comes from editor's own handling rather than our generic API error fallback
+            expect(find('.gh-alert-content')).to.contain.text('Post has been deleted in a different session');
         });
     });
 });

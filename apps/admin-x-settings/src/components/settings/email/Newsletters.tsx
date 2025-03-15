@@ -90,7 +90,7 @@ const Newsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
     }, [verifyEmailToken, handleError, verifyEmail]);
 
     const buttons = (
-        <Button color='green' label='Add newsletter' link linkWithPadding onClick={() => {
+        <Button className='mt-[-5px]' color='clear' label='Add newsletter' size='sm' onClick={() => {
             openNewsletterModal();
         }} />
     );
@@ -150,6 +150,7 @@ const Newsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
     return (
         <TopLevelGroup
             customButtons={buttons}
+            description="Edit details and customize your design"
             keywords={keywords}
             navid='newsletters'
             testId='newsletters'

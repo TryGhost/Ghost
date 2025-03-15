@@ -60,6 +60,7 @@ describe('Identities API', function () {
                 })
                 .then((decoded) => {
                     decoded.sub.should.equal('jbloggs@example.com');
+                    decoded.role.should.equal('Owner');
                 });
         });
     });

@@ -211,6 +211,9 @@ class CustomRedirectsAPI {
      */
     async setFromFilePath(filePath, ext = '.json') {
         const redirectsFilePath = await this.getRedirectsFilePath();
+        const content = await readRedirectsFile(filePath);
+        const parsed = parseRedirectsFile(content, ext);
+        this.validate(parsed);
 
         if (redirectsFilePath) {
             const backupRedirectsPath = this.getBackupFilePath(redirectsFilePath);
@@ -222,10 +225,6 @@ class CustomRedirectsAPI {
 
             await fs.move(redirectsFilePath, backupRedirectsPath);
         }
-
-        const content = await readRedirectsFile(filePath);
-        const parsed = parseRedirectsFile(content, ext);
-        this.validate(parsed);
 
         if (ext === '.json') {
             await fs.writeFile(this.createRedirectsFilePath('.json'), JSON.stringify(parsed), 'utf-8');

@@ -136,7 +136,7 @@ const Connect: React.FC = () => {
             </div>
             <StripeButton href={stripeConnectUrl} tag='a' target='_blank' />
             <Heading className='mb-2 mt-8' level={6} grey>Step 2 — <span className='text-black dark:text-white'>Paste secure key</span></Heading>
-            <TextArea clearBg={false} error={Boolean(error)} hint={error || undefined} placeholder='Paste your secure key here' onChange={onTokenChange}></TextArea>
+            <TextArea error={Boolean(error)} hint={error || undefined} placeholder='Paste your secure key here' onChange={onTokenChange}></TextArea>
             {submitEnabled && <Button className='mt-5' color='green' label='Save Stripe settings' onClick={onSubmit} />}
         </div>
     );
@@ -162,8 +162,7 @@ const Connected: React.FC<{onClose?: () => void}> = ({onClose}) => {
         // this.ghostPaths.url.api('/members/') + '?filter=status:paid&limit=0';
         NiceModal.show(ConfirmationModal, {
             title: 'Disconnect Stripe',
-            prompt: (hasActiveStripeSubscriptions ? 'Cannot disconnect while there are members with active Stripe subscriptions.' : <>You&lsquo;re about to disconnect your Stripe account {stripeConnectAccountName}
-                from this site. This will automatically turn off paid memberships on this site.</>),
+            prompt: (hasActiveStripeSubscriptions ? 'Cannot disconnect while there are members with active Stripe subscriptions.' : <>You&lsquo;re about to disconnect your Stripe account {stripeConnectAccountName} from this site. This will automatically turn off paid memberships on this site.</>),
             okLabel: hasActiveStripeSubscriptions ? '' : 'Disconnect',
             onOk: async (modal) => {
                 try {

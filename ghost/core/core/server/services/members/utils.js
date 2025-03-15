@@ -22,6 +22,7 @@ module.exports.formattedMemberResponse = function formattedMemberResponse(member
         firstname: member.name && member.name.split(' ')[0],
         expertise: member.expertise,
         avatar_image: member.avatar_image,
+        unsubscribe_url: member.unsubscribe_url,
         subscribed: !!member.subscribed,
         subscriptions: member.subscriptions || [],
         paid: member.status !== 'free',

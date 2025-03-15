@@ -6,9 +6,16 @@ let tiers = {};
 let models = {};
 const crypto = require('crypto');
 
+// @ts-check
+/**
+ * @typedef {"customers" | "checkout" | "subscriptions" | "coupons" | "payment_methods" | "prices" | "setup_intents" | "products"} resource
+ */
+
 /**
  * The Stripe Mocker mimics an in memory version of the Stripe API. We can use it to quickly create new subscriptions and get a close to real world test environment with working webhooks etc.
- * If you create a new subscription, it will automatically send the customer.subscription.created webhook. So you can test what happens.
+ * 
+ * If you create a new subscription, it will by default send the checkout.session.completed webhook.
+ * If you update a subscription, it will by default send the customer.subscription.updated webhook.
  */
 class StripeMocker {
     customers = [];
@@ -49,10 +56,19 @@ class StripeMocker {
         models = require('../../core/server/models');
     }
 
+    /**
+     * Generates a random ID.
+     * @returns {string} The generated random ID.
+     */
     #generateRandomId() {
         return crypto.randomBytes(8).toString('hex');
     }
 
+    /**
+     * Creates a mock Stripe customer.
+     * @param {object} overrides - Optional overrides for the customer object.
+     * @returns {object} - The created Stripe customer object.
+     */
     createCustomer(overrides = {}) {
         const customerId = `cus_${this.#generateRandomId()}`;
         const stripeCustomer = {
@@ -71,10 +87,10 @@ class StripeMocker {
     }
 
     /**
-     *
-     * @param {*} tierSlug
+     * Fetches a mock Stripe price for a given product/tier (by slug).
+     * @param {string} tierSlug
      * @param {'month' | 'year'} cadence
-     * @returns
+     * @returns {Promise<object>} - The fetched Stripe price object.
      */
     async getPriceForTier(tierSlug, cadence) {
         const product = await models.Product.findOne({slug: tierSlug});
@@ -89,13 +105,13 @@ class StripeMocker {
     }
 
     /**
-     *
+     * Creates a Ghost tier (product).
      * @param {object} data
      * @param {string} [data.name]
      * @param {string} data.currency
      * @param {number} data.monthly_price
      * @param {number} data.yearly_price
-     * @returns
+     * @returns {Promise<object>} - The created product object.
      */
     async createTier({name, currency, monthly_price, yearly_price}) {
         const result = await tiers.api.add({
@@ -110,6 +126,15 @@ class StripeMocker {
         });
     }
 
+    /**
+     * Creates a trial subscription.
+     *
+     * @param {object} options - The options for creating the trial subscription.
+     * @param {string} options.customer - The customer ID.
+     * @param {string} options.price - The price ID.
+     * @param {object} [options.overrides] - Optional overrides for the trial subscription.
+     * @returns {Promise<object>} - The created trial subscription object.
+     */
     async createTrialSubscription({customer, price, ...overrides}) {
         return await this.createSubscription({
             customer,
@@ -143,6 +168,17 @@ class StripeMocker {
         await DomainEvents.allSettled();
     }
 
+    /**
+     * Creates a subscription for a customer.
+     *
+     * @param {object} data - The data for creating the subscription.
+     * @param {object} data.customer - The customer object.
+     * @param {object} data.price - The price object.
+     * @param {object} [data.overrides] - Optional overrides for the subscription object.
+     * @param {object} options - The options for creating the subscription.
+     * @param {object} [options.sendWebhook=true] - Whether to send a webhook or not.
+     * @returns {Promise<Object>} The created subscription object.
+     */
     async createSubscription({customer, price, ...overrides}, options = {sendWebhook: true}) {
         const subscriptionId = `sub_${this.#generateRandomId()}`;
 
@@ -188,6 +224,14 @@ class StripeMocker {
         return subscription;
     }
 
+    /**
+     * Retrieves requested data from the in-memory storage similar to a HTTP request.
+     *
+     * @param {Array} arr - The array to search in.
+     * @param {string} id - The id to search for.
+     * @returns {Array} - An array containing the HTTP status code and the setup intent object.
+     *                   If the setup intent is not found, returns [404].
+     */
     #getData(arr, id) {
         const setupIntent = arr.find(c => c.id === id);
         if (!setupIntent) {
@@ -196,6 +240,15 @@ class StripeMocker {
         return [200, setupIntent];
     }
 
+    /**
+     * Handles creation and updating of in memory resources.
+     *
+     * @param {Array} arr - The array to store the processed data.
+     * @param {string} id - The ID of the resource.
+     * @param {string} body - The body of the POST request.
+     * @param {resource} resource - The type of resource.
+     * @returns {Array} - An array containing the HTTP status code and the processed data.
+     */
     #postData(arr, id, body, resource) {
         const qs = require('qs');
         let decoded = qs.parse(body, {
@@ -309,6 +362,9 @@ class StripeMocker {
         return [200, subscription];
     }
 
+    /**
+     * Removes all the registered nock interceptors.
+     */
     remove() {
         for (const interceptor of this.nockInterceptors) {
             nock.removeInterceptor(interceptor);
@@ -316,6 +372,10 @@ class StripeMocker {
         this.nockInterceptors = [];
     }
 
+    /**
+     * Stubs the Stripe API.
+     * This will intercept all requests to the Stripe API and return the mocked data. 
+     */
     stub() {
         this.remove();
 
@@ -425,10 +485,13 @@ class StripeMocker {
             });
     }
 
+    /**
+     * Sends a webhook event to the Stripe webhook controller.
+     * 
+     * @param {any} event - The webhook event to send.
+     * @returns {Promise<void>} - A promise that resolves when the webhook event is handled.
+     */
     async sendWebhook(event) {
-        /**
-         * @type {any}
-         */
         const webhookController = stripeService.webhookController;
         await webhookController.handleEvent(event);
     }

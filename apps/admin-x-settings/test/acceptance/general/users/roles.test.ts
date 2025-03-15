@@ -57,7 +57,7 @@ test.describe('User roles', async () => {
         await page.goto('/');
 
         const section = page.getByTestId('users');
-        const activeTab = section.locator('[role=tabpanel]:not(.hidden)');
+        const activeTab = section.locator('[role=tabpanel]:not([hidden])');
 
         await section.getByRole('tab', {name: 'Authors'}).click();
 
@@ -67,11 +67,13 @@ test.describe('User roles', async () => {
 
         const modal = page.getByTestId('user-detail-modal');
 
-        await modal.locator('input[value=editor]').check();
+        await modal.locator('button[value=editor]').click();
 
-        await modal.getByRole('button', {name: 'Save & close'}).click();
+        await modal.getByRole('button', {name: 'Save'}).click();
 
         await expect(modal.getByRole('button', {name: 'Saved'})).toBeVisible();
+
+        await modal.getByRole('button', {name: 'Close'}).click();
 
         await expect(activeTab).toHaveText(/No authors found./);
 
@@ -146,6 +148,7 @@ test.describe('User roles', async () => {
 
         await modal.getByLabel('Full name').fill('New name');
         await modal.getByRole('button', {name: 'Save'}).click();
+        await modal.getByRole('button', {name: 'Close'}).click();
 
         await expect(modal).toBeHidden();
     });

@@ -1,8 +1,24 @@
 /* eslint-disable no-console */
-import {getCheckoutSessionDataFromPlanAttribute, getUrlHistory} from './utils/helpers';
-import {HumanReadableError} from './utils/errors';
+import {getCheckoutSessionDataFromPlanAttribute, getUrlHistory, hasCaptchaEnabled, getCaptchaSitekey} from './utils/helpers';
+import {HumanReadableError, chooseBestErrorMessage} from './utils/errors';
+import i18nLib from '@tryghost/i18n';
 
-export function formSubmitHandler({event, form, errorEl, siteUrl, submitHandler}) {
+function displayErrorIfElementExists(errorEl, message) {
+    if (errorEl) {
+        errorEl.innerText = message;
+    }
+}
+
+function handleError(error, form, errorEl, t) {
+    form.classList.add('error');
+    const defaultMessage = t('There was an error sending the email, please try again');
+    displayErrorIfElementExists(errorEl, chooseBestErrorMessage(error, defaultMessage, t));
+}
+
+export async function formSubmitHandler(
+    {event, form, errorEl, siteUrl, captchaId, submitHandler},
+    t = str => str
+) {
     form.removeEventListener('submit', submitHandler);
     event.preventDefault();
     if (errorEl) {
@@ -56,32 +72,40 @@ export function formSubmitHandler({event, form, errorEl, siteUrl, submitHandler}
         }
     }
 
-    fetch(`${siteUrl}/members/api/send-magic-link/`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(reqBody)
-    }).then(function (res) {
+    try {
+        const integrityTokenRes = await fetch(`${siteUrl}/members/api/integrity-token/`, {method: 'GET'});
+        const integrityToken = await integrityTokenRes.text();
+
+        if (captchaId) {
+            const {response} = await window.hcaptcha.execute(captchaId, {async: true});
+            reqBody.token = response;
+        }
+
+        const magicLinkRes = await fetch(`${siteUrl}/members/api/send-magic-link/`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({...reqBody, integrityToken})
+        });
+
         form.addEventListener('submit', submitHandler);
         form.classList.remove('loading');
-        if (res.ok) {
+        if (magicLinkRes.ok) {
             form.classList.add('success');
         } else {
-            return HumanReadableError.fromApiResponse(res).then((e) => {
-                throw e;
-            });
+            const e = await HumanReadableError.fromApiResponse(magicLinkRes);
+            const errorMessage = chooseBestErrorMessage(e, t('Failed to send magic link email'), t);
+            displayErrorIfElementExists(errorEl, errorMessage);
+            form.classList.add('error'); // Ensure error state is set here
         }
-    }).catch((err) => {
-        if (errorEl) {
-            // This theme supports a custom error element
-            errorEl.innerText = HumanReadableError.getMessageFromError(err, 'There was an error sending the email, please try again');
-        }
-        form.classList.add('error');
-    });
+    } catch (err) {
+        handleError(err, form, errorEl, t);
+    }
 }
 
 export function planClickHandler({event, el, errorEl, siteUrl, site, member, clickHandler}) {
+    const i18nLanguage = site.locale || 'en';
+    const i18n = i18nLib(i18nLanguage, 'portal');
+    const t = i18n.t;
     el.removeEventListener('click', clickHandler);
     event.preventDefault();
     let plan = el.dataset.membersPlan;
@@ -134,7 +158,7 @@ export function planClickHandler({event, el, errorEl, siteUrl, site, member, cli
             })
         }).then(function (res) {
             if (!res.ok) {
-                throw new Error('Could not create stripe checkout session');
+                throw new Error(t('Could not create stripe checkout session'));
             }
             return res.json();
         });
@@ -162,14 +186,28 @@ export function planClickHandler({event, el, errorEl, siteUrl, site, member, cli
 }
 
 export function handleDataAttributes({siteUrl, site, member}) {
+    const i18nLanguage = site.locale || 'en';
+    const i18n = i18nLib(i18nLanguage, 'portal');
+    const t = i18n.t;
     if (!siteUrl) {
         return;
     }
     siteUrl = siteUrl.replace(/\/$/, '');
     Array.prototype.forEach.call(document.querySelectorAll('form[data-members-form]'), function (form) {
+        let captchaId;
+        if (hasCaptchaEnabled({site})) {
+            const captchaSitekey = getCaptchaSitekey({site});
+            const captchaEl = document.createElement('div');
+            form.appendChild(captchaEl);
+            captchaId = window.hcaptcha.render(captchaEl, {
+                size: 'invisible',
+                sitekey: captchaSitekey
+            });
+        }
+
         let errorEl = form.querySelector('[data-members-error]');
         function submitHandler(event) {
-            formSubmitHandler({event, errorEl, form, siteUrl, submitHandler});
+            formSubmitHandler({event, errorEl, form, siteUrl, captchaId, submitHandler}, t);
         }
         form.addEventListener('submit', submitHandler);
     });
@@ -225,7 +263,7 @@ export function handleDataAttributes({siteUrl, site, member}) {
                     })
                 }).then(function (res) {
                     if (!res.ok) {
-                        throw new Error('Could not create stripe checkout session');
+                        throw new Error(t('Could not create stripe checkout session'));
                     }
                     return res.json();
                 });
@@ -236,7 +274,7 @@ export function handleDataAttributes({siteUrl, site, member}) {
                 });
             }).then(function (result) {
                 if (result.error) {
-                    throw new Error(result.error.message);
+                    throw new Error(t(result.error.message));
                 }
             }).catch(function (err) {
                 console.error(err);
@@ -314,7 +352,7 @@ export function handleDataAttributes({siteUrl, site, member}) {
                     el.classList.add('error');
 
                     if (errorEl) {
-                        errorEl.innerText = 'There was an error cancelling your subscription, please try again.';
+                        errorEl.innerText = t('There was an error cancelling your subscription, please try again.');
                     }
                 }
             });
@@ -364,7 +402,7 @@ export function handleDataAttributes({siteUrl, site, member}) {
                     el.classList.add('error');
 
                     if (errorEl) {
-                        errorEl.innerText = 'There was an error continuing your subscription, please try again.';
+                        errorEl.innerText = t('There was an error continuing your subscription, please try again.');
                     }
                 }
             });

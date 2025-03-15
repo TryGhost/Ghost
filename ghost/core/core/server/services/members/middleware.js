@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const _ = require('lodash');
 const logging = require('@tryghost/logging');
 const membersService = require('./service');
@@ -11,10 +12,76 @@ const {
 } = require('./utils');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
+const onHeaders = require('on-headers');
+const tiersService = require('../tiers/service');
+const config = require('../../../shared/config');
+const settingsHelpers = require('../settings-helpers');
 
 const messages = {
     missingUuid: 'Missing uuid.',
-    invalidUuid: 'Invalid uuid.'
+    invalidUuid: 'Invalid uuid.',
+    invalidKey: 'Invalid key.'
+};
+
+const getFreeTier = async function getFreeTier() {
+    const response = await tiersService.api.browse();
+    const freeTier = response.data.find(tier => tier.type === 'free');
+    return freeTier;
+};
+
+/**
+ * Sets the ghost-access and ghost-access-hmac cookies on the response object
+ * @param {Object} member - The member object
+ * @param {import('express').Request} req - The member object
+ * @param {import('express').Response} res - The express response object to set the cookies on
+ * @param {Object} freeTier - The free tier object
+ * @returns
+ */
+const setAccessCookies = function setAccessCookies(member, req, res, freeTier) {
+    if (!member) {
+        // If there is no cookie sent with the request, return early
+        if (!req.headers.cookie || !req.headers.cookie.includes('ghost-access')) {
+            return;
+        }
+        // If there are cookies sent with the request, set them to null and expire them immediately
+        const accessCookie = `ghost-access=null; Max-Age=0; Path=/; HttpOnly; SameSite=Strict;`;
+        const hmacCookie = `ghost-access-hmac=null; Max-Age=0; Path=/; HttpOnly; SameSite=Strict;`;
+        const existingCookies = res.getHeader('Set-Cookie') || [];
+        const cookiesToSet = [accessCookie, hmacCookie].concat(existingCookies);
+
+        res.setHeader('Set-Cookie', cookiesToSet);
+        return;
+    }
+    const hmacSecret = config.get('cacheMembersContent:hmacSecret');
+    if (!hmacSecret) {
+        return;
+    }
+    const hmacSecretBuffer = Buffer.from(hmacSecret, 'base64');
+    if (hmacSecretBuffer.length === 0) {
+        return;
+    }
+    const activeSubscription = member.subscriptions?.find(sub => sub.status === 'active');
+
+    const cookieTimestamp = Math.floor(Date.now() / 1000); // to mitigate a cookie replay attack
+    const memberTier = activeSubscription && activeSubscription.tier.id || freeTier.id;
+    const memberTierAndTimestamp = `${memberTier}:${cookieTimestamp}`;
+    const memberTierHmac = crypto.createHmac('sha256', hmacSecretBuffer).update(memberTierAndTimestamp).digest('hex');
+
+    const maxAge = 3600;
+    const accessCookie = `ghost-access=${memberTierAndTimestamp}; Max-Age=${maxAge}; Path=/; HttpOnly; SameSite=Strict;`;
+    const hmacCookie = `ghost-access-hmac=${memberTierHmac}; Max-Age=${maxAge}; Path=/; HttpOnly; SameSite=Strict;`;
+
+    const existingCookies = res.getHeader('Set-Cookie') || [];
+    const cookiesToSet = [accessCookie, hmacCookie].concat(existingCookies);
+    res.setHeader('Set-Cookie', cookiesToSet);
+};
+
+const accessInfoSession = async function accessInfoSession(req, res, next) {
+    const freeTier = await getFreeTier();
+    onHeaders(res, function () {
+        setAccessCookies(req.member, req, res, freeTier);
+    });
+    next();
 };
 
 // @TODO: This piece of middleware actually belongs to the frontend, not to the member app
@@ -32,7 +99,7 @@ const loadMemberSession = async function loadMemberSession(req, res, next) {
 };
 
 /**
- * Require member authentication, and make it possible to authenticate via uuid.
+ * Require member authentication, and make it possible to authenticate via uuid + hashed key.
  * You can chain this after loadMemberSession to make it possible to authenticate via both the uuid and the session.
  */
 const authMemberByUuid = async function authMemberByUuid(req, res, next) {
@@ -45,7 +112,23 @@ const authMemberByUuid = async function authMemberByUuid(req, res, next) {
             }
 
             throw new errors.UnauthorizedError({
-                messsage: tpl(messages.missingUuid)
+                message: tpl(messages.missingUuid)
+            });
+        }
+
+        const key = req.query.key;
+        if (!key) {
+            throw new errors.UnauthorizedError({
+                message: tpl(messages.invalidKey)
+            });
+        }
+
+        // the request key is a hashed value from the member uuid and the members validation key so we can verify the source
+        //  (only Ghost should be able to generate the key)
+        const memberHmac = crypto.createHmac('sha256', settingsHelpers.getMembersValidationKey()).update(uuid).digest('hex');
+        if (memberHmac !== key) {
+            throw new errors.UnauthorizedError({
+                message: tpl(messages.invalidKey)
             });
         }
 
@@ -71,6 +154,44 @@ const getIdentityToken = async function getIdentityToken(req, res) {
     } catch (err) {
         res.writeHead(204);
         res.end();
+    }
+};
+
+const createIntegrityToken = async function createIntegrityToken(req, res) {
+    try {
+        const token = membersService.requestIntegrityTokenProvider.create();
+        res.writeHead(200);
+        res.end(token);
+    } catch (err) {
+        res.writeHead(204);
+        res.end();
+    }
+};
+
+const verifyIntegrityToken = async function verifyIntegrityToken(req, res, next) {
+    const shouldThrowForInvalidToken = config.get('verifyRequestIntegrity');
+    try {
+        const token = req.body.integrityToken;
+        if (!token) {
+            logging.warn('Request with missing integrity token.');
+            if (shouldThrowForInvalidToken) {
+                throw new errors.BadRequestError();
+            } else {
+                return next();
+            }
+        }
+        if (membersService.requestIntegrityTokenProvider.validate(token)) {
+            return next();
+        } else {
+            logging.warn('Request with invalid integrity token.');
+            if (shouldThrowForInvalidToken) {
+                throw new errors.BadRequestError();
+            } else {
+                return next();
+            }
+        }
+    } catch (err) {
+        next(err);
     }
 };
 
@@ -128,25 +249,14 @@ const deleteSuppression = async function deleteSuppression(req, res) {
 
 const getMemberNewsletters = async function getMemberNewsletters(req, res) {
     try {
-        const memberUuid = req.query.uuid;
-
-        if (!memberUuid) {
-            res.writeHead(400);
-            return res.end('Invalid member uuid');
-        }
-
-        const memberData = await membersService.api.members.get({
-            uuid: memberUuid
-        }, {
-            withRelated: ['newsletters']
-        });
+        const memberData = req.member; // validation assumed
 
         if (!memberData) {
             res.writeHead(404);
             return res.end('Email address not found.');
         }
 
-        const data = _.pick(memberData.toJSON(), 'uuid', 'email', 'name', 'newsletters', 'enable_comment_notifications', 'status');
+        const data = _.pick(memberData, 'uuid', 'email', 'name', 'newsletters', 'enable_comment_notifications', 'status');
 
         if (data.newsletters) {
             data.newsletters = formatNewsletterResponse(data.newsletters);
@@ -161,23 +271,15 @@ const getMemberNewsletters = async function getMemberNewsletters(req, res) {
 
 const updateMemberNewsletters = async function updateMemberNewsletters(req, res) {
     try {
-        const memberUuid = req.query.uuid;
-        if (!memberUuid) {
-            res.writeHead(400);
-            return res.end('Invalid member uuid');
-        }
-
-        const data = _.pick(req.body, 'newsletters', 'enable_comment_notifications');
-        const memberData = await membersService.api.members.get({
-            uuid: memberUuid
-        });
+        const memberData = req.member; // validation assumed
         if (!memberData) {
             res.writeHead(404);
             return res.end('Email address not found.');
         }
 
+        const data = _.pick(req.body, 'newsletters', 'enable_comment_notifications');
         const options = {
-            id: memberData.get('id'),
+            id: memberData.id,
             withRelated: ['newsletters']
         };
 
@@ -241,6 +343,16 @@ const createSessionFromMagicLink = async function createSessionFromMagicLink(req
         spamPrevention.membersAuth().reset(req.ip, `${member.email}login`);
         // Note: don't reset 'member_login', or that would give an easy way around user enumeration by logging in to a manually created account
         const subscriptions = member && member.subscriptions || [];
+
+        if (config.get('cacheMembersContent:enabled')) {
+            // Set the ghost-access cookies to enable tier-based caching
+            try {
+                const freeTier = await getFreeTier();
+                setAccessCookies(member, req, res, freeTier);
+            } catch {
+                // This is a non-critical operation, so we can safely ignore any errors
+            }
+        }
 
         const action = req.query.action;
 
@@ -322,5 +434,8 @@ module.exports = {
     updateMemberData,
     updateMemberNewsletters,
     deleteSession,
-    deleteSuppression
+    accessInfoSession,
+    deleteSuppression,
+    createIntegrityToken,
+    verifyIntegrityToken
 };

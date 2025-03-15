@@ -6,7 +6,8 @@ import {getFrameStyles} from './Frame.styles';
 import Pages, {getActivePage} from '../pages';
 import PopupNotification from './common/PopupNotification';
 import PoweredBy from './common/PoweredBy';
-import {getSiteProducts, isInviteOnlySite, isCookiesDisabled, hasFreeProductPrice} from '../utils/helpers';
+import {getSiteProducts, hasAvailablePrices, isInviteOnly, isCookiesDisabled, hasFreeProductPrice, hasCaptchaEnabled, getCaptchaSitekey} from '../utils/helpers';
+import HCaptcha from '@hcaptcha/react-hcaptcha';
 
 const StylesWrapper = () => {
     return {
@@ -131,6 +132,25 @@ class PopupContent extends React.Component {
         );
     }
 
+    renderHCaptcha() {
+        const {site, captchaRef} = this.context;
+
+        if (hasCaptchaEnabled({site})) {
+            return (
+                <HCaptcha
+                    size="invisible"
+                    sitekey={getCaptchaSitekey({site})}
+                    onVerify={token => this.context.onAction('verifyCaptcha', {token})}
+                    onError={error => this.context.onAction('captchaError', {error})}
+                    ref={captchaRef}
+                    id="hcaptcha-portal"
+                />
+            );
+        } else {
+            return null;
+        }
+    }
+
     sendPortalPreviewReadyEvent() {
         if (window.self !== window.parent) {
             window.parent.postMessage({
@@ -142,7 +162,7 @@ class PopupContent extends React.Component {
 
     render() {
         const {page, pageQuery, site, customSiteUrl} = this.context;
-        const products = getSiteProducts({site});
+        const products = getSiteProducts({site, pageQuery});
         const noOfProducts = products.length;
 
         getActivePage({page});
@@ -177,7 +197,7 @@ class PopupContent extends React.Component {
             break;
         }
 
-        if (noOfProducts > 1 && !isInviteOnlySite({site, pageQuery})) {
+        if (noOfProducts > 1 && !isInviteOnly({site}) && hasAvailablePrices({site, pageQuery})) {
             if (page === 'signup') {
                 pageClass += ' full-size';
                 popupSize = 'full';
@@ -215,9 +235,10 @@ class PopupContent extends React.Component {
         return (
             <>
                 <div className={'gh-portal-popup-wrapper ' + pageClass} onClick={e => this.handlePopupClose(e)}>
+                    {this.renderPopupNotification()}
+                    {this.renderHCaptcha()}
                     <div className={containerClassName} style={pageStyle} ref={node => (this.node = node)} tabIndex={-1}>
                         <CookieDisabledBanner message={cookieBannerText} />
-                        {this.renderPopupNotification()}
                         {this.renderActivePage()}
                         {(popupSize === 'full' ?
                             <div className={'gh-portal-powered inside ' + (hasMode(['preview']) ? 'hidden ' : '') + pageClass}>
@@ -303,7 +324,9 @@ export default class PopupModal extends React.Component {
 
         return (
             <div style={Styles.modalContainer}>
-                <Frame style={frameStyle} title="portal-popup" head={this.renderFrameStyles()} dataTestId='portal-popup-frame'>
+                <Frame style={frameStyle} title="portal-popup" head={this.renderFrameStyles()} dataTestId='portal-popup-frame'
+                    dataDir={this.context.dir}
+                >
                     <div className={className} onClick = {e => this.handlePopupClose(e)}></div>
                     <PopupContent isMobile={isMobile} />
                 </Frame>

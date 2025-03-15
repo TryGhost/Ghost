@@ -78,6 +78,7 @@ const SettingGroup = forwardRef<HTMLDivElement, SettingGroupProps>(function Sett
 
     styles += ' border-grey-250 dark:border-grey-925';
 
+    // The links visible before editing
     const viewButtons: ButtonProps[] = [];
 
     if (!hideEditButton) {
@@ -89,7 +90,7 @@ const SettingGroup = forwardRef<HTMLDivElement, SettingGroupProps>(function Sett
             {
                 label,
                 key: 'edit',
-                color: 'green',
+                color: 'clear',
                 onClick: handleEdit
             }
         );
@@ -104,6 +105,7 @@ const SettingGroup = forwardRef<HTMLDivElement, SettingGroupProps>(function Sett
         );
     }
 
+    // The buttons that show when you are editing
     const editButtons: ButtonProps[] = [
         {
             label: 'Cancel',
@@ -119,9 +121,10 @@ const SettingGroup = forwardRef<HTMLDivElement, SettingGroupProps>(function Sett
         }
         editButtons.push(
             {
-                label,
+                label: label,
                 key: 'save',
-                color: 'green',
+                color: saveState === 'unsaved' ? 'green' : 'light-grey',
+                disabled: saveState !== 'unsaved',
                 onClick: handleSave
             }
         );
@@ -151,18 +154,35 @@ const SettingGroup = forwardRef<HTMLDivElement, SettingGroupProps>(function Sett
         styles
     );
 
-    return (
-        <div className={containerClasses} data-testid={testId}>
-            <div ref={ref} className='absolute' id={navid && navid}></div>
-            {customHeader ? customHeader :
-                <SettingGroupHeader beta={beta} description={description} title={title!}>
-                    {customButtons ? customButtons :
-                        (onEditingChange && <ButtonGroup buttons={isEditing ? editButtons : viewButtons} link linkWithPadding />)}
-                </SettingGroupHeader>
-            }
-            {children}
-        </div>
-    );
+    if (!isEditing) {
+        return (
+            <div className={containerClasses} data-testid={testId}>
+                <div ref={ref} className='absolute' id={navid && navid}></div>
+                {customHeader ? customHeader :
+                    <SettingGroupHeader beta={beta} description={description} title={title!}>
+                        {customButtons ? customButtons :
+                            (onEditingChange && <ButtonGroup buttons={isEditing ? editButtons : viewButtons} className={isEditing ? 'mt-[-5px]  ' : '-mr-1 mt-[-5px]'} size='sm' />)
+                        }
+                    </SettingGroupHeader>
+                }
+                {children}
+            </div>
+        );
+    } else {
+        return (
+            <div className={containerClasses} data-testid={testId}>
+                <div ref={ref} className='absolute' id={navid && navid}></div>
+                {customHeader ? customHeader :
+                    <SettingGroupHeader beta={beta} description={description} title={title!}>
+                        {customButtons ? customButtons :
+                            (onEditingChange && <ButtonGroup buttons={isEditing ? editButtons : viewButtons} className={isEditing ? 'mt-[-5px]  ' : '-mr-1 mt-[-5px]'} size='sm' />)
+                        }
+                    </SettingGroupHeader>
+                }
+                {children}
+            </div>
+        );
+    }
 });
 
 export default SettingGroup;

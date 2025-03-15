@@ -18,7 +18,6 @@ test.describe('Default recipient settings', async () => {
 
         await expect(section.getByText('Whoever has access to the post')).toHaveCount(1);
 
-        await section.getByRole('button', {name: 'Edit'}).click();
         await chooseOptionInSelect(section.getByTestId('default-recipients-select'), 'All members');
         await section.getByRole('button', {name: 'Save'}).click();
 
@@ -29,7 +28,6 @@ test.describe('Default recipient settings', async () => {
             ]
         });
 
-        await section.getByRole('button', {name: 'Edit'}).click();
         await chooseOptionInSelect(section.getByTestId('default-recipients-select'), 'Usually nobody');
         await section.getByRole('button', {name: 'Save'}).click();
 
@@ -40,13 +38,12 @@ test.describe('Default recipient settings', async () => {
             ]
         });
 
-        await section.getByRole('button', {name: 'Edit'}).click();
         await chooseOptionInSelect(section.getByTestId('default-recipients-select'), 'Paid-members only');
         await section.getByRole('button', {name: 'Save'}).click();
 
-        await expect(section.getByTestId('default-recipients-select')).toHaveCount(0);
-
-        await expect(section.getByText('Paid-members only')).toHaveCount(1);
+        const select = section.getByTestId('default-recipients-select');
+        await expect(select).toBeVisible();
+        await expect(select).toHaveText(/Paid-members only/);
 
         expect(lastApiRequests.editSettings?.body).toEqual({
             settings: [
@@ -78,8 +75,6 @@ test.describe('Default recipient settings', async () => {
 
         const section = page.getByTestId('default-recipients');
 
-        await section.getByRole('button', {name: 'Edit'}).click();
-
         await chooseOptionInSelect(section.getByTestId('default-recipients-select'), 'Specific people');
         await section.getByLabel('Filter').click();
 
@@ -89,7 +84,9 @@ test.describe('Default recipient settings', async () => {
 
         await section.getByRole('button', {name: 'Save'}).click();
 
-        await expect(section.getByText('Specific people')).toHaveCount(1);
+        const select = section.getByTestId('default-recipients-select');
+        await expect(select).toBeVisible();
+        await expect(select).toHaveText(/Specific people/);
 
         expect(lastApiRequests.editSettings?.body).toEqual({
             settings: [
@@ -103,5 +100,33 @@ test.describe('Default recipient settings', async () => {
                 }
             ]
         });
+    });
+
+    test('renders existing default recipients filters correctly', async ({page}) => {
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseTiers: {method: 'GET', path: '/tiers/?filter=&limit=20', response: responseFixtures.tiers},
+            browseLabels: {method: 'GET', path: '/labels/?filter=&limit=20', response: responseFixtures.labels},
+            browseOffers: {method: 'GET', path: '/offers/?filter=&limit=20', response: responseFixtures.offers},
+            browseSettings: {...globalDataRequests.browseSettings, response: updatedSettingsResponse([
+                {
+                    key: 'editor_default_email_recipients',
+                    value: 'filter'
+                },
+                {
+                    key: 'editor_default_email_recipients_filter',
+                    value: '645453f4d254799990dd0e22,label:first-label,offer_redemptions:6487ea6464fca78ec2fff5fe'
+                }
+            ])}
+        }});
+
+        await page.goto('/');
+
+        const section = page.getByTestId('default-recipients');
+
+        await expect(section.getByText('Specific people')).toHaveCount(1);
+        await expect(section.getByText('Basic Supporter')).toHaveCount(1);
+        await expect(section.getByText('first-label')).toHaveCount(1);
+        await expect(section.getByText('First offer')).toHaveCount(1);
     });
 });

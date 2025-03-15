@@ -99,7 +99,7 @@ input[type=number] {
 
 .form-group p {
     margin: 4px 0 0 0;
-    color: var(--midgrey-d1);
+    color: var(--middarkgrey);
     font-size: 1.25rem;
     font-weight: 400;
 }
@@ -225,20 +225,20 @@ select {
 .gh-select.error,
 .error .gh-input-append,
 select.error {
-    border-color: var(--red);
+    border-color: var(--red)!important;
 }
 
 .gh-input:focus,
 .gh-input.focus {
     outline: 0;
-    border-color: color-mod(var(--green)) !important;
+    border-color: var(--green);
     box-shadow: inset 0 0 0 1px var(--green);
     background: var(--white);
 }
 
 .error .gh-input:focus,
 .error .gh-input.focus {
-    border-color: color-mod(var(--red)) !important;
+    border-color: var(--red);
     box-shadow: inset 0 0 0 1px var(--red);
 }
 
@@ -278,6 +278,61 @@ textarea {
     top: 6px;
     font-size: 1.3rem;
     color: var(--midgrey);
+}
+
+.gh-input-x {
+    width: 100%;
+    min-height: 38px;
+    height: auto;
+    padding: 4px 12px;
+    font-size: 1.4rem;
+    color: var(--black);
+    background-color: var(--grey-150);
+    border: 1px solid transparent;
+    border-radius: 8px;
+}
+
+.gh-input-x:focus,
+.gh-input-x:focus-visible {
+    background-color: var(--white);
+    border: 1px solid var(--green);
+    box-shadow: 0 0 0 2px rgba(48,207,67,.25);
+    outline: none;
+}
+
+textarea.gh-input-x {
+    padding-block: 8px;
+    max-width: unset;
+}
+
+.ember-power-select-multiple-trigger {
+    padding: 4px;
+    display: grid;
+    grid-template-columns: 1fr 24px;
+    position: relative;
+}
+
+.ember-power-select-multiple-options {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+    margin: 0;
+    padding: 0;
+}
+
+.ember-power-select-trigger-multiple-input {
+    margin: 2px;
+    padding: 0;
+    border: 0;
+    background: none;
+    min-width: 60px;
+}
+
+.ember-basic-dropdown-trigger[aria-expanded="true"] .ember-power-select-status-icon,
+.ember-power-select-status-icon {
+    margin: 0 auto;
+    transform: none;
 }
 
 
@@ -540,15 +595,10 @@ textarea {
     display: inline-block;
 }
 
-.for-switch label:not(.x-small .switch),
+.for-switch label:not(.xs .switch):not(.xxs .switch),
 .for-switch .container {
     width: 50px !important;
     height: 28px !important;
-}
-
-.for-switch.x-small label {
-    width: 34px !important;
-    height: 20px !important;
 }
 
 .for-switch label p,
@@ -576,7 +626,7 @@ textarea {
     width: 48px !important;
     height: 26px !important;
     border-radius: 999px;
-    transition: background 0.15s ease-in-out, border-color 0.15s ease-in-out;
+    transition: all 0.15s ease-in-out;
 }
 
 .for-switch label:hover input:not(:checked) + .input-toggle-component,
@@ -595,6 +645,7 @@ textarea {
     transition: .3s;
     box-shadow: 0 1px 3px rgba(0,0,0,.15);
     border-radius: 999px;
+    transition: all 0.15s ease-in-out;
 }
 
 .for-switch input:checked + .input-toggle-component {
@@ -625,20 +676,45 @@ textarea {
 
 .for-switch.small input:checked + .input-toggle-component:before {
     transform: translateX(16px);
+    transition: all 0.15s ease-in-out;
 }
 
-.for-switch.x-small .input-toggle-component {
+.for-switch.xs label {
     width: 34px !important;
     height: 20px !important;
 }
 
-.for-switch.x-small .input-toggle-component:before {
+.for-switch.xs .input-toggle-component {
+    width: 34px !important;
+    height: 20px !important;
+}
+
+.for-switch.xs .input-toggle-component:before {
     height: 16px !important;
     width: 16px !important;
 }
 
-.for-switch.x-small input:checked + .input-toggle-component:before {
+.for-switch.xs input:checked + .input-toggle-component:before {
     transform: translateX(14px);
+}
+
+.for-switch.xxs label {
+    width: 28px !important;
+    height: 16px !important;
+}
+
+.for-switch.xxs .input-toggle-component {
+    width: 28px !important;
+    height: 16px !important;
+}
+
+.for-switch.xxs .input-toggle-component:before {
+    height: 12px !important;
+    width: 12px !important;
+}
+
+.for-switch.xxs input:checked + .input-toggle-component:before {
+    transform: translateX(12px);
 }
 
 .for-switch.disabled {

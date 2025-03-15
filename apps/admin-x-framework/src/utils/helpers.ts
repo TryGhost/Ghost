@@ -3,6 +3,7 @@ export interface IGhostPaths {
     adminRoot: string;
     assetRoot: string;
     apiRoot: string;
+    activityPubRoot: string;
 }
 
 export function getGhostPaths(): IGhostPaths {
@@ -11,7 +12,8 @@ export function getGhostPaths(): IGhostPaths {
     const adminRoot = `${subdir}/ghost/`;
     const assetRoot = `${subdir}/ghost/assets/`;
     const apiRoot = `${subdir}/ghost/api/admin`;
-    return {subdir, adminRoot, assetRoot, apiRoot};
+    const activityPubRoot = `${subdir}/.ghost/activitypub`;
+    return {subdir, adminRoot, assetRoot, apiRoot, activityPubRoot};
 }
 
 export function downloadFile(url: string) {

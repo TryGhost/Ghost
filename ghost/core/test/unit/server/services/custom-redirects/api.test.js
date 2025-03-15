@@ -259,5 +259,48 @@ describe('UNIT: redirects CustomRedirectsAPI class', function () {
             // two redirects in total
             redirectManager.addRedirect.calledTwice.should.be.true();
         });
+
+        it('does not create a backup file from a bad redirect yaml file', async function () {
+            const incomingFilePath = path.join(__dirname, '/invalid/path/redirects_incoming.yaml');
+            const backupFilePath = path.join(basePath, 'backup.yaml');
+
+            const invalidYaml = `
+                301:
+                    /my-old-blog-post/: /revamped-url/
+                    /my-old-blog-post/: /revamped-url/
+
+                302:
+                    /another-old-blog-post/: /hello-there/
+            `;
+
+            // redirects.json file already exits
+            fs.pathExists.withArgs(`${basePath}redirects.json`).resolves(false);
+            fs.pathExists.withArgs(`${basePath}redirects.yaml`).resolves(true);
+            // incoming redirects file
+            fs.readFile.withArgs(incomingFilePath, 'utf-8').resolves(invalidYaml);
+            // backup file DOES not exists yet
+            fs.pathExists.withArgs(backupFilePath).resolves(false);
+            // should not be called
+            fs.unlink.withArgs(backupFilePath).resolves(false);
+            fs.move.withArgs(`${basePath}redirects.yaml`, backupFilePath).resolves(true);
+
+            customRedirectsAPI = new CustomRedirectsAPI({
+                basePath,
+                redirectManager,
+                getBackupFilePath: () => backupFilePath,
+                validate: () => {}
+            });
+
+            try {
+                await customRedirectsAPI.setFromFilePath(incomingFilePath, '.yaml');
+                should.fail('setFromFilePath did not throw');
+            } catch (err) {
+                should.exist(err);
+                err.errorType.should.eql('BadRequestError');
+            }
+
+            fs.unlink.called.should.not.be.true();
+            fs.move.called.should.not.be.true();
+        });
     });
 });

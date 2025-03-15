@@ -48,8 +48,10 @@ typings/
 # Optional npm cache directory
 .npm
 
-# Nx cache
+# Nx
 .nxcache
+.nx/cache
+.nx/workspace-data
 
 # Optional eslint cache
 .eslintcache
@@ -65,9 +67,6 @@ typings/
 
 # dotenv environment variables file
 .env
-
-# direnv
-.direnv
 
 # IDE
 .idea/*
@@ -86,6 +85,7 @@ typings/
 *.db
 *.db-journal
 
+/ghost/core/test-results/
 /ghost/core/core/server/data/export/exported*
 /ghost/core/content/tmp/*
 /ghost/core/content/data/*
@@ -128,6 +128,7 @@ Caddyfile
 
 # Playwright state with cookies it keeps across tests
 /ghost/core/playwright-state.json
+/ghost/core/playwright-report
 
 # Admin
 /ghost/admin/dist
@@ -136,7 +137,7 @@ Caddyfile
 /apps/comments-ui/umd
 /apps/comments-ui/playwright-report
 /ghost/comments-ui/playwright/.cache/
-/ghost/comments-ui/test-results/
+/apps/comments-ui/test-results/
 
 # Portal
 !/apps/portal/.env
@@ -169,3 +170,12 @@ tsconfig.tsbuildinfo
 /apps/admin-x-settings/test-results/
 /apps/admin-x-settings/playwright-report/
 /apps/admin-x-settings/playwright/.cache/
+
+# Tinybird
+.tinyb
+.venv
+.diff_tmp
+
+# Docker Yarn Cache
+.yarncache
+.yarncachecopy
