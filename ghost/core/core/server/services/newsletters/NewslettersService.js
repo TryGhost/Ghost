@@ -23,11 +23,12 @@ class NewslettersService {
      * @param {Object} options.mail
      * @param {Object} options.singleUseTokenProvider
      * @param {Object} options.urlUtils
+     * @param {Object} options.settingsCache
      * @param {ILimitService} options.limitService
      * @param {Object} options.emailAddressService
      * @param {Object} options.labs
      */
-    constructor({NewsletterModel, MemberModel, mail, singleUseTokenProvider, urlUtils, limitService, labs, emailAddressService}) {
+    constructor({NewsletterModel, MemberModel, mail, singleUseTokenProvider, urlUtils, settingsCache, limitService, labs, emailAddressService}) {
         this.NewsletterModel = NewsletterModel;
         this.MemberModel = MemberModel;
         this.urlUtils = urlUtils;
@@ -84,6 +85,7 @@ class NewslettersService {
             tokenProvider: singleUseTokenProvider,
             getSigninURL,
             getText,
+            getOpenTrackingEnabled: () => settingsCache.get('email_track_opens'),
             getHTML,
             getSubject,
             sentry
