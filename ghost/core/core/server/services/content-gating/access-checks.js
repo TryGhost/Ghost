@@ -1,12 +1,13 @@
 const nql = require('@tryghost/nql');
+const {PERMIT_ACCESS, BLOCK_ACCESS} = require('./constants');
 
-// @ts-check
-/** @typedef { boolean } AccessFlag */
+/**
+ * @typedef {import ('./typings').AccessFlag} AccessFlag
+ * @typedef {import ('./typings').GatedMember} GatedMember
+ * @typedef {import ('./typings').GatedPost} GatedPost
+ * @typedef {import ('./typings').GatedBlockParams} GatedBlockParams
+ */
 
-const PERMIT_ACCESS = true;
-const BLOCK_ACCESS = false;
-
-// TODO: better place to store this?
 const MEMBER_NQL_EXPANSIONS = [{
     key: 'products',
     replacement: 'products.slug'
@@ -15,6 +16,13 @@ const MEMBER_NQL_EXPANSIONS = [{
     replacement: 'products.slug'
 }];
 
+/**
+ * Filters out keys from the input object that are not used for our content-gating.
+ * Avoids unexpected behaviour when using NQL queries with unknown keys.
+ *
+ * @param {Object} input - The input object to be filtered.
+ * @returns {Object} A new object containing only the allowed keys and their values.
+ */
 const rejectUnknownKeys = input => nql.utils.mapQuery(input, function (value, key) {
     if (!['product', 'products', 'status'].includes(key.toLowerCase())) {
         return;
@@ -26,12 +34,13 @@ const rejectUnknownKeys = input => nql.utils.mapQuery(input, function (value, ke
 });
 
 /**
- * @param {object} post - A post object to check access to
- * @param {object} member - The member whos access should be checked
+ * Checks if a member has access to a post based on the post's visibility and the member's status.
  *
- * @returns {AccessFlag}
+ * @param {GatedPost} post - The post object to check access for.
+ * @param {GatedMember} member - The member object to check access against.
+ * @returns {AccessFlag} - Returns `rue` if the member has access to the post, otherwise returns `false`
  */
-function checkPostAccess(post, member) {
+module.exports.checkPostAccess = function checkPostAccess(post, member) {
     if (post.visibility === 'public') {
         return PERMIT_ACCESS;
     }
@@ -59,9 +68,15 @@ function checkPostAccess(post, member) {
     }
 
     return BLOCK_ACCESS;
-}
+};
 
-function checkGatedBlockAccess(gatedBlockParams, member) {
+/**
+ *
+ * @param {GatedBlockParams} gatedBlockParams Block-specific gating parameters extracted from source data
+ * @param {GatedMember} member The member to check access against
+ * @returns {AccessFlag} Returns `true` if the member has access to the block, otherwise returns `false`
+ */
+module.exports.checkGatedBlockAccess = function checkGatedBlockAccess(gatedBlockParams, member) {
     const {nonMember, memberSegment} = gatedBlockParams;
     const isLoggedIn = !!member;
 
@@ -85,11 +100,4 @@ function checkGatedBlockAccess(gatedBlockParams, member) {
     }
 
     return BLOCK_ACCESS;
-}
-
-module.exports = {
-    checkPostAccess,
-    checkGatedBlockAccess,
-    PERMIT_ACCESS,
-    BLOCK_ACCESS
 };
