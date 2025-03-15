@@ -227,3 +227,21 @@ export function validateCurrencyAmount(
         return `Suggested amount cannot be more than ${symbol}${maxAmount}.`;
     }
 }
+
+/**
+ * Formats a decimal amount for monetary display:
+ * - Maintains 2 decimal places only when needed (1.3 -> "1.30", 1 -> "1")
+ * - Adds thousand separators (1000.5 -> "1,000.50")
+ * @param amount The decimal amount to format
+ * @returns Formatted string (e.g., "1,000.30", "1,000", "1.55")
+ */
+export function formatMonetaryAmount(amount: number): string {
+    const formatted = amount % 1 === 0 ?
+        amount.toString() :
+        amount.toFixed(2);
+
+    const [whole, decimal] = formatted.split('.');
+    const withCommas = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+
+    return decimal ? `${withCommas}.${decimal}` : withCommas;
+}
