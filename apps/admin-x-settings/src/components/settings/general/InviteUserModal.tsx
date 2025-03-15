@@ -235,7 +235,6 @@ const InviteUserModal = NiceModal.create(() => {
                         id='role'
                         options={allowedRoleOptions}
                         selectedOption={role}
-                        separator={true}
                         title="Role"
                         onSelect={(value) => {
                             setRole(value as RoleType);
