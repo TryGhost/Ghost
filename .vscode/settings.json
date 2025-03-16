@@ -24,5 +24,8 @@
   "tailwindCSS.experimental.classRegex": [
     ["clsx\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"]
   ],
-  "git.detectSubmodules": false
+  "git.detectSubmodules": false,
+  "githubPullRequests.ignoredPullRequestBranches": [
+    "main"
+  ]
 }
