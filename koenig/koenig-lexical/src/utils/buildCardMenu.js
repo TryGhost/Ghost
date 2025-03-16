@@ -92,7 +92,7 @@ function buildSnippetMenuItem(data, config) {
         matches: query => name.indexOf(query) > -1 || 'snippets'.indexOf(query) > -1,
         insertCommand: INSERT_SNIPPET_COMMAND,
         insertParams: data,
-        onRemove: () => config.deleteSnippet(data)
+        ...(config.deleteSnippet && {onRemove: () => config.deleteSnippet(data)})
     };
 
     return snippet;

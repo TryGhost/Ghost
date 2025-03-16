@@ -1,3 +1,4 @@
+import KoenigComposerContext from '../../context/KoenigComposerContext';
 import React from 'react';
 import {$createAsideNode} from '../../nodes/AsideNode';
 import {
@@ -61,6 +62,7 @@ export default function FormatToolbar({
     const [isBold, setIsBold] = React.useState(false);
     const [isItalic, setIsItalic] = React.useState(false);
     const [blockType, setBlockType] = React.useState('paragraph');
+    const {cardConfig: {createSnippet}} = React.useContext(KoenigComposerContext);
 
     let hideHeading = false;
     if (!editor.hasNodes([HeadingNode])){
@@ -71,8 +73,8 @@ export default function FormatToolbar({
     if (!editor.hasNodes([QuoteNode])){
         hideQuotes = true;
     }
-
-    let hideSnippets = !isSnippetsEnabled;
+    
+    let hideSnippets = !isSnippetsEnabled || !createSnippet; // don't show snippet toolbar if we can't create them
     if (editor._parentEditor) {
         hideSnippets = true;
     }

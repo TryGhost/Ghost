@@ -372,7 +372,7 @@ describe('buildCardMenu', function () {
 
         it('can filter snippets', async function () {
             const snippets = [{name: 'One snippet'}, {name: 'Two snippet'}];
-            const cardMenu = buildCardMenu([], {query: 'snip', config: {snippets}});
+            const cardMenu = buildCardMenu([], {query: 'snip', config: {snippets, deleteSnippet: () => {}}});
 
             expect(cardMenu.menu).toEqual(new Map([
                 ['Snippets', [
@@ -404,6 +404,37 @@ describe('buildCardMenu', function () {
             ]));
         });
 
+        it(`doesn't show delete option if createSnippet is not defined`, async function () {
+            const snippets = [{name: 'One snippet'}, {name: 'Two snippet'}];
+            const cardMenu = buildCardMenu([], {query: 'snippets', config: {snippets}});
+            expect(cardMenu.menu).toEqual(new Map([
+                ['Snippets', [
+                    {
+                        Icon: expect.any(Function),
+                        insertCommand: {},
+                        insertParams: {
+                            name: 'One snippet'
+                        },
+                        label: 'One snippet',
+                        matches: expect.any(Function),
+                        section: 'Snippets',
+                        type: 'snippet'
+                    },
+                    {
+                        Icon: expect.any(Function),
+                        insertCommand: {},
+                        insertParams: {
+                            name: 'Two snippet'
+                        },
+                        label: 'Two snippet',
+                        matches: expect.any(Function),
+                        section: 'Snippets',
+                        type: 'snippet'
+                    }
+                ]]
+            ]));
+        });
+
         it('returns empty value if no snippet matches ', async function () {
             const snippets = [{name: 'One snippet'}, {name: 'Two snippet'}];
             const cardMenu = buildCardMenu([], {query: 'sniptr', config: {snippets}});
@@ -412,7 +443,7 @@ describe('buildCardMenu', function () {
 
         it('shows all snippets when typing /snippets', async function () {
             const snippets = [{name: 'Test1'}, {name: 'Test2'}];
-            const cardMenu = buildCardMenu([], {query: 'snippets', config: {snippets}});
+            const cardMenu = buildCardMenu([], {query: 'snippets', config: {snippets, deleteSnippet: () => {}}});
 
             expect(cardMenu.menu).toEqual(new Map([
                 ['Snippets', [
