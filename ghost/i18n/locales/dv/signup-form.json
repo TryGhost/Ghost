@@ -1,9 +1,9 @@
 {
-    "Email sent": "",
-    "Now check your email!": "",
-    "Please enter a valid email address": "",
-    "Something went wrong, please try again.": "",
-    "Subscribe": "",
-    "To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!": "",
-    "Your email address": ""
+    "Email sent": "އީމެއިލް ފޮނުވުނީ",
+    "Now check your email!": "މިހާރު ތިބާގެ އީމެއިލް ޗެކްކުރައްވާ!",
+    "Please enter a valid email address": "ރަނގަޅު އީމެއިލް އެޑްރެހެއް ޖައްސާ",
+    "Something went wrong, please try again.": "ކަމެއް ގޯސްވެއްޖެ، އަލުން ޓްރައި ކުރައްވާ.",
+    "Subscribe": "ސަބްސްކްރައިބްކުރައްވާ",
+    "To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!": "ސައިންއަޕް ފުރިހަމަކުރުމަށް، ތިބާގެ އިންބޮކްސްއިން ކޮންފޮރމޭޝަން ލިންކަށް ކްލިކްކުރައްވާ. 3 މިނެޓްގެ ތެރޭގައި ނުލިބިއްޖެނަމަ، ތިބާގެ ސްޕޭމް ފޯލްޑަރ ޗެކްކުރައްވާ!",
+    "Your email address": "ތިބާގެ އީމެއިލް އެޑްރެސް"
 }
