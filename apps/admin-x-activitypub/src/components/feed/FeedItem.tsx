@@ -323,7 +323,17 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                                     {!isLoading ?
                                                         <div dangerouslySetInnerHTML={{
                                                             __html: openLinksInNewTab(object.content || '') ?? ''
-                                                        }} ref={contentRef} />
+                                                        }} ref={contentRef}
+                                                        onClick={(e) => {
+                                                            const target = e.target as HTMLElement;
+                                                            if (
+                                                                target.tagName === 'A' ||
+                                                                target.closest('a')
+                                                            ) {
+                                                                e.stopPropagation();
+                                                            }
+                                                        }}
+                                                        />
                                                         :
                                                         <Skeleton count={2} />
                                                     }
