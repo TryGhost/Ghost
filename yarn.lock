@@ -18605,10 +18605,10 @@ flatten@^1.0.2:
   resolved "https://registry.yarnpkg.com/flatten/-/flatten-1.0.3.tgz#c1283ac9f27b368abc1e36d1ff7b04501a30356b"
   integrity sha512-dVsPA/UwQ8+2uoFe5GHtiBMu48dWLTdsuEd7CKGlZlD78r1TTWBvDuFaFGKCo/ZfEr95Uk56vZoX86OsHkUeIg==
 
-flexsearch@0.7.43:
-  version "0.7.43"
-  resolved "https://registry.yarnpkg.com/flexsearch/-/flexsearch-0.7.43.tgz#34f89b36278a466ce379c5bf6fb341965ed3f16c"
-  integrity sha512-c5o/+Um8aqCSOXGcZoqZOm+NqtVwNsvVpWv6lfmSclU954O3wvQKxxK8zj74fPaSJbXpSLTs4PRhh+wnoCXnKg==
+flexsearch@0.8.1:
+  version "0.8.1"
+  resolved "https://registry.yarnpkg.com/flexsearch/-/flexsearch-0.8.1.tgz#cc96e04f5f0f7a71cda47f6a5c2c3d42e944e7c0"
+  integrity sha512-YGc/9Y5zbBmbyBzAEz+JdQOVDk3qTaBxVajmPWYAHNB8zvKQwNZtNYfmQlSoYH1VORdqhbwaUsJqnfMxJqndjQ==
 
 flow-parser@0.*:
   version "0.205.1"

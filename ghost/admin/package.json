@@ -124,7 +124,7 @@
     "ember-tooltips": "3.6.0",
     "ember-truth-helpers": "3.1.1",
     "eslint-plugin-babel": "5.3.1",
-    "flexsearch": "0.7.43",
+    "flexsearch": "0.8.1",
     "fs-extra": "11.3.0",
     "glob": "8.1.0",
     "google-caja-bower": "https://github.com/acburdine/google-caja-bower#ghost",
