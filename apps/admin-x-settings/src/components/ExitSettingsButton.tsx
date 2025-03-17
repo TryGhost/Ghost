@@ -1,13 +1,16 @@
 import React from 'react';
 import useFeatureFlag from '../hooks/useFeatureFlag';
 import {Button, confirmIfDirty, useGlobalDirtyState} from '@tryghost/admin-x-design-system';
+import {isOwnerUser} from '@tryghost/admin-x-framework/api/users';
+import {useGlobalData} from './providers/GlobalDataProvider';
 
 const ExitSettingsButton: React.FC = () => {
     const {isDirty} = useGlobalDirtyState();
+    const {currentUser} = useGlobalData();
     const hasActivityPub = useFeatureFlag('ActivityPub');
 
     const navigateAway = () => {
-        window.location.hash = hasActivityPub ? '/activitypub' : '/dashboard';
+        window.location.hash = (hasActivityPub && isOwnerUser(currentUser)) ? '/activitypub' : '/dashboard';
     };
 
     return (
