@@ -50,10 +50,6 @@
     color: var(--midgrey);
 }
 
-.gh-whasnew-featured-title {
-    font-size: 2.8rem;
-}
-
 .gh-whatsnew-featured-excerpt {
     margin: 0 0 24px;
     font-size: 1.6rem;
@@ -67,7 +63,7 @@
     align-items: center;
     position: sticky;
     bottom: 0px;
-    background: #fff;
+    background: var(--white);
     padding: 32px;
     margin-bottom: -32px;
     box-shadow: 0px -7px 15px -10px rgba(0, 0, 0, 0.15);
@@ -85,7 +81,7 @@
     gap: 24px;
 }
 
-.gh-whasnew-modal-title {
+.gh-whatsnew-modal-title {
     font-size: 2.5rem;
     padding: 32px 32px 28px;
     margin: 0;
