@@ -5,19 +5,15 @@ import Sidebar from './Sidebar';
 import {Navigate} from '@tryghost/admin-x-framework';
 import {useCurrentUser} from '@tryghost/admin-x-framework/api/currentUser';
 import {useExploreProfilesForUser} from '@src/hooks/use-activity-pub-queries';
-import {useFeatureFlags} from '@src/lib/feature-flags';
 
 const Layout: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({children, ...props}) => {
-    const {isEnabled} = useFeatureFlags();
-    const {isOnboarded: onboardingStatus} = useOnboardingStatus();
+    const {isOnboarded} = useOnboardingStatus();
     const {data: currentUser, isLoading} = useCurrentUser();
     const {prefetchExploreProfiles} = useExploreProfilesForUser('index');
 
     useEffect(() => {
         prefetchExploreProfiles();
     }, [prefetchExploreProfiles]);
-
-    const isOnboarded = isEnabled('onboarding') ? onboardingStatus : true;
 
     if (isLoading || !currentUser) {
         return null;
