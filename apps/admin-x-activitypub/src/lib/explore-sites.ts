@@ -30,8 +30,7 @@ export const exploreSites = {
         categoryName: 'Business',
         sites: [
             '@Forbes@newsie.social',
-            '@index@www.cosmico.org',
-            '@taylorlorenz@mastodon.social'
+            '@index@www.cosmico.org'
         ]
     }
 };
