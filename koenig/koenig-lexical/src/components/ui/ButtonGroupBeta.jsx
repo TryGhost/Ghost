@@ -7,7 +7,7 @@ import {usePreviousFocus} from '../../hooks/usePreviousFocus';
 export function ButtonGroupBeta({buttons = [], selectedName, onClick, hasTooltip = true}) {
     return (
         <div className="flex">
-            <ul className="flex items-center justify-evenly rounded-lg bg-grey-100 font-sans text-md font-normal text-white" role="menubar">
+            <ul className="flex items-center justify-evenly rounded-lg bg-grey-100 font-sans text-md font-normal text-white dark:bg-grey-900" role="menubar">
                 {buttons.map(({label, name, Icon, dataTestId, ariaLabel}) => (
                     <ButtonGroupIconButton
                         key={`${name}-${label}`}
@@ -36,7 +36,7 @@ export function ButtonGroupIconButton({dataTestId, onClick, label, ariaLabel, na
             <button
                 aria-checked={isActive}
                 aria-label={ariaLabel || label}
-                className={`group relative flex h-7 w-8 cursor-pointer items-center justify-center rounded-lg text-black dark:text-white dark:hover:bg-grey-900 ${isActive ? 'border border-grey-300 bg-white shadow-xs dark:bg-grey-900' : '' } ${Icon ? '' : 'text-[1.3rem] font-bold'}`}
+                className={`group relative flex h-7 w-8 cursor-pointer items-center justify-center rounded-lg text-black dark:text-white ${isActive ? 'border border-grey-300 bg-white shadow-xs dark:border-grey-800 dark:bg-grey-950' : '' } ${Icon ? '' : 'text-[1.3rem] font-bold'}`}
                 data-testid={dataTestId}
                 role="menuitemradio"
                 type="button"

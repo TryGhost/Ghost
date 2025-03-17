@@ -107,6 +107,7 @@ export class CallToActionNode extends BaseCallToActionNode {
                     htmlEditorInitialState={this.__callToActionHtmlEditorInitialState}
                     imageUrl={this.imageUrl}
                     layout={this.layout}
+                    linkColor={this.linkColor}
                     nodeKey={this.getKey()}
                     showButton={this.showButton}
                     sponsorLabelHtmlEditor={this.__sponsorLabelHtmlEditor}

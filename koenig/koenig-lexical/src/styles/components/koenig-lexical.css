@@ -1,5 +1,11 @@
 .koenig-lexical {
     position: relative;
+    --cta-link-color-text: var(--grey-900);
+}
+
+/* Link color */
+.koenig-lexical .cta-link-color {
+    color: var(--cta-link-color) !important;
 }
 
 /* everything is nested here to keep it scoped to our container */
@@ -37,6 +43,8 @@
 
 /* Dark mode */
 .koenig-lexical > .dark, .koenig-lexical.dark, .dark .koenig-lexical {
+    --cta-link-color-text: var(--grey-200);
+    
     &:not(.kg-inherit-styles) {
         /* background-color: var(--black); */
 
@@ -114,6 +122,12 @@ em-emoji-picker {
   .koenig-lexical.dark .js-embed-placeholder {
     background: var(--grey-900);
     border: none;
+  }
+
+  /* CTA card */
+
+  .koenig-lexical-cta-label a {
+    text-decoration: underline;
   }
 
 /* Menu */

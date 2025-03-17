@@ -202,7 +202,7 @@ export function ColorIndicatorBeta({value, swatches, onSwatchChange, onTogglePic
                     }} />
                 )}
                 <span
-                    className="block size-full rounded-full border-2 border-white"
+                    className="block size-full rounded-full border-2 border-white dark:border-grey-950"
                     style={{backgroundColor}}
                 >
                     {
@@ -218,7 +218,7 @@ export function ColorIndicatorBeta({value, swatches, onSwatchChange, onTogglePic
                 <div
                     ref={popoverRef}
                     className={clsx(
-                        'absolute -right-3 bottom-full z-10 mb-2 flex flex-col gap-3 rounded-lg bg-white p-3 shadow transition-[width] duration-200 ease-in-out dark:bg-grey-950',
+                        'absolute -right-3 bottom-full z-10 mb-2 flex flex-col gap-3 rounded-lg bg-white p-3 shadow transition-[width] duration-200 ease-in-out dark:bg-grey-900',
                         (showColorPicker || showChildren) && 'min-w-[296px]'
                     )}
                     onClick={stopPropagation}
@@ -271,7 +271,7 @@ export function ColorIndicatorBeta({value, swatches, onSwatchChange, onTogglePic
                                         maskComposite: 'exclude'
                                     }} />
                                     <span
-                                        className="block size-full rounded-full border-2 border-white"
+                                        className="block size-full rounded-full border-2 border-white dark:border-grey-950"
                                         style={{backgroundColor: value}}
                                     >
                                         {value === 'transparent' && <div className="absolute left-[3px] top-[3px] z-10 w-[136%] origin-left rotate-45 border-b border-b-red" />}

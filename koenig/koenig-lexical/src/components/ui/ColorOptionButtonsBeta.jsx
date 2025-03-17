@@ -31,13 +31,13 @@ export function ColorOptionButtonsBeta({buttons = [], selectedName, onClick}) {
                     }} />
                 )}
                 <span
-                    className={`${selectedButton?.color || ''} block size-full rounded-full border-2 border-white`}
+                    className={`${selectedButton?.color || ''} block size-full rounded-full border-2 border-white dark:border-grey-950`}
                 ></span>
             </button>
 
             {/* Color options popover */}
             {isOpen && (
-                <div className="absolute -right-3 bottom-full z-10 mb-2 rounded-lg bg-white px-3 py-2 shadow" data-testid="color-options-popover">
+                <div className="absolute -right-3 bottom-full z-10 mb-2 rounded-lg bg-white px-3 py-2 shadow dark:bg-grey-900" data-testid="color-options-popover">
                     <div className="flex">
                         <ul className="flex w-full items-center justify-between rounded-md font-sans text-md font-normal text-white">
                             {buttons.map(({label, name, color}) => (

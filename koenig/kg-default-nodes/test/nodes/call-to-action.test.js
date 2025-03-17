@@ -38,7 +38,8 @@ describe('CallToActionNode', function () {
             backgroundColor: 'none',
             imageUrl: 'http://blog.com/image1.jpg',
             imageWidth: 200,
-            imageHeight: 100
+            imageHeight: 100,
+            linkColor: 'text'
         };
         exportOptions = {
             exportFormat: 'html',
@@ -69,6 +70,7 @@ describe('CallToActionNode', function () {
             callToActionNode.visibility.should.deepEqual(utils.visibility.buildDefaultVisibility());
             callToActionNode.imageHeight.should.equal(dataset.imageHeight);
             callToActionNode.imageWidth.should.equal(dataset.imageWidth);
+            callToActionNode.linkColor.should.equal(dataset.linkColor);
         }));
 
         it('has setters for all properties', editorTest(function () {
@@ -144,6 +146,10 @@ describe('CallToActionNode', function () {
                     memberSegment: ''
                 }
             });
+
+            callToActionNode.linkColor.should.equal('text');
+            callToActionNode.linkColor = 'accent';
+            callToActionNode.linkColor.should.equal('accent');
         }));
 
         it('has getDataset() convenience method', editorTest(function () {
@@ -483,6 +489,7 @@ describe('CallToActionNode', function () {
                 layout: 'minimal',
                 showButton: true,
                 textValue: '<p><span style="white-space: pre-wrap;">This is a new CTA Card.</span></p>',
+                linkColor: 'text',
                 visibility: {
                     web: {
                         nonMember: true,

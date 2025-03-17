@@ -19,6 +19,7 @@ export const CallToActionNodeComponent = ({
     hasSponsorLabel,
     imageUrl,
     layout,
+    linkColor,
     showButton,
     textValue,
     buttonColor,
@@ -89,6 +90,13 @@ export const CallToActionNodeComponent = ({
         });
     };
 
+    const handleLinkColorChange = (val) => {
+        editor.update(() => {
+            const node = $getNodeByKey(nodeKey);
+            node.linkColor = val;
+        });
+    };
+
     const handleImageChange = async (files) => {
         const imgPreviewUrl = URL.createObjectURL(files[0]);
         try {
@@ -143,6 +151,7 @@ export const CallToActionNodeComponent = ({
                 color={backgroundColor}
                 handleButtonColor={handleButtonColorChange}
                 handleColorChange={handleBackgroundColorChange}
+                handleLinkColorChange={handleLinkColorChange}
                 hasSponsorLabel={hasSponsorLabel}
                 htmlEditor={htmlEditor}
                 htmlEditorInitialState={htmlEditorInitialState}
@@ -151,6 +160,7 @@ export const CallToActionNodeComponent = ({
                 imageUploader={imageUploader}
                 isEditing={isEditing}
                 layout={layout}
+                linkColor={linkColor}
                 setEditing={setEditing}
                 setFileInputRef={ref => fileInputRef.current = ref}
                 showButton={showButton}
