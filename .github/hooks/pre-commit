@@ -73,7 +73,13 @@ increment_version() {
     new_version="$major.$minor.$patch"
 
     # Update package.json with new version
-    sed -i '' -E "s/\"version\": \"[0-9]+\.[0-9]+\.[0-9]+\"/\"version\": \"$new_version\"/" "$package_json_path"
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        # macOS
+        sed -i '' -E "s/\"version\": \"[0-9]+\.[0-9]+\.[0-9]+\"/\"version\": \"$new_version\"/" "$package_json_path"
+    else
+        # Linux and others
+        sed -i -E "s/\"version\": \"[0-9]+\.[0-9]+\.[0-9]+\"/\"version\": \"$new_version\"/" "$package_json_path"
+    fi
 
     echo "Updated version to $new_version in $package_json_path"
 }
