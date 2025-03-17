@@ -76,6 +76,23 @@ const ArticleBody: React.FC<{
 
     const cssContent = articleBodyStyles(siteData?.url.replace(/\/$/, ''));
 
+    const openLinksInNewTab = (content: string) => {
+        // Create a temporary div to parse the HTML
+        const div = document.createElement('div');
+        div.innerHTML = content;
+
+        // Find all anchor tags
+        const links = div.getElementsByTagName('a');
+
+        // Add target="_blank" and rel attributes to each link
+        for (let i = 0; i < links.length; i++) {
+            links[i].setAttribute('target', '_blank');
+            links[i].setAttribute('rel', 'noopener noreferrer');
+        }
+
+        return div.innerHTML;
+    };
+
     const htmlContent = `
         <html class="has-${!darkMode ? 'dark' : 'light'}-text">
         <head>
@@ -164,7 +181,7 @@ const ArticleBody: React.FC<{
                 ` : ''}
             </header>
             <div class='gh-content gh-canvas is-body'>
-                ${html}
+                ${openLinksInNewTab(html)}
             </div>
         </body>
         </html>
