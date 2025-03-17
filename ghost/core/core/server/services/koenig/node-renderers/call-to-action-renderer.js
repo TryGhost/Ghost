@@ -23,7 +23,7 @@ function ctaCardTemplate(dataset) {
         ? `style="color: ${dataset.buttonTextColor};"`
         : `style="background-color: ${dataset.buttonColor}; color: ${dataset.buttonTextColor};"`;
     return `
-        <div class="kg-card kg-cta-card kg-cta-bg-${dataset.backgroundColor} kg-cta-${dataset.layout} ${dataset.imageUrl ? 'kg-cta-has-img' : ''}" data-layout="${dataset.layout}">
+        <div class="kg-card kg-cta-card kg-cta-bg-${dataset.backgroundColor} kg-cta-${dataset.layout} ${dataset.imageUrl ? 'kg-cta-has-img' : ''} ${dataset.linkColor === 'accent' ? 'kg-cta-link-accent' : ''}" data-layout="${dataset.layout}">
             ${dataset.hasSponsorLabel ? `
                 <div class="kg-cta-sponsor-label-wrapper">
                     <div class="kg-cta-sponsor-label">
@@ -177,7 +177,7 @@ function emailCTATemplate(dataset, options = {}) {
     };
 
     return `
-        <table class="kg-card kg-cta-card kg-cta-bg-${dataset.backgroundColor} kg-cta-${dataset.layout} ${dataset.hasSponsorLabel ? '' : 'kg-cta-no-label'} ${dataset.textValue ? '' : 'kg-cta-no-text'} ${dataset.imageUrl ? 'kg-cta-has-img' : ''}" border="0" cellpadding="0" cellspacing="0" width="100%">
+        <table class="kg-card kg-cta-card kg-cta-bg-${dataset.backgroundColor} kg-cta-${dataset.layout} ${dataset.hasSponsorLabel ? '' : 'kg-cta-no-label'} ${dataset.textValue ? '' : 'kg-cta-no-text'} ${dataset.imageUrl ? 'kg-cta-has-img' : ''} ${dataset.linkColor === 'accent' ? 'kg-cta-link-accent' : ''}" border="0" cellpadding="0" cellspacing="0" width="100%">
             ${dataset.hasSponsorLabel ? `
                 <tr>
                     <td>
@@ -212,7 +212,8 @@ export function renderCallToActionNode(node, options = {}) {
         sponsorLabel: node.sponsorLabel,
         imageUrl: node.imageUrl,
         imageWidth: node.imageWidth,
-        imageHeight: node.imageHeight
+        imageHeight: node.imageHeight,
+        linkColor: node.linkColor
     };
 
     // Add validation for backgroundColor
