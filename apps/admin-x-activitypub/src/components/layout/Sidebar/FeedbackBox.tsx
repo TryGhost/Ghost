@@ -11,7 +11,7 @@ const FeedbackBox: React.FC = () => {
         NiceModal.show(ArticleModal, {
             activityId: targetPostId,
             object: {
-                content: `<p>Thank you for trying the beta version of Social web in Ghost! We'd love to hear what you think — your feedback will help us fine-tune the experience.</p><p>If you've run into any issues or have suggestions, just leave a reply to this note and let us know.</p>`,
+                content: `<p>Welcome the Ghost social web beta!</p><p>We’d love to hear your thoughts and feedback. Reply to this note to let us know what’s working well, and what isn’t.</p>`,
                 id: targetPostId,
                 published: '2025-03-10T15:00:58Z',
                 type: 'Note',
