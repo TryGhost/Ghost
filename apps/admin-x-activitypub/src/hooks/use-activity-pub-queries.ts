@@ -380,6 +380,7 @@ export function useActivitiesForUser({
 
     const getActivitiesQuery = useInfiniteQuery({
         queryKey,
+        staleTime: 5 * 60 * 1000, // 5m
         async queryFn({pageParam}: {pageParam?: string}) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
@@ -1013,6 +1014,7 @@ export function useFeedForUser(options: {enabled: boolean}) {
     const feedQuery = useInfiniteQuery({
         queryKey,
         enabled: options.enabled,
+        staleTime: 1 * 60 * 1000, // 1m
         async queryFn({pageParam}: {pageParam?: string}) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI('index', siteUrl);
@@ -1048,6 +1050,7 @@ export function useInboxForUser(options: {enabled: boolean}) {
     const inboxQuery = useInfiniteQuery({
         queryKey,
         enabled: options.enabled,
+        staleTime: 20 * 1000, // 20s
         async queryFn({pageParam}: {pageParam?: string}) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI('index', siteUrl);
