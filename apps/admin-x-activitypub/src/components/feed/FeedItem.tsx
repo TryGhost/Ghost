@@ -10,8 +10,8 @@ import FeedItemStats from './FeedItemStats';
 import clsx from 'clsx';
 import getReadingTime from '../../utils/get-reading-time';
 import getUsername from '../../utils/get-username';
-import stripHtml from '../../utils/strip-html';
 import {handleProfileClick} from '../../utils/handle-profile-click';
+import {openLinksInNewTab, stripHtml} from '../../utils/content-formatters';
 import {renderTimestamp} from '../../utils/render-timestamp';
 import {useDeleteMutationForUser} from '../../hooks/use-activity-pub-queries';
 
@@ -322,8 +322,18 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                                 <div className='ap-note-content line-clamp-[10] text-pretty leading-[1.4285714286] tracking-[-0.006em] text-gray-900 dark:text-gray-600 [&_p+p]:mt-3'>
                                                     {!isLoading ?
                                                         <div dangerouslySetInnerHTML={{
-                                                            __html: object.content ?? ''
-                                                        }} ref={contentRef} />
+                                                            __html: openLinksInNewTab(object.content || '') ?? ''
+                                                        }} ref={contentRef}
+                                                        onClick={(e) => {
+                                                            const target = e.target as HTMLElement;
+                                                            if (
+                                                                target.tagName === 'A' ||
+                                                                target.closest('a')
+                                                            ) {
+                                                                e.stopPropagation();
+                                                            }
+                                                        }}
+                                                        />
                                                         :
                                                         <Skeleton count={2} />
                                                     }
@@ -383,7 +393,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                 <div className={`relative z-10 col-start-1 col-end-3 w-full gap-4`}>
                                     <div className='flex flex-col items-start'>
                                         {object.name && <Heading className='mb-1 leading-tight' level={4} data-test-activity-heading>{object.name}</Heading>}
-                                        <div dangerouslySetInnerHTML={({__html: object.content ?? ''})} className='ap-note-content-large text-pretty text-[1.6rem] tracking-[-0.011em] text-gray-900 dark:text-gray-600 [&_p+p]:mt-3'></div>
+                                        <div dangerouslySetInnerHTML={({__html: openLinksInNewTab(object.content || '') ?? ''})} className='ap-note-content-large text-pretty text-[1.6rem] tracking-[-0.011em] text-gray-900 dark:text-gray-600 [&_p+p]:mt-3'></div>
                                         {renderFeedAttachment(object)}
                                         <div className='space-between ml-[-7px] mt-3 flex'>
                                             {showStats && <FeedItemStats
@@ -440,7 +450,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                     <div className='flex flex-col'>
                                         {(object.type === 'Article') && renderFeedAttachment(object)}
                                         {object.name && <Heading className='my-1 text-pretty leading-tight' level={5} data-test-activity-heading>{object.name}</Heading>}
-                                        {(object.preview && object.type === 'Article') ? <div className='line-clamp-3 leading-tight'>{object.preview.content}</div> : <div dangerouslySetInnerHTML={({__html: object.content ?? ''})} className='ap-note-content text-pretty tracking-[-0.006em] text-gray-900 dark:text-gray-600 [&_p+p]:mt-3'></div>}
+                                        {(object.preview && object.type === 'Article') ? <div className='line-clamp-3 leading-tight'>{object.preview.content}</div> : <div dangerouslySetInnerHTML={({__html: openLinksInNewTab(object.content || '') ?? ''})} className='ap-note-content text-pretty tracking-[-0.006em] text-gray-900 dark:text-gray-600 [&_p+p]:mt-3'></div>}
                                         {(object.type === 'Note') && renderFeedAttachment(object)}
                                         {(object.type === 'Article') && <ButtonX
                                             className={`mt-3 self-start text-gray-900 transition-all hover:opacity-60`}

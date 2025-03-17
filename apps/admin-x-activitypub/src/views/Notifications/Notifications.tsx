@@ -12,7 +12,6 @@ import Separator from '@components/global/Separator';
 
 import Layout from '@components/layout';
 import getUsername from '@utils/get-username';
-import stripHtml from '@utils/strip-html';
 import truncate from '@utils/truncate';
 import {EmptyViewIcon, EmptyViewIndicator} from '@src/components/global/EmptyViewIndicator';
 import {
@@ -22,6 +21,7 @@ import {
 } from '@hooks/use-activity-pub-queries';
 import {type NotificationType} from '@components/activities/NotificationIcon';
 import {handleProfileClick} from '@utils/handle-profile-click';
+import {stripHtml} from '@src/utils/content-formatters';
 
 interface NotificationsProps {}
 
