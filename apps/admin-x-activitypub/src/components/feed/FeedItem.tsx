@@ -10,8 +10,8 @@ import FeedItemStats from './FeedItemStats';
 import clsx from 'clsx';
 import getReadingTime from '../../utils/get-reading-time';
 import getUsername from '../../utils/get-username';
-import stripHtml from '../../utils/strip-html';
 import {handleProfileClick} from '../../utils/handle-profile-click';
+import {openLinksInNewTab, stripHtml} from '../../utils/content-formatters';
 import {renderTimestamp} from '../../utils/render-timestamp';
 import {useDeleteMutationForUser} from '../../hooks/use-activity-pub-queries';
 
@@ -322,7 +322,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                                 <div className='ap-note-content line-clamp-[10] text-pretty leading-[1.4285714286] tracking-[-0.006em] text-gray-900 dark:text-gray-600 [&_p+p]:mt-3'>
                                                     {!isLoading ?
                                                         <div dangerouslySetInnerHTML={{
-                                                            __html: object.content ?? ''
+                                                            __html: openLinksInNewTab(object.content || '') ?? ''
                                                         }} ref={contentRef} />
                                                         :
                                                         <Skeleton count={2} />
