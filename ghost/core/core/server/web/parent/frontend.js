@@ -19,6 +19,7 @@ module.exports = (routerConfig) => {
 
     frontendApp.lazyUse('/members', require('../members'));
     frontendApp.lazyUse('/webmentions', require('../webmentions'));
+    frontendApp.lazyUse('/metrics', require('../metrics')); // endpoint for web analytics
     frontendApp.use('/', require('../../../frontend/web')(routerConfig));
 
     return frontendApp;
