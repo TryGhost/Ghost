@@ -6,14 +6,14 @@ import {Button, H4, LucideIcon} from '@tryghost/shade';
 
 const FeedbackBox: React.FC = () => {
     function showFeedbackReply() {
-        const targetPostId = 'https://main.ghost.org/.ghost/activitypub/note/abfa416f-30ee-4aa9-be3b-b763aa2547fe';
+        const targetPostId = 'https://activitypub.ghost.org/.ghost/activitypub/note/84eb47c6-4e5d-4d1a-bb6e-089a5890cc2';
 
         NiceModal.show(ArticleModal, {
             activityId: targetPostId,
             object: {
                 content: `<p>Welcome the Ghost social web beta!</p><p>We’d love to hear your thoughts and feedback. Reply to this note to let us know what’s working well, and what isn’t.</p>`,
                 id: targetPostId,
-                published: '2025-03-10T15:00:58Z',
+                published: '2025-03-17T09:45:00Z',
                 type: 'Note',
                 url: targetPostId,
                 '@context': '',
