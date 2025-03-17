@@ -5,7 +5,7 @@ import Users from './components/settings/general/Users';
 import useFeatureFlag from './hooks/useFeatureFlag';
 import {Heading, confirmIfDirty, topLevelBackdropClasses, useGlobalDirtyState} from '@tryghost/admin-x-design-system';
 import {ReactNode, useEffect} from 'react';
-import {canAccessSettings, isEditorUser} from '@tryghost/admin-x-framework/api/users';
+import {canAccessSettings, isEditorUser, isOwnerUser} from '@tryghost/admin-x-framework/api/users';
 import {toast} from 'react-hot-toast';
 import {useGlobalData} from './components/providers/GlobalDataProvider';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
@@ -35,7 +35,7 @@ const MainContent: React.FC = () => {
         const handleKeyDown = (event: KeyboardEvent) => {
             if (event.key === 'Escape') {
                 confirmIfDirty(isDirty, () => {
-                    if (hasActivityPub) {
+                    if (hasActivityPub && isOwnerUser(currentUser)) {
                         navigateAway('/activitypub');
                     } else {
                         navigateAway('/dashboard');
