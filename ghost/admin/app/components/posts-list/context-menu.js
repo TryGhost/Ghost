@@ -1,6 +1,6 @@
-import AddPostTagsModal from './modals/add-tag';
 import Component from '@glimmer/component';
 import DeletePostsModal from './modals/delete-posts';
+import EditPostTagsModal from './modals/edit-tag';
 import EditPostsAccessModal from './modals/edit-posts-access';
 import UnpublishPostsModal from './modals/unpublish-posts';
 import UnschedulePostsModal from './modals/unschedule-posts';
@@ -38,13 +38,9 @@ const messages = {
         single: '{Type} access updated',
         multiple: '{Type} access updated for {count} {type}s'
     },
-    tagsAdded: {
-        single: 'Tags added',
-        multiple: 'Tags added to {count} {type}s'
-    },
-    tagAdded: {
-        single: 'Tag added',
-        multiple: 'Tag added to {count} {type}s'
+    tagsUpdated: {
+        single: 'Tags updated',
+        multiple: 'Tags updated to {count} {type}s'
     },
     duplicated: {
         single: '{Type} duplicated',
@@ -107,11 +103,25 @@ export default class PostsContextMenu extends Component {
     }
 
     @action
-    async addTagToPosts() {
-        await this.menu.openModal(AddPostTagsModal, {
+    async updatePostTags() {
+        let existingTags = [];
+        if (this.selectionList.isSingle) {
+            existingTags = this.selectionList.availableModels[0].tags.toArray();
+        } else {
+            let tagMap = new Map();
+            this.selectionList.availableModels.forEach((post) => {
+                post.tags.forEach((tag) => {
+                    let key = tag.id;
+                    tagMap.set(key, tag);
+                });
+            });
+            existingTags = Array.from(tagMap.values());
+        }
+        await this.menu.openModal(EditPostTagsModal, {
             type: this.type,
             selectionList: this.selectionList,
-            confirm: this.addTagToPostsTask
+            existingTags,
+            confirm: this.updateTagsTask
         });
     }
 
@@ -157,25 +167,39 @@ export default class PostsContextMenu extends Component {
     }
 
     @task
-    *addTagToPostsTask(tags) {
+    *updateTagsTask({newTags, removedTags}) {
         const updatedModels = this.selectionList.availableModels;
 
-        yield this.performBulkEdit('addTag', {
-            tags: tags.map((t) => {
-                return {
+        if (newTags.length) {
+            yield this.performBulkEdit('addTag', {
+                tags: newTags.map(t => ({
                     id: t.id,
                     name: t.name,
                     slug: t.slug
-                };
-            })
-        });
-        if (tags.length > 1) {
-            this.notifications.showNotification(this.#getToastMessage('tagsAdded'), {type: 'success'});
-        } else {
-            this.notifications.showNotification(this.#getToastMessage('tagAdded'), {type: 'success'});
+                }))
+            });
         }
+        if (removedTags.length) {
+            yield this.performBulkEdit('removeTag', {
+                tags: removedTags.map(t => ({
+                    id: t.id,
+                    name: t.name,
+                    slug: t.slug
+                }))
+            });
+        }
+        if (newTags.length || removedTags.length) {
+            this.notifications.showNotification(this.#getToastMessage('tagsUpdated'), {type: 'success'});
+        }
+        
+        const serializedTags = newTags.toArray().map((t) => {
+            return {
+                ...t.serialize({includeId: true}),
+                type: 'tag'
+            };
+        });
 
-        const serializedTags = tags.toArray().map((t) => {
+        const serializedRemoved = removedTags.toArray().map((t) => {
             return {
                 ...t.serialize({includeId: true}),
                 type: 'tag'
@@ -209,17 +233,20 @@ export default class PostsContextMenu extends Component {
 
         // Update the models on the client side
         for (const post of updatedModels) {
-            const newTags = post.tags.toArray().map((t) => {
+            const existingTags = post.tags.toArray().map((t) => {
                 return {
                     ...t.serialize({includeId: true}),
                     type: 'tag'
                 };
             });
             for (const tag of serializedTags) {
-                if (!newTags.find(t => t.id === tag.id)) {
-                    newTags.push(tag);
+                if (!existingTags.find(t => t.id === tag.id)) {
+                    existingTags.push(tag);
                 }
             }
+            let updatedTags = existingTags.filter((t) => {
+                return !serializedRemoved.find(rt => rt.id === t.id);
+            });
 
             // We need to do it this way to prevent marking the model as dirty
             this.store.push({
@@ -228,7 +255,7 @@ export default class PostsContextMenu extends Component {
                     type: this.type,
                     relationships: {
                         tags: {
-                            data: newTags
+                            data: updatedTags
                         }
                     }
                 }

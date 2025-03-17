@@ -504,16 +504,16 @@ describe('Acceptance: Posts / Pages', function () {
                         let contextMenu = find('.gh-posts-context-menu'); // this is a <ul> element
                         expect(contextMenu, 'context menu').to.exist;
 
-                        // add a tag to the posts
+                        // edit tags of the posts
                         let buttons = contextMenu.querySelectorAll('button');
-                        let addTagButton = findButton('Add a tag', buttons);
-                        expect(addTagButton, 'add tag button').to.exist;
-                        await click(addTagButton);
+                        let editTagsButton = findButton('Edit tags', buttons);
+                        expect(editTagsButton, 'edit tags button').to.exist;
+                        await click(editTagsButton);
 
-                        const addTagsModal = find('[data-test-modal="add-tags"]');
-                        expect(addTagsModal, 'tag settings modal').to.exist;
+                        const editTagsModal = find('[data-test-modal="edit-tags"]');
+                        expect(editTagsModal, 'tag settings modal').to.exist;
 
-                        const input = addTagsModal.querySelector('input');
+                        const input = editTagsModal.querySelector('input');
                         expect(input, 'tag input').to.exist;
                         await fillIn(input, 'test-tag');
                         await triggerKeyEvent(input, 'keydown', 13);
