@@ -154,6 +154,8 @@ function getTinybirdTrackerScript(dataRoot) {
     const endpoint = config.get('tinybird:tracker:endpoint');
     const token = config.get('tinybird:tracker:token');
     const datasource = config.get('tinybird:tracker:datasource');
+    // const scriptUrl = config.get('tinybird:tracker:scriptUrl') || '/public/metrics.js';
+    const scriptUrl = '/public/metrics.js';
 
     const tbParams = _.map({
         site_uuid: config.get('tinybird:tracker:id'),
@@ -162,7 +164,7 @@ function getTinybirdTrackerScript(dataRoot) {
         member_status: dataRoot.member?.status
     }, (value, key) => `tb_${key}="${value}"`).join(' ');
 
-    return `<script defer src="/public/tracker.js" data-stringify-payload="false" ${datasource ? `data-datasource="${datasource}"` : ''} data-storage="localStorage" data-host="${endpoint}" data-token="${token}" ${tbParams}></script>`;
+    return `<script defer src="${scriptUrl}" data-stringify-payload="false" ${datasource ? `data-datasource="${datasource}"` : ''} data-storage="localStorage" data-host="${endpoint}" data-token="${token}" ${tbParams}></script>`;
 }
 
 function getHCaptchaScript() {
