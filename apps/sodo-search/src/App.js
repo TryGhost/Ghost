@@ -48,7 +48,7 @@ export default class App extends React.Component {
                     this.bodyScroll = window.document?.body?.style?.overflow;
                     this.bodyMargin = window.getComputedStyle(document.body).getPropertyValue('margin-right');
                     window.document.body.style.overflow = 'hidden';
-                    if (this.state.scrollbarWidth) {
+                    if (this.state.scrollbarWidth && document.body.scrollHeight > window.innerHeight) {
                         window.document.body.style.marginRight = `calc(${this.bodyMargin} + ${this.state.scrollbarWidth}px)`;
                     }
                 } else {
