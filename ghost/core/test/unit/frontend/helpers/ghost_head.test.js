@@ -1472,7 +1472,7 @@ describe('{{ghost_head}} helper', function () {
                 }
             }));
 
-            rendered.should.match(/script defer src="\/public\/metrics\.js"/);
+            rendered.should.match(/script defer src="\/public\/analytics\.js"/);
         });
 
         it('with all tb_variables set to undefined on logged out home page', async function () {
