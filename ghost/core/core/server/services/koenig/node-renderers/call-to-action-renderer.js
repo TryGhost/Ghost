@@ -34,7 +34,7 @@ function ctaCardTemplate(dataset) {
             <div class="kg-cta-content">
                 ${dataset.imageUrl ? `
                     <div class="kg-cta-image-container">
-                        ${wrapWithLink(dataset, `<img src="${dataset.imageUrl}" alt="CTA Image">`)}
+                        ${wrapWithLink(dataset, `<img src="${dataset.imageUrl}" alt="CTA Image" ${dataset?.imageWidth && dataset.imageHeight ? `data-image-dimensions="${dataset.imageWidth}x${dataset.imageHeight}"` : '' }>`)}
                     </div>
                 ` : ''}
                 ${dataset.textValue || dataset.showButton ? `
