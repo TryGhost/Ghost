@@ -142,7 +142,7 @@ export function getStatsParams(config, props, additionalParams = {}) {
     };
 
     if (audience.length > 0) {
-        params.member_status = audience.join(',');
+        params.member_status = audience;
     }
 
     if (device) {
