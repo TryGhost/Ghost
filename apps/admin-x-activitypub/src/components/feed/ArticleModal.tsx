@@ -21,6 +21,7 @@ import DeletedFeedItem from './DeletedFeedItem';
 import TableOfContents, {TOCItem} from './TableOfContents';
 import getReadingTime from '../../utils/get-reading-time';
 import {isPendingActivity} from '../../utils/pending-activity';
+import {openLinksInNewTab} from '@src/utils/content-formatters';
 import {useDebounce} from 'use-debounce';
 
 interface ArticleModalProps {
@@ -30,6 +31,7 @@ interface ArticleModalProps {
     focusReply: boolean;
     focusReplies: boolean;
     width?: 'narrow' | 'wide';
+    disableStats?: boolean;
     history: {
         activityId: string;
         object: ObjectProperties;
@@ -163,7 +165,7 @@ const ArticleBody: React.FC<{
                 ` : ''}
             </header>
             <div class='gh-content gh-canvas is-body'>
-                ${html}
+                ${openLinksInNewTab(html)}
             </div>
         </body>
         </html>
@@ -373,6 +375,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
     focusReply,
     focusReplies,
     width = 'narrow',
+    disableStats = false,
     history = []
 }) => {
     const MODAL_SIZE_SM = 640;
@@ -882,6 +885,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                     object={object}
                                     repostCount={object.repostCount ?? 0}
                                     showHeader={(canNavigateBack || (threadParents.length > 0))}
+                                    showStats={!disableStats}
                                     type='Note'
                                     onCommentClick={() => {
                                         repliesRef.current?.scrollIntoView({
