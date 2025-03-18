@@ -1332,6 +1332,29 @@ export function useDeleteMutationForUser(handle: string) {
                 };
             });
 
+            // Check if post was liked by checking all possible locations
+            const wasLiked = [
+                QUERY_KEYS.feed,
+                QUERY_KEYS.inbox,
+                QUERY_KEYS.postsByAccount,
+                QUERY_KEYS.postsLikedByAccount
+            ].some(key => {
+                const queryData = queryClient.getQueryData<{pages: {posts: Activity[]}[]}>(key);
+                return queryData?.pages.some(page => 
+                    page.posts.some(post => post.id === id && post.object.liked)
+                );
+            });
+
+            if (wasLiked) {
+                queryClient.setQueryData(QUERY_KEYS.account(handle), (currentAccount?: Account) => {
+                    if (!currentAccount) return currentAccount;
+                    return {
+                        ...currentAccount,
+                        likedCount: Math.max(0, currentAccount.likedCount)
+                    };
+                });
+            }
+
             // Update the profile posts cache:
             // - Remove the post from any profile posts collections it may be in
             const profilePostsQueryKey = QUERY_KEYS.profilePosts(null);
