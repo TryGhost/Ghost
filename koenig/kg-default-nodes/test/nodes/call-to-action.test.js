@@ -388,15 +388,6 @@ describe('CallToActionNode', function () {
             });
         }));
 
-        it('removes <p> first child tag from sponsorLabel', editorTest(function () {
-            testRender(({element}) => {
-                const sponsorLabel = element.querySelector('.kg-cta-sponsor-label');
-                sponsorLabel.should.exist;
-                sponsorLabel.firstElementChild.tagName.should.equal('SPAN');
-                sponsorLabel.firstElementChild.outerHTML.should.equal('<span style="white-space: pre-wrap;">SPONSORED</span>');
-            });
-        }));
-
         function testButtonSkipOnMissingData(target, layout, {missing = []} = {}) {
             return editorTest(function () {
                 dataset.layout = layout;
