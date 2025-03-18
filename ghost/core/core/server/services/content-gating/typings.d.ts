@@ -21,6 +21,6 @@ interface LabsService {
 }
 
 export interface GatedBlockParams {
-    nonMember: boolean;
-    memberSegment: string;
+    nonMember?: boolean;
+    memberSegment?: '' | 'status:free,status:-free' | 'status:free' | 'status:-free';
 }
