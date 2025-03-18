@@ -88,8 +88,9 @@ const QUERY_KEYS = {
 };
 
 function updateLikedCache(queryClient: QueryClient, queryKey: string[], id: string, liked: boolean) {
+    // Update like status and count in existing posts
     queryClient.setQueriesData(queryKey, (current?: {pages: {posts: Activity[]}[]}) => {
-        if (current === undefined) {
+        if (!current) {
             return current;
         }
 
@@ -104,17 +105,45 @@ function updateLikedCache(queryClient: QueryClient, queryKey: string[], id: stri
                                 ...item,
                                 object: {
                                     ...item.object,
-                                    liked: liked
+                                    liked,
+                                    likeCount: Math.max(liked ? item.object.likeCount + 1 : item.object.likeCount - 1, 0)
                                 }
                             };
                         }
-
                         return item;
                     })
                 };
             })
         };
     });
+
+    // For the likes tab, add/remove the post
+    if (queryKey === QUERY_KEYS.postsLikedByAccount) {
+        queryClient.setQueriesData(queryKey, (current?: {pages: {posts: Activity[]}[]}) => {
+            if (!current) {
+                return current;
+            }
+
+            return {
+                ...current,
+                pages: current.pages.map((page: {posts: Activity[]}) => {
+                    return {
+                        ...page,
+                        posts: liked 
+                            // If liking, keep the post (it will be added via refetch)
+                            ? page.posts 
+                            // If unliking, remove the post
+                            : page.posts.filter(item => item.object.id !== id)
+                    };
+                })
+            };
+        });
+
+        // Invalidate the likes tab query to refetch and get the new post when liking
+        if (liked) {
+            queryClient.invalidateQueries({queryKey: QUERY_KEYS.postsLikedByAccount});
+        }
+    }
 }
 
 export function useLikeMutationForUser(handle: string) {
@@ -130,6 +159,8 @@ export function useLikeMutationForUser(handle: string) {
         onMutate: (id) => {
             updateLikedCache(queryClient, QUERY_KEYS.feed, id, true);
             updateLikedCache(queryClient, QUERY_KEYS.inbox, id, true);
+            updateLikedCache(queryClient, QUERY_KEYS.postsByAccount, id, true);
+            updateLikedCache(queryClient, QUERY_KEYS.postsLikedByAccount, id, true);
         }
     });
 }
@@ -147,6 +178,8 @@ export function useUnlikeMutationForUser(handle: string) {
         onMutate: (id) => {
             updateLikedCache(queryClient, QUERY_KEYS.feed, id, false);
             updateLikedCache(queryClient, QUERY_KEYS.inbox, id, false);
+            updateLikedCache(queryClient, QUERY_KEYS.postsByAccount, id, false);
+            updateLikedCache(queryClient, QUERY_KEYS.postsLikedByAccount, id, false);
         }
     });
 }
