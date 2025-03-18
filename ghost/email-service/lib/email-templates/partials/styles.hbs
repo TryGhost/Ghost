@@ -1122,12 +1122,22 @@ img.kg-cta-image {
     margin-bottom: 0;
 }
 
+.kg-cta-immersive.kg-cta-centered .kg-cta-text p {
+    text-align: center;
+}
+
 .kg-cta-button-container {
     padding-top: 20px;
 }
 
-.kg-cta-minimal table.kg-cta-button-wrapper {
+.kg-cta-minimal table.kg-cta-button-wrapper,
+.kg-cta-immersive:not(.kg-cta-has-img) .kg-cta-button-container table {
     width: unset !important;
+}
+
+.kg-cta-immersive.kg-cta-centered .kg-cta-button-container table {
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .kg-cta-minimal table.kg-cta-button-wrapper td {
