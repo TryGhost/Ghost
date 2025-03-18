@@ -104,7 +104,7 @@ function updateLikedCache(queryClient: QueryClient, queryKey: string[], id: stri
                                 ...item,
                                 object: {
                                     ...item.object,
-                                    liked
+                                    liked: liked
                                 }
                             };
                         }
@@ -958,6 +958,7 @@ export function useNoteMutationForUser(handle: string, actorProps?: ActorPropert
     const queryClient = useQueryClient();
     const queryKeyFeed = QUERY_KEYS.feed;
     const queryKeyOutbox = QUERY_KEYS.outbox(handle);
+    const queryKeyPostsByAccount = QUERY_KEYS.postsByAccount;
 
     return useMutation({
         async mutationFn(content: string) {
@@ -979,17 +980,22 @@ export function useNoteMutationForUser(handle: string, actorProps?: ActorPropert
             prependActivityToPaginatedCollection(queryClient, queryKeyFeed, 'posts', activity);
             prependActivityToPaginatedCollection(queryClient, queryKeyOutbox, 'data', activity);
 
+            // Add to profile tab (postsByAccount)
+            prependActivityToPaginatedCollection(queryClient, queryKeyPostsByAccount, 'posts', activity);
+
+
             return {id};
         },
         onSuccess: (activity: Activity, _variables, context) => {
             if (activity.id === undefined) {
-                throw new Error('Actvitiy returned from API has no id');
+                throw new Error('Activity returned from API has no id');
             }
 
             const preparedActivity = prepareNewActivity(activity);
 
             updateActivityInPaginatedCollection(queryClient, queryKeyFeed, 'posts', context?.id ?? '', () => preparedActivity);
             updateActivityInPaginatedCollection(queryClient, queryKeyOutbox, 'data', context?.id ?? '', () => preparedActivity);
+            updateActivityInPaginatedCollection(queryClient, queryKeyPostsByAccount, 'posts', context?.id ?? '', () => preparedActivity);
         },
         onError(error, _variables, context) {
             // eslint-disable-next-line no-console
@@ -997,6 +1003,7 @@ export function useNoteMutationForUser(handle: string, actorProps?: ActorPropert
 
             removeActivityFromPaginatedCollection(queryClient, queryKeyFeed, 'posts', context?.id ?? '');
             removeActivityFromPaginatedCollection(queryClient, queryKeyOutbox, 'data', context?.id ?? '');
+            removeActivityFromPaginatedCollection(queryClient, queryKeyPostsByAccount, 'posts', context?.id ?? '');
 
             showToast({
                 message: 'An error occurred while posting your note.',
