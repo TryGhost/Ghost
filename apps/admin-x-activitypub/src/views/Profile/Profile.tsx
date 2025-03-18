@@ -298,37 +298,37 @@ const FollowingTab: React.FC = () => {
         <>
             <EmptyState />
             {
-            <List className='pt-3'>
-                {accounts.map((account, index) => (
+                <List className='pt-3'>
+                    {accounts.map((account, index) => (
                         <React.Fragment key={account.id}>
-                        <ActivityItem
+                            <ActivityItem
                                 key={account.id}
-                            onClick={() => handleAccountClick(account.handle)}
-                        >
-                            <APAvatar author={{
-                                icon: {
-                                    url: account.avatarUrl
-                                },
-                                name: account.name,
-                                handle: account.handle
-                            }} />
-                            <div>
-                                <div className='text-gray-600'>
-                                    <span className='mr-1 font-bold text-black'>{account.name}</span>
-                                    <div className='text-sm'>{account.handle}</div>
+                                onClick={() => handleAccountClick(account.handle)}
+                            >
+                                <APAvatar author={{
+                                    icon: {
+                                        url: account.avatarUrl
+                                    },
+                                    name: account.name,
+                                    handle: account.handle
+                                }} />
+                                <div>
+                                    <div className='text-gray-600'>
+                                        <span className='mr-1 font-bold text-black'>{account.name}</span>
+                                        <div className='text-sm'>{account.handle}</div>
+                                    </div>
                                 </div>
-                            </div>
-                            <FollowButton
-                                className='ml-auto'
-                                following={account.isFollowing}
-                                handle={account.handle}
-                                type='secondary'
-                            />
-                        </ActivityItem>
-                        {index < accounts.length - 1 && <Separator />}
-                    </React.Fragment>
-                ))}
-            </List>
+                                <FollowButton
+                                    className='ml-auto'
+                                    following={account.isFollowing}
+                                    handle={account.handle}
+                                    type='secondary'
+                                />
+                            </ActivityItem>
+                            {index < accounts.length - 1 && <Separator />}
+                        </React.Fragment>
+                    ))}
+                </List>
             }
             <LoadingState />
         </>
@@ -346,37 +346,37 @@ const FollowersTab: React.FC = () => {
         <>
             <EmptyState />
             {
-            <List className='pt-3'>
-                {accounts.map((account, index) => (
+                <List className='pt-3'>
+                    {accounts.map((account, index) => (
                         <React.Fragment key={account.id}>
-                        <ActivityItem
+                            <ActivityItem
                                 key={account.id}
-                            onClick={() => handleAccountClick(account.handle)}
-                        >
-                            <APAvatar author={{
-                                icon: {
-                                    url: account.avatarUrl
-                                },
-                                name: account.name,
-                                handle: account.handle
-                            }} />
-                            <div>
-                                <div className='text-gray-600'>
-                                    <span className='mr-1 font-bold text-black'>{account.name}</span>
-                                    <div className='text-sm'>{account.handle}</div>
+                                onClick={() => handleAccountClick(account.handle)}
+                            >
+                                <APAvatar author={{
+                                    icon: {
+                                        url: account.avatarUrl
+                                    },
+                                    name: account.name,
+                                    handle: account.handle
+                                }} />
+                                <div>
+                                    <div className='text-gray-600'>
+                                        <span className='mr-1 font-bold text-black'>{account.name}</span>
+                                        <div className='text-sm'>{account.handle}</div>
+                                    </div>
                                 </div>
-                            </div>
-                            <FollowButton
-                                className='ml-auto'
-                                following={account.isFollowing}
-                                handle={account.handle}
-                                type='secondary'
-                            />
-                        </ActivityItem>
-                        {index < accounts.length - 1 && <Separator />}
-                    </React.Fragment>
-                ))}
-            </List>
+                                <FollowButton
+                                    className='ml-auto'
+                                    following={account.isFollowing}
+                                    handle={account.handle}
+                                    type='secondary'
+                                />
+                            </ActivityItem>
+                            {index < accounts.length - 1 && <Separator />}
+                        </React.Fragment>
+                    ))}
+                </List>
             }
             <LoadingState />
         </>
@@ -459,7 +459,7 @@ const Profile: React.FC<ProfileProps> = ({}) => {
     return (
         <Layout>
             <div className='relative isolate'>
-                <div className='absolute -right-8 left-0 top-0 z-0 h-[15vw] bg-[linear-gradient(265deg,#FAFAFB_0%,#F4F5F6_100%)] dark:bg-[linear-gradient(265deg,#23272C_0%,#202327_100%)]'>
+                <div className='absolute -right-8 left-0 top-0 z-0 h-[5vw]'>
                     {account?.bannerImageUrl &&
                     <div className='h-full w-full'>
                         <img
@@ -470,7 +470,7 @@ const Profile: React.FC<ProfileProps> = ({}) => {
                     </div>
                     }
                 </div>
-                <div className='relative z-10 mx-auto flex w-full max-w-[620px] flex-col items-center pb-16 pt-[calc(15vw-52px)]'>
+                <div className='relative z-10 mx-auto flex w-full max-w-[620px] flex-col items-center pb-16 pt-[calc(5vw-52px)]'>
                     <div className='mx-auto w-full'>
                         <div>
                             <div className='flex items-end justify-between'>
