@@ -253,7 +253,7 @@
     "find-root": "1.1.0",
     "form-data": "4.0.0",
     "inquirer": "8.2.6",
-    "jwks-rsa": "3.1.0",
+    "jwks-rsa": "3.2.0",
     "mocha": "10.2.0",
     "mocha-slow-test-reporter": "0.1.2",
     "mock-knex": "TryGhost/mock-knex#68948e11b0ea4fe63456098dfdc169bea7f62009",
