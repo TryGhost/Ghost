@@ -160,6 +160,8 @@
 }
 
 .kg-cta-image-container img {
+    width: 100%;
+    height: auto;
     margin: 0;
     object-fit: cover;
     border-radius: 6px;
