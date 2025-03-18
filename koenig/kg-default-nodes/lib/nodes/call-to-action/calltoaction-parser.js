@@ -27,12 +27,21 @@ export function parseCallToActionNode(CallToActionNode) {
                             imageWidth: null,
                             imageHeight: null
                         };
+
                         if (imageElement) {
                             const {src, width, height} = readImageAttributesFromElement(imageElement);
                             imageData.imageUrl = src;
                             imageData.imageWidth = width || null;
                             imageData.imageHeight = height || null;
                         }
+
+                        // sponsorLabel gets rendered without <p> in the web rendered version.
+                        // however we need to keep the <p> tag in the lexical stored version to ensure
+                        // consistency in the editor when a CTA card is copied and pasted into the editor.
+                        if (sponsorLabelElement) {
+                            sponsorLabelElement.innerHTML = `<p>${sponsorLabelElement.innerHTML.trim()}</p>`;
+                        }
+
                         const payload = {
                             layout: layout,
                             textValue: textValueElement.textContent.trim() || '',
@@ -42,7 +51,7 @@ export function parseCallToActionNode(CallToActionNode) {
                             buttonColor: rgbToHex(buttonColor),
                             buttonTextColor: rgbToHex(buttonTextColor),
                             hasSponsorLabel: sponsorLabelElement ? true : false,
-                            sponsorLabel: sponsorLabelElement?.innerHTML.trim() || '',
+                            sponsorLabel: sponsorLabelElement?.innerHTML || '',
                             backgroundColor: backgroundColor,
                             imageUrl: imageData.imageUrl,
                             imageWidth: imageData.imageWidth,
