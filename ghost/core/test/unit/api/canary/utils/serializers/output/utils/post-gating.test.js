@@ -102,26 +102,26 @@ describe('Unit: endpoints/utils/serializers/output/utils/post-gating', function 
                 sinon.restore();
             });
 
-            it('does not call stripGatedBlocks when a post has no gated blocks', function () {
+            it('does not call removeGatedBlocksFromHtml when a post has no gated blocks', function () {
                 const attrs = {
                     visibility: 'public',
                     html: '<p>no gated blocks</p>'
                 };
 
-                const stripGatedBlocksStub = sinon.stub(gating, 'stripGatedBlocks');
+                const removeGatedBlocksFromHtmlStub = sinon.stub(contentGatingService, 'removeGatedBlocksFromHtml');
                 gating.forPost(attrs, frame);
-                sinon.assert.notCalled(stripGatedBlocksStub);
+                sinon.assert.notCalled(removeGatedBlocksFromHtmlStub);
             });
 
-            it('calls stripGatedBlocks when a post has gated blocks', function () {
+            it('calls removeGatedBlocksFromHtml when a post has gated blocks', function () {
                 const attrs = {
                     visibility: 'public',
                     html: '<!--kg-gated-block:begin nonMember:true--><p>gated block</p><!--kg-gated-block:end-->'
                 };
 
-                const stripGatedBlocksStub = sinon.stub(gating, 'stripGatedBlocks');
+                const removeGatedBlocksFromHtmlStub = sinon.stub(contentGatingService, 'removeGatedBlocksFromHtml');
                 gating.forPost(attrs, frame);
-                sinon.assert.calledOnce(stripGatedBlocksStub);
+                sinon.assert.calledOnce(removeGatedBlocksFromHtmlStub);
             });
 
             it('updates html, plaintext, and excerpt when a post has gated blocks', function () {
@@ -147,7 +147,7 @@ describe('Unit: endpoints/utils/serializers/output/utils/post-gating', function 
                 contentVisibilityStub.returns(false);
 
                 const regexSpy = sinon.spy(RegExp.prototype, 'test');
-                const stripGatedBlocksStub = sinon.stub(gating, 'stripGatedBlocks');
+                const removeGatedBlocksFromHtmlStub = sinon.stub(contentGatingService, 'removeGatedBlocksFromHtml');
 
                 const attrs = {
                     visibility: 'public',
@@ -156,159 +156,8 @@ describe('Unit: endpoints/utils/serializers/output/utils/post-gating', function 
                 gating.forPost(attrs, frame);
 
                 sinon.assert.notCalled(regexSpy);
-                sinon.assert.notCalled(stripGatedBlocksStub);
+                sinon.assert.notCalled(removeGatedBlocksFromHtmlStub);
             });
-        });
-    });
-
-    describe('parseGatedBlockParams', function () {
-        function testFn(input, expected) {
-            const params = gating.parseGatedBlockParams(input);
-            assert.deepEqual(params, expected);
-        }
-
-        const validTestCases = [{
-            input: 'nonMember:true',
-            output: {nonMember: true}
-        }, {
-            input: 'nonMember:false',
-            output: {nonMember: false}
-        }, {
-            input: 'nonMember:\'true\'',
-            output: {nonMember: true}
-        }, {
-            input: 'nonMember:\'false\'',
-            output: {nonMember: false}
-        }, {
-            input: 'nonMember:"true"',
-            output: {nonMember: true}
-        }, {
-            input: 'memberSegment:\'\'',
-            output: {}
-        }, {
-            input: 'memberSegment:"status:free"',
-            output: {memberSegment: 'status:free'}
-        }, {
-            input: 'nonMember:true memberSegment:"status:free"',
-            output: {nonMember: true, memberSegment: 'status:free'}
-        }, {
-            input: 'memberSegment:"status:free" nonMember:true',
-            output: {nonMember: true, memberSegment: 'status:free'}
-        }];
-
-        validTestCases.forEach(function (testCase) {
-            it(`should parse ${testCase.input} correctly`, function () {
-                testFn(testCase.input, testCase.output);
-            });
-        });
-
-        // we only support known keys and values with the correct types and allowed values
-        // we should also handle malformed input gracefully
-        const invalidTestCases = [{
-            input: 'unknownKey:true nonMember:false',
-            output: {nonMember: false}
-        }, {
-            input: 'nonMember:invalid',
-            output: {}
-        }, {
-            input: 'nonMember: memberSegment:"status:free"',
-            output: {memberSegment: 'status:free'}
-        }, {
-            input: 'memberSegment:"status:paid"',
-            output: {}
-        }, {
-            input: 'nonMember:memberSegment:"status:free"',
-            output: {}
-        }, {
-            input: 'memberSegment',
-            output: {}
-        }];
-
-        invalidTestCases.forEach(function (testCase) {
-            it(`should handle unexpected input ${testCase.input} correctly`, function () {
-                testFn(testCase.input, testCase.output);
-            });
-        });
-    });
-
-    describe('stripGatedBlocks', function () {
-        function stubCheckGatedBlockAccess(permitAccess) {
-            return sinon.stub(contentGatingService, 'checkGatedBlockAccess').returns(permitAccess);
-        }
-
-        it('handles content with no gated blocks', function () {
-            const checkGatedBlockAccessStub = stubCheckGatedBlockAccess(true);
-            const html = '<p>no gated blocks</p>';
-            const result = gating.stripGatedBlocks(html, {});
-            assert.equal(result, html);
-            sinon.assert.notCalled(checkGatedBlockAccessStub);
-        });
-
-        it('handles content with only a denied gated block', function () {
-            const checkGatedBlockAccessStub = stubCheckGatedBlockAccess(false);
-            const html = '<!--kg-gated-block:begin nonMember:false--><p>gated blocks</p><!--kg-gated-block:end-->';
-            const result = gating.stripGatedBlocks(html, {});
-            sinon.assert.calledWith(checkGatedBlockAccessStub, {nonMember: false}, {});
-            assert.equal(result, '');
-        });
-
-        it('handles content with only a permitted gated block', function () {
-            const checkGatedBlockAccessStub = stubCheckGatedBlockAccess(true);
-            const html = '<!--kg-gated-block:begin nonMember:true--><p>gated blocks</p><!--kg-gated-block:end-->';
-            const result = gating.stripGatedBlocks(html, {});
-            sinon.assert.calledWith(checkGatedBlockAccessStub, {nonMember: true}, {});
-            assert.equal(result, '<p>gated blocks</p>');
-        });
-
-        it('handles content with multiple permitted blocks', function () {
-            const checkGatedBlockAccessStub = stubCheckGatedBlockAccess(true);
-            const html = `
-                <!--kg-gated-block:begin nonMember:true--><p>gated block 1</p><!--kg-gated-block:end-->
-                <p>Non-gated block</p>
-                <!--kg-gated-block:begin nonMember:true--><p>gated block 2</p><!--kg-gated-block:end-->
-            `;
-            const result = gating.stripGatedBlocks(html, {});
-            sinon.assert.calledTwice(checkGatedBlockAccessStub);
-            assert.equal(result, `
-                <p>gated block 1</p>
-                <p>Non-gated block</p>
-                <p>gated block 2</p>
-            `);
-        });
-
-        it('handles mix of permitted and denied blocks', function () {
-            const checkGatedBlockAccessStub = sinon.stub(contentGatingService, 'checkGatedBlockAccess')
-                .onFirstCall().returns(false)
-                .onSecondCall().returns(true);
-            const html = `
-                <!--kg-gated-block:begin nonMember:true--><p>gated block 1</p><!--kg-gated-block:end-->
-                <p>Non-gated block</p>
-                <!--kg-gated-block:begin nonMember:false--><p>gated block 2</p><!--kg-gated-block:end-->
-            `;
-            const result = gating.stripGatedBlocks(html, null);
-            sinon.assert.calledTwice(checkGatedBlockAccessStub);
-            assert.equal(result.trim(), `
-                <p>Non-gated block</p>
-                <p>gated block 2</p>
-            `.trim());
-        });
-
-        it('handles malformed gated block comments', function () {
-            const checkGatedBlockAccessStub = stubCheckGatedBlockAccess(true);
-            const html = `
-                <!--kg-gated-block:begin-><p>malformed gated block 1</p><!--kg-gated-block:end-->
-                <p>Non-gated block</p>
-                <!--kg-gated-block:begin <p>malformed gated block 2</p>
-                <!--kg-gated-block:begin nonMember:true--><p>valid gated block</p><!--kg-gated-block:end-->
-            `;
-            const result = gating.stripGatedBlocks(html, null);
-            sinon.assert.calledOnce(checkGatedBlockAccessStub);
-            assert.equal(result.trim(), `
-                <!--kg-gated-block:begin-><p>malformed gated block 1</p><!--kg-gated-block:end-->
-                <p>Non-gated block</p>
-                <!--kg-gated-block:begin <p>malformed gated block 2</p>
-                <p>valid gated block</p>
-            `.trim());
         });
     });
 });
