@@ -123,7 +123,7 @@ export default class KpisComponent extends Component {
                                 break;
                             case 'bounce_rate':
                                 tooltipTitle = 'Bounce rate';
-                                displayValue = fparams[0].value[1] !== null && fparams[0].value[1].toFixed(2) + '%';
+                                displayValue = fparams[0].value[1] !== null && (fparams[0].value[1] * 100).toFixed(0) + '%';
                                 break;
                             default:
                                 tooltipTitle = 'Unique visits';
