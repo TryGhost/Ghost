@@ -47,6 +47,12 @@ Object {
   padding: 8px;
   line-height: 1.3em;
 }
+.kg-cta-link-accent .kg-cta-sponsor-label a {
+  color: #FF1A75 !important;
+}
+.kg-cta-link-accent .kg-cta-text a {
+  color: #FF1A75 !important;
+}
 .kg-audio-link {
   color: #73818c !important;
 }
@@ -772,6 +778,12 @@ Object {
   padding: 8px;
   line-height: 1.3em;
 }
+.kg-cta-link-accent .kg-cta-sponsor-label a {
+  color: #FF1A75 !important;
+}
+.kg-cta-link-accent .kg-cta-text a {
+  color: #FF1A75 !important;
+}
 .kg-audio-link {
   color: #73818c !important;
 }
@@ -1496,6 +1508,12 @@ Object {
   font-size: 15px;
   padding: 8px;
   line-height: 1.3em;
+}
+.kg-cta-link-accent .kg-cta-sponsor-label a {
+  color: #FF1A75 !important;
+}
+.kg-cta-link-accent .kg-cta-text a {
+  color: #FF1A75 !important;
 }
 .kg-audio-link {
   color: #73818c !important;
@@ -2756,6 +2774,12 @@ Object {
   font-size: 15px;
   padding: 8px;
   line-height: 1.3em;
+}
+.kg-cta-link-accent .kg-cta-sponsor-label a {
+  color: #FF1A75 !important;
+}
+.kg-cta-link-accent .kg-cta-text a {
+  color: #FF1A75 !important;
 }
 .kg-audio-link {
   color: #73818c !important;
