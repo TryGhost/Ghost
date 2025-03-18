@@ -111,10 +111,6 @@ export default class App extends React.Component {
         div.style.overflow = 'scroll'; // forcing scrollbar to appear
         document.body.appendChild(div);
 
-        // Create an inner div
-        // const inner = document.createElement('div');
-        document.body.appendChild(div);
-
         // Calculate the width difference
         const scrollbarWidth = div.offsetWidth - div.clientWidth;
 
