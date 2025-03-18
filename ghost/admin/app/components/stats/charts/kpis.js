@@ -62,7 +62,7 @@ export default class KpisComponent extends Component {
                     xAxis: {
                         type: 'time',
                         min: startDate.toISOString(),
-                        max: endDate.subtract(1, 'day').toISOString(),
+                        max: chartRange === 1 ? endDate.toISOString() : endDate.subtract(1, 'day').toISOString(),
                         boundaryGap: ['0%', '0%'],
                         axisLabel: {
                             formatter: chartRange <= 7 ? '{ee}' : '{d} {MMM}',
@@ -133,7 +133,8 @@ export default class KpisComponent extends Component {
                             if (!displayValue) {
                                 displayValue = 'N/A';
                             }
-                            return `<div><div class="gh-stats-tooltip-header">${moment(fparams[0].value[0]).format('D MMM YYYY')}</div><div class="gh-stats-tooltip-data"><span class="gh-stats-tooltip-marker" style="background: ${LINE_COLOR}"></span><span class="gh-stats-tooltip-label">${tooltipTitle}</span> <span class="gh-stats-tooltip-value">${displayValue}</span></div></div>`;
+                            const dateFormat = chartRange === 1 ? 'D MMM YYYY HH:mm' : 'D MMM YYYY';
+                            return `<div><div class="gh-stats-tooltip-header">${moment(fparams[0].value[0]).format(dateFormat)}</div><div class="gh-stats-tooltip-data"><span class="gh-stats-tooltip-marker" style="background: ${LINE_COLOR}"></span><span class="gh-stats-tooltip-label">${tooltipTitle}</span> <span class="gh-stats-tooltip-value">${displayValue}</span></div></div>`;
                         }
                     },
                     series: [
