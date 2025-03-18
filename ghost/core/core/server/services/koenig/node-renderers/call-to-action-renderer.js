@@ -2,6 +2,7 @@ import {addCreateDocumentOption} from '../../utils/add-create-document-option';
 import {renderWithVisibility} from '../../utils/visibility';
 import {getResizedImageDimensions} from '../../utils/get-resized-image-dimensions';
 import {isLocalContentImage} from '../../utils/is-local-content-image';
+import {buildCleanBasicHtmlForElement} from '../../utils/build-clean-basic-html-for-element';
 
 const showButton = dataset => dataset.showButton && dataset.buttonUrl && dataset.buttonText;
 
@@ -22,6 +23,7 @@ function ctaCardTemplate(dataset) {
     const buttonStyle = dataset.buttonColor === 'accent'
         ? `style="color: ${dataset.buttonTextColor};"`
         : `style="background-color: ${dataset.buttonColor}; color: ${dataset.buttonTextColor};"`;
+
     return `
         <div class="kg-card kg-cta-card kg-cta-bg-${dataset.backgroundColor} kg-cta-${dataset.layout} ${dataset.imageUrl ? 'kg-cta-has-img' : ''} ${dataset.linkColor === 'accent' ? 'kg-cta-link-accent' : ''}" data-layout="${dataset.layout}">
             ${dataset.hasSponsorLabel ? `
@@ -231,8 +233,15 @@ export function renderCallToActionNode(node, options = {}) {
         return renderWithVisibility({element: emailDiv.firstElementChild}, node.visibility, options);
     }
 
-    const htmlString = ctaCardTemplate(dataset);
     const element = document.createElement('div');
+
+    if (dataset.hasSponsorLabel) {
+        const cleanBasicHtml = buildCleanBasicHtmlForElement(element);
+        const cleanedHtml = cleanBasicHtml(dataset.sponsorLabel, {firstChildInnerContent: true});
+        dataset.sponsorLabel = cleanedHtml;
+    }
+    const htmlString = ctaCardTemplate(dataset);
+
     element.innerHTML = htmlString?.trim();
 
     return renderWithVisibility({element: element.firstElementChild}, node.visibility, options);
