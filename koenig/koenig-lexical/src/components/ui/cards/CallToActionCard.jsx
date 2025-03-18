@@ -382,7 +382,7 @@ export function CallToActionCard({
                             placeholderText="Write something worth clicking..."
                             textClassName={clsx(
                                 'koenig-lexical-cta-text w-full whitespace-normal text-pretty bg-transparent font-serif text-xl text-grey-900 dark:text-grey-200',
-                                alignment === 'center' && layout === 'immersive' ? 'text-center' : 'text-left'
+                                alignment === 'center' && layout === 'immersive' ? 'text-center [&:has(.placeholder)]:w-fit [&:has(.placeholder)]:text-left' : 'text-left'
                             )}
                         >
                             <ReplacementStringsPlugin />
