@@ -260,7 +260,8 @@ module.exports = function createSessionService({
             siteUrl: siteUrl,
             siteLogo: siteLogo,
             token: token,
-            deviceDetails: await getDeviceDetails(session.user_agent, session.ip)
+            deviceDetails: await getDeviceDetails(session.user_agent, session.ip),
+            is2FARequired: getSettingsCache('require_email_mfa')
         });
 
         try {
