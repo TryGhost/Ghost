@@ -88,6 +88,10 @@
     opacity: 0.85;
 }
 
+.kg-cta-link-accent .kg-cta-sponsor-label a {
+    color: var(--ghost-accent-color);
+}
+
 .kg-cta-content {
     display: flex;
     padding: 1.5em;
@@ -187,6 +191,10 @@
 .kg-cta-text a:hover {
     color: currentColor;
     opacity: 0.85;
+}
+
+.kg-cta-link-accent .kg-cta-text a {
+    color: var(--ghost-accent-color);
 }
 
 a.kg-cta-button {
