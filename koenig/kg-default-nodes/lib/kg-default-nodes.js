@@ -66,9 +66,11 @@ export * from './nodes/zwnj/ZWNJNode';
 // export utility functions that are useful in other packages or tests
 import * as visibilityUtils from './utils/visibility';
 import {generateDecoratorNode} from './generate-decorator-node.js';
+import {rgbToHex} from './utils/rgb-to-hex.js';
 export const utils = {
     generateDecoratorNode,
-    visibility: visibilityUtils
+    visibility: visibilityUtils,
+    rgbToHex
 };
 
 export const serializers = {

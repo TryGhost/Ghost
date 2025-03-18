@@ -1,4 +1,4 @@
-export function rgbToHex(rgb) {
+export const rgbToHex = (rgb) => {
     if (rgb === 'transparent') {
         return rgb;
     }
@@ -16,4 +16,4 @@ export function rgbToHex(rgb) {
     } catch (e) {
         return null;
     }
-}
+};
