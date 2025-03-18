@@ -363,6 +363,53 @@ test.describe('Call To Action Card', async () => {
         await expect(page.locator(firstChildSelector)).toHaveAttribute('data-cta-layout', 'minimal');
     });
 
+    test('alignment settings are hidden when layout is minimal', async function () {
+        await focusEditor(page);
+        await insertCard(page, {cardName: 'call-to-action'});
+        await page.getByTestId('tab-design').click();
+        
+        // Verify alignment settings are not visible by default (minimal layout)
+        await expect(page.getByTestId('left-align')).not.toBeVisible();
+        await expect(page.getByTestId('center-align')).not.toBeVisible();
+    });
+
+    test('alignment settings are visible when layout is immersive', async function () {
+        await focusEditor(page);
+        await insertCard(page, {cardName: 'call-to-action'});
+        await page.getByTestId('tab-design').click();
+        await page.click('[data-testid="immersive-layout"]');
+        
+        // Verify alignment settings are now visible
+        await expect(page.getByTestId('left-align')).toBeVisible();
+        await expect(page.getByTestId('center-align')).toBeVisible();
+
+        // Switch back to minimal layout and verify alignment settings are hidden
+        await page.click('[data-testid="minimal-layout"]');
+        await expect(page.getByTestId('left-align')).not.toBeVisible();
+        await expect(page.getByTestId('center-align')).not.toBeVisible();
+    });
+
+    test('can change text alignment in immersive layout', async function () {
+        await focusEditor(page);
+        await insertCard(page, {cardName: 'call-to-action'});
+        await page.click('[data-testid="cta-card-content-editor"]');
+        await page.keyboard.type('Test content for alignment');
+        await page.getByTestId('tab-design').click();
+        await page.click('[data-testid="immersive-layout"]');
+        
+        // Test left alignment (default)
+        const contentEditor = page.locator('[data-testid="cta-card-content-editor"]');
+        await expect(contentEditor).toHaveClass(/text-left/);
+        
+        // Test center alignment
+        await page.click('[data-testid="center-align"]');
+        await expect(contentEditor).toHaveClass(/text-center/);
+        
+        // Test switching back to left alignment
+        await page.click('[data-testid="left-align"]');
+        await expect(contentEditor).toHaveClass(/text-left/);
+    });
+
     test('can change background colors', async function () {
         const colors = [
             {testId: 'color-picker-none', expectedClass: 'bg-transparent border-transparent'},

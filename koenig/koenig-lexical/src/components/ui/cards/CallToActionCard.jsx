@@ -1,5 +1,7 @@
+import CenterAlignIcon from '../../../assets/icons/kg-align-center.svg?react';
 import ImmersiveLayoutIcon from '../../../assets/icons/kg-layout-immersive.svg?react';
 import KoenigNestedEditor from '../../KoenigNestedEditor.jsx';
+import LeftAlignIcon from '../../../assets/icons/kg-align-left.svg?react';
 import MinimalLayoutIcon from '../../../assets/icons/kg-layout-minimal.svg?react';
 import PropTypes from 'prop-types';
 import React, {useState} from 'react';
@@ -93,6 +95,7 @@ export const callToActionLinkColorPicker = [
 ];
 
 export function CallToActionCard({
+    alignment = 'left',
     buttonColor = '',
     buttonText = '',
     buttonTextColor = '',
@@ -114,6 +117,7 @@ export function CallToActionCard({
     onFileChange = () => {},
     onRemoveMedia = () => {},
     setFileInputRef = () => {},
+    updateAlignment = () => {},
     updateButtonText = () => {},
     updateButtonUrl = () => {},
     updateHasSponsorLabel = () => {},
@@ -140,14 +144,29 @@ export function CallToActionCard({
             name: 'minimal',
             Icon: MinimalLayoutIcon,
             dataTestId: 'minimal-layout',
-            ariaLabel: 'Left-aligned layout with small, square image'
+            ariaLabel: 'Small, square image'
         },
         {
-            label: 'Immersive',
+            label: 'Full',
             name: 'immersive',
             Icon: ImmersiveLayoutIcon,
             dataTestId: 'immersive-layout',
-            ariaLabel: 'Center-aligned layout with full-width image and button'
+            ariaLabel: 'Full-width image'
+        }
+    ];
+
+    const alignmentOptions = [
+        {
+            label: 'Left',
+            name: 'left',
+            Icon: LeftAlignIcon,
+            dataTestId: 'left-align'
+        },
+        {
+            label: 'Center',
+            name: 'center',
+            Icon: CenterAlignIcon,
+            dataTestId: 'center-align'
         }
     ];
 
@@ -217,11 +236,20 @@ export function CallToActionCard({
             {/* Layout settings */}
             <ButtonGroupSettingBeta
                 buttons={layoutOptions}
-                hasTooltip={false}
                 label='Layout'
                 selectedName={layout}
                 onClick={updateLayout}
             />
+            {layout === 'immersive' &&
+                <>
+                    <ButtonGroupSettingBeta
+                        buttons={alignmentOptions}
+                        label='Alignment'
+                        selectedName={alignment}
+                        onClick={updateAlignment}
+                    />
+                </>
+            }
             {/* Color picker */}
             <ColorOptionSettingBeta
                 buttons={callToActionColorPicker}
@@ -337,7 +365,10 @@ export function CallToActionCard({
                             />
                         </div>
                     )}
-                    <div className="flex flex-col gap-6">
+                    <div className={clsx(
+                        'flex flex-col gap-6', 
+                        layout === 'immersive' && alignment === 'center' ? 'items-center' : ''
+                    )}>
                         {/* HTML content */}
                         <KoenigNestedEditor
                             autoFocus={true}
@@ -349,25 +380,31 @@ export function CallToActionCard({
                             nodes='basic'
                             placeholderClassName={`bg-transparent whitespace-normal font-serif text-xl !text-grey-500 !dark:text-grey-800 `}
                             placeholderText="Write something worth clicking..."
-                            textClassName="koenig-lexical-cta-text w-full whitespace-normal text-pretty bg-transparent font-serif text-xl text-grey-900 dark:text-grey-200"
+                            textClassName={clsx(
+                                'koenig-lexical-cta-text w-full whitespace-normal text-pretty bg-transparent font-serif text-xl text-grey-900 dark:text-grey-200',
+                                alignment === 'center' && layout === 'immersive' ? 'text-center' : 'text-left'
+                            )}
                         >
                             <ReplacementStringsPlugin />
                         </KoenigNestedEditor>
 
                         {/* Button */}
                         { (showButton && (isEditing || (buttonText && buttonUrl))) &&
-                            <div data-test-cta-button-current-url={buttonUrl}>
+                            <div className={clsx(
+                                layout === 'immersive' && imageSrc ? 'w-full' : ''
+                            )} data-test-cta-button-current-url={buttonUrl}>
                                 <Button
                                     color={'accent'}
+                                    data-test-cta-button-current-url={buttonUrl}
                                     dataTestId="cta-button"
                                     placeholder="Add button text"
-                                    size={layout === 'immersive' ? 'medium' : 'small'}
+                                    size={layout === 'immersive' && imageSrc ? 'medium' : 'small'}
                                     style={buttonColor !== 'accent' ? {
                                         backgroundColor: buttonColor,
                                         color: buttonTextColor
                                     } : undefined}
                                     value={buttonText}
-                                    width={layout === 'immersive' ? 'full' : 'regular'}
+                                    width={layout === 'minimal' || !imageSrc ? 'regular' : 'full'}
                                 />
                             </div>
                         }
@@ -396,6 +433,7 @@ export function CallToActionCard({
 }
 
 CallToActionCard.propTypes = {
+    alignment: PropTypes.oneOf(['left', 'center']),
     buttonText: PropTypes.string,
     buttonUrl: PropTypes.string,
     buttonColor: PropTypes.string,
@@ -408,6 +446,7 @@ CallToActionCard.propTypes = {
     showButton: PropTypes.bool,
     htmlEditor: PropTypes.object,
     htmlEditorInitialState: PropTypes.object,
+    updateAlignment: PropTypes.func,
     updateButtonText: PropTypes.func,
     updateButtonUrl: PropTypes.func,
     updateHasSponsorLabel: PropTypes.func,

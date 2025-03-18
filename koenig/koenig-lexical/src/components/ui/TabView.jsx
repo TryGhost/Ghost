@@ -10,7 +10,7 @@ const TabView = ({tabs, defaultTab, tabContent}) => {
 
     return (
         <>
-            <div className={`no-scrollbar flex gap-3 border-b border-grey-300 dark:border-grey-900 ${tabs.length > 1 ? 'w-full px-6' : 'mx-6'}`}>
+            <div className={`no-scrollbar flex gap-4 border-b border-grey-300 dark:border-grey-900 ${tabs.length > 1 ? 'w-full px-6' : 'mx-6'}`}>
                 {tabs.map(tab => (
                     <button
                         key={tab.id}

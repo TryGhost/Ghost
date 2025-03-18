@@ -13,6 +13,7 @@ import {useVisibilityToggle} from '../hooks/useVisibilityToggle.js';
 
 export const CallToActionNodeComponent = ({
     nodeKey,
+    alignment,
     backgroundColor,
     buttonText,
     buttonUrl,
@@ -133,6 +134,13 @@ export const CallToActionNodeComponent = ({
         });
     };
 
+    const handleUpdatingAlignment = (val) => {
+        editor.update(() => {
+            const node = $getNodeByKey(nodeKey);
+            node.alignment = val;
+        });
+    };
+
     async function handleImageDrop(files) {
         await handleImageChange(files);
     }
@@ -144,6 +152,7 @@ export const CallToActionNodeComponent = ({
     return (
         <>
             <CallToActionCard
+                alignment={alignment}
                 buttonColor={buttonColor}
                 buttonText={buttonText}
                 buttonTextColor={buttonTextColor}
@@ -168,6 +177,7 @@ export const CallToActionNodeComponent = ({
                 sponsorLabelHtmlEditorInitialState={sponsorLabelHtmlEditorInitialState}
                 text={textValue}
                 toggleVisibility={toggleVisibility}
+                updateAlignment={handleUpdatingAlignment}
                 updateButtonText={handleButtonTextChange}
                 updateButtonUrl={handleButtonUrlChange}
                 updateHasSponsorLabel={handleHasSponsorLabelChange}

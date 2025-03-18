@@ -159,6 +159,7 @@ describe('CallToActionNode', function () {
 
             callToActionNodeDataset.should.deepEqual({
                 ...dataset,
+                alignment: 'left',
                 ...{visibility: utils.visibility.buildDefaultVisibility()}
             });
         }));
@@ -500,6 +501,7 @@ describe('CallToActionNode', function () {
                 showButton: true,
                 textValue: '<p><span style="white-space: pre-wrap;">This is a new CTA Card.</span></p>',
                 linkColor: 'text',
+                alignment: 'left',
                 visibility: {
                     web: {
                         nonMember: true,

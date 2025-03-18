@@ -8,6 +8,7 @@ export class CallToActionNode extends generateDecoratorNode({
     hasVisibility: true,
     properties: [
         {name: 'layout', default: 'minimal'},
+        {name: 'alignment', default: 'left'},
         {name: 'textValue', default: '', wordCount: true},
         {name: 'showButton', default: true},
         {name: 'buttonText', default: 'Learn more'},

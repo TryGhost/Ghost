@@ -10,6 +10,7 @@ export function parseCallToActionNode(CallToActionNode) {
                     conversion(domNode) {
                         const div = domNode;
                         const layout = div.getAttribute('data-layout') || 'minimal';
+                        const alignment = div.getAttribute('data-alignment') || 'left';
                         const textValueElement = domNode.querySelector('.kg-cta-text');
                         const buttonElement = domNode.querySelector('.kg-cta-button');
                         const buttonStyles = buttonElement?.style || {};
@@ -44,6 +45,7 @@ export function parseCallToActionNode(CallToActionNode) {
 
                         const payload = {
                             layout: layout,
+                            alignment: alignment,
                             textValue: textValueElement.textContent.trim() || '',
                             showButton: buttonElement ? true : false,
                             buttonText: buttonElement?.textContent.trim() || '',

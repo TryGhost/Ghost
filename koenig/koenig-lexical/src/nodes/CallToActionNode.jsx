@@ -96,6 +96,7 @@ export class CallToActionNode extends BaseCallToActionNode {
                 wrapperStyle={this.backgroundColor === 'none' ? 'wide' : 'regular'}
             >
                 <CallToActionNodeComponent
+                    alignment={this.alignment}
                     backgroundColor={this.backgroundColor}
                     buttonColor={this.buttonColor}
                     buttonText={this.buttonText}
