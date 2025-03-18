@@ -161,6 +161,15 @@ export function useLikeMutationForUser(handle: string) {
             updateLikedCache(queryClient, QUERY_KEYS.inbox, id, true);
             updateLikedCache(queryClient, QUERY_KEYS.postsByAccount, id, true);
             updateLikedCache(queryClient, QUERY_KEYS.postsLikedByAccount, id, true);
+
+            // Update account liked count
+            queryClient.setQueryData(QUERY_KEYS.account(handle), (currentAccount?: Account) => {
+                if (!currentAccount) return currentAccount;
+                return {
+                    ...currentAccount,
+                    likedCount: currentAccount.likedCount + 1
+                };
+            });
         }
     });
 }
@@ -180,6 +189,15 @@ export function useUnlikeMutationForUser(handle: string) {
             updateLikedCache(queryClient, QUERY_KEYS.inbox, id, false);
             updateLikedCache(queryClient, QUERY_KEYS.postsByAccount, id, false);
             updateLikedCache(queryClient, QUERY_KEYS.postsLikedByAccount, id, false);
+
+            // Update account liked count
+            queryClient.setQueryData(QUERY_KEYS.account(handle), (currentAccount?: Account) => {
+                if (!currentAccount) return currentAccount;
+                return {
+                    ...currentAccount,
+                    likedCount: Math.max(0, currentAccount.likedCount - 1)
+                };
+            });
         }
     });
 }
