@@ -27,7 +27,6 @@ class UrlService {
      * @param {Function} [options.cache.write] - write into cache by type
      */
     constructor({cache} = {}) {
-        this.utils = urlUtils;
         this.cache = cache;
         this.finished = false;
         this.urlGenerators = [];
@@ -233,22 +232,22 @@ class UrlService {
 
         if (obj) {
             if (options.absolute) {
-                return this.utils.createUrl(obj.url, options.absolute);
+                return urlUtils.createUrl(obj.url, options.absolute);
             }
 
             if (options.withSubdirectory) {
-                return this.utils.createUrl(obj.url, false, true);
+                return urlUtils.createUrl(obj.url, false, true);
             }
 
             return obj.url;
         }
 
         if (options.absolute) {
-            return this.utils.createUrl('/404/', options.absolute);
+            return urlUtils.createUrl('/404/', options.absolute);
         }
 
         if (options.withSubdirectory) {
-            return this.utils.createUrl('/404/', false);
+            return urlUtils.createUrl('/404/', false);
         }
 
         return '/404/';
