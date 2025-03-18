@@ -88,9 +88,8 @@ const QUERY_KEYS = {
 };
 
 function updateLikedCache(queryClient: QueryClient, queryKey: string[], id: string, liked: boolean) {
-    // Update like status and count in existing posts
     queryClient.setQueriesData(queryKey, (current?: {pages: {posts: Activity[]}[]}) => {
-        if (!current) {
+        if (current === undefined) {
             return current;
         }
 
@@ -105,11 +104,11 @@ function updateLikedCache(queryClient: QueryClient, queryKey: string[], id: stri
                                 ...item,
                                 object: {
                                     ...item.object,
-                                    liked,
-                                    likeCount: Math.max(liked ? item.object.likeCount + 1 : item.object.likeCount - 1, 0)
+                                    liked
                                 }
                             };
                         }
+
                         return item;
                     })
                 };
