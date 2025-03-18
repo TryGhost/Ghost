@@ -72,12 +72,20 @@
     text-wrap: pretty;
 }
 
-.kg-cta-sponsor-label p span:not(a span) {
+.kg-cta-sponsor-label span:not(a span) {
     color: color-mix(in srgb, currentColor 45%, transparent);
 }
 
-.kg-cta-sponsor-label a {
+.kg-cta-sponsor-label a,
+.kg-cta-sponsor-label a span {
     color: currentColor;
+    transition: opacity 0.15s ease-in-out;
+}
+
+.kg-cta-sponsor-label a:hover,
+.kg-cta-sponsor-label a:hover span {
+    color: currentColor;
+    opacity: 0.85;
 }
 
 .kg-cta-content {
@@ -173,6 +181,12 @@
 
 .kg-cta-text a {
     color: currentColor;
+    transition: opacity 0.15s ease-in-out;
+}
+
+.kg-cta-text a:hover {
+    color: currentColor;
+    opacity: 0.85;
 }
 
 a.kg-cta-button {
@@ -188,7 +202,7 @@ a.kg-cta-button {
     line-height: 1.65;
     text-decoration: none;
     border-radius: 6px;
-    transition: opacity 0.2s ease-in-out;
+    transition: opacity 0.15s ease-in-out;
 }
 
 a.kg-cta-button:hover {
