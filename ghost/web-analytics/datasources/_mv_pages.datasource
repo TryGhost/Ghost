@@ -1,4 +1,4 @@
-VERSION 0
+VERSION 1
 
 TAGS "v0"
 
@@ -13,7 +13,7 @@ SCHEMA >
     `location` String,
     `source` String,
     `pathname` String,
-    `member_status` AggregateFunction(maxIf, String, UInt8),
+    `member_status` SimpleAggregateFunction(max, String),
     `visits` AggregateFunction(uniq, String),
     `pageviews` AggregateFunction(count)
 
