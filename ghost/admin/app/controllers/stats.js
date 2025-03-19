@@ -2,7 +2,9 @@ import Controller from '@ember/controller';
 import countries from 'i18n-iso-countries';
 import enLocale from 'i18n-iso-countries/langs/en.json';
 import {AUDIENCE_TYPES, RANGE_OPTIONS} from 'ghost-admin/utils/stats';
+import {STATS_LABEL_MAPPINGS} from '../utils/stats';
 import {action} from '@ember/object';
+import {capitalizeFirstLetter} from '../helpers/capitalize-first-letter';
 import {tracked} from '@glimmer/tracking';
 
 countries.registerLocale(enLocale);
@@ -33,7 +35,6 @@ export default class StatsController extends Controller {
     @tracked audience = [];
     @tracked excludedAudiences = '';
     @tracked showStats = true;
-    @tracked locationHumanReadable = this.location ? (countries.getName(this.location, 'en') || 'Unknown') : null;
 
     @action
     onRangeChange(selected) {
@@ -82,7 +83,19 @@ export default class StatsController extends Controller {
         return this.rangeOptions.find(d => d.value === this.chartRange);
     }
 
-    get humanReadableLocation() {
-        return this.location ? (countries.getName(this.location, 'en') || 'Unknown') : null;
+    get formattedLocation() {
+        return STATS_LABEL_MAPPINGS[this.location] || countries.getName(this.location, 'en') || 'Unknown' || null;
+    }
+
+    get formattedDevice() {
+        return STATS_LABEL_MAPPINGS[this.device] || capitalizeFirstLetter(this.device);
+    }
+
+    get formattedSource() {
+        return STATS_LABEL_MAPPINGS[this.source] || this.source;
+    }
+
+    get formattedOs() {
+        return STATS_LABEL_MAPPINGS[this.os] || this.os;
     }
 }
