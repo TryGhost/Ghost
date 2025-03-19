@@ -117,7 +117,7 @@ export const statsStaticColors = [
 ];
 
 export const getCountryFlag = (countryCode) => {
-    if (!countryCode) {
+    if (!countryCode || countryCode === null || countryCode.toUpperCase() === 'ᴺᵁᴸᴸ') {
         return '🏳️';
     }
     return countryCode.toUpperCase().replace(/./g, char => String.fromCodePoint(char.charCodeAt(0) + 127397)
