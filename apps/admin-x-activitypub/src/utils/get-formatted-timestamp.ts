@@ -27,11 +27,17 @@ const getRelative = (date: Date): string => {
     const now = new Date();
     const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
-    if (seconds < 1) return `Just now`;
-    if (seconds < 60) return `${seconds}s`;
+    if (seconds < 1) {
+        return `Just now`;
+    }
+    if (seconds < 60) {
+        return `${seconds}s`;
+    }
 
     const minutes = Math.floor(seconds / 60);
-    if (minutes < 60) return `${minutes}m`;
+    if (minutes < 60) {
+        return `${minutes}m`;
+    }
 
     const hours = Math.floor(minutes / 60);
     return `${hours}h`;
@@ -40,7 +46,7 @@ const getRelative = (date: Date): string => {
 const formatAbsoluteDate = (date: Date): string => {
     const now = new Date();
     const day = date.getDate();
-    const month = date.toLocaleString('default', { month: 'short' }); // e.g., Mar
+    const month = date.toLocaleString('default', {month: 'short'}); // e.g., Mar
     const isCurrentYear = date.getFullYear() === now.getFullYear();
 
     return isCurrentYear ? `${day} ${month}` : `${day} ${month} ${date.getFullYear()}`;
