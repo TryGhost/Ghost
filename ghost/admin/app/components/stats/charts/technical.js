@@ -5,6 +5,7 @@ import React from 'react';
 import {DonutChart, useQuery} from '@tinybirdco/charts';
 import {STATS_LABEL_MAPPINGS, TB_VERSION, getStatsParams, statsStaticColors} from 'ghost-admin/utils/stats';
 import {action} from '@ember/object';
+import {capitalizeFirstLetter} from '../../../helpers/capitalize-first-letter';
 import {formatNumber} from 'ghost-admin/helpers/format-number';
 import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
@@ -67,7 +68,7 @@ export default class TechnicalComponent extends Component {
         });
 
         const transformedData = (data ?? []).map((item, index) => ({
-            name: STATS_LABEL_MAPPINGS[item[indexBy]] || item[indexBy].charAt(0).toUpperCase() + item[indexBy].slice(1),
+            name: item[indexBy],
             value: item.visits,
             color: colorPalette[index]
         }));
@@ -153,12 +154,12 @@ export default class TechnicalComponent extends Component {
                                         href="#"
                                         onClick={(e) => {
                                             e.preventDefault();
-                                            this.navigateToFilter(indexBy, item.name.toLowerCase());
+                                            this.navigateToFilter(indexBy, item.name);
                                         }}
                                         className="gh-stats-data-label"
                                     >
                                         <span style={{backgroundColor: item.color, display: 'inline-block', width: '10px', height: '10px', marginRight: '5px', borderRadius: '2px'}}></span>
-                                        {item.name}
+                                        {STATS_LABEL_MAPPINGS[item.name] || capitalizeFirstLetter(item.name)}
                                     </a>
                                 </td>
                                 <td><span className="gh-stats-data-value">{formatNumber(item.value)}</span></td>

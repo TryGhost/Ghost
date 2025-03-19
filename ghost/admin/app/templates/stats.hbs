@@ -36,7 +36,7 @@
             </div>
         </div>
 
-        {{#if (or this.device this.browser this.location this.source this.pathname)}}
+        {{#if (or this.device this.browser this.location this.source this.pathname this.os)}}
         <div class="gh-stats-filters">
             {{#if this.pathname}}
                 <div class="gh-stats-filter-pill">
@@ -46,25 +46,31 @@
 
             {{#if this.source}}
                 <div class="gh-stats-filter-pill">
-                    <div>Source is <span class="value">{{this.source}}</span></div>
+                    <div>Source is <span class="value">{{this.formattedSource}}</span></div>
                 </div>
             {{/if}}
 
             {{#if this.location}}
                 <div class="gh-stats-filter-pill">
-                    <div>Location is <span class="value">{{this.humanReadableLocation}}</span></div>
+                    <div>Location is <span class="value">{{this.formattedLocation}}</span></div>
                 </div>
             {{/if}}
 
             {{#if this.device}}
                 <div class="gh-stats-filter-pill">
-                    <div>Device is <span class="value">{{this.device}}</span></div>
+                    <div>Device is <span class="value">{{this.formattedDevice}}</span></div>
                 </div>
             {{/if}}
 
             {{#if this.browser}}
                 <div class="gh-stats-filter-pill">
                     <div>Browser is <span class="value">{{this.browser}}</span></div>
+                </div>
+            {{/if}}
+
+            {{#if this.os}}
+                <div class="gh-stats-filter-pill">
+                    <div>OS is <span class="value">{{this.formattedOs}}</span></div>
                 </div>
             {{/if}}
 
