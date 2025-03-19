@@ -182,7 +182,12 @@
 
 .kg-cta-text p {
     margin: 0;
+    line-height: 1.5em;
     text-wrap: pretty;
+}
+
+.kg-cta-bg-none .kg-cta-text p {
+    line-height: unset;
 }
 
 .kg-cta-immersive.kg-cta-centered .kg-cta-text {
