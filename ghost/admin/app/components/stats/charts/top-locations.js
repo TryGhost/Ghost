@@ -86,7 +86,7 @@ export default class TopLocations extends Component {
                                     e.preventDefault();
                                     this.navigateToFilter(label || 'Unknown');
                                 }}
-                                className="gh-stats-domain"
+                                className="gh-stats-bar-text"
                             >
                                 <span title={this.getCountryName(label) || 'Unknown'}>{getCountryFlag(label)} {this.getCountryName(label) || 'Unknown' || 'Unknown'}</span>
                             </a>
