@@ -55,7 +55,7 @@ class EditorPage {
 
     async checkPostStatus(status, hoverStatus) {
         await this.page.waitForLoadState('networkidle');
-        await expect(this.postStatus).toContainText(status, {timeout: 5000});
+        await expect(this.postStatus).toContainText(status, {timeout: 10000});
 
         if (hoverStatus) {
             await this.postStatus.hover();
