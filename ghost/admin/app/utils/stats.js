@@ -130,6 +130,20 @@ export function getDateRange(chartRange) {
     return {startDate, endDate};
 }
 
+export function formatVisitDuration(duration) {
+    if (duration === null || duration === 0) {
+        return '0m';
+    }
+
+    if (duration > 0 && duration < 60) {
+        return `${Math.floor(duration)}s`;
+    }
+
+    const minutes = Math.floor(duration / 60);
+    const seconds = Math.floor(duration % 60);
+    return `${minutes}m ${seconds}s`;
+}
+
 export function getStatsParams(config, props, additionalParams = {}) {
     const {chartRange, audience, device, browser, location, source, pathname, os} = props;
     const {startDate, endDate} = getDateRange(chartRange);
