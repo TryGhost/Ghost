@@ -9,6 +9,11 @@ const {expect} = require('@playwright/test');
 class EditorPage {
     constructor(page) {
         this.page = page;
+        this.titleInput = this.page.locator('[data-test-editor-title-input]');
+        this.editor = this.page.locator('[data-secondary-instance="false"] [data-lexical-editor]');
+        this.postStatus = this.page.locator('[data-test-editor-post-status]').first();
+        this.psmButton = this.page.locator('[data-test-editor-psm-trigger]');
+        this.breadcrumb = this.page.locator('[data-test-breadcrumb]');
     }
 
     async goto(type = 'post') {
@@ -22,25 +27,39 @@ class EditorPage {
         }
 
         // wait for editor to be ready
-        await expect(this.page.locator('[data-lexical-editor="true"]').first()).toBeVisible();
+        await expect(this.editor).toBeVisible();
     }
 
-    async focusBody() {
-        await this.page.locator('[data-secondary-instance="false"] [data-lexical-editor]').click();
+    async focusTitle() {
+        await this.titleInput.click();
     }
 
-    async typeInBody(text) {
-        await this.focusBody();
+    async blurTitle() {
+        await this.titleInput.blur();
+    }
+
+    async typeInTitle(text) {
+        await this.focusTitle();
+        await this.page.keyboard.type(text);
+        await this.blurTitle();
+    }
+
+    async focusEditor() {
+        await this.editor.click();
+    }
+
+    async typeInEditor(text) {
+        await this.focusEditor();
         await this.page.keyboard.type(text);
     }
 
     async checkPostStatus(status, hoverStatus) {
         await this.page.waitForLoadState('networkidle');
-        await expect(this.page.locator('[data-test-editor-post-status]').first()).toContainText(status, {timeout: 5000});
+        await expect(this.postStatus).toContainText(status, {timeout: 5000});
 
         if (hoverStatus) {
-            await this.page.locator('[data-test-editor-post-status]').first().hover();
-            await expect(this.page.locator('[data-test-editor-post-status]').first()).toContainText(hoverStatus, {timeout: 5000});
+            await this.postStatus.hover();
+            await expect(this.postStatus).toContainText(hoverStatus, {timeout: 5000});
         }
     }
 }
