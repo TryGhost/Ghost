@@ -6,6 +6,7 @@ import moment from 'moment-timezone';
 import {AreaChart, useQuery} from '@tinybirdco/charts';
 import {TB_VERSION, getDateRange, getStatsParams, statsStaticColors} from 'ghost-admin/utils/stats';
 import {formatNumber} from 'ghost-admin/helpers/format-number';
+import {formatVisitDuration} from '../../../utils/stats';
 import {hexToRgba} from 'ghost-admin/utils/stats';
 import {inject} from 'ghost-admin/decorators/inject';
 
@@ -96,7 +97,13 @@ export default class KpisComponent extends Component {
                             }
                         },
                         axisLabel: {
-                            show: true
+                            show: true,
+                            formatter: function (value) {
+                                if (CATEGORY === 'avg_session_sec') {
+                                    return formatVisitDuration(value);
+                                }
+                                return value;
+                            }
                         },
                         axisTick: {
                             show: false
@@ -119,7 +126,7 @@ export default class KpisComponent extends Component {
                             switch (CATEGORY) {
                             case 'avg_session_sec':
                                 tooltipTitle = 'Visit duration';
-                                displayValue = fparams[0].value[1] !== null && (fparams[0].value[1] / 60).toFixed(0) + ' min';
+                                displayValue = formatVisitDuration(fparams[0].value[1]);
                                 break;
                             case 'bounce_rate':
                                 tooltipTitle = 'Bounce rate';
