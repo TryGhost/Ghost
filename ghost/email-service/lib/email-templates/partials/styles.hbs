@@ -1054,6 +1054,10 @@ a[data-flickr-embed] img {
     color: #15212A;
 }
 
+.kg-cta-link-accent .kg-cta-sponsor-label a {
+    color: {{accentColor}} !important;
+}
+
 table.kg-cta-content-wrapper {
     padding: 24px 0;
 }
@@ -1101,6 +1105,10 @@ img.kg-cta-image {
     color: #15212A;
 }
 
+.kg-cta-link-accent .kg-cta-text a {
+    color: {{accentColor}} !important;
+}
+
 .post-content-sans-serif .kg-cta-text {
     font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
     font-size: 17px;
@@ -1114,12 +1122,22 @@ img.kg-cta-image {
     margin-bottom: 0;
 }
 
+.kg-cta-immersive.kg-cta-centered .kg-cta-text p {
+    text-align: center;
+}
+
 .kg-cta-button-container {
     padding-top: 20px;
 }
 
-.kg-cta-minimal table.kg-cta-button-wrapper {
+.kg-cta-minimal table.kg-cta-button-wrapper,
+.kg-cta-immersive:not(.kg-cta-has-img) .kg-cta-button-container table {
     width: unset !important;
+}
+
+.kg-cta-immersive.kg-cta-centered .kg-cta-button-container table {
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .kg-cta-minimal table.kg-cta-button-wrapper td {

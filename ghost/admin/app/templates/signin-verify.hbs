@@ -8,7 +8,6 @@
                 </header>
 
                 <p>
-                    We don't recognize this device.
                     To keep your account safe, we've sent a 6-digit verification code to your email to make sure it's you.
                 </p>
                 <GhFormGroup @errors={{this.verifyData.errors}} @hasValidated={{this.verifyData.hasValidated}} @property="token">
@@ -56,7 +55,7 @@
                     @type="submit"
                     @useAccentColor={{true}}
                     data-test-button="verify" />
-                
+
                 <p class="main-notification">Not receiving the emails? <a href="https://ghost.org/docs/config/#mail" target="_blank" rel="noopener noreferrer">Learn more</a></p>
             </form>
 
