@@ -100,10 +100,10 @@ export default class KpisOverview extends Component {
         const formattedBouceRate = (_ponderatedKPIsTotal('bounce_rate') * 100).toFixed(0);
 
         return {
-            avg_session_sec: isNaN(formattedVisitDurations) ? '0m' : formattedVisitDurations,
-            pageviews: formatNumber(_KPITotal('pageviews')),
-            visits: formatNumber(totalVisits),
-            bounce_rate: isNaN(formattedBouceRate) ? '0' : formattedBouceRate
+            avg_session_sec: isNaN(formattedVisitDurations) || formattedVisitDurations ? '0m' : formattedVisitDurations,
+            pageviews: formatNumber(_KPITotal('pageviews')) || '0',
+            visits: formatNumber(totalVisits) || '0',
+            bounce_rate: isNaN(formattedBouceRate) || !formattedBouceRate ? '0' : formattedBouceRate
         };
     }
 
