@@ -64,8 +64,6 @@ COPY apps/posts/package.json apps/posts/package.json
 COPY apps/shade/package.json apps/shade/package.json
 COPY apps/signup-form/package.json apps/signup-form/package.json
 COPY apps/sodo-search/package.json apps/sodo-search/package.json
-COPY ghost/activitypub/package.json ghost/activitypub/package.json
-COPY ghost/adapter-cache-memory-ttl/package.json ghost/adapter-cache-memory-ttl/package.json
 COPY ghost/adapter-cache-redis/package.json ghost/adapter-cache-redis/package.json
 COPY ghost/adapter-manager/package.json ghost/adapter-manager/package.json
 COPY ghost/admin/lib/asset-delivery/package.json ghost/admin/lib/asset-delivery/package.json
@@ -86,7 +84,6 @@ COPY ghost/custom-theme-settings-service/package.json ghost/custom-theme-setting
 COPY ghost/data-generator/package.json ghost/data-generator/package.json
 COPY ghost/domain-events/package.json ghost/domain-events/package.json
 COPY ghost/donations/package.json ghost/donations/package.json
-COPY ghost/dynamic-routing-events/package.json ghost/dynamic-routing-events/package.json
 COPY ghost/email-addresses/package.json ghost/email-addresses/package.json
 COPY ghost/email-analytics-provider-mailgun/package.json ghost/email-analytics-provider-mailgun/package.json
 COPY ghost/email-analytics-service/package.json ghost/email-analytics-service/package.json
@@ -95,7 +92,6 @@ COPY ghost/email-events/package.json ghost/email-events/package.json
 COPY ghost/email-service/package.json ghost/email-service/package.json
 COPY ghost/email-suppression-list/package.json ghost/email-suppression-list/package.json
 COPY ghost/express-dynamic-redirects/package.json ghost/express-dynamic-redirects/package.json
-COPY ghost/external-media-inliner/package.json ghost/external-media-inliner/package.json
 COPY ghost/extract-api-key/package.json ghost/extract-api-key/package.json
 COPY ghost/ghost/package.json ghost/ghost/package.json
 COPY ghost/html-to-plaintext/package.json ghost/html-to-plaintext/package.json
@@ -107,7 +103,6 @@ COPY ghost/in-memory-repository/package.json ghost/in-memory-repository/package.
 COPY ghost/job-manager/package.json ghost/job-manager/package.json
 COPY ghost/link-redirects/package.json ghost/link-redirects/package.json
 COPY ghost/link-replacer/package.json ghost/link-replacer/package.json
-COPY ghost/link-tracking/package.json ghost/link-tracking/package.json
 COPY ghost/magic-link/package.json ghost/magic-link/package.json
 COPY ghost/mail-events/package.json ghost/mail-events/package.json
 COPY ghost/mailgun-client/package.json ghost/mailgun-client/package.json
@@ -115,10 +110,8 @@ COPY ghost/member-attribution/package.json ghost/member-attribution/package.json
 COPY ghost/member-events/package.json ghost/member-events/package.json
 COPY ghost/members-api/package.json ghost/members-api/package.json
 COPY ghost/members-csv/package.json ghost/members-csv/package.json
-COPY ghost/members-events-service/package.json ghost/members-events-service/package.json
 COPY ghost/members-importer/package.json ghost/members-importer/package.json
 COPY ghost/members-ssr/package.json ghost/members-ssr/package.json
-COPY ghost/mentions-email-report/package.json ghost/mentions-email-report/package.json
 COPY ghost/milestones/package.json ghost/milestones/package.json
 COPY ghost/minifier/package.json ghost/minifier/package.json
 COPY ghost/mw-api-version-mismatch/package.json ghost/mw-api-version-mismatch/package.json
@@ -128,7 +121,6 @@ COPY ghost/mw-session-from-token/package.json ghost/mw-session-from-token/packag
 COPY ghost/mw-update-user-last-seen/package.json ghost/mw-update-user-last-seen/package.json
 COPY ghost/mw-version-match/package.json ghost/mw-version-match/package.json
 COPY ghost/mw-vhost/package.json ghost/mw-vhost/package.json
-COPY ghost/oembed-service/package.json ghost/oembed-service/package.json
 COPY ghost/offers/package.json ghost/offers/package.json
 COPY ghost/package-json/package.json ghost/package-json/package.json
 COPY ghost/payments/package.json ghost/payments/package.json
@@ -142,12 +134,8 @@ COPY ghost/security/package.json ghost/security/package.json
 COPY ghost/session-service/package.json ghost/session-service/package.json
 COPY ghost/settings-path-manager/package.json ghost/settings-path-manager/package.json
 COPY ghost/slack-notifications/package.json ghost/slack-notifications/package.json
-COPY ghost/staff-service/package.json ghost/staff-service/package.json
-COPY ghost/stats-service/package.json ghost/stats-service/package.json
 COPY ghost/stripe/package.json ghost/stripe/package.json
 COPY ghost/tiers/package.json ghost/tiers/package.json
-COPY ghost/update-check-service/package.json ghost/update-check-service/package.json
-COPY ghost/verification-trigger/package.json ghost/verification-trigger/package.json
 COPY ghost/version-notifications-data-service/package.json ghost/version-notifications-data-service/package.json
 COPY ghost/webmentions/package.json ghost/webmentions/package.json
 
