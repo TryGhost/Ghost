@@ -132,16 +132,25 @@ export function getDateRange(chartRange) {
 
 export function formatVisitDuration(duration) {
     if (duration === null || duration === 0) {
-        return '0m';
+        return '0s';
     }
 
-    if (duration > 0 && duration < 60) {
+    // Under a minute
+    if (duration < 60) {
         return `${Math.floor(duration)}s`;
     }
 
-    const minutes = Math.floor(duration / 60);
-    const seconds = Math.floor(duration % 60);
-    return `${minutes}m ${seconds}s`;
+    // Under an hour
+    if (duration < 3600) {
+        const minutes = Math.floor(duration / 60);
+        const seconds = Math.floor(duration % 60);
+        return `${minutes}m ${seconds}s`;
+    }
+
+    // Over an hour
+    const hours = Math.floor(duration / 3600);
+    const remainingMinutes = Math.floor((duration % 3600) / 60);
+    return `${hours}h ${remainingMinutes}m`;
 }
 
 export function getStatsParams(config, props, additionalParams = {}) {

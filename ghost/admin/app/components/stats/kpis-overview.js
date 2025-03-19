@@ -3,6 +3,7 @@ import fetch from 'fetch';
 import {TB_VERSION, getStatsParams} from 'ghost-admin/utils/stats';
 import {action} from '@ember/object';
 import {formatNumber} from 'ghost-admin/helpers/format-number';
+import {formatVisitDuration} from '../../utils/stats';
 import {inject} from 'ghost-admin/decorators/inject';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
@@ -96,7 +97,7 @@ export default class KpisOverview extends Component {
         const _ponderatedKPIsTotal = kpi => queryData.reduce((prev, curr) => prev + ((curr[kpi] ?? 0) * curr.visits / totalVisits), 0);
 
         return {
-            avg_session_sec: Math.floor(_ponderatedKPIsTotal('avg_session_sec') / 60),
+            avg_session_sec: formatVisitDuration(_ponderatedKPIsTotal('avg_session_sec')),
             pageviews: formatNumber(_KPITotal('pageviews')),
             visits: formatNumber(totalVisits),
             bounce_rate: (_ponderatedKPIsTotal('bounce_rate') * 100).toFixed(0)

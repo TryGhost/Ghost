@@ -22,7 +22,7 @@
         <button type="button" class="gh-stats-tab min-width {{if this.avgVisitTimeTabSelected 'is-selected'}}" {{on "click" this.changeTabToAvgVisitTime}}>
             <Stats::Parts::Metric
                 @label="Visit duration"
-                @value="{{this.totals.avg_session_sec}}m" />
+                @value={{this.totals.avg_session_sec}} />
         </button>
     </div>
     {{!-- <div class="gh-stats-kpi-granularity">

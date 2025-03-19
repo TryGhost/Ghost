@@ -97,7 +97,13 @@ export default class KpisComponent extends Component {
                             }
                         },
                         axisLabel: {
-                            show: true
+                            show: true,
+                            formatter: function (value) {
+                                if (CATEGORY === 'avg_session_sec') {
+                                    return formatVisitDuration(value);
+                                }
+                                return value;
+                            }
                         },
                         axisTick: {
                             show: false
