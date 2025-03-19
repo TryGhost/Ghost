@@ -34,9 +34,16 @@ export const AUDIENCE_TYPES = [
 ];
 
 export const STATS_LABEL_MAPPINGS = {
+    // Countries
+    US: 'United States',
+    TWN: 'Taiwan',
+
+    // Technical
     'mobile-ios': 'iOS',
     'mobile-android': 'Android',
     macos: 'macOS',
+
+    // Sources
     'google.com': 'Google',
     'ghost.org': 'Ghost',
     'bing.com': 'Bing',
