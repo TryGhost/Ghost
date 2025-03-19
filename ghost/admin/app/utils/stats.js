@@ -33,6 +33,25 @@ export const AUDIENCE_TYPES = [
     {name: 'Paid members', value: 'paid'}
 ];
 
+export const STATS_LABEL_MAPPINGS = {
+    // Countries
+    US: 'United States',
+    TWN: 'Taiwan',
+
+    // Technical
+    'mobile-ios': 'iOS',
+    'mobile-android': 'Android',
+    macos: 'macOS',
+
+    // Sources
+    'google.com': 'Google',
+    'ghost.org': 'Ghost',
+    'bing.com': 'Bing',
+    'bsky.app': 'Bluesky',
+    'yahoo.com': 'Yahoo',
+    'duckduckgo.com': 'DuckDuckGo'
+};
+
 export function hexToRgba(hex, alpha = 1) {
     const r = parseInt(hex.slice(1, 3), 16);
     const g = parseInt(hex.slice(3, 5), 16);

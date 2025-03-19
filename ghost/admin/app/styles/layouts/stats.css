@@ -40,7 +40,6 @@
     padding: 20px;
     border: 1px solid var(--whitegrey);
     border-radius: 8px;
-    overflow: hidden;
     transition: all ease-in-out 0.3s;
 }
 
@@ -145,7 +144,7 @@
 
 .gh-stats-metric-value {
     font-size: 21px;
-    letter-spacing: -0.05em;
+    letter-spacing: -0.02em;
     font-weight: 600;
     line-height: 1;
 }
