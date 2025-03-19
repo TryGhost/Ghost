@@ -3,7 +3,7 @@
 import Component from '@glimmer/component';
 import React from 'react';
 import {DonutChart, useQuery} from '@tinybirdco/charts';
-import {TB_VERSION, getStatsParams, statsStaticColors} from 'ghost-admin/utils/stats';
+import {STATS_LABEL_MAPPINGS, TB_VERSION, getStatsParams, statsStaticColors} from 'ghost-admin/utils/stats';
 import {action} from '@ember/object';
 import {formatNumber} from 'ghost-admin/helpers/format-number';
 import {inject} from 'ghost-admin/decorators/inject';
@@ -67,7 +67,7 @@ export default class TechnicalComponent extends Component {
         });
 
         const transformedData = (data ?? []).map((item, index) => ({
-            name: item[indexBy].charAt(0).toUpperCase() + item[indexBy].slice(1),
+            name: STATS_LABEL_MAPPINGS[item[indexBy]] || item[indexBy].charAt(0).toUpperCase() + item[indexBy].slice(1),
             value: item.visits,
             color: colorPalette[index]
         }));

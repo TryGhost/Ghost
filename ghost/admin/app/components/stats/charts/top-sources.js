@@ -5,6 +5,7 @@ import Component from '@glimmer/component';
 import React from 'react';
 import {BarList, useQuery} from '@tinybirdco/charts';
 import {CAMPAIGN_OPTIONS, TB_VERSION, barListColor, getStatsParams} from 'ghost-admin/utils/stats';
+import {STATS_LABEL_MAPPINGS} from '../../../utils/stats';
 import {action} from '@ember/object';
 import {formatNumber} from 'ghost-admin/helpers/format-number';
 import {inject} from 'ghost-admin/decorators/inject';
@@ -91,7 +92,7 @@ export default class TopSources extends Component {
                                     onError={(e) => {
                                         e.target.src = DEFAULT_ICON_URL;
                                     }} />
-                                <span title={label || 'Direct'}>{label || 'Direct'}</span>
+                                <span title={label || 'Direct'}>{STATS_LABEL_MAPPINGS[label] || label || 'Direct'}</span>
                             </a>
                         </span>
                     )
