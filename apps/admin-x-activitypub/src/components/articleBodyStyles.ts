@@ -553,11 +553,6 @@ unless a heading is the very first element in the post content */
     flex-direction: column;
     align-items: center;
     width: 100%;
-    position: relative; padding-top: 56.5%;
-}
-
-.kg-embed-card iframe {
-    position: absolute;width: 100%;height: 100%;left: 0px;top: 0px;
 }
 
 /* Gallery */
