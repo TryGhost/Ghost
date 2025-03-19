@@ -96,11 +96,14 @@ export default class KpisOverview extends Component {
         // Sum total KPI value from the trend, ponderating using sessions
         const _ponderatedKPIsTotal = kpi => queryData.reduce((prev, curr) => prev + ((curr[kpi] ?? 0) * curr.visits / totalVisits), 0);
 
+        const formattedVisitDurations = formatVisitDuration(_ponderatedKPIsTotal('avg_session_sec'));
+        const formattedBouceRate = (_ponderatedKPIsTotal('bounce_rate') * 100).toFixed(0);
+
         return {
-            avg_session_sec: formatVisitDuration(_ponderatedKPIsTotal('avg_session_sec')),
-            pageviews: formatNumber(_KPITotal('pageviews')),
-            visits: formatNumber(totalVisits),
-            bounce_rate: (_ponderatedKPIsTotal('bounce_rate') * 100).toFixed(0)
+            avg_session_sec: isNaN(formattedVisitDurations) || formattedVisitDurations ? '0m' : formattedVisitDurations,
+            pageviews: formatNumber(_KPITotal('pageviews')) || '0',
+            visits: formatNumber(totalVisits) || '0',
+            bounce_rate: isNaN(formattedBouceRate) || !formattedBouceRate ? '0' : formattedBouceRate
         };
     }
 
