@@ -98,7 +98,7 @@ SQL >
                         case
                             when match(user_agent, 'windows')
                             then 'windows'
-                            when match(user_agent, 'macintosh|mac os x')
+                            when match(user_agent, 'mac')
                             then 'macos'
                             when match(user_agent, 'linux')
                             then 'linux'
