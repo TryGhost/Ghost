@@ -577,7 +577,7 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
             await initAppService();
         }
 
-        await initServices({config});
+        await initServices();
 
         // Gate the NestJS framework behind an env var to prevent it from being loaded (and slowing down boot)
         // If we ever ship the new framework, we can remove this
