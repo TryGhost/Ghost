@@ -1,10 +1,8 @@
 const assert = require('assert/strict');
 const sinon = require('sinon');
 const contentGatingService = require('../../../../../core/server/services/content-gating');
-const accessChecks = require('../../../../../core/server/services/content-gating/access-checks');
-const gatedBlocks = require('../../../../../core/server/services/content-gating/gated-blocks');
 
-describe('Content gating service', function () {
+describe('Unit: Content gating service', function () {
     afterEach(function () {
         sinon.restore();
     });
@@ -118,16 +116,6 @@ describe('Content gating service', function () {
 
         it('handles unknown segment keys', function () {
             testCheckGatedBlockAccess({params: {memberSegment: 'unknown:free'}, member: {status: 'free'}, expectedAccess: false});
-        });
-    });
-
-    describe('removeGatedBlocksFromHtml', function () {
-        it('calls gatedBlocks.removeGatedBlocksFromHtml with correct arguments', function () {
-            const removeGatedBlocksFromHtmlStub = sinon.stub(gatedBlocks, 'removeGatedBlocksFromHtml');
-            const html = '<p>test</p>';
-            const member = {status: 'paid'};
-            contentGatingService.removeGatedBlocksFromHtml(html, member);
-            sinon.assert.calledWith(removeGatedBlocksFromHtmlStub, html, member, accessChecks.checkGatedBlockAccess);
         });
     });
 });

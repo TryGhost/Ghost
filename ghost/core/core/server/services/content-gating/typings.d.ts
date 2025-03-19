@@ -1,11 +1,12 @@
 export type AccessFlag = boolean;
 
 export interface GatedPost {
-    visibility: string;
-    tiers?: GatedTier[];
+    access?: boolean;
+    excerpt?: string;
     html?: string;
     plaintext?: string;
-    excerpt?: string;
+    tiers?: GatedTier[];
+    visibility: string;
 }
 
 interface GatedTier {
@@ -13,7 +14,7 @@ interface GatedTier {
 }
 
 export interface GatedMember {
-    status?: string
+    status?: 'free' | 'paid' | 'comped'
 }
 
 interface LabsService {
@@ -23,4 +24,9 @@ interface LabsService {
 export interface GatedBlockParams {
     nonMember?: boolean;
     memberSegment?: '' | 'status:free,status:-free' | 'status:free' | 'status:-free';
+}
+
+export type GatePostAttrsOptions = {
+    addAccessAttr?: boolean;
+    labs?: LabsService;
 }

@@ -1,4 +1,5 @@
 const {PERMIT_ACCESS} = require('./constants');
+const accessChecks = require('./access-checks');
 
 // NOTE: regexes defined as consts to avoid recompiling them on every function call
 
@@ -95,14 +96,12 @@ module.exports.parseGatedBlockParams = function parseGatedBlockParams(paramsStri
  *
  * @param {string} html
  * @param {GatedMember} member
- * @param {*} checkGatedBlockAccess
  * @returns
  */
-// TODO: move post attr updating to a content-gating service method, pass the check function into this function
-module.exports.removeGatedBlocksFromHtml = function removeGatedBlocksFromHtml(html, member, checkGatedBlockAccess) {
+module.exports.removeGatedBlocksFromHtml = function removeGatedBlocksFromHtml(html, member) {
     return html.replace(GATED_BLOCK_REGEX, (match, params, content) => {
         const gatedBlockParams = module.exports.parseGatedBlockParams(params);
-        const checkResult = checkGatedBlockAccess(gatedBlockParams, member);
+        const checkResult = accessChecks.checkGatedBlockAccess(gatedBlockParams, member);
 
         if (checkResult === PERMIT_ACCESS) {
             // return content rather than match to avoid rendering gated block wrapping comments

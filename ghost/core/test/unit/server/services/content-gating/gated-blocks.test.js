@@ -1,15 +1,17 @@
 const assert = require('assert/strict');
 const sinon = require('sinon');
-const {parseGatedBlockParams, removeGatedBlocksFromHtml} = require('../../../../../core/server/services/content-gating/gated-blocks');
+const accessChecks = require('../../../../../core/server/services/content-gating/access-checks');
+const gatedBlocks = require('../../../../../core/server/services/content-gating/gated-blocks');
+const contentGatingService = require('../../../../../core/server/services/content-gating');
 
-describe('Content gating service', function () {
+describe('Unit: Content gating service', function () {
     afterEach(function () {
         sinon.restore();
     });
 
     describe('parseGatedBlockParams', function () {
         function testFn(input, expected) {
-            const params = parseGatedBlockParams(input);
+            const params = gatedBlocks.parseGatedBlockParams(input);
             assert.deepEqual(params, expected);
         }
 
@@ -78,38 +80,40 @@ describe('Content gating service', function () {
     });
 
     describe('removeGatedBlocksFromHtml', function () {
+        const removeGatedBlocksFromHtml = contentGatingService.removeGatedBlocksFromHtml;
+
         it('handles content with no gated blocks', function () {
-            const checkGatedBlockAccessStub = sinon.stub().returns(true);
+            const checkGatedBlockAccessStub = sinon.stub(accessChecks, 'checkGatedBlockAccess').returns(true);
             const html = '<p>no gated blocks</p>';
-            const result = removeGatedBlocksFromHtml(html, {}, checkGatedBlockAccessStub);
+            const result = removeGatedBlocksFromHtml(html, {});
             assert.equal(result, html);
             sinon.assert.notCalled(checkGatedBlockAccessStub);
         });
 
         it('handles content with only a denied gated block', function () {
-            const checkGatedBlockAccessStub = sinon.stub().returns(false);
+            const checkGatedBlockAccessStub = sinon.stub(accessChecks, 'checkGatedBlockAccess').returns(false);
             const html = '<!--kg-gated-block:begin nonMember:false--><p>gated blocks</p><!--kg-gated-block:end-->';
-            const result = removeGatedBlocksFromHtml(html, {}, checkGatedBlockAccessStub);
+            const result = removeGatedBlocksFromHtml(html, {});
             sinon.assert.calledWith(checkGatedBlockAccessStub, {nonMember: false}, {});
             assert.equal(result, '');
         });
 
         it('handles content with only a permitted gated block', function () {
-            const checkGatedBlockAccessStub = sinon.stub().returns(true);
+            const checkGatedBlockAccessStub = sinon.stub(accessChecks, 'checkGatedBlockAccess').returns(true);
             const html = '<!--kg-gated-block:begin nonMember:true--><p>gated blocks</p><!--kg-gated-block:end-->';
-            const result = removeGatedBlocksFromHtml(html, {}, checkGatedBlockAccessStub);
+            const result = removeGatedBlocksFromHtml(html, {});
             sinon.assert.calledWith(checkGatedBlockAccessStub, {nonMember: true}, {});
             assert.equal(result, '<p>gated blocks</p>');
         });
 
         it('handles content with multiple permitted blocks', function () {
-            const checkGatedBlockAccessStub = sinon.stub().returns(true);
+            const checkGatedBlockAccessStub = sinon.stub(accessChecks, 'checkGatedBlockAccess').returns(true);
             const html = `
                     <!--kg-gated-block:begin nonMember:true--><p>gated block 1</p><!--kg-gated-block:end-->
                     <p>Non-gated block</p>
                     <!--kg-gated-block:begin nonMember:true--><p>gated block 2</p><!--kg-gated-block:end-->
                 `;
-            const result = removeGatedBlocksFromHtml(html, {}, checkGatedBlockAccessStub);
+            const result = removeGatedBlocksFromHtml(html, {});
             sinon.assert.calledTwice(checkGatedBlockAccessStub);
             assert.equal(result, `
                     <p>gated block 1</p>
@@ -119,7 +123,7 @@ describe('Content gating service', function () {
         });
 
         it('handles mix of permitted and denied blocks', function () {
-            const checkGatedBlockAccessStub = sinon.stub()
+            const checkGatedBlockAccessStub = sinon.stub(accessChecks, 'checkGatedBlockAccess')
                 .onFirstCall().returns(false)
                 .onSecondCall().returns(true);
             const html = `
@@ -127,7 +131,7 @@ describe('Content gating service', function () {
                     <p>Non-gated block</p>
                     <!--kg-gated-block:begin nonMember:false--><p>gated block 2</p><!--kg-gated-block:end-->
                 `;
-            const result = removeGatedBlocksFromHtml(html, null, checkGatedBlockAccessStub);
+            const result = removeGatedBlocksFromHtml(html, null);
             sinon.assert.calledTwice(checkGatedBlockAccessStub);
             assert.equal(result.trim(), `
                     <p>Non-gated block</p>
@@ -136,14 +140,14 @@ describe('Content gating service', function () {
         });
 
         it('handles malformed gated block comments', function () {
-            const checkGatedBlockAccessStub = sinon.stub().returns(true);
+            const checkGatedBlockAccessStub = sinon.stub(accessChecks, 'checkGatedBlockAccess').returns(true);
             const html = `
                     <!--kg-gated-block:begin-><p>malformed gated block 1</p><!--kg-gated-block:end-->
                     <p>Non-gated block</p>
                     <!--kg-gated-block:begin <p>malformed gated block 2</p>
                     <!--kg-gated-block:begin nonMember:true--><p>valid gated block</p><!--kg-gated-block:end-->
                 `;
-            const result = removeGatedBlocksFromHtml(html, null, checkGatedBlockAccessStub);
+            const result = removeGatedBlocksFromHtml(html, null);
             sinon.assert.calledOnce(checkGatedBlockAccessStub);
             assert.equal(result.trim(), `
                     <!--kg-gated-block:begin-><p>malformed gated block 1</p><!--kg-gated-block:end-->

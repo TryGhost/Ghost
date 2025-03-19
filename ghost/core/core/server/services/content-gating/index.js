@@ -1,11 +1,7 @@
 const {PERMIT_ACCESS, BLOCK_ACCESS} = require('./constants');
 const accessChecks = require('./access-checks');
 const gatedBlocks = require('./gated-blocks');
-
-/**
- * @typedef {import ('./typings').GatedPost} GatedPost
- * @typedef {import ('./typings').GatedMember} GatedMember
- */
+const attrGating = require('./attr-gating');
 
 module.exports = {
     PERMIT_ACCESS,
@@ -13,8 +9,6 @@ module.exports = {
     checkPostAccess: accessChecks.checkPostAccess,
     checkGatedBlockAccess: accessChecks.checkGatedBlockAccess,
     htmlHasGatedBlocks: gatedBlocks.htmlHasGatedBlocks,
-    // avoid circular require dependency by using "DI" for checkGatedBlockAccess
-    removeGatedBlocksFromHtml: (html, member) => {
-        return gatedBlocks.removeGatedBlocksFromHtml(html, member, accessChecks.checkGatedBlockAccess);
-    }
+    removeGatedBlocksFromHtml: gatedBlocks.removeGatedBlocksFromHtml,
+    gatePostAttrs: attrGating.gatePostAttrs
 };
