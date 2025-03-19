@@ -3,6 +3,7 @@ import {blur, click, currentURL, fillIn, find, waitFor, waitUntil} from '@ember/
 import {enableLabsFlag} from '../../helpers/labs-flag';
 import {expect} from 'chai';
 import {invalidateSession} from 'ember-simple-auth/test-support';
+import {pasteInEditor} from '../../helpers/editor';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
 import {visit} from '../../helpers/visit';
@@ -74,8 +75,20 @@ describe('Acceptance: Lexical editor', function () {
             expect(currentURL(), 'currentURL').to.equal(`/editor/post/1`);
         });
 
-        // TODO: requires editor to be loading
-        it('saves on content change');
+        it('saves on content change', async function () {
+            await visit('/editor/post/');
+
+            await waitFor('[data-secondary-instance="false"] [data-lexical-editor]');
+
+            await click('[data-secondary-instance="false"] [data-lexical-editor]');
+            await pasteInEditor('Test content');
+
+            await waitUntil(function () {
+                return find('[data-test-editor-post-status]').textContent.includes('Saved');
+            }, {timeoutMessage: 'Timed out waiting for "Saved" status'});
+
+            expect(currentURL(), 'currentURL').to.equal(`/editor/post/1`);
+        });
     });
 
     describe('with existing post', function () {
