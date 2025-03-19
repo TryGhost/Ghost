@@ -1,4 +1,4 @@
-VERSION 0
+VERSION 1
 
 TAGS "v0"
 
@@ -18,7 +18,7 @@ SQL >
             SELECT
                 session_id,
                 argMin(source, timestamp) AS source,
-                maxIfState(member_status, member_status IN ('paid', 'free', 'undefined')) AS member_status
+                maxSimpleState(member_status) AS member_status
             FROM hits
             GROUP BY session_id
         )

@@ -1,6 +1,6 @@
 import moment from 'moment-timezone';
 
-export const TB_VERSION = 0;
+export const TB_VERSION = 1;
 
 export const RANGE_OPTIONS = [
     {name: 'Last 24 hours', value: 1},
@@ -184,7 +184,7 @@ export function getStatsParams(config, props, additionalParams = {}) {
     };
 
     if (audience.length > 0) {
-        params.member_status = audience;
+        params.member_status = audience.join(',');
     }
 
     if (device) {
