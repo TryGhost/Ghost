@@ -35,6 +35,11 @@
                     {{/let}}
                 </div>
                 <div style="display: flex; gap: 8px;">
+                    {{#if (and (gh-user-can-admin this.session.user) this.config.stats)}}
+                    <LinkTo class="gh-btn gh-btn-icon" @route="stats" @query={{hash pathname=(concat "/" this.post.slug "/")}}>
+                        <span>{{svg-jar "stats" title="Post traffic stats"}} Traffic stats</span>
+                    </LinkTo>
+                    {{/if}}
                     <GhTaskButton
                         @buttonText="Refresh"
                         @task={{this.fetchPostTask}}
