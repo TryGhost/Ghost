@@ -139,12 +139,12 @@
 
 .gh-stats-metric-label {
     font-weight: 600;
-    font-size: 16px;
+    font-size: 15px;
     margin-bottom: 0;
 }
 
 .gh-stats-metric-value {
-    font-size: 26px;
+    font-size: 21px;
     letter-spacing: -0.05em;
     font-weight: 600;
     line-height: 1;
