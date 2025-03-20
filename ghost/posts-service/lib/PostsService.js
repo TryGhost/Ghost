@@ -21,7 +21,8 @@ const messages = {
     invalidTags: 'Invalid tags value.',
     invalidEmailSegment: 'The email segment parameter doesn\'t contain a valid filter',
     unsupportedBulkAction: 'Unsupported bulk action',
-    postNotFound: 'Post not found.'
+    postNotFound: 'Post not found.',
+    pageNotFound: 'Page not found.'
 };
 
 class PostsService {
@@ -36,24 +37,53 @@ class PostsService {
 
     /**
      *
-     * @param {Object} options - frame options
+     * @param {Object} frame
+     * @param {Object} frame.options
      * @returns {Promise<Object>}
      */
-    async browsePosts(options) {
-        const posts = await this.models.Post.findPage(options);
-        return posts;
+    async browsePosts({options}) {
+        const {data: models, meta} = await this.models.Post.findPage(options);
+
+        const posts = [];
+        for (const postModel of models) {
+            posts.push(this.serializePostModel(postModel, {options}));
+        }
+
+        return {
+            posts,
+            meta
+        };
     }
 
-    async readPost(frame) {
-        const model = await this.models.Post.findOne(frame.data, frame.options);
+    /**
+     *
+     * @param {Object} frame - frame object
+     * @param {Object} frame.data
+     * @param {Object} frame.options
+     * @returns {Promise<Object>}
+     */
+    async readPost({data, options}) {
+        const model = await this.models.Post.findOne(data, options);
 
         if (!model) {
+            const isPageRequest = options?.filter?.includes('type:page') || false;
             throw new errors.NotFoundError({
-                message: tpl(messages.postNotFound)
+                message: tpl(isPageRequest ? messages.pageNotFound : messages.postNotFound)
             });
         }
 
-        return model.toJSON(frame.options);
+        return this.serializePostModel(model, {options});
+    }
+
+    serializePostModel(model, {options}) {
+        const postAttrs = model.toJSON(options);
+
+        // re-add id in case it's been excluded by toJSON due to fields/columns options,
+        // otherwise URL lookups will fail in the posts output serializer mapper
+        // TODO: can Post.toJSON be changed to always include id?
+        postAttrs.id = model.id;
+
+        return postAttrs;
     }
 
     /**

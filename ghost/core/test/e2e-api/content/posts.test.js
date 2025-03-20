@@ -5,9 +5,10 @@ const testUtils = require('../../utils');
 const models = require('../../../core/server/models');
 
 const {agentProvider, fixtureManager, matchers, mockManager} = require('../../utils/e2e-framework');
-const {anyArray, anyContentVersion, anyErrorId, anyEtag, anyUuid, anyISODateTimeWithTZ} = matchers;
+const {anyArray, anyContentVersion, anyErrorId, anyEtag, anyObjectId, anyUuid, anyISODateTimeWithTZ} = matchers;
 
 const postMatcher = {
+    id: anyObjectId,
     published_at: anyISODateTimeWithTZ,
     created_at: anyISODateTimeWithTZ,
     updated_at: anyISODateTimeWithTZ,
@@ -380,14 +381,22 @@ describe('Posts Content API', function () {
         await agent
             .get(`posts/?fields=excerpt`)
             .expectStatus(200)
-            .matchBodySnapshot();
+            .matchBodySnapshot({
+                posts: new Array(15).fill({
+                    id: anyObjectId
+                })
+            });
     });
 
     it('Can use post plaintext as field', async function () {
         await agent
             .get(`posts/?fields=plaintext`)
             .expectStatus(200)
-            .matchBodySnapshot();
+            .matchBodySnapshot({
+                posts: new Array(15).fill({
+                    id: anyObjectId
+                })
+            });
     });
 
     it('Adds ?ref tags', async function () {
