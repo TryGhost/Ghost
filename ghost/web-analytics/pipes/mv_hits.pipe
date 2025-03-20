@@ -19,7 +19,7 @@ SQL >
         toString(payload.post_type) as post_type,
         lower(toString(getSubcolumn(payload,'user-agent'))) as user_agent
     FROM analytics_events
-    where action = 'page_hit' 
+    where action = 'page_hit'
 
 
 
