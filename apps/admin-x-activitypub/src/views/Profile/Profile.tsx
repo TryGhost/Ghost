@@ -98,7 +98,7 @@ const useInfiniteScrollTab = <TData,>({useDataHook, emptyStateLabel, emptyStateI
                         <ul>
                             {placeholderPosts.map((activity, index) => (
                                 <li
-                                    key={activity.id}
+                                    key={`loading-${activity.id}`}
                                     className=''
                                     data-test-view-article
                                 >
@@ -171,7 +171,7 @@ const PostsTab: React.FC = () => {
             <ul className='mx-auto flex max-w-[640px] flex-col'>
                 {posts.map((activity, index) => (
                     <li
-                        key={activity.id}
+                        key={`posts-${activity.id}`}
                         data-test-view-article
                     >
                         <FeedItem
@@ -251,7 +251,7 @@ const LikesTab: React.FC = () => {
             <ul className='mx-auto flex max-w-[640px] flex-col'>
                 {posts.map((activity, index) => (
                     <li
-                        key={activity.id}
+                        key={`likes-${activity.id}`}
                         data-test-view-article
                     >
                         <FeedItem
