@@ -41,8 +41,23 @@ class PostsService {
      * @returns {Promise<Object>}
      */
     async browsePosts(options) {
-        const posts = await this.models.Post.findPage(options);
-        return posts;
+        const {data: models, meta} = await this.models.Post.findPage(options);
+
+        const posts = [];
+        for (const postModel of models) {
+            const post = postModel.toJSON(options);
+
+            // re-add id in case it's been excluded by toJSON due to fields/columns options,
+            // otherwise URL lookups will fail in the posts output serializer mapper
+            post.id = postModel.id;
+
+            posts.push(post);
+        }
+
+        return {
+            posts,
+            meta
+        };
     }
 
     async readPost(frame) {
