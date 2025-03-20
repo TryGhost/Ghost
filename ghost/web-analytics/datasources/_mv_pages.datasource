@@ -1,5 +1,4 @@
 VERSION 2
-
 TAGS "v0"
 
 SCHEMA >
@@ -17,6 +16,6 @@ SCHEMA >
     `visits` AggregateFunction(uniq, String),
     `pageviews` AggregateFunction(count)
 
-ENGINE AggregatingMergeTree
-ENGINE_PARTITION_KEY toYYYYMM(date)
-ENGINE_SORTING_KEY site_uuid, date, device, os, browser, location, source, pathname, post_type, post_uuid
+ENGINE "AggregatingMergeTree"
+ENGINE_PARTITION_KEY "toYYYYMM(date)"
+ENGINE_SORTING_KEY "site_uuid, date, device, os, browser, location, source, pathname, post_type, post_uuid"

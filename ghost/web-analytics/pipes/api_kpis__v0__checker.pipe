@@ -1,6 +1,3 @@
-VERSION 2
-TAGS "v0"
-
 NODE parsed_hits
 SQL >
 
@@ -116,19 +113,6 @@ SQL >
                             location,
                             domainWithoutWWW(referrer) as source,
                             pathname,
-                            case
-                                when match(user_agent, 'windows')
-                                then 'windows'
-                                when match(user_agent, 'mac')
-                                then 'macos'
-                                when match(user_agent, 'linux')
-                                then 'linux'
-                                when match(user_agent, 'android')
-                                then 'android'
-                                when match(user_agent, 'iphone|ipad|ipod')
-                                then 'ios'
-                                else 'Unknown'
-                            END as os,
                             uniq(session_id) as visits,
                             count() as pageviews,
                             case when min(timestamp) = max(timestamp) then 1 else 0 end as is_bounce,
@@ -136,7 +120,7 @@ SQL >
                             min(timestamp) as first_view_aux
                         from parsed_hits
                         where toDate(timestamp) = {{ Date(date_from) }}
-                        group by toStartOfHour(timestamp), session_id, site_uuid, member_status, device, browser, location, source, pathname, os
+                        group by toStartOfHour(timestamp), session_id, site_uuid, member_status, device, browser, location, source, pathname
                     {% else %}
                         select
                             site_uuid,
@@ -147,7 +131,6 @@ SQL >
                             location,
                             source,
                             pathname,
-                            os,
                             session_id,
                             uniq(session_id) as visits,
                             countMerge(pageviews) as pageviews,
@@ -162,7 +145,7 @@ SQL >
                             {% if defined(date_to) %} and date <= {{ Date(date_to) }}
                             {% else %} and date <= today()
                             {% end %}
-                        group by date, session_id, site_uuid, member_status, device, browser, location, source, pathname, os
+                        group by date, session_id, site_uuid, member_status, device, browser, location, source, pathname
                     {% end %}
 
 
