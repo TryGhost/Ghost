@@ -319,6 +319,14 @@
         "blocked_email_domains": {
             "defaultValue": "[]",
             "type": "array"
+        },
+        "captcha_enabled": {
+            "defaultValue": "false",
+            "validations": {
+                "isEmpty": false,
+                "isIn": [["true", "false"]]
+            },
+            "type": "boolean"
         }
     },
     "portal": {
@@ -593,6 +601,12 @@
                 "isEmpty": false,
                 "isIn": [["true", "false"]]
             },
+            "type": "boolean"
+        }
+    },
+    "security": {
+        "require_email_mfa": {
+            "defaultValue": false,
             "type": "boolean"
         }
     }

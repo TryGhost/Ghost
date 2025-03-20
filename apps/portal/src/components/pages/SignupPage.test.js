@@ -1,9 +1,6 @@
-import {vi} from 'vitest';
 import {getFreeProduct, getProductData, getSiteData} from '../../utils/fixtures-generator';
 import {render, fireEvent, getByTestId, queryByTestId} from '../../utils/test-utils';
 import SignupPage from './SignupPage';
-
-vi.mock('@hcaptcha/react-hcaptcha');
 
 const setup = (overrides) => {
     const {mockOnActionFn, ...utils} = render(
@@ -213,44 +210,6 @@ describe('SignupPage', () => {
 
             const signinLink = getByTestId(document.body, 'signin-switch');
             expect(signinLink).toBeInTheDocument();
-        });
-    });
-
-    describe('when captcha is enabled', () => {
-        test('renders', () => {
-            setup({
-                site: getSiteData({
-                    captchaEnabled: true,
-                    captchaSiteKey: '20000000-ffff-ffff-ffff-000000000002',
-                    products: [
-                        getFreeProduct({})
-                    ]
-                })
-            });
-
-            const hcaptchaElement = getByTestId(document.body, 'hcaptcha-mock');
-            expect(hcaptchaElement).toBeInTheDocument();
-        });
-
-        test('uses Captcha when run', () => {
-            const {nameInput, emailInput, chooseButton, mockOnActionFn} = setup({
-                site: getSiteData({
-                    captchaEnabled: true,
-                    captchaSiteKey: '20000000-ffff-ffff-ffff-000000000002'
-                })
-            });
-
-            const nameVal = 'J Smith';
-            const emailVal = 'jsmith@example.com';
-            const planVal = 'free';
-
-            fireEvent.change(nameInput, {target: {value: nameVal}});
-            fireEvent.change(emailInput, {target: {value: emailVal}});
-            expect(nameInput).toHaveValue(nameVal);
-            expect(emailInput).toHaveValue(emailVal);
-
-            fireEvent.click(chooseButton[0]);
-            expect(mockOnActionFn).toHaveBeenCalledWith('signup', {email: emailVal, name: nameVal, plan: planVal, token: 'mocked-token'});
         });
     });
 });

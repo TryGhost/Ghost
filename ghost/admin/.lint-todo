@@ -204,3 +204,6 @@ remove|ember-template-lint|no-invalid-link-title|27|24|27|24|17a357b69040eb9e19a
 add|ember-template-lint|no-invalid-interactive|41|26|41|26|da9f7c0f319619ff98a53fd679c47841cfaa3c1d|1736380800000|1746745200000|1751929200000|app/components/gh-nav-menu/main.hbs
 add|ember-template-lint|no-redundant-fn|5|70|5|70|d8c5269c9b4ca3aec0fc5b8e3d6a997e115dbc92|1736380800000|1746745200000|1751929200000|app/components/gh-nav-menu/main.hbs
 remove|ember-template-lint|no-invalid-interactive|34|26|34|26|0c04fbca90264398b6b5033632f3170c73d1769b|1734307200000|1744671600000|1749855600000|app/components/gh-nav-menu/main.hbs
+remove|ember-template-lint|no-action|113|83|113|83|40a33b8afd29e93eebeaccdb49d729c06f755e1f|1728345600000|1738717200000|1743897600000|app/components/gh-nav-menu/footer.hbs
+remove|ember-template-lint|no-invalid-interactive|113|83|113|83|91111b837d1217ec9988076f5263b0e32df72604|1728345600000|1738717200000|1743897600000|app/components/gh-nav-menu/footer.hbs
+remove|ember-template-lint|no-invalid-link-title|29|20|29|20|593cda92786c7440169712eadac45a452b967dd5|1734307200000|1744671600000|1749855600000|app/components/gh-nav-menu/main.hbs

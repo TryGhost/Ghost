@@ -81,19 +81,19 @@ export default class AllStatsModal extends Component {
         let unknownOption = 'Unknown';
         switch (type) {
         case 'top-sources':
-            endpoint = `${this.config.stats.endpoint}/v0/pipes/top_sources__v${TB_VERSION}.json`;
+            endpoint = `${this.config.stats.endpoint}/v0/pipes/api_top_sources__v${TB_VERSION}.json`;
             labelText = 'Source';
             indexBy = 'source';
             unknownOption = 'Direct';
             break;
         case 'top-locations':
-            endpoint = `${this.config.stats.endpoint}/v0/pipes/top_locations__v${TB_VERSION}.json`;
+            endpoint = `${this.config.stats.endpoint}/v0/pipes/api_top_locations__v${TB_VERSION}.json`;
             labelText = 'Country';
             indexBy = 'location';
             unknownOption = 'Unknown';
             break;
         default:
-            endpoint = `${this.config.stats.endpoint}/v0/pipes/top_pages__v${TB_VERSION}.json`;
+            endpoint = `${this.config.stats.endpoint}/v0/pipes/api_top_pages__v${TB_VERSION}.json`;
             labelText = 'Post or page';
             indexBy = 'pathname';
             break;
@@ -115,14 +115,14 @@ export default class AllStatsModal extends Component {
                 indexConfig={{
                     label: <span className="gh-stats-data-header">{labelText}</span>,
                     renderBarContent: ({label}) => (
-                        <span className={`gh-stats-data-label ${type === 'top-sources' && 'gh-stats-domain'}`}>
+                        <span className='gh-stats-data-label'>
                             <a
                                 href="#"
                                 onClick={(e) => {
                                     e.preventDefault();
                                     this.navigateToFilter(label);
                                 }}
-                                className="gh-stats-domain"
+                                className="gh-stats-bar-text"
                             >
                                 {(type === 'top-locations') && getCountryFlag(label)}
                                 {(type === 'top-sources') && (
@@ -133,8 +133,9 @@ export default class AllStatsModal extends Component {
                                 )}
                                 {type === 'top-sources' && <span title={label || unknownOption}>{label || unknownOption}</span>}
                                 {type === 'top-locations' && <span title={this.getCountryName(label) || unknownOption}>{this.getCountryName(label) || unknownOption}</span>}
-                                {type === 'top-pages' && <span title={label}>{label}</span>}
+                                {type === 'top-pages' && <span title={label || unknownOption}>{label}</span>}
                             </a>
+                            {(type === 'top-sources' || type === 'top-pages') && label && <a href={type === 'top-sources' ? `https://${label}` : label} target="_blank" className="gh-stats-external-link"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg></a>}
                         </span>
                     )
                 }}

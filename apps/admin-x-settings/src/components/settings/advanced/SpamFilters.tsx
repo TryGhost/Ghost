@@ -1,8 +1,8 @@
 import React from 'react';
 import TopLevelGroup from '../../TopLevelGroup';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {SettingGroupContent, TextArea, withErrorBoundary} from '@tryghost/admin-x-design-system';
-import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
+import {Separator, SettingGroupContent, TextArea, Toggle, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {getSettingValue, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 
 const SpamFilters: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {
@@ -24,6 +24,14 @@ const SpamFilters: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const [initialBlockedEmailDomainsJSON] = getSettingValues(localSettings, ['blocked_email_domains']) as string[];
     const initialBlockedEmailDomains = JSON.parse(initialBlockedEmailDomainsJSON || '[]') as string[];
     const [blockedEmailDomains, setBlockedEmailDomains] = React.useState(initialBlockedEmailDomains.join('\n'));
+
+    const [captchaEnabled] = getSettingValues(localSettings, ['captcha_enabled']) as boolean[];
+    const handleToggleChange = (key: string, e: React.ChangeEvent<HTMLInputElement>) => {
+        updateSetting(key, e.target.checked);
+        handleEditingChange(true);
+    };
+
+    const labs = JSON.parse(getSettingValue<string>(localSettings, 'labs') || '{}');
 
     const updateBlockedEmailDomainsSetting = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         const input = e.target.value;
@@ -47,6 +55,12 @@ const SpamFilters: React.FC<{ keywords: string[] }> = ({keywords}) => {
         </>
     );
 
+    const captchaHint = (
+        <>
+            Use <a className="text-green hover:text-green-400" href="https://www.hcaptcha.com/" rel="noreferrer" target="_blank">hCaptcha</a> validation on signup when spam patterns are detected.
+        </>
+    );
+
     return (
         <TopLevelGroup
             description='Protect your member signups from spam'
@@ -67,11 +81,26 @@ const SpamFilters: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     error={!!errors.blockedEmailDomains}
                     hint={errors.blockedEmailDomains || hint}
                     placeholder={`spam.xyz\njunk.com`}
+                    resize="vertical"
                     title='Blocked email domains'
                     value={blockedEmailDomains}
                     onChange={updateBlockedEmailDomainsSetting}
                     onKeyDown={() => clearError('spam-filters')}
                 />
+                {labs.captcha && (<>
+                    <Separator className="border-grey-200 dark:border-grey-900" />
+                    <Toggle
+                        checked={captchaEnabled}
+                        direction='rtl'
+                        gap='gap-0'
+                        hint={captchaHint}
+                        label='Enable strict signup security'
+                        labelClasses='block text-sm font-medium tracking-normal text-grey-900 w-full mt-[-10px]'
+                        onChange={(e) => {
+                            handleToggleChange('captcha_enabled', e);
+                        }}
+                    />
+                </>)}
             </SettingGroupContent>
         </TopLevelGroup>
     );

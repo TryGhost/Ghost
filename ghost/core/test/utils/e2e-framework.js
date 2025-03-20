@@ -132,7 +132,7 @@ const prepareContentFolder = async ({contentFolder, redirectsFile = true, routes
     );
 
     if (redirectsFile) {
-        redirectsUtils.setupFile(contentFolderForTests, '.yaml');
+        await redirectsUtils.setupFile(contentFolderForTests, '.yaml');
     }
 
     if (routesFile) {

@@ -1,4 +1,6 @@
 {
+    "{date}": "{date}",
+    "Become a paid member of {site} to get access to all premium content.": "",
     "By {authors}": "{authors} द्वारा",
     "Comment": "प्रतिक्रिया",
     "complimentary": "",
@@ -14,6 +16,8 @@
     "Subscription details": "सदस्यता विवरण",
     "trialing": "परीक्षण गर्दै",
     "Unsubscribe": "सदस्यता रद्द गर्नुहोस्",
+    "Upgrade": "",
+    "Upgrade to continue reading.": "",
     "View in browser": "ब्राउजरमा हेर्नुहोस्",
     "You are receiving this because you are a <strong>%%{status}%% subscriber</strong> to {site}.": "तपाईं यो प्राप्त गर्दै हुनुहुन्छ किनकि तपाईं {site} को <strong>%%{status}%% सदस्य</strong> हुनुहुन्छ।",
     "Your free trial ends on {date}, at which time you will be charged the regular price. You can always cancel before then.": "तपाईंको निःशुल्क परीक्षण {date} मा समाप्त हुन्छ, जुन समयमा तपाईंलाई नियमित मूल्यमा शुल्क लिइनेछ। तपाईं सधैं त्यसअघि रद्द गर्न सक्नुहुन्छ।",

@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/sodo-search",
-  "version": "1.5.1",
+  "version": "1.5.4",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -33,8 +33,7 @@
     "test:unit": "yarn test:ci",
     "lint": "eslint src --ext .js --cache",
     "preship": "yarn lint",
-    "ship": "STATUS=$(git status --porcelain .); echo $STATUS; if [ -z \"$STATUS\" ]; then yarn version; else echo \"Uncommitted changes found.\" && exit 1; fi",
-    "postship": "git push ${GHOST_UPSTREAM:-origin} --follow-tags && npm publish",
+    "ship": "node ../../.github/scripts/release-apps.js",
     "prepublishOnly": "yarn build"
   },
   "eslintConfig": {
@@ -86,7 +85,7 @@
     "@testing-library/react": "12.1.5",
     "@vitejs/plugin-react": "4.2.1",
     "jsdom": "24.1.3",
-    "nock": "13.3.3",
+    "nock": "13.5.6",
     "vite": "4.5.3",
     "vite-plugin-svgr": "3.3.0",
     "vitest": "0.34.3"

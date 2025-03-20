@@ -3,6 +3,7 @@ import fetch from 'fetch';
 import {TB_VERSION, getStatsParams} from 'ghost-admin/utils/stats';
 import {action} from '@ember/object';
 import {formatNumber} from 'ghost-admin/helpers/format-number';
+import {formatVisitDuration} from '../../utils/stats';
 import {inject} from 'ghost-admin/decorators/inject';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
@@ -59,7 +60,9 @@ export default class KpisOverview extends Component {
                 args
             ));
 
-            const response = yield fetch(`${this.config.stats.endpoint}/v0/pipes/kpis__v${TB_VERSION}.json?${params}`, {
+            const endpoint = `${this.config.stats.endpoint}/v0/pipes/api_kpis__v${TB_VERSION}.json?${params}`;
+
+            const response = yield fetch(endpoint, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -75,6 +78,7 @@ export default class KpisOverview extends Component {
 
             this.totals = this.processData(rawData.data);
         } catch (error) {
+            this.totals = null; // reset totals if the endpoint doesn't exist/fails
             // console.error('Error fetching KPI data:', error);
             // Handle error (e.g., set an error state, show a notification)
         }
@@ -92,11 +96,14 @@ export default class KpisOverview extends Component {
         // Sum total KPI value from the trend, ponderating using sessions
         const _ponderatedKPIsTotal = kpi => queryData.reduce((prev, curr) => prev + ((curr[kpi] ?? 0) * curr.visits / totalVisits), 0);
 
+        const formattedVisitDurations = formatVisitDuration(_ponderatedKPIsTotal('avg_session_sec'));
+        const formattedBouceRate = (_ponderatedKPIsTotal('bounce_rate') * 100).toFixed(0);
+
         return {
-            avg_session_sec: Math.floor(_ponderatedKPIsTotal('avg_session_sec') / 60),
-            pageviews: formatNumber(_KPITotal('pageviews')),
-            visits: formatNumber(totalVisits),
-            bounce_rate: (_ponderatedKPIsTotal('bounce_rate') * 100).toFixed(0)
+            avg_session_sec: isNaN(_ponderatedKPIsTotal('avg_session_sec')) ? '0m' : formattedVisitDurations,
+            pageviews: formatNumber(_KPITotal('pageviews')) || '0',
+            visits: formatNumber(totalVisits) || '0',
+            bounce_rate: isNaN(formattedBouceRate) ? '0' : formattedBouceRate
         };
     }
 

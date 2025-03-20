@@ -1,7 +1,6 @@
-node_modules/
+node_modules
 
 .nxcache
-.nx/cache
 .nx/workspace-data
 
 **/*.log

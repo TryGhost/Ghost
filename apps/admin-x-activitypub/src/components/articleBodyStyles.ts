@@ -16,6 +16,7 @@ const articleBodyStyles = (siteUrl: string|undefined) => {
     --color-secondary-text: rgb(0 0 0 / 0.55);
     --color-border: rgb(0 0 0 / 0.08);
     --color-dark-border: rgb(0 0 0 / 0.55);
+    --background-color: #fff;
     --font-sans: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
     --font-serif: "EB Garamond", Georgia, Times, serif;
     --font-serif-alt: Georgia, Times, serif;
@@ -33,6 +34,7 @@ const articleBodyStyles = (siteUrl: string|undefined) => {
     --color-secondary-text: rgb(255 255 255 / 0.64);
     --color-border: rgb(255 255 255 / 0.15);
     --color-dark-border: rgb(255 255 255 / 0.5);
+    --background-color: #15171a;
 }
 
 /* 2. Resets
@@ -551,11 +553,6 @@ unless a heading is the very first element in the post content */
     flex-direction: column;
     align-items: center;
     width: 100%;
-    position: relative; padding-top: 56.5%;
-}
-
-.kg-embed-card iframe {
-    position: absolute;width: 100%;height: 100%;left: 0px;top: 0px;
 }
 
 /* Gallery */
@@ -1041,12 +1038,6 @@ figcaption a {
 .kg-audio-seek-slider {
     flex-grow: 1;
     margin: 0 4px;
-}
-
-@media (max-width: 640px) {
-    .kg-audio-seek-slider {
-        display: none;
-    }
 }
 
 .kg-audio-playback-rate {
@@ -2800,6 +2791,15 @@ p.kg-collection-card-post-excerpt {
     display: flex;
     flex-direction: column;
     align-items: center;
+}
+
+.kg-video-container video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .kg-video-overlay {

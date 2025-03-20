@@ -24,7 +24,6 @@ const GA_FEATURES = [
     'audienceFeedback',
     'i18n',
     'themeErrorsNotification',
-    'outboundLinkTagging',
     'announcementBar',
     'customFonts'
 ];
@@ -39,7 +38,8 @@ const BETA_FEATURES = [
     'ActivityPub',
     'importMemberTier',
     'staff2fa',
-    'contentVisibility'
+    'contentVisibility',
+    'superEditors'
 ];
 
 const ALPHA_FEATURES = [

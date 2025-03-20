@@ -2,6 +2,7 @@ const {expect} = require('@playwright/test');
 const test = require('../fixtures/ghost-test');
 const security = require('@tryghost/security');
 const models = require('../../../core/server/models');
+const {signInAsUserById, signOutCurrentUser} = require('../utils/e2e-browser-utils');
 
 test.describe('Portal', () => {
     test.describe('Invites', () => {
@@ -43,11 +44,7 @@ test.describe('Portal', () => {
             const encodedToken = security.url.encodeBase64(token);
             const inviteUrl = `${adminUrl}/signup/${encodedToken}/`;
 
-            //signout current user
-            await sharedPage.goto('/ghost/#/dashboard');
-            await sharedPage.waitForLoadState('networkidle');
-            await sharedPage.locator('[data-test-nav="arrow-down"]').click();
-            await sharedPage.getByRole('link', {name: 'Sign out'}).click();
+            await signOutCurrentUser(sharedPage);
 
             // Open invite URL
             await sharedPage.goto(inviteUrl);
@@ -66,6 +63,10 @@ test.describe('Portal', () => {
 
             await sharedPage.locator('[data-test-nav="arrow-down"]').click();
             await expect(sharedPage.locator(`text=${testEmail}`)).toBeVisible();
+
+            await signOutCurrentUser(sharedPage);
+
+            await signInAsUserById(sharedPage, '1');
         });
 
         test.describe('2FA invite test', () => {
@@ -126,11 +127,7 @@ test.describe('Portal', () => {
                 const context = await sharedPage.context();
                 await context.clearCookies();
 
-                //signout current user
-                await sharedPage.goto('/ghost/#/dashboard');
-                await sharedPage.waitForLoadState('networkidle');
-                await sharedPage.locator('[data-test-nav="arrow-down"]').click();
-                await sharedPage.getByRole('link', {name: 'Sign out'}).click();
+                await signOutCurrentUser(sharedPage);
 
                 // Open invite URL
                 await sharedPage.goto(inviteUrl);
@@ -150,6 +147,10 @@ test.describe('Portal', () => {
 
                 await sharedPage.locator('[data-test-nav="arrow-down"]').click();
                 await expect(sharedPage.locator(`text=${testEmail}`)).toBeVisible();
+
+                await signOutCurrentUser(sharedPage);
+
+                await signInAsUserById(sharedPage, '1');
             });
         });
     });

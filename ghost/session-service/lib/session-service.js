@@ -235,13 +235,17 @@ module.exports = function createSessionService({
     async function sendAuthCodeToUser(req, res) {
         const session = await getSession(req, res);
         const token = await generateAuthCodeForUser(req, res);
-        const user = await findUserById({id: session.user_id});
 
-        if (!user) {
+        let user;
+        try {
+            user = await findUserById({id: session.user_id});
+        } catch (error) {
+            // User session likely doesn't contain a valid user ID
             throw new BadRequestError({
                 message: 'Could not fetch user from the session.'
             });
         }
+
         const recipient = user.get('email');
         const siteTitle = getSettingsCache('title');
         const siteLogo = getBlogLogo();
@@ -256,7 +260,8 @@ module.exports = function createSessionService({
             siteUrl: siteUrl,
             siteLogo: siteLogo,
             token: token,
-            deviceDetails: await getDeviceDetails(session.user_agent, session.ip)
+            deviceDetails: await getDeviceDetails(session.user_agent, session.ip),
+            is2FARequired: getSettingsCache('require_email_mfa')
         });
 
         try {
@@ -304,6 +309,12 @@ module.exports = function createSessionService({
      */
     async function removeUserForSession(req, res) {
         const session = await getSession(req, res);
+
+        const requireMfa = getSettingsCache('require_email_mfa');
+        if (requireMfa) {
+            session.verified = undefined;
+        }
+
         session.user_id = undefined;
     }
 

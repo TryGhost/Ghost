@@ -51,7 +51,6 @@ describe('Settings Content API', function () {
                 })
                 .matchBodySnapshot({
                     settings: Object.assign({}, settingsMatcher, {
-                        captcha_enabled: true,
                         captcha_sitekey: 'testkey'
                     })
                 });

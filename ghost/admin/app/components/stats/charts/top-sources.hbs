@@ -19,12 +19,12 @@
         </div> --}}
     </div>
 
-    <div {{react-render this.ReactComponent props=(hash chartRange=@chartRange audience=@audience device=@device browser=@browser location=@location source=@source pathname=@pathname)}}></div>
+    <div {{react-render this.ReactComponent props=(hash chartRange=@chartRange audience=@audience device=@device browser=@browser location=@location source=@source pathname=@pathname os=@os mockData=@mockData)}}></div>
 </div>
 
 {{#if this.showSeeAll}}
 <div class="gh-stats-see-all-container">
-    <button type="button" class="gh-btn gh-btn-link gh-stats-see-all-btn" {{on "click" (fn this.openSeeAll @chartRange @audience @device @browser @location @source @pathname)}}>
+    <button type="button" class="gh-btn gh-btn-link gh-stats-see-all-btn" {{on "click" (fn this.openSeeAll @chartRange @audience @device @browser @location @source @pathname @os)}}>
         <span>See all &rarr;</span>
     </button>
 </div>

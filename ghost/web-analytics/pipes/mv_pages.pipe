@@ -1,0 +1,40 @@
+VERSION 1
+
+TAGS "v0"
+
+INCLUDE "_hits.incl"
+
+NODE _pages_0
+SQL >
+
+    SELECT
+        site_uuid,
+        toDate(timestamp) AS date,
+        post_type,
+        post_uuid,
+        device,
+        os,
+        browser,
+        location,
+        source,
+        pathname,
+        maxSimpleState(member_status) AS member_status,
+        uniqState(session_id) AS visits,
+        countState() AS pageviews
+    FROM hits
+    GROUP BY
+        site_uuid,
+        date,
+        device,
+        os,
+        browser,
+        location,
+        source,
+        pathname,
+        post_type,
+        post_uuid
+
+TYPE materialized
+DATASOURCE _mv_pages
+
+

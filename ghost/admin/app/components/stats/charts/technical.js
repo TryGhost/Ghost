@@ -3,8 +3,9 @@
 import Component from '@glimmer/component';
 import React from 'react';
 import {DonutChart, useQuery} from '@tinybirdco/charts';
-import {TB_VERSION, getStatsParams, statsStaticColors} from 'ghost-admin/utils/stats';
+import {STATS_LABEL_MAPPINGS, TB_VERSION, getStatsParams, statsStaticColors} from 'ghost-admin/utils/stats';
 import {action} from '@ember/object';
+import {capitalizeFirstLetter} from '../../../helpers/capitalize-first-letter';
 import {formatNumber} from 'ghost-admin/helpers/format-number';
 import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
@@ -22,12 +23,14 @@ export default class TechnicalComponent extends Component {
     updateQueryParams(params) {
         const currentRoute = this.router.currentRoute;
         const newQueryParams = {...currentRoute.queryParams, ...params};
-
         this.router.transitionTo({queryParams: newQueryParams});
     }
 
     ReactComponent = (props) => {
         const {selected} = props;
+
+        // If OS is selected but not available, switch to devices
+        let effectiveSelected = selected;
 
         const colorPalette = statsStaticColors.slice(0, 5);
 
@@ -40,14 +43,20 @@ export default class TechnicalComponent extends Component {
         let endpoint;
         let indexBy;
         let tableHead;
-        switch (selected) {
+
+        switch (effectiveSelected) {
         case 'browsers':
-            endpoint = `${this.config.stats.endpoint}/v0/pipes/top_browsers__v${TB_VERSION}.json`;
+            endpoint = `${this.config.stats.endpoint}/v0/pipes/api_top_browsers__v${TB_VERSION}.json`;
             indexBy = 'browser';
             tableHead = 'Browser';
             break;
+        case 'os':
+            endpoint = `${this.config.stats.endpoint}/v0/pipes/api_top_os__v${TB_VERSION}.json`;
+            indexBy = 'os';
+            tableHead = 'OS';
+            break;
         default:
-            endpoint = `${this.config.stats.endpoint}/v0/pipes/top_devices__v${TB_VERSION}.json`;
+            endpoint = `${this.config.stats.endpoint}/v0/pipes/api_top_devices__v${TB_VERSION}.json`;
             indexBy = 'device';
             tableHead = 'Device';
         }
@@ -59,7 +68,7 @@ export default class TechnicalComponent extends Component {
         });
 
         const transformedData = (data ?? []).map((item, index) => ({
-            name: item[indexBy].charAt(0).toUpperCase() + item[indexBy].slice(1),
+            name: item[indexBy],
             value: item.visits,
             color: colorPalette[index]
         }));
@@ -145,12 +154,12 @@ export default class TechnicalComponent extends Component {
                                         href="#"
                                         onClick={(e) => {
                                             e.preventDefault();
-                                            this.navigateToFilter(indexBy, item.name.toLowerCase());
+                                            this.navigateToFilter(indexBy, item.name);
                                         }}
                                         className="gh-stats-data-label"
                                     >
                                         <span style={{backgroundColor: item.color, display: 'inline-block', width: '10px', height: '10px', marginRight: '5px', borderRadius: '2px'}}></span>
-                                        {item.name}
+                                        {STATS_LABEL_MAPPINGS[item.name] || capitalizeFirstLetter(item.name)}
                                     </a>
                                 </td>
                                 <td><span className="gh-stats-data-value">{formatNumber(item.value)}</span></td>

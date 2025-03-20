@@ -16,6 +16,14 @@ const BetaFeatures: React.FC = () => {
     return (
         <List titleSeparator={false}>
             <LabItem
+                action={<FeatureToggle flag="ActivityPub" />}
+                detail={<>Federate your site with ActivityPub to join the world&apos;s largest open network. <a className='text-green' href="https://ghost.org/help/social-web/" rel="noopener noreferrer" target="_blank">Learn more &rarr;</a></>}
+                title='Social web (beta)' />
+            <LabItem
+                action={<FeatureToggle flag="superEditors" />}
+                detail={<>Allows newly-assigned editors to manage members and comments in addition to regular roles.</>}
+                title='Enhanced Editor role (beta)' />
+            <LabItem
                 action={<FeatureToggle flag="editorExcerpt" />}
                 detail={<>Adds the excerpt input below the post title in the editor</>}
                 title='Show post excerpt inline' />

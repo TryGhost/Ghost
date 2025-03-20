@@ -253,4 +253,63 @@ describe('search index', function () {
         searchResults = searchIndex.search('glenish');
         expect(searchResults.posts.length).toEqual(0);
     });
+
+    test('searching handles hebrew characters correctly', async () => {
+        const adminUrl = 'http://localhost:3000';
+        const apiKey = '69010382388f9de5869ad6e558';
+        const searchIndex = new SearchIndex({adminUrl, apiKey, storage: localStorage});
+
+        nock('http://localhost:3000/ghost/api/content')
+            .get('/posts/?key=69010382388f9de5869ad6e558&limit=10000&fields=id%2Cslug%2Ctitle%2Cexcerpt%2Curl%2Cupdated_at%2Cvisibility&order=updated_at%20DESC')
+            .reply(200, {
+                posts: [{
+                    id: 'post',
+                    title: 'חדשות ניו יורק',
+                    excerpt: 'לורם איפסום דולור סיט אמט, קונסקטורר אדיפיסינג אלית סחטיר בלובק',
+                    url: 'http://localhost/ghost/khdshvt-nyv-yvrq/'
+                }]
+            })
+            .get('/authors/?key=69010382388f9de5869ad6e558&limit=10000&fields=id,slug,name,url,profile_image&order=updated_at%20DESC')
+            .reply(200, {
+                authors: [{
+                    id: 'author',
+                    slug: 'svpr',
+                    name: 'סופר',
+                    url: 'http://localhost/ghost/authors/svpr/'
+                }]
+            })
+            .get('/tags/?key=69010382388f9de5869ad6e558&&limit=10000&fields=id,slug,name,url&order=updated_at%20DESC&filter=visibility%3Apublic')
+            .reply(200, {
+                tags: [{
+                    id: 'tag',
+                    slug: 'khdshvt',
+                    name: 'חדשות',
+                    url: 'http://localhost/ghost/tags/khdshvt/'
+                }]
+            });
+            
+        await searchIndex.init();
+
+        let searchResults = searchIndex.search('ניו יורק');
+        expect(searchResults.posts.length).toEqual(1);
+        expect(searchResults.posts[0].url).toEqual('http://localhost/ghost/khdshvt-nyv-yvrq/');
+
+        searchResults = searchIndex.search('Nothing like this');
+        expect(searchResults.posts.length).toEqual(0);
+
+        searchResults = searchIndex.search('קונסקט');
+        expect(searchResults.posts.length).toEqual(1);
+        expect(searchResults.posts[0].url).toEqual('http://localhost/ghost/khdshvt-nyv-yvrq/');
+         
+        searchResults = searchIndex.search('סופר');
+        expect(searchResults.authors.length).toEqual(1);
+        expect(searchResults.authors[0].url).toEqual('http://localhost/ghost/authors/svpr/');
+         
+        searchResults = searchIndex.search('חדשות');
+        expect(searchResults.posts.length).toEqual(1);
+        expect(searchResults.posts[0].title).toEqual('חדשות ניו יורק');
+        expect(searchResults.tags.length).toEqual(1);
+        expect(searchResults.tags[0].name).toEqual('חדשות');
+        expect(searchResults.tags[0].url).toEqual('http://localhost/ghost/tags/khdshvt/');
+    });
 });

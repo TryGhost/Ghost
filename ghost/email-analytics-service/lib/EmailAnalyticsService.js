@@ -1,7 +1,6 @@
 const EventProcessingResult = require('./EventProcessingResult');
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
-const {MemberEmailAnalyticsUpdateEvent} = require('@tryghost/member-events');
 
 /**
  * @typedef {import('@tryghost/email-service').EmailEventProcessor} EmailEventProcessor
@@ -275,7 +274,7 @@ module.exports = class EmailAnalyticsService {
             };
         }
 
-        this.queries.setJobTimestamp(this.#fetchScheduledData.jobName, 'completed', this.#fetchScheduledData.lastEventTimestamp);
+        this.queries.setJobTimestamp(this.#fetchScheduledData.jobName, 'finished', this.#fetchScheduledData.lastEventTimestamp);
         return count;
     }
     /**
@@ -375,13 +374,13 @@ module.exports = class EmailAnalyticsService {
         if (!error && eventCount > 0 && eventCount < maxEvents && fetchData.lastEventTimestamp && fetchData.lastEventTimestamp.getTime() < Date.now() - 2000) {
             logging.info('[EmailAnalytics] Reached end of new events, increasing lastEventTimestamp with one second');
             // set the data on the db so we can store it for fetching after reboot
-            await this.queries.setJobTimestamp(fetchData.jobName, 'completed', new Date(fetchData.lastEventTimestamp.getTime()));
+            await this.queries.setJobTimestamp(fetchData.jobName, 'finished', new Date(fetchData.lastEventTimestamp.getTime()));
             // increment and store in local memory
             fetchData.lastEventTimestamp = new Date(fetchData.lastEventTimestamp.getTime() + 1000);
         } else {
             logging.info('[EmailAnalytics] No new events found');
             // set job status to finished
-            await this.queries.setJobStatus(fetchData.jobName, 'completed');
+            await this.queries.setJobStatus(fetchData.jobName, 'finished');
         }
 
         fetchData.running = false;
@@ -525,14 +524,8 @@ module.exports = class EmailAnalyticsService {
         // @ts-expect-error
         const memberMetric = this.prometheusClient?.getMetric('email_analytics_aggregate_member_stats_count');
         for (const memberId of memberIds) {
-            if (this.config?.get('services:jobs:queue:enabled')) {
-                // With the queue enabled we will dispatch an event to update the member email analytics on the background queue (multithreaded :))
-                //  job manager has its own metrics
-                await this.domainEvents.dispatch(MemberEmailAnalyticsUpdateEvent.create({memberId}));
-            } else {
-                await this.aggregateMemberStats(memberId);
-                memberMetric?.inc();
-            }
+            await this.aggregateMemberStats(memberId);
+            memberMetric?.inc();
         }
         endTime = Date.now() - startTime;
         logging.info(`[EmailAnalytics] Aggregating for ${memberIds.length} members took ${endTime}ms`);

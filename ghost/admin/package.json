@@ -1,6 +1,6 @@
 {
   "name": "ghost-admin",
-  "version": "5.109.1",
+  "version": "5.113.1",
   "description": "Ember.js admin client for Ghost",
   "author": "Ghost Foundation",
   "homepage": "http://ghost.org",
@@ -26,7 +26,7 @@
     "lint": "yarn lint:js && yarn lint:hbs"
   },
   "engines": {
-    "node": "^18.12.1 || ^20.11.1"
+    "node": "^18.12.1 || ^20.11.1 || ^22.13.1"
   },
   "devDependencies": {
     "@babel/eslint-parser": "7.23.3",
@@ -48,9 +48,9 @@
     "@tryghost/color-utils": "0.2.2",
     "@tryghost/ember-promise-modals": "2.0.1",
     "@tryghost/helpers": "1.1.90",
-    "@tryghost/kg-clean-basic-html": "4.1.5",
-    "@tryghost/kg-converters": "1.0.8",
-    "@tryghost/koenig-lexical": "1.5.2",
+    "@tryghost/kg-clean-basic-html": "4.2.0",
+    "@tryghost/kg-converters": "1.1.0",
+    "@tryghost/koenig-lexical": "1.6.6",
     "@tryghost/limit-service": "1.2.14",
     "@tryghost/members-csv": "0.0.0",
     "@tryghost/nql": "0.12.7",
@@ -125,7 +125,7 @@
     "ember-truth-helpers": "3.1.1",
     "eslint-plugin-babel": "5.3.1",
     "flexsearch": "0.7.43",
-    "fs-extra": "11.2.0",
+    "fs-extra": "11.3.0",
     "glob": "8.1.0",
     "google-caja-bower": "https://github.com/acburdine/google-caja-bower#ghost",
     "keymaster": "https://github.com/madrobby/keymaster.git",
@@ -146,7 +146,7 @@
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "reframe.js": "4.0.2",
-    "semver": "7.6.3",
+    "semver": "7.7.1",
     "sentry-testkit": "5.0.9",
     "sinon-chai": "4.0.0",
     "testem": "3.15.1",
@@ -179,7 +179,7 @@
     "i18n-iso-countries": "7.12.0",
     "jose": "4.15.9",
     "path-browserify": "1.0.1",
-    "webpack": "5.97.1"
+    "webpack": "5.98.0"
   },
   "nx": {
     "targets": {
