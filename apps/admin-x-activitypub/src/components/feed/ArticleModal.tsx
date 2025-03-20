@@ -20,8 +20,8 @@ import APReplyBox from '../global/APReplyBox';
 import DeletedFeedItem from './DeletedFeedItem';
 import TableOfContents, {TOCItem} from './TableOfContents';
 import getReadingTime from '../../utils/get-reading-time';
+import {formatArticle} from '@src/utils/content-formatters';
 import {isPendingActivity} from '../../utils/pending-activity';
-import {openLinksInNewTab} from '@src/utils/content-formatters';
 import {useDebounce} from 'use-debounce';
 
 interface ArticleModalProps {
@@ -46,6 +46,7 @@ interface IframeWindow extends Window {
 const FONT_SANS = 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif';
 
 const ArticleBody: React.FC<{
+    postUrl: string;
     heading: string;
     image: string|undefined;
     excerpt: string|undefined;
@@ -57,6 +58,7 @@ const ArticleBody: React.FC<{
     onIframeLoad?: (iframe: HTMLIFrameElement) => void;
     onLoadingChange?: (isLoading: boolean) => void;
 }> = ({
+    postUrl,
     heading,
     image,
     excerpt,
@@ -179,7 +181,7 @@ const ArticleBody: React.FC<{
                 ` : ''}
             </header>
             <div class='gh-content gh-canvas is-body'>
-                ${openLinksInNewTab(html)}
+                ${formatArticle(html, postUrl)}
             </div>
             <script>
                 (function () {
@@ -930,6 +932,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                         html={object.content ?? ''}
                                         image={typeof object.image === 'string' ? object.image : object.image?.url}
                                         lineHeight={LINE_HEIGHTS[currentLineHeightIndex]}
+                                        postUrl={object?.url || ''}
                                         onHeadingsExtracted={handleHeadingsExtracted}
                                         onIframeLoad={handleIframeLoad}
                                         onLoadingChange={setIsLoading}
