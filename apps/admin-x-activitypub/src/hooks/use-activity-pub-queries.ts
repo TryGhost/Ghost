@@ -163,7 +163,9 @@ export function useLikeMutationForUser(handle: string) {
 
             // Update account liked count
             queryClient.setQueryData(QUERY_KEYS.account(handle), (currentAccount?: Account) => {
-                if (!currentAccount) return currentAccount;
+                if (!currentAccount) {
+                    return currentAccount;
+                }
                 return {
                     ...currentAccount,
                     likedCount: currentAccount.likedCount + 1
@@ -191,7 +193,9 @@ export function useUnlikeMutationForUser(handle: string) {
 
             // Update account liked count
             queryClient.setQueryData(QUERY_KEYS.account(handle), (currentAccount?: Account) => {
-                if (!currentAccount) return currentAccount;
+                if (!currentAccount) {
+                    return currentAccount;
+                }
                 return {
                     ...currentAccount,
                     likedCount: Math.max(0, currentAccount.likedCount - 1)
@@ -1007,7 +1011,6 @@ export function useNoteMutationForUser(handle: string, actorProps?: ActorPropert
             // Add to profile tab (postsByAccount)
             prependActivityToPaginatedCollection(queryClient, queryKeyPostsByAccount, 'posts', activity);
 
-
             return {id};
         },
         onSuccess: (activity: Activity, _variables, context) => {
@@ -1364,16 +1367,16 @@ export function useDeleteMutationForUser(handle: string) {
                 QUERY_KEYS.inbox,
                 QUERY_KEYS.postsByAccount,
                 QUERY_KEYS.postsLikedByAccount
-            ].some(key => {
+            ].some((key) => {
                 const queryData = queryClient.getQueryData<{pages: {posts: Activity[]}[]}>(key);
-                return queryData?.pages.some(page => 
-                    page.posts.some(post => post.id === id && post.object.liked)
-                );
+                return queryData?.pages.some(page => page.posts.some(post => post.id === id && post.object.liked));
             });
 
             if (wasLiked) {
                 queryClient.setQueryData(QUERY_KEYS.account(handle), (currentAccount?: Account) => {
-                    if (!currentAccount) return currentAccount;
+                    if (!currentAccount) {
+                        return currentAccount;
+                    }
                     return {
                         ...currentAccount,
                         likedCount: Math.max(0, currentAccount.likedCount - 1)
