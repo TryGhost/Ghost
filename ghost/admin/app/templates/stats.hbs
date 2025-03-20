@@ -2,14 +2,16 @@
     <GhCanvasHeader class="gh-canvas-header gh-stats-header sticky break tablet post-header">
         <GhCustomViewTitle @title="Stats" />
         <div class="view-actions">
-            <button
-                type="button"
-                class="gh-btn {{if this.mockData "gh-btn-green"}}"
-                data-test-button="toggle-data-mode"
-                {{on "click" this.toggleMockData}}
-            >
-                <span>{{if this.mockData "Using Test Data" "Using Live Data"}}</span>
-            </button>
+            {{#if this.config.enableDeveloperExperiments}}
+                <button
+                    type="button"
+                    class="gh-btn {{if this.mockData "gh-btn-green"}}"
+                    data-test-button="toggle-data-mode"
+                    {{on "click" this.toggleMockData}}
+                >
+                    <span>{{if this.mockData "Using Test Data" "Using Live Data"}}</span>
+                </button>
+            {{/if}}
 
             <div>
                 <Stats::Parts::AudienceFilter
