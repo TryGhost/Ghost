@@ -95,7 +95,7 @@ const SpamFilters: React.FC<{ keywords: string[] }> = ({keywords}) => {
                         gap='gap-0'
                         hint={captchaHint}
                         label='Enable strict signup security'
-                        labelClasses='block text-sm font-medium tracking-normal text-grey-900 w-full mt-[-10px]'
+                        labelClasses='block text-sm font-medium tracking-normal text-grey-900 dark:text-grey-500 w-full mt-[-10px]'
                         onChange={(e) => {
                             handleToggleChange('captcha_enabled', e);
                         }}
