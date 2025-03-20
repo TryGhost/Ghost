@@ -1040,12 +1040,6 @@ figcaption a {
     margin: 0 4px;
 }
 
-@media (max-width: 640px) {
-    .kg-audio-seek-slider {
-        display: none;
-    }
-}
-
 .kg-audio-playback-rate {
     min-width: 37px;
     padding: 0 4px;
@@ -2797,6 +2791,15 @@ p.kg-collection-card-post-excerpt {
     display: flex;
     flex-direction: column;
     align-items: center;
+}
+
+.kg-video-container video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .kg-video-overlay {
