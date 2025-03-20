@@ -63,6 +63,7 @@ class AdapterCacheRedis extends BaseCacheAdapter {
         this.refreshAheadFactor = config.refreshAheadFactor || 0;
         this.getTimeoutMilliseconds = config.getTimeoutMilliseconds || null;
         this.currentlyExecutingBackgroundRefreshes = new Set();
+        this.currentlyExecutingReads = new Map();
         this.keyPrefix = config.keyPrefix;
         this._keysPattern = config.keyPrefix ? `${config.keyPrefix}*` : '';
         this.redisClient = this.cache.store.getClient();
@@ -192,6 +193,18 @@ class AdapterCacheRedis extends BaseCacheAdapter {
      * @param {() => Promise<any>} [fetchData] An optional function to fetch the data, which will be used in the case of a cache MISS or a background refresh
      */
     async get(key, fetchData) {
+        const internalKey = this._buildKey(key);
+        if (this.currentlyExecutingReads.has(internalKey)) {
+            return this.currentlyExecutingReads.get(internalKey);
+        }
+        const resultPromise = this.#get(key, fetchData).finally(() => {
+            this.currentlyExecutingReads.delete(internalKey);
+        });
+        this.currentlyExecutingReads.set(internalKey, resultPromise);
+        return resultPromise;
+    }
+
+    async #get(key, fetchData) {
         const internalKey = this._buildKey(key);
         try {
             const result = await this._get(internalKey);
