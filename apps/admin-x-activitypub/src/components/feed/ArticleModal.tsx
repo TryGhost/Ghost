@@ -96,61 +96,75 @@ const ArticleBody: React.FC<{
                 }
             </style>
             <script>
-                let isFullyLoaded = false;
-
                 function resizeIframe() {
-                    const bodyHeight = document.body.offsetHeight;
-
+                    const height = document.body.scrollHeight;
                     window.parent.postMessage({
                         type: 'resize',
-                        height: bodyHeight,
-                        isLoaded: isFullyLoaded,
-                        bodyHeight: bodyHeight
+                        bodyHeight: height,
+                        isLoaded: true
                     }, '*');
                 }
 
+                // Initialize resize observers
+                function setupResizeObservers() {
+                    // ResizeObserver for overall size changes
+                    const resizeObserver = new ResizeObserver(() => {
+                        resizeIframe();
+                    });
+                    resizeObserver.observe(document.body);
+
+                    // MutationObserver for DOM changes
+                    const mutationObserver = new MutationObserver(() => {
+                        resizeIframe();
+                    });
+                    mutationObserver.observe(document.body, {
+                        childList: true,
+                        subtree: true,
+                        attributes: true
+                    });
+
+                    // Handle window resize
+                    window.addEventListener('resize', resizeIframe);
+
+                    // Initial resize
+                    resizeIframe();
+
+                    // Clean up function
+                    return () => {
+                        resizeObserver.disconnect();
+                        mutationObserver.disconnect();
+                        window.removeEventListener('resize', resizeIframe);
+                    };
+                }
+
+                // Wait for images to load
                 function waitForImages() {
                     const images = document.getElementsByTagName('img');
-                    const imagePromises = Array.from(images).map(img => {
-                        if (img.complete) {
-                            return Promise.resolve();
-                        }
+                    Promise.all(Array.from(images).map(img => {
+                        if (img.complete) return Promise.resolve();
                         return new Promise(resolve => {
                             img.onload = resolve;
                             img.onerror = resolve;
                         });
-                    });
-                    return Promise.all(imagePromises);
+                    })).then(resizeIframe);
                 }
 
-                function initializeResize() {
-                    resizeIframe();
-                    isFullyLoaded = true;
+                // Initialize everything once DOM is ready
+                document.addEventListener('DOMContentLoaded', () => {
+                    setupResizeObservers();
+                    waitForImages();
+                });
 
-                    waitForImages().then(() => {
-                        resizeIframe();
-                    });
-                }
-
-                window.addEventListener('DOMContentLoaded', initializeResize);
-                window.addEventListener('load', resizeIframe);
-                window.addEventListener('resize', resizeIframe);
-
-                if (document.body) {
-                    const observer = new MutationObserver(resizeIframe);
-                    observer.observe(document.body, {
-                        subtree: true,
-                        childList: true,
-                        attributes: true
-                    });
-                }
-
+                // Handle external resize triggers
                 window.addEventListener('message', (event) => {
                     if (event.data.type === 'triggerResize') {
                         resizeIframe();
                     }
                 });
             </script>
+
+            <!-- Reframe.js — a plugin that makes iframes and videos responsive -->
+            <script>!function(e,t){"object"==typeof exports&&"undefined"!=typeof module?module.exports=t():"function"==typeof define&&define.amd?define(t):(e="undefined"!=typeof globalThis?globalThis:e||self).reframe=t()}(this,function(){"use strict";function t(){for(var e=0,t=0,n=arguments.length;t<n;t++)e+=arguments[t].length;for(var i=Array(e),o=0,t=0;t<n;t++)for(var r=arguments[t],f=0,d=r.length;f<d;f++,o++)i[o]=r[f];return i}return function(e,s){return void 0===s&&(s="js-reframe"),("string"==typeof e?t(document.querySelectorAll(e)):"length"in e?t(e):[e]).forEach(function(e){var t,n,i,o,r,f,d,l;-1!==e.className.split(" ").indexOf(s)||-1<e.style.width.indexOf("%")||(i=e.getAttribute("height")||e.offsetHeight,o=e.getAttribute("width")||e.offsetWidth,r=("string"==typeof i?parseInt(i):i)/("string"==typeof o?parseInt(o):o)*100,(f=document.createElement("div")).className=s,(d=f.style).position="relative",d.width="100%",d.paddingTop=r+"%",(l=e.style).position="absolute",l.width="100%",l.height="100%",l.left="0",l.top="0",null!==(t=e.parentNode)&&void 0!==t&&t.insertBefore(f,e),null!==(n=e.parentNode)&&void 0!==n&&n.removeChild(e),f.appendChild(e))})}});</script>
         </head>
         <body>
             <header class='gh-article-header gh-canvas'>
@@ -167,6 +181,19 @@ const ArticleBody: React.FC<{
             <div class='gh-content gh-canvas is-body'>
                 ${openLinksInNewTab(html)}
             </div>
+            <script>
+                (function () {
+                    const sources = [
+                        '.gh-content iframe[src*="youtube.com"]',
+                        '.gh-content iframe[src*="youtube-nocookie.com"]',
+                        '.gh-content iframe[src*="player.vimeo.com"]',
+                        '.gh-content iframe[src*="kickstarter.com"][src*="video.html"]',
+                        '.gh-content object',
+                        '.gh-content embed',
+                    ];
+                    reframe(document.querySelectorAll(sources.join(',')));
+                })();
+            </script>
         </body>
         </html>
     `;
@@ -194,10 +221,7 @@ const ArticleBody: React.FC<{
         };
 
         window.addEventListener('message', handleMessage);
-
-        return () => {
-            window.removeEventListener('message', handleMessage);
-        };
+        return () => window.removeEventListener('message', handleMessage);
     }, [htmlContent]);
 
     // Separate effect for style updates
