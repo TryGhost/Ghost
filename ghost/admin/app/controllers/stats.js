@@ -5,11 +5,14 @@ import {AUDIENCE_TYPES, RANGE_OPTIONS} from 'ghost-admin/utils/stats';
 import {STATS_LABEL_MAPPINGS} from '../utils/stats';
 import {action} from '@ember/object';
 import {capitalizeFirstLetter} from '../helpers/capitalize-first-letter';
+import {inject} from 'ghost-admin/decorators/inject';
 import {tracked} from '@glimmer/tracking';
 
 countries.registerLocale(enLocale);
 
 export default class StatsController extends Controller {
+    @inject config;
+
     queryParams = ['device', 'browser', 'location', 'source', 'pathname', 'os'];
 
     @tracked device = null;
