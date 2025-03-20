@@ -21,7 +21,8 @@ const messages = {
     invalidTags: 'Invalid tags value.',
     invalidEmailSegment: 'The email segment parameter doesn\'t contain a valid filter',
     unsupportedBulkAction: 'Unsupported bulk action',
-    postNotFound: 'Post not found.'
+    postNotFound: 'Post not found.',
+    pageNotFound: 'Page not found.'
 };
 
 class PostsService {
@@ -48,8 +49,9 @@ class PostsService {
         const model = await this.models.Post.findOne(frame.data, frame.options);
 
         if (!model) {
+            const isPageRequest = frame.options?.filter?.includes('type:page') || false;
             throw new errors.NotFoundError({
-                message: tpl(messages.postNotFound)
+                message: tpl(isPageRequest ? messages.pageNotFound : messages.postNotFound)
             });
         }
 
