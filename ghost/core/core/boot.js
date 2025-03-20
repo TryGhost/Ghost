@@ -88,6 +88,12 @@ async function initCore({ghostServer, config, frontend}) {
     require('./shared/url-utils');
     debug('End: Load urlUtils');
 
+    // Models are the heart of Ghost - we want to explicitly load them here so their require time
+    // isn't hidden in other steps
+    debug('Begin: models');
+    require('./server/models');
+    debug('End: models');
+
     // Settings are a core concept we use settings to store key-value pairs used in critical pathways as well as public data like the site title
     debug('Begin: settings');
     const settings = require('./server/services/settings/settings-service');
