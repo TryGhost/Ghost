@@ -6,6 +6,7 @@ const urlUtils = require('../../../shared/url-utils');
 const limitService = require('../limits');
 const labs = require('../../../shared/labs');
 const emailAddressService = require('../email-address');
+const settingsCache = require('../../../shared/settings-cache');
 
 const MAGIC_LINK_TOKEN_VALIDITY = 24 * 60 * 60 * 1000;
 const MAGIC_LINK_TOKEN_VALIDITY_AFTER_USAGE = 10 * 60 * 1000;
@@ -22,6 +23,7 @@ module.exports = new NewslettersService({
         maxUsageCount: MAGIC_LINK_TOKEN_MAX_USAGE_COUNT
     }),
     urlUtils,
+    settingsCache,
     limitService,
     labs,
     emailAddressService: emailAddressService
