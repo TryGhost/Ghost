@@ -78,7 +78,7 @@ const startGhost = async (options = {}) => {
 
     const defaults = {
         backend: true,
-        frontend: true,
+        frontend: false,
         server: false
     };
 
@@ -217,11 +217,19 @@ const getContentAPIAgent = async () => {
  * It is automatically hooked up to the Admin API so you can make requests to e.g.
  * agent.get('/posts/') without having to worry about URL paths
  *
+ * @param {Object} [options={}]
+ * @param {Boolean} [options.members] Include members in the boot process
  * @returns {Promise<InstanceType<AdminAPITestAgent>>} agent
  */
-const getAdminAPIAgent = async () => {
+const getAdminAPIAgent = async (options = {}) => {
+    const bootOptions = {};
+
+    if (options.members) {
+        bootOptions.frontend = true;
+    }
+
     try {
-        const app = await startGhost();
+        const app = await startGhost(bootOptions);
         const originURL = configUtils.config.get('url');
 
         return new AdminAPITestAgent(app, {
@@ -242,8 +250,11 @@ const getAdminAPIAgent = async () => {
  * @returns {Promise<InstanceType<MembersAPITestAgent>>} agent
  */
 const getMembersAPIAgent = async () => {
+    const bootOptions = {
+        frontend: true
+    };
     try {
-        const app = await startGhost();
+        const app = await startGhost(bootOptions);
         const originURL = configUtils.config.get('url');
 
         return new MembersAPITestAgent(app, {
@@ -264,8 +275,11 @@ const getMembersAPIAgent = async () => {
  * @returns {Promise<InstanceType<GhostAPITestAgent>>} agent
  */
 const getWebmentionsAPIAgent = async () => {
+    const bootOptions = {
+        frontend: true
+    };
     try {
-        const app = await startGhost();
+        const app = await startGhost(bootOptions);
         const originURL = configUtils.config.get('url');
 
         return new GhostAPITestAgent(app, {
@@ -286,8 +300,12 @@ const getWebmentionsAPIAgent = async () => {
  * @returns {Promise<InstanceType<GhostAPITestAgent>>} agent
  */
 const getGhostAPIAgent = async () => {
+    const bootOptions = {
+        frontend: false
+    };
+
     try {
-        const app = await startGhost();
+        const app = await startGhost(bootOptions);
         const originURL = configUtils.config.get('url');
 
         return new GhostAPITestAgent(app, {
@@ -308,8 +326,12 @@ const getAgentsForMembers = async () => {
     let membersAgent;
     let adminAgent;
 
+    const bootOptions = {
+        frontend: true
+    };
+
     try {
-        const app = await startGhost();
+        const app = await startGhost(bootOptions);
         const originURL = configUtils.config.get('url');
 
         membersAgent = new MembersAPITestAgent(app, {

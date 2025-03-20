@@ -79,7 +79,8 @@
     "useMinFiles": false,
     "paths": {
         "fixtures": "test/utils/fixtures/fixtures",
-        "defaultSettings": "test/utils/fixtures/default-settings-browser.json"
+        "defaultSettings": "test/utils/fixtures/default-settings-browser.json",
+        "urlCache": "test/utils/fixtures/urls"
     },
     "enableDeveloperExperiments": true
 }

@@ -9,8 +9,6 @@ describe('SSO API', function () {
     let agent;
 
     before(async function () {
-        models.init();
-
         // Configure mock SSO adapter that always returns owner
         const owner = await models.User.getOwnerUser();
 

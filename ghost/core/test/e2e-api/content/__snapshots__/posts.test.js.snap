@@ -1322,7 +1322,7 @@ Most successful subscription businesses publish a mix of free and paid posts to 
           "profile_image": null,
           "slug": "slimer-mcectoplasm",
           "twitter": null,
-          "url": "http://127.0.0.1:2369/author/slimer-mcectoplasm/",
+          "url": "http://127.0.0.1:2369/404/",
           "website": null,
         },
       ],
@@ -1616,7 +1616,7 @@ exports[`Posts Content API Can filter posts by authors 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "public, max-age=0",
-  "content-length": "55206",
+  "content-length": "55184",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -2878,7 +2878,7 @@ exports[`Posts Content API Can include relations 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "public, max-age=0",
-  "content-length": "65535",
+  "content-length": "65513",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
