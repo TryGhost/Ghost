@@ -8731,7 +8731,7 @@
     "@types/qs" "*"
     "@types/range-parser" "*"
 
-"@types/express@*", "@types/express@4.17.21", "@types/express@^4.17.17", "@types/express@^4.17.2", "@types/express@^4.7.0":
+"@types/express@*", "@types/express@4.17.21", "@types/express@^4.17.2", "@types/express@^4.17.20", "@types/express@^4.7.0":
   version "4.17.21"
   resolved "https://registry.yarnpkg.com/@types/express/-/express-4.17.21.tgz#c26d4a151e60efe0084b23dc3369ebc631ed192d"
   integrity sha512-ejlPM315qwLpaQlQDTjPdsUFSc6ZsP4AN6AlWnogPjQ7CVi7PYF3YVz+CY3jE2pwYf7E/7HlDAN0rV2GxTG0HQ==
@@ -8820,11 +8820,19 @@
   resolved "https://registry.yarnpkg.com/@types/json-schema/-/json-schema-7.0.12.tgz#d70faba7039d5fca54c83c7dbab41051d2b6f6cb"
   integrity sha512-Hr5Jfhc9eYOQNPYO5WLDq/n4jqijdHNlDXjuAQkkt+mWdQR+XJToOHrsD4cPaMXpn6KO7y2+wM8AZEs8VpBLVA==
 
-"@types/jsonwebtoken@9.0.6", "@types/jsonwebtoken@^9", "@types/jsonwebtoken@^9.0.2":
+"@types/jsonwebtoken@9.0.6":
   version "9.0.6"
   resolved "https://registry.yarnpkg.com/@types/jsonwebtoken/-/jsonwebtoken-9.0.6.tgz#d1af3544d99ad992fb6681bbe60676e06b032bd3"
   integrity sha512-/5hndP5dCjloafCXns6SZyESp3Ldq7YjH3zwzwczYnjxIT0Fqzk5ROSYVGfFyczIue7IUEj8hkvLbPoLQ18vQw==
   dependencies:
+    "@types/node" "*"
+
+"@types/jsonwebtoken@^9", "@types/jsonwebtoken@^9.0.4":
+  version "9.0.9"
+  resolved "https://registry.yarnpkg.com/@types/jsonwebtoken/-/jsonwebtoken-9.0.9.tgz#a4c3a446c0ebaaf467a58398382616f416345fb3"
+  integrity sha512-uoe+GxEuHbvy12OUQct2X9JenKM3qAscquYymuQN4fMWG9DBQtykrQEFcAbVACF7qaLw9BePSodUL0kquqBJpQ==
+  dependencies:
+    "@types/ms" "*"
     "@types/node" "*"
 
 "@types/keygrip@*":
@@ -8890,6 +8898,11 @@
   version "10.0.1"
   resolved "https://registry.yarnpkg.com/@types/mocha/-/mocha-10.0.1.tgz#2f4f65bb08bc368ac39c96da7b2f09140b26851b"
   integrity sha512-/fvYntiO1GeICvqbQ3doGDIP97vWmvFt83GKguJ6prmQM2iXZfFcq6YE8KteFyRtX2/h5Hf91BYvPodJKFYv5Q==
+
+"@types/ms@*":
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/@types/ms/-/ms-2.1.0.tgz#052aa67a48eccc4309d7f0191b7e41434b90bb78"
+  integrity sha512-GsCCIZDE/p3i96vtEqx+7dBUGXrc7zeSK3wwPHIaRThS+9OhWIXRqzs4d6k1SVU8g91DrNRWxWUGhp5KXQb2VA==
 
 "@types/node-fetch@^2.6.4":
   version "2.6.4"
@@ -21894,7 +21907,7 @@ jiti@^1.18.2, jiti@^1.21.0:
   resolved "https://registry.yarnpkg.com/jiti/-/jiti-1.21.0.tgz#7c97f8fe045724e136a397f7340475244156105d"
   integrity sha512-gFqAIbuKyyso/3G2qhiO2OM6shY6EPP/R0+mkDbyspxKazh8BXDC5FiFsUjlczgdNz/vfra0da2y+aHrusLG/Q==
 
-jose@4.15.9, jose@^4.14.6:
+jose@4.15.9, jose@^4.15.4:
   version "4.15.9"
   resolved "https://registry.yarnpkg.com/jose/-/jose-4.15.9.tgz#9b68eda29e9a0614c042fa29387196c7dd800100"
   integrity sha512-1vUQX+IdDMVPj4k8kOxgUqlcK518yluMuGZwqlr44FS1ppZB/5GWh4rZG89erpOBOJjU/OBsnCVFfapsRz6nEA==
@@ -22269,15 +22282,15 @@ jwk-to-pem@2.0.6:
     elliptic "^6.5.7"
     safe-buffer "^5.0.1"
 
-jwks-rsa@3.1.0:
-  version "3.1.0"
-  resolved "https://registry.yarnpkg.com/jwks-rsa/-/jwks-rsa-3.1.0.tgz#50406f23e38c9b2682cd437f824d7d61aa983171"
-  integrity sha512-v7nqlfezb9YfHHzYII3ef2a2j1XnGeSE/bK3WfumaYCqONAIstJbrEGapz4kadScZzEt7zYCN7bucj8C0Mv/Rg==
+jwks-rsa@3.2.0:
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/jwks-rsa/-/jwks-rsa-3.2.0.tgz#132bc8bfa7b03928a273bbc93486f70226449e04"
+  integrity sha512-PwchfHcQK/5PSydeKCs1ylNym0w/SSv8a62DgHJ//7x2ZclCoinlsjAfDxAAbpoTPybOum/Jgy+vkvMmKz89Ww==
   dependencies:
-    "@types/express" "^4.17.17"
-    "@types/jsonwebtoken" "^9.0.2"
+    "@types/express" "^4.17.20"
+    "@types/jsonwebtoken" "^9.0.4"
     debug "^4.3.4"
-    jose "^4.14.6"
+    jose "^4.15.4"
     limiter "^1.1.5"
     lru-memoizer "^2.2.0"
 
@@ -24550,10 +24563,10 @@ mysql2@3.11.4:
     seq-queue "^0.0.5"
     sqlstring "^2.3.2"
 
-mysql2@3.12.0:
-  version "3.12.0"
-  resolved "https://registry.yarnpkg.com/mysql2/-/mysql2-3.12.0.tgz#db8fc770f8b76ebaba49dc4bbfe2a1754057d882"
-  integrity sha512-C8fWhVysZoH63tJbX8d10IAoYCyXy4fdRFz2Ihrt9jtPILYynFEKUUzpp1U7qxzDc3tMbotvaBH+sl6bFnGZiw==
+mysql2@3.14.0:
+  version "3.14.0"
+  resolved "https://registry.yarnpkg.com/mysql2/-/mysql2-3.14.0.tgz#5a7ab528f3249ace2d0ac1180c7ac1ea40bfe20b"
+  integrity sha512-8eMhmG6gt/hRkU1G+8KlGOdQi2w+CgtNoD1ksXZq9gQfkfDsX4LHaBwTe1SY0Imx//t2iZA03DFnyYKPinxSRw==
   dependencies:
     aws-ssl-profiles "^1.1.1"
     denque "^2.1.0"

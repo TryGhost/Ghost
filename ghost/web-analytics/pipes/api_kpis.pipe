@@ -1,4 +1,4 @@
-VERSION 0
+VERSION 1
 
 TAGS "v0"
 
@@ -95,6 +95,19 @@ SQL >
                         location,
                         domainWithoutWWW(referrer) as source,
                         pathname,
+                        case
+                            when match(user_agent, 'windows')
+                            then 'windows'
+                            when match(user_agent, 'mac')
+                            then 'macos'
+                            when match(user_agent, 'linux')
+                            then 'linux'
+                            when match(user_agent, 'android')
+                            then 'android'
+                            when match(user_agent, 'iphone|ipad|ipod')
+                            then 'ios'
+                            else 'Unknown'
+                        END as os,
                         uniq(session_id) as visits,
                         count() as pageviews,
                         case when min(timestamp) = max(timestamp) then 1 else 0 end as is_bounce,
@@ -102,7 +115,7 @@ SQL >
                         min(timestamp) as first_view_aux
                     from parsed_hits
                     where toDate(timestamp) = {{ Date(date_from) }}
-                    group by toStartOfHour(timestamp), session_id, site_uuid, member_status, device, browser, location, source, pathname
+                    group by toStartOfHour(timestamp), session_id, site_uuid, member_status, device, browser, location, source, pathname, os
                 {% else %}
                     select
                         site_uuid,
@@ -113,6 +126,7 @@ SQL >
                         location,
                         source,
                         pathname,
+                        os,
                         session_id,
                         uniq(session_id) as visits,
                         countMerge(pageviews) as pageviews,
@@ -127,7 +141,7 @@ SQL >
                         {% if defined(date_to) %} and date <= {{ Date(date_to) }}
                         {% else %} and date <= today()
                         {% end %}
-                    group by date, session_id, site_uuid, member_status, device, browser, location, source, pathname
+                    group by date, session_id, site_uuid, member_status, device, browser, location, source, pathname, os
                 {% end %}
 
 
@@ -148,6 +162,7 @@ SQL >
                     {% if defined(member_status) %} and member_status IN {{ Array(member_status, "'undefined', 'free', 'paid'", description="Member status to filter on", required=False) }} {% end %}
                     {% if defined(device) %} and device = {{ String(device, description="Device to filter on", required=False) }} {% end %}
                     {% if defined(browser) %} and browser = {{ String(browser, description="Browser to filter on", required=False) }} {% end %}
+                    {% if defined(os) %} and os = {{ String(os, description="Operating system to filter on", required=False) }} {% end %}
                     {% if defined(source) %} and source = {{ String(source, description="Source to filter on", required=False) }} {% end %}
                     {% if defined(location) %} and location = {{ String(location, description="Location to filter on", required=False) }} {% end %}
                     {% if defined(pathname) %} and pathname = {{ String(pathname, description="Pathname to filter on", required=False) }} {% end %}

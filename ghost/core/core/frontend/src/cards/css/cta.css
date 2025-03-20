@@ -95,7 +95,7 @@
 .kg-cta-content {
     display: flex;
     padding: 1.5em;
-    gap: 1.5em;
+    gap: 1.5em 1.5em 1.7em;
 }
 
 @media (max-width: 600px) {
@@ -151,7 +151,7 @@
     }
 }
 
-.kg-cta-centered .kg-cta-content-inner {
+.kg-cta-immersive.kg-cta-centered .kg-cta-content-inner {
     align-items: center;
 }
 
@@ -182,7 +182,12 @@
 
 .kg-cta-text p {
     margin: 0;
+    line-height: 1.5em;
     text-wrap: pretty;
+}
+
+.kg-cta-bg-none .kg-cta-text p {
+    line-height: unset;
 }
 
 .kg-cta-immersive.kg-cta-centered .kg-cta-text {

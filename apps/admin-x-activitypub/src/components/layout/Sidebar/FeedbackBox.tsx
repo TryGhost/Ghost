@@ -11,7 +11,7 @@ const FeedbackBox: React.FC = () => {
         NiceModal.show(ArticleModal, {
             activityId: targetPostId,
             object: {
-                content: `<p>Welcome the Ghost social web beta!</p><p>We’d love to hear your thoughts and feedback. Reply to this note to let us know what’s working well, and what isn’t.</p>`,
+                content: `<p>Welcome to the Ghost social web beta!</p><p>We’d love to hear your thoughts and feedback. Reply to this note to let us know what’s working well, and what isn’t.</p>`,
                 id: targetPostId,
                 published: '2025-03-17T09:45:00Z',
                 type: 'Note',

@@ -1,4 +1,4 @@
-VERSION 0
+VERSION 1
 
 TAGS "v0"
 
@@ -18,7 +18,7 @@ SQL >
         location,
         source,
         pathname,
-        maxIfState(member_status, member_status IN ('paid', 'free', 'undefined')) AS member_status,
+        maxSimpleState(member_status) AS member_status,
         uniqState(session_id) AS visits,
         countState() AS pageviews
     FROM hits

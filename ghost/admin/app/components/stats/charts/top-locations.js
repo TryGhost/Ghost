@@ -6,6 +6,7 @@ import React from 'react';
 import countries from 'i18n-iso-countries';
 import enLocale from 'i18n-iso-countries/langs/en.json';
 import {BarList, useQuery} from '@tinybirdco/charts';
+import {STATS_LABEL_MAPPINGS} from '../../../utils/stats';
 import {TB_VERSION, barListColor, getCountryFlag, getStatsParams} from 'ghost-admin/utils/stats';
 import {action} from '@ember/object';
 import {formatNumber} from 'ghost-admin/helpers/format-number';
@@ -50,7 +51,7 @@ export default class TopLocations extends Component {
     }
 
     getCountryName = (label) => {
-        return countries.getName(label, 'en') || 'Unknown';
+        return STATS_LABEL_MAPPINGS[label] || countries.getName(label, 'en') || 'Unknown';
     };
 
     ReactComponent = (props) => {
@@ -85,7 +86,7 @@ export default class TopLocations extends Component {
                                     e.preventDefault();
                                     this.navigateToFilter(label || 'Unknown');
                                 }}
-                                className="gh-stats-domain"
+                                className="gh-stats-bar-text"
                             >
                                 <span title={this.getCountryName(label) || 'Unknown'}>{getCountryFlag(label)} {this.getCountryName(label) || 'Unknown' || 'Unknown'}</span>
                             </a>
