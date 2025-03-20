@@ -1,6 +1,6 @@
 import moment from 'moment-timezone';
 
-export const TB_VERSION = 2;
+export const TB_VERSION = 3;
 
 export const RANGE_OPTIONS = [
     {name: 'Last 24 hours', value: 1},
