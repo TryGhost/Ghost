@@ -78,7 +78,13 @@ const Step1: React.FC = () => {
                                 </div>
                             </div>
                         </div>
-                        <p className='leading-tight text-gray-800 dark:text-gray-600'>{account?.bio || <Skeleton count={3} randomize={true} />}</p>
+                        <p className='leading-tight text-gray-800 dark:text-gray-600'>
+                            {account?.bio ? (
+                                <span dangerouslySetInnerHTML={{__html: account.bio}} />
+                            ) : (
+                                <Skeleton count={3} randomize={true} />
+                            )}
+                        </p>
                         <div className='mt-1 flex gap-2 text-sm text-gray-800 dark:text-gray-600'>
                             <div className='flex [&>*:not(:first-child)]:-ml-2 [&>*:nth-child(1)]:z-30 [&>*:nth-child(2)]:z-20 [&>*:nth-child(3)]:z-10 [&>*]:pointer-events-none [&>*]:h-5 [&>*]:w-5 [&>*]:border [&>*]:border-white dark:[&>*]:border-[#101114] [&_img]:h-5 [&_img]:w-5'>
                                 {transformedUsers.map(user => (
