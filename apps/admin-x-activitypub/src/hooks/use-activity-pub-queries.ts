@@ -1376,7 +1376,7 @@ export function useDeleteMutationForUser(handle: string) {
                     if (!currentAccount) return currentAccount;
                     return {
                         ...currentAccount,
-                        likedCount: Math.max(0, currentAccount.likedCount)
+                        likedCount: Math.max(0, currentAccount.likedCount - 1)
                     };
                 });
             }
