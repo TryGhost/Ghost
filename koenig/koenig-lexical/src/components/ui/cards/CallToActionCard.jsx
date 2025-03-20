@@ -366,7 +366,7 @@ export function CallToActionCard({
                         </div>
                     )}
                     <div className={clsx(
-                        'flex flex-col gap-6', 
+                        'flex w-full flex-col gap-6', 
                         layout === 'immersive' && alignment === 'center' ? 'items-center' : ''
                     )}>
                         {/* HTML content */}
