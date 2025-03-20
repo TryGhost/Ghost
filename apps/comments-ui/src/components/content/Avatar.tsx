@@ -77,17 +77,17 @@ export const Avatar: React.FC<AvatarProps> = ({comment, member: propMember}) => 
         <>
             {memberName ?
                 (<div className={`flex items-center justify-center rounded-full ${dimensionClasses}`} data-testid="avatar-background" style={avatarStyle}>
-                    <p className="font-sans text-base font-semibold text-white">{memberInitials}</p>
+                    <p aria-hidden="true" className="font-sans text-base font-semibold text-white">{memberInitials}</p>
                 </div>) :
                 (<div className={`flex items-center justify-center rounded-full bg-neutral-900 dark:bg-white/70 ${dimensionClasses}`} data-testid="avatar-background">
                     <AvatarIcon className="stroke-white dark:stroke-black/60" />
                 </div>)}
-            {activeMember?.avatar_image && <img alt="Avatar" className={`absolute left-0 top-0 rounded-full ${dimensionClasses}`} data-testid="avatar-image" src={activeMember.avatar_image} />}
+            {activeMember?.avatar_image && <img role="presentation" className={`absolute left-0 top-0 rounded-full ${dimensionClasses}`} data-testid="avatar-image" src={activeMember.avatar_image} />}
         </>
     );
 
     return (
-        <figure className={`relative ${dimensionClasses}`} data-testid="avatar">
+        <figure className={`relative ${dimensionClasses}`} data-testid="avatar" role="presentation">
             {avatarEl}
         </figure>
     );
