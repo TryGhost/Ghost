@@ -2,7 +2,7 @@ export function stripHtml(html: string): string {
     return html.replace(/<[^>]*>/g, '');
 }
 
-export const formatArticle = (content: string, postUrl: string) => {
+export const formatArticle = (content: string, postUrl?: string) => {
     // Create a temporary div to parse the HTML
     const div = document.createElement('div');
     div.innerHTML = content;
