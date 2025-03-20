@@ -144,27 +144,25 @@ const enableLabs = async (page) => {
 };
 
 /**
- * Delete all members, 1 by 1, using the UI
+ * Delete all members, 1 by 1, using the API
  * @param {import('@playwright/test').Page} page
  */
 const deleteAllMembers = async (page) => {
-    await page.locator('a[href="#/members/"]').first().click();
+    // Get all members from the API (max of 100, but that should be sufficient)
+    const response = await page.request.get('/ghost/api/admin/members/?limit=100');
+    const data = await response.json();
+    const members = data.members;
 
-    const firstMember = page.locator('.gh-list tbody tr').first();
-    while (await Promise.race([
-        firstMember.waitFor({state: 'visible', timeout: 1000}).then(() => true),
-        page.locator('.gh-members-empty').waitFor({state: 'visible', timeout: 1000}).then(() => false)
-    ]).catch(() => false)) {
-        await firstMember.click();
-        await page.locator('.view-actions .dropdown > button').click();
-        await page.getByRole('button', {name: 'Delete member'}).click();
-        await page
-            .locator('.modal-content')
-            .filter({hasText: 'Delete member'})
-            .first()
-            .getByRole('button', {name: 'Delete member'})
-            .click();
+    // Delete all members
+    for (const member of members) {
+        await page.request.delete(`/ghost/api/admin/members/${member.id}/`);
     }
+
+    // Confirm all members were deleted
+    const newResponse = await page.request.get('/ghost/api/admin/members/?limit=100');
+    const newData = await newResponse.json();
+    const newMembers = newData.members;
+    expect(newMembers, 'Failed to delete all members').toHaveLength(0);
 };
 
 /**
@@ -430,6 +428,8 @@ const createMember = async (page, {email, name, note, label = '', compedPlan}) =
 const createPostDraft = async (page, {title = 'Hello world', body = 'This is my post body.'} = {}) => {
     await page.locator('.gh-nav a[href="#/posts/"]').click();
 
+    const createPostPromise = page.waitForResponse(response => response.url().includes('/ghost/api/admin/posts/') && response.status() === 201);
+
     // Create a new post
     await page.locator('[data-test-new-post-button]').click();
 
@@ -442,10 +442,15 @@ const createPostDraft = async (page, {title = 'Hello world', body = 'This is my 
 
     // Continue to the body by pressing enter
     await page.keyboard.press('Enter');
+    const response = await createPostPromise;
+    const responseBody = await response.json();
+    const slug = responseBody.posts[0].slug;
 
     const postStatus = await page.locator('[data-test-editor-post-status]');
     await expect(postStatus).toHaveText('Draft - Saved');
     await page.keyboard.type(body);
+
+    return slug;
 };
 
 /**
