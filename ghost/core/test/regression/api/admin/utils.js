@@ -207,7 +207,12 @@ module.exports = {
     },
 
     async startGhost(overrides = {}) {
-        return await testUtils.startGhost(overrides);
+        const defaults = {
+            backend: true,
+            frontend: false
+        };
+
+        return await testUtils.startGhost(Object.assign(defaults, overrides));
     },
 
     getValidAdminToken(endpoint, key) {

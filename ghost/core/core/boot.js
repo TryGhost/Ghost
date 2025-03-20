@@ -78,8 +78,9 @@ async function initDatabase({config}) {
  * @param {object} options
  * @param {object} options.ghostServer
  * @param {object} options.config
+ * @param {boolean} options.frontend
  */
-async function initCore({ghostServer, config}) {
+async function initCore({ghostServer, config, frontend}) {
     debug('Begin: initCore');
 
     // URL Utils is a bit slow, put it here so the timing is visible separate from models
@@ -111,7 +112,9 @@ async function initCore({ghostServer, config}) {
     // Note: there is no await here, we do not wait for the url service to finish
     // We can return, but the site will remain in maintenance mode until this finishes
     // This is managed on request: https://github.com/TryGhost/Ghost/blob/main/core/app.js#L10
-    urlService.init();
+    urlService.init({
+        urlCache: !frontend // hacky parameter to make the cache initialization kick in as we can't initialize labs before the boot
+    });
     debug('End: Url Service');
 
     if (ghostServer) {
@@ -554,7 +557,7 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
 
         // Step 4 - Load Ghost with all its services
         debug('Begin: Load Ghost Services & Apps');
-        await initCore({ghostServer, config});
+        await initCore({ghostServer, config, frontend});
 
         // Instrument the knex instance and connection pool if prometheus is enabled
         // Needs to be after initCore because the pool is destroyed and recreated in initCore, which removes the event listeners

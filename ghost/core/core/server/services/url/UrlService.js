@@ -3,6 +3,7 @@ const _ = require('lodash');
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const metrics = require('@tryghost/metrics');
+const labs = require('../../../shared/labs');
 const UrlGenerator = require('./UrlGenerator');
 const Queue = require('./Queue');
 const Urls = require('./Urls');
@@ -25,8 +26,9 @@ class UrlService {
      * @param {Function} [options.cache.read] - read cache by type
      * @param {Function} [options.cache.write] - write into cache by type
      */
-    constructor() {
+    constructor({cache} = {}) {
         this.utils = urlUtils;
+        this.cache = cache;
         this.finished = false;
         this.urlGenerators = [];
 
@@ -295,19 +297,43 @@ class UrlService {
 
     /**
      * @description Initializes components needed for the URL Service to function
+     * @param {Object} options
+     * @param {Boolean} [options.urlCache] - whether to init using url cache or not
      */
-    async init() {
-        this.resources.initEventListeners();
-        await this.resources.fetchResources();
-        // CASE: all resources are fetched, start the queue
-        this.queue.start({
-            event: 'init',
-            tolerance: 100,
-            requiredSubscriberCount: 1
-        });
+    async init({urlCache} = {}) {
+        let persistedUrls;
+        let persistedResources;
+
+        if (this.cache && (labs.isSet('urlCache') || urlCache)) {
+            persistedUrls = await this.cache.read('urls');
+            persistedResources = await this.cache.read('resources');
+        }
+
+        if (persistedUrls && persistedResources) {
+            this.urls.urls = persistedUrls;
+            this.resources.data = persistedResources;
+            this.resources.initEventListeners();
+
+            this._onQueueEnded('init');
+        } else {
+            this.resources.initEventListeners();
+            await this.resources.fetchResources();
+            // CASE: all resources are fetched, start the queue
+            this.queue.start({
+                event: 'init',
+                tolerance: 100,
+                requiredSubscriberCount: 1
+            });
+        }
     }
 
     async shutdown() {
+        if (!labs.isSet('urlCache')) {
+            return null;
+        }
+
+        await this.cache.write('urls', this.urls.urls);
+        await this.cache.write('resources', this.resources.getAll());
     }
 
     /**

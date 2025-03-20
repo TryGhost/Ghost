@@ -133,7 +133,7 @@ const restartModeGhostStart = async ({frontend, copyThemes, copySettings}) => {
     // Reload the URL service & wait for it to be ready again
     // @TODO: why/how is this different to urlService.resetGenerators?
     urlServiceUtils.reset();
-    urlServiceUtils.init();
+    urlServiceUtils.init({urlCache: !frontend});
 
     if (frontend) {
         await urlServiceUtils.isFinished();
