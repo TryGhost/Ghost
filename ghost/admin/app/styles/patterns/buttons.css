@@ -116,17 +116,20 @@ fieldset[disabled] .gh-btn {
     color: #fff;
     fill: #fff;
     background: var(--green);
+    border-color: var(--green);
 }
 
 .gh-btn-green:hover {
     color: #fff !important;
     background: color-mod(var(--green) l(-4%)) !important;
+    border-color: color-mod(var(--green) l(-4%)) !important;
 }
 
 /* When clicked or focused with keyboard */
 .gh-btn-green:active,
 .gh-btn-green:focus {
     background: color-mod(var(--green) l(-7%)) !important;
+    border-color: color-mod(var(--green) l(-7%)) !important;
 }
 
 

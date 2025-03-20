@@ -194,6 +194,7 @@ const AddRecommendationModal: React.FC<RoutingModalProps & AddRecommendationModa
         <p className="mt-4">You can recommend <strong>any site</strong> your audience will find valuable, not just those published on Ghost.</p>
         <Form
             marginBottom={false}
+            margins='xs'
             marginTop
         >
             <TextField
