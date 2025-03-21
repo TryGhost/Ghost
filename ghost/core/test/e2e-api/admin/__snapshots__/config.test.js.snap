@@ -22,6 +22,7 @@ Object {
       "customFonts": true,
       "editorExcerpt": true,
       "emailCustomization": true,
+      "explore": true,
       "i18n": true,
       "importMemberTier": true,
       "lexicalIndicators": true,
