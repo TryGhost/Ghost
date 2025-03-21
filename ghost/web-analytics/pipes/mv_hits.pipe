@@ -1,11 +1,9 @@
-VERSION 3
-TAGS "v0"
+TOKEN "mv_hits_endpoint_read_2373" READ
 
-NODE parsed_hits
+NODE mv_hits_0
 SQL >
 
-    SELECT
-        timestamp,
+    SELECT timestamp,
         action,
         version,
         coalesce(session_id, '0') as session_id,
@@ -25,7 +23,7 @@ SQL >
 
 
 
-NODE hits
+NODE mv_hits_1
 SQL >
 
     SELECT
@@ -77,61 +75,9 @@ SQL >
             then 'safari'
             else 'Unknown'
         END as browser
-    FROM parsed_hits
-
-
-
-NODE _sources_0
-SQL >
-
-    WITH
-        (
-            SELECT domainWithoutWWW(href)
-            FROM hits
-            LIMIT 1
-        ) AS current_domain,
-        sessions AS
-        (
-            SELECT
-                session_id,
-                argMin(source, timestamp) AS source,
-                maxSimpleState(member_status) AS member_status
-            FROM hits
-            GROUP BY session_id
-        )
-    SELECT
-        a.site_uuid,
-        toDate(a.timestamp) AS date,
-        a.session_id,
-        a.device,
-        a.os,
-        a.browser,
-        a.location,
-        b.source AS source,
-        a.pathname,
-        a.post_type,
-        a.post_uuid,
-        b.member_status AS member_status,
-        uniqState(a.session_id) AS visits,
-        countState() AS pageviews
-    FROM hits AS a
-    INNER JOIN sessions AS b ON a.session_id = b.session_id
-    GROUP BY
-        a.site_uuid,
-        toDate(a.timestamp),
-        a.session_id,
-        a.device,
-        a.os,
-        a.browser,
-        a.location,
-        b.member_status,
-        b.source,
-        a.pathname,
-        a.post_type,
-        a.post_uuid
-    HAVING b.source != current_domain
+    FROM mv_hits_0
 
 TYPE materialized
-DATASOURCE _mv_sources
+DATASOURCE _mv_hits
 
 

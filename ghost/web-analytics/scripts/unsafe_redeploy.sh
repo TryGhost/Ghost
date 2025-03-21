@@ -7,8 +7,16 @@ if [[ "$@" == *"--force"* ]]; then
     force=true
 fi
 
-# Prompt for version number
-read -p "Enter version number to cleanup (e.g., 0): " version
+# Get version from arguments or prompt
+version=0
+if [[ "$@" =~ --version=([0-9]+) ]]; then
+    version="${BASH_REMATCH[1]}"
+else
+    read -p "Enter version number to cleanup (default: 0): " input_version
+    if [ ! -z "$input_version" ]; then
+        version=$input_version
+    fi
+fi
 
 # Get current branch info
 branch_info=$(tb branch current)
@@ -24,7 +32,7 @@ if echo "$branch_info" | grep -q "main" && echo "$branch_info" | grep -q "produc
     fi
 fi
 
-echo "Proceeding with unsafe redeploy..."
+echo "Proceeding with unsafe redeploy for version ${version}..."
 
 # Store the lists to avoid multiple calls
 datasources=$(tb datasource ls)
@@ -32,48 +40,117 @@ pipes=$(tb pipe ls)
 
 # Define arrays for each type of resource
 materialized_views=(
-    "analytics_pages_mv"
-    "analytics_sessions_mv"
-    "analytics_sources_mv"
+    "_mv_pages"
+    "_mv_sessions"
+    "_mv_sources"
 )
 
 data_pipes=(
-    "analytics_pages"
-    "analytics_sessions"
-    "analytics_sources"
-    "analytics_hits"
+    "mv_pages"
+    "mv_sessions"
+    "mv_sources"
 )
 
 endpoint_pipes=(
-    "kpis"
-    "top_browsers"
-    "top_devices"
-    "top_locations"
-    "top_pages"
-    "top_sources"
-    "trend"
+    "api_kpis"
+    "api_top_browsers"
+    "api_top_devices"
+    "api_top_locations"
+    "api_top_os"
+    "api_top_pages"
+    "api_top_sources"
 )
+
+include_files=(
+    "_hits"
+    "_parsed_hits"
+)
+
+# Function to safely remove a resource
+safe_remove() {
+    local type=$1
+    local name=$2
+    local version=$3
+    
+    if [ "$type" == "pipe" ]; then
+        if echo "$pipes" | grep -q "${name}"; then
+            echo "Removing pipe: ${name}__v${version}"
+            tb pipe rm "${name}__v${version}" --yes || true
+        else
+            echo "Pipe not found: ${name}__v${version}"
+        fi
+    elif [ "$type" == "datasource" ]; then
+        if echo "$datasources" | grep -q "${name}"; then
+            echo "Removing datasource: ${name}__v${version}"
+            tb datasource rm "${name}__v${version}" --yes || true
+        else
+            echo "Datasource not found: ${name}__v${version}"
+        fi
+    elif [ "$type" == "include" ]; then
+        if echo "$pipes" | grep -q "${name}"; then
+            echo "Removing include: ${name}__v${version}"
+            tb pipe rm "${name}__v${version}" --yes || true
+        else
+            echo "Include not found: ${name}__v${version}"
+        fi
+    fi
+}
+
+# Function to update version in files
+update_file_versions() {
+    local new_version=$1
+    echo "Updating version to ${new_version} in all files..."
+    
+    # Update pipe files
+    for pipe in "${endpoint_pipes[@]}" "${data_pipes[@]}"; do
+        pipe_file="pipes/${pipe}.pipe"
+        if [ -f "$pipe_file" ]; then
+            echo "Updating version in ${pipe_file}"
+            sed -i "1s/^VERSION .*$/VERSION ${new_version}/" "$pipe_file"
+        fi
+    done
+    
+    # Update datasource files
+    for mv in "${materialized_views[@]}"; do
+        ds_file="datasources/${mv}.datasource"
+        if [ -f "$ds_file" ]; then
+            echo "Updating version in ${ds_file}"
+            sed -i "1s/^VERSION .*$/VERSION ${new_version}/" "$ds_file"
+        fi
+    done
+
+    # Update include files
+    for inc in "${include_files[@]}"; do
+        inc_file="pipes/${inc}.incl"
+        if [ -f "$inc_file" ]; then
+            echo "Updating version in ${inc_file}"
+            sed -i "1s/^VERSION .*$/VERSION ${new_version}/" "$inc_file"
+        fi
+    done
+}
 
 # Remove endpoint pipes
 for pipe in "${endpoint_pipes[@]}"; do
-    if echo "$pipes" | grep -q "${pipe}"; then
-        tb pipe rm "${pipe}__v${version}" --yes
-    fi
+    safe_remove "pipe" "$pipe" "$version"
 done
 
 # Remove materialized views
 for mv in "${materialized_views[@]}"; do
-    if echo "$datasources" | grep -q "${mv}"; then
-        tb datasource rm "${mv}__v${version}" --yes
-    fi
+    safe_remove "datasource" "$mv" "$version"
 done
 
 # Remove data pipes
 for pipe in "${data_pipes[@]}"; do
-    if echo "$pipes" | grep -q "${pipe}"; then
-        tb pipe rm "${pipe}__v${version}" --yes
-    fi
+    safe_remove "pipe" "$pipe" "$version"
 done
+
+# Remove include files
+for inc in "${include_files[@]}"; do
+    safe_remove "include" "$inc" "$version"
+done
+
+# Update version in all files to the specified version
+update_file_versions "$version"
 
 # Push all the changes
 tb push --force --populate
