@@ -51,6 +51,10 @@ const features = [{
     title: 'Sign-up CAPTCHA',
     description: 'Enable CAPTCHA for member sign-up and sign-in',
     flag: 'captcha'
+}, {
+    title: 'Explore',
+    description: 'Enables keeping in touch with the new Explore API',
+    flag: 'explore'
 }];
 
 const AlphaFeatures: React.FC = () => {
