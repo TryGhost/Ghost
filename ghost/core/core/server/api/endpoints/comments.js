@@ -42,6 +42,27 @@ const controller = {
             return result;
         }
     },
+    import: {
+        headers: {
+            cacheInvalidate: false
+        },
+        options: [
+            'id',
+            'post_id'
+        ],
+        validation: {
+            options: {
+                post_id: {
+                    required: true
+                }
+            }
+        },
+        permissions: true,
+        async query(frame) {
+            const result = await commentsService.controller.adminAdd(frame);
+            return result;
+        }        
+    },
     browse: {
         headers: {
             cacheInvalidate: false
