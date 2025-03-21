@@ -6,7 +6,6 @@ module.exports = class ExplorePingService {
         this.logging = logging;
         this.ghostVersion = ghostVersion;
         this.request = request;
-        this.labs = labs;
     }
 
     constructPayload() {
