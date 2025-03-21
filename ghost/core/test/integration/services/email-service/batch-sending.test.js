@@ -601,10 +601,13 @@ describe('Batch sending tests', function () {
             // Check that the emails were sent with the deliverytime
             for (const call of calls) {
                 const options = call.args[1];
+                assert.ok(Object.hasOwn(options, 'o:deliverytime'), 'Email options should include o:deliverytime');
+
                 const deliveryTimeString = options['o:deliverytime'];
+                assert.equal(typeof deliveryTimeString, 'string', 'Delivery time should be a string');
+
                 const deliveryTimeDate = new Date(Date.parse(deliveryTimeString));
-                assert.equal(typeof deliveryTimeString, 'string');
-                assert.ok(deliveryTimeDate.getTime() <= deadline.getTime());
+                assert.ok(deliveryTimeDate.getTime() <= deadline.getTime(), 'Delivery time should be before the deadline');
             }
             configUtils.restore();
         });
