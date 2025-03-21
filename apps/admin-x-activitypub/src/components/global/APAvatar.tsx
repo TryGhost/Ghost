@@ -7,7 +7,7 @@ import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Icon} from '@tryghost/admin-x-design-system';
 import {Skeleton} from '@tryghost/shade';
 
-type AvatarSize = '2xs' | 'xs' | 'sm' | 'lg' | 'notification';
+type AvatarSize = '2xs' | 'xs' | 'sm' | 'md' | 'lg' | 'notification';
 
 interface APAvatarProps {
     author: {
@@ -20,11 +20,12 @@ interface APAvatarProps {
     size?: AvatarSize;
     isLoading?: boolean;
     onClick?: () => void;
+    disabled?: boolean;
 }
 
-const APAvatar: React.FC<APAvatarProps> = ({author, size, isLoading = false, onClick}) => {
+const APAvatar: React.FC<APAvatarProps> = ({author, size, isLoading = false, onClick, disabled = false}) => {
     let iconSize = 18;
-    let containerClass = `shrink-0 items-center justify-center rounded-full overflow-hidden relative z-10 flex ${size === 'lg' ? '' : 'hover:opacity-80 cursor-pointer'}`;
+    let containerClass = `shrink-0 items-center justify-center rounded-full overflow-hidden relative z-10 flex bg-gray-100 dark:bg-gray-900 ${size === 'lg' || disabled ? '' : 'hover:opacity-80 cursor-pointer'}`;
     let imageClass = 'z-10 object-cover';
     const [iconUrl, setIconUrl] = useState(author?.icon?.url);
 
@@ -51,6 +52,10 @@ const APAvatar: React.FC<APAvatarProps> = ({author, size, isLoading = false, onC
     case 'sm':
         containerClass = clsx('h-10 w-10', containerClass);
         imageClass = clsx('h-10 w-10', imageClass);
+        break;
+    case 'md':
+        containerClass = clsx('h-[60px] w-[60px]', containerClass);
+        imageClass = clsx('h-[60px] w-[60px]', imageClass);
         break;
     case 'lg':
         containerClass = clsx('h-22 w-22', containerClass);
@@ -85,7 +90,7 @@ const APAvatar: React.FC<APAvatarProps> = ({author, size, isLoading = false, onC
             <div
                 className={containerClass}
                 title={title}
-                onClick={size === 'lg' ? undefined : handleClick}
+                onClick={size === 'lg' || disabled ? undefined : handleClick}
             >
                 <img
                     className={imageClass}
@@ -100,7 +105,7 @@ const APAvatar: React.FC<APAvatarProps> = ({author, size, isLoading = false, onC
         <div
             className={containerClass}
             title={title}
-            onClick={handleClick}
+            onClick={disabled ? undefined : handleClick}
         >
             <Icon
                 colorClass='text-gray-600'

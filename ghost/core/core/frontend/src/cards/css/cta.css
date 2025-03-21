@@ -72,18 +72,30 @@
     text-wrap: pretty;
 }
 
-.kg-cta-sponsor-label p span:not(a span) {
+.kg-cta-sponsor-label span:not(a span) {
     color: color-mix(in srgb, currentColor 45%, transparent);
 }
 
-.kg-cta-sponsor-label a {
+.kg-cta-sponsor-label a,
+.kg-cta-sponsor-label a span {
     color: currentColor;
+    transition: opacity 0.15s ease-in-out;
+}
+
+.kg-cta-sponsor-label a:hover,
+.kg-cta-sponsor-label a:hover span {
+    color: currentColor;
+    opacity: 0.85;
+}
+
+.kg-cta-link-accent .kg-cta-sponsor-label a {
+    color: var(--ghost-accent-color);
 }
 
 .kg-cta-content {
     display: flex;
     padding: 1.5em;
-    gap: 1.5em;
+    gap: 1.5em 1.5em 1.7em;
 }
 
 @media (max-width: 600px) {
@@ -139,11 +151,17 @@
     }
 }
 
+.kg-cta-immersive.kg-cta-centered .kg-cta-content-inner {
+    align-items: center;
+}
+
 .kg-cta-image-container {
     flex-shrink: 0;
 }
 
 .kg-cta-image-container img {
+    width: 100%;
+    height: auto;
     margin: 0;
     object-fit: cover;
     border-radius: 6px;
@@ -164,7 +182,16 @@
 
 .kg-cta-text p {
     margin: 0;
+    line-height: 1.5em;
     text-wrap: pretty;
+}
+
+.kg-cta-bg-none .kg-cta-text p {
+    line-height: unset;
+}
+
+.kg-cta-immersive.kg-cta-centered .kg-cta-text {
+    text-align: center;
 }
 
 .kg-cta-text p + p {
@@ -173,6 +200,16 @@
 
 .kg-cta-text a {
     color: currentColor;
+    transition: opacity 0.15s ease-in-out;
+}
+
+.kg-cta-text a:hover {
+    color: currentColor;
+    opacity: 0.85;
+}
+
+.kg-cta-link-accent .kg-cta-text a {
+    color: var(--ghost-accent-color);
 }
 
 a.kg-cta-button {
@@ -188,7 +225,7 @@ a.kg-cta-button {
     line-height: 1.65;
     text-decoration: none;
     border-radius: 6px;
-    transition: opacity 0.2s ease-in-out;
+    transition: opacity 0.15s ease-in-out;
 }
 
 a.kg-cta-button:hover {
@@ -199,11 +236,11 @@ a.kg-cta-button.kg-style-accent {
     background-color: var(--ghost-accent-color);
 }
 
-.kg-cta-minimal a.kg-cta-button {
+a.kg-cta-button {
     width: max-content;
 }
 
-.kg-cta-immersive a.kg-cta-button {
+.kg-cta-immersive.kg-cta-has-img a.kg-cta-button {
     width: 100%;
 }
 

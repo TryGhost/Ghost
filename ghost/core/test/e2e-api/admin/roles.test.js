@@ -21,7 +21,7 @@ describe('Roles API', function () {
         await agent.get('roles/')
             .expectStatus(200)
             .matchBodySnapshot({
-                roles: Array(10).fill(rolesObjectMatcher)
+                roles: Array(11).fill(rolesObjectMatcher)
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -33,7 +33,7 @@ describe('Roles API', function () {
         await agent.get('roles/?permissions=assign')
             .expectStatus(200)
             .matchBodySnapshot({
-                roles: Array(4).fill(rolesObjectMatcher)
+                roles: Array(5).fill(rolesObjectMatcher)
             })
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,

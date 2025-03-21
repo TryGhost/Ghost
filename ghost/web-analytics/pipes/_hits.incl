@@ -1,4 +1,4 @@
-VERSION 0
+VERSION 3
 
 TAGS "v0"
 
@@ -37,6 +37,10 @@ SQL >
             then 'macos'
             when match(user_agent, 'linux')
             then 'linux'
+            when match(user_agent, 'android')
+            then 'android'
+            when match(user_agent, 'iphone|ipad|ipod')
+            then 'ios'
             else 'Unknown'
         END as os,
         case

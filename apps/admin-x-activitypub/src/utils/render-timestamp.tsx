@@ -1,4 +1,4 @@
-import getRelativeTimestamp from './get-relative-timestamp';
+import getFormattedTimestamp from './get-formatted-timestamp';
 import {ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 
 export function formatTimestamp(date: Date): string {
@@ -12,17 +12,26 @@ export function formatTimestamp(date: Date): string {
     });
 }
 
-export function renderTimestamp(object: ObjectProperties) {
+export function renderTimestamp(object: ObjectProperties, asLink = true) {
     const date = new Date(object?.published ?? new Date());
     const timestamp = formatTimestamp(date);
+    const formattedTimestamp = getFormattedTimestamp(date);
+
+    if (asLink) {
+        return (
+            <a
+                className='whitespace-nowrap text-gray-700 hover:underline'
+                href={object.url}
+                title={timestamp}
+            >
+                {formattedTimestamp}
+            </a>
+        );
+    }
 
     return (
-        <a
-            className='whitespace-nowrap text-gray-700 hover:underline'
-            href={object.url}
-            title={timestamp}
-        >
-            {getRelativeTimestamp(date)}
-        </a>
+        <span className='whitespace-nowrap text-gray-700'>
+            {formattedTimestamp}
+        </span>
     );
 }

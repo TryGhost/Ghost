@@ -1,12 +1,11 @@
-VERSION 0
-
+VERSION 3
 TAGS "v0"
 
 SCHEMA >
     `site_uuid` String,
     `date` Date,
     `session_id` String,
-    `member_status` AggregateFunction(maxIf, String, UInt8),
+    `member_status` SimpleAggregateFunction(max, String),
     `post_uuid` SimpleAggregateFunction(any, String),
     `post_type` SimpleAggregateFunction(any, String),
     `device` SimpleAggregateFunction(any, String),
@@ -19,6 +18,6 @@ SCHEMA >
     `latest_view` SimpleAggregateFunction(max, DateTime),
     `pageviews` AggregateFunction(count)
 
-ENGINE AggregatingMergeTree
-ENGINE_PARTITION_KEY toYYYYMM(date)
-ENGINE_SORTING_KEY site_uuid, date, session_id
+ENGINE "AggregatingMergeTree"
+ENGINE_PARTITION_KEY "toYYYYMM(date)"
+ENGINE_SORTING_KEY "site_uuid, date, session_id"

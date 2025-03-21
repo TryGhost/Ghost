@@ -1,37 +1,53 @@
 import * as React from 'react';
 import APAvatar from '@components/global/APAvatar';
 import ActivityItem from '@components/activities/ActivityItem';
-import Search from '@src/components/modals/Search';
 import getName from '@utils/get-name';
 import getUsername from '@utils/get-username';
-import {Dialog, DialogContent, DialogTrigger, H4, LucideIcon, Skeleton} from '@tryghost/shade';
+import {Button, H4, LucideIcon, Skeleton} from '@tryghost/shade';
 import {handleProfileClick} from '@utils/handle-profile-click';
+import {useNavigate} from '@tryghost/admin-x-framework';
 import {useSuggestedProfilesForUser} from '@hooks/use-activity-pub-queries';
 
 const Recommendations: React.FC = () => {
     const {suggestedProfilesQuery} = useSuggestedProfilesForUser('index', 3);
     const {data: suggestedData, isLoading: isLoadingSuggested} = suggestedProfilesQuery;
     const suggested = suggestedData || Array(3).fill({actor: {}});
-    const [isSearchOpen, setIsSearchOpen] = React.useState(false);
-    const [searchQuery, setSearchQuery] = React.useState('');
+    const navigate = useNavigate();
+    let i = 0;
+
+    const hideClassName = '[@media(max-height:740px)]:hidden';
 
     return (
-        <div className='px-3'>
+        <div className={`border-t border-gray-200 px-3 pt-6 dark:border-gray-950 ${hideClassName}`}>
             <div className='mb-3 flex flex-col gap-0.5'>
                 <div className='flex items-center gap-2'>
                     <LucideIcon.Globe className='text-purple-500' size={20} strokeWidth={1.5} />
                     <H4>Follow suggestions</H4>
                 </div>
-                <span className='text-sm text-gray-600'>
+                <span className='text-sm text-gray-700'>
                     Accounts you might be interested in
                 </span>
             </div>
             <ul className='grow'>
                 {suggested.map((profile) => {
                     const actor = profile.actor;
+                    let className;
+                    switch (i) {
+                    case 0:
+                        className = '[@media(max-height:740px)]:hidden';
+                        break;
+                    case 1:
+                        className = '[@media(max-height:800px)]:hidden';
+                        break;
+                    case 2:
+                        className = '[@media(max-height:860px)]:hidden';
+                        break;
+                    }
+                    i = i + 1;
+
                     return (
                         <React.Fragment key={actor.id}>
-                            <li key={actor.id}>
+                            <li key={actor.id} className={className}>
                                 <ActivityItem
                                     onClick={() => handleProfileClick(actor)}
                                 >
@@ -46,14 +62,9 @@ const Recommendations: React.FC = () => {
                     );
                 })}
             </ul>
-            <Dialog open={isSearchOpen} onOpenChange={setIsSearchOpen}>
-                <DialogTrigger>
-                    <span className='mt-2 inline-block p-0 py-2 text-md font-semibold text-purple-500'>Find more &rarr;</span>
-                </DialogTrigger>
-                <DialogContent>
-                    <Search query={searchQuery} setQuery={setSearchQuery} onOpenChange={setIsSearchOpen} />
-                </DialogContent>
-            </Dialog>
+            <Button className='p-0 font-medium text-purple' variant='link' onClick={() => {
+                navigate('/explore');
+            }}>Find more &rarr;</Button>
         </div>
     );
 };

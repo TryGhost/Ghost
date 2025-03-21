@@ -1,6 +1,6 @@
-import React, {useState} from 'react';
-import {Button} from '@tryghost/shade';
-import {parseAccessibilitySettings, updateAccessibilitySettings} from '@utils/accessibility';
+import React from 'react';
+import {ApOnboardingSettings, parseAccessibilitySettings, updateAccessibilitySettings} from '@utils/accessibility';
+import {Outlet} from '@tryghost/admin-x-framework';
 import {useCurrentUser} from '@tryghost/admin-x-framework/api/currentUser';
 import {useEditUser} from '@tryghost/admin-x-framework/api/users';
 
@@ -8,22 +8,28 @@ export const useOnboardingStatus = () => {
     const {data: currentUser} = useCurrentUser();
     const {mutateAsync: updateUser} = useEditUser();
 
-    const isOnboarded = React.useMemo(() => {
+    const settings = React.useMemo(() => {
         if (!currentUser?.accessibility) {
-            return false;
+            return {};
         }
-        const settings = parseAccessibilitySettings(currentUser.accessibility);
-        return !!settings.apOnboarded;
+        const parsed = parseAccessibilitySettings(currentUser.accessibility);
+        return parsed.apOnboarding || {};
     }, [currentUser?.accessibility]);
 
-    const setOnboarded = React.useCallback(async (onboarded: boolean) => {
+    const updateSettings = React.useCallback(async (updates: Partial<ApOnboardingSettings>) => {
         if (!currentUser) {
             return;
         }
 
+        const currentSettings = parseAccessibilitySettings(currentUser.accessibility);
         const newSettings = updateAccessibilitySettings(
             currentUser.accessibility,
-            {apOnboarded: onboarded}
+            {
+                apOnboarding: {
+                    ...currentSettings.apOnboarding,
+                    ...updates
+                }
+            }
         );
 
         await updateUser({
@@ -32,66 +38,18 @@ export const useOnboardingStatus = () => {
         });
     }, [currentUser, updateUser]);
 
-    return {isOnboarded, setOnboarded};
+    return {
+        isOnboarded: !!settings.welcomeStepsFinished,
+        isExplainerClosed: !!settings.exploreExplainerClosed,
+        setOnboarded: (onboarded: boolean) => updateSettings({welcomeStepsFinished: onboarded}),
+        setExplainerClosed: (closed: boolean) => updateSettings({exploreExplainerClosed: closed})
+    };
 };
 
-const Step1: React.FC<{onNext: () => void}> = ({onNext}) => (
-    <div className='flex h-full flex-col gap-4 p-8'>
-        <div className=''>
-            <h2>Increase your reach, with the social web.</h2>
-            <p>In addition to your website, email newsletter and RSS feeds, Ghost now shares posts to the social web – so millions of users across Flipboard, Mastodon, Threads, Bluesky and WordPress can find & follow your work.</p>
-            <p>404Media is now part of the world’s largest open network.</p>
-        </div>
-        <div className='text-right'>
-            <Button onClick={onNext}>Next</Button>
-        </div>
-    </div>
-);
-
-const Step2: React.FC<{onNext: () => void}> = ({onNext}) => (
-    <div className='flex h-full flex-col gap-4 p-8'>
-        <div>
-            <h2>Feel the network effect.</h2>
-            <p>People who follow you can like, reply, repost and interact with your posts. Their followers will see those interactions too, distributing your content even more widely, to a brand new audience.</p>
-            <p>Best of all, you get realtime feedback and visibility when something you’ve created is spreading fast across the social web.</p>
-        </div>
-        <div className='text-right'>
-            <Button onClick={onNext}>Next</Button>
-        </div>
-    </div>
-);
-
-const Step3: React.FC<{onComplete: () => Promise<void>}> = ({onComplete}) => (
-    <div className='flex h-full flex-col gap-4 p-8'>
-        <div>
-            <h2>Find inspiration & follow what you love.</h2>
-            <p>Follow-back your community to connect with them directly, or subscribe to your peers for inspiration to fuel your next idea. You now have a native social web reader inside Ghost for keeping track of your favourite creators across different platforms. </p>
-        </div>
-        <div className='text-right'>
-            <Button onClick={onComplete}>Done</Button>
-        </div>
-    </div>
-);
-
 const Onboarding: React.FC = () => {
-    const {setOnboarded} = useOnboardingStatus();
-    const [currentStep, setCurrentStep] = useState(1);
-
-    const handleComplete = async () => {
-        await setOnboarded(true);
-    };
-
     return (
-        <div className='max-w-xl'>
-            {currentStep === 1 && (
-                <Step1 onNext={() => setCurrentStep(2)} />
-            )}
-            {currentStep === 2 && (
-                <Step2 onNext={() => setCurrentStep(3)} />
-            )}
-            {currentStep === 3 && (
-                <Step3 onComplete={handleComplete} />
-            )}
+        <div className='h-full pt-14'>
+            <Outlet />
         </div>
     );
 };

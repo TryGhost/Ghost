@@ -1,19 +1,18 @@
 import React, {useEffect, useRef, useState} from 'react';
 
 import NiceModal from '@ebay/nice-modal-react';
-import {Activity,ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, Heading, List, LoadingIndicator, NoValueLabel, Tab, TabView} from '@tryghost/admin-x-design-system';
 import {Skeleton} from '@tryghost/shade';
 
-import {Account, FollowAccount} from '../../api/activitypub';
 import {
     type AccountFollowsQueryResult,
     type ActivityPubCollectionQueryResult,
     useAccountFollowsForUser,
     useAccountForUser,
-    useLikedForUser,
-    useOutboxForUser
+    usePostsByAccount,
+    usePostsLikedByAccount
 } from '@hooks/use-activity-pub-queries';
+import {FollowAccount} from '../../api/activitypub';
 import {handleViewContent} from '@utils/content-handlers';
 
 import APAvatar from '@components/global/APAvatar';
@@ -99,7 +98,7 @@ const useInfiniteScrollTab = <TData,>({useDataHook, emptyStateLabel, emptyStateI
                         <ul>
                             {placeholderPosts.map((activity, index) => (
                                 <li
-                                    key={activity.id}
+                                    key={`loading-${activity.id}`}
                                     className=''
                                     data-test-view-article
                                 >
@@ -124,112 +123,162 @@ const useInfiniteScrollTab = <TData,>({useDataHook, emptyStateLabel, emptyStateI
     return {items, EmptyState, LoadingState};
 };
 
-const PostsTab: React.FC<{currentUserAccount: Account | undefined}> = ({currentUserAccount}) => {
-    const {items, EmptyState, LoadingState} = useInfiniteScrollTab<Activity>({
-        useDataHook: useOutboxForUser,
-        emptyStateLabel: 'You haven\'t posted anything yet.',
-        emptyStateIcon: 'pen'
-    });
+const PostsTab: React.FC = () => {
+    const {postsByAccountQuery} = usePostsByAccount({enabled: true});
+    const {data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading} = postsByAccountQuery;
 
-    const posts = items.filter(post => (post.type === 'Announce' || post.type === 'Create') && !post.object?.inReplyTo);
+    const posts = data?.pages.flatMap(page => page.posts) ?? Array.from({length: 5}, (_, index) => ({id: `placeholder-${index}`, object: {}}));
+
+    const observerRef = useRef<IntersectionObserver | null>(null);
+    const loadMoreRef = useRef<HTMLDivElement | null>(null);
+    const endLoadMoreRef = useRef<HTMLDivElement | null>(null);
+
+    // Calculate the index at which to place the loadMoreRef - This will place it ~75% through the list
+    const loadMoreIndex = Math.max(0, Math.floor(posts.length * 0.75) - 1);
+
+    useEffect(() => {
+        if (observerRef.current) {
+            observerRef.current.disconnect();
+        }
+
+        observerRef.current = new IntersectionObserver((entries) => {
+            if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+                fetchNextPage();
+            }
+        });
+
+        if (loadMoreRef.current) {
+            observerRef.current.observe(loadMoreRef.current);
+        }
+        if (endLoadMoreRef.current) {
+            observerRef.current.observe(endLoadMoreRef.current);
+        }
+
+        return () => {
+            if (observerRef.current) {
+                observerRef.current.disconnect();
+            }
+        };
+    }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
     return (
         <>
-            <EmptyState />
-            {
-                posts.length > 0 && (
-                    <ul className='mx-auto flex max-w-[640px] flex-col'>
-                        {posts.map((activity, index) => {
-                            let canDelete = false;
-
-                            const attributedTo = activity.object?.attributedTo;
-
-                            if (typeof attributedTo === 'object' && 'id' in attributedTo) {
-                                canDelete = currentUserAccount?.id === attributedTo.id;
-                            }
-
-                            return (
-                                <li
-                                    key={activity.id}
-                                    data-test-view-article
-                                >
-                                    <FeedItem
-                                        actor={activity.actor}
-                                        allowDelete={canDelete}
-                                        layout='feed'
-                                        object={activity.object}
-                                        type={activity.type}
-                                        onClick={() => handleViewContent({
-                                            ...activity,
-                                            id: activity.object.id
-                                        }, false)}
-                                        onCommentClick={() => handleViewContent({
-                                            ...activity,
-                                            id: activity.object.id
-                                        }, true)}
-                                    />
-                                    {index < posts.length - 1 && <Separator />}
-                                </li>
-                            );
-                        })}
-                    </ul>
-                )
-            }
-            <LoadingState />
+            {hasNextPage === false && posts.length === 0 && (
+                <NoValueLabel icon='pen'>
+                    You haven&apos;t posted anything yet.
+                </NoValueLabel>
+            )}
+            <ul className='mx-auto flex max-w-[640px] flex-col'>
+                {posts.map((activity, index) => (
+                    <li
+                        key={`posts-${activity.id}`}
+                        data-test-view-article
+                    >
+                        <FeedItem
+                            actor={activity.actor}
+                            allowDelete={activity.object.authored}
+                            commentCount={activity.object.replyCount}
+                            isLoading={isLoading}
+                            layout='feed'
+                            object={activity.object}
+                            repostCount={activity.object.repostCount}
+                            type={activity.type}
+                            onClick={() => handleViewContent(activity, false)}
+                            onCommentClick={() => handleViewContent(activity, true)}
+                        />
+                        {index < posts.length - 1 && <Separator />}
+                        {index === loadMoreIndex && (
+                            <div ref={loadMoreRef} className='h-1'></div>
+                        )}
+                    </li>
+                ))}
+                {isFetchingNextPage && (
+                    <li className='flex flex-col items-center justify-center space-y-4 text-center'>
+                        <LoadingIndicator size='md' />
+                    </li>
+                )}
+            </ul>
+            <div ref={endLoadMoreRef} className='h-1'></div>
         </>
     );
 };
 
-const LikesTab: React.FC<{currentUserAccount: Account | undefined}> = ({currentUserAccount}) => {
-    const {items: liked, EmptyState, LoadingState} = useInfiniteScrollTab<Activity>({
-        useDataHook: useLikedForUser,
-        emptyStateLabel: 'You haven\'t liked anything yet.',
-        emptyStateIcon: 'heart'
-    });
+const LikesTab: React.FC = () => {
+    const {postsLikedByAccountQuery} = usePostsLikedByAccount({enabled: true});
+    const {data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading} = postsLikedByAccountQuery;
+
+    const posts = data?.pages.flatMap(page => page.posts) ?? Array.from({length: 5}, (_, index) => ({id: `placeholder-${index}`, object: {}}));
+
+    const observerRef = useRef<IntersectionObserver | null>(null);
+    const loadMoreRef = useRef<HTMLDivElement | null>(null);
+    const endLoadMoreRef = useRef<HTMLDivElement | null>(null);
+
+    // Calculate the index at which to place the loadMoreRef - This will place it ~75% through the list
+    const loadMoreIndex = Math.max(0, Math.floor(posts.length * 0.75) - 1);
+
+    useEffect(() => {
+        if (observerRef.current) {
+            observerRef.current.disconnect();
+        }
+
+        observerRef.current = new IntersectionObserver((entries) => {
+            if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+                fetchNextPage();
+            }
+        });
+
+        if (loadMoreRef.current) {
+            observerRef.current.observe(loadMoreRef.current);
+        }
+        if (endLoadMoreRef.current) {
+            observerRef.current.observe(endLoadMoreRef.current);
+        }
+
+        return () => {
+            if (observerRef.current) {
+                observerRef.current.disconnect();
+            }
+        };
+    }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
     return (
         <>
-            <EmptyState />
-            {
-                liked.length > 0 && (
-                    <ul className='mx-auto flex max-w-[640px] flex-col'>
-                        {liked.map((activity, index) => {
-                            let canDelete = false;
-
-                            const attributedTo = activity.object?.attributedTo;
-
-                            if (typeof attributedTo === 'object' && 'id' in attributedTo) {
-                                canDelete = currentUserAccount?.id === attributedTo.id;
-                            }
-
-                            return (
-                                <li
-                                    key={activity.id}
-                                    data-test-view-article
-                                >
-                                    <FeedItem
-                                        actor={activity.object?.attributedTo as ActorProperties || activity.actor}
-                                        allowDelete={canDelete}
-                                        layout='feed'
-                                        object={Object.assign({}, activity.object, {liked: true})}
-                                        type={activity.type}
-                                        onClick={() => handleViewContent({
-                                            ...activity,
-                                            id: activity.object.id
-                                        }, false)}
-                                        onCommentClick={() => handleViewContent({
-                                            ...activity,
-                                            id: activity.object.id
-                                        }, true)}
-                                    />
-                                    {index < liked.length - 1 && <Separator />}
-                                </li>
-                            );
-                        })}
-                    </ul>
-                )
-            }
-            <LoadingState />
+            {hasNextPage === false && posts.length === 0 && (
+                <NoValueLabel icon='heart'>
+                    You haven&apos;t liked anything yet.
+                </NoValueLabel>
+            )}
+            <ul className='mx-auto flex max-w-[640px] flex-col'>
+                {posts.map((activity, index) => (
+                    <li
+                        key={`likes-${activity.id}`}
+                        data-test-view-article
+                    >
+                        <FeedItem
+                            actor={activity.actor}
+                            allowDelete={activity.object.authored}
+                            commentCount={activity.object.replyCount}
+                            isLoading={isLoading}
+                            layout='feed'
+                            object={activity.object}
+                            repostCount={activity.object.repostCount}
+                            type={activity.type}
+                            onClick={() => handleViewContent(activity, false)}
+                            onCommentClick={() => handleViewContent(activity, true)}
+                        />
+                        {index < posts.length - 1 && <Separator />}
+                        {index === loadMoreIndex && (
+                            <div ref={loadMoreRef} className='h-1'></div>
+                        )}
+                    </li>
+                ))}
+                {isFetchingNextPage && (
+                    <li className='flex flex-col items-center justify-center space-y-4 text-center'>
+                        <LoadingIndicator size='md' />
+                    </li>
+                )}
+            </ul>
+            <div ref={endLoadMoreRef} className='h-1'></div>
         </>
     );
 };
@@ -349,7 +398,7 @@ const Profile: React.FC<ProfileProps> = ({}) => {
             title: 'Posts',
             contents: (
                 <div className='ap-posts'>
-                    <PostsTab currentUserAccount={account} />
+                    <PostsTab />
                 </div>
             )
         },
@@ -358,7 +407,7 @@ const Profile: React.FC<ProfileProps> = ({}) => {
             title: 'Likes',
             contents: (
                 <div className='ap-likes'>
-                    <LikesTab currentUserAccount={account} />
+                    <LikesTab />
                 </div>
             ),
             counter: account?.likedCount || 0
@@ -410,7 +459,7 @@ const Profile: React.FC<ProfileProps> = ({}) => {
     return (
         <Layout>
             <div className='relative isolate'>
-                <div className='absolute -right-8 left-0 top-0 z-0 h-[15vw] bg-[linear-gradient(265deg,#FAFAFB_0%,#F4F5F6_100%)] dark:bg-[linear-gradient(265deg,#23272C_0%,#202327_100%)]'>
+                <div className='absolute -right-8 left-0 top-0 z-0 h-[5vw]'>
                     {account?.bannerImageUrl &&
                     <div className='h-full w-full'>
                         <img
@@ -421,7 +470,7 @@ const Profile: React.FC<ProfileProps> = ({}) => {
                     </div>
                     }
                 </div>
-                <div className='relative z-10 mx-auto flex w-full max-w-[620px] flex-col items-center pb-16 pt-[calc(15vw-52px)]'>
+                <div className='relative z-10 mx-auto flex w-full max-w-[620px] flex-col items-center pb-16 pt-[calc(5vw-52px)]'>
                     <div className='mx-auto w-full'>
                         <div>
                             <div className='flex items-end justify-between'>

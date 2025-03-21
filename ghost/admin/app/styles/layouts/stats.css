@@ -40,7 +40,6 @@
     padding: 20px;
     border: 1px solid var(--whitegrey);
     border-radius: 8px;
-    overflow: hidden;
     transition: all ease-in-out 0.3s;
 }
 
@@ -139,13 +138,13 @@
 
 .gh-stats-metric-label {
     font-weight: 600;
-    font-size: 16px;
+    font-size: 15px;
     margin-bottom: 0;
 }
 
 .gh-stats-metric-value {
-    font-size: 26px;
-    letter-spacing: -0.05em;
+    font-size: 21px;
+    letter-spacing: -0.02em;
     font-weight: 600;
     line-height: 1;
 }
@@ -234,6 +233,25 @@
 
 .gh-stats-data-label {
     color: var(--black);
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.gh-stats-external-link {
+    color: var(--black);
+    line-height: 1;
+    opacity: 0;
+    transition: all ease-in-out 0.15s;
+}
+
+.gh-stats-data-label:hover .gh-stats-external-link {
+    opacity: 1;
+}
+
+.gh-stats-external-link svg {
+    width: 13px;
+    height: auto;
 }
 
 a.gh-stats-data-label:hover {
@@ -276,7 +294,7 @@ a.gh-stats-data-label:hover {
     margin-top: -20px;
 }
 
-.gh-stats-domain {
+.gh-stats-bar-text {
     display: flex;
     align-items: center;
     gap: 6px;
@@ -284,7 +302,7 @@ a.gh-stats-data-label:hover {
     line-height: 1.3em;
 }
 
-.gh-stats-domain:hover span {
+.gh-stats-bar-text:hover span {
     text-decoration: underline;
 }
 
@@ -293,10 +311,10 @@ a.gh-stats-data-label:hover {
     height: 16px;
 }
 
-.gh-stats-domain span {
+.gh-stats-bar-text span {
     display: -webkit-box;
     -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
+    -webkit-line-clamp: 1;
     overflow: hidden;
 }
 
@@ -413,6 +431,13 @@ a.gh-stats-data-label:hover {
 .gh-stats-audience-filter-btn-label {
     padding: 0 !important;
     margin: 0 !important;
+}
+
+.gh-stats-data-label .gh-stats-bar-truncate {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    display: inline-block;
 }
 
 @media (max-width: 1440px) {

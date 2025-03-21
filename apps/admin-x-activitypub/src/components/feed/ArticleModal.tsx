@@ -7,7 +7,7 @@ import getUsername from '../../utils/get-username';
 import {OptionProps, SingleValueProps, components} from 'react-select';
 import {Popover, PopoverContent, PopoverTrigger, Skeleton} from '@tryghost/shade';
 
-import {Activity, ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
+import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, Icon, LoadingIndicator, Modal, Select, SelectOption} from '@tryghost/admin-x-design-system';
 import {renderTimestamp} from '../../utils/render-timestamp';
 import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
@@ -20,6 +20,8 @@ import APReplyBox from '../global/APReplyBox';
 import DeletedFeedItem from './DeletedFeedItem';
 import TableOfContents, {TOCItem} from './TableOfContents';
 import getReadingTime from '../../utils/get-reading-time';
+import {isPendingActivity} from '../../utils/pending-activity';
+import {openLinksInNewTab} from '@src/utils/content-formatters';
 import {useDebounce} from 'use-debounce';
 
 interface ArticleModalProps {
@@ -29,7 +31,7 @@ interface ArticleModalProps {
     focusReply: boolean;
     focusReplies: boolean;
     width?: 'narrow' | 'wide';
-    updateActivity: (id: string, updated: Partial<Activity>) => void;
+    disableStats?: boolean;
     history: {
         activityId: string;
         object: ObjectProperties;
@@ -44,6 +46,7 @@ interface IframeWindow extends Window {
 const FONT_SANS = 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif';
 
 const ArticleBody: React.FC<{
+    postUrl?: string;
     heading: string;
     image: string|undefined;
     excerpt: string|undefined;
@@ -93,62 +96,81 @@ const ArticleBody: React.FC<{
                     overflow-y: hidden;
                 }
             </style>
+
             <script>
-                let isFullyLoaded = false;
-
                 function resizeIframe() {
-                    const bodyHeight = document.body.offsetHeight;
-
+                    const height = document.body.scrollHeight;
                     window.parent.postMessage({
                         type: 'resize',
-                        height: bodyHeight,
-                        isLoaded: isFullyLoaded,
-                        bodyHeight: bodyHeight
+                        bodyHeight: height,
+                        isLoaded: true
                     }, '*');
                 }
 
+                // Initialize resize observers
+                function setupResizeObservers() {
+                    // ResizeObserver for overall size changes
+                    const resizeObserver = new ResizeObserver(() => {
+                        resizeIframe();
+                    });
+                    resizeObserver.observe(document.body);
+
+                    // MutationObserver for DOM changes
+                    const mutationObserver = new MutationObserver(() => {
+                        resizeIframe();
+                    });
+                    mutationObserver.observe(document.body, {
+                        childList: true,
+                        subtree: true,
+                        attributes: true
+                    });
+
+                    // Handle window resize
+                    window.addEventListener('resize', resizeIframe);
+
+                    // Initial resize
+                    resizeIframe();
+
+                    // Clean up function
+                    return () => {
+                        resizeObserver.disconnect();
+                        mutationObserver.disconnect();
+                        window.removeEventListener('resize', resizeIframe);
+                    };
+                }
+
+                // Wait for images to load
                 function waitForImages() {
                     const images = document.getElementsByTagName('img');
-                    const imagePromises = Array.from(images).map(img => {
-                        if (img.complete) {
-                            return Promise.resolve();
-                        }
+                    Promise.all(Array.from(images).map(img => {
+                        if (img.complete) return Promise.resolve();
                         return new Promise(resolve => {
                             img.onload = resolve;
                             img.onerror = resolve;
                         });
-                    });
-                    return Promise.all(imagePromises);
+                    })).then(resizeIframe);
                 }
 
-                function initializeResize() {
-                    resizeIframe();
-                    isFullyLoaded = true;
-
-                    waitForImages().then(() => {
-                        resizeIframe();
-                    });
-                }
-
-                window.addEventListener('DOMContentLoaded', initializeResize);
-                window.addEventListener('load', resizeIframe);
-                window.addEventListener('resize', resizeIframe);
-
-                if (document.body) {
-                    const observer = new MutationObserver(resizeIframe);
-                    observer.observe(document.body, {
-                        subtree: true,
-                        childList: true,
-                        attributes: true
-                    });
-                }
-
+                // Handle external resize triggers
                 window.addEventListener('message', (event) => {
                     if (event.data.type === 'triggerResize') {
                         resizeIframe();
                     }
                 });
+
+                // Initialize everything once DOM is ready
+                document.addEventListener('DOMContentLoaded', () => {
+                    setupResizeObservers();
+                    waitForImages();
+
+                    const script = document.createElement('script');
+                    script.src = '/public/cards.min.js';
+                    document.head.appendChild(script);
+                });
             </script>
+
+            <!-- Reframe.js — a plugin that makes iframes and videos responsive -->
+            <script>!function(e,t){"object"==typeof exports&&"undefined"!=typeof module?module.exports=t():"function"==typeof define&&define.amd?define(t):(e="undefined"!=typeof globalThis?globalThis:e||self).reframe=t()}(this,function(){"use strict";function t(){for(var e=0,t=0,n=arguments.length;t<n;t++)e+=arguments[t].length;for(var i=Array(e),o=0,t=0;t<n;t++)for(var r=arguments[t],f=0,d=r.length;f<d;f++,o++)i[o]=r[f];return i}return function(e,s){return void 0===s&&(s="js-reframe"),("string"==typeof e?t(document.querySelectorAll(e)):"length"in e?t(e):[e]).forEach(function(e){var t,n,i,o,r,f,d,l;-1!==e.className.split(" ").indexOf(s)||-1<e.style.width.indexOf("%")||(i=e.getAttribute("height")||e.offsetHeight,o=e.getAttribute("width")||e.offsetWidth,r=("string"==typeof i?parseInt(i):i)/("string"==typeof o?parseInt(o):o)*100,(f=document.createElement("div")).className=s,(d=f.style).position="relative",d.width="100%",d.paddingTop=r+"%",(l=e.style).position="absolute",l.width="100%",l.height="100%",l.left="0",l.top="0",null!==(t=e.parentNode)&&void 0!==t&&t.insertBefore(f,e),null!==(n=e.parentNode)&&void 0!==n&&n.removeChild(e),f.appendChild(e))})}});</script>
         </head>
         <body>
             <header class='gh-article-header gh-canvas'>
@@ -163,8 +185,21 @@ const ArticleBody: React.FC<{
                 ` : ''}
             </header>
             <div class='gh-content gh-canvas is-body'>
-                ${html}
+                ${openLinksInNewTab(html)}
             </div>
+            <script>
+                (function () {
+                    const sources = [
+                        '.gh-content iframe[src*="youtube.com"]',
+                        '.gh-content iframe[src*="youtube-nocookie.com"]',
+                        '.gh-content iframe[src*="player.vimeo.com"]',
+                        '.gh-content iframe[src*="kickstarter.com"][src*="video.html"]',
+                        '.gh-content object',
+                        '.gh-content embed',
+                    ];
+                    reframe(document.querySelectorAll(sources.join(',')));
+                })();
+            </script>
         </body>
         </html>
     `;
@@ -192,10 +227,7 @@ const ArticleBody: React.FC<{
         };
 
         window.addEventListener('message', handleMessage);
-
-        return () => {
-            window.removeEventListener('message', handleMessage);
-        };
+        return () => window.removeEventListener('message', handleMessage);
     }, [htmlContent]);
 
     // Separate effect for style updates
@@ -373,15 +405,14 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
     focusReply,
     focusReplies,
     width = 'narrow',
-    updateActivity = () => {},
+    disableStats = false,
     history = []
 }) => {
     const MODAL_SIZE_SM = 640;
     const MODAL_SIZE_LG = 1420;
     const [isFocused, setIsFocused] = useFocusedState(focusReply);
 
-    const {threadQuery, addToThread} = useThreadForUser('index', activityId);
-    const {data: thread, isLoading: isLoadingThread} = threadQuery;
+    const {data: thread, isLoading: isLoadingThread} = useThreadForUser('index', activityId);
     const threadPostIdx = (thread?.posts ?? []).findIndex(item => item.object.id === activityId);
     const threadChildren = (thread?.posts ?? []).slice(threadPostIdx + 1);
     const threadParents = (thread?.posts ?? []).slice(0, threadPostIdx);
@@ -408,7 +439,6 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
             activityId: prevProps.activityId,
             object: prevProps.object,
             actor: prevProps.actor,
-            updateActivity,
             width,
             history
         });
@@ -425,7 +455,6 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
             activityId: nextObject.id,
             object: nextObject,
             actor: nextActor,
-            updateActivity,
             width,
             focusReply: nextFocusReply,
             history: [
@@ -444,24 +473,8 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
         // Don't need to know about setting timeouts or anything like that
     };
 
-    function handleNewReply(activity: Activity) {
-        // Add the new reply to the thread
-        activity.object.authored = true;
-        activity.id = activity.object.id;
-        addToThread(activity);
-
-        // Update the replyCount on the activity outside of the context
-        // of this component
-        updateActivity(activityId, {
-            object: {
-                ...object,
-                replyCount: (object.replyCount ?? 0) + 1
-            }
-        } as Partial<Activity>);
-
-        // Update the replyCount on the current activity loaded in the modal
-        // This is used for when we navigate via the history
-        setReplyCount((current: number) => current + 1);
+    function incrementReplyCount(step: number = 1) {
+        setReplyCount((current: number) => current + step);
     }
 
     function decrementReplyCount(step: number = 1) {
@@ -902,6 +915,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                     object={object}
                                     repostCount={object.repostCount ?? 0}
                                     showHeader={(canNavigateBack || (threadParents.length > 0))}
+                                    showStats={!disableStats}
                                     type='Note'
                                     onCommentClick={() => {
                                         repliesRef.current?.scrollIntoView({
@@ -922,6 +936,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                         html={object.content ?? ''}
                                         image={typeof object.image === 'string' ? object.image : object.image?.url}
                                         lineHeight={LINE_HEIGHTS[currentLineHeightIndex]}
+                                        postUrl={object?.url || ''}
                                         onHeadingsExtracted={handleHeadingsExtracted}
                                         onIframeLoad={handleIframeLoad}
                                         onLoadingChange={setIsLoading}
@@ -953,7 +968,8 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                 <APReplyBox
                                     focused={isFocused}
                                     object={object}
-                                    onNewReply={handleNewReply}
+                                    onReply={incrementReplyCount}
+                                    onReplyError={decrementReplyCount}
                                 />
                             </div>
                             <FeedItemDivider />
@@ -970,6 +986,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                                                 actor={item.actor}
                                                 allowDelete={item.object.authored}
                                                 commentCount={item.object.replyCount ?? 0}
+                                                isPending={isPendingActivity(item.id)}
                                                 last={true}
                                                 layout='reply'
                                                 object={item.object}

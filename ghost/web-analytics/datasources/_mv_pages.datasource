@@ -1,5 +1,4 @@
-VERSION 0
-
+VERSION 3
 TAGS "v0"
 
 SCHEMA >
@@ -13,10 +12,10 @@ SCHEMA >
     `location` String,
     `source` String,
     `pathname` String,
-    `member_status` AggregateFunction(maxIf, String, UInt8),
+    `member_status` SimpleAggregateFunction(max, String),
     `visits` AggregateFunction(uniq, String),
     `pageviews` AggregateFunction(count)
 
-ENGINE AggregatingMergeTree
-ENGINE_PARTITION_KEY toYYYYMM(date)
-ENGINE_SORTING_KEY site_uuid, date, device, os, browser, location, source, pathname, post_type, post_uuid
+ENGINE "AggregatingMergeTree"
+ENGINE_PARTITION_KEY "toYYYYMM(date)"
+ENGINE_SORTING_KEY "site_uuid, date, device, os, browser, location, source, pathname, post_type, post_uuid"
