@@ -1,9 +1,8 @@
-import React, {useEffect} from 'react';
+import React from 'react';
 import {ApOnboardingSettings, parseAccessibilitySettings, updateAccessibilitySettings} from '@utils/accessibility';
 import {Outlet} from '@tryghost/admin-x-framework';
 import {useCurrentUser} from '@tryghost/admin-x-framework/api/currentUser';
 import {useEditUser} from '@tryghost/admin-x-framework/api/users';
-import {useExploreProfilesForUser} from '@src/hooks/use-activity-pub-queries';
 
 export const useOnboardingStatus = () => {
     const {data: currentUser} = useCurrentUser();
@@ -48,12 +47,6 @@ export const useOnboardingStatus = () => {
 };
 
 const Onboarding: React.FC = () => {
-    const {prefetchExploreProfiles} = useExploreProfilesForUser('index');
-
-    useEffect(() => {
-        prefetchExploreProfiles();
-    }, [prefetchExploreProfiles]);
-
     return (
         <div className='h-full pt-14'>
             <Outlet />

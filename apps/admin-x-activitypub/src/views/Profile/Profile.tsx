@@ -98,7 +98,7 @@ const useInfiniteScrollTab = <TData,>({useDataHook, emptyStateLabel, emptyStateI
                         <ul>
                             {placeholderPosts.map((activity, index) => (
                                 <li
-                                    key={activity.id}
+                                    key={`loading-${activity.id}`}
                                     className=''
                                     data-test-view-article
                                 >
@@ -171,7 +171,7 @@ const PostsTab: React.FC = () => {
             <ul className='mx-auto flex max-w-[640px] flex-col'>
                 {posts.map((activity, index) => (
                     <li
-                        key={activity.id}
+                        key={`posts-${activity.id}`}
                         data-test-view-article
                     >
                         <FeedItem
@@ -251,7 +251,7 @@ const LikesTab: React.FC = () => {
             <ul className='mx-auto flex max-w-[640px] flex-col'>
                 {posts.map((activity, index) => (
                     <li
-                        key={activity.id}
+                        key={`likes-${activity.id}`}
                         data-test-view-article
                     >
                         <FeedItem
@@ -459,7 +459,7 @@ const Profile: React.FC<ProfileProps> = ({}) => {
     return (
         <Layout>
             <div className='relative isolate'>
-                <div className='absolute -right-8 left-0 top-0 z-0 h-[15vw] bg-[linear-gradient(265deg,#FAFAFB_0%,#F4F5F6_100%)] dark:bg-[linear-gradient(265deg,#23272C_0%,#202327_100%)]'>
+                <div className='absolute -right-8 left-0 top-0 z-0 h-[5vw]'>
                     {account?.bannerImageUrl &&
                     <div className='h-full w-full'>
                         <img
@@ -470,7 +470,7 @@ const Profile: React.FC<ProfileProps> = ({}) => {
                     </div>
                     }
                 </div>
-                <div className='relative z-10 mx-auto flex w-full max-w-[620px] flex-col items-center pb-16 pt-[calc(15vw-52px)]'>
+                <div className='relative z-10 mx-auto flex w-full max-w-[620px] flex-col items-center pb-16 pt-[calc(5vw-52px)]'>
                     <div className='mx-auto w-full'>
                         <div>
                             <div className='flex items-end justify-between'>

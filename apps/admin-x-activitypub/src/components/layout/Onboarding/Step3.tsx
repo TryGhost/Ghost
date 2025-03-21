@@ -52,7 +52,7 @@ const TabButton: React.FC<{
 
 const Sidebar: React.FC<{selectedTab?: number}> = ({selectedTab}) => {
     return (
-        <div className='flex h-full flex-col gap-px border-l border-gray-200 pl-4 pt-4'>
+        <div className='flex h-full flex-col gap-px border-l border-gray-200 pl-4 pt-4 dark:border-gray-900'>
             <MenuItem selected={selectedTab === 1}>
                 <LucideIcon.Inbox size={16} strokeWidth={1.5} /> Inbox
             </MenuItem>
@@ -119,16 +119,16 @@ const LongFormContent: React.FC = () => {
 
     return (
         <>
-            <div className='flex w-full justify-between border-b border-gray-200 py-5'>
+            <div className='flex w-full justify-between border-b border-gray-200 py-5 dark:border-gray-900'>
                 <H1>Inbox</H1>
-                <div className='flex h-[30px] w-[232px] items-center rounded-full bg-gray-100 px-2 text-gray-400'>
+                <div className='flex h-[30px] w-[232px] items-center rounded-full bg-gray-100 px-2 text-gray-400 dark:bg-gray-950'>
                     <LucideIcon.Search size={16} strokeWidth={1.5} />
                 </div>
             </div>
             <div className='grid h-full grid-cols-[auto_248px] gap-4'>
                 <div>
                     {inboxList.map(item => (
-                        <div key={item.publisher} className='flex items-center justify-between gap-8 border-b border-gray-200 py-4'>
+                        <div key={item.publisher} className='flex items-center justify-between gap-8 border-b border-gray-200 py-4 dark:border-gray-900'>
                             <div className='flex flex-col gap-1'>
                                 <div className='flex items-center gap-1.5 text-sm font-semibold'>
                                     <div className='h-4 w-4 rounded-full bg-cover bg-center bg-no-repeat' style={{
@@ -207,15 +207,15 @@ const ShortFormContent: React.FC = () => {
 
     return (
         <>
-            <div className='flex w-full justify-between border-b border-gray-200 py-5'>
+            <div className='flex w-full justify-between border-b border-gray-200 py-5 dark:border-gray-900'>
                 <H1>Feed</H1>
-                <div className='flex h-[30px] w-[232px] items-center rounded-full bg-gray-100 px-2 text-gray-400'>
+                <div className='flex h-[30px] w-[232px] items-center rounded-full bg-gray-100 px-2 text-gray-400 dark:bg-gray-950'>
                     <LucideIcon.Search size={16} strokeWidth={1.5} />
                 </div>
             </div>
             <div className='grid h-full grid-cols-[auto_248px] gap-4'>
                 <div className='mx-auto flex w-full max-w-[524px] flex-col items-center gap-4 pt-8'>
-                    <div className='mb-5 flex w-full items-center gap-3 rounded-md bg-white p-3 text-gray-600 shadow-sm'>
+                    <div className='mb-5 flex w-full items-center gap-3 rounded-md bg-white p-3 text-gray-600 shadow-sm dark:bg-gray-950'>
                         <Avatar className='h-9 w-9'>
                             <AvatarImage src={account?.avatarUrl} />
                             <AvatarFallback><LucideIcon.User strokeWidth={1.5} /></AvatarFallback>
@@ -266,7 +266,7 @@ const ShortFormContent: React.FC = () => {
 const Reader: React.FC = () => {
     return (
         <>
-            <div className='relative flex w-full items-center justify-center border-b border-gray-200 py-5'>
+            <div className='relative flex w-full items-center justify-center border-b border-gray-200 py-5 dark:border-gray-900'>
                 <div className='flex w-full max-w-[520px] items-center gap-3 text-sm'>
                     <div className='h-9 max-h-9 min-h-9 w-9 min-w-9 max-w-9 rounded-full bg-cover bg-center bg-no-repeat'
                         style={{
@@ -329,7 +329,7 @@ const Step3: React.FC = () => {
                         <p className='tracking-tight text-gray-700 dark:text-gray-600'>Follow-back your community to connect with them directly, or subscribe to your peers for inspiration to fuel your next idea. You now have a native <span className='font-semibold text-black'>social web reader</span> inside Ghost for keeping track of your favourite creators across different platforms.</p>
                     </div>
                 </div>
-                <Button className='min-w-60 bg-gradient-to-r from-purple-500 to-[#6A1AD6] hover:opacity-90' size='lg' onClick={handleComplete}>Next &rarr;</Button>
+                <Button className='min-w-60 bg-gradient-to-r from-purple-500 to-[#6A1AD6] hover:opacity-90 dark:text-white' size='lg' onClick={handleComplete}>Next &rarr;</Button>
             </Header>
             <div className='mt-8 flex h-full max-h-[760px] flex-col items-stretch justify-end'>
                 <div
@@ -367,8 +367,8 @@ const Step3: React.FC = () => {
                     </TabButton>
                 </div>
                 <div className='pointer-events-none relative -mx-14 mt-5 w-[calc(100%+112px)] overflow-y-hidden px-14'>
-                    <div className='mx-auto h-[694px] w-full max-w-6xl overflow-hidden rounded-md bg-white shadow-xl'>
-                        <div className='flex h-5 w-full items-center gap-1.5 bg-gray-100 pl-2'>
+                    <div className='mx-auto h-[694px] w-full max-w-6xl overflow-hidden rounded-md bg-white shadow-xl dark:bg-[#101114]'>
+                        <div className='flex h-5 w-full items-center gap-1.5 bg-gray-100 pl-2 dark:bg-gray-950'>
                             <div className='h-2 w-2 rounded-full bg-gray-300'></div>
                             <div className='h-2 w-2 rounded-full bg-gray-300'></div>
                             <div className='h-2 w-2 rounded-full bg-gray-300'></div>
@@ -379,7 +379,7 @@ const Step3: React.FC = () => {
                             {activeTab === 3 && <Reader />}
                         </div>
                     </div>
-                    <div className='absolute inset-x-0 bottom-0 h-18 bg-gradient-to-t from-white via-[rgba(255,255,255,0.71)] to-[rgba(255,255,255,0)]'></div>
+                    <div className='absolute inset-x-0 bottom-0 h-18 bg-gradient-to-t from-white via-[rgba(255,255,255,0.71)] to-[rgba(255,255,255,0)] dark:from-black dark:via-[rgba(0,0,0,0.71)] dark:to-[rgba(0,0,0,0)]'></div>
                 </div>
             </div>
         </div>

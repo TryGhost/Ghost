@@ -13,24 +13,41 @@ const Recommendations: React.FC = () => {
     const {data: suggestedData, isLoading: isLoadingSuggested} = suggestedProfilesQuery;
     const suggested = suggestedData || Array(3).fill({actor: {}});
     const navigate = useNavigate();
+    let i = 0;
+
+    const hideClassName = '[@media(max-height:740px)]:hidden';
 
     return (
-        <div className='px-3'>
+        <div className={`border-t border-gray-200 px-3 pt-6 dark:border-gray-950 ${hideClassName}`}>
             <div className='mb-3 flex flex-col gap-0.5'>
                 <div className='flex items-center gap-2'>
                     <LucideIcon.Globe className='text-purple-500' size={20} strokeWidth={1.5} />
                     <H4>Follow suggestions</H4>
                 </div>
-                <span className='text-sm text-gray-600'>
+                <span className='text-sm text-gray-700'>
                     Accounts you might be interested in
                 </span>
             </div>
             <ul className='grow'>
                 {suggested.map((profile) => {
                     const actor = profile.actor;
+                    let className;
+                    switch (i) {
+                    case 0:
+                        className = '[@media(max-height:740px)]:hidden';
+                        break;
+                    case 1:
+                        className = '[@media(max-height:800px)]:hidden';
+                        break;
+                    case 2:
+                        className = '[@media(max-height:860px)]:hidden';
+                        break;
+                    }
+                    i = i + 1;
+
                     return (
                         <React.Fragment key={actor.id}>
-                            <li key={actor.id}>
+                            <li key={actor.id} className={className}>
                                 <ActivityItem
                                     onClick={() => handleProfileClick(actor)}
                                 >
@@ -45,7 +62,7 @@ const Recommendations: React.FC = () => {
                     );
                 })}
             </ul>
-            <Button className='px-0 font-medium text-purple' variant='link' onClick={() => {
+            <Button className='p-0 font-medium text-purple' variant='link' onClick={() => {
                 navigate('/explore');
             }}>Find more &rarr;</Button>
         </div>

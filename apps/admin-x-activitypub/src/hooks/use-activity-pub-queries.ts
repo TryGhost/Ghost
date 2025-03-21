@@ -115,6 +115,34 @@ function updateLikedCache(queryClient: QueryClient, queryKey: string[], id: stri
             })
         };
     });
+
+    // For the likes tab, add/remove the post
+    if (queryKey === QUERY_KEYS.postsLikedByAccount) {
+        queryClient.setQueriesData(queryKey, (current?: {pages: {posts: Activity[]}[]}) => {
+            if (!current) {
+                return current;
+            }
+
+            return {
+                ...current,
+                pages: current.pages.map((page: {posts: Activity[]}) => {
+                    return {
+                        ...page,
+                        posts: liked 
+                            // If liking, keep the post (it will be added via refetch)
+                            ? page.posts 
+                            // If unliking, remove the post
+                            : page.posts.filter(item => item.object.id !== id)
+                    };
+                })
+            };
+        });
+
+        // Invalidate the likes tab query to refetch and get the new post when liking
+        if (liked) {
+            queryClient.invalidateQueries({queryKey: QUERY_KEYS.postsLikedByAccount});
+        }
+    }
 }
 
 export function useLikeMutationForUser(handle: string) {
@@ -130,6 +158,19 @@ export function useLikeMutationForUser(handle: string) {
         onMutate: (id) => {
             updateLikedCache(queryClient, QUERY_KEYS.feed, id, true);
             updateLikedCache(queryClient, QUERY_KEYS.inbox, id, true);
+            updateLikedCache(queryClient, QUERY_KEYS.postsByAccount, id, true);
+            updateLikedCache(queryClient, QUERY_KEYS.postsLikedByAccount, id, true);
+
+            // Update account liked count
+            queryClient.setQueryData(QUERY_KEYS.account(handle), (currentAccount?: Account) => {
+                if (!currentAccount) {
+                    return currentAccount;
+                }
+                return {
+                    ...currentAccount,
+                    likedCount: currentAccount.likedCount + 1
+                };
+            });
         }
     });
 }
@@ -147,6 +188,19 @@ export function useUnlikeMutationForUser(handle: string) {
         onMutate: (id) => {
             updateLikedCache(queryClient, QUERY_KEYS.feed, id, false);
             updateLikedCache(queryClient, QUERY_KEYS.inbox, id, false);
+            updateLikedCache(queryClient, QUERY_KEYS.postsByAccount, id, false);
+            updateLikedCache(queryClient, QUERY_KEYS.postsLikedByAccount, id, false);
+
+            // Update account liked count
+            queryClient.setQueryData(QUERY_KEYS.account(handle), (currentAccount?: Account) => {
+                if (!currentAccount) {
+                    return currentAccount;
+                }
+                return {
+                    ...currentAccount,
+                    likedCount: Math.max(0, currentAccount.likedCount - 1)
+                };
+            });
         }
     });
 }
@@ -380,6 +434,7 @@ export function useActivitiesForUser({
 
     const getActivitiesQuery = useInfiniteQuery({
         queryKey,
+        staleTime: 5 * 60 * 1000, // 5m
         async queryFn({pageParam}: {pageParam?: string}) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
@@ -464,20 +519,36 @@ export function useExploreProfilesForUser(handle: string) {
     const fetchExploreProfiles = useCallback(async () => {
         const siteUrl = await getSiteUrl();
         const api = createActivityPubAPI(handle, siteUrl);
+
+        // Collect all handles with their category info
+        const allHandles = Object.entries(exploreSites).flatMap(([key, category]) => category.sites.map(profileHandle => ({
+            key,
+            categoryName: category.categoryName,
+            profileHandle
+        })));
+
+        // Fetch all profiles in parallel
+        const allResults = await Promise.allSettled(
+            allHandles.map(item => api.getProfile(item.profileHandle)
+                .then(profile => ({...item, profile}))
+            )
+        );
+
+        // Organize results back into categories
         const results: Record<string, { categoryName: string; sites: Profile[] }> = {};
 
-        for (const [key, category] of Object.entries(exploreSites)) {
-            const settledResults = await Promise.allSettled(
-                category.sites.map(suggestedHandle => api.getProfile(suggestedHandle))
-            );
+        allResults
+            .filter((result): result is PromiseFulfilledResult<typeof allHandles[0] & { profile: Profile }> => result.status === 'fulfilled'
+            )
+            .forEach((result) => {
+                const {key, categoryName, profile} = result.value;
 
-            results[key] = {
-                categoryName: category.categoryName,
-                sites: settledResults
-                    .filter((result): result is PromiseFulfilledResult<Profile> => result.status === 'fulfilled')
-                    .map(result => result.value)
-            };
-        }
+                if (!results[key]) {
+                    results[key] = {categoryName, sites: []};
+                }
+
+                results[key].sites.push(profile);
+            });
 
         return results;
     }, [handle]);
@@ -495,19 +566,26 @@ export function useExploreProfilesForUser(handle: string) {
     }, [queryClient, fetchExploreProfiles, queryKey]);
 
     const updateExploreProfile = (id: string, updated: Partial<Profile>) => {
-        // Update the suggested profiles stored in the suggested profiles query cache
-        queryClient.setQueryData(queryKey, (current: Profile[] | undefined) => {
+        // Update the suggested profiles stored in explore profiles query cache
+        queryClient.setQueryData(queryKey, (current: Record<string, { categoryName: string; sites: Profile[] }> | undefined) => {
             if (!current) {
                 return current;
             }
 
-            return current.map((item: Profile) => {
-                if (item.actor.id === id) {
-                    return {...item, ...updated};
-                }
-
-                return item;
-            });
+            return Object.fromEntries(
+                Object.entries(current).map(([key, category]) => [
+                    key,
+                    {
+                        ...category,
+                        sites: category.sites.map((item: Profile) => {
+                            if (item.actor.id === id) {
+                                return {...item, ...updated};
+                            }
+                            return item;
+                        })
+                    }
+                ])
+            );
         });
     };
 
@@ -908,6 +986,7 @@ export function useNoteMutationForUser(handle: string, actorProps?: ActorPropert
     const queryClient = useQueryClient();
     const queryKeyFeed = QUERY_KEYS.feed;
     const queryKeyOutbox = QUERY_KEYS.outbox(handle);
+    const queryKeyPostsByAccount = QUERY_KEYS.postsByAccount;
 
     return useMutation({
         async mutationFn(content: string) {
@@ -929,17 +1008,21 @@ export function useNoteMutationForUser(handle: string, actorProps?: ActorPropert
             prependActivityToPaginatedCollection(queryClient, queryKeyFeed, 'posts', activity);
             prependActivityToPaginatedCollection(queryClient, queryKeyOutbox, 'data', activity);
 
+            // Add to profile tab (postsByAccount)
+            prependActivityToPaginatedCollection(queryClient, queryKeyPostsByAccount, 'posts', activity);
+
             return {id};
         },
         onSuccess: (activity: Activity, _variables, context) => {
             if (activity.id === undefined) {
-                throw new Error('Actvitiy returned from API has no id');
+                throw new Error('Activity returned from API has no id');
             }
 
             const preparedActivity = prepareNewActivity(activity);
 
             updateActivityInPaginatedCollection(queryClient, queryKeyFeed, 'posts', context?.id ?? '', () => preparedActivity);
             updateActivityInPaginatedCollection(queryClient, queryKeyOutbox, 'data', context?.id ?? '', () => preparedActivity);
+            updateActivityInPaginatedCollection(queryClient, queryKeyPostsByAccount, 'posts', context?.id ?? '', () => preparedActivity);
         },
         onError(error, _variables, context) {
             // eslint-disable-next-line no-console
@@ -947,6 +1030,7 @@ export function useNoteMutationForUser(handle: string, actorProps?: ActorPropert
 
             removeActivityFromPaginatedCollection(queryClient, queryKeyFeed, 'posts', context?.id ?? '');
             removeActivityFromPaginatedCollection(queryClient, queryKeyOutbox, 'data', context?.id ?? '');
+            removeActivityFromPaginatedCollection(queryClient, queryKeyPostsByAccount, 'posts', context?.id ?? '');
 
             showToast({
                 message: 'An error occurred while posting your note.',
@@ -990,6 +1074,7 @@ export function useFeedForUser(options: {enabled: boolean}) {
     const feedQuery = useInfiniteQuery({
         queryKey,
         enabled: options.enabled,
+        staleTime: 1 * 60 * 1000, // 1m
         async queryFn({pageParam}: {pageParam?: string}) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI('index', siteUrl);
@@ -1025,6 +1110,7 @@ export function useInboxForUser(options: {enabled: boolean}) {
     const inboxQuery = useInfiniteQuery({
         queryKey,
         enabled: options.enabled,
+        staleTime: 20 * 1000, // 20s
         async queryFn({pageParam}: {pageParam?: string}) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI('index', siteUrl);
@@ -1274,6 +1360,29 @@ export function useDeleteMutationForUser(handle: string) {
                     })
                 };
             });
+
+            // Check if post was liked by checking all possible locations
+            const wasLiked = [
+                QUERY_KEYS.feed,
+                QUERY_KEYS.inbox,
+                QUERY_KEYS.postsByAccount,
+                QUERY_KEYS.postsLikedByAccount
+            ].some((key) => {
+                const queryData = queryClient.getQueryData<{pages: {posts: Activity[]}[]}>(key);
+                return queryData?.pages.some(page => page.posts.some(post => post.id === id && post.object.liked));
+            });
+
+            if (wasLiked) {
+                queryClient.setQueryData(QUERY_KEYS.account(handle), (currentAccount?: Account) => {
+                    if (!currentAccount) {
+                        return currentAccount;
+                    }
+                    return {
+                        ...currentAccount,
+                        likedCount: Math.max(0, currentAccount.likedCount - 1)
+                    };
+                });
+            }
 
             // Update the profile posts cache:
             // - Remove the post from any profile posts collections it may be in

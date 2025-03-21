@@ -10,7 +10,6 @@ export const exploreSites = {
     news: {
         categoryName: 'News & journalism',
         sites: [
-            '@abc@flipboard.com',
             '@404mediaco@mastodon.social',
             '@index@www.coffeeandcomplexity.com',
             '@index@www.syphoncontinuity.com',
@@ -20,19 +19,18 @@ export const exploreSites = {
     technology: {
         categoryName: 'Technology',
         sites: [
+            '@TechCrunch@mstdn.social',
             '@swf@socialwebfoundation.org',
             '@index@www.russbrown.design',
             '@index@ghost.codenamejimmy.com',
-            '@arstechnica@mastodon.social',
-            '@Gargron@mastodon.social'
+            '@arstechnica@mastodon.social'
         ]
     },
     business: {
         categoryName: 'Business',
         sites: [
             '@Forbes@newsie.social',
-            '@index@www.cosmico.org',
-            '@katienotopoulos@threads.net'
+            '@index@www.cosmico.org'
         ]
     }
 };
