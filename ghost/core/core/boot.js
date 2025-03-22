@@ -335,6 +335,7 @@ async function initServices() {
     const recommendationsService = require('./server/services/recommendations');
     const emailAddressService = require('./server/services/email-address');
     const statsService = require('./server/services/stats');
+    const explorePingService = require('./server/services/explore-ping');
 
     const urlUtils = require('./shared/url-utils');
 
@@ -379,7 +380,8 @@ async function initServices() {
         mailEvents.init(),
         donationService.init(),
         recommendationsService.init(),
-        statsService.init()
+        statsService.init(),
+        explorePingService.init()
     ]);
     debug('End: Services');
 
