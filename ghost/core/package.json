@@ -21,8 +21,10 @@
   "license": "MIT",
   "scripts": {
     "archive": "npm pack",
-    "dev": "node --watch --import=tsx index.js",
-    "build:assets": "postcss core/frontend/public/ghost.css --no-map --use cssnano -o core/frontend/public/ghost.min.css",
+    "dev": "node --watch index.js",
+    "build:assets:css": "postcss core/frontend/public/ghost.css --no-map --use cssnano -o core/frontend/public/ghost.min.css",
+    "build:assets:js": "../minifier/bin/minify core/frontend/public/comment-counts.js core/frontend/public/comment-counts.min.js && ../minifier/bin/minify core/frontend/public/member-attribution.js core/frontend/public/member-attribution.min.js && ../minifier/bin/minify core/frontend/public/admin-auth/message-handler.js core/frontend/public/admin-auth/admin-auth.min.js",
+    "build:assets": "yarn build:assets:css && yarn build:assets:js",
     "build:tsc": "tsc",
     "test": "yarn test:unit",
     "test:base": "mocha --reporter dot --require tsx --require=./test/utils/overrides.js --exit --trace-warnings --recursive --extension=test.js,test.ts",
@@ -295,6 +297,7 @@
       },
       "dev": {
         "dependsOn": [
+          "build:assets",
           "^build:ts"
         ]
       },
