@@ -12,7 +12,7 @@ class CommentsServiceWrapper {
         const settingsCache = require('../../../shared/settings-cache');
         const urlService = require('../url');
         const urlUtils = require('../../../shared/url-utils');
-        const membersService = require('../members');
+        const contentGating = require('../content-gating');
         const db = require('../../data/db');
         const settingsHelpers = require('../settings-helpers');
 
@@ -25,7 +25,7 @@ class CommentsServiceWrapper {
             settingsHelpers,
             urlService,
             urlUtils,
-            contentGating: membersService.contentGating
+            contentGating
         });
 
         const stats = new CommentsStats({db});

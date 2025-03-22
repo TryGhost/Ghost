@@ -26,6 +26,7 @@ module.exports = {
                 yearly_price_id: null
             };
         }) || [];
+
         const emailPost = await mappers.posts(model, frame, {tiers});
         gating.forPost(emailPost, frame);
 

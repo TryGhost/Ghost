@@ -35,6 +35,12 @@ module.exports = async (model, frame, options = {}) => {
                 return jsonModel[attr];
             }
         };
+
+        // When passed POJO, we need to ensure that the id is present for URL lookups
+        // but it can be excluded from the API output which is why we delete it here
+        if (frame.options.columns && !frame.options.columns.includes('id')) {
+            delete jsonModel.id;
+        }
     }
 
     // Map email_recipient_filter to email_segment

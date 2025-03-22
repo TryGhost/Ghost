@@ -21,7 +21,8 @@ const messages = {
     invalidTags: 'Invalid tags value.',
     invalidEmailSegment: 'The email segment parameter doesn\'t contain a valid filter',
     unsupportedBulkAction: 'Unsupported bulk action',
-    postNotFound: 'Post not found.'
+    postNotFound: 'Post not found.',
+    pageNotFound: 'Page not found.'
 };
 
 class PostsService {
@@ -40,16 +41,32 @@ class PostsService {
      * @returns {Promise<Object>}
      */
     async browsePosts(options) {
-        const posts = await this.models.Post.findPage(options);
-        return posts;
+        const {data: models, meta} = await this.models.Post.findPage(options);
+
+        const posts = [];
+        for (const postModel of models) {
+            const post = postModel.toJSON(options);
+
+            // re-add id in case it's been excluded by toJSON due to fields/columns options,
+            // otherwise URL lookups will fail in the posts output serializer mapper
+            post.id = postModel.id;
+
+            posts.push(post);
+        }
+
+        return {
+            posts,
+            meta
+        };
     }
 
     async readPost(frame) {
         const model = await this.models.Post.findOne(frame.data, frame.options);
 
         if (!model) {
+            const isPageRequest = frame.options?.filter?.includes('type:page') || false;
             throw new errors.NotFoundError({
-                message: tpl(messages.postNotFound)
+                message: tpl(isPageRequest ? messages.pageNotFound : messages.postNotFound)
             });
         }
 
