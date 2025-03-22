@@ -171,7 +171,7 @@ describe('Acceptance: Posts / Pages', function () {
                     expect(buttons[0].innerText.trim(), 'context menu button 1').to.contain('Copy link to post');
                     expect(buttons[1].innerText.trim(), 'context menu button 2').to.contain('Unpublish');
                     expect(buttons[2].innerText.trim(), 'context menu button 3').to.contain('Feature');
-                    expect(buttons[3].innerText.trim(), 'context menu button 4').to.contain('Add a tag');
+                    expect(buttons[3].innerText.trim(), 'context menu button 4').to.contain('Edit tags');
                     expect(buttons[4].innerText.trim(), 'context menu button 5').to.contain('Duplicate');
                 });
 
@@ -337,7 +337,7 @@ describe('Acceptance: Posts / Pages', function () {
                         expect(buttons[0].innerText.trim(), 'context menu button 1').to.contain('Copy link to post');
                         expect(buttons[1].innerText.trim(), 'context menu button 1').to.contain('Unpublish');
                         expect(buttons[2].innerText.trim(), 'context menu button 2').to.contain('Feature'); // or Unfeature
-                        expect(buttons[3].innerText.trim(), 'context menu button 3').to.contain('Add a tag');
+                        expect(buttons[3].innerText.trim(), 'context menu button 3').to.contain('Edit tags');
                         expect(buttons[4].innerText.trim(), 'context menu button 4').to.contain('Duplicate');
                         expect(buttons[5].innerText.trim(), 'context menu button 5').to.contain('Delete');
 
@@ -370,7 +370,7 @@ describe('Acceptance: Posts / Pages', function () {
                         expect(buttons[0].innerText.trim(), 'context menu button 1').to.contain('Copy link to post');
                         expect(buttons[1].innerText.trim(), 'context menu button 1').to.contain('Unpublish');
                         expect(buttons[2].innerText.trim(), 'context menu button 2').to.contain('Feature'); // or Unfeature
-                        expect(buttons[3].innerText.trim(), 'context menu button 3').to.contain('Add a tag');
+                        expect(buttons[3].innerText.trim(), 'context menu button 3').to.contain('Edit tags');
                         expect(buttons[4].innerText.trim(), 'context menu button 4').to.contain('Duplicate');
                         expect(buttons[5].innerText.trim(), 'context menu button 5').to.contain('Delete');
 
@@ -404,7 +404,7 @@ describe('Acceptance: Posts / Pages', function () {
                         expect(buttons.length, 'context menu buttons').to.equal(5);
                         expect(buttons[0].innerText.trim(), 'context menu button 1').to.contain('Copy preview link');
                         expect(buttons[1].innerText.trim(), 'context menu button 2').to.contain('Feature'); // or Unfeature
-                        expect(buttons[2].innerText.trim(), 'context menu button 3').to.contain('Add a tag');
+                        expect(buttons[2].innerText.trim(), 'context menu button 3').to.contain('Edit tags');
                         expect(buttons[3].innerText.trim(), 'context menu button 4').to.contain('Duplicate');
                         expect(buttons[4].innerText.trim(), 'context menu button 5').to.contain('Delete');
 
@@ -504,16 +504,16 @@ describe('Acceptance: Posts / Pages', function () {
                         let contextMenu = find('.gh-posts-context-menu'); // this is a <ul> element
                         expect(contextMenu, 'context menu').to.exist;
 
-                        // add a tag to the posts
+                        // edit tags of the posts
                         let buttons = contextMenu.querySelectorAll('button');
-                        let addTagButton = findButton('Add a tag', buttons);
-                        expect(addTagButton, 'add tag button').to.exist;
-                        await click(addTagButton);
+                        let editTagsButton = findButton('Edit tags', buttons);
+                        expect(editTagsButton, 'edit tags button').to.exist;
+                        await click(editTagsButton);
 
-                        const addTagsModal = find('[data-test-modal="add-tags"]');
-                        expect(addTagsModal, 'tag settings modal').to.exist;
+                        const editTagsModal = find('[data-test-modal="edit-tags"]');
+                        expect(editTagsModal, 'tag settings modal').to.exist;
 
-                        const input = addTagsModal.querySelector('input');
+                        const input = editTagsModal.querySelector('input');
                         expect(input, 'tag input').to.exist;
                         await fillIn(input, 'test-tag');
                         await triggerKeyEvent(input, 'keydown', 13);

@@ -1,4 +1,3 @@
-const nql = require('@tryghost/nql');
 const {BadRequestError} = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
@@ -212,6 +211,28 @@ class PostsService {
 
             return bulkResult;
         }
+        if (data.action === 'removeTag') {
+            if (!Array.isArray(data.meta.tags)) {
+                throw new errors.IncorrectUsageError({
+                    message: tpl(messages.invalidTags)
+                });
+            }
+            for (const tag of data.meta.tags) {
+                if (typeof tag !== 'object') {
+                    throw new errors.IncorrectUsageError({
+                        message: tpl(messages.invalidTags)
+                    });
+                }
+                if (!tag.id && !tag.name) {
+                    throw new errors.IncorrectUsageError({
+                        message: tpl(messages.invalidTags)
+                    });
+                }
+            }
+            const bulkResult = await this.#bulkRemoveTags({tags: data.meta.tags}, {filter: options.filter, context: options.context});
+
+            return bulkResult;
+        }
         throw new errors.IncorrectUsageError({
             message: tpl(messages.unsupportedBulkAction)
         });
@@ -267,6 +288,48 @@ class PostsService {
         return {
             editIds: postRows.map(p => p.id),
             successful: postRows.length,
+            unsuccessful: 0
+        };
+    }
+
+    /**
+     * @param {object} data
+     * @param {string[]} data.tags - Array of tag ids to remove from the post
+     * @param {object} options
+     * @param {string} options.filter - An NQL Filter
+     * @param {object} options.context
+     * @param {object} [options.transacting]
+     * @returns {Promise<{successful: number, unsuccessful: number, editIds: string[]}>}
+     */
+    async #bulkRemoveTags(data, options) {
+        if (!options.transacting) {
+            return await this.models.Post.transaction(async (transacting) => {
+                return await this.#bulkRemoveTags(data, {
+                    ...options,
+                    transacting
+                });
+            });
+        }
+
+        const postRows = await this.models.Post.getFilteredCollectionQuery({
+            filter: options.filter,
+            status: 'all',
+            transacting: options.transacting
+        }).select('posts.id');
+
+        const postIds = postRows.map(row => row.id);
+        const tagIds = data.tags.map(tag => tag.id);
+
+        await options.transacting('posts_tags')
+            .whereIn('post_id', postIds)
+            .whereIn('tag_id', tagIds)
+            .del();
+
+        await this.models.Post.addActions('edited', postIds, options);
+
+        return {
+            editIds: postIds,
+            successful: postIds.length,
             unsuccessful: 0
         };
     }
@@ -423,28 +486,6 @@ class PostsService {
         result.editIds = editIds;
 
         return result;
-    }
-
-    async getProductsFromVisibilityFilter(visibilityFilter) {
-        try {
-            const allProducts = await this.models.Product.findAll();
-            const visibilityFilterJson = nql(visibilityFilter).toJSON();
-            const productsData = (visibilityFilterJson.product ? [visibilityFilterJson] : visibilityFilterJson.$or) || [];
-            const tiers = productsData
-                .map((data) => {
-                    return allProducts.find((p) => {
-                        return p.get('slug') === data.product;
-                    });
-                }).filter(p => !!p).map((d) => {
-                    return d.toJSON();
-                });
-            return tiers;
-        } catch (err) {
-            return Promise.reject(new BadRequestError({
-                message: tpl(messages.invalidVisibilityFilter),
-                context: err.message
-            }));
-        }
     }
 
     /**
