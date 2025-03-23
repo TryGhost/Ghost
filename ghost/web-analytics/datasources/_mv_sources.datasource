@@ -1,5 +1,4 @@
-VERSION 1
-
+VERSION 3
 TAGS "v0"
 
 SCHEMA >
@@ -18,6 +17,6 @@ SCHEMA >
     `post_type` SimpleAggregateFunction(any, String),
     `post_uuid` SimpleAggregateFunction(any, String)
 
-ENGINE AggregatingMergeTree
-ENGINE_PARTITION_KEY toYYYYMM(date)
-ENGINE_SORTING_KEY site_uuid, date, session_id, device, os, browser, location, source, pathname
+ENGINE "AggregatingMergeTree"
+ENGINE_PARTITION_KEY "toYYYYMM(date)"
+ENGINE_SORTING_KEY "site_uuid, date, session_id, device, os, browser, location, source, pathname"
