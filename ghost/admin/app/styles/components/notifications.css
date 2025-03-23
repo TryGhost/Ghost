@@ -1,0 +1,358 @@
+/* Notifications
+/* ---------------------------------------------------------- */
+
+/* Base notification style */
+.gh-notifications {
+    position: absolute;
+    bottom: 30px;
+    left: 24px;
+    z-index: 7000;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Base notification style */
+.gh-notification {
+    position: relative;
+    margin-top: 8px;
+    min-width: 272px;
+    max-width: 320px;
+    background: var(--white);
+    border-radius: 8px;
+    box-shadow: 0px 0px 1px rgba(0, 0, 0, 0.28), 0px 100px 80px rgba(0, 0, 0, 0.0112458), 0px 41.7776px 33.4221px rgba(0, 0, 0, 0.0161557), 0px 22.3363px 17.869px rgba(0, 0, 0, 0.02), 0px 12.5216px 10.0172px rgba(0, 0, 0, 0.0238443), 0px 6.6501px 5.32008px rgba(0, 0, 0, 0.0287542), 0px 2.76726px 2.21381px rgba(0, 0, 0, 0.04);
+    color: var(--black);
+    font-size: 1.3rem;
+    line-height: 1.25em;
+    opacity: 1.0;
+    min-height: 44px;
+}
+
+@media (max-width: 1240px) {
+    .gh-notification {
+        min-width: 232px;
+    }
+}
+
+.gh-notification-icon {
+    margin-top: 1px;
+    line-height: 0;
+    color: #30CF43;
+}
+
+:is(.gh-notification-error, .gh-notification-warn) .gh-notification-icon {
+    color: #F50B23;
+}
+
+.gh-notification-icon svg {
+    width: 16px;
+    height: 16px;
+}
+
+.gh-notification-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 16px;
+    border-radius: 3px;
+    margin-right: 28px;
+}
+
+.gh-notification-content p span {
+    white-space: nowrap;
+}
+
+.gh-notification-header {
+    display: flex;
+    gap: 10px;
+}
+
+.gh-notification-title {
+    display: block;
+    margin-top: 1px;
+    font-weight: 600;
+    font-size: 1.4rem;
+}
+
+.gh-notification-details {
+    margin: -18px 16px 16px 42px;
+}
+
+.gh-notification p {
+    margin: 8px 0 0;
+    padding: 0;
+    line-height: 1.35em;
+}
+
+.gh-notification a {
+    color: inherit;
+    text-decoration: underline;
+    font-weight: 400;
+}
+
+.gh-notification em {
+    font-weight: bold;
+    font-style: normal;
+}
+
+.gh-notification-actions {
+    margin-top: 10px;
+    margin-bottom: 2px;
+    display: flex;
+}
+
+.gh-notification-actions a {
+    display: inline-block;
+    margin-right: 10px;
+    color: var(--darkgrey);
+}
+
+.gh-notification-actions a:hover {
+    color: var(--black);
+}
+
+.gh-notification-close {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    padding: 8px;
+    background: none;
+    border-radius: 999px;
+    line-height: 0;
+    width: 24px;
+    height: 24px;
+}
+
+.gh-notification-close svg {
+    height: 8px;
+    width: 8px;
+    stroke: #7C8B9A;
+}
+
+.gh-notification-close:hover svg {
+    stroke: #394047;
+}
+
+.gh-notification-close svg path {
+    stroke-width: 2px;
+}
+
+/* .gh-notification-close:hover {
+    background: rgba(255, 255, 255, 0.3);
+} */
+
+.gh-notification-passive {
+    animation: notification-fade-in-spring, fade-out;
+    animation-delay: 0s, 5s;
+    animation-duration: 0.8s, 0.35s;
+    animation-iteration-count: 1;
+    animation-timing-function: cubic-bezier(0.445, 0.050, 0.550, 0.950);
+}
+
+.gh-notification-passive:hover {
+    animation: notification-fade-in-spring;
+}
+
+@keyframes notification-fade-in-spring {
+    0.00% {
+        transform: translateY(100%);
+    }
+    26.52% {
+        transform: translateY(-3.90px);
+    }
+    63.26% {
+        transform: translateY(1.2px);
+    }
+    100.00% {
+        transform: translateY(0px);
+    }
+}
+
+/* Red notification
+/* ---------------------------------------------------------- */
+.gh-notification-red {
+    background: var(--red);
+}
+
+/* Green notification
+/* ---------------------------------------------------------- */
+
+.gh-notification-green {
+    background: var(--green);
+}
+
+/* Schedule notification top
+/* ---------------------------------------------------------- */
+
+.gh-notification-schedule {
+    display: inline-block;
+    margin: 0;
+    padding: 7px 10px;
+    width: auto;
+    border: var(--lightgrey) 1px solid;
+    border-radius: 2px;
+    box-shadow: none;
+    vertical-align: middle;
+    line-height: 1.3em;
+}
+
+.gh-notification-schedule:hover {
+    cursor: default;
+}
+
+/* Alerts
+/* ---------------------------------------------------------- */
+
+/* Alert wrapper, top of screen */
+.gh-alerts {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Base alert style */
+.gh-alert {
+    z-index: 9999;
+    flex-grow: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 15px;
+    border-bottom: #dfe1e3 1px solid;
+    background-color: white;
+}
+
+.gh-alert-content {
+    font-size: 1.4rem;
+    line-height: 1.3em;
+    font-weight: 400;
+    user-select: text;
+}
+
+.gh-alert a {
+    text-decoration: underline;
+    font-weight: 400;
+    user-select: text;
+}
+
+.gh-alert-close {
+    flex-shrink: 0;
+    margin-left: 20px;
+    padding: 4px;
+    font-size: 10px;
+    line-height: 10px;
+}
+
+.gh-alert-close svg {
+    height: 12px;
+    width: 12px;
+}
+
+
+/* Blue alert
+/* ---------------------------------------------------------- */
+
+.gh-alert-blue {
+    border-bottom: color-mod(var(--blue) lightness(-10%)) 1px solid;
+    background: var(--blue);
+    color: #fff;
+}
+.gh-alert-blue a {
+    color: #fff;
+}
+.gh-alert-blue svg {
+    fill: #fff;
+}
+.gh-alert-blue .gh-alert-close svg:hover {
+    fill: #fff;
+}
+
+/* Red alert
+/* ---------------------------------------------------------- */
+
+.gh-alert-red {
+    border-bottom: color-mod(var(--red) lightness(-10%)) 1px solid;
+    background: var(--red);
+    color: #fff;
+}
+.gh-alert-red a {
+    color: #fff;
+}
+.gh-alert-red svg {
+    fill: #fff;
+}
+.gh-alert-red .gh-alert-close:hover {
+    color: #fff;
+}
+.gh-alert-red .gh-alert-close svg:hover {
+    fill: #fff;
+}
+
+/* Green alert
+/* ---------------------------------------------------------- */
+
+.gh-alert-green {
+    border-bottom: color-mod(var(--green) lightness(-7%)) 1px solid;
+    background: var(--green);
+    color: #fff;
+}
+.gh-alert-green a {
+    color: #fff;
+}
+.gh-alert-green svg {
+    fill: #fff;
+}
+.gh-alert-green .gh-alert-close:hover {
+    color: #fff;
+}
+.gh-alert-green .gh-alert-close svg:hover {
+    fill: #fff;
+}
+
+/* Black alert
+/* ---------------------------------------------------------- */
+
+.gh-alert-black {
+    border-bottom: 1px solid var(--black);
+    background: var(--black);
+    color: var(--white);
+}
+.gh-alert-black a {
+    color: var(--white);
+}
+.gh-alert-black svg {
+    fill: var(--white);
+}
+.gh-alert-black .gh-alert-close:hover {
+    color: var(--white);
+}
+.gh-alert-black .gh-alert-close svg:hover {
+    fill: var(--white);
+}
+
+/* Yellow alert
+/* ---------------------------------------------------------- */
+
+.gh-alert-yellow {
+    border-bottom: #e9ebb6 1px solid;
+    background: #fdffb6;
+}
+
+
+/* Update banner
+/* ---------------------------------------------------------- */
+
+.gh-update-banner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 12px;
+    background: var(--black);
+    color: #fff;
+    font-size: 1.45rem;
+    z-index: 30;
+}
+
+.gh-update-banner a {
+    font-weight: 700;
+    color: var(--green-l2);
+}

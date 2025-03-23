@@ -1,0 +1,50 @@
+<div class="modal-content" data-test-modal="delete-member">
+    <header class="modal-header">
+        <h1>Delete member account</h1>
+    </header>
+    <button type="button" class="close" title="Close" {{on "click" (fn @close false)}}>{{svg-jar "close"}}<span class="hidden">Close</span></button>
+
+    <div class="modal-body">
+        <p class="mb6">
+            Permanently delete <strong>{{@data.member.email}}</strong> from Ghost.
+        </p>
+
+        {{#if this.hasActiveStripeSubscriptions}}
+            <div class="flex justify-between">
+                <div class="form-group for-checkbox gh-member-cancelstripe-checkbox">
+                    <label class="checkbox">
+                        <input
+                            class="gh-input"
+                            type="checkbox"
+                            checked={{this.shouldCancelSubscriptions}}
+                            {{on "click" (toggle "shouldCancelSubscriptions" this)}}
+                        />
+                        <span class="input-toggle-component"></span>
+                        <div>
+                            <h4>Also cancel subscription in Stripe</h4>
+                            <p>If disabled, the member’s premium subscription will continue</p>
+                        </div>
+                    </label>
+                </div>
+            </div>
+        {{/if}}
+    </div>
+
+    <div class="modal-footer">
+        <button
+            type="button"
+            class="gh-btn"
+            {{on "click" (fn @close false)}}
+            data-test-button="cancel"
+        >
+            <span>Cancel</span>
+        </button>
+        <GhTaskButton
+            @buttonText={{if this.shouldCancelSubscriptions "Delete member + Cancel subscription" "Delete member"}}
+            @successText="Deleted"
+            @task={{this.deleteMemberTask}}
+            @class="gh-btn gh-btn-red gh-btn-icon"
+            data-test-button="confirm"
+        />
+    </div>
+</div>

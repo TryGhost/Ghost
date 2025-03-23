@@ -1,0 +1,5 @@
+<svg width="16" height="16" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <title>email-name</title>
+  <path d="M10 2h5.333M10 6h5.333M.667 10h14.666M.667 14h14.666" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M4.69 7.333v-.718l.756-.082-.332-.958H2.831l-.322.957.727.083v.718H.666v-.718l.406-.101c.11-.027.193-.065.23-.175L3.319.667h1.63l2.007 5.69c.037.111.11.129.22.157l.424.101v.718H4.69Zm-.67-5.258h-.056L3.116 4.58h1.722l-.82-2.505Z" fill="currentColor"/>
+</svg>

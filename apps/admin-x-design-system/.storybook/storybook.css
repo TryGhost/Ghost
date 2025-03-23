@@ -1,0 +1,247 @@
+/*
+ * We load Inter in Ember admin, so loading it explicitly here makes the final rendering
+ * in Storybook match the final rendering when embedded in Ember
+ */
+@font-face {
+    font-family: "Inter";
+    src: url("./Inter.ttf") format("truetype-variations");
+    font-weight: 100 900;
+}
+
+:root {
+    font-size: 62.5%;
+    line-height: 1.5;
+    -ms-text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
+
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-text-size-adjust: 100%;
+}
+
+html, body, #root {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    letter-spacing: unset;
+}
+
+.sbdocs-wrapper {
+    padding: 3vmin !important;
+}
+
+.sbdocs-wrapper .sbdocs-content {
+    max-width: 1320px;
+}
+
+.sb-doc {
+    max-width: 740px;
+    width: 100%;
+    margin: 0 auto !important;
+}
+
+.sb-doc,
+.sb-doc a,
+.sb-doc h1,
+.sb-doc h2,
+.sb-doc h3,
+.sb-doc h4,
+.sb-doc h5,
+.sb-doc h6,
+.sb-doc p,
+.sb-doc ul li,
+.sbdocs-title,
+.sb-doc ol li {
+    font-family: Inter, sans-serif !important;
+    padding: 0 !important;
+}
+
+.sb-doc a {
+    color: #30CF43;
+}
+
+.sb-doc h1 {
+    font-size: 48px !important;
+    letter-spacing: -0.04em !important;
+    margin-bottom: 20px;
+}
+
+.sb-doc h2 {
+    margin-top: 40px !important;
+    font-size: 27px;
+    border: none;
+    margin-bottom: 2px;
+}
+
+.sb-doc h3 {
+    margin-top: 40px !important;
+    margin-bottom: 4px !important;
+    font-size: 20px;
+}
+
+.sb-doc h4 {
+    margin: 0 0 4px !important;
+}
+
+.sb-doc p,
+.sb-doc div,
+.sb-doc ul li,
+.sb-doc ol li {
+    font-size: 15px;
+    line-height: 1.5em;
+}
+
+.sb-doc ul li,
+.sb-doc ol li {
+    margin-bottom: 8px;
+}
+
+.sb-doc h2 + p,
+.sb-doc h3 + p {
+    margin-top: 8px;
+}
+
+.sb-doc img,
+.sb-wide img {
+    margin-top: 40px !important;
+    margin-bottom: 40px !important;
+}
+
+.sb-doc img.small {
+    max-width: 520px;
+    margin: 0 auto;
+    display: block;
+}
+
+.sb-doc p.excerpt {
+    font-size: 19px;
+    letter-spacing: -0.02em;
+}
+
+.sb-doc .highlight {
+    padding: 12px 20px;
+    border-radius: 4px;
+    background: #EBEEF0;
+}
+
+.sb-doc .highlight.purple {
+    background: #F0E9FA;
+}
+
+.sb-doc .highlight.purple a {
+    color: #8E42FF;
+}
+
+/* Welcome */
+.sb-doc img.main-image {
+    margin-top: -2vmin !important;
+    margin-left: -44px;
+    margin-right: -32px;
+    margin-bottom: 0 !important;
+    max-width: unset;
+    width: calc(100% + 64px);
+}
+
+.sb-doc .main-structure-container {
+    display: flex;
+    gap: 32px;
+    margin: 32px 0 80px;
+}
+
+.sb-doc .main-structure-container div {
+    flex-basis: 33%;
+}
+
+.sb-doc .main-structure-container div p {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.sb-doc .main-structure-container img {
+    margin: 12px 0 !important;
+    width: 32px;
+    height: 32px;
+}
+
+.sb-doc .main-structure-container div h4 {
+    border-bottom: 1px solid #EBEEF0;
+    padding-bottom: 8px !important;
+    margin-bottom: 8px !important;
+}
+
+.sb-doc .main-structure-container div p {
+    margin: 0;
+    font-size: 13.5px;
+}
+
+/* Colors */
+.color-grid {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+}
+
+.color-grid div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 12px;
+    border-radius: 4px;
+    border: 1px solid #EBEEF0;
+}
+
+.color-grid .swatch {
+    display: block;
+    background: #EFEFEF;
+    border-radius: 100%;
+    width: 28px;
+    height: 28px;
+}
+
+.swatch.green {
+    background: #30CF43;
+}
+
+.swatch.black {
+    background: #15171A;
+}
+
+.swatch.white {
+    background: #FFFFFF;
+    border: 1px solid #EBEEF0;
+}
+
+.swatch.lime {
+    background: #B5FF18;
+}
+.swatch.blue {
+    background: #14B8FF;
+}
+.swatch.purple {
+    background: #8E42FF;
+}
+.swatch.pink {
+    background: #FB2D8D;
+}
+.swatch.yellow {
+    background: #FFB41F;
+}
+.swatch.red {
+    background: #F50B23;
+}
+
+/* Icons */
+
+.sb-doc .streamline {
+    display: grid;
+    grid-template-columns: auto 240px;
+    gap: 32px;
+}
+
+.sbdocs-a {
+    color: #30CF43 !important;
+}

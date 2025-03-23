@@ -1,0 +1,10 @@
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <title>offer</title>
+  <defs>
+    <style>
+      .a{fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:1.5px}
+    </style>
+  </defs>
+  <path d="M22.939 2.56v6.257a3 3 0 0 1-.878 2.121L10.5 22.5a1.5 1.5 0 0 1-2.121 0L1.5 15.62a1.5 1.5 0 0 1 0-2.121L13.061 1.938a3 3 0 0 1 2.121-.878h6.257a1.5 1.5 0 0 1 1.5 1.5v0Z" class="a"/>
+  <path d="M17.689 7.81a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3Z" class="a"/>
+</svg>

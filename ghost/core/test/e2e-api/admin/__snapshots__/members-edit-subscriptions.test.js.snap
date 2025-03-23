@@ -1,0 +1,1093 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Members API: edit subscriptions Can cancel a subscription 1: [body] 1`] = `
+Object {
+  "members": Array [
+    Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6e1",
+        "referrer_medium": null,
+        "referrer_source": "Direct",
+        "referrer_url": null,
+        "title": "Ghostly Kitchen Sink",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/ghostly-kitchen-sink/",
+      },
+      "avatar_image": null,
+      "comped": false,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "email": "member2@test.com",
+      "email_count": 0,
+      "email_open_rate": 50,
+      "email_opened_count": 0,
+      "email_suppression": Object {
+        "info": null,
+        "suppressed": false,
+      },
+      "geolocation": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "labels": Any<Array>,
+      "last_seen_at": null,
+      "name": null,
+      "newsletters": Any<Array>,
+      "note": null,
+      "status": "paid",
+      "subscribed": false,
+      "subscriptions": Array [
+        Object {
+          "attribution": Object {
+            "id": null,
+            "referrer_medium": null,
+            "referrer_source": null,
+            "referrer_url": null,
+            "title": null,
+            "type": null,
+            "url": null,
+          },
+          "cancel_at_period_end": false,
+          "cancellation_reason": null,
+          "current_period_end": Any<String>,
+          "customer": Object {
+            "email": "member2@test.com",
+            "id": Any<String>,
+            "name": null,
+          },
+          "default_payment_card_last4": null,
+          "id": Any<String>,
+          "offer": null,
+          "plan": Object {
+            "amount": 5000,
+            "currency": "USD",
+            "id": Any<String>,
+            "interval": "year",
+            "nickname": "Yearly",
+          },
+          "price": Object {
+            "amount": 5000,
+            "currency": "USD",
+            "id": Any<String>,
+            "interval": "year",
+            "nickname": "Yearly",
+            "price_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+            "tier": Object {
+              "id": Any<String>,
+              "name": "Default Product",
+              "tier_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+            },
+            "type": "recurring",
+          },
+          "start_date": Any<String>,
+          "status": "active",
+          "tier": Object {
+            "active": true,
+            "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+            "currency": "usd",
+            "description": null,
+            "expiry_at": null,
+            "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+            "monthly_price": 500,
+            "monthly_price_id": Any<String>,
+            "name": "Default Product",
+            "slug": "default-product",
+            "trial_days": 0,
+            "type": "paid",
+            "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+            "visibility": "public",
+            "welcome_page_url": "/welcome-paid",
+            "yearly_price": 5000,
+            "yearly_price_id": Any<String>,
+          },
+          "trial_end_at": null,
+          "trial_start_at": null,
+        },
+      ],
+      "tiers": Array [
+        Object {
+          "active": true,
+          "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "currency": "usd",
+          "description": null,
+          "expiry_at": null,
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "monthly_price": 500,
+          "monthly_price_id": Any<String>,
+          "name": "Default Product",
+          "slug": "default-product",
+          "trial_days": 0,
+          "type": "paid",
+          "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "visibility": "public",
+          "welcome_page_url": "/welcome-paid",
+          "yearly_price": 5000,
+          "yearly_price_id": Any<String>,
+        },
+      ],
+      "unsubscribe_url": "http://domain.com/unsubscribe/?uuid=memberuuid&key=abc123dontstealme",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+    },
+  ],
+}
+`;
+
+exports[`Members API: edit subscriptions Can cancel a subscription 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "2573",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Members API: edit subscriptions Can cancel a subscription 3: [body] 1`] = `
+Object {
+  "members": Array [
+    Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6e1",
+        "referrer_medium": null,
+        "referrer_source": "Direct",
+        "referrer_url": null,
+        "title": "Ghostly Kitchen Sink",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/ghostly-kitchen-sink/",
+      },
+      "avatar_image": null,
+      "comped": false,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "email": "member2@test.com",
+      "email_count": 0,
+      "email_open_rate": 50,
+      "email_opened_count": 0,
+      "email_suppression": Object {
+        "info": null,
+        "suppressed": false,
+      },
+      "geolocation": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "labels": Any<Array>,
+      "last_seen_at": null,
+      "name": null,
+      "newsletters": Any<Array>,
+      "note": null,
+      "status": "free",
+      "subscribed": false,
+      "subscriptions": Array [
+        Object {
+          "attribution": Object {
+            "id": null,
+            "referrer_medium": null,
+            "referrer_source": null,
+            "referrer_url": null,
+            "title": null,
+            "type": null,
+            "url": null,
+          },
+          "cancel_at_period_end": false,
+          "cancellation_reason": null,
+          "current_period_end": Any<String>,
+          "customer": Object {
+            "email": "member2@test.com",
+            "id": Any<String>,
+            "name": null,
+          },
+          "default_payment_card_last4": null,
+          "id": Any<String>,
+          "offer": null,
+          "plan": Object {
+            "amount": 5000,
+            "currency": "USD",
+            "id": Any<String>,
+            "interval": "year",
+            "nickname": "Yearly",
+          },
+          "price": Object {
+            "amount": 5000,
+            "currency": "USD",
+            "id": Any<String>,
+            "interval": "year",
+            "nickname": "Yearly",
+            "price_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+            "tier": Object {
+              "id": Any<String>,
+              "name": "Default Product",
+              "tier_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+            },
+            "type": "recurring",
+          },
+          "start_date": Any<String>,
+          "status": "canceled",
+          "trial_end_at": null,
+          "trial_start_at": null,
+        },
+      ],
+      "tiers": Array [],
+      "unsubscribe_url": "http://domain.com/unsubscribe/?uuid=memberuuid&key=abc123dontstealme",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+    },
+  ],
+}
+`;
+
+exports[`Members API: edit subscriptions Can cancel a subscription 4: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "1673",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Members API: edit subscriptions Can cancel a subscription for a member with both comped and paid subscriptions 1: [body] 1`] = `
+Object {
+  "members": Array [
+    Object {
+      "attribution": null,
+      "avatar_image": null,
+      "comped": false,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "email": "comped-paid-combination@example.com",
+      "email_count": 0,
+      "email_open_rate": null,
+      "email_opened_count": 0,
+      "email_suppression": Object {
+        "info": null,
+        "suppressed": false,
+      },
+      "geolocation": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "labels": Any<Array>,
+      "last_seen_at": null,
+      "name": null,
+      "newsletters": Any<Array>,
+      "note": null,
+      "status": "paid",
+      "subscribed": false,
+      "subscriptions": Any<Array>,
+      "tiers": Any<Array>,
+      "unsubscribe_url": "http://domain.com/unsubscribe/?uuid=memberuuid&key=abc123dontstealme",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+    },
+  ],
+}
+`;
+
+exports[`Members API: edit subscriptions Can cancel a subscription for a member with both comped and paid subscriptions 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "3724",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Members API: edit subscriptions Can cancel a subscription for a member with both comped and paid subscriptions 3: [body] 1`] = `
+Object {
+  "members": Array [
+    Object {
+      "attribution": null,
+      "avatar_image": null,
+      "comped": true,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "email": "comped-paid-combination@example.com",
+      "email_count": 0,
+      "email_open_rate": null,
+      "email_opened_count": 0,
+      "email_suppression": Object {
+        "info": null,
+        "suppressed": false,
+      },
+      "geolocation": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "labels": Any<Array>,
+      "last_seen_at": null,
+      "name": null,
+      "newsletters": Any<Array>,
+      "note": null,
+      "status": "comped",
+      "subscribed": false,
+      "subscriptions": Any<Array>,
+      "tiers": Any<Array>,
+      "unsubscribe_url": "http://domain.com/unsubscribe/?uuid=memberuuid&key=abc123dontstealme",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+    },
+  ],
+}
+`;
+
+exports[`Members API: edit subscriptions Can cancel a subscription for a member with both comped and paid subscriptions 4: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "2824",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Members API: edit subscriptions Can cancel a subscription for a member with duplicate customers 1: [body] 1`] = `
+Object {
+  "members": Array [
+    Object {
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": null,
+        "referrer_source": null,
+        "referrer_url": null,
+        "title": null,
+        "type": null,
+        "url": null,
+      },
+      "avatar_image": null,
+      "comped": false,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "email": "duplicate-customers-test@example.com",
+      "email_count": 0,
+      "email_open_rate": null,
+      "email_opened_count": 0,
+      "email_suppression": Object {
+        "info": null,
+        "suppressed": false,
+      },
+      "geolocation": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "labels": Any<Array>,
+      "last_seen_at": null,
+      "name": null,
+      "newsletters": Any<Array>,
+      "note": null,
+      "status": "paid",
+      "subscribed": true,
+      "subscriptions": Any<Array>,
+      "tiers": Any<Array>,
+      "unsubscribe_url": "http://domain.com/unsubscribe/?uuid=memberuuid&key=abc123dontstealme",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+    },
+  ],
+}
+`;
+
+exports[`Members API: edit subscriptions Can cancel a subscription for a member with duplicate customers 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "3514",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Members API: edit subscriptions Can cancel a subscription for a member with duplicate customers 3: [body] 1`] = `
+Object {
+  "members": Array [
+    Object {
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": null,
+        "referrer_source": null,
+        "referrer_url": null,
+        "title": null,
+        "type": null,
+        "url": null,
+      },
+      "avatar_image": null,
+      "comped": false,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "email": "duplicate-customers-test@example.com",
+      "email_count": 0,
+      "email_open_rate": null,
+      "email_opened_count": 0,
+      "email_suppression": Object {
+        "info": null,
+        "suppressed": false,
+      },
+      "geolocation": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "labels": Any<Array>,
+      "last_seen_at": null,
+      "name": null,
+      "newsletters": Any<Array>,
+      "note": null,
+      "status": "free",
+      "subscribed": true,
+      "subscriptions": Any<Array>,
+      "tiers": Any<Array>,
+      "unsubscribe_url": "http://domain.com/unsubscribe/?uuid=memberuuid&key=abc123dontstealme",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+    },
+  ],
+}
+`;
+
+exports[`Members API: edit subscriptions Can cancel a subscription for a member with duplicate customers 4: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "2614",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Members API: edit subscriptions Can cancel a subscription for a member with duplicate subscriptions 1: [body] 1`] = `
+Object {
+  "members": Array [
+    Object {
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": null,
+        "referrer_source": null,
+        "referrer_url": null,
+        "title": null,
+        "type": null,
+        "url": null,
+      },
+      "avatar_image": null,
+      "comped": false,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "email": "duplicate-subscription-test@example.com",
+      "email_count": 0,
+      "email_open_rate": null,
+      "email_opened_count": 0,
+      "email_suppression": Object {
+        "info": null,
+        "suppressed": false,
+      },
+      "geolocation": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "labels": Any<Array>,
+      "last_seen_at": null,
+      "name": null,
+      "newsletters": Any<Array>,
+      "note": null,
+      "status": "paid",
+      "subscribed": true,
+      "subscriptions": Any<Array>,
+      "tiers": Any<Array>,
+      "unsubscribe_url": "http://domain.com/unsubscribe/?uuid=memberuuid&key=abc123dontstealme",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+    },
+  ],
+}
+`;
+
+exports[`Members API: edit subscriptions Can cancel a subscription for a member with duplicate subscriptions 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "3523",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Members API: edit subscriptions Can cancel a subscription for a member with duplicate subscriptions 3: [body] 1`] = `
+Object {
+  "members": Array [
+    Object {
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": null,
+        "referrer_source": null,
+        "referrer_url": null,
+        "title": null,
+        "type": null,
+        "url": null,
+      },
+      "avatar_image": null,
+      "comped": false,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "email": "duplicate-subscription-test@example.com",
+      "email_count": 0,
+      "email_open_rate": null,
+      "email_opened_count": 0,
+      "email_suppression": Object {
+        "info": null,
+        "suppressed": false,
+      },
+      "geolocation": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "labels": Any<Array>,
+      "last_seen_at": null,
+      "name": null,
+      "newsletters": Any<Array>,
+      "note": null,
+      "status": "free",
+      "subscribed": true,
+      "subscriptions": Any<Array>,
+      "tiers": Any<Array>,
+      "unsubscribe_url": "http://domain.com/unsubscribe/?uuid=memberuuid&key=abc123dontstealme",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+    },
+  ],
+}
+`;
+
+exports[`Members API: edit subscriptions Can cancel a subscription for a member with duplicate subscriptions 4: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "2623",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Members API: edit subscriptions Can edit a subscription 1: [body] 1`] = `
+Object {
+  "members": Array [
+    Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6e1",
+        "referrer_medium": null,
+        "referrer_source": "Direct",
+        "referrer_url": null,
+        "title": "Ghostly Kitchen Sink",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/ghostly-kitchen-sink/",
+      },
+      "avatar_image": null,
+      "comped": false,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "email": "member2@test.com",
+      "email_count": 0,
+      "email_open_rate": 50,
+      "email_opened_count": 0,
+      "email_suppression": Object {
+        "info": null,
+        "suppressed": false,
+      },
+      "geolocation": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "labels": Any<Array>,
+      "last_seen_at": null,
+      "name": null,
+      "newsletters": Any<Array>,
+      "note": null,
+      "status": "paid",
+      "subscribed": false,
+      "subscriptions": Array [
+        Object {
+          "attribution": Object {
+            "id": null,
+            "referrer_medium": null,
+            "referrer_source": null,
+            "referrer_url": null,
+            "title": null,
+            "type": null,
+            "url": null,
+          },
+          "cancel_at_period_end": false,
+          "cancellation_reason": null,
+          "current_period_end": Any<String>,
+          "customer": Object {
+            "email": "member2@test.com",
+            "id": Any<String>,
+            "name": null,
+          },
+          "default_payment_card_last4": null,
+          "id": Any<String>,
+          "offer": null,
+          "plan": Object {
+            "amount": 5000,
+            "currency": "USD",
+            "id": Any<String>,
+            "interval": "year",
+            "nickname": "Yearly",
+          },
+          "price": Object {
+            "amount": 5000,
+            "currency": "USD",
+            "id": Any<String>,
+            "interval": "year",
+            "nickname": "Yearly",
+            "price_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+            "tier": Object {
+              "id": Any<String>,
+              "name": "Default Product",
+              "tier_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+            },
+            "type": "recurring",
+          },
+          "start_date": Any<String>,
+          "status": "active",
+          "tier": Object {
+            "active": true,
+            "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+            "currency": "usd",
+            "description": null,
+            "expiry_at": null,
+            "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+            "monthly_price": 500,
+            "monthly_price_id": Any<String>,
+            "name": "Default Product",
+            "slug": "default-product",
+            "trial_days": 0,
+            "type": "paid",
+            "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+            "visibility": "public",
+            "welcome_page_url": "/welcome-paid",
+            "yearly_price": 5000,
+            "yearly_price_id": Any<String>,
+          },
+          "trial_end_at": null,
+          "trial_start_at": null,
+        },
+      ],
+      "tiers": Array [
+        Object {
+          "active": true,
+          "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "currency": "usd",
+          "description": null,
+          "expiry_at": null,
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "monthly_price": 500,
+          "monthly_price_id": Any<String>,
+          "name": "Default Product",
+          "slug": "default-product",
+          "trial_days": 0,
+          "type": "paid",
+          "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "visibility": "public",
+          "welcome_page_url": "/welcome-paid",
+          "yearly_price": 5000,
+          "yearly_price_id": Any<String>,
+        },
+      ],
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+    },
+  ],
+}
+`;
+
+exports[`Members API: edit subscriptions Can edit a subscription 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "2484",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Members API: edit subscriptions Can edit a subscription 3: [body] 1`] = `
+Object {
+  "members": Array [
+    Object {
+      "attribution": Object {
+        "id": "618ba1ffbe2896088840a6e1",
+        "referrer_medium": null,
+        "referrer_source": "Direct",
+        "referrer_url": null,
+        "title": "Ghostly Kitchen Sink",
+        "type": "post",
+        "url": "http://127.0.0.1:2369/ghostly-kitchen-sink/",
+      },
+      "avatar_image": null,
+      "comped": false,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "email": "member2@test.com",
+      "email_count": 0,
+      "email_open_rate": 50,
+      "email_opened_count": 0,
+      "email_suppression": Object {
+        "info": null,
+        "suppressed": false,
+      },
+      "geolocation": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "labels": Any<Array>,
+      "last_seen_at": null,
+      "name": null,
+      "newsletters": Any<Array>,
+      "note": null,
+      "status": "free",
+      "subscribed": false,
+      "subscriptions": Array [
+        Object {
+          "attribution": Object {
+            "id": null,
+            "referrer_medium": null,
+            "referrer_source": null,
+            "referrer_url": null,
+            "title": null,
+            "type": null,
+            "url": null,
+          },
+          "cancel_at_period_end": false,
+          "cancellation_reason": null,
+          "current_period_end": Any<String>,
+          "customer": Object {
+            "email": "member2@test.com",
+            "id": Any<String>,
+            "name": null,
+          },
+          "default_payment_card_last4": null,
+          "id": Any<String>,
+          "offer": null,
+          "plan": Object {
+            "amount": 5000,
+            "currency": "USD",
+            "id": Any<String>,
+            "interval": "year",
+            "nickname": "Yearly",
+          },
+          "price": Object {
+            "amount": 5000,
+            "currency": "USD",
+            "id": Any<String>,
+            "interval": "year",
+            "nickname": "Yearly",
+            "price_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+            "tier": Object {
+              "id": Any<String>,
+              "name": "Default Product",
+              "tier_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+            },
+            "type": "recurring",
+          },
+          "start_date": Any<String>,
+          "status": "canceled",
+          "trial_end_at": null,
+          "trial_start_at": null,
+        },
+      ],
+      "tiers": Array [],
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+    },
+  ],
+}
+`;
+
+exports[`Members API: edit subscriptions Can edit a subscription 4: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "1584",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Members API: edit subscriptions Can recover member products when we cancel a subscription 1: [body] 1`] = `
+Object {
+  "members": Array [
+    Object {
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": null,
+        "referrer_source": null,
+        "referrer_url": null,
+        "title": null,
+        "type": null,
+        "url": null,
+      },
+      "avatar_image": null,
+      "comped": false,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "email": "duplicate-subscription-wrongfully-test@example.com",
+      "email_count": 0,
+      "email_open_rate": null,
+      "email_opened_count": 0,
+      "email_suppression": Object {
+        "info": null,
+        "suppressed": false,
+      },
+      "geolocation": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "labels": Any<Array>,
+      "last_seen_at": null,
+      "name": null,
+      "newsletters": Any<Array>,
+      "note": null,
+      "status": "paid",
+      "subscribed": true,
+      "subscriptions": Any<Array>,
+      "tiers": Any<Array>,
+      "unsubscribe_url": "http://domain.com/unsubscribe/?uuid=memberuuid&key=abc123dontstealme",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+    },
+  ],
+}
+`;
+
+exports[`Members API: edit subscriptions Can recover member products when we cancel a subscription 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "3556",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Members API: edit subscriptions Can recover member products when we cancel a subscription 3: [body] 1`] = `
+Object {
+  "members": Array [
+    Object {
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": null,
+        "referrer_source": null,
+        "referrer_url": null,
+        "title": null,
+        "type": null,
+        "url": null,
+      },
+      "avatar_image": null,
+      "comped": false,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "email": "duplicate-subscription-wrongfully-test@example.com",
+      "email_count": 0,
+      "email_open_rate": null,
+      "email_opened_count": 0,
+      "email_suppression": Object {
+        "info": null,
+        "suppressed": false,
+      },
+      "geolocation": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "labels": Any<Array>,
+      "last_seen_at": null,
+      "name": null,
+      "newsletters": Any<Array>,
+      "note": null,
+      "status": "free",
+      "subscribed": true,
+      "subscriptions": Any<Array>,
+      "tiers": Any<Array>,
+      "unsubscribe_url": "http://domain.com/unsubscribe/?uuid=memberuuid&key=abc123dontstealme",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+    },
+  ],
+}
+`;
+
+exports[`Members API: edit subscriptions Can recover member products when we cancel a subscription 4: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "2656",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Members API: edit subscriptions Can recover member products when we update a subscription 1: [body] 1`] = `
+Object {
+  "members": Array [
+    Object {
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": null,
+        "referrer_source": null,
+        "referrer_url": null,
+        "title": null,
+        "type": null,
+        "url": null,
+      },
+      "avatar_image": null,
+      "comped": false,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "email": "duplicate-subscription-wrongfully-test2@example.com",
+      "email_count": 0,
+      "email_open_rate": null,
+      "email_opened_count": 0,
+      "email_suppression": Object {
+        "info": null,
+        "suppressed": false,
+      },
+      "geolocation": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "labels": Any<Array>,
+      "last_seen_at": null,
+      "name": null,
+      "newsletters": Any<Array>,
+      "note": null,
+      "status": "paid",
+      "subscribed": true,
+      "subscriptions": Any<Array>,
+      "tiers": Any<Array>,
+      "unsubscribe_url": "http://domain.com/unsubscribe/?uuid=memberuuid&key=abc123dontstealme",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+    },
+  ],
+}
+`;
+
+exports[`Members API: edit subscriptions Can recover member products when we update a subscription 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "4311",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Members API: edit subscriptions Can update a subscription for a member with duplicate subscriptions 1: [body] 1`] = `
+Object {
+  "members": Array [
+    Object {
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": null,
+        "referrer_source": null,
+        "referrer_url": null,
+        "title": null,
+        "type": null,
+        "url": null,
+      },
+      "avatar_image": null,
+      "comped": false,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "email": "duplicate-subscription-edit-test@example.com",
+      "email_count": 0,
+      "email_open_rate": null,
+      "email_opened_count": 0,
+      "email_suppression": Object {
+        "info": null,
+        "suppressed": false,
+      },
+      "geolocation": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "labels": Any<Array>,
+      "last_seen_at": null,
+      "name": null,
+      "newsletters": Any<Array>,
+      "note": null,
+      "status": "paid",
+      "subscribed": true,
+      "subscriptions": Any<Array>,
+      "tiers": Any<Array>,
+      "unsubscribe_url": "http://domain.com/unsubscribe/?uuid=memberuuid&key=abc123dontstealme",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+    },
+  ],
+}
+`;
+
+exports[`Members API: edit subscriptions Can update a subscription for a member with duplicate subscriptions 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "4290",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Members API: edit subscriptions Can update a subscription for a member with duplicate subscriptions 3: [body] 1`] = `
+Object {
+  "members": Array [
+    Object {
+      "attribution": Object {
+        "id": null,
+        "referrer_medium": null,
+        "referrer_source": null,
+        "referrer_url": null,
+        "title": null,
+        "type": null,
+        "url": null,
+      },
+      "avatar_image": null,
+      "comped": false,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "email": "duplicate-subscription-edit-test@example.com",
+      "email_count": 0,
+      "email_open_rate": null,
+      "email_opened_count": 0,
+      "email_suppression": Object {
+        "info": null,
+        "suppressed": false,
+      },
+      "geolocation": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "labels": Any<Array>,
+      "last_seen_at": null,
+      "name": null,
+      "newsletters": Any<Array>,
+      "note": null,
+      "status": "paid",
+      "subscribed": true,
+      "subscriptions": Any<Array>,
+      "tiers": Any<Array>,
+      "unsubscribe_url": "http://domain.com/unsubscribe/?uuid=memberuuid&key=abc123dontstealme",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+    },
+  ],
+}
+`;
+
+exports[`Members API: edit subscriptions Can update a subscription for a member with duplicate subscriptions 4: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "4289",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;

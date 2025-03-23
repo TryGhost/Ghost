@@ -1,0 +1,42 @@
+import { Meta } from '@storybook/blocks';
+
+<Meta title="Icons" />
+
+<div className="sb-doc">
+
+# Icons
+
+In Shade we use Streamline icons. They are dynamically loaded from the `src/assets/icons` library, so to add a new icon you just need to create the corresponding SVG for it in this folder. Then you can use the Icon component like this:
+
+```
+<Icon.IconName size="md" />
+```
+
+If you check out the [Icons](/docs/components-icons--docs) component here in Storybook, you'll see a grid of all available icons in Shade. This list is dynamically loaded and if you click on an icon then the component code will be copied to your clipboard.
+
+<a href="/?path=/docs/components-icons--docs" className="button">Streamline icons in Shade &rarr;</a>
+
+
+## Adding icons
+
+We need to make sure we stay consistent when adding new icons, so here are some rules to follow when doing so:
+
+- Copy icons from the [Streamline Ultimate Regular collection](https://www.streamlinehq.com/icons/streamline-regular)
+- SVG properties in Streamline should be:
+  - Size: 24px
+  - Stroke width: 1.5px
+  - Outline stroke: OFF
+  - Responsive size: OFF
+  - Currentcolor: ON
+- Create the icon in `src/assets/icons`. The icon name should be in kebab case, ie. all lowercase, words separated by dash (-). Examples:
+  - ✅ `layout-column-3.svg`
+  - ❌ `LayoutColumn3.svg`
+
+
+---
+
+## Experimental: Lucide Icons
+
+ShadCN/UI uses Lucide Icons by default. Right now we're experimenting with using it instead of Streamline icons but haven't decided to go with it. To learn how to use them, read the [Lucide Icons docs](https://lucide.dev/guide/packages/lucide-react).
+
+</div>

@@ -1,0 +1,48 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Mentions API Can browse with limits 1: [body] 1`] = `
+Object {
+  "mentions": Array [
+    Object {
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "payload": null,
+      "resource": null,
+      "source": Any<String>,
+      "source_author": null,
+      "source_excerpt": null,
+      "source_favicon": null,
+      "source_featured_image": null,
+      "source_site_title": "source.com",
+      "source_title": Any<String>,
+      "target": Any<String>,
+      "timestamp": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "verified": false,
+    },
+    Object {
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "payload": null,
+      "resource": null,
+      "source": Any<String>,
+      "source_author": null,
+      "source_excerpt": null,
+      "source_favicon": null,
+      "source_featured_image": null,
+      "source_site_title": "anothersource.com",
+      "source_title": Any<String>,
+      "target": Any<String>,
+      "timestamp": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "verified": false,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": 2,
+      "next": 2,
+      "page": 1,
+      "pages": 2,
+      "prev": null,
+      "total": 3,
+    },
+  },
+}
+`;

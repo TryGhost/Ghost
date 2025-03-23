@@ -1,0 +1,155 @@
+{
+    "@context": "https://www.w3.org/ns/activitystreams",
+    "id": "https://example.com/activitypub/inbox/index",
+    "summary": "Inbox for index",
+    "type": "OrderedCollection",
+    "totalItems": 2,
+    "orderedItems": [
+        {
+            "@context": "https://www.w3.org/ns/activitystreams",
+            "id": "https://main.ghost.org/activitypub/activity/664cf007fd27b20001a76d72",
+            "type": "Accept",
+            "actor": {
+                "@context": [
+                    "https://www.w3.org/ns/activitystreams",
+                    "https://w3id.org/security/v1",
+                    {
+                        "featured": {
+                            "@id": "http://joinmastodon.org/ns#featured",
+                            "@type": "@id"
+                        }
+                    },
+                    {
+                        "discoverable": {
+                            "@id": "http://joinmastodon.org/ns#discoverable",
+                            "@type": "@id"
+                        }
+                    },
+                    {
+                        "manuallyApprovesFollowers": {
+                            "@id": "http://joinmastodon.org/ns#manuallyApprovesFollowers",
+                            "@type": "@id"
+                        }
+                    },
+                    {
+                        "schema": "http://schema.org#",
+                        "PropertyValue": "schema:PropertyValue",
+                        "value": "schema:value"
+                    }
+                ],
+                "type": "Person",
+                "id": "https://main.ghost.org/activitypub/actor/index",
+                "name": "The Main",
+                "preferredUsername": "index",
+                "summary": "The bio for the actor",
+                "url": "https://main.ghost.org/activitypub/actor/index",
+                "icon": "",
+                "image": "",
+                "published": "1970-01-01T00:00:00Z",
+                "manuallyApprovesFollowers": false,
+                "discoverable": true,
+                "attachment": [
+                    {
+                        "type": "PropertyValue",
+                        "name": "Website",
+                        "value": "<a href='https://main.ghost.org/activitypub/'>main.ghost.org</a>"
+                    }
+                ],
+                "following": "https://main.ghost.org/activitypub/following/index",
+                "followers": "https://main.ghost.org/activitypub/followers/index",
+                "inbox": "https://main.ghost.org/activitypub/inbox/index",
+                "outbox": "https://main.ghost.org/activitypub/outbox/index",
+                "featured": "https://main.ghost.org/activitypub/featured/index",
+                "publicKey": {
+                    "id": "https://main.ghost.org/activitypub/actor/index#main-key",
+                    "owner": "https://main.ghost.org/activitypub/actor/index",
+                    "publicKeyPem": "-----BEGIN RSA PUBLIC KEY-----\nMIGJAoGBANRpUrwk7x7bJDddHmrYSWVw9enVPMFm5qAW7fTgoZ7x2PoJUIqy/bkqpXZ0SmZs\nsLO3UZm+yN/DqxioD8BnhhD0N8Ydv6+UniT7hE2tHvsMxQIq2jet1auSBZNFmUIWodsBxI/R\ntm+KwFBFk+P+MvVsGZ2K3Rkd4K0dv0/45dtXAgMBAAE=\n-----END RSA PUBLIC KEY-----\n"
+                }
+            },
+            "object": {
+                "id": "https://0a2e-129-222-88-174.ngrok-free.app/activitypub/activity/664cf0074daa2f8183ba6ea6",
+                "type": "Follow"
+            },
+            "to": "https://0a2e-129-222-88-174.ngrok-free.app/activitypub/actor/index"
+        },
+        {
+            "type": "Create",
+            "actor": {
+                "@context": [
+                    "https://www.w3.org/ns/activitystreams",
+                    "https://w3id.org/security/v1",
+                    {
+                        "featured": {
+                            "@id": "http://joinmastodon.org/ns#featured",
+                            "@type": "@id"
+                        }
+                    },
+                    {
+                        "discoverable": {
+                            "@id": "http://joinmastodon.org/ns#discoverable",
+                            "@type": "@id"
+                        }
+                    },
+                    {
+                        "manuallyApprovesFollowers": {
+                            "@id": "http://joinmastodon.org/ns#manuallyApprovesFollowers",
+                            "@type": "@id"
+                        }
+                    },
+                    {
+                        "schema": "http://schema.org#",
+                        "PropertyValue": "schema:PropertyValue",
+                        "value": "schema:value"
+                    }
+                ],
+                "type": "Person",
+                "id": "https://main.ghost.org/activitypub/actor/index",
+                "name": "The Main",
+                "preferredUsername": "index",
+                "summary": "The bio for the actor",
+                "url": "https://main.ghost.org/activitypub/actor/index",
+                "icon": "",
+                "image": "",
+                "published": "1970-01-01T00:00:00Z",
+                "manuallyApprovesFollowers": false,
+                "discoverable": true,
+                "attachment": [
+                    {
+                        "type": "PropertyValue",
+                        "name": "Website",
+                        "value": "<a href='https://main.ghost.org/activitypub/'>main.ghost.org</a>"
+                    }
+                ],
+                "following": "https://main.ghost.org/activitypub/following/index",
+                "followers": "https://main.ghost.org/activitypub/followers/index",
+                "inbox": "https://main.ghost.org/activitypub/inbox/index",
+                "outbox": "https://main.ghost.org/activitypub/outbox/index",
+                "featured": "https://main.ghost.org/activitypub/featured/index",
+                "publicKey": {
+                    "id": "https://main.ghost.org/activitypub/actor/index#main-key",
+                    "owner": "https://main.ghost.org/activitypub/actor/index",
+                    "publicKeyPem": "-----BEGIN RSA PUBLIC KEY-----\nMIGJAoGBANRpUrwk7x7bJDddHmrYSWVw9enVPMFm5qAW7fTgoZ7x2PoJUIqy/bkqpXZ0SmZs\nsLO3UZm+yN/DqxioD8BnhhD0N8Ydv6+UniT7hE2tHvsMxQIq2jet1auSBZNFmUIWodsBxI/R\ntm+KwFBFk+P+MvVsGZ2K3Rkd4K0dv0/45dtXAgMBAAE=\n-----END RSA PUBLIC KEY-----\n"
+                }
+            },
+            "object": {
+                "@context": "https://www.w3.org/ns/activitystreams",
+                "type": "Article",
+                "id": "https://main.ghost.org/activitypub/article/my-article/",
+                "name": "Testing ActivityPub",
+                "content": "<p> Super long test </p>",
+                "url": "https://main.ghost.org/my-article/",
+                "image": "https://main.ghost.org/content/images/2021/08/ghost-logo.png",
+                "published": "2024-05-09T00:00:00Z",
+                "attributedTo": {
+                    "type": "Person",
+                    "name": "The Main"
+                },
+                "preview": {
+                    "type": "Link",
+                    "href": "https://main.ghost.org/my-article/",
+                    "name": "Testing ActivityPub"
+                }
+            }
+        }
+    ]
+}

@@ -1,0 +1,128 @@
+
+/*
+/* UI Styles
+/*
+/* Styles that extend Spirit classes.
+/* -------------------------------------------------------------------- */
+
+/* Scroll container for the editor canvas */
+.gh-koenig-editor {
+    width: 100%;
+    height: 100dvh;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+/* Padded container housing title + editor canvas, scrollable content */
+.gh-koenig-editor-pane {
+    padding: 11vw 92px;
+}
+
+@media (max-width: 768px) {
+    .gh-koenig-editor-pane {
+        padding: 56px 32px;
+    }
+}
+
+/* Use flex-grow to fill the available vertical space so clicks outside the
+   editor content can trigger focus */
+.gh-koenig-editor-pane .koenig-editor {
+    cursor: text;
+}
+
+.koenig-editor {
+    max-width: 740px;
+}
+
+.kg-settings-panel-control-input .gh-input,
+.kg-settings-panel-control-input .gh-select,
+.kg-settings-panel-control-input .ember-power-select-trigger {
+    font-size: 1.4rem !important;
+    padding: 5px 10px;
+    font-weight: 500;
+}
+
+.kg-settings-panel-control-input .ember-power-select-trigger svg {
+    position: absolute;
+    top: 18px;
+    right: 12px;
+}
+
+/* Cards
+/* --------------------------------------------------------------- */
+
+.kg-settings-headerstyle-btn-group {
+    background: none !important;
+}
+
+.kg-settings-headerstyle-btn-group .gh-btn {
+    background: var(--white) !important;
+    width: 26px;
+    height: 26px;
+    border: 1px solid var(--whitegrey);
+    border-radius: 999px;
+    margin-right: 5px;
+}
+
+.kg-settings-headerstyle-btn-group .kg-headerstyle-btn-dark {
+    background: #08090c !important;
+}
+
+.kg-settings-headerstyle-btn-group .kg-headerstyle-btn-light {
+    background: #F9F9F9 !important;
+}
+
+.kg-settings-headerstyle-btn-group .kg-headerstyle-btn-accent {
+    background: var(--accent-color) !important;
+}
+
+.kg-settings-headerstyle-btn-group .kg-headerstyle-btn-image {
+    background: transparent !important;
+    margin-right: 0;
+}
+
+.kg-settings-headerstyle-btn-group .kg-headerstyle-btn-image svg {
+    width: 12px;
+    height: 12px;
+}
+
+.kg-settings-headerstyle-btn-group .kg-headerstyle-btn-image svg path {
+    stroke-width: 1.5;
+}
+
+.kg-settings-headerstyle-btn-group .gh-btn-group-selected {
+    position: relative;
+}
+
+.kg-settings-headerstyle-btn-group .gh-btn-group-selected::before {
+    position: absolute;
+    content: "";
+    display: block;
+    top: -4px;
+    right: -4px;
+    bottom: -4px;
+    left: -4px;
+    border: 2px solid var(--green);
+    border-radius: 999px;
+}
+
+/* Lexical editor
+/* --------------------------------------------------------------- */
+
+.koenig-react-editor {
+    max-width: 740px;
+    margin: 0 auto;
+}
+
+.koenig-react-editor-loading,
+.koenig-react-editor-error {
+    font-family: Georgia, Times, serif;
+    font-size: 2rem;
+    font-weight: 400;
+    line-height: 1.6em;
+    letter-spacing: .1px;
+}
+
+.koenig-react-editor-loading {
+    color: #AEB7C1;
+}

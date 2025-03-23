@@ -1,0 +1,39 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Offers Content API Can read offer details from id 1: [body] 1`] = `
+Object {
+  "offers": Array [
+    Object {
+      "amount": 12,
+      "cadence": "year",
+      "currency": null,
+      "currency_restriction": false,
+      "display_description": "",
+      "display_title": "",
+      "duration": "once",
+      "duration_in_months": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "name": "Black Friday",
+      "status": "active",
+      "tier": Object {
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "name": "Default Product",
+      },
+      "type": "percent",
+    },
+  ],
+}
+`;
+
+exports[`Offers Content API Can read offer details from id 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "public, max-age=0",
+  "content-length": "331",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;

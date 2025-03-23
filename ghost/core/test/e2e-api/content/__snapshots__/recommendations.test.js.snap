@@ -1,0 +1,235 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Recommendations Content API Can paginate recommendations 1: [body] 1`] = `
+Object {
+  "meta": Object {
+    "pagination": Object {
+      "limit": 5,
+      "next": 2,
+      "page": 1,
+      "pages": 2,
+      "prev": null,
+      "total": 7,
+    },
+  },
+  "recommendations": Array [
+    Object {
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "description": "Description 6",
+      "excerpt": null,
+      "favicon": null,
+      "featured_image": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "one_click_subscribe": false,
+      "title": "Recommendation 6",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "url": "https://recommendation6.com/",
+    },
+    Object {
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "description": "Description 5",
+      "excerpt": null,
+      "favicon": null,
+      "featured_image": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "one_click_subscribe": false,
+      "title": "Recommendation 5",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "url": "https://recommendation5.com/",
+    },
+    Object {
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "description": "Description 4",
+      "excerpt": null,
+      "favicon": null,
+      "featured_image": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "one_click_subscribe": false,
+      "title": "Recommendation 4",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "url": "https://recommendation4.com/",
+    },
+    Object {
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "description": "Description 3",
+      "excerpt": null,
+      "favicon": null,
+      "featured_image": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "one_click_subscribe": false,
+      "title": "Recommendation 3",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "url": "https://recommendation3.com/",
+    },
+    Object {
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "description": "Description 2",
+      "excerpt": null,
+      "favicon": null,
+      "featured_image": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "one_click_subscribe": false,
+      "title": "Recommendation 2",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "url": "https://recommendation2.com/",
+    },
+  ],
+}
+`;
+
+exports[`Recommendations Content API Can paginate recommendations 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "public, max-age=0",
+  "content-length": "1545",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Recommendations Content API Can paginate recommendations 3: [body] 1`] = `
+Object {
+  "meta": Object {
+    "pagination": Object {
+      "limit": 5,
+      "next": null,
+      "page": 2,
+      "pages": 2,
+      "prev": 1,
+      "total": 7,
+    },
+  },
+  "recommendations": Array [
+    Object {
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "description": "Description 1",
+      "excerpt": null,
+      "favicon": null,
+      "featured_image": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "one_click_subscribe": false,
+      "title": "Recommendation 1",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "url": "https://recommendation1.com/",
+    },
+    Object {
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "description": "Description 0",
+      "excerpt": null,
+      "favicon": null,
+      "featured_image": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "one_click_subscribe": false,
+      "title": "Recommendation 0",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "url": "https://recommendation0.com/",
+    },
+  ],
+}
+`;
+
+exports[`Recommendations Content API Can paginate recommendations 4: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "public, max-age=0",
+  "content-length": "681",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Recommendations Content API Does not allow includes 1: [body] 1`] = `
+Object {
+  "meta": Object {
+    "pagination": Object {
+      "limit": 5,
+      "next": 2,
+      "page": 1,
+      "pages": 2,
+      "prev": null,
+      "total": 7,
+    },
+  },
+  "recommendations": Array [
+    Object {
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "description": "Description 6",
+      "excerpt": null,
+      "favicon": null,
+      "featured_image": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "one_click_subscribe": false,
+      "title": "Recommendation 6",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "url": "https://recommendation6.com/",
+    },
+    Object {
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "description": "Description 5",
+      "excerpt": null,
+      "favicon": null,
+      "featured_image": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "one_click_subscribe": false,
+      "title": "Recommendation 5",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "url": "https://recommendation5.com/",
+    },
+    Object {
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "description": "Description 4",
+      "excerpt": null,
+      "favicon": null,
+      "featured_image": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "one_click_subscribe": false,
+      "title": "Recommendation 4",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "url": "https://recommendation4.com/",
+    },
+    Object {
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "description": "Description 3",
+      "excerpt": null,
+      "favicon": null,
+      "featured_image": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "one_click_subscribe": false,
+      "title": "Recommendation 3",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "url": "https://recommendation3.com/",
+    },
+    Object {
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "description": "Description 2",
+      "excerpt": null,
+      "favicon": null,
+      "featured_image": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "one_click_subscribe": false,
+      "title": "Recommendation 2",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "url": "https://recommendation2.com/",
+    },
+  ],
+}
+`;
+
+exports[`Recommendations Content API Does not allow includes 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "public, max-age=0",
+  "content-length": "1545",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;

@@ -1,0 +1,10 @@
+<rss>
+    <channel>
+        <title>{{@site.title}}</title>
+        {{#get "posts" filter="featured:true" limit="20"}}
+            {{#foreach posts}}
+                <link>{{url}}</link>
+            {{/foreach}}
+        {{/get}}
+    </channel>
+</rss>

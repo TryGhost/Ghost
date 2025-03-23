@@ -1,0 +1,23 @@
+.kg-blockquote-alt {
+  font-size: 1.5em;
+  font-style: italic;
+  line-height: 1.7em;
+  text-align: center;
+  padding: 0 2.5em;
+}
+
+@media (max-width: 800px) {
+  .kg-blockquote-alt {
+    font-size: 1.4em;
+    padding-left: 2em;
+    padding-right: 2em;
+  }
+}
+
+@media (max-width: 600px) {
+  .kg-blockquote-alt {
+    font-size: 1.2em;
+    padding-left: 1.75em;
+    padding-right: 1.75em;
+  } 
+}

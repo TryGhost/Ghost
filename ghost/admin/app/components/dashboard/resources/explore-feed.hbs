@@ -1,0 +1,48 @@
+<section class="gh-dashboard-section gh-dashboard-explore-feed" {{did-insert this.load}}>
+    <article class="gh-dashboard-box">
+        <div class="gh-dashboard-resource-title">
+            <h4>Featured publications
+                {{#if this.meta.category_url}}
+                    in <a class="gh-dasboard-explore-title-link" href={{this.meta.category_url}} target="_blank" rel="noopener noreferrer">{{this.meta.category}}</a>
+                {{/if}}
+            </h4>
+            <div>
+                <a href="https://ghost.org/explore/?ref=admin" target="_blank" rel="noopener noreferrer">Browse all</a>
+                <LinkTo @route="explore.connect" class="gh-dashboard-explore-add">Add your site to Explore</LinkTo>
+            </div>
+        </div>
+        <div class="gh-dashboard-resource-body">
+            <div class="gh-dashboard-columns">
+                {{#if (not (or this.loading this.error))}}
+                    {{#each this.sites as |entry|}}
+                        <a class="gh-dashboard-column gh-dashboard-explore-card" href={{entry.url}} target="_blank" rel="noopener noreferrer">
+                            <div class="gh-dashboard-explore-header">
+                                <div class="gh-dashboard-explore-icon">
+                                    <img src={{entry.icon}} alt={{entry.title}} />
+                                </div>
+                                <div class="gh-dashboard-explore-title gap-2">
+                                    <h5 class="truncate">{{entry.title}}</h5>
+                                </div>
+                                <p>{{entry.description}}</p>
+                            </div>
+                            <div class="gh-dashboard-explore-footer text-xs md:text-sm mt-5 gap-3 font-medium">
+                                <p class="truncate">{{entry.pretty_url}}</p>
+                                {{#if entry.mrr}}
+                                    <div class="gh-dashboard-explore-mrr">{{entry.mrr}}</div>
+                                {{else if entry.members}}
+                                    <div class="gh-dashboard-explore-members">{{entry.members}}</div>
+                                {{else}}
+                                    <div class="gh-dashboard-explore-visit">Visit →</div>
+                                {{/if}}
+                            </div>
+                        </a>
+                    {{else}}
+                        <div class="gh-dashboard-list-empty">
+                            <p>No sites yet.</p>
+                        </div>
+                    {{/each}}
+                {{/if}}
+            </div>
+        </div>
+    </article>
+</section>
