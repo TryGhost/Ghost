@@ -78,6 +78,16 @@ export interface GetAccountFollowsResponse {
     next: string | null;
 }
 
+export interface Notification {
+    id: string;
+    type: string;
+}
+
+export interface GetNotificationsResponse {
+    notifications: Notification[];
+    next: string | null;
+}
+
 export enum PostType {
     Note = 0,
     Article = 1,
@@ -474,6 +484,37 @@ export class ActivityPubAPI {
 
         return {
             posts,
+            next: nextPage
+        };
+    }
+
+    async getNotifications(next?: string): Promise<GetNotificationsResponse> {
+        const url = new URL('.ghost/activitypub/notifications', this.apiUrl);
+        if (next) {
+            url.searchParams.set('next', next);
+        }
+
+        const json = await this.fetchJSON(url);
+
+        if (json === null) {
+            return {
+                notifications: [],
+                next: null
+            };
+        }
+
+        if (!('notifications' in json)) {
+            return {
+                notifications: [],
+                next: null
+            };
+        }
+
+        const notifications = Array.isArray(json.notifications) ? json.notifications : [];
+        const nextPage = 'next' in json && typeof json.next === 'string' ? json.next : null;
+
+        return {
+            notifications,
             next: nextPage
         };
     }

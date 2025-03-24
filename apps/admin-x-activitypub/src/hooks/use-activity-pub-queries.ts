@@ -84,7 +84,8 @@ const QUERY_KEYS = {
     feed: ['feed'],
     inbox: ['inbox'],
     postsByAccount: ['account_posts'],
-    postsLikedByAccount: ['account_liked_posts']
+    postsLikedByAccount: ['account_liked_posts'],
+    notifications: (handle: string) => ['notifications', handle]
 };
 
 function updateLikedCache(queryClient: QueryClient, queryKey: string[], id: string, liked: boolean) {
@@ -128,9 +129,9 @@ function updateLikedCache(queryClient: QueryClient, queryKey: string[], id: stri
                 pages: current.pages.map((page: {posts: Activity[]}) => {
                     return {
                         ...page,
-                        posts: liked 
+                        posts: liked
                             // If liking, keep the post (it will be added via refetch)
-                            ? page.posts 
+                            ? page.posts
                             // If unliking, remove the post
                             : page.posts.filter(item => item.object.id !== id)
                     };
@@ -1523,6 +1524,21 @@ export function useDeleteMutationForUser(handle: string) {
             if (context.previousPostsLikedByAccount) {
                 queryClient.setQueryData(QUERY_KEYS.postsLikedByAccount, context.previousPostsLikedByAccount);
             }
+        }
+    });
+}
+
+export function useNotificationsForUser(handle: string) {
+    return useInfiniteQuery({
+        queryKey: QUERY_KEYS.notifications(handle),
+        async queryFn({pageParam}: {pageParam?: string}) {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI(handle, siteUrl);
+
+            return api.getNotifications(pageParam);
+        },
+        getNextPageParam(prevPage) {
+            return prevPage.next;
         }
     });
 }
