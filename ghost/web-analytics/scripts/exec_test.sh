@@ -4,11 +4,12 @@ set -euo pipefail
 export TB_VERSION_WARNING=0
 
 # Default version if not provided
-export TB_VERSION=${TB_VERSION:-0}
+# 4 = latest
+export TB_VERSION=${TB_VERSION:-4}
 
 # Get the expected count once, outside of any function
-ndjson_file="./datasources/fixtures/analytics_events.ndjson"
-export expected_count=$(wc -l < "$ndjson_file" || echo "0")
+ndjson_file="./tests/fixtures/analytics_events.ndjson"
+export expected_count=$(grep -c '^' "$ndjson_file" || echo "0")
 
 check_sum() {
     local file=$1
@@ -41,7 +42,7 @@ check_sum() {
         echo "✅ Sanity check passed: Sum of $column_name is $sum (matches NDJSON line count)"
         return 0
     else
-        echo "⚠️  WARNING: Sanity check failed: Sum of $column_name is $sum, expected $expected_count (NDJSON line count)"
+        echo "🚨 WARNING: Sanity check failed: Sum of $column_name is $sum, expected $expected_count (NDJSON line count)"
         return 1  # Return 1 to indicate a warning, but not a failure
     fi
 }
@@ -75,7 +76,7 @@ run_test() {
 
     if diff -B "${t}.result" "$tmpfile" >/dev/null 2>&1; then
         echo "✅ Test $t passed"
-        check_sum "${t}.result" "$expected_count" || echo "⚠️  Warning: Sanity check did not pass."
+        check_sum "${t}.result" "$expected_count" || echo "🚨 Warning: Sanity check did not pass."
         rm "$tmpfile"
         return 0
     elif [ $retries -eq $TOTAL_RETRIES ]; then
