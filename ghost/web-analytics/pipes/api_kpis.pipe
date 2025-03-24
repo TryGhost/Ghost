@@ -74,7 +74,7 @@ SQL >
                                 pathname,
                                 os,
                                 count() over (partition by session_id) as hits_per_session,
-                                count() as pageviews,
+                                1 as pageviews,
                                 max(timestamp) as latest_view_aux,
                                 min(timestamp) as first_view_aux
                             from mv_hits
@@ -93,7 +93,7 @@ SQL >
                                 os,
                                 session_id,
                                 count() over (partition by session_id) as hits_per_session,
-                                count() as pageviews,
+                                1 as pageviews,
                                 max(timestamp) as latest_view_aux,
                                 min(timestamp) as first_view_aux
                             from mv_hits
@@ -116,9 +116,9 @@ SQL >
                         select
                             date,
                             uniq(session_id) as visits,
-                            sum(pageviews) as pageviews,
-                            sum(case when hits_per_session = 1 then 1 else 0 end) / nullIf(uniq(session_id), 0) as bounce_rate,
-                            avg(latest_view_aux - first_view_aux) as avg_session_sec
+                            count() as pageviews,
+                            coalesce(sum(case when hits_per_session = 1 then 1 else 0 end) / nullIf(uniq(session_id), 0), 0) as bounce_rate,
+                            avg(dateDiff('second', first_view_aux, latest_view_aux)) as avg_session_sec
                         from pageviews
                         where
                             site_uuid = {{String(site_uuid, 'mock_site_uuid', description="Tenant ID", required=False)}}

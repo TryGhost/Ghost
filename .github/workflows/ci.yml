@@ -1133,6 +1133,7 @@ jobs:
         job_admin_x_settings,
         job_comments_ui,
         job_signup_form,
+        job_tinybird
       ]
     if: always()
     runs-on: ubuntu-latest

@@ -40,12 +40,14 @@ pipes=$(tb pipe ls)
 
 # Define arrays for each type of resource
 materialized_views=(
+    "_mv_hits"
     "_mv_pages"
     "_mv_sessions"
     "_mv_sources"
 )
 
 data_pipes=(
+    "mv_hits"
     "mv_pages"
     "mv_sessions"
     "mv_sources"
@@ -62,7 +64,6 @@ endpoint_pipes=(
 )
 
 include_files=(
-    "_hits"
     "_parsed_hits"
 )
 
