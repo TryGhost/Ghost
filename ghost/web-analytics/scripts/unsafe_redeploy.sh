@@ -63,10 +63,6 @@ endpoint_pipes=(
     "api_top_sources"
 )
 
-include_files=(
-    "_parsed_hits"
-)
-
 # Function to safely remove a resource
 safe_remove() {
     local type=$1
@@ -86,13 +82,6 @@ safe_remove() {
             tb datasource rm "${name}__v${version}" --yes || true
         else
             echo "Datasource not found: ${name}__v${version}"
-        fi
-    elif [ "$type" == "include" ]; then
-        if echo "$pipes" | grep -q "${name}"; then
-            echo "Removing include: ${name}__v${version}"
-            tb pipe rm "${name}__v${version}" --yes || true
-        else
-            echo "Include not found: ${name}__v${version}"
         fi
     fi
 }
@@ -143,11 +132,6 @@ done
 # Remove data pipes
 for pipe in "${data_pipes[@]}"; do
     safe_remove "pipe" "$pipe" "$version"
-done
-
-# Remove include files
-for inc in "${include_files[@]}"; do
-    safe_remove "include" "$inc" "$version"
 done
 
 # Update version in all files to the specified version
