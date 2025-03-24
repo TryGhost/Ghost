@@ -75,7 +75,7 @@ run_test() {
 
     if diff -B "${t}.result" "$tmpfile" >/dev/null 2>&1; then
         echo "✅ Test $t passed"
-        check_sum "${t}.result" "$expected_count" || echo "⚠️  Warning: Sanity check did not pass."
+        check_sum "${t}.result" "$expected_count" || echo "🚨 Warning: Sanity check did not pass."
         rm "$tmpfile"
         return 0
     elif [ $retries -eq $TOTAL_RETRIES ]; then
