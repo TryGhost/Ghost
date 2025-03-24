@@ -6,16 +6,10 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
 # Define arrays for each type of resource
 materialized_views=(
-    "_mv_pages"
-    "_mv_sessions"
-    "_mv_sources"
     "_mv_hits"
 )
 
 data_pipes=(
-    "mv_pages"
-    "mv_sessions"
-    "mv_sources"
     "mv_hits"
 )
 
