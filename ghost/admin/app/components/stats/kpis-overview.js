@@ -114,11 +114,6 @@ export default class KpisOverview extends Component {
 
     get hasNoViews() {
         const hasNoViews = this.totals?.visits === '0' || this.totals?.pageviews === '0';
-        console.log('KPI Overview - hasNoViews check:', {
-            visits: this.totals?.visits,
-            pageviews: this.totals?.pageviews,
-            hasNoViews
-        });
         return hasNoViews;
     }
 
