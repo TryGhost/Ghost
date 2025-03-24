@@ -106,10 +106,6 @@ export default class KpisOverview extends Component {
             bounce_rate: isNaN(formattedBouceRate) ? '0' : formattedBouceRate
         };
 
-        console.log('KPI Overview - Processed totals:', totals);
-        console.log('KPI Overview - Raw visits:', totalVisits);
-        console.log('KPI Overview - Raw pageviews:', _KPITotal('pageviews'));
-
         this.totals = totals;
         this.args.onTotalsChange?.(totals);
 

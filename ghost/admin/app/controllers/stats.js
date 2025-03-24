@@ -42,14 +42,8 @@ export default class StatsController extends Controller {
 
     @action
     onTotalsChange(totals) {
-        console.log('Stats Controller - onTotalsChange:', totals);
         this.totals = totals;
         const hasNoViews = totals?.visits === '0' && totals?.pageviews === '0';
-        console.log('Stats Controller - hasNoViews check:', {
-            visits: totals?.visits,
-            pageviews: totals?.pageviews,
-            hasNoViews
-        });
         this.showStats = !hasNoViews;
     }
 
