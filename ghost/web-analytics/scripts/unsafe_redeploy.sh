@@ -7,11 +7,9 @@ if [[ "$@" == *"--force"* ]]; then
     force=true
 fi
 
-# Get version from arguments or prompt
-version=0
-if [[ "$@" =~ --version=([0-9]+) ]]; then
-    version="${BASH_REMATCH[1]}"
-else
+# Get version from TB_VERSION environment variable or prompt
+version=${TB_VERSION:-0}
+if [ "$version" = "0" ]; then
     read -p "Enter version number to cleanup (default: 0): " input_version
     if [ ! -z "$input_version" ]; then
         version=$input_version

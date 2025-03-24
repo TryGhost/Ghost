@@ -118,7 +118,7 @@ SQL >
                             uniq(session_id) as visits,
                             count() as pageviews,
                             coalesce(sum(case when hits_per_session = 1 then 1 else 0 end) / nullIf(uniq(session_id), 0), 0) as bounce_rate,
-                            avg(dateDiff('second', first_view_aux, latest_view_aux)) as avg_session_sec
+                            coalesce(avg(case when hits_per_session > 1 then dateDiff('second', first_view_aux, latest_view_aux) end), 0) as avg_session_sec
                         from pageviews
                         where
                             site_uuid = {{String(site_uuid, 'mock_site_uuid', description="Tenant ID", required=False)}}
