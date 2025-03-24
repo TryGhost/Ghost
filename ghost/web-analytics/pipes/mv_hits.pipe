@@ -1,4 +1,4 @@
-TOKEN "mv_hits_endpoint_read_2373" READ
+VERSION 4
 
 NODE mv_hits_0
 SQL >
