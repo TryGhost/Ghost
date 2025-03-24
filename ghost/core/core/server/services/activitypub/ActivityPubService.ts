@@ -66,7 +66,12 @@ export class ActivityPubService {
 
     async getWebhookSecret(): Promise<string | null> {
         try {
-            const ownerUser = await this.knex.select('*').from('users').where('id', '=', '1').first();
+            const ownerUser = await this.knex('users')
+                .select('users.*')
+                .join('roles_users', 'users.id', 'roles_users.user_id')
+                .join('roles', 'roles.id', 'roles_users.role_id')
+                .where('roles.name', 'Owner')
+                .first();
             const token = await this.identityTokenService.getTokenForUser(ownerUser.email, 'Owner');
 
             const res = await fetch(new URL('.ghost/activitypub/site', this.siteUrl), {
