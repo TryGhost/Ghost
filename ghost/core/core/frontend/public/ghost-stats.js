@@ -11,15 +11,13 @@
   let globalAttributes = {}
   let stringifyPayload = true
 
-  let proxy, token, host, domain
+  let token, host, domain
   if (document.currentScript) {
     host = document.currentScript.getAttribute('data-host')
-    proxy = document.currentScript.getAttribute('data-proxy')
     token = document.currentScript.getAttribute('data-token')
     domain = document.currentScript.getAttribute('data-domain')
     DATASOURCE =
       document.currentScript.getAttribute('data-datasource') || DATASOURCE
-    console.log('DATASOURCE', DATASOURCE)
     STORAGE_METHOD =
       document.currentScript.getAttribute('data-storage') || STORAGE_METHOD
     stringifyPayload = document.currentScript.getAttribute('data-stringify-payload') !== 'false'
@@ -182,17 +180,7 @@
    */
   async function _sendEvent(name, payload) {
     _setSessionId()
-    let url
-
-    // Use public Tinybird url if no custom endpoint is provided
-    if (proxy) {
-      url = `${proxy}/api/tracking`
-    } else if (host) {
-      host = host.replaceAll(/\/+$/gm, '')
-      url = `${host}/v0/events?name=${DATASOURCE}&token=${token}`
-    } else {
-      url = `https://api.tinybird.co/v0/events?name=${DATASOURCE}&token=${token}`
-    }
+    const url = `https://e.ghost.org/tb/web_analytics?name=${DATASOURCE}&token=${token}`
 
     let processedPayload
     if (stringifyPayload) {
