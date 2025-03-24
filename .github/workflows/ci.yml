@@ -520,7 +520,7 @@ jobs:
         run: sudo service mysql stop
         if: matrix.env.DB == 'mysql8'
 
-      - uses: daniellockyer/mysql-action@main
+      - uses: tryghost/mysql-action@main
         if: matrix.env.DB == 'mysql8'
         timeout-minutes: 3
         with:
@@ -649,7 +649,7 @@ jobs:
         run: sudo service mysql stop
         if: matrix.env.DB == 'mysql8'
 
-      - uses: daniellockyer/mysql-action@main
+      - uses: tryghost/mysql-action@main
         if: matrix.env.DB == 'mysql8'
         timeout-minutes: 3
         with:
