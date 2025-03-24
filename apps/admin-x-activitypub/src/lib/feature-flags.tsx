@@ -2,7 +2,9 @@ import React, {createContext, useContext, useEffect, useState} from 'react';
 import {useLocation} from '@tryghost/admin-x-framework';
 
 // Define all available feature flags here
-export const FEATURE_FLAGS = [] as const;
+export const FEATURE_FLAGS = [
+    'notificationsV2'
+] as const;
 
 // ---
 export type FeatureFlag = typeof FEATURE_FLAGS[number] | string;
