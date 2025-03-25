@@ -29,26 +29,21 @@ if echo "$branch_info" | grep -q "main" && echo "$branch_info" | grep -q "produc
 fi
 
 # Function to safely remove a resource
-safe_delete() {
-    local type=$1
-    local name=$2
-    local version=$3
+safe_delete_pipe() {
+    local name=$1
+    local version=${2:-""}  # Make version optional with empty default
 
-    if [ "$type" == "pipe" ]; then
         if echo "$pipes" | grep -q "${name}"; then
-            echo "Removing pipe: ${name}__v${version}"
-            tb pipe rm "${name}__v${version}" --yes || true
+            if [ -z "$version" ]; then
+                echo "Removing pipe: ${name}"
+                tb pipe rm "${name}" --yes || true
+            else
+                echo "Removing pipe: ${name}__v${version}"
+                tb pipe rm "${name}__v${version}" --yes || true
+            fi
         else
-            echo "Pipe not found: ${name}__v${version}"
+            echo "Pipe not found: ${name}"
         fi
-    elif [ "$type" == "datasource" ]; then
-        if echo "$datasources" | grep -q "${name}"; then
-            echo "Removing datasource: ${name}__v${version}"
-            tb datasource rm "${name}__v${version}" --yes || true
-        else
-            echo "Datasource not found: ${name}__v${version}"
-        fi
-    fi
 }
 
 # Get all pipes as a JSON object
@@ -60,7 +55,7 @@ echo "$pipes"
 pipe_names=$(echo "$pipes" | jq -r '.[] | .name' 2>/dev/null || echo "$pipes" | jq -r '.pipes[]')
 
 # Iterate over each pipe and call safe_delete
-echo "$pipes" | jq -r '.[] | "safe_delete \"pipe\" \"\(.name)\" \"\(.version)\""' 2>/dev/null || \
-    echo "$pipes" | jq -r '.pipes[] | "safe_delete \"pipe\" \"\(.name)\" \"\(.version)\""' | while read -r cmd; do
+echo "$pipes" | jq -r '.[] | if .version then "safe_delete_pipe \"\(.name)\" \"\(.version)\"" else "safe_delete_pipe \"\(.name)\"" end' 2>/dev/null || \
+    echo "$pipes" | jq -r '.pipes[] | if .version then "safe_delete_pipe \"\(.name)\" \"\(.version)\"" else "safe_delete_pipe \"\(.name)\"" end' | while read -r cmd; do
     eval "$cmd"
 done
