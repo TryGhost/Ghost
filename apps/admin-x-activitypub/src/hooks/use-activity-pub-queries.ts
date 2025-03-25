@@ -145,6 +145,88 @@ function updateLikedCache(queryClient: QueryClient, queryKey: string[], id: stri
             queryClient.invalidateQueries({queryKey: QUERY_KEYS.postsLikedByAccount});
         }
     }
+
+    // Update the thread cache
+    const threadQueryKey = QUERY_KEYS.thread(null);
+    queryClient.setQueriesData(threadQueryKey, (current?: {posts: Activity[]}) => {
+        if (!current) {
+            return current;
+        }
+
+        return {
+            posts: current.posts.map((activity) => {
+                if (activity.object.id === id) {
+                    return {
+                        ...activity,
+                        object: {
+                            ...activity.object,
+                            liked
+                        }
+                    };
+                }
+                return activity;
+            })
+        };
+    });
+}
+
+function updateReplyCountInCache(queryClient: QueryClient, id: string, delta: number) {
+    const queryKeys = [
+        QUERY_KEYS.feed,
+        QUERY_KEYS.inbox,
+        QUERY_KEYS.postsByAccount,
+        QUERY_KEYS.postsLikedByAccount
+    ];
+
+    for (const queryKey of queryKeys) {
+        queryClient.setQueriesData(queryKey, (current?: {pages: {posts: Activity[]}[]}) => {
+            if (!current) {
+                return current;
+            }
+
+            return {
+                ...current,
+                pages: current.pages.map(page => ({
+                    ...page,
+                    posts: page.posts.map((activity) => {
+                        if (activity.object.id === id) {
+                            return {
+                                ...activity,
+                                object: {
+                                    ...activity.object,
+                                    replyCount: Math.max((activity.object.replyCount ?? 0) + delta, 0)
+                                }
+                            };
+                        }
+                        return activity;
+                    })
+                }))
+            };
+        });
+    }
+
+    // Update thread cache
+    const threadQueryKey = QUERY_KEYS.thread(null);
+    queryClient.setQueriesData(threadQueryKey, (current?: {posts: Activity[]}) => {
+        if (!current) {
+            return current;
+        }
+
+        return {
+            posts: current.posts.map((activity) => {
+                if (activity.object.id === id) {
+                    return {
+                        ...activity,
+                        object: {
+                            ...activity.object,
+                            replyCount: Math.max((activity.object.replyCount ?? 0) + delta, 0)
+                        }
+                    };
+                }
+                return activity;
+            })
+        };
+    });
 }
 
 export function useLikeMutationForUser(handle: string) {
@@ -940,13 +1022,7 @@ export function useReplyMutationForUser(handle: string, actorProps?: ActorProper
             addActivityToCollection(queryClient, QUERY_KEYS.thread(inReplyTo), 'posts', activity, inReplyTo);
 
             // Increment the reply count of the inReplyTo post in the feed
-            updateActivityInPaginatedCollection(queryClient, QUERY_KEYS.feed, 'posts', inReplyTo, currentActivity => ({
-                ...currentActivity,
-                object: {
-                    ...currentActivity.object,
-                    replyCount: currentActivity.object.replyCount + 1
-                }
-            }));
+            updateReplyCountInCache(queryClient, inReplyTo, 1);
 
             // We do not need to increment the reply count of the inReplyTo post
             // in the thread as this is handled locally in the ArticleModal component
@@ -970,13 +1046,7 @@ export function useReplyMutationForUser(handle: string, actorProps?: ActorProper
             removeActivityFromCollection(queryClient, QUERY_KEYS.thread(variables.inReplyTo), 'posts', context?.id ?? '');
 
             // Decrement the reply count of the inReplyTo post in the feed
-            updateActivityInPaginatedCollection(queryClient, QUERY_KEYS.feed, 'posts', variables.inReplyTo, currentActivity => ({
-                ...currentActivity,
-                object: {
-                    ...currentActivity.object,
-                    replyCount: currentActivity.object.replyCount - 1
-                }
-            }));
+            updateReplyCountInCache(queryClient, variables.inReplyTo, -1);
 
             // We do not need to decrement the reply count of the inReplyTo post
             // in the thread as this is handled locally in the ArticleModal component
