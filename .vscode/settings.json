@@ -24,5 +24,7 @@
   "tailwindCSS.experimental.classRegex": [
     ["clsx\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"]
   ],
-  "git.detectSubmodules": false
+  "git.detectSubmodules": false,
+  "tinybird.dataProjectSubdir": "ghost/web-analytics",
+  "tinybird.venv": "ghost/web-analytics/.venv"
 }
