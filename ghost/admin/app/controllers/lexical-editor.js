@@ -952,6 +952,17 @@ export default class LexicalEditorController extends Controller {
             return;
         }
 
+        // Prevent slug regeneration when only whitespace changes are made to the title.
+        // This check compares the trimmed versions of the current and new titles to ensure
+        // that differences in leading or trailing spaces do not trigger unnecessary slug updates.
+        // Without this, adding or removing spaces would incorrectly generate a new slug,
+        // even though the meaningful content of the title hasn't changed.
+        const trimmedCurrentTitle = currentTitle?.trim();
+        const trimmedNewTitle = newTitle?.trim();
+        if (trimmedCurrentTitle === trimmedNewTitle) {
+            return;
+        }
+
         // Update the slug unless the slug looks to be a custom slug or the title is a default/has been cleared out
         if (
             (currentSlug && slugify(currentTitle) !== currentSlug)
