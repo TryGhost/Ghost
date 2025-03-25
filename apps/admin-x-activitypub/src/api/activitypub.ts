@@ -539,4 +539,10 @@ export class ActivityPubAPI {
             next: nextPage
         };
     }
+
+    async getPost(id: string): Promise<Post> {
+        const url = new URL(`.ghost/activitypub/post/${encodeURIComponent(id)}`, this.apiUrl);
+        const json = await this.fetchJSON(url);
+        return json as Post;
+    }
 }

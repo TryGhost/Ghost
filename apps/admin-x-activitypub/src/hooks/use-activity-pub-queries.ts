@@ -85,7 +85,8 @@ const QUERY_KEYS = {
     inbox: ['inbox'],
     postsByAccount: ['account_posts'],
     postsLikedByAccount: ['account_liked_posts'],
-    notifications: (handle: string) => ['notifications', handle]
+    notifications: (handle: string) => ['notifications', handle],
+    post: (id: string) => ['post', id]
 };
 
 function updateLikedCache(queryClient: QueryClient, queryKey: string[], id: string, liked: boolean) {
@@ -700,11 +701,16 @@ export function useProfileFollowingForUser(handle: string, profileHandle: string
     });
 }
 
-export function useThreadForUser(handle: string, id: string) {
+export function useThreadForUser(handle: string, id?: string) {
     return useQuery({
-        queryKey: QUERY_KEYS.thread(id),
+        queryKey: QUERY_KEYS.thread(id || ''),
         refetchOnMount: 'always',
+        enabled: Boolean(id),
         async queryFn() {
+            if (!id) {
+                throw new Error('Post ID is required');
+            }
+
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
 
@@ -1539,6 +1545,26 @@ export function useNotificationsForUser(handle: string) {
         },
         getNextPageParam(prevPage) {
             return prevPage.next;
+        }
+    });
+}
+
+export function usePostForUser(handle: string, id: string | null) {
+    return useQuery({
+        queryKey: QUERY_KEYS.post(id || ''),
+        refetchOnMount: 'always',
+        enabled: Boolean(id),
+        async queryFn() {
+            if (!id) {
+                throw new Error('Post ID is required');
+            }
+
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI(handle, siteUrl);
+
+            return api.getPost(id).then((response) => {
+                return mapPostToActivity(response);
+            });
         }
     });
 }
