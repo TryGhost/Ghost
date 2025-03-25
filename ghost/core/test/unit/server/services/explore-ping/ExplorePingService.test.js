@@ -4,7 +4,7 @@ const ExplorePingService = require('../../../../../core/server/services/explore-
 
 describe('ExplorePingService', function () {
     let explorePingService;
-    let publicConfigStub;
+    let settingsCacheStub;
     let configStub;
     let labsStub;
     let loggingStub;
@@ -13,21 +13,42 @@ describe('ExplorePingService', function () {
 
     beforeEach(function () {
         // Setup stubs
-        publicConfigStub = {
-            site: {
-                url: 'https://example.com',
+        settingsCacheStub = {
+            getPublic: sinon.stub().returns({
                 title: 'Test Blog',
                 description: 'Test Description',
                 icon: 'icon.png',
+                accent_color: '#000000',
+                lang: 'en',
+                timezone: 'Etc/UTC',
+                navigation: JSON.stringify([]),
+                secondary_navigation: JSON.stringify([]),
+                meta_title: null,
+                meta_description: null,
+                og_image: null,
+                og_title: null,
+                og_description: null,
+                twitter_image: null,
+                twitter_title: null,
+                twitter_description: null,
+                active_theme: 'casper',
+                cover_image: null,
+                logo: null,
+                portal_button: true,
+                portal_name: true,
                 locale: 'en',
                 twitter: '@test',
-                facebook: 'testfb'
-            }
+                facebook: 'testfb',
+                labs: JSON.stringify({})
+            })
         };
 
         configStub = {
-            get: sinon.stub().returns('https://explore-api.ghost.org')
+            get: sinon.stub()
         };
+
+        configStub.get.withArgs('url').returns('https://example.com');
+        configStub.get.withArgs('explore:url').returns('https://explore-api.ghost.org');
 
         labsStub = {
             isSet: sinon.stub().returns(true)
@@ -45,7 +66,7 @@ describe('ExplorePingService', function () {
         requestStub = sinon.stub();
 
         explorePingService = new ExplorePingService({
-            PublicConfigService: publicConfigStub,
+            settingsCache: settingsCacheStub,
             config: configStub,
             labs: labsStub,
             logging: loggingStub,
@@ -68,6 +89,7 @@ describe('ExplorePingService', function () {
                 title: 'Test Blog',
                 description: 'Test Description',
                 icon: 'icon.png',
+                accent_color: '#000000',
                 locale: 'en',
                 twitter: '@test',
                 facebook: 'testfb'
@@ -114,7 +136,7 @@ describe('ExplorePingService', function () {
         });
 
         it('does not ping if explore URL is not set', async function () {
-            configStub.get.returns(null);
+            configStub.get.withArgs('explore:url').returns(null);
 
             await explorePingService.ping();
 
