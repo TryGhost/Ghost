@@ -18,39 +18,47 @@ describe('Previews controller', function () {
 
     describe('#read', function () {
         it('sets frame.apiType to content when a memberStatus is provided', function () {
-            const frame = {options: {memberStatus: 'free'}};
+            const frame = {data: {uuid: 'test'}, options: {memberStatus: 'free'}};
             previewsController.read.query(frame);
 
             assert.equal(frame.apiType, 'content');
         });
 
         it('does not set frame.apiType when no memberStatus is provided', function () {
-            const frame = {options: {}};
+            const frame = {data: {uuid: 'test'}, options: {}};
             previewsController.read.query(frame);
 
             assert.equal(frame.apiType, undefined);
         });
 
-        it('sets frame.original.context.member.status to free when memberStatus is free', function () {
-            const frame = {options: {memberStatus: 'free'}};
+        it('sets frame.options.context.member.status to free when memberStatus is free', function () {
+            const frame = {data: {uuid: 'test'}, options: {memberStatus: 'free'}};
             previewsController.read.query(frame);
 
-            assert.equal(frame.original.context.member.status, 'free');
+            assert.equal(frame.options.context.member.status, 'free');
         });
 
-        it('sets frame.original.context.member.status to paid when memberStatus is paid', function () {
-            const frame = {options: {memberStatus: 'paid'}};
+        it('sets frame.options.context.member.status to paid when memberStatus is paid', function () {
+            const frame = {data: {uuid: 'test'}, options: {memberStatus: 'paid'}};
             previewsController.read.query(frame);
 
-            assert.equal(frame.original.context.member.status, 'paid');
+            assert.equal(frame.options.context.member.status, 'paid');
         });
 
         it('sets frame.apiType but does not set member context when memberStatus is anonymous', function () {
-            const frame = {options: {memberStatus: 'anonymous'}};
+            const frame = {data: {uuid: 'test'}, options: {memberStatus: 'anonymous'}};
             previewsController.read.query(frame);
 
             assert.equal(frame.apiType, 'content');
-            assert.equal(frame.original.context.member, undefined);
+            assert.equal(frame.options.context.member, undefined);
+        });
+
+        it('sets frame.apiType but does not set member context when memberStatus is unknown', function () {
+            const frame = {data: {uuid: 'test'}, options: {memberStatus: 'not-a-status'}};
+            previewsController.read.query(frame);
+
+            assert.equal(frame.apiType, 'content');
+            assert.equal(frame.options.context.member, undefined);
         });
     });
 });

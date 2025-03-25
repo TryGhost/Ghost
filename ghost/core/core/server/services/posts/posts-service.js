@@ -12,6 +12,7 @@ const getPostServiceInstance = () => {
     const emailService = require('../email-service');
     const settingsCache = require('../../../shared/settings-cache');
     const settingsHelpers = require('../settings-helpers');
+    const contentGating = require('../content-gating');
 
     const postStats = new PostStats();
 
@@ -32,12 +33,13 @@ const getPostServiceInstance = () => {
     });
 
     return new PostsService({
-        urlUtils: urlUtils,
-        models: models,
-        isSet: flag => labs.isSet(flag), // don't use bind, that breaks test subbing of labs
+        urlUtils,
+        models,
+        labs,
         stats: postStats,
         emailService: emailService.service,
-        postsExporter
+        postsExporter,
+        contentGating
     });
 };
 

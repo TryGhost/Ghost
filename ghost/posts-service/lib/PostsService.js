@@ -26,27 +26,29 @@ const messages = {
 };
 
 class PostsService {
-    constructor({urlUtils, models, isSet, stats, emailService, postsExporter}) {
+    constructor({urlUtils, models, labs, stats, emailService, postsExporter, contentGating}) {
         this.urlUtils = urlUtils;
         this.models = models;
-        this.isSet = isSet;
+        this.labs = labs;
         this.stats = stats;
         this.emailService = emailService;
         this.postsExporter = postsExporter;
+        this.contentGating = contentGating;
     }
 
     /**
      *
      * @param {Object} frame
      * @param {Object} frame.options
+     * @param {string} frame.apiType
      * @returns {Promise<Object>}
      */
-    async browsePosts({options}) {
+    async browsePosts({options, apiType}) {
         const {data: models, meta} = await this.models.Post.findPage(options);
 
         const posts = [];
         for (const postModel of models) {
-            posts.push(this.serializePostModel(postModel, {options}));
+            posts.push(this.serializePostModel(postModel, {options, apiType}));
         }
 
         return {
@@ -60,9 +62,10 @@ class PostsService {
      * @param {Object} frame - frame object
      * @param {Object} frame.data
      * @param {Object} frame.options
+     * @param {string} frame.apiType
      * @returns {Promise<Object>}
      */
-    async readPost({data, options}) {
+    async readPost({data, options, apiType}) {
         const model = await this.models.Post.findOne(data, options);
 
         if (!model) {
@@ -72,10 +75,10 @@ class PostsService {
             });
         }
 
-        return this.serializePostModel(model, {options});
+        return this.serializePostModel(model, {options, apiType});
     }
 
-    serializePostModel(model, {options}) {
+    serializePostModel(model, {options, apiType}) {
         const postAttrs = model.toJSON(options);
 
         // re-add id in case it's been excluded by toJSON due to fields/columns options,
@@ -83,7 +86,19 @@ class PostsService {
         // TODO: can Post.toJSON be changed to always include id?
         postAttrs.id = model.id;
 
+        // for public requests we want to exclude any content that should not be
+        // visible to anonymous viewers or members with insufficient permissions
+        if (this.#isPublicRequest({apiType})) {
+            // add an extra `access` attribute to the postAttrs object unless explicitly not requested
+            const addAccessAttr = !options || !Object.prototype.hasOwnProperty.call(options, 'columns') || (options.columns.includes('access'));
+            this.contentGating.gatePostAttrs(postAttrs, options?.context?.member, {addAccessAttr, labs: this.labs});
+        }
+
         return postAttrs;
+    }
+
+    #isPublicRequest({apiType}) {
+        return apiType === 'content';
     }
 
     /**

@@ -247,4 +247,112 @@ describe('Posts Service', function () {
             assert.equal(postsService.generateCopiedPostLocationFromUrl(url), expectedUrl);
         });
     });
+
+    describe('content gating', function () {
+        let postData = [];
+        let postsService;
+        let contentGating;
+        let labs;
+
+        function buildPostStub(attrs) {
+            return {
+                ...attrs,
+                get(attr) {
+                    return attrs[attr];
+                },
+                toJSON() {
+                    return attrs;
+                }
+            };
+        }
+
+        beforeEach(function () {
+            postData = [];
+
+            contentGating = {
+                gatePostAttrs: sinon.stub()
+            };
+
+            labs = {
+                isSet: sinon.stub().returns(false)
+            };
+
+            // @ts-ignore
+            postsService = new PostsService({
+                models: {
+                    Post: {
+                        findPage: sinon.spy(async () => ({data: postData.map(buildPostStub)})),
+                        findOne: sinon.spy(async () => (buildPostStub(postData[0])))
+                    }
+                },
+                contentGating,
+                labs
+            });
+        });
+
+        afterEach(function () {
+            sinon.restore();
+        });
+
+        it('browsePosts() does not call gatePostAttrs for admin api requests', async function () {
+            postData.push({id: '1', visibility: 'public'});
+            postData.push({id: '2', visibility: 'members'});
+            await postsService.browsePosts({apiType: 'admin'});
+
+            sinon.assert.notCalled(contentGating.gatePostAttrs);
+        });
+
+        it('browsePosts() calls gatePostAttrs for each fetched post for content api requests', async function () {
+            postData.push({id: '1', visibility: 'public'});
+            postData.push({id: '2', visibility: 'members'});
+            await postsService.browsePosts({apiType: 'content'});
+
+            sinon.assert.calledTwice(contentGating.gatePostAttrs);
+        });
+
+        it('readPost() does not call gatePostAttrs for admin api requests', async function () {
+            postData.push({id: '1', visibility: 'public'});
+            await postsService.readPost({apiType: 'admin'});
+
+            sinon.assert.notCalled(contentGating.gatePostAttrs);
+        });
+
+        it('readPost() calls gatePostAttrs for content api requests', async function () {
+            postData.push({id: '1', visibility: 'public'});
+            await postsService.readPost({apiType: 'content'});
+
+            sinon.assert.calledOnce(contentGating.gatePostAttrs);
+        });
+
+        it('calls gatePostAttrs with addAccessAttr=true by default', async function () {
+            const post = {id: 'post1', visibility: 'public'};
+            const member = {id: 'member1', status: 'paid'};
+            postData.push(post);
+
+            const frame = {
+                apiType: 'content',
+                options: {context: {member}}
+            };
+            await postsService.readPost(frame);
+
+            sinon.assert.calledWith(contentGating.gatePostAttrs, post, member, {addAccessAttr: true, labs});
+        });
+
+        it('calls gatePostAttrs with addAccessAttr=false when columns does not include access', async function () {
+            const post = {id: 'post1', visibility: 'public'};
+            const member = {id: 'member1', status: 'paid'};
+            postData.push(post);
+
+            const frame = {
+                apiType: 'content',
+                options: {
+                    context: {member},
+                    columns: ['id', 'html']
+                }
+            };
+            await postsService.readPost(frame);
+
+            sinon.assert.calledWith(contentGating.gatePostAttrs, post, member, {addAccessAttr: false, labs});
+        });
+    });
 });

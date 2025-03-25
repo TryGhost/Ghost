@@ -1,5 +1,4 @@
 const mappers = require('./mappers');
-const gating = require('./utils/post-gating');
 const tiersService = require('../../../../../services/tiers');
 
 module.exports = {
@@ -28,7 +27,6 @@ module.exports = {
         }) || [];
 
         const emailPost = await mappers.posts(model, frame, {tiers});
-        gating.forPost(emailPost, frame);
 
         frame.response = {
             email_posts: [emailPost]

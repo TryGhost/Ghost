@@ -1,38 +1,14 @@
-const tpl = require('@tryghost/tpl');
-const errors = require('@tryghost/errors');
-const models = require('../../models');
+const getPostServiceInstance = require('../../services/posts/posts-service');
+const postsService = getPostServiceInstance();
+
 const ALLOWED_INCLUDES = ['authors', 'tags'];
 const ALLOWED_MEMBER_STATUSES = ['anonymous', 'free', 'paid'];
 
-const messages = {
-    postNotFound: 'Post not found.'
-};
-
-// Simulate serving content as different member states by setting the minimal
-// member context needed for content gating to function
-const _addMemberContextToFrame = (frame) => {
-    if (!frame?.options?.memberStatus) {
-        return;
-    }
-
-    // only set apiType when given a memberStatus to preserve backwards compatibility
-    // where we used to serve "Admin API" content with no gating for all previews
-    frame.apiType = 'content';
-
-    frame.original ??= {};
-    frame.original.context ??= {};
-
-    if (frame.options?.memberStatus === 'free') {
-        frame.original.context.member = {
-            status: 'free'
-        };
-    }
-
-    if (frame.options?.memberStatus === 'paid') {
-        frame.original.context.member = {
-            status: 'paid'
-        };
-    }
+// minimal member-like objects needed to simulate fetching content as a member
+const PREVIEW_MEMBERS = {
+    anonymous: undefined,
+    free: {status: 'free'},
+    paid: {status: 'paid'}
 };
 
 /** @type {import('@tryghost/api-framework').Controller} */
@@ -66,19 +42,22 @@ const controller = {
                 }
             }
         },
+        // eslint-disable-next-line ghost/ghost-custom/max-api-complexity
         query(frame) {
-            _addMemberContextToFrame(frame);
+            // previews are designed for previewing content before it's published
+            // so we need to override Post's default status='published' filter
+            frame.data.status = 'all';
 
-            return models.Post.findOne(Object.assign({status: 'all'}, frame.data), frame.options)
-                .then((model) => {
-                    if (!model) {
-                        throw new errors.NotFoundError({
-                            message: tpl(messages.postNotFound)
-                        });
-                    }
+            // When we're given a memberStatus, we need to simulate fetching content with that member status.
+            // When we don't have a memberStatus, we're serving content as an admin which displays
+            // all content for backwards-compatibility with earlier preview API behaviour
+            if (Object.prototype.hasOwnProperty.call(frame.options, 'memberStatus')) {
+                frame.apiType = 'content';
+                frame.options.context ??= {};
+                frame.options.context.member = PREVIEW_MEMBERS[frame.options.memberStatus];
+            }
 
-                    return model;
-                });
+            return postsService.readPost(frame);
         }
     }
 };
