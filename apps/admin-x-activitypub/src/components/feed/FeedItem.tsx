@@ -292,7 +292,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                             {!isLoading ? getUsername(author) : <Skeleton className='w-56' />}
                                         </span>
                                         <div className={`ml-1 leading-tight before:mr-1 ${!isLoading && 'before:content-["·"]'}`} title={`${timestamp}`}>
-                                            {!isLoading ? renderTimestamp(object, isPending === false) : <Skeleton className='w-4' />}
+                                            {!isLoading ? renderTimestamp(object, (isPending === false && !object.authored)) : <Skeleton className='w-4' />}
                                         </div>
                                     </div>
                                 </div>
@@ -382,7 +382,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                     <div className='relative z-10 flex w-full min-w-0 cursor-pointer flex-col overflow-visible text-[1.5rem]' onClick={e => !isPending && handleProfileClick(author, e)}>
                                         <div className='flex w-full'>
                                             <span className='min-w-0 truncate whitespace-nowrap font-semibold after:mx-1 after:font-normal after:text-gray-700 after:content-["·"] after:dark:text-gray-600' data-test-activity-heading>{author.name}</span>
-                                            <div>{renderTimestamp(object)}</div>
+                                            <div>{renderTimestamp(object, !object.authored)}</div>
                                         </div>
                                         <div className='flex w-full'>
                                             <span className='min-w-0 truncate text-gray-700 dark:text-gray-600'>{getUsername(author)}</span>
@@ -430,7 +430,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                     <div className='relative z-10 flex w-full min-w-0 flex-col overflow-visible' onClick={e => !isPending && handleProfileClick(author, e)}>
                                         <div className='flex'>
                                             <span className='min-w-0 truncate whitespace-nowrap font-semibold after:mx-1 after:font-normal after:text-gray-700 after:content-["·"]' data-test-activity-heading>{author.name}</span>
-                                            <div>{renderTimestamp(object, isPending === false)}</div>
+                                            <div>{renderTimestamp(object, (isPending === false && !object.authored))}</div>
                                         </div>
                                         <div className='flex'>
                                             <span className='truncate text-gray-700'>{getUsername(author)}</span>
@@ -498,7 +498,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                         >{author.name}
                                         </span>
                                         {(type === 'Announce') && <span className='z-10 flex items-center gap-1 text-gray-700 dark:text-gray-600'><Icon colorClass='text-gray-700 shrink-0 dark:text-gray-600' name='reload' size={'sm'}></Icon><span className='hover:underline' title={getUsername(actor)} onClick={e => handleProfileClick(actor, e)}>{actor.name}</span> reposted</span>}
-                                        <span className='shrink-0 whitespace-nowrap text-gray-600 before:mr-1 before:content-["·"]' title={`${timestamp}`}>{renderTimestamp(object)}</span>
+                                        <span className='shrink-0 whitespace-nowrap text-gray-600 before:mr-1 before:content-["·"]' title={`${timestamp}`}>{renderTimestamp(object, !object.authored)}</span>
                                     </> :
                                     <Skeleton className='w-24' />
                                 }

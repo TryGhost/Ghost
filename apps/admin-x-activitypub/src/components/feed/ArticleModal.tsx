@@ -757,11 +757,11 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
                             </div>
                             <div className='relative z-10 flex w-full min-w-0 cursor-pointer flex-col overflow-visible text-[1.5rem]' onClick={e => handleProfileClick(actor, e)}>
                                 <div className='flex w-full'>
-                                    <span className='min-w-0 truncate whitespace-nowrap font-semibold'>{actor.name}</span>
+                                    <span className='min-w-0 truncate whitespace-nowrap font-semibold hover:underline'>{actor.name}</span>
                                 </div>
                                 <div className='flex w-full'>
                                     <span className='text-gray-700 after:mx-1 after:font-normal after:text-gray-700 after:content-["·"]'>{getUsername(actor)}</span>
-                                    <span className='text-gray-700'>{renderTimestamp(object)}</span>
+                                    <span className='text-gray-700'>{renderTimestamp(object, !object.authored)}</span>
                                 </div>
                             </div>
                         </div>)}
