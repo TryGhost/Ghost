@@ -1,23 +1,16 @@
-VERSION 3
+VERSION 0
+
 TAGS "v0"
 
 SCHEMA >
     `site_uuid` String,
-    `date` Date,
     `session_id` String,
-    `member_status` SimpleAggregateFunction(max, String),
-    `post_uuid` SimpleAggregateFunction(any, String),
-    `post_type` SimpleAggregateFunction(any, String),
-    `device` SimpleAggregateFunction(any, String),
-    `os` SimpleAggregateFunction(any, String),
-    `browser` SimpleAggregateFunction(any, String),
-    `location` SimpleAggregateFunction(any, String),
-    `source` SimpleAggregateFunction(any, String),
-    `pathname` SimpleAggregateFunction(any, String),
-    `first_view` SimpleAggregateFunction(min, DateTime),
-    `latest_view` SimpleAggregateFunction(max, DateTime),
-    `pageviews` AggregateFunction(count)
+    `pageviews` UInt64,
+    `first_pageview` DateTime,
+    `last_pageview` DateTime,
+    `duration` Int64,
+    `is_bounce` Boolean
 
-ENGINE "AggregatingMergeTree"
-ENGINE_PARTITION_KEY "toYYYYMM(date)"
-ENGINE_SORTING_KEY "site_uuid, date, session_id"
+ENGINE MergeTree
+ENGINE_PARTITION_KEY toYYYYMM(first_pageview)
+ENGINE_SORTING_KEY site_uuid, first_pageview, session_id

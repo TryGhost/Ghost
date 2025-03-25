@@ -1,4 +1,6 @@
-VERSION 5
+VERSION 0
+
+TAGS "v0"
 
 SCHEMA >
     `site_uuid` LowCardinality(String),
@@ -18,6 +20,6 @@ SCHEMA >
     `os` String,
     `browser` String
 
-ENGINE "MergeTree"
-ENGINE_PARTITION_KEY "toYYYYMM(timestamp)"
-ENGINE_SORTING_KEY "site_uuid, timestamp, session_id"
+ENGINE MergeTree
+ENGINE_PARTITION_KEY toYYYYMM(timestamp)
+ENGINE_SORTING_KEY site_uuid, timestamp, session_id
