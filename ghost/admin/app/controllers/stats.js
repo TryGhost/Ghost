@@ -79,6 +79,8 @@ export default class StatsController extends Controller {
     @action
     toggleMockData() {
         this.mockData = !this.mockData;
+        this.showStats = true;
+        this.totals = null;
     }
 
     @action
