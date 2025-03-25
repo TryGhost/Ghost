@@ -203,7 +203,7 @@
     "knex": "2.4.2",
     "knex-migrator": "5.3.0",
     "lodash": "4.17.21",
-    "luxon": "3.5.0",
+    "luxon": "3.6.0",
     "metascraper": "5.45.15",
     "metascraper-author": "5.45.10",
     "metascraper-description": "5.45.10",
