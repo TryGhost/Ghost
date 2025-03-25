@@ -29,36 +29,34 @@ if echo "$branch_info" | grep -q "main" && echo "$branch_info" | grep -q "produc
 fi
 
 # Function to safely remove a resource
-safe_delete() {
-    local type=$1
-    local name=$2
-    local version=$3
+safe_delete_mv() {
+    local name=$1
+    local version=${2:-""}  # Make version optional with empty default
 
-    if [ "$type" == "pipe" ]; then
-        if echo "$pipes" | grep -q "${name}"; then
-            echo "Removing pipe: ${name}__v${version}"
-            tb pipe rm "${name}__v${version}" --yes || true
+    if [[ "${name}" != _mv* ]]; then
+        echo "Skipping non-materialized view: ${name}"
+        return
+    fi
+
+    if echo "$datasources" | grep -q "${name}"; then
+        if [ -z "$version" ]; then
+            echo "Removing materialized view: ${name}"
+            tb datasource rm "${name}" --yes || true
         else
-            echo "Pipe not found: ${name}__v${version}"
-        fi
-    elif [ "$type" == "datasource" ]; then
-        if echo "$datasources" | grep -q "${name}"; then
-            echo "Removing datasource: ${name}__v${version}"
+            echo "Removing materialized view: ${name}__v${version}"
             tb datasource rm "${name}__v${version}" --yes || true
-        else
-            echo "Datasource not found: ${name}__v${version}"
         fi
+    else
+        echo "Materialized view not found: ${name}__v${version}"
     fi
 }
 
 # Get all pipes as a JSON object
 datasources=$(tb datasource ls --format=json)
 
-echo "$datasources"
-
 # Parse and filter materialized views (datasources starting with _mv)
 echo "Deleting materialized views:"
-echo "$datasources" | jq -r '.[] | select(.name | startswith("_mv")) | "safe_delete \"datasource\" \"\(.name)\" \"\(.version)\""' 2>/dev/null || \
-    echo "$datasources" | jq -r '.datasources[] | select(.name | startswith("_mv")) | "safe_delete \"datasource\" \"\(.name)\" \"\(.version)\""' | while read -r cmd; do
+echo "$datasources" | jq -r '.[] | select(.name | startswith("_mv")) | if .version then "safe_delete_mv \"\(.name)\" \"\(.version)\"" else "safe_delete_mv \"\(.name)\"" end' 2>/dev/null || \
+    echo "$datasources" | jq -r '.datasources[] | select(.name | startswith("_mv")) | if .version then "safe_delete_mv \"\(.name)\" \"\(.version)\"" else "safe_delete_mv \"\(.name)\"" end' | while read -r cmd; do
     eval "$cmd"
 done

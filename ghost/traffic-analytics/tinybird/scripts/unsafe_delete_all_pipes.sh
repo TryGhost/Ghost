@@ -49,8 +49,6 @@ safe_delete_pipe() {
 # Get all pipes as a JSON object
 pipes=$(tb pipe ls --format=json)
 
-echo "$pipes"
-
 # Parse the value of the 'pipes' key into its own variable
 pipe_names=$(echo "$pipes" | jq -r '.[] | .name' 2>/dev/null || echo "$pipes" | jq -r '.pipes[]')
 
