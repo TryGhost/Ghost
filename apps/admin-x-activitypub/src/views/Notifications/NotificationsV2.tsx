@@ -1,3 +1,4 @@
+import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useRef} from 'react';
 import {LucideIcon, Skeleton} from '@tryghost/shade';
 
@@ -8,6 +9,7 @@ import APAvatar from '@components/global/APAvatar';
 import NotificationItem from '@components/activities/NotificationItem';
 import Separator from '@components/global/Separator';
 
+import ArticleModal from '@src/components/feed/ArticleModal';
 import Layout from '@components/layout';
 import truncate from '@utils/truncate';
 import {EmptyViewIcon, EmptyViewIndicator} from '@src/components/global/EmptyViewIndicator';
@@ -28,7 +30,7 @@ interface NotificationGroupDescriptionProps {
     group: NotificationGroup;
 }
 
-const groupNotifications = (notifications: Notification[]): NotificationGroup[] => {
+function groupNotifications(notifications: Notification[]): NotificationGroup[] {
     const groups: {
         [key: string]: NotificationGroup
     } = {};
@@ -179,13 +181,22 @@ const NotificationsV2: React.FC = () => {
     const handleNotificationClick = (group: NotificationGroup, index: number) => {
         switch (group.type) {
         case 'like':
-            // TODO: Open ArticleModal with Liked post
+            NiceModal.show(ArticleModal, {
+                remotePostId: group.post?.id || '',
+                width: group.post?.type === 'article' ? 'wide' : 'narrow'
+            });
             break;
         case 'reply':
-            // TODO: Open ArticleModal with Reply post
+            NiceModal.show(ArticleModal, {
+                remotePostId: group.post?.id || '',
+                width: group.inReplyTo?.type === 'article' ? 'wide' : 'narrow'
+            });
             break;
         case 'repost':
-            // TODO: Open ArticleModal with Reposted post
+            NiceModal.show(ArticleModal, {
+                remotePostId: group.post?.id || '',
+                width: group.post?.type === 'article' ? 'wide' : 'narrow'
+            });
             break;
         case 'follow':
             if (group.actors.length > 1) {
