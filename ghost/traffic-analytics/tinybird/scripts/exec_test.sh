@@ -5,7 +5,7 @@ export TB_VERSION_WARNING=0
 
 # Default version if not provided
 # 4 = latest
-export TB_VERSION=${TB_VERSION:-4}
+export TB_VERSION=${TB_VERSION:-0}
 
 # Get the expected count once, outside of any function
 ndjson_file="./tests/fixtures/analytics_events.ndjson"
