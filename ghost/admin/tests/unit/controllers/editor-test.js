@@ -24,7 +24,7 @@ describe('Unit: Controller: lexical-editor', function () {
     });
 
     describe('generateSlug', function () {
-        it('should generate a slug and set it on the post', async function () {
+        it('should generate a slug and set it on the post when the title is changed', async function () {
             let controller = this.owner.lookup('controller:lexical-editor');
             controller.set('slugGenerator', EmberObject.create({
                 generateSlug(slugType, str) {
@@ -41,6 +41,23 @@ describe('Unit: Controller: lexical-editor', function () {
             await controller.generateSlugTask.perform();
 
             expect(controller.get('post.slug')).to.equal('title-slug');
+        });
+
+        it('should generate a slug and set it on the post when the body is changed', async function () {
+            let controller = this.owner.lookup('controller:lexical-editor');
+            controller.set('slugGenerator', EmberObject.create({
+                generateSlug(slugType, str) {
+                    return RSVP.resolve(`${str}-slug`);
+                }
+            }));
+            controller.set('post', createPost({slug: '', title: '', titleScratch: ''}));
+
+            await controller.updateScratch({root: {children: [{type: 'paragraph', children: [{type: 'text', text: 'some content'}]}]}});
+            await settled();
+
+            await controller.generateSlugTask.perform();
+
+            expect(controller.get('post.slug')).to.equal('(untitled)-slug');
         });
 
         it('should not set the destination if the title is "(Untitled)" and the post already has a slug', async function () {
