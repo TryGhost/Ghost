@@ -1,6 +1,15 @@
 module.exports = class ExplorePingService {
-    constructor({PublicConfigService, config, labs, logging, ghostVersion, request}) {
-        this.PublicConfigService = PublicConfigService;
+    /**
+     * @param {object} deps
+     * @param {{getPublic: () => import('../../../shared/settings-cache/CacheManager').PublicSettingsCache}} deps.settingsCache
+     * @param {object} deps.config
+     * @param {object} deps.labs
+     * @param {object} deps.logging
+     * @param {object} deps.ghostVersion
+     * @param {object} deps.request
+     */
+    constructor({settingsCache, config, labs, logging, ghostVersion, request}) {
+        this.settingsCache = settingsCache;
         this.config = config;
         this.labs = labs;
         this.logging = logging;
@@ -9,17 +18,20 @@ module.exports = class ExplorePingService {
     }
 
     constructPayload() {
-        const {url, title, description, icon, locale, twitter, facebook} = this.PublicConfigService.site;
+        /* eslint-disable camelcase */
+        const {title, description, icon, locale, accent_color, twitter, facebook} = this.settingsCache.getPublic();
         return {
             ghost: this.ghostVersion.full,
-            url,
+            url: this.config.get('url'),
             title,
             description,
             icon,
             locale,
+            accent_color,
             twitter,
             facebook
         };
+        /* eslint-enable camelcase */
     }
 
     async makeRequest(exploreUrl, payload) {
