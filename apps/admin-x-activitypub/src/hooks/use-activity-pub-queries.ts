@@ -230,6 +230,29 @@ export function useUnlikeMutationForUser(handle: string) {
     });
 }
 
+function updateThreadCache(
+    queryClient: QueryClient,
+    id: string,
+    update: (activity: Activity) => Activity
+) {
+    const threadQueryKey = QUERY_KEYS.thread(null);
+
+    queryClient.setQueriesData(threadQueryKey, (current?: {posts: Activity[]}) => {
+        if (!current) {
+            return current;
+        }
+
+        return {
+            posts: current.posts.map((activity: Activity) => {
+                if (activity.object.id === id) {
+                    return update(activity);
+                }
+                return activity;
+            })
+        };
+    });
+}
+
 function updateRepostCache(queryClient: QueryClient, queryKey: string[], id: string, reposted: boolean, delta: number) {
     queryClient.setQueriesData(queryKey, (current?: {pages: {posts: Activity[]}[]}) => {
         if (current === undefined) {
@@ -260,29 +283,35 @@ function updateRepostCache(queryClient: QueryClient, queryKey: string[], id: str
         };
     });
 
-    // Update the thread cache
-    const threadQueryKey = QUERY_KEYS.thread(null);
-    queryClient.setQueriesData(threadQueryKey, (current?: {posts: Activity[]}) => {
-        if (!current) {
-            return current;
-        }
+    // //Update the thread cache
+    // const threadQueryKey = QUERY_KEYS.thread(id);
+    // queryClient.setQueriesData(threadQueryKey, (current?: {posts: Activity[]}) => {
+    //     if (!current) {
+    //         return current;
+    //     }
 
-        return {
-            posts: current.posts.map((activity: Activity) => {
-                if (activity.object.id === id) {
-                    return {
-                        ...activity,
-                        object: {
-                            ...activity.object,
-                            reposted: reposted,
-                            repostCount: Math.max((activity.object.repostCount ?? 0) + delta, 0)
-                        }
-                    };
-                }
-                return activity;
-            })
-        };
-    });
+    //     return {
+    //         posts: current.posts.map((activity: Activity) => {
+    //             console.log('posts: ', current.posts.length, queryKey);
+    //             console.log('id: ', id);
+    //             console.log('reposting activity: ', JSON.stringify(activity.object.id));
+    //             console.log('reposting activity object: ', JSON.stringify(activity.object.id));
+    //             console.log('reposting: ', JSON.stringify(activity.object.content));
+    //             console.log('########################################################');
+    //             if (activity.id === id) {
+    //                 return {
+    //                     ...activity,
+    //                     object: {
+    //                         ...activity.object,
+    //                         reposted: reposted,
+    //                         repostCount: Math.max((activity.object.repostCount ?? 0) + delta, 0)
+    //                     }
+    //                 };
+    //             }
+    //             return activity;
+    //         })
+    //     };
+    // });
 }
 
 function updateReplyCountInCache(queryClient: QueryClient, id: string, delta: number) {
@@ -357,6 +386,15 @@ export function useRepostMutationForUser(handle: string) {
         onMutate: (id) => {
             updateRepostCache(queryClient, QUERY_KEYS.feed, id, true, 1);
             updateRepostCache(queryClient, QUERY_KEYS.inbox, id, true, 1);
+
+            updateThreadCache(queryClient, id, activity => ({
+                ...activity,
+                object: {
+                    ...activity.object,
+                    reposted: true,
+                    repostCount: Math.max((activity.object.repostCount ?? 0) + 1, 0)
+                }
+            }));
         }
     });
 }
@@ -374,6 +412,15 @@ export function useDerepostMutationForUser(handle: string) {
         onMutate: (id) => {
             updateRepostCache(queryClient, QUERY_KEYS.feed, id, false, -1);
             updateRepostCache(queryClient, QUERY_KEYS.inbox, id, false, -1);
+
+            updateThreadCache(queryClient, id, activity => ({
+                ...activity,
+                object: {
+                    ...activity.object,
+                    reposted: false,
+                    repostCount: Math.max((activity.object.repostCount ?? 0) - 1 , 0)
+                }
+            }));
         }
     });
 }
