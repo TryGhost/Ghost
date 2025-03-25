@@ -2,6 +2,8 @@ VERSION 0
 
 TAGS "v0"
 
+TOKEN stats_page READ
+
 NODE _top_locations_0
 SQL >
     %
