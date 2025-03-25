@@ -282,36 +282,6 @@ function updateRepostCache(queryClient: QueryClient, queryKey: string[], id: str
             })
         };
     });
-
-    // //Update the thread cache
-    // const threadQueryKey = QUERY_KEYS.thread(id);
-    // queryClient.setQueriesData(threadQueryKey, (current?: {posts: Activity[]}) => {
-    //     if (!current) {
-    //         return current;
-    //     }
-
-    //     return {
-    //         posts: current.posts.map((activity: Activity) => {
-    //             console.log('posts: ', current.posts.length, queryKey);
-    //             console.log('id: ', id);
-    //             console.log('reposting activity: ', JSON.stringify(activity.object.id));
-    //             console.log('reposting activity object: ', JSON.stringify(activity.object.id));
-    //             console.log('reposting: ', JSON.stringify(activity.object.content));
-    //             console.log('########################################################');
-    //             if (activity.id === id) {
-    //                 return {
-    //                     ...activity,
-    //                     object: {
-    //                         ...activity.object,
-    //                         reposted: reposted,
-    //                         repostCount: Math.max((activity.object.repostCount ?? 0) + delta, 0)
-    //                     }
-    //                 };
-    //             }
-    //             return activity;
-    //         })
-    //     };
-    // });
 }
 
 function updateReplyCountInCache(queryClient: QueryClient, id: string, delta: number) {
