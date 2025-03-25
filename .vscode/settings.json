@@ -26,5 +26,5 @@
   ],
   "git.detectSubmodules": false,
   "tinybird.dataProjectSubdir": "ghost/web-analytics",
-  "tinybird.venv": "ghost/web-analytics/.venv"
+  "tinybird.venv": ".venv"
 }

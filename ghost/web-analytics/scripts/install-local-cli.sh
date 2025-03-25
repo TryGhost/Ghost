@@ -13,9 +13,9 @@ else
 fi
 
 {
-    python3 -m venv ../.venv && \
-    source ../.venv/bin/activate && \
-    pip3 install -r ../requirements.txt
+    python3 -m venv ./.venv && \
+    source ./.venv/bin/activate && \
+    pip3 install -r ./requirements.txt
 } || {
     echo "An error occurred during the setup of the virtual environment or the installation of the requirements."
     exit 1
