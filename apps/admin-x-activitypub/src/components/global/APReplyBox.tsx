@@ -75,13 +75,12 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
             inReplyTo: object.id,
             content: textValue
         }, {
-            onSuccess() {
-                setTextValue('');
-            },
             onError() {
                 onReplyError?.();
             }
         });
+
+        setTextValue('');
 
         onReply?.();
     }
