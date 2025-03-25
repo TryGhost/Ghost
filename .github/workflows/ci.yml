@@ -1286,7 +1286,7 @@ jobs:
         uses: gacts/purge-jsdelivr-cache@v1
         with:
           url: ${{ steps.cdn_paths.outputs.cdn_paths }}
-  deploy_tinybird:
+  deploy_traffic_analytics:
     runs-on: ubuntu-latest
     needs: [
       job_setup,
@@ -1296,7 +1296,7 @@ jobs:
     strategy:
       matrix:
         environment: [ 'staging', 'production']
-    name: Deploy Tinybird
+    name: Deploy Traffic Analytics
     defaults:
       run:
         working-directory: ghost/traffic-analytics/tinybird
