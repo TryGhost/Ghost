@@ -137,11 +137,11 @@ const COMMAND_TYPESCRIPT = {
     env: {}
 };
 
-const adminXApps = '@tryghost/admin-x-demo,@tryghost/admin-x-settings,@tryghost/admin-x-activitypub,@tryghost/posts';
+const adminXApps = '@tryghost/admin-x-demo,@tryghost/admin-x-settings,@tryghost/admin-x-activitypub,@tryghost/posts,@tryghost/stats';
 
 const COMMANDS_ADMINX = [{
     name: 'adminXDeps',
-    command: 'while [ 1 ]; do nx watch --projects=apps/admin-x-design-system,apps/admin-x-framework,apps/shade -- nx run \\$NX_PROJECT_NAME:build; done',
+    command: 'while [ 1 ]; do nx watch --projects=apps/admin-x-design-system,apps/admin-x-framework,apps/shade,apps/stats -- nx run \\$NX_PROJECT_NAME:build; done',
     cwd: path.resolve(__dirname, '../..'),
     prefixColor: '#C72AF7',
     env: {}
@@ -307,7 +307,7 @@ async function handleStripe() {
     debug('handling stripe');
     await handleStripe();
     debug('stripe handled');
-    
+
     if (!commands.length) {
         debug('no commands provided');
         console.log(`No commands provided`);

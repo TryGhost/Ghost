@@ -51,6 +51,7 @@ const ALPHA_FEATURES = [
     'lexicalIndicators',
     'adminXDemo',
     'postsX',
+    'statsX',
     'captcha',
     'contentVisibilityAlpha',
     'explore'
