@@ -1,4 +1,4 @@
-VERSION 4
+VERSION 5
 
 NODE mv_hits_0
 SQL >
@@ -20,8 +20,6 @@ SQL >
         lower(toString(getSubcolumn(payload,'user-agent'))) as user_agent
     FROM analytics_events
     where action = 'page_hit'
-
-
 
 NODE mv_hits_1
 SQL >
@@ -79,5 +77,3 @@ SQL >
 
 TYPE materialized
 DATASOURCE _mv_hits
-
-

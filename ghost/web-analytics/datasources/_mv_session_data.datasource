@@ -1,0 +1,14 @@
+VERSION 5
+
+SCHEMA >
+    `site_uuid` String,
+    `session_id` String,
+    `pageviews` UInt64,
+    `first_pageview` DateTime,
+    `last_pageview` DateTime,
+    `duration` Int64,
+    `is_bounce` Boolean
+
+ENGINE "MergeTree"
+ENGINE_PARTITION_KEY "toYYYYMM(first_pageview)"
+ENGINE_SORTING_KEY "site_uuid, first_pageview, session_id"
