@@ -21,4 +21,37 @@ describe('Slug API', function () {
                 etag: anyEtag
             });
     });
+
+    it('Will increment the slug if there is a collision', async function () {
+        await agent
+            .get('slugs/post/integrations/')
+            .expectStatus(200)
+            .matchBodySnapshot()
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            });
+    });
+
+    it('Can handle collisions of the same resource if an id is provided', async function () {
+        await agent
+            .get('slugs/post/integrations/6194d3ce51e2700162531a71')
+            .expectStatus(200)
+            .matchBodySnapshot()
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            });
+    });
+
+    it('Can handle collisions of a different resource if an id is provided', async function () {
+        await agent
+            .get('slugs/post/integrations/000000000000000000000000')
+            .expectStatus(200)
+            .matchBodySnapshot()
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            });
+    });
 });

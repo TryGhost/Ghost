@@ -21,7 +21,8 @@ const controller = {
         },
         options: [
             'include',
-            'type'
+            'type',
+            'id'
         ],
         data: [
             'name'
@@ -32,6 +33,9 @@ const controller = {
                 type: {
                     required: true,
                     values: Object.keys(allowedTypes)
+                },
+                id: {
+                    required: false
                 }
             },
             data: {
@@ -41,7 +45,7 @@ const controller = {
             }
         },
         query(frame) {
-            return models.Base.Model.generateSlug(allowedTypes[frame.options.type], frame.data.name, {status: 'all'})
+            return models.Base.Model.generateSlug(allowedTypes[frame.options.type], frame.data.name, {status: 'all', modelId: frame.options.id})
                 .then((slug) => {
                     if (!slug) {
                         return Promise.reject(new errors.InternalServerError({
