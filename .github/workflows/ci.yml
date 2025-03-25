@@ -842,7 +842,7 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
   job_traffic_analytics:
-    name: Tinybird Tests (Web Analytics)
+    name: Traffic Analytics - Tinybird tests
     runs-on: ubuntu-latest
     needs: [
       job_setup
@@ -936,7 +936,9 @@ jobs:
       - name: Deploy changes to the test Branch
         run: |
           source .tinyenv
+          echo $VERSION
           DEPLOY_FILE=./deploy/${VERSION}/deploy.sh
+          echo $DEPLOY_FILE
           if [ ! -f "$DEPLOY_FILE" ]; then
             echo "$DEPLOY_FILE not found, running default tb deploy command"
             tb deploy
