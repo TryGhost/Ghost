@@ -22,7 +22,10 @@ export function renderTimestamp(object: ObjectProperties, asLink = true) {
             <a
                 className='whitespace-nowrap text-gray-700 hover:underline'
                 href={object.url}
+                rel='noreferrer'
+                target='_blank'
                 title={timestamp}
+                onClick={e => e.stopPropagation()}
             >
                 {formattedTimestamp}
             </a>
