@@ -97,7 +97,7 @@ jobs:
               - *shared
               - 'ghost/**'
               - '!ghost/admin/**'
-              - '!ghost/web-analytics/**'
+              - '!ghost/traffic-analytics/**'
             admin:
               - *shared
               - 'ghost/admin/**'
@@ -120,9 +120,9 @@ jobs:
             sodo-search:
               - *shared
               - 'apps/sodo-search/**'
-            tinybird:
-              - 'ghost/web-analytics/**'
-              - '!ghost/web-analytics/**/*.md'
+            traffic-analytics:
+              - 'ghost/traffic-analytics/tinybird/**'
+              - '!ghost/traffic-analytics/tinybird/**/*.md'
             any-code:
               - '!**/*.md'
 
@@ -196,7 +196,7 @@ jobs:
       changed_portal: ${{ steps.changed.outputs.portal }}
       changed_signup_form: ${{ steps.changed.outputs.signup-form }}
       changed_sodo_search: ${{ steps.changed.outputs.sodo-search }}
-      changed_tinybird: ${{ steps.changed.outputs.tinybird }}
+      changed_traffic_analytics: ${{ steps.changed.outputs.traffic-analytics }}
       changed_any_code: ${{ steps.changed.outputs.any-code }}
       changed_new_package: ${{ steps.added.outputs.new-package }}
       base_commit: ${{ env.BASE_COMMIT }}
@@ -841,7 +841,7 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
-  job_tinybird:
+  job_traffic_analytics:
     name: Tinybird Tests (Web Analytics)
     runs-on: ubuntu-latest
     needs: [
@@ -849,8 +849,8 @@ jobs:
     ]
     defaults:
       run:
-        working-directory: ghost/web-analytics
-    if: needs.job_setup.outputs.changed_tinybird == 'true'
+        working-directory: ghost/traffic-analytics/tinybird
+    if: needs.job_setup.outputs.changed_traffic_analytics == 'true'
     steps:
       - name: Get User Permission
         id: get-user-permission
@@ -1133,7 +1133,7 @@ jobs:
         job_admin_x_settings,
         job_comments_ui,
         job_signup_form,
-        job_tinybird
+        job_traffic_analytics
       ]
     if: always()
     runs-on: ubuntu-latest
@@ -1290,16 +1290,16 @@ jobs:
     runs-on: ubuntu-latest
     needs: [
       job_setup,
-      job_tinybird
+      job_traffic_analytics
     ]
-    if: always() && needs.job_setup.outputs.changed_tinybird == 'true' && needs.job_setup.result == 'success' && needs.job_tinybird.result == 'success' && needs.job_setup.outputs.is_main == 'true'
+    if: always() && needs.job_setup.outputs.changed_traffic_analytics == 'true' && needs.job_setup.result == 'success' && needs.job_traffic_analytics.result == 'success' && needs.job_setup.outputs.is_main == 'true'
     strategy:
       matrix:
         environment: [ 'staging', 'production']
     name: Deploy Tinybird
     defaults:
       run:
-        working-directory: ghost/web-analytics
+        working-directory: ghost/traffic-analytics/tinybird
     steps:
       - name: Checkout
         uses: actions/checkout@v4

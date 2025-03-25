@@ -1,6 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Install jq if not installed
+if ! command -v jq &> /dev/null
+then
+    echo "jq could not be found, installing..."
+    apt-get update && apt-get install -y jq
+fi
+
 # Check if --force flag is provided
 force=false
 if [[ "$@" == *"--force"* ]]; then
