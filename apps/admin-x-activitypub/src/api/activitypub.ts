@@ -80,7 +80,28 @@ export interface GetAccountFollowsResponse {
 
 export interface Notification {
     id: string;
-    type: string;
+    type: 'like' | 'reply' | 'repost' | 'follow';
+    actor: {
+        id: string;
+        name: string;
+        url: string;
+        handle: string;
+        avatarUrl: string | null;
+    },
+    post: null | {
+        id: string;
+        type: 'article' | 'note';
+        title: string | null;
+        content: string;
+        url: string;
+    },
+    inReplyTo: null | {
+        id: string;
+        type: 'article' | 'note';
+        title: string | null;
+        content: string;
+        url: string;
+    }
 }
 
 export interface GetNotificationsResponse {
@@ -517,5 +538,11 @@ export class ActivityPubAPI {
             notifications,
             next: nextPage
         };
+    }
+
+    async getPost(id: string): Promise<Post> {
+        const url = new URL(`.ghost/activitypub/post/${encodeURIComponent(id)}`, this.apiUrl);
+        const json = await this.fetchJSON(url);
+        return json as Post;
     }
 }

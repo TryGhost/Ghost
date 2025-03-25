@@ -1985,4 +1985,41 @@ describe('ActivityPubAPI', function () {
             expect(actual.notifications).toEqual([]);
         });
     });
+
+    describe('getPost', function () {
+        test('It returns a post', async function () {
+            const postId = 'https://example.com/posts/abc123';
+
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                [`https://activitypub.api/.ghost/activitypub/post/${encodeURIComponent(postId)}`]: {
+                    response: JSONResponse({
+                        id: postId,
+                        title: 'Foo Bar Baz'
+                    })
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const actual = await api.getPost(postId);
+            const expected = {
+                id: postId,
+                title: 'Foo Bar Baz'
+            };
+
+            expect(actual).toEqual(expected);
+        });
+    });
 });
