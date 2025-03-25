@@ -2,6 +2,7 @@ import path from 'path';
 import {assertHTML, focusEditor, html, initialize, insertCard} from '../../utils/e2e';
 import {expect, test} from '@playwright/test';
 import {fileURLToPath} from 'url';
+import {selectCustomColor, selectTitledColor} from '../../utils/color-select-helper';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -202,18 +203,19 @@ test.describe('Signup card', async () => {
         await focusEditor(page);
         await insertCard(page, {cardName: 'signup'});
 
-        await page.click('[data-testid="signup-button-color"] [aria-label="Pick color"]');
+        await page.click('[data-testid="signup-button-color"] [data-testid="color-selector-button"]');
 
-        await page.fill('[data-testid="signup-button-color"] input', '');
-        await page.keyboard.type('ff0000');
+        await selectCustomColor(page, '#ff0000', 'color-picker-toggle');
+        await page.click('[data-testid="settings-panel"]');
 
         // Selected colour should be applied inline
         await expect(page.locator('[data-testid="signup-card-button"]')).toHaveCSS('background-color', 'rgb(255, 0, 0)');
         await expect(page.locator('[data-testid="signup-card-button"]')).toHaveCSS('color', 'rgb(255, 255, 255)');
 
-        // Check that the text colour updates to contrast with the background
-        await page.fill('[data-testid="signup-button-color"] input', '');
-        await page.keyboard.type('f7f7f7');
+        await page.click('[data-testid="signup-button-color"] [data-testid="color-selector-button"]');
+
+        await selectCustomColor(page, '#f7f7f7', null);
+        await page.click('[data-testid="settings-panel"]');
 
         await expect(page.locator('[data-testid="signup-card-button"]')).toHaveCSS('background-color', 'rgb(247, 247, 247)');
         await expect(page.locator('[data-testid="signup-card-button"]')).toHaveCSS('color', 'rgb(0, 0, 0)');
@@ -223,22 +225,43 @@ test.describe('Signup card', async () => {
         await focusEditor(page);
         await insertCard(page, {cardName: 'signup'});
 
-        await page.click('[data-testid="signup-background-color"] [aria-label="Pick color"]');
+        await page.click('[data-testid="signup-background-color"] [data-testid="color-selector-button"]');
 
-        await page.fill('[data-testid="signup-background-color"] input', '');
-        await page.keyboard.type('ff0000');
+        await selectCustomColor(page, '#ff0000', 'color-picker-toggle');
 
-        // Selected colour should be applied inline
+        await page.click('[data-testid="settings-panel"]');
+
         const container = page.getByTestId('signup-card-container');
         await expect(container).toHaveCSS('background-color', 'rgb(255, 0, 0)');
         await expect(container).toHaveCSS('color', 'rgb(255, 255, 255)');
 
-        // Check that the text colour updates to contrast with the background
-        await page.fill('[data-testid="signup-background-color"] input', '');
-        await page.keyboard.type('f7f7f7');
-
+        await page.click('[data-testid="signup-background-color"] [data-testid="color-selector-button"]');
+        await selectCustomColor(page, '#f7f7f7', null);
+        await page.click('[data-testid="settings-panel"]');
         await expect(container).toHaveCSS('background-color', 'rgb(247, 247, 247)');
         await expect(container).toHaveCSS('color', 'rgb(0, 0, 0)');
+    });
+
+    test('can change to grey, black and brand background colors', async function () {
+        await focusEditor(page);
+        await insertCard(page, {cardName: 'signup'});
+
+        await page.click('[data-testid="signup-background-color"] [data-testid="color-selector-button"]');
+
+        const container = page.getByTestId('signup-card-container');
+
+        await expect(container).toHaveCSS('background-color', 'rgb(240, 240, 240)');
+        await expect(container).toHaveCSS('color', 'rgb(0, 0, 0)');
+
+        await selectTitledColor(page, 'Black', 'color-picker-toggle');
+
+        await expect(container).toHaveCSS('background-color', 'rgb(0, 0, 0)');
+        await expect(container).toHaveCSS('color', 'rgb(255, 255, 255)');
+
+        await selectTitledColor(page, 'Brand color', 'color-picker-toggle');
+
+        await expect(container).toHaveCSS('background-color', 'rgb(255, 0, 149)');
+        await expect(container).toHaveCSS('color', 'rgb(255, 255, 255)');
     });
 
     test('can add and remove background image', async function () {
@@ -249,7 +272,10 @@ test.describe('Signup card', async () => {
 
         const fileChooserPromise = page.waitForEvent('filechooser');
 
+        // await page.click('[data-testid="signup-background-image-toggle"]');
+        await page.click('[data-testid="color-selector-button"]');
         await page.click('[data-testid="signup-background-image-toggle"]');
+        await page.click('[data-testid="media-upload-placeholder"]');
 
         // Set files
         const fileChooser = await fileChooserPromise;
@@ -289,7 +315,9 @@ test.describe('Signup card', async () => {
 
         const fileChooserPromise = page.waitForEvent('filechooser');
 
+        await page.click('[data-testid="color-selector-button"]');
         await page.click('[data-testid="signup-background-image-toggle"]');
+        await page.click('[data-testid="media-upload-placeholder"]');
 
         const fileChooser = await fileChooserPromise;
         await fileChooser.setFiles([filePath]);
@@ -331,7 +359,13 @@ test.describe('Signup card', async () => {
 
         // Text colour is updated based on the background colour
 
-        await page.click('[data-testid="signup-background-color"] button[title="Grey"]');
+        // await page.click('[data-testid="signup-background-color"] button[title="Grey"]');
+        await page.click('[data-testid="signup-background-color"] [data-testid="color-selector-button"]');
+
+        const container = page.getByTestId('signup-card-container');
+        await selectTitledColor(page, 'Grey', 'color-picker-toggle');
+        await expect(container).toHaveCSS('background-color', 'rgb(240, 240, 240)');
+        await expect(container).toHaveCSS('color', 'rgb(0, 0, 0)');
 
         await expect(page.locator('[data-kg-card="signup"] > div:first-child')).toHaveCSS('background-color', 'rgb(240, 240, 240)');
         await expect(page.locator('[data-kg-card="signup"] > div:first-child')).toHaveCSS('color', 'rgb(0, 0, 0)');
@@ -340,7 +374,10 @@ test.describe('Signup card', async () => {
 
         const fileChooserPromise = page.waitForEvent('filechooser');
 
+        // await page.click('[data-testid="signup-background-image-toggle"]');
+        await page.click('[data-testid="color-selector-button"]');
         await page.click('[data-testid="signup-background-image-toggle"]');
+        await page.click('[data-testid="media-upload-placeholder"]');
 
         const fileChooser = await fileChooserPromise;
         await fileChooser.setFiles([filePath]);
@@ -348,8 +385,9 @@ test.describe('Signup card', async () => {
         await expect(page.locator('[data-kg-card="signup"] > div:first-child')).toHaveCSS('background-image', /blob:/);
         await expect(page.locator('[data-kg-card="signup"] > div:first-child')).toHaveCSS('color', 'rgb(255, 255, 255)');
 
-        // When switching to split layout, text colour is set based on the background colour
+        // // When switching to split layout, text colour is set based on the background colour
 
+        await page.click('[data-testid="settings-panel"]');
         await page.locator('[data-testid="signup-layout-split"]').click();
 
         await expect(page.locator('[data-kg-card="signup"] > div:first-child')).not.toHaveCSS('background-image', /blob:/);

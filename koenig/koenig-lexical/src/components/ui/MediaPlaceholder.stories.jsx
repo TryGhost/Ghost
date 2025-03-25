@@ -3,7 +3,7 @@ import React from 'react';
 import {MediaPlaceholder} from './MediaPlaceholder';
 
 const story = {
-    title: 'Generic/Media placeholder',
+    title: 'Generic/Media placeholder (beta)',
     component: MediaPlaceholder,
     argTypes: {
         icon: {
@@ -81,8 +81,8 @@ Product.args = {
     borderStyle: 'squared'
 };
 
-export const Error = Template.bind({});
-Error.args = {
+export const ErrorState = Template.bind({});
+ErrorState.args = {
     icon: 'video',
     desc: 'Click to select a video',
     size: 'medium',

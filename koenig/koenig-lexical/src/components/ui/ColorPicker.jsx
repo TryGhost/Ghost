@@ -1,12 +1,14 @@
 import EyedropperIcon from '../../assets/icons/kg-eyedropper.svg?react';
-import React, {Fragment, useCallback, useEffect, useRef} from 'react';
+import ImgBgIcon from '../../assets/icons/kg-img-bg.svg?react';
+import React, {Fragment, useCallback, useEffect, useRef, useState} from 'react';
 import clsx from 'clsx';
 import {Button} from './Button';
 import {HexColorInput, HexColorPicker} from 'react-colorful';
 import {Tooltip} from './Tooltip';
 import {getAccentColor} from '../../utils/getAccentColor';
+import {useClickOutside} from '../../hooks/useClickOutside';
 
-export function ColorPicker({value, eyedropper, hasTransparentOption, onChange}) {
+export function ColorPicker({value, eyedropper, hasTransparentOption, onChange, children}) {
     // HexColorInput doesn't support adding a ref on the input itself
     const inputWrapperRef = useRef(null);
 
@@ -76,7 +78,7 @@ export function ColorPicker({value, eyedropper, hasTransparentOption, onChange})
     }, []);
 
     return (
-        <div className="mt-2" onMouseDown={stopPropagation} onTouchStart={stopPropagation}>
+        <div onMouseDown={stopPropagation} onTouchStart={stopPropagation}>
             <HexColorPicker color={hexValue || '#ffffff'} onChange={onChange} onMouseDown={startUsingColorPicker} onTouchStart={startUsingColorPicker} />
             <div className="mt-3 flex gap-2">
                 <div ref={inputWrapperRef} className={`relative flex w-full items-center rounded-lg border border-grey-100 bg-grey-100 px-3 py-1.5 font-sans text-sm font-normal text-grey-900 transition-colors placeholder:text-grey-500 focus-within:border-green focus-within:bg-white focus-within:shadow-[0_0_0_2px_rgba(48,207,67,.25)] focus-within:outline-none dark:border-transparent dark:bg-grey-900 dark:text-white dark:selection:bg-grey-800 dark:placeholder:text-grey-700 dark:focus-within:border-green dark:hover:bg-grey-925 dark:focus:bg-grey-925`} onClick={focusHexInputOnClick}>
@@ -94,6 +96,7 @@ export function ColorPicker({value, eyedropper, hasTransparentOption, onChange})
                 </div>
 
                 {hasTransparentOption && <Button color='grey' value='Clear' onClick={() => onChange('transparent')} />}
+                {children}
             </div>
         </div>
     );
@@ -134,12 +137,27 @@ function ColorSwatch({hex, accent, transparent, title, isSelected, onSelect}) {
     );
 }
 
-export function ColorIndicator({value, swatches, onSwatchChange, onTogglePicker, isExpanded}) {
+export function ColorIndicator({value, swatches, onSwatchChange, onTogglePicker, onChange, isExpanded, eyedropper, hasTransparentOption, children}) {
+    const [isOpen, setIsOpen] = useState(false);
+    const [showChildren, setShowChildren] = useState(false);
+    const popoverRef = useRef(null);
+
+    useClickOutside(isOpen, popoverRef, () => setIsOpen(false));
+
+    const stopPropagation = useCallback((e) => {
+        e.stopPropagation();
+        e.preventDefault();
+    }, []);
+
     let backgroundColor = value;
     let selectedSwatch = swatches.find(swatch => swatch.hex === value)?.title;
+
     if (value === 'accent') {
         backgroundColor = getAccentColor();
         selectedSwatch = swatches.find(swatch => swatch.accent)?.title;
+    } else if (value === 'image') {
+        backgroundColor = 'transparent';
+        selectedSwatch = swatches.find(swatch => swatch.image)?.title;
     } else if (value === 'transparent') {
         backgroundColor = 'white';
         selectedSwatch = swatches.find(swatch => swatch.transparent)?.title;
@@ -149,22 +167,117 @@ export function ColorIndicator({value, swatches, onSwatchChange, onTogglePicker,
         selectedSwatch = null;
     }
 
+    const handleColorPickerChange = (newValue) => {
+        onChange(newValue);
+        // Don't close the popover when using the color picker
+    };
+
     return (
-        <div className='flex gap-1'>
-            <div className={`flex items-center gap-1`}>
-                {swatches.map(({customContent, ...swatch}) => (
-                    customContent ? <Fragment key={swatch.title}>{customContent}</Fragment> : <ColorSwatch key={swatch.title} isSelected={selectedSwatch === swatch.title} onSelect={onSwatchChange} {...swatch} />
-                ))}
-            </div>
-            <button aria-label="Pick color" className="group relative size-6 rounded-full border border-grey-200 dark:border-grey-800" type="button" onClick={onTogglePicker}>
-                <div className='absolute inset-0 rounded-full bg-[conic-gradient(hsl(360,100%,50%),hsl(315,100%,50%),hsl(270,100%,50%),hsl(225,100%,50%),hsl(180,100%,50%),hsl(135,100%,50%),hsl(90,100%,50%),hsl(45,100%,50%),hsl(0,100%,50%))]' />
-                {value && !selectedSwatch && (
-                    <div className="absolute inset-[3px] overflow-hidden rounded-full border border-white dark:border-grey-950" style={{backgroundColor}}>
-                        {value === 'transparent' && <div className="absolute left-[3px] top-[3px] z-10 w-[136%] origin-left rotate-45 border-b border-b-red" />}
-                    </div>
+        <div className="relative" data-testid="color-selector-button">
+            <button
+                className={`relative size-6 cursor-pointer rounded-full ${value ? 'p-[2px]' : 'border border-grey-200 dark:border-grey-800'}`}
+                type="button"
+                onClick={() => {
+                    setIsOpen(!isOpen);
+                    setShowChildren(false);
+                }}
+            >
+                {value && (
+                    <div className="absolute inset-0 rounded-full bg-clip-content p-[3px]" style={{
+                        background: 'conic-gradient(hsl(360,100%,50%),hsl(315,100%,50%),hsl(270,100%,50%),hsl(225,100%,50%),hsl(180,100%,50%),hsl(135,100%,50%),hsl(90,100%,50%),hsl(45,100%,50%),hsl(0,100%,50%))',
+                        WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+                        WebkitMaskComposite: 'xor',
+                        mask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+                        maskComposite: 'exclude'
+                    }} />
                 )}
-                <Tooltip label='Pick color' />
+                <span
+                    className={clsx(
+                        'block size-full rounded-full border-2 border-white dark:border-grey-950',
+                        value === 'image' && 'flex items-center justify-center'
+                    )}
+                    style={{backgroundColor}}
+                >
+                    {
+                        value === 'image' && (
+                            <ImgBgIcon className='size-[1.4rem]' />
+                        )
+                    }
+                    {value === 'transparent' && <div className="absolute left-[3px] top-[3px] z-10 w-[136%] origin-left rotate-45 border-b border-b-red" />}
+                </span>
             </button>
+
+            {isOpen && (
+                <div
+                    ref={popoverRef}
+                    className={clsx(
+                        'absolute -right-3 bottom-full z-10 mb-2 flex flex-col gap-3 rounded-lg bg-white p-3 shadow transition-[width] duration-200 ease-in-out dark:bg-grey-900',
+                        (isExpanded || showChildren) && 'min-w-[296px]'
+                    )}
+                    onClick={stopPropagation}
+                    onMouseDown={stopPropagation}
+                    onTouchStart={stopPropagation}
+                >
+                    {!isExpanded && (children)}
+                    {isExpanded && (
+                        <ColorPicker
+                            eyedropper={eyedropper}
+                            hasTransparentOption={hasTransparentOption}
+                            value={value}
+                            onChange={handleColorPickerChange}
+                        />
+                    )}
+                    {showChildren && children}
+                    <div className="flex justify-end gap-1">
+                        <div className={`flex items-center gap-1`}>
+                            {swatches.map(({customContent, ...swatch}) => (
+                                customContent ?
+                                    <Fragment key={swatch.title}>{customContent}</Fragment> :
+                                    <ColorSwatch
+                                        key={swatch.title}
+                                        isSelected={selectedSwatch === swatch.title}
+                                        onSelect={(val) => {
+                                            onSwatchChange(val);
+                                            // setShowColorPicker(false);
+                                        }}
+                                        {...swatch}
+                                    />
+                            ))}
+                        </div>
+                        <button
+                            aria-label="Pick color"
+                            className={`group relative size-6 rounded-full ${!selectedSwatch ? 'p-[2px]' : 'border border-grey-200 dark:border-grey-800'}`}
+                            data-testid="color-picker-toggle"
+                            type="button"
+                            onClick={() => {
+                                setShowChildren(false);
+                                onTogglePicker(!isExpanded);
+                            }}
+                        >
+                            {!selectedSwatch ? (
+                                <>
+                                    <div className="absolute inset-0 rounded-full bg-clip-content p-[3px]" style={{
+                                        background: 'conic-gradient(hsl(360,100%,50%),hsl(315,100%,50%),hsl(270,100%,50%),hsl(225,100%,50%),hsl(180,100%,50%),hsl(135,100%,50%),hsl(90,100%,50%),hsl(45,100%,50%),hsl(0,100%,50%))',
+                                        WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+                                        WebkitMaskComposite: 'xor',
+                                        mask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+                                        maskComposite: 'exclude'
+                                    }} />
+                                    <span
+                                        className="block size-full rounded-full border-2 border-white dark:border-grey-950"
+                                        style={{backgroundColor: value}}
+                                    >
+                                        {value === 'transparent' && <div className="absolute left-[3px] top-[3px] z-10 w-[136%] origin-left rotate-45 border-b border-b-red" />}
+                                    </span>
+                                </>
+                            ) : (
+                                <div className='absolute inset-0 rounded-full bg-[conic-gradient(hsl(360,100%,50%),hsl(315,100%,50%),hsl(270,100%,50%),hsl(225,100%,50%),hsl(180,100%,50%),hsl(135,100%,50%),hsl(90,100%,50%),hsl(45,100%,50%),hsl(0,100%,50%))]' />
+                            )}
+                            <Tooltip label='Pick color' />
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

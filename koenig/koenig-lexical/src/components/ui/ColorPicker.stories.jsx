@@ -2,7 +2,7 @@ import React from 'react';
 import {ColorPicker} from './ColorPicker';
 
 const story = {
-    title: 'Generic/Color picker',
+    title: 'Generic/Color picker (New)',
     component: ColorPicker,
     parameters: {
         status: {

@@ -9,24 +9,13 @@ import ReplacementStringsPlugin from '../../../plugins/ReplacementStringsPlugin.
 import clsx from 'clsx';
 import defaultTheme from '../../../themes/default.js';
 import {Button} from '../Button.jsx';
-import {ButtonGroupSettingBeta, ColorOptionSettingBeta, ColorPickerSettingBeta, InputSetting, InputUrlSetting, MediaUploadSettingBeta, SettingsPanel, ToggleSetting} from '../SettingsPanel.jsx';
+import {ButtonGroupSetting, ColorOptionSetting, ColorPickerSetting, InputSetting, InputUrlSetting, MediaUploadSetting, SettingsPanel, ToggleSetting} from '../SettingsPanel.jsx';
+import {CALLTOACTION_COLORS} from '../../../utils/callToActionColors.js';
 import {ReadOnlyOverlay} from '../ReadOnlyOverlay.jsx';
 import {RestrictContentPlugin} from '../../../index.js';
 import {VisibilitySettings} from '../VisibilitySettings.jsx';
 import {getAccentColor} from '../../../utils/getAccentColor.js';
 import {textColorForBackgroundColor} from '@tryghost/color-utils';
-
-export const CALLTOACTION_COLORS = {
-    none: 'bg-transparent border-transparent',
-    white: 'bg-transparent border-grey-900/15 dark:border-grey-100/20',
-    grey: 'bg-grey/10 border-transparent',
-    blue: 'bg-blue/10 border-transparent',
-    green: 'bg-green/10 border-transparent',
-    yellow: 'bg-yellow/10 border-transparent',
-    red: 'bg-red/10 border-transparent',
-    pink: 'bg-pink/10 border-transparent',
-    purple: 'bg-purple/10 border-transparent'
-};
 
 const getTheme = () => ({
     ...defaultTheme,
@@ -186,7 +175,7 @@ export function CallToActionCard({
                 onChange={updateHasSponsorLabel}
             />
             {/* Image setting */}
-            <MediaUploadSettingBeta
+            <MediaUploadSetting
                 alt='Image'
                 borderStyle={'rounded'}
                 desc='Upload'
@@ -234,7 +223,7 @@ export function CallToActionCard({
     const designSettings = (
         <>
             {/* Layout settings */}
-            <ButtonGroupSettingBeta
+            <ButtonGroupSetting
                 buttons={layoutOptions}
                 label='Layout'
                 selectedName={layout}
@@ -242,7 +231,7 @@ export function CallToActionCard({
             />
             {layout === 'immersive' &&
                 <>
-                    <ButtonGroupSettingBeta
+                    <ButtonGroupSetting
                         buttons={alignmentOptions}
                         label='Alignment'
                         selectedName={alignment}
@@ -251,7 +240,7 @@ export function CallToActionCard({
                 </>
             }
             {/* Color picker */}
-            <ColorOptionSettingBeta
+            <ColorOptionSetting
                 buttons={callToActionColorPicker}
                 dataTestId='cta-background-color-picker'
                 label='Background'
@@ -259,7 +248,7 @@ export function CallToActionCard({
                 onClick={handleColorChange}
             />
             {/* Link color setting */}
-            <ColorOptionSettingBeta
+            <ColorOptionSetting
                 buttons={callToActionLinkColorPicker}
                 dataTestId='cta-link-color-picker'
                 label='Link color'
@@ -267,7 +256,7 @@ export function CallToActionCard({
                 onClick={handleLinkColorChange}
             />
             {showButton && (
-                <ColorPickerSettingBeta
+                <ColorPickerSetting
                     dataTestId='cta-button-color'
                     eyedropper={true}
                     isExpanded={buttonColorPickerExpanded}

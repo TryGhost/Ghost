@@ -2,12 +2,12 @@ import ImgFullIcon from '../../assets/icons/kg-img-full.svg?react';
 import ImgRegularIcon from '../../assets/icons/kg-img-regular.svg?react';
 import ImgWideIcon from '../../assets/icons/kg-img-wide.svg?react';
 import React from 'react';
-import {ButtonGroup, IconButton} from './ButtonGroup';
+import {ButtonGroup, ButtonGroupIconButton} from './ButtonGroup';
 
 const story = {
-    title: 'Generic/Button group',
+    title: 'Generic/Button group (beta)',
     component: ButtonGroup,
-    subcomponents: {IconButton},
+    subcomponents: {ButtonGroupIconButton},
     parameters: {
         status: {
             type: 'functional'

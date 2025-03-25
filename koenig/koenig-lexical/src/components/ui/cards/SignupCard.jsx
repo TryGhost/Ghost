@@ -427,7 +427,7 @@ export function SignupCard({alignment,
                             {title: 'Black', hex: '#000000'},
                             {title: 'Brand color', accent: true}
                         ].filter(Boolean)}
-                        value={(showBackgroundImage && layout !== 'split') ? '' : backgroundColor}
+                        value={(showBackgroundImage && layout !== 'split') ? 'image' : backgroundColor}
                         onPickerChange={color => handleBackgroundColor(color, matchingTextColor(color))}
                         onSwatchChange={(color) => {
                             handleBackgroundColor(color, matchingTextColor(color));
@@ -449,33 +449,37 @@ export function SignupCard({alignment,
                                 setButtonColorPickerExpanded(!isExpanded);
                             }
                         }}
-                    />
-
-                    <MediaUploadSetting
-                        alt='Background image'
-                        borderStyle={'rounded'}
-                        className={(!showBackgroundImage || layout === 'split') && 'hidden'}
-                        errors={fileUploader?.errors}
-                        hideLabel={layout !== 'split'}
-                        icon='file'
-                        isDraggedOver={imageDragHandler?.isDraggedOver}
-                        isLoading={isLoading}
-                        isPinturaEnabled={isPinturaEnabled}
-                        label='Image'
-                        mimeTypes={['image/*']}
-                        openImageEditor={openImageEditor}
-                        placeholderRef={imageDragHandler?.setRef}
-                        progress={progress}
-                        setFileInputRef={setFileInputRef}
-                        size='xsmall'
-                        src={backgroundImageSrc}
-                        stacked={true}
-                        onFileChange={onFileChange}
-                        onRemoveMedia={() => {
-                            handleClearBackgroundImage();
-                            handleTextColor(matchingTextColor(backgroundColor));
-                        }}
-                    />
+                    >
+                        <MediaUploadSetting
+                            alt='Background image'
+                            borderStyle={'rounded'}
+                            className={clsx(
+                                'min-w-[296px]',
+                                (!showBackgroundImage || layout === 'split') && 'hidden'
+                            )}
+                            errors={fileUploader?.errors}
+                            hideLabel={layout !== 'split'}
+                            icon='file'
+                            imgClassName='w-full'
+                            isDraggedOver={imageDragHandler?.isDraggedOver}
+                            isLoading={isLoading}
+                            isPinturaEnabled={isPinturaEnabled}
+                            label='Image'
+                            mimeTypes={['image/*']}
+                            openImageEditor={openImageEditor}
+                            placeholderRef={imageDragHandler?.setRef}
+                            progress={progress}
+                            setFileInputRef={setFileInputRef}
+                            size='xsmall'
+                            src={backgroundImageSrc}
+                            stacked={true}
+                            onFileChange={onFileChange}
+                            onRemoveMedia={() => {
+                                handleClearBackgroundImage();
+                                handleTextColor(matchingTextColor(backgroundColor));
+                            }}
+                        />
+                    </ColorPickerSetting>
 
                     <ColorPickerSetting
                         dataTestId='signup-button-color'

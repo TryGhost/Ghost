@@ -2,7 +2,7 @@ import FileUploadForm from '../FileUploadForm';
 import FileUploadIcon from '../../../assets/icons/kg-file-upload.svg?react';
 import PropTypes from 'prop-types';
 import React from 'react';
-import {MediaPlaceholder} from '../MediaPlaceholder';
+import {MediaPlaceholder} from '../MediaPlaceholder.jsx';
 import {ProgressBar} from '../ProgressBar';
 import {TextInput} from '../TextInput.jsx';
 import {openFileSelection} from '../../../utils/openFileSelection';

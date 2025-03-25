@@ -17,6 +17,7 @@ export function MediaUploader({
     desc,
     icon,
     size,
+    type,
     borderStyle = 'squared',
     backgroundSize = 'cover',
     mimeTypes,
@@ -28,7 +29,7 @@ export function MediaUploader({
     openImageEditor,
     progress,
     errors,
-    onRemoveMedia,
+    onRemoveMedia = () => {},
     additionalActions,
     setFileInputRef
 }) {
@@ -64,6 +65,7 @@ export function MediaUploader({
                     isDraggedOver={dragHandler?.isDraggedOver}
                     placeholderRef={dragHandler?.setRef}
                     size={size}
+                    type={type}
                 />
                 <ImageUploadForm
                     fileInputRef={onFileInputRef}
@@ -76,10 +78,15 @@ export function MediaUploader({
     }
 
     return (
-        <div className={clsx('group/image relative flex items-center justify-center', borderStyle === 'rounded' && 'rounded', className)} data-testid="media-upload-filled">
+        <div className={clsx(
+            'group/image relative flex items-center justify-center', 
+            isLoading ? 'min-w-[6.8rem]' : 'min-w-[5.2rem]',
+            borderStyle === 'rounded' && 'rounded', 
+            className
+        )} data-testid="media-upload-filled">
             {src && (
                 <>
-                    <img alt={alt} className={clsx('mx-auto h-full w-auto', borderStyle === 'rounded' && 'rounded-lg', backgroundSize === 'cover' ? 'object-cover' : 'object-contain', imgClassName)} src={src} />
+                    <img alt={alt} className={clsx('mx-auto h-full w-auto min-w-[5.2rem]', borderStyle === 'rounded' && 'rounded-lg', backgroundSize === 'cover' ? 'object-cover' : 'object-contain', imgClassName)} src={src} />
                     <div className={clsx('absolute inset-0 bg-gradient-to-t from-black/0 via-black/5 to-black/30 opacity-0 transition-all group-hover/image:opacity-100', borderStyle === 'rounded' && 'rounded-lg')}></div>
                 </>
             )}
@@ -103,7 +110,7 @@ export function MediaUploader({
 
             {isLoading && (
                 <div
-                    className={clsx('absolute inset-0 flex min-w-full items-center justify-center overflow-hidden border border-grey-100 bg-grey-75', borderStyle === 'rounded' && 'rounded-lg')}
+                    className={clsx('absolute inset-0 flex min-w-full items-center justify-center overflow-hidden bg-grey-100', borderStyle === 'rounded' && 'rounded-lg')}
                     data-testid="custom-thumbnail-progress"
                 >
                     <ProgressBar style={progressStyle} />
@@ -114,23 +121,26 @@ export function MediaUploader({
 }
 
 MediaUploader.propTypes = {
-    className: PropTypes.string,
-    src: PropTypes.string,
+    additionalActions: PropTypes.node,
     alt: PropTypes.string,
+    backgroundSize: PropTypes.oneOf(['cover', 'contain']),
+    borderStyle: PropTypes.oneOf(['squared', 'rounded']),
+    className: PropTypes.string,
     desc: PropTypes.string,
+    dragHandler: PropTypes.shape({isDraggedOver: PropTypes.bool, setRef: PropTypes.func}),
+    errors: PropTypes.arrayOf(PropTypes.shape({message: PropTypes.string})),
     icon: PropTypes.string,
-    size: PropTypes.string,
-    borderStyle: PropTypes.string,
+    imgClassName: PropTypes.string,
+    isEditing: PropTypes.bool,
+    isLoading: PropTypes.bool,
+    isPinturaEnabled: PropTypes.bool,
     mimeTypes: PropTypes.arrayOf(PropTypes.string),
     onFileChange: PropTypes.func,
-    dragHandler: PropTypes.shape({
-        isDraggedOver: PropTypes.bool,
-        setRef: PropTypes.func
-    }),
-    isLoading: PropTypes.bool,
+    onRemoveMedia: PropTypes.func,
+    openImageEditor: PropTypes.func,
     progress: PropTypes.number,
-    errors: PropTypes.arrayOf(PropTypes.shape({
-        message: PropTypes.string
-    })),
-    onRemoveMedia: PropTypes.func
+    setFileInputRef: PropTypes.func,
+    size: PropTypes.string,
+    src: PropTypes.string,
+    type: PropTypes.oneOf(['image', 'button'])
 };

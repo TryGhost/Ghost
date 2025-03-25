@@ -4,14 +4,16 @@ import React from 'react';
 import {Tooltip} from './Tooltip';
 import {usePreviousFocus} from '../../hooks/usePreviousFocus';
 
-export function ButtonGroup({buttons = [], selectedName, onClick}) {
+export function ButtonGroup({buttons = [], selectedName, onClick, hasTooltip = true}) {
     return (
         <div className="flex">
-            <ul className="flex items-center justify-evenly gap-[.6rem] rounded-lg font-sans text-md font-normal text-white">
-                {buttons.map(({label, name, Icon, dataTestId}) => (
-                    <IconButton
+            <ul className="flex items-center justify-evenly rounded-lg bg-grey-100 font-sans text-md font-normal text-white dark:bg-grey-900" role="menubar">
+                {buttons.map(({label, name, Icon, dataTestId, ariaLabel}) => (
+                    <ButtonGroupIconButton
                         key={`${name}-${label}`}
+                        ariaLabel={ariaLabel}
                         dataTestId={dataTestId}
+                        hasTooltip={hasTooltip}
                         Icon={Icon}
                         label={label}
                         name={name}
@@ -24,7 +26,7 @@ export function ButtonGroup({buttons = [], selectedName, onClick}) {
     );
 }
 
-export function IconButton({dataTestId, onClick, label, name, selectedName, Icon}) {
+export function ButtonGroupIconButton({dataTestId, onClick, label, ariaLabel, name, selectedName, Icon, hasTooltip}) {
     const isActive = name === selectedName;
 
     const {handleMousedown, handleClick} = usePreviousFocus(onClick, name);
@@ -32,20 +34,31 @@ export function IconButton({dataTestId, onClick, label, name, selectedName, Icon
     return (
         <li className="mb-0">
             <button
-                aria-label={label}
-                className={`group relative flex h-7 w-8 cursor-pointer items-center justify-center rounded-lg hover:bg-grey-150 dark:hover:bg-grey-900 ${isActive ? 'bg-grey-150 text-green-600 dark:bg-grey-900 dark:text-white' : 'text-black dark:text-white' } ${Icon ? '' : 'text-[1.3rem] font-bold'}`}
+                aria-checked={isActive}
+                aria-label={ariaLabel || label}
+                className={`group relative flex h-7 w-8 cursor-pointer items-center justify-center rounded-lg text-black dark:text-white ${isActive ? 'border border-grey-300 bg-white shadow-xs dark:border-grey-800 dark:bg-grey-950' : '' } ${Icon ? '' : 'text-[1.3rem] font-bold'}`}
                 data-testid={dataTestId}
+                role="menuitemradio"
                 type="button"
                 onClick={handleClick}
                 onMouseDown={handleMousedown}
             >
                 {Icon ? <Icon className="size-4 stroke-2" /> : label}
-                {(Icon && label) && <Tooltip label={label} />}
+                {(Icon && label && hasTooltip) && <Tooltip label={label} />}
             </button>
         </li>
     );
 }
 
 ButtonGroup.propTypes = {
-    selectedName: PropTypes.oneOf(['regular', 'wide', 'full', 'split', 'center', 'left', 'small', 'medium', 'large', 'grid', 'list'])
+    selectedName: PropTypes.oneOf(['regular', 'wide', 'full', 'split', 'center', 'left', 'small', 'medium', 'large', 'grid', 'list', 'minimal', 'immersive']).isRequired,
+    hasTooltip: PropTypes.bool,
+    onClick: PropTypes.func.isRequired,
+    buttons: PropTypes.arrayOf(PropTypes.shape({
+        label: PropTypes.string,
+        name: PropTypes.string.isRequired,
+        Icon: PropTypes.elementType,
+        dataTestId: PropTypes.string,
+        ariaLabel: PropTypes.string
+    }))
 };

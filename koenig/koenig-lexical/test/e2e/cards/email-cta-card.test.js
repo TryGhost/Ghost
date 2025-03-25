@@ -328,15 +328,23 @@ test.describe('Email card', async () => {
                             <div>Content alignment</div>
                             <div>
                                 <div>
-                                    <ul>
+                                    <ul role="menubar">
                                         <li>
-                                            <button aria-label="Left" type="button">
+                                            <button
+                                                aria-checked="true"
+                                                aria-label="Left"
+                                                role="menuitemradio"
+                                                type="button">
                                                 <svg></svg>
                                                 <div><span>Left</span></div>
                                             </button>
                                         </li>
                                         <li>
-                                            <button aria-label="Center" type="button">
+                                            <button
+                                                aria-checked="false"
+                                                aria-label="Center"
+                                                role="menuitemradio"
+                                                type="button">
                                                 <svg></svg>
                                                 <div><span>Center</span></div>
                                             </button>
