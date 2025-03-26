@@ -2,6 +2,7 @@ import ContentView from '@views/Feed/components/ContentView';
 import Error from '@components/layout/Error';
 import Explore from '@views/Explore';
 import Inbox from '@views/Inbox';
+import LongformInbox from './views/Inbox/LongformInbox';
 import Notifications from '@views/Notifications';
 import Onboarding from '@components/layout/Onboarding';
 import OnboardingStep1 from '@components/layout/Onboarding/Step1';
@@ -29,7 +30,12 @@ export const routes: CustomRouteObject[] = [
             },
             {
                 path: 'inbox',
-                element: <Inbox />,
+                element: <LongformInbox />,
+                pageTitle: 'Inbox'
+            },
+            {
+                path: 'inbox/:postId',
+                element: <LongformInbox />,
                 pageTitle: 'Inbox'
             },
             {
