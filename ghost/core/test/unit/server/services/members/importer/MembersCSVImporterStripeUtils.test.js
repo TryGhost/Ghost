@@ -1,6 +1,6 @@
 const sinon = require('sinon');
 const {DataImportError} = require('@tryghost/errors');
-const MembersCSVImporterStripeUtils = require('../lib/MembersCSVImporterStripeUtils');
+const MembersCSVImporterStripeUtils = require('../../../../../../core/server/services/members/importer/MembersCSVImporterStripeUtils');
 
 describe('MembersCSVImporterStripeUtils', function () {
     const CUSTOMER_ID = 'abc123';

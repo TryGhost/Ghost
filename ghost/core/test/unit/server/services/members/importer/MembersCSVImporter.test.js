@@ -6,7 +6,7 @@ const assert = require('assert/strict');
 const fs = require('fs-extra');
 const path = require('path');
 const sinon = require('sinon');
-const MembersCSVImporter = require('../lib/MembersCSVImporter');
+const MembersCSVImporter = require('../../../../../../core/server/services/members/importer/MembersCSVImporter');
 
 const csvPath = path.join(__dirname, '/fixtures/');
 
@@ -473,7 +473,7 @@ describe('MembersCSVImporter', function () {
             const result = await membersImporter.prepare(`${csvPath}/single-column-with-header.csv`, defaultAllowedFields);
 
             should.exist(result.filePath);
-            result.filePath.should.match(/\/members-importer\/test\/fixtures\/Members Import/);
+            result.filePath.should.match(/\/members\/importer\/fixtures\/Members Import/);
 
             result.batches.should.equal(2);
             should.exist(result.metadata);
