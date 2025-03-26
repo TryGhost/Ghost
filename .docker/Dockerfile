@@ -75,7 +75,6 @@ COPY ghost/api-framework/package.json ghost/api-framework/package.json
 COPY ghost/api-version-compatibility-service/package.json ghost/api-version-compatibility-service/package.json
 COPY ghost/audience-feedback/package.json ghost/audience-feedback/package.json
 COPY ghost/bookshelf-repository/package.json ghost/bookshelf-repository/package.json
-COPY ghost/bootstrap-socket/package.json ghost/bootstrap-socket/package.json
 COPY ghost/captcha-service/package.json ghost/captcha-service/package.json
 COPY ghost/constants/package.json ghost/constants/package.json
 COPY ghost/core/package.json ghost/core/package.json

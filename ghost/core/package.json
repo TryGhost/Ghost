@@ -72,7 +72,6 @@
     "@tryghost/api-version-compatibility-service": "0.0.0",
     "@tryghost/audience-feedback": "0.0.0",
     "@tryghost/bookshelf-plugins": "0.6.25",
-    "@tryghost/bootstrap-socket": "0.0.0",
     "@tryghost/captcha-service": "0.0.0",
     "@tryghost/color-utils": "0.2.2",
     "@tryghost/config-url-helpers": "1.0.12",
