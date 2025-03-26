@@ -1,7 +1,7 @@
 const express = require('express');
 const sinon = require('sinon');
 const should = require('should');
-const SessionFromToken = require('../');
+const SessionFromToken = require('../../../../../core/server/services/auth/session/session-from-token');
 
 describe('SessionFromToken', function () {
     it('Parses the request, matches the user to the token, sets the user on req.user and calls createSession', async function () {
