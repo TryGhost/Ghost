@@ -16,7 +16,7 @@ const RevueHandler = require('./handlers/revue');
 const JSONHandler = require('./handlers/json');
 const MarkdownHandler = require('./handlers/markdown');
 const ContentFileImporter = require('./importers/ContentFileImporter');
-const RevueImporter = require('@tryghost/importer-revue');
+const RevueImporter = require('./importers/importer-revue');
 const DataImporter = require('./importers/data');
 const urlUtils = require('../../../shared/url-utils');
 const {GhostMailer} = require('../../services/mail');
@@ -225,7 +225,7 @@ class ImportManager {
 
         try {
             await extract(filePath, tmpDir);
-            
+
             // Set permissions for all extracted files
             const files = glob.sync('**/*', {cwd: tmpDir, nodir: true});
             await Promise.all(files.map(file => fs.chmod(path.join(tmpDir, file), 0o644)));

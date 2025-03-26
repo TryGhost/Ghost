@@ -1,8 +1,8 @@
 const assert = require('assert/strict');
 const sinon = require('sinon');
-const RevueImporter = require('../index');
 
-const JSONToHTML = require('../lib/json-to-html');
+const RevueImporter = require('../../../../../../core/server/data/importer/importers/importer-revue');
+const JSONToHTML = require('../../../../../../core/server/data/importer/importers/json-to-html');
 
 describe('Revue Importer', function () {
     afterEach(function () {

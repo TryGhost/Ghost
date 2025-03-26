@@ -94,7 +94,6 @@ COPY ghost/html-to-plaintext/package.json ghost/html-to-plaintext/package.json
 COPY ghost/i18n/package.json ghost/i18n/package.json
 COPY ghost/identity-token-service/package.json ghost/identity-token-service/package.json
 COPY ghost/importer-handler-content-files/package.json ghost/importer-handler-content-files/package.json
-COPY ghost/importer-revue/package.json ghost/importer-revue/package.json
 COPY ghost/in-memory-repository/package.json ghost/in-memory-repository/package.json
 COPY ghost/job-manager/package.json ghost/job-manager/package.json
 COPY ghost/link-redirects/package.json ghost/link-redirects/package.json
