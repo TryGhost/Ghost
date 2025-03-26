@@ -83,7 +83,6 @@ services:
       - node_modules_ghost_mw-api-version-mismatch:/home/ghost/ghost/mw-api-version-mismatch/node_modules:delegated
       - node_modules_ghost_mw-cache-control:/home/ghost/ghost/mw-cache-control/node_modules:delegated
       - node_modules_ghost_mw-error-handler:/home/ghost/ghost/mw-error-handler/node_modules:delegated
-      - node_modules_ghost_mw-session-from-token:/home/ghost/ghost/mw-session-from-token/node_modules:delegated
       - node_modules_ghost_mw-update-user-last-seen:/home/ghost/ghost/mw-update-user-last-seen/node_modules:delegated
       - node_modules_ghost_mw-version-match:/home/ghost/ghost/mw-version-match/node_modules:delegated
       - node_modules_ghost_mw-vhost:/home/ghost/ghost/mw-vhost/node_modules:delegated
@@ -249,7 +248,6 @@ volumes:
   node_modules_ghost_mw-api-version-mismatch: {}
   node_modules_ghost_mw-cache-control: {}
   node_modules_ghost_mw-error-handler: {}
-  node_modules_ghost_mw-session-from-token: {}
   node_modules_ghost_mw-update-user-last-seen: {}
   node_modules_ghost_mw-version-match: {}
   node_modules_ghost_mw-vhost: {}
