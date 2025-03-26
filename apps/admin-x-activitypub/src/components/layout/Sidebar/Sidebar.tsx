@@ -9,13 +9,14 @@ import {useFeatureFlags} from '@src/lib/feature-flags';
 
 const Sidebar: React.FC = () => {
     const {allFlags, flags} = useFeatureFlags();
+    const {isEnabled} = useFeatureFlags();
 
     return (
         <div className='sticky top-[102px] flex min-h-[calc(100vh-102px-32px)] w-[294px] flex-col border-l border-gray-200 dark:border-gray-950'>
             <div className='flex grow flex-col justify-between'>
                 <div className='isolate flex w-full flex-col items-start gap-6 pl-4 pt-4'>
                     <div className='flex w-full flex-col gap-px'>
-                        <SidebarMenuLink to='/inbox'>
+                        <SidebarMenuLink to={(isEnabled('reader-routes') ? '/inbox-rr' : '/inbox')}>
                             <LucideIcon.Inbox size={18} strokeWidth={1.5} />
                             Inbox
                         </SidebarMenuLink>

@@ -6,9 +6,10 @@ import Separator from '@components/global/Separator';
 import {Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, LucideIcon} from '@tryghost/shade';
 import {EmptyViewIcon, EmptyViewIndicator} from '@src/components/global/EmptyViewIndicator';
 import {LoadingIndicator} from '@tryghost/admin-x-design-system';
+import {Navigate, useNavigate, useParams} from '@tryghost/admin-x-framework';
 import {isPendingActivity} from '@utils/pending-activity';
+import {useFeatureFlags} from '@src/lib/feature-flags';
 import {useInboxForUser} from '@hooks/use-activity-pub-queries';
-import {useNavigate, useParams} from '@tryghost/admin-x-framework';
 
 const LongformInbox: React.FC = () => {
     const navigate = useNavigate();
@@ -58,6 +59,11 @@ const LongformInbox: React.FC = () => {
     // Calculate the index at which to place the loadMoreRef - This will place it ~75% through the list
     const loadMoreIndex = Math.max(0, Math.floor(activities.length * 0.75) - 1);
 
+    const {isEnabled} = useFeatureFlags();
+    if (!isEnabled('reader-routes')) {
+        return <Navigate to='/inbox' />;
+    }
+
     return (
         <Layout>
             <div className='flex w-full flex-col'>
@@ -85,7 +91,7 @@ const LongformInbox: React.FC = () => {
                                                         repostCount={activity.object.repostCount ?? 0}
                                                         type={activity.type}
                                                         onClick={() => {
-                                                            navigate(`/inbox/${encodeURIComponent(activity.id)}`);
+                                                            navigate(`/inbox-rr/${encodeURIComponent(activity.id)}`);
                                                         }}
                                                         onCommentClick={() => {}}
                                                     />
@@ -130,7 +136,7 @@ const LongformInbox: React.FC = () => {
                 onOpenChange={(open: boolean) => {
                     setIsReaderOpen(open);
                     if (!open) {
-                        navigate('/inbox');
+                        navigate('/inbox-rr');
                     }
                 }}
             >
@@ -140,7 +146,7 @@ const LongformInbox: React.FC = () => {
                         <DialogDescription>Ghost reader for long form articles</DialogDescription>
                     </DialogHeader>
                     {params.postId && <Reader postId={params.postId} onClose={() => {
-                        navigate('/inbox');
+                        navigate('/inbox-rr');
                     }} />}
                 </DialogContent>
             </Dialog>

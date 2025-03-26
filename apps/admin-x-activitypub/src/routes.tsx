@@ -30,11 +30,16 @@ export const routes: CustomRouteObject[] = [
             },
             {
                 path: 'inbox',
+                element: <Inbox />,
+                pageTitle: 'Inbox'
+            },
+            {
+                path: 'inbox-rr',
                 element: <LongformInbox />,
                 pageTitle: 'Inbox'
             },
             {
-                path: 'inbox/:postId',
+                path: 'inbox-rr/:postId',
                 element: <LongformInbox />,
                 pageTitle: 'Inbox'
             },
