@@ -7,6 +7,7 @@ export TB_VERSION_WARNING=0
 # 4 = latest
 export TB_VERSION=${TB_VERSION:-7}
 
+
 # Get the expected count once, outside of any function
 ndjson_file="./tests/fixtures/analytics_events.ndjson"
 export expected_count=$(grep -c '^' "$ndjson_file" || echo "0")
