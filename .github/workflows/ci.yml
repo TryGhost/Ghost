@@ -947,6 +947,7 @@ jobs:
       - name: Custom deployment to the test Branch
         run: |
           DEPLOY_FILE=./deploy/${VERSION}/deploy.sh
+          echo $DEPLOY_FILE
           if [ -f "$DEPLOY_FILE" ]; then
               echo "$DEPLOY_FILE found"
               if ! [ -x "$DEPLOY_FILE" ]; then
