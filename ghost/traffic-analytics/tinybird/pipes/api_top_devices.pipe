@@ -8,7 +8,7 @@ NODE _top_devices_0
 SQL >
     %
     select device, uniqExact(session_id) as visits, count() as pageviews
-    from mv_hits
+    from _mv_hits
     where
         site_uuid = {{ String(site_uuid, 'mock_site_uuid', description="Tenant ID", required=True) }}
         {% if defined(date_from) %}

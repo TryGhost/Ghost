@@ -66,7 +66,7 @@ DESCRIPTION >
 SQL >
     %
     select distinct session_id
-    from mv_hits
+    from _mv_hits
     where
         site_uuid = {{ String(site_uuid, 'mock_site_uuid', description="Tenant ID", required=True) }}
         {% if defined(date_from) %} and toDate(timestamp) >= {{ Date(date_from) }}
@@ -121,7 +121,7 @@ SQL >
         pageviews,
         is_bounce,
         duration as session_sec
-    from mv_sessions
+    from _mv_sessions
     where
         site_uuid = {{ String(site_uuid, 'mock_site_uuid', description="Tenant ID", required=True) }}
         and session_id in (select session_id from filtered_sessions)
