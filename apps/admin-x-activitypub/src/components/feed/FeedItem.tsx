@@ -270,7 +270,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
         return (
             <>
                 {object && (
-                    <div className={`group/article relative -mx-4 -my-px ${!isPending ? 'cursor-pointer' : 'pointer-events-none opacity-50'} rounded-lg p-6 px-8 pb-[18px]`} data-layout='feed' data-object-id={object.id} onClick={onClick}>
+                    <div className={`group/article relative -mx-4 -my-px ${!isPending ? 'cursor-pointer' : 'pointer-events-none'} rounded-lg p-6 px-8 pb-[18px]`} data-layout='feed' data-object-id={object.id} onClick={onClick}>
                         {(type === 'Announce') && <div className='z-10 mb-2 flex items-center gap-2 text-gray-700 dark:text-gray-600'>
                             <Icon colorClass='text-gray-700 shrink-0 dark:text-gray-600' name='reload' size={'sm'} />
                             <div className='flex min-w-0 items-center gap-1 text-sm'>
@@ -281,21 +281,18 @@ const FeedItem: React.FC<FeedItemProps> = ({
                         <div className={`border-1 flex flex-col gap-2.5`} data-test-activity>
                             <div className='flex min-w-0 items-center gap-3'>
                                 <APAvatar author={author} disabled={isPending} />
-                                <div className='flex min-w-0 grow flex-col gap-0.5'>
+                                <div className='flex min-w-0 grow flex-col gap-0.5' onClick={e => !isPending && handleProfileClick(author, e)}>
                                     <span className={`min-w-0 truncate break-all font-semibold leading-[normal] ${!isPending ? 'hover-underline' : ''} dark:text-white`}
                                         data-test-activity-heading
-                                        onClick={e => !isPending && handleProfileClick(author, e)}
                                     >
                                         {!isLoading ? author.name : <Skeleton className='w-24' />}
                                     </span>
                                     <div className='flex w-full text-sm text-gray-700 dark:text-gray-600'>
-                                        <span className={`truncate leading-tight ${!isPending ? 'hover-underline' : ''}`}
-                                            onClick={e => !isPending && handleProfileClick(author, e)}
-                                        >
+                                        <span className={`truncate leading-tight ${!isPending ? 'hover-underline' : ''}`}>
                                             {!isLoading ? getUsername(author) : <Skeleton className='w-56' />}
                                         </span>
                                         <div className={`ml-1 leading-tight before:mr-1 ${!isLoading && 'before:content-["·"]'}`} title={`${timestamp}`}>
-                                            {!isLoading ? renderTimestamp(object, isPending === false) : <Skeleton className='w-4' />}
+                                            {!isLoading ? renderTimestamp(object, (isPending === false && !object.authored)) : <Skeleton className='w-4' />}
                                         </div>
                                     </div>
                                 </div>
@@ -378,18 +375,20 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                     <div><Icon colorClass='text-gray-700 shrink-0 dark:text-gray-600' name='reload' size={'sm'}></Icon></div>
                                     <span className='flex min-w-0 items-center gap-1'><span className='truncate break-all hover:underline' title={getUsername(actor)} onClick={e => handleProfileClick(actor, e)}>{actor.name}</span> reposted</span>
                                 </div>}
-                                {(showHeader) && <><div className='relative z-10 pt-[3px]'>
-                                    <APAvatar author={author}/>
-                                </div>
-                                <div className='relative z-10 flex w-full min-w-0 flex-col overflow-visible text-[1.5rem]'>
-                                    <div className='flex w-full'>
-                                        <span className='min-w-0 truncate whitespace-nowrap font-semibold after:mx-1 after:font-normal after:text-gray-700 after:content-["·"] after:dark:text-gray-600' data-test-activity-heading>{author.name}</span>
-                                        <div>{renderTimestamp(object)}</div>
+                                {(showHeader) && <>
+                                    <div className='relative z-10 pt-[3px]'>
+                                        <APAvatar author={author}/>
                                     </div>
-                                    <div className='flex w-full'>
-                                        <span className='min-w-0 truncate text-gray-700 dark:text-gray-600'>{getUsername(author)}</span>
+                                    <div className='relative z-10 flex w-full min-w-0 cursor-pointer flex-col overflow-visible text-[1.5rem]' onClick={e => !isPending && handleProfileClick(author, e)}>
+                                        <div className='flex w-full'>
+                                            <span className='min-w-0 truncate whitespace-nowrap font-semibold after:mx-1 after:font-normal after:text-gray-700 after:content-["·"] after:dark:text-gray-600' data-test-activity-heading>{author.name}</span>
+                                            <div>{renderTimestamp(object, !object.authored)}</div>
+                                        </div>
+                                        <div className='flex w-full'>
+                                            <span className='min-w-0 truncate text-gray-700 dark:text-gray-600'>{getUsername(author)}</span>
+                                        </div>
                                     </div>
-                                </div></>}
+                                </>}
                                 <div className={`relative z-10 col-start-1 col-end-3 w-full gap-4`}>
                                     <div className='flex flex-col items-start'>
                                         {object.name && <Heading className='mb-1 leading-tight' level={4} data-test-activity-heading>{object.name}</Heading>}
@@ -421,17 +420,17 @@ const FeedItem: React.FC<FeedItemProps> = ({
         return (
             <>
                 {object && (
-                    <div className={`group/article relative py-5 ${!isPending ? 'cursor-pointer' : 'pointer-events-none opacity-50'}`} data-layout='reply' data-object-id={object.id} onClick={onClick}>
+                    <div className={`group/article relative py-5 ${!isPending ? 'cursor-pointer' : 'pointer-events-none'}`} data-layout='reply' data-object-id={object.id} onClick={onClick}>
                         <div className={`border-1 z-10 flex items-start gap-3 border-b-gray-200`} data-test-activity>
                             <div className='relative z-10 pt-[3px]'>
                                 <APAvatar author={author} disabled={isPending} />
                             </div>
                             <div className='flex w-full min-w-0 flex-col gap-2'>
                                 <div className='flex w-full items-center justify-between'>
-                                    <div className='relative z-10 flex w-full min-w-0 flex-col overflow-visible'>
+                                    <div className='relative z-10 flex w-full min-w-0 flex-col overflow-visible' onClick={e => !isPending && handleProfileClick(author, e)}>
                                         <div className='flex'>
                                             <span className='min-w-0 truncate whitespace-nowrap font-semibold after:mx-1 after:font-normal after:text-gray-700 after:content-["·"]' data-test-activity-heading>{author.name}</span>
-                                            <div>{renderTimestamp(object, isPending === false)}</div>
+                                            <div>{renderTimestamp(object, (isPending === false && !object.authored))}</div>
                                         </div>
                                         <div className='flex'>
                                             <span className='truncate text-gray-700'>{getUsername(author)}</span>
@@ -499,7 +498,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                         >{author.name}
                                         </span>
                                         {(type === 'Announce') && <span className='z-10 flex items-center gap-1 text-gray-700 dark:text-gray-600'><Icon colorClass='text-gray-700 shrink-0 dark:text-gray-600' name='reload' size={'sm'}></Icon><span className='hover:underline' title={getUsername(actor)} onClick={e => handleProfileClick(actor, e)}>{actor.name}</span> reposted</span>}
-                                        <span className='shrink-0 whitespace-nowrap text-gray-600 before:mr-1 before:content-["·"]' title={`${timestamp}`}>{renderTimestamp(object)}</span>
+                                        <span className='shrink-0 whitespace-nowrap text-gray-600 before:mr-1 before:content-["·"]' title={`${timestamp}`}>{renderTimestamp(object, !object.authored)}</span>
                                     </> :
                                     <Skeleton className='w-24' />
                                 }
