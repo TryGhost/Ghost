@@ -23,7 +23,6 @@
     "sinon": "15.2.0"
   },
   "dependencies": {
-    "@tryghost/email-content-generator": "0.0.0",
-    "@tryghost/version-notifications-data-service": "0.0.0"
+    "@tryghost/email-content-generator": "0.0.0"
   }
 }
