@@ -1,3 +1,4 @@
+import Error from '@components/layout/Error';
 import Explore from '@views/Explore';
 import Inbox from '@views/Inbox';
 import Notifications from '@views/Notifications';
@@ -10,65 +11,76 @@ import {Navigate, RouteObject} from '@tryghost/admin-x-framework';
 
 export const APP_ROUTE_PREFIX = '/activitypub';
 
-type CustomRouteObject = RouteObject & {
+export type CustomRouteObject = RouteObject & {
     pageTitle?: string;
+    children?: CustomRouteObject[];
 };
 
 export const routes: CustomRouteObject[] = [
     {
+        // Root route configuration
         path: '',
-        index: true,
-        element: <Navigate to="inbox" replace />
-    },
-    {
-        path: 'inbox',
-        element: <Inbox />,
-        pageTitle: 'Inbox'
-    },
-    {
-        path: 'feed',
-        element: <Inbox />,
-        pageTitle: 'Feed'
-    },
-    {
-        path: 'notifications',
-        element: <Notifications />,
-        pageTitle: 'Notifications'
-    },
-    {
-        path: 'explore',
-        element: <Explore />,
-        pageTitle: 'Explore'
-    },
-    {
-        path: 'profile',
-        element: <Profile />,
-        pageTitle: 'Profile'
-    },
-    {
-        path: 'welcome',
-        element: <Onboarding />,
-        pageTitle: 'Welcome',
+        errorElement: <Error />, // This will catch all errors in child routes
         children: [
             {
-                path: '',
-                element: <Navigate to="1" replace />
+                index: true,
+                element: <Navigate to="inbox" replace />
             },
             {
-                path: '1',
-                element: <OnboardingStep1 />
+                path: 'inbox',
+                element: <Inbox />,
+                pageTitle: 'Inbox'
             },
             {
-                path: '2',
-                element: <OnboardingStep2 />
+                path: 'feed',
+                element: <Inbox />,
+                pageTitle: 'Feed'
             },
             {
-                path: '3',
-                element: <OnboardingStep3 />
+                path: 'notifications',
+                element: <Notifications />,
+                pageTitle: 'Notifications'
+            },
+            {
+                path: 'explore',
+                element: <Explore />,
+                pageTitle: 'Explore'
+            },
+            {
+                path: 'profile',
+                element: <Profile />,
+                pageTitle: 'Profile'
+            },
+            {
+                path: 'welcome',
+                element: <Onboarding />,
+                pageTitle: 'Welcome',
+                children: [
+                    {
+                        path: '',
+                        element: <Navigate to="1" replace />
+                    },
+                    {
+                        path: '1',
+                        element: <OnboardingStep1 />
+                    },
+                    {
+                        path: '2',
+                        element: <OnboardingStep2 />
+                    },
+                    {
+                        path: '3',
+                        element: <OnboardingStep3 />
+                    },
+                    {
+                        path: '*',
+                        element: <Navigate to="1" replace />
+                    }
+                ]
             },
             {
                 path: '*',
-                element: <Navigate to="1" replace />
+                element: <Error />
             }
         ]
     }
