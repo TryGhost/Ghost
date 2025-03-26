@@ -1,11 +1,7 @@
 const assert = require('assert/strict');
-const {AudienceFeedbackService} = require('../index');
+const AudienceFeedbackService = require('../../../../../core/server/services/audience-feedback/AudienceFeedbackService');
 
 describe('audienceFeedbackService', function () {
-    it('exported', function () {
-        assert.equal(require('../index').AudienceFeedbackService, AudienceFeedbackService);
-    });
-
     const mockData = {
         uuid: '7b11de3c-dff9-4563-82ae-a281122d201d',
         postId: '634fc3901e0a291855d8b135',

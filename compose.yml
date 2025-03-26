@@ -38,7 +38,6 @@ services:
       - node_modules_ghost_announcement-bar-settings:/home/ghost/ghost/announcement-bar-settings/node_modules:delegated
       - node_modules_ghost_api-framework:/home/ghost/ghost/api-framework/node_modules:delegated
       - node_modules_ghost_api-version-compatibility-service:/home/ghost/ghost/api-version-compatibility-service/node_modules:delegated
-      - node_modules_ghost_audience-feedback:/home/ghost/ghost/audience-feedback/node_modules:delegated
       - node_modules_ghost_bookshelf-repository:/home/ghost/ghost/bookshelf-repository/node_modules:delegated
       - node_modules_ghost_captcha-service:/home/ghost/ghost/captcha-service/node_modules:delegated
       - node_modules_ghost_constants:/home/ghost/ghost/constants/node_modules:delegated
@@ -200,7 +199,6 @@ volumes:
   node_modules_ghost_announcement-bar-settings: {}
   node_modules_ghost_api-framework: {}
   node_modules_ghost_api-version-compatibility-service: {}
-  node_modules_ghost_audience-feedback: {}
   node_modules_ghost_bookshelf-repository: {}
   node_modules_ghost_captcha-service: {}
   node_modules_ghost_constants: {}
