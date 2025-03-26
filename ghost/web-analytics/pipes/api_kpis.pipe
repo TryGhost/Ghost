@@ -38,7 +38,7 @@ SQL >
             select
                 arrayJoin(
                     arrayMap(
-                        x -> toDateTime(x),
+                        x -> toDateTime(toString(toDateTime(x)), {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}}),
                         range(
                             toUInt32(toDateTime(start)), toUInt32(timestampAdd(end, interval 1 day)), 3600
                         )
