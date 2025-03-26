@@ -1,8 +1,9 @@
-import {IncludeOption, OrderOption} from '@tryghost/bookshelf-repository';
 import errors from '@tryghost/errors';
 import {InMemoryRepository} from '@tryghost/in-memory-repository';
 import logging from '@tryghost/logging';
 import tpl from '@tryghost/tpl';
+
+import {IncludeOption, OrderOption} from './BookshelfRepository';
 import {ClickEvent} from './ClickEvent';
 import {AddRecommendation, Recommendation, RecommendationPlain} from './Recommendation';
 import {RecommendationRepository} from './RecommendationRepository';

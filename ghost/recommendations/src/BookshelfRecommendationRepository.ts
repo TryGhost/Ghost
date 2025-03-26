@@ -1,4 +1,4 @@
-import {AllOptions, BookshelfRepository, ModelClass, ModelInstance} from '@tryghost/bookshelf-repository';
+import {AllOptions, BookshelfRepository, ModelClass, ModelInstance} from './BookshelfRepository';
 import logger from '@tryghost/logging';
 import {Knex} from 'knex';
 import {Recommendation} from './Recommendation';
