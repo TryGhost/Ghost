@@ -1,6 +1,6 @@
 const assert = require('assert/strict');
 const sinon = require('sinon');
-const CaptchaService = require('../index');
+const CaptchaService = require('../../../../../core/server/services/members/CaptchaService');
 const hcaptcha = require('hcaptcha');
 
 describe('CaptchaService', function () {
