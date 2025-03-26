@@ -151,6 +151,8 @@ function getWebmentionDiscoveryLink() {
 }
 
 function getTinybirdTrackerScript(dataRoot) {
+    const src = urlUtils.getSubdir() + '/public/ghost-stats.js';
+
     const endpoint = config.get('tinybird:tracker:endpoint');
     const token = config.get('tinybird:tracker:token');
     const datasource = config.get('tinybird:tracker:datasource');
@@ -162,7 +164,7 @@ function getTinybirdTrackerScript(dataRoot) {
         member_status: dataRoot.member?.status
     }, (value, key) => `tb_${key}="${value}"`).join(' ');
 
-    return `<script defer src="/public/ghost-stats.js" data-stringify-payload="false" ${datasource ? `data-datasource="${datasource}"` : ''} data-storage="localStorage" data-host="${endpoint}" data-token="${token}" ${tbParams}></script>`;
+    return `<script defer src="${src}" data-stringify-payload="false" ${datasource ? `data-datasource="${datasource}"` : ''} data-storage="localStorage" data-host="${endpoint}" data-token="${token}" ${tbParams}></script>`;
 }
 
 function getHCaptchaScript() {
