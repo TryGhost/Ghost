@@ -25,6 +25,18 @@ const messages = {
     pageNotFound: 'Page not found.'
 };
 
+function shouldIncludeAttr(options, column) {
+    const formatsIncludesColumn = options?.formats?.includes(column);
+    const optionsHasNoColumns = !options || !Object.prototype.hasOwnProperty.call(options, 'columns');
+
+    return optionsHasNoColumns
+        || options.columns.includes(column)
+        || formatsIncludesColumn;
+}
+function shouldNotIncludeAttr(options, column) {
+    return options && Object.prototype.hasOwnProperty.call(options, 'columns') && !options.columns.includes(column);
+}
+
 class PostsService {
     constructor({urlUtils, models, labs, stats, emailService, postsExporter, contentGating}) {
         this.urlUtils = urlUtils;
@@ -43,7 +55,7 @@ class PostsService {
      * @param {string} frame.apiType
      * @returns {Promise<Object>}
      */
-    async browsePosts({options, apiType}) {
+    async browsePosts({options = {}, apiType}) {
         const {data: models, meta} = await this.models.Post.findPage(options);
 
         const posts = [];
@@ -65,7 +77,7 @@ class PostsService {
      * @param {string} frame.apiType
      * @returns {Promise<Object>}
      */
-    async readPost({data, options, apiType}) {
+    async readPost({data, options = {}, apiType}) {
         const model = await this.models.Post.findOne(data, options);
 
         if (!model) {
@@ -81,8 +93,31 @@ class PostsService {
     serializePostModel(model, {options, apiType}) {
         const postAttrs = model.toJSON(options);
 
-        // re-add id in case it's been excluded by toJSON due to fields/columns options,
-        // otherwise URL lookups will fail in the posts output serializer mapper
+        // console.log({postAttrs});
+
+        // We have some virtual properties that need to be added to the JSON output
+        // manually because they are not added at the model level.
+        //
+        // These can have dependencies on fields that weren't requested and therefore
+        // are not included in the model's `toJSON` output, so we have to read them
+        // via model.get(). Some fields are also always given to us with .toJSON()
+        // even when not requested so we have to manually remove them.
+        // TODO: why is this the case? It's not obvious from looking at Post.toJSON
+        if (shouldNotIncludeAttr(options, 'custom_excerpt')) {
+            delete postAttrs.custom_excerpt;
+        }
+        if (shouldIncludeAttr(options, 'plaintext')) {
+            postAttrs.plaintext = model.get('plaintext');
+        }
+        if (shouldIncludeAttr(options, 'excerpt')) {
+            postAttrs.excerpt = model.get('custom_excerpt') || model.get('plaintext')?.substring(0, 500) || null;
+        }
+        if (shouldIncludeAttr(options, 'reading_time')) {
+
+        }
+
+        // re-add `id` in case it's been excluded by toJSON due to fields/columns
+        // options, otherwise URL lookups will fail in the posts output serializer
         // TODO: can Post.toJSON be changed to always include id?
         postAttrs.id = model.id;
 
@@ -90,7 +125,7 @@ class PostsService {
         // visible to anonymous viewers or members with insufficient permissions
         if (this.#isPublicRequest({apiType})) {
             // add an extra `access` attribute to the postAttrs object unless explicitly not requested
-            const addAccessAttr = !options || !Object.prototype.hasOwnProperty.call(options, 'columns') || (options.columns.includes('access'));
+            const addAccessAttr = shouldIncludeAttr(options, 'access');
             this.contentGating.gatePostAttrs(postAttrs, options?.context?.member, {addAccessAttr, labs: this.labs});
         }
 

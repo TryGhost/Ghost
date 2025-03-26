@@ -2,6 +2,18 @@ const {PostsService} = require('../index');
 const assert = require('assert/strict');
 const sinon = require('sinon');
 
+function buildPostStub(attrs) {
+    return {
+        ...attrs,
+        get(attr) {
+            return attrs[attr];
+        },
+        toJSON() {
+            return attrs;
+        }
+    };
+}
+
 describe('Posts Service', function () {
     it('Can construct class', function () {
         new PostsService({});
@@ -248,23 +260,98 @@ describe('Posts Service', function () {
         });
     });
 
+    // Some properties on a post are virtual and not stored in the database but
+    // are calculated based on other properties. We need to ensure these properties
+    // are correctly calculated and returned when requested.
+    //
+    // Note that we need to use real Post instances here because we're dependant
+    // on Post.toJSON behaviour.
+    describe('virtual properties', function () {
+        let postData = [];
+        let postsService;
+
+        beforeEach(function () {
+            postData = [];
+
+            postsService = new PostsService({
+                models: {
+                    Post: {
+                        findPage: sinon.spy(async () => ({data: postData.map(buildPostStub)})),
+                        findOne: sinon.spy(async () => (buildPostStub(postData[0])))
+                    }
+                }
+            });
+        });
+
+        describe('excerpt', function () {
+            it('adds excerpt when no explicit columns are requested', async function () {
+                postData.push({id: '1', plaintext: new Array(5000).join('A')});
+                const {posts} = await postsService.browsePosts({});
+                assert.ok(Object.prototype.hasOwnProperty.call(posts[0], 'excerpt'));
+            });
+
+            it('adds excerpt when columns include excerpt', async function () {
+                postData.push({id: '1', plaintext: new Array(5000).join('A')});
+                const {posts} = await postsService.browsePosts({options: {columns: ['excerpt']}});
+                assert.ok(Object.prototype.hasOwnProperty.call(posts[0], 'excerpt'));
+            });
+
+            it('does not add excerpt if columns does not include excerpt', async function () {
+                postData.push({id: '1', plaintext: new Array(5000).join('A')});
+                const {posts} = await postsService.browsePosts({options: {columns: ['id']}});
+                assert.ok(!Object.prototype.hasOwnProperty.call(posts[0], 'excerpt'));
+            });
+
+            it('uses custom_excerpt for excerpt when it exists', async function () {
+                postData.push({id: '1', plaintext: new Array(5000).join('A'), custom_excerpt: 'custom excerpt'});
+                const {posts} = await postsService.browsePosts({});
+                assert.equal(posts[0].excerpt, 'custom excerpt');
+            });
+
+            it('uses substring of plaintext when custom_excerpt does not exist', async function () {
+                postData.push({id: '1', plaintext: new Array(5000).join('A')});
+                const {posts} = await postsService.browsePosts({});
+                assert.equal(posts[0].excerpt.length, 500);
+                assert.equal(posts[0].excerpt, new Array(501).join('A'));
+            });
+
+            it('has a null excerpt when custom_excerpt and plaintext do not exist', async function () {
+                postData.push({id: '1'});
+                const {posts} = await postsService.browsePosts({});
+                assert.equal(posts[0].excerpt, null);
+            });
+
+            // TODO: this feels wrong but matches old behaviour, would be better to always return null or maybe fall back to plaintext
+            it('has an empty excerpt when custom_excerpt is empty', async function () {
+                postData.push({id: '1', custom_excerpt: '', plaintext: new Array(5000).join('A')});
+                const {posts} = await postsService.browsePosts({});
+                assert.equal(posts[0].excerpt, '');
+            });
+
+            it('can still generate excerpt from custom_excerpt when only excerpt is requested', async function () {
+
+            });
+
+            it('can still generate excerpt from plaintext when only excerpt is requested');
+        });
+
+        describe('reading_time', function () {
+            it('includes reading_time when no explicit columns are requested');
+            it('includes reading_time when columns include reading_time');
+            it('calculates reading_time based on html');
+            it('can still calculate reading_time when html isn\'t requested');
+        });
+    });
+
+    // Uses member from the frame context to determine which content of a post is visible,
+    // anything not visible is stripped out/replaced with a paywall. Actual logic for attr
+    // manipulation lives in the content-gating service so we only need to ensure it gets
+    // called when we expect it to.
     describe('content gating', function () {
         let postData = [];
         let postsService;
         let contentGating;
         let labs;
-
-        function buildPostStub(attrs) {
-            return {
-                ...attrs,
-                get(attr) {
-                    return attrs[attr];
-                },
-                toJSON() {
-                    return attrs;
-                }
-            };
-        }
 
         beforeEach(function () {
             postData = [];
