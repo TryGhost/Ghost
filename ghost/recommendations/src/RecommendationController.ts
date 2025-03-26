@@ -3,7 +3,7 @@ import errors from '@tryghost/errors';
 import {AddRecommendation, Recommendation, RecommendationPlain} from './Recommendation';
 import {RecommendationService} from './RecommendationService';
 import {UnsafeData} from './UnsafeData';
-import {OrderOption} from '@tryghost/bookshelf-repository';
+import {OrderOption} from './BookshelfRepository';
 
 type Frame = {
     data: unknown,
