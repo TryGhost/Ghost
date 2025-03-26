@@ -83,7 +83,6 @@ COPY ghost/data-generator/package.json ghost/data-generator/package.json
 COPY ghost/domain-events/package.json ghost/domain-events/package.json
 COPY ghost/donations/package.json ghost/donations/package.json
 COPY ghost/email-addresses/package.json ghost/email-addresses/package.json
-COPY ghost/email-analytics-provider-mailgun/package.json ghost/email-analytics-provider-mailgun/package.json
 COPY ghost/email-analytics-service/package.json ghost/email-analytics-service/package.json
 COPY ghost/email-content-generator/package.json ghost/email-content-generator/package.json
 COPY ghost/email-events/package.json ghost/email-events/package.json
