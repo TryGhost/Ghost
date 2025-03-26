@@ -946,6 +946,8 @@ jobs:
           fi
       - name: Custom deployment to the test Branch
         run: |
+          source .tinyenv
+          echo $VERSION
           DEPLOY_FILE=./deploy/${VERSION}/deploy.sh
           echo $DEPLOY_FILE
           if [ -f "$DEPLOY_FILE" ]; then
