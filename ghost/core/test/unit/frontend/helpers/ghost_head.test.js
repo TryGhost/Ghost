@@ -1475,6 +1475,20 @@ describe('{{ghost_head}} helper', function () {
             rendered.should.match(/script defer src="\/public\/ghost-stats\.js"/);
         });
 
+        it('includes tracker script with subdir', async function () {
+            configUtils.set('url', 'http://localhost:2388/blog/');
+
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+
+            rendered.should.match(/script defer src="\/blog\/public\/ghost-stats\.js"/);
+        });
+
         it('with all tb_variables set to undefined on logged out home page', async function () {
             await testGhostHead(testUtils.createHbsResponse({
                 locals: {
