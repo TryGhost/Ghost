@@ -10,6 +10,7 @@ describe('ExplorePingService', function () {
     let loggingStub;
     let ghostVersionStub;
     let requestStub;
+    let postsStub;
 
     beforeEach(function () {
         // Setup stubs
@@ -65,13 +66,22 @@ describe('ExplorePingService', function () {
 
         requestStub = sinon.stub();
 
+        postsStub = {
+            stats: {
+                getTotalPostsPublished: sinon.stub().resolves(100),
+                getMostRecentlyPublishedPostDate: sinon.stub().resolves(new Date('2023-01-01')),
+                getFirstPublishedPostDate: sinon.stub().resolves(new Date('2020-01-01'))
+            }
+        };
+
         explorePingService = new ExplorePingService({
             settingsCache: settingsCacheStub,
             config: configStub,
             labs: labsStub,
             logging: loggingStub,
             ghostVersion: ghostVersionStub,
-            request: requestStub
+            request: requestStub,
+            posts: postsStub
         });
     });
 
@@ -80,8 +90,8 @@ describe('ExplorePingService', function () {
     });
 
     describe('constructPayload', function () {
-        it('constructs correct payload', function () {
-            const payload = explorePingService.constructPayload();
+        it('constructs correct payload', async function () {
+            const payload = await explorePingService.constructPayload();
 
             assert.deepEqual(payload, {
                 ghost: '4.0.0',
@@ -92,8 +102,32 @@ describe('ExplorePingService', function () {
                 accent_color: '#000000',
                 locale: 'en',
                 twitter: '@test',
-                facebook: 'testfb'
+                facebook: 'testfb',
+                posts_total: 100,
+                posts_last: '2023-01-01T00:00:00.000Z',
+                posts_first: '2020-01-01T00:00:00.000Z'
             });
+        });
+
+        it('returns null for posts_first and posts_last if no posts', async function () {
+            postsStub.stats.getFirstPublishedPostDate.resolves(null);
+            postsStub.stats.getMostRecentlyPublishedPostDate.resolves(null);
+
+            const payload = await explorePingService.constructPayload();
+            assert.equal(payload.posts_first, null);
+            assert.equal(payload.posts_last, null);
+        });
+
+        // test that the payload is correct if the timezone is not UTC
+        it('returns correct payload if the timezone is not UTC', async function () {
+            settingsCacheStub.getPublic.returns({
+                ...settingsCacheStub.getPublic(),
+                timezone: 'America/New_York'
+            });
+
+            const payload = await explorePingService.constructPayload();
+            assert.equal(payload.posts_first, '2020-01-01T00:00:00.000Z');
+            assert.equal(payload.posts_last, '2023-01-01T00:00:00.000Z');
         });
     });
 
@@ -151,7 +185,7 @@ describe('ExplorePingService', function () {
             await explorePingService.ping();
 
             assert.equal(requestStub.calledOnce, true);
-            const payload = explorePingService.constructPayload();
+            const payload = await explorePingService.constructPayload();
             assert.equal(requestStub.firstCall.args[1].body, JSON.stringify(payload));
         });
     });

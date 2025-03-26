@@ -21,6 +21,19 @@ class PostStats {
     }
 
     /**
+     * Returns the first published post date
+     */
+    async getFirstPublishedPostDate() {
+        const result = await this.#db.knex.select('published_at')
+            .from('posts')
+            .whereIn('status', ['sent', 'published'])
+            .orderBy('published_at', 'asc')
+            .limit(1);
+
+        return result?.[0]?.published_at ? new Date(result?.[0]?.published_at) : null;
+    }
+
+    /**
      * Fetches count of all published posts
      */
     async getTotalPostsPublished() {
