@@ -12,6 +12,7 @@ import {inject as service} from '@ember/service';
 
 export default class TechnicalComponent extends Component {
     @service router;
+    @service settings;
     @inject config;
 
     @action
@@ -22,7 +23,7 @@ export default class TechnicalComponent extends Component {
     @action
     updateQueryParams(params) {
         const currentRoute = this.router.currentRoute;
-        const newQueryParams = {...currentRoute.queryParams, ...params};
+        const newQueryParams = {...currentRoute.queryParams, ...params, timezone: this.settings.timezone};
         this.router.transitionTo({queryParams: newQueryParams});
     }
 
@@ -37,7 +38,7 @@ export default class TechnicalComponent extends Component {
         const params = getStatsParams(
             this.config,
             props,
-            {limit: 5}
+            {limit: 5, timezone: this.settings.timezone}
         );
 
         let endpoint;

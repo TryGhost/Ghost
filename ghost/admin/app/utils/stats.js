@@ -173,7 +173,7 @@ export function formatVisitDuration(duration) {
 }
 
 export function getStatsParams(config, props, additionalParams = {}) {
-    const {chartRange, audience, device, browser, location, source, pathname, os} = props;
+    const {chartRange, audience, device, browser, location, source, pathname, os, timezone} = props;
     const {startDate, endDate} = getDateRange(chartRange);
 
     const params = {
@@ -209,6 +209,10 @@ export function getStatsParams(config, props, additionalParams = {}) {
 
     if (os) {
         params.os = os;
+    }
+
+    if (timezone) {
+        params.timezone = timezone;
     }
 
     return params;
