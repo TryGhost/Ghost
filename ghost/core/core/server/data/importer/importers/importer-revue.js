@@ -3,7 +3,7 @@ const {slugify} = require('@tryghost/string');
 const papaparse = require('papaparse');
 const _ = require('lodash');
 
-const JSONToHTML = require('../lib/json-to-html');
+const JSONToHTML = require('./json-to-html');
 
 /**
  * Build posts out of the issue and item data
