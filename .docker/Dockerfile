@@ -122,7 +122,6 @@ COPY ghost/security/package.json ghost/security/package.json
 COPY ghost/slack-notifications/package.json ghost/slack-notifications/package.json
 COPY ghost/stripe/package.json ghost/stripe/package.json
 COPY ghost/tiers/package.json ghost/tiers/package.json
-COPY ghost/version-notifications-data-service/package.json ghost/version-notifications-data-service/package.json
 COPY ghost/webmentions/package.json ghost/webmentions/package.json
 
 ## Install dependencies
