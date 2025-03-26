@@ -90,7 +90,6 @@ COPY ghost/email-events/package.json ghost/email-events/package.json
 COPY ghost/email-service/package.json ghost/email-service/package.json
 COPY ghost/email-suppression-list/package.json ghost/email-suppression-list/package.json
 COPY ghost/express-dynamic-redirects/package.json ghost/express-dynamic-redirects/package.json
-COPY ghost/extract-api-key/package.json ghost/extract-api-key/package.json
 COPY ghost/ghost/package.json ghost/ghost/package.json
 COPY ghost/html-to-plaintext/package.json ghost/html-to-plaintext/package.json
 COPY ghost/i18n/package.json ghost/i18n/package.json
