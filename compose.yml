@@ -62,7 +62,6 @@ services:
       - node_modules_ghost_link-redirects:/home/ghost/ghost/link-redirects/node_modules:delegated
       - node_modules_ghost_link-replacer:/home/ghost/ghost/link-replacer/node_modules:delegated
       - node_modules_ghost_magic-link:/home/ghost/ghost/magic-link/node_modules:delegated
-      - node_modules_ghost_mail-events:/home/ghost/ghost/mail-events/node_modules:delegated
       - node_modules_ghost_mailgun-client:/home/ghost/ghost/mailgun-client/node_modules:delegated
       - node_modules_ghost_member-attribution:/home/ghost/ghost/member-attribution/node_modules:delegated
       - node_modules_ghost_member-events:/home/ghost/ghost/member-events/node_modules:delegated
@@ -212,7 +211,6 @@ volumes:
   node_modules_ghost_link-redirects: {}
   node_modules_ghost_link-replacer: {}
   node_modules_ghost_magic-link: {}
-  node_modules_ghost_mail-events: {}
   node_modules_ghost_mailgun-client: {}
   node_modules_ghost_member-attribution: {}
   node_modules_ghost_member-events: {}
