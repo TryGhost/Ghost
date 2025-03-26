@@ -124,7 +124,6 @@ COPY ghost/recommendations/package.json ghost/recommendations/package.json
 COPY ghost/referrers/package.json ghost/referrers/package.json
 COPY ghost/security/package.json ghost/security/package.json
 COPY ghost/session-service/package.json ghost/session-service/package.json
-COPY ghost/settings-path-manager/package.json ghost/settings-path-manager/package.json
 COPY ghost/slack-notifications/package.json ghost/slack-notifications/package.json
 COPY ghost/stripe/package.json ghost/stripe/package.json
 COPY ghost/tiers/package.json ghost/tiers/package.json
