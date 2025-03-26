@@ -123,7 +123,6 @@
     "@tryghost/milestones": "0.0.0",
     "@tryghost/minifier": "0.0.0",
     "@tryghost/mw-api-version-mismatch": "0.0.0",
-    "@tryghost/mw-cache-control": "0.0.0",
     "@tryghost/mw-error-handler": "0.0.0",
     "@tryghost/mw-version-match": "0.0.0",
     "@tryghost/mw-vhost": "0.0.0",

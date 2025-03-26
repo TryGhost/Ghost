@@ -106,7 +106,6 @@ COPY ghost/members-csv/package.json ghost/members-csv/package.json
 COPY ghost/milestones/package.json ghost/milestones/package.json
 COPY ghost/minifier/package.json ghost/minifier/package.json
 COPY ghost/mw-api-version-mismatch/package.json ghost/mw-api-version-mismatch/package.json
-COPY ghost/mw-cache-control/package.json ghost/mw-cache-control/package.json
 COPY ghost/mw-error-handler/package.json ghost/mw-error-handler/package.json
 COPY ghost/mw-version-match/package.json ghost/mw-version-match/package.json
 COPY ghost/mw-vhost/package.json ghost/mw-vhost/package.json
