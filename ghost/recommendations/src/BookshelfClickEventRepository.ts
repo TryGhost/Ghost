@@ -1,4 +1,4 @@
-import {BookshelfRepository, ModelClass, ModelInstance} from '@tryghost/bookshelf-repository';
+import {BookshelfRepository, ModelClass, ModelInstance} from './BookshelfRepository';
 import logger from '@tryghost/logging';
 import {ClickEvent} from './ClickEvent';
 

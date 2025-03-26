@@ -1,4 +1,4 @@
-import {AllOptions} from '@tryghost/bookshelf-repository';
+import {AllOptions} from './BookshelfRepository';
 import {Recommendation} from './Recommendation';
 
 export interface RecommendationRepository {
