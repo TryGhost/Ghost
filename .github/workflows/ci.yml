@@ -1300,7 +1300,7 @@ jobs:
     if: always() && needs.job_setup.outputs.changed_traffic_analytics == 'true' && needs.job_setup.result == 'success' && needs.job_traffic_analytics.result == 'success' && needs.job_setup.outputs.is_main == 'true'
     strategy:
       matrix:
-        environment: [ 'staging', 'production']
+        environment: [ 'staging' ]
     name: Deploy Traffic Analytics
     defaults:
       run:
@@ -1333,6 +1333,7 @@ jobs:
         run: tb --host=${{ secrets.TB_HOST }} --token=${{ secrets.TB_ADMIN_TOKEN_PRODUCTION }} auth info
       - name: Deploy changes to the main Workspace
         run: |
+          source .tinyenv
           DEPLOY_FILE=./deploy/${VERSION}/deploy.sh
           if [ ! -f "$DEPLOY_FILE" ]; then
             echo "$DEPLOY_FILE not found, running default tb push command"
@@ -1341,6 +1342,7 @@ jobs:
           fi
       - name: Custom deployment to the main Workspace
         run: |
+            source .tinyenv
             DEPLOY_FILE=./deploy/${VERSION}/deploy.sh
             if [ -f "$DEPLOY_FILE" ]; then
               echo "$DEPLOY_FILE found"
