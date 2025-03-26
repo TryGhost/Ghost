@@ -97,7 +97,6 @@ COPY ghost/job-manager/package.json ghost/job-manager/package.json
 COPY ghost/link-redirects/package.json ghost/link-redirects/package.json
 COPY ghost/link-replacer/package.json ghost/link-replacer/package.json
 COPY ghost/magic-link/package.json ghost/magic-link/package.json
-COPY ghost/mail-events/package.json ghost/mail-events/package.json
 COPY ghost/mailgun-client/package.json ghost/mailgun-client/package.json
 COPY ghost/member-attribution/package.json ghost/member-attribution/package.json
 COPY ghost/member-events/package.json ghost/member-events/package.json
