@@ -95,7 +95,7 @@
 .kg-cta-content {
     display: flex;
     padding: 1.5em;
-    gap: 1.5em 1.5em 1.7em;
+    gap: 1.5em;
 }
 
 @media (max-width: 600px) {
