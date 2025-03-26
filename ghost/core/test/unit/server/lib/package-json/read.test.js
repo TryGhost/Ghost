@@ -3,7 +3,7 @@ require('should');
 const tmp = require('tmp');
 const join = require('path').join;
 const fs = require('fs-extra');
-const packageJSON = require('../');
+const packageJSON = require('../../../../../core/server/lib/package-json');
 
 describe('package-json read', function () {
     describe('readPackages', function () {

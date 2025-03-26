@@ -1,6 +1,6 @@
 require('should');
 
-const packageJSON = require('../');
+const packageJSON = require('../../../../../core/server/lib/package-json');
 
 describe('package-json filter', function () {
     // @TODO: introduce some non-theme package examples
