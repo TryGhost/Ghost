@@ -6,14 +6,14 @@ ARG WORKDIR=/home/ghost
 FROM node:$NODE_VERSION-bullseye-slim AS base
 RUN apt-get update && \
     apt-get install -y \
-        build-essential \
-        curl \
-        jq \
-        libjemalloc2 \
-        python3 \
-        tar && \
-        rm -rf /var/lib/apt/lists/* && \
-        apt clean
+    build-essential \
+    curl \
+    jq \
+    libjemalloc2 \
+    python3 \
+    tar && \
+    rm -rf /var/lib/apt/lists/* && \
+    apt clean
 
 # Development Base Image
 ## This stage adds development specific packages like the Stripe CLI, zsh, playwright, etc.
@@ -24,11 +24,11 @@ RUN curl -s https://packages.stripe.dev/api/security/keypair/stripe-cli-gpg/publ
     echo "deb [signed-by=/usr/share/keyrings/stripe.gpg] https://packages.stripe.dev/stripe-cli-debian-local stable main" | tee -a /etc/apt/sources.list.d/stripe.list && \
     apt update && \
     apt install -y \
-        git \
-        stripe \
-        procps && \
-        rm -rf /var/lib/apt/lists/* && \
-        apt clean
+    git \
+    stripe \
+    procps && \
+    rm -rf /var/lib/apt/lists/* && \
+    apt clean
 
 # DevContainer Stage: Install dependencies and copy the code
 ## This stage is used for local development
@@ -117,7 +117,6 @@ COPY ghost/minifier/package.json ghost/minifier/package.json
 COPY ghost/mw-api-version-mismatch/package.json ghost/mw-api-version-mismatch/package.json
 COPY ghost/mw-cache-control/package.json ghost/mw-cache-control/package.json
 COPY ghost/mw-error-handler/package.json ghost/mw-error-handler/package.json
-COPY ghost/mw-session-from-token/package.json ghost/mw-session-from-token/package.json
 COPY ghost/mw-update-user-last-seen/package.json ghost/mw-update-user-last-seen/package.json
 COPY ghost/mw-version-match/package.json ghost/mw-version-match/package.json
 COPY ghost/mw-vhost/package.json ghost/mw-vhost/package.json
