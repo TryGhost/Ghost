@@ -2,7 +2,7 @@ require('should');
 
 const tmp = require('tmp');
 const fs = require('fs-extra');
-const parse = require('../lib/parse');
+const parse = require('../../../../../core/server/lib/package-json/parse');
 
 describe('package-json parse', function () {
     it('should parse valid package.json', function (done) {
