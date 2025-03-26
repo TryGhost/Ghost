@@ -1,7 +1,7 @@
 const should = require('should');
 const sinon = require('sinon');
 const express = require('express');
-const SessionService = require('../');
+const SessionService = require('../../../../../../core/server/services/auth/session/session-service');
 
 describe('SessionService', function () {
     it('Returns the user for the id stored on the session', async function () {

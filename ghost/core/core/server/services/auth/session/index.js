@@ -1,5 +1,5 @@
 const adapterManager = require('../../adapter-manager');
-const createSessionService = require('@tryghost/session-service');
+const createSessionService = require('./session-service');
 const sessionFromToken = require('./session-from-token');
 const createSessionMiddleware = require('./middleware');
 const settingsCache = require('../../../../shared/settings-cache');
