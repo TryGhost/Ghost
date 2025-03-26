@@ -3,7 +3,7 @@ const sinon = require('sinon');
 const {EventProcessingResult} = require('@tryghost/email-analytics-service');
 
 // module under test
-const EmailAnalyticsProviderMailgun = require('../');
+const EmailAnalyticsProviderMailgun = require('../../../../../core/server/services/email-analytics/EmailAnalyticsProviderMailgun');
 
 const SAMPLE_EVENTS = [
     new EventProcessingResult({
