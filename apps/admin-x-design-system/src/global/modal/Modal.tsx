@@ -1,6 +1,6 @@
 import {useModal} from '@ebay/nice-modal-react';
 import clsx from 'clsx';
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, forwardRef} from 'react';
 import useGlobalDirtyState from '../../hooks/useGlobalDirtyState';
 import {confirmIfDirty} from '../../utils/modals';
 import Button, {ButtonColor, ButtonProps} from '../Button';
@@ -52,7 +52,7 @@ export interface ModalProps {
 
 export const topLevelBackdropClasses = 'bg-[rgba(98,109,121,0.2)] backdrop-blur-[3px]';
 
-const Modal: React.FC<ModalProps> = ({
+const Modal = forwardRef<HTMLElement, ModalProps>(({
     size = 'md',
     align = 'center',
     width,
@@ -85,7 +85,7 @@ const Modal: React.FC<ModalProps> = ({
     formSheet = false,
     enableCMDS = true,
     allowBackgroundInteraction = false
-}) => {
+}, ref) => {
     const modal = useModal();
     const {setGlobalDirtyState} = useGlobalDirtyState();
     const [animationFinished, setAnimationFinished] = useState(false);
@@ -430,7 +430,7 @@ const Modal: React.FC<ModalProps> = ({
                 (backDrop && !formSheet) && topLevelBackdropClasses,
                 formSheet && 'bg-[rgba(98,109,121,0.08)]'
             )}></div>
-            <section className={clsx(
+            <section ref={ref} className={clsx(
                 modalClasses,
                 allowBackgroundInteraction && 'pointer-events-auto'
             )} data-testid={testId} style={modalStyles}>
@@ -453,6 +453,8 @@ const Modal: React.FC<ModalProps> = ({
             </section>
         </div>
     );
-};
+});
+
+Modal.displayName = 'Modal';
 
 export default Modal;

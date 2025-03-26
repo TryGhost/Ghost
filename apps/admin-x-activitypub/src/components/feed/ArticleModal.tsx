@@ -411,6 +411,7 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
     history = [],
     remotePostId = null
 }) => {
+    const modalRef = useRef<HTMLElement>(null);
     const MODAL_SIZE_SM = 640;
     const MODAL_SIZE_LG = 1420;
     const [isFocused, setIsFocused] = useFocusedState(focusReply);
@@ -590,10 +591,10 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
     // Add debounced version of setReadingProgress
     const [debouncedSetReadingProgress] = useDebounce(setReadingProgress, 100);
 
-    const PROGRESS_INCREMENT = 5; // Progress is shown in 5% increments (0%, 5%, 10%, etc.)
+    const PROGRESS_INCREMENT = 1; // Progress is shown in 5% increments (0%, 5%, 10%, etc.)
 
     useEffect(() => {
-        const container = document.querySelector('.overflow-y-auto');
+        const container = modalRef.current;
         const article = document.getElementById('object-content');
 
         const handleScroll = () => {
@@ -605,23 +606,18 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
                 return;
             }
 
-            const articleRect = article.getBoundingClientRect();
-            const containerRect = container.getBoundingClientRect();
+            // Get scroll position
+            const scrollTop = container.scrollTop;
+            // Get the total scrollable height (content height - viewport height)
+            const scrollHeight = container.scrollHeight - container.clientHeight;
 
-            const isContentShorterThanViewport = articleRect.height <= containerRect.height;
-
-            if (isContentShorterThanViewport) {
-                debouncedSetReadingProgress(100);
-                return;
-            }
-
-            const scrolledPast = Math.max(0, containerRect.top - articleRect.top);
-            const totalHeight = (article as HTMLElement).offsetHeight - (container as HTMLElement).offsetHeight;
-
-            const rawProgress = Math.min(Math.max((scrolledPast / totalHeight) * 100, 0), 100);
+            // Calculate percentage
+            const rawProgress = (scrollTop / scrollHeight) * 100;
             const progress = Math.round(rawProgress / PROGRESS_INCREMENT) * PROGRESS_INCREMENT;
 
-            debouncedSetReadingProgress(progress);
+            // Ensure progress stays between 0 and 100
+            const boundedProgress = Math.min(Math.max(progress, 0), 100);
+            debouncedSetReadingProgress(boundedProgress);
         };
 
         if (isLoading) {
@@ -740,6 +736,7 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
 
     return (
         <Modal
+            ref={modalRef}
             align='right'
             allowBackgroundInteraction={false}
             animate={true}
@@ -1035,7 +1032,7 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
                                 <div className='pointer-events-auto text-gray-600'>
                                     {getReadingTime(object.content ?? '')}
                                 </div>
-                                <div className='pointer-events-auto text-gray-600 transition-all duration-200 ease-out'>
+                                <div key={readingProgress} className='pointer-events-auto min-w-10 text-right text-gray-600 transition-all duration-200 ease-out'>
                                     {readingProgress}%
                                 </div>
                             </div>
