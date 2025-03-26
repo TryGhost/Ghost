@@ -1,4 +1,4 @@
-const extractApiKey = require('@tryghost/extract-api-key');
+const extractApiKey = require('./extract-api-key');
 
 const versionMismatchHandler = (APIVersionCompatibilityService) => {
     /**
