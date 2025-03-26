@@ -7,19 +7,32 @@ module.exports = class ExplorePingService {
      * @param {object} deps.logging
      * @param {object} deps.ghostVersion
      * @param {object} deps.request
+     * @param {{stats: {
+     *   getMostRecentlyPublishedPostDate: () => Promise<Date>,
+     *   getFirstPublishedPostDate: () => Promise<Date>,
+     *   getTotalPostsPublished: () => Promise<number>
+     * }}} deps.posts
      */
-    constructor({settingsCache, config, labs, logging, ghostVersion, request}) {
+    constructor({settingsCache, config, labs, logging, ghostVersion, request, posts}) {
         this.settingsCache = settingsCache;
         this.config = config;
         this.labs = labs;
         this.logging = logging;
         this.ghostVersion = ghostVersion;
         this.request = request;
+        this.posts = posts;
     }
 
-    constructPayload() {
+    async constructPayload() {
         /* eslint-disable camelcase */
         const {title, description, icon, locale, accent_color, twitter, facebook} = this.settingsCache.getPublic();
+
+        const [totalPosts, lastPublishedAt, firstPublishedAt] = await Promise.all([
+            this.posts.stats.getTotalPostsPublished(),
+            this.posts.stats.getMostRecentlyPublishedPostDate(),
+            this.posts.stats.getFirstPublishedPostDate()
+        ]);
+
         return {
             ghost: this.ghostVersion.full,
             url: this.config.get('url'),
@@ -29,7 +42,10 @@ module.exports = class ExplorePingService {
             locale,
             accent_color,
             twitter,
-            facebook
+            facebook,
+            posts_first: firstPublishedAt ? firstPublishedAt.toISOString() : null,
+            posts_last: lastPublishedAt ? lastPublishedAt.toISOString() : null,
+            posts_total: totalPosts
         };
         /* eslint-enable camelcase */
     }
@@ -56,18 +72,17 @@ module.exports = class ExplorePingService {
     }
 
     async ping() {
-        const exploreUrl = this.config.get('explore:url');
-
         if (!this.labs.isSet('explore')) {
             return;
         }
 
+        const exploreUrl = this.config.get('explore:url');
         if (!exploreUrl) {
             this.logging.warn('Explore URL not set');
             return;
         }
 
-        const payload = this.constructPayload();
+        const payload = await this.constructPayload();
         await this.makeRequest(exploreUrl, payload);
     }
 };
