@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const themeList = require('./list');
 const bridge = require('../../../bridge');
-const packageJSON = require('@tryghost/package-json');
+const packageJSON = require('../../lib/package-json');
 const settingsCache = require('../../../shared/settings-cache');
 
 /**

@@ -121,7 +121,6 @@ COPY ghost/mw-update-user-last-seen/package.json ghost/mw-update-user-last-seen/
 COPY ghost/mw-version-match/package.json ghost/mw-version-match/package.json
 COPY ghost/mw-vhost/package.json ghost/mw-vhost/package.json
 COPY ghost/offers/package.json ghost/offers/package.json
-COPY ghost/package-json/package.json ghost/package-json/package.json
 COPY ghost/payments/package.json ghost/payments/package.json
 COPY ghost/post-events/package.json ghost/post-events/package.json
 COPY ghost/post-revisions/package.json ghost/post-revisions/package.json
