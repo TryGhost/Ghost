@@ -591,7 +591,7 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
     // Add debounced version of setReadingProgress
     const [debouncedSetReadingProgress] = useDebounce(setReadingProgress, 100);
 
-    const PROGRESS_INCREMENT = 5; // Progress is shown in 5% increments (0%, 5%, 10%, etc.)
+    const PROGRESS_INCREMENT = 1; // Progress is shown in 5% increments (0%, 5%, 10%, etc.)
 
     useEffect(() => {
         const container = modalRef.current;
