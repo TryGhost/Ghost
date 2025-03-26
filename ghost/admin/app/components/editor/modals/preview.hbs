@@ -1,29 +1,78 @@
-<div class="flex flex-column h-100">
+<div class="gh-post-preview-modal">
     <header class="modal-header gh-post-preview-header" data-test-modal="preview-email">
         <div class="left">
-            <button class="gh-btn-editor gh-editor-back-button" title="Close" type="button" {{on "click" @close}}>
-                <span>{{svg-jar "arrow-left"}} Editor</span>
-            </button>
+            <h2>Preview</h2>
         </div>
         <div class="gh-post-preview-btn-group">
             <div class="gh-contentfilter gh-btn-group">
-                <button type="button" class="gh-btn {{if (eq this.tab "browser") "gh-btn-group-selected"}} gh-post-preview-mode" {{on "click" (fn this.changeTab "browser")}}><span>{{svg-jar "desktop"}}</span></button>
-                <button type="button" class="gh-btn {{if (eq this.tab "mobile") "gh-btn-group-selected"}} gh-post-preview-mode" {{on "click" (fn this.changeTab "mobile")}}><span>{{svg-jar "mobile-phone"}}</span></button>
+                    <button type="button" class="gh-btn gh-post-preview-mode {{if (or (eq this.tab "browser") (eq this.tab "mobile")) "gh-btn-group-selected"}}" {{on "click" (fn this.changeTab "browser")}}><span>Web</span></button>
                 {{#if (and (not-eq this.settings.membersSignupAccess "none") (not-eq this.settings.editorDefaultEmailRecipients "disabled"))}}
                     {{#if (and @data.publishOptions.post.isPost (not @data.publishOptions.user.isContributor))}}
-                        <button type="button" class="gh-btn {{if (eq this.tab "email") "gh-btn-group-selected"}} gh-post-preview-mode" {{on "click" (fn this.changeTab "email")}} data-test-button="email-preview"><span>{{svg-jar "email-unread"}}</span></button>
+                        <button type="button" class="gh-btn {{if (eq this.tab "email") "gh-btn-group-selected"}} gh-post-preview-mode" {{on "click" (fn this.changeTab "email")}} data-test-button="email-preview"><span>Email</span></button>
                     {{/if}}
                 {{/if}}
-                <button type="button" class="gh-btn {{if (eq this.tab "social") "gh-btn-group-selected"}} gh-post-preview-mode" {{on "click" (fn this.changeTab "social")}}><span>{{svg-jar "facebook-logo"}}</span></button>
             </div>
+            <div class="gh-contentfilter-divider"></div>
+            <div class="gh-contentfilter gh-btn-group">
+                <button type="button" class="gh-btn {{if (or (eq this.tab "browser") (eq this.tab "email")) "gh-btn-group-selected"}} gh-post-preview-mode" {{on "click" (fn this.changeTab "browser")}}><span>{{svg-jar "laptop"}}</span></button>
+                <button type="button" class="gh-btn {{if (eq this.tab "mobile") "gh-btn-group-selected"}} gh-post-preview-mode" {{on "click" (fn this.changeTab "mobile")}}><span>{{svg-jar "mobile-phone"}}</span></button>
+            </div>
+            <div class="gh-contentfilter-divider"></div>
+            <span class="gh-select gh-web-preview-segment">
+                <PowerSelect
+                    @selected={{hash value="free" label="Free member"}}
+                    @options={{if (eq this.tab "email")
+                        (array
+                            (hash value="free" label="Free member")
+                            (hash value="paid" label="Paid member")
+                        )
+                        (array
+                            (hash value="anonymous" label="Anonymous")
+                            (hash value="free" label="Free member")
+                            (hash value="paid" label="Paid member")
+                        )
+                    }}
+                    @onChange={{this.noop}}
+                    @triggerComponent={{component "gh-power-select/trigger"}}
+                    @triggerClass="gh-preview-segment-trigger"
+                    @dropdownClass="gh-preview-segment-dropdown"
+                    as |option|
+                >
+                    {{option.label}}
+                </PowerSelect>
+            </span>
         </div>
         <div class="right">
+            <div class="gh-post-test-email-group">
+                <GhDropdownButton
+                    @dropdownName="post-preview-test-email"
+                    @classNames="gh-btn gh-btn-preview gh-post-preview-url"
+                    data-test-button="post-preview-test-email"
+                >
+                    <span>{{svg-jar "share"}}</span>
+                </GhDropdownButton>
+                <GhDropdown
+                    @name="post-preview-test-email"
+                    @classNames="dropdown-menu gh-post-preview-share-dropdown"
+                    @onOpen={{this.focusInput}}
+                >
+                    <div class="gh-post-preview-share">
+                        <button type="button" {{on "click" (perform this.copyPreviewUrl)}} class="gh-btn gh-btn-icon gh-btn-preview gh-post-copy-url">
+                            <span>{{svg-jar "link"}}Copy draft link</span>
+                        </button>
+                        <a href={{@post.previewUrl}} target="_blank" rel="noopener noreferrer" class="gh-btn gh-btn-preview gh-publish-preview-newtab">
+                            <span>{{svg-jar "external"}}Open in new tab</span>
+                        </a>
+                    </div>
+                </GhDropdown>
+            </div>
+            <div class="gh-contentfilter-divider"></div>
             <button
                 type="button"
                 class="gh-btn gh-btn-editor gh-editor-preview-trigger active"
                 {{on "click" @close}}
             >
-                <span>Preview</span>
+                <span>Close</span>
             </button>
 
             {{#if @data.publishOptions.user.isContributor}}
@@ -36,14 +85,12 @@
             {{else}}
                 <button
                     type="button"
-                    class="gh-btn gh-btn-editor darkgrey gh-publish-trigger"
+                    class="gh-btn gh-btn-primary"
                     {{on "click" @data.togglePreviewPublish}}
                 >
                     <span>Publish</span>
                 </button>
             {{/if}}
-
-            <div class="settings-menu-toggle-spacer"></div>
         </div>
     </header>
 
@@ -74,12 +121,5 @@
                 />
             {{/if}}
         {{/unless}}
-
-        {{#if (eq this.tab "social")}}
-            <Editor::Modals::Preview::Social
-                @post={{@data.publishOptions.post}}
-                @skipAnimation={{this.skipAnimation}}
-            />
-        {{/if}}
     {{/if}}
 </div>
