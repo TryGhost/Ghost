@@ -88,7 +88,6 @@ services:
       - node_modules_ghost_posts-service:/home/ghost/ghost/posts-service/node_modules:delegated
       - node_modules_ghost_prometheus-metrics:/home/ghost/ghost/prometheus-metrics/node_modules:delegated
       - node_modules_ghost_recommendations:/home/ghost/ghost/recommendations/node_modules:delegated
-      - node_modules_ghost_referrers:/home/ghost/ghost/referrers/node_modules:delegated
       - node_modules_ghost_security:/home/ghost/ghost/security/node_modules:delegated
       - node_modules_ghost_session-service:/home/ghost/ghost/session-service/node_modules:delegated
       - node_modules_ghost_slack-notifications:/home/ghost/ghost/slack-notifications/node_modules:delegated
@@ -245,7 +244,6 @@ volumes:
   node_modules_ghost_posts-service: {}
   node_modules_ghost_prometheus-metrics: {}
   node_modules_ghost_recommendations: {}
-  node_modules_ghost_referrers: {}
   node_modules_ghost_security: {}
   node_modules_ghost_session-service: {}
   node_modules_ghost_slack-notifications: {}
