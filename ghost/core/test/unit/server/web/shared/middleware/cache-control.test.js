@@ -1,7 +1,7 @@
 const should = require('should');
 const sinon = require('sinon');
 
-const cacheControl = require('../');
+const cacheControl = require('../../../../../../core/server/web/shared/middleware/cache-control');
 
 describe('Cache-Control middleware', function () {
     let res;
