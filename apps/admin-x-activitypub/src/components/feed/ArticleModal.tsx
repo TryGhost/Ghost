@@ -25,6 +25,8 @@ import {isPendingActivity} from '../../utils/pending-activity';
 import {openLinksInNewTab} from '@src/utils/content-formatters';
 import {useDebounce} from 'use-debounce';
 
+import {Dialog, DialogContent} from '@tryghost/shade';
+
 interface ArticleModalProps {
     activityId: string;
     object: ObjectProperties;
@@ -43,6 +45,13 @@ interface ArticleModalProps {
 
 interface IframeWindow extends Window {
     resizeIframe?: () => void;
+}
+
+interface GalleryImage {
+    src: string;
+    width: number;
+    height: number;
+    alt?: string;
 }
 
 const FONT_SANS = 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif';
@@ -79,6 +88,55 @@ const ArticleBody: React.FC<{
     const darkMode = document.documentElement.classList.contains('dark');
 
     const cssContent = articleBodyStyles(siteData?.url.replace(/\/$/, ''));
+
+    const [images, setImages] = useState([]);
+    const [currentIndex, setCurrentIndex] = useState<number | null>(null);
+    const [dialogOpen, setDialogOpen] = useState(false);
+
+    useEffect(() => {
+        // Listen for messages from the iframe
+        const handleMessage = (event: MessageEvent) => {
+            // You might want to check event.origin for security
+
+            if (event.data.type === 'REGISTER_IMAGES') {
+                setImages(event.data.payload);
+            } else if (event.data.type === 'OPEN_LIGHTBOX') {
+                setCurrentIndex(event.data.payload.index);
+                setDialogOpen(true);
+            }
+        };
+
+        window.addEventListener('message', handleMessage);
+        return () => window.removeEventListener('message', handleMessage);
+    }, []);
+
+    const goToPrevious = useCallback(() => {
+        setCurrentIndex(prevIndex => ((prevIndex ?? 0) > 0 ? (prevIndex ?? 0) - 1 : images.length - 1));
+    }, [images.length]);
+
+    const goToNext = useCallback(() => {
+        setCurrentIndex(prevIndex => ((prevIndex ?? 0) < images.length - 1 ? (prevIndex ?? 0) + 1 : 0));
+    }, [images.length]);
+
+    // Handle keyboard navigation
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (!dialogOpen) {
+                return;
+            }
+
+            if (e.key === 'ArrowLeft') {
+                goToPrevious();
+            } else if (e.key === 'ArrowRight') {
+                goToNext();
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [dialogOpen, goToNext, goToPrevious, images]);
+
+    const currentImage = (currentIndex !== null && images.length > 0 ? images[currentIndex] : null) as GalleryImage | null;
 
     const htmlContent = `
         <html class="has-${!darkMode ? 'dark' : 'light'}-text">
@@ -202,6 +260,36 @@ const ArticleBody: React.FC<{
                     reframe(document.querySelectorAll(sources.join(',')));
                 })();
             </script>
+
+            <script>
+            // When the iframe loads, register all images
+            function registerImages() {
+              const allImages = Array.from(document.querySelectorAll('.kg-gallery-card img')).map((img, index) => ({
+                src: img.src,
+                alt: img.alt,
+                index: index
+              }));
+
+              window.parent.postMessage({
+                type: 'REGISTER_IMAGES',
+                payload: allImages
+              }, '*');
+            }
+
+            // Call this when the iframe content loads
+            window.addEventListener('load', registerImages);
+
+            // Add click listeners to your images
+            document.querySelectorAll('.kg-gallery-card img').forEach((img, index) => {
+              img.addEventListener('click', (e) => {
+                e.preventDefault();
+                window.parent.postMessage({
+                  type: 'OPEN_LIGHTBOX',
+                  payload: { index: index }
+                }, '*');
+              });
+            });
+            </script>
         </body>
         </html>
     `;
@@ -317,6 +405,33 @@ const ArticleBody: React.FC<{
 
     return (
         <div className='w-full pb-6'>
+            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                <DialogContent className="max-h-[90vh] max-w-[90vw] overflow-hidden bg-black/90 p-0">
+                    {currentImage && (
+                        <div className="relative flex h-full items-center justify-center">
+                            <div className="flex flex-col items-center">
+                                <img
+                                    alt={currentImage.alt || ''}
+                                    className="max-h-[80vh] max-w-full object-contain"
+                                    src={currentImage.src}
+                                />
+
+                                {/* Caption and counter */}
+                                <div className="w-full p-4 text-center">
+                                    {currentImage.alt && (
+                                        <p className="mb-2 text-sm text-white">{currentImage.alt}</p>
+                                    )}
+                                    {images.length > 1 && (
+                                        <p className="text-xs text-white/70">
+                                            {(currentIndex ?? 0) + 1} / {images.length}
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </DialogContent>
+            </Dialog>
             <div className='relative'>
                 {isLoading && (
                     <div className='mt-6'>
