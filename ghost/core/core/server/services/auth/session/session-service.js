@@ -2,7 +2,7 @@ const {
     BadRequestError
 } = require('@tryghost/errors');
 const errors = require('@tryghost/errors');
-const emailTemplate = require('../lib/emails/signin');
+const emailTemplate = require('./emails/signin');
 const UAParser = require('ua-parser-js');
 const got = require('got');
 const IPV4_REGEX = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
