@@ -1,8 +1,8 @@
-VERSION 6
+VERSION 7
 
 NODE mv_hits_0
 SQL >
-    SELECT 
+    SELECT
         site_uuid,
         session_id,
         finalizeAggregation(countState()) as pageviews,
@@ -14,7 +14,7 @@ SQL >
 
 NODE data
 SQL >
-    SELECT 
+    SELECT
         site_uuid,
         session_id,
         pageviews,

@@ -1,10 +1,10 @@
-VERSION 6
+VERSION 7
 
 NODE _top_locations_0
 SQL >
 
     %
-    select 
+    select
         location,
         uniqExact(session_id) as visits,
         count() as pageviews
@@ -34,5 +34,3 @@ SQL >
     group by location
     order by visits desc
     limit {{ Int32(skip, 0) }},{{ Int32(limit, 50) }}
-
-

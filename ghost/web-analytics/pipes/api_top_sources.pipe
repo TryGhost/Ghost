@@ -1,10 +1,10 @@
-VERSION 6
+VERSION 7
 
 
 NODE filtered_sessions
 DESCRIPTION >
     Get sessions that match the filter criteria
-    
+
 SQL >
     %
         select distinct session_id

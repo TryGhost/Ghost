@@ -1,4 +1,4 @@
-VERSION 6
+VERSION 7
 
 NODE timeseries
 SQL >
@@ -59,7 +59,7 @@ SQL >
 NODE filtered_sessions
 DESCRIPTION >
     Get sessions that match the filter criteria
-    
+
 SQL >
     %
         select distinct session_id
@@ -140,5 +140,3 @@ SQL >
         coalesce(b.avg_session_sec, 0) as avg_session_sec
     from timeseries a
     left join data b on a.date = b.date
-
-
