@@ -103,7 +103,6 @@ COPY ghost/member-attribution/package.json ghost/member-attribution/package.json
 COPY ghost/member-events/package.json ghost/member-events/package.json
 COPY ghost/members-api/package.json ghost/members-api/package.json
 COPY ghost/members-csv/package.json ghost/members-csv/package.json
-COPY ghost/members-ssr/package.json ghost/members-ssr/package.json
 COPY ghost/milestones/package.json ghost/milestones/package.json
 COPY ghost/minifier/package.json ghost/minifier/package.json
 COPY ghost/mw-api-version-mismatch/package.json ghost/mw-api-version-mismatch/package.json
