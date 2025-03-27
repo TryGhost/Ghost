@@ -17,7 +17,6 @@ export default class AllStatsModal extends Component {
     @inject config;
     @service router;
     @service modals;
-    @service settings;
 
     get type() {
         return this.args.data.type;
