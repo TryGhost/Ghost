@@ -11,7 +11,14 @@ import {isPendingActivity} from '@utils/pending-activity';
 import {useFeatureFlags} from '@src/lib/feature-flags';
 import {useInboxForUser} from '@hooks/use-activity-pub-queries';
 
-const LongformInbox: React.FC = () => {
+/**
+ * TODO: Before merge:
+ * 1. Remove Inbox and rename this to `Inbox`
+ * 2. Update routes to use this component
+ * 3. Update routes to use `inbox` instead of `inbox-rr`
+ */
+
+const Inbox: React.FC = () => {
     const navigate = useNavigate();
     const params = useParams();
     const [isReaderOpen, setIsReaderOpen] = useState(false);
@@ -60,7 +67,7 @@ const LongformInbox: React.FC = () => {
     const loadMoreIndex = Math.max(0, Math.floor(activities.length * 0.75) - 1);
 
     const {isEnabled} = useFeatureFlags();
-    if (!isEnabled('reader-routes')) {
+    if (!isEnabled('ap-routes')) {
         return <Navigate to='/inbox' />;
     }
 
@@ -154,4 +161,4 @@ const LongformInbox: React.FC = () => {
     );
 };
 
-export default LongformInbox;
+export default Inbox;
