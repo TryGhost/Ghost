@@ -19,13 +19,13 @@ RUN apt-get update && \
 ## This stage adds development specific packages like the Stripe CLI, zsh, playwright, etc.
 ## It does not include the source code or node_modules
 FROM base AS development-base
-ARG WORKDIR=/home/ghost
 RUN curl -s https://packages.stripe.dev/api/security/keypair/stripe-cli-gpg/public | gpg --dearmor | tee /usr/share/keyrings/stripe.gpg && \
     echo "deb [signed-by=/usr/share/keyrings/stripe.gpg] https://packages.stripe.dev/stripe-cli-debian-local stable main" | tee -a /etc/apt/sources.list.d/stripe.list && \
     apt update && \
     apt install -y \
     git \
     stripe \
+    python3-pip \
     procps && \
     rm -rf /var/lib/apt/lists/* && \
     apt clean
@@ -127,6 +127,13 @@ COPY . .
 
 ## Build typescript packages
 RUN yarn nx run-many -t build:ts
+
+# Install the tinybird CLI
+WORKDIR /home/ghost/ghost/web-analytics
+RUN pip install -r requirements.txt
+
+WORKDIR $WORKDIR
+
 
 # Expose the ports
 EXPOSE 2368
