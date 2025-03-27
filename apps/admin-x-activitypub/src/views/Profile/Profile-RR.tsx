@@ -236,7 +236,7 @@ const Profile: React.FC = () => {
 
     // Only call useProfileForUser when we have a valid handle
     const {data: profile, isLoading: isLoadingProfile} = useProfileForUser('index', handle, Boolean(handle));
-    // const isCurrentUser = profile?.handle === currentUser?.handle;
+    const isCurrentUser = profile?.handle === currentUser?.handle;
 
     const isLoading = isLoadingCurrentUser || isLoadingProfile;
 
@@ -285,7 +285,7 @@ const Profile: React.FC = () => {
 
     return (
         <Layout>
-            <div className='z-0 mx-auto mt-4 flex w-full max-w-[580px] flex-col items-center pb-16'>
+            <div className='z-0 -mr-8 flex w-[calc(100%+32px)] flex-col items-center pb-16'>
                 <div className='mx-auto w-full'>
                     {isLoading && (
                         <LoadingIndicator size='lg' />
@@ -297,14 +297,14 @@ const Profile: React.FC = () => {
                     )}
                     {!isLoading && profile && (
                         <>
-                            {profile.actor.image && (<div className='h-[200px] w-full overflow-hidden rounded-lg bg-gradient-to-tr from-gray-200 to-gray-100'>
+                            {profile.actor.image && (<div className='h-[15vw] w-full overflow-hidden bg-gradient-to-tr from-gray-200 to-gray-100'>
                                 <img
                                     alt={profile.actor.name}
                                     className='h-full w-full object-cover'
                                     src={profile.actor.image.url}
                                 />
                             </div>)}
-                            <div className={`${profile.actor.image && '-mt-12'} px-6`}>
+                            <div className={`${profile.actor.image ? '-mt-12' : 'mt-8'} mx-auto max-w-[620px] px-6`}>
                                 <div className='flex items-end justify-between'>
                                     <div className='-ml-2 rounded-full bg-white p-1 dark:bg-black'>
                                         <APAvatar
@@ -312,13 +312,15 @@ const Profile: React.FC = () => {
                                             size='lg'
                                         />
                                     </div>
-                                    <FollowButton
-                                        following={profile.isFollowing}
-                                        handle={profile.handle}
-                                        type='primary'
-                                        onFollow={noop}
-                                        onUnfollow={noop}
-                                    />
+                                    {!isCurrentUser &&
+                                        <FollowButton
+                                            following={profile.isFollowing}
+                                            handle={profile.handle}
+                                            type='primary'
+                                            onFollow={noop}
+                                            onUnfollow={noop}
+                                        />
+                                    }
                                 </div>
                                 <Heading className='mt-4' level={3}>{profile.actor.name}</Heading>
                                 <a className='group/handle mt-1 flex items-center gap-1 text-[1.5rem] text-gray-800 hover:text-gray-900' href={profile?.actor.url} rel='noopener noreferrer' target='_blank'><span>{profile.handle}</span><Icon className='opacity-0 transition-opacity group-hover/handle:opacity-100' name='arrow-top-right' size='xs'/></a>
