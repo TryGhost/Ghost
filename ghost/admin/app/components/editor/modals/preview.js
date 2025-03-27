@@ -2,7 +2,7 @@ import Component from '@glimmer/component';
 import copyTextToClipboard from 'ghost-admin/utils/copy-text-to-clipboard';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
-import {task, timeout} from 'ember-concurrency';
+import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
 export default class EditorPostPreviewModal extends Component {
@@ -56,9 +56,9 @@ export default class EditorPostPreviewModal extends Component {
     }
 
     @task
-    *copyPreviewUrl() {
-        copyTextToClipboard(this.args.post.previewUrl);
-        yield timeout(this.isTesting ? 50 : 3000);
+    *copyPreviewUrlTask() {
+        copyTextToClipboard(this.args.data.publishOptions.post.previewUrl);
+        return yield true;
     }
 
     noop() {}

@@ -57,10 +57,16 @@
                     @onOpen={{this.focusInput}}
                 >
                     <div class="gh-post-preview-share">
-                        <button type="button" {{on "click" (perform this.copyPreviewUrl)}} class="gh-btn gh-btn-icon gh-btn-preview gh-post-copy-url">
-                            <span>{{svg-jar "link"}}Copy draft link</span>
-                        </button>
-                        <a href={{@post.previewUrl}} target="_blank" rel="noopener noreferrer" class="gh-btn gh-btn-preview gh-publish-preview-newtab">
+                        <GhTaskButton
+                            @task={{this.copyPreviewUrlTask}}
+                            @idleIcon="external"
+                            @buttonText="Copy draft link"
+                            @runningText="Copy draft link"
+                            @successText="Copied"
+                            @class="gh-btn gh-btn-icon gh-btn-preview gh-post-copy-url"
+                            data-test-button="copy-draft-link"
+                        />
+                        <a href={{@data.publishOptions.post.previewUrl}} target="_blank" rel="noopener noreferrer" class="gh-btn gh-btn-preview gh-publish-preview-newtab" data-test-link="open-draft">
                             <span>{{svg-jar "external"}}Open in new tab</span>
                         </a>
                     </div>
