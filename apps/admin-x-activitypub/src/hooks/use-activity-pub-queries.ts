@@ -491,6 +491,13 @@ export function useFollowMutationForUser(handle: string, onSuccess: () => void, 
 
             const profileFollowersQueryKey = QUERY_KEYS.profileFollowers(fullHandle);
 
+            // Invalidate the follows query cache for the account performing the follow
+            // because we cannot directly add to it due to potentially incompatible data
+            // shapes
+            const accountFollowsQueryKey = QUERY_KEYS.accountFollows('index', 'following');
+
+            queryClient.invalidateQueries({queryKey: accountFollowsQueryKey});
+
             // Add new follower to the followers list cache
             queryClient.setQueryData(profileFollowersQueryKey, (oldData?: any) => {
                 if (!oldData?.pages?.[0]) return oldData;
