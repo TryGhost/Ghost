@@ -118,29 +118,6 @@ function updateLikedCache(queryClient: QueryClient, queryKey: string[], id: stri
         };
     });
 
-    // Update the thread cache
-    const threadQueryKey = QUERY_KEYS.thread(null);
-    queryClient.setQueriesData(threadQueryKey, (current?: {posts: Activity[]}) => {
-        if (!current) {
-            return current;
-        }
-
-        return {
-            posts: current.posts.map((activity) => {
-                if (activity.object.id === id) {
-                    return {
-                        ...activity,
-                        object: {
-                            ...activity.object,
-                            liked
-                        }
-                    };
-                }
-                return activity;
-            })
-        };
-    });
-
     // For the likes tab, add/remove the post
     if (queryKey === QUERY_KEYS.postsLikedByAccount) {
         queryClient.setQueriesData(queryKey, (current?: {pages: {posts: Activity[]}[]}) => {
@@ -168,97 +145,6 @@ function updateLikedCache(queryClient: QueryClient, queryKey: string[], id: stri
             queryClient.invalidateQueries({queryKey: QUERY_KEYS.postsLikedByAccount});
         }
     }
-}
-
-export function useLikeMutationForUser(handle: string) {
-    const queryClient = useQueryClient();
-
-    return useMutation({
-        async mutationFn(id: string) {
-            const siteUrl = await getSiteUrl();
-            const api = createActivityPubAPI(handle, siteUrl);
-
-            return api.like(id);
-        },
-        onMutate: (id) => {
-            updateLikedCache(queryClient, QUERY_KEYS.feed, id, true);
-            updateLikedCache(queryClient, QUERY_KEYS.inbox, id, true);
-            updateLikedCache(queryClient, QUERY_KEYS.postsByAccount, id, true);
-            updateLikedCache(queryClient, QUERY_KEYS.postsLikedByAccount, id, true);
-
-            // Update account liked count
-            queryClient.setQueryData(QUERY_KEYS.account(handle), (currentAccount?: Account) => {
-                if (!currentAccount) {
-                    return currentAccount;
-                }
-                return {
-                    ...currentAccount,
-                    likedCount: currentAccount.likedCount + 1
-                };
-            });
-        }
-    });
-}
-
-export function useUnlikeMutationForUser(handle: string) {
-    const queryClient = useQueryClient();
-
-    return useMutation({
-        async mutationFn(id: string) {
-            const siteUrl = await getSiteUrl();
-            const api = createActivityPubAPI(handle, siteUrl);
-
-            return api.unlike(id);
-        },
-        onMutate: (id) => {
-            updateLikedCache(queryClient, QUERY_KEYS.feed, id, false);
-            updateLikedCache(queryClient, QUERY_KEYS.inbox, id, false);
-            updateLikedCache(queryClient, QUERY_KEYS.postsByAccount, id, false);
-            updateLikedCache(queryClient, QUERY_KEYS.postsLikedByAccount, id, false);
-
-            // Update account liked count
-            queryClient.setQueryData(QUERY_KEYS.account(handle), (currentAccount?: Account) => {
-                if (!currentAccount) {
-                    return currentAccount;
-                }
-                return {
-                    ...currentAccount,
-                    likedCount: Math.max(0, currentAccount.likedCount - 1)
-                };
-            });
-        }
-    });
-}
-
-function updateRepostCache(queryClient: QueryClient, queryKey: string[], id: string, reposted: boolean, delta: number) {
-    queryClient.setQueriesData(queryKey, (current?: {pages: {posts: Activity[]}[]}) => {
-        if (current === undefined) {
-            return current;
-        }
-
-        return {
-            ...current,
-            pages: current.pages.map((page: {posts: Activity[]}) => {
-                return {
-                    ...page,
-                    posts: page.posts.map((item: Activity) => {
-                        if (item.object.id === id) {
-                            return {
-                                ...item,
-                                object: {
-                                    ...item.object,
-                                    reposted: reposted,
-                                    repostCount: Math.max((item.object.repostCount ?? 0) + delta, 0)
-                                }
-                            };
-                        }
-
-                        return item;
-                    })
-                };
-            })
-        };
-    });
 
     // Update the thread cache
     const threadQueryKey = QUERY_KEYS.thread(null);
@@ -268,14 +154,13 @@ function updateRepostCache(queryClient: QueryClient, queryKey: string[], id: str
         }
 
         return {
-            posts: current.posts.map((activity: Activity) => {
+            posts: current.posts.map((activity) => {
                 if (activity.object.id === id) {
                     return {
                         ...activity,
                         object: {
                             ...activity.object,
-                            reposted: reposted,
-                            repostCount: Math.max((activity.object.repostCount ?? 0) + delta, 0)
+                            liked
                         }
                     };
                 }
@@ -344,6 +229,97 @@ function updateReplyCountInCache(queryClient: QueryClient, id: string, delta: nu
     });
 }
 
+export function useLikeMutationForUser(handle: string) {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        async mutationFn(id: string) {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI(handle, siteUrl);
+
+            return api.like(id);
+        },
+        onMutate: (id) => {
+            updateLikedCache(queryClient, QUERY_KEYS.feed, id, true);
+            updateLikedCache(queryClient, QUERY_KEYS.inbox, id, true);
+            updateLikedCache(queryClient, QUERY_KEYS.postsByAccount, id, true);
+            updateLikedCache(queryClient, QUERY_KEYS.postsLikedByAccount, id, true);
+
+            // Update account liked count
+            queryClient.setQueryData(QUERY_KEYS.account(handle), (currentAccount?: Account) => {
+                if (!currentAccount) {
+                    return currentAccount;
+                }
+                return {
+                    ...currentAccount,
+                    likedCount: currentAccount.likedCount + 1
+                };
+            });
+        }
+    });
+}
+
+export function useUnlikeMutationForUser(handle: string) {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        async mutationFn(id: string) {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI(handle, siteUrl);
+
+            return api.unlike(id);
+        },
+        onMutate: (id) => {
+            updateLikedCache(queryClient, QUERY_KEYS.feed, id, false);
+            updateLikedCache(queryClient, QUERY_KEYS.inbox, id, false);
+            updateLikedCache(queryClient, QUERY_KEYS.postsByAccount, id, false);
+            updateLikedCache(queryClient, QUERY_KEYS.postsLikedByAccount, id, false);
+
+            // Update account liked count
+            queryClient.setQueryData(QUERY_KEYS.account(handle), (currentAccount?: Account) => {
+                if (!currentAccount) {
+                    return currentAccount;
+                }
+                return {
+                    ...currentAccount,
+                    likedCount: Math.max(0, currentAccount.likedCount - 1)
+                };
+            });
+        }
+    });
+}
+
+function updateRepostCache(queryClient: QueryClient, queryKey: string[], id: string, reposted: boolean) {
+    queryClient.setQueriesData(queryKey, (current?: {pages: {posts: Activity[]}[]}) => {
+        if (current === undefined) {
+            return current;
+        }
+
+        return {
+            ...current,
+            pages: current.pages.map((page: {posts: Activity[]}) => {
+                return {
+                    ...page,
+                    posts: page.posts.map((item: Activity) => {
+                        if (item.object.id === id) {
+                            return {
+                                ...item,
+                                object: {
+                                    ...item.object,
+                                    reposted: reposted,
+                                    repostCount: Math.max(reposted ? item.object.repostCount + 1 : item.object.repostCount - 1, 0)
+                                }
+                            };
+                        }
+
+                        return item;
+                    })
+                };
+            })
+        };
+    });
+}
+
 export function useRepostMutationForUser(handle: string) {
     const queryClient = useQueryClient();
 
@@ -355,8 +331,8 @@ export function useRepostMutationForUser(handle: string) {
             return api.repost(id);
         },
         onMutate: (id) => {
-            updateRepostCache(queryClient, QUERY_KEYS.feed, id, true, 1);
-            updateRepostCache(queryClient, QUERY_KEYS.inbox, id, true, 1);
+            updateRepostCache(queryClient, QUERY_KEYS.feed, id, true);
+            updateRepostCache(queryClient, QUERY_KEYS.inbox, id, true);
         }
     });
 }
@@ -372,8 +348,8 @@ export function useDerepostMutationForUser(handle: string) {
             return api.derepost(id);
         },
         onMutate: (id) => {
-            updateRepostCache(queryClient, QUERY_KEYS.feed, id, false, -1);
-            updateRepostCache(queryClient, QUERY_KEYS.inbox, id, false, -1);
+            updateRepostCache(queryClient, QUERY_KEYS.feed, id, false);
+            updateRepostCache(queryClient, QUERY_KEYS.inbox, id, false);
         }
     });
 }
@@ -416,11 +392,72 @@ export function useUnfollowMutationForUser(handle: string, onSuccess: () => void
                 };
             });
 
-            // Invalidate the profile followers query cache for the profile being unfollowed
-            // because we cannot directly remove from it as we don't have the data for the unfollowed follower
+            // Update the profile followers query cache for the profile being unfollowed
             const profileFollowersQueryKey = QUERY_KEYS.profileFollowers(fullHandle);
 
-            queryClient.invalidateQueries({queryKey: profileFollowersQueryKey});
+            queryClient.setQueryData(profileFollowersQueryKey, (oldData?: {
+                pages: Array<{
+                    followers: Array<{
+                        actor: {
+                            id: string;
+                            type: string;
+                            preferredUsername: string;
+                            name: string;
+                            url: string;
+                            icon: {
+                                type: string;
+                                url: string;
+                            };
+                        };
+                        isFollowing: boolean;
+                    }>;
+                }>;
+            }) => {
+                if (!oldData?.pages?.[0]) {
+                    return oldData;
+                }
+
+                const currentAccount = queryClient.getQueryData<Account>(QUERY_KEYS.account('index'));
+                if (!currentAccount) {
+                    return oldData;
+                }
+
+                return {
+                    ...oldData,
+                    pages: oldData.pages.map((page: {
+                        followers: Array<{
+                            actor: {
+                                id: string;
+                                type: string;
+                                preferredUsername: string;
+                                name: string;
+                                url: string;
+                                icon: {
+                                    type: string;
+                                    url: string;
+                                };
+                            };
+                            isFollowing: boolean;
+                        }>;
+                    }) => ({
+                        ...page,
+                        followers: page.followers.filter((follower: {
+                            actor: {
+                                id: string;
+                                type: string;
+                                preferredUsername: string;
+                                name: string;
+                                url: string;
+                                icon: {
+                                    type: string;
+                                    url: string;
+                                };
+                            };
+                            isFollowing: boolean;
+                        }) => follower.actor.id !== currentAccount.id)
+                    }))
+                };
+            });
 
             // Update the "followingCount" property of the account performing the follow
             const accountQueryKey = QUERY_KEYS.account('index');
@@ -485,12 +522,6 @@ export function useFollowMutationForUser(handle: string, onSuccess: () => void, 
                 };
             });
 
-            // Invalidate the profile followers query cache for the profile being followed
-            // because we cannot directly add to it as we don't have the data for the new follower
-            const profileFollowersQueryKey = QUERY_KEYS.profileFollowers(fullHandle);
-
-            queryClient.invalidateQueries({queryKey: profileFollowersQueryKey});
-
             // Update the "followingCount" property of the account performing the follow
             const accountQueryKey = QUERY_KEYS.account('index');
 
@@ -505,12 +536,66 @@ export function useFollowMutationForUser(handle: string, onSuccess: () => void, 
                 };
             });
 
+            const profileFollowersQueryKey = QUERY_KEYS.profileFollowers(fullHandle);
+
             // Invalidate the follows query cache for the account performing the follow
             // because we cannot directly add to it due to potentially incompatible data
             // shapes
             const accountFollowsQueryKey = QUERY_KEYS.accountFollows('index', 'following');
 
             queryClient.invalidateQueries({queryKey: accountFollowsQueryKey});
+
+            // Add new follower to the followers list cache
+            queryClient.setQueryData(profileFollowersQueryKey, (oldData?: {
+                pages: Array<{
+                    followers: Array<{
+                        actor: {
+                            id: string;
+                            type: string;
+                            preferredUsername: string;
+                            name: string;
+                            url: string;
+                            icon: {
+                                type: string;
+                                url: string;
+                            };
+                        };
+                        isFollowing: boolean;
+                    }>;
+                }>;
+            }) => {
+                if (!oldData?.pages?.[0]) {
+                    return oldData;
+                }
+
+                const currentAccount = queryClient.getQueryData<Account>(QUERY_KEYS.account('index'));
+                if (!currentAccount) {
+                    return oldData;
+                }
+                
+                const newFollower = {
+                    actor: {
+                        id: currentAccount.id,
+                        type: 'Person',
+                        preferredUsername: 'index',
+                        name: currentAccount.name,
+                        url: currentAccount.url,
+                        icon: {
+                            type: 'Image',
+                            url: currentAccount.avatarUrl
+                        }
+                    },
+                    isFollowing: false
+                };
+
+                return {
+                    ...oldData,
+                    pages: [{
+                        ...oldData.pages[0],
+                        followers: [newFollower, ...oldData.pages[0].followers]
+                    }, ...oldData.pages.slice(1)]
+                };
+            });
 
             onSuccess();
         },

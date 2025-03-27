@@ -39,6 +39,42 @@ describe('Models: base', function () {
                 });
         });
 
+        it('slug exists but it does not exist for the id', function () {
+            let i = 0;
+            Model.findOne.callsFake(() => {
+                i = i + 1;
+                if (i === 1) {
+                    return Promise.resolve({id: 'correct-model-id'});
+                }
+                return Promise.resolve(null);
+            });
+
+            security.string.safe.withArgs('My-Slug').returns('my-slug');
+
+            return models.Base.Model.generateSlug(Model, 'My-Slug', {modelId: 'incorrect-model-id'})
+                .then((slug) => {
+                    slug.should.eql('my-slug-2');
+                });
+        });
+
+        it('slug exists but it exists for the id', function () {
+            let i = 0;
+            Model.findOne.callsFake(() => {
+                i = i + 1;
+                if (i === 1) {
+                    return Promise.resolve({id: 'correct-model-id'});
+                }
+                return Promise.resolve(null);
+            });
+
+            security.string.safe.withArgs('My-Slug').returns('my-slug');
+
+            return models.Base.Model.generateSlug(Model, 'My-Slug', {modelId: 'correct-model-id'})
+                .then((slug) => {
+                    slug.should.eql('my-slug');
+                });
+        });
+
         it('slug exists', function () {
             let i = 0;
             Model.findOne.callsFake(() => {

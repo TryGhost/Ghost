@@ -1,5 +1,9 @@
 const urlUtils = require('../../../shared/url-utils');
 const urlService = require('../../services/url');
+
+const AudienceFeedbackService = require('./AudienceFeedbackService');
+const AudienceFeedbackController = require('./AudienceFeedbackController');
+const Feedback = require('./Feedback');
 const FeedbackRepository = require('./FeedbackRepository');
 
 class AudienceFeedbackServiceWrapper {
@@ -11,8 +15,6 @@ class AudienceFeedbackServiceWrapper {
 
         // Wire up all the dependencies
         const models = require('../../models');
-
-        const {AudienceFeedbackService, AudienceFeedbackController, Feedback} = require('@tryghost/audience-feedback');
 
         this.repository = new FeedbackRepository({
             Member: models.Member,
