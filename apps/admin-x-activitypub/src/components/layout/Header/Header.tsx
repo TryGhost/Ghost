@@ -47,7 +47,7 @@ const Header: React.FC = () => {
         <div
             className='sticky top-0 z-10 bg-white px-8 dark:bg-black'>
             <div className='flex h-[102px] items-center justify-between gap-5 border-b border-gray-200 dark:border-gray-950'>
-                <HeaderTitle backIcon={location.pathname === '/search' || (isEnabled('feed-routes') && location.pathname.includes('/feed/'))} title={activeRoute?.pageTitle || ''} />
+                <HeaderTitle backIcon={location.pathname === '/search' || (isEnabled('ap-routes') && location.pathname.includes('/feed/'))} title={activeRoute?.pageTitle || ''} />
                 <Dialog open={isSearchOpen} onOpenChange={setIsSearchOpen}>
                     <DialogTrigger>
                         <SearchInput />
