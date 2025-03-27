@@ -59,8 +59,7 @@ export default class KpisOverview extends Component {
         try {
             const params = new URLSearchParams(getStatsParams(
                 this.config,
-                args,
-                {timezone: this.settings.timezone}
+                args
             ));
 
             const endpoint = `${this.config.stats.endpoint}/v0/pipes/api_kpis__v${TB_VERSION}.json?${params}`;

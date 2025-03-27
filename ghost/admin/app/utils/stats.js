@@ -144,9 +144,10 @@ export const getCountryFlag = (countryCode) => {
 };
 
 export function getDateRange(chartRange) {
-    const endDate = moment().endOf('day');
-    const startDate = moment().subtract(chartRange - 1, 'days').startOf('day');
-    return {startDate, endDate};
+    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const endDate = moment().tz(timezone).endOf('day');
+    const startDate = moment().tz(timezone).subtract(chartRange - 1, 'days').startOf('day');
+    return {startDate, endDate, timezone};
 }
 
 export function formatVisitDuration(duration) {
@@ -173,8 +174,8 @@ export function formatVisitDuration(duration) {
 }
 
 export function getStatsParams(config, props, additionalParams = {}) {
-    const {chartRange, audience, device, browser, location, source, pathname, os, timezone} = props;
-    const {startDate, endDate} = getDateRange(chartRange);
+    const {chartRange, audience, device, browser, location, source, pathname, os} = props;
+    const {startDate, endDate, timezone} = getDateRange(chartRange);
 
     const params = {
         site_uuid: props.mockData ? 'mock_site_uuid' : config.stats.id,
