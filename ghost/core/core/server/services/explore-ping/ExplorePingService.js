@@ -12,8 +12,11 @@ module.exports = class ExplorePingService {
      *   getFirstPublishedPostDate: () => Promise<Date>,
      *   getTotalPostsPublished: () => Promise<number>
      * }}} deps.posts
+     * @param {{stats: {
+     *   getTotalMembers: () => Promise<number>
+     * }}} deps.members
      */
-    constructor({settingsCache, config, labs, logging, ghostVersion, request, posts}) {
+    constructor({settingsCache, config, labs, logging, ghostVersion, request, posts, members}) {
         this.settingsCache = settingsCache;
         this.config = config;
         this.labs = labs;
@@ -21,16 +24,18 @@ module.exports = class ExplorePingService {
         this.ghostVersion = ghostVersion;
         this.request = request;
         this.posts = posts;
+        this.members = members;
     }
 
     async constructPayload() {
         /* eslint-disable camelcase */
         const {title, description, icon, locale, accent_color, twitter, facebook} = this.settingsCache.getPublic();
 
-        const [totalPosts, lastPublishedAt, firstPublishedAt] = await Promise.all([
+        const [totalPosts, lastPublishedAt, firstPublishedAt, totalMembers] = await Promise.all([
             this.posts.stats.getTotalPostsPublished(),
             this.posts.stats.getMostRecentlyPublishedPostDate(),
-            this.posts.stats.getFirstPublishedPostDate()
+            this.posts.stats.getFirstPublishedPostDate(),
+            this.members.stats.getTotalMembers()
         ]);
 
         return {
@@ -45,7 +50,8 @@ module.exports = class ExplorePingService {
             facebook,
             posts_first: firstPublishedAt ? firstPublishedAt.toISOString() : null,
             posts_last: lastPublishedAt ? lastPublishedAt.toISOString() : null,
-            posts_total: totalPosts
+            posts_total: totalPosts,
+            members_total: totalMembers
         };
         /* eslint-enable camelcase */
     }
