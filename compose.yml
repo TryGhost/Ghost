@@ -197,7 +197,7 @@ volumes:
   node_modules_ghost_domain-events: {}
   node_modules_ghost_donations: {}
   node_modules_ghost_email-addresses: {}
-  node_modules_ghost_email-analytics-provider-mailgun: {}
+  node_modules_ghost_email-analytics-service: {}
   node_modules_ghost_email-content-generator: {}
   node_modules_ghost_email-events: {}
   node_modules_ghost_email-service: {}
