@@ -378,6 +378,10 @@
     box-shadow: var(--shadow-1);
 }
 
+.gh-post-preview-email-mockup-mobile {
+    max-width: 360px;
+}
+
 .gh-post-preview-email-container iframe {
     flex-grow: 1;
     border: none;
