@@ -129,25 +129,6 @@
     color: var(--midgrey);
 }
 
-.gh-publish-preview-newtab {
-    background: transparent;
-    color: var(--black);
-    cursor: pointer;
-}
-
-.gh-publish-preview-newtab svg {
-    fill: none;
-}
-
-.gh-publish-preview-newtab span {
-    padding: 0 10px;
-}
-
-.gh-publish-preview-newtab svg {
-    width: 18px;
-    height: 18px;
-}
-
 /* Preview animation */
 
 .gh-post-preview-container {
@@ -443,7 +424,7 @@
     top: calc(100% + 6px);
     right: 0;
     left: auto;
-    padding: 1.6rem 2rem;
+    padding: 1.6rem;
     border-radius: 8px;
     box-shadow: var(--shadow-3);
     animation: fade-out .0s;
