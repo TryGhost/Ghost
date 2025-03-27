@@ -5,22 +5,22 @@ const logging = require('@tryghost/logging');
 
 /**
  * Handles `checkout.session.completed` webhook events
- * 
+ *
  * The `checkout.session.completed` event is triggered when a customer completes a checkout session.
- * 
+ *
  * It is triggered for the following scenarios:
  * - Subscription
  * - Donation
  * - Setup intent
- * 
+ *
  * This service delegates the event to the appropriate handler based on the session mode and metadata.
- * 
+ *
  * The `session` payload can be found here: https://docs.stripe.com/api/checkout/sessions/object
  */
 module.exports = class CheckoutSessionEventService {
     /**
      * @param {object} deps
-     * @param {import('../StripeAPI')} deps.api
+     * @param {import('../../StripeAPI')} deps.api
      * @param {object} deps.memberRepository
      * @param {object} deps.donationRepository
      * @param {object} deps.staffServiceEmails
@@ -87,8 +87,8 @@ module.exports = class CheckoutSessionEventService {
 
     /**
      * Handles a `checkout.session.completed` event for a setup intent
-     * 
-     * This is used when a customer adds or changes their payment method outside 
+     *
+     * This is used when a customer adds or changes their payment method outside
      * of the normal subscription flow.
      * @param {import('stripe').Stripe.Checkout.Session} session
      */
