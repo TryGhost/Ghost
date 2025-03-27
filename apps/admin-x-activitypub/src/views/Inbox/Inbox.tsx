@@ -110,7 +110,7 @@ const Inbox: React.FC = () => {
                                                         repostCount={activity.object.repostCount ?? 0}
                                                         type={activity.type}
                                                         onClick={() => {
-                                                            if (isEnabled('feed-routes') && layout === 'feed') {
+                                                            if (isEnabled('ap-routes') && layout === 'feed') {
                                                                 navigate(`/feed/${encodeURIComponent(activity.id)}`, {
                                                                     state: {
                                                                         activity,
