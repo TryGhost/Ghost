@@ -1,5 +1,7 @@
 VERSION 7
 
+TOKEN stats_page READ
+
 NODE _top_os_0
 SQL >
 

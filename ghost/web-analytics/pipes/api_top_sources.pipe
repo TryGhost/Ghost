@@ -1,5 +1,7 @@
 VERSION 7
 
+TOKEN stats_page READ
+
 
 NODE filtered_sessions
 DESCRIPTION >
