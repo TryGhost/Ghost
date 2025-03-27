@@ -2,7 +2,7 @@ const assert = require('assert/strict');
 const sinon = require('sinon');
 const errors = require('@tryghost/errors');
 
-const versionMismatchMW = require('../index');
+const versionMismatchMW = require('../../../../../core/server/services/api-version-compatibility/mw-api-version-mismatch');
 
 describe('mw-api-version-mismatch', function () {
     it('Does call handle mismatch when a generic RequestNotAcceptableError is used', function (done) {
