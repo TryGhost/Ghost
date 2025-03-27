@@ -9,16 +9,19 @@ import {formatNumber} from 'ghost-admin/helpers/format-number';
 import {formatVisitDuration} from '../../../utils/stats';
 import {hexToRgba} from 'ghost-admin/utils/stats';
 import {inject} from 'ghost-admin/decorators/inject';
+import {inject as service} from '@ember/service';
 
 export default class KpisComponent extends Component {
     @inject config;
+    @service settings;
 
     ReactComponent = (props) => {
         const {chartRange, selected} = props;
 
         const params = getStatsParams(
             this.config,
-            props
+            props,
+            {timezone: this.settings.timezone}
         );
 
         const {data, meta, error, loading} = useQuery({

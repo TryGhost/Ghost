@@ -17,6 +17,7 @@ export default class TopPages extends Component {
     @inject config;
     @service modals;
     @service router;
+    @service settings;
 
     @tracked contentOption = CONTENT_OPTIONS[0];
     @tracked contentOptions = CONTENT_OPTIONS;
@@ -43,7 +44,7 @@ export default class TopPages extends Component {
 
     updateQueryParams(params) {
         const currentRoute = this.router.currentRoute;
-        const newQueryParams = {...currentRoute.queryParams, ...params};
+        const newQueryParams = {...currentRoute.queryParams, ...params, timezone: this.settings.timezone};
 
         this.router.transitionTo({queryParams: newQueryParams});
     }
@@ -56,7 +57,7 @@ export default class TopPages extends Component {
         const params = getStatsParams(
             this.config,
             props,
-            {limit: LIMIT + 1}
+            {limit: LIMIT + 1, timezone: this.settings.timezone}
         );
 
         const {data, meta, error, loading} = useQuery({

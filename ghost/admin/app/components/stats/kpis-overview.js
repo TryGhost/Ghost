@@ -5,11 +5,13 @@ import {action} from '@ember/object';
 import {formatNumber} from 'ghost-admin/helpers/format-number';
 import {formatVisitDuration} from '../../utils/stats';
 import {inject} from 'ghost-admin/decorators/inject';
+import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
 export default class KpisOverview extends Component {
     @inject config;
+    @service settings;
     @tracked selected = 'unique_visits';
     @tracked totals = null;
     @tracked showGranularity = true;
@@ -57,7 +59,8 @@ export default class KpisOverview extends Component {
         try {
             const params = new URLSearchParams(getStatsParams(
                 this.config,
-                args
+                args,
+                {timezone: this.settings.timezone}
             ));
 
             const endpoint = `${this.config.stats.endpoint}/v0/pipes/api_kpis__v${TB_VERSION}.json?${params}`;
