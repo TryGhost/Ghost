@@ -1,5 +1,5 @@
 const assert = require('assert/strict');
-const extractApiKey = require('../lib/extract-api-key');
+const extractApiKey = require('../../../../../core/server/services/api-version-compatibility/extract-api-key');
 
 describe('Extract API Key', function () {
     it('Returns nulls for a request without any key', function () {
