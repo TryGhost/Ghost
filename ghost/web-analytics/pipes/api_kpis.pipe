@@ -183,7 +183,7 @@ NODE finished_data
 SQL >
     %
     select
-        a.date,
+        a.date as date,
         coalesce(b.visits, 0) as visits,
         {% if defined(pathname) %}coalesce(c.pageviews, 0){% else %}coalesce(b.pageviews, 0){% end %} as pageviews,
         coalesce(b.bounce_rate, 0) as bounce_rate,
