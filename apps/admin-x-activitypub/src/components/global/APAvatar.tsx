@@ -6,6 +6,8 @@ import getUsername from '../../utils/get-username';
 import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Icon} from '@tryghost/admin-x-design-system';
 import {Skeleton} from '@tryghost/shade';
+import {useFeatureFlags} from '@src/lib/feature-flags';
+import {useNavigate} from '@tryghost/admin-x-framework';
 
 type AvatarSize = '2xs' | 'xs' | 'sm' | 'md' | 'lg' | 'notification';
 
@@ -28,6 +30,8 @@ const APAvatar: React.FC<APAvatarProps> = ({author, size, isLoading = false, onC
     let containerClass = `shrink-0 items-center justify-center rounded-full overflow-hidden relative z-10 flex bg-gray-100 dark:bg-gray-900 ${size === 'lg' || disabled ? '' : 'hover:opacity-80 cursor-pointer'}`;
     let imageClass = 'z-10 object-cover';
     const [iconUrl, setIconUrl] = useState(author?.icon?.url);
+    const {isEnabled} = useFeatureFlags();
+    const navigate = useNavigate();
 
     useEffect(() => {
         setIconUrl(author?.icon?.url);
@@ -79,8 +83,12 @@ const APAvatar: React.FC<APAvatarProps> = ({author, size, isLoading = false, onC
 
     const handleClick = (e: React.MouseEvent) => {
         e.stopPropagation();
-        NiceModal.show(ViewProfileModal, {handle});
-        onClick?.();
+        if (isEnabled('ap-routes')) {
+            navigate(`/profile-rr/${handle}`);
+        } else {
+            NiceModal.show(ViewProfileModal, {handle});
+            onClick?.();
+        }
     };
 
     const title = `${author?.name} ${handle}`;
