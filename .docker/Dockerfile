@@ -6,14 +6,14 @@ ARG WORKDIR=/home/ghost
 FROM node:$NODE_VERSION-bullseye-slim AS base
 RUN apt-get update && \
     apt-get install -y \
-        build-essential \
-        curl \
-        jq \
-        libjemalloc2 \
-        python3 \
-        tar && \
-        rm -rf /var/lib/apt/lists/* && \
-        apt clean
+    build-essential \
+    curl \
+    jq \
+    libjemalloc2 \
+    python3 \
+    tar && \
+    rm -rf /var/lib/apt/lists/* && \
+    apt clean
 
 # Development Base Image
 ## This stage adds development specific packages like the Stripe CLI, zsh, playwright, etc.
@@ -24,11 +24,11 @@ RUN curl -s https://packages.stripe.dev/api/security/keypair/stripe-cli-gpg/publ
     echo "deb [signed-by=/usr/share/keyrings/stripe.gpg] https://packages.stripe.dev/stripe-cli-debian-local stable main" | tee -a /etc/apt/sources.list.d/stripe.list && \
     apt update && \
     apt install -y \
-        git \
-        stripe \
-        procps && \
-        rm -rf /var/lib/apt/lists/* && \
-        apt clean
+    git \
+    stripe \
+    procps && \
+    rm -rf /var/lib/apt/lists/* && \
+    apt clean
 
 # DevContainer Stage: Install dependencies and copy the code
 ## This stage is used for local development
@@ -73,10 +73,6 @@ COPY ghost/admin/package.json ghost/admin/package.json
 COPY ghost/announcement-bar-settings/package.json ghost/announcement-bar-settings/package.json
 COPY ghost/api-framework/package.json ghost/api-framework/package.json
 COPY ghost/api-version-compatibility-service/package.json ghost/api-version-compatibility-service/package.json
-COPY ghost/audience-feedback/package.json ghost/audience-feedback/package.json
-COPY ghost/bookshelf-repository/package.json ghost/bookshelf-repository/package.json
-COPY ghost/bootstrap-socket/package.json ghost/bootstrap-socket/package.json
-COPY ghost/captcha-service/package.json ghost/captcha-service/package.json
 COPY ghost/constants/package.json ghost/constants/package.json
 COPY ghost/core/package.json ghost/core/package.json
 COPY ghost/custom-fonts/package.json ghost/custom-fonts/package.json
@@ -85,20 +81,17 @@ COPY ghost/data-generator/package.json ghost/data-generator/package.json
 COPY ghost/domain-events/package.json ghost/domain-events/package.json
 COPY ghost/donations/package.json ghost/donations/package.json
 COPY ghost/email-addresses/package.json ghost/email-addresses/package.json
-COPY ghost/email-analytics-provider-mailgun/package.json ghost/email-analytics-provider-mailgun/package.json
 COPY ghost/email-analytics-service/package.json ghost/email-analytics-service/package.json
 COPY ghost/email-content-generator/package.json ghost/email-content-generator/package.json
 COPY ghost/email-events/package.json ghost/email-events/package.json
 COPY ghost/email-service/package.json ghost/email-service/package.json
 COPY ghost/email-suppression-list/package.json ghost/email-suppression-list/package.json
 COPY ghost/express-dynamic-redirects/package.json ghost/express-dynamic-redirects/package.json
-COPY ghost/extract-api-key/package.json ghost/extract-api-key/package.json
 COPY ghost/ghost/package.json ghost/ghost/package.json
 COPY ghost/html-to-plaintext/package.json ghost/html-to-plaintext/package.json
 COPY ghost/i18n/package.json ghost/i18n/package.json
 COPY ghost/identity-token-service/package.json ghost/identity-token-service/package.json
 COPY ghost/importer-handler-content-files/package.json ghost/importer-handler-content-files/package.json
-COPY ghost/importer-revue/package.json ghost/importer-revue/package.json
 COPY ghost/in-memory-repository/package.json ghost/in-memory-repository/package.json
 COPY ghost/job-manager/package.json ghost/job-manager/package.json
 COPY ghost/link-redirects/package.json ghost/link-redirects/package.json
@@ -110,33 +103,24 @@ COPY ghost/member-attribution/package.json ghost/member-attribution/package.json
 COPY ghost/member-events/package.json ghost/member-events/package.json
 COPY ghost/members-api/package.json ghost/members-api/package.json
 COPY ghost/members-csv/package.json ghost/members-csv/package.json
-COPY ghost/members-importer/package.json ghost/members-importer/package.json
-COPY ghost/members-ssr/package.json ghost/members-ssr/package.json
 COPY ghost/milestones/package.json ghost/milestones/package.json
 COPY ghost/minifier/package.json ghost/minifier/package.json
 COPY ghost/mw-api-version-mismatch/package.json ghost/mw-api-version-mismatch/package.json
 COPY ghost/mw-cache-control/package.json ghost/mw-cache-control/package.json
 COPY ghost/mw-error-handler/package.json ghost/mw-error-handler/package.json
-COPY ghost/mw-session-from-token/package.json ghost/mw-session-from-token/package.json
-COPY ghost/mw-update-user-last-seen/package.json ghost/mw-update-user-last-seen/package.json
 COPY ghost/mw-version-match/package.json ghost/mw-version-match/package.json
 COPY ghost/mw-vhost/package.json ghost/mw-vhost/package.json
 COPY ghost/offers/package.json ghost/offers/package.json
-COPY ghost/package-json/package.json ghost/package-json/package.json
 COPY ghost/payments/package.json ghost/payments/package.json
 COPY ghost/post-events/package.json ghost/post-events/package.json
 COPY ghost/post-revisions/package.json ghost/post-revisions/package.json
 COPY ghost/posts-service/package.json ghost/posts-service/package.json
 COPY ghost/prometheus-metrics/package.json ghost/prometheus-metrics/package.json
 COPY ghost/recommendations/package.json ghost/recommendations/package.json
-COPY ghost/referrers/package.json ghost/referrers/package.json
 COPY ghost/security/package.json ghost/security/package.json
-COPY ghost/session-service/package.json ghost/session-service/package.json
-COPY ghost/settings-path-manager/package.json ghost/settings-path-manager/package.json
 COPY ghost/slack-notifications/package.json ghost/slack-notifications/package.json
 COPY ghost/stripe/package.json ghost/stripe/package.json
 COPY ghost/tiers/package.json ghost/tiers/package.json
-COPY ghost/version-notifications-data-service/package.json ghost/version-notifications-data-service/package.json
 COPY ghost/webmentions/package.json ghost/webmentions/package.json
 
 ## Install dependencies

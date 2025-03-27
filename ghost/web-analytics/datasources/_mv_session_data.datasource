@@ -1,4 +1,4 @@
-VERSION 5
+VERSION 6
 
 SCHEMA >
     `site_uuid` String,
@@ -7,7 +7,8 @@ SCHEMA >
     `first_pageview` DateTime,
     `last_pageview` DateTime,
     `duration` Int64,
-    `is_bounce` Boolean
+    `is_bounce` Bool,
+    `source` String
 
 ENGINE "MergeTree"
 ENGINE_PARTITION_KEY "toYYYYMM(first_pageview)"

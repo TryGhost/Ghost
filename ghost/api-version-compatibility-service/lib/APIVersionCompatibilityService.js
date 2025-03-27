@@ -1,5 +1,5 @@
 const path = require('path');
-const VersionNotificationsDataService = require('@tryghost/version-notifications-data-service');
+const VersionNotificationsDataService = require('./VersionNotificationsDataService');
 const EmailContentGenerator = require('@tryghost/email-content-generator');
 
 class APIVersionCompatibilityService {
