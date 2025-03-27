@@ -4,7 +4,7 @@ const sinon = require('sinon');
 const assert = require('assert/strict');
 const errors = require('@tryghost/errors');
 
-const InvoiceEventService = require('../../../../../lib/services/webhook/InvoiceEventService');
+const InvoiceEventService = require('../../../../../../../core/server/services/stripe/services/webhook/InvoiceEventService');
 
 describe('InvoiceEventService', function () {
     let memberRepositoryStub, eventRepositoryStub, productRepositoryStub, apiStub, service;
@@ -76,7 +76,7 @@ describe('InvoiceEventService', function () {
         } catch (err) {
             error = err;
         }
-    
+
         // Use Sinon to assert that the error is a NotFoundError with the expected message
         // expect(error).to.be.instanceOf(errors.NotFoundError);
         assert(error instanceof errors.NotFoundError);
