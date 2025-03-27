@@ -1,6 +1,6 @@
 const assert = require('assert/strict');
 const sinon = require('sinon');
-const VersionNotificationsDataService = require('../lib/VersionNotificationsDataService');
+const VersionNotificationsDataService = require('../../../../../core/server/services/api-version-compatibility/VersionNotificationsDataService');
 
 describe('Version Notification Data Service', function () {
     afterEach(function () {
