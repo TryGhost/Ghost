@@ -26,7 +26,7 @@ const ContentView = () => {
 
     return (
         <Layout>
-            <div className='flex h-full flex-col max-w-[620px] mx-auto'>
+            <div className='mx-auto flex h-full max-w-[620px] flex-col'>
                 <div className='relative flex-1'>
                     <div className='grow overflow-y-auto'>
                         <div className={`mx-auto px-8 pb-10 pt-5`}>
