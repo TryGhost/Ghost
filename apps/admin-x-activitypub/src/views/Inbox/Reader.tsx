@@ -16,10 +16,11 @@ import FeedItemStats from '@src/components/feed/FeedItemStats';
 import TableOfContents, {TOCItem} from '@src/components/feed/TableOfContents';
 import articleBodyStyles from '@src/components/articleBodyStyles';
 import getReadingTime from '../../utils/get-reading-time';
-import {handleProfileClick} from '@src/utils/handle-profile-click';
+import {handleProfileClickRR} from '@src/utils/handle-profile-click';
 import {isPendingActivity} from '../../utils/pending-activity';
 import {openLinksInNewTab} from '@src/utils/content-formatters';
 import {useDebounce} from 'use-debounce';
+import {useNavigate} from '@tryghost/admin-x-framework';
 
 interface IframeWindow extends Window {
     resizeIframe?: () => void;
@@ -638,6 +639,9 @@ export const Reader: React.FC<ReaderProps> = ({
         const timeoutId = setTimeout(setupObserver, 100);
         return () => clearTimeout(timeoutId);
     }, [iframeElement, tocItems, activeHeadingId]);
+
+    const navigate = useNavigate();
+
     return (
         <div ref={modalRef as React.RefObject<HTMLDivElement>} className='max-h-full overflow-auto'>
             {
@@ -663,7 +667,7 @@ export const Reader: React.FC<ReaderProps> = ({
                                             <div className='relative z-10 pt-[3px]'>
                                                 <APAvatar author={actor}/>
                                             </div>
-                                            <div className='relative z-10 flex w-full min-w-0 cursor-pointer flex-col overflow-visible text-[1.5rem]' onClick={e => handleProfileClick(actor, e)}>
+                                            <div className='relative z-10 flex w-full min-w-0 cursor-pointer flex-col overflow-visible text-[1.5rem]' onClick={e => handleProfileClickRR(actor, navigate, e)}>
                                                 <div className='flex w-full'>
                                                     <span className='min-w-0 truncate whitespace-nowrap font-semibold hover:underline'>{actor.name}</span>
                                                 </div>
