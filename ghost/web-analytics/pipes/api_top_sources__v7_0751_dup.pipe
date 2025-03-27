@@ -1,8 +1,3 @@
-VERSION 7
-TOKEN "stats_page" READ
-
-TOKEN "api_top_sources__v7_endpoint_read_2345" READ
-
 NODE filtered_sessions
 DESCRIPTION >
     Get sessions that match the filter criteria
@@ -40,7 +35,7 @@ SQL >
 
 
 
-NODE top_sources
+NODE api_top_sources_2
 SQL >
 
     %

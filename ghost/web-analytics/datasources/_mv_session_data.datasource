@@ -1,15 +1,16 @@
 VERSION 7
+# Data Source created from Pipe 'mv_session_data__v7'
 
 SCHEMA >
-    `site_uuid` String,
+    `site_uuid` LowCardinality(String),
     `session_id` String,
     `pageviews` UInt64,
     `first_pageview` DateTime,
     `last_pageview` DateTime,
-    `duration` Int64,
-    `is_bounce` Bool,
+    `duration` Int32,
+    `is_bounce` UInt8,
     `source` String
 
-ENGINE "MergeTree"
+ENGINE "ReplacingMergeTree"
 ENGINE_PARTITION_KEY "toYYYYMM(first_pageview)"
-ENGINE_SORTING_KEY "site_uuid, first_pageview, session_id"
+ENGINE_SORTING_KEY "site_uuid, session_id"

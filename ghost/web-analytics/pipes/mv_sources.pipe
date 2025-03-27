@@ -1,5 +1,5 @@
 VERSION 3
-TAGS "v0"
+TOKEN "stats_page" READ
 
 NODE parsed_hits
 SQL >
