@@ -275,7 +275,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
         return (
             <>
                 {object && (
-                    <div className={`group/article relative -mx-4 -my-px ${!isPending ? 'cursor-pointer' : 'pointer-events-none'} rounded-lg p-6 px-8 pb-[18px]`} data-layout='feed' data-object-id={object.id} onClick={onClick}>
+                    <div className={`group/article relative -mx-4 -my-px ${!isPending ? 'cursor-pointer' : 'pointer-events-none'} rounded-lg p-6 px-4 pb-[18px]`} data-layout='feed' data-object-id={object.id} onClick={onClick}>
                         {(type === 'Announce') && <div className='z-10 mb-2 flex items-center gap-2 text-gray-700 dark:text-gray-600'>
                             <Icon colorClass='text-gray-700 shrink-0 dark:text-gray-600' name='reload' size={'sm'} />
                             <div className='flex min-w-0 items-center gap-1 text-sm'>

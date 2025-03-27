@@ -309,7 +309,7 @@ const Profile: React.FC = () => {
 
     return (
         <Layout>
-            <div className='z-0 -mr-8 flex w-[calc(100%+32px)] flex-col items-center pb-16'>
+            <div className='z-0 -mx-8 mt-[-102px] flex flex-col items-center pb-16'>
                 <div className='mx-auto w-full'>
                     {isLoading && (
                         <LoadingIndicator size='lg' />
@@ -321,14 +321,18 @@ const Profile: React.FC = () => {
                     )}
                     {!isLoading && profile && (
                         <>
-                            {profile.actor.image && (<div className='h-[15vw] w-full overflow-hidden bg-gradient-to-tr from-gray-200 to-gray-100'>
-                                <img
-                                    alt={profile.actor.name}
-                                    className='h-full w-full object-cover'
-                                    src={profile.actor.image.url}
-                                />
-                            </div>)}
-                            <div className={`${profile.actor.image ? '-mt-12' : 'mt-8'} mx-auto max-w-[620px] px-6`}>
+                            {profile.actor.image ?
+                                <div className='h-[15vw] w-full overflow-hidden bg-gradient-to-tr from-gray-200 to-gray-100'>
+                                    <img
+                                        alt={profile.actor.name}
+                                        className='h-full w-full object-cover'
+                                        src={profile.actor.image.url}
+                                    />
+                                </div>
+                                :
+                                <div className='h-[8vw] w-full overflow-hidden bg-gradient-to-tr from-white to-white'></div>
+                            }
+                            <div className='mx-auto -mt-12 max-w-[620px] px-6'>
                                 <div className='flex items-end justify-between'>
                                     <div className='-ml-2 rounded-full bg-white p-1 dark:bg-black'>
                                         <APAvatar

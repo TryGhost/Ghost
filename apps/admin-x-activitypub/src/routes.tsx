@@ -50,7 +50,7 @@ export const routes: CustomRouteObject[] = [
                 pageTitle: 'Feed'
             },
             {
-                path: 'feed/:encodedId',
+                path: 'feed/:postId',
                 element: <ContentView />,
                 pageTitle: ''
             },

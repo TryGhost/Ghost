@@ -1,24 +1,21 @@
-import React, {useEffect, useRef, useState} from 'react';
-import {LucideIcon, Skeleton} from '@tryghost/shade';
-
-import NiceModal from '@ebay/nice-modal-react';
-import {Activity, ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
-import {Button, LoadingIndicator} from '@tryghost/admin-x-design-system';
-
 import APAvatar from '@components/global/APAvatar';
 import ArticleModal from '@components/feed/ArticleModal';
-import NotificationItem from '@components/activities/NotificationItem';
-import Separator from '@components/global/Separator';
-
 import Layout from '@components/layout';
+import NiceModal from '@ebay/nice-modal-react';
+import NotificationItem from '@components/activities/NotificationItem';
+import React, {useEffect, useRef, useState} from 'react';
+import Separator from '@components/global/Separator';
 import getUsername from '@utils/get-username';
 import truncate from '@utils/truncate';
+import {Activity, ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
+import {Button, LoadingIndicator} from '@tryghost/admin-x-design-system';
 import {EmptyViewIcon, EmptyViewIndicator} from '@src/components/global/EmptyViewIndicator';
 import {
     GET_ACTIVITIES_QUERY_KEY_NOTIFICATIONS,
     useActivitiesForUser,
     useUserDataForUser
 } from '@hooks/use-activity-pub-queries';
+import {LucideIcon, Skeleton} from '@tryghost/shade';
 import {type NotificationType} from '@components/activities/NotificationIcon';
 import {handleProfileClick} from '@utils/handle-profile-click';
 import {stripHtml} from '@src/utils/content-formatters';
