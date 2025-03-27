@@ -17,14 +17,14 @@ If you've got an idea for a new feature, please start by suggesting it in the [f
 
 If you're going to work on Ghost core you'll need to go through a slightly more involved install and setup process than the usual Ghost CLI version.
 
-First you'll need to fork both [Ghost](https://github.com/tryghost/ghost) and [Ghost-Admin](https://github.com/tryghost/ghost-admin) to your personal Github account, and then follow the detailed [install from source](https://ghost.org/docs/install/source/) setup guide.
+First you'll need to fork [Ghost](https://github.com/tryghost/ghost) to your personal Github account, and then follow the detailed [install from source](https://ghost.org/docs/install/source/) setup guide.
 
 
 ### Branching Guide
 
-`master` on the main repository always contains the latest changes. This means that it is WIP for the next minor version and should NOT be considered stable. Stable versions are tagged using [semantic versioning](http://semver.org/).
+`main` on the main repository always contains the latest changes. This means that it is WIP for the next minor version and should NOT be considered stable. Stable versions are tagged using [semantic versioning](http://semver.org/).
 
-On your local repository, you should always work on a branch to make keeping up-to-date and submitting pull requests easier, but in most cases you should submit your pull requests to `master`. Where necessary, for example if multiple people are contributing on a large feature, or if a feature requires a database change, we make use of feature branches.
+On your local repository, you should always work on a branch to make keeping up-to-date and submitting pull requests easier, but in most cases you should submit your pull requests to `main`. Where necessary, for example if multiple people are contributing on a large feature, or if a feature requires a database change, we make use of feature branches.
 
 
 ### Commit Messages
@@ -33,20 +33,28 @@ We have a handful of simple standards for commit messages which help us to gener
 
 - **1st line:** Max 80 character summary written in past tense
 - **2nd line:** [Always blank]
-- **3rd line:** `refs/closes #000` or `no issue`
-- **4th line:** Whatever you want. Any extra details can be included from here
+- **3rd line:** `refs <issue link>`, `fixes <issue link>` or `no issue`
+- **4th line:** Why this change was made - the code includes the what, the commit message should describe the context of why - why this, why now, why not something else?
 
-If your change is **user-facing** please prepend the first line of your commit with **an emoji key**.
-We are following [gitmoji](https://gitmoji.carloscuesta.me/).
+If your change is **user-facing** please prepend the first line of your commit with **an emoji key**. If the commit is for an alpha feature, no emoji is needed. We are following [gitmoji](https://gitmoji.carloscuesta.me/).
 
 **Main emojis we are using:**
 
 - ✨ Feature
 - 🎨 Improvement / change
 - 🐛 Bug Fix
+- 🌐 i18n (translation) submissions
 - 💡 Anything else flagged to users or whoever is writing release notes
 
 Good commit message examples: [one](https://github.com/TryGhost/Ghost/commit/61db6defde3b10a4022c86efac29cf15ae60983f), [two](https://github.com/TryGhost/Ghost/commit/b392d1925a9f961d7b4bf781ee86393a7773ed4b) and [three](https://github.com/TryGhost/Ghost/commit/e4807a779c28a754e3f8ae871a26a8aad12ca9a9).
+
+**Bumping @tryghost dependencies**
+
+When bumping `@tryghost/*` dependencies, the first line should follow the above format and say what has changed, not say what has been bumped.
+
+There is no need to include what modules have changed in the commit message, as this is _very_ clear from the contents of the commit. The commit should focus on surfacing the underlying changes from the dependencies - what actually changed as a result of this dependency bump?
+
+[Good example](https://github.com/TryGhost/Ghost/commit/95751a0e5fb719bb5bca74cb97fb5f29b225094f)
 
 
 

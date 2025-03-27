@@ -1,0 +1,62 @@
+@import '@tryghost/admin-x-design-system/styles.css';
+
+/* Only settings related overrides */
+.gh-update-banner ~ * #admin-x-settings-content {
+    top: 48px;
+}
+
+.gh-update-banner ~ * #done-button-container {
+    top: 48px;
+}
+
+.analytics-settings div {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.analytics-settings div button {
+    align-self: center;
+}
+
+@media (max-width: 860px) {
+    .gh-update-banner ~ * #admin-x-settings-sidebar-scroller {
+        position: fixed;
+        top: 48px;
+    }
+
+    .gh-update-banner ~ * #done-button-container {
+        top: 60px;
+    }
+}
+
+@media (max-width: 600px) {
+    .gh-update-banner ~ * #admin-x-settings-sidebar-scroller {
+        position: fixed;
+        top: 72px;
+    }
+
+    .gh-update-banner ~ * #done-button-container {
+        top: 84px;
+    }
+}
+
+.admin-x-base {
+    opacity: 1;
+    animation-name: openAnimation;
+    animation-iteration-count: 1;
+    animation-timing-function: ease;
+    animation-duration: 0.35s;
+}
+
+@keyframes openAnimation {
+    0% {
+        opacity: 0;
+        transform: translateY(20px) scale(0.95);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0px) scale(1.0);
+    }
+}

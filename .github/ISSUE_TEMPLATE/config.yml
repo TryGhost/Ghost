@@ -1,0 +1,12 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 🚑 Help & Support
+    url: https://forum.ghost.org
+    about: Please use the community forum for questions
+  - name: 💡 Features & Ideas
+    url: https://forum.ghost.org/c/Ideas
+    about: Please vote for & post new ideas in the the forum
+  - name: 📖 Documentation
+    url: https://ghost.org/docs/
+    about: Tutorials & reference guides for themes, the API and more
+    

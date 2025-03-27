@@ -1,0 +1,11 @@
+<span class="gh-select">
+    <OneWaySelect @value={{this.selectedVisibility}}
+        @options={{this.availableVisibilities}}
+        @optionValuePath="name"
+        @optionLabelPath="label"
+        @optionTargetPath="name"
+        @update={{action "updateVisibility"}}
+        @data-test-select="post-visibility"
+    />
+    <span class="ember-power-select-status-icon"></span>
+</span>

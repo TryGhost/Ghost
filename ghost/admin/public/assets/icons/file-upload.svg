@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <title>file-upload</title>
+  <defs>
+    <style>
+      .a{fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:1.5px}
+    </style>
+  </defs>
+  <path class="a" d="M8.25 14.25 12 18l3.75-3.75M12 6.75V18"/>
+  <circle class="a" cx="12" cy="12" r="11.25"/>
+</svg>

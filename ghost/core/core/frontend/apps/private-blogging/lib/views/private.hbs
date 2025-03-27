@@ -1,0 +1,75 @@
+<!doctype html>
+<!--[if (IE 8)&!(IEMobile)]><html class="no-js lt-ie9" lang="en"><![endif]-->
+<!--[if (gte IE 9)| IEMobile |!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+    <head>
+        <meta http-equiv="Content-Type" content="text/html" charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+
+        <title>{{@site.title}}</title>
+        <meta property="og:type" content="website">
+        <meta property="og:site_name" content="{{@site.title}}">
+        <meta property="og:title" content="{{@site.title}}">
+        <meta name="twitter:title" content="{{@site.title}}">
+
+        <link rel="canonical" href="{{@site.url}}">
+        <meta property="og:url" content="{{@site.url}}">
+        <meta name="twitter:url" content="{{@site.url}}">
+
+        {{#if @site.icon}}
+            <link rel="icon" href="{{img_url @site.icon absolute="true"}}" type="image/png">
+        {{/if}}
+
+        {{#if @site.description}}
+            <meta name="description" content="{{@site.description}}">
+            <meta property="og:description" content="{{@site.description}}">
+            <meta name="twitter:description" content="{{@site.description}}">
+        {{/if}}
+
+        {{#if @site.cover_image}}
+            <meta property="og:image" content="{{img_url @site.cover_image absolute="true"}}">
+            <meta name="twitter:image" content="{{img_url @site.cover_image absolute="true"}}">
+        {{/if}}
+
+        <meta name="twitter:card" content="summary_large_image">
+        <meta name="twitter:site" content="@ghost">
+        <meta property="article:publisher" content="https://www.facebook.com/ghost">
+        <meta name="referrer" content="no-referrer-when-downgrade">
+        <meta name="HandheldFriendly" content="True">
+        <meta name="MobileOptimized" content="320">
+        <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1">
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+
+        <meta http-equiv="cleartype" content="on">
+
+        <link rel="stylesheet" href="{{asset "public/ghost.css" hasMinFile="true"}}"/>
+    </head>
+    <body>
+        <div class="gh-app">
+            <div class="gh-viewport">
+                <main class="gh-main" role="main">
+                    <div class="gh-flow">
+                        <div class="gh-flow-content-wrap">
+                            {{#if @site.icon}}
+                                <img class="site-icon" src="{{img_url @site.icon absolute="true"}}" alt="icon">
+                            {{/if}}
+                            <section class="gh-flow-content private">
+                                <header>
+                                    <h1>This site is private.</h1>
+                                </header>
+                                <form class="gh-signin" method="post" novalidate="novalidate">
+                                    <div class="form-group{{#if error}} error{{/if}}">
+                                            {{input_password class="gh-input" placeholder="Password"}}
+                                            {{#if error}}
+                                                <p class="main-error">{{error.message}}</p>
+                                            {{/if}}
+                                    </div>
+                                    <button class="gh-btn" type="submit"><span>Access site &rarr;</span></button>
+                                </form>
+                            </section>
+                        </div>
+                    </div>
+                </main>
+            </div>
+        </div>
+    </body>
+</html>

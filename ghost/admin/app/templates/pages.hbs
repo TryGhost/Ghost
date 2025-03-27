@@ -1,0 +1,74 @@
+<section class="gh-canvas gh-canvas-sticky">
+    <GhCanvasHeader class="gh-canvas-header sticky break tablet post-header">
+        <GhCustomViewTitle @title="Pages" @query={{reset-query-params "posts"}} />
+
+        <section class="view-actions">
+            <PostsList::ContentFilter
+                @currentUser={{this.session.user}}
+                @selectedType={{this.selectedType}}
+                @availableTypes={{this.availableTypes}}
+                @onTypeChange={{this.changeType}}
+                @selectedVisibility={{this.selectedVisibility}}
+                @availableVisibilities={{this.availableVisibilities}}
+                @onVisibilityChange={{this.changeVisibility}}
+                @selectedAuthor={{this.selectedAuthor}}
+                @availableAuthors={{this.availableAuthors}}
+                @onAuthorChange={{this.changeAuthor}}
+                @selectedTag={{this.selectedTag}}
+                @availableTags={{this.availableTags}}
+                @onTagChange={{this.changeTag}}
+                @selectedOrder={{this.selectedOrder}}
+                @availableOrders={{this.availableOrders}}
+                @onOrderChange={{this.changeOrder}}
+            />
+
+            <LinkTo @route="lexical-editor.new" @model="page" class="gh-btn gh-btn-primary view-actions-top-row" data-test-new-page-button={{true}}><span>New page</span></LinkTo>
+        </section>
+    </GhCanvasHeader>
+
+    <section class="view-container content-list">
+        <PostsList::List
+            @model={{@model}}
+            @list={{this.selectionList}}
+        >
+            <li class="no-posts-box">
+                <div class="no-posts">
+                    {{#if this.showingAll}}
+                        {{svg-jar "pages-placeholder" class="gh-pages-placeholder"}}
+                        <h4>Tell the world about yourself.</h4>
+                        <LinkTo @route="lexical-editor.new" @model="page" class="gh-btn gh-btn-green">
+                            <span>Create a new page</span>
+                        </LinkTo>
+                    {{else}}
+                        <h4>No pages match the current filter</h4>
+                        <LinkTo @route="pages" @query={{hash visibility=null type=null author=null tag=null}} class="gh-btn">
+                            <span>Show all pages</span>
+                        </LinkTo>
+                    {{/if}}
+                </div>
+            </li>
+        </PostsList::List>
+
+    {{!-- only show one infinity loader wheel at a time - always order as scheduled, draft, remainder --}}
+    {{#if @model.scheduledInfinityModel}}
+        <GhInfinityLoader
+            @infinityModel={{@model.scheduledInfinityModel}}
+            @scrollable=".gh-main"
+            @triggerOffset={{1000}} />
+    {{/if}}
+    {{#if (and @model.draftInfinityModel (or (not @model.scheduledInfinityModel) (and @model.scheduledInfinityModel @model.scheduledInfinityModel.reachedInfinity)))}}
+        <GhInfinityLoader
+            @infinityModel={{@model.draftInfinityModel}}
+            @scrollable=".gh-main"
+            @triggerOffset={{1000}} />
+    {{/if}}
+    {{#if (and @model.publishedAndSentInfinityModel (and (or (not @model.scheduledInfinityModel) @model.scheduledInfinityModel.reachedInfinity) (or (not @model.draftInfinityModel) @model.draftInfinityModel.reachedInfinity)))}}
+        <GhInfinityLoader
+            @infinityModel={{@model.publishedAndSentInfinityModel}}
+            @scrollable=".gh-main"
+            @triggerOffset={{1000}} />
+    {{/if}}
+
+    </section>
+    {{outlet}}
+</section>

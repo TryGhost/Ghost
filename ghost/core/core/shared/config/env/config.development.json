@@ -1,0 +1,38 @@
+{
+    "url": "http://localhost:2368",
+    "mail": {
+        "from": "test@example.com",
+        "transport": "SMTP",
+        "options": {
+            "host": "127.0.0.1",
+            "port": 1025,
+            "auth": {
+                "user": "user",
+                "pass": "unsecure"
+            }
+        }
+    },
+    "database": {
+        "client": "sqlite3",
+        "connection": {
+            "filename": "content/data/ghost-dev.db"
+        },
+        "debug": false
+    },
+    "paths": {
+        "contentPath": "content/"
+    },
+    "privacy": {
+        "useRpcPing": false,
+        "useUpdateCheck": true
+    },
+    "useMinFiles": false,
+    "caching": {
+        "theme": {
+            "maxAge": 0
+        },
+        "admin": {
+            "maxAge": 0
+        }
+    }
+}

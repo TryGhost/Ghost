@@ -1,0 +1,10 @@
+<input
+    type="url"
+    class="gh-input"
+    placeholder="https://www.facebook.com/username"
+    value={{this.value}}
+    {{on "input" this.setScratchValue}}
+    {{on "blur" this.setFacebookUrl}}
+    data-test-facebook-input
+    ...attributes
+/>

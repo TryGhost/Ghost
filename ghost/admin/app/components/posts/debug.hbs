@@ -1,0 +1,424 @@
+<section class="gh-canvas gh-email-debug" {{did-insert this.loadData}}>
+    <GhCanvasHeader class="gh-canvas-header gh-post-analytics-header">
+        <div class="flex flex-column flex-grow-1">
+            <div class="gh-canvas-breadcrumb">
+                <LinkTo @route="posts">
+                    Posts
+                </LinkTo>
+                {{svg-jar "arrow-right-small"}}
+                <LinkTo @route="posts.analytics" @model={{this.post.id}}>
+                    Analytics
+                </LinkTo>
+                {{svg-jar "arrow-right-small"}}
+                Debug
+            </div>
+            <h2 class="gh-canvas-title gh-post-title">
+                {{this.post.title}}
+            </h2>
+            <div class="gh-post-analytics-meta">
+                <div class="gh-post-analytics-meta-text">
+                    {{#if this.post.hasBeenEmailed }}
+                        {{#if this.post.emailOnly}}
+                            Sent
+                        {{else}}
+                            Published and sent
+                        {{/if}}
+                    {{else}}
+                        Published
+                        {{#if @post.didEmailFail}}
+                            but failed to send
+                        {{else}}
+                            on your site
+                        {{/if}}
+                    {{/if}}
+
+                    {{#let (moment-site-tz this.post.publishedAtUTC) as |publishedAt|}}
+                        on
+                        {{moment-format publishedAt "D MMM YYYY"}}
+                        at
+                        {{moment-format publishedAt "HH:mm"}}
+                    {{/let}}
+                </div>
+            </div>
+            {{#if (eq this.post.email.status 'failed') }}
+                <div class="gh-box gh-box-error gh-box-tip gh-email-debug-error">
+                    {{svg-jar "warning"}}
+                    <div class="gh-email-debug-errortext">
+                        <h4>{{this.emailError.message}}</h4>
+                        <p class="mb0">{{this.emailError.details}}</p>
+                    </div>
+                    <LinkTo @route="lexical-editor.edit" @models={{array this.post.displayName this.post.id}} class="gh-btn gh-btn-primary gh-btn-icon gh-btn-red ember-view self-center">
+                        <span>Retry</span>
+                    </LinkTo>
+                </div>
+            {{/if}}
+        </div>
+    </GhCanvasHeader>
+
+    <Tabs::Tabs class="gh-tabs-analytics" @forceRender={{false}} as |tabs|>
+        <tabs.tab>
+            <h3>{{svg-jar "analytics-tab-sent-large"}} {{this.tabTotals.permanentFailures}}</h3>
+            <p><span class="analytics-tab-label">Permanent {{gh-pluralize this.tabTotals.permanentFailures "failure" without-count=true}}</span></p>
+        </tabs.tab>
+
+        <tabs.tabPanel>
+            <table class="gh-list gh-email-debug-permanent-failures">
+                <tbody>
+                {{#each this.permanentFailureData as |failure index|}}
+                <tr>
+                    <div class="gh-list-data gh-email-debug-col-member">
+                        {{#if failure.member.id}}
+                            <LinkTo @route="member" @model={{failure.member.id}} class="gh-email-debug-member">
+                                <GhMemberAvatar @member={{failure.member.record}} @containerClass="w9 h9 mr3 flex-shrink-0" />
+                                <div>
+                                    <h3 class="ma0 pa0 gh-members-list-name">{{failure.recipient.name}}</h3>
+                                    <p class="ma0 pa0 middarkgrey f8 gh-members-list-email">{{failure.recipient.email}}</p>
+                                </div>
+                            </LinkTo>
+                        {{else}}
+                            <div class="gh-email-debug-member">
+                                <figure class="gh-member-gravatar w9 h9 mr3 flex-shrink-0 bg-red">
+                                    <div class="gh-member-initials flex w9 h9 items-center justify-center br-100">
+                                        <span class="gh-member-avatar-label gh-member-list-avatar">{{failure.recipient.initials}}</span>
+                                    </div>
+                                </figure>
+                                <div>
+                                    <h3 class="ma0 pa0 gh-members-list-name">{{failure.recipient.name}}</h3>
+                                    <p class="ma0 pa0 middarkgrey f8 gh-members-list-email">{{failure.recipient.email}}</p>
+                                </div>
+                            </div>
+                        {{/if}}
+                    </div>
+                    <div class="gh-list-data gh-email-debug-col-failure">
+                        <div class="gh-email-debug-failure-details">
+                            <div class="gh-email-debug-failure-codes">
+                                <span class="gh-email-debug-failure-code">Failure code: <span>{{failure.code}}</span></span>
+                                {{#if failure.enhancedCode}}
+                                    <span class="gh-email-debug-failure-code">Enhanced code: <span>{{failure.enhancedCode}}</span></span>
+                                {{/if}}
+                            </div>
+                            <Posts::Debug::EmailErrorMessage @index={{index}} @message={{failure.message}} />
+                        </div>
+                    </div>
+                </tr>
+                {{/each}}
+                {{#unless this.permanentFailureData}}
+                <tr>
+                    <td>
+                        <div class="gh-email-debug-empty-list">No permanent failures.</div>
+                    </td>
+                </tr>
+                {{/unless}}
+                </tbody>
+            </table>
+        </tabs.tabPanel>
+
+        <tabs.tab>
+            <h3>{{svg-jar "analytics-tab-opened-large"}}{{this.tabTotals.temporaryFailures}}</h3>
+            <p><span class="analytics-tab-label">Temporary {{gh-pluralize this.tabTotals.temporaryFailures "failure" without-count=true}}</span></p>
+        </tabs.tab>
+
+        <tabs.tabPanel>
+            <table class="gh-list gh-email-debug-permanent-failures">
+                <tbody>
+                {{#each this.temporaryFailureData as |failure index|}}
+                <tr>
+                    <div class="gh-list-data gh-email-debug-col-member">
+                        {{#if failure.member.id}}
+                            <LinkTo @route="member" @model={{failure.member.id}} class="gh-email-debug-member">
+                                <GhMemberAvatar @member={{failure.member.record}} @containerClass="w9 h9 mr3 flex-shrink-0" />
+                                <div>
+                                    <h3 class="ma0 pa0 gh-members-list-name">{{failure.recipient.name}}</h3>
+                                    <p class="ma0 pa0 middarkgrey f8 gh-members-list-email">{{failure.recipient.email}}</p>
+                                </div>
+                            </LinkTo>
+                        {{else}}
+                            <div class="gh-email-debug-member">
+                                <figure class="gh-member-gravatar w9 h9 mr3 flex-shrink-0 bg-blue">
+                                    <div class="gh-member-initials flex w9 h9 items-center justify-center br-100">
+                                        <span class="gh-member-avatar-label gh-member-list-avatar">{{failure.recipient.initials}}</span>
+                                    </div>
+                                </figure>
+                                <div>
+                                    <h3 class="ma0 pa0 gh-members-list-name">{{failure.recipient.name}}</h3>
+                                    <p class="ma0 pa0 middarkgrey f8 gh-members-list-email">{{failure.recipient.email}}</p>
+                                </div>
+                            </div>
+                        {{/if}}
+                    </div>
+                    <div class="gh-list-data gh-email-debug-col-failure">
+                        <div class="gh-email-debug-failure">
+                            <div class="gh-email-debug-failure-details">
+                                <div class="gh-email-debug-failure-codes">
+                                    <span class="gh-email-debug-failure-code">Failure code: <span>{{failure.code}}</span></span>
+                                    {{#if failure.enhancedCode}}
+                                        <span class="gh-email-debug-failure-code">Enhanced code: <span>{{failure.enhancedCode}}</span></span>
+                                    {{/if}}
+                                </div>
+                                <Posts::Debug::EmailErrorMessage @index={{index}} @message={{failure.message}} />
+                            </div>
+                        </div>
+                    </div>
+                </tr>
+                {{/each}}
+                {{#unless this.temporaryFailureData}}
+                <tr>
+                    <td>
+                        <div class="gh-email-debug-empty-list">No temporary failures.</div>
+                    </td>
+                </tr>
+                {{/unless}}
+                </tbody>
+            </table>
+        </tabs.tabPanel>
+
+        <tabs.tab>
+            <h3>{{svg-jar "analytics-tab-clicked-large"}}{{this.tabTotals.erroredBatches}}</h3>
+            <p><span class="analytics-tab-label">{{gh-pluralize this.tabTotals.erroredBatches "batch" without-count=true}} errored</span></p>
+        </tabs.tab>
+
+        <tabs.tabPanel>
+            <table class="gh-list gh-email-debug-batches">
+                <thead>
+                    <tr class="gh-list-row header">
+                        <th class="gh-list-header">Status</th>
+                        <th class="gh-list-header">Created</th>
+                        <th class="gh-list-header">Segment</th>
+                        <th class="gh-list-header">Recipients</th>
+                        <th class="gh-list-header">Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#each this.emailBatchesData as |batch|}}
+                    <tr>
+                        <div class="gh-list-data gh-email-debug-batch-col-status">
+                            <span class="{{batch.statusClass}}">{{batch.status}}</span>
+                        </div>
+                        <div class="gh-list-data gh-email-debug-batch-col-created">
+                            <span>{{batch.createdAt}}</span>
+                        </div>
+                        <div class="gh-list-data gh-email-debug-batch-col-segment">
+                            {{#if batch.segment}}
+                                <span>{{batch.segment}}</span>
+                            {{else}}
+                                <div class="dib lightgrey">N/A</div>
+                            {{/if}}
+                        </div>
+                        <div class="gh-list-data gh-email-debug-batch-col-recipients">
+                            <span>{{batch.recipientCount}}</span>
+                        </div>
+                        <div class="gh-list-data gh-email-debug-batch-col-details">
+                            <div class="flex flex-col items-center space-between w100">
+                                {{#if (or batch.providerId batch.errorStatusCode batch.errorMessage)}}
+                                    <div class="detailtext">
+                                        {{#if batch.providerId}}
+                                            <div class="noselect">
+                                                Provider id:
+                                                <code>
+                                                    {{batch.providerId}}
+                                                </code>
+                                            </div>
+                                        {{/if}}
+                                        {{#if batch.errorStatusCode}}
+                                            <div>
+                                                Failure status code: <span>{{batch.errorStatusCode}}</span>
+                                            </div>
+                                        {{/if}}
+                                        {{#if batch.errorMessage}}
+                                            <span class="error">{{batch.errorMessage}}</span>
+                                        {{/if}}
+                                    </div>
+                                    {{!-- {{#if batch.errorMessage}}
+                                        <div class="download-icon">{{svg-jar "download" title="Download full failure message"}}</div>
+                                    {{/if}} --}}
+                                {{else}}
+                                    <div class="dib lightgrey">N/A</div>
+                                {{/if}}
+                            </div>
+                        </div>
+                    </tr>
+                    {{/each}}
+                    {{#unless this.emailBatchesData}}
+                    <tr>
+                        <td>
+                            <div class="gh-email-debug-empty-list">No batch data.</div>
+                        </td>
+                    </tr>
+                    {{/unless}}
+                </tbody>
+            </table>
+        </tabs.tabPanel>
+
+        <tabs.tab>
+            <div class="gh-email-debug-settingstab-icon">{{svg-jar "settings"}}</div>
+            <p><span class="analytics-tab-label">Settings</span></p>
+        </tabs.tab>
+
+        <tabs.tabPanel>
+            <table class="gh-email-debug-settings">
+                <tbody>
+                    <tr>
+                        <td>Status:</td>
+                        <td class="gh-email-debug-batch-col-status"><span class="{{this.emailSettings.statusClass}}">{{this.emailSettings.status}}</span></td>
+                    </tr>
+                    <tr>
+                        <td>Recipient filter:</td>
+                        <td class="gh-email-debug-batch-col-segment"><span>{{this.emailSettings.recipientFilter}}</span></td>
+                    </tr>
+                    <tr>
+                        <td>Created at:</td>
+                        <td>{{this.emailSettings.createdAt}}</td>
+                    </tr>
+                    <tr>
+                        <td>Submitted at:</td>
+                        <td>{{this.emailSettings.submittedAt}}</td>
+                    </tr>
+                    <tr>
+                        <td colspan="2"><hr></td>
+                    </tr>
+                    <tr>
+                        <td>Emails sent:</td>
+                        <td class="gh-type-number">{{ format-number this.emailSettings.emailsSent}}</td>
+                    </tr>
+                    <tr>
+                        <td>Delivered:</td>
+                        <td class="gh-type-number">{{ format-number this.emailSettings.emailsDelivered}}</td>
+                    </tr>
+                    <tr>
+                        <td>Opened:</td>
+                        <td class="gh-type-number">{{ format-number this.emailSettings.emailsOpened}}</td>
+                    </tr>
+                    <tr>
+                        <td>Failed:</td>
+                        <td class="gh-type-number">{{ format-number this.emailSettings.emailsFailed}}</td>
+                    </tr>
+                    <tr>
+                        <td colspan="2"><hr></td>
+                    </tr>
+                    <tr>
+                        <td>Track opens:</td>
+                        <td class="gh-email-debug-settings-icon">
+                            {{#if this.emailSettings.trackOpens}}
+                                <span class="check">{{svg-jar "check-2"}}</span>
+                            {{else}}
+                                <span class="x">{{svg-jar "close"}}</span>
+                            {{/if}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Track clicks:</td>
+                        <td class="gh-email-debug-settings-icon">
+                            {{#if this.emailSettings.trackClicks}}
+                                <span class="check">{{svg-jar "check-2"}}</span>
+                            {{else}}
+                                <span class="x">{{svg-jar "close"}}</span>
+                            {{/if}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Member feedback:</td>
+                        <td class="gh-email-debug-settings-icon">
+                            {{#if this.emailSettings.feedbackEnabled}}
+                                <span class="check">{{svg-jar "check-2"}}</span>
+                            {{else}}
+                                <span class="x">{{svg-jar "close"}}</span>
+                            {{/if}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2"><hr></td>
+                    </tr>
+                    <tr>
+                        <td>Analytics Latest running:</td>
+                        <td class="gh-email-debug-settings-icon">
+                            {{#if (and this.analyticsStatus this.analyticsStatus.latest this.analyticsStatus.latest.running) }}
+                                <span class="check">{{svg-jar "check-2"}}</span>
+                            {{else}}
+                                <span class="x">{{svg-jar "close"}}</span>
+                            {{/if}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Last started:</td>
+                        <td>{{ this.analyticsStatus.latest.lastStarted }}</td>
+                    </tr>
+                    <tr>
+                        <td>Fetching from:</td>
+                        <td>{{ this.analyticsStatus.latest.lastBegin }}</td>
+                    </tr>
+                    <tr>
+                        <td>Last event time:</td>
+                        <td>{{ this.analyticsStatus.latest.lastEventTimestamp }}</td>
+                    </tr>
+                    <tr>
+                        <td colspan="2"><hr></td>
+                    </tr>
+                    <tr>
+                        <td>Analytics Missing running:</td>
+                        <td class="gh-email-debug-settings-icon">
+                            {{#if (and this.analyticsStatus this.analyticsStatus.missing this.analyticsStatus.missing.running) }}
+                                <span class="check">{{svg-jar "check-2"}}</span>
+                            {{else}}
+                                <span class="x">{{svg-jar "close"}}</span>
+                            {{/if}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Last started:</td>
+                        <td>{{ this.analyticsStatus.missing.lastStarted }}</td>
+                    </tr>
+                    <tr>
+                        <td>Fetching from:</td>
+                        <td>{{ this.analyticsStatus.missing.lastBegin }}</td>
+                    </tr>
+                    <tr>
+                        <td>Last event time:</td>
+                        <td>{{ this.analyticsStatus.missing.lastEventTimestamp }}</td>
+                    </tr>
+                    {{#if (and this.analyticsStatus this.analyticsStatus.scheduled this.analyticsStatus.scheduled.schedule) }}
+                        <tr>
+                            <td colspan="2"><hr></td>
+                        </tr>
+                        <tr>
+                            <td>Analytics Scheduled running:</td>
+                            <td class="gh-email-debug-settings-icon">
+                                {{#if this.analyticsStatus.scheduled.running }}
+                                    <span class="check">{{svg-jar "check-2"}}</span>
+                                {{else}}
+                                    <span class="x">{{svg-jar "close"}}</span>
+                                {{/if}}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Schedule:</td>
+                            <td>{{ this.analyticsStatus.scheduled.schedule.begin }} - {{ this.analyticsStatus.scheduled.schedule.end }}</td>
+                        </tr>
+                        <tr>
+                            <td>Last started:</td>
+                            <td>{{ this.analyticsStatus.scheduled.lastStarted }}</td>
+                        </tr>
+                        <tr>
+                            <td>Last event time:</td>
+                            <td>{{ this.analyticsStatus.scheduled.lastEventTimestamp }}</td>
+                        </tr>
+                        {{#unless this.analyticsStatus.scheduled.canceled}}
+                            <tr>
+                                <td colspan="2">
+                                    <button type="button" class="gh-email-debug-schedule-analytics" {{on "click" this.cancelScheduleAnalytics }}>{{svg-jar "trash"}}Cancel scheduled refetch</button>
+                                </td>
+                            </tr>
+                        {{/unless}}
+                    {{else}}
+                        <tr>
+                            <td colspan="2">
+                                <button type="button" class="gh-email-debug-schedule-analytics" {{on "click" this.scheduleAnalytics }}>{{svg-jar "reload"}}Refetch Analytics</button>
+                            </td>
+                        </tr>
+                    {{/if}}
+                </tbody>
+            </table>
+
+        </tabs.tabPanel>
+
+    </Tabs::Tabs>
+</section>

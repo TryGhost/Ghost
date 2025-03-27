@@ -1,0 +1,115 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`OPTIONS requests CORS headers in Admin API Handles cross-domain origin header request 1: [headers] 1`] = `
+Object {
+  "allow": "GET,HEAD",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "8",
+  "content-type": "text/html; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": "W/\\"8-ZRAf8oNBS3Bjb/SU2GYZCmbtmXg\\"",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`OPTIONS requests CORS headers in Admin API Handles no origin header request 1: [headers] 1`] = `
+Object {
+  "allow": "GET,HEAD",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "8",
+  "content-type": "text/html; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": "W/\\"8-ZRAf8oNBS3Bjb/SU2GYZCmbtmXg\\"",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`OPTIONS requests CORS headers in Admin API Handles same origin request 1: [headers] 1`] = `
+Object {
+  "access-control-allow-methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "access-control-max-age": "86400",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "0",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "vary": "Accept-Version, Origin, Access-Control-Request-Headers",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`OPTIONS requests CORS headers in Content API Handles cross-domain origin header request 1: [headers] 1`] = `
+Object {
+  "access-control-allow-methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
+  "access-control-allow-origin": "*",
+  "access-control-max-age": "86400",
+  "cache-control": "public, max-age=0",
+  "content-length": "0",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "vary": "Accept-Version, Access-Control-Request-Headers",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`OPTIONS requests CORS headers in Content API Handles no origin header request 1: [headers] 1`] = `
+Object {
+  "access-control-allow-methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
+  "access-control-allow-origin": "*",
+  "access-control-max-age": "86400",
+  "cache-control": "public, max-age=0",
+  "content-length": "0",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "vary": "Accept-Version, Access-Control-Request-Headers",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`OPTIONS requests CORS headers in Content API Handles same origin request 1: [headers] 1`] = `
+Object {
+  "access-control-allow-methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
+  "access-control-allow-origin": "*",
+  "access-control-max-age": "86400",
+  "cache-control": "public, max-age=0",
+  "content-length": "0",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "vary": "Accept-Version, Access-Control-Request-Headers",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`OPTIONS requests CORS headers in Members API Handles cross-domain origin header request 1: [headers] 1`] = `
+Object {
+  "access-control-allow-methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
+  "access-control-allow-origin": "*",
+  "access-control-max-age": "86400",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "0",
+  "vary": "Access-Control-Request-Headers",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`OPTIONS requests CORS headers in Members API Handles no origin header request 1: [headers] 1`] = `
+Object {
+  "access-control-allow-methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
+  "access-control-allow-origin": "*",
+  "access-control-max-age": "86400",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "0",
+  "vary": "Access-Control-Request-Headers",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`OPTIONS requests CORS headers in Members API Handles same origin request 1: [headers] 1`] = `
+Object {
+  "access-control-allow-methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
+  "access-control-allow-origin": "*",
+  "access-control-max-age": "86400",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "0",
+  "vary": "Access-Control-Request-Headers",
+  "x-powered-by": "Express",
+}
+`;

@@ -1,0 +1,78 @@
+import { Meta } from '@storybook/blocks';
+import SBLocalError from './assets/local-error-example.png';
+import SBPageError from './assets/page-error-example.png';
+import SBGlobalError from './assets/global-error-example.png';
+
+<Meta title="Foundations / Error handling" />
+
+<div className="sb-doc">
+
+# Error handling
+
+<p className='excerpt'>Consistent error handling throughout the whole product is a key to great user experience.</p>
+
+Errors in Ghost Admin fall into one of three categories:
+
+1. **Field errors** &mdash; errors related to various [input] fields in forms
+2. **Page errors** &mdash; errors which are related to a screen, page or a modal.
+3. **System errors** &mdash; product level, global errors
+
+## Field errors
+
+Field errors are shown during frontend form validation, and appear close to the related form field. The most typical example of it is when the user doesn't fill a mandatory input field and an error message appears like this:
+
+<img src={SBLocalError} className='small' />
+
+This kind of error is usually used for inline frontend form validation, which mostly happens without an API roundtrip. The error is shown right after the user finishes editing the field and focuses out of it (`onBlur`).
+
+Ideally, all validation should be inline: that is, as soon as the user has finished filling in a field, an indicator should appear nearby if the field contains an error. This type of error message is easily noticeable; moreover, fixing the error immediately after the field has been completed requires the least interaction cost for users: they don’t need to locate it or navigate to the field, nor do they have to switch context from a new field to return to an old field they thought they had completed successfully.
+
+Of course, there will be situations where inline validation won’t be possible and data entered by the user will need to be sent to a server for verification. ([ref](https://www.nngroup.com/articles/errors-forms-design-guidelines/)).
+
+So the steps to show a field error are:
+
+1. User fills a field in the form
+2. Clicks outside the field (`onBlur`)
+3. The system does frontend field validation and — in case of an error — shows the related error
+
+All form elements (input fields, selects etc.) in AdminX have a built in capability to show form errors via the `error` prop set to `true` and using the `hint` prop to set the error message. (Example: [Textfield](/story/global-form-textfield--error))
+
+## Page errors
+
+Page errors are related to the actual page, modal or the task but unlike inline errors, they always appear on the top of the page. An important property of page errors is that they _disappear_ if the user navigates away from the page. A common example of page errors is a summary of form validation errors or an API error or a summary of errors on submitting a form.
+
+A typical example when page errors would be used:
+
+1. User fills a form. All inline form field validation is passed without an error
+2. Clicks Submit &rarr; API call
+3. There's an API error
+4. A page error is shown with the appropriate error message
+
+</div>
+
+<div className="sb-wide">
+<img src={SBPageError} />
+</div>
+
+<div className="sb-doc">
+## System errors
+
+System errors are always visible until explicitly dismissed no matter where the user navigates. Unlike inline or page errors, they are not connected to a specific context but to the overall behavior or status of the system.
+
+For example:
+</div>
+
+<div className="sb-wide">
+<img src={SBGlobalError} />
+</div>
+
+
+<div className="sb-doc">
+## Best practices
+
+- Optimise for inline error messages and instead page level errors. With inline validation, the error message is naturally shown next to the field causing the error.
+- Use modals sparingly. They are disruptive and the error message is presented in a window that needs to be dismissed in order to fix the error, so any complex instructions will have to be stored in users’ working memory, thus increasing their cognitive load.
+- Don't validate fields prematurely, ie. show the error messages only when the user finished interacting with the given field.
+- Don’t use summary errors as the only indication of an error. If you show a validation summary page error make sure that all fields with errors are also indicated with an appropriate inline error message.
+
+</div>

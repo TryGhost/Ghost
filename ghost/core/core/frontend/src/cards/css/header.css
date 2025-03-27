@@ -1,0 +1,233 @@
+.kg-header-card,
+.kg-header-card * {
+    box-sizing: border-box;
+}
+
+.kg-header-card {
+    padding: 12vmin 4em;
+    min-height: 60vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.kg-header-card.kg-size-small {
+    padding-top: 14vmin;
+    padding-bottom: 14vmin;
+    min-height: 40vh;
+}
+
+.kg-header-card.kg-size-large {
+    padding-top: 18vmin;
+    padding-bottom: 18vmin;
+    min-height: 80vh;
+}
+
+.kg-header-card.kg-align-left {
+    text-align: left;
+    align-items: flex-start;
+}
+
+.kg-header-card.kg-style-dark {
+    background: #151515;
+    color: #ffffff;
+}
+
+.kg-header-card.kg-style-light {
+    background-color: #fafafa;
+}
+
+.kg-header-card.kg-style-accent {
+    background-color: var(--ghost-accent-color);
+}
+
+.kg-header-card.kg-style-image {
+    position: relative;
+    background-color: #e7e7e7;
+    background-size: cover;
+    background-position: center;
+}
+
+.kg-header-card.kg-style-image::before {
+    position: absolute;
+    display: block;
+    content: "";
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background: linear-gradient(0deg, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.2));
+}
+
+.kg-header-card h2.kg-header-card-header {
+    font-size: 5em;
+    font-weight: 700;
+    line-height: 1.1em;
+    letter-spacing: -0.01em;
+    margin: 0;
+}
+
+.kg-header-card h2.kg-header-card-header strong {
+    font-weight: 800;
+}
+
+.kg-header-card.kg-size-small h2.kg-header-card-header {
+    font-size: 4em;
+}
+
+.kg-header-card.kg-size-large h2.kg-header-card-header {
+    font-size: 6em;
+}
+
+.kg-header-card h3.kg-header-card-subheader {
+    font-size: 1.5em;
+    font-weight: 500;
+    line-height: 1.4em;
+    margin: 0;
+    max-width: 40em;
+}
+
+.kg-header-card h2 + h3.kg-header-card-subheader {
+    margin: 0.35em 0 0;
+}
+
+.kg-header-card h3.kg-header-card-subheader strong {
+    font-weight: 600;
+}
+
+.kg-header-card.kg-size-small h3.kg-header-card-subheader {
+    font-size: 1.25em;
+}
+
+.kg-header-card.kg-size-large h3.kg-header-card-subheader {
+    font-size: 1.75em;
+}
+
+.kg-header-card:not(.kg-style-light) h2.kg-header-card-header,
+.kg-header-card:not(.kg-style-light) h3.kg-header-card-subheader {
+    color: #ffffff;
+}
+
+.kg-header-card.kg-style-accent h3.kg-header-card-subheader,
+.kg-header-card.kg-style-image h3.kg-header-card-subheader {
+    opacity: 1.0;
+}
+
+.kg-header-card.kg-style-image h2.kg-header-card-header,
+.kg-header-card.kg-style-image h3.kg-header-card-subheader,
+.kg-header-card.kg-style-image a.kg-header-card-button {
+    z-index: 999;
+}
+
+.kg-header-card h2.kg-header-card-header a,
+.kg-header-card h3.kg-header-card-subheader a {
+    color: var(--ghost-accent-color);
+}
+
+.kg-header-card.kg-style-accent h2.kg-header-card-header a,
+.kg-header-card.kg-style-accent h3.kg-header-card-subheader a,
+.kg-header-card.kg-style-image h2.kg-header-card-header a,
+.kg-header-card.kg-style-image h3.kg-header-card-subheader a {
+    color: #fff;
+}
+
+.kg-header-card a.kg-header-card-button {
+    display: flex;
+    position: static;
+    align-items: center;
+    fill: #fff;
+    background: #fff;
+    border-radius: 3px;
+    outline: none;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+    font-size: 1.05em;
+    font-weight: 600;
+    line-height: 1em;
+    text-align: center;
+    text-decoration: none;
+    letter-spacing: .2px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: #151515;
+    height: 2.7em;
+    padding: 0 1.2em;
+    transition: opacity .2s ease;
+}
+
+.kg-header-card h2 + a.kg-header-card-button,
+.kg-header-card h3 + a.kg-header-card-button {
+    margin: 1.75em 0 0;
+}
+
+.kg-header-card a.kg-header-card-button:hover {
+    opacity: 0.85;
+}
+
+.kg-header-card.kg-size-large a.kg-header-card-button {
+    font-size: 1.1em;
+    height: 2.9em;
+}
+
+.kg-header-card.kg-size-large h2 + a.kg-header-card-button,
+.kg-header-card.kg-size-large h3 + a.kg-header-card-button {
+    margin-top: 2em;
+}
+
+.kg-header-card.kg-size-small a.kg-header-card-button {
+    height: 2.4em;
+    font-size: 1em;
+}
+
+.kg-header-card.kg-size-small h2 + a.kg-header-card-button,
+.kg-header-card.kg-size-small h3 + a.kg-header-card-button {
+    margin-top: 1.5em;
+}
+
+.kg-header-card.kg-style-image a.kg-header-card-button,
+.kg-header-card.kg-style-dark a.kg-header-card-button {
+    background: #fff;
+    color: #151515;
+}
+
+.kg-header-card.kg-style-light a.kg-header-card-button {
+    background: var(--ghost-accent-color);
+    color: #fff;
+}
+
+.kg-header-card.kg-style-accent a.kg-header-card-button {
+    background: #fff;
+    color: #151515;
+}
+
+@media (max-width: 640px) {
+    .kg-header-card {
+        padding-left: 1em;
+        padding-right: 1em;
+    }
+
+    .kg-header-card h2.kg-header-card-header {
+        font-size: 3.5em;
+    }
+
+    .kg-header-card.kg-size-large h2.kg-header-card-header {
+        font-size: 4em;
+    }
+
+    .kg-header-card.kg-size-small h2.kg-header-card-header {
+        font-size: 3em;
+    }
+
+    .kg-header-card h3.kg-header-card-subheader {
+        font-size: 1.25em;
+    }
+
+    .kg-header-card.kg-size-large h3.kg-header-card-subheader {
+        font-size: 1.5em;
+    }
+
+    .kg-header-card.kg-size-small h3.kg-header-card-subheader {
+        font-size: 1em;
+    }
+}

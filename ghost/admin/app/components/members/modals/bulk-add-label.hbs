@@ -1,0 +1,81 @@
+<div class="modal-content">
+    <header class="modal-header" data-test-modal="add-label-members">
+        <h1>Add Label</h1>
+    </header>
+    <button type="button" class="close" title="Close" {{on "click" @close}}>{{svg-jar "close"}}<span class="hidden">Close</span></button>
+
+    {{#if this.hasRun}}
+        <div class="gh-content-box pa" data-test-state="add-complete">
+            {{#if this.error}}
+                <div class="flex items-center">
+                    {{svg-jar "warning" class="w4 h4 fill-red mr2 nudge-top--3"}}
+                    <div>
+                        <p class="ma0 pa0">
+                            <span class="fw5" data-test-text="add-error">{{this.error}}</span>
+                        </p>
+                    </div>
+                </div>
+            {{else}}
+                <div class="flex items-center">
+                    {{svg-jar "check-circle" class="w4 h4 stroke-green mr2"}}
+                    <p class="ma0 pa0">
+                        Label added to
+                        <span class="fw6" data-test-text="add-count">{{gh-pluralize this.response.stats.successful "member"}}</span>
+                        successfully
+                    </p>
+                </div>
+                {{#if this.response.stats.unsuccessful}}
+                    <div class="flex items-start mt2" data-test-bulk-label-add-errors>
+                        {{svg-jar "warning" class="w4 h4 fill-red mr2 nudge-top--3"}}
+                        <div>
+                            <p class="ma0 pa0">
+                                Failed to add label to <span class="fw5" data-test-text="invalid-count"> {{gh-pluralize this.response.stats.unsuccessful "member"}}</span>
+                            </p>
+                        </div>
+                    </div>
+                {{/if}}
+            {{/if}}
+        </div>
+    {{else}}
+        <div class="modal-body" data-test-state="add-label-unconfirmed">
+            {{#if @data.query}}
+                {{#let (members-count-fetcher query=@data.query) as |countFetcher|}}
+                    {{#if countFetcher.isLoading}}
+                        <GhLoadingSpinner />
+                    {{else}}
+                        <GhMemberSingleLabelInput
+                            @onChange={{this.setLabel}}
+                            @triggerId="label-input"
+                        />
+                        <p class="mt2 ml1">
+                            Will be added to the currently selected <span class="fw6" data-test-text="member-count">{{gh-pluralize countFetcher.count "member"}}</span>
+                        </p>
+                    {{/if}}
+                {{/let}}
+            {{else}}
+                <p>No members are selected.</p>
+            {{/if}}
+        </div>
+    {{/if}}
+
+    <div class="modal-footer">
+        {{#if this.hasRun}}
+            <button class="gh-btn gh-btn-black" data-test-button="close-modal" type="button" {{on "click" @close}}>
+                <span>Close</span>
+            </button>
+        {{else}}
+            <button class="gh-btn" data-test-button="cancel" type="button" {{on "click" @close}}>
+                <span>Cancel</span>
+            </button>
+
+            <GhTaskButton
+                @buttonText="Add Label"
+                @successText="Added"
+                @disabled={{this.isDisabled}}
+                @task={{this.addLabelTask}}
+                @class="gh-btn gh-btn-green gh-btn-icon"
+                data-test-button="confirm"
+            />
+        {{/if}}
+    </div>
+</div>

@@ -1,0 +1,82 @@
+<div class="gh-flow">
+    <div class="gh-flow-content-wrap">
+        <section class="gh-flow-content">
+            {{#if this.passwordResetEmailSent}}
+                <div class="gh-auth-email">
+                    <header>
+                        <div class="gh-site-icon" style={{site-icon-style}}></div>
+                        <h1>Update your password.</h1>
+                        <p>
+                            For security, you need to create a new password. An email has been sent to you with instructions.
+                        </p>
+                    </header>
+                </div>
+            {{else}}
+                <form id="login" method="post" action="javascript:void(0)" class="gh-signin" novalidate="novalidate" {{on "submit" (perform this.validateAndAuthenticateTask)}}>
+                    <header>
+                        <div class="gh-site-icon" style={{site-icon-style}}></div>
+                        <h1>{{this.config.blogTitle}}</h1>
+                    </header>
+                    <GhFormGroup @errors={{this.signin.errors}} @hasValidated={{this.hasValidated}} @property="identification">
+                        <label for="identification">Email address</label>
+                        <span class="gh-input-icon gh-icon-mail">
+                            <input
+                                id="identification"
+                                type="email"
+                                class="gh-input email"
+                                placeholder="jamie@example.com"
+                                name="identification"
+                                autocapitalize="off"
+                                autocorrect="off"
+                                autocomplete="username"
+                                value={{this.signin.identification}}
+                                data-test-input="email"
+                                {{on "input" this.handleInput}}
+                                {{on "blur" (fn this.validateProperty "identification")}}
+                            />
+                        </span>
+                    </GhFormGroup>
+                    <GhFormGroup @errors={{this.signin.errors}} @hasValidated={{this.hasValidated}} @property="password">
+                        <label for="password">Password</label>
+                        <span class="gh-input-icon gh-icon-lock forgotten-wrap">
+                            <input
+                                id="password"
+                                type="password"
+                                class="gh-input password"
+                                placeholder="•••••••••••••••"
+                                name="password"
+                                autocomplete="current-password"
+                                autocorrect="off"
+                                value={{this.signin.password}}
+                                data-test-input="password"
+                                {{on "input" this.handleInput}}
+                            />
+
+                            <GhTaskButton
+                                @task={{this.forgotPasswordTask}}
+                                @class="forgotten-link gh-btn gh-btn-link gh-btn-icon"
+                                @type="button"
+                                @successClass=""
+                                @failureClass=""
+                                as |task|
+                            >
+                                <span>{{#if task.isRunning}}{{svg-jar "spinner" class="gh-spinner"}}{{else}}Forgot?{{/if}}</span>
+                            </GhTaskButton>
+                        </span>
+                    </GhFormGroup>
+
+                    <GhTaskButton
+                        @buttonText="Sign in &rarr;"
+                        @task={{this.validateAndAuthenticateTask}}
+                        @showSuccess={{false}}
+                        @class="login gh-btn gh-btn-login gh-btn-block gh-btn-icon"
+                        @type="submit"
+                        @useAccentColor={{true}}
+                        data-test-button="sign-in" />
+                </form>
+
+                <p class="{{if this.flowErrors "main-error" "main-notification"}}" data-test-flow-notification>{{if this.flowErrors this.flowErrors this.flowNotification}}&nbsp;</p>
+            {{/if}}
+        </section>
+    </div>
+</div>

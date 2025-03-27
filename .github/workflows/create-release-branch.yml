@@ -1,0 +1,59 @@
+name: Create release branch
+on:
+  workflow_dispatch:
+    inputs:
+      base-ref:
+        description: 'Git ref to base from (defaults to latest tag)'
+        type: string
+        default: 'latest'
+        required: false
+      bump-type:
+        description: 'Version bump type (patch, minor)'
+        type: string
+        required: false
+        default: 'patch'
+env:
+  FORCE_COLOR: 1
+permissions:
+  contents: write
+jobs:
+  create-branch:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "BASE_REF=main" >> $GITHUB_ENV
+        if: inputs.base-ref == 'latest'
+
+      - run: echo "BASE_REF=${{ inputs.base-ref }}" >> $GITHUB_ENV
+        if: inputs.base-ref != 'latest'
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.BASE_REF }}
+          fetch-depth: 0
+          submodules: true
+
+      - name: Checkout most recent tag
+        run: git checkout $(git describe --tags --abbrev=0 --match=v*)
+        if: inputs.base-ref == 'latest'
+
+      - uses: asdf-vm/actions/install@v2
+        with:
+          tool_versions: |
+            semver 3.3.0
+
+      - run: |
+          echo "CURRENT_SHA=$(git rev-parse HEAD)" >> $GITHUB_ENV
+          echo "NEW_VERSION=$(semver bump ${{ inputs.bump-type }} $(git describe --tags --abbrev=0 --match=v*))" >> $GITHUB_ENV
+
+      - name: Create branch
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const branchName = `v${process.env.NEW_VERSION}`;
+            console.log(`Creating branch: ${branchName}`);
+            await github.request('POST /repos/{owner}/{repo}/git/refs', {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: `refs/heads/${branchName}`,
+              sha: process.env.CURRENT_SHA
+            });
