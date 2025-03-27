@@ -1,4 +1,7 @@
-<div class="gh-post-preview-container gh-post-preview-email-container {{unless @skipAnimation "fade-in"}}">
+<div
+    class="gh-post-preview-container gh-post-preview-email-container {{unless @skipAnimation "fade-in"}}"
+    {{did-update this.rerenderEmailPreview @memberSegment}}
+>
     <div class="gh-post-preview-email-mockup">
         <div class="gh-post-preview-email-header">
             <div class="gh-post-preview-email-columns">

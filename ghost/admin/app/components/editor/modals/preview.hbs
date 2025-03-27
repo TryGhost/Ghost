@@ -20,22 +20,13 @@
             <div class="gh-contentfilter-divider"></div>
             <span class="gh-select gh-web-preview-segment">
                 <PowerSelect
-                    @selected={{hash value="free" label="Free member"}}
-                    @options={{if (eq this.tab "email")
-                        (array
-                            (hash value="free" label="Free member")
-                            (hash value="paid" label="Paid member")
-                        )
-                        (array
-                            (hash value="anonymous" label="Anonymous")
-                            (hash value="free" label="Free member")
-                            (hash value="paid" label="Paid member")
-                        )
-                    }}
-                    @onChange={{this.noop}}
+                    @selected={{this.selectedPreviewAsOption}}
+                    @options={{this.previewAsOptions}}
+                    @onChange={{this.changePreviewAsOption}}
                     @triggerComponent={{component "gh-power-select/trigger"}}
                     @triggerClass="gh-preview-segment-trigger"
                     @dropdownClass="gh-preview-segment-dropdown"
+                    @matchTriggerWidth={{false}}
                     as |option|
                 >
                     {{option.label}}
@@ -105,14 +96,14 @@
     {{else}}
         {{#if (eq this.tab "browser")}}
             <Editor::Modals::Preview::Browser
-                @post={{@data.publishOptions.post}}
+                @previewUrl={{this.browserPreviewUrl}}
                 @skipAnimation={{this.skipAnimation}}
             />
         {{/if}}
 
         {{#if (and (eq this.tab "mobile"))}}
             <Editor::Modals::Preview::Mobile
-                @post={{@data.publishOptions.post}}
+                @previewUrl={{this.browserPreviewUrl}}
                 @skipAnimation={{this.skipAnimation}}
             />
         {{/if}}
@@ -121,6 +112,7 @@
             {{#if (and (eq this.tab "email") @data.publishOptions.post.isPost)}}
                 <Editor::Modals::Preview::Email
                     @post={{@data.publishOptions.post}}
+                    @memberSegment={{this.previewAsSegment}}
                     @newsletter={{@data.publishOptions.newsletter}}
                     @skipAnimation={{this.skipAnimation}}
                     @savePostTask={{@data.savePostTask}}

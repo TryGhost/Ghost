@@ -15,24 +15,79 @@ export default class EditorPostPreviewModal extends Component {
         ignoreBackdropClick: true
     };
 
-    @tracked tab = this.args.data.currentTab || 'browser';
+    @tracked tab = this.args.data.initialTab || 'browser';
     @tracked isChangingTab = false;
     @tracked previewEmailAddress = this.session.user.email;
+    @tracked previewAsSegment = 'free';
+    @tracked previewAsOptions = [];
 
     constructor() {
         super(...arguments);
         this.saveFirstTask.perform();
+
+        const {initialPreviewAsSegment} = this.args.data;
+        if (initialPreviewAsSegment) {
+            this.changePreviewAsSegment(initialPreviewAsSegment);
+        }
+
+        this.setPreviewAsOptions();
+    }
+
+    get selectedPreviewAsOption() {
+        return this.previewAsOptions.find(option => option.value === this.previewAsSegment);
     }
 
     get skipAnimation() {
         return this.args.data.skipAnimation || this.isChangingTab;
     }
 
+    get browserPreviewUrl() {
+        const url = new URL(this.args.data.publishOptions.post.previewUrl);
+        url.searchParams.set('memberStatus', this.previewAsSegment);
+        return url.toString();
+    }
+
+    // manually set the tracked property rather than using a getter so we have
+    // a stable reference when finding the selected option by value
+    setPreviewAsOptions() {
+        if (this.tab === 'email') {
+            this.previewAsOptions = [
+                {label: 'Free member', value: 'free'},
+                {label: 'Paid member', value: 'paid'}
+            ];
+        } else {
+            this.previewAsOptions = [
+                {label: 'Anonymous', value: 'anonymous'},
+                {label: 'Free member', value: 'free'},
+                {label: 'Paid member', value: 'paid'}
+            ];
+        }
+    }
+
     @action
     changeTab(tab) {
-        this.tab = tab;
         this.isChangingTab = true;
+        this.tab = tab;
         this.args.data.changeTab?.(tab);
+        this.setPreviewAsOptions();
+
+        if (tab === 'email' && this.previewAsSegment === 'anonymous') {
+            this.changePreviewAsSegment('free');
+        }
+    }
+
+    @action
+    changePreviewAsSegment(segment) {
+        if (this.tab === 'email' && segment === 'anonymous') {
+            segment = 'free';
+        }
+        this.previewAsSegment = segment;
+        this.args.data.changePreviewAsSegment?.(segment);
+    }
+
+    @action
+    changePreviewAsOption(option) {
+        this.changePreviewAsSegment(option.value);
     }
 
     @action
@@ -60,6 +115,4 @@ export default class EditorPostPreviewModal extends Component {
         copyTextToClipboard(this.args.data.publishOptions.post.previewUrl);
         return yield true;
     }
-
-    noop() {}
 }
