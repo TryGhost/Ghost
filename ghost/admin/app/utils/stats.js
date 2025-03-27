@@ -3,7 +3,7 @@ import moment from 'moment-timezone';
 export const TB_VERSION = 7;
 
 export const RANGE_OPTIONS = [
-    {name: 'Last 24 hours', value: 1},
+    {name: 'Today', value: 1},
     {name: 'Last 7 days', value: 7},
     {name: 'Last 30 days', value: 30 + 1},
     {name: 'Last 3 months', value: 90 + 1},
