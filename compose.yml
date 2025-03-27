@@ -53,7 +53,6 @@ services:
       - node_modules_ghost_ghost:/home/ghost/ghost/ghost/node_modules:delegated
       - node_modules_ghost_html-to-plaintext:/home/ghost/ghost/html-to-plaintext/node_modules:delegated
       - node_modules_ghost_i18n:/home/ghost/ghost/i18n/node_modules:delegated
-      - node_modules_ghost_identity-token-service:/home/ghost/ghost/identity-token-service/node_modules:delegated
       - node_modules_ghost_importer-handler-content-files:/home/ghost/ghost/importer-handler-content-files/node_modules:delegated
       - node_modules_ghost_in-memory-repository:/home/ghost/ghost/in-memory-repository/node_modules:delegated
       - node_modules_ghost_job-manager:/home/ghost/ghost/job-manager/node_modules:delegated
@@ -198,7 +197,6 @@ volumes:
   node_modules_ghost_ghost: {}
   node_modules_ghost_html-to-plaintext: {}
   node_modules_ghost_i18n: {}
-  node_modules_ghost_identity-token-service: {}
   node_modules_ghost_importer-handler-content-files: {}
   node_modules_ghost_in-memory-repository: {}
   node_modules_ghost_job-manager: {}
