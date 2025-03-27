@@ -27,7 +27,7 @@ export const routes: CustomRouteObject[] = [
         children: [
             {
                 index: true,
-                element: <Navigate to="inbox" replace />
+                element: <Navigate to="inbox" />
             },
             {
                 path: 'inbox',

@@ -6,7 +6,7 @@ import Separator from '@components/global/Separator';
 import {Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, LucideIcon} from '@tryghost/shade';
 import {EmptyViewIcon, EmptyViewIndicator} from '@src/components/global/EmptyViewIndicator';
 import {LoadingIndicator} from '@tryghost/admin-x-design-system';
-import {Navigate, useNavigate, useParams} from '@tryghost/admin-x-framework';
+import {Navigate, useNavigate, useNavigationStack, useParams} from '@tryghost/admin-x-framework';
 import {isPendingActivity} from '@utils/pending-activity';
 import {useFeatureFlags} from '@src/lib/feature-flags';
 import {useInboxForUser} from '@hooks/use-activity-pub-queries';
@@ -19,6 +19,9 @@ import {useInboxForUser} from '@hooks/use-activity-pub-queries';
  */
 
 const Inbox: React.FC = () => {
+    const {stack: navigationStack, canGoBack, goBack} = useNavigationStack();
+    console.log(navigationStack);
+
     const navigate = useNavigate();
     const params = useParams();
     const [isReaderOpen, setIsReaderOpen] = useState(false);
@@ -153,7 +156,11 @@ const Inbox: React.FC = () => {
                         <DialogDescription>Ghost reader for long form articles</DialogDescription>
                     </DialogHeader>
                     {params.postId && <Reader postId={params.postId} onClose={() => {
-                        navigate('/inbox-rr');
+                        if (canGoBack) {
+                            goBack();
+                        } else {
+                            navigate('/inbox-rr');
+                        }
                     }} />}
                 </DialogContent>
             </Dialog>

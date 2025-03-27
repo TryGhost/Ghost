@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useState, useRef} from 'react';
 import {useLocation, useNavigate, useNavigationType} from 'react-router';
 
 /**
@@ -29,15 +29,39 @@ export function NavigationStackProvider({
     const location = useLocation();
     const navigationType = useNavigationType();
     const [stack, setStack] = useState<string[]>([]);
+    const isInitializedRef = useRef(false);
+    const lastPathRef = useRef(location.pathname);
 
     useEffect(() => {
+        // Initialize stack if not initialized
+        if (!isInitializedRef.current) {
+            setStack([location.pathname]);
+            lastPathRef.current = location.pathname;
+            isInitializedRef.current = true;
+            return;
+        }
+
+        // Skip if the path hasn't changed
+        if (lastPathRef.current === location.pathname) {
+            return;
+        }
+
+        // Update last path
+        lastPathRef.current = location.pathname;
+
         if (navigationType === 'PUSH') {
             setStack((prev) => {
                 const newStack = [...prev, location.pathname];
                 return newStack.slice(-maxStackSize);
             });
         } else if (navigationType === 'POP') {
-            setStack(prev => prev.slice(0, -1));
+            setStack((prev) => {
+                // When popping, we want to keep the current path in the stack
+                // and remove the previous one
+                const newStack = [...prev];
+                newStack.pop();
+                return newStack;
+            });
         } else if (navigationType === 'REPLACE') {
             setStack((prev) => {
                 const newStack = [...prev.slice(0, -1), location.pathname];

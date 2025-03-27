@@ -19,7 +19,7 @@ const SidebarMenuLink = React.forwardRef<HTMLButtonElement, SidebarButtonProps>(
         if (to) {
             return (
                 <Button className={linkClass} variant='ghost' asChild>
-                    <Link replace={true} to={to}>{children}</Link>
+                    <Link to={to}>{children}</Link>
                 </Button>
             );
         }

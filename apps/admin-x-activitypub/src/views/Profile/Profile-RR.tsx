@@ -16,7 +16,8 @@ import getUsername from '../../utils/get-username';
 import {Separator} from '@tryghost/shade';
 import {handleProfileClick} from '../../utils/handle-profile-click';
 import {handleViewContent} from '../../utils/content-handlers';
-import {useParams} from '@tryghost/admin-x-framework';
+import {useFeatureFlags} from '@src/lib/feature-flags';
+import {useNavigate, useParams} from '@tryghost/admin-x-framework';
 
 const noop = () => {};
 
@@ -156,6 +157,9 @@ const PostsTab: React.FC<{handle: string}> = ({handle}) => {
     const posts = (data?.pages.flatMap(page => page.posts) ?? [])
         .filter(post => (post.type === 'Announce' || post.type === 'Create') && !post.object?.inReplyTo);
 
+    const {isEnabled} = useFeatureFlags();
+    const navigate = useNavigate();
+
     return (
         <div>
             {
@@ -175,10 +179,21 @@ const PostsTab: React.FC<{handle: string}> = ({handle}) => {
                                     object={post.object}
                                     repostCount={post.object.repostCount}
                                     type={post.type}
-                                    onClick={() => handleViewContent({
-                                        ...post,
-                                        id: post.object.id
-                                    }, false)}
+                                    onClick={() => {
+                                        if (isEnabled('ap-routes')) {
+                                            if (post.object.type === 'Note') {
+                                                navigate(`/feed/${encodeURIComponent(post.object.id)}`);
+                                            }
+                                            if (post.object.type === 'Article') {
+                                                navigate(`/inbox-rr/${encodeURIComponent(post.object.id)}`);
+                                            }
+                                        } else {
+                                            handleViewContent({
+                                                ...post,
+                                                id: post.object.id
+                                            }, false);
+                                        }
+                                    }}
                                     onCommentClick={() => handleViewContent({
                                         ...post,
                                         id: post.object.id
