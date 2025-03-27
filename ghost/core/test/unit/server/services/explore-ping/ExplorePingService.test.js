@@ -127,6 +127,13 @@ describe('ExplorePingService', function () {
             assert.equal(payload.posts_last, null);
         });
 
+        it('returns null for members_total if no members data available', async function () {
+            membersStub.stats.getTotalMembers.resolves(null);
+
+            const payload = await explorePingService.constructPayload();
+            assert.equal(payload.members_total, null);
+        });
+
         // test that the payload is correct if the timezone is not UTC
         it('returns correct payload if the timezone is not UTC', async function () {
             settingsCacheStub.getPublic.returns({

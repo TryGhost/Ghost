@@ -31,12 +31,24 @@ module.exports = class ExplorePingService {
         /* eslint-disable camelcase */
         const {title, description, icon, locale, accent_color, twitter, facebook} = this.settingsCache.getPublic();
 
-        const [totalPosts, lastPublishedAt, firstPublishedAt, totalMembers] = await Promise.all([
+        // Get post statistics
+        const [totalPosts, lastPublishedAt, firstPublishedAt] = await Promise.all([
             this.posts.stats.getTotalPostsPublished(),
             this.posts.stats.getMostRecentlyPublishedPostDate(),
-            this.posts.stats.getFirstPublishedPostDate(),
-            this.members.stats.getTotalMembers()
+            this.posts.stats.getFirstPublishedPostDate()
         ]);
+
+        // Get member statistics with error handling
+        let totalMembers = null;
+        try {
+            totalMembers = await this.members.stats.getTotalMembers();
+        } catch (err) {
+            this.logging.warn('Failed to fetch member statistics', {
+                error: err.message,
+                context: 'explore-ping-service'
+            });
+            // Continue without member statistics
+        }
 
         return {
             ghost: this.ghostVersion.full,
