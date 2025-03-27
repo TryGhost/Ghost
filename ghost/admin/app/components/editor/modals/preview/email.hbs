@@ -18,11 +18,13 @@
                                 data-test-email-preview-newsletter-select
                                 as |option|
                             >
-                                <span>{{option.name}} {{concat "<" (sender-email-address this.newsletter.senderEmail) ">"}}</span>
+                                <span>{{option.name}} {{concat "<" (sender-email-address option.senderEmail) ">"}}</span>
                             </PowerSelect>
                         {{else}}
-                            <p class="gh-preview-newsletter-name">{{this.newsletter.name}} <span
-                                class="gh-preview-email-address">&lt;{{sender-email-address this.newsletter.senderEmail}}&gt;</span></p>
+                            <p class="gh-preview-newsletter-name" data-test-text="newsletter-from">
+                                {{this.newsletter.name}}
+                                <span class="gh-preview-email-address">&lt;{{sender-email-address this.newsletter.senderEmail}}&gt;</span>
+                            </p>
                         {{/if}}
                     </form>
                     <div class="gh-post-test-email-group">
@@ -76,7 +78,7 @@
 
             <hr>
 
-            <form class="gh-email-preview-newsletter-select" data-test-email-preview-segment-select-section>
+            <form class="gh-email-preview-newsletter-select">
                 <label for="email-preview-newsletter-select">Subject</label>
                 <Editor::Modals::Preview::Email::EmailSubject
                     @post={{@post}}
