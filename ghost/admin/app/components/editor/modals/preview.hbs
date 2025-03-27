@@ -36,14 +36,14 @@
         <div class="right">
             <div class="gh-post-test-email-group">
                 <GhDropdownButton
-                    @dropdownName="post-preview-test-email"
+                    @dropdownName="post-preview-share"
                     @classNames="gh-btn gh-btn-preview gh-post-preview-url"
                     data-test-button="post-preview-test-email"
                 >
                     <span>{{svg-jar "share"}}</span>
                 </GhDropdownButton>
                 <GhDropdown
-                    @name="post-preview-test-email"
+                    @name="post-preview-share"
                     @classNames="dropdown-menu gh-post-preview-share-dropdown"
                     @onOpen={{this.focusInput}}
                 >
