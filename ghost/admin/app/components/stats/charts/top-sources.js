@@ -62,7 +62,7 @@ export default class TopSources extends Component {
             params: getStatsParams(
                 this.config,
                 props,
-                {limit: 7, timezone: this.settings.timezone}
+                {limit: 7}
             )
         });
 

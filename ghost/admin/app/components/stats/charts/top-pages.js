@@ -57,7 +57,7 @@ export default class TopPages extends Component {
         const params = getStatsParams(
             this.config,
             props,
-            {limit: LIMIT + 1, timezone: this.settings.timezone}
+            {limit: LIMIT + 1}
         );
 
         const {data, meta, error, loading} = useQuery({

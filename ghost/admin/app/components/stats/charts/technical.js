@@ -38,7 +38,7 @@ export default class TechnicalComponent extends Component {
         const params = getStatsParams(
             this.config,
             props,
-            {limit: 5, timezone: this.settings.timezone}
+            {limit: 5}
         );
 
         let endpoint;
