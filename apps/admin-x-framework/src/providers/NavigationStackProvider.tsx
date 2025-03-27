@@ -9,6 +9,7 @@ interface NavigationStackContextType {
     stack: string[];
     previousPath: string | null,
     canGoBack: boolean;
+    resetStack: () => void;
 }
 
 export interface NavigationStackProviderProps {
@@ -19,7 +20,8 @@ export interface NavigationStackProviderProps {
 const NavigationStackContext = React.createContext<NavigationStackContextType>({
     stack: [],
     previousPath: null,
-    canGoBack: false
+    canGoBack: false,
+    resetStack: () => {}
 });
 
 export function NavigationStackProvider({
@@ -31,6 +33,12 @@ export function NavigationStackProvider({
     const [stack, setStack] = useState<string[]>([]);
     const isInitializedRef = useRef(false);
     const lastPathRef = useRef(location.pathname);
+
+    const resetStack = useCallback(() => {
+        setStack([location.pathname]);
+        lastPathRef.current = location.pathname;
+        isInitializedRef.current = false;
+    }, [location.pathname]);
 
     useEffect(() => {
         // Initialize stack if not initialized
@@ -74,7 +82,7 @@ export function NavigationStackProvider({
     const canGoBack = stack.length > 1;
 
     return (
-        <NavigationStackContext.Provider value={{stack, previousPath, canGoBack}}>
+        <NavigationStackContext.Provider value={{stack, previousPath, canGoBack, resetStack}}>
             {children}
         </NavigationStackContext.Provider>
     );

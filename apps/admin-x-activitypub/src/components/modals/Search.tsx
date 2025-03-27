@@ -8,6 +8,8 @@ import {H4, LucideIcon} from '@tryghost/shade';
 import {LoadingIndicator, NoValueLabel, TextField} from '@tryghost/admin-x-design-system';
 import {SuggestedProfiles} from '../global/SuggestedProfiles';
 import {useDebounce} from 'use-debounce';
+import {useFeatureFlags} from '@src/lib/feature-flags';
+import {useNavigate} from '@tryghost/admin-x-framework';
 import {useSearchForUser} from '@hooks/use-activity-pub-queries';
 
 interface AccountSearchResult {
@@ -41,12 +43,19 @@ const AccountSearchResultItem: React.FC<AccountSearchResultItemProps & {
         });
     };
 
+    const {isEnabled} = useFeatureFlags();
+    const navigate = useNavigate();
+
     return (
         <ActivityItem
             key={account.id}
             onClick={() => {
-                onOpenChange?.(false);
-                NiceModal.show(ViewProfileModal, {handle: account.handle, onFollow, onUnfollow});
+                if (isEnabled('ap-routes')) {
+                    navigate(`/profile-rr/${account.handle}`);
+                } else {
+                    onOpenChange?.(false);
+                    NiceModal.show(ViewProfileModal, {handle: account.handle, onFollow, onUnfollow});
+                }
             }}
         >
             <APAvatar author={{
