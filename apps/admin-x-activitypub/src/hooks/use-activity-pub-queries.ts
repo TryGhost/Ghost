@@ -395,19 +395,66 @@ export function useUnfollowMutationForUser(handle: string, onSuccess: () => void
             // Update the profile followers query cache for the profile being unfollowed
             const profileFollowersQueryKey = QUERY_KEYS.profileFollowers(fullHandle);
 
-            queryClient.setQueryData(profileFollowersQueryKey, (oldData?: any) => {
-                if (!oldData?.pages?.[0]) return oldData;
+            queryClient.setQueryData(profileFollowersQueryKey, (oldData?: {
+                pages: Array<{
+                    followers: Array<{
+                        actor: {
+                            id: string;
+                            type: string;
+                            preferredUsername: string;
+                            name: string;
+                            url: string;
+                            icon: {
+                                type: string;
+                                url: string;
+                            };
+                        };
+                        isFollowing: boolean;
+                    }>;
+                }>;
+            }) => {
+                if (!oldData?.pages?.[0]) {
+                    return oldData;
+                }
 
                 const currentAccount = queryClient.getQueryData<Account>(QUERY_KEYS.account('index'));
-                if (!currentAccount) return oldData;
+                if (!currentAccount) {
+                    return oldData;
+                }
 
                 return {
                     ...oldData,
-                    pages: oldData.pages.map((page: any) => ({
+                    pages: oldData.pages.map((page: {
+                        followers: Array<{
+                            actor: {
+                                id: string;
+                                type: string;
+                                preferredUsername: string;
+                                name: string;
+                                url: string;
+                                icon: {
+                                    type: string;
+                                    url: string;
+                                };
+                            };
+                            isFollowing: boolean;
+                        }>;
+                    }) => ({
                         ...page,
-                        followers: page.followers.filter((follower: any) => 
-                            follower.actor.id !== currentAccount.id
-                        )
+                        followers: page.followers.filter((follower: {
+                            actor: {
+                                id: string;
+                                type: string;
+                                preferredUsername: string;
+                                name: string;
+                                url: string;
+                                icon: {
+                                    type: string;
+                                    url: string;
+                                };
+                            };
+                            isFollowing: boolean;
+                        }) => follower.actor.id !== currentAccount.id)
                     }))
                 };
             });
@@ -499,12 +546,32 @@ export function useFollowMutationForUser(handle: string, onSuccess: () => void, 
             queryClient.invalidateQueries({queryKey: accountFollowsQueryKey});
 
             // Add new follower to the followers list cache
-            queryClient.setQueryData(profileFollowersQueryKey, (oldData?: any) => {
-                if (!oldData?.pages?.[0]) return oldData;
+            queryClient.setQueryData(profileFollowersQueryKey, (oldData?: {
+                pages: Array<{
+                    followers: Array<{
+                        actor: {
+                            id: string;
+                            type: string;
+                            preferredUsername: string;
+                            name: string;
+                            url: string;
+                            icon: {
+                                type: string;
+                                url: string;
+                            };
+                        };
+                        isFollowing: boolean;
+                    }>;
+                }>;
+            }) => {
+                if (!oldData?.pages?.[0]) {
+                    return oldData;
+                }
 
                 const currentAccount = queryClient.getQueryData<Account>(QUERY_KEYS.account('index'));
-                console.log('currentAccount: ', currentAccount);
-                if (!currentAccount) return oldData;
+                if (!currentAccount) {
+                    return oldData;
+                }
                 
                 const newFollower = {
                     actor: {
@@ -520,9 +587,6 @@ export function useFollowMutationForUser(handle: string, onSuccess: () => void, 
                     },
                     isFollowing: false
                 };
-
-                console.log('data on page 0: ', oldData.pages[0]);
-                console.log('currentAccount: ', currentAccount);
 
                 return {
                     ...oldData,
