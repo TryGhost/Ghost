@@ -11,7 +11,7 @@
                                 @options={{this.newslettersList}}
                                 @onChange={{this.setNewsletter}}
                                 @triggerComponent={{component "gh-power-select/trigger"}}
-                                @triggerClass="gh-preview-newsletter-trigger"
+                                @triggerClass="gh-preview-newsletter-trigger gh-input-x"
                                 @dropdownClass="gh-publish-newsletter-dropdown gh-preview-newsletter-dropdown"
                                 @extra={{concat "<" (sender-email-address this.newsletter.senderEmail) ">"}}
                                 @selectedItemComponent={{component "editor/modals/preview/selected-newsletter-label"}}
@@ -33,7 +33,7 @@
                                 @options={{this.segments}}
                                 @onChange={{this.setSegment}}
                                 @triggerComponent={{component "gh-power-select/trigger"}}
-                                @triggerClass="gh-preview-newsletter-trigger"
+                                @triggerClass="gh-preview-newsletter-trigger gh-input-x"
                                 @dropdownClass="gh-publish-newsletter-dropdown gh-preview-newsletter-dropdown"
                                 data-test-email-preview-segment-select
                                 as |option|
