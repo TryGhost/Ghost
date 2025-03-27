@@ -1,3 +1,4 @@
+// import NavigationDebug from './components/layout/NavigationDebug';
 import {APP_ROUTE_PREFIX, routes} from '@src/routes';
 import {DesignSystemApp, DesignSystemAppProps} from '@tryghost/admin-x-design-system';
 import {FeatureFlagsProvider} from './lib/feature-flags';
@@ -22,6 +23,7 @@ const App: React.FC<AppProps> = ({framework, designSystem, activityPubEnabled}) 
                     <DesignSystemApp className='shade' {...designSystem}>
                         {/* TODO: remove className='' from ShadeApp once DesignSystemApp is removed to apply 'shade' to the main container */}
                         <ShadeApp className='' darkMode={designSystem.darkMode} fetchKoenigLexical={null}>
+                            {/* <NavigationDebug /> */}
                             <Outlet />
                         </ShadeApp>
                     </DesignSystemApp>
