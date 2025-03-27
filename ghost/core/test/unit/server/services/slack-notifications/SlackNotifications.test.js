@@ -1,6 +1,6 @@
 const assert = require('assert/strict');
 const sinon = require('sinon');
-const SlackNotifications = require('../lib/SlackNotifications');
+const SlackNotifications = require('../../../../../core/server/services/slack-notifications/SlackNotifications');
 const nock = require('nock');
 const ObjectId = require('bson-objectid').default;
 const got = require('got');

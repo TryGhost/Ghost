@@ -132,7 +132,6 @@
     "@tryghost/recommendations": "0.0.0",
     "@tryghost/request": "1.0.8",
     "@tryghost/security": "0.0.0",
-    "@tryghost/slack-notifications": "0.0.0",
     "@tryghost/social-urls": "0.1.43",
     "@tryghost/string": "0.2.12",
     "@tryghost/tiers": "0.0.0",
