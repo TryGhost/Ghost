@@ -28,7 +28,7 @@ export default class PublishManagement extends Component {
     // ensure we get a new PublishOptions instance when @post is replaced
     @use publishOptions = new PublishOptionsResource(() => [this.args.post]);
 
-    @tracked previewTab = 'browser';
+    @tracked previewFormat = 'browser';
     @tracked previewAsSegment = 'free';
 
     publishFlowModal = null;
@@ -115,8 +115,8 @@ export default class PublishManagement extends Component {
                 saveTask: this.saveTask,
                 savePostTask: this.args.savePostTask,
                 togglePreviewPublish: this.togglePreviewPublish,
-                initialTab: this.previewTab,
-                changeTab: this.changePreviewTab,
+                initialFormatTab: this.previewFormatTab,
+                changeFormatTab: this.changePreviewFormatTab,
                 initialPreviewAsSegment: this.previewAsSegment,
                 changePreviewAsSegment: this.changePreviewAsSegment,
                 skipAnimation
@@ -144,8 +144,8 @@ export default class PublishManagement extends Component {
     }
 
     @action
-    changePreviewTab(tab) {
-        this.previewTab = tab;
+    changePreviewFormat(format) {
+        this.previewFormat = format;
     }
 
     @action

@@ -88,13 +88,6 @@ export default class ModalPostPreviewEmailComponent extends Component {
         }
     }
 
-    @action
-    rerenderEmailPreview() {
-        if (this._previewIframe) {
-            this.renderEmailPreview(this._previewIframe);
-        }
-    }
-
     @task({drop: true})
     *sendPreviewEmailTask() {
         try {

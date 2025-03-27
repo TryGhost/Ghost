@@ -15,7 +15,8 @@ export default class EditorPostPreviewModal extends Component {
         ignoreBackdropClick: true
     };
 
-    @tracked tab = this.args.data.initialTab || 'browser';
+    @tracked previewFormat = this.args.data.initialPreviewFormat || 'browser';
+    @tracked previewSize = 'desktop';
     @tracked isChangingTab = false;
     @tracked previewEmailAddress = this.session.user.email;
     @tracked previewAsSegment = 'free';
@@ -50,7 +51,7 @@ export default class EditorPostPreviewModal extends Component {
     // manually set the tracked property rather than using a getter so we have
     // a stable reference when finding the selected option by value
     setPreviewAsOptions() {
-        if (this.tab === 'email') {
+        if (this.previewFormat === 'email') {
             this.previewAsOptions = [
                 {label: 'Free member', value: 'free'},
                 {label: 'Paid member', value: 'paid'}
@@ -65,20 +66,26 @@ export default class EditorPostPreviewModal extends Component {
     }
 
     @action
-    changeTab(tab) {
+    changePreviewFormat(format) {
         this.isChangingTab = true;
-        this.tab = tab;
-        this.args.data.changeTab?.(tab);
+        this.previewFormat = format;
+        this.args.data.changePreviewFormat?.(format);
         this.setPreviewAsOptions();
 
-        if (tab === 'email' && this.previewAsSegment === 'anonymous') {
+        if (format === 'email' && this.previewAsSegment === 'anonymous') {
             this.changePreviewAsSegment('free');
         }
     }
 
     @action
+    changePreviewSize(size) {
+        this.isChangingTab = true;
+        this.previewSize = size;
+    }
+
+    @action
     changePreviewAsSegment(segment) {
-        if (this.tab === 'email' && segment === 'anonymous') {
+        if (this.previewFormat === 'email' && segment === 'anonymous') {
             segment = 'free';
         }
         this.previewAsSegment = segment;

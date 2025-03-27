@@ -5,17 +5,17 @@
         </div>
         <div class="gh-post-preview-btn-group">
             <div class="gh-contentfilter gh-btn-group">
-                    <button type="button" class="gh-btn gh-post-preview-mode {{if (or (eq this.tab "browser") (eq this.tab "mobile")) "gh-btn-group-selected"}}" {{on "click" (fn this.changeTab "browser")}}><span>Web</span></button>
+                <button type="button" class="gh-btn gh-post-preview-mode {{if (eq this.previewFormat "browser") "gh-btn-group-selected"}}" {{on "click" (fn this.changePreviewFormat "browser")}}><span>Web</span></button>
                 {{#if (and (not-eq this.settings.membersSignupAccess "none") (not-eq this.settings.editorDefaultEmailRecipients "disabled"))}}
                     {{#if (and @data.publishOptions.post.isPost (not @data.publishOptions.user.isContributor))}}
-                        <button type="button" class="gh-btn {{if (eq this.tab "email") "gh-btn-group-selected"}} gh-post-preview-mode" {{on "click" (fn this.changeTab "email")}} data-test-button="email-preview"><span>Email</span></button>
+                        <button type="button" class="gh-btn {{if (eq this.previewFormat "email") "gh-btn-group-selected"}} gh-post-preview-mode" {{on "click" (fn this.changePreviewFormat "email")}} data-test-button="email-preview"><span>Email</span></button>
                     {{/if}}
                 {{/if}}
             </div>
             <div class="gh-contentfilter-divider"></div>
             <div class="gh-contentfilter gh-btn-group">
-                <button type="button" class="gh-btn {{if (or (eq this.tab "browser") (eq this.tab "email")) "gh-btn-group-selected"}} gh-post-preview-mode" {{on "click" (fn this.changeTab "browser")}}><span>{{svg-jar "laptop"}}</span></button>
-                <button type="button" class="gh-btn {{if (eq this.tab "mobile") "gh-btn-group-selected"}} gh-post-preview-mode" {{on "click" (fn this.changeTab "mobile")}}><span>{{svg-jar "mobile-phone"}}</span></button>
+                <button type="button" class="gh-btn {{if (eq this.previewSize "desktop") "gh-btn-group-selected"}} gh-post-preview-mode" {{on "click" (fn this.changePreviewSize "desktop")}}><span>{{svg-jar "laptop"}}</span></button>
+                <button type="button" class="gh-btn {{if (eq this.previewSize "mobile") "gh-btn-group-selected"}} gh-post-preview-mode" {{on "click" (fn this.changePreviewSize "mobile")}}><span>{{svg-jar "mobile-phone"}}</span></button>
             </div>
             <div class="gh-contentfilter-divider"></div>
             <span class="gh-select gh-web-preview-segment">
@@ -94,30 +94,23 @@
     {{#if this.saveFirstTask.isRunning}}
         <GhLoadingSpinner />
     {{else}}
-        {{#if (eq this.tab "browser")}}
-            <Editor::Modals::Preview::Browser
-                @previewUrl={{this.browserPreviewUrl}}
-                @skipAnimation={{this.skipAnimation}}
-            />
-        {{/if}}
-
-        {{#if (and (eq this.tab "mobile"))}}
-            <Editor::Modals::Preview::Mobile
-                @previewUrl={{this.browserPreviewUrl}}
-                @skipAnimation={{this.skipAnimation}}
-            />
-        {{/if}}
-
-        {{#unless @data.publishOptions.user.isContributor}}
-            {{#if (and (eq this.tab "email") @data.publishOptions.post.isPost)}}
+        {{#let @data.publishOptions.user.isContributor as |isContributor|}}
+            {{#if (or isContributor (not @data.publishOptions.post.isPost) (eq this.previewFormat "browser"))}}
+                <Editor::Modals::Preview::Browser
+                    @previewUrl={{this.browserPreviewUrl}}
+                    @skipAnimation={{this.skipAnimation}}
+                    @mobile={{eq this.previewSize "mobile"}}
+                />
+            {{else}}
                 <Editor::Modals::Preview::Email
                     @post={{@data.publishOptions.post}}
                     @memberSegment={{this.previewAsSegment}}
                     @newsletter={{@data.publishOptions.newsletter}}
                     @skipAnimation={{this.skipAnimation}}
                     @savePostTask={{@data.savePostTask}}
+                    @mobile={{eq this.previewSize "mobile"}}
                 />
             {{/if}}
-        {{/unless}}
+        {{/let}}
     {{/if}}
 </div>
