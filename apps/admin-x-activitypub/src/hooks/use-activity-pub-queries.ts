@@ -461,12 +461,6 @@ export function useFollowMutationForUser(handle: string, onSuccess: () => void, 
                 };
             });
 
-            // Invalidate the profile followers query cache for the profile being followed
-            // because we cannot directly add to it as we don't have the data for the new follower
-            const profileFollowersQueryKey = QUERY_KEYS.profileFollowers(fullHandle);
-
-            queryClient.invalidateQueries({queryKey: profileFollowersQueryKey});
-
             // Update the "followingCount" property of the account performing the follow
             const accountQueryKey = QUERY_KEYS.account('index');
 
@@ -481,12 +475,42 @@ export function useFollowMutationForUser(handle: string, onSuccess: () => void, 
                 };
             });
 
-            // Invalidate the follows query cache for the account performing the follow
-            // because we cannot directly add to it due to potentially incompatible data
-            // shapes
-            const accountFollowsQueryKey = QUERY_KEYS.accountFollows('index', 'following');
+            const profileFollowersQueryKey = QUERY_KEYS.profileFollowers(fullHandle);
 
-            queryClient.invalidateQueries({queryKey: accountFollowsQueryKey});
+            // Add new follower to the followers list cache
+            queryClient.setQueryData(profileFollowersQueryKey, (oldData?: any) => {
+                if (!oldData?.pages?.[0]) return oldData;
+
+                const currentAccount = queryClient.getQueryData<Account>(QUERY_KEYS.account('index'));
+                console.log('currentAccount: ', currentAccount);
+                if (!currentAccount) return oldData;
+                
+                const newFollower = {
+                    actor: {
+                        id: currentAccount.id,
+                        type: 'Person',
+                        preferredUsername: 'index',
+                        name: currentAccount.name,
+                        url: currentAccount.url || `https://${window.location.host}/ap/users/${currentAccount.username}`,
+                        icon: {
+                            type: 'Image',
+                            url: currentAccount.avatarUrl
+                        }
+                    },
+                    isFollowing: false
+                };
+
+                console.log('data on page 0: ', oldData.pages[0]);
+                console.log('currentAccount: ', currentAccount);
+
+                return {
+                    ...oldData,
+                    pages: [{
+                        ...oldData.pages[0],
+                        followers: [newFollower, ...oldData.pages[0].followers]
+                    }, ...oldData.pages.slice(1)]
+                };
+            });
 
             onSuccess();
         },
