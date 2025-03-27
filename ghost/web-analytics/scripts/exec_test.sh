@@ -4,7 +4,7 @@ set -euo pipefail
 export TB_VERSION_WARNING=0
 
 # Default version if not provided
-export TB_VERSION=${TB_VERSION:-7}
+export TB_VERSION=${TB_VERSION:-8}
 
 echo "TB_VERSION: $TB_VERSION"
 # Get the expected count once, outside of any function

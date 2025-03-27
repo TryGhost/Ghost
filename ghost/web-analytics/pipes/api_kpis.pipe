@@ -1,4 +1,4 @@
-VERSION 7
+VERSION 8
 TOKEN "stats_page" READ
 
 NODE timeseries
@@ -79,6 +79,20 @@ SQL >
                     {% if defined(pathname) %} and pathname = {{ String(pathname, description="Pathname to filter on", required=False) }} {% end %}
 
 
+NODE source_sessions
+SQL >
+
+    %
+    select session_id
+    from _mv_session_data sd
+    inner join filtered_sessions fs
+      on fs.session_id = sd.session_id
+    where
+        site_uuid = {{ String(site_uuid, 'mock_site_uuid', description="Tenant ID", required=True) }}
+        {% if defined(source) %} and source = {{ String(source, description="Source to filter on", required=False) }} {% end %}
+
+
+
 
 NODE session_metrics
 DESCRIPTION >
@@ -110,10 +124,11 @@ SQL >
                     {% end %}
                     is_bounce,
                     duration as session_sec
-                from mv_session_data
+                from _mv_session_data sd
+                    inner join source_sessions ss
+                        on ss.session_id = sd.session_id
                 where
                     site_uuid = {{ String(site_uuid, 'mock_site_uuid', description="Tenant ID", required=True) }}
-                    and session_id in (select session_id from filtered_sessions)
                     {% if defined(date_from) and day_diff(date_from, date_to) == 0 %}
                         and toDate(toTimezone(first_pageview, {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}})) = {{ Date(date_from) }}
                     {% else %}
