@@ -22,6 +22,7 @@ export default class TopLocations extends Component {
     @inject config;
     @service modals;
     @service router;
+    @service settings;
 
     @tracked showSeeAll = true;
 
@@ -41,7 +42,7 @@ export default class TopLocations extends Component {
 
     updateQueryParams(params) {
         const currentRoute = this.router.currentRoute;
-        const newQueryParams = {...currentRoute.queryParams, ...params};
+        const newQueryParams = {...currentRoute.queryParams, ...params, timezone: this.settings.timezone};
 
         this.router.transitionTo({queryParams: newQueryParams});
     }

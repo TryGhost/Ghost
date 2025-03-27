@@ -1,3 +1,4 @@
+import ContentView from '@views/Feed/components/ContentView';
 import Error from '@components/layout/Error';
 import Explore from '@views/Explore';
 import Inbox from '@views/Inbox';
@@ -35,6 +36,11 @@ export const routes: CustomRouteObject[] = [
                 path: 'feed',
                 element: <Inbox />,
                 pageTitle: 'Feed'
+            },
+            {
+                path: 'feed/:encodedId',
+                element: <ContentView />,
+                pageTitle: ''
             },
             {
                 path: 'notifications',

@@ -19,6 +19,7 @@ export default class TopSources extends Component {
     @inject config;
     @service modals;
     @service router;
+    @service settings;
 
     @tracked campaignOption = CAMPAIGN_OPTIONS[0];
     @tracked campaignOptions = CAMPAIGN_OPTIONS;
@@ -45,7 +46,7 @@ export default class TopSources extends Component {
 
     updateQueryParams(params) {
         const currentRoute = this.router.currentRoute;
-        const newQueryParams = {...currentRoute.queryParams, ...params};
+        const newQueryParams = {...currentRoute.queryParams, ...params, timezone: this.settings.timezone};
 
         this.router.transitionTo({queryParams: newQueryParams});
     }

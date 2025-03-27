@@ -13,7 +13,7 @@ countries.registerLocale(enLocale);
 export default class StatsController extends Controller {
     @inject config;
 
-    queryParams = ['device', 'browser', 'location', 'source', 'pathname', 'os'];
+    queryParams = ['device', 'browser', 'location', 'source', 'pathname', 'os', 'timezone'];
 
     @tracked device = null;
     @tracked browser = null;

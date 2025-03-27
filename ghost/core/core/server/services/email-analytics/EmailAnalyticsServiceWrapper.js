@@ -6,7 +6,7 @@ class EmailAnalyticsServiceWrapper {
             return;
         }
 
-        const {EmailAnalyticsService} = require('@tryghost/email-analytics-service');
+        const EmailAnalyticsService = require('./EmailAnalyticsService');
         const {EmailEventStorage, EmailEventProcessor} = require('@tryghost/email-service');
         const MailgunProvider = require('./EmailAnalyticsProviderMailgun');
         const {EmailRecipientFailure, EmailSpamComplaintEvent, Email} = require('../../models');

@@ -155,8 +155,9 @@ p .gh-preview-email-address {
 .gh-preview-email-subject {
     display: flex;
     align-items: center;
-    color: var(--darkgrey);
-    font-weight: 600;
+    color: var(--black);
+    font-size: 1.4rem;
+    font-weight: 400;
     cursor: pointer;
 }
 
