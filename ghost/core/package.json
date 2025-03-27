@@ -81,7 +81,6 @@
     "@tryghost/domain-events": "0.0.0",
     "@tryghost/donations": "0.0.0",
     "@tryghost/email-addresses": "0.0.0",
-    "@tryghost/email-analytics-service": "0.0.0",
     "@tryghost/email-content-generator": "0.0.0",
     "@tryghost/email-mock-receiver": "0.3.8",
     "@tryghost/email-service": "0.0.0",
