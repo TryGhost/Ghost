@@ -16,6 +16,14 @@ export function buildMember(override: any = {}) {
     };
 }
 
+export function buildDeletedMember() {
+    return null;
+}
+
+export function buildAnonymousMember(override: any = {}) {
+    return buildMember({...override, name: ''});
+}
+
 export function buildSettings(override: any = {}) {
     return {
         meta: {},

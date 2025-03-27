@@ -2,7 +2,6 @@ const ghostBookshelf = require('./base');
 const crypto = require('crypto');
 const _ = require('lodash');
 const config = require('../../shared/config');
-const {gravatar} = require('../lib/image');
 
 const Member = ghostBookshelf.Model.extend({
     tableName: 'members',
@@ -389,14 +388,14 @@ const Member = ghostBookshelf.Model.extend({
     },
 
     toJSON(unfilteredOptions) {
-        const options = Member.filterOptions(unfilteredOptions, 'toJSON');
-        const attrs = ghostBookshelf.Model.prototype.toJSON.call(this, options);
+        const attrs = ghostBookshelf.Model.prototype.toJSON.call(this, unfilteredOptions);
 
         // Inject a computed avatar url. Uses gravatar's default ?d= query param
         // to serve a blank image if there is no gravatar for the member's email.
         // Will not use gravatar if privacy.useGravatar is false in config
         attrs.avatar_image = null;
         if (attrs.email && !config.isPrivacyDisabled('useGravatar')) {
+            const {gravatar} = require('../lib/image');
             attrs.avatar_image = gravatar.url(attrs.email, {size: 250, default: 'blank'});
         }
 

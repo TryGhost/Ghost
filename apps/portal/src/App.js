@@ -12,7 +12,7 @@ import {transformPortalAnchorToRelative} from './utils/transform-portal-anchor-t
 import {getActivePage, isAccountPage, isOfferPage} from './pages';
 import ActionHandler from './actions';
 import './App.css';
-import {hasRecommendations, allowCompMemberUpgrade, createPopupNotification, getCurrencySymbol, getFirstpromoterId, getPriceIdFromPageQuery, getProductCadenceFromPrice, getProductFromId, getQueryPrice, getSiteDomain, isActiveOffer, isComplimentaryMember, isInviteOnlySite, isPaidMember, isRecentMember, isSentryEventAllowed, removePortalLinkFromUrl} from './utils/helpers';
+import {hasRecommendations, allowCompMemberUpgrade, createPopupNotification, hasAvailablePrices, getCurrencySymbol, getFirstpromoterId, getPriceIdFromPageQuery, getProductCadenceFromPrice, getProductFromId, getQueryPrice, getSiteDomain, isActiveOffer, isComplimentaryMember, isInviteOnly, isPaidMember, isRecentMember, isSentryEventAllowed, removePortalLinkFromUrl} from './utils/helpers';
 import {handleDataAttributes} from './data-attributes';
 
 import i18nLib from '@tryghost/i18n';
@@ -23,7 +23,8 @@ const DEV_MODE_DATA = {
     member: Fixtures.member.free,
     page: 'accountEmail',
     ...Fixtures.paidMemberOnTier(),
-    pageData: Fixtures.offer
+    pageData: Fixtures.offer,
+    captchaRef: React.createRef()
 };
 
 function SentryErrorBoundary({site, children}) {
@@ -56,11 +57,17 @@ export default class App extends React.Component {
             action: 'init:running',
             initStatus: 'running',
             lastPage: null,
-            customSiteUrl: props.customSiteUrl
+            customSiteUrl: props.customSiteUrl,
+            locale: props.locale,
+            scrollbarWidth: 0,
+            captchaRef: React.createRef()
         };
     }
 
     componentDidMount() {
+        const scrollbarWidth = this.getScrollbarWidth();
+        this.setState({scrollbarWidth});
+
         this.initSetup();
     }
 
@@ -74,10 +81,19 @@ export default class App extends React.Component {
                 if (this.state.showPopup) {
                     /** When modal is opened, store current overflow and set as hidden */
                     this.bodyScroll = window.document?.body?.style?.overflow;
+                    this.bodyMargin = window.getComputedStyle(document.body).getPropertyValue('margin-right');
                     window.document.body.style.overflow = 'hidden';
+                    if (this.state.scrollbarWidth) {
+                        window.document.body.style.marginRight = `calc(${this.bodyMargin} + ${this.state.scrollbarWidth}px)`;
+                    }
                 } else {
                     /** When the modal is hidden, reset overflow property for body */
                     window.document.body.style.overflow = this.bodyScroll || '';
+                    if (!this.bodyMargin || this.bodyMargin === '0px') {
+                        window.document.body.style.marginRight = '';
+                    } else {
+                        window.document.body.style.marginRight = this.bodyMargin;
+                    }
                 }
             } catch (e) {
                 /** Ignore any errors for scroll handling */
@@ -112,6 +128,27 @@ export default class App extends React.Component {
                 payload: {}
             }, '*');
         }
+    }
+
+    // User for adding trailing margin to prevent layout shift when popup appears
+    getScrollbarWidth() {
+        // Create a temporary div
+        const div = document.createElement('div');
+        div.style.visibility = 'hidden';
+        div.style.overflow = 'scroll'; // forcing scrollbar to appear
+        document.body.appendChild(div);
+
+        // Create an inner div
+        // const inner = document.createElement('div');
+        document.body.appendChild(div);
+
+        // Calculate the width difference
+        const scrollbarWidth = div.offsetWidth - div.clientWidth;
+
+        // Clean up
+        document.body.removeChild(div);
+
+        return scrollbarWidth;
     }
 
     /** Setup custom trigger buttons handling on page */
@@ -158,9 +195,9 @@ export default class App extends React.Component {
         try {
             // Fetch data from API, links, preview, dev sources
             const {site, member, page, showPopup, popupNotification, lastPage, pageQuery, pageData} = await this.fetchData();
-            const i18nLanguage = this.props.siteI18nEnabled ? site.locale : 'en';
-
+            const i18nLanguage = this.props.siteI18nEnabled ? this.props.locale || site.locale || 'en' : 'en';
             const i18n = i18nLib(i18nLanguage, 'portal');
+
             const state = {
                 site,
                 member,
@@ -171,8 +208,10 @@ export default class App extends React.Component {
                 pageData,
                 popupNotification,
                 t: i18n.t,
+                dir: i18n.dir() || 'ltr',
                 action: 'init:success',
-                initStatus: 'success'
+                initStatus: 'success',
+                locale: i18nLanguage
             };
 
             this.handleSignupQuery({site, pageQuery, member});
@@ -360,8 +399,6 @@ export default class App extends React.Component {
                 currency = currencyValue;
             } else if (key === 'disableBackground') {
                 data.site.disableBackground = JSON.parse(value);
-            } else if (key === 'allowSelfSignup') {
-                data.site.allow_self_signup = JSON.parse(value);
             } else if (key === 'membersSignupAccess' && value) {
                 data.site.members_signup_access = value;
             } else if (key === 'portalDefaultPlan' && value) {
@@ -549,7 +586,6 @@ export default class App extends React.Component {
     /** Fetch site and member session data with Ghost Apis  */
     async fetchApiData() {
         const {siteUrl, customSiteUrl, apiUrl, apiKey} = this.props;
-
         try {
             this.GhostApi = this.props.api || setupGhostApi({siteUrl, apiUrl, apiKey});
             const {site, member} = await this.GhostApi.init();
@@ -770,12 +806,11 @@ export default class App extends React.Component {
     }
 
     /**Get Portal page from Link/Data-attribute path*/
-    getPageFromLinkPath(path, useSite) {
+    getPageFromLinkPath(path) {
         const customPricesSignupRegex = /^signup\/?(?:\/(\w+?))?\/?$/;
         const customMonthlyProductSignup = /^signup\/?(?:\/(\w+?))\/monthly\/?$/;
         const customYearlyProductSignup = /^signup\/?(?:\/(\w+?))\/yearly\/?$/;
         const customOfferRegex = /^offers\/(\w+?)\/?$/;
-        const site = useSite ?? this.state.site ?? {};
 
         if (path === undefined || path === '') {
             return {
@@ -854,7 +889,7 @@ export default class App extends React.Component {
             return {
                 page: 'supportError'
             };
-        } else if (path === 'recommendations' && hasRecommendations({site})) {
+        } else if (path === 'recommendations') {
             return {
                 page: 'recommendations',
                 pageData: {
@@ -892,7 +927,7 @@ export default class App extends React.Component {
     getContextPage({site, page, member}) {
         /**Set default page based on logged-in status */
         if (!page || page === 'default') {
-            const loggedOutPage = isInviteOnlySite({site}) ? 'signin' : 'signup';
+            const loggedOutPage = isInviteOnly({site}) || !hasAvailablePrices({site}) ? 'signin' : 'signup';
             page = member ? 'accountHome' : loggedOutPage;
         }
 
@@ -925,7 +960,7 @@ export default class App extends React.Component {
 
     /**Get final App level context from App state*/
     getContextFromState() {
-        const {site, member, action, page, lastPage, showPopup, pageQuery, pageData, popupNotification, customSiteUrl, t} = this.state;
+        const {site, member, action, page, lastPage, showPopup, pageQuery, pageData, popupNotification, customSiteUrl, t, dir, scrollbarWidth, captchaRef} = this.state;
         const contextPage = this.getContextPage({site, page, member});
         const contextMember = this.getContextMember({page: contextPage, member, customSiteUrl});
         return {
@@ -942,6 +977,9 @@ export default class App extends React.Component {
             popupNotification,
             customSiteUrl,
             t,
+            dir,
+            scrollbarWidth,
+            captchaRef,
             onAction: (_action, data) => this.dispatchAction(_action, data)
         };
     }

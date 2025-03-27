@@ -3,10 +3,11 @@ import TopLevelGroup from '../../TopLevelGroup';
 import clsx from 'clsx';
 import useQueryParams from '../../../hooks/useQueryParams';
 import useStaffUsers from '../../../hooks/useStaffUsers';
-import {Avatar, Button, List, ListItem, NoValueLabel, TabView, showToast, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {Avatar, Button, List, ListItem, NoValueLabel, Separator, TabView, Toggle, showToast, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {User, hasAdminAccess, isContributorUser, isEditorUser} from '@tryghost/admin-x-framework/api/users';
 import {UserInvite, useAddInvite, useDeleteInvite} from '@tryghost/admin-x-framework/api/invites';
 import {generateAvatarColor, getInitials} from '../../../utils/helpers';
+import {getSettingValue, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
@@ -215,6 +216,7 @@ const Users: React.FC<{ keywords: string[], highlight?: boolean }> = ({keywords,
         fetchNextPage
     } = useStaffUsers();
     const {updateRoute} = useRouting();
+    const {currentUser} = useGlobalData();
 
     const showInviteModal = () => {
         updateRoute('staff/invite');
@@ -274,6 +276,12 @@ const Users: React.FC<{ keywords: string[], highlight?: boolean }> = ({keywords,
         }
     ];
 
+    const {settings} = useGlobalData();
+    const require2fa = getSettingValue<boolean>(settings, 'require_email_mfa') || false;
+    const labs = JSON.parse(getSettingValue<string>(settings, 'labs') || '{}');
+    const {mutateAsync: editSettings} = useEditSettings();
+    const handleError = useHandleError();
+
     return (
         <TopLevelGroup
             customButtons={buttons}
@@ -291,6 +299,33 @@ const Users: React.FC<{ keywords: string[], highlight?: boolean }> = ({keywords,
                 link
                 onClick={() => fetchNextPage()}
             />}
+            {labs.staff2fa && !isEditorUser(currentUser) && (
+                <div className={`flex flex-col gap-6 ${users.length > 1 || invites.length > 0 ? '-mt-6' : ''}`}>
+                    <Separator />
+                    <div className='flex items-baseline justify-between'>
+                        <div className='flex flex-col'>
+                            <span className='text-[1.5rem] font-semibold tracking-tight'>Security settings</span>
+                            <span>Enable email 2FA for all staff logins</span>
+                        </div>
+                        <Toggle
+                            checked={require2fa}
+                            direction='rtl'
+                            gap='gap-0'
+                            onChange={async () => {
+                                const newValue = !require2fa;
+                                try {
+                                    await editSettings([{
+                                        key: 'require_email_mfa',
+                                        value: newValue
+                                    }]);
+                                } catch (error) {
+                                    handleError(error);
+                                }
+                            }}
+                        />
+                    </div>
+                </div>
+            )}
         </TopLevelGroup>
     );
 };

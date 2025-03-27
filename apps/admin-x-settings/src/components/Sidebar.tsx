@@ -122,7 +122,7 @@ const Sidebar: React.FC = () => {
 
     return (
         <div className='ml-auto flex w-full flex-col pt-0 tablet:max-w-[240px]' data-testid="sidebar">
-            <div className='sticky top-0 flex content-stretch items-end dark:bg-grey-975 tablet:h-20 tablet:bg-grey-50 dark:tablet:bg-black xl:h-20'>
+            <div className='sticky top-0 flex content-stretch items-end dark:bg-grey-975 tablet:h-20 tablet:bg-grey-50 dark:tablet:bg-[#101114] xl:h-20'>
                 <div className='relative w-full'>
                     <Icon className='absolute left-3 top-3 z-10' colorClass='text-grey-500' name='magnifying-glass' size='sm' />
                     <TextField
@@ -138,7 +138,7 @@ const Sidebar: React.FC = () => {
                         unstyled
                         onChange={updateSearch}
                     />
-                    {filter ? <Button className='absolute top-3 p-1 sm:right-14 tablet:right-3' icon='close' iconColorClass='text-grey-700 !w-[10px] !h-[10px]' size='sm' unstyled onClick={() => {
+                    {filter ? <Button className='absolute right-14 top-3 p-1 tablet:right-3' icon='close' iconColorClass='text-grey-700 !w-[10px] !h-[10px]' size='sm' unstyled onClick={() => {
                         setFilter('');
                         searchInputRef.current?.focus();
                     }} /> : <div className='absolute -right-1/2 top-[9px] hidden rounded border border-grey-400 bg-white px-1.5 py-0.5 text-2xs font-semibold uppercase tracking-wider text-grey-600 shadow-[0px_1px_#CED4D9] dark:border-grey-800 dark:bg-grey-900 dark:text-grey-500 dark:shadow-[0px_1px_#626D79] tablet:!visible tablet:right-3 tablet:!block'>/</div>}
@@ -167,6 +167,7 @@ const Sidebar: React.FC = () => {
 
                 <SettingNavSection isVisible={checkVisible(Object.values(siteSearchKeywords).flat())} title="Site">
                     <NavItem icon='palette' keywords={siteSearchKeywords.design} navid='design' title="Design & branding" onClick={handleSectionClick} />
+                    <NavItem icon='layout-2-col' keywords={siteSearchKeywords.theme} navid='theme' title="Theme" onClick={handleSectionClick} />
                     <NavItem icon='navigation' keywords={siteSearchKeywords.navigation} navid='navigation' title="Navigation" onClick={handleSectionClick} />
                     <NavItem icon='megaphone' keywords={siteSearchKeywords.announcementBar} navid='announcement-bar' title="Announcement bar" onClick={handleSectionClick} />
                 </SettingNavSection>
@@ -199,6 +200,7 @@ const Sidebar: React.FC = () => {
                 <SettingNavSection isVisible={checkVisible(Object.values(advancedSearchKeywords).flat())} title="Advanced">
                     <NavItem icon='modules-3' keywords={advancedSearchKeywords.integrations} navid='integrations' title="Integrations" onClick={handleSectionClick} />
                     <NavItem icon='download' keywords={advancedSearchKeywords.migrationtools} navid='migration' title="Import/Export" onClick={handleSectionClick} />
+                    <NavItem icon='block' keywords={advancedSearchKeywords.spamFilters} navid='spam-filters' title="Spam filters" onClick={handleSectionClick} />
                     <NavItem icon='brackets' keywords={advancedSearchKeywords.codeInjection} navid='code-injection' title="Code injection" onClick={handleSectionClick} />
                     <NavItem icon='labs-flask' keywords={advancedSearchKeywords.labs} navid='labs' title="Labs" onClick={handleSectionClick} />
                     <NavItem icon='time-back' keywords={advancedSearchKeywords.history} navid='history' title="History" onClick={handleSectionClick} />

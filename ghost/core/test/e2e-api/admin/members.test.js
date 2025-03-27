@@ -21,7 +21,8 @@ const urlUtils = require('../../../core/shared/url-utils');
 const settingsCache = require('../../../core/shared/settings-cache');
 const DomainEvents = require('@tryghost/domain-events');
 const logging = require('@tryghost/logging');
-const {stripeMocker, mockLabsDisabled} = require('../../utils/e2e-framework-mock-manager');
+const {stripeMocker} = require('../../utils/e2e-framework-mock-manager');
+const settingsHelpers = require('../../../core/server/services/settings-helpers');
 
 /**
  * Assert that haystack and needles match, ignoring the order.
@@ -136,7 +137,8 @@ function buildMemberWithIncludesSnapshot(options) {
         attribution: attributionSnapshot,
         newsletters: new Array(options.newsletters).fill(newsletterSnapshot),
         subscriptions: anyArray,
-        labels: anyArray
+        labels: anyArray,
+        unsubscribe_url: anyString
     };
 }
 
@@ -154,7 +156,8 @@ const memberMatcherShallowIncludes = {
     created_at: anyISODateTime,
     updated_at: anyISODateTime,
     subscriptions: anyArray,
-    labels: anyArray
+    labels: anyArray,
+    unsubscribe_url: anyString
 };
 
 /**
@@ -194,7 +197,6 @@ describe('Members API without Stripe', function () {
 
     beforeEach(function () {
         mockManager.mockMail();
-        mockLabsDisabled('newEmailAddresses');
     });
 
     afterEach(function () {
@@ -494,6 +496,7 @@ describe('Members API', function () {
     beforeEach(function () {
         mockManager.mockStripe();
         emailMockReceiver = mockManager.mockMail();
+        sinon.stub(settingsHelpers, 'createUnsubscribeUrl').returns('http://domain.com/unsubscribe/?uuid=memberuuid&key=abc123dontstealme');
     });
 
     afterEach(function () {
@@ -540,7 +543,7 @@ describe('Members API', function () {
                 etag: anyEtag
             });
     });
-    
+
     it('Can browse with more than maximum allowed limit', async function () {
         await agent
             .get('/members/?limit=300')
@@ -562,7 +565,7 @@ describe('Members API', function () {
                 etag: anyEtag
             });
     });
-    
+
     it('Can browse with limit=all', async function () {
         await agent
             .get('/members/?limit=all')
@@ -584,7 +587,7 @@ describe('Members API', function () {
                 etag: anyEtag
             });
     });
-    
+
     it('Can browse with filter', async function () {
         await agent
             .get('/members/?filter=label:label-1')
@@ -965,7 +968,7 @@ describe('Members API', function () {
         await agent.delete(`/members/${memberFailVerification.id}`);
 
         await configUtils.restore();
-        settingsCache.set('email_verification_required', false);
+        settingsCache.set('email_verification_required', {value: false});
     });
 
     it('Can add and send a signup confirmation email', async function () {

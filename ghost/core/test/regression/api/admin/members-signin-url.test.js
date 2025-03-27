@@ -99,4 +99,40 @@ describe('Members Sigin URL API', function () {
                 .expect(403);
         });
     });
+    describe('With an admin API key', function () {
+        let key, token;
+        before(async function () {
+            await localUtils.startGhost();
+            request = supertest.agent(config.get('url'));
+            await testUtils.initFixtures('members', 'api_keys');
+
+            key = testUtils.DataGenerator.Content.api_keys[0];
+            token = localUtils.getValidAdminToken('/admin/', key);   
+        });
+        it('Cannot read without the key', function () {
+            return request
+                .get(localUtils.API.getApiQuery(`members/${testUtils.DataGenerator.Content.members[0].id}/signin_urls/`))
+                .set('Origin', config.get('url'))
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(403);
+        });   
+        it('Can read with a key', function () {
+            return request
+                .get(localUtils.API.getApiQuery(`members/${testUtils.DataGenerator.Content.members[0].id}/signin_urls/`))
+                .set('Origin', config.get('url'))
+                .set('Content-Type', 'application/json')
+                .set('Authorization', `Ghost ${token}`)
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200)
+                .then((res) => {
+                    should.not.exist(res.headers['x-cache-invalidate']);
+                    const jsonResponse = res.body;
+                    should.exist(jsonResponse);
+                    should.exist(jsonResponse.member_signin_urls);
+                    jsonResponse.member_signin_urls.should.have.length(1);
+                    localUtils.API.checkResponse(jsonResponse.member_signin_urls[0], 'member_signin_url');
+                });
+        }); 
+    });
 });

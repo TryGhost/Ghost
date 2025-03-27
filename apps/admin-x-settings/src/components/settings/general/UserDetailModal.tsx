@@ -362,9 +362,10 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
         >
             <div>
                 <div className={`relative ${canAccessSettings(currentUser) ? '-mx-8 -mt-8 rounded-t' : '-mx-10 -mt-10'} bg-gradient-to-tr from-grey-900 to-black`}>
-                    <div className='flex min-h-[40vmin] flex-wrap items-end justify-between bg-cover bg-center' style={{
-                        backgroundImage: `url(${formState.cover_image})`
-                    }}>
+                    <div className='flex min-h-[40vmin] flex-wrap items-end justify-between bg-cover bg-center' 
+                        style={{
+                            backgroundImage: formState.cover_image ? `url(${formState.cover_image})` : 'none'
+                        }}>
                         <div className='flex w-full max-w-[620px] flex-col gap-5 p-8 md:max-w-[auto] md:flex-row md:items-center'>
                             <div>
                                 <ImageUpload

@@ -132,7 +132,7 @@ const prepareContentFolder = async ({contentFolder, redirectsFile = true, routes
     );
 
     if (redirectsFile) {
-        redirectsUtils.setupFile(contentFolderForTests, '.yaml');
+        await redirectsUtils.setupFile(contentFolderForTests, '.yaml');
     }
 
     if (routesFile) {
@@ -409,10 +409,12 @@ const getAgentsWithFrontend = async () => {
     };
 };
 
-const insertWebhook = ({event, url}) => {
+const insertWebhook = ({event, url, integrationType = undefined}) => {
     return fixtureUtils.fixtures.insertWebhook({
         event: event,
         target_url: url
+    }, {
+        integrationType
     });
 };
 

@@ -1,6 +1,6 @@
 {
   "name": "ghost-admin",
-  "version": "5.94.2",
+  "version": "5.115.0",
   "description": "Ember.js admin client for Ghost",
   "author": "Ghost Foundation",
   "homepage": "http://ghost.org",
@@ -26,7 +26,7 @@
     "lint": "yarn lint:js && yarn lint:hbs"
   },
   "engines": {
-    "node": "^18.12.1 || ^20.11.1"
+    "node": "^18.12.1 || ^20.11.1 || ^22.13.1"
   },
   "devDependencies": {
     "@babel/eslint-parser": "7.23.3",
@@ -41,22 +41,22 @@
     "@faker-js/faker": "7.6.0",
     "@glimmer/component": "1.1.2",
     "@html-next/vertical-collection": "3.0.0",
-    "@sentry/ember": "7.119.0",
+    "@sentry/ember": "7.119.2",
     "@sentry/integrations": "7.114.0",
     "@sentry/replay": "7.116.0",
     "@tinybirdco/charts": "0.2.1",
     "@tryghost/color-utils": "0.2.2",
     "@tryghost/ember-promise-modals": "2.0.1",
     "@tryghost/helpers": "1.1.90",
-    "@tryghost/kg-clean-basic-html": "4.1.4",
-    "@tryghost/kg-converters": "1.0.7",
-    "@tryghost/koenig-lexical": "1.3.26",
+    "@tryghost/kg-clean-basic-html": "4.2.0",
+    "@tryghost/kg-converters": "1.1.0",
+    "@tryghost/koenig-lexical": "1.6.6",
     "@tryghost/limit-service": "1.2.14",
     "@tryghost/members-csv": "0.0.0",
-    "@tryghost/nql": "0.12.5",
-    "@tryghost/nql-lang": "0.6.1",
+    "@tryghost/nql": "0.12.7",
+    "@tryghost/nql-lang": "0.6.3",
     "@tryghost/string": "0.2.12",
-    "@tryghost/timezone-data": "0.4.3",
+    "@tryghost/timezone-data": "0.4.4",
     "animejs": "3.2.2",
     "autoprefixer": "9.8.6",
     "babel-eslint": "10.1.0",
@@ -125,7 +125,7 @@
     "ember-truth-helpers": "3.1.1",
     "eslint-plugin-babel": "5.3.1",
     "flexsearch": "0.7.43",
-    "fs-extra": "11.2.0",
+    "fs-extra": "11.3.0",
     "glob": "8.1.0",
     "google-caja-bower": "https://github.com/acburdine/google-caja-bower#ghost",
     "keymaster": "https://github.com/madrobby/keymaster.git",
@@ -146,7 +146,7 @@
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "reframe.js": "4.0.2",
-    "semver": "7.6.3",
+    "semver": "7.7.1",
     "sentry-testkit": "5.0.9",
     "sinon-chai": "4.0.0",
     "testem": "3.15.1",
@@ -176,9 +176,10 @@
     "*.js": "eslint"
   },
   "dependencies": {
+    "i18n-iso-countries": "7.12.0",
     "jose": "4.15.9",
     "path-browserify": "1.0.1",
-    "webpack": "5.94.0"
+    "webpack": "5.98.0"
   },
   "nx": {
     "targets": {
@@ -189,7 +190,9 @@
             "projects": [
               "@tryghost/admin-x-demo",
               "@tryghost/admin-x-settings",
-              "@tryghost/admin-x-activitypub"
+              "@tryghost/admin-x-activitypub",
+              "@tryghost/posts",
+              "@tryghost/stats"
             ],
             "target": "build"
           }
@@ -206,7 +209,9 @@
             "projects": [
               "@tryghost/admin-x-demo",
               "@tryghost/admin-x-settings",
-              "@tryghost/admin-x-activitypub"
+              "@tryghost/admin-x-activitypub",
+              "@tryghost/posts",
+              "@tryghost/stats"
             ],
             "target": "build"
           }

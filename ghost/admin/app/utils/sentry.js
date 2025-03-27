@@ -2,6 +2,8 @@ import {Debug} from '@sentry/integrations';
 import {Replay} from '@sentry/replay';
 import {isAjaxError} from 'ember-ajax/errors';
 
+const FILTERED_URL_REGEX = /\/e\.ghost\.org|plausible\.io/;
+
 export function getSentryConfig(dsn, environment, appVersion, transport) {
     const extraIntegrations = [];
 
@@ -50,7 +52,7 @@ export function getSentryConfig(dsn, environment, appVersion, transport) {
         },
         beforeBreadcrumb(breadcrumb) {
             // ignore breadcrumbs for event tracking to reduce noise in error reports
-            if (breadcrumb.category === 'http' && breadcrumb.data?.url?.match(/\/e\.ghost\.org|plausible\.io/)) {
+            if (breadcrumb.category === 'http' && breadcrumb.data?.url?.match(FILTERED_URL_REGEX)) {
                 return null;
             }
             return breadcrumb;
@@ -97,13 +99,19 @@ export function getSentryTestConfig(transport) {
 
 export function beforeSend(event, hint) {
     try {
-        const exception = hint.originalException;
+        const originalException = hint?.originalException;
+        event.contexts = event.contexts || {};
         event.tags = event.tags || {};
         event.tags.shown_to_user = event.tags.shown_to_user || false;
         event.tags.grammarly = !!document.querySelector('[data-gr-ext-installed]');
 
         // Do not report "handled" errors to Sentry
         if (event.tags.shown_to_user === true) {
+            return null;
+        }
+
+        // Do not report requests to our event tracking endpoints to reduce noise
+        if (event.request?.url?.match(FILTERED_URL_REGEX)) {
             return null;
         }
 
@@ -115,8 +123,8 @@ export function beforeSend(event, hint) {
         }
 
         // ajax errors — improve logging and add context for debugging
-        if (isAjaxError(exception) && exception.payload && exception.payload.errors && exception.payload.errors.length > 0) {
-            const error = exception.payload.errors[0];
+        if (isAjaxError(originalException) && originalException.payload && originalException.payload.errors && originalException.payload.errors.length > 0) {
+            const error = originalException.payload.errors[0];
             event.exception.values[0].type = `${error.type}: ${error.context}`;
             event.exception.values[0].value = error.message;
             event.exception.values[0].context = error.context;
@@ -128,14 +136,13 @@ export function beforeSend(event, hint) {
         }
 
         // Do not report posthog-js errors to Sentry
-        if (hint && hint.originalException && hint.originalException.stack) {
-            if (hint.originalException.stack.includes('/posthog-js/')) {
-                return null;
-            }
+        if (originalException?.stack?.includes('/posthog-js/')) {
+            return null;
         }
 
         return event;
     } catch (error) {
+        console.error('Error in beforeSend:', error); // eslint-disable-line no-console
         // If any errors occur in beforeSend, send the original event to Sentry
         // Better to have some information than no information
         return event;

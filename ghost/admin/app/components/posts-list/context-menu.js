@@ -348,7 +348,7 @@ export default class PostsContextMenu extends Component {
                 }
                 return filterNql.queryJSON(model.serialize({includeId: true}));
             });
-            // Deleteobjects method from infintiymodel is broken for all models except the first page, so we cannot use this
+            // Deleteobjects method from infinitymodel is broken for all models except the first page, so we cannot use this
             this.infinity.replace(this.selectionList.infinityModel[key], remainingModels);
         }
 
@@ -369,12 +369,8 @@ export default class PostsContextMenu extends Component {
                     id: post.id,
                     type: this.type,
                     attributes: {
-                        visibility
-                    },
-                    relationships: {
-                        links: {
-                            data: tiers
-                        }
+                        visibility,
+                        tiers // tiers is a weird one, it's set up as an attribute but represents a relationship
                     }
                 }
             });
@@ -384,6 +380,8 @@ export default class PostsContextMenu extends Component {
         this.updateFilteredPosts();
 
         close();
+
+        return true;
     }
 
     @task

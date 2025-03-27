@@ -106,7 +106,8 @@ export default function NewsletterSelectionPage({pageData, onBack}) {
                             onClick={() => {
                                 let newsletters = subscribedNewsletters.map((d) => {
                                     return {
-                                        id: d.id
+                                        id: d.id,
+                                        name: d.name
                                     };
                                 });
                                 const {name, email, plan, phonenumber, offerId} = pageData;

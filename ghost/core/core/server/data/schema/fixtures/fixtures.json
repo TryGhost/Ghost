@@ -106,6 +106,10 @@
                 {
                     "name": "Scheduler Integration",
                     "description": "Internal Scheduler Client"
+                },
+                {
+                    "name": "Super Editor",
+                    "description": "Super Editors"
                 }
             ]
         },
@@ -814,6 +818,13 @@
                     "description": "Internal Content API integration for Admin access",
                     "type": "core",
                     "api_keys": [{"type": "content"}]
+                },
+                {
+                    "slug": "ghost-activitypub",
+                    "name": "Ghost ActivityPub",
+                    "description": "Internal Integration for ActivityPub",
+                    "type": "internal",
+                    "api_keys": []
                 }
             ]
         }
@@ -864,7 +875,8 @@
                     "link": "all",
                     "mention": "browse",
                     "collection": "all",
-                    "recommendation": "all"
+                    "recommendation": "all",
+                    "identity": "read"
                 },
                 "DB Backup Integration": {
                     "db": "all"
@@ -907,7 +919,31 @@
                     "link": "all",
                     "mention": "browse",
                     "collection": "all",
-                    "recommendation": "all"
+                    "recommendation": "all",
+                    "member_signin_url": "read"
+                },
+                "Super Editor": {
+                    "notification": "all",
+                    "post": "all",
+                    "setting": ["browse", "read"],
+                    "slug": "all",
+                    "tag": "all",
+                    "user": "all",
+                    "role": "all",
+                    "invite": "all",
+                    "theme": ["browse", "readActive"],
+                    "email_preview": "all",
+                    "email": "all",
+                    "snippet": "all",
+                    "label": ["browse", "read", "edit", "add", "destroy"],
+                    "product": ["browse", "read"],
+                    "newsletter": ["browse", "read"],
+                    "collection": "all",
+                    "recommendation": ["browse", "read"],
+                    "member": ["browse", "read", "add", "edit", "destroy"],
+                    "member_signin_url": "read",
+                    "offer": ["browse", "read"],
+                    "comment": "all"
                 },
                 "Editor": {
                     "notification": "all",

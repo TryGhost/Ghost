@@ -1,7 +1,9 @@
 const sessionMiddleware = require('../../../../../../core/server/services/auth').session;
+const SessionMiddlware = require('../../../../../../core/server/services/auth/session/middleware');
 const models = require('../../../../../../core/server/models');
 const sinon = require('sinon');
 const should = require('should');
+const labs = require('../../../../../../core/shared/labs');
 
 describe('Session Service', function () {
     before(function () {
@@ -14,9 +16,7 @@ describe('Session Service', function () {
 
     const fakeReq = function fakeReq() {
         return {
-            session: {
-                destroy() {}
-            },
+            session: {},
             user: null,
             body: {},
             get() {}
@@ -74,54 +74,190 @@ describe('Session Service', function () {
 
             sessionMiddleware.createSession(req, res);
         });
+
+        it('errors with a 403 when signing in while not verified', function (done) {
+            sinon.stub(labs, 'isSet').returns(true);
+            const req = fakeReq();
+            const res = fakeRes();
+
+            sinon.stub(req, 'get')
+                .withArgs('origin').returns('http://host.tld')
+                .withArgs('user-agent').returns('bububang');
+
+            req.ip = '127.0.0.1';
+            req.user = models.User.forge({id: 23});
+
+            const middleware = SessionMiddlware({
+                sessionService: {
+                    createSessionForUser: function () {
+                        return Promise.resolve();
+                    },
+                    isVerifiedSession: function () {
+                        return Promise.resolve(false);
+                    },
+                    sendAuthCodeToUser: function () {
+                        return Promise.resolve();
+                    }
+                }
+            });
+
+            middleware.createSession(req, res, (err) => {
+                should.equal(err.statusCode, 403);
+                should.equal(err.code, '2FA_TOKEN_REQUIRED');
+                done();
+            });
+        });
     });
 
-    describe('destroySession', function () {
-        it('calls req.session.destroy', function (done) {
+    describe('logout', function () {
+        it('calls next with InternalServerError if removeSessionForUser errors', function (done) {
             const req = fakeReq();
             const res = fakeRes();
-            const destroyStub = sinon.stub(req.session, 'destroy')
-                .callsFake(function (fn) {
-                    fn();
-                });
+            const middleware = SessionMiddlware({
+                sessionService: {
+                    removeUserForSession: function () {
+                        return Promise.reject(new Error('oops'));
+                    }
+                }
+            });
 
-            sinon.stub(res, 'sendStatus')
-                .callsFake(function () {
-                    should.equal(destroyStub.callCount, 1);
-                    done();
-                });
-
-            sessionMiddleware.destroySession(req, res);
-        });
-
-        it('calls next with InternalServerError if destroy errors', function (done) {
-            const req = fakeReq();
-            const res = fakeRes();
-            sinon.stub(req.session, 'destroy')
-                .callsFake(function (fn) {
-                    fn(new Error('oops'));
-                });
-
-            sessionMiddleware.destroySession(req, res, function next(err) {
+            middleware.logout(req, res, function next(err) {
                 should.equal(err.errorType, 'InternalServerError');
                 done();
             });
         });
 
-        it('calls sendStatus with 204 if destroy does not error', function (done) {
+        it('calls sendStatus with 204 if removeUserForSession does not error', function (done) {
             const req = fakeReq();
             const res = fakeRes();
-            sinon.stub(req.session, 'destroy')
-                .callsFake(function (fn) {
-                    fn();
-                });
             sinon.stub(res, 'sendStatus')
                 .callsFake(function (status) {
                     should.equal(status, 204);
                     done();
                 });
 
-            sessionMiddleware.destroySession(req, res);
+            const middleware = SessionMiddlware({
+                sessionService: {
+                    removeUserForSession: function () {
+                        return Promise.resolve();
+                    }
+                }
+            });
+
+            middleware.logout(req, res);
+        });
+    });
+
+    describe('sendAuthCode', function () {
+        it('sends an auth code to the user', async function () {
+            const req = fakeReq();
+            const res = fakeRes();
+
+            const sendAuthCodeToUserStub = sinon.stub().resolves(123);
+            const nextStub = sinon.stub();
+            const sendStatusStub = sinon.stub(res, 'sendStatus');
+
+            const middleware = SessionMiddlware({
+                sessionService: {
+                    sendAuthCodeToUser: sendAuthCodeToUserStub
+                }
+            });
+
+            await middleware.sendAuthCode(req, res, nextStub);
+
+            should.equal(sendAuthCodeToUserStub.callCount, 1);
+            should.equal(nextStub.callCount, 0);
+            should.equal(sendStatusStub.callCount, 1);
+            should.equal(sendStatusStub.args[0][0], 200);
+        });
+
+        it('calls next with an error if sendAuthCodeToUser fails', async function () {
+            const req = fakeReq();
+            const res = fakeRes();
+
+            const sendAuthCodeToUserStub = sinon.stub().rejects(new Error('foo bar baz'));
+            const nextStub = sinon.stub();
+            const sendStatusStub = sinon.stub(res, 'sendStatus');
+
+            const middleware = SessionMiddlware({
+                sessionService: {
+                    sendAuthCodeToUser: sendAuthCodeToUserStub
+                }
+            });
+
+            await middleware.sendAuthCode(req, res, nextStub);
+
+            should.equal(sendAuthCodeToUserStub.callCount, 1);
+            should.equal(nextStub.callCount, 1);
+            should.equal(sendStatusStub.callCount, 0);
+        });
+    });
+
+    describe('verifyAuthCode', function () {
+        it('returns 200 if the auth code is valid', async function () {
+            const req = fakeReq();
+            const res = fakeRes();
+
+            const verifyAuthCodeForUserStub = sinon.stub().resolves(true);
+            const nextStub = sinon.stub();
+            const sendStatusStub = sinon.stub(res, 'sendStatus');
+
+            const middleware = SessionMiddlware({
+                sessionService: {
+                    verifyAuthCodeForUser: verifyAuthCodeForUserStub,
+                    verifySession: sinon.stub().resolves(true)
+                }
+            });
+
+            await middleware.verifyAuthCode(req, res, nextStub);
+
+            should.equal(verifyAuthCodeForUserStub.callCount, 1);
+            should.equal(nextStub.callCount, 0);
+            should.equal(sendStatusStub.callCount, 1);
+            should.equal(sendStatusStub.args[0][0], 200);
+        });
+
+        it('returns 401 if the auth code is invalid', async function () {
+            const req = fakeReq();
+            const res = fakeRes();
+
+            const verifyAuthCodeForUserStub = sinon.stub().resolves(false);
+            const nextStub = sinon.stub();
+            const sendStatusStub = sinon.stub(res, 'sendStatus');
+
+            const middleware = SessionMiddlware({
+                sessionService: {
+                    verifyAuthCodeForUser: verifyAuthCodeForUserStub
+                }
+            });
+
+            await middleware.verifyAuthCode(req, res, nextStub);
+
+            should.equal(verifyAuthCodeForUserStub.callCount, 1);
+            should.equal(nextStub.callCount, 0);
+            should.equal(sendStatusStub.callCount, 1);
+            should.equal(sendStatusStub.args[0][0], 401);
+        });
+
+        it('calls next with an error if sendAuthCodeToUser fails', async function () {
+            const req = fakeReq();
+            const res = fakeRes();
+
+            const verifyAuthCodeForUserStub = sinon.stub().rejects(new Error('foo bar baz'));
+            const nextStub = sinon.stub();
+            const sendStatusStub = sinon.stub(res, 'sendStatus');
+
+            const middleware = SessionMiddlware({
+                sessionService: {
+                    verifyAuthCodeForUser: verifyAuthCodeForUserStub
+                }
+            });
+
+            await middleware.verifyAuthCode(req, res, nextStub);
+
+            should.equal(verifyAuthCodeForUserStub.callCount, 1);
+            should.equal(nextStub.callCount, 1);
+            should.equal(sendStatusStub.callCount, 0);
         });
     });
 });

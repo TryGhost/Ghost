@@ -4,13 +4,16 @@ import Component from '@glimmer/component';
 import React from 'react';
 import moment from 'moment-timezone';
 import {AreaChart, useQuery} from '@tinybirdco/charts';
-import {formatNumber} from '../../../helpers/format-number';
-import {getDateRange, getStatsParams, statsStaticColors} from '../../../utils/stats';
+import {TB_VERSION, getDateRange, getStatsParams, statsStaticColors} from 'ghost-admin/utils/stats';
+import {formatNumber} from 'ghost-admin/helpers/format-number';
+import {formatVisitDuration} from '../../../utils/stats';
 import {hexToRgba} from 'ghost-admin/utils/stats';
 import {inject} from 'ghost-admin/decorators/inject';
+import {inject as service} from '@ember/service';
 
 export default class KpisComponent extends Component {
     @inject config;
+    @service settings;
 
     ReactComponent = (props) => {
         const {chartRange, selected} = props;
@@ -21,7 +24,7 @@ export default class KpisComponent extends Component {
         );
 
         const {data, meta, error, loading} = useQuery({
-            endpoint: `${this.config.stats.endpoint}/v0/pipes/kpis.json`,
+            endpoint: `${this.config.stats.endpoint}/v0/pipes/api_kpis__v${TB_VERSION}.json`,
             token: this.config.stats.token,
             params
         });
@@ -54,7 +57,7 @@ export default class KpisComponent extends Component {
                 options={{
                     grid: {
                         left: '10px',
-                        right: '10px',
+                        right: '20px',
                         top: '10%',
                         bottom: 0,
                         containLabel: true
@@ -62,7 +65,7 @@ export default class KpisComponent extends Component {
                     xAxis: {
                         type: 'time',
                         min: startDate.toISOString(),
-                        max: endDate.subtract(1, 'day').toISOString(),
+                        max: chartRange === 1 ? endDate.toISOString() : endDate.subtract(1, 'day').toISOString(),
                         boundaryGap: ['0%', '0%'],
                         axisLabel: {
                             formatter: chartRange <= 7 ? '{ee}' : '{d} {MMM}',
@@ -96,7 +99,13 @@ export default class KpisComponent extends Component {
                             }
                         },
                         axisLabel: {
-                            show: true
+                            show: true,
+                            formatter: function (value) {
+                                if (CATEGORY === 'avg_session_sec') {
+                                    return formatVisitDuration(value);
+                                }
+                                return value;
+                            }
                         },
                         axisTick: {
                             show: false
@@ -119,11 +128,11 @@ export default class KpisComponent extends Component {
                             switch (CATEGORY) {
                             case 'avg_session_sec':
                                 tooltipTitle = 'Visit duration';
-                                displayValue = fparams[0].value[1] !== null && (fparams[0].value[1] / 60).toFixed(0) + ' min';
+                                displayValue = formatVisitDuration(fparams[0].value[1]);
                                 break;
                             case 'bounce_rate':
                                 tooltipTitle = 'Bounce rate';
-                                displayValue = fparams[0].value[1] !== null && fparams[0].value[1].toFixed(2) + '%';
+                                displayValue = fparams[0].value[1] !== null && (fparams[0].value[1] * 100).toFixed(0) + '%';
                                 break;
                             default:
                                 tooltipTitle = 'Unique visits';
@@ -133,7 +142,8 @@ export default class KpisComponent extends Component {
                             if (!displayValue) {
                                 displayValue = 'N/A';
                             }
-                            return `<div><div class="gh-stats-tooltip-header">${moment(fparams[0].value[0]).format('D MMM YYYY')}</div><div class="gh-stats-tooltip-data"><span class="gh-stats-tooltip-marker" style="background: ${LINE_COLOR}"></span><span class="gh-stats-tooltip-label">${tooltipTitle}</span> <span class="gh-stats-tooltip-value">${displayValue}</span></div></div>`;
+                            const dateFormat = chartRange === 1 ? 'D MMM YYYY HH:mm' : 'D MMM YYYY';
+                            return `<div><div class="gh-stats-tooltip-header">${moment(fparams[0].value[0]).format(dateFormat)}</div><div class="gh-stats-tooltip-data"><span class="gh-stats-tooltip-marker" style="background: ${LINE_COLOR}"></span><span class="gh-stats-tooltip-label">${tooltipTitle}</span> <span class="gh-stats-tooltip-value">${displayValue}</span></div></div>`;
                         }
                     },
                     series: [

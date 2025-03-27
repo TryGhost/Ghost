@@ -61,8 +61,27 @@ async function validateHtml(html) {
     assert.equal(report.valid, true, 'Expected valid HTML without warnings, got errors:\n' + parsedErrors.join('\n\n'));
 }
 
+const createUnsubscribeUrl = (uuid) => {
+    return `https://example.com/unsubscribe/?uuid=${uuid}&key=456`;
+};
+
 const getMembersValidationKey = () => {
     return 'members-key';
+};
+// stub the t function so that we don't need to load the i18n module
+// actually, no, this is a terrible option, because then we don't actually get interpolation.
+// we should probably just load the i18n module
+
+// load the i18n module
+const i18nLib = require('@tryghost/i18n');
+const i18n = i18nLib('en', 'newsletter');
+const t = (key, options) => {
+    return i18n.t(key, options);
+};
+
+const i18nFr = i18nLib('fr', 'newsletter');
+const tFr = (key, options) => {
+    return i18nFr.t(key, options);
 };
 
 describe('Email renderer', function () {
@@ -98,7 +117,8 @@ describe('Email renderer', function () {
                         }
                     }
                 },
-                settingsHelpers: {getMembersValidationKey}
+                settingsHelpers: {getMembersValidationKey,createUnsubscribeUrl},
+                t: t
             });
             newsletter = createModel({
                 uuid: 'newsletteruuid'
@@ -119,8 +139,8 @@ describe('Email renderer', function () {
             assert.equal(replacements.length, 1);
             assert.equal(replacements[0].token.toString(), '/%%\\{list_unsubscribe\\}%%/g');
             assert.equal(replacements[0].id, 'list_unsubscribe');
-            const memberHmac = crypto.createHmac('sha256', getMembersValidationKey()).update(member.uuid).digest('hex');
-            assert.equal(replacements[0].getValue(member), `http://example.com/subdirectory/unsubscribe/?uuid=${member.uuid}&key=${memberHmac}&newsletter=newsletteruuid`);
+            const unsubscribeUrl = createUnsubscribeUrl(member.uuid);
+            assert.equal(replacements[0].getValue(member), unsubscribeUrl);
         });
 
         it('returns a replacement if it is used', function () {
@@ -156,8 +176,8 @@ describe('Email renderer', function () {
             assert.equal(replacements.length, 2);
             assert.equal(replacements[0].token.toString(), '/%%\\{unsubscribe_url\\}%%/g');
             assert.equal(replacements[0].id, 'unsubscribe_url');
-            const memberHmac = crypto.createHmac('sha256', getMembersValidationKey()).update(member.uuid).digest('hex');
-            assert.equal(replacements[0].getValue(member), `http://example.com/subdirectory/unsubscribe/?uuid=${member.uuid}&key=${memberHmac}&newsletter=newsletteruuid`);
+            const unsubscribeUrl = createUnsubscribeUrl(member.uuid);
+            assert.equal(replacements[0].getValue(member), unsubscribeUrl);
         });
 
         it('returns correct name', function () {
@@ -334,6 +354,197 @@ describe('Email renderer', function () {
         });
     });
 
+    describe('buildReplacementDefinitions with locales', function () {
+        let emailRenderer;
+        let newsletter;
+        let member;
+
+        beforeEach(function () {
+            emailRenderer = new EmailRenderer({
+                urlUtils: {
+                    urlFor: () => 'http://example.com/subdirectory/'
+                },
+                labs: {
+                    isSet: () => true
+                },
+                settingsCache: {
+                    get: (key) => {
+                        if (key === 'timezone') {
+                            return 'UTC';
+                        }
+                    }
+                },
+                settingsHelpers: {getMembersValidationKey,createUnsubscribeUrl},
+                t: t
+            });
+            newsletter = createModel({
+                uuid: 'newsletteruuid'
+            });
+            member = {
+                id: '456',
+                uuid: 'myuuid',
+                name: 'Test User',
+                email: 'test@example.com',
+                createdAt: new Date(2023, 2, 13, 12, 0),
+                status: 'free'
+            };
+        });
+
+        it('handles dates when the locale is en-gb (default)', function () {
+            const html = '%%{created_at}%%';
+            const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
+            assert.equal(replacements.length, 2);
+            assert.equal(replacements[0].token.toString(), '/%%\\{created_at\\}%%/g');
+            assert.equal(replacements[0].id, 'created_at');
+            assert.equal(replacements[0].getValue(member), '13 March 2023');
+        });
+
+        it('handles dates when the locale is fr and labs enabled', function () {
+            emailRenderer = new EmailRenderer({
+                urlUtils: {
+                    urlFor: () => 'http://example.com/subdirectory/'
+                },
+                labs: {
+                    isSet: () => true
+                },
+                settingsCache: {
+                    get: (key) => {
+                        if (key === 'timezone') {
+                            return 'UTC';
+                        }
+                        if (key === 'locale') {
+                            return 'fr';
+                        }
+                    }
+                },
+                settingsHelpers: {getMembersValidationKey,createUnsubscribeUrl},
+                t: tFr
+            });
+            const html = '%%{created_at}%%';
+            const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
+            assert.equal(replacements.length, 2);
+            assert.equal(replacements[0].token.toString(), '/%%\\{created_at\\}%%/g');
+            assert.equal(replacements[0].id, 'created_at');
+            assert.equal(replacements[0].getValue(member), '13 mars 2023');
+        });
+
+        it('handles dates when the locale is fr and labs is disabled', function () {
+            emailRenderer = new EmailRenderer({
+                urlUtils: {
+                    urlFor: () => 'http://example.com/subdirectory/'
+                },
+                labs: {
+                    isSet: () => false
+                },
+                settingsCache: {
+                    get: (key) => {
+                        if (key === 'timezone') {
+                            return 'UTC';
+                        }
+                        if (key === 'locale') {
+                            return 'fr';
+                        }
+                    }
+                },
+                settingsHelpers: {getMembersValidationKey,createUnsubscribeUrl},
+                t: tFr
+            });
+            const html = '%%{created_at}%%';
+            const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
+            assert.equal(replacements.length, 2);
+            assert.equal(replacements[0].token.toString(), '/%%\\{created_at\\}%%/g');
+            assert.equal(replacements[0].id, 'created_at');
+            assert.equal(replacements[0].getValue(member), '13 March 2023');
+        });
+
+        it('handles dates when the locale is en (US)', function () {
+            emailRenderer = new EmailRenderer({
+                urlUtils: {
+                    urlFor: () => 'http://example.com/subdirectory/'
+                },
+                labs: {
+                    isSet: () => true
+                },
+                settingsCache: {
+                    get: (key) => {
+                        if (key === 'timezone') {
+                            return 'UTC';
+                        }
+                        if (key === 'locale') {
+                            return 'en';
+                        }
+                    }
+                },
+                settingsHelpers: {getMembersValidationKey,createUnsubscribeUrl},
+                t: t
+            });
+            const html = '%%{created_at}%%';
+            const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
+            assert.equal(replacements.length, 2);
+            assert.equal(replacements[0].token.toString(), '/%%\\{created_at\\}%%/g');
+            assert.equal(replacements[0].id, 'created_at');
+            assert.equal(replacements[0].getValue(member), '13 March 2023');
+        });
+
+        it('handles dates when the locale has whitespace like "en "', function () {
+            emailRenderer = new EmailRenderer({
+                urlUtils: {
+                    urlFor: () => 'http://example.com/subdirectory/'
+                },
+                labs: {
+                    isSet: () => true
+                },
+                settingsCache: {
+                    get: (key) => {
+                        if (key === 'timezone') {
+                            return 'UTC';
+                        }
+                        if (key === 'locale') {
+                            return 'en ';
+                        }
+                    }
+                },
+                settingsHelpers: {getMembersValidationKey,createUnsubscribeUrl},
+                t: t
+            });
+            const html = '%%{created_at}%%';
+            const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
+            assert.equal(replacements.length, 2);
+            assert.equal(replacements[0].token.toString(), '/%%\\{created_at\\}%%/g');
+            assert.equal(replacements[0].id, 'created_at');
+            assert.equal(replacements[0].getValue(member), '13 March 2023');
+        });
+
+        it('handles dates when the locale is invalid like "(en)"', function () {
+            emailRenderer = new EmailRenderer({
+                urlUtils: {
+                    urlFor: () => 'http://example.com/subdirectory/'
+                },
+                labs: {
+                    isSet: () => true
+                },
+                settingsCache: {
+                    get: (key) => {
+                        if (key === 'timezone') {
+                            return 'UTC';
+                        }
+                        if (key === 'locale') {
+                            return '(en)';
+                        }
+                    }
+                },
+                settingsHelpers: {getMembersValidationKey,createUnsubscribeUrl},
+                t: t
+            });
+
+            const html = '%%{created_at}%%';
+            const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
+            assert.equal(replacements.length, 2);
+            assert.equal(replacements[0].token.toString(), '/%%\\{created_at\\}%%/g');
+            assert.equal(replacements[0].id, 'created_at');
+            assert.equal(replacements[0].getValue(member), '13 March 2023');
+        });
+    });
     describe('isMemberTrialing', function () {
         let emailRenderer;
 
@@ -351,7 +562,8 @@ describe('Email renderer', function () {
                             return 'UTC';
                         }
                     }
-                }
+                },
+                t: t
             });
         });
 
@@ -454,7 +666,8 @@ describe('Email renderer', function () {
                             return 'UTC';
                         }
                     }
-                }
+                },
+                t: t
             });
         });
 
@@ -1055,7 +1268,8 @@ describe('Email renderer', function () {
 
                         return labsEnabled;
                     }
-                }
+                },
+                t: t
             });
         });
 
@@ -1254,7 +1468,6 @@ describe('Email renderer', function () {
                 segment,
                 options
             );
-
             assert.match(response.html, /By A &amp; 2 others/);
             assert.match(response.plaintext, /By A & 2 others/);
         });
@@ -1466,8 +1679,6 @@ describe('Email renderer', function () {
                 '#',
                 `http://feedback-link.com/?score=1&uuid=%%{uuid}%%&key=%%{key}%%`,
                 `http://feedback-link.com/?score=0&uuid=%%{uuid}%%&key=%%{key}%%`,
-                `http://feedback-link.com/?score=1&uuid=%%{uuid}%%&key=%%{key}%%`,
-                `http://feedback-link.com/?score=0&uuid=%%{uuid}%%&key=%%{key}%%`,
                 `%%{unsubscribe_url}%%`,
                 `https://ghost.org/?via=pbg-newsletter&source_tracking=site`
             ]);
@@ -1523,8 +1734,6 @@ describe('Email renderer', function () {
                 '#',
                 'http://feedback-link.com/?score=1&uuid=%%{uuid}%%&key=%%{key}%%',
                 'http://feedback-link.com/?score=0&uuid=%%{uuid}%%&key=%%{key}%%',
-                'http://feedback-link.com/?score=1&uuid=%%{uuid}%%&key=%%{key}%%',
-                'http://feedback-link.com/?score=0&uuid=%%{uuid}%%&key=%%{key}%%',
                 '%%{unsubscribe_url}%%',
                 'https://ghost.org/?via=pbg-newsletter'
             ]);
@@ -1578,8 +1787,6 @@ describe('Email renderer', function () {
                 `http://tracked-link.com/?m=%%{uuid}%%&url=http%3A%2F%2Fexample.com%2F%3Fsource_tracking%3DTest%2BNewsletter%26post_tracking%3Dadded`,
                 `http://tracked-link.com/?m=%%{uuid}%%&url=https%3A%2F%2Fexternal-domain.com%2F%3Fref%3D123%26source_tracking%3Dsite`,
                 `http://tracked-link.com/?m=%%{uuid}%%&url=https%3A%2F%2Fexample.com%2F%3Fref%3D123%26source_tracking%3DTest%2BNewsletter%26post_tracking%3Dadded`,
-                `http://feedback-link.com/?score=1&uuid=%%{uuid}%%&key=%%{key}%%`,
-                `http://feedback-link.com/?score=0&uuid=%%{uuid}%%&key=%%{key}%%`,
                 `http://feedback-link.com/?score=1&uuid=%%{uuid}%%&key=%%{key}%%`,
                 `http://feedback-link.com/?score=0&uuid=%%{uuid}%%&key=%%{key}%%`,
                 `%%{unsubscribe_url}%%`,
@@ -1920,7 +2127,8 @@ describe('Email renderer', function () {
                             }
                         ]
                     })
-                }
+                },
+                t: t
             });
         });
 
@@ -2303,7 +2511,8 @@ describe('Email renderer', function () {
                     }
                 },
                 settingsHelpers: {
-                    getMembersValidationKey
+                    getMembersValidationKey,
+                    createUnsubscribeUrl
                 }
             });
         });
@@ -2312,21 +2521,26 @@ describe('Email renderer', function () {
             const response = await emailRenderer.createUnsubscribeUrl('memberuuid', {
                 newsletterUuid: 'newsletteruuid'
             });
-            const memberHmac = crypto.createHmac('sha256', getMembersValidationKey()).update('memberuuid').digest('hex');
-            assert.equal(response, `http://example.com/subdirectory/unsubscribe/?uuid=memberuuid&key=${memberHmac}&newsletter=newsletteruuid`);
+            const unsubscribeUrl = createUnsubscribeUrl('memberuuid', {
+                newsletterUuid: 'newsletteruuid'
+            });
+            assert.equal(response, unsubscribeUrl);
         });
 
         it('includes comments', async function () {
             const response = await emailRenderer.createUnsubscribeUrl('memberuuid', {
                 comments: true
             });
-            const memberHmac = crypto.createHmac('sha256', getMembersValidationKey()).update('memberuuid').digest('hex');
-            assert.equal(response, `http://example.com/subdirectory/unsubscribe/?uuid=memberuuid&key=${memberHmac}&comments=1`);
+            const unsubscribeUrl = createUnsubscribeUrl('memberuuid', {
+                comments: true
+            });
+            assert.equal(response, unsubscribeUrl);
         });
 
         it('works for previews', async function () {
             const response = await emailRenderer.createUnsubscribeUrl();
-            assert.equal(response, `http://example.com/subdirectory/unsubscribe/?preview=1`);
+            const unsubscribeUrl = createUnsubscribeUrl();
+            assert.equal(response, unsubscribeUrl);
         });
     });
 

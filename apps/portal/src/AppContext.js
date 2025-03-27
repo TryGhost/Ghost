@@ -10,7 +10,10 @@ const AppContext = React.createContext({
     pageData: {},
     onAction: (action, data) => {
         return {action, data};
-    }
+    },
+    t: () => {},
+    dir: 'ltr'
+
 });
 
 export default AppContext;

@@ -4,11 +4,9 @@ import * as FormPrimitive from '@radix-ui/react-form';
 import APAvatar from './APAvatar';
 import clsx from 'clsx';
 import getUsername from '../../utils/get-username';
-import {Activity} from '../activities/ActivityItem';
 import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
-import {Button, showToast} from '@tryghost/admin-x-design-system';
-import {useReplyMutationForUser, useUserDataForUser} from '../../hooks/useActivityPubQueries';
-// import {useFocusContext} from '@tryghost/admin-x-design-system/types/providers/DesignSystemProvider';
+import {Button} from '@tryghost/admin-x-design-system';
+import {useReplyMutationForUser, useUserDataForUser} from '@hooks/use-activity-pub-queries';
 
 export interface APTextAreaProps extends HTMLProps<HTMLTextAreaElement> {
     title?: string;
@@ -19,10 +17,26 @@ export interface APTextAreaProps extends HTMLProps<HTMLTextAreaElement> {
     hint?: React.ReactNode;
     className?: string;
     onChange?: (event: React.ChangeEvent<HTMLTextAreaElement>) => void;
-    onNewReply?: (activity: Activity) => void;
+    onReply?: () => void;
+    onReplyError?: () => void;
     object: ObjectProperties;
     focused: number;
 }
+
+export const useFocusedState = (initialValue: boolean) => {
+    const [state, setUnderlyingState] = useState(initialValue ? 1 : 0);
+
+    const setState = (value: boolean | ((prev: number) => number)) => {
+        if (value === false) {
+            return setUnderlyingState(0);
+        }
+        setUnderlyingState((prev) => {
+            return prev + 1;
+        });
+    };
+
+    return [state, setState] as const;
+};
 
 const APReplyBox: React.FC<APTextAreaProps> = ({
     title,
@@ -34,17 +48,15 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
     className,
     object,
     focused,
-    onNewReply,
-    // onChange,
-    // onFocus,
-    // onBlur,
+    onReply,
+    onReplyError,
     ...props
 }) => {
     const id = useId();
     const [textValue, setTextValue] = useState(value); // Manage the textarea value with state
-    const replyMutation = useReplyMutationForUser('index');
 
     const {data: user} = useUserDataForUser('index');
+    const replyMutation = useReplyMutationForUser('index', user);
 
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -55,21 +67,22 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
     }, [focused]);
 
     async function handleClick() {
-        if (!textValue) {
+        if (!textValue || !user) {
             return;
         }
-        await replyMutation.mutate({id: object.id, content: textValue}, {
-            onSuccess(activity: Activity) {
-                setTextValue('');
-                showToast({
-                    message: 'Reply sent',
-                    type: 'success'
-                });
-                if (onNewReply) {
-                    onNewReply(activity);
-                }
+
+        replyMutation.mutate({
+            inReplyTo: object.id,
+            content: textValue
+        }, {
+            onError() {
+                onReplyError?.();
             }
         });
+
+        setTextValue('');
+
+        onReply?.();
     }
 
     function handleChange(event: React.ChangeEvent<HTMLTextAreaElement>) {
@@ -87,14 +100,13 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
     }
 
     const styles = clsx(
-        `ap-textarea order-2 w-full resize-none rounded-lg border py-2 pr-3 text-[1.5rem] transition-all dark:text-white ${isFocused && 'pb-12'}`,
-        error ? 'border-red' : 'border-transparent placeholder:text-grey-500 dark:placeholder:text-grey-800',
+        `ap-textarea order-2 w-full resize-none rounded-lg border bg-transparent py-2 pr-3 text-[1.5rem] transition-all dark:text-white ${isFocused && 'pb-12'}`,
+        error ? 'border-red' : 'border-transparent placeholder:text-gray-500 dark:placeholder:text-gray-800',
         title && 'mt-1.5',
         className
     );
 
-    // We disable the button if either the textbox isn't focused, or the reply is currently being sent.
-    const buttonDisabled = !isFocused || replyMutation.isLoading;
+    const buttonDisabled = !textValue || !user;
 
     let placeholder = 'Reply...';
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -114,7 +126,6 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
                                 <textarea
                                     ref={textareaRef}
                                     className={styles}
-                                    disabled={replyMutation.isLoading}
                                     id={id}
                                     maxLength={maxLength}
                                     placeholder={placeholder}
@@ -131,8 +142,8 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
                         {hint}
                     </div>
                 </FormPrimitive.Root>
-                <div className='absolute bottom-[6px] right-[9px] flex space-x-4 transition-[opacity] duration-150'>
-                    <Button color='black' disabled={buttonDisabled} id='post' label='Post' loading={replyMutation.isLoading} size='sm' onMouseDown={handleClick} />
+                <div className='absolute bottom-[3px] right-0 flex space-x-4 transition-[opacity] duration-150'>
+                    <Button color='black' disabled={buttonDisabled} id='post' label='Post' size='md' onMouseDown={handleClick} />
                 </div>
             </div>
         </div>

@@ -1,9 +1,9 @@
+import IntegrationsSettingsImg from '../../../assets/images/integrations-settings.png';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
 import TopLevelGroup from '../../TopLevelGroup';
 import usePinturaEditor from '../../../hooks/usePinturaEditor';
-import {ReactComponent as AmpIcon} from '../../../assets/icons/amp.svg';
-import {Button, ConfirmationModal, Icon, List, ListItem, NoValueLabel, TabView, showToast, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {Button, ConfirmationModal, Icon, List, ListItem, NoValueLabel, SettingGroupHeader, TabView, showToast, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {ReactComponent as FirstPromoterIcon} from '../../../assets/icons/firstpromoter.svg';
 import {Integration, useBrowseIntegrations, useDeleteIntegration} from '@tryghost/admin-x-framework/api/integrations';
 import {ReactComponent as PinturaIcon} from '../../../assets/icons/pintura.svg';
@@ -18,7 +18,7 @@ import {useRouting} from '@tryghost/admin-x-framework/routing';
 interface IntegrationItemProps {
     icon?: React.ReactNode,
     title: string,
-    detail: string,
+    detail: string | React.ReactNode,
     action: () => void;
     onDelete?: () => void;
     active?: boolean;
@@ -40,7 +40,10 @@ const IntegrationItem: React.FC<IntegrationItemProps> = ({
 }) => {
     const {updateRoute} = useRouting();
 
-    const handleClick = () => {
+    const handleClick = (e?: React.MouseEvent<HTMLElement>) => {
+        // Prevent the click event from bubbling up when clicking the delete button
+        e?.stopPropagation();
+
         if (disabled) {
             updateRoute({route: 'pro', isExternal: true});
         } else {
@@ -48,8 +51,13 @@ const IntegrationItem: React.FC<IntegrationItemProps> = ({
         }
     };
 
+    const handleDelete = (e?: React.MouseEvent<HTMLElement>) => {
+        e?.stopPropagation();
+        onDelete?.();
+    };
+
     const buttons = custom ?
-        <Button color='red' label='Delete' link onClick={onDelete} />
+        <Button color='red' label='Delete' link onClick={handleDelete} />
         :
         (disabled ?
             <Button icon='lock-locked' label='Upgrade' link onClick={handleClick} /> :
@@ -81,8 +89,7 @@ const BuiltInIntegrations: React.FC = () => {
     const pinturaEditor = usePinturaEditor();
 
     const {settings} = useGlobalData();
-    const [ampEnabled, unsplashEnabled, firstPromoterEnabled, slackUrl, slackUsername] = getSettingValues<boolean>(settings, [
-        'amp',
+    const [unsplashEnabled, firstPromoterEnabled, slackUrl, slackUsername] = getSettingValues<boolean>(settings, [
         'unsplash',
         'firstpromoter',
         'slack_url',
@@ -110,16 +117,6 @@ const BuiltInIntegrations: React.FC = () => {
                 icon={<SlackIcon className='h-8 w-8' />}
                 testId='slack-integration'
                 title='Slack' />
-
-            <IntegrationItem
-                action={() => {
-                    openModal('integrations/amp');
-                }}
-                active={ampEnabled}
-                detail='Google AMP will be removed in Ghost 6.0'
-                icon={<AmpIcon className='h-8 w-8' />}
-                testId='amp-integration'
-                title='AMP' />
 
             <IntegrationItem
                 action={() => {
@@ -165,11 +162,13 @@ const CustomIntegrations: React.FC<{integrations: Integration[]}> = ({integratio
                 {integrations.map(integration => (
                     <IntegrationItem
                         action={() => updateRoute({route: `integrations/${integration.id}`})}
-                        detail={integration.description || 'No description'}
+                        detail={<div className="line-clamp-2 break-words">
+                            <span title={`${integration.name}: ${integration.description || 'No description'}`}>{integration.description || 'No description'}</span>
+                        </div>}
                         icon={
                             integration.icon_image ?
-                                <img className='h-8 w-8 object-cover' role='presentation' src={integration.icon_image} /> :
-                                <Icon className='w-8' name='integration' />
+                                <img className='h-8 w-8 shrink-0 object-cover' role='presentation' src={integration.icon_image} /> :
+                                <Icon className='w-8 shrink-0' name='integration' />
                         }
                         title={integration.name}
                         custom
@@ -226,27 +225,41 @@ const Integrations: React.FC<{ keywords: string[] }> = ({keywords}) => {
     ] as const;
 
     const buttons = (
-        <Button className='mt-[-5px] hidden md:!visible md:!block' color='clear' label='Add custom integration' size='sm' onClick={() => {
-            updateRoute('integrations/new');
-            setSelectedTab('custom');
-        }} />
+        <Button 
+            className='mt-[-5px] inline-flex h-7 cursor-pointer items-center justify-center whitespace-nowrap rounded px-3 text-sm font-semibold text-grey-900 transition hover:bg-grey-200 dark:text-white dark:hover:bg-grey-900 [&:hover]:text-black' 
+            color='clear'
+            label='Add custom integration' 
+            link 
+            onClick={() => {
+                updateRoute('integrations/new');
+                setSelectedTab('custom');
+            }} 
+        />
     );
 
     return (
         <TopLevelGroup
             customButtons={buttons}
-            description="Make Ghost work with apps and tools"
+            customHeader={
+                <div className='sm:-mt-5 md:-mt-7'>
+                    <div className='-mx-5 overflow-hidden rounded-t-xl border-b border-grey-200 dark:border-grey-800 md:-mx-7'>
+                        <img className='h-full w-full' src={IntegrationsSettingsImg} />
+                    </div>
+                    <div className=' z-10 mt-6 flex items-start justify-between'>
+                        <SettingGroupHeader description='Make Ghost work with apps and tools.' title='Integrations' />
+                        {
+                            <Button className='mt-[-5px] inline-flex h-7 cursor-pointer items-center justify-center whitespace-nowrap rounded px-3 text-sm font-semibold text-grey-900 transition hover:bg-grey-200 dark:text-white dark:hover:bg-grey-900 [&:hover]:text-black' color='clear' label='Add custom integration' link onClick={() => {
+                                updateRoute('integrations/new');
+                                setSelectedTab('custom');
+                            }} />
+                        }
+                    </div>
+                </div>
+            }
             keywords={keywords}
             navid='integrations'
             testId='integrations'
-            title="Integrations"
         >
-            <div className='flex justify-center rounded border border-green px-4 py-2 md:hidden'>
-                <Button color='green' label='Add custom integration' link onClick={() => {
-                    updateRoute('integrations/new');
-                    setSelectedTab('custom');
-                }} />
-            </div>
             <TabView<'built-in' | 'custom'> selectedTab={selectedTab} tabs={tabs} onTabChange={setSelectedTab} />
         </TopLevelGroup>
     );

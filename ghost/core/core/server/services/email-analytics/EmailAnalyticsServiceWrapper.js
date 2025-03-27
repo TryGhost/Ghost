@@ -6,12 +6,11 @@ class EmailAnalyticsServiceWrapper {
             return;
         }
 
-        const {EmailAnalyticsService} = require('@tryghost/email-analytics-service');
+        const EmailAnalyticsService = require('./EmailAnalyticsService');
         const {EmailEventStorage, EmailEventProcessor} = require('@tryghost/email-service');
-        const MailgunProvider = require('@tryghost/email-analytics-provider-mailgun');
+        const MailgunProvider = require('./EmailAnalyticsProviderMailgun');
         const {EmailRecipientFailure, EmailSpamComplaintEvent, Email} = require('../../models');
         const StartEmailAnalyticsJobEvent = require('./events/StartEmailAnalyticsJobEvent');
-
         const domainEvents = require('@tryghost/domain-events');
         const config = require('../../../shared/config');
         const settings = require('../../../shared/settings-cache');
@@ -20,6 +19,7 @@ class EmailAnalyticsServiceWrapper {
         const membersService = require('../members');
         const membersRepository = membersService.api.members;
         const emailSuppressionList = require('../email-suppression-list');
+        const prometheusClient = require('../../../shared/prometheus-client');
 
         this.eventStorage = new EmailEventStorage({
             db,
@@ -29,7 +29,8 @@ class EmailAnalyticsServiceWrapper {
                 EmailRecipientFailure,
                 EmailSpamComplaintEvent
             },
-            emailSuppressionList
+            emailSuppressionList,
+            prometheusClient
         });
 
         // Since this is running in a worker thread, we cant dispatch directly
@@ -37,7 +38,8 @@ class EmailAnalyticsServiceWrapper {
         const eventProcessor = new EmailEventProcessor({
             domainEvents,
             db,
-            eventStorage: this.eventStorage
+            eventStorage: this.eventStorage,
+            prometheusClient
         });
 
         this.service = new EmailAnalyticsService({
@@ -47,7 +49,9 @@ class EmailAnalyticsServiceWrapper {
             providers: [
                 new MailgunProvider({config, settings})
             ],
-            queries
+            queries,
+            domainEvents,
+            prometheusClient
         });
 
         // We currently cannot trigger a non-offloaded job from the job manager
@@ -138,7 +142,7 @@ class EmailAnalyticsServiceWrapper {
                 this._restartFetch('scheduled backfill');
                 return;
             }
-            
+
             this.fetching = false;
         } catch (e) {
             logging.error(e, 'Error while fetching email analytics');

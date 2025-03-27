@@ -163,6 +163,15 @@ const createDb = ({first, all} = {}) => {
     return db;
 };
 
+const createPrometheusClient = ({registerCounterStub, getMetricStub, incStub} = {}) => {
+    return {
+        registerCounter: registerCounterStub ?? sinon.stub(),
+        getMetric: getMetricStub ?? sinon.stub().returns({
+            inc: incStub ?? sinon.stub()
+        })
+    };
+};
+
 const sleep = (ms) => {
     return new Promise((resolve) => {
         setTimeout(resolve, ms);
@@ -173,5 +182,6 @@ module.exports = {
     createModel,
     createModelClass,
     createDb,
+    createPrometheusClient,
     sleep
 };

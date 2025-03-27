@@ -28,7 +28,6 @@ export function getSiteData({
     portalProducts = products.map(p => p.id),
     accentColor: accent_color = '#45C32E',
     portalPlans: portal_plans = ['free', 'monthly', 'yearly'],
-    allowSelfSignup: allow_self_signup = true,
     membersSignupAccess: members_signup_access = 'all',
     freePriceName: free_price_name = 'Free',
     freePriceDescription: free_price_description = 'Free preview',
@@ -44,7 +43,9 @@ export function getSiteData({
     posts = getPostsData(),
     commentsEnabled,
     recommendations = [],
-    recommendationsEnabled
+    recommendationsEnabled,
+    captchaEnabled = false,
+    captchaSitekey
 } = {}) {
     return {
         title,
@@ -56,7 +57,6 @@ export function getSiteData({
         plans,
         products,
         portal_products: portalProducts,
-        allow_self_signup,
         members_signup_access,
         free_price_name,
         free_price_description,
@@ -73,7 +73,9 @@ export function getSiteData({
         recommendations,
         recommendations_enabled: !!recommendationsEnabled,
         editor_default_email_recipients,
-        posts
+        posts,
+        captcha_enabled: !!captchaEnabled,
+        captcha_sitekey: captchaSitekey
     };
 }
 

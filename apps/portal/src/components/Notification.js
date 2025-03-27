@@ -15,9 +15,9 @@ const Styles = () => {
             position: 'fixed',
             top: '0',
             right: '0',
-            maxWidth: '415px',
+            maxWidth: '481px',
             width: '100%',
-            height: '120px',
+            height: '220px',
             animation: '250ms ease 0s 1 normal none running animation-bhegco',
             transition: 'opacity 0.3s ease 0s',
             overflow: 'hidden'
@@ -34,13 +34,13 @@ const NotificationText = ({type, status, context}) => {
         const firstname = context.member.firstname || '';
         return (
             <p>
-                {firstname ? t('Welcome back, {{name}}!', {name: firstname}) : t('Welcome back!')}<br />{t('You\'ve successfully signed in.')}
+                <strong>{firstname ? t('Welcome back, {{name}}!', {name: firstname}) : t('Welcome back!')}</strong><br />{t('You\'ve successfully signed in.')}
             </p>
         );
     } else if (type === 'signin' && status === 'error') {
         return (
             <p>
-                {t('Could not sign in. Login link expired.')} <a href={signinPortalLink} target="_parent">{t('Click here to retry')}</a>
+                {t('Could not sign in. Login link expired.')} <br /><a href={signinPortalLink} target="_parent">{t('Click here to retry')}</a>
             </p>
         );
     } else if (type === 'signup' && status === 'success') {

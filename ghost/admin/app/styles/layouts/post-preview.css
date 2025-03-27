@@ -193,11 +193,15 @@
 .gh-post-preview-email-group {
     display: flex;
     flex-direction: column;
+    gap: .8rem;
 }
 
 .gh-post-preview-email-header {
+    display: flex;
+    flex-direction: column;
+    gap: .8rem;
     border-bottom: 1px solid var(--whitegrey);
-    padding: 20px 24px;
+    padding: 16px 20px;
     background: var(--whitegrey-l2);
 }
 
@@ -208,6 +212,7 @@
 }
 
 .gh-email-preview-newsletter-select p {
+    min-width: 56px;
     padding: 0;
     margin: 0;
     color: var(--midgrey-l1);
@@ -216,19 +221,18 @@
 }
 
 .gh-email-preview-newsletter-select {
-    display: grid;
-    grid-template-columns: 65px 1fr;
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
 }
 
-.gh-preview-newsletter-trigger,
-.gh-preview-newsletter-trigger:focus {
-    padding: 0;
-    border: none;
-    cursor: pointer;
-    color: var(--darkgrey);
-    font-size: 1.4rem;
-    font-weight: 600;
-    line-height: 1.8em;
+.gh-preview-newsletter-trigger {
+    width: auto;
+}
+
+.ember-basic-dropdown-trigger.gh-preview-newsletter-trigger[aria-expanded="true"] {
+    border-color: transparent;
+    border-radius: var(--border-radius);
 }
 
 .gh-preview-newsletter-trigger svg {
@@ -243,7 +247,6 @@
 }
 
 .gh-preview-newsletter-dropdown.ember-power-select-dropdown.ember-basic-dropdown-content--below {
-    width: min-content !important;
     border-top: 1px solid var(--input-border-color);
     border-radius: var(--border-radius);
 }

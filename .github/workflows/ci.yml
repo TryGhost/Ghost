@@ -5,10 +5,7 @@ on:
   push:
     branches:
       - main
-      - arch
       - 'v5.*'
-      - 3.x
-      - 2.x
 
 env:
   FORCE_COLOR: 1
@@ -21,6 +18,7 @@ env:
   CACHED_BUILD_PATHS: |
     ${{ github.workspace }}/ghost/*/build
   NX_REJECT_UNKNOWN_LOCAL_CACHE: 0
+  NODE_VERSION: 20.11.1
 
 concurrency:
   group: ${{ github.head_ref || github.run_id }}
@@ -65,9 +63,10 @@ jobs:
         id: check_user_org_membership
         if: github.event_name == 'pull_request'
         run: |
-          echo "Looking up: ${{ github.event.pull_request.user.login }}"
+          echo "Looking up: ${{ github.triggering_actor }}"
+          ENCODED_USERNAME=$(printf '%s' '${{ github.triggering_actor }}' | jq -sRr @uri)
 
-          LOOKUP_USER=$(curl --write-out "%{http_code}" --silent --output /dev/null --location 'https://api.github.com/orgs/tryghost/members/${{ github.event.pull_request.user.login }}' --header 'Authorization: Bearer ${{ secrets.CANARY_DOCKER_BUILD }}')
+          LOOKUP_USER=$(curl --write-out "%{http_code}" --silent --output /dev/null --location "https://api.github.com/orgs/tryghost/members/$ENCODED_USERNAME" --header "Authorization: Bearer ${{ secrets.CANARY_DOCKER_BUILD }}")
 
           if [ "$LOOKUP_USER" == "204" ]; then
             echo "User is in the org"
@@ -98,12 +97,14 @@ jobs:
               - *shared
               - 'ghost/**'
               - '!ghost/admin/**'
+              - '!ghost/web-analytics/**'
             admin:
               - *shared
               - 'ghost/admin/**'
             admin-x-settings:
               - *shared
               - 'apps/admin-x-settings/**'
+              - 'apps/admin-x-design-system/**'
             announcement-bar:
               - *shared
               - 'apps/announcement-bar/**'
@@ -119,6 +120,9 @@ jobs:
             sodo-search:
               - *shared
               - 'apps/sodo-search/**'
+            tinybird:
+              - 'ghost/web-analytics/**'
+              - '!ghost/web-analytics/**/*.md'
             any-code:
               - '!**/*.md'
 
@@ -173,7 +177,7 @@ jobs:
         env:
           FORCE_COLOR: 0
         with:
-          node-version: '18.12.1'
+          node-version: ${{ env.NODE_VERSION }}
           cache: yarn
 
       - name: Install dependencies
@@ -192,6 +196,7 @@ jobs:
       changed_portal: ${{ steps.changed.outputs.portal }}
       changed_signup_form: ${{ steps.changed.outputs.signup-form }}
       changed_sodo_search: ${{ steps.changed.outputs.sodo-search }}
+      changed_tinybird: ${{ steps.changed.outputs.tinybird }}
       changed_any_code: ${{ steps.changed.outputs.any-code }}
       changed_new_package: ${{ steps.added.outputs.new-package }}
       base_commit: ${{ env.BASE_COMMIT }}
@@ -208,12 +213,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 100
+          fetch-depth: 1000
       - uses: actions/setup-node@v4
         env:
           FORCE_COLOR: 0
         with:
-          node-version: '18.12.1'
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: Restore caches
         uses: ./.github/actions/restore-cache
@@ -241,13 +246,14 @@ jobs:
     if: |
         needs.job_setup.outputs.changed_comments_ui == 'true'
         || needs.job_setup.outputs.changed_signup_form == 'true'
+        || needs.job_setup.outputs.changed_sodo_search == 'true'
         || needs.job_setup.outputs.changed_portal == 'true'
         || needs.job_setup.outputs.changed_core == 'true'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: "18.12.1"
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: Restore caches
         uses: ./.github/actions/restore-cache
@@ -271,7 +277,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: "18.12.1"
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: Restore caches
         uses: ./.github/actions/restore-cache
@@ -311,11 +317,21 @@ jobs:
     - uses: actions/checkout@v4
       with:
         submodules: true
+    - name: Check secrets
+      if: github.event_name == 'pull_request'
+      env:
+        STRIPE_PUBLISHABLE_KEY: ${{ secrets.STRIPE_PUBLISHABLE_KEY }}
+      run: |
+        if [ -z "${{ env.STRIPE_PUBLISHABLE_KEY }}" ]; then
+          echo "Stripe Publishable Key is not available. Did you open this PR from a fork?"
+          echo "If so, please re-open the PR from a branch in the upstream TryGhost/Ghost repository."
+          exit 1
+        fi
     - uses: actions/setup-node@v4
       env:
         FORCE_COLOR: 0
       with:
-        node-version: '18.x'
+        node-version: ${{ env.NODE_VERSION }}
         cache: yarn
 
     - name: Install Stripe-CLI
@@ -389,7 +405,7 @@ jobs:
         env:
           FORCE_COLOR: 0
         with:
-          node-version: '18.12.1'
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: Restore caches
         uses: ./.github/actions/restore-cache
@@ -404,6 +420,9 @@ jobs:
           mv hyperfine-v$HYPERFINE_VERSION-x86_64-unknown-linux-gnu/hyperfine /usr/local/bin
           chmod +x /usr/local/bin/hyperfine
 
+      - name: Build TS code
+        run: yarn nx run-many -t build:tsc
+
       - name: Run hyperfine on boot
         working-directory: ghost/core
         run: hyperfine --show-output --warmup 3 'GHOST_CI_SHUTDOWN_AFTER_BOOT=1 node index.js' --export-json boot-perf.json
@@ -414,7 +433,7 @@ jobs:
           jq '[{ name: "Boot time", unit: "s", value: .results[0].median, range: ((.results[0].max - .results[0].min) | tostring) }]' < boot-perf.json > boot-perf-formatted.json
 
       - name: Run analysis
-        uses: benchmark-action/github-action-benchmark@v1.20.3
+        uses: benchmark-action/github-action-benchmark@v1.20.4
         with:
           tool: 'customSmallerIsBetter'
           output-file-path: ghost/core/boot-perf-formatted.json
@@ -429,12 +448,12 @@ jobs:
     if: needs.job_setup.outputs.changed_any_code == 'true'
     strategy:
       matrix:
-        node: [ '18.12.1', '20.11.1' ]
+        node: [ '18.12.1', '20.11.1', '22.13.1' ]
     name: Unit tests (Node ${{ matrix.node }})
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 100
+          fetch-depth: 1000
       - uses: actions/setup-node@v4
         env:
           FORCE_COLOR: 0
@@ -445,6 +464,15 @@ jobs:
         uses: ./.github/actions/restore-cache
         env:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
+
+      - name: Set timezone (non-UTC)
+        uses: szenius/set-timezone@v1.2
+        with:
+          timezoneLinux: "America/New_York"
+
+      # Ensure all built packages are built before running tests (admin is built in job_setup)
+      - name: Build remaining assets
+        run: yarn nx run-many -t build --exclude=ghost-admin
 
       - run: yarn nx affected -t test:unit --base=${{ needs.job_setup.outputs.BASE_COMMIT }}
 
@@ -467,12 +495,12 @@ jobs:
     if: needs.job_setup.outputs.changed_core == 'true'
     strategy:
       matrix:
-        node: [ '18.12.1', '20.11.1' ]
+        node: [ '18.12.1', '20.11.1', '22.13.1' ]
         env:
           - DB: mysql8
             NODE_ENV: testing-mysql
         include:
-          - node: 18.12.1
+          - node: 20.11.1
             env:
               DB: sqlite3
               NODE_ENV: testing
@@ -492,8 +520,9 @@ jobs:
         run: sudo service mysql stop
         if: matrix.env.DB == 'mysql8'
 
-      - uses: daniellockyer/mysql-action@main
+      - uses: tryghost/mysql-action@main
         if: matrix.env.DB == 'mysql8'
+        timeout-minutes: 3
         with:
           authentication plugin: 'caching_sha2_password'
           mysql version: '8.0'
@@ -504,6 +533,11 @@ jobs:
         uses: ./.github/actions/restore-cache
         env:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
+
+      - name: Set timezone (non-UTC)
+        uses: szenius/set-timezone@v1.2
+        with:
+          timezoneLinux: "America/New_York"
 
       - name: Record start time
         run: date +%s > ${{ runner.temp }}/startTime # Get start time for test suite
@@ -589,11 +623,11 @@ jobs:
     strategy:
       matrix:
         include:
-          - node: 18.12.1
+          - node: 20.11.1
             env:
               DB: mysql8
               NODE_ENV: testing-mysql
-          - node: 18.12.1
+          - node: 20.11.1
             env:
               DB: sqlite3
               NODE_ENV: testing
@@ -615,8 +649,9 @@ jobs:
         run: sudo service mysql stop
         if: matrix.env.DB == 'mysql8'
 
-      - uses: daniellockyer/mysql-action@main
+      - uses: tryghost/mysql-action@main
         if: matrix.env.DB == 'mysql8'
+        timeout-minutes: 3
         with:
           authentication plugin: 'caching_sha2_password'
           mysql version: '8.0'
@@ -660,7 +695,7 @@ jobs:
         env:
           FORCE_COLOR: 0
         with:
-          node-version: "18.12.1"
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: Restore caches
         uses: ./.github/actions/restore-cache
@@ -713,7 +748,7 @@ jobs:
         env:
           FORCE_COLOR: 0
         with:
-          node-version: "18.12.1"
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: Restore caches
         uses: ./.github/actions/restore-cache
@@ -766,7 +801,7 @@ jobs:
         env:
           FORCE_COLOR: 0
         with:
-          node-version: "18.12.1"
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: Restore caches
         uses: ./.github/actions/restore-cache
@@ -806,6 +841,148 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
+  job_tinybird:
+    name: Tinybird Tests (Web Analytics)
+    runs-on: ubuntu-latest
+    needs: [
+      job_setup
+    ]
+    defaults:
+      run:
+        working-directory: ghost/web-analytics
+    if: needs.job_setup.outputs.changed_tinybird == 'true'
+    steps:
+      - name: Get User Permission
+        id: get-user-permission
+        uses: actions-cool/check-user-permission@v2
+        with:
+          require: write
+          username: ${{ github.triggering_actor }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Check User Permission
+        id: check-user-permission
+        if: steps.get-user-permission.outputs.require-result == 'false'
+        run: |
+          echo "${{ github.triggering_actor }} does not have permissions on this repo."
+          echo "Current permission level is ${{ steps.get-user-permission.outputs.user-permission }}"
+          echo "Job originally triggered by ${{ github.actor }}"
+          exit 1
+      - name: Checkout current commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 300
+      - name: Check secrets
+        if: github.event_name == 'pull_request'
+        env:
+          TB_ADMIN_TOKEN: ${{ secrets.TB_ADMIN_TOKEN_STAGING }}
+        run: |
+          if [ -z "${{ env.TB_ADMIN_TOKEN }}" ]; then
+            echo "Tinybird admin token is not available. Did you open this PR from a fork?"
+            echo "If so, please re-open the PR from a branch in the upstream TryGhost/Ghost repository."
+            exit 1
+          fi
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.11
+          architecture: "x64"
+          cache: "pip"
+      - name: Set environment variables
+        run: |
+          _ENV_FLAGS="${ENV_FLAGS:=--wait}"
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            TB_BRANCH_NAME="tmp_ci_pr_${{ github.event.pull_request.number }}"
+          else
+            TB_BRANCH_NAME="tmp_ci_main_$(echo ${{ github.sha }} | cut -c1-7)"
+          fi
+          GIT_BRANCH=${GITHUB_HEAD_REF}
+          echo "GIT_BRANCH=$GIT_BRANCH" >> $GITHUB_ENV
+          echo "_ENV_FLAGS=$_ENV_FLAGS" >> $GITHUB_ENV
+          echo "TB_BRANCH_NAME=$TB_BRANCH_NAME" >> $GITHUB_ENV
+      - name: Install Tinybird CLI
+        run: |
+          if [ -f "requirements.txt" ]; then
+            pip install -r requirements.txt
+          else
+            pip install tinybird-cli
+          fi
+      - name: Tinybird CLI Version
+        run: tb --version
+      - name: Check all the datafiles syntax
+        run: tb check
+      - name: Check auth
+        run: tb --host=${{ secrets.TB_HOST }} --token=${{ secrets.TB_ADMIN_TOKEN_STAGING }} auth info
+      - name: Try to delete previous Branch
+        run: |
+          output=$(tb --host ${{ secrets.TB_HOST }} --token ${{ secrets.TB_ADMIN_TOKEN_STAGING }} branch ls)
+          # Check if the branch name exists in the output
+          if echo "$output" | grep -q "\b$TB_BRANCH_NAME\b"; then
+            tb \
+            --host ${{ secrets.TB_HOST }} \
+            --token ${{ secrets.TB_ADMIN_TOKEN_STAGING }} \
+            branch rm $TB_BRANCH_NAME \
+            --yes
+          else
+            echo "Skipping clean up: The Branch '$TB_BRANCH_NAME' does not exist."
+          fi
+      - name: Create new test Branch with data
+        run: |
+          tb \
+          --host ${{ secrets.TB_HOST }} \
+          --token ${{ secrets.TB_ADMIN_TOKEN_STAGING }} \
+          branch create $TB_BRANCH_NAME \
+          ${_ENV_FLAGS}
+      - name: Deploy changes to the test Branch
+        run: |
+          source .tinyenv
+          DEPLOY_FILE=./deploy/${VERSION}/deploy.sh
+          if [ ! -f "$DEPLOY_FILE" ]; then
+            echo "$DEPLOY_FILE not found, running default tb deploy command"
+            tb deploy
+            tb release ls
+          fi
+      - name: Custom deployment to the test Branch
+        run: |
+          DEPLOY_FILE=./deploy/${VERSION}/deploy.sh
+          if [ -f "$DEPLOY_FILE" ]; then
+              echo "$DEPLOY_FILE found"
+              if ! [ -x "$DEPLOY_FILE" ]; then
+                echo "Error: You do not have permission to execute '$DEPLOY_FILE'. Run:"
+                echo "> chmod +x $DEPLOY_FILE"
+                echo "and commit your changes"
+                exit 1
+              else
+                $DEPLOY_FILE
+              fi
+          fi
+      - name: Append fixtures
+        run: |
+          if [ -f ./scripts/append_fixtures.sh ]; then
+          echo "append_fixtures script found"
+          ./scripts/append_fixtures.sh
+          fi
+      - name: Run fixture tests
+        run: |
+          if [ -f ./scripts/exec_test.sh ]; then
+          ./scripts/exec_test.sh
+          fi
+
+      - name: Try to delete previous Branch
+        if: always()
+        run: |
+          output=$(tb --host ${{ secrets.TB_HOST }} --token ${{ secrets.TB_ADMIN_TOKEN_STAGING }} branch ls)
+          # Check if the branch name exists in the output
+          if echo "$output" | grep -q "\b$TB_BRANCH_NAME\b"; then
+            tb \
+                --host ${{ secrets.TB_HOST }} \
+                --token ${{ secrets.TB_ADMIN_TOKEN_STAGING }} \
+                branch rm $TB_BRANCH_NAME \
+                --yes
+          else
+            echo "Skipping clean up: The Branch '$TB_BRANCH_NAME' does not exist."
+          fi
+
   job_ghost-cli:
     name: Ghost-CLI tests
     needs: [job_setup]
@@ -820,7 +997,10 @@ jobs:
         env:
           FORCE_COLOR: 0
         with:
-          node-version: '16.14.0'
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install npm v8 # downgrade from v10 to v8 due to https://github.com/npm/cli/issues/6738
+        run: npm install -g npm@8
 
       - name: Install Ghost-CLI
         run: npm install -g ghost-cli@latest
@@ -832,11 +1012,17 @@ jobs:
 
       - run: node .github/scripts/bump-version.js canary
 
-      - run: npm pack
-        working-directory: ghost/core
+      - run: yarn archive
 
       - run: mv ghost-*.tgz ghost.tgz
         working-directory: ghost/core
+
+      - name: Switch back to Node v16.14.0 (for v4)
+        uses: actions/setup-node@v4
+        env:
+          FORCE_COLOR: 0
+        with:
+          node-version: '16.14.0'
 
       - name: Install latest v4
         run: |
@@ -844,11 +1030,12 @@ jobs:
           echo "V4_DIR=$DIR" >> $GITHUB_ENV
           ghost install v4 --local -d $DIR
 
-      - uses: actions/setup-node@v4
+      - name: Switch back to ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
         env:
           FORCE_COLOR: 0
         with:
-          node-version: '18.12.1'
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: Update from v4
         run: |
@@ -856,7 +1043,7 @@ jobs:
 
       - name: Save Ghost CLI Debug Logs
         if: failure()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ghost-cli-debug-logs
           path: /home/runner/.ghost/logs/
@@ -946,6 +1133,7 @@ jobs:
         job_admin_x_settings,
         job_comments_ui,
         job_signup_form,
+        job_tinybird
       ]
     if: always()
     runs-on: ubuntu-latest
@@ -973,7 +1161,10 @@ jobs:
         needs.job_setup.outputs.is_main == 'true'
         || (
           github.event_name == 'pull_request'
-          && needs.job_setup.outputs.member_is_in_org == 'true'
+          && (
+            needs.job_setup.outputs.member_is_in_org == 'true'
+            || github.event.pull_request.user.login == 'renovate[bot]'
+          )
           && contains(github.event.pull_request.labels.*.name, 'deploy-to-staging')
         )
       )
@@ -999,3 +1190,161 @@ jobs:
           inputs: '{"version":"canary","environment":"staging","version_extra":"${{ env.branch_name }}"}'
           wait-for-completion-timeout: 25m
           wait-for-completion-interval: 30s
+
+  publish_packages:
+    needs: [
+      job_setup,
+      job_lint,
+      job_unit-tests
+    ]
+    name: Publish ${{ matrix.package_name }}
+    runs-on: ubuntu-latest
+    if: always() && needs.job_setup.result == 'success' && needs.job_lint.result == 'success' && needs.job_unit-tests.result == 'success' && needs.job_setup.outputs.is_main == 'true'
+    strategy:
+      matrix:
+        include:
+          - package_name: '@tryghost/admin-x-activitypub'
+            package_path: 'apps/admin-x-activitypub'
+            cdn_paths: 'https://cdn.jsdelivr.net/ghost/admin-x-activitypub@0/dist/admin-x-activitypub.js'
+          - package_name: '@tryghost/portal'
+            package_path: 'apps/portal'
+            cdn_paths: 'https://cdn.jsdelivr.net/ghost/portal@~CURRENT_MINOR/umd/portal.min.js'
+          - package_name: '@tryghost/sodo-search'
+            package_path: 'apps/sodo-search'
+            cdn_paths: |
+              'https://cdn.jsdelivr.net/ghost/sodo-search@~CURRENT_MINOR/umd/sodo-search.min.js'
+              'https://cdn.jsdelivr.net/ghost/sodo-search@~CURRENT_MINOR/umd/main.css'
+          - package_name: '@tryghost/comments-ui'
+            package_path: 'apps/comments-ui'
+            cdn_paths: 'https://cdn.jsdelivr.net/ghost/comments-ui@~CURRENT_MINOR/umd/comments-ui.min.js'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Restore caches
+        uses: ./.github/actions/restore-cache
+        env:
+          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
+
+      - name: Check if version changed
+        id: version_check
+        working-directory: ${{ matrix.package_path }}
+        run: |
+          CURRENT_VERSION=$(cat package.json | jq -r .version)
+          PUBLISHED_VERSION=$(npm show ${{ matrix.package_name }} version || echo "0.0.0")
+          echo "Current version: $CURRENT_VERSION"
+          echo "Published version: $PUBLISHED_VERSION"
+
+          CURRENT_MINOR=$(cat package.json | jq -r .version | awk -F. '{print $1"."$2}')
+          echo "current_minor=$CURRENT_MINOR" >> $GITHUB_OUTPUT
+
+          if [ "$CURRENT_VERSION" = "$PUBLISHED_VERSION" ]; then
+            echo "Version is unchanged."
+            echo "version_changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "Version has changed."
+            echo "version_changed=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build the package
+        if: steps.version_check.outputs.version_changed == 'true'
+        run: yarn run nx build ${{ matrix.package_name }}
+
+      - name: Configure .npmrc
+        if: steps.version_check.outputs.version_changed == 'true'
+        run: |
+          echo "@tryghost:registry=https://registry.npmjs.org/" >> ~/.npmrc
+          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" >> ~/.npmrc
+
+      - name: Publish to npm
+        if: steps.version_check.outputs.version_changed == 'true'
+        working-directory: ${{ matrix.package_path }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --access public
+
+      - name: Replace CURRENT_MINOR in cdn-paths
+        id: cdn_paths
+        if: steps.version_check.outputs.version_changed == 'true'
+        run: |
+          cdn_paths="${{ matrix.cdn_paths }}"
+          echo "cdn_paths<<EOF" >> $GITHUB_OUTPUT
+          echo "$cdn_paths" | sed 's/CURRENT_MINOR/${{ steps.version_check.outputs.current_minor }}/g' >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Print cdn_paths
+        if: steps.version_check.outputs.version_changed == 'true'
+        run: echo "${{ steps.cdn_paths.outputs.cdn_paths }}"
+
+      - name: Purge jsdelivr cache
+        if: steps.version_check.outputs.version_changed == 'true'
+        uses: gacts/purge-jsdelivr-cache@v1
+        with:
+          url: ${{ steps.cdn_paths.outputs.cdn_paths }}
+  deploy_tinybird:
+    runs-on: ubuntu-latest
+    needs: [
+      job_setup,
+      job_tinybird
+    ]
+    if: always() && needs.job_setup.outputs.changed_tinybird == 'true' && needs.job_setup.result == 'success' && needs.job_tinybird.result == 'success' && needs.job_setup.outputs.is_main == 'true'
+    strategy:
+      matrix:
+        environment: [ 'staging', 'production']
+    name: Deploy Tinybird
+    defaults:
+      run:
+        working-directory: ghost/web-analytics
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 300
+          submodules: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.11
+          architecture: "x64"
+          cache: "pip"
+      - name: Install Tinybird CLI
+        run: |
+          if [ -f "requirements.txt" ]; then
+            pip install -r requirements.txt
+          else
+            pip install tinybird-cli
+          fi
+      - name: Tinybird version
+        run: tb --version
+      - name: Check auth (staging)
+        if: matrix.environment == 'staging'
+        run: tb --host=${{ secrets.TB_HOST }} --token=${{ secrets.TB_ADMIN_TOKEN_STAGING }} auth info
+      - name: Check auth (production)
+        if: matrix.environment == 'production'
+        run: tb --host=${{ secrets.TB_HOST }} --token=${{ secrets.TB_ADMIN_TOKEN_PRODUCTION }} auth info
+      - name: Deploy changes to the main Workspace
+        run: |
+          DEPLOY_FILE=./deploy/${VERSION}/deploy.sh
+          if [ ! -f "$DEPLOY_FILE" ]; then
+            echo "$DEPLOY_FILE not found, running default tb push command"
+            tb branch current
+            tb deploy
+          fi
+      - name: Custom deployment to the main Workspace
+        run: |
+            DEPLOY_FILE=./deploy/${VERSION}/deploy.sh
+            if [ -f "$DEPLOY_FILE" ]; then
+              echo "$DEPLOY_FILE found"
+              if ! [ -x "$DEPLOY_FILE" ]; then
+                  echo "Error: You don't have permission to execute '$DEPLOY_FILE'. Run:"
+                  echo "> chmod +x $DEPLOY_FILE"
+                  echo "and commit your changes"
+                  exit 1
+              else
+                  $DEPLOY_FILE
+              fi
+            fi

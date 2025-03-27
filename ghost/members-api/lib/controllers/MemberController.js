@@ -1,4 +1,9 @@
 const errors = require('@tryghost/errors');
+const tpl = require('@tryghost/tpl');
+
+const messages = {
+    blockedEmailDomain: 'Memberships from this email domain are currently restricted.'
+};
 
 module.exports = class MemberController {
     /**
@@ -10,6 +15,7 @@ module.exports = class MemberController {
      * @param {any} deps.StripePrice
      * @param {any} deps.tokenService
      * @param {any} deps.sendEmailWithMagicLink
+     * @param {any} deps.settingsCache
      */
     constructor({
         memberRepository,
@@ -18,7 +24,8 @@ module.exports = class MemberController {
         tiersService,
         StripePrice,
         tokenService,
-        sendEmailWithMagicLink
+        sendEmailWithMagicLink,
+        settingsCache
     }) {
         this._memberRepository = memberRepository;
         this._productRepository = productRepository;
@@ -27,6 +34,7 @@ module.exports = class MemberController {
         this._StripePrice = StripePrice;
         this._tokenService = tokenService;
         this._sendEmailWithMagicLink = sendEmailWithMagicLink;
+        this._settingsCache = settingsCache;
     }
 
     async updateEmailAddress(req, res) {
@@ -39,6 +47,14 @@ module.exports = class MemberController {
         if (!identity) {
             res.writeHead(403);
             return res.end('No Permission.');
+        }
+
+        const blockedEmailDomains = this._settingsCache.get('all_blocked_email_domains');
+        const emailDomain = req.body.email.split('@')[1]?.toLowerCase();
+        if (emailDomain && blockedEmailDomains.includes(emailDomain)) {
+            throw new errors.BadRequestError({
+                message: tpl(messages.blockedEmailDomain)
+            });
         }
 
         let tokenData = {};

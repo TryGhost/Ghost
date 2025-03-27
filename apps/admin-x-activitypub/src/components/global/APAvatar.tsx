@@ -1,78 +1,114 @@
-import React, {useState} from 'react';
+import NiceModal from '@ebay/nice-modal-react';
+import React, {useEffect, useState} from 'react';
+import ViewProfileModal from '../modals/ViewProfileModal';
+import clsx from 'clsx';
+import getUsername from '../../utils/get-username';
 import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Icon} from '@tryghost/admin-x-design-system';
+import {Skeleton} from '@tryghost/shade';
 
-type AvatarSize = 'xs' | 'sm' | 'lg';
-export type AvatarBadge = 'user-fill' | 'heart-fill' | 'comment-fill' | undefined;
+type AvatarSize = '2xs' | 'xs' | 'sm' | 'md' | 'lg' | 'notification';
 
 interface APAvatarProps {
-    author?: ActorProperties;
+    author: {
+        icon: {
+            url: string;
+        };
+        name: string;
+        handle?: string;
+    } | undefined;
     size?: AvatarSize;
-    badge?: AvatarBadge;
+    isLoading?: boolean;
+    onClick?: () => void;
+    disabled?: boolean;
 }
 
-const APAvatar: React.FC<APAvatarProps> = ({author, size, badge}) => {
+const APAvatar: React.FC<APAvatarProps> = ({author, size, isLoading = false, onClick, disabled = false}) => {
     let iconSize = 18;
-    let containerClass = '';
-    let imageClass = 'z-10 rounded w-10 h-10 object-cover';
-    const badgeClass = `w-6 h-6 rounded-full absolute -bottom-2 -right-2 border-2 border-white content-box flex items-center justify-center `;
-    let badgeColor = '';
+    let containerClass = `shrink-0 items-center justify-center rounded-full overflow-hidden relative z-10 flex bg-gray-100 dark:bg-gray-900 ${size === 'lg' || disabled ? '' : 'hover:opacity-80 cursor-pointer'}`;
+    let imageClass = 'z-10 object-cover';
     const [iconUrl, setIconUrl] = useState(author?.icon?.url);
 
-    switch (badge) {
-    case 'user-fill':
-        badgeColor = ' bg-blue-500';
-        break;
-    case 'heart-fill':
-        badgeColor = ' bg-red-500';
-        break;
-    case 'comment-fill':
-        badgeColor = ' bg-purple-500';
-        break;
-    }
-    
+    useEffect(() => {
+        setIconUrl(author?.icon?.url);
+    }, [author?.icon?.url]);
+
     switch (size) {
+    case '2xs':
+        iconSize = 10;
+        containerClass = clsx('h-4 w-4', containerClass);
+        imageClass = clsx('h-4 w-4', imageClass);
+        break;
     case 'xs':
         iconSize = 12;
-        containerClass = 'z-10 rounded bg-grey-100 flex items-center justify-center p-[3px] w-6 h-6';
-        imageClass = 'z-10 rounded w-6 h-6 object-cover';
+        containerClass = clsx('h-6 w-6', containerClass);
+        imageClass = clsx('h-6 w-6', imageClass);
+        break;
+    case 'notification':
+        iconSize = 12;
+        containerClass = clsx('h-9 w-9', containerClass);
+        imageClass = clsx('h-9 w-9', imageClass);
         break;
     case 'sm':
-        containerClass = 'z-10 rounded bg-grey-100 flex items-center justify-center p-[10px] w-10 h-10';
+        containerClass = clsx('h-10 w-10', containerClass);
+        imageClass = clsx('h-10 w-10', imageClass);
+        break;
+    case 'md':
+        containerClass = clsx('h-[60px] w-[60px]', containerClass);
+        imageClass = clsx('h-[60px] w-[60px]', imageClass);
         break;
     case 'lg':
-        containerClass = 'z-10 rounded bg-grey-100 flex items-center justify-center p-[10px] w-22 h-22';
+        containerClass = clsx('h-22 w-22', containerClass);
+        imageClass = clsx('h-22 w-22', imageClass);
         break;
     default:
-        containerClass = 'z-10 rounded bg-grey-100 flex items-center justify-center p-[10px] w-10 h-10';
+        containerClass = clsx('h-10 w-10', containerClass);
+        imageClass = clsx('h-10 w-10', imageClass);
         break;
     }
+
+    if (!author || isLoading) {
+        return <Skeleton className={imageClass} containerClassName={containerClass} />;
+    }
+
+    if (!iconUrl) {
+        containerClass = clsx(containerClass, 'bg-gray-100 dark:bg-gray-900');
+    }
+
+    const handle = author?.handle || getUsername(author as ActorProperties);
+
+    const handleClick = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        NiceModal.show(ViewProfileModal, {handle});
+        onClick?.();
+    };
+
+    const title = `${author?.name} ${handle}`;
 
     if (iconUrl) {
         return (
-            <a className='relative z-10 h-10 w-10 shrink-0 pt-[3px] transition-opacity hover:opacity-80' href={author?.url} rel='noopener noreferrer' target='_blank'>
+            <div
+                className={containerClass}
+                title={title}
+                onClick={size === 'lg' || disabled ? undefined : handleClick}
+            >
                 <img
                     className={imageClass}
                     src={iconUrl}
-                    onError={() => setIconUrl(null)}
+                    onError={() => setIconUrl(undefined)}
                 />
-                {badge && (
-                    <div className={`${badgeClass} ${badgeColor}`}>
-                        <Icon
-                            colorClass='text-white'
-                            name={badge}
-                            size='xs'
-                        />
-                    </div>
-                )}
-            </a>
+            </div>
         );
     }
 
     return (
-        <div className={containerClass}>
+        <div
+            className={containerClass}
+            title={title}
+            onClick={disabled ? undefined : handleClick}
+        >
             <Icon
-                colorClass='text-grey-600'
+                colorClass='text-gray-600'
                 name='user'
                 size={iconSize}
             />

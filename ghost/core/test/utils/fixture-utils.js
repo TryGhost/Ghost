@@ -11,7 +11,6 @@ const knexMigrator = new KnexMigrator();
 // Ghost Internals
 const models = require('../../core/server/models');
 const {fixtureManager} = require('../../core/server/data/schema/fixtures');
-const emailAnalyticsService = require('../../core/server/services/email-analytics');
 const permissions = require('../../core/server/services/permissions');
 const settingsService = require('../../core/server/services/settings/settings-service');
 const labsService = require('../../core/shared/labs');
@@ -64,12 +63,12 @@ const fixtures = {
     },
 
     insertMultiAuthorPosts: function insertMultiAuthorPosts() {
+        // Creates two posts per staff member.
+        // (It used to create 10, but then other tests assumed two per staff member)
+
         let i;
         let k = 0;
         let posts = [];
-
-        // NOTE: this variable should become a parameter as test logic depends on it
-        const count = 10;
 
         // insert users of different roles
         return Promise.resolve(fixtures.createUsersWithRoles()).then(function () {
@@ -83,6 +82,7 @@ const fixtures = {
             ]);
         }).then(function (results) {
             let users = results[0];
+            const count = users.length * 2;
             let tags = results[1];
 
             tags = tags.toJSON();
@@ -90,7 +90,7 @@ const fixtures = {
             users = users.toJSON();
             users = _.map(users, 'id');
 
-            // Let's insert posts with random authors
+            // Let's insert posts for each staff member, two each.
             for (i = 0; i < count; i += 1) {
                 const author = users[i % users.length];
                 posts.push(DataGenerator.forKnex.createGenericPost(k, null, null, [{id: author}]));
@@ -375,7 +375,8 @@ const fixtures = {
             Author: DataGenerator.Content.roles[2].id,
             Owner: DataGenerator.Content.roles[3].id,
             Contributor: DataGenerator.Content.roles[4].id,
-            'Admin Integration': DataGenerator.Content.roles[5].id
+            'Admin Integration': DataGenerator.Content.roles[5].id,
+            'Super Editor': DataGenerator.Content.roles[6].id
         };
 
         // CASE: if empty db will throw SQLITE_MISUSE, hard to debug
@@ -427,10 +428,16 @@ const fixtures = {
         }));
     },
 
-    insertWebhook: function (attributes) {
+    insertWebhook: function (attributes, options = {}) {
+        let integration = DataGenerator.forKnex.integrations[0];
+        if (options.integrationType) {
+            integration = DataGenerator.forKnex.integrations.find(
+                props => props.type === options.integrationType
+            );
+        }
         const webhook = DataGenerator.forKnex.createWebhook(
             Object.assign(attributes, {
-                integration_id: DataGenerator.forKnex.integrations[0].id
+                integration_id: integration.id
             })
         );
 
@@ -630,6 +637,9 @@ const fixtures = {
     },
 
     insertEmailsAndRecipients: function insertEmailsAndRecipients(withFailed = false) {
+        // NOTE: This require results in the jobs service being loaded prematurely, which breaks any tests relevant to it.
+        //  This MUST be done in here and not at the top of the file to prevent that from happening as test setup is being performed.
+        const emailAnalyticsService = require('../../core/server/services/email-analytics');
         return sequence(_.cloneDeep(DataGenerator.forKnex.emails).map(email => () => {
             return models.Email.add(email, context.internal);
         })).then(function () {
@@ -713,7 +723,10 @@ const fixtures = {
     },
 
     async enableAllLabsFeatures() {
-        const labsValue = Object.fromEntries(labsService.WRITABLE_KEYS_ALLOWLIST.map(key => [key, true]));
+        const labsValue = Object.fromEntries(labsService.WRITABLE_KEYS_ALLOWLIST
+            // TODO: should test with 2fa enabled
+            .filter(key => key !== 'staff2fa')
+            .map(key => [key, true]));
         const labsSetting = DataGenerator.forKnex.createSetting({
             key: 'labs',
             group: 'labs',

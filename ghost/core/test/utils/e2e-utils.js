@@ -57,7 +57,7 @@ const exposeFixtures = async () => {
         });
 };
 
-const prepareContentFolder = (options) => {
+const prepareContentFolder = async (options) => {
     const contentFolderForTests = options.contentFolder;
 
     /**
@@ -66,36 +66,36 @@ const prepareContentFolder = (options) => {
      */
     configUtils.set('paths:contentPath', contentFolderForTests);
 
-    fs.ensureDirSync(contentFolderForTests);
-    fs.ensureDirSync(path.join(contentFolderForTests, 'data'));
-    fs.ensureDirSync(path.join(contentFolderForTests, 'themes'));
-    fs.ensureDirSync(path.join(contentFolderForTests, 'images'));
-    fs.ensureDirSync(path.join(contentFolderForTests, 'logs'));
-    fs.ensureDirSync(path.join(contentFolderForTests, 'adapters'));
-    fs.ensureDirSync(path.join(contentFolderForTests, 'settings'));
+    await fs.ensureDir(contentFolderForTests);
+    await fs.ensureDir(path.join(contentFolderForTests, 'data'));
+    await fs.ensureDir(path.join(contentFolderForTests, 'themes'));
+    await fs.ensureDir(path.join(contentFolderForTests, 'images'));
+    await fs.ensureDir(path.join(contentFolderForTests, 'logs'));
+    await fs.ensureDir(path.join(contentFolderForTests, 'adapters'));
+    await fs.ensureDir(path.join(contentFolderForTests, 'settings'));
 
     if (options.copyThemes) {
         // Copy all themes into the new test content folder. Default active theme is always source. If you want to use a different theme, you have to set the active theme (e.g. stub)
-        fs.copySync(path.join(__dirname, 'fixtures', 'themes'), path.join(contentFolderForTests, 'themes'));
+        await fs.copy(path.join(__dirname, 'fixtures', 'themes'), path.join(contentFolderForTests, 'themes'));
     }
 
     // Copy theme even if frontend is disabled, as admin can use source when viewing themes section
-    fs.copySync(path.join(__dirname, 'fixtures', 'themes', 'source'), path.join(contentFolderForTests, 'themes', 'source'));
+    await fs.copy(path.join(__dirname, 'fixtures', 'themes', 'source'), path.join(contentFolderForTests, 'themes', 'source'));
 
     if (options.redirectsFile) {
-        redirects.setupFile(contentFolderForTests, options.redirectsFileExt);
+        await redirects.setupFile(contentFolderForTests, options.redirectsFileExt);
     }
 
     if (options.routesFilePath) {
-        fs.copySync(options.routesFilePath, path.join(contentFolderForTests, 'settings', 'routes.yaml'));
+        await fs.copy(options.routesFilePath, path.join(contentFolderForTests, 'settings', 'routes.yaml'));
     } else if (options.copySettings) {
-        fs.copySync(path.join(__dirname, 'fixtures', 'settings', 'routes.yaml'), path.join(contentFolderForTests, 'settings', 'routes.yaml'));
+        await fs.copy(path.join(__dirname, 'fixtures', 'settings', 'routes.yaml'), path.join(contentFolderForTests, 'settings', 'routes.yaml'));
     }
 
     // Used by newsletter fixtures
-    fs.ensureDirSync(path.join(contentFolderForTests, 'images', '2022', '05'));
+    await fs.ensureDir(path.join(contentFolderForTests, 'images', '2022', '05'));
     const GIF1x1 = Buffer.from('R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==', 'base64');
-    fs.writeFileSync(path.join(contentFolderForTests, 'images', '2022', '05', 'test.jpg'), GIF1x1);
+    await fs.writeFile(path.join(contentFolderForTests, 'images', '2022', '05', 'test.jpg'), GIF1x1);
 };
 
 // CASE: Ghost Server is Running
@@ -218,7 +218,7 @@ const startGhost = async (options) => {
     }, options);
 
     // @TODO: tidy up the tmp folders after tests
-    prepareContentFolder(options);
+    await prepareContentFolder(options);
 
     if (ghostServer && ghostServer.httpServer && !options.forceStart) {
         await restartModeGhostStart(options);

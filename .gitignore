@@ -128,6 +128,7 @@ Caddyfile
 
 # Playwright state with cookies it keeps across tests
 /ghost/core/playwright-state.json
+/ghost/core/playwright-report
 
 # Admin
 /ghost/admin/dist
@@ -174,3 +175,8 @@ tsconfig.tsbuildinfo
 .tinyb
 .venv
 .diff_tmp
+temp*.sql
+
+# Docker Yarn Cache
+.yarncache
+.yarncachecopy

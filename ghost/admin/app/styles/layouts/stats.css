@@ -40,7 +40,6 @@
     padding: 20px;
     border: 1px solid var(--whitegrey);
     border-radius: 8px;
-    overflow: hidden;
     transition: all ease-in-out 0.3s;
 }
 
@@ -139,13 +138,13 @@
 
 .gh-stats-metric-label {
     font-weight: 600;
-    font-size: 16px;
+    font-size: 15px;
     margin-bottom: 0;
 }
 
 .gh-stats-metric-value {
-    font-size: 26px;
-    letter-spacing: -0.05em;
+    font-size: 21px;
+    letter-spacing: -0.02em;
     font-weight: 600;
     line-height: 1;
 }
@@ -153,7 +152,7 @@
 .gh-stats-piechart-container {
     display: flex;
     gap: 16px;
-    align-items: flex-start;
+    align-items: center;
     width: 100%;
 }
 
@@ -174,7 +173,7 @@
     width: 100%;
     height: 100%;
     flex-grow: 1;
-    margin-right: -20px;
+    margin-left: -20px;
 }
 
 .gh-stats-section-dropdown {
@@ -234,6 +233,25 @@
 
 .gh-stats-data-label {
     color: var(--black);
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.gh-stats-external-link {
+    color: var(--black);
+    line-height: 1;
+    opacity: 0;
+    transition: all ease-in-out 0.15s;
+}
+
+.gh-stats-data-label:hover .gh-stats-external-link {
+    opacity: 1;
+}
+
+.gh-stats-external-link svg {
+    width: 13px;
+    height: auto;
 }
 
 a.gh-stats-data-label:hover {
@@ -261,24 +279,43 @@ a.gh-stats-data-label:hover {
     z-index: 9999;
 }
 
+.gh-stats-all-container {
+    max-height: calc(100vh - 12vw - 172px);
+    overflow: auto;
+    margin: -4px -32px;
+    padding: 4px 32px;
+}
+
+.gh-stats-all-container > div > div {
+    overflow-y: unset !important;
+}
+
 .gh-stats-kpis-chart-container {
     margin-top: -20px;
 }
 
-.gh-stats-domain {
+.gh-stats-bar-text {
     display: flex;
     align-items: center;
     gap: 6px;
     color: var(--black);
+    line-height: 1.3em;
 }
 
-.gh-stats-domain:hover {
+.gh-stats-bar-text:hover span {
     text-decoration: underline;
 }
 
 .gh-stats-favicon {
     width: 16px;
     height: 16px;
+}
+
+.gh-stats-bar-text span {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+    overflow: hidden;
 }
 
 .gh-stats-tooltip-header {
@@ -328,9 +365,11 @@ a.gh-stats-data-label:hover {
     align-items: center;
     font-size: 13px;
     font-weight: 500;
-    border: 1px solid var(--whitegrey);
+    /* border: 1px solid var(--purple); */
+    border: 1px solid rgba(142,68,254,0.75);
     border-radius: 999px;
     padding: 4px 12px;
+    background-color: rgba(142,68,254,0.06);
 }
 
 .gh-stats-filter-pill .value {
@@ -363,4 +402,77 @@ a.gh-stats-data-label:hover {
 
 .gh-btn-clear-filters svg path {
     stroke-width: 2px;
+}
+
+.gh-stats-audience-filter-menu {
+    max-width: 240px;
+    min-width: 220px;
+}
+
+.gh-stats-placeholder {
+    width: 60px;
+    color: var(--lightgrey);
+    margin-bottom: -8px;
+}
+
+.gh-stats-technical-container {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.gh-stats-technical-data {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.gh-stats-audience-filter-btn-label {
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+.gh-stats-data-label .gh-stats-bar-truncate {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    display: inline-block;
+}
+
+@media (max-width: 1440px) {
+    .gh-stats-filters {
+        margin-bottom: 0;
+    }
+}
+
+@media (max-width: 1140px) {
+    .gh-stats-grid.cols-2 {
+        grid-template-columns: 1fr;
+    }
+
+    .gh-stats-tab.is-selected:before {
+        display: none;
+    }
+
+    .gh-stats-tab.is-selected {
+        border-bottom: 2px solid var(--black);
+    }
+}
+
+@media (max-width: 990px) {
+    .gh-stats-tabs {
+        max-width: 100%;
+        overflow: auto;
+    }
+}
+
+@media (max-width: 390px) {
+    .gh-stats-audience-filter-btn-label {
+        display: none !important;
+    }
+
+    .gh-stats-btn-audience-filter svg {
+        margin-right: 0 !important;
+    }
 }

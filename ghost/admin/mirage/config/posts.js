@@ -125,10 +125,10 @@ export default function mockPosts(server) {
         return posts.create(attrs);
     });
 
-    server.put('/posts/bulk/', function ({tags}, {requestBody}) {
+    server.put('/posts/bulk/', function ({posts, tags}, {queryParams, requestBody}) {
         const bulk = JSON.parse(requestBody).bulk;
         const action = bulk.action;
-        // const ids = extractFilterParam('id', queryParams.filter);
+        const ids = extractFilterParam('id', queryParams.filter);
 
         if (action === 'addTag') {
             // create tag so we have an id from the server
@@ -144,5 +144,27 @@ export default function mockPosts(server) {
             // const postsToUpdate = posts.find(ids);
             // getting the posts is fine, but within this we CANNOT manipulate them (???) not even iterate with .forEach
         }
+
+        if (action === 'access') {
+            const postsToUpdate = posts.find(ids);
+            postsToUpdate.models.forEach((post) => {
+                post.visibility = bulk.meta.visibility;
+                post.tierIds = bulk.meta.tiers.map(tier => tier.id);
+                post.save();
+            });
+        }
+
+        return {
+            bulk: {
+                meta: {
+                    errors: [],
+                    stats: {
+                        successful: ids.length,
+                        unsuccessful: 0
+                    },
+                    unsuccessfulData: []
+                }
+            }
+        };
     });
 }

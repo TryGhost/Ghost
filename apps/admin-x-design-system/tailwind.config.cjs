@@ -13,6 +13,8 @@ module.exports = {
             md: '640px',
             lg: '1024px',
             xl: '1320px',
+            xxl: '1440px',
+            xxxl: '1600px',
             tablet: '860px'
         },
         colors: {
@@ -87,11 +89,31 @@ module.exports = {
             }
         },
         fontFamily: {
+            cardo: 'Cardo',
+            manrope: 'Manrope',
+            merriweather: 'Merriweather',
+            nunito: 'Nunito',
+            'tenor-sans': 'Tenor Sans',
+            'old-standard-tt': 'Old Standard TT',
+            prata: 'Prata',
+            roboto: 'Roboto',
+            rufina: 'Rufina',
             inter: 'Inter',
             sans: 'Inter, -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, ubuntu, roboto, noto, segoe ui, arial, sans-serif',
             serif: 'Georgia, serif',
             mono: 'Consolas, Liberation Mono, Menlo, Courier, monospace',
-            inherit: 'inherit'
+            inherit: 'inherit',
+            'space-grotesk': 'Space Grotesk',
+            'chakra-petch': 'Chakra Petch',
+            'noto-sans': 'Noto Sans',
+            poppins: 'Poppins',
+            'fira-sans': 'Fira Sans',
+            'noto-serif': 'Noto Serif',
+            lora: 'Lora',
+            'ibm-plex-serif': 'IBM Plex Serif',
+            'space-mono': 'Space Mono',
+            'fira-mono': 'Fira Mono',
+            'jetbrains-mono': 'JetBrains Mono'
         },
         boxShadow: {
             DEFAULT: '0 0 1px rgba(0,0,0,.05), 0 5px 18px rgba(0,0,0,.08)',
@@ -286,7 +308,7 @@ module.exports = {
                 lg: '1.65rem',
                 xl: '2rem',
                 '2xl': '2.4rem',
-                '3xl': '3.2rem',
+                '3xl': '2.8rem',
                 '4xl': '3.6rem',
                 '5xl': ['4.2rem', '1.15'],
                 '6xl': ['6rem', '1'],

@@ -314,19 +314,19 @@
 .gh-alert-black {
     border-bottom: 1px solid var(--black);
     background: var(--black);
-    color: #fff;
+    color: var(--white);
 }
 .gh-alert-black a {
-    color: #fff;
+    color: var(--white);
 }
 .gh-alert-black svg {
-    fill: #fff;
+    fill: var(--white);
 }
 .gh-alert-black .gh-alert-close:hover {
-    color: #fff;
+    color: var(--white);
 }
 .gh-alert-black .gh-alert-close svg:hover {
-    fill: #fff;
+    fill: var(--white);
 }
 
 /* Yellow alert

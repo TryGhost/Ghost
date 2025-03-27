@@ -148,10 +148,12 @@ const publishPost = async (page, {type = 'publish', time, date} = {}) => {
 
     if (date) {
         await page.locator('[data-test-date-time-picker-date-input]').fill(date);
+        await page.locator('[data-test-date-time-picker-date-input]').blur();
     }
 
     if (time) {
         await page.locator('[data-test-date-time-picker-time-input]').fill(time);
+        await page.locator('[data-test-date-time-picker-time-input]').blur();
     }
 
     // TODO: set other publish options
@@ -312,6 +314,7 @@ test.describe('Publishing', () => {
             const date = DateTime.now();
 
             await createPostDraft(adminPage, {title: 'Testing publish update', body: 'This is the initial published text.'});
+            const editorUrl = await adminPage.url();
             await publishPost(adminPage);
             const frontendPage = await openPublishedPostBookmark(adminPage);
             await closePublishFlow(adminPage);
@@ -323,7 +326,7 @@ test.describe('Publishing', () => {
             await expect(publishedHeader).toContainText(date.toFormat('LLL d, yyyy'));
 
             // add some extra text to the post
-            await adminPage.locator('li[data-test-post-id]').first().click();
+            await adminPage.goto(editorUrl);
             await adminPage.locator('[data-kg="editor"]').first().click();
             await adminPage.waitForTimeout(500);
             await adminPage.keyboard.type(' This is some updated text.');
@@ -362,12 +365,13 @@ test.describe('Publishing', () => {
             await sharedPage.goto('/ghost');
             await createPostDraft(sharedPage, postData);
 
+            const editorUrl = await sharedPage.url();
+
             // Schedule the post to publish asap (by setting it to 00:00, it will get auto corrected to the minimum time possible - 5 seconds in the future)
             await publishPost(sharedPage, {time: '00:00', type: 'publish+send'});
             await closePublishFlow(sharedPage);
             await checkPostStatus(sharedPage, 'Scheduled', 'Scheduled to be published and sent'); // Member count can differ, hence not included here
             await checkPostStatus(sharedPage, 'Scheduled', 'in a few seconds'); // Extra test for suffix on hover
-            const editorUrl = await sharedPage.url();
 
             // Go to the homepage and check if the post is not yet visible there
             await checkPostNotPublished(sharedPage, postData);
@@ -393,11 +397,11 @@ test.describe('Publishing', () => {
             await sharedPage.goto('/ghost');
             await createPostDraft(sharedPage, postData);
 
+            const editorUrl = await sharedPage.url();
             // Schedule the post to publish asap (by setting it to 00:00, it will get auto corrected to the minimum time possible - 5 seconds in the future)
             await publishPost(sharedPage, {time: '00:00'});
             await closePublishFlow(sharedPage);
             await checkPostStatus(sharedPage, 'Scheduled', 'Scheduled to be published in a few seconds');
-            const editorUrl = await sharedPage.url();
 
             // Check not published yet
             await checkPostNotPublished(sharedPage, postData);
@@ -424,12 +428,12 @@ test.describe('Publishing', () => {
 
             await sharedPage.goto('/ghost');
             await createPostDraft(sharedPage, postData);
+            const editorUrl = await sharedPage.url();
 
             // Schedule the post to publish asap (by setting it to 00:00, it will get auto corrected to the minimum time possible - 5 seconds in the future)
             await publishPost(sharedPage, {type: 'send', time: '00:00'});
             await closePublishFlow(sharedPage);
             await checkPostStatus(sharedPage, 'Scheduled', 'Scheduled to be sent in a few seconds');
-            const editorUrl = await sharedPage.url();
 
             // Check not published yet
             await checkPostNotPublished(sharedPage, postData);
@@ -455,6 +459,8 @@ test.describe('Publishing', () => {
             await sharedPage.goto('/ghost');
             await createPostDraft(sharedPage, postData);
 
+            const editorUrl = await sharedPage.url();
+
             // Schedule far in the future
             await publishPost(sharedPage, {date: '2050-01-01', time: '10:09'});
             await closePublishFlow(sharedPage);
@@ -469,7 +475,7 @@ test.describe('Publishing', () => {
             await checkPostNotPublished(testsharedPage, postData);
 
             // Now unschedule this post
-            await sharedPage.locator('li[data-test-post-id]').first().click();
+            await sharedPage.goto(editorUrl);
             await sharedPage.locator('[data-test-button="update-flow"]').first().click();
             await sharedPage.locator('[data-test-button="revert-to-draft"]').click();
 
@@ -564,8 +570,8 @@ test.describe('Updating post access', () => {
 
         // publish
         await publishPost(sharedPage);
-        await closePublishFlow(sharedPage);
         const frontendPage = await openPublishedPostBookmark(sharedPage);
+        await closePublishFlow(sharedPage);
 
         // non-member doesn't have access
         await expect(frontendPage.locator('.gh-post-upgrade-cta-content h2')).toContainText('on the Gold tier only');
@@ -609,12 +615,10 @@ test.describe('Updating post access', () => {
         await page.locator('[data-test-nav="settings"]').click();
         await expect(page.getByTestId('timezone')).toContainText('UTC');
 
-        await page.getByTestId('timezone').getByRole('button', {name: 'Edit'}).click();
         await page.getByTestId('timezone-select').click();
         await page.locator('[data-testid="select-option"]', {hasText: 'Tokyo'}).click();
 
         await page.getByTestId('timezone').getByRole('button', {name: 'Save'}).click();
-        await expect(page.getByTestId('timezone-select')).toBeHidden();
         await expect(page.getByTestId('timezone')).toContainText('(GMT +9:00) Osaka, Sapporo, Tokyo');
 
         await page.getByTestId('exit-settings').click();
@@ -631,12 +635,10 @@ test.describe('Updating post access', () => {
     test('default recipient settings - usually nobody', async ({page}) => {
         // switch to "usually nobody" setting
         await page.goto('/ghost/settings/newsletters');
-        await page.getByTestId('default-recipients').getByRole('button', {name: 'Edit'}).click();
         await page.getByTestId('default-recipients-select').click();
         await page.locator('[data-testid="select-option"]', {hasText: /Usually nobody/}).click();
         await page.getByTestId('default-recipients').getByRole('button', {name: 'Save'}).click();
 
-        await expect(page.getByTestId('default-recipients-select')).toBeHidden();
         await expect(page.getByTestId('default-recipients')).toContainText('Usually nobody');
 
         await page.goto('/ghost');

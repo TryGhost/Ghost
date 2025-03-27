@@ -1,7 +1,7 @@
-const cacheControl = require('@tryghost/mw-cache-control');
 const express = require('../../shared/express');
 const settings = require('../../shared/settings-cache');
 const config = require('../../shared/config');
+const {cacheControl} = require('./shared/middleware');
 
 module.exports = function setupWellKnownApp() {
     const wellKnownApp = express('well-known');

@@ -3,14 +3,16 @@
 import Component from '@glimmer/component';
 import React from 'react';
 import {DonutChart, useQuery} from '@tinybirdco/charts';
+import {STATS_LABEL_MAPPINGS, TB_VERSION, getStatsParams, statsStaticColors} from 'ghost-admin/utils/stats';
 import {action} from '@ember/object';
-import {formatNumber} from '../../../helpers/format-number';
-import {getStatsParams, statsStaticColors} from 'ghost-admin/utils/stats';
+import {capitalizeFirstLetter} from '../../../helpers/capitalize-first-letter';
+import {formatNumber} from 'ghost-admin/helpers/format-number';
 import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 
 export default class TechnicalComponent extends Component {
     @service router;
+    @service settings;
     @inject config;
 
     @action
@@ -21,15 +23,17 @@ export default class TechnicalComponent extends Component {
     @action
     updateQueryParams(params) {
         const currentRoute = this.router.currentRoute;
-        const newQueryParams = {...currentRoute.queryParams, ...params};
-
+        const newQueryParams = {...currentRoute.queryParams, ...params, timezone: this.settings.timezone};
         this.router.transitionTo({queryParams: newQueryParams});
     }
 
     ReactComponent = (props) => {
         const {selected} = props;
 
-        const colorPalette = statsStaticColors.slice(1, 5);
+        // If OS is selected but not available, switch to devices
+        let effectiveSelected = selected;
+
+        const colorPalette = statsStaticColors.slice(0, 5);
 
         const params = getStatsParams(
             this.config,
@@ -40,14 +44,20 @@ export default class TechnicalComponent extends Component {
         let endpoint;
         let indexBy;
         let tableHead;
-        switch (selected) {
+
+        switch (effectiveSelected) {
         case 'browsers':
-            endpoint = `${this.config.stats.endpoint}/v0/pipes/top_browsers.json`;
+            endpoint = `${this.config.stats.endpoint}/v0/pipes/api_top_browsers__v${TB_VERSION}.json`;
             indexBy = 'browser';
             tableHead = 'Browser';
             break;
+        case 'os':
+            endpoint = `${this.config.stats.endpoint}/v0/pipes/api_top_os__v${TB_VERSION}.json`;
+            indexBy = 'os';
+            tableHead = 'OS';
+            break;
         default:
-            endpoint = `${this.config.stats.endpoint}/v0/pipes/top_devices.json`;
+            endpoint = `${this.config.stats.endpoint}/v0/pipes/api_top_devices__v${TB_VERSION}.json`;
             indexBy = 'device';
             tableHead = 'Device';
         }
@@ -59,41 +69,13 @@ export default class TechnicalComponent extends Component {
         });
 
         const transformedData = (data ?? []).map((item, index) => ({
-            name: item[indexBy].charAt(0).toUpperCase() + item[indexBy].slice(1),
+            name: item[indexBy],
             value: item.visits,
             color: colorPalette[index]
         }));
 
         return (
             <div className="gh-stats-piechart-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th><span className="gh-stats-data-header">{tableHead}</span></th>
-                            <th><span className="gh-stats-data-header">Visits</span></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {transformedData.map((item, index) => (
-                            <tr key={index}>
-                                <td>
-                                    <a
-                                        href="#"
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            this.navigateToFilter(indexBy, item.name.toLowerCase());
-                                        }}
-                                        className="gh-stats-data-label"
-                                    >
-                                        <span style={{backgroundColor: item.color, display: 'inline-block', width: '10px', height: '10px', marginRight: '5px', borderRadius: '2px'}}></span>
-                                        {item.name}
-                                    </a>
-                                </td>
-                                <td><span className="gh-stats-data-value">{formatNumber(item.value)}</span></td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
                 <div className="gh-stats-piechart">
                     <DonutChart
                         data={data}
@@ -108,7 +90,7 @@ export default class TechnicalComponent extends Component {
                         textColor="#AEB7C1"
                         showLegend={true}
                         params={params}
-                        height="210px"
+                        height="230px"
                         options={{
                             color: colorPalette,
                             tooltip: {
@@ -118,9 +100,9 @@ export default class TechnicalComponent extends Component {
                                 textStyle: {
                                     color: '#15171A'
                                 },
-                                extraCssText: 'border: none !important; box-shadow: 0px 100px 80px 0px rgba(0, 0, 0, 0.07), 0px 41.778px 33.422px 0px rgba(0, 0, 0, 0.05), 0px 22.336px 17.869px 0px rgba(0, 0, 0, 0.04), 0px 12.522px 10.017px 0px rgba(0, 0, 0, 0.04), 0px 6.65px 5.32px 0px rgba(0, 0, 0, 0.03), 0px 2.767px 2.214px 0px rgba(0, 0, 0, 0.02);',
+                                extraCssText: 'border: none !important; box-shadow: 0px 100px 80px 0px rgba(0, 0, 0, 0.07), 0px 41.778px 33.422px 0px rgba(0, 0, 0, 0.05), 0px 22.336px 17.869px 0px rgba(0, 0, 0, 0.04), 0px 12.522px 10.017px 0px rgba(0, 0, 0, 0.04), 0px 6.65px 5.32px 0px rgba(0, 0, 0, 0.03), 0px 2.767px 2.214px 0px rgba(0, 0, 0, 0.02); padding: 6px 10px;',
                                 formatter: function (fparams) {
-                                    return `<span style="background-color: ${fparams.color}; display: inline-block; width: 10px; height: 10px; margin-right: 5px; border-radius: 2px;"></span> ${fparams.name}: ${formatNumber(fparams.value)}`;
+                                    return `<span style="background-color: ${fparams.color}; display: inline-block; width: 10px; height: 10px; margin-right: 5px; border-radius: 2px;"></span> <span class="gh-stats-tooltip-label">${fparams.name}</span> <span class="gh-stats-tooltip-value">${formatNumber(fparams.value)}</span>`;
                                 }
                             },
                             legend: {
@@ -135,8 +117,9 @@ export default class TechnicalComponent extends Component {
                                 {
                                     animation: true,
                                     name: tableHead,
+                                    padAngle: 1.5,
                                     type: 'pie',
-                                    radius: ['60%', '90%'],
+                                    radius: ['67%', '90%'],
                                     center: ['50%', '50%'], // Adjusted to align the chart to the top
                                     data: transformedData,
                                     label: {
@@ -157,6 +140,34 @@ export default class TechnicalComponent extends Component {
                         }}
                     />
                 </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th><span className="gh-stats-data-header">{tableHead}</span></th>
+                            <th><span className="gh-stats-data-header">Visits</span></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {transformedData.map((item, index) => (
+                            <tr key={index}>
+                                <td>
+                                    <a
+                                        href="#"
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            this.navigateToFilter(indexBy, item.name);
+                                        }}
+                                        className="gh-stats-data-label"
+                                    >
+                                        <span style={{backgroundColor: item.color, display: 'inline-block', width: '10px', height: '10px', marginRight: '5px', borderRadius: '2px'}}></span>
+                                        {STATS_LABEL_MAPPINGS[item.name] || capitalizeFirstLetter(item.name)}
+                                    </a>
+                                </td>
+                                <td><span className="gh-stats-data-value">{formatNumber(item.value)}</span></td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
             </div>
         );
     };

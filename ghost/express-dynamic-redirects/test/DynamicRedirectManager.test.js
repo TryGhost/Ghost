@@ -137,7 +137,6 @@ describe('DynamicRedirectManager', function () {
             req.url = '/redirect-me';
 
             manager.removeAllRedirects();
-            manager.redirectIds.should.be.empty();
             manager.redirects.should.be.empty();
 
             manager.handleRequest(req, res, function next() {

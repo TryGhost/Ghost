@@ -1,19 +1,20 @@
 <GhBasicDropdown @verticalPosition="below" as |dd|>
-    <dd.Trigger class="gh-btn gh-btn-icon gh-btn-action-icon" data-test-id="filter-events-button">
+    <dd.Trigger class="gh-btn gh-btn-icon gh-btn-action-icon gh-stats-btn-audience-filter" data-test-id="filter-events-button">
         <span class={{if @excludedAudiences "gh-btn-label-green"}}>
             {{svg-jar "members"}}
-            Audience
+            <span class="gh-stats-audience-filter-btn-label">Audience</span>
+            {{svg-jar "arrow-down-small" class="gh-btn-dropdown-arrow"}}
         </span>
     </dd.Trigger>
 
-    <dd.Content class="gh-member-activity-actions-menu dropdown-menu dropdown-triangle-top-right gh-member-activity-actions-menu--suppression">
+    <dd.Content class="gh-member-activity-actions-menu gh-stats-audience-filter-menu dropdown-menu dropdown-triangle-top-right gh-member-activity-actions-menu--suppression">
         <ul class="ember-power-select-options" role="listbox">
             {{#each this.audienceTypes as |type idx|}}
                 <li  class="ember-power-select-option mb0 gh-member-activity-actions-menu-item">
                     <label for="type-{{idx}}">
                         <span>{{type.name}}</span>
                     </label>
-                    <div class="for-switch x-small">
+                    <div class="for-switch xxs">
                         <label class="switch" for="type-{{idx}}">
                             <input
                                 data-test-id="audience-type-filter-checkbox-{{type.value}}"

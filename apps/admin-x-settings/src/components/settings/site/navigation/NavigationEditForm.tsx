@@ -26,6 +26,7 @@ const NavigationEditForm: React.FC<{
             <Icon colorClass='text-grey-300 dark:text-grey-900 mt-1' name='add' size='sm' />
             <NavigationItemEditor
                 action={<Button className='mx-2 mt-1 self-center rounded bg-green p-1' data-testid="add-button" icon="add" iconColorClass='text-white' size='sm' unstyled onClick={navigation.addItem} />}
+                addItem={navigation.addItem}
                 baseUrl={baseUrl}
                 className="mt-1"
                 clearError={key => navigation.clearError(navigation.newItem.id, key)}

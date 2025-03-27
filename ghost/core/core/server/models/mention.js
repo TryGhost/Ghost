@@ -6,7 +6,7 @@ const Mention = ghostBookshelf.Model.extend({
         deleted: false,
         verified: false
     },
-    enforcedFilters() {
+    defaultFilters() {
         return 'deleted:false';
     }
 }, {

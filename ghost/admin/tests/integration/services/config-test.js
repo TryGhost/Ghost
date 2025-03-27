@@ -22,7 +22,7 @@ describe('Integration: Service: config-manager', function () {
         const injection = this.owner.lookup('config:main');
         const timezones = injection.availableTimezones;
 
-        expect(timezones.length).to.equal(66);
+        expect(timezones.length).to.equal(67);
         expect(timezones[0].name).to.equal('Pacific/Pago_Pago');
         expect(timezones[0].label).to.equal('(GMT -11:00) Midway Island, Samoa');
         expect(timezones[1].name).to.equal('Pacific/Honolulu');

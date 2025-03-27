@@ -134,7 +134,8 @@ DataGenerator.Content = {
             email: 'jbloggs@example.com',
             password: 'Sl1m3rson99',
             profile_image: 'https://example.com/super_photo.jpg',
-            paid_subscription_canceled_notification: true
+            paid_subscription_canceled_notification: true,
+            last_seen: moment().subtract(1, 'hour').toDate()
         },
         {
             // admin
@@ -198,6 +199,14 @@ DataGenerator.Content = {
             name: 'contributor2',
             slug: 'contrib-2',
             email: 'contributor2@ghost.org',
+            password: 'Sl1m3rson99'
+        },
+        {
+            // super editor
+            id: '6193c6cde792de832cd08148',
+            name: 'Super Editor',
+            slug: 'super-editor',
+            email: 'supersuper@ghost.org',
             password: 'Sl1m3rson99'
         }
     ],
@@ -295,6 +304,11 @@ DataGenerator.Content = {
             id: ObjectId().toHexString(),
             name: 'Admin Integration',
             description: 'External Apps'
+        },
+        {
+            id: ObjectId().toHexString(),
+            name: 'Super Editor',
+            description: 'Super Editor'
         }
     ],
 
@@ -305,7 +319,8 @@ DataGenerator.Content = {
             name: 'Mr Egg',
             uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b340',
             status: 'free',
-            email_disabled: false
+            email_disabled: false,
+            created_at: moment().subtract(8, 'day').toDate()
         },
         {
             id: ObjectId().toHexString(),
@@ -313,7 +328,8 @@ DataGenerator.Content = {
             email_open_rate: 50,
             uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b341',
             status: 'free',
-            email_disabled: false
+            email_disabled: false,
+            created_at: moment().subtract(7, 'day').toDate()
         },
         {
             id: ObjectId().toHexString(),
@@ -322,7 +338,8 @@ DataGenerator.Content = {
             email_open_rate: 80,
             uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b342',
             status: 'paid',
-            email_disabled: false
+            email_disabled: false,
+            created_at: moment().subtract(6, 'day').toDate()
         },
         {
             id: ObjectId().toHexString(),
@@ -330,7 +347,8 @@ DataGenerator.Content = {
             name: 'Ray Stantz',
             uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b343',
             status: 'paid',
-            email_disabled: false
+            email_disabled: false,
+            created_at: moment().subtract(5, 'day').toDate()
         },
         {
             id: ObjectId().toHexString(),
@@ -338,7 +356,8 @@ DataGenerator.Content = {
             name: 'Vinz Clortho',
             uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b344',
             status: 'paid',
-            email_disabled: false
+            email_disabled: false,
+            created_at: moment().subtract(4, 'day').toDate()
         },
         {
             id: ObjectId().toHexString(),
@@ -346,7 +365,8 @@ DataGenerator.Content = {
             name: 'Winston Zeddemore',
             uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b345',
             status: 'free',
-            email_disabled: false
+            email_disabled: false,
+            created_at: moment().subtract(3, 'day').toDate()
         },
         {
             id: ObjectId().toHexString(),
@@ -355,7 +375,8 @@ DataGenerator.Content = {
             uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b346',
             status: 'paid',
             subscribed: false,
-            email_disabled: false
+            email_disabled: false,
+            created_at: moment().subtract(2, 'day').toDate()
         },
         {
             id: ObjectId().toHexString(),
@@ -364,7 +385,8 @@ DataGenerator.Content = {
             uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b347',
             status: 'paid',
             subscribed: false,
-            email_disabled: false
+            email_disabled: false,
+            created_at: moment().subtract(1, 'day').toDate()
         }
     ],
 
@@ -1424,7 +1446,8 @@ DataGenerator.forKnex = (function () {
         createBasic(DataGenerator.Content.roles[2]),
         createBasic(DataGenerator.Content.roles[3]),
         createBasic(DataGenerator.Content.roles[4]),
-        createBasic(DataGenerator.Content.roles[5])
+        createBasic(DataGenerator.Content.roles[5]),
+        createBasic(DataGenerator.Content.roles[6])
     ];
 
     const users = [
@@ -1432,7 +1455,8 @@ DataGenerator.forKnex = (function () {
         createUser(DataGenerator.Content.users[1]),
         createUser(DataGenerator.Content.users[2]),
         createUser(DataGenerator.Content.users[3]),
-        createUser(DataGenerator.Content.users[7])
+        createUser(DataGenerator.Content.users[7]),
+        createUser(DataGenerator.Content.users[9])
     ];
 
     const roles_users = [
@@ -1470,6 +1494,13 @@ DataGenerator.forKnex = (function () {
             role_name: 'Contributor',
             user_id: DataGenerator.Content.users[7].id,
             role_id: DataGenerator.Content.roles[4].id
+        },
+        {
+            // super editor
+            id: ObjectId().toHexString(),
+            role_name: 'Super Editor',
+            user_id: DataGenerator.Content.users[9].id,
+            role_id: DataGenerator.Content.roles[6].id
         }
     ];
 

@@ -66,6 +66,18 @@ describe('Version Mismatch', function () {
         nextStub.firstCall.args.should.be.empty();
     });
 
+    it('should throw BadRequestError if client version is invalid', function () {
+        const server = '1.5.0';
+        const client = 'bananarama';
+
+        testVersionMatch(server, client);
+
+        nextStub.calledOnce.should.be.true();
+        nextStub.firstCall.args.should.have.lengthOf(1);
+        nextStub.firstCall.args[0].should.have.property('errorType', 'BadRequestError');
+        nextStub.firstCall.args[0].should.have.property('statusCode', 400);
+    });
+
     it('should throw VersionMismatchError if client version is earlier by a major version', function () {
         const server = '2.5.0';
         const client = '1.3';

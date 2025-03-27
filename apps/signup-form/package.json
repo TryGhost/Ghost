@@ -1,6 +1,6 @@
 {
     "name": "@tryghost/signup-form",
-    "version": "0.1.6",
+    "version": "0.2.2",
     "license": "MIT",
     "repository": {
         "type": "git",
@@ -39,7 +39,7 @@
         "react-dom": "18.3.1"
     },
     "devDependencies": {
-        "@playwright/test": "1.46.1",
+        "@playwright/test": "1.50.1",
         "@storybook/addon-essentials": "7.6.20",
         "@storybook/addon-interactions": "7.6.20",
         "@storybook/addon-links": "7.6.20",
@@ -65,9 +65,8 @@
         "rollup-plugin-node-builtins": "2.1.2",
         "storybook": "7.6.20",
         "stylelint": "15.10.3",
-        "tailwindcss": "3.4.13",
+        "tailwindcss": "3.4.14",
         "vite": "4.5.3",
-        "vite-plugin-commonjs": "0.10.1",
         "vite-plugin-svgr": "3.3.0",
         "vitest": "0.34.3"
     }

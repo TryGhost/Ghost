@@ -23,9 +23,6 @@ export default class LocalRevisionsService extends Service {
     _prefix = 'post-revision';
     latestRevisionTime = null;
 
-    // key to store a simple index of all revisions
-    _indexKey = 'ghost-revisions';
-
     /**
      * 
      * @param {object} data - serialized post data, must include id and revisionTimestamp
@@ -74,11 +71,7 @@ export default class LocalRevisionsService extends Service {
         data.revisionTimestamp = Date.now();
         const key = this.generateKey(data);
         try {
-            const allKeys = this.keys();
-            allKeys.push(key);
-            this.storage.setItem(this._indexKey, JSON.stringify(allKeys));
             this.storage.setItem(key, JSON.stringify(data));
-            
             // Apply the filter after saving
             this.filterRevisions(data.id);
             
@@ -152,12 +145,6 @@ export default class LocalRevisionsService extends Service {
      */
     remove(key) {
         this.storage.removeItem(key);
-        const keys = this.keys();
-        let index = keys.indexOf(key);
-        if (index !== -1) {
-            keys.splice(index, 1);
-        }
-        this.storage.setItem(this._indexKey, JSON.stringify(keys));
     }
 
     /**
@@ -186,11 +173,15 @@ export default class LocalRevisionsService extends Service {
      * @returns {string[]}
      */
     keys(prefix = undefined) {
-        let keys = JSON.parse(this.storage.getItem(this._indexKey) || '[]');
-        if (prefix) {
-            keys = keys.filter(key => key.startsWith(prefix));
+        const allKeys = [];
+        const filterPrefix = prefix || this._prefix;
+        for (let i = 0; i < this.storage.length; i++) {
+            const key = this.storage.key(i);
+            if (key.startsWith(filterPrefix)) {
+                allKeys.push(key);
+            }
         }
-        return keys;
+        return allKeys;
     }
 
     /**

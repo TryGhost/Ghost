@@ -1,8 +1,8 @@
 import React from 'react';
 import TopLevelGroup from '../../TopLevelGroup';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {Button, SettingGroupContent, Toggle, withErrorBoundary} from '@tryghost/admin-x-design-system';
-import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
+import {Button, Separator, SettingGroupContent, Toggle, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {getSettingValues, isSettingReadOnly} from '@tryghost/admin-x-framework/api/settings';
 import {usePostsExports} from '@tryghost/admin-x-framework/api/posts';
 
 const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
@@ -19,6 +19,8 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const [trackEmailOpens, trackEmailClicks, trackMemberSources, outboundLinkTagging] = getSettingValues(localSettings, [
         'email_track_opens', 'email_track_clicks', 'members_track_sources', 'outbound_link_tagging'
     ]) as boolean[];
+
+    const isEmailTrackClicksReadOnly = isSettingReadOnly(localSettings, 'email_track_clicks');
 
     const handleToggleChange = (key: string, e: React.ChangeEvent<HTMLInputElement>) => {
         updateSetting(key, e.target.checked);
@@ -48,31 +50,47 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
     };
 
     const inputs = (
-        <SettingGroupContent columns={2}>
+        <SettingGroupContent className="analytics-settings !gap-y-0" columns={1}>
             <Toggle
                 checked={trackEmailOpens}
+                direction='rtl'
+                gap='gap-0'
                 label='Newsletter opens'
+                labelClasses='py-4 w-full'
                 onChange={(e) => {
                     handleToggleChange('email_track_opens', e);
                 }}
             />
+            <Separator className="border-grey-200 dark:border-grey-900" />
             <Toggle
                 checked={trackEmailClicks}
+                direction='rtl'
+                disabled={isEmailTrackClicksReadOnly}
+                gap='gap-0'
                 label='Newsletter clicks'
+                labelClasses='py-4 w-full'
                 onChange={(e) => {
                     handleToggleChange('email_track_clicks', e);
                 }}
             />
+            <Separator className="border-grey-200 dark:border-grey-900" />
             <Toggle
                 checked={trackMemberSources}
+                direction='rtl'
+                gap='gap-0'
                 label='Member sources'
+                labelClasses='py-4 w-full'
                 onChange={(e) => {
                     handleToggleChange('members_track_sources', e);
                 }}
             />
+            <Separator className="border-grey-200 dark:border-grey-900" />
             <Toggle
                 checked={outboundLinkTagging}
+                direction='rtl'
+                gap='gap-0'
                 label='Outbound link tagging'
+                labelClasses='py-4 w-full'
                 onChange={(e) => {
                     handleToggleChange('outbound_link_tagging', e);
                 }}

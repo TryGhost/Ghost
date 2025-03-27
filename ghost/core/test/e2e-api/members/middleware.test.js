@@ -42,6 +42,7 @@ describe('Comments API', function () {
     });
 
     beforeEach(function () {
+        sinon.stub(settingsHelpers, 'createUnsubscribeUrl').returns('http://domain.com/unsubscribe/?uuid=memberuuid&key=abc123dontstealme');
         mockManager.mockMail();
     });
 

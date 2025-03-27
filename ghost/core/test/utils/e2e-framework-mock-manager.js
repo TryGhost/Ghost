@@ -19,6 +19,7 @@ const originalMailServiceSendMail = mailService.GhostMailer.prototype.sendMail;
 const labs = require('../../core/shared/labs');
 const events = require('../../core/server/lib/common/events');
 const settingsCache = require('../../core/shared/settings-cache');
+const limitService = require('../../core/server/services/limits');
 const dns = require('dns');
 const dnsPromises = dns.promises;
 const StripeMocker = require('./stripe-mocker');
@@ -76,6 +77,25 @@ const disableNetwork = () => {
 const allowStripe = () => {
     disableNetwork();
     allowedNetworkDomains.push('stripe.com');
+};
+
+const mockGeojs = () => {
+    disableNetwork();
+
+    nock(/get\.geojs\.io/)
+        .persist()
+        .get('/v1/ip/geo/127.0.0.1.json')
+        .reply(200, {
+            latitude: 'nil',
+            longitude: 'nil',
+            organization_name: 'Unknown',
+            ip: '127.0.0.1',
+            asn: 64512,
+            organization: 'AS64512 Unknown',
+            area_code: '0'
+        }, {
+            'Response-Type': 'application/json'
+        });
 };
 
 const mockStripe = () => {
@@ -142,20 +162,6 @@ const mockWebhookRequests = () => {
     mocks.webhookMockReceiver = new WebhookMockReceiver({snapshotManager});
 
     return mocks.webhookMockReceiver;
-};
-
-/**
- * @deprecated use emailMockReceiver.assertSentEmailCount(count) instead
- * @param {Number} count number of emails sent
- */
-const sentEmailCount = (count) => {
-    if (!mocks.mail) {
-        throw new errors.IncorrectUsageError({
-            message: 'Cannot assert on mail when mail has not been mocked'
-        });
-    }
-
-    mocks.mockMailReceiver.assertSentEmailCount(count);
 };
 
 const sentEmail = (matchers) => {
@@ -264,6 +270,15 @@ const mockLabsDisabled = (flag, alpha = true) => {
     fakedLabsFlags[flag] = false;
 };
 
+const mockLimitService = (limit, options) => {
+    if (!mocks.limitService) {
+        mocks.limitService = sinon.stub(limitService);
+    }
+
+    mocks.limitService.isLimited.withArgs(limit).returns(options.isLimited);
+    mocks.limitService.checkWouldGoOverLimit.withArgs(limit).resolves(options.wouldGoOverLimit);
+};
+
 const restore = () => {
     // eslint-disable-next-line no-console
     configUtils.restore().catch(console.error);
@@ -294,16 +309,17 @@ module.exports = {
     mockStripe,
     mockSlack,
     allowStripe,
+    mockGeojs,
     mockMailgun,
     mockLabsEnabled,
     mockLabsDisabled,
     mockWebhookRequests,
     mockSetting,
+    mockLimitService,
     disableNetwork,
     restore,
     stripeMocker,
     assert: {
-        sentEmailCount,
         sentEmail,
         emittedEvent
     },

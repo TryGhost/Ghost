@@ -1,0 +1,22 @@
+VERSION 3
+TAGS "v0"
+
+SCHEMA >
+    `site_uuid` String,
+    `date` Date,
+    `session_id` String,
+    `device` String,
+    `os` String,
+    `browser` String,
+    `location` String,
+    `source` String,
+    `pathname` String,
+    `member_status` SimpleAggregateFunction(max, String),
+    `visits` AggregateFunction(uniq, String),
+    `pageviews` AggregateFunction(count),
+    `post_type` SimpleAggregateFunction(any, String),
+    `post_uuid` SimpleAggregateFunction(any, String)
+
+ENGINE "AggregatingMergeTree"
+ENGINE_PARTITION_KEY "toYYYYMM(date)"
+ENGINE_SORTING_KEY "site_uuid, date, session_id, device, os, browser, location, source, pathname"

@@ -20,11 +20,18 @@ export const BackButtonStyles = `
         border: none;
         z-index: 10000;
     }
-
+    html[dir="rtl"] .gh-portal-btn-back {
+        right: 20px;
+        left: unset;
+    }
     @media (max-width: 480px) {
         .gh-portal-btn-back,
         .gh-portal-btn-back:hover {
             left: 16px;
+        }
+        html[dir="rtl"] .gh-portal-btn-back {
+            right: 16px;
+            left: unset;
         }
     }
 
@@ -37,7 +44,10 @@ export const BackButtonStyles = `
         width: 17px;
         height: 17px;
         margin-top: 1px;
-        margin-right: 2px;
+        margin-inline-end: 2px;
+    }
+    html[dir="rtl"] .gh-portal-btn-back svg {
+        transform: scaleX(-1);
     }
 `;
 

@@ -4,7 +4,7 @@ import ValidationEngine from 'ghost-admin/mixins/validation-engine';
 import classic from 'ember-classic-decorator';
 import {action} from '@ember/object';
 import {htmlSafe} from '@ember/template';
-import {isVersionMismatchError} from 'ghost-admin/services/ajax';
+import {isTwoFactorTokenRequiredError, isVersionMismatchError} from 'ghost-admin/services/ajax';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
@@ -69,6 +69,12 @@ export default class ReAuthenticateModal extends Component {
                 return;
             }
 
+            if (isTwoFactorTokenRequiredError(error)) {
+                yield this.modals.open('editor/modals/re-verify');
+                this.args.close();
+                return true;
+            }
+
             if (error?.payload?.errors) {
                 error.payload.errors.forEach((err) => {
                     if (isVersionMismatchError(err)) {
@@ -87,13 +93,12 @@ export default class ReAuthenticateModal extends Component {
     }
 
     async _authenticate() {
-        const authStrategy = 'authenticator:cookie';
         const {identification, password} = this.signin;
 
         this.session.skipAuthSuccessHandler = true;
 
         try {
-            await this.session.authenticate(authStrategy, identification, password);
+            await this.session.authenticate('authenticator:cookie', {identification, password});
         } finally {
             this.session.skipAuthSuccessHandler = undefined;
         }
