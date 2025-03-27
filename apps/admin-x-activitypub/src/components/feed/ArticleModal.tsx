@@ -606,18 +606,23 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
                 return;
             }
 
-            // Get scroll position
-            const scrollTop = container.scrollTop;
-            // Get the total scrollable height (content height - viewport height)
-            const scrollHeight = container.scrollHeight - container.clientHeight;
+            const articleRect = article.getBoundingClientRect();
+            const containerRect = container.getBoundingClientRect();
 
-            // Calculate percentage
-            const rawProgress = (scrollTop / scrollHeight) * 100;
+            const isContentShorterThanViewport = articleRect.height <= containerRect.height;
+
+            if (isContentShorterThanViewport) {
+                debouncedSetReadingProgress(100);
+                return;
+            }
+
+            const scrolledPast = Math.max(0, containerRect.top - articleRect.top);
+            const totalHeight = (article as HTMLElement).offsetHeight - (container as HTMLElement).offsetHeight;
+
+            const rawProgress = Math.min(Math.max((scrolledPast / totalHeight) * 100, 0), 100);
             const progress = Math.round(rawProgress / PROGRESS_INCREMENT) * PROGRESS_INCREMENT;
 
-            // Ensure progress stays between 0 and 100
-            const boundedProgress = Math.min(Math.max(progress, 0), 100);
-            debouncedSetReadingProgress(boundedProgress);
+            debouncedSetReadingProgress(progress);
         };
 
         if (isLoading) {
