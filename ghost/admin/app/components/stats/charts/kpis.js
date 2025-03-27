@@ -20,8 +20,7 @@ export default class KpisComponent extends Component {
 
         const params = getStatsParams(
             this.config,
-            props,
-            {timezone: this.settings.timezone}
+            props
         );
 
         const {data, meta, error, loading} = useQuery({

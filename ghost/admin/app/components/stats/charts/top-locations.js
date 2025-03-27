@@ -59,7 +59,7 @@ export default class TopLocations extends Component {
         const params = getStatsParams(
             this.config,
             props,
-            {limit: 7, timezone: this.settings.timezone}
+            {limit: 7}
         );
 
         const {data, meta, error, loading} = useQuery({
