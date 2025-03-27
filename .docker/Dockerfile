@@ -26,6 +26,7 @@ RUN curl -s https://packages.stripe.dev/api/security/keypair/stripe-cli-gpg/publ
     apt install -y \
     git \
     stripe \
+    python3-pip \
     procps && \
     rm -rf /var/lib/apt/lists/* && \
     apt clean
@@ -127,6 +128,12 @@ COPY . .
 
 ## Build typescript packages
 RUN yarn nx run-many -t build:ts
+
+# Install the tinybird CLI
+WORKDIR /home/ghost/ghost/web-analytics
+RUN pip install -r requirements.txt
+
+WORKDIR $WORKDIR
 
 # Expose the ports
 EXPOSE 2368
