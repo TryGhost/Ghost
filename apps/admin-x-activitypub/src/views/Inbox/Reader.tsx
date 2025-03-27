@@ -656,9 +656,7 @@ export const Reader: React.FC<ReaderProps> = ({
                                     >
                                         {/* {(canNavigateBack || (threadParents.length > 0)) ? (
                                             <div className='col-[1/2] flex items-center justify-between'>
-                                                <Button className='transition-color flex h-10 w-10 items-center justify-center rounded-full bg-white hover:bg-gray-100' icon='arrow-left' size='sm' unstyled onClick={() => {
-                                                    alert('back');
-                                                }}/>
+                                                <Button className='transition-color flex h-10 w-10 items-center justify-center rounded-full bg-white hover:bg-gray-100' icon='arrow-left' size='sm' unstyled onClick={() => {}}/>
                                             </div>
                                         ) : (*/}
                                         <div className='col-[2/3] mx-auto flex w-full items-center gap-3'>

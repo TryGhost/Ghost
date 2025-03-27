@@ -16,7 +16,7 @@ const Sidebar: React.FC = () => {
             <div className='flex grow flex-col justify-between'>
                 <div className='isolate flex w-full flex-col items-start gap-6 pl-4 pt-4'>
                     <div className='flex w-full flex-col gap-px'>
-                        <SidebarMenuLink to={(isEnabled('reader-routes') ? '/inbox-rr' : '/inbox')}>
+                        <SidebarMenuLink to={(isEnabled('ap-routes') ? '/inbox-rr' : '/inbox')}>
                             <LucideIcon.Inbox size={18} strokeWidth={1.5} />
                             Inbox
                         </SidebarMenuLink>
@@ -32,7 +32,7 @@ const Sidebar: React.FC = () => {
                             <LucideIcon.Globe size={18} strokeWidth={1.5} />
                             Explore
                         </SidebarMenuLink>
-                        <SidebarMenuLink to='/profile'>
+                        <SidebarMenuLink to={(isEnabled('ap-routes') ? '/profile-rr' : '/profile')}>
                             <LucideIcon.User size={18} strokeWidth={1.5} />
                             Profile
                         </SidebarMenuLink>

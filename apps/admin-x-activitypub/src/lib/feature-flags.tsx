@@ -5,7 +5,7 @@ import {useLocation} from '@tryghost/admin-x-framework';
 export const FEATURE_FLAGS = [
     'notificationsV2',
     'feed-routes',
-    'reader-routes'
+    'ap-routes'
 ] as const;
 
 // ---
