@@ -1,6 +1,6 @@
 require('should');
 
-const {EventProcessingResult} = require('..');
+const EventProcessingResult = require('../../../../../core/server/services/email-analytics/EventProcessingResult');
 
 describe('EventProcessingResult', function () {
     it('has expected initial state', function () {

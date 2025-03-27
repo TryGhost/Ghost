@@ -2,10 +2,8 @@ require('should');
 
 const sinon = require('sinon');
 
-const {
-    EmailAnalyticsService
-} = require('..');
-const EventProcessingResult = require('../lib/EventProcessingResult');
+const EmailAnalyticsService = require('../../../../../core/server/services/email-analytics/EmailAnalyticsService');
+const EventProcessingResult = require('../../../../../core/server/services/email-analytics/EventProcessingResult');
 
 describe('EmailAnalyticsService', function () {
     let clock;
@@ -89,9 +87,6 @@ describe('EmailAnalyticsService', function () {
 
             const result = await service.getLastOpenedEventTimestamp();
             result.should.eql(new Date(Date.now() - 30 * 60 * 1000)); // should be 30 mins prior
-        });
-
-        it.skip('returns the cached value before the fallback', async function () {
         });
     });
 

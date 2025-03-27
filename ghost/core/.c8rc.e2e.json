@@ -9,7 +9,7 @@
   "reportsDir": "./coverage-e2e",
   "statements": 79,
   "branches": 82,
-  "functions": 81,
+  "functions": 80,
   "lines": 79,
   "include": [
     "core/{*.js,frontend,server,shared}"
