@@ -143,10 +143,14 @@ const Inbox: React.FC = () => {
             <Dialog
                 open={isReaderOpen}
                 onOpenChange={(open: boolean) => {
-                    setIsReaderOpen(open);
                     if (!open) {
-                        navigate('/inbox-rr');
+                        if (canGoBack) {
+                            goBack();
+                        } else {
+                            navigate('/inbox-rr');
+                        }
                     }
+                    setIsReaderOpen(open);
                 }}
             >
                 <DialogContent className='inset-y-3 h-[calc(100vh-24px)] w-screen max-w-[calc(100vw-24px)] !animate-none p-0 focus:outline-none'>

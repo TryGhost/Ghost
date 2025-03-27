@@ -28,10 +28,12 @@ const Layout: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({children, ...pr
             <div className='relative mx-auto flex max-w-page flex-col' {...props}>
                 {isOnboarded ?
                     <>
-                        <Header />
-                        <div className='grid grid-cols-[auto_292px] items-start gap-8 px-8'>
+                        <div className='grid grid-cols-[auto_320px] items-start'>
                             <div className='z-0'>
-                                {children}
+                                <Header />
+                                <div className='px-8'>
+                                    {children}
+                                </div>
                             </div>
                             <Sidebar />
                         </div>

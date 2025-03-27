@@ -13,10 +13,10 @@ const ContentView = () => {
     // const location = useLocation();
     // const activity = location.state.activity;
 
-    const {encodedId} = useParams();
+    const {postId} = useParams();
 
-    const activityId = encodedId ? decodeURIComponent(encodedId) : '';
-    const {data: post, isLoading: isPostLoading} = usePostForUser('index', encodedId!);
+    const activityId = postId ? decodeURIComponent(postId) : '';
+    const {data: post, isLoading: isPostLoading} = usePostForUser('index', postId!);
     const object = post?.object;
 
     const {data: thread} = useThreadForUser('index', activityId);
