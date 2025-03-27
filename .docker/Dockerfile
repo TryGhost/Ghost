@@ -4,6 +4,7 @@ ARG WORKDIR=/home/ghost
 # Base Image used for all targets
 ## This stage includes the OS, Node and a few apt packages
 FROM node:$NODE_VERSION-bullseye-slim AS base
+ARG WORKDIR=/home/ghost
 RUN apt-get update && \
     apt-get install -y \
     build-essential \
@@ -133,7 +134,6 @@ WORKDIR /home/ghost/ghost/web-analytics
 RUN pip install -r requirements.txt
 
 WORKDIR $WORKDIR
-
 
 # Expose the ports
 EXPOSE 2368
