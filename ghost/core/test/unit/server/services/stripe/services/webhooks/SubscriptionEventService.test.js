@@ -1,7 +1,7 @@
 const sinon = require('sinon');
 const assert = require('assert/strict');
 
-const SubscriptionEventService = require('../../../../../lib/services/webhook/SubscriptionEventService');
+const SubscriptionEventService = require('../../../../../../../core/server/services/stripe/services/webhook/SubscriptionEventService');
 
 describe('SubscriptionEventService', function () {
     let service;
