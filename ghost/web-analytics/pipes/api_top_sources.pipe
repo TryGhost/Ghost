@@ -31,7 +31,7 @@ SQL >
 
     %
     select session_id
-    from _mv_session_data sd
+    from mv_session_data sd
     inner join filtered_sessions fs
       on fs.session_id = sd.session_id
     where
@@ -44,11 +44,11 @@ NODE top_sources
 SQL >
 
     %
-    select 
+    select
         source,
         count() as visits,
         sum(pageviews) as pageviews
-    from _mv_session_data sd
+    from mv_session_data sd
       inner join source_sessions ss
          on ss.session_id = sd.session_id
     where
@@ -62,5 +62,3 @@ SQL >
     group by source
     order by visits desc
     limit {{ Int32(skip, 0) }},{{ Int32(limit, 50) }}
-
-

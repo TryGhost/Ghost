@@ -27,8 +27,3 @@ SQL >
         pageviews = 1 AS is_bounce,
         source
     FROM mv_hits_0
-
-TYPE materialized
-DATASOURCE _mv_session_data
-
-
