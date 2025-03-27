@@ -1,4 +1,4 @@
-const APIVersionCompatibilityService = require('@tryghost/api-version-compatibility-service');
+const APIVersionCompatibilityService = require('./APIVersionCompatibilityService');
 const versionMismatchHandler = require('@tryghost/mw-api-version-mismatch');
 const ghostVersion = require('@tryghost/version');
 const {GhostMailer} = require('../mail');

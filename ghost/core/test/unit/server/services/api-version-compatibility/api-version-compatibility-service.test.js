@@ -1,6 +1,6 @@
 const assert = require('assert/strict');
 const sinon = require('sinon');
-const APIVersionCompatibilityService = require('../index');
+const APIVersionCompatibilityService = require('../../../../../core/server/services/api-version-compatibility/APIVersionCompatibilityService');
 
 describe('APIVersionCompatibilityService', function () {
     const getSiteUrl = () => 'https://amazeballsghostsite.com';
