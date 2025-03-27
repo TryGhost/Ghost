@@ -4,7 +4,6 @@ ARG WORKDIR=/home/ghost
 # Base Image used for all targets
 ## This stage includes the OS, Node and a few apt packages
 FROM node:$NODE_VERSION-bullseye-slim AS base
-ARG WORKDIR=/home/ghost
 RUN apt-get update && \
     apt-get install -y \
     build-essential \
@@ -20,6 +19,7 @@ RUN apt-get update && \
 ## This stage adds development specific packages like the Stripe CLI, zsh, playwright, etc.
 ## It does not include the source code or node_modules
 FROM base AS development-base
+ARG WORKDIR=/home/ghost
 RUN curl -s https://packages.stripe.dev/api/security/keypair/stripe-cli-gpg/public | gpg --dearmor | tee /usr/share/keyrings/stripe.gpg && \
     echo "deb [signed-by=/usr/share/keyrings/stripe.gpg] https://packages.stripe.dev/stripe-cli-debian-local stable main" | tee -a /etc/apt/sources.list.d/stripe.list && \
     apt update && \
