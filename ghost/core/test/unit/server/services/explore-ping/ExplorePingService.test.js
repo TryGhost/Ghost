@@ -11,6 +11,7 @@ describe('ExplorePingService', function () {
     let ghostVersionStub;
     let requestStub;
     let postsStub;
+    let membersStub;
 
     beforeEach(function () {
         // Setup stubs
@@ -74,6 +75,12 @@ describe('ExplorePingService', function () {
             }
         };
 
+        membersStub = {
+            stats: {
+                getTotalMembers: sinon.stub().resolves(50)
+            }
+        };
+
         explorePingService = new ExplorePingService({
             settingsCache: settingsCacheStub,
             config: configStub,
@@ -81,7 +88,8 @@ describe('ExplorePingService', function () {
             logging: loggingStub,
             ghostVersion: ghostVersionStub,
             request: requestStub,
-            posts: postsStub
+            posts: postsStub,
+            members: membersStub
         });
     });
 
@@ -105,7 +113,8 @@ describe('ExplorePingService', function () {
                 facebook: 'testfb',
                 posts_total: 100,
                 posts_last: '2023-01-01T00:00:00.000Z',
-                posts_first: '2020-01-01T00:00:00.000Z'
+                posts_first: '2020-01-01T00:00:00.000Z',
+                members_total: 50
             });
         });
 
@@ -116,6 +125,13 @@ describe('ExplorePingService', function () {
             const payload = await explorePingService.constructPayload();
             assert.equal(payload.posts_first, null);
             assert.equal(payload.posts_last, null);
+        });
+
+        it('returns null for members_total if no members data available', async function () {
+            membersStub.stats.getTotalMembers.resolves(null);
+
+            const payload = await explorePingService.constructPayload();
+            assert.equal(payload.members_total, null);
         });
 
         // test that the payload is correct if the timezone is not UTC
