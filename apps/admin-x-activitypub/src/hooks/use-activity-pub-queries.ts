@@ -579,7 +579,7 @@ export function useFollowMutationForUser(handle: string, onSuccess: () => void, 
                         type: 'Person',
                         preferredUsername: 'index',
                         name: currentAccount.name,
-                        url: currentAccount.url || `https://${window.location.host}/ap/users/${currentAccount.username}`,
+                        url: currentAccount.url,
                         icon: {
                             type: 'Image',
                             url: currentAccount.avatarUrl
