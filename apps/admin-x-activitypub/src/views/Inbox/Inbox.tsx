@@ -106,7 +106,18 @@ const Inbox: React.FC = () => {
                                                         object={activity.object}
                                                         repostCount={activity.object.repostCount ?? 0}
                                                         type={activity.type}
-                                                        onClick={() => handleViewContent(activity, false)}
+                                                        onClick={() => {
+                                                            if (layout === 'feed') {
+                                                                navigate(`/feed/${encodeURIComponent(activity.id)}`, {
+                                                                    state: {
+                                                                        activity,
+                                                                        key: 'feed'
+                                                                    }
+                                                                });
+                                                            } else {
+                                                                handleViewContent(activity, false);
+                                                            }
+                                                        }}
                                                         onCommentClick={() => handleViewContent(activity, true)}
                                                     />
                                                     {index < activities.length - 1 && (
