@@ -392,11 +392,25 @@ export function useUnfollowMutationForUser(handle: string, onSuccess: () => void
                 };
             });
 
-            // Invalidate the profile followers query cache for the profile being unfollowed
-            // because we cannot directly remove from it as we don't have the data for the unfollowed follower
+            // Update the profile followers query cache for the profile being unfollowed
             const profileFollowersQueryKey = QUERY_KEYS.profileFollowers(fullHandle);
 
-            queryClient.invalidateQueries({queryKey: profileFollowersQueryKey});
+            queryClient.setQueryData(profileFollowersQueryKey, (oldData?: any) => {
+                if (!oldData?.pages?.[0]) return oldData;
+
+                const currentAccount = queryClient.getQueryData<Account>(QUERY_KEYS.account('index'));
+                if (!currentAccount) return oldData;
+
+                return {
+                    ...oldData,
+                    pages: oldData.pages.map((page: any) => ({
+                        ...page,
+                        followers: page.followers.filter((follower: any) => 
+                            follower.actor.id !== currentAccount.id
+                        )
+                    }))
+                };
+            });
 
             // Update the "followingCount" property of the account performing the follow
             const accountQueryKey = QUERY_KEYS.account('index');
