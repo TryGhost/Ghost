@@ -15,12 +15,11 @@ const ContentView = () => {
 
     const {encodedId} = useParams();
     const activityId = encodedId ? decodeURIComponent(encodedId) : '';
-    const {data: thread, isLoading: isLoadingThread} = useThreadForUser('index', activityId);
+    const {data: thread} = useThreadForUser('index', activityId);
     const threadPostIdx = (thread?.posts ?? []).findIndex(item => item.object.id === activityId);
     const threadChildren = (thread?.posts ?? []).slice(threadPostIdx + 1);
-    const threadParents = (thread?.posts ?? []).slice(0, threadPostIdx);
 
-    const [replyCount, setReplyCount] = useState(object.replyCount ?? 0);
+    const [replyCount] = useState(object.replyCount ?? 0);
 
     const repliesRef = useRef<HTMLDivElement>(null);
     const navigate = useNavigate();
