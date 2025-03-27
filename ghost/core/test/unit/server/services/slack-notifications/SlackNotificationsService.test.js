@@ -1,6 +1,6 @@
 const assert = require('assert/strict');
 const sinon = require('sinon');
-const {SlackNotificationsService} = require('../index');
+const SlackNotificationsService = require('../../../../../core/server/services/slack-notifications/SlackNotificationsService');
 const ObjectId = require('bson-objectid').default;
 const {MilestoneCreatedEvent} = require('@tryghost/milestones');
 const DomainEvents = require('@tryghost/domain-events');

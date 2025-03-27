@@ -107,7 +107,6 @@ COPY ghost/posts-service/package.json ghost/posts-service/package.json
 COPY ghost/prometheus-metrics/package.json ghost/prometheus-metrics/package.json
 COPY ghost/recommendations/package.json ghost/recommendations/package.json
 COPY ghost/security/package.json ghost/security/package.json
-COPY ghost/slack-notifications/package.json ghost/slack-notifications/package.json
 COPY ghost/tiers/package.json ghost/tiers/package.json
 COPY ghost/webmentions/package.json ghost/webmentions/package.json
 
