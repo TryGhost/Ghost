@@ -209,7 +209,7 @@ p .gh-preview-email-address {
 .gh-pe-mobile-bezel {
     width: 320px;
     height: 657px;
-    border-radius: 40px;
+    border-radius: 32px;
     display: flex;
     background: var(--white);
     box-shadow:
@@ -225,10 +225,10 @@ p .gh-preview-email-address {
 
 .gh-pe-mobile-screen {
     width: 100%;
-    margin: 14px;
+    margin: 12px;
     border: 1px solid var(--whitegrey-l1);
     background: var(--white);
-    border-radius: 28px;
+    border-radius: 24px;
     flex-grow: 1;
     overflow: hidden;
     -webkit-mask-image: -webkit-radial-gradient(white, black);
@@ -239,7 +239,7 @@ p .gh-preview-email-address {
     transform: scale(0.8);
     transform-origin: 0 0;
     overflow-x: hidden;
-    width: 361px;
+    width: 368px;
     height: 706px;
 }
 
