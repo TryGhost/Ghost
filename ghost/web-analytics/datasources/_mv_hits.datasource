@@ -1,4 +1,4 @@
-VERSION 7
+VERSION 8
 
 SCHEMA >
     `site_uuid` LowCardinality(String),

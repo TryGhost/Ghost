@@ -1,4 +1,4 @@
-VERSION 7
+VERSION 8
 TOKEN "stats_page" READ
 
 TOKEN "api_top_sources__v7_endpoint_read_2345" READ
