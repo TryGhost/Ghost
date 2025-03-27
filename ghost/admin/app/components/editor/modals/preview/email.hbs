@@ -55,7 +55,7 @@
                                             {{autofocus}}
                                             {{on-key "Enter" (perform this.sendPreviewEmailTask)}}
                                         />
-                                        <p class="description">You'll receive this as a free member.</p>
+                                        <p class="description">You'll receive this as a {{@memberSegment}} member.</p>
                                         <GhTaskButton
                                             @task={{this.sendPreviewEmailTask}}
                                             @buttonText="Send"
