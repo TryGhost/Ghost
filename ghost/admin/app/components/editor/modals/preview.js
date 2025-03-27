@@ -16,7 +16,7 @@ export default class EditorPostPreviewModal extends Component {
     };
 
     @tracked previewFormat = this.args.data.initialPreviewFormat || 'browser';
-    @tracked previewSize = 'desktop';
+    @tracked previewSize = this.args.data.initialPreviewSize || 'desktop';
     @tracked isChangingTab = false;
     @tracked previewEmailAddress = this.session.user.email;
     @tracked previewAsSegment = 'free';
@@ -81,6 +81,7 @@ export default class EditorPostPreviewModal extends Component {
     changePreviewSize(size) {
         this.isChangingTab = true;
         this.previewSize = size;
+        this.args.data.changePreviewSize?.(size);
     }
 
     @action

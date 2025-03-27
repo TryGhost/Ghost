@@ -29,6 +29,7 @@ export default class PublishManagement extends Component {
     @use publishOptions = new PublishOptionsResource(() => [this.args.post]);
 
     @tracked previewFormat = 'browser';
+    @tracked previewSize = 'desktop';
     @tracked previewAsSegment = 'free';
 
     publishFlowModal = null;
@@ -115,8 +116,10 @@ export default class PublishManagement extends Component {
                 saveTask: this.saveTask,
                 savePostTask: this.args.savePostTask,
                 togglePreviewPublish: this.togglePreviewPublish,
-                initialFormatTab: this.previewFormatTab,
-                changeFormatTab: this.changePreviewFormatTab,
+                initialPreviewFormat: this.previewFormat,
+                changePreviewFormat: this.changePreviewFormat,
+                initialPreviewSize: this.previewSize,
+                changePreviewSize: this.changePreviewSize,
                 initialPreviewAsSegment: this.previewAsSegment,
                 changePreviewAsSegment: this.changePreviewAsSegment,
                 skipAnimation
@@ -146,6 +149,11 @@ export default class PublishManagement extends Component {
     @action
     changePreviewFormat(format) {
         this.previewFormat = format;
+    }
+
+    @action
+    changePreviewSize(size) {
+        this.previewSize = size;
     }
 
     @action
