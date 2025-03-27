@@ -1,4 +1,4 @@
-"a.date","visits","pageviews","bounce_rate","avg_session_sec"
+"date","visits","pageviews","bounce_rate","avg_session_sec"
 "2100-01-03 00:00:00",0,0,0,0
 "2100-01-03 01:00:00",1,1,0,1115
 "2100-01-03 02:00:00",0,1,0,0
