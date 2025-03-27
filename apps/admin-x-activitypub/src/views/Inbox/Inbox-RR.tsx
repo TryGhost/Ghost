@@ -19,8 +19,7 @@ import {useInboxForUser} from '@hooks/use-activity-pub-queries';
  */
 
 const Inbox: React.FC = () => {
-    const {stack: navigationStack, canGoBack, goBack} = useNavigationStack();
-    console.log(navigationStack);
+    const {canGoBack, goBack} = useNavigationStack();
 
     const navigate = useNavigate();
     const params = useParams();

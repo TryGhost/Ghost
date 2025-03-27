@@ -14,7 +14,7 @@ import Layout from '@src/components/layout';
 import getName from '../../utils/get-name';
 import getUsername from '../../utils/get-username';
 import {Separator} from '@tryghost/shade';
-import {handleProfileClick} from '../../utils/handle-profile-click';
+import {handleProfileClick, handleProfileClickRR} from '../../utils/handle-profile-click';
 import {handleViewContent} from '../../utils/content-handlers';
 import {useFeatureFlags} from '@src/lib/feature-flags';
 import {useNavigate, useParams} from '@tryghost/admin-x-framework';
@@ -73,6 +73,9 @@ const ActorList: React.FC<ActorListProps> = ({
         };
     }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
+    const {isEnabled} = useFeatureFlags();
+    const navigate = useNavigate();
+
     return (
         <div className='pt-3'>
             {
@@ -86,7 +89,13 @@ const ActorList: React.FC<ActorListProps> = ({
                             return (
                                 <React.Fragment key={actor.id}>
                                     <ActivityItem key={actor.id}
-                                        onClick={() => handleProfileClick(actor)}
+                                        onClick={() => {
+                                            if (isEnabled('ap-routes')) {
+                                                handleProfileClickRR(actor, navigate);
+                                            } else {
+                                                handleProfileClick(actor);
+                                            }
+                                        }}
                                     >
                                         <APAvatar author={actor} />
                                         <div>

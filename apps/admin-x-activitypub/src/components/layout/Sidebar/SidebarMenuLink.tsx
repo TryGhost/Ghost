@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {Button, ButtonProps, cn} from '@tryghost/shade';
-import {Link, useLocation} from '@tryghost/admin-x-framework';
+import {Link, useLocation, useNavigationStack} from '@tryghost/admin-x-framework';
 
 interface SidebarButtonProps extends ButtonProps {
     to?: string;
@@ -10,6 +10,7 @@ interface SidebarButtonProps extends ButtonProps {
 const SidebarMenuLink = React.forwardRef<HTMLButtonElement, SidebarButtonProps>(
     ({to, children, ...props}, ref) => {
         const location = useLocation();
+        const {resetStack} = useNavigationStack();
 
         const linkClass = cn(
             'justify-start text-md font-medium text-gray-800 dark:hover:bg-gray-925/70 dark:text-gray-500 h-9 [&_svg]:size-[18px]',
@@ -19,7 +20,7 @@ const SidebarMenuLink = React.forwardRef<HTMLButtonElement, SidebarButtonProps>(
         if (to) {
             return (
                 <Button className={linkClass} variant='ghost' asChild>
-                    <Link to={to}>{children}</Link>
+                    <Link to={to} onClick={() => resetStack()}>{children}</Link>
                 </Button>
             );
         }

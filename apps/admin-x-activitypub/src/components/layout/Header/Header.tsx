@@ -3,8 +3,7 @@ import Search from '@src/components/modals/Search';
 import SearchInput from './SearchInput';
 import useActiveRoute from '@src/hooks/use-active-route';
 import {Button, Dialog, DialogContent, DialogTrigger, H1, LucideIcon} from '@tryghost/shade';
-import {useFeatureFlags} from '@src/lib/feature-flags';
-import {useLocation, useNavigate, useNavigationStack} from '@tryghost/admin-x-framework';
+import {useNavigate, useNavigationStack} from '@tryghost/admin-x-framework';
 
 interface HeaderTitleProps {
     title: string;
@@ -34,20 +33,20 @@ const HeaderTitle: React.FC<HeaderTitleProps> = ({title, backIcon}) => {
 };
 
 const Header: React.FC = () => {
-    const location = useLocation();
+    const {canGoBack} = useNavigationStack();
     const [isSearchOpen, setIsSearchOpen] = React.useState(false);
     const [searchQuery, setSearchQuery] = React.useState('');
 
     // Get page title from custom route object
     const activeRoute = useActiveRoute();
-
-    const {isEnabled} = useFeatureFlags();
-
     return (
         <div
             className='sticky top-0 z-10 bg-white px-8 dark:bg-black'>
             <div className='flex h-[102px] items-center justify-between gap-5 border-b border-gray-200 dark:border-gray-950'>
-                <HeaderTitle backIcon={location.pathname === '/search' || (isEnabled('ap-routes') && location.pathname.includes('/feed/'))} title={activeRoute?.pageTitle || ''} />
+                <HeaderTitle
+                    backIcon={canGoBack}
+                    title={activeRoute?.pageTitle || ''}
+                />
                 <Dialog open={isSearchOpen} onOpenChange={setIsSearchOpen}>
                     <DialogTrigger>
                         <SearchInput />
