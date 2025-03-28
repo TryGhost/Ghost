@@ -133,6 +133,7 @@ const Post = () => {
                                         onReplyError={decrementReplyCount}
                                     />
                                 </div>
+                                <FeedItemDivider />
                                 <div ref={repliesRef}>
                                     {threadChildren.map((item, index) => {
                                         const showDivider = index !== threadChildren.length - 1;

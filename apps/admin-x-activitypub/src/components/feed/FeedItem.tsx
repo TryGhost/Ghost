@@ -324,17 +324,17 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                     onDelete={handleDelete}
                                 />
                             </div>
-                            <div className={`relative col-start-2 col-end-3 w-full gap-4`}>
+                            <div className='relative col-start-2 col-end-3 w-full gap-4 pl-[52px]'>
                                 <div className='flex flex-col'>
                                     <div className=''>
                                         {(object.type === 'Article') ? <div className='rounded-md border border-gray-150 transition-colors hover:bg-gray-75 dark:border-gray-950 dark:hover:bg-gray-950'>
                                             {renderFeedAttachment(object)}
-                                            <div className='p-4'>
-                                                <Heading className='mb-1 text-pretty leading-tight' level={5} data-test-activity-heading>{object.name}</Heading>
-                                                <div className='line-clamp-3 leading-tight'>{object.preview?.content}</div>
+                                            <div className='p-5'>
+                                                <div className='mb-1 text-pretty text-lg font-semibold leading-tight tracking-tight' data-test-activity-heading>{object.name}</div>
+                                                <div className='line-clamp-3 leading-[1.4em]'>{object.preview?.content}</div>
                                             </div>
                                         </div> :
-                                            <div className='relative pl-[52px]'>
+                                            <div className='relative'>
                                                 <div className='ap-note-content line-clamp-[10] text-pretty leading-[1.4285714286] tracking-[-0.006em] text-gray-900 dark:text-gray-600 [&_p+p]:mt-3'>
                                                     {!isLoading ?
                                                         <div dangerouslySetInnerHTML={{
@@ -361,7 +361,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                             </div>
                                         }
                                     </div>
-                                    <div className='space-between relative z-[30] ml-[-7px] mt-1 flex pl-[52px]'>
+                                    <div className='space-between relative z-[30] ml-[-7px] mt-1 flex'>
                                         {!isLoading ?
                                             showStats && <FeedItemStats
                                                 commentCount={commentCount}
