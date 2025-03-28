@@ -1,5 +1,5 @@
 import React, {useCallback, useMemo} from 'react';
-import {createHashRouter, RouteObject, RouterProvider as ReactRouterProvider, NavigateOptions as ReactRouterNavigateOptions, useNavigate as useReactRouterNavigate} from 'react-router';
+import {createHashRouter, RouteObject, RouterProvider as ReactRouterProvider, NavigateOptions as ReactRouterNavigateOptions, useNavigate as useReactRouterNavigate, useLocation, useParams} from 'react-router';
 import {useFramework} from './FrameworkProvider';
 import {NavigationStackProvider} from './NavigationStackProvider';
 import {ErrorPage} from '@tryghost/shade';
@@ -88,4 +88,14 @@ export function useNavigate() {
 
         navigate(to, options);
     }, [navigate, externalNavigate]);
+}
+
+export function useBaseRoute() {
+    const location = useLocation();
+    return location.pathname.split('/')[1];
+}
+
+export function useIsBaseRoute() {
+    const params = useParams();
+    return params && Object.keys(params).length > 0;
 }
