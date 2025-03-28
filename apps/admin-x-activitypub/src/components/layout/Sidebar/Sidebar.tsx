@@ -35,7 +35,7 @@ const Sidebar: React.FC = () => {
                             <LucideIcon.Inbox size={18} strokeWidth={1.5} />
                             Inbox
                         </SidebarMenuLink>
-                        <SidebarMenuLink to='/feed'>
+                        <SidebarMenuLink to={(isEnabled('ap-routes') ? '/feed-rr' : '/feed')}>
                             <LucideIcon.Hash size={18} strokeWidth={1.5} />
                             Feed
                         </SidebarMenuLink>

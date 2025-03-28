@@ -1,5 +1,6 @@
 import Error from '@components/layout/Error';
 import Explore from '@views/Explore';
+import Feed from './views/Feed/Feed';
 import Inbox from '@views/Inbox';
 import InboxRR from './views/Inbox/Inbox-RR';
 import Notifications from '@views/Notifications';
@@ -25,15 +26,7 @@ export const routes: CustomRouteObject[] = [
         path: '',
         errorElement: <Error />, // This will catch all errors in child routes
         children: [
-            {
-                index: true,
-                element: <Navigate to="inbox" />
-            },
-            {
-                path: 'inbox',
-                element: <Inbox />,
-                pageTitle: 'Inbox'
-            },
+            // `ap-routes` related routes
             {
                 path: 'inbox-rr',
                 element: <InboxRR />,
@@ -45,13 +38,39 @@ export const routes: CustomRouteObject[] = [
                 pageTitle: 'Inbox'
             },
             {
-                path: 'feed',
-                element: <Inbox />,
+                path: 'feed-rr',
+                element: <Feed />,
                 pageTitle: 'Feed'
             },
             {
-                path: 'feed/:postId',
+                path: 'feed-rr/:postId',
                 element: <Post />,
+                pageTitle: 'Feed'
+            },
+            {
+                path: 'profile-rr',
+                element: <ProfileRR />,
+                pageTitle: 'Profile'
+            },
+            {
+                path: 'profile-rr/:handle',
+                element: <ProfileRR />,
+                pageTitle: 'Profile'
+            },
+
+            // ---
+            {
+                index: true,
+                element: <Navigate to="inbox" />
+            },
+            {
+                path: 'inbox',
+                element: <Inbox />,
+                pageTitle: 'Inbox'
+            },
+            {
+                path: 'feed',
+                element: <Inbox />,
                 pageTitle: 'Feed'
             },
             {
@@ -67,16 +86,6 @@ export const routes: CustomRouteObject[] = [
             {
                 path: 'profile',
                 element: <Profile />,
-                pageTitle: 'Profile'
-            },
-            {
-                path: 'profile-rr',
-                element: <ProfileRR />,
-                pageTitle: 'Profile'
-            },
-            {
-                path: 'profile-rr/:handle',
-                element: <ProfileRR />,
                 pageTitle: 'Profile'
             },
             {

@@ -29,10 +29,8 @@ const Header: React.FC = () => {
         onlyBackButton = true;
     }
 
-    if (baseRoute === 'feed') {
-        if (canGoBack) {
-            onlyBackButton = true;
-        }
+    if (baseRoute === 'feed-rr' && canGoBack) {
+        onlyBackButton = true;
     }
 
     // Avoid back button on main routes

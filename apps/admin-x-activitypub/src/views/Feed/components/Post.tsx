@@ -95,10 +95,10 @@ const Post = () => {
                                                 repostCount={item.object.repostCount ?? 0}
                                                 type='Note'
                                                 onClick={() => {
-                                                    navigate(`/feed/${encodeURIComponent(item.object.id)}`);
+                                                    navigate(`/feed-rr/${encodeURIComponent(item.object.id)}`);
                                                 }}
                                                 onCommentClick={() => {
-                                                    navigate(`/feed/${encodeURIComponent(item.object.id)}`);
+                                                    navigate(`/feed-rr/${encodeURIComponent(item.object.id)}`);
                                                     setIsFocused(true);
                                                 }}
                                             />
@@ -152,10 +152,10 @@ const Post = () => {
                                                     repostCount={item.object.repostCount ?? 0}
                                                     type='Note'
                                                     onClick={() => {
-                                                        navigate(`/feed/${encodeURIComponent(item.id)}`);
+                                                        navigate(`/feed-rr/${encodeURIComponent(item.id)}`);
                                                     }}
                                                     onCommentClick={() => {
-                                                        navigate(`/feed/${encodeURIComponent(item.id)}`);
+                                                        navigate(`/feed-rr/${encodeURIComponent(item.id)}`);
                                                         setIsFocused(true);
                                                     }}
                                                     // onDelete={decrementReplyCount}
