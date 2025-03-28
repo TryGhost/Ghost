@@ -1,14 +1,14 @@
 import APAvatar from '@src/components/global/APAvatar';
-import APReplyBox, {useFocusedState} from '@src/components/global/APReplyBox';
+import APReplyBox from '@src/components/global/APReplyBox';
 import DeletedFeedItem from '@src/components/feed/DeletedFeedItem';
 import FeedItem from '@components/feed/FeedItem';
 import Layout from '@src/components/layout/Layout';
-import React, {useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import getUsername from '@src/utils/get-username';
 import {Skeleton} from '@tryghost/shade';
 import {handleProfileClickRR} from '@src/utils/handle-profile-click';
 import {renderTimestamp} from '@src/utils/render-timestamp';
-import {useNavigate, useParams} from '@tryghost/admin-x-framework';
+import {useLocation, useNavigate, useParams} from '@tryghost/admin-x-framework';
 import {usePostForUser, useThreadForUser} from '@hooks/use-activity-pub-queries';
 
 const FeedItemDivider: React.FC = () => (
@@ -20,7 +20,16 @@ const Post = () => {
     // const activity = location.state.activity;
 
     const {postId} = useParams();
-    const [isFocused, setIsFocused] = useFocusedState(false);
+    // const [isFocused, setIsFocused] = useFocusedState(false);
+
+    const location = useLocation();
+    const [focusReply, setFocusReply] = useState(false);
+    useEffect(() => {
+        const searchParams = new URLSearchParams(location.search);
+        if (searchParams.get('focusReply') === 'true') {
+            setFocusReply(true);
+        }
+    }, [location.search, setFocusReply]);
 
     const activityId = postId ? decodeURIComponent(postId) : '';
     const {data: post, isLoading: isPostLoading} = usePostForUser('index', postId!);
@@ -98,8 +107,7 @@ const Post = () => {
                                                     navigate(`/feed-rr/${encodeURIComponent(item.object.id)}`);
                                                 }}
                                                 onCommentClick={() => {
-                                                    navigate(`/feed-rr/${encodeURIComponent(item.object.id)}`);
-                                                    setIsFocused(true);
+                                                    navigate(`/feed-rr/${encodeURIComponent(item.object.id)}?focusReply=true`);
                                                 }}
                                             />
                                         )
@@ -122,12 +130,12 @@ const Post = () => {
                                             behavior: 'smooth',
                                             block: 'center'
                                         });
-                                        setIsFocused(true);
+                                        setFocusReply(true);
                                     }}
                                 />
                                 <div ref={replyBoxRef}>
                                     <APReplyBox
-                                        focused={isFocused}
+                                        focused={focusReply ? 1 : 0}
                                         object={object}
                                         onReply={incrementReplyCount}
                                         onReplyError={decrementReplyCount}
@@ -155,8 +163,7 @@ const Post = () => {
                                                         navigate(`/feed-rr/${encodeURIComponent(item.id)}`);
                                                     }}
                                                     onCommentClick={() => {
-                                                        navigate(`/feed-rr/${encodeURIComponent(item.id)}`);
-                                                        setIsFocused(true);
+                                                        navigate(`/feed-rr/${encodeURIComponent(item.id)}?focusReply=true`);
                                                     }}
                                                     // onDelete={decrementReplyCount}
                                                 />

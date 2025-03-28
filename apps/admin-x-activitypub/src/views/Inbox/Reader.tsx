@@ -2,8 +2,9 @@ import React, {useCallback, useEffect, useRef, useState} from 'react';
 import getUsername from '../../utils/get-username';
 import {OptionProps, SingleValueProps, components} from 'react-select';
 import {Popover, PopoverContent, PopoverTrigger, Skeleton} from '@tryghost/shade';
+import {useLocation} from '@tryghost/admin-x-framework';
 
-import APReplyBox, {useFocusedState} from '@components/global/APReplyBox';
+import APReplyBox from '@components/global/APReplyBox';
 import {Button, Icon, LoadingIndicator, Select, SelectOption} from '@tryghost/admin-x-design-system';
 import {renderTimestamp} from '../../utils/render-timestamp';
 import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
@@ -392,12 +393,21 @@ export const Reader: React.FC<ReaderProps> = ({
     onClose
 }) => {
     const modalRef = useRef<HTMLElement>(null);
-    const [isFocused, setIsFocused] = useFocusedState(false);
+    const location = useLocation();
+    // const [isFocused, setIsFocused] = useFocusedState(false);
     const {data: post, isLoading: isLoadingPost} = usePostForUser('index', postId);
     const activityData = post;
     const activityId = activityData?.id;
     const object = activityData?.object;
     const actor = activityData?.actor;
+
+    const [focusReply, setFocusReply] = useState(false);
+    useEffect(() => {
+        const searchParams = new URLSearchParams(location.search);
+        if (searchParams.get('focusReply') === 'true') {
+            setFocusReply(true);
+        }
+    }, [location.search, setFocusReply]);
 
     const {data: thread, isLoading: isLoadingThread} = useThreadForUser('index', activityId);
     const threadPostIdx = (thread?.posts ?? []).findIndex(item => item.object.id === activityId);
@@ -815,7 +825,8 @@ export const Reader: React.FC<ReaderProps> = ({
                                                                 behavior: 'smooth',
                                                                 block: 'center'
                                                             });
-                                                            setIsFocused(true);
+                                                            // setIsFocused(true);
+                                                            setFocusReply(true);
                                                         }}
                                                         onLikeClick={onLikeClick}
                                                     />
@@ -828,7 +839,7 @@ export const Reader: React.FC<ReaderProps> = ({
 
                                         <div ref={replyBoxRef}>
                                             <APReplyBox
-                                                focused={isFocused}
+                                                focused={focusReply ? 1 : 0}
                                                 object={object}
                                                 onReply={incrementReplyCount}
                                                 onReplyError={decrementReplyCount}
@@ -856,11 +867,10 @@ export const Reader: React.FC<ReaderProps> = ({
                                                             repostCount={item.object.repostCount ?? 0}
                                                             type='Note'
                                                             onClick={() => {
-                                                                navigate(`/feed/${encodeURIComponent(item.object.id)}`);
+                                                                navigate(`/feed-rr/${encodeURIComponent(item.object.id)}`);
                                                             }}
                                                             onCommentClick={() => {
-                                                                navigate(`/feed/${encodeURIComponent(item.object.id)}`);
-                                                                // setIsFocused(true);
+                                                                navigate(`/feed-rr/${encodeURIComponent(item.object.id)}?focusReply=true`);
                                                             }}
                                                             onDelete={decrementReplyCount}
                                                         />
