@@ -52,7 +52,7 @@ export const routes: CustomRouteObject[] = [
             {
                 path: 'feed/:postId',
                 element: <ContentView />,
-                pageTitle: ''
+                pageTitle: 'Feed'
             },
             {
                 path: 'notifications',
