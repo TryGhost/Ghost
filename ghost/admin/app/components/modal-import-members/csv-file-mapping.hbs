@@ -1,0 +1,28 @@
+{{#if this.hasFileData}}
+    <GhFormGroup class="gh-members-import-mapping" data-test-csv-file-mapping>
+        <div class="gh-members-import-mappingwrapper {{if (and this.error @showErrors) "error"}}">
+            <div class="gh-members-import-scrollarea">
+                <GhMembersImportTable
+                    @data={{this.fileData}}
+                    @setMapping={{this.setMapping}}
+                    @disabled={{@disabled}} />
+            </div>
+        </div>
+        {{#if (and this.error @showErrors)}}
+            <p class="pt2 error">{{this.error.message}}</p>
+        {{/if}}
+
+        {{#if this.membersStats.memberCount}}
+            <p class="pt2">If an email address in your CSV matches an existing member, they will be updated with the mapped values.</p>
+        {{/if}}
+
+        <div class="mt6">
+            <label for="label-input"><span class="fw6 f8 dib mb1">Label these members</span></label>
+            <GhMemberLabelInput @labels={{this.labels}} @onChange={{this.updateLabels}} @disabled={{@disabled}} @triggerId="label-input" @renderInPlace={{true}} />
+        </div>
+    </GhFormGroup>
+{{else}}
+    <div class="bg-whitegrey-l2 ba b--whitegrey br3 gh-image-uploader gh-members-import-spinner">
+        <GhLoadingSpinner />
+    </div>
+{{/if}}

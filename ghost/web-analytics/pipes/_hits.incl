@@ -1,0 +1,8 @@
+# some comments
+# tinybird was seeing this file as renamed...
+# so we're just going to add a comment to the file
+# to make it happy
+# and then we'll delete the file
+# and then we'll delete the comment
+# and then we'll delete the file
+# and then we'll delete the comment

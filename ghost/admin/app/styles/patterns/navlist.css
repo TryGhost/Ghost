@@ -1,0 +1,88 @@
+/* Nav Lists
+/* ---------------------------------------------------------- */
+
+.nav-list {
+    padding: 0;
+}
+
+.nav-list-item {
+    position: relative;
+    display: block;
+    margin: 0;
+    color: var(--darkgrey);
+    border-bottom: 1px solid var(--whitegrey-d1);
+}
+
+.nav-list-item:hover {
+    background: var(--whitegrey-l2);
+    cursor: pointer;
+}
+
+.nav-list-item.selected {
+    background: var(--whitegrey-l2);
+}
+
+.nav-list-item:first-of-type {
+    border-top: 1px solid var(--whitegrey-d1);
+}
+
+.nav-list-item button {
+    width: 100%;
+    padding: 2rem 2.4rem;
+    text-align: left;
+}
+
+.nav-list-item a {
+    color: var(--darkgrey);
+}
+
+.nav-list-item span {
+    display: flex;
+    align-items: center;
+    color: var(--black);
+    font-size: 1.4rem;
+    line-height: 1.375;
+    font-weight: 600;
+}
+
+li.nav-list-item svg {
+    margin: 0 1rem 0 0;
+    height: 1.6rem;
+    width: 1.6rem;
+}
+
+li.nav-list-item svg path:not(li.nav-list-item .history path) {
+    stroke-width: 1.8;
+}
+
+li.nav-list-item .history {
+    width: 1.8rem;
+    height: 1.8rem;
+}
+
+li.nav-list-item.delete {
+    color: var(--red);
+}
+
+li.nav-list-item .arrow-right {
+    position: absolute;
+    top: 50%;
+    right: 24px;
+    margin: -0.9rem 0 0;
+    height: 1.4rem;
+    width: 1.4rem;
+}
+
+li.nav-list-item .arrow-right path {
+    fill: var(--midgrey);
+}
+
+.nav-list-item-notification {
+    margin: 0 2.4rem 2rem;
+    color: var(--middarkgrey);
+}
+
+.nav-list-item-notification a {
+    color: var(--green-d1);
+    font-weight: 500;
+}

@@ -1,0 +1,1015 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Offers API Can add a fixed offer 1: [body] 1`] = `
+Object {
+  "offers": Array [
+    Object {
+      "amount": 100,
+      "cadence": "year",
+      "code": "4th",
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "currency": "USD",
+      "currency_restriction": true,
+      "display_description": "",
+      "display_title": "",
+      "duration": "once",
+      "duration_in_months": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "last_redeemed": null,
+      "name": "Fourth of July Sales",
+      "redemption_count": 0,
+      "status": "active",
+      "tier": Object {
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      },
+      "type": "fixed",
+    },
+  ],
+}
+`;
+
+exports[`Offers API Can add a fixed offer 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "408",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/offers\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-cache-invalidate": "/*",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Offers API Can add a new offer 1: [body] 1`] = `
+Object {
+  "offers": Array [
+    Object {
+      "amount": 12,
+      "cadence": "year",
+      "code": "black-friday",
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "currency": null,
+      "currency_restriction": false,
+      "display_description": "10% off on yearly plan",
+      "display_title": "Black Friday Sale!",
+      "duration": "once",
+      "duration_in_months": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "last_redeemed": null,
+      "name": "Black Friday",
+      "redemption_count": 0,
+      "status": "active",
+      "tier": Object {
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      },
+      "type": "percent",
+    },
+  ],
+}
+`;
+
+exports[`Offers API Can add a new offer 1: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "450",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/offers\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-cache-invalidate": "/*",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Offers API Can add a new offer 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "450",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/offers\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-cache-invalidate": "/*",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Offers API Can add a new offer with minimal fields 1: [body] 1`] = `
+Object {
+  "offers": Array [
+    Object {
+      "amount": 50,
+      "cadence": "month",
+      "code": "easter",
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "currency": null,
+      "currency_restriction": false,
+      "display_description": "",
+      "display_title": "",
+      "duration": "once",
+      "duration_in_months": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "last_redeemed": null,
+      "name": "Easter Sales",
+      "redemption_count": 0,
+      "status": "active",
+      "tier": Object {
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      },
+      "type": "percent",
+    },
+  ],
+}
+`;
+
+exports[`Offers API Can add a new offer with minimal fields 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "405",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/offers\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-cache-invalidate": "/*",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Offers API Can add a trial offer 1: [body] 1`] = `
+Object {
+  "offers": Array [
+    Object {
+      "amount": 20,
+      "cadence": "year",
+      "code": "4th-trial",
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "currency": null,
+      "currency_restriction": false,
+      "display_description": "",
+      "display_title": "",
+      "duration": "trial",
+      "duration_in_months": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "last_redeemed": null,
+      "name": "Fourth of July Sales trial",
+      "redemption_count": 0,
+      "status": "active",
+      "tier": Object {
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      },
+      "type": "trial",
+    },
+  ],
+}
+`;
+
+exports[`Offers API Can add a trial offer 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "420",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/offers\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-cache-invalidate": "/*",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Offers API Can archive an offer 1: [body] 1`] = `
+Object {
+  "offers": Array [
+    Object {
+      "amount": 12,
+      "cadence": "year",
+      "code": "cyber-monday",
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "currency": null,
+      "currency_restriction": false,
+      "display_description": "10% off on yearly plan, only today",
+      "display_title": "Cyber Monday Sale!",
+      "duration": "once",
+      "duration_in_months": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "last_redeemed": null,
+      "name": "Cyber Monday",
+      "redemption_count": 0,
+      "status": "archived",
+      "tier": Object {
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "name": "Default Product",
+      },
+      "type": "percent",
+    },
+  ],
+}
+`;
+
+exports[`Offers API Can archive an offer 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "489",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-cache-invalidate": "/*",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Offers API Can browse 1: [body] 1`] = `
+Object {
+  "offers": Array [
+    Object {
+      "amount": 12,
+      "cadence": "year",
+      "code": "black-friday",
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "currency": null,
+      "currency_restriction": false,
+      "display_description": "10% off on yearly plan",
+      "display_title": "Black Friday Sale!",
+      "duration": "once",
+      "duration_in_months": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "last_redeemed": null,
+      "name": "Black Friday",
+      "redemption_count": 0,
+      "status": "active",
+      "tier": Object {
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "name": "Default Product",
+      },
+      "type": "percent",
+    },
+    Object {
+      "amount": 50,
+      "cadence": "month",
+      "code": "easter",
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "currency": null,
+      "currency_restriction": false,
+      "display_description": "",
+      "display_title": "",
+      "duration": "once",
+      "duration_in_months": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "last_redeemed": null,
+      "name": "Easter Sales",
+      "redemption_count": 0,
+      "status": "active",
+      "tier": Object {
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "name": "Default Product",
+      },
+      "type": "percent",
+    },
+    Object {
+      "amount": 20,
+      "cadence": "year",
+      "code": "summer-sale",
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "currency": null,
+      "currency_restriction": false,
+      "display_description": "",
+      "display_title": "",
+      "duration": "once",
+      "duration_in_months": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "last_redeemed": null,
+      "name": "Summer Sale",
+      "redemption_count": 0,
+      "status": "active",
+      "tier": Object {
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "name": "Default Product",
+      },
+      "type": "percent",
+    },
+    Object {
+      "amount": 100,
+      "cadence": "year",
+      "code": "4th",
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "currency": "USD",
+      "currency_restriction": true,
+      "display_description": "",
+      "display_title": "",
+      "duration": "once",
+      "duration_in_months": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "last_redeemed": null,
+      "name": "Fourth of July Sales",
+      "redemption_count": 0,
+      "status": "active",
+      "tier": Object {
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "name": "Default Product",
+      },
+      "type": "fixed",
+    },
+    Object {
+      "amount": 20,
+      "cadence": "year",
+      "code": "4th-trial",
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "currency": null,
+      "currency_restriction": false,
+      "display_description": "",
+      "display_title": "",
+      "duration": "trial",
+      "duration_in_months": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "last_redeemed": null,
+      "name": "Fourth of July Sales trial",
+      "redemption_count": 0,
+      "status": "active",
+      "tier": Object {
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "name": "Default Product",
+      },
+      "type": "trial",
+    },
+  ],
+}
+`;
+
+exports[`Offers API Can browse 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "2168",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Offers API Can browse active 1: [body] 1`] = `
+Object {
+  "offers": Array [
+    Object {
+      "amount": 50,
+      "cadence": "month",
+      "code": "easter",
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "currency": null,
+      "currency_restriction": false,
+      "display_description": "",
+      "display_title": "",
+      "duration": "once",
+      "duration_in_months": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "last_redeemed": null,
+      "name": "Easter Sales",
+      "redemption_count": 0,
+      "status": "active",
+      "tier": Object {
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "name": "Default Product",
+      },
+      "type": "percent",
+    },
+    Object {
+      "amount": 20,
+      "cadence": "year",
+      "code": "summer-sale",
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "currency": null,
+      "currency_restriction": false,
+      "display_description": "",
+      "display_title": "",
+      "duration": "once",
+      "duration_in_months": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "last_redeemed": null,
+      "name": "Summer Sale",
+      "redemption_count": 0,
+      "status": "active",
+      "tier": Object {
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "name": "Default Product",
+      },
+      "type": "percent",
+    },
+    Object {
+      "amount": 100,
+      "cadence": "year",
+      "code": "4th",
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "currency": "USD",
+      "currency_restriction": true,
+      "display_description": "",
+      "display_title": "",
+      "duration": "once",
+      "duration_in_months": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "last_redeemed": null,
+      "name": "Fourth of July Sales",
+      "redemption_count": 0,
+      "status": "active",
+      "tier": Object {
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "name": "Default Product",
+      },
+      "type": "fixed",
+    },
+    Object {
+      "amount": 20,
+      "cadence": "year",
+      "code": "4th-trial",
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "currency": null,
+      "currency_restriction": false,
+      "display_description": "",
+      "display_title": "",
+      "duration": "trial",
+      "duration_in_months": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "last_redeemed": null,
+      "name": "Fourth of July Sales trial",
+      "redemption_count": 0,
+      "status": "active",
+      "tier": Object {
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "name": "Default Product",
+      },
+      "type": "trial",
+    },
+  ],
+}
+`;
+
+exports[`Offers API Can browse active 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "1705",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Offers API Can browse archived 1: [body] 1`] = `
+Object {
+  "offers": Array [
+    Object {
+      "amount": 12,
+      "cadence": "year",
+      "code": "cyber-monday",
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "currency": null,
+      "currency_restriction": false,
+      "display_description": "10% off on yearly plan, only today",
+      "display_title": "Cyber Monday Sale!",
+      "duration": "once",
+      "duration_in_months": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "last_redeemed": null,
+      "name": "Cyber Monday",
+      "redemption_count": 0,
+      "status": "archived",
+      "tier": Object {
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "name": "Default Product",
+      },
+      "type": "percent",
+    },
+  ],
+}
+`;
+
+exports[`Offers API Can browse archived 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "489",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Offers API Can edit an offer 1: [body] 1`] = `
+Object {
+  "offers": Array [
+    Object {
+      "amount": 12,
+      "cadence": "year",
+      "code": "cyber-monday",
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "currency": null,
+      "currency_restriction": false,
+      "display_description": "10% off on yearly plan, only today",
+      "display_title": "Cyber Monday Sale!",
+      "duration": "once",
+      "duration_in_months": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "last_redeemed": null,
+      "name": "Cyber Monday",
+      "redemption_count": 0,
+      "status": "active",
+      "tier": Object {
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "name": "Default Product",
+      },
+      "type": "percent",
+    },
+  ],
+}
+`;
+
+exports[`Offers API Can edit an offer 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "487",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-cache-invalidate": "/*",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Offers API Can get a single offer 1: [body] 1`] = `
+Object {
+  "offers": Array [
+    Object {
+      "amount": 12,
+      "cadence": "year",
+      "code": "black-friday",
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "currency": null,
+      "currency_restriction": false,
+      "display_description": "10% off on yearly plan",
+      "display_title": "Black Friday Sale!",
+      "duration": "once",
+      "duration_in_months": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "last_redeemed": null,
+      "name": "Black Friday",
+      "redemption_count": 0,
+      "status": "active",
+      "tier": Object {
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "name": "Default Product",
+      },
+      "type": "percent",
+    },
+  ],
+}
+`;
+
+exports[`Offers API Can get a single offer 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "475",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Offers API Can get a trial offer 1: [body] 1`] = `
+Object {
+  "offers": Array [
+    Object {
+      "amount": 20,
+      "cadence": "year",
+      "code": "4th-trial",
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "currency": null,
+      "currency_restriction": false,
+      "display_description": "",
+      "display_title": "",
+      "duration": "trial",
+      "duration_in_months": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "last_redeemed": null,
+      "name": "Fourth of July Sales trial",
+      "redemption_count": 0,
+      "status": "active",
+      "tier": Object {
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "name": "Default Product",
+      },
+      "type": "trial",
+    },
+  ],
+}
+`;
+
+exports[`Offers API Can get a trial offer 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "445",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Offers API Cannot create offer with same code 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": "Offer 'code' must be unique. Please change and try again.",
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Validation error, cannot save offer.",
+      "property": null,
+      "type": "InvalidOfferCode",
+    },
+  ],
+}
+`;
+
+exports[`Offers API Cannot create offer with same code 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "280",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Offers API Cannot create offer with same name 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": "Offer 'name' must be unique. Please change and try again.",
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Validation error, cannot save offer.",
+      "property": null,
+      "type": "InvalidOfferName",
+    },
+  ],
+}
+`;
+
+exports[`Offers API Cannot create offer with same name 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "280",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Offers API Cannot create offer with same slugified code 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": "Offer 'code' must be unique. Please change and try again.",
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Validation error, cannot save offer.",
+      "property": null,
+      "type": "InvalidOfferCode",
+    },
+  ],
+}
+`;
+
+exports[`Offers API Cannot create offer with same slugified code 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "280",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Offers API Cannot update offer amount 1: [body] 1`] = `
+Object {
+  "offers": Array [
+    Object {
+      "amount": 12,
+      "cadence": "year",
+      "code": "cyber-monday",
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "currency": null,
+      "currency_restriction": false,
+      "display_description": "10% off on yearly plan, only today",
+      "display_title": "Cyber Monday Sale!",
+      "duration": "once",
+      "duration_in_months": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "last_redeemed": null,
+      "name": "Cyber Monday",
+      "redemption_count": 0,
+      "status": "archived",
+      "tier": Object {
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "name": "Default Product",
+      },
+      "type": "percent",
+    },
+  ],
+}
+`;
+
+exports[`Offers API Cannot update offer amount 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "489",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-cache-invalidate": "/*",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Offers API Cannot update offer cadence 1: [body] 1`] = `
+Object {
+  "offers": Array [
+    Object {
+      "amount": 12,
+      "cadence": "year",
+      "code": "cyber-monday",
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "currency": null,
+      "currency_restriction": false,
+      "display_description": "10% off on yearly plan, only today",
+      "display_title": "Cyber Monday Sale!",
+      "duration": "once",
+      "duration_in_months": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "last_redeemed": null,
+      "name": "Cyber Monday",
+      "redemption_count": 0,
+      "status": "archived",
+      "tier": Object {
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "name": "Default Product",
+      },
+      "type": "percent",
+    },
+  ],
+}
+`;
+
+exports[`Offers API Cannot update offer cadence 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "489",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-cache-invalidate": "/*",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Offers API Cannot update offer code to one that exists 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": "Offer 'code' must be unique. Please change and try again.",
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Validation error, cannot edit offer.",
+      "property": null,
+      "type": "InvalidOfferCode",
+    },
+  ],
+}
+`;
+
+exports[`Offers API Cannot update offer code to one that exists 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "280",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Offers API Cannot update offer code to one that exists after it is slugified 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": "Offer 'code' must be unique. Please change and try again.",
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Validation error, cannot edit offer.",
+      "property": null,
+      "type": "InvalidOfferCode",
+    },
+  ],
+}
+`;
+
+exports[`Offers API Cannot update offer code to one that exists after it is slugified 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "280",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Offers API Cannot update offer name to one that exists 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": "Offer 'name' must be unique. Please change and try again.",
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Validation error, cannot edit offer.",
+      "property": null,
+      "type": "InvalidOfferName",
+    },
+  ],
+}
+`;
+
+exports[`Offers API Cannot update offer name to one that exists 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "280",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Offers API Cannot update offer tier 1: [body] 1`] = `
+Object {
+  "offers": Array [
+    Object {
+      "amount": 12,
+      "cadence": "year",
+      "code": "cyber-monday",
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "currency": null,
+      "currency_restriction": false,
+      "display_description": "10% off on yearly plan, only today",
+      "display_title": "Cyber Monday Sale!",
+      "duration": "once",
+      "duration_in_months": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "last_redeemed": null,
+      "name": "Cyber Monday",
+      "redemption_count": 0,
+      "status": "archived",
+      "tier": Object {
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "name": "Default Product",
+      },
+      "type": "percent",
+    },
+  ],
+}
+`;
+
+exports[`Offers API Cannot update offer tier 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "489",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-cache-invalidate": "/*",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Offers API Has no initial offers 1: [body] 1`] = `
+Object {
+  "offers": Array [],
+}
+`;
+
+exports[`Offers API Has no initial offers 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "13",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Offers API Slugifies offer codes 1: [body] 1`] = `
+Object {
+  "offers": Array [
+    Object {
+      "amount": 20,
+      "cadence": "year",
+      "code": "summer-sale",
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "currency": null,
+      "currency_restriction": false,
+      "display_description": "",
+      "display_title": "",
+      "duration": "once",
+      "duration_in_months": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "last_redeemed": null,
+      "name": "Summer Sale",
+      "redemption_count": 0,
+      "status": "active",
+      "tier": Object {
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      },
+      "type": "percent",
+    },
+  ],
+}
+`;
+
+exports[`Offers API Slugifies offer codes 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "408",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/offers\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-cache-invalidate": "/*",
+  "x-powered-by": "Express",
+}
+`;

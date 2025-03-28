@@ -1,0 +1,45 @@
+import { Meta } from '@storybook/blocks';
+import StreamlineSettings from './assets/streamline-settings.png';
+
+<Meta title="Foundations / Icons" />
+
+<div className="sb-doc">
+
+# Icons
+
+<p className='excerpt'>We use the [Streamline icon library](https://www.streamlinehq.com/) in Ghost Admin. Here are some iconography best practices.</p>
+
+### Overview
+The icons are part of the AdminX design system so they can be reusable in any Ghost Admin app. Use the [Icon](/docs/global-icon--docs) component to display available icons in standard icon sizes.
+
+### Adding new icons
+
+There are some rules we have to follow in order to maintain consistent iconography:
+
+<div className="streamline">
+    <div>
+    - All icons must be SVG format.
+    - Icons must be exported using **strokes** as lines and **not** filled areas. The stroke width must be **1.5px**. This allows more flexibility but still maintains consistency (and less filesize).
+    - All icon should be exported in a 24x24 pixel container.
+    - All icons should use `currentColor` as their colors for strokes. This lets us color the icon easily in CSS.
+    - Icons must be exported with transparent background.
+
+    <br /><br />
+
+    #### Exporting using the Streamline app
+
+    For the best result we recommend using the Streamline app to copy the SVG code of new icons with the following settings:
+
+    - Format: SVG
+    - Size: 24px
+    - Stroke: 1.5px
+    - Responsive size: OFF
+    - Outline stroke: **OFF**
+    - Background: transparent
+    - Asset currentcolor: **ON**
+    - Background currentcolor: OFF
+    </div>
+    <img src={StreamlineSettings} />
+</div>
+
+</div>

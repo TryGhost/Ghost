@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <title>paintbrush</title>
+  <defs>
+    <style>
+      .a{fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:1.5px}
+    </style>
+  </defs>
+  <path class="a" d="M10.644 17.865c1.589-1.9.1-4.338 1.513-5.981a2.759 2.759 0 1 1 4.18 3.6 6.506 6.506 0 0 1-5.693 2.381Z"/>
+  <path class="a" d="m16.62 12.277 6.232-8.253A2.038 2.038 0 1 0 19.4 1.88L14.871 11"/>
+  <path class="a" d="M13.5 5.224H3.75a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3h12a3 3 0 0 0 3-3v-1.5"/>
+</svg>

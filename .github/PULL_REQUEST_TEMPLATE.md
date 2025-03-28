@@ -1,9 +1,14 @@
 Got some code for us? Awesome 🎊!
 
-Please include a description of your change & check your PR against this list, thanks!
+Please take a minute to explain the change you're making:
+- Why are you making it?
+- What does it do?
+- Why is this something Ghost users or developers need?
 
-- [ ] There's a clear use-case for this code change
-- [ ] Commit message has a short title & references relevant issues
-- [ ] The build will pass (run `yarn test` and `yarn lint`)
+Please check your PR against these items:
 
-More info can be found by clicking the "guidelines for contributing" link above.
+- [ ] I've read and followed the [Contributor Guide](https://github.com/TryGhost/Ghost/blob/main/.github/CONTRIBUTING.md)
+- [ ] I've explained my change
+- [ ] I've written an automated test to prove my change works
+
+We appreciate your contribution! 🙏

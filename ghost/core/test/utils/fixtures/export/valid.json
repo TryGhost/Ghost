@@ -1,0 +1,1445 @@
+{
+    "db": [
+        {
+            "meta": {
+                "exported_on": 1504269105806,
+                "version": "1.20.0"
+            },
+            "data": {
+                "app_fields": [],
+                "app_settings": [],
+                "apps": [],
+                "brute": [],
+                "invites": [],
+                "posts_authors": [],
+                "migrations": [
+                    {
+                        "id": 1,
+                        "name": "1-create-tables.js",
+                        "version": "init",
+                        "currentVersion": "1.8"
+                    },
+                    {
+                        "id": 2,
+                        "name": "2-create-fixtures.js",
+                        "version": "init",
+                        "currentVersion": "1.8"
+                    },
+                    {
+                        "id": 3,
+                        "name": "1-post-excerpt.js",
+                        "version": "1.3",
+                        "currentVersion": "1.8"
+                    },
+                    {
+                        "id": 4,
+                        "name": "1-codeinjection-post.js",
+                        "version": "1.4",
+                        "currentVersion": "1.8"
+                    },
+                    {
+                        "id": 5,
+                        "name": "1-og-twitter-post.js",
+                        "version": "1.5",
+                        "currentVersion": "1.8"
+                    },
+                    {
+                        "id": 6,
+                        "name": "1-add-backup-client.js",
+                        "version": "1.7",
+                        "currentVersion": "1.8"
+                    }
+                ],
+                "permissions": [
+                    {
+                        "id": "59a952be7d79ed06b0d21137",
+                        "name": "Export database",
+                        "object_type": "db",
+                        "action_type": "exportContent",
+                        "object_id": null,
+                        "created_at": "2017-09-01T12:29:50.000Z",
+                        "created_by": "1",
+                        "updated_at": "2017-09-01T12:29:50.000Z",
+                        "updated_by": "1"
+                    },
+                    {
+                        "id": "59a952be7d79ed06b0d21138",
+                        "name": "Import database",
+                        "object_type": "db",
+                        "action_type": "importContent",
+                        "object_id": null,
+                        "created_at": "2017-09-01T12:29:50.000Z",
+                        "created_by": "1",
+                        "updated_at": "2017-09-01T12:29:50.000Z",
+                        "updated_by": "1"
+                    },
+                    {
+                        "id": "59a952be7d79ed06b0d21139",
+                        "name": "Delete all content",
+                        "object_type": "db",
+                        "action_type": "deleteAllContent",
+                        "object_id": null,
+                        "created_at": "2017-09-01T12:29:50.000Z",
+                        "created_by": "1",
+                        "updated_at": "2017-09-01T12:29:50.000Z",
+                        "updated_by": "1"
+                    },
+                    {
+                        "id": "59a952be7d79ed06b0d2113a",
+                        "name": "Send mail",
+                        "object_type": "mail",
+                        "action_type": "send",
+                        "object_id": null,
+                        "created_at": "2017-09-01T12:29:50.000Z",
+                        "created_by": "1",
+                        "updated_at": "2017-09-01T12:29:50.000Z",
+                        "updated_by": "1"
+                    },
+                    {
+                        "id": "59a952be7d79ed06b0d2113b",
+                        "name": "Browse notifications",
+                        "object_type": "notification",
+                        "action_type": "browse",
+                        "object_id": null,
+                        "created_at": "2017-09-01T12:29:50.000Z",
+                        "created_by": "1",
+                        "updated_at": "2017-09-01T12:29:50.000Z",
+                        "updated_by": "1"
+                    },
+                    {
+                        "id": "59a952be7d79ed06b0d2113c",
+                        "name": "Add notifications",
+                        "object_type": "notification",
+                        "action_type": "add",
+                        "object_id": null,
+                        "created_at": "2017-09-01T12:29:50.000Z",
+                        "created_by": "1",
+                        "updated_at": "2017-09-01T12:29:50.000Z",
+                        "updated_by": "1"
+                    },
+                    {
+                        "id": "59a952be7d79ed06b0d2113d",
+                        "name": "Delete notifications",
+                        "object_type": "notification",
+                        "action_type": "destroy",
+                        "object_id": null,
+                        "created_at": "2017-09-01T12:29:50.000Z",
+                        "created_by": "1",
+                        "updated_at": "2017-09-01T12:29:50.000Z",
+                        "updated_by": "1"
+                    },
+                    {
+                        "id": "59a952be7d79ed06b0d2113e",
+                        "name": "Browse posts",
+                        "object_type": "post",
+                        "action_type": "browse",
+                        "object_id": null,
+                        "created_at": "2017-09-01T12:29:50.000Z",
+                        "created_by": "1",
+                        "updated_at": "2017-09-01T12:29:50.000Z",
+                        "updated_by": "1"
+                    },
+                    {
+                        "id": "59a952be7d79ed06b0d2113f",
+                        "name": "Read posts",
+                        "object_type": "post",
+                        "action_type": "read",
+                        "object_id": null,
+                        "created_at": "2017-09-01T12:29:50.000Z",
+                        "created_by": "1",
+                        "updated_at": "2017-09-01T12:29:50.000Z",
+                        "updated_by": "1"
+                    },
+                    {
+                        "id": "59a952be7d79ed06b0d21140",
+                        "name": "Edit posts",
+                        "object_type": "post",
+                        "action_type": "edit",
+                        "object_id": null,
+                        "created_at": "2017-09-01T12:29:50.000Z",
+                        "created_by": "1",
+                        "updated_at": "2017-09-01T12:29:50.000Z",
+                        "updated_by": "1"
+                    },
+                    {
+                        "id": "59a952be7d79ed06b0d21141",
+                        "name": "Add posts",
+                        "object_type": "post",
+                        "action_type": "add",
+                        "object_id": null,
+                        "created_at": "2017-09-01T12:29:50.000Z",
+                        "created_by": "1",
+                        "updated_at": "2017-09-01T12:29:50.000Z",
+                        "updated_by": "1"
+                    },
+                    {
+                        "id": "59a952be7d79ed06b0d21142",
+                        "name": "Delete posts",
+                        "object_type": "post",
+                        "action_type": "destroy",
+                        "object_id": null,
+                        "created_at": "2017-09-01T12:29:50.000Z",
+                        "created_by": "1",
+                        "updated_at": "2017-09-01T12:29:50.000Z",
+                        "updated_by": "1"
+                    },
+                    {
+                        "id": "59a952be7d79ed06b0d21143",
+                        "name": "Browse settings",
+                        "object_type": "setting",
+                        "action_type": "browse",
+                        "object_id": null,
+                        "created_at": "2017-09-01T12:29:50.000Z",
+                        "created_by": "1",
+                        "updated_at": "2017-09-01T12:29:50.000Z",
+                        "updated_by": "1"
+                    },
+                    {
+                        "id": "59a952be7d79ed06b0d21144",
+                        "name": "Read settings",
+                        "object_type": "setting",
+                        "action_type": "read",
+                        "object_id": null,
+                        "created_at": "2017-09-01T12:29:50.000Z",
+                        "created_by": "1",
+                        "updated_at": "2017-09-01T12:29:50.000Z",
+                        "updated_by": "1"
+                    },
+                    {
+                        "id": "59a952be7d79ed06b0d21145",
+                        "name": "Edit settings",
+                        "object_type": "setting",
+                        "action_type": "edit",
+                        "object_id": null,
+                        "created_at": "2017-09-01T12:29:50.000Z",
+                        "created_by": "1",
+                        "updated_at": "2017-09-01T12:29:50.000Z",
+                        "updated_by": "1"
+                    },
+                    {
+                        "id": "59a952be7d79ed06b0d21146",
+                        "name": "Generate slugs",
+                        "object_type": "slug",
+                        "action_type": "generate",
+                        "object_id": null,
+                        "created_at": "2017-09-01T12:29:50.000Z",
+                        "created_by": "1",
+                        "updated_at": "2017-09-01T12:29:50.000Z",
+                        "updated_by": "1"
+                    },
+                    {
+                        "id": "59a952be7d79ed06b0d21147",
+                        "name": "Browse tags",
+                        "object_type": "tag",
+                        "action_type": "browse",
+                        "object_id": null,
+                        "created_at": "2017-09-01T12:29:50.000Z",
+                        "created_by": "1",
+                        "updated_at": "2017-09-01T12:29:50.000Z",
+                        "updated_by": "1"
+                    },
+                    {
+                        "id": "59a952be7d79ed06b0d21148",
+                        "name": "Read tags",
+                        "object_type": "tag",
+                        "action_type": "read",
+                        "object_id": null,
+                        "created_at": "2017-09-01T12:29:50.000Z",
+                        "created_by": "1",
+                        "updated_at": "2017-09-01T12:29:50.000Z",
+                        "updated_by": "1"
+                    },
+                    {
+                        "id": "59a952be7d79ed06b0d21149",
+                        "name": "Edit tags",
+                        "object_type": "tag",
+                        "action_type": "edit",
+                        "object_id": null,
+                        "created_at": "2017-09-01T12:29:50.000Z",
+                        "created_by": "1",
+                        "updated_at": "2017-09-01T12:29:50.000Z",
+                        "updated_by": "1"
+                    },
+                    {
+                        "id": "59a952be7d79ed06b0d2114a",
+                        "name": "Add tags",
+                        "object_type": "tag",
+                        "action_type": "add",
+                        "object_id": null,
+                        "created_at": "2017-09-01T12:29:50.000Z",
+                        "created_by": "1",
+                        "updated_at": "2017-09-01T12:29:50.000Z",
+                        "updated_by": "1"
+                    },
+                    {
+                        "id": "59a952be7d79ed06b0d2114b",
+                        "name": "Delete tags",
+                        "object_type": "tag",
+                        "action_type": "destroy",
+                        "object_id": null,
+                        "created_at": "2017-09-01T12:29:50.000Z",
+                        "created_by": "1",
+                        "updated_at": "2017-09-01T12:29:50.000Z",
+                        "updated_by": "1"
+                    },
+                    {
+                        "id": "59a952be7d79ed06b0d2114c",
+                        "name": "Browse themes",
+                        "object_type": "theme",
+                        "action_type": "browse",
+                        "object_id": null,
+                        "created_at": "2017-09-01T12:29:50.000Z",
+                        "created_by": "1",
+                        "updated_at": "2017-09-01T12:29:50.000Z",
+                        "updated_by": "1"
+                    },
+                    {
+                        "id": "59a952be7d79ed06b0d2114d",
+                        "name": "Edit themes",
+                        "object_type": "theme",
+                        "action_type": "edit",
+                        "object_id": null,
+                        "created_at": "2017-09-01T12:29:50.000Z",
+                        "created_by": "1",
+                        "updated_at": "2017-09-01T12:29:50.000Z",
+                        "updated_by": "1"
+                    },
+                    {
+                        "id": "59a952be7d79ed06b0d2114e",
+                        "name": "Activate themes",
+                        "object_type": "theme",
+                        "action_type": "activate",
+                        "object_id": null,
+                        "created_at": "2017-09-01T12:29:50.000Z",
+                        "created_by": "1",
+                        "updated_at": "2017-09-01T12:29:50.000Z",
+                        "updated_by": "1"
+                    },
+                    {
+                        "id": "59a952be7d79ed06b0d2114f",
+                        "name": "Upload themes",
+                        "object_type": "theme",
+                        "action_type": "add",
+                        "object_id": null,
+                        "created_at": "2017-09-01T12:29:50.000Z",
+                        "created_by": "1",
+                        "updated_at": "2017-09-01T12:29:50.000Z",
+                        "updated_by": "1"
+                    },
+                    {
+                        "id": "59a952be7d79ed06b0d21150",
+                        "name": "Download themes",
+                        "object_type": "theme",
+                        "action_type": "read",
+                        "object_id": null,
+                        "created_at": "2017-09-01T12:29:50.000Z",
+                        "created_by": "1",
+                        "updated_at": "2017-09-01T12:29:50.000Z",
+                        "updated_by": "1"
+                    },
+                    {
+                        "id": "59a952be7d79ed06b0d21151",
+                        "name": "Delete themes",
+                        "object_type": "theme",
+                        "action_type": "destroy",
+                        "object_id": null,
+                        "created_at": "2017-09-01T12:29:50.000Z",
+                        "created_by": "1",
+                        "updated_at": "2017-09-01T12:29:50.000Z",
+                        "updated_by": "1"
+                    },
+                    {
+                        "id": "59a952be7d79ed06b0d21152",
+                        "name": "Browse users",
+                        "object_type": "user",
+                        "action_type": "browse",
+                        "object_id": null,
+                        "created_at": "2017-09-01T12:29:50.000Z",
+                        "created_by": "1",
+                        "updated_at": "2017-09-01T12:29:50.000Z",
+                        "updated_by": "1"
+                    },
+                    {
+                        "id": "59a952be7d79ed06b0d21153",
+                        "name": "Read users",
+                        "object_type": "user",
+                        "action_type": "read",
+                        "object_id": null,
+                        "created_at": "2017-09-01T12:29:50.000Z",
+                        "created_by": "1",
+                        "updated_at": "2017-09-01T12:29:50.000Z",
+                        "updated_by": "1"
+                    },
+                    {
+                        "id": "59a952be7d79ed06b0d21154",
+                        "name": "Edit users",
+                        "object_type": "user",
+                        "action_type": "edit",
+                        "object_id": null,
+                        "created_at": "2017-09-01T12:29:50.000Z",
+                        "created_by": "1",
+                        "updated_at": "2017-09-01T12:29:50.000Z",
+                        "updated_by": "1"
+                    },
+                    {
+                        "id": "59a952be7d79ed06b0d21155",
+                        "name": "Add users",
+                        "object_type": "user",
+                        "action_type": "add",
+                        "object_id": null,
+                        "created_at": "2017-09-01T12:29:50.000Z",
+                        "created_by": "1",
+                        "updated_at": "2017-09-01T12:29:50.000Z",
+                        "updated_by": "1"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d21156",
+                        "name": "Delete users",
+                        "object_type": "user",
+                        "action_type": "destroy",
+                        "object_id": null,
+                        "created_at": "2017-09-01T12:29:51.000Z",
+                        "created_by": "1",
+                        "updated_at": "2017-09-01T12:29:51.000Z",
+                        "updated_by": "1"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d21157",
+                        "name": "Assign a role",
+                        "object_type": "role",
+                        "action_type": "assign",
+                        "object_id": null,
+                        "created_at": "2017-09-01T12:29:51.000Z",
+                        "created_by": "1",
+                        "updated_at": "2017-09-01T12:29:51.000Z",
+                        "updated_by": "1"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d21158",
+                        "name": "Browse roles",
+                        "object_type": "role",
+                        "action_type": "browse",
+                        "object_id": null,
+                        "created_at": "2017-09-01T12:29:51.000Z",
+                        "created_by": "1",
+                        "updated_at": "2017-09-01T12:29:51.000Z",
+                        "updated_by": "1"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d2115e",
+                        "name": "Browse subscribers",
+                        "object_type": "subscriber",
+                        "action_type": "browse",
+                        "object_id": null,
+                        "created_at": "2017-09-01T12:29:51.000Z",
+                        "created_by": "1",
+                        "updated_at": "2017-09-01T12:29:51.000Z",
+                        "updated_by": "1"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d2115f",
+                        "name": "Read subscribers",
+                        "object_type": "subscriber",
+                        "action_type": "read",
+                        "object_id": null,
+                        "created_at": "2017-09-01T12:29:51.000Z",
+                        "created_by": "1",
+                        "updated_at": "2017-09-01T12:29:51.000Z",
+                        "updated_by": "1"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d21160",
+                        "name": "Edit subscribers",
+                        "object_type": "subscriber",
+                        "action_type": "edit",
+                        "object_id": null,
+                        "created_at": "2017-09-01T12:29:51.000Z",
+                        "created_by": "1",
+                        "updated_at": "2017-09-01T12:29:51.000Z",
+                        "updated_by": "1"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d21161",
+                        "name": "Add subscribers",
+                        "object_type": "subscriber",
+                        "action_type": "add",
+                        "object_id": null,
+                        "created_at": "2017-09-01T12:29:51.000Z",
+                        "created_by": "1",
+                        "updated_at": "2017-09-01T12:29:51.000Z",
+                        "updated_by": "1"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d21162",
+                        "name": "Delete subscribers",
+                        "object_type": "subscriber",
+                        "action_type": "destroy",
+                        "object_id": null,
+                        "created_at": "2017-09-01T12:29:51.000Z",
+                        "created_by": "1",
+                        "updated_at": "2017-09-01T12:29:51.000Z",
+                        "updated_by": "1"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d21163",
+                        "name": "Browse invites",
+                        "object_type": "invite",
+                        "action_type": "browse",
+                        "object_id": null,
+                        "created_at": "2017-09-01T12:29:51.000Z",
+                        "created_by": "1",
+                        "updated_at": "2017-09-01T12:29:51.000Z",
+                        "updated_by": "1"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d21164",
+                        "name": "Read invites",
+                        "object_type": "invite",
+                        "action_type": "read",
+                        "object_id": null,
+                        "created_at": "2017-09-01T12:29:51.000Z",
+                        "created_by": "1",
+                        "updated_at": "2017-09-01T12:29:51.000Z",
+                        "updated_by": "1"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d21165",
+                        "name": "Edit invites",
+                        "object_type": "invite",
+                        "action_type": "edit",
+                        "object_id": null,
+                        "created_at": "2017-09-01T12:29:51.000Z",
+                        "created_by": "1",
+                        "updated_at": "2017-09-01T12:29:51.000Z",
+                        "updated_by": "1"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d21166",
+                        "name": "Add invites",
+                        "object_type": "invite",
+                        "action_type": "add",
+                        "object_id": null,
+                        "created_at": "2017-09-01T12:29:51.000Z",
+                        "created_by": "1",
+                        "updated_at": "2017-09-01T12:29:51.000Z",
+                        "updated_by": "1"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d21167",
+                        "name": "Delete invites",
+                        "object_type": "invite",
+                        "action_type": "destroy",
+                        "object_id": null,
+                        "created_at": "2017-09-01T12:29:51.000Z",
+                        "created_by": "1",
+                        "updated_at": "2017-09-01T12:29:51.000Z",
+                        "updated_by": "1"
+                    }
+                ],
+                "permissions_roles": [
+                    {
+                        "id": "59a952bf7d79ed06b0d21169",
+                        "role_id": "59a952be7d79ed06b0d21133",
+                        "permission_id": "59a952be7d79ed06b0d21137"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d2116a",
+                        "role_id": "59a952be7d79ed06b0d21133",
+                        "permission_id": "59a952be7d79ed06b0d21138"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d2116b",
+                        "role_id": "59a952be7d79ed06b0d21133",
+                        "permission_id": "59a952be7d79ed06b0d21139"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d2116c",
+                        "role_id": "59a952be7d79ed06b0d21133",
+                        "permission_id": "59a952be7d79ed06b0d2113a"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d2116d",
+                        "role_id": "59a952be7d79ed06b0d21133",
+                        "permission_id": "59a952be7d79ed06b0d2113b"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d2116e",
+                        "role_id": "59a952be7d79ed06b0d21133",
+                        "permission_id": "59a952be7d79ed06b0d2113c"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d2116f",
+                        "role_id": "59a952be7d79ed06b0d21133",
+                        "permission_id": "59a952be7d79ed06b0d2113d"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d21170",
+                        "role_id": "59a952be7d79ed06b0d21133",
+                        "permission_id": "59a952be7d79ed06b0d2113e"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d21171",
+                        "role_id": "59a952be7d79ed06b0d21133",
+                        "permission_id": "59a952be7d79ed06b0d2113f"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d21172",
+                        "role_id": "59a952be7d79ed06b0d21133",
+                        "permission_id": "59a952be7d79ed06b0d21140"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d21173",
+                        "role_id": "59a952be7d79ed06b0d21133",
+                        "permission_id": "59a952be7d79ed06b0d21141"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d21174",
+                        "role_id": "59a952be7d79ed06b0d21133",
+                        "permission_id": "59a952be7d79ed06b0d21142"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d21175",
+                        "role_id": "59a952be7d79ed06b0d21133",
+                        "permission_id": "59a952be7d79ed06b0d21143"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d21176",
+                        "role_id": "59a952be7d79ed06b0d21133",
+                        "permission_id": "59a952be7d79ed06b0d21144"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d21177",
+                        "role_id": "59a952be7d79ed06b0d21133",
+                        "permission_id": "59a952be7d79ed06b0d21145"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d21178",
+                        "role_id": "59a952be7d79ed06b0d21133",
+                        "permission_id": "59a952be7d79ed06b0d21146"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d21179",
+                        "role_id": "59a952be7d79ed06b0d21133",
+                        "permission_id": "59a952be7d79ed06b0d21147"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d2117a",
+                        "role_id": "59a952be7d79ed06b0d21133",
+                        "permission_id": "59a952be7d79ed06b0d21148"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d2117b",
+                        "role_id": "59a952be7d79ed06b0d21133",
+                        "permission_id": "59a952be7d79ed06b0d21149"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d2117c",
+                        "role_id": "59a952be7d79ed06b0d21133",
+                        "permission_id": "59a952be7d79ed06b0d2114a"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d2117d",
+                        "role_id": "59a952be7d79ed06b0d21133",
+                        "permission_id": "59a952be7d79ed06b0d2114b"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d2117e",
+                        "role_id": "59a952be7d79ed06b0d21133",
+                        "permission_id": "59a952be7d79ed06b0d2114c"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d2117f",
+                        "role_id": "59a952be7d79ed06b0d21133",
+                        "permission_id": "59a952be7d79ed06b0d2114d"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d21180",
+                        "role_id": "59a952be7d79ed06b0d21133",
+                        "permission_id": "59a952be7d79ed06b0d2114e"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d21181",
+                        "role_id": "59a952be7d79ed06b0d21133",
+                        "permission_id": "59a952be7d79ed06b0d2114f"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d21182",
+                        "role_id": "59a952be7d79ed06b0d21133",
+                        "permission_id": "59a952be7d79ed06b0d21150"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d21183",
+                        "role_id": "59a952be7d79ed06b0d21133",
+                        "permission_id": "59a952be7d79ed06b0d21151"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d21184",
+                        "role_id": "59a952be7d79ed06b0d21133",
+                        "permission_id": "59a952be7d79ed06b0d21152"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d21185",
+                        "role_id": "59a952be7d79ed06b0d21133",
+                        "permission_id": "59a952be7d79ed06b0d21153"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d21186",
+                        "role_id": "59a952be7d79ed06b0d21133",
+                        "permission_id": "59a952be7d79ed06b0d21154"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d21187",
+                        "role_id": "59a952be7d79ed06b0d21133",
+                        "permission_id": "59a952be7d79ed06b0d21155"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d21188",
+                        "role_id": "59a952be7d79ed06b0d21133",
+                        "permission_id": "59a952bf7d79ed06b0d21156"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d21189",
+                        "role_id": "59a952be7d79ed06b0d21133",
+                        "permission_id": "59a952bf7d79ed06b0d21157"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d2118a",
+                        "role_id": "59a952be7d79ed06b0d21133",
+                        "permission_id": "59a952bf7d79ed06b0d21158"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d2118b",
+                        "role_id": "59a952be7d79ed06b0d21133",
+                        "permission_id": "59a952bf7d79ed06b0d21159"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d2118c",
+                        "role_id": "59a952be7d79ed06b0d21133",
+                        "permission_id": "59a952bf7d79ed06b0d2115a"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d2118d",
+                        "role_id": "59a952be7d79ed06b0d21133",
+                        "permission_id": "59a952bf7d79ed06b0d2115b"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d2118e",
+                        "role_id": "59a952be7d79ed06b0d21133",
+                        "permission_id": "59a952bf7d79ed06b0d2115c"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d2118f",
+                        "role_id": "59a952be7d79ed06b0d21133",
+                        "permission_id": "59a952bf7d79ed06b0d2115d"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d21190",
+                        "role_id": "59a952be7d79ed06b0d21133",
+                        "permission_id": "59a952bf7d79ed06b0d2115e"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d21191",
+                        "role_id": "59a952be7d79ed06b0d21133",
+                        "permission_id": "59a952bf7d79ed06b0d2115f"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d21192",
+                        "role_id": "59a952be7d79ed06b0d21133",
+                        "permission_id": "59a952bf7d79ed06b0d21160"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d21193",
+                        "role_id": "59a952be7d79ed06b0d21133",
+                        "permission_id": "59a952bf7d79ed06b0d21161"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d21194",
+                        "role_id": "59a952be7d79ed06b0d21133",
+                        "permission_id": "59a952bf7d79ed06b0d21162"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d21195",
+                        "role_id": "59a952be7d79ed06b0d21133",
+                        "permission_id": "59a952bf7d79ed06b0d21163"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d21196",
+                        "role_id": "59a952be7d79ed06b0d21133",
+                        "permission_id": "59a952bf7d79ed06b0d21164"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d21197",
+                        "role_id": "59a952be7d79ed06b0d21133",
+                        "permission_id": "59a952bf7d79ed06b0d21165"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d21198",
+                        "role_id": "59a952be7d79ed06b0d21133",
+                        "permission_id": "59a952bf7d79ed06b0d21166"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d21199",
+                        "role_id": "59a952be7d79ed06b0d21133",
+                        "permission_id": "59a952bf7d79ed06b0d21167"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d2119a",
+                        "role_id": "59a952be7d79ed06b0d21134",
+                        "permission_id": "59a952be7d79ed06b0d2113e"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d2119b",
+                        "role_id": "59a952be7d79ed06b0d21134",
+                        "permission_id": "59a952be7d79ed06b0d2113f"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d2119c",
+                        "role_id": "59a952be7d79ed06b0d21134",
+                        "permission_id": "59a952be7d79ed06b0d21140"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d2119d",
+                        "role_id": "59a952be7d79ed06b0d21134",
+                        "permission_id": "59a952be7d79ed06b0d21141"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d2119e",
+                        "role_id": "59a952be7d79ed06b0d21134",
+                        "permission_id": "59a952be7d79ed06b0d21142"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d2119f",
+                        "role_id": "59a952be7d79ed06b0d21134",
+                        "permission_id": "59a952be7d79ed06b0d21143"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d211a0",
+                        "role_id": "59a952be7d79ed06b0d21134",
+                        "permission_id": "59a952be7d79ed06b0d21144"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d211a1",
+                        "role_id": "59a952be7d79ed06b0d21134",
+                        "permission_id": "59a952be7d79ed06b0d21146"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d211a2",
+                        "role_id": "59a952be7d79ed06b0d21134",
+                        "permission_id": "59a952be7d79ed06b0d21147"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d211a3",
+                        "role_id": "59a952be7d79ed06b0d21134",
+                        "permission_id": "59a952be7d79ed06b0d21148"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d211a4",
+                        "role_id": "59a952be7d79ed06b0d21134",
+                        "permission_id": "59a952be7d79ed06b0d21149"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d211a5",
+                        "role_id": "59a952be7d79ed06b0d21134",
+                        "permission_id": "59a952be7d79ed06b0d2114a"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d211a6",
+                        "role_id": "59a952be7d79ed06b0d21134",
+                        "permission_id": "59a952be7d79ed06b0d2114b"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d211a7",
+                        "role_id": "59a952be7d79ed06b0d21134",
+                        "permission_id": "59a952be7d79ed06b0d21152"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d211a8",
+                        "role_id": "59a952be7d79ed06b0d21134",
+                        "permission_id": "59a952be7d79ed06b0d21153"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d211a9",
+                        "role_id": "59a952be7d79ed06b0d21134",
+                        "permission_id": "59a952be7d79ed06b0d21154"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d211aa",
+                        "role_id": "59a952be7d79ed06b0d21134",
+                        "permission_id": "59a952be7d79ed06b0d21155"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d211ab",
+                        "role_id": "59a952be7d79ed06b0d21134",
+                        "permission_id": "59a952bf7d79ed06b0d21156"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d211ac",
+                        "role_id": "59a952be7d79ed06b0d21134",
+                        "permission_id": "59a952bf7d79ed06b0d21157"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d211ad",
+                        "role_id": "59a952be7d79ed06b0d21134",
+                        "permission_id": "59a952bf7d79ed06b0d21158"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d211ae",
+                        "role_id": "59a952be7d79ed06b0d21134",
+                        "permission_id": "59a952bf7d79ed06b0d21159"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d211af",
+                        "role_id": "59a952be7d79ed06b0d21134",
+                        "permission_id": "59a952bf7d79ed06b0d2115a"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d211b0",
+                        "role_id": "59a952be7d79ed06b0d21134",
+                        "permission_id": "59a952bf7d79ed06b0d2115b"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d211b1",
+                        "role_id": "59a952be7d79ed06b0d21134",
+                        "permission_id": "59a952bf7d79ed06b0d2115c"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d211b2",
+                        "role_id": "59a952be7d79ed06b0d21134",
+                        "permission_id": "59a952bf7d79ed06b0d2115d"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d211b3",
+                        "role_id": "59a952be7d79ed06b0d21134",
+                        "permission_id": "59a952bf7d79ed06b0d21161"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d211b4",
+                        "role_id": "59a952be7d79ed06b0d21134",
+                        "permission_id": "59a952bf7d79ed06b0d21163"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d211b5",
+                        "role_id": "59a952be7d79ed06b0d21134",
+                        "permission_id": "59a952bf7d79ed06b0d21164"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d211b6",
+                        "role_id": "59a952be7d79ed06b0d21134",
+                        "permission_id": "59a952bf7d79ed06b0d21165"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d211b7",
+                        "role_id": "59a952be7d79ed06b0d21134",
+                        "permission_id": "59a952bf7d79ed06b0d21166"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d211b8",
+                        "role_id": "59a952be7d79ed06b0d21134",
+                        "permission_id": "59a952bf7d79ed06b0d21167"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d211b9",
+                        "role_id": "59a952be7d79ed06b0d21135",
+                        "permission_id": "59a952be7d79ed06b0d2113e"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d211ba",
+                        "role_id": "59a952be7d79ed06b0d21135",
+                        "permission_id": "59a952be7d79ed06b0d2113f"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d211bb",
+                        "role_id": "59a952be7d79ed06b0d21135",
+                        "permission_id": "59a952be7d79ed06b0d21141"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d211bc",
+                        "role_id": "59a952be7d79ed06b0d21135",
+                        "permission_id": "59a952be7d79ed06b0d21143"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d211bd",
+                        "role_id": "59a952be7d79ed06b0d21135",
+                        "permission_id": "59a952be7d79ed06b0d21144"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d211be",
+                        "role_id": "59a952be7d79ed06b0d21135",
+                        "permission_id": "59a952be7d79ed06b0d21146"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d211bf",
+                        "role_id": "59a952be7d79ed06b0d21135",
+                        "permission_id": "59a952be7d79ed06b0d21147"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d211c0",
+                        "role_id": "59a952be7d79ed06b0d21135",
+                        "permission_id": "59a952be7d79ed06b0d21148"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d211c1",
+                        "role_id": "59a952be7d79ed06b0d21135",
+                        "permission_id": "59a952be7d79ed06b0d2114a"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d211c2",
+                        "role_id": "59a952be7d79ed06b0d21135",
+                        "permission_id": "59a952be7d79ed06b0d21152"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d211c3",
+                        "role_id": "59a952be7d79ed06b0d21135",
+                        "permission_id": "59a952be7d79ed06b0d21153"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d211c4",
+                        "role_id": "59a952be7d79ed06b0d21135",
+                        "permission_id": "59a952bf7d79ed06b0d21158"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d211c5",
+                        "role_id": "59a952be7d79ed06b0d21135",
+                        "permission_id": "59a952bf7d79ed06b0d21159"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d211c6",
+                        "role_id": "59a952be7d79ed06b0d21135",
+                        "permission_id": "59a952bf7d79ed06b0d2115a"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d211c7",
+                        "role_id": "59a952be7d79ed06b0d21135",
+                        "permission_id": "59a952bf7d79ed06b0d2115b"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d211c8",
+                        "role_id": "59a952be7d79ed06b0d21135",
+                        "permission_id": "59a952bf7d79ed06b0d2115c"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d211c9",
+                        "role_id": "59a952be7d79ed06b0d21135",
+                        "permission_id": "59a952bf7d79ed06b0d2115d"
+                    },
+                    {
+                        "id": "59a952bf7d79ed06b0d211ca",
+                        "role_id": "59a952be7d79ed06b0d21135",
+                        "permission_id": "59a952bf7d79ed06b0d21161"
+                    }
+                ],
+                "permissions_users": [],
+                "posts": [
+                    {
+                        "id": "59a952be7d79ed06b0d21127",
+                        "uuid": "8c414ae2-dce6-4b0f-8ee6-5c403fa2ae86",
+                        "title": "Setting up your own Ghost theme",
+                        "slug": "themes",
+                        "mobiledoc": "{\"version\":\"0.3.1\",\"markups\":[],\"atoms\":[],\"cards\":[[\"markdown\",{\"markdown\":\"Creating a totally custom design for your publication\\n\\nGhost comes with a beautiful default theme called Casper, which is designed to be a clean, readable publication layout and can be easily adapted for most purposes. However, Ghost can also be completely themed to suit your needs. Rather than just giving you a few basic settings which act as a poor proxy for code, we just let you write code.\\n\\nThere are a huge range of both free and premium pre-built themes which you can get from the [Ghost Theme Marketplace](https://ghost.org/marketplace/), or you can simply create your own from scratch.\\n\\n[![marketplace](https://static.ghost.org/v1.0.0/images/marketplace.jpg)](https://ghost.org/marketplace/)\\n\\n> Anyone can write a completely custom Ghost theme, with just some solid knowledge of HTML and CSS\\n\\nGhost themes are written with a templating language called handlebars, which has a bunch of dynamic helpers to insert your data into template files. Like `{{author.name}}`, for example, outputs the name of the current author.\\n\\nThe best way to learn how to write your own Ghost theme is to have a look at [the source code for Casper](https://github.com/TryGhost/Casper), which is heavily commented and should give you a sense of how everything fits together.\\n\\n- `default.hbs` is the main template file, all contexts will load inside this file unless specifically told to use a different template.\\n- `post.hbs` is the file used in the context of viewing a post.\\n- `index.hbs` is the file used in the context of viewing the home page.\\n- and so on\\n\\nWe've got [full and extensive theme documentation](https://ghost.org/docs/themes/) which outlines every template file, context and helper that you can use.\\n\\nIf you want to chat with other people making Ghost themes to get any advice or help, there's also a **themes** section on our [public Ghost forum](https://forum.ghost.org/c/themes).\"}]],\"sections\":[[10,0]]}",
+                        "html": "<p>Creating a totally custom design for your publication</p>\n<p>Ghost comes with a beautiful default theme called Casper, which is designed to be a clean, readable publication layout and can be easily adapted for most purposes. However, Ghost can also be completely themed to suit your needs. Rather than just giving you a few basic settings which act as a poor proxy for code, we just let you write code.</p>\n<p>There are a huge range of both free and premium pre-built themes which you can get from the <a href=\"https://ghost.org/marketplace/\">Ghost Theme Marketplace</a>, or you can simply create your own from scratch.</p>\n<p><a href=\"https://ghost.org/marketplace/\"><img src=\"https://static.ghost.org/v1.0.0/images/marketplace.jpg\" alt=\"marketplace\"></a></p>\n<blockquote>\n<p>Anyone can write a completely custom Ghost theme, with just some solid knowledge of HTML and CSS</p>\n</blockquote>\n<p>Ghost themes are written with a templating language called handlebars, which has a bunch of dynamic helpers to insert your data into template files. Like <code>{{author.name}}</code>, for example, outputs the name of the current author.</p>\n<p>The best way to learn how to write your own Ghost theme is to have a look at <a href=\"https://github.com/TryGhost/Casper\">the source code for Casper</a>, which is heavily commented and should give you a sense of how everything fits together.</p>\n<ul>\n<li><code>default.hbs</code> is the main template file, all contexts will load inside this file unless specifically told to use a different template.</li>\n<li><code>post.hbs</code> is the file used in the context of viewing a post.</li>\n<li><code>index.hbs</code> is the file used in the context of viewing the home page.</li>\n<li>and so on</li>\n</ul>\n<p>We've got <a href=\"https://ghost.org/docs/themes/\">full and extensive theme documentation</a> which outlines every template file, context and helper that you can use.</p>\n<p>If you want to chat with other people making Ghost themes to get any advice or help, there's also a <strong>themes</strong> section on our <a href=\"https://forum.ghost.org/c/themes\">public Ghost forum</a>.</p>",
+                        "amp": "1",
+                        "plaintext": "Creating a totally custom design for your publication\n\nGhost comes with a beautiful default theme called Casper, which is designed to\nbe a clean, readable publication layout and can be easily adapted for most\npurposes. However, Ghost can also be completely themed to suit your needs.\nRather than just giving you a few basic settings which act as a poor proxy for\ncode, we just let you write code.\n\nThere are a huge range of both free and premium pre-built themes which you can\nget from the Ghost Theme Marketplace [https://ghost.org/marketplace/], or you can\nsimply create your own from scratch.\n\n  [https://ghost.org/marketplace/]\n\nAnyone can write a completely custom Ghost theme, with just some solid knowledge\nof HTML and CSS\n\nGhost themes are written with a templating language called handlebars, which has\na bunch of dynamic helpers to insert your data into template files. Like \n{{author.name}}, for example, outputs the name of the current author.\n\nThe best way to learn how to write your own Ghost theme is to have a look at \nthe\nsource code for Casper [https://github.com/TryGhost/Casper], which is heavily\ncommented and should give you a sense of how everything fits together.\n\n * default.hbs  is the main template file, all contexts will load inside this\n   file unless specifically told to use a different template.\n * post.hbs  is the file used in the context of viewing a post.\n * index.hbs  is the file used in the context of viewing the home page.\n * and so on\n\nWe've got full and extensive theme documentation\n[https://ghost.org/docs/themes/] which outlines every template file,\ncontext and helper that you can use.\n\nIf you want to chat with other people making Ghost themes to get any advice or\nhelp, there's also a themes category on our public Ghost forum\n[https://forum.ghost.org/c/themes].",
+                        "feature_image": "https://static.ghost.org/v1.0.0/images/design.jpg",
+                        "featured": 0,
+                        "page": 0,
+                        "status": "published",
+                        "locale": null,
+                        "visibility": "public",
+                        "meta_title": null,
+                        "meta_description": null,
+                        "author_id": "5951f5fca366002ebd5dbef7",
+                        "created_at": "2017-09-01T12:29:50.000Z",
+                        "created_by": "5951f5fca366002ebd5dbef7",
+                        "updated_at": "2017-09-01T12:29:50.000Z",
+                        "updated_by": "5951f5fca366002ebd5dbef7",
+                        "published_at": "2017-09-01T12:29:50.000Z",
+                        "published_by": "5951f5fca366002ebd5dbef7",
+                        "custom_excerpt": null,
+                        "codeinjection_head": null,
+                        "codeinjection_foot": null,
+                        "og_image": null,
+                        "og_title": null,
+                        "og_description": null,
+                        "twitter_image": null,
+                        "twitter_title": null,
+                        "twitter_description": null
+                    },
+                    {
+                        "id": "59a952be7d79ed06b0d21128",
+                        "uuid": "8a6fdc10-fcde-48ba-b662-4d366cef5653",
+                        "title": "Advanced Markdown tips",
+                        "slug": "advanced-markdown",
+                        "mobiledoc": "{\"version\":\"0.3.1\",\"markups\":[],\"atoms\":[],\"cards\":[[\"markdown\",{\"markdown\":\"There are lots of powerful things you can do with the Ghost editor\\n\\nIf you've gotten pretty comfortable with [all the basics](/the-editor/) of writing in Ghost, then you may enjoy some more advanced tips about the types of things you can do with Markdown!\\n\\nAs with the last post about the editor, you'll want to be actually editing this post as you read it so that you can see all the Markdown code we're using.\\n\\n\\n## Special formatting\\n\\nAs well as bold and italics, you can also use some other special formatting in Markdown when the need arises, for example:\\n\\n+ ~~strike through~~\\n+ ==highlight==\\n+ \\\\*escaped characters\\\\*\\n\\n\\n## Writing code blocks\\n\\nThere are two types of code elements which can be inserted in Markdown, the first is inline, and the other is block. Inline code is formatted by wrapping any word or words in back-ticks, `like this`. Larger snippets of code can be displayed across multiple lines using triple back ticks:\\n\\n```\\n.my-link {\\n    text-decoration: underline;\\n}\\n```\\n\\nIf you want to get really fancy, you can even add syntax highlighting using [Prism.js](http://prismjs.com/).\\n\\n\\n## Full bleed images\\n\\nOne neat trick which you can use in Markdown to distinguish between different types of images is to add a `#hash` value to the end of the source URL, and then target images containing the hash with special styling. For example:\\n\\n![walking](https://static.ghost.org/v1.0.0/images/walking.jpg#full)\\n\\nwhich is styled with...\\n\\n```\\nimg[src$=\\\"#full\\\"] {\\n    max-width: 100vw;\\n}\\n```\\n\\nThis creates full-bleed images in the Casper theme, which stretch beyond their usual boundaries right up to the edge of the window. Every theme handles these types of things slightly differently, but it's a great trick to play with if you want to have a variety of image sizes and styles.\\n\\n\\n## Reference lists\\n\\n**The quick brown [fox][1], jumped over the lazy [dog][2].**\\n\\n[1]: https://en.wikipedia.org/wiki/Fox \\\"Wikipedia: Fox\\\"\\n[2]: https://en.wikipedia.org/wiki/Dog \\\"Wikipedia: Dog\\\"\\n\\nAnother way to insert links in markdown is using reference lists. You might want to use this style of linking to cite reference material in a Wikipedia-style. All of the links are listed at the end of the document, so you can maintain full separation between content and its source or reference.\\n\\n\\n## Creating footnotes\\n\\nThe quick brown fox[^1] jumped over the lazy dog[^2].\\n\\n[^1]: Foxes are red\\n[^2]: Dogs are usually not red\\n\\nFootnotes are a great way to add additional contextual details when appropriate. Ghost will automatically add footnote content to the very end of your post.\\n\\n\\n## Full HTML\\n\\nPerhaps the best part of Markdown is that you're never limited to just Markdown. You can write HTML directly in the Ghost editor and it will just work as HTML usually does. No limits! Here's a standard YouTube embed code as an example:\\n\\n<iframe width=\\\"560\\\" height=\\\"315\\\" src=\\\"https://www.youtube.com/embed/Cniqsc9QfDo?rel=0&amp;showinfo=0\\\" frameborder=\\\"0\\\" allowfullscreen></iframe>\\n\"}]],\"sections\":[[10,0]]}",
+                        "html": "<p>There are lots of powerful things you can do with the Ghost editor</p>\n<p>If you've gotten pretty comfortable with <a href=\"/the-editor/\">all the basics</a> of writing in Ghost, then you may enjoy some more advanced tips about the types of things you can do with Markdown!</p>\n<p>As with the last post about the editor, you'll want to be actually editing this post as you read it so that you can see all the Markdown code we're using.</p>\n<h2 id=\"specialformatting\">Special formatting</h2>\n<p>As well as bold and italics, you can also use some other special formatting in Markdown when the need arises, for example:</p>\n<ul>\n<li><s>strike through</s></li>\n<li><mark>highlight</mark></li>\n<li>*escaped characters*</li>\n</ul>\n<h2 id=\"writingcodeblocks\">Writing code blocks</h2>\n<p>There are two types of code elements which can be inserted in Markdown, the first is inline, and the other is block. Inline code is formatted by wrapping any word or words in back-ticks, <code>like this</code>. Larger snippets of code can be displayed across multiple lines using triple back ticks:</p>\n<pre><code>.my-link {\n    text-decoration: underline;\n}\n</code></pre>\n<p>If you want to get really fancy, you can even add syntax highlighting using <a href=\"http://prismjs.com/\">Prism.js</a>.</p>\n<h2 id=\"fullbleedimages\">Full bleed images</h2>\n<p>One neat trick which you can use in Markdown to distinguish between different types of images is to add a <code>#hash</code> value to the end of the source URL, and then target images containing the hash with special styling. For example:</p>\n<p><img src=\"https://static.ghost.org/v1.0.0/images/walking.jpg#full\" alt=\"walking\"></p>\n<p>which is styled with...</p>\n<pre><code>img[src$=&quot;#full&quot;] {\n    max-width: 100vw;\n}\n</code></pre>\n<p>This creates full-bleed images in the Casper theme, which stretch beyond their usual boundaries right up to the edge of the window. Every theme handles these types of things slightly differently, but it's a great trick to play with if you want to have a variety of image sizes and styles.</p>\n<h2 id=\"referencelists\">Reference lists</h2>\n<p><strong>The quick brown <a href=\"https://en.wikipedia.org/wiki/Fox\" title=\"Wikipedia: Fox\">fox</a>, jumped over the lazy <a href=\"https://en.wikipedia.org/wiki/Dog\" title=\"Wikipedia: Dog\">dog</a>.</strong></p>\n<p>Another way to insert links in markdown is using reference lists. You might want to use this style of linking to cite reference material in a Wikipedia-style. All of the links are listed at the end of the document, so you can maintain full separation between content and its source or reference.</p>\n<h2 id=\"creatingfootnotes\">Creating footnotes</h2>\n<p>The quick brown fox<sup class=\"footnote-ref\"><a href=\"#fn1\" id=\"fnref1\">[1]</a></sup> jumped over the lazy dog<sup class=\"footnote-ref\"><a href=\"#fn2\" id=\"fnref2\">[2]</a></sup>.</p>\n<p>Footnotes are a great way to add additional contextual details when appropriate. Ghost will automatically add footnote content to the very end of your post.</p>\n<h2 id=\"fullhtml\">Full HTML</h2>\n<p>Perhaps the best part of Markdown is that you're never limited to just Markdown. You can write HTML directly in the Ghost editor and it will just work as HTML usually does. No limits! Here's a standard YouTube embed code as an example:</p>\n<iframe width=\"560\" height=\"315\" src=\"https://www.youtube.com/embed/Cniqsc9QfDo?rel=0&amp;showinfo=0\" frameborder=\"0\" allowfullscreen></iframe>\n<hr class=\"footnotes-sep\">\n<section class=\"footnotes\">\n<ol class=\"footnotes-list\">\n<li id=\"fn1\" class=\"footnote-item\"><p>Foxes are red <a href=\"#fnref1\" class=\"footnote-backref\">↩︎</a></p>\n</li>\n<li id=\"fn2\" class=\"footnote-item\"><p>Dogs are usually not red <a href=\"#fnref2\" class=\"footnote-backref\">↩︎</a></p>\n</li>\n</ol>\n</section>",
+                        "amp": null,
+                        "plaintext": "There are lots of powerful things you can do with the Ghost editor\n\nIf you've gotten pretty comfortable with all the basics [/the-editor/]  of\nwriting in Ghost, then you may enjoy some more advanced tips about the types of\nthings you can do with Markdown!\n\nAs with the last post about the editor, you'll want to be actually editing this\npost as you read it so that you can see all the Markdown code we're using.\n\nSpecial formatting\nAs well as bold and italics, you can also use some other special formatting in\nMarkdown when the need arises, for example:\n\n * strike through\n * highlight\n * *escaped characters*\n\nWriting code blocks\nThere are two types of code elements which can be inserted in Markdown, the\nfirst is inline, and the other is block. Inline code is formatted by wrapping\nany word or words in back-ticks, like this. Larger snippets of code can be\ndisplayed across multiple lines using triple back ticks:\n\n.my-link {\n    text-decoration: underline;\n}\n\n\nIf you want to get really fancy, you can even add syntax highlighting using \nPrism.js [http://prismjs.com/].\n\nFull bleed images\nOne neat trick which you can use in Markdown to distinguish between different\ntypes of images is to add a #hash  value to the end of the source URL, and then\ntarget images containing the hash with special styling. For example:\n\n\n\nwhich is styled with...\n\nimg[src$=\"#full\"] {\n    max-width: 100vw;\n}\n\n\nThis creates full-bleed images in the Casper theme, which stretch beyond their\nusual boundaries right up to the edge of the window. Every theme handles these\ntypes of things slightly differently, but it's a great trick to play with if you\nwant to have a variety of image sizes and styles.\n\nReference lists\nThe quick brown fox [https://en.wikipedia.org/wiki/Fox], jumped over the lazy \ndog [https://en.wikipedia.org/wiki/Dog].\n\nAnother way to insert links in markdown is using reference lists. You might want\nto use this style of linking to cite reference material in a Wikipedia-style.\nAll of the links are listed at the end of the document, so you can maintain full\nseparation between content and its source or reference.\n\nCreating footnotes\nThe quick brown fox[1]  jumped over the lazy dog[2].\n\nFootnotes are a great way to add additional contextual details when appropriate.\nGhost will automatically add footnote content to the very end of your post.\n\nFull HTML\nPerhaps the best part of Markdown is that you're never limited to just Markdown.\nYou can write HTML directly in the Ghost editor and it will just work as HTML\nusually does. No limits! Here's a standard YouTube embed code as an example:\n\n\n--------------------------------------------------------------------------------\n\n 1. Foxes are red ↩︎\n    \n    \n 2. Dogs are usually not red ↩︎",
+                        "feature_image": "https://static.ghost.org/v1.0.0/images/advanced.jpg",
+                        "featured": 0,
+                        "page": 0,
+                        "status": "published",
+                        "locale": null,
+                        "visibility": "public",
+                        "meta_title": null,
+                        "meta_description": null,
+                        "author_id": "5951f5fca366002ebd5dbef7",
+                        "created_at": "2017-09-01T12:29:50.000Z",
+                        "created_by": "5951f5fca366002ebd5dbef7",
+                        "updated_at": "2017-09-01T12:29:50.000Z",
+                        "updated_by": "5951f5fca366002ebd5dbef7",
+                        "published_at": "2017-09-01T12:29:51.000Z",
+                        "published_by": "5951f5fca366002ebd5dbef7",
+                        "custom_excerpt": null,
+                        "codeinjection_head": null,
+                        "codeinjection_foot": null,
+                        "og_image": null,
+                        "og_title": null,
+                        "og_description": null,
+                        "twitter_image": null,
+                        "twitter_title": null,
+                        "twitter_description": null
+                    }
+                ],
+                "posts_tags": [
+                    {
+                        "id": "59a952bf7d79ed06b0d211cb",
+                        "post_id": "59a952be7d79ed06b0d21127",
+                        "tag_id": "59a952be7d79ed06b0d2112e",
+                        "sort_order": 0
+                    }
+                ],
+                "roles": [
+                    {
+                        "id": "59a952be7d79ed06b0d21133",
+                        "name": "Administrator",
+                        "description": "Administrators",
+                        "created_at": "2017-09-01T12:29:50.000Z",
+                        "created_by": "1",
+                        "updated_at": "2017-09-01T12:29:50.000Z",
+                        "updated_by": "1"
+                    },
+                    {
+                        "id": "59a952be7d79ed06b0d21134",
+                        "name": "Editor",
+                        "description": "Editors",
+                        "created_at": "2017-09-01T12:29:50.000Z",
+                        "created_by": "1",
+                        "updated_at": "2017-09-01T12:29:50.000Z",
+                        "updated_by": "1"
+                    },
+                    {
+                        "id": "59a952be7d79ed06b0d21135",
+                        "name": "Author",
+                        "description": "Authors",
+                        "created_at": "2017-09-01T12:29:50.000Z",
+                        "created_by": "1",
+                        "updated_at": "2017-09-01T12:29:50.000Z",
+                        "updated_by": "1"
+                    },
+                    {
+                        "id": "59a952be7d79ed06b0d21136",
+                        "name": "Owner",
+                        "description": "Blog Owner",
+                        "created_at": "2017-09-01T12:29:50.000Z",
+                        "created_by": "1",
+                        "updated_at": "2017-09-01T12:29:50.000Z",
+                        "updated_by": "1"
+                    },
+                    {
+                        "id": "59a952be7d79ed06b0d21137",
+                        "name": "Contributor",
+                        "description": "Contributors",
+                        "created_at": "2017-09-01T12:29:50.000Z",
+                        "created_by": "1",
+                        "updated_at": "2017-09-01T12:29:50.000Z",
+                        "updated_by": "1"
+                    }
+                ],
+                "roles_users": [
+                    {
+                        "id": "59a952bf7d79ed06b0d211d2",
+                        "role_id": "59a952be7d79ed06b0d21136",
+                        "user_id": "5951f5fca366002ebd5dbef7"
+                    }
+                ],
+                "settings": [
+                    {
+                        "id": "59a952c2ebbf7206b369cdc2",
+                        "key": "db_hash",
+                        "value": "84a2add4-a3cb-4b8b-873b-1c2ac5b49acb",
+                        "type": "core",
+                        "created_at": "2017-09-01T12:29:54.000Z",
+                        "created_by": "1",
+                        "updated_at": "2017-09-01T12:29:54.000Z",
+                        "updated_by": "1"
+                    },
+                    {
+                        "id": "59a952c2ebbf7206b369cdc3",
+                        "key": "next_update_check",
+                        "value": "1504355419",
+                        "type": "core",
+                        "created_at": "2017-09-01T12:29:54.000Z",
+                        "created_by": "1",
+                        "updated_at": "2017-09-01T12:30:18.000Z",
+                        "updated_by": "1"
+                    },
+                    {
+                        "id": "59a952c2ebbf7206b369cdc4",
+                        "key": "display_update_notification",
+                        "value": "1.8.1",
+                        "type": "core",
+                        "created_at": "2017-09-01T12:29:54.000Z",
+                        "created_by": "1",
+                        "updated_at": "2017-09-01T12:30:18.000Z",
+                        "updated_by": "1"
+                    },
+                    {
+                        "id": "59a952c2ebbf7206b369cdc5",
+                        "key": "seen_notifications",
+                        "value": "[]",
+                        "type": "core",
+                        "created_at": "2017-09-01T12:29:54.000Z",
+                        "created_by": "1",
+                        "updated_at": "2017-09-01T12:29:54.000Z",
+                        "updated_by": "1"
+                    },
+                    {
+                        "id": "59a952c2ebbf7206b369cdc6",
+                        "key": "title",
+                        "value": "a test blog",
+                        "type": "site",
+                        "created_at": "2017-09-01T12:18:30.000Z",
+                        "created_by": "1",
+                        "updated_at": "2017-09-01T12:30:47.000Z",
+                        "updated_by": "1"
+                    },
+                    {
+                        "id": "59a952c2ebbf7206b369cdc7",
+                        "key": "description",
+                        "value": "Thoughts, stories and ideas.",
+                        "type": "site",
+                        "created_at": "2017-09-01T12:18:30.000Z",
+                        "created_by": "1",
+                        "updated_at": "2017-09-01T12:30:47.000Z",
+                        "updated_by": "1"
+                    },
+                    {
+                        "id": "59a952c2ebbf7206b369cdc8",
+                        "key": "logo",
+                        "value": "",
+                        "type": "site",
+                        "created_at": "2017-09-01T12:18:30.000Z",
+                        "created_by": "1",
+                        "updated_at": "2017-09-01T12:30:47.000Z",
+                        "updated_by": "1"
+                    },
+                    {
+                        "id": "59a952c2ebbf7206b369cdc9",
+                        "key": "cover_image",
+                        "value": "",
+                        "type": "site",
+                        "created_at": "2017-09-01T12:18:30.000Z",
+                        "created_by": "1",
+                        "updated_at": "2017-09-01T12:30:47.000Z",
+                        "updated_by": "1"
+                    },
+                    {
+                        "id": "59a952c2ebbf7206b369cdca",
+                        "key": "icon",
+                        "value": "",
+                        "type": "site",
+                        "created_at": "2017-09-01T12:29:54.000Z",
+                        "created_by": "1",
+                        "updated_at": "2017-09-01T12:29:54.000Z",
+                        "updated_by": "1"
+                    },
+                    {
+                        "id": "59a952c2ebbf7206b369cdcb",
+                        "key": "lang",
+                        "value": "en",
+                        "type": "site",
+                        "created_at": "2017-09-01T12:29:54.000Z",
+                        "created_by": "1",
+                        "updated_at": "2017-09-01T12:29:54.000Z",
+                        "updated_by": "1"
+                    },
+                    {
+                        "id": "59a952c2ebbf7206b369cdcc",
+                        "key": "timezone",
+                        "value": "Etc/UTC",
+                        "type": "site",
+                        "created_at": "2017-09-01T12:18:30.000Z",
+                        "created_by": "1",
+                        "updated_at": "2017-09-01T12:30:47.000Z",
+                        "updated_by": "1"
+                    },
+                    {
+                        "id": "59a952c2ebbf7206b369cdcf",
+                        "key": "amp",
+                        "value": "true",
+                        "type": "site",
+                        "created_at": "2017-09-01T12:18:30.000Z",
+                        "created_by": "1",
+                        "updated_at": "2017-09-01T12:30:47.000Z",
+                        "updated_by": "1"
+                    },
+                    {
+                        "id": "59a952c2ebbf7206b369cdd0",
+                        "key": "ghost_head",
+                        "value": "",
+                        "type": "site",
+                        "created_at": "2017-09-01T12:18:30.000Z",
+                        "created_by": "1",
+                        "updated_at": "2017-09-01T12:30:47.000Z",
+                        "updated_by": "1"
+                    },
+                    {
+                        "id": "59a952c2ebbf7206b369cdd1",
+                        "key": "ghost_foot",
+                        "value": "",
+                        "type": "site",
+                        "created_at": "2017-09-01T12:18:30.000Z",
+                        "created_by": "1",
+                        "updated_at": "2017-09-01T12:30:47.000Z",
+                        "updated_by": "1"
+                    },
+                    {
+                        "id": "59a952c2ebbf7206b369cdd2",
+                        "key": "facebook",
+                        "value": "",
+                        "type": "site",
+                        "created_at": "2017-09-01T12:18:30.000Z",
+                        "created_by": "1",
+                        "updated_at": "2017-09-01T12:30:47.000Z",
+                        "updated_by": "1"
+                    },
+                    {
+                        "id": "59a952c2ebbf7206b369cdd3",
+                        "key": "twitter",
+                        "value": "",
+                        "type": "site",
+                        "created_at": "2017-09-01T12:18:30.000Z",
+                        "created_by": "1",
+                        "updated_at": "2017-09-01T12:30:47.000Z",
+                        "updated_by": "1"
+                    },
+                    {
+                        "id": "59a952c2ebbf7206b369cdd4",
+                        "key": "labs",
+                        "value": "{\"publicAPI\":true}",
+                        "type": "site",
+                        "created_at": "2017-09-01T12:18:30.000Z",
+                        "created_by": "1",
+                        "updated_at": "2017-09-01T12:30:47.000Z",
+                        "updated_by": "1"
+                    },
+                    {
+                        "id": "59a952c2ebbf7206b369cdd5",
+                        "key": "navigation",
+                        "value": "[{\"label\":\"Home\", \"url\":\"/\"}]",
+                        "type": "site",
+                        "created_at": "2017-09-01T12:18:30.000Z",
+                        "created_by": "1",
+                        "updated_at": "2017-09-01T12:30:47.000Z",
+                        "updated_by": "1"
+                    },
+                    {
+                        "id": "59a952c2ebbf7206b369cdd6",
+                        "key": "slack",
+                        "value": "[{\"url\":\"https://hook.slack.com\"}]",
+                        "type": "site",
+                        "created_at": "2017-09-01T12:18:30.000Z",
+                        "created_by": "1",
+                        "updated_at": "2017-09-01T12:30:47.000Z",
+                        "updated_by": "1"
+                    },
+                    {
+                        "id": "59a952c2ebbf7206b369cdd7",
+                        "key": "unsplash",
+                        "value": "",
+                        "type": "site",
+                        "created_at": "2017-09-01T12:29:54.000Z",
+                        "created_by": "1",
+                        "updated_at": "2017-09-01T12:29:54.000Z",
+                        "updated_by": "1"
+                    },
+                    {
+                        "id": "59a952c2ebbf7206b369cdd8",
+                        "key": "active_theme",
+                        "value": "casper",
+                        "type": "theme",
+                        "created_at": "2017-09-01T12:29:54.000Z",
+                        "created_by": "1",
+                        "updated_at": "2017-09-01T12:29:54.000Z",
+                        "updated_by": "1"
+                    },
+                    {
+                        "id": "59a952c2ebbf7206b369cddb",
+                        "key": "is_private",
+                        "value": "false",
+                        "type": "private",
+                        "created_at": "2017-09-01T12:18:30.000Z",
+                        "created_by": "1",
+                        "updated_at": "2017-09-01T12:30:47.000Z",
+                        "updated_by": "1"
+                    },
+                    {
+                        "id": "59a952c2ebbf7206b369cddc",
+                        "key": "password",
+                        "value": "",
+                        "type": "private",
+                        "created_at": "2017-09-01T12:18:30.000Z",
+                        "created_by": "1",
+                        "updated_at": "2017-09-01T12:30:47.000Z",
+                        "updated_by": "1"
+                    }
+                ],
+                "subscribers": [],
+                "tags": [
+                    {
+                        "id": "59a952be7d79ed06b0d2112e",
+                        "name": "tag1",
+                        "slug": "tag1",
+                        "description": null,
+                        "feature_image": "/content/images/2017/05/tagImage-1.jpeg",
+                        "parent_id": null,
+                        "visibility": "public",
+                        "meta_title": null,
+                        "meta_description": null,
+                        "created_at": "2017-05-30T08:44:09.000Z",
+                        "created_by": "5951f5fca366002ebd5dbef7",
+                        "updated_at": "2017-05-30T12:03:10.000Z",
+                        "updated_by": "5951f5fca366002ebd5dbef7"
+                    }
+                ],
+                "users": [
+                    {
+                        "id": "5951f5fca366002ebd5dbef7",
+                        "name": "Joe Blogg's Brother",
+                        "slug": "joe-bloggs-brother",
+                        "password": "$2a$10$.pZeeBE0gHXd0PTnbT/ph.GEKgd0Wd3q2pWna3ynTGBkPKnGIKABC",
+                        "email": "jbloggsbrother@example.com",
+                        "profile_image": "/content/images/2017/05/authorlogo.jpeg",
+                        "cover_image": "/content/images/2017/05/authorcover.jpeg",
+                        "bio": "I'm Joe's brother, the good looking one!",
+                        "website": "http://joebloggsbrother.com",
+                        "location": null,
+                        "facebook": null,
+                        "twitter": null,
+                        "accessibility": null,
+                        "status": "active",
+                        "locale": "en_US",
+                        "visibility": "public",
+                        "meta_title": null,
+                        "meta_description": null,
+                        "tour": "[\"getting-started\",\"using-the-editor\",\"static-post\",\"featured-post\",\"upload-a-theme\"]",
+                        "last_seen": "2017-09-01T12:30:37.000Z",
+                        "created_at": "2017-09-01T12:29:51.000Z",
+                        "created_by": "5951f5fca366002ebd5dbef7",
+                        "updated_at": "2017-09-01T12:30:59.000Z",
+                        "updated_by": "5951f5fca366002ebd5dbef7"
+                    }
+                ]
+            }
+        }
+    ]
+}

@@ -1,0 +1,72 @@
+{{#if @publishManagement.publishOptions.user.isContributor}}
+    {{#if @publishManagement.post.isDraft}}
+        <button
+            type="button"
+            class="gh-btn gh-btn-editor gh-editor-preview-trigger"
+            {{on "click" @publishManagement.openPreview}}
+            {{on-key "cmd+p" @publishManagement.togglePreview}}
+            data-test-button="contributor-preview"
+        >
+            <span>Preview</span>
+        </button>
+    {{/if}}
+
+    <GhTaskButton
+        @buttonText="Save"
+        @task={{@publishManagement.saveTask}}
+        @runningText="Saving"
+        @class="gh-btn gh-btn-icon gh-btn-editor gh-editor-save-trigger contributor-save-button"
+        data-test-button="contributor-save" />
+{{else}}
+    {{#if @publishManagement.post.isDraft}}
+        <button
+            type="button"
+            class="gh-btn gh-btn-editor gh-editor-preview-trigger"
+            {{on "click" @publishManagement.openPreview}}
+            {{on-key "cmd+p" @publishManagement.togglePreview}}
+            data-test-button="publish-preview"
+        >
+            <span>Preview</span>
+        </button>
+
+        <button
+            type="button"
+            class="gh-btn gh-btn-editor darkgrey gh-publish-trigger"
+            {{on "click" @publishManagement.openPublishFlow}}
+            {{on-key "cmd+shift+p"}}
+            disabled={{@publishManagement.publishOptions.isLoading}}
+            data-test-button="publish-flow"
+        >
+            <span>Publish</span>
+        </button>
+    {{else}}
+        <GhTaskButton
+            @task={{@publishManagement.saveTask}}
+            @buttonText="Update"
+            @runningText="Updating..."
+            @successText="Updated"
+            @class="gh-btn gh-btn-editor gh-editor-save-trigger"
+            @idleClass="green"
+            @runningClass="midlightgrey"
+            @successClass="midlightgrey"
+            @failureClass="red"
+            @showIcon={{false}}
+            @disabled={{not @publishManagement.hasUnsavedChanges}}
+            @autoReset={{true}}
+            data-test-button="publish-save"
+        />
+
+        {{#if (not (and @publishManagement.post.isSent (not @publishManagement.post.isPublished)))}}
+            <button
+                type="button"
+                class="gh-btn gh-btn-editor darkgrey gh-unpublish-trigger"
+                {{on "click" @publishManagement.openUpdateFlow}}
+                data-test-button="update-flow"
+            >
+                <span>
+                    {{if @publishManagement.post.isScheduled "Unschedule" "Unpublish"}}
+                </span>
+            </button>
+        {{/if}}
+    {{/if}}
+{{/if}}

@@ -1,0 +1,144 @@
+{{#if (not (feature "audienceFeedback"))}}
+    <h4 class="gh-main-section-header small bn">
+        Newsletter clicks
+    </h4>
+{{/if}}
+<div class="gh-post-analytics-box column gh-post-analytics-newsletter-clicks">
+    {{#if (feature "audienceFeedback")}}<h3 class="gh-newsletter-clicks-header">Newsletter clicks</h3>{{/if}}
+    <div class="gh-links-list">
+        <div class="gh-links-list-header">
+            {{#if this.showPagination}}
+            <div class="gh-links-pagination-progress">
+                Showing {{this.startOffset}}-{{this.endOffset}} of {{this.totalLinks}}
+            </div>
+            {{else}}
+                <div class="gh-links-list-title">
+                    {{#if (not (feature "audienceFeedback"))}}Link{{/if}}
+                </div>
+            {{/if}}
+            <div class="gh-links-list-title">
+                No. of Members
+            </div>
+        </div>
+        <div class="gh-links-list-items">
+        {{#each this.visibleLinks as |link|}}
+            <div class="gh-links-list-item {{if (eq this.editingLink link.link.link_id) "gh-links-list-item-edit-mode"}}">
+                <div class="gh-links-list-url">
+                    {{#if (eq this.editingLink link.link.link_id)}}
+                    <div class="gh-links-list-input-container {{if (eq this.showError link.link.link_id) "error"}}">
+                        <div class="gh-input-group">
+                            <input
+                            aria-label="Link"
+                            type="text"
+                            class="gh-input"
+                            placeholder={{link.link.to}}
+                            value={{link.link.to}}
+                            maxlength="300"
+                            {{on "input" this.updateLinkValue}}
+                            {{on "blur" this.handleBlur}}
+                            {{on-key "Enter" this.setLink}}
+                            {{on-key "Escape" this.cancelEdit}}
+                            {{autofocus}}
+                            data-prevent-escape-close-modal="true"
+                        />
+                        {{#if (eq this.showError link.link.link_id)}}
+                            <button
+                                class="gh-btn gh-btn-red gh-btn-icon gh-links-list-item-update-button"
+                                type="button"
+                                {{on "mousedown" this.setLink}}
+                                data-test-button="cancel-webhook"
+                            >
+                                <span>Retry</span>
+                            </button>
+                        {{else}}
+                            <button
+                                class="gh-btn gh-btn-green gh-btn-icon gh-links-list-item-update-button"
+                                type="button"
+                                {{on "mousedown" this.setLink}}
+                                data-test-button="cancel-webhook"
+                            >
+                                <span>Update</span>
+                            </button>
+                        {{/if}}
+                        </div>
+                        <span class="gh-links-list-item-error">Please enter a valid link</span>
+                    </div>
+                    {{else}}
+                    <button type="button" class="gh-btn gh-btn-action-icon gh-btn-icon gh-btn-outline gh-links-list-item-edit icon-only" aria-label="Edit link" {{on "click" (fn this.editLink link.link.link_id)}}>
+                        <span>
+                            {{svg-jar "pen"}}
+                        </span>
+                    </button>
+                    <a href="{{link.link.to}}" target="_blank" rel="noopener noreferrer">
+                        {{link.link.title}}
+                    </a>
+                    <span class="gh-links-list-item-edited {{if link.link.edited "gh-links-list-item-edited-show"}}">&nbsp;(edited)</span>
+                    <span class="gh-links-list-item-success {{if (eq @showSuccess link.link.link_id) "gh-links-list-item-success-show"}}">{{svg-jar "check-circle"}}</span>
+                    {{/if}}
+                </div>
+                <p class="gh-links-list-clicks">{{link.count.clicks}}</p>
+            </div>
+        {{/each}}
+        </div>
+            <div class="gh-links-pagination">
+                <span class="gh-links-info">{{svg-jar "arrow-right-tail"}} <span class="gh-links-info-normal">Sent a broken link? You can update it!</span><span class="gh-links-info-short">Update any link!</span></span>
+
+                    {{#unless (feature "audienceFeedback")}}
+                        <div class="gh-links-pagination-actions">
+                            <button type="button" class="gh-links-pagination-action gh-links-pagination-prev {{if this.disablePreviousPage "gh-links-pagination-disabled"}}" {{on "click" this.openPreviousPage}} disabled={{this.disablePreviousPage}}>
+                                {{svg-jar "arrow-left-pagination"}}
+                                Previous
+                            </button>
+                            <button type="button" class="gh-links-pagination-action gh-links-pagination-next {{if this.disableNextPage "gh-links-pagination-disabled"}}" {{on "click" this.openNextPage}} disabled={{this.disableNextPage}}>
+                                Next
+                                {{svg-jar "arrow-right-pagination"}}
+                            </button>
+                        </div>
+                    {{/unless}}
+                {{#unless (feature "audienceFeedback")}}
+                    <div class="gh-links-pagination-progress">
+                        Showing {{this.startOffset}}-{{this.endOffset}} of {{this.totalLinks}}
+                    </div>
+                    {{#if this.showPagination}}
+                        <div class="gh-links-pagination-actions">
+                            <button type="button" class="gh-links-pagination-action gh-links-pagination-prev {{if this.disablePreviousPage "gh-links-pagination-disabled"}}" {{on "click" this.openPreviousPage}} disabled={{this.disablePreviousPage}}>
+                                {{svg-jar "arrow-left-pagination"}}
+                                Previous
+                            </button>
+                            <button type="button" class="gh-links-pagination-action gh-links-pagination-next {{if this.disableNextPage "gh-links-pagination-disabled"}}" {{on "click" this.openNextPage}} disabled={{this.disableNextPage}}>
+                                Next
+                                {{svg-jar "arrow-right-pagination"}}
+                            </button>
+                        </div>
+                    {{/if}}
+                {{/unless}}
+
+                {{#if (feature "audienceFeedback")}}
+                    <div class="gh-post-activity-feed-pagination">
+                        Showing {{this.startOffset}}-{{this.endOffset}} of {{this.totalLinks}}
+                        <div class="gh-post-activity-feed-pagination-group">
+                            <button
+                                class="gh-post-activity-feed-pagination-button gh-post-activity-feed-prev-button"
+                                type="button"
+                                title="Previous page"
+                                disabled={{this.disablePreviousPage}}
+                                {{on "click" this.openPreviousPage}}
+                            >
+                                {{svg-jar "arrow-left-pagination"}}
+                            </button>
+
+                            <button
+                                class="gh-post-activity-feed-pagination-button gh-post-activity-feed-next-button"
+                                type="button"
+                                title="Next page"
+                                disabled={{this.disableNextPage}}
+                                {{on "click" this.openNextPage}}
+                            >
+                                {{svg-jar "arrow-right-pagination"}}
+                            </button>
+                        </div>
+                    </div>
+                {{/if}}
+            </div>
+    </div>
+</div>

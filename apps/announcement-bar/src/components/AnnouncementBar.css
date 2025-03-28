@@ -1,0 +1,82 @@
+.gh-announcement-bar,
+.gh-announcement-bar * {
+    box-sizing: border-box !important;
+}
+
+.gh-announcement-bar {
+    position: relative;
+    z-index: 90;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 48px;
+    min-height: 48px;
+    font-size: 15px;
+    line-height: 23px;
+    text-align: center;
+}
+
+.gh-announcement-bar.light {
+    background-color: #f0f0f0;
+    color: #15171a;
+}
+
+.gh-announcement-bar.accent {
+    background-color: var(--ghost-accent-color);
+    color: #fff;
+}
+
+.gh-announcement-bar.dark {
+    background-color: #15171a;
+    color: #fff;
+}
+
+.gh-announcement-bar *:not(path) {
+    all: unset;
+}
+
+.gh-announcement-bar strong {
+    font-weight: 700;
+}
+
+.gh-announcement-bar :is(i, em) {
+    font-style: italic;
+}
+
+.gh-announcement-bar a {
+    color: #fff;
+    font-weight: 700;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.gh-announcement-bar.light a {
+    color: var(--ghost-accent-color) !important;
+}
+
+.gh-announcement-bar button {
+    position: absolute;
+    top: 50%;
+    right: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: -16px;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    background-color: transparent;
+    border: 0;
+    color: #fff;
+    cursor: pointer;
+}
+
+.gh-announcement-bar.light button {
+    color: #888;
+}
+
+.gh-announcement-bar svg {
+    width: 10px;
+    height: 10px;
+    fill: currentColor;
+}

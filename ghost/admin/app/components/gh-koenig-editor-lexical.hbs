@@ -1,0 +1,107 @@
+<div class="gh-koenig-editor relative z-0" {{did-insert this.registerElement}} ...attributes>
+    {{!-- full height content pane --}}
+    {{!-- template-lint-disable no-invalid-interactive no-passed-in-event-handlers --}}
+    <div
+        class="gh-koenig-editor-pane flex flex-column mih-100"
+        {{on "mousedown" this.trackMousedown}}
+        {{on "mouseup" this.focusEditor}}
+        {{on "dragover" this.editorPaneDragover}}
+        {{on "drop" this.editorPaneDrop}}
+    >
+        <GhEditorFeatureImage
+            @image={{@featureImage}}
+            @updateImage={{@setFeatureImage}}
+            @clearImage={{@clearFeatureImage}}
+            @alt={{@featureImageAlt}}
+            @updateAlt={{@setFeatureImageAlt}}
+            @caption={{@featureImageCaption}}
+            @updateCaption={{@setFeatureImageCaption}}
+            @handleCaptionBlur={{@handleFeatureImageCaptionBlur}}
+            @forceButtonDisplay={{or (not @title) (eq @title "(Untitled)") this.titleIsHovered this.titleIsFocused}}
+            @isHidden={{or (not @cardOptions.post.showTitleAndFeatureImage) false}}
+            @onTKCountChange={{@updateFeatureImageTkCount}}
+        />
+
+        <div class="gh-editor-title-container">
+            {{#if (and (not @cardOptions.post.showTitleAndFeatureImage) (not @featureImage))}}
+                <span class="gh-editor-hidden-indicator" data-tooltip="Post title is hidden on page">
+                    {{svg-jar "eye-closed"}}
+                </span>
+            {{/if}}
+
+            {{#if @titleHasTk}}
+                <div
+                    class="tk-indicator" data-testid="tk-indicator"
+                    {{on "click" this.focusTitle}}
+                >
+                    TK
+                </div>
+            {{/if}}
+
+            <GhTextarea
+                @class="gh-editor-title {{if (and (not @cardOptions.post.showTitleAndFeatureImage) (not this.titleIsFocused)) "faded"}}"
+                @placeholder={{@titlePlaceholder}}
+                @shouldFocus={{or @titleAutofocus false}}
+                @tabindex="1"
+                @autoExpand=".gh-koenig-editor"
+                @value={{readonly this.title}}
+                @input={{this.updateTitle}}
+                @focus-out={{optional @onTitleBlur}}
+                @keyDown={{this.onTitleKeydown}}
+                @didCreateTextarea={{this.registerTitleElement}}
+                {{on "focus" (fn (mut this.titleIsFocused) true)}}
+                {{on "blur" (fn (mut this.titleIsFocused) false)}}
+                {{on "mouseover" (fn (mut this.titleIsHovered) true)}}
+                {{on "mouseleave" (fn (mut this.titleIsHovered) false)}}
+                {{on "paste" this.cleanPastedTitle}}
+                data-test-editor-title-input={{true}}
+            />
+
+            {{#if (feature 'editorExcerpt')}}
+                <div class="relative">
+                    <GhTextarea
+                        @class={{concat "gh-editor-excerpt " (if @excerptErrorMessage "red")}}
+                        @placeholder="Add an excerpt"
+                        @shouldFocus={{false}}
+                        @tabindex="1"
+                        @autoExpand=".gh-koenig-editor"
+                        @value={{readonly this.excerpt}}
+                        @input={{this.onExcerptInput}}
+                        @keyDown={{this.onExcerptKeydown}}
+                        @didCreateTextarea={{this.registerExcerptElement}}
+                        {{on "blur" @onExcerptBlur}}
+                        data-test-textarea="excerpt"
+                    />
+                    {{#if @excerptHasTk}}
+                        <div
+                            class="tk-indicator tk-indicator-excerpt"
+                            data-testid="tk-indicator-excerpt"
+                            {{on "click" this.focusExcerpt}}
+                        >
+                            TK
+                        </div>
+                    {{/if}}
+                    <hr class="gh-editor-title-divider {{if @excerptErrorMessage "gh-editor-title-divider-error" ""}}">
+                    {{#if @excerptErrorMessage}}
+                        <div class="gh-editor-excerpt-error" data-test-error="excerpt">
+                            {{@excerptErrorMessage}}
+                        </div>
+                    {{/if}}
+                </div>
+            {{/if}}
+        </div>
+
+        <KoenigLexicalEditor
+            @lexical={{@body}}
+            @placeholder={{@bodyPlaceholder}}
+            @cardConfig={{@cardOptions}}
+            @onChange={{@onBodyChange}}
+            @updateSecondaryInstanceModel={{@updateSecondaryInstanceModel}}
+            @registerAPI={{this.registerEditorAPI}}
+            @registerSecondaryAPI={{this.registerSecondaryEditorAPI}}
+            @cursorDidExitAtTop={{if this.feature.editorExcerpt this.focusExcerpt this.focusTitle}}
+            @updateWordCount={{@updateWordCount}}
+            @updatePostTkCount={{@updatePostTkCount}}
+        />
+    </div>
+</div>

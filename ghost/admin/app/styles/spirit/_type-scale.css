@@ -1,0 +1,95 @@
+/*
+
+    Vertical rhythm = 1.067
+    Tools that can help with experimenting with type scale:
+    http://type-scale.com/
+    https://www.gridlover.net/
+
+    Media Query Extensions:
+        -ns = not-small
+        -m  = medium
+        -l  = large
+
+*/
+
+ :root {
+    --ts-base-fontsize: 62.5%;
+
+    --ts-headline: 3.6rem;
+    --ts-subheadline: 2.8rem;
+
+    --ts-1: 2.3rem;
+    --ts-2: 2.1rem;
+    --ts-3: 2.0rem;
+    --ts-4: 1.9rem;
+    --ts-5: 1.75rem;
+    --ts-6: 1.5rem;
+    --ts-7: 1.4rem;
+    --ts-8: 1.3rem;
+    --ts-small: 1.2rem;
+    --ts-supersmall: 1.1rem;
+ }
+
+
+.fs-base        { font-size: var(--ts-base-fontsize); }
+.f-headline     { font-size: var(--ts-headline); }
+.f-subheadline  { font-size: var(--ts-subheadline); }
+.f1             { font-size: var(--ts-1); }
+.f2             { font-size: var(--ts-2); }
+.f3             { font-size: var(--ts-3); }
+.f4             { font-size: var(--ts-4); }
+.f5             { font-size: var(--ts-5); }
+.f6             { font-size: var(--ts-6); }
+.f7             { font-size: var(--ts-7); }
+.f8, .f-default { font-size: var(--ts-8); }
+.f-small        { font-size: var(--ts-small); }
+.f-supersmall   { font-size: var(--ts-supersmall); }
+
+
+@media (--breakpoint-not-small){
+    .fs-base-ns             {  font-size: var(--ts-base-fontsize); }
+    .f-headline-ns          { font-size: var(--ts-headline); }
+    .f-subheadline-ns       { font-size: var(--ts-subheadline); }
+    .f1-ns                  { font-size: var(--ts-1); }
+    .f2-ns                  { font-size: var(--ts-2); }
+    .f3-ns                  { font-size: var(--ts-3); }
+    .f4-ns                  { font-size: var(--ts-4); }
+    .f5-ns                  { font-size: var(--ts-5); }
+    .f6-ns                  { font-size: var(--ts-6); }
+    .f7-ns                  { font-size: var(--ts-7); }
+    .f8-ns, .f-default-ns   { font-size: var(--ts-8); }
+    .fsmall-ns              { font-size: var(--ts-small); }
+    .f-supersmall-ns        { font-size: var(--ts-supersmall); }
+}
+
+@media (--breakpoint-medium) {
+    .fs-base-m             {  font-size: var(--ts-base-fontsize); }
+    .f-headline-m          { font-size: var(--ts-headline); }
+    .f-subheadline-m       { font-size: var(--ts-subheadline); }
+    .f1-m                  { font-size: var(--ts-1); }
+    .f2-m                  { font-size: var(--ts-2); }
+    .f3-m                  { font-size: var(--ts-3); }
+    .f4-m                  { font-size: var(--ts-4); }
+    .f5-m                  { font-size: var(--ts-5); }
+    .f6-m                  { font-size: var(--ts-6); }
+    .f7-m                  { font-size: var(--ts-7); }
+    .f8-m, .f-default-m   { font-size: var(--ts-8); }
+    .fsmall-m              { font-size: var(--ts-small); }
+    .f-supersmall-m        { font-size: var(--ts-supersmall); }
+}
+
+@media (--breakpoint-large) {
+    .fs-base-l             {  font-size: var(--ts-base-fontsize); }
+    .f-headline-l          { font-size: var(--ts-headline); }
+    .f-subheadline-l       { font-size: var(--ts-subheadline); }
+    .f1-l                  { font-size: var(--ts-1); }
+    .f2-l                  { font-size: var(--ts-2); }
+    .f3-l                  { font-size: var(--ts-3); }
+    .f4-l                  { font-size: var(--ts-4); }
+    .f5-l                  { font-size: var(--ts-5); }
+    .f6-l                  { font-size: var(--ts-6); }
+    .f7-l                  { font-size: var(--ts-7); }
+    .f8-l, .f-default-l   { font-size: var(--ts-8); }
+    .fsmall-l              { font-size: var(--ts-small); }
+    .f-supersmall-l        { font-size: var(--ts-supersmall); }
+}

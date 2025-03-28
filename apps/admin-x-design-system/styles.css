@@ -1,0 +1,123 @@
+@import './preflight.css';
+
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+@import url(https://fonts.bunny.net/css?family=cardo:400,700);
+@import url(https://fonts.bunny.net/css?family=manrope:300,500,700);
+@import url(https://fonts.bunny.net/css?family=merriweather:300,700);
+@import url(https://fonts.bunny.net/css?family=nunito:400,600,700);
+@import url(https://fonts.bunny.net/css?family=old-standard-tt:400,700);
+@import url(https://fonts.bunny.net/css?family=prata:400);
+@import url(https://fonts.bunny.net/css?family=roboto:400,500,700);
+@import url(https://fonts.bunny.net/css?family=rufina:400,500,700);
+@import url(https://fonts.bunny.net/css?family=tenor-sans:400);
+@import url(https://fonts.bunny.net/css?family=space-grotesk:700);
+@import url(https://fonts.bunny.net/css?family=chakra-petch:400);
+@import url(https://fonts.bunny.net/css?family=noto-sans:400,700);
+@import url(https://fonts.bunny.net/css?family=poppins:400,700);
+@import url(https://fonts.bunny.net/css?family=fira-sans:400,700);
+@import url(https://fonts.bunny.net/css?family=inter:400,700);
+@import url(https://fonts.bunny.net/css?family=noto-serif:400,700);
+@import url(https://fonts.bunny.net/css?family=lora:400,700);
+@import url(https://fonts.bunny.net/css?family=ibm-plex-serif:400,700);
+@import url(https://fonts.bunny.net/css?family=space-mono:400,700);
+@import url(https://fonts.bunny.net/css?family=fira-mono:400,700);
+@import url(https://fonts.bunny.net/css?family=jetbrains-mono:400,700);
+
+/* Defaults */
+@layer base {
+    /* This just serves as a placeholder; we actually load Inter from a font file in Ember admin */
+    @font-face {
+        font-family: "Inter";
+        src: local("Inter") format("truetype-variations");
+        font-weight: 100 900;
+    }
+
+    .admin-x-base {
+        & {
+            @apply font-sans text-black text-base leading-normal;
+        }
+
+        h1, h2, h3, h4, h5 {
+            @apply font-bold tracking-tight leading-tighter;
+        }
+
+        h1 {
+            @apply text-4xl leading-supertight;
+        }
+
+        h2 {
+            @apply text-2xl;
+        }
+
+        h3 {
+            @apply text-xl;
+        }
+
+        h4 {
+            @apply text-lg;
+        }
+
+        h5 {
+            @apply text-md leading-supertight;
+        }
+
+        h6 {
+            @apply text-md leading-normal;
+        }
+    }
+}
+
+.admin-x-base {
+    line-height: 1.5;
+    -ms-text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
+
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-text-size-adjust: 100%;
+    letter-spacing: unset;
+
+    height: 100vh;
+    width: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+
+/*
+Used to be for fixed bottom mobile menu bar
+@media (max-width: 800px) {
+    .admin-x-base {
+        height: calc(100vh - 55px);
+    }
+} */
+
+.dark .admin-x-base {
+    color: #FAFAFB;
+}
+
+.dark .admin-x-base .gh-loading-orb-container {
+    background-color: #000000;
+}
+
+.dark .admin-x-base .gh-loading-orb {
+    filter: invert(100%);
+}
+
+.admin-x-base .no-scrollbar::-webkit-scrollbar {
+    display: none; /* Chrome */
+}
+
+.admin-x-base .no-scrollbar {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+}
+
+/* Prose classes are for formatting arbitrary HTML that comes from the API */
+.gh-prose-links a {
+    color: #30CF43;
+}

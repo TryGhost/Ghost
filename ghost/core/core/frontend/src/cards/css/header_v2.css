@@ -1,0 +1,262 @@
+.kg-header-card.kg-v2 {
+    position: relative;
+    padding: 0;
+    min-height: initial;
+    text-align: initial;
+}
+
+.kg-header-card.kg-v2,
+.kg-header-card.kg-v2 * {
+    box-sizing: border-box;
+}
+
+.kg-header-card.kg-v2 a,
+.kg-header-card.kg-v2 a span {
+    color: currentColor;
+}
+
+.kg-header-card.kg-style-accent.kg-v2 {
+    background-color: var(--ghost-accent-color);
+}
+
+.kg-header-card-content {
+    width: 100%;
+}
+
+.kg-layout-split .kg-header-card-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+}
+
+.kg-header-card-text {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    height: 100%;
+    padding: min(6.4vmax, 120px) min(4vmax, 80px);
+    background-size: cover;
+    background-position: center;
+    text-align: left;
+}
+
+.kg-width-wide .kg-header-card-text {
+    padding: min(10vmax, 220px) min(6.4vmax, 140px);
+}
+
+.kg-width-full .kg-header-card-text {
+    padding: min(12vmax, 260px) 0;
+}
+
+.kg-layout-split .kg-header-card-text {
+    padding: min(12vmax, 260px) min(4vmax, 80px);
+}
+
+.kg-layout-split.kg-content-wide .kg-header-card-text {
+    padding: min(10vmax, 220px) 0 min(10vmax, 220px) min(4vmax, 80px);
+}
+
+.kg-layout-split.kg-content-wide.kg-swapped .kg-header-card-text {
+    padding: min(10vmax, 220px) min(4vmax, 80px) min(10vmax, 220px) 0;
+}
+
+.kg-swapped .kg-header-card-text {
+    grid-row: 1;
+}
+
+.kg-header-card-text.kg-align-center {
+    align-items: center;
+    text-align: center;
+}
+
+.kg-header-card.kg-style-image h2.kg-header-card-heading,
+.kg-header-card.kg-style-image .kg-header-card-subheading,
+.kg-header-card.kg-style-image.kg-v2 .kg-header-card-button {
+    z-index: 999;
+}
+
+/* Background image */
+
+.kg-header-card > picture > .kg-header-card-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    background-color: #FFFFFF;
+    pointer-events: none;
+}
+
+/* Split layout image */
+
+.kg-header-card-content .kg-header-card-image {
+    width: 100%;
+    /* this will force the image to follow the signup card height */
+    height: 0;
+    min-height: 100%;
+    /**/
+    object-fit: cover;
+    object-position: center;
+}
+
+.kg-content-wide .kg-header-card-content .kg-header-card-image {
+    height: 100%;
+    padding: 5.6em 0;
+    object-fit: contain;
+}
+
+/* Heading */
+
+.kg-header-card h2.kg-header-card-heading {
+    margin: 0;
+    font-size: clamp(1.7em, 4vw, 2.5em);
+    font-weight: 700;
+    line-height: 1.05em;
+    letter-spacing: -0.01em;
+}
+
+.kg-header-card.kg-width-wide h2.kg-header-card-heading {
+    font-size: clamp(1.7em, 5vw, 3.3em);
+}
+
+.kg-header-card.kg-width-full h2.kg-header-card-heading {
+    font-size: clamp(1.9em, 5.6vw, 4.2em);
+}
+
+.kg-header-card.kg-width-full.kg-layout-split h2.kg-header-card-heading {
+    font-size: clamp(1.9em, 4vw, 3.3em);
+}
+
+/* Subheading */
+
+.kg-header-card-subheading {
+    margin: 0 0 2em;
+}
+
+.kg-header-card .kg-header-card-subheading {
+    max-width: 40em;
+    margin: 0;
+    font-size: clamp(1.05em, 2vw, 1.4em);
+    font-weight: 500;
+    line-height: 1.2em;
+}
+
+.kg-header-card h2 + .kg-header-card-subheading {
+    margin: 0.6em 0 0;
+}
+
+.kg-header-card .kg-header-card-subheading strong {
+    font-weight: 600;
+}
+
+.kg-header-card.kg-width-wide .kg-header-card-subheading {
+    font-size: clamp(1.05em, 2vw, 1.55em);
+}
+
+.kg-header-card.kg-width-full .kg-header-card-subheading:not(.kg-layout-split .kg-header-card-subheading) {
+    max-width: min(65vmax, 1200px);
+    font-size: clamp(1.05em, 2vw, 1.7em);
+}
+
+.kg-header-card.kg-width-full.kg-layout-split .kg-header-card-subheading {
+    font-size: clamp(1.05em, 2vw, 1.55em);
+}
+
+.kg-header-card.kg-v2 .kg-header-card-button {
+    display: flex;
+    position: relative;
+    align-items: center;
+    height: 2.9em;
+    min-height: 46px;
+    padding: 0 1.2em;
+    outline: none;
+    border: none;
+    font-size: 1em;
+    font-weight: 600;
+    line-height: 1em;
+    text-align: center;
+    text-decoration: none;
+    letter-spacing: .2px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    border-radius: 3px;
+    transition: opacity .2s ease;
+}
+
+.kg-header-card.kg-v2 .kg-header-card-button.kg-style-accent {
+    background-color: var(--ghost-accent-color);
+}
+
+.kg-header-card.kg-v2 h2 + .kg-header-card-button,
+.kg-header-card.kg-v2 p + .kg-header-card-button {
+    margin: 1.5em 0 0;
+}
+
+.kg-header-card.kg-v2 .kg-header-card-button:hover {
+    opacity: 0.85;
+}
+
+.kg-header-card.kg-v2.kg-width-wide .kg-header-card-button {
+    font-size: 1.05em;
+}
+
+.kg-header-card.kg-v2.kg-width-wide h2 + .kg-header-card-button,
+.kg-header-card.kg-v2.kg-width-wide p + .kg-header-card-button {
+    margin-top: 1.75em;
+}
+
+.kg-header-card.kg-v2.kg-width-full .kg-header-card-button {
+    font-size: 1.1em;
+}
+
+.kg-header-card.kg-v2.kg-width-full h2 + .kg-header-card-button,
+.kg-header-card.kg-v2.kg-width-full p + .kg-header-card-button {
+    margin-top: 2em;
+}
+
+/* Responsive styles */
+
+@media (max-width: 640px) {
+    .kg-layout-split .kg-header-card-content {
+        grid-template-columns: 1fr;
+    }
+
+    .kg-width-wide .kg-header-card-text {
+        padding: min(6.4vmax, 120px) min(4vmax, 80px);
+    }
+
+    .kg-layout-split.kg-content-wide .kg-header-card-text,
+    .kg-layout-split.kg-content-wide.kg-swapped .kg-header-card-text {
+        padding: min(9.6vmax, 180px) 0;
+    }
+
+    .kg-header-card.kg-width-full .kg-header-card-subheading:not(.kg-layout-split .kg-header-card-subheading) {
+        max-width: unset;
+    }
+
+    .kg-header-card-content .kg-header-card-image:not(.kg-content-wide .kg-header-card-content .kg-header-card-image) {
+        height: auto;
+        min-height: unset;
+        aspect-ratio: 1 / 1;
+    }
+
+    .kg-content-wide .kg-header-card-content .kg-header-card-image {
+        padding: 1.7em 0 0;
+    }
+
+    .kg-content-wide.kg-swapped .kg-header-card-content .kg-header-card-image {
+        padding: 0 0 1.7em;
+    }
+
+    .kg-header-card.kg-v2 .kg-header-card-button {
+        height: 2.9em;
+    }
+
+    .kg-header-card.kg-v2.kg-width-wide .kg-header-card-button,
+    .kg-header-card.kg-v2.kg-width-full .kg-header-card-button {
+        font-size: 1em;
+    }
+}

@@ -1,0 +1,140 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Tiers Content API Can filter on visibility 1: [body] 1`] = `
+Object {
+  "meta": Object {
+    "pagination": Object {
+      "limit": 2,
+      "next": null,
+      "page": 1,
+      "pages": 1,
+      "prev": null,
+      "total": 2,
+    },
+  },
+  "tiers": Array [
+    Object {
+      "active": true,
+      "benefits": Array [],
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
+      "description": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "name": "Free",
+      "slug": "free",
+      "trial_days": 0,
+      "type": "free",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
+      "visibility": "public",
+      "welcome_page_url": "/welcome-free",
+    },
+    Object {
+      "active": true,
+      "benefits": Array [],
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
+      "currency": "USD",
+      "description": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "monthly_price": 500,
+      "name": "Default Product",
+      "slug": "default-product",
+      "trial_days": 0,
+      "type": "paid",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
+      "visibility": "public",
+      "welcome_page_url": "/welcome-paid",
+      "yearly_price": 5000,
+    },
+  ],
+}
+`;
+
+exports[`Tiers Content API Can filter on visibility 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "public, max-age=0",
+  "content-length": "727",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Tiers Content API Can request only active tiers 1: [body] 1`] = `
+Object {
+  "meta": Object {
+    "pagination": Object {
+      "limit": 3,
+      "next": null,
+      "page": 1,
+      "pages": 1,
+      "prev": null,
+      "total": 3,
+    },
+  },
+  "tiers": Array [
+    Object {
+      "active": true,
+      "benefits": Array [],
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
+      "description": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "name": "Free",
+      "slug": "free",
+      "trial_days": 0,
+      "type": "free",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
+      "visibility": "public",
+      "welcome_page_url": "/welcome-free",
+    },
+    Object {
+      "active": true,
+      "benefits": Array [],
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
+      "currency": "USD",
+      "description": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "monthly_price": 500,
+      "name": "Default Product",
+      "slug": "default-product",
+      "trial_days": 0,
+      "type": "paid",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
+      "visibility": "public",
+      "welcome_page_url": "/welcome-paid",
+      "yearly_price": 5000,
+    },
+    Object {
+      "active": true,
+      "benefits": Array [],
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
+      "currency": "USD",
+      "description": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "monthly_price": 500,
+      "name": "product",
+      "slug": "gold-2",
+      "trial_days": 0,
+      "type": "paid",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
+      "visibility": "none",
+      "welcome_page_url": null,
+      "yearly_price": 5000,
+    },
+  ],
+}
+`;
+
+exports[`Tiers Content API Can request only active tiers 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "public, max-age=0",
+  "content-length": "1051",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
