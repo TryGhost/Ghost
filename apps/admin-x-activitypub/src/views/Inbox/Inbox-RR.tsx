@@ -102,7 +102,9 @@ const Inbox: React.FC = () => {
                                                         onClick={() => {
                                                             navigate(`/inbox-rr/${encodeURIComponent(activity.id)}`);
                                                         }}
-                                                        onCommentClick={() => {}}
+                                                        onCommentClick={() => {
+                                                            navigate(`/inbox-rr/${encodeURIComponent(activity.id)}?focusReply=true`);
+                                                        }}
                                                     />
                                                     {index < activities.length - 1 && (
                                                         <Separator />
