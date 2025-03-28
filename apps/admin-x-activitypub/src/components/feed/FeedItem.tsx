@@ -334,7 +334,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                                 <div className='line-clamp-3 leading-tight'>{object.preview?.content}</div>
                                             </div>
                                         </div> :
-                                            <div className='relative'>
+                                            <div className='relative pl-[52px]'>
                                                 <div className='ap-note-content line-clamp-[10] text-pretty leading-[1.4285714286] tracking-[-0.006em] text-gray-900 dark:text-gray-600 [&_p+p]:mt-3'>
                                                     {!isLoading ?
                                                         <div dangerouslySetInnerHTML={{
@@ -361,7 +361,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                             </div>
                                         }
                                     </div>
-                                    <div className='space-between relative z-[30] ml-[-7px] mt-1 flex'>
+                                    <div className='space-between relative z-[30] ml-[-7px] mt-1 flex pl-[52px]'>
                                         {!isLoading ?
                                             showStats && <FeedItemStats
                                                 commentCount={commentCount}

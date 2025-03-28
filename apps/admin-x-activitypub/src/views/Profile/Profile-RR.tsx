@@ -309,7 +309,7 @@ const Profile: React.FC = () => {
 
     return (
         <Layout>
-            <div className='z-0 -mx-8 -mt-8 flex flex-col items-center pb-16'>
+            <div className='z-0 -mx-8 -mt-9 flex flex-col items-center pb-16'>
                 <div className='mx-auto w-full'>
                     {isLoading && (
                         <LoadingIndicator size='lg' />
