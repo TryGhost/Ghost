@@ -191,7 +191,7 @@ const PostsTab: React.FC<{handle: string}> = ({handle}) => {
                                     onClick={() => {
                                         if (isEnabled('ap-routes')) {
                                             if (post.object.type === 'Note') {
-                                                navigate(`/feed/${encodeURIComponent(post.object.id)}`);
+                                                navigate(`/feed-rr/${encodeURIComponent(post.object.id)}`);
                                             }
                                             if (post.object.type === 'Article') {
                                                 navigate(`/inbox-rr/${encodeURIComponent(post.object.id)}`);
@@ -203,10 +203,21 @@ const PostsTab: React.FC<{handle: string}> = ({handle}) => {
                                             }, false);
                                         }
                                     }}
-                                    onCommentClick={() => handleViewContent({
-                                        ...post,
-                                        id: post.object.id
-                                    }, true)}
+                                    onCommentClick={() => {
+                                        if (isEnabled('ap-routes')) {
+                                            if (post.object.type === 'Note') {
+                                                navigate(`/feed-rr/${encodeURIComponent(post.object.id)}?focusReply=true`);
+                                            }
+                                            if (post.object.type === 'Article') {
+                                                navigate(`/inbox-rr/${encodeURIComponent(post.object.id)}?focusReply=true`);
+                                            }
+                                        } else {
+                                            handleViewContent({
+                                                ...post,
+                                                id: post.object.id
+                                            }, true);
+                                        }
+                                    }}
                                 />
                                 {index < posts.length - 1 && <Separator />}
                             </div>

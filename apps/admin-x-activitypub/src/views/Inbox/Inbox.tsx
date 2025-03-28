@@ -11,7 +11,6 @@ import {EmptyViewIcon, EmptyViewIndicator} from '@src/components/global/EmptyVie
 import {LoadingIndicator} from '@tryghost/admin-x-design-system';
 import {handleViewContent} from '@utils/content-handlers';
 import {isPendingActivity} from '@utils/pending-activity';
-import {useFeatureFlags} from '@src/lib/feature-flags';
 import {
     useFeedForUser,
     useInboxForUser,
@@ -46,8 +45,6 @@ const Inbox: React.FC = () => {
     const observerRef = useRef<IntersectionObserver | null>(null);
     const loadMoreRef = useRef<HTMLDivElement | null>(null);
     const endLoadMoreRef = useRef<HTMLDivElement | null>(null);
-
-    const {isEnabled} = useFeatureFlags();
 
     useEffect(() => {
         if (observerRef.current) {
@@ -110,13 +107,7 @@ const Inbox: React.FC = () => {
                                                         repostCount={activity.object.repostCount ?? 0}
                                                         type={activity.type}
                                                         onClick={() => {
-                                                            if (isEnabled('ap-routes')) {
-                                                                if (layout === 'feed') {
-                                                                    navigate(`/feed/${encodeURIComponent(activity.id)}`);
-                                                                }
-                                                            } else {
-                                                                handleViewContent(activity, false);
-                                                            }
+                                                            handleViewContent(activity, false);
                                                         }}
                                                         onCommentClick={() => handleViewContent(activity, true)}
                                                     />
