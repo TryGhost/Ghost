@@ -1,7 +1,7 @@
 import React from 'react';
 import useActiveRoute from '@src/hooks/use-active-route';
 import {Button, H1, LucideIcon} from '@tryghost/shade';
-import {useLocation, useNavigate, useNavigationStack, useParams} from '@tryghost/admin-x-framework';
+import {useLocation, useNavigate, useNavigationStack} from '@tryghost/admin-x-framework';
 
 interface HeaderTitleProps {
     title: string;
@@ -37,14 +37,10 @@ const HeaderTitle: React.FC<HeaderTitleProps> = ({title, backIcon}) => {
 const Header: React.FC = () => {
     const {canGoBack} = useNavigationStack();
     const location = useLocation();
-    const params = useParams();
 
     const baseRoute = location.pathname.split('/')[1];
 
-    const onlyBackButton = (
-        baseRoute === 'profile-rr' ||
-        (baseRoute === 'feed' && params.postId)
-    );
+    const onlyBackButton = (baseRoute === 'profile-rr');
 
     const activeRoute = useActiveRoute();
     return (
