@@ -334,6 +334,11 @@ const Profile: React.FC = () => {
     const [selectedTab, setSelectedTab] = useState<ProfileTab>('posts');
     const {handle: urlHandle} = useParams();
 
+    // Reset selected tab when route changes
+    useEffect(() => {
+        setSelectedTab('posts');
+    }, [urlHandle]);
+
     // Get current user's handle if no handle provided in URL
     const {data: currentUser, isLoading: isLoadingCurrentUser} = useAccountForUser('index');
     const handle = urlHandle || currentUser?.handle || '';
