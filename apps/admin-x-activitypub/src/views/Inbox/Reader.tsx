@@ -10,6 +10,7 @@ import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
 import {usePostForUser, useThreadForUser} from '@hooks/use-activity-pub-queries';
 
 import APAvatar from '@src/components/global/APAvatar';
+import BackButton from '@src/components/global/BackButton';
 import DeletedFeedItem from '@src/components/feed/DeletedFeedItem';
 import FeedItem from '@src/components/feed/FeedItem';
 import FeedItemStats from '@src/components/feed/FeedItemStats';
@@ -401,7 +402,6 @@ export const Reader: React.FC<ReaderProps> = ({
     const {data: thread, isLoading: isLoadingThread} = useThreadForUser('index', activityId);
     const threadPostIdx = (thread?.posts ?? []).findIndex(item => item.object.id === activityId);
     const threadChildren = (thread?.posts ?? []).slice(threadPostIdx + 1);
-    const threadParents = (thread?.posts ?? []).slice(0, threadPostIdx);
 
     // const darkMode = document.documentElement.classList.contains('dark');
     const [replyCount, setReplyCount] = useState(object?.replyCount ?? 0);
@@ -658,11 +658,9 @@ export const Reader: React.FC<ReaderProps> = ({
                                             gridTemplateColumns: `1fr minmax(0,${currentGridWidth}) 1fr`
                                         }}
                                     >
-                                        {/* {(canNavigateBack || (threadParents.length > 0)) ? (
-                                            <div className='col-[1/2] flex items-center justify-between'>
-                                                <Button className='transition-color flex h-10 w-10 items-center justify-center rounded-full bg-white hover:bg-gray-100' icon='arrow-left' size='sm' unstyled onClick={() => {}}/>
-                                            </div>
-                                        ) : (*/}
+                                        <div className='flex items-center'>
+                                            <BackButton onClick={onClose} />
+                                        </div>
                                         <div className='col-[2/3] mx-auto flex w-full items-center gap-3'>
                                             <div className='relative z-10 pt-[3px]'>
                                                 <APAvatar author={actor}/>
@@ -677,7 +675,6 @@ export const Reader: React.FC<ReaderProps> = ({
                                                 </div>
                                             </div>
                                         </div>
-                                        {/*//)} */}
                                         <div className='col-[3/4] flex items-center justify-end gap-2'>
                                             <Popover modal={false}>
                                                 <PopoverTrigger asChild>
@@ -776,7 +773,6 @@ export const Reader: React.FC<ReaderProps> = ({
                                                     </div>
                                                 </PopoverContent>
                                             </Popover>
-                                            <Button className='transition-color flex h-10 w-10 items-center justify-center rounded-full bg-white hover:bg-gray-100 dark:bg-black dark:hover:bg-gray-950' icon='close' size='sm' unstyled onClick={onClose}/>
                                         </div>
                                     </div>
                                 </div>
@@ -792,53 +788,6 @@ export const Reader: React.FC<ReaderProps> = ({
                                 )}
                                 <div className='grow overflow-y-auto'>
                                     <div className={`mx-auto px-8 pb-10 pt-5`} style={{maxWidth: currentMaxWidth}}>
-                                        {threadParents.map((item) => {
-                                            return (
-                                                item.object.type === 'Tombstone' ? (
-                                                    <DeletedFeedItem last={false} />
-                                                ) : (
-                                                    <FeedItem
-                                                        actor={item.actor}
-                                                        allowDelete={false}
-                                                        commentCount={item.object.replyCount ?? 0}
-                                                        last={false}
-                                                        layout='reply'
-                                                        object={item.object}
-                                                        repostCount={item.object.repostCount ?? 0}
-                                                        type='Note'
-                                                        onClick={() => {
-                                                            // navigateForward(item.id, item.object, item.actor, false);
-                                                        }}
-                                                        onCommentClick={() => {
-                                                            // navigateForward(item.id, item.object, item.actor, true);
-                                                            setIsFocused(true);
-                                                        }}
-                                                    />
-                                                )
-                                            );
-                                        })}
-
-                                        {object.type === 'Note' && (
-                                            <FeedItem
-                                                actor={actor}
-                                                allowDelete={false}
-                                                commentCount={replyCount}
-                                                last={true}
-                                                layout={'modal'}
-                                                object={object}
-                                                repostCount={object.repostCount ?? 0}
-                                                // showHeader={(canNavigateBack || (threadParents.length > 0))}
-                                                // showStats={!disableStats}
-                                                type='Note'
-                                                onCommentClick={() => {
-                                                    repliesRef.current?.scrollIntoView({
-                                                        behavior: 'smooth',
-                                                        block: 'center'
-                                                    });
-                                                    setIsFocused(true);
-                                                }}
-                                            />
-                                        )}
                                         {object.type === 'Article' && (
                                             <div className='border-b border-gray-200 pb-8 dark:border-gray-950' id='object-content'>
                                                 <ArticleBody
@@ -907,11 +856,11 @@ export const Reader: React.FC<ReaderProps> = ({
                                                             repostCount={item.object.repostCount ?? 0}
                                                             type='Note'
                                                             onClick={() => {
-                                                                // navigateForward(item.id, item.object, item.actor, false);
+                                                                navigate(`/feed/${encodeURIComponent(item.object.id)}`);
                                                             }}
                                                             onCommentClick={() => {
-                                                                // navigateForward(item.id, item.object, item.actor, true);
-                                                                setIsFocused(true);
+                                                                navigate(`/feed/${encodeURIComponent(item.object.id)}`);
+                                                                // setIsFocused(true);
                                                             }}
                                                             onDelete={decrementReplyCount}
                                                         />
