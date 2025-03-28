@@ -95,7 +95,7 @@ export function useBaseRoute() {
     return location.pathname.split('/')[1];
 }
 
-export function useIsBaseRoute() {
+export function useRouteHasParams() {
     const params = useParams();
     return params && Object.keys(params).length > 0;
 }
