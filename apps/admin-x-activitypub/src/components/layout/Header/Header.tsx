@@ -2,7 +2,7 @@ import BackButton from '@src/components/global/BackButton';
 import React from 'react';
 import useActiveRoute from '@src/hooks/use-active-route';
 import {H1} from '@tryghost/shade';
-import {useBaseRoute, useIsBaseRoute, useNavigationStack} from '@tryghost/admin-x-framework';
+import {useBaseRoute, useNavigationStack, useRouteHasParams} from '@tryghost/admin-x-framework';
 
 interface HeaderTitleProps {
     title: string;
@@ -21,18 +21,28 @@ const HeaderTitle: React.FC<HeaderTitleProps> = ({title, backIcon}) => {
 const Header: React.FC = () => {
     const {canGoBack} = useNavigationStack();
     const baseRoute = useBaseRoute();
-    const isBaseRoute = useIsBaseRoute();
+    const routeHasParams = useRouteHasParams();
 
-    const onlyBackButton = (baseRoute === 'profile-rr');
+    // Logic for special pages
+    let onlyBackButton = false;
+    if (baseRoute === 'profile-rr') {
+        onlyBackButton = true;
+    }
+
+    if (baseRoute === 'feed') {
+        if (canGoBack) {
+            onlyBackButton = true;
+        }
+    }
 
     // Avoid back button on main routes
-    const backActive = canGoBack && isBaseRoute;
+    const backActive = canGoBack && routeHasParams;
 
     const activeRoute = useActiveRoute();
     return (
         <>
             {onlyBackButton ?
-                <div className='sticky top-0 z-50 flex h-[102px] items-center px-8'>
+                <div className='sticky left-8 top-8 z-50 inline-block'>
                     {backActive && <BackButton />}
                 </div>
                 :
