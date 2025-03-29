@@ -122,7 +122,7 @@ const Post = () => {
                                             );
                                         })}
                                         <div ref={postRef} className={`${canGoBack ? 'scroll-mt-[10px]' : 'scroll-mt-[102px]'}`}>
-                                            <div className={`${threadParents.length > 0 && 'min-h-[calc(100vh-60px)]'}`}>
+                                            <div className={`${threadParents.length > 0 && 'min-h-[calc(100vh-52px)]'}`}>
                                                 <FeedItem
                                                     actor={post.actor}
                                                     allowDelete={false}
