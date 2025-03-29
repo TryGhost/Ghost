@@ -3,12 +3,12 @@ import Explore from '@views/Explore';
 import Feed from './views/Feed/Feed';
 import Inbox from '@views/Inbox';
 import InboxRR from './views/Inbox/Inbox-RR';
+import Note from './views/Feed/Note';
 import Notifications from '@views/Notifications';
 import Onboarding from '@components/layout/Onboarding';
 import OnboardingStep1 from '@components/layout/Onboarding/Step1';
 import OnboardingStep2 from '@components/layout/Onboarding/Step2';
 import OnboardingStep3 from '@components/layout/Onboarding/Step3';
-import Post from './views/Feed/Post';
 import Profile from '@views/Profile';
 import ProfileRR from '@views/Profile/Profile-RR';
 import {Navigate, RouteObject} from '@tryghost/admin-x-framework';
@@ -44,7 +44,7 @@ export const routes: CustomRouteObject[] = [
             },
             {
                 path: 'feed-rr/:postId',
-                element: <Post />,
+                element: <Note />,
                 pageTitle: 'Note'
             },
             {
