@@ -4,15 +4,26 @@ import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
+
 const {Errors} = DS;
 
-export default class AddTag extends Component {
+// Helper to compare two tags
+function tagEquals(a, b) {
+    if (a.id && b.id) {
+        return a.id === b.id;
+    }
+    return a.name.toLowerCase() === b.name.toLowerCase();
+}
+
+export default class EditTag extends Component {
     @service store;
 
     #availableTags = null;
 
     @tracked
         selectedTags = [];
+    @tracked
+        originalTags = [];
 
     @tracked
         errors = Errors.create();
@@ -23,6 +34,16 @@ export default class AddTag extends Component {
 
     get hasValidated() {
         return ['tags'];
+    }
+
+    get disabled() {
+        let newTags = this.selectedTags.filter(
+            tag => !this.originalTags.some(orig => tagEquals(tag, orig))
+        );
+        let removedTags = this.originalTags.filter(
+            tag => !this.selectedTags.some(sel => tagEquals(sel, tag))
+        );
+        return newTags.length === 0 && removedTags.length === 0;
     }
 
     constructor() {
@@ -39,6 +60,10 @@ export default class AddTag extends Component {
                 tag.destroyRecord();
             }
         });
+
+        // Initialize originalTags from passed-in data (or empty array)
+        this.originalTags = this.args.data.existingTags ? [...this.args.data.existingTags] : [];
+        this.selectedTags = [...this.originalTags];
     }
 
     @action
@@ -53,12 +78,19 @@ export default class AddTag extends Component {
 
     @task
     *confirm() {
-        if (this.selectedTags.length === 0) {
-            this.errors.add('tags', 'Select at least one tag');
+        let newTags = this.selectedTags.filter(
+            tag => !this.originalTags.some(orig => tagEquals(tag, orig))
+        );
+        let removedTags = this.originalTags.filter(
+            tag => !this.selectedTags.some(sel => tagEquals(sel, tag))
+        );
+
+        if (newTags.length === 0 && removedTags.length === 0) {
+            this.errors.add('tags', 'No changes were made.');
             return;
         }
         this.errors.clear();
-        return yield this.args.data.confirm.perform(this.selectedTags);
+        return yield this.args.data.confirm.perform({newTags, removedTags});
     }
 
     @action
