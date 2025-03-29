@@ -246,7 +246,7 @@
     "form-data": "4.0.0",
     "inquirer": "8.2.6",
     "jwks-rsa": "3.2.0",
-    "mocha": "10.2.0",
+    "mocha": "10.8.2",
     "mocha-slow-test-reporter": "0.1.2",
     "mock-knex": "TryGhost/mock-knex#68948e11b0ea4fe63456098dfdc169bea7f62009",
     "nock": "13.5.6",
