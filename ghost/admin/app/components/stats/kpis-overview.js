@@ -5,11 +5,13 @@ import {action} from '@ember/object';
 import {formatNumber} from 'ghost-admin/helpers/format-number';
 import {formatVisitDuration} from '../../utils/stats';
 import {inject} from 'ghost-admin/decorators/inject';
+import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
 export default class KpisOverview extends Component {
     @inject config;
+    @service settings;
     @tracked selected = 'unique_visits';
     @tracked totals = null;
     @tracked showGranularity = true;
@@ -99,12 +101,22 @@ export default class KpisOverview extends Component {
         const formattedVisitDurations = formatVisitDuration(_ponderatedKPIsTotal('avg_session_sec'));
         const formattedBouceRate = (_ponderatedKPIsTotal('bounce_rate') * 100).toFixed(0);
 
-        return {
+        const totals = {
             avg_session_sec: isNaN(_ponderatedKPIsTotal('avg_session_sec')) ? '0m' : formattedVisitDurations,
             pageviews: formatNumber(_KPITotal('pageviews')) || '0',
             visits: formatNumber(totalVisits) || '0',
             bounce_rate: isNaN(formattedBouceRate) ? '0' : formattedBouceRate
         };
+
+        this.totals = totals;
+        this.args.onTotalsChange?.(totals);
+
+        return totals;
+    }
+
+    get hasNoViews() {
+        const hasNoViews = this.totals?.visits === '0' || this.totals?.pageviews === '0';
+        return hasNoViews;
     }
 
     willDestroy() {

@@ -1,7 +1,7 @@
 import assert from 'assert/strict';
 import {ActivityPubService} from '../../../../../core/server/services/activitypub/ActivityPubService';
 import knex, {Knex} from 'knex';
-import {IdentityTokenService} from '@tryghost/identity-token-service';
+import type {IdentityTokenService} from '../../../../../core/server/services/identity-tokens/IdentityTokenService';
 import nock from 'nock';
 
 async function getKnexInstance() {
@@ -16,6 +16,17 @@ async function getKnexInstance() {
     await knexInstance.schema.createTable('users', (table) => {
         table.string('id').primary();
         table.string('email');
+    });
+
+    await knexInstance.schema.createTable('roles', (table) => {
+        table.string('id').primary();
+        table.string('name');
+    });
+
+    await knexInstance.schema.createTable('roles_users', (table) => {
+        table.string('id').primary();
+        table.string('user_id').references('users.id');
+        table.string('role_id').references('roles.id');
     });
 
     await knexInstance.schema.createTable('integrations', (table) => {
@@ -36,14 +47,25 @@ async function getKnexInstance() {
         table.string('created_by');
     });
 
+    await knexInstance.insert({
+        id: 'owner-role-id',
+        name: 'Owner'
+    }).into('roles');
+
     return knexInstance;
 }
 
 async function addOwnerUser(knexInstance: Knex) {
     await knexInstance.insert({
-        id: '1',
+        id: 'non-standard-id',
         email: 'owner@user.com'
     }).into('users');
+
+    await knexInstance.insert({
+        id: 'roles-users-id',
+        user_id: 'non-standard-id',
+        role_id: 'owner-role-id'
+    }).into('roles_users');
 }
 async function addActivityPubIntegration(knexInstance: Knex) {
     await knexInstance.insert({

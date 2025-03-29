@@ -1,9 +1,9 @@
 import moment from 'moment-timezone';
 
-export const TB_VERSION = 3;
+export const TB_VERSION = 7;
 
 export const RANGE_OPTIONS = [
-    {name: 'Last 24 hours', value: 1},
+    {name: 'Today', value: 1},
     {name: 'Last 7 days', value: 7},
     {name: 'Last 30 days', value: 30 + 1},
     {name: 'Last 3 months', value: 90 + 1},
@@ -144,9 +144,10 @@ export const getCountryFlag = (countryCode) => {
 };
 
 export function getDateRange(chartRange) {
-    const endDate = moment().endOf('day');
-    const startDate = moment().subtract(chartRange - 1, 'days').startOf('day');
-    return {startDate, endDate};
+    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const endDate = moment().tz(timezone).endOf('day');
+    const startDate = moment().tz(timezone).subtract(chartRange - 1, 'days').startOf('day');
+    return {startDate, endDate, timezone};
 }
 
 export function formatVisitDuration(duration) {
@@ -174,7 +175,7 @@ export function formatVisitDuration(duration) {
 
 export function getStatsParams(config, props, additionalParams = {}) {
     const {chartRange, audience, device, browser, location, source, pathname, os} = props;
-    const {startDate, endDate} = getDateRange(chartRange);
+    const {startDate, endDate, timezone} = getDateRange(chartRange);
 
     const params = {
         site_uuid: props.mockData ? 'mock_site_uuid' : config.stats.id,
@@ -209,6 +210,10 @@ export function getStatsParams(config, props, additionalParams = {}) {
 
     if (os) {
         params.os = os;
+    }
+
+    if (timezone) {
+        params.timezone = timezone;
     }
 
     return params;

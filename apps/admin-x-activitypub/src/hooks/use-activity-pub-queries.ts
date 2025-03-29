@@ -84,7 +84,9 @@ const QUERY_KEYS = {
     feed: ['feed'],
     inbox: ['inbox'],
     postsByAccount: ['account_posts'],
-    postsLikedByAccount: ['account_liked_posts']
+    postsLikedByAccount: ['account_liked_posts'],
+    notifications: (handle: string) => ['notifications', handle],
+    post: (id: string) => ['post', id]
 };
 
 function updateLikedCache(queryClient: QueryClient, queryKey: string[], id: string, liked: boolean) {
@@ -128,9 +130,9 @@ function updateLikedCache(queryClient: QueryClient, queryKey: string[], id: stri
                 pages: current.pages.map((page: {posts: Activity[]}) => {
                     return {
                         ...page,
-                        posts: liked 
+                        posts: liked
                             // If liking, keep the post (it will be added via refetch)
-                            ? page.posts 
+                            ? page.posts
                             // If unliking, remove the post
                             : page.posts.filter(item => item.object.id !== id)
                     };
@@ -143,6 +145,88 @@ function updateLikedCache(queryClient: QueryClient, queryKey: string[], id: stri
             queryClient.invalidateQueries({queryKey: QUERY_KEYS.postsLikedByAccount});
         }
     }
+
+    // Update the thread cache
+    const threadQueryKey = QUERY_KEYS.thread(null);
+    queryClient.setQueriesData(threadQueryKey, (current?: {posts: Activity[]}) => {
+        if (!current) {
+            return current;
+        }
+
+        return {
+            posts: current.posts.map((activity) => {
+                if (activity.object.id === id) {
+                    return {
+                        ...activity,
+                        object: {
+                            ...activity.object,
+                            liked
+                        }
+                    };
+                }
+                return activity;
+            })
+        };
+    });
+}
+
+function updateReplyCountInCache(queryClient: QueryClient, id: string, delta: number) {
+    const queryKeys = [
+        QUERY_KEYS.feed,
+        QUERY_KEYS.inbox,
+        QUERY_KEYS.postsByAccount,
+        QUERY_KEYS.postsLikedByAccount
+    ];
+
+    for (const queryKey of queryKeys) {
+        queryClient.setQueriesData(queryKey, (current?: {pages: {posts: Activity[]}[]}) => {
+            if (!current) {
+                return current;
+            }
+
+            return {
+                ...current,
+                pages: current.pages.map(page => ({
+                    ...page,
+                    posts: page.posts.map((activity) => {
+                        if (activity.object.id === id) {
+                            return {
+                                ...activity,
+                                object: {
+                                    ...activity.object,
+                                    replyCount: Math.max((activity.object.replyCount ?? 0) + delta, 0)
+                                }
+                            };
+                        }
+                        return activity;
+                    })
+                }))
+            };
+        });
+    }
+
+    // Update thread cache
+    const threadQueryKey = QUERY_KEYS.thread(null);
+    queryClient.setQueriesData(threadQueryKey, (current?: {posts: Activity[]}) => {
+        if (!current) {
+            return current;
+        }
+
+        return {
+            posts: current.posts.map((activity) => {
+                if (activity.object.id === id) {
+                    return {
+                        ...activity,
+                        object: {
+                            ...activity.object,
+                            replyCount: Math.max((activity.object.replyCount ?? 0) + delta, 0)
+                        }
+                    };
+                }
+                return activity;
+            })
+        };
+    });
 }
 
 export function useLikeMutationForUser(handle: string) {
@@ -308,11 +392,72 @@ export function useUnfollowMutationForUser(handle: string, onSuccess: () => void
                 };
             });
 
-            // Invalidate the profile followers query cache for the profile being unfollowed
-            // because we cannot directly remove from it as we don't have the data for the unfollowed follower
+            // Update the profile followers query cache for the profile being unfollowed
             const profileFollowersQueryKey = QUERY_KEYS.profileFollowers(fullHandle);
 
-            queryClient.invalidateQueries({queryKey: profileFollowersQueryKey});
+            queryClient.setQueryData(profileFollowersQueryKey, (oldData?: {
+                pages: Array<{
+                    followers: Array<{
+                        actor: {
+                            id: string;
+                            type: string;
+                            preferredUsername: string;
+                            name: string;
+                            url: string;
+                            icon: {
+                                type: string;
+                                url: string;
+                            };
+                        };
+                        isFollowing: boolean;
+                    }>;
+                }>;
+            }) => {
+                if (!oldData?.pages?.[0]) {
+                    return oldData;
+                }
+
+                const currentAccount = queryClient.getQueryData<Account>(QUERY_KEYS.account('index'));
+                if (!currentAccount) {
+                    return oldData;
+                }
+
+                return {
+                    ...oldData,
+                    pages: oldData.pages.map((page: {
+                        followers: Array<{
+                            actor: {
+                                id: string;
+                                type: string;
+                                preferredUsername: string;
+                                name: string;
+                                url: string;
+                                icon: {
+                                    type: string;
+                                    url: string;
+                                };
+                            };
+                            isFollowing: boolean;
+                        }>;
+                    }) => ({
+                        ...page,
+                        followers: page.followers.filter((follower: {
+                            actor: {
+                                id: string;
+                                type: string;
+                                preferredUsername: string;
+                                name: string;
+                                url: string;
+                                icon: {
+                                    type: string;
+                                    url: string;
+                                };
+                            };
+                            isFollowing: boolean;
+                        }) => follower.actor.id !== currentAccount.id)
+                    }))
+                };
+            });
 
             // Update the "followingCount" property of the account performing the follow
             const accountQueryKey = QUERY_KEYS.account('index');
@@ -377,12 +522,6 @@ export function useFollowMutationForUser(handle: string, onSuccess: () => void, 
                 };
             });
 
-            // Invalidate the profile followers query cache for the profile being followed
-            // because we cannot directly add to it as we don't have the data for the new follower
-            const profileFollowersQueryKey = QUERY_KEYS.profileFollowers(fullHandle);
-
-            queryClient.invalidateQueries({queryKey: profileFollowersQueryKey});
-
             // Update the "followingCount" property of the account performing the follow
             const accountQueryKey = QUERY_KEYS.account('index');
 
@@ -397,12 +536,66 @@ export function useFollowMutationForUser(handle: string, onSuccess: () => void, 
                 };
             });
 
+            const profileFollowersQueryKey = QUERY_KEYS.profileFollowers(fullHandle);
+
             // Invalidate the follows query cache for the account performing the follow
             // because we cannot directly add to it due to potentially incompatible data
             // shapes
             const accountFollowsQueryKey = QUERY_KEYS.accountFollows('index', 'following');
 
             queryClient.invalidateQueries({queryKey: accountFollowsQueryKey});
+
+            // Add new follower to the followers list cache
+            queryClient.setQueryData(profileFollowersQueryKey, (oldData?: {
+                pages: Array<{
+                    followers: Array<{
+                        actor: {
+                            id: string;
+                            type: string;
+                            preferredUsername: string;
+                            name: string;
+                            url: string;
+                            icon: {
+                                type: string;
+                                url: string;
+                            };
+                        };
+                        isFollowing: boolean;
+                    }>;
+                }>;
+            }) => {
+                if (!oldData?.pages?.[0]) {
+                    return oldData;
+                }
+
+                const currentAccount = queryClient.getQueryData<Account>(QUERY_KEYS.account('index'));
+                if (!currentAccount) {
+                    return oldData;
+                }
+                
+                const newFollower = {
+                    actor: {
+                        id: currentAccount.id,
+                        type: 'Person',
+                        preferredUsername: 'index',
+                        name: currentAccount.name,
+                        url: currentAccount.url,
+                        icon: {
+                            type: 'Image',
+                            url: currentAccount.avatarUrl
+                        }
+                    },
+                    isFollowing: false
+                };
+
+                return {
+                    ...oldData,
+                    pages: [{
+                        ...oldData.pages[0],
+                        followers: [newFollower, ...oldData.pages[0].followers]
+                    }, ...oldData.pages.slice(1)]
+                };
+            });
 
             onSuccess();
         },
@@ -699,11 +892,16 @@ export function useProfileFollowingForUser(handle: string, profileHandle: string
     });
 }
 
-export function useThreadForUser(handle: string, id: string) {
+export function useThreadForUser(handle: string, id?: string) {
     return useQuery({
-        queryKey: QUERY_KEYS.thread(id),
+        queryKey: QUERY_KEYS.thread(id || ''),
         refetchOnMount: 'always',
+        enabled: Boolean(id),
         async queryFn() {
+            if (!id) {
+                throw new Error('Post ID is required');
+            }
+
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
 
@@ -933,13 +1131,7 @@ export function useReplyMutationForUser(handle: string, actorProps?: ActorProper
             addActivityToCollection(queryClient, QUERY_KEYS.thread(inReplyTo), 'posts', activity, inReplyTo);
 
             // Increment the reply count of the inReplyTo post in the feed
-            updateActivityInPaginatedCollection(queryClient, QUERY_KEYS.feed, 'posts', inReplyTo, currentActivity => ({
-                ...currentActivity,
-                object: {
-                    ...currentActivity.object,
-                    replyCount: currentActivity.object.replyCount + 1
-                }
-            }));
+            updateReplyCountInCache(queryClient, inReplyTo, 1);
 
             // We do not need to increment the reply count of the inReplyTo post
             // in the thread as this is handled locally in the ArticleModal component
@@ -963,13 +1155,7 @@ export function useReplyMutationForUser(handle: string, actorProps?: ActorProper
             removeActivityFromCollection(queryClient, QUERY_KEYS.thread(variables.inReplyTo), 'posts', context?.id ?? '');
 
             // Decrement the reply count of the inReplyTo post in the feed
-            updateActivityInPaginatedCollection(queryClient, QUERY_KEYS.feed, 'posts', variables.inReplyTo, currentActivity => ({
-                ...currentActivity,
-                object: {
-                    ...currentActivity.object,
-                    replyCount: currentActivity.object.replyCount - 1
-                }
-            }));
+            updateReplyCountInCache(queryClient, variables.inReplyTo, -1);
 
             // We do not need to decrement the reply count of the inReplyTo post
             // in the thread as this is handled locally in the ArticleModal component
@@ -1523,6 +1709,41 @@ export function useDeleteMutationForUser(handle: string) {
             if (context.previousPostsLikedByAccount) {
                 queryClient.setQueryData(QUERY_KEYS.postsLikedByAccount, context.previousPostsLikedByAccount);
             }
+        }
+    });
+}
+
+export function useNotificationsForUser(handle: string) {
+    return useInfiniteQuery({
+        queryKey: QUERY_KEYS.notifications(handle),
+        async queryFn({pageParam}: {pageParam?: string}) {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI(handle, siteUrl);
+
+            return api.getNotifications(pageParam);
+        },
+        getNextPageParam(prevPage) {
+            return prevPage.next;
+        }
+    });
+}
+
+export function usePostForUser(handle: string, id: string | null) {
+    return useQuery({
+        queryKey: QUERY_KEYS.post(id || ''),
+        refetchOnMount: 'always',
+        enabled: Boolean(id),
+        async queryFn() {
+            if (!id) {
+                throw new Error('Post ID is required');
+            }
+
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI(handle, siteUrl);
+
+            return api.getPost(id).then((response) => {
+                return mapPostToActivity(response);
+            });
         }
     });
 }

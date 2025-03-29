@@ -1,6 +1,6 @@
 {
   "name": "ghost-admin",
-  "version": "5.114.0",
+  "version": "5.115.1",
   "description": "Ember.js admin client for Ghost",
   "author": "Ghost Foundation",
   "homepage": "http://ghost.org",
@@ -191,7 +191,8 @@
               "@tryghost/admin-x-demo",
               "@tryghost/admin-x-settings",
               "@tryghost/admin-x-activitypub",
-              "@tryghost/posts"
+              "@tryghost/posts",
+              "@tryghost/stats"
             ],
             "target": "build"
           }
@@ -209,7 +210,8 @@
               "@tryghost/admin-x-demo",
               "@tryghost/admin-x-settings",
               "@tryghost/admin-x-activitypub",
-              "@tryghost/posts"
+              "@tryghost/posts",
+              "@tryghost/stats"
             ],
             "target": "build"
           }

@@ -13,13 +13,14 @@ import {renderTimestamp} from '../../utils/render-timestamp';
 import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
 import {useFocusedState} from '@components/global/APReplyBox';
 import {useModal} from '@ebay/nice-modal-react';
-import {useThreadForUser} from '@hooks/use-activity-pub-queries';
+import {usePostForUser, useThreadForUser} from '@hooks/use-activity-pub-queries';
 
 import APAvatar from '../global/APAvatar';
 import APReplyBox from '../global/APReplyBox';
 import DeletedFeedItem from './DeletedFeedItem';
 import TableOfContents, {TOCItem} from './TableOfContents';
 import getReadingTime from '../../utils/get-reading-time';
+import {handleProfileClick} from '@src/utils/handle-profile-click';
 import {isPendingActivity} from '../../utils/pending-activity';
 import {openLinksInNewTab} from '@src/utils/content-formatters';
 import {useDebounce} from 'use-debounce';
@@ -37,6 +38,7 @@ interface ArticleModalProps {
         object: ObjectProperties;
         actor: ActorProperties;
     }[];
+    remotePostId: string;
 }
 
 interface IframeWindow extends Window {
@@ -398,19 +400,32 @@ interface FontSelectOption {
     className?: string;
 }
 
-const ArticleModal: React.FC<ArticleModalProps> = ({
-    activityId,
-    object,
-    actor,
+export const ArticleModal: React.FC<ArticleModalProps> = ({
+    activityId: initialActivityId,
+    object: initialObject,
+    actor: initialActor,
     focusReply,
     focusReplies,
     width = 'narrow',
     disableStats = false,
-    history = []
+    history = [],
+    remotePostId = null
 }) => {
+    const modalRef = useRef<HTMLElement>(null);
     const MODAL_SIZE_SM = 640;
     const MODAL_SIZE_LG = 1420;
     const [isFocused, setIsFocused] = useFocusedState(focusReply);
+
+    const {data: post, isLoading: isRemotelyLoadingPost} = usePostForUser('index', remotePostId);
+    const isLoadingPost = remotePostId && isRemotelyLoadingPost;
+    const activityData = post ? post : {
+        id: initialActivityId,
+        object: initialObject,
+        actor: initialActor
+    };
+    const activityId = activityData.id;
+    const object = activityData.object;
+    const actor = activityData.actor;
 
     const {data: thread, isLoading: isLoadingThread} = useThreadForUser('index', activityId);
     const threadPostIdx = (thread?.posts ?? []).findIndex(item => item.object.id === activityId);
@@ -420,7 +435,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
     const modalSize = width === 'narrow' ? MODAL_SIZE_SM : MODAL_SIZE_LG;
     const modal = useModal();
     const darkMode = document.documentElement.classList.contains('dark');
-    const [replyCount, setReplyCount] = useState(object.replyCount ?? 0);
+    const [replyCount, setReplyCount] = useState(object?.replyCount ?? 0);
 
     const canNavigateBack = history.length > 0;
     const navigateBack = () => {
@@ -576,10 +591,10 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
     // Add debounced version of setReadingProgress
     const [debouncedSetReadingProgress] = useDebounce(setReadingProgress, 100);
 
-    const PROGRESS_INCREMENT = 5; // Progress is shown in 5% increments (0%, 5%, 10%, etc.)
+    const PROGRESS_INCREMENT = 1; // Progress is shown in 5% increments (0%, 5%, 10%, etc.)
 
     useEffect(() => {
-        const container = document.querySelector('.overflow-y-auto');
+        const container = modalRef.current;
         const article = document.getElementById('object-content');
 
         const handleScroll = () => {
@@ -726,6 +741,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
 
     return (
         <Modal
+            ref={modalRef}
             align='right'
             allowBackgroundInteraction={false}
             animate={true}
@@ -738,289 +754,297 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
             size='bleed'
             width={modalSize === MODAL_SIZE_LG ? 'toSidebar' : modalSize}
         >
-            <div className='flex h-full flex-col'>
-                <div className='sticky top-0 z-50 flex h-[102px] items-center justify-center border-b border-gray-200 bg-white dark:border-gray-950 dark:bg-black'>
-                    <div
-                        className={`w-full ${modalSize === MODAL_SIZE_LG ? 'grid px-8' : 'flex justify-between gap-2 px-8'}`}
-                        style={modalSize === MODAL_SIZE_LG ? {
-                            gridTemplateColumns: `1fr minmax(0,${currentGridWidth}) 1fr`
-                        } : undefined}
-                    >
-                        {(canNavigateBack || (threadParents.length > 0)) ? (
-                            <div className='col-[1/2] flex items-center justify-between'>
-                                <Button className='transition-color flex h-10 w-10 items-center justify-center rounded-full bg-white hover:bg-gray-100' icon='arrow-left' size='sm' unstyled onClick={navigateBack}/>
-                            </div>
-                        ) : (<div className='col-[2/3] mx-auto flex w-full items-center gap-3'>
-                            <div className='relative z-10 pt-[3px]'>
-                                <APAvatar author={actor}/>
-                            </div>
-                            <div className='relative z-10 flex w-full min-w-0 flex-col overflow-visible text-[1.5rem]'>
-                                <div className='flex w-full'>
-                                    <span className='min-w-0 truncate whitespace-nowrap font-semibold'>{actor.name}</span>
-                                </div>
-                                <div className='flex w-full'>
-                                    <span className='text-gray-700 after:mx-1 after:font-normal after:text-gray-700 after:content-["·"]'>{getUsername(actor)}</span>
-                                    <span className='text-gray-700'>{renderTimestamp(object)}</span>
-                                </div>
-                            </div>
-                        </div>)}
-                        <div className='col-[3/4] flex items-center justify-end gap-2'>
-                            {modalSize === MODAL_SIZE_LG && object.type === 'Article' && <Popover modal={false}>
-                                <PopoverTrigger asChild>
-                                    <Button className='transition-color flex h-10 w-10 items-center justify-center rounded-full bg-white hover:bg-gray-100 dark:bg-black dark:hover:bg-gray-950' icon='typography' size='sm' unstyled />
-                                </PopoverTrigger>
-                                <PopoverContent align='end' className='w-[300px]' onCloseAutoFocus={e => e.preventDefault()} onOpenAutoFocus={e => e.preventDefault()}>
-                                    <div className='flex flex-col'>
-                                        <Select
-                                            className='mb-3'
-                                            components={{Option, SingleValue}}
-                                            controlClasses={{control: '!min-h-[40px] !py-0 !pl-1 dark:!bg-grey-925', option: '!pl-1 !py-[4px]'}}
-                                            options={[
-                                                {
-                                                    value: FONT_SANS,
-                                                    label: 'Clean sans-serif',
-                                                    className: 'font-sans'
-                                                },
-                                                {
-                                                    value: 'Georgia, Times, serif',
-                                                    label: 'Elegant serif',
-                                                    className: 'font-serif'
-                                                }
-                                            ]}
-                                            title='Typeface'
-                                            value={fontFamily}
-                                            onFocus={() => {}}
-                                            onSelect={option => setFontFamily(option || {
-                                                value: FONT_SANS,
-                                                label: 'Clean sans-serif',
-                                                className: 'font-sans'
-                                            })}
-                                        />
-                                        <div className='mb-2 flex items-center justify-between'>
-                                            <span className='text-sm font-medium text-gray-900 dark:text-white'>Font size</span>
-                                            <div className='flex items-center'>
-                                                <Button
-                                                    className={`transition-color flex h-8 w-8 items-center justify-center rounded-full bg-white dark:bg-grey-900 dark:hover:bg-grey-925 ${currentFontSizeIndex === 0 ? 'opacity-20 hover:bg-white' : 'hover:bg-gray-100'}`}
-                                                    disabled={currentFontSizeIndex === 0}
-                                                    hideLabel={true}
-                                                    icon='substract'
-                                                    iconSize='xs'
-                                                    label='Decrease font size'
-                                                    unstyled={true}
-                                                    onClick={decreaseFontSize}
-                                                />
-                                                <Button
-                                                    className={`transition-color flex h-8 w-8 items-center justify-center rounded-full bg-white hover:bg-gray-100 dark:bg-grey-900 dark:hover:bg-grey-925 ${currentFontSizeIndex === FONT_SIZES.length - 1 ? 'opacity-20 hover:bg-white' : 'hover:bg-gray-100'}`}
-                                                    disabled={currentFontSizeIndex === FONT_SIZES.length - 1}
-                                                    hideLabel={true}
-                                                    icon='add'
-                                                    iconSize='xs'
-                                                    label='Increase font size'
-                                                    unstyled={true}
-                                                    onClick={increaseFontSize}
-                                                />
+            {
+                isLoadingPost ? (
+                    <LoadingIndicator size='lg' />
+                ) : (
+                    <>
+                        <div className='flex h-full flex-col'>
+                            <div className='sticky top-0 z-50 flex h-[102px] items-center justify-center border-b border-gray-200 bg-white dark:border-gray-950 dark:bg-black'>
+                                <div
+                                    className={`w-full ${modalSize === MODAL_SIZE_LG ? 'grid px-8' : 'flex justify-between gap-2 px-8'}`}
+                                    style={modalSize === MODAL_SIZE_LG ? {
+                                        gridTemplateColumns: `1fr minmax(0,${currentGridWidth}) 1fr`
+                                    } : undefined}
+                                >
+                                    {(canNavigateBack || (threadParents.length > 0)) ? (
+                                        <div className='col-[1/2] flex items-center justify-between'>
+                                            <Button className='transition-color flex h-10 w-10 items-center justify-center rounded-full bg-white hover:bg-gray-100' icon='arrow-left' size='sm' unstyled onClick={navigateBack}/>
+                                        </div>
+                                    ) : (<div className='col-[2/3] mx-auto flex w-full items-center gap-3'>
+                                        <div className='relative z-10 pt-[3px]'>
+                                            <APAvatar author={actor}/>
+                                        </div>
+                                        <div className='relative z-10 flex w-full min-w-0 cursor-pointer flex-col overflow-visible text-[1.5rem]' onClick={e => handleProfileClick(actor, e)}>
+                                            <div className='flex w-full'>
+                                                <span className='min-w-0 truncate whitespace-nowrap font-semibold hover:underline'>{actor.name}</span>
+                                            </div>
+                                            <div className='flex w-full'>
+                                                <span className='text-gray-700 after:mx-1 after:font-normal after:text-gray-700 after:content-["·"]'>{getUsername(actor)}</span>
+                                                <span className='text-gray-700'>{renderTimestamp(object, !object.authored)}</span>
                                             </div>
                                         </div>
-                                        <div className='mb-5 flex items-center justify-between'>
-                                            <span className='text-sm font-medium text-gray-900 dark:text-white'>Line spacing</span>
-                                            <div className='flex items-center'>
-                                                <Button
-                                                    className={`transition-color flex h-8 w-8 items-center justify-center rounded-full bg-white hover:bg-gray-100 dark:bg-grey-900 dark:hover:bg-grey-925 ${currentLineHeightIndex === 0 ? 'opacity-20 hover:bg-white' : 'hover:bg-gray-100'}`}
-                                                    disabled={currentLineHeightIndex === 0}
-                                                    hideLabel={true}
-                                                    icon='substract'
-                                                    iconSize='xs'
-                                                    label='Decrease line spacing'
-                                                    unstyled={true}
-                                                    onClick={decreaseLineHeight}
-                                                />
-                                                <Button
-                                                    className={`transition-color flex h-8 w-8 items-center justify-center rounded-full bg-white hover:bg-gray-100 dark:bg-grey-900 dark:hover:bg-grey-925 ${currentLineHeightIndex === LINE_HEIGHTS.length - 1 ? 'opacity-20 hover:bg-white' : 'hover:bg-gray-100'}`}
-                                                    disabled={currentLineHeightIndex === LINE_HEIGHTS.length - 1}
-                                                    hideLabel={true}
-                                                    icon='add'
-                                                    iconSize='xs'
-                                                    label='Increase line spacing'
-                                                    unstyled={true}
-                                                    onClick={increaseLineHeight}
-                                                />
-                                            </div>
-                                        </div>
-                                        <Button
-                                            className="text-sm text-gray-600 hover:text-gray-700 dark:text-gray-500 dark:hover:text-gray-600"
-                                            label="Reset to default"
-                                            link={true}
-                                            onClick={() => {
-                                                setCurrentFontSizeIndex(1); // Default font size
-                                                setCurrentLineHeightIndex(1); // Default line height
-                                                setFontFamily({
-                                                    value: FONT_SANS,
-                                                    label: 'Clean sans-serif'
-                                                });
-                                            }}
-                                        />
-                                    </div>
-                                </PopoverContent>
-                            </Popover>}
-                            <Button className='transition-color flex h-10 w-10 items-center justify-center rounded-full bg-white hover:bg-gray-100 dark:bg-black dark:hover:bg-gray-950' icon='close' size='sm' unstyled onClick={() => modal.remove()}/>
-                        </div>
-                    </div>
-                </div>
-                <div className='relative flex-1'>
-                    {modalSize === MODAL_SIZE_LG && object.type === 'Article' && tocItems.length > 1 && (
-                        <div className="!visible absolute inset-y-0 right-7 z-40 hidden lg:!block">
-                            <div className="sticky top-1/2 -translate-y-1/2">
-                                <TableOfContents
-                                    items={tocItems}
-                                    onItemClick={scrollToHeading}
-                                />
-                            </div>
-                        </div>
-                    )}
-                    <div className='grow overflow-y-auto'>
-                        <div className={`mx-auto px-8 pb-10 pt-5`} style={{maxWidth: currentMaxWidth}}>
-                            {threadParents.map((item) => {
-                                return (
-                                    item.object.type === 'Tombstone' ? (
-                                        <DeletedFeedItem last={false} />
-                                    ) : (
-                                        <FeedItem
-                                            actor={item.actor}
-                                            allowDelete={false}
-                                            commentCount={item.object.replyCount ?? 0}
-                                            last={false}
-                                            layout='reply'
-                                            object={item.object}
-                                            repostCount={item.object.repostCount ?? 0}
-                                            type='Note'
-                                            onClick={() => {
-                                                navigateForward(item.id, item.object, item.actor, false);
-                                            }}
-                                            onCommentClick={() => {
-                                                navigateForward(item.id, item.object, item.actor, true);
-                                                setIsFocused(true);
-                                            }}
-                                        />
-                                    )
-                                );
-                            })}
-
-                            {object.type === 'Note' && (
-                                <FeedItem
-                                    actor={actor}
-                                    allowDelete={false}
-                                    commentCount={replyCount}
-                                    last={true}
-                                    layout={'modal'}
-                                    object={object}
-                                    repostCount={object.repostCount ?? 0}
-                                    showHeader={(canNavigateBack || (threadParents.length > 0))}
-                                    showStats={!disableStats}
-                                    type='Note'
-                                    onCommentClick={() => {
-                                        repliesRef.current?.scrollIntoView({
-                                            behavior: 'smooth',
-                                            block: 'center'
-                                        });
-                                        setIsFocused(true);
-                                    }}
-                                />
-                            )}
-                            {object.type === 'Article' && (
-                                <div className='border-b border-gray-200 pb-8 dark:border-gray-950' id='object-content'>
-                                    <ArticleBody
-                                        excerpt={object?.preview?.content ?? ''}
-                                        fontFamily={fontFamily}
-                                        fontSize={FONT_SIZES[currentFontSizeIndex]}
-                                        heading={object.name}
-                                        html={object.content ?? ''}
-                                        image={typeof object.image === 'string' ? object.image : object.image?.url}
-                                        lineHeight={LINE_HEIGHTS[currentLineHeightIndex]}
-                                        postUrl={object?.url || ''}
-                                        onHeadingsExtracted={handleHeadingsExtracted}
-                                        onIframeLoad={handleIframeLoad}
-                                        onLoadingChange={setIsLoading}
-                                    />
-                                    <div className='ml-[-7px]'>
-                                        <FeedItemStats
-                                            commentCount={replyCount}
-                                            layout={'modal'}
-                                            likeCount={1}
-                                            object={object}
-                                            repostCount={object.repostCount ?? 0}
-                                            onCommentClick={() => {
-                                                repliesRef.current?.scrollIntoView({
-                                                    behavior: 'smooth',
-                                                    block: 'center'
-                                                });
-                                                setIsFocused(true);
-                                            }}
-                                            onLikeClick={onLikeClick}
-                                        />
+                                    </div>)}
+                                    <div className='col-[3/4] flex items-center justify-end gap-2'>
+                                        {modalSize === MODAL_SIZE_LG && object.type === 'Article' && <Popover modal={false}>
+                                            <PopoverTrigger asChild>
+                                                <Button className='transition-color flex h-10 w-10 items-center justify-center rounded-full bg-white hover:bg-gray-100 dark:bg-black dark:hover:bg-gray-950' icon='typography' size='sm' unstyled />
+                                            </PopoverTrigger>
+                                            <PopoverContent align='end' className='w-[300px]' onCloseAutoFocus={e => e.preventDefault()} onOpenAutoFocus={e => e.preventDefault()}>
+                                                <div className='flex flex-col'>
+                                                    <Select
+                                                        className='mb-3'
+                                                        components={{Option, SingleValue}}
+                                                        controlClasses={{control: '!min-h-[40px] !py-0 !pl-1 dark:!bg-grey-925', option: '!pl-1 !py-[4px]'}}
+                                                        options={[
+                                                            {
+                                                                value: FONT_SANS,
+                                                                label: 'Clean sans-serif',
+                                                                className: 'font-sans'
+                                                            },
+                                                            {
+                                                                value: 'Georgia, Times, serif',
+                                                                label: 'Elegant serif',
+                                                                className: 'font-serif'
+                                                            }
+                                                        ]}
+                                                        title='Typeface'
+                                                        value={fontFamily}
+                                                        onFocus={() => {}}
+                                                        onSelect={option => setFontFamily(option || {
+                                                            value: FONT_SANS,
+                                                            label: 'Clean sans-serif',
+                                                            className: 'font-sans'
+                                                        })}
+                                                    />
+                                                    <div className='mb-2 flex items-center justify-between'>
+                                                        <span className='text-sm font-medium text-gray-900 dark:text-white'>Font size</span>
+                                                        <div className='flex items-center'>
+                                                            <Button
+                                                                className={`transition-color flex h-8 w-8 items-center justify-center rounded-full bg-white dark:bg-grey-900 dark:hover:bg-grey-925 ${currentFontSizeIndex === 0 ? 'opacity-20 hover:bg-white' : 'hover:bg-gray-100'}`}
+                                                                disabled={currentFontSizeIndex === 0}
+                                                                hideLabel={true}
+                                                                icon='substract'
+                                                                iconSize='xs'
+                                                                label='Decrease font size'
+                                                                unstyled={true}
+                                                                onClick={decreaseFontSize}
+                                                            />
+                                                            <Button
+                                                                className={`transition-color flex h-8 w-8 items-center justify-center rounded-full bg-white hover:bg-gray-100 dark:bg-grey-900 dark:hover:bg-grey-925 ${currentFontSizeIndex === FONT_SIZES.length - 1 ? 'opacity-20 hover:bg-white' : 'hover:bg-gray-100'}`}
+                                                                disabled={currentFontSizeIndex === FONT_SIZES.length - 1}
+                                                                hideLabel={true}
+                                                                icon='add'
+                                                                iconSize='xs'
+                                                                label='Increase font size'
+                                                                unstyled={true}
+                                                                onClick={increaseFontSize}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                    <div className='mb-5 flex items-center justify-between'>
+                                                        <span className='text-sm font-medium text-gray-900 dark:text-white'>Line spacing</span>
+                                                        <div className='flex items-center'>
+                                                            <Button
+                                                                className={`transition-color flex h-8 w-8 items-center justify-center rounded-full bg-white hover:bg-gray-100 dark:bg-grey-900 dark:hover:bg-grey-925 ${currentLineHeightIndex === 0 ? 'opacity-20 hover:bg-white' : 'hover:bg-gray-100'}`}
+                                                                disabled={currentLineHeightIndex === 0}
+                                                                hideLabel={true}
+                                                                icon='substract'
+                                                                iconSize='xs'
+                                                                label='Decrease line spacing'
+                                                                unstyled={true}
+                                                                onClick={decreaseLineHeight}
+                                                            />
+                                                            <Button
+                                                                className={`transition-color flex h-8 w-8 items-center justify-center rounded-full bg-white hover:bg-gray-100 dark:bg-grey-900 dark:hover:bg-grey-925 ${currentLineHeightIndex === LINE_HEIGHTS.length - 1 ? 'opacity-20 hover:bg-white' : 'hover:bg-gray-100'}`}
+                                                                disabled={currentLineHeightIndex === LINE_HEIGHTS.length - 1}
+                                                                hideLabel={true}
+                                                                icon='add'
+                                                                iconSize='xs'
+                                                                label='Increase line spacing'
+                                                                unstyled={true}
+                                                                onClick={increaseLineHeight}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                    <Button
+                                                        className="text-sm text-gray-600 hover:text-gray-700 dark:text-gray-500 dark:hover:text-gray-600"
+                                                        label="Reset to default"
+                                                        link={true}
+                                                        onClick={() => {
+                                                            setCurrentFontSizeIndex(1); // Default font size
+                                                            setCurrentLineHeightIndex(1); // Default line height
+                                                            setFontFamily({
+                                                                value: FONT_SANS,
+                                                                label: 'Clean sans-serif'
+                                                            });
+                                                        }}
+                                                    />
+                                                </div>
+                                            </PopoverContent>
+                                        </Popover>}
+                                        <Button className='transition-color flex h-10 w-10 items-center justify-center rounded-full bg-white hover:bg-gray-100 dark:bg-black dark:hover:bg-gray-950' icon='close' size='sm' unstyled onClick={() => modal.remove()}/>
                                     </div>
                                 </div>
-                            )}
-                            {object.type === 'Tombstone' && (
-                                <DeletedFeedItem last={true} />
-                            )}
-
-                            <div ref={replyBoxRef}>
-                                <APReplyBox
-                                    focused={isFocused}
-                                    object={object}
-                                    onReply={incrementReplyCount}
-                                    onReplyError={decrementReplyCount}
-                                />
                             </div>
-                            <FeedItemDivider />
+                            <div className='relative flex-1'>
+                                {modalSize === MODAL_SIZE_LG && object.type === 'Article' && tocItems.length > 1 && (
+                                    <div className="!visible absolute inset-y-0 right-7 z-40 hidden lg:!block">
+                                        <div className="sticky top-1/2 -translate-y-1/2">
+                                            <TableOfContents
+                                                items={tocItems}
+                                                onItemClick={scrollToHeading}
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+                                <div className='grow overflow-y-auto'>
+                                    <div className={`mx-auto px-8 pb-10 pt-5`} style={{maxWidth: currentMaxWidth}}>
+                                        {threadParents.map((item) => {
+                                            return (
+                                                item.object.type === 'Tombstone' ? (
+                                                    <DeletedFeedItem last={false} />
+                                                ) : (
+                                                    <FeedItem
+                                                        actor={item.actor}
+                                                        allowDelete={false}
+                                                        commentCount={item.object.replyCount ?? 0}
+                                                        last={false}
+                                                        layout='reply'
+                                                        object={item.object}
+                                                        repostCount={item.object.repostCount ?? 0}
+                                                        type='Note'
+                                                        onClick={() => {
+                                                            navigateForward(item.id, item.object, item.actor, false);
+                                                        }}
+                                                        onCommentClick={() => {
+                                                            navigateForward(item.id, item.object, item.actor, true);
+                                                            setIsFocused(true);
+                                                        }}
+                                                    />
+                                                )
+                                            );
+                                        })}
 
-                            {isLoadingThread && <LoadingIndicator size='lg' />}
-
-                            <div ref={repliesRef}>
-                                {threadChildren.map((item, index) => {
-                                    const showDivider = index !== threadChildren.length - 1;
-
-                                    return (
-                                        <React.Fragment key={item.id}>
+                                        {object.type === 'Note' && (
                                             <FeedItem
-                                                actor={item.actor}
-                                                allowDelete={item.object.authored}
-                                                commentCount={item.object.replyCount ?? 0}
-                                                isPending={isPendingActivity(item.id)}
+                                                actor={actor}
+                                                allowDelete={false}
+                                                commentCount={replyCount}
                                                 last={true}
-                                                layout='reply'
-                                                object={item.object}
-                                                parentId={object.id}
-                                                repostCount={item.object.repostCount ?? 0}
+                                                layout={'modal'}
+                                                object={object}
+                                                repostCount={object.repostCount ?? 0}
+                                                showHeader={(canNavigateBack || (threadParents.length > 0))}
+                                                showStats={!disableStats}
                                                 type='Note'
-                                                onClick={() => {
-                                                    navigateForward(item.id, item.object, item.actor, false);
-                                                }}
                                                 onCommentClick={() => {
-                                                    navigateForward(item.id, item.object, item.actor, true);
+                                                    repliesRef.current?.scrollIntoView({
+                                                        behavior: 'smooth',
+                                                        block: 'center'
+                                                    });
                                                     setIsFocused(true);
                                                 }}
-                                                onDelete={decrementReplyCount}
                                             />
-                                            {showDivider && <FeedItemDivider />}
-                                        </React.Fragment>
-                                    );
-                                })}
+                                        )}
+                                        {object.type === 'Article' && (
+                                            <div className='border-b border-gray-200 pb-8 dark:border-gray-950' id='object-content'>
+                                                <ArticleBody
+                                                    excerpt={object?.preview?.content ?? ''}
+                                                    fontFamily={fontFamily}
+                                                    fontSize={FONT_SIZES[currentFontSizeIndex]}
+                                                    heading={object.name}
+                                                    html={object.content ?? ''}
+                                                    image={typeof object.image === 'string' ? object.image : object.image?.url}
+                                                    lineHeight={LINE_HEIGHTS[currentLineHeightIndex]}
+                                                    postUrl={object?.url || ''}
+                                                    onHeadingsExtracted={handleHeadingsExtracted}
+                                                    onIframeLoad={handleIframeLoad}
+                                                    onLoadingChange={setIsLoading}
+                                                />
+                                                <div className='ml-[-7px]'>
+                                                    <FeedItemStats
+                                                        commentCount={replyCount}
+                                                        layout={'modal'}
+                                                        likeCount={1}
+                                                        object={object}
+                                                        repostCount={object.repostCount ?? 0}
+                                                        onCommentClick={() => {
+                                                            repliesRef.current?.scrollIntoView({
+                                                                behavior: 'smooth',
+                                                                block: 'center'
+                                                            });
+                                                            setIsFocused(true);
+                                                        }}
+                                                        onLikeClick={onLikeClick}
+                                                    />
+                                                </div>
+                                            </div>
+                                        )}
+                                        {object.type === 'Tombstone' && (
+                                            <DeletedFeedItem last={true} />
+                                        )}
+
+                                        <div ref={replyBoxRef}>
+                                            <APReplyBox
+                                                focused={isFocused}
+                                                object={object}
+                                                onReply={incrementReplyCount}
+                                                onReplyError={decrementReplyCount}
+                                            />
+                                        </div>
+                                        <FeedItemDivider />
+
+                                        {isLoadingThread && <LoadingIndicator size='lg' />}
+
+                                        <div ref={repliesRef}>
+                                            {threadChildren.map((item, index) => {
+                                                const showDivider = index !== threadChildren.length - 1;
+
+                                                return (
+                                                    <React.Fragment key={item.id}>
+                                                        <FeedItem
+                                                            actor={item.actor}
+                                                            allowDelete={item.object.authored}
+                                                            commentCount={item.object.replyCount ?? 0}
+                                                            isPending={isPendingActivity(item.id)}
+                                                            last={true}
+                                                            layout='reply'
+                                                            object={item.object}
+                                                            parentId={object.id}
+                                                            repostCount={item.object.repostCount ?? 0}
+                                                            type='Note'
+                                                            onClick={() => {
+                                                                navigateForward(item.id, item.object, item.actor, false);
+                                                            }}
+                                                            onCommentClick={() => {
+                                                                navigateForward(item.id, item.object, item.actor, true);
+                                                                setIsFocused(true);
+                                                            }}
+                                                            onDelete={decrementReplyCount}
+                                                        />
+                                                        {showDivider && <FeedItemDivider />}
+                                                    </React.Fragment>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </div>
-            </div>
-            {modalSize === MODAL_SIZE_LG && object.type === 'Article' && (
-                <div className='pointer-events-none !visible sticky bottom-0 hidden items-end justify-between px-10 pb-[42px] lg:!flex'>
-                    <div className='pointer-events-auto text-gray-600'>
-                        {getReadingTime(object.content ?? '')}
-                    </div>
-                    <div className='pointer-events-auto text-gray-600 transition-all duration-200 ease-out'>
-                        {readingProgress}%
-                    </div>
-                </div>
-            )}
+                        {modalSize === MODAL_SIZE_LG && object.type === 'Article' && (
+                            <div className='pointer-events-none !visible sticky bottom-0 hidden items-end justify-between px-10 pb-[42px] lg:!flex'>
+                                <div className='pointer-events-auto text-gray-600'>
+                                    {getReadingTime(object.content ?? '')}
+                                </div>
+                                <div key={readingProgress} className='pointer-events-auto min-w-10 text-right text-gray-600 transition-all duration-200 ease-out'>
+                                    {readingProgress}%
+                                </div>
+                            </div>
+                        )}
+                    </>
+                )
+            }
         </Modal>
     );
 };

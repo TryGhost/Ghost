@@ -175,6 +175,7 @@ tsconfig.tsbuildinfo
 .tinyb
 .venv
 .diff_tmp
+temp*.sql
 
 # Docker Yarn Cache
 .yarncache

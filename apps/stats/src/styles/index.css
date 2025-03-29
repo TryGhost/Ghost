@@ -1,0 +1,5 @@
+@import "@tryghost/shade/styles.css";
+
+.admin-x-base.shade {
+    animation-name: none;
+}

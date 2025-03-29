@@ -875,7 +875,8 @@
                     "link": "all",
                     "mention": "browse",
                     "collection": "all",
-                    "recommendation": "all"
+                    "recommendation": "all",
+                    "identity": "read"
                 },
                 "DB Backup Integration": {
                     "db": "all"
