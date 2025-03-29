@@ -81,7 +81,7 @@ const Feed: React.FC = () => {
                 <div className='w-full'>
                     {activities.length > 0 ? (
                         <div className='my-4'>
-                            <div className={`mx-auto flex min-h-[calc(100dvh_-_117px)] items-start gap-11`}>
+                            <div className='mx-auto flex items-start gap-11'>
                                 <div className='flex w-full min-w-0 flex-col items-center'>
                                     <div className='flex w-full min-w-0 max-w-[620px] flex-col items-start'>
                                         <FeedInput user={user} />

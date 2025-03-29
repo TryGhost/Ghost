@@ -1,4 +1,4 @@
-import React, {useCallback, useMemo, useRef, useEffect} from 'react';
+import React, {useCallback, useMemo, useRef, useEffect, createContext, useContext} from 'react';
 import {createHashRouter, RouteObject, RouterProvider as ReactRouterProvider, NavigateOptions as ReactRouterNavigateOptions, useNavigate as useReactRouterNavigate, useLocation, useParams} from 'react-router';
 import {useFramework} from './FrameworkProvider';
 import {NavigationStackProvider} from './NavigationStackProvider';
@@ -27,90 +27,75 @@ export interface RouterProviderProps {
 // Store scroll positions globally
 const scrollPositions = new Map<string, number>();
 
+interface ScrollRestorationContextType {
+    saveScrollPosition: (pathname: string, position: number) => void;
+    getScrollPosition: (pathname: string) => number | undefined;
+    resetScrollPosition: (pathname: string) => void;
+}
+
+const ScrollRestorationContext = createContext<ScrollRestorationContextType>({
+    saveScrollPosition: () => {},
+    getScrollPosition: () => undefined,
+    resetScrollPosition: () => {}
+});
+
+export function useScrollRestoration() {
+    return useContext(ScrollRestorationContext);
+}
+
 export function resetScrollPosition(location: string) {
     scrollPositions.delete(location);
 }
 
-export function useScrollableContainer() {
+interface ScrollRestorationProps {
+    containerRef: React.RefObject<HTMLDivElement>;
+}
+
+export function ScrollRestoration({containerRef}: ScrollRestorationProps) {
     const location = useLocation();
-    const containerRef = useRef<HTMLDivElement | null>(null);
-    const observerRef = useRef<MutationObserver | null>(null);
+    const previousPathRef = useRef<string | null>(null);
+    const lastScrollPositionRef = useRef<number | null>(null);
 
     // Save scroll position when user scrolls
     useEffect(() => {
-        const setupScrollListener = (container: HTMLDivElement) => {
-            const handleScroll = () => {
-                scrollPositions.set(location.pathname, container.scrollTop);
-            };
-
-            container.addEventListener('scroll', handleScroll);
-            return () => container.removeEventListener('scroll', handleScroll);
-        };
-
-        // If we already have a container, set up the listener immediately
-        if (containerRef.current) {
-            return setupScrollListener(containerRef.current);
-        }
-
-        // Otherwise, wait for the container to be available
-        observerRef.current = new MutationObserver((_, observer) => {
-            if (containerRef.current) {
-                const cleanup = setupScrollListener(containerRef.current);
-                observer.disconnect();
-                observerRef.current = null;
-                return cleanup;
-            }
-        });
-
-        observerRef.current.observe(document.body, {
-            childList: true,
-            subtree: true
-        });
-
-        return () => {
-            if (observerRef.current) {
-                observerRef.current.disconnect();
-                observerRef.current = null;
-            }
-        };
-    }, [location.pathname]);
-
-    // Restore scroll position when location changes
-    useEffect(() => {
-        const restoreScroll = (container: HTMLDivElement) => {
-            const savedPosition = scrollPositions.get(location.pathname);
-            container.scrollTop = savedPosition ?? 0;
-        };
-
-        // If we already have a container, restore immediately
-        if (containerRef.current) {
-            restoreScroll(containerRef.current);
+        const container = containerRef.current;
+        if (!container) {
             return;
         }
 
-        // Otherwise, wait for the container to be available
-        observerRef.current = new MutationObserver((_, observer) => {
-            if (containerRef.current) {
-                restoreScroll(containerRef.current);
-                observer.disconnect();
-                observerRef.current = null;
-            }
-        });
-
-        observerRef.current.observe(document.body, {
-            childList: true,
-            subtree: true
-        });
-
-        return () => {
-            if (observerRef.current) {
-                observerRef.current.disconnect();
-                observerRef.current = null;
-            }
+        const handleScroll = () => {
+            const currentPosition = container.scrollTop;
+            scrollPositions.set(location.pathname, currentPosition);
+            lastScrollPositionRef.current = currentPosition;
         };
+
+        container.addEventListener('scroll', handleScroll);
+        return () => container.removeEventListener('scroll', handleScroll);
+    }, [location.pathname, containerRef]);
+
+    // Restore scroll position when pathname changes
+    useEffect(() => {
+        const container = containerRef.current;
+        if (!container) {
+            return;
+        }
+
+        const savedPosition = scrollPositions.get(location.pathname);
+        if (savedPosition !== undefined && previousPathRef.current !== location.pathname) {
+            // Only restore if the saved position is significantly different
+            // This helps prevent small scroll adjustments
+            if (Math.abs(savedPosition - container.scrollTop) > 5) {
+                container.scrollTop = savedPosition;
+            }
+        }
+    }, [location.pathname, containerRef]);
+
+    // Update previous path
+    useEffect(() => {
+        previousPathRef.current = location.pathname;
     }, [location.pathname]);
 
-    return containerRef;
+    return null;
 }
 
 export function RouterProvider({

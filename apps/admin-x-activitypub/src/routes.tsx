@@ -45,7 +45,7 @@ export const routes: CustomRouteObject[] = [
             {
                 path: 'feed-rr/:postId',
                 element: <Post />,
-                pageTitle: 'Feed'
+                pageTitle: 'Note'
             },
             {
                 path: 'profile-rr',
