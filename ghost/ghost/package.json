@@ -25,7 +25,7 @@
     "@types/sinon": "^17.0.3",
     "@types/supertest": "^6.0.2",
     "c8": "8.0.1",
-    "mocha": "10.2.0",
+    "mocha": "10.8.2",
     "nock": "14.0.0-beta.6",
     "sinon": "17.0.1",
     "supertest": "7.0.0",
