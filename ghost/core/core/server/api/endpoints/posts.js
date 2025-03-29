@@ -71,7 +71,7 @@ const controller = {
             unsafeAttrs: unsafeAttrs
         },
         query(frame) {
-            return postsService.browsePosts(frame.options);
+            return postsService.browsePosts(frame);
         }
     },
 

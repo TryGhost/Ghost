@@ -1,11 +1,7 @@
-const tpl = require('@tryghost/tpl');
-const errors = require('@tryghost/errors');
-const models = require('../../models');
-const ALLOWED_INCLUDES = ['authors', 'tags', 'tiers'];
+const getPostServiceInstance = require('../../services/posts/posts-service');
+const postsService = getPostServiceInstance();
 
-const messages = {
-    postNotFound: 'Post not found.'
-};
+const ALLOWED_INCLUDES = ['authors', 'tags', 'tiers'];
 
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {
@@ -34,16 +30,13 @@ const controller = {
                 }
             }
         },
-        async query(frame) {
-            const model = await models.Post.findOne(Object.assign(frame.data, {status: 'sent'}), frame.options);
+        query(frame) {
+            const data = {
+                ...frame.data,
+                status: 'sent'
+            };
 
-            if (!model) {
-                throw new errors.NotFoundError({
-                    message: tpl(messages.postNotFound)
-                });
-            }
-
-            return model;
+            return postsService.readPost({...frame, data});
         }
     }
 };

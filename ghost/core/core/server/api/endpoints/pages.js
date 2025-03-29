@@ -1,13 +1,7 @@
 const models = require('../../models');
-const tpl = require('@tryghost/tpl');
-const errors = require('@tryghost/errors');
 const getPostServiceInstance = require('../../services/posts/posts-service');
 const ALLOWED_INCLUDES = ['tags', 'authors', 'authors.roles', 'tiers', 'count.signups', 'count.paid_conversions', 'post_revisions', 'post_revisions.author'];
 const UNSAFE_ATTRS = ['status', 'authors', 'visibility'];
-
-const messages = {
-    pageNotFound: 'Page not found.'
-};
 
 const postsService = getPostServiceInstance();
 
@@ -44,7 +38,7 @@ const controller = {
             unsafeAttrs: UNSAFE_ATTRS
         },
         query(frame) {
-            return models.Post.findPage(frame.options);
+            return postsService.browsePosts(frame);
         }
     },
 
@@ -82,16 +76,7 @@ const controller = {
             unsafeAttrs: UNSAFE_ATTRS
         },
         query(frame) {
-            return models.Post.findOne(frame.data, frame.options)
-                .then((model) => {
-                    if (!model) {
-                        throw new errors.NotFoundError({
-                            message: tpl(messages.pageNotFound)
-                        });
-                    }
-
-                    return model;
-                });
+            return postsService.readPost(frame);
         }
     },
 
