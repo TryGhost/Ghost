@@ -5,7 +5,8 @@ import FeedItem from '@components/feed/FeedItem';
 import Layout from '@src/components/layout/Layout';
 import React, {useEffect, useRef, useState} from 'react';
 import getUsername from '@src/utils/get-username';
-import {Skeleton} from '@tryghost/shade';
+import {EmptyViewIcon, EmptyViewIndicator} from '@src/components/global/EmptyViewIndicator';
+import {LucideIcon, Skeleton} from '@tryghost/shade';
 import {handleProfileClickRR} from '@src/utils/handle-profile-click';
 import {renderTimestamp} from '@src/utils/render-timestamp';
 import {useLocation, useNavigate, useNavigationStack, useParams} from '@tryghost/admin-x-framework';
@@ -187,7 +188,14 @@ const Post = () => {
                                 </div>
                             </div>
                         </div>
-                        : 'no post'}
+                        :
+                        <div className='mx-auto mt-4 flex w-full max-w-[620px] flex-col items-center'>
+                            <EmptyViewIndicator>
+                                <EmptyViewIcon><LucideIcon.Hash /></EmptyViewIcon>
+                                <div>Error loading note.</div>
+                            </EmptyViewIndicator>
+                        </div>
+                    }
                 </>
             }
         </Layout>
