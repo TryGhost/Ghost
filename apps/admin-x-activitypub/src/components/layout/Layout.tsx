@@ -2,7 +2,7 @@ import Header from './Header';
 import Onboarding, {useOnboardingStatus} from './Onboarding';
 import React, {useEffect} from 'react';
 import Sidebar from './Sidebar';
-import {Navigate} from '@tryghost/admin-x-framework';
+import {Navigate, useScrollableContainer} from '@tryghost/admin-x-framework';
 import {useCurrentUser} from '@tryghost/admin-x-framework/api/currentUser';
 import {useExploreProfilesForUser} from '@src/hooks/use-activity-pub-queries';
 
@@ -10,6 +10,7 @@ const Layout: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({children, ...pr
     const {isOnboarded} = useOnboardingStatus();
     const {data: currentUser, isLoading} = useCurrentUser();
     const {prefetchExploreProfiles} = useExploreProfilesForUser('index');
+    const containerRef = useScrollableContainer();
 
     useEffect(() => {
         prefetchExploreProfiles();
@@ -24,7 +25,7 @@ const Layout: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({children, ...pr
     }
 
     return (
-        <div className={`h-screen w-full ${isOnboarded && 'overflow-y-auto'}`}>
+        <div ref={containerRef} className={`h-screen w-full ${isOnboarded && 'overflow-y-auto'}`}>
             <div className='relative mx-auto flex max-w-page flex-col' {...props}>
                 {isOnboarded ?
                     <>
