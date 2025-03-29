@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {Button, ButtonProps, cn} from '@tryghost/shade';
-import {Link, useLocation, useNavigationStack} from '@tryghost/admin-x-framework';
+import {Link, resetScrollPosition, useLocation, useNavigationStack} from '@tryghost/admin-x-framework';
 
 interface SidebarButtonProps extends ButtonProps {
     to?: string;
@@ -20,7 +20,10 @@ const SidebarMenuLink = React.forwardRef<HTMLButtonElement, SidebarButtonProps>(
         if (to) {
             return (
                 <Button className={linkClass} variant='ghost' asChild>
-                    <Link to={to} onClick={() => resetStack()}>{children}</Link>
+                    <Link to={to} onClick={() => {
+                        resetStack();
+                        resetScrollPosition(to);
+                    }}>{children}</Link>
                 </Button>
             );
         }
