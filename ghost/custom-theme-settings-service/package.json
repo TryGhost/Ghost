@@ -20,7 +20,7 @@
   "devDependencies": {
     "@tryghost/nql-lang": "0.6.3",
     "c8": "8.0.1",
-    "mocha": "10.2.0",
+    "mocha": "10.8.2",
     "should": "13.2.3",
     "sinon": "15.2.0"
   },
