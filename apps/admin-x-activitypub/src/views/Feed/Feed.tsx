@@ -9,7 +9,6 @@ import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, LucideIcon} from '@tryghost/shade';
 import {EmptyViewIcon, EmptyViewIndicator} from '@src/components/global/EmptyViewIndicator';
 import {LoadingIndicator} from '@tryghost/admin-x-design-system';
-import {handleViewContent} from '@utils/content-handlers';
 import {isPendingActivity} from '@utils/pending-activity';
 import {
     useFeedForUser,
@@ -105,7 +104,9 @@ const Feed: React.FC = () => {
                                                         onClick={() => {
                                                             navigate(`/feed-rr/${encodeURIComponent(activity.id)}`);
                                                         }}
-                                                        onCommentClick={() => handleViewContent(activity, true)}
+                                                        onCommentClick={() => {
+                                                            navigate(`/feed-rr/${encodeURIComponent(activity.id)}?focusReply=true`);
+                                                        }}
                                                     />
                                                     {index < activities.length - 1 && (
                                                         <Separator />
