@@ -1,4 +1,4 @@
-import React, {useCallback, useMemo} from 'react';
+import React, {useCallback, useMemo, useRef, useEffect} from 'react';
 import {createHashRouter, RouteObject, RouterProvider as ReactRouterProvider, NavigateOptions as ReactRouterNavigateOptions, useNavigate as useReactRouterNavigate, useLocation, useParams} from 'react-router';
 import {useFramework} from './FrameworkProvider';
 import {NavigationStackProvider} from './NavigationStackProvider';
@@ -22,6 +22,91 @@ export interface RouterProviderProps {
     // Custom routing props
     errorElement?: React.ReactNode;
     children?: React.ReactNode;
+}
+
+// Store scroll positions globally
+const scrollPositions = new Map<string, number>();
+
+export function useScrollableContainer() {
+    const location = useLocation();
+    const containerRef = useRef<HTMLDivElement | null>(null);
+    const observerRef = useRef<MutationObserver | null>(null);
+
+    // Save scroll position when user scrolls
+    useEffect(() => {
+        const setupScrollListener = (container: HTMLDivElement) => {
+            const handleScroll = () => {
+                scrollPositions.set(location.pathname, container.scrollTop);
+            };
+
+            container.addEventListener('scroll', handleScroll);
+            return () => container.removeEventListener('scroll', handleScroll);
+        };
+
+        // If we already have a container, set up the listener immediately
+        if (containerRef.current) {
+            return setupScrollListener(containerRef.current);
+        }
+
+        // Otherwise, wait for the container to be available
+        observerRef.current = new MutationObserver((_, observer) => {
+            if (containerRef.current) {
+                const cleanup = setupScrollListener(containerRef.current);
+                observer.disconnect();
+                observerRef.current = null;
+                return cleanup;
+            }
+        });
+
+        observerRef.current.observe(document.body, {
+            childList: true,
+            subtree: true
+        });
+
+        return () => {
+            if (observerRef.current) {
+                observerRef.current.disconnect();
+                observerRef.current = null;
+            }
+        };
+    }, [location.pathname]);
+
+    // Restore scroll position when location changes
+    useEffect(() => {
+        const restoreScroll = (container: HTMLDivElement) => {
+            const savedPosition = scrollPositions.get(location.pathname);
+            container.scrollTop = savedPosition ?? 0;
+        };
+
+        // If we already have a container, restore immediately
+        if (containerRef.current) {
+            restoreScroll(containerRef.current);
+            return;
+        }
+
+        // Otherwise, wait for the container to be available
+        observerRef.current = new MutationObserver((_, observer) => {
+            if (containerRef.current) {
+                restoreScroll(containerRef.current);
+                observer.disconnect();
+                observerRef.current = null;
+            }
+        });
+
+        observerRef.current.observe(document.body, {
+            childList: true,
+            subtree: true
+        });
+
+        return () => {
+            if (observerRef.current) {
+                observerRef.current.disconnect();
+                observerRef.current = null;
+            }
+        };
+    }, [location.pathname]);
+
+    return containerRef;
 }
 
 export function RouterProvider({
