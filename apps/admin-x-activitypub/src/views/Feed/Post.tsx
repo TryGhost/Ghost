@@ -53,7 +53,7 @@ const Post = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        if (postRef.current && threadParents.length) {
+        if (postRef.current && threadParents.length > 0) {
             postRef.current.scrollIntoView({
                 behavior: 'instant',
                 block: 'start'
@@ -122,7 +122,7 @@ const Post = () => {
                                             );
                                         })}
                                         <div ref={postRef} className={`${canGoBack ? 'scroll-mt-[10px]' : 'scroll-mt-[102px]'}`}>
-                                            <div className={`${threadParents.length} && min-h-[100vh]`}>
+                                            <div className={`${threadParents.length > 0} && min-h-[calc(100vh-110px]`}>
                                                 <FeedItem
                                                     actor={post.actor}
                                                     allowDelete={false}
