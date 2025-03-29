@@ -27,6 +27,10 @@ export interface RouterProviderProps {
 // Store scroll positions globally
 const scrollPositions = new Map<string, number>();
 
+export function resetScrollPosition(location: string) {
+    scrollPositions.delete(location);
+}
+
 export function useScrollableContainer() {
     const location = useLocation();
     const containerRef = useRef<HTMLDivElement | null>(null);
