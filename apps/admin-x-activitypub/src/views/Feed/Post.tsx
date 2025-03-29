@@ -8,7 +8,7 @@ import getUsername from '@src/utils/get-username';
 import {Skeleton} from '@tryghost/shade';
 import {handleProfileClickRR} from '@src/utils/handle-profile-click';
 import {renderTimestamp} from '@src/utils/render-timestamp';
-import {useLocation, useNavigate, useParams} from '@tryghost/admin-x-framework';
+import {useLocation, useNavigate, useNavigationStack, useParams} from '@tryghost/admin-x-framework';
 import {usePostForUser, useThreadForUser} from '@hooks/use-activity-pub-queries';
 
 const FeedItemDivider: React.FC = () => (
@@ -18,6 +18,7 @@ const FeedItemDivider: React.FC = () => (
 const Post = () => {
     const {postId} = useParams();
     const location = useLocation();
+    const {canGoBack} = useNavigationStack();
     const [focusReply, setFocusReply] = useState(false);
     useEffect(() => {
         const searchParams = new URLSearchParams(location.search);
@@ -47,8 +48,18 @@ const Post = () => {
     }
 
     const repliesRef = useRef<HTMLDivElement>(null);
+    const postRef = useRef<HTMLDivElement>(null);
     const replyBoxRef = useRef<HTMLDivElement>(null);
     const navigate = useNavigate();
+
+    useEffect(() => {
+        if (postRef.current && threadParents.length) {
+            postRef.current.scrollIntoView({
+                behavior: 'instant',
+                block: 'start'
+            });
+        }
+    }, [threadParents]);
 
     return (
         <Layout>
@@ -110,64 +121,67 @@ const Post = () => {
                                                 )
                                             );
                                         })}
+                                        <div ref={postRef} className={`${canGoBack ? 'scroll-mt-[10px]' : 'scroll-mt-[102px]'}`}>
+                                            <div className={`${threadParents.length} && min-h-[100vh]`}>
+                                                <FeedItem
+                                                    actor={post.actor}
+                                                    allowDelete={false}
+                                                    commentCount={replyCount}
+                                                    last={true}
+                                                    layout={'modal'}
+                                                    object={object}
+                                                    repostCount={object.repostCount}
+                                                    showHeader={threadParents.length > 0}
+                                                    // showStats={!disableStats}
+                                                    type='Note'
+                                                    onCommentClick={() => {
+                                                        repliesRef.current?.scrollIntoView({
+                                                            behavior: 'smooth',
+                                                            block: 'center'
+                                                        });
+                                                        setFocusReply(true);
+                                                    }}
+                                                />
+                                                <div ref={replyBoxRef}>
+                                                    <APReplyBox
+                                                        focused={focusReply ? 1 : 0}
+                                                        object={object}
+                                                        onReply={incrementReplyCount}
+                                                        onReplyError={decrementReplyCount}
+                                                    />
+                                                </div>
+                                                <FeedItemDivider />
+                                                <div ref={repliesRef}>
+                                                    {threadChildren.map((item, index) => {
+                                                        const showDivider = index !== threadChildren.length - 1;
 
-                                        <FeedItem
-                                            actor={post.actor}
-                                            allowDelete={false}
-                                            commentCount={replyCount}
-                                            last={true}
-                                            layout={'modal'}
-                                            object={object}
-                                            repostCount={object.repostCount}
-                                            showHeader={threadParents.length > 0}
-                                            // showStats={!disableStats}
-                                            type='Note'
-                                            onCommentClick={() => {
-                                                repliesRef.current?.scrollIntoView({
-                                                    behavior: 'smooth',
-                                                    block: 'center'
-                                                });
-                                                setFocusReply(true);
-                                            }}
-                                        />
-                                        <div ref={replyBoxRef}>
-                                            <APReplyBox
-                                                focused={focusReply ? 1 : 0}
-                                                object={object}
-                                                onReply={incrementReplyCount}
-                                                onReplyError={decrementReplyCount}
-                                            />
-                                        </div>
-                                        <FeedItemDivider />
-                                        <div ref={repliesRef}>
-                                            {threadChildren.map((item, index) => {
-                                                const showDivider = index !== threadChildren.length - 1;
-
-                                                return (
-                                                    <React.Fragment key={item.id}>
-                                                        <FeedItem
-                                                            actor={item.actor}
-                                                            allowDelete={item.object.authored}
-                                                            commentCount={item.object.replyCount ?? 0}
-                                                            // isPending={isPendingActivity(item.id)}
-                                                            last={true}
-                                                            layout='reply'
-                                                            object={item.object}
-                                                            parentId={object.id}
-                                                            repostCount={item.object.repostCount ?? 0}
-                                                            type='Note'
-                                                            onClick={() => {
-                                                                navigate(`/feed-rr/${encodeURIComponent(item.id)}`);
-                                                            }}
-                                                            onCommentClick={() => {
-                                                                navigate(`/feed-rr/${encodeURIComponent(item.id)}?focusReply=true`);
-                                                            }}
-                                                            // onDelete={decrementReplyCount}
-                                                        />
-                                                        {showDivider && <FeedItemDivider />}
-                                                    </React.Fragment>
-                                                );
-                                            })}
+                                                        return (
+                                                            <React.Fragment key={item.id}>
+                                                                <FeedItem
+                                                                    actor={item.actor}
+                                                                    allowDelete={item.object.authored}
+                                                                    commentCount={item.object.replyCount ?? 0}
+                                                                    // isPending={isPendingActivity(item.id)}
+                                                                    last={true}
+                                                                    layout='reply'
+                                                                    object={item.object}
+                                                                    parentId={object.id}
+                                                                    repostCount={item.object.repostCount ?? 0}
+                                                                    type='Note'
+                                                                    onClick={() => {
+                                                                        navigate(`/feed-rr/${encodeURIComponent(item.id)}`);
+                                                                    }}
+                                                                    onCommentClick={() => {
+                                                                        navigate(`/feed-rr/${encodeURIComponent(item.id)}?focusReply=true`);
+                                                                    }}
+                                                                    // onDelete={decrementReplyCount}
+                                                                />
+                                                                {showDivider && <FeedItemDivider />}
+                                                            </React.Fragment>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
