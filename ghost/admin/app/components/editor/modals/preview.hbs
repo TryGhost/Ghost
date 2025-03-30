@@ -18,7 +18,7 @@
                 <button type="button" class="gh-btn {{if (eq this.previewSize "mobile") "gh-btn-group-selected"}} gh-post-preview-mode" {{on "click" (fn this.changePreviewSize "mobile")}}><span>{{svg-jar "mobile-phone"}}</span></button>
             </div>
             <div class="gh-contentfilter-divider"></div>
-            <span class="gh-select gh-web-preview-segment">
+            <span class="gh-select gh-web-preview-segment" data-test-select="preview-segment">
                 <PowerSelect
                     @selected={{this.selectedPreviewAsOption}}
                     @options={{this.previewAsOptions}}

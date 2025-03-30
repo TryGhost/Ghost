@@ -83,11 +83,11 @@ describe('Acceptance: Post email preview', function () {
         await click('[data-test-button="publish-preview"]');
         await click('[data-test-button="email-preview"]');
 
-        expect(find('[data-test-email-preview-newsletter-select]')).not.to.exist;
-        expect(find('[data-test-email-preview-segment-select]')).to.exist;
+        expect(find('[data-test-email-preview-newsletter-select]'), 'newsletter select').not.to.exist;
+        expect(find('[data-test-select="preview-segment"]'), 'segment select').to.exist;
 
         // check segments options
-        await clickTrigger('[data-test-email-preview-segment-select-section]');
+        await clickTrigger('[data-test-select="preview-segment"]');
 
         const options = findAll('.ember-power-select-option');
 
@@ -96,7 +96,7 @@ describe('Acceptance: Post email preview', function () {
         expect(options[1].textContent.trim()).to.equal('Paid member');
 
         // can switch free/paid member in preview
-        await selectChoose('[data-test-email-preview-segment-select]', 'Paid member');
+        await selectChoose('[data-test-select="preview-segment"]', 'Paid member');
 
         // send chosen segment on backend
         await click(find('[data-test-button="post-preview-test-email"]'));
