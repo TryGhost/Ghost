@@ -42,7 +42,7 @@
     "@types/lodash-es": "4.17.12",
     "@vitejs/plugin-react": "4.2.1",
     "c8": "8.0.1",
-    "chai": "4.3.8",
+    "chai": "4.5.0",
     "eslint-plugin-react-hooks": "4.6.0",
     "eslint-plugin-react-refresh": "0.4.19",
     "eslint-plugin-tailwindcss": "3.13.0",
