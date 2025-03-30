@@ -114,7 +114,6 @@ export default class PublishManagement extends Component {
                 publishOptions: this.publishOptions,
                 hasDirtyAttributes: this.args.hasUnsavedChanges,
                 saveTask: this.saveTask,
-                savePostTask: this.args.savePostTask,
                 togglePreviewPublish: this.togglePreviewPublish,
                 initialPreviewFormat: this.previewFormat,
                 changePreviewFormat: this.changePreviewFormat,
