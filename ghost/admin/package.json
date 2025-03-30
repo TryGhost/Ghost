@@ -59,7 +59,7 @@
     "@tryghost/timezone-data": "0.4.4",
     "animejs": "3.2.2",
     "autoprefixer": "9.8.6",
-    "babel-eslint": "10.1.0",
+    "@babel/eslint-parser": "7.11.0",
     "babel-plugin-transform-class-properties": "6.24.1",
     "babel-plugin-transform-react-jsx": "6.24.1",
     "broccoli-asset-rev": "3.0.0",
