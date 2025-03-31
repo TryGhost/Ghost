@@ -12,8 +12,8 @@ export interface RolesResponseType {
     roles: UserRole[];
 }
 export declare const useBrowseRoles: ({ searchParams, ...query }?: import("@tanstack/react-query").UseQueryOptions<RolesResponseType, unknown, RolesResponseType, import("@tanstack/query-core").QueryKey> & {
-    searchParams?: Record<string, string> | undefined;
-    defaultErrorHandler?: boolean | undefined;
+    searchParams?: Record<string, string>;
+    defaultErrorHandler?: boolean;
 }) => Omit<import("@tanstack/react-query").UseQueryResult<RolesResponseType>, "data"> & {
     data: RolesResponseType | undefined;
 };
