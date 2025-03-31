@@ -5,7 +5,7 @@ DESCRIPTION >
 SQL >
     %
     select distinct session_id
-    from mv_hits
+    from _mv_hits
     where
          site_uuid = {{ String(site_uuid, 'mock_site_uuid', description="Tenant ID", required=True) }}
         {% if defined(date_from) %} and toDate(toTimezone(timestamp, {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}})) >= {{ Date(date_from) }} {% else %} and toDate(toTimezone(timestamp, {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}})) >= timestampAdd(today(), interval -7 day) {% end %}
