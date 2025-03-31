@@ -123,4 +123,44 @@ describe('site.* events', function () {
             })
             .matchBodySnapshot();
     });
+
+    it('site.changed event is NOT triggered when draft posts are deleted', async function () {
+        const webhookURL = 'https://test-webhook-receiver.com/site-changed';
+        await webhookMockReceiver.mock(webhookURL);
+        await fixtureManager.insertWebhook({
+            event: 'site.changed',
+            url: webhookURL
+        });
+
+        const res = await adminAPIAgent
+            .post('posts/')
+            .body({
+                posts: [{
+                    title: 'webhookz',
+                    status: 'draft',
+                    mobiledoc: fixtureManager.get('posts', 1).mobiledoc
+                }]
+            })
+            .expectStatus(201);
+
+        const id = res.body.posts[0].id;
+
+        await adminAPIAgent
+            .delete('posts/' + id)
+            .expectStatus(204);
+
+        const receivedRequest = webhookMockReceiver.receivedRequest().then(() => true);
+        const wait = new Promise((resolve) => {
+            setTimeout(resolve, 2000, false);
+        });
+
+        const requestWasReceived = await Promise.race([
+            receivedRequest,
+            wait
+        ]);
+
+        if (requestWasReceived) {
+            throw new Error('The webhook should not have been sent.');
+        }
+    });
 });
