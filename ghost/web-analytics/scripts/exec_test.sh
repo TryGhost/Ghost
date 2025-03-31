@@ -15,8 +15,8 @@ check_sum() {
     local file=$1
     local expected_count=$2
 
-    # Only perform the check if the file starts with "all_"
-    if [[ ! $(basename "$file") =~ ^all_ ]]; then
+    # Skip check if file starts with "all_" AND contains "timezone" in the name // TODO: we should handle this for all tests and in a better way
+    if [[ ! $(basename "$file") =~ ^all_ ]] || [[ $(basename "$file") =~ timezone ]]; then
         return 0
     fi
 

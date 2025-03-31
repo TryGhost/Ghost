@@ -1,6 +1,8 @@
 VERSION 7
 TOKEN "stats_page" READ
 
+INCLUDE "../includes/filtered_sessions.incl"
+
 NODE _top_devices_0
 SQL >
 
@@ -9,7 +11,9 @@ SQL >
             device,
             uniqExact(session_id) as visits,
             count() as pageviews
-        from mv_hits
+        from _mv_hits h
+        inner join filtered_sessions fs
+            on fs.session_id = h.session_id
         where
             site_uuid = {{String(site_uuid, 'mock_site_uuid', description="Tenant ID", required=True)}}
             {% if defined(date_from) %}
