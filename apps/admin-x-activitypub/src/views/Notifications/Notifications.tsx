@@ -132,7 +132,7 @@ const NotificationGroupDescription: React.FC<NotificationGroupDescriptionProps> 
     return <></>;
 };
 
-const NotificationsV2: React.FC = () => {
+const Notifications: React.FC = () => {
     const [openStates, setOpenStates] = React.useState<{[key: string]: boolean}>({});
 
     const toggleOpen = (groupId: string) => {
@@ -336,4 +336,4 @@ const NotificationsV2: React.FC = () => {
     );
 };
 
-export default NotificationsV2;
+export default Notifications;
