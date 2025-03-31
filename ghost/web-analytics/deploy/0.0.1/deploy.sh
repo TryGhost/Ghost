@@ -15,7 +15,7 @@ command_exists() {
 }
 
 # Check required dependencies
-for cmd in tb jq; do
+for cmd in tb jq git; do
     if ! command_exists "$cmd"; then
         echo "❌ Required command '$cmd' not found"
         exit 1
@@ -57,3 +57,14 @@ tb pipe ls
 
 echo "Current datasources after cleanup:"
 tb datasource ls
+
+echo "Updating the git commit metadata..."
+# Only update git commit metadata if we're on the main branch
+CURRENT_BRANCH=$(tb branch current | grep "|" | awk -F'|' '{print $2}' | xargs)
+if [ "$CURRENT_BRANCH" = "main" ]; then
+    CURRENT_COMMIT=$(git rev-parse HEAD)
+    echo "On main branch, updating git commit metadata to: $CURRENT_COMMIT"
+    tb init --override-commit "$CURRENT_COMMIT"
+else
+    echo "Not on main branch ($CURRENT_BRANCH), skipping git commit metadata update"
+fi
