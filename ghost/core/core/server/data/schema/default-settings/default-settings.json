@@ -327,6 +327,14 @@
                 "isIn": [["true", "false"]]
             },
             "type": "boolean"
+        },
+        "captcha_sitekey": {
+            "defaultValue": null,
+            "type": "string"
+        },
+        "captcha_secret": {
+            "defaultValue": null,
+            "type": "string"
         }
     },
     "portal": {
