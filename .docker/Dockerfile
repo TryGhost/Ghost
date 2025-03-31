@@ -102,7 +102,6 @@ COPY ghost/minifier/package.json ghost/minifier/package.json
 COPY ghost/mw-error-handler/package.json ghost/mw-error-handler/package.json
 COPY ghost/mw-vhost/package.json ghost/mw-vhost/package.json
 COPY ghost/offers/package.json ghost/offers/package.json
-COPY ghost/payments/package.json ghost/payments/package.json
 COPY ghost/post-events/package.json ghost/post-events/package.json
 COPY ghost/post-revisions/package.json ghost/post-revisions/package.json
 COPY ghost/posts-service/package.json ghost/posts-service/package.json
