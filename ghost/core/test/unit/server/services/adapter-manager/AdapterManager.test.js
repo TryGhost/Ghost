@@ -1,6 +1,6 @@
 const sinon = require('sinon');
 const should = require('should');
-const AdapterManager = require('../');
+const AdapterManager = require('../../../../../core/server/services/adapter-manager/AdapterManager');
 
 class BaseMailAdapter {
     constructor() {
