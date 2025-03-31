@@ -28,13 +28,6 @@ echo "  Workspace: $(tb workspace ls | grep "True" | head -n1 | awk -F'|' '{prin
 echo "  Current branch:"
 tb branch current
 
-echo -n "Continue with deletion? [y/N] "
-read -r response
-if [[ ! "$response" =~ ^[Yy]$ ]]; then
-    echo "Aborting."
-    exit 1
-fi
-
 # Delete all pipes that have a version less than 7 or no version
 echo "🗑️ Deleting pipes with version < 7 or no version..."
 tb pipe ls --format json | \
