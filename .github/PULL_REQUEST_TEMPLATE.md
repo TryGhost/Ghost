@@ -5,7 +5,7 @@ Please take a minute to explain the change you're making:
 - What does it do?
 - Why is this something Ghost users or developers need?
 
-Please check these items off:
+Please check your PR against these items:
 
 - [ ] I've read and followed the [Contributor Guide](https://github.com/TryGhost/Ghost/blob/main/.github/CONTRIBUTING.md)
 - [ ] I've explained my change
