@@ -33,7 +33,6 @@ services:
       ## Prevent collisions between host and container node_modules
       - node_modules_ghost_root:/home/ghost/node_modules:delegated
       - node_modules_ghost_adapter-cache-redis:/home/ghost/ghost/adapter-cache-redis/node_modules:delegated
-      - node_modules_ghost_adapter-manager:/home/ghost/ghost/adapter-manager/node_modules:delegated
       - node_modules_ghost_admin:/home/ghost/ghost/admin/node_modules:delegated
       - node_modules_ghost_api-framework:/home/ghost/ghost/api-framework/node_modules:delegated
       - node_modules_ghost_constants:/home/ghost/ghost/constants/node_modules:delegated
@@ -173,7 +172,6 @@ volumes:
   redis-data: {}
   node_modules_ghost_root: {}
   node_modules_ghost_adapter-cache-redis: {}
-  node_modules_ghost_adapter-manager: {}
   node_modules_ghost_admin: {}
   node_modules_ghost_api-framework: {}
   node_modules_ghost_constants: {}

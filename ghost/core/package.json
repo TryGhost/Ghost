@@ -65,7 +65,6 @@
     "@slack/webhook": "7.0.5",
     "@tryghost/adapter-base-cache": "0.1.12",
     "@tryghost/adapter-cache-redis": "0.0.0",
-    "@tryghost/adapter-manager": "0.0.0",
     "@tryghost/admin-api-schema": "4.5.5",
     "@tryghost/api-framework": "0.0.0",
     "@tryghost/bookshelf-plugins": "0.6.25",

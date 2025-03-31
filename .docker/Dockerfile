@@ -66,7 +66,6 @@ COPY apps/shade/package.json apps/shade/package.json
 COPY apps/signup-form/package.json apps/signup-form/package.json
 COPY apps/sodo-search/package.json apps/sodo-search/package.json
 COPY ghost/adapter-cache-redis/package.json ghost/adapter-cache-redis/package.json
-COPY ghost/adapter-manager/package.json ghost/adapter-manager/package.json
 COPY ghost/admin/lib/asset-delivery/package.json ghost/admin/lib/asset-delivery/package.json
 COPY ghost/admin/lib/ember-power-calendar-moment/package.json ghost/admin/lib/ember-power-calendar-moment/package.json
 COPY ghost/admin/lib/ember-power-calendar-utils/package.json ghost/admin/lib/ember-power-calendar-utils/package.json
