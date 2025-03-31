@@ -78,12 +78,12 @@ describe('site.* events', function () {
             setTimeout(resolve, 2000, false);
         });
 
-        const requestWasRecieved = await Promise.race([
+        const requestWasReceived = await Promise.race([
             receivedRequest,
             wait
         ]);
 
-        if (requestWasRecieved) {
+        if (requestWasReceived) {
             throw new Error('The webhook should not have been sent.');
         }
     });
