@@ -1,4 +1,4 @@
-const EmailSegmenter = require('../lib/EmailSegmenter');
+const EmailSegmenter = require('../../../../../core/server/services/email-service/EmailSegmenter');
 const sinon = require('sinon');
 
 describe('Email segmenter', function () {

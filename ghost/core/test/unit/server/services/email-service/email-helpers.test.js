@@ -1,5 +1,5 @@
 const assert = require('assert/strict');
-const {registerHelpers} = require('../lib/helpers/register-helpers');
+const {registerHelpers} = require('../../../../../core/server/services/email-service/helpers/register-helpers');
 
 // load the i18n module
 const i18nLib = require('@tryghost/i18n');

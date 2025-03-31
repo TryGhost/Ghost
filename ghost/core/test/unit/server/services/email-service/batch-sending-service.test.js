@@ -1,10 +1,11 @@
-const {createModel, createModelClass, createDb, sleep} = require('./utils');
-const BatchSendingService = require('../lib/BatchSendingService');
 const sinon = require('sinon');
 const assert = require('assert/strict');
 const logging = require('@tryghost/logging');
 const nql = require('@tryghost/nql');
 const errors = require('@tryghost/errors');
+
+const {createModel, createModelClass, createDb, sleep} = require('./utils');
+const BatchSendingService = require('../../../../../core/server/services/email-service/BatchSendingService');
 
 // We need a short sleep in some tests to simulate time passing
 // This way we don't actually add a delay to the tests
@@ -1640,7 +1641,7 @@ describe('Batch Sending Service', function () {
             assert.equal(result, undefined, 'getDeliveryDeadline should return undefined if target delivery window is <=0');
         });
 
-        it('returns undefined if the email.created_at is not set', async function () { 
+        it('returns undefined if the email.created_at is not set', async function () {
             const email = createModel({});
             const service = new BatchSendingService({
                 sendingService: {
