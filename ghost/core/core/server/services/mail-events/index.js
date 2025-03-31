@@ -1,4 +1,4 @@
-const {MailEventService} = require('@tryghost/mail-events');
+const {MailEventService} = require('./MailEventService');
 const MailEventRepository = require('./BookshelfMailEventRepository.js');
 
 class MailEventsServiceWrapper {

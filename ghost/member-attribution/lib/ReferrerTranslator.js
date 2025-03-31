@@ -5,7 +5,7 @@
  * @prop {string|null} [referrerUrl]
  */
 
-const knownReferrers = require('@tryghost/referrers');
+const knownReferrers = require('./referrers.json');
 
 /**
  * Translates referrer info into Source and Medium

@@ -16,7 +16,7 @@ let ImageHandler = rewire('../../../../../core/server/data/importer/handlers/ima
 const MarkdownHandler = require('../../../../../core/server/data/importer/handlers/markdown');
 const RevueHandler = require('../../../../../core/server/data/importer/handlers/revue');
 const DataImporter = require('../../../../../core/server/data/importer/importers/data');
-const RevueImporter = require('@tryghost/importer-revue');
+const RevueImporter = require('../../../../../core/server/data/importer/importers/importer-revue');
 const configUtils = require('../../../../utils/configUtils');
 const logging = require('@tryghost/logging');
 

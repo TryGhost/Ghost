@@ -1,6 +1,5 @@
 import EmberObject from '@ember/object';
 import RSVP from 'rsvp';
-import sinon from 'sinon';
 import {authenticateSession} from 'ember-simple-auth/test-support';
 import {defineProperty} from '@ember/object';
 import {describe, it} from 'mocha';
@@ -24,6 +23,28 @@ describe('Unit: Controller: lexical-editor', function () {
     });
 
     describe('generateSlug', function () {
+        it('should generate a slug and set it on the post, passing the id if it exists', async function () {
+            let controller = this.owner.lookup('controller:lexical-editor');
+            controller.set('slugGenerator', EmberObject.create({
+                generateSlug(slugType, str, id) {
+                    if (id !== 'fake-id') {
+                        throw new Error('Expected id "fake-id" to be passed to generateSlug.');
+                    }
+                    return RSVP.resolve(`${str}-slug`);
+                }
+            }));
+            controller.set('post', createPost({id: 'fake-id', slug: ''}));
+
+            controller.set('post.titleScratch', 'title');
+            await settled();
+
+            expect(controller.get('post.slug')).to.equal('');
+
+            await controller.generateSlugTask.perform();
+
+            expect(controller.get('post.slug')).to.equal('title-slug');
+        });
+
         it('should generate a slug and set it on the post', async function () {
             let controller = this.owner.lookup('controller:lexical-editor');
             controller.set('slugGenerator', EmberObject.create({
@@ -135,34 +156,6 @@ describe('Unit: Controller: lexical-editor', function () {
             await controller.generateSlugTask.perform();
 
             expect(controller.get('post.slug')).to.equal('newtitle-slug');
-        });
-
-        it('should not call generateSlug if only whitespace is added to the title', async function () {
-            let controller = this.owner.lookup('controller:lexical-editor');
-
-            const slugify = str => str.trim().toLowerCase().replace(/\s+/g, '-');
-
-            // Create a stub for generateSlug to track calls and return a predictable slug
-            const generateSlugStub = sinon.stub().callsFake((slugType, str) => {
-                return RSVP.resolve(slugify(str)); // Mimic real slug generation
-            });
-
-            // Set the slugGenerator with the stub
-            controller.set('slugGenerator', EmberObject.create({
-                generateSlug: generateSlugStub
-            }));
-
-            controller.set('post', createPost({
-                title: 'title',
-                slug: 'title'
-            }));
-
-            // Add whitespace to the titleScratch
-            controller.set('post.titleScratch', 'title ');
-            await controller.generateSlugTask.perform();
-
-            expect(generateSlugStub.called).to.be.false; // Should not be called with the fix
-            expect(controller.get('post.slug')).to.equal('title'); // Slug remains unchanged
         });
     });
 

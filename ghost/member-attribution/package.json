@@ -15,14 +15,13 @@
   },
   "devDependencies": {
     "c8": "8.0.1",
-    "mocha": "10.2.0",
+    "mocha": "10.8.2",
     "should": "13.2.3",
     "sinon": "15.2.0"
   },
   "dependencies": {
     "@tryghost/domain-events": "0.0.0",
     "@tryghost/member-events": "0.0.0",
-    "@tryghost/referrers": "0.0.0",
     "@tryghost/string": "0.2.12"
   }
 }

@@ -1,9 +1,9 @@
 import moment from 'moment-timezone';
 
-export const TB_VERSION = 0;
+export const TB_VERSION = 7;
 
 export const RANGE_OPTIONS = [
-    {name: 'Last 24 hours', value: 1},
+    {name: 'Today', value: 1},
     {name: 'Last 7 days', value: 7},
     {name: 'Last 30 days', value: 30 + 1},
     {name: 'Last 3 months', value: 90 + 1},
@@ -28,10 +28,29 @@ export const CAMPAIGN_OPTIONS = [
 ];
 
 export const AUDIENCE_TYPES = [
-    {name: 'Logged out visitors', value: 'undefined'},
+    {name: 'Anonymous visitors', value: 'undefined'},
     {name: 'Free members', value: 'free'},
     {name: 'Paid members', value: 'paid'}
 ];
+
+export const STATS_LABEL_MAPPINGS = {
+    // Countries
+    US: 'United States',
+    TWN: 'Taiwan',
+
+    // Technical
+    'mobile-ios': 'iOS',
+    'mobile-android': 'Android',
+    macos: 'macOS',
+
+    // Sources
+    'google.com': 'Google',
+    'ghost.org': 'Ghost',
+    'bing.com': 'Bing',
+    'bsky.app': 'Bluesky',
+    'yahoo.com': 'Yahoo',
+    'duckduckgo.com': 'DuckDuckGo'
+};
 
 export function hexToRgba(hex, alpha = 1) {
     const r = parseInt(hex.slice(1, 3), 16);
@@ -117,7 +136,7 @@ export const statsStaticColors = [
 ];
 
 export const getCountryFlag = (countryCode) => {
-    if (!countryCode) {
+    if (!countryCode || countryCode === null || countryCode.toUpperCase() === 'ᴺᵁᴸᴸ') {
         return '🏳️';
     }
     return countryCode.toUpperCase().replace(/./g, char => String.fromCodePoint(char.charCodeAt(0) + 127397)
@@ -125,14 +144,38 @@ export const getCountryFlag = (countryCode) => {
 };
 
 export function getDateRange(chartRange) {
-    const endDate = moment().endOf('day');
-    const startDate = moment().subtract(chartRange - 1, 'days').startOf('day');
-    return {startDate, endDate};
+    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const endDate = moment().tz(timezone).endOf('day');
+    const startDate = moment().tz(timezone).subtract(chartRange - 1, 'days').startOf('day');
+    return {startDate, endDate, timezone};
+}
+
+export function formatVisitDuration(duration) {
+    if (duration === null || duration === 0) {
+        return '0s';
+    }
+
+    // Under a minute
+    if (duration < 60) {
+        return `${Math.floor(duration)}s`;
+    }
+
+    // Under an hour
+    if (duration < 3600) {
+        const minutes = Math.floor(duration / 60);
+        const seconds = Math.floor(duration % 60);
+        return `${minutes}m ${seconds}s`;
+    }
+
+    // Over an hour
+    const hours = Math.floor(duration / 3600);
+    const remainingMinutes = Math.floor((duration % 3600) / 60);
+    return `${hours}h ${remainingMinutes}m`;
 }
 
 export function getStatsParams(config, props, additionalParams = {}) {
     const {chartRange, audience, device, browser, location, source, pathname, os} = props;
-    const {startDate, endDate} = getDateRange(chartRange);
+    const {startDate, endDate, timezone} = getDateRange(chartRange);
 
     const params = {
         site_uuid: props.mockData ? 'mock_site_uuid' : config.stats.id,
@@ -142,7 +185,7 @@ export function getStatsParams(config, props, additionalParams = {}) {
     };
 
     if (audience.length > 0) {
-        params.member_status = audience;
+        params.member_status = audience.join(',');
     }
 
     if (device) {
@@ -167,6 +210,10 @@ export function getStatsParams(config, props, additionalParams = {}) {
 
     if (os) {
         params.os = os;
+    }
+
+    if (timezone) {
+        params.timezone = timezone;
     }
 
     return params;

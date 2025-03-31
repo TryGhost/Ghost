@@ -1,6 +1,6 @@
 /**
- * @typedef {import('@tryghost/mail-events').MailEventRepository} MailEventRepository
- * @typedef {import('@tryghost/mail-events').MailEvent} MailEvent
+ * @typedef {import('./MailEventRepository')} MailEventRepository
+ * @typedef {import('./MailEvent').MailEvent} MailEvent
  */
 
 /**

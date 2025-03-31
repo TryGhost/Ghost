@@ -292,8 +292,8 @@ textarea {
     border-radius: 8px;
 }
 
-.gh-input-x:focus,
-.gh-input-x:focus-visible {
+.gh-input-x:focus:not(.ember-basic-dropdown-trigger),
+.gh-input-x:focus-visible:not(.ember-basic-dropdown-trigger) {
     background-color: var(--white);
     border: 1px solid var(--green);
     box-shadow: 0 0 0 2px rgba(48,207,67,.25);

@@ -4,6 +4,15 @@ import {inject} from 'ghost-admin/decorators/inject';
 export default class StatsRoute extends AuthenticatedRoute {
     @inject config;
 
+    queryParams = {
+        device: {refreshModel: true},
+        browser: {refreshModel: true},
+        location: {refreshModel: true},
+        source: {refreshModel: true},
+        pathname: {refreshModel: true},
+        os: {refreshModel: true}
+    };
+
     beforeModel() {
         super.beforeModel(...arguments);
 

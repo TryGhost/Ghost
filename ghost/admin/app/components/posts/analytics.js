@@ -4,6 +4,7 @@ import PostSuccessModal from '../modal-post-success';
 import anime from 'animejs/lib/anime.es.js';
 import {action} from '@ember/object';
 import {didCancel, task} from 'ember-concurrency';
+import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
 
@@ -30,6 +31,9 @@ export default class Analytics extends Component {
     @service router;
     @service modals;
     @service notifications;
+    @service session;
+
+    @inject config;
 
     @tracked sources = null;
     @tracked links = null;

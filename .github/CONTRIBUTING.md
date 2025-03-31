@@ -33,7 +33,7 @@ We have a handful of simple standards for commit messages which help us to gener
 
 - **1st line:** Max 80 character summary written in past tense
 - **2nd line:** [Always blank]
-- **3rd line:** `refs <issue link>`, `fixes <issue link>` or `no issue`
+- **3rd line:** `ref <issue link>`, `fixes <issue link>`, `closes <issue link>` or blank
 - **4th line:** Why this change was made - the code includes the what, the commit message should describe the context of why - why this, why now, why not something else?
 
 If your change is **user-facing** please prepend the first line of your commit with **an emoji key**. If the commit is for an alpha feature, no emoji is needed. We are following [gitmoji](https://gitmoji.carloscuesta.me/).
@@ -43,10 +43,10 @@ If your change is **user-facing** please prepend the first line of your commit w
 - ✨ Feature
 - 🎨 Improvement / change
 - 🐛 Bug Fix
-- 🌐 i18n (translation) submissions
+- 🌐 i18n (translation) submissions  [[See Translating Ghost docs for more detail](https://www.notion.so/5af2858289b44f9194f73f8a1e17af59?pvs=25#bef8c9988e294a4b9a6dd624136de36f)]
 - 💡 Anything else flagged to users or whoever is writing release notes
 
-Good commit message examples: [one](https://github.com/TryGhost/Ghost/commit/61db6defde3b10a4022c86efac29cf15ae60983f), [two](https://github.com/TryGhost/Ghost/commit/b392d1925a9f961d7b4bf781ee86393a7773ed4b) and [three](https://github.com/TryGhost/Ghost/commit/e4807a779c28a754e3f8ae871a26a8aad12ca9a9).
+Good commit message examples: [new feature](https://github.com/TryGhost/Ghost/commit/61db6defde3b10a4022c86efac29cf15ae60983f), [bug fix](https://github.com/TryGhost/Ghost/commit/6ef835bb5879421ae9133541ebf8c4e560a4a90e) and [translation](https://github.com/TryGhost/Ghost/commit/83904c1611ae7ab3257b3b7d55f03e50cead62d7).
 
 **Bumping @tryghost dependencies**
 

@@ -50,7 +50,7 @@ module.exports = {
     },
     posts: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
-        uuid: {type: 'string', maxlength: 36, nullable: false, validations: {isUUID: true}},
+        uuid: {type: 'string', maxlength: 36, nullable: false, index: true, validations: {isUUID: true}},
         title: {type: 'string', maxlength: 2000, nullable: false, validations: {isLength: {max: 255}}},
         slug: {type: 'string', maxlength: 191, nullable: false},
         mobiledoc: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},

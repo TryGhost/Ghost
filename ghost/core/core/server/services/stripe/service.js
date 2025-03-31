@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const StripeService = require('@tryghost/members-stripe-service');
+const StripeService = require('./StripeService');
 const logging = require('@tryghost/logging');
 const membersService = require('../members');
 const config = require('../../../shared/config');

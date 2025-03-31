@@ -47,10 +47,18 @@ const features = [{
     title: 'Post analytics redesign',
     description: 'Enables redesigned Post analytics page',
     flag: 'postsX'
+},{
+    title: 'Stats redesign',
+    description: 'Enables redesigned Stats page',
+    flag: 'statsX'
 }, {
     title: 'Sign-up CAPTCHA',
     description: 'Enable CAPTCHA for member sign-up and sign-in',
     flag: 'captcha'
+}, {
+    title: 'Explore',
+    description: 'Enables keeping in touch with the new Explore API',
+    flag: 'explore'
 }];
 
 const AlphaFeatures: React.FC = () => {

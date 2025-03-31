@@ -18,7 +18,6 @@
     domain = document.currentScript.getAttribute('data-domain')
     DATASOURCE =
       document.currentScript.getAttribute('data-datasource') || DATASOURCE
-    console.log('DATASOURCE', DATASOURCE)
     STORAGE_METHOD =
       document.currentScript.getAttribute('data-storage') || STORAGE_METHOD
     stringifyPayload = document.currentScript.getAttribute('data-stringify-payload') !== 'false'

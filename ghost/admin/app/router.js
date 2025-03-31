@@ -26,6 +26,10 @@ Router.map(function () {
     this.route('launch');
     this.route('stats');
 
+    this.route('stats-x', function () {
+        this.route('stats-x', {path: '/*sub'});
+    });
+
     this.route('pro', function () {
         this.route('pro-sub', {path: '/*sub'});
     });

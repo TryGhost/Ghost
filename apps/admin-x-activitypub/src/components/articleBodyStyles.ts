@@ -553,11 +553,6 @@ unless a heading is the very first element in the post content */
     flex-direction: column;
     align-items: center;
     width: 100%;
-    position: relative; padding-top: 56.5%;
-}
-
-.kg-embed-card iframe {
-    position: absolute;width: 100%;height: 100%;left: 0px;top: 0px;
 }
 
 /* Gallery */
@@ -1043,12 +1038,6 @@ figcaption a {
 .kg-audio-seek-slider {
     flex-grow: 1;
     margin: 0 4px;
-}
-
-@media (max-width: 640px) {
-    .kg-audio-seek-slider {
-        display: none;
-    }
 }
 
 .kg-audio-playback-rate {
@@ -2802,6 +2791,15 @@ p.kg-collection-card-post-excerpt {
     display: flex;
     flex-direction: column;
     align-items: center;
+}
+
+.kg-video-container video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .kg-video-overlay {

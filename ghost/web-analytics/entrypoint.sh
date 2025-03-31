@@ -17,6 +17,22 @@ prompt_tb() {
     echo $TB_BRANCH
 }
 
+# Function to run SQL queries from files
+tbsql() {
+    if [ -z "$1" ]; then
+        echo "Usage: tbsql <filename without .sql>"
+        return 1
+    fi
+
+    local sql_file="/ghost/ghost/web-analytics/sql/$1.sql"
+    if [ ! -f "$sql_file" ]; then
+        echo "Error: SQL file not found: $sql_file"
+        return 1
+    fi
+
+    tb sql "$(cat $sql_file)"
+}
+
 # Export the prompt with Tinybird branch information
 export PS1="\w\$(prompt_tb)\$ "
 
