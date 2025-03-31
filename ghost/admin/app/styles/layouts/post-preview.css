@@ -285,9 +285,14 @@
 }
 
 .gh-post-preview-email-mockup-mobile .gh-post-preview-email-header {
-    gap: .8rem;
-    padding: .8rem;
+    gap: 0;
+    padding: 1rem;
 }
+
+.gh-post-preview-email-mockup-mobile .gh-post-preview-multiple-newsletters.gh-post-preview-email-header {
+    gap: .8rem;
+}
+
 
 .gh-post-preview-email-header label {
     min-width: 52px;
@@ -331,7 +336,7 @@
 }
 
 .gh-post-preview-email-mockup-mobile .gh-email-preview-newsletter-select {
-    gap: .8rem;
+    gap: .2rem;
 }
 
 .gh-email-preview-newsletter-select label {

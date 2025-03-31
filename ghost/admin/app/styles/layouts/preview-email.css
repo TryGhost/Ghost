@@ -148,8 +148,17 @@
     line-height: 1.15;
 }
 
+.gh-post-preview-email-mockup-mobile p.gh-preview-newsletter-name {
+    min-height: unset;
+    font-size: 1.3rem;
+}
+
 p .gh-preview-email-address {
     color: var(--midgrey-l1);
+}
+
+.gh-post-preview-email-mockup-mobile .gh-preview-email-address {
+    display: none;
 }
 
 .gh-preview-email-subject {
@@ -182,6 +191,15 @@ p .gh-preview-email-address {
 
 .gh-preview-email-subject svg path {
     stroke-width: 2px;
+}
+
+.gh-preview-email-subject-text {
+    margin: 0;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+    font-size: 1.3rem;
 }
 
 .gh-email-subject {

@@ -1,13 +1,17 @@
 <div class="gh-email-subject">
-    <input
-        aria-label="Email subject"
-        type="text"
-        class="gh-input gh-input-x"
-        placeholder={{truncate @post.title 40}}
-        value={{this.subject}}
-        {{on "blur" this.setSubject}}
-        {{on-key "Enter" this.setSubject}}
-    />
+    {{#if @mobile}}
+        <p class="gh-preview-email-subject-text">{{this.subject}}</p>
+    {{else}}
+        <input
+            aria-label="Email subject"
+            type="text"
+            class="gh-input gh-input-x"
+            placeholder={{truncate @post.title 40}}
+            value={{this.subject}}
+            {{on "blur" this.setSubject}}
+            {{on-key "Enter" this.setSubject}}
+        />
+    {{/if}}
 
     <div class="error">
         <GhErrorMessage @errors={{@post.errors}} @property="emailSubject" />
