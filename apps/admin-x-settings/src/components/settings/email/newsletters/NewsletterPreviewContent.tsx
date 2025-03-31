@@ -85,6 +85,9 @@ const NewsletterPreviewContent: React.FC<{
 
     const backgroundColorIsDark = backgroundColor && textColorForBackgroundColor(backgroundColor).hex().toLowerCase() === '#ffffff';
 
+    // Process footer content to add target and rel attributes to links
+    const processedFooterContent = footerContent ? footerContent.replace(/<a/g, '<a target="_blank" rel="noopener noreferrer"') : '';
+
     let emailHeader;
 
     if (isManagedEmail(config)) {
@@ -136,7 +139,7 @@ const NewsletterPreviewContent: React.FC<{
                             )}
                             {showHeader && (
                                 <div className="py-3" style={{borderColor: secondaryBorderColor}}>
-                                    {headerIcon && <img alt="" className="mx-auto mb-2 h-10 w-10" role="presentation" src={headerIcon} />}
+                                    {headerIcon && <img alt="" className="mx-auto mb-2 size-10" role="presentation" src={headerIcon} />}
                                     {headerTitle && <h4 className="mb-1 text-center text-[1.6rem] font-bold uppercase leading-tight tracking-tight text-grey-900" style={{color: textColor}}>{headerTitle}</h4>}
                                     {headerSubtitle && <h5 className="mb-1 text-center text-[1.3rem] font-normal text-grey-700" style={{color: secondaryTextColor}}>{headerSubtitle}</h5>}
                                 </div>
@@ -276,7 +279,7 @@ const NewsletterPreviewContent: React.FC<{
 
                             {/* Footer */}
                             <div className="flex flex-col items-center pt-10">
-                                <div dangerouslySetInnerHTML={{__html: footerContent || ''}} className="text break-words px-8 py-3 text-center text-[1.3rem] leading-base text-grey-700" style={{color: secondaryTextColor}} />
+                                <div dangerouslySetInnerHTML={{__html: processedFooterContent || ''}} className="text break-words px-8 py-3 text-center text-[1.3rem] leading-base text-grey-700 [&_a]:underline" style={{color: secondaryTextColor}} />
 
                                 <div className="px-8 pb-14 pt-3 text-center text-[1.3rem] text-grey-700">
                                     <span style={{color: secondaryTextColor}}>{siteTitle} © {currentYear} &mdash; </span>
@@ -286,7 +289,7 @@ const NewsletterPreviewContent: React.FC<{
                                 {showBadge && (
                                     <div className="flex flex-col items-center pb-[40px] pt-[10px]">
                                         <a className="pointer-events-none inline-flex cursor-auto items-center px-2 py-1 text-[1.25rem] font-semibold tracking-tight text-grey-900" href="https://ghost.org">
-                                            <GhostOrb className="mr-[6px] h-4 w-4"/>
+                                            <GhostOrb className="mr-[6px] size-4"/>
                                             <span>Powered by Ghost</span>
                                         </a>
                                     </div>
