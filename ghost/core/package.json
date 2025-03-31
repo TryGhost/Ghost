@@ -67,7 +67,6 @@
     "@tryghost/adapter-cache-redis": "0.0.0",
     "@tryghost/adapter-manager": "0.0.0",
     "@tryghost/admin-api-schema": "4.5.5",
-    "@tryghost/announcement-bar-settings": "0.0.0",
     "@tryghost/api-framework": "0.0.0",
     "@tryghost/bookshelf-plugins": "0.6.25",
     "@tryghost/color-utils": "0.2.2",
