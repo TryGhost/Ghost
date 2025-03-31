@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import TextField, {TextFieldProps} from './TextField';
 
 export type CurrencyFieldProps = Omit<TextFieldProps, 'type' | 'onChange' | 'value'> & {
@@ -15,13 +15,22 @@ export type CurrencyFieldProps = Omit<TextFieldProps, 'type' | 'onChange' | 'val
  * Available options are generally the same as TextField.
  */
 const CurrencyField: React.FC<CurrencyFieldProps> = ({
-    valueInCents,
+    valueInCents = '',
     onChange,
     ...props
 }) => {
-    const [localValue, setLocalValue] = useState(valueInCents === '' ? '' : ((valueInCents || 0) / 100).toString());
+    // Format the initial value using the same logic as onBlur
+    const formatValue = (cents: number | '') => {
+        if (cents === '' || cents === undefined) {
+            return '';
+        }
+        const value = cents / 100;
+        return value % 1 === 0 ? value.toString() : value.toFixed(2);
+    };
 
-    // While the user is editing we allow more lenient input, e.g. "1.32.566" to make it easier to type and change
+    const [localValue, setLocalValue] = useState(formatValue(valueInCents));
+
+    // While the user is editing we allow more lenient input
     const stripNonNumeric = (input: string) => input.replace(/[^\d.]+/g, '');
 
     // The saved value is strictly a number with 2 decimal places
@@ -29,16 +38,26 @@ const CurrencyField: React.FC<CurrencyFieldProps> = ({
         return Math.round(parseFloat(input.match(/[\d]+\.?[\d]{0,2}/)?.[0] || '0') * 100);
     };
 
+    // Update localValue when valueInCents prop changes
+    useEffect(() => {
+        setLocalValue(formatValue(valueInCents));
+    }, [valueInCents]);
+
     return <TextField
         {...props}
         value={localValue}
         onBlur={(e) => {
-            setLocalValue((forceCurrencyValue(e.target.value) / 100).toString());
+            const value = forceCurrencyValue(e.target.value) / 100;
+            setLocalValue(value % 1 === 0 ? value.toString() : value.toFixed(2));
+            // Only convert to cents on blur
+            onChange?.(forceCurrencyValue(e.target.value));
             props.onBlur?.(e);
         }}
         onChange={(e) => {
-            setLocalValue(stripNonNumeric(e.target.value));
-            onChange?.(forceCurrencyValue(e.target.value));
+            const stripped = stripNonNumeric(e.target.value);
+            setLocalValue(stripped);
+            // Don't convert to cents while typing
+            // onChange?.(forceCurrencyValue(stripped));
         }}
     />;
 };
