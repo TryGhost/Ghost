@@ -1,7 +1,7 @@
 require('should');
 const sinon = require('sinon');
 
-const versionMatch = require('../');
+const versionMatch = require('../../../../../../core/server/web/api/middleware/version-match');
 
 describe('Version Mismatch', function () {
     let req;

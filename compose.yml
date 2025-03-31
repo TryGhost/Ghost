@@ -69,7 +69,6 @@ services:
       - node_modules_ghost_minifier:/home/ghost/ghost/minifier/node_modules:delegated
       - node_modules_ghost_model-to-domain-event-interceptor:/home/ghost/ghost/model-to-domain-event-interceptor/node_modules:delegated
       - node_modules_ghost_mw-error-handler:/home/ghost/ghost/mw-error-handler/node_modules:delegated
-      - node_modules_ghost_mw-version-match:/home/ghost/ghost/mw-version-match/node_modules:delegated
       - node_modules_ghost_mw-vhost:/home/ghost/ghost/mw-vhost/node_modules:delegated
       - node_modules_ghost_nql-filter-expansions:/home/ghost/ghost/nql-filter-expansions/node_modules:delegated
       - node_modules_ghost_offers:/home/ghost/ghost/offers/node_modules:delegated
@@ -213,7 +212,6 @@ volumes:
   node_modules_ghost_minifier: {}
   node_modules_ghost_model-to-domain-event-interceptor: {}
   node_modules_ghost_mw-error-handler: {}
-  node_modules_ghost_mw-version-match: {}
   node_modules_ghost_mw-vhost: {}
   node_modules_ghost_nql-filter-expansions: {}
   node_modules_ghost_offers: {}

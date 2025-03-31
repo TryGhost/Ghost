@@ -7,7 +7,7 @@ const messages = {
     versionMismatch: 'Client request for {clientVersion} does not match server version {serverVersion}.'
 };
 
-function checkVersionMatch(req, res, next) {
+module.exports = function checkVersionMatch(req, res, next) {
     const clientVersion = req.get('X-Ghost-Version');
     // can contain pre-release suffix, you should be able to use e.g. 1.19.0-pre [server] with 1.18.0 [client]
     const serverVersion = res.locals.version.match(/^(\d+\.)?(\d+\.)?(\d+)/)[0];
@@ -38,6 +38,4 @@ function checkVersionMatch(req, res, next) {
     }
 
     next();
-}
-
-module.exports = checkVersionMatch;
+};
