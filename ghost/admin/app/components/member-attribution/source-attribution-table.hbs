@@ -6,9 +6,9 @@
             class="gh-dashboard-list-title {{if (eq @sortColumn "signups") "sorted-by"}}"
             {{on "click" (fn @setSortColumn "signups")}}
         >
-            <span class="hide-when-small">Free </span>signups{{#if this.membersUtils.paidMembersEnabled}}{{svg-jar "arrow-down-fill"}}{{/if}}
+            <span class="hide-when-small">Free </span>signups{{#if this.settings.paidMembersEnabled}}{{svg-jar "arrow-down-fill"}}{{/if}}
         </div>
-        {{#if this.membersUtils.paidMembersEnabled}}
+        {{#if this.settings.paidMembersEnabled}}
             <div
                 role="button" aria-label="Sort by paid conversions"
                 class="gh-dashboard-list-title {{if (eq @sortColumn "paid") "sorted-by"}}"
@@ -37,7 +37,7 @@
                             </span>
                         {{/if}}
                     </div>
-                        {{#if this.membersUtils.paidMembersEnabled}}
+                        {{#if this.settings.paidMembersEnabled}}
                             <div class="gh-dashboard-list-item-sub gh-dashboard-list-item-sub-paid {{if (eq @sortColumn "paid") "sorted-by"}}">
                                 {{#if sourceData.paidConversions}}
                                     <span class="gh-dashboard-metric-minivalue">
@@ -69,7 +69,7 @@
                                 </span>
                             {{/if}}
                         </div>
-                        {{#if this.membersUtils.paidMembersEnabled}}
+                        {{#if this.settings.paidMembersEnabled}}
                             <div class="gh-dashboard-list-item-sub gh-dashboard-list-item-sub-other {{if (eq @sortColumn "paid") "sorted-by"}}">
                                 {{#if this.others.paidConversions}}
                                     <span class="gh-dashboard-metric-minivalue">

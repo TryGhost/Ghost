@@ -7,7 +7,6 @@ import {isEmpty} from '@ember/utils';
 export default class MemberImportValidatorService extends Service {
     @service ajax;
     @service feature;
-    @service membersUtils;
 
     @service ghostPaths;
 

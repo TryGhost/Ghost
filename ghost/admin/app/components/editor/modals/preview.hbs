@@ -9,7 +9,7 @@
             <div class="gh-contentfilter gh-btn-group">
                 <button type="button" class="gh-btn {{if (eq this.tab "browser") "gh-btn-group-selected"}} gh-post-preview-mode" {{on "click" (fn this.changeTab "browser")}}><span>{{svg-jar "desktop"}}</span></button>
                 <button type="button" class="gh-btn {{if (eq this.tab "mobile") "gh-btn-group-selected"}} gh-post-preview-mode" {{on "click" (fn this.changeTab "mobile")}}><span>{{svg-jar "mobile-phone"}}</span></button>
-                {{#if (and (not-eq this.settings.membersSignupAccess "none") (not-eq this.settings.editorDefaultEmailRecipients "disabled"))}}
+                {{#if (and this.settings.membersEnabled (not-eq this.settings.editorDefaultEmailRecipients "disabled"))}}
                     {{#if (and @data.publishOptions.post.isPost (not @data.publishOptions.user.isContributor))}}
                         <button type="button" class="gh-btn {{if (eq this.tab "email") "gh-btn-group-selected"}} gh-post-preview-mode" {{on "click" (fn this.changeTab "email")}} data-test-button="email-preview"><span>{{svg-jar "email-unread"}}</span></button>
                     {{/if}}

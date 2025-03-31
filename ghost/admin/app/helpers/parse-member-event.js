@@ -7,7 +7,7 @@ import {inject as service} from '@ember/service';
 export default class ParseMemberEventHelper extends Helper {
     @service feature;
     @service utils;
-    @service membersUtils;
+    @service settings;
 
     compute([event, hasMultipleNewsletters]) {
         const subject = event.data.member ? (event.data.member.name || event.data.member.email) : (event.data.name || event.data.email || '');
@@ -293,7 +293,7 @@ export default class ParseMemberEventHelper extends Helper {
             return `MRR ${sign}${symbol}${Math.abs(mrrDelta)}`;
         }
 
-        if (event.type === 'signup_event' && this.membersUtils.paidMembersEnabled) {
+        if (event.type === 'signup_event' && this.settings.paidMembersEnabled) {
             return 'Free';
         }
 

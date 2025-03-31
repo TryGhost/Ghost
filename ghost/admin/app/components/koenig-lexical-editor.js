@@ -161,7 +161,6 @@ export default class KoenigLexicalEditor extends Component {
     @service feature;
     @service ghostPaths;
     @service koenig;
-    @service membersUtils;
     @service search;
     @service session;
     @service settings;
@@ -283,7 +282,7 @@ export default class KoenigLexicalEditor extends Component {
 
             const memberLinks = () => {
                 let links = [];
-                if (this.membersUtils.paidMembersEnabled) {
+                if (this.settings.paidMembersEnabled) {
                     links = [
                         {
                             label: 'Paid signup',
@@ -447,7 +446,7 @@ export default class KoenigLexicalEditor extends Component {
             deprecated: { // todo fix typo
                 headerV1: true // if false, shows header v1 in the menu
             },
-            membersEnabled: this.settings.membersSignupAccess === 'all',
+            membersEnabled: this.settings.membersEnabled,
             searchLinks,
             siteTitle: this.settings.title,
             siteDescription: this.settings.description,

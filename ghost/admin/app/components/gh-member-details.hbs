@@ -72,7 +72,7 @@
                 {{/if}}
             </div>
 
-            {{#if (and (not-eq this.settings.membersSignupAccess "none") (not-eq this.settings.editorDefaultEmailRecipients "disabled"))}}
+            {{#if (and this.settings.membersEnabled (not-eq this.settings.editorDefaultEmailRecipients "disabled"))}}
                 <div class="gh-member-details-stats-container">
                     <h4 class="gh-main-section-header small bn">Engagement</h4>
                     {{#if (eq @member.emailCount 0)}}

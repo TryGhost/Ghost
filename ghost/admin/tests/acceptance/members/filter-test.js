@@ -4,7 +4,6 @@ import {authenticateSession} from 'ember-simple-auth/test-support';
 import {blur, click, currentURL, fillIn, find, findAll, focus} from '@ember/test-helpers';
 import {datepickerSelect} from 'ember-power-datepicker/test-support';
 import {enableNewsletters} from '../../helpers/newsletters';
-import {enablePaidMembers} from '../../helpers/members';
 import {enableStripe} from '../../helpers/stripe';
 import {expect} from 'chai';
 import {selectChoose} from 'ember-power-select/test-support/helpers';
@@ -22,9 +21,9 @@ describe('Acceptance: Members filtering', function () {
         this.server.loadFixtures('configs');
         this.server.loadFixtures('settings');
         this.server.loadFixtures('newsletters');
+        this.server.loadFixtures('themes');
         enableStripe(this.server);
         enableNewsletters(this.server, true);
-        enablePaidMembers(this.server);
 
         let role = this.server.create('role', {name: 'Owner'});
         this.server.create('user', {roles: [role]});

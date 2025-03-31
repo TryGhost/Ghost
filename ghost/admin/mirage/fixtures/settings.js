@@ -57,6 +57,8 @@ export default [
     setting('private', 'public_hash', ''),
 
     // MEMBERS
+    setting('members', 'members_enabled', true),
+    setting('members', 'paid_members_enabled', true),
     setting('members', 'default_content_visibility', 'public'),
     setting('members', 'default_content_visibility_tiers', JSON.stringify([])),
     setting('members', 'members_signup_access', 'all'),

@@ -102,7 +102,7 @@
                                 </article>
                             </section>
                         {{/if}}
-                        {{#unless this.membersUtils.isMembersInviteOnly}}
+                        {{#unless this.settings.membersInviteOnly}}
                             <Dashboard::Charts::Attribution />
                         {{/unless}}
                         {{#if this.areNewslettersEnabled}}

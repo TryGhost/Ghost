@@ -9,7 +9,7 @@
             <div class="gh-dashboard-list-header">
                 <div class="gh-dashboard-list-title">Sources</div>
                 <div class="gh-dashboard-list-title">Free signups</div>
-                    {{#if this.membersUtils.paidMembersEnabled}}
+                    {{#if this.settings.paidMembersEnabled}}
                         <div class="gh-dashboard-list-title"><span class="hide-when-small">Paid </span>Conversions</div>
                     {{/if}}
             </div>
@@ -29,7 +29,7 @@
                                     {{/if}}
                                 </span>
                             </div>
-                                {{#if this.membersUtils.paidMembersEnabled}}
+                                {{#if this.settings.paidMembersEnabled}}
                                     <div class="gh-dashboard-list-item-sub">
                                         <span class="gh-dashboard-metric-minivalue">
                                             {{#if sourceData.paidConversions}}

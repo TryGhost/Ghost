@@ -123,7 +123,7 @@ export default class PublishOptions {
 
     get emailDisabledInSettings() {
         return this.settings.editorDefaultEmailRecipients === 'disabled'
-            || this.settings.membersSignupAccess === 'none';
+            || !this.settings.membersEnabled;
     }
 
     // publish type dropdown is not shown at all

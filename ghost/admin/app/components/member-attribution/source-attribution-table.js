@@ -4,8 +4,8 @@ import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 
 export default class SourceAttributionTable extends Component {
-    @service membersUtils;
     @service modals;
+    @service settings;
 
     @action
     openAllSources() {
