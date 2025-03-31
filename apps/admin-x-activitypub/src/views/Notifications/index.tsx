@@ -1,1 +1,1 @@
-export {default} from './NotificationsV2';
+export {default} from './Notifications';
