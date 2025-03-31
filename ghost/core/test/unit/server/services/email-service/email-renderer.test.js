@@ -1,4 +1,4 @@
-const {EmailRenderer} = require('../');
+const EmailRenderer = require('../../../../../core/server/services/email-service/EmailRenderer');
 const assert = require('assert/strict');
 const cheerio = require('cheerio');
 const {createModel, createModelClass} = require('./utils');

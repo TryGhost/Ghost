@@ -1,9 +1,10 @@
-const EmailEventStorage = require('../lib/EmailEventStorage');
 const {EmailDeliveredEvent, EmailOpenedEvent, EmailBouncedEvent, EmailTemporaryBouncedEvent, EmailUnsubscribedEvent, SpamComplaintEvent} = require('@tryghost/email-events');
 const sinon = require('sinon');
 const assert = require('assert/strict');
 const logging = require('@tryghost/logging');
 const {createDb, createPrometheusClient} = require('./utils');
+
+const EmailEventStorage = require('../../../../../core/server/services/email-service/EmailEventStorage');
 
 describe('Email Event Storage', function () {
     let logError;
