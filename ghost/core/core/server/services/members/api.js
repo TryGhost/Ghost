@@ -244,7 +244,7 @@ function createApiInstance(config) {
         captchaService: new CaptchaService({
             enabled: labsService.isSet('captcha') && sharedConfig.get('captcha:enabled'),
             scoreThreshold: sharedConfig.get('captcha:scoreThreshold'),
-            secretKey: sharedConfig.get('captcha:secretKey')
+            secretKey: sharedConfig.get('hostSettings:captcha:secretKey') || settingsCache.get('captcha_secret')
         })
     });
 
