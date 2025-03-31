@@ -91,7 +91,6 @@ COPY ghost/html-to-plaintext/package.json ghost/html-to-plaintext/package.json
 COPY ghost/i18n/package.json ghost/i18n/package.json
 COPY ghost/in-memory-repository/package.json ghost/in-memory-repository/package.json
 COPY ghost/job-manager/package.json ghost/job-manager/package.json
-COPY ghost/link-redirects/package.json ghost/link-redirects/package.json
 COPY ghost/link-replacer/package.json ghost/link-replacer/package.json
 COPY ghost/magic-link/package.json ghost/magic-link/package.json
 COPY ghost/mailgun-client/package.json ghost/mailgun-client/package.json
