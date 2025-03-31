@@ -1,6 +1,6 @@
 const assert = require('assert/strict');
 const ObjectID = require('bson-objectid').default;
-const EmailBouncedEvent = require('../../lib/EmailBouncedEvent');
+const EmailBouncedEvent = require('../../lib/events/EmailBouncedEvent');
 
 describe('EmailBouncedEvent', function () {
     it('exports a static create method to create instances', function () {
