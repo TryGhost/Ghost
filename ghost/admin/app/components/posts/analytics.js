@@ -249,7 +249,11 @@ export default class Analytics extends Component {
             return acc;
         }, {});
 
-        this.links = Object.values(linksByTitle);
+        this.links = Object.values(linksByTitle).sort((a, b) => {
+            const aClicks = a.count?.clicks || 0;
+            const bClicks = b.count?.clicks || 0;
+            return bClicks - aClicks;
+        });
     }
 
     async fetchReferrersStats() {
