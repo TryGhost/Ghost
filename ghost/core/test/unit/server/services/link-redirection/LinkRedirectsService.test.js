@@ -1,4 +1,4 @@
-const {LinkRedirectsService} = require('../index');
+const LinkRedirectsService = require('../../../../../core/server/services/link-redirection/LinkRedirectsService');
 const assert = require('assert/strict');
 const sinon = require('sinon');
 const crypto = require('crypto');
@@ -6,10 +6,6 @@ const crypto = require('crypto');
 describe('LinkRedirectsService', function () {
     afterEach(function () {
         sinon.restore();
-    });
-
-    it('exported', function () {
-        assert.equal(require('../index').LinkRedirectsService, LinkRedirectsService);
     });
 
     describe('getSlugUrl', function () {

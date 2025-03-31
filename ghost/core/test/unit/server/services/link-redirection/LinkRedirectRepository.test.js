@@ -2,13 +2,13 @@ const should = require('should');
 const sinon = require('sinon');
 const ObjectID = require('bson-objectid').default;
 const EventEmitter = require('events').EventEmitter;
-const LinkRedirect = require('@tryghost/link-redirects').LinkRedirect;
 
 const LinkRedirectRepository = require('../../../../../core/server/services/link-redirection/LinkRedirectRepository');
+const LinkRedirect = require('../../../../../core/server/services/link-redirection/LinkRedirect');
 
 /**
  * Create a stubbed LinkRedirect Bookshelf model for testing, with overridable values
- * 
+ *
  * @param {object} [values] - Values to override in the stubbed LinkRedirect model
  * @param {string} [values.id] - The ID of the model
  * @param {Date} [values.updated_at] - The updated_at date of the model
@@ -16,7 +16,7 @@ const LinkRedirectRepository = require('../../../../../core/server/services/link
  * @param {string} [values.from] - The from URL path of the model (path only)
  * @param {string} [values.to] - The to URL of the model (full URL including protocol, but not a URL object)
  * @returns {object} - A stubbed LinkRedirect Bookshelf model
- * 
+ *
  */
 function createRedirectModel(values = {}) {
     const get = sinon.stub();
@@ -33,8 +33,8 @@ function createRedirectModel(values = {}) {
 /**
  * Create a LinkRedirectRepository instance with stubbed dependencies
  * Optionally override dependencies with custom stubs if needed
- * 
- * @param {object} deps 
+ *
+ * @param {object} deps
  * @param {object} [deps.LinkRedirect] - Stubbed LinkRedirect Bookshelf model
  * @param {object} [deps.urlUtils] - Stubbed URL Utils module
  * @param {object} [deps.cacheAdapter] - Stubbed cache adapter, or null is cache is disabled

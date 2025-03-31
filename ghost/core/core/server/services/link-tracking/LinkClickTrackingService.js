@@ -1,4 +1,4 @@
-const {RedirectEvent} = require('@tryghost/link-redirects');
+const RedirectEvent = require('../link-redirection/RedirectEvent');
 const LinkClick = require('./ClickEvent');
 const PostLink = require('./PostLink');
 const ObjectID = require('bson-objectid').default;

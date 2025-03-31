@@ -4,7 +4,7 @@ const should = require('should');
 const assert = require('assert/strict');
 const ObjectID = require('bson-objectid').default;
 const PostLink = require('../../../../../core/server/services/link-tracking/PostLink');
-const {RedirectEvent} = require('@tryghost/link-redirects');
+const RedirectEvent = require('../../../../../core/server/services/link-redirection/RedirectEvent');
 const errors = require('@tryghost/errors');
 
 describe('LinkClickTrackingService', function () {
