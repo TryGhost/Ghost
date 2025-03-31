@@ -51,3 +51,9 @@ tb datasource ls --format json | \
   done
 
 echo "✅ Deployment completed successfully!"
+
+echo "Current pipes after cleanup:"
+tb pipe ls
+
+echo "Current datasources after cleanup:"
+tb datasource ls
