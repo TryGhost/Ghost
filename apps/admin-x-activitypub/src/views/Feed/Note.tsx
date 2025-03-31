@@ -16,7 +16,7 @@ const FeedItemDivider: React.FC = () => (
     <div className="h-px bg-gray-200 dark:bg-gray-950"></div>
 );
 
-const Post = () => {
+const Note = () => {
     const {postId} = useParams();
     const location = useLocation();
     const {canGoBack} = useNavigationStack();
@@ -66,7 +66,7 @@ const Post = () => {
         <Layout>
             {isPostLoading ?
                 <div className='mx-auto mt-8 flex max-w-[620px] items-center gap-3 px-8'>
-                    <Skeleton className='h-10 w-10 rounded-full' />
+                    <Skeleton className='size-10 rounded-full' />
                     <div className='grow'>
                         <Skeleton className='w-full' />
                         <Skeleton className='w-2/3' />
@@ -202,4 +202,4 @@ const Post = () => {
     );
 };
 
-export default Post;
+export default Note;
