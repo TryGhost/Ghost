@@ -10,7 +10,6 @@ import {Popover, PopoverContent, PopoverTrigger, Skeleton} from '@tryghost/shade
 import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, Icon, LoadingIndicator, Modal, Select, SelectOption} from '@tryghost/admin-x-design-system';
 import {renderTimestamp} from '../../utils/render-timestamp';
-import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
 import {useFocusedState} from '@components/global/APReplyBox';
 import {useModal} from '@ebay/nice-modal-react';
 import {usePostForUser, useThreadForUser} from '@hooks/use-activity-pub-queries';
@@ -60,6 +59,7 @@ const ArticleBody: React.FC<{
     onIframeLoad?: (iframe: HTMLIFrameElement) => void;
     onLoadingChange?: (isLoading: boolean) => void;
 }> = ({
+    postUrl,
     heading,
     image,
     excerpt,
@@ -71,25 +71,21 @@ const ArticleBody: React.FC<{
     onIframeLoad,
     onLoadingChange
 }) => {
-    const site = useBrowseSite();
-    const siteData = site.data?.site;
     const iframeRef = useRef<HTMLIFrameElement>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [iframeHeight, setIframeHeight] = useState('0px');
     const darkMode = document.documentElement.classList.contains('dark');
 
-    const cssContent = articleBodyStyles(siteData?.url.replace(/\/$/, ''));
+    const cssContent = articleBodyStyles();
 
     const htmlContent = `
-        <html class="has-${!darkMode ? 'dark' : 'light'}-text">
+        <html class="has-${!darkMode ? 'dark' : 'light'}-text has-${fontFamily.className === 'font-sans' ? 'sans' : 'serif'}-body">
         <head>
             ${cssContent}
             <style>
                 :root {
                     --font-size: ${fontSize};
                     --line-height: ${lineHeight};
-                    --font-family: ${(fontFamily.value === 'sans-serif' ? FONT_SANS : fontFamily.value)};
-                    --letter-spacing: ${fontFamily.label === 'Clean sans-serif' ? '-0.013em' : '0'};
                     --content-spacing-factor: ${SPACING_FACTORS[FONT_SIZES.indexOf(fontSize)]};
                 }
                 body {
@@ -177,9 +173,10 @@ const ArticleBody: React.FC<{
         <body>
             <header class='gh-article-header gh-canvas'>
                 <h1 class='gh-article-title is-title' data-test-article-heading>${heading}</h1>
-                ${excerpt ? `
-                    <p class='gh-article-excerpt'>${excerpt}</p>
-                    ` : ''}
+                ${excerpt ? `<p class='gh-article-excerpt'>${excerpt}</p>` : ''}
+                <a href="${postUrl}" target="_blank" rel="noopener noreferrer" class="gh-article-source">
+                    ${postUrl ? new URL(postUrl).hostname : ''} <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-external-link-icon lucide-external-link"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
+                </a>
                 ${image ? `
                 <figure class='gh-article-image'>
                     <img src='${image}' alt='${heading}' />
@@ -247,8 +244,8 @@ const ArticleBody: React.FC<{
         const root = iframeDocument.documentElement;
         root.style.setProperty('--font-size', fontSize);
         root.style.setProperty('--line-height', lineHeight);
-        root.style.setProperty('--font-family', fontFamily.value);
-        root.style.setProperty('--letter-spacing', fontFamily.label === 'Clean sans-serif' ? '-0.013em' : '0');
+        root.classList.remove('has-sans-body', 'has-serif-body');
+        root.classList.add(fontFamily.value === FONT_SANS ? 'has-sans-body' : 'has-serif-body');
         root.style.setProperty('--content-spacing-factor', SPACING_FACTORS[FONT_SIZES.indexOf(fontSize)]);
 
         const iframeWindow = iframe.contentWindow as IframeWindow;
@@ -319,7 +316,7 @@ const ArticleBody: React.FC<{
         <div className='w-full pb-6'>
             <div className='relative'>
                 {isLoading && (
-                    <div className='mt-6'>
+                    <div className='mx-auto mt-6 w-full max-w-[640px]'>
                         <div className='mb-6 flex flex-col gap-2'>
                             <Skeleton className='h-8' />
                             <Skeleton className='h-8 w-full max-w-md' />
@@ -361,14 +358,6 @@ const STORAGE_KEYS = {
     FONT_SIZE: 'ghost-ap-font-size',
     LINE_HEIGHT: 'ghost-ap-line-height',
     FONT_FAMILY: 'ghost-ap-font-family'
-} as const;
-
-const MAX_WIDTHS = {
-    '1.5rem': '544px',
-    '1.6rem': '644px',
-    '1.7rem': '684px',
-    '1.8rem': '724px',
-    '2rem': '764px'
 } as const;
 
 const SingleValue: React.FC<SingleValueProps<FontSelectOption, false>> = ({children, ...props}) => (
@@ -526,7 +515,7 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
 
     const [currentLineHeightIndex, setCurrentLineHeightIndex] = useState(() => {
         const saved = localStorage.getItem(STORAGE_KEYS.LINE_HEIGHT);
-        return saved ? parseInt(saved) : 1;
+        return saved ? parseInt(saved) : 2;
     });
 
     const [fontFamily, setFontFamily] = useState<SelectOption>(() => {
@@ -573,17 +562,13 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
             if (iframeDocument) {
                 iframeDocument.documentElement.style.setProperty('--font-size', FONT_SIZES[currentFontSizeIndex]);
                 iframeDocument.documentElement.style.setProperty('--line-height', LINE_HEIGHTS[currentLineHeightIndex]);
-                iframeDocument.documentElement.style.setProperty('--font-family', fontFamily.value);
-                iframeDocument.documentElement.style.setProperty('--letter-spacing', fontFamily.label === 'Clean sans-serif' ? '-0.013em' : '0');
                 iframeDocument.documentElement.style.setProperty('--content-spacing-factor', SPACING_FACTORS[FONT_SIZES.indexOf(FONT_SIZES[currentFontSizeIndex])]);
             }
         }
     }, [currentFontSizeIndex, currentLineHeightIndex, fontFamily]);
 
-    // Get the current max width based on font size
-    const currentMaxWidth = MAX_WIDTHS[FONT_SIZES[currentFontSizeIndex]];
-    // Calculate the grid column width by subtracting 64px from the current max width
-    const currentGridWidth = `${parseInt(currentMaxWidth) - 64}px`;
+    const currentMaxWidth = '904px';
+    const currentGridWidth = '640px';
 
     const [readingProgress, setReadingProgress] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
@@ -666,7 +651,7 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
 
         const heading = iframeElement.contentDocument.getElementById(id);
         if (heading) {
-            const container = document.querySelector('.overflow-y-auto');
+            const container = modalRef.current;
             if (!container) {
                 return;
             }
@@ -674,7 +659,7 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
             const headingOffset = heading.offsetTop;
 
             container.scrollTo({
-                top: headingOffset - 120,
+                top: headingOffset - 20,
                 behavior: 'smooth'
             });
         }
@@ -777,7 +762,7 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
                                         </div>
                                         <div className='relative z-10 flex w-full min-w-0 cursor-pointer flex-col overflow-visible text-[1.5rem]' onClick={e => handleProfileClick(actor, e)}>
                                             <div className='flex w-full'>
-                                                <span className='min-w-0 truncate whitespace-nowrap font-semibold hover:underline'>{actor.name}</span>
+                                                <span className='min-w-0 truncate whitespace-nowrap font-semibold tracking-tight hover:underline'>{actor.name}</span>
                                             </div>
                                             <div className='flex w-full'>
                                                 <span className='text-gray-700 after:mx-1 after:font-normal after:text-gray-700 after:content-["·"]'>{getUsername(actor)}</span>
@@ -873,7 +858,7 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
                                                         link={true}
                                                         onClick={() => {
                                                             setCurrentFontSizeIndex(1); // Default font size
-                                                            setCurrentLineHeightIndex(1); // Default line height
+                                                            setCurrentLineHeightIndex(2); // Default line height
                                                             setFontFamily({
                                                                 value: FONT_SANS,
                                                                 label: 'Clean sans-serif'
@@ -948,7 +933,7 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
                                             />
                                         )}
                                         {object.type === 'Article' && (
-                                            <div className='border-b border-gray-200 pb-8 dark:border-gray-950' id='object-content'>
+                                            <div className='flex flex-col items-center pb-8' id='object-content'>
                                                 <ArticleBody
                                                     excerpt={object?.preview?.content ?? ''}
                                                     fontFamily={fontFamily}
@@ -962,7 +947,7 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
                                                     onIframeLoad={handleIframeLoad}
                                                     onLoadingChange={setIsLoading}
                                                 />
-                                                <div className='ml-[-7px]'>
+                                                <div className='-ml-3 w-full' style={{maxWidth: currentGridWidth}}>
                                                     <FeedItemStats
                                                         commentCount={replyCount}
                                                         layout={'modal'}
@@ -985,19 +970,19 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
                                             <DeletedFeedItem last={true} />
                                         )}
 
-                                        <div ref={replyBoxRef}>
+                                        <div ref={replyBoxRef} className='mx-auto w-full border-t border-gray-200 dark:border-gray-950' style={{maxWidth: currentGridWidth}}>
                                             <APReplyBox
                                                 focused={isFocused}
                                                 object={object}
                                                 onReply={incrementReplyCount}
                                                 onReplyError={decrementReplyCount}
                                             />
+                                            <FeedItemDivider />
                                         </div>
-                                        <FeedItemDivider />
 
                                         {isLoadingThread && <LoadingIndicator size='lg' />}
 
-                                        <div ref={repliesRef}>
+                                        <div ref={repliesRef} className='mx-auto w-full' style={{maxWidth: currentGridWidth}}>
                                             {threadChildren.map((item, index) => {
                                                 const showDivider = index !== threadChildren.length - 1;
 
