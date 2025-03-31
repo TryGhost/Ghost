@@ -55,7 +55,7 @@
         "@vitejs/plugin-react": "4.2.1",
         "autoprefixer": "10.4.19",
         "concurrently": "8.2.2",
-        "eslint-plugin-react-hooks": "4.6.0",
+        "eslint-plugin-react-hooks": "4.6.2",
         "eslint-plugin-react-refresh": "0.4.19",
         "eslint-plugin-tailwindcss": "3.18.0",
         "jsdom": "24.1.3",
