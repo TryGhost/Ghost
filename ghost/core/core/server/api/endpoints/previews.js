@@ -11,24 +11,24 @@ const messages = {
 // Simulate serving content as different member states by setting the minimal
 // member context needed for content gating to function
 const _addMemberContextToFrame = (frame) => {
-    if (!frame?.options?.memberStatus) {
+    if (!frame?.options?.member_status) {
         return;
     }
 
-    // only set apiType when given a memberStatus to preserve backwards compatibility
+    // only set apiType when given a member_status to preserve backwards compatibility
     // where we used to serve "Admin API" content with no gating for all previews
     frame.apiType = 'content';
 
     frame.original ??= {};
     frame.original.context ??= {};
 
-    if (frame.options?.memberStatus === 'free') {
+    if (frame.options?.member_status === 'free') {
         frame.original.context.member = {
             status: 'free'
         };
     }
 
-    if (frame.options?.memberStatus === 'paid') {
+    if (frame.options?.member_status === 'paid') {
         frame.original.context.member = {
             status: 'paid'
         };
@@ -46,7 +46,7 @@ const controller = {
         permissions: true,
         options: [
             'include',
-            'memberStatus'
+            'member_status'
         ],
         data: [
             'uuid'
@@ -56,7 +56,7 @@ const controller = {
                 include: {
                     values: ALLOWED_INCLUDES
                 },
-                memberStatus: {
+                member_status: {
                     values: ALLOWED_MEMBER_STATUSES
                 }
             },

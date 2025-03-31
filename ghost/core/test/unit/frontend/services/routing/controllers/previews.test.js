@@ -70,7 +70,7 @@ describe('Unit - services/routing/controllers/previews', function () {
             uuid: req.params.uuid,
             status: 'all',
             include: 'authors,tags,tiers',
-            memberStatus: undefined
+            member_status: undefined
         }).resolves(apiResponse);
 
         sinon.stub(api, 'previews').get(() => {

@@ -66,8 +66,8 @@ describe('Frontend Routing: Preview Routes', function () {
             });
     });
 
-    it('should render draft as free member with ?memberStatus=free', async function () {
-        await request.get('/p/d52c42ae-2755-455c-80ec-70b2ec55c905/?memberStatus=free')
+    it('should render draft as free member with ?member_status=free', async function () {
+        await request.get('/p/d52c42ae-2755-455c-80ec-70b2ec55c905/?member_status=free')
             .expect('Content-Type', /html/)
             .expect(200)
             .expect(assertCorrectFrontendHeaders)
@@ -77,8 +77,8 @@ describe('Frontend Routing: Preview Routes', function () {
             });
     });
 
-    it('should render draft as paid member with ?memberStatus=paid', async function () {
-        await request.get('/p/d52c42ae-2755-455c-80ec-70b2ec55c905/?memberStatus=paid')
+    it('should render draft as paid member with ?member_status=paid', async function () {
+        await request.get('/p/d52c42ae-2755-455c-80ec-70b2ec55c905/?member_status=paid')
             .expect('Content-Type', /html/)
             .expect(200)
             .expect(assertCorrectFrontendHeaders)

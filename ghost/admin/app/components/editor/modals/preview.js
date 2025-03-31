@@ -44,7 +44,7 @@ export default class EditorPostPreviewModal extends Component {
 
     get browserPreviewUrl() {
         const url = new URL(this.args.data.publishOptions.post.previewUrl);
-        url.searchParams.set('memberStatus', this.previewAsSegment);
+        url.searchParams.set('member_status', this.previewAsSegment);
         return url.toString();
     }
 
