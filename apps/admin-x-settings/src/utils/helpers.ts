@@ -21,8 +21,8 @@ export function getOptionLabel(
 }
 
 export function getInitials(name: string = '') {
-    let rgx = new RegExp(/(\p{L}{1})\p{L}+/, 'gu');
-    let rgxInitials = [...name.matchAll(rgx)] || [];
+    let rgx = new RegExp(/([A-Za-z\u00C0-\u017F]{1})[A-Za-z\u00C0-\u017F]+/, 'g');
+    let rgxInitials = [...name.matchAll(rgx)];
 
     const initials = (
         (rgxInitials.shift()?.[1] || '') + (rgxInitials.pop()?.[1] || '')
