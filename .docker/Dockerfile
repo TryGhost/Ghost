@@ -81,7 +81,6 @@ COPY ghost/domain-events/package.json ghost/domain-events/package.json
 COPY ghost/donations/package.json ghost/donations/package.json
 COPY ghost/email-addresses/package.json ghost/email-addresses/package.json
 COPY ghost/email-content-generator/package.json ghost/email-content-generator/package.json
-COPY ghost/email-events/package.json ghost/email-events/package.json
 COPY ghost/email-service/package.json ghost/email-service/package.json
 COPY ghost/email-suppression-list/package.json ghost/email-suppression-list/package.json
 COPY ghost/express-dynamic-redirects/package.json ghost/express-dynamic-redirects/package.json

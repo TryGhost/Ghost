@@ -1,15 +1,16 @@
 const assert = require('assert/strict');
 const ObjectID = require('bson-objectid').default;
-const EmailUnsubscribedEvent = require('../../lib/EmailUnsubscribedEvent');
+const EmailOpenedEvent = require('../../lib/events/EmailOpenedEvent');
 
-describe('EmailUnsubscribedEvent', function () {
+describe('EmailOpenedEvent', function () {
     it('exports a static create method to create instances', function () {
-        const event = EmailUnsubscribedEvent.create({
+        const event = EmailOpenedEvent.create({
             email: 'test@test.test',
             memberId: new ObjectID().toHexString(),
             emailId: new ObjectID().toHexString(),
+            emailRecipientId: new ObjectID().toHexString(),
             timestamp: new Date()
         });
-        assert(event instanceof EmailUnsubscribedEvent);
+        assert(event instanceof EmailOpenedEvent);
     });
 });
