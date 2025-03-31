@@ -70,7 +70,7 @@
     "bson-objectid": "2.0.4",
     "concurrently": "8.2.2",
     "eslint-plugin-i18next": "6.1.1",
-    "eslint-plugin-react-hooks": "4.6.0",
+    "eslint-plugin-react-hooks": "4.6.2",
     "eslint-plugin-react-refresh": "0.4.19",
     "eslint-plugin-tailwindcss": "3.18.0",
     "jsdom": "24.1.3",
