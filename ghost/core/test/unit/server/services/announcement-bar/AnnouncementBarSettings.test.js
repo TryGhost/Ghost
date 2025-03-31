@@ -1,5 +1,5 @@
 const assert = require('assert/strict');
-const AnnouncementBarSettings = require('../index');
+const AnnouncementBarSettings = require('../../../../../core/server/services/announcement-bar-service/AnnouncementBarSettings');
 
 describe('AnnouncementBarSettings', function () {
     it('can initialize', function () {
