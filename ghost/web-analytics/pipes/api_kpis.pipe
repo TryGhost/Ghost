@@ -77,7 +77,7 @@ SQL >
             -- Count only hits matching the pathname
             (
                 select count()
-                from mv_hits h 
+                from _mv_hits h 
                 inner join filtered_sessions
                     on h.session_id = filtered_sessions.session_id
                 where h.pathname = {{ String(pathname) }}
