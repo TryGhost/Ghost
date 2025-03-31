@@ -951,6 +951,7 @@ jobs:
           fi
       - name: Custom deployment to the test Branch
         run: |
+          source .tinyenv
           DEPLOY_FILE=./deploy/${VERSION}/deploy.sh
           if [ -f "$DEPLOY_FILE" ]; then
               echo "$DEPLOY_FILE found"
@@ -1335,6 +1336,7 @@ jobs:
         run: tb --host=${{ secrets.TB_HOST }} --token=${{ secrets.TB_ADMIN_TOKEN_PRODUCTION }} auth info
       - name: Deploy changes to the main Workspace
         run: |
+          source .tinyenv
           DEPLOY_FILE=./deploy/${VERSION}/deploy.sh
           if [ ! -f "$DEPLOY_FILE" ]; then
             echo "$DEPLOY_FILE not found, running default tb push command"
@@ -1343,6 +1345,7 @@ jobs:
           fi
       - name: Custom deployment to the main Workspace
         run: |
+            source .tinyenv
             DEPLOY_FILE=./deploy/${VERSION}/deploy.sh
             if [ -f "$DEPLOY_FILE" ]; then
               echo "$DEPLOY_FILE found"
