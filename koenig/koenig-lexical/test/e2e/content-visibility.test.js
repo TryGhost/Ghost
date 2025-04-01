@@ -35,14 +35,10 @@ test.describe('Content Visibility', async () => {
             await expect(page.locator('[data-kg-card-toolbar="html"] [data-testid="edit-html"]')).toBeVisible();
         });
 
-        test('toolbar shows settings panel on click', async function () {
+        test('toolbar does not show settings panel by default on click', async function () {
             const card = await insertHtmlCard();
             await card.getByTestId('edit-html').click();
-
-            // settings are visible
-            await expect(card.getByTestId('settings-panel')).toBeVisible();
-            await card.getByTestId('tab-visibility').click();
-            await expect(card.getByTestId('visibility-toggle-web-nonMembers')).toBeVisible();
+            await expect(card.getByTestId('settings-panel')).not.toBeVisible();
         });
 
         test('clicking on edit button transitions card into edit mode', async function () {
@@ -54,7 +50,9 @@ test.describe('Content Visibility', async () => {
 
         test('visibility settings defaults to show on email and web and all members', async function () {
             const card = await insertHtmlCard();
-            await card.getByTestId('edit-html').click();
+
+            await card.getByTestId('show-visibility').click();
+            await card.getByTestId('tab-visibility').click();
 
             await expect(card.getByTestId('visibility-message')).not.toBeVisible();
 
@@ -68,7 +66,7 @@ test.describe('Content Visibility', async () => {
         test('can toggle visibility settings ', async function () {
             const card = await insertHtmlCard();
 
-            await card.getByTestId('edit-html').click();
+            await card.getByTestId('show-visibility').click();
             await card.getByTestId('tab-visibility').click();
 
             await card.getByTestId('visibility-toggle-web-nonMembers').click();
@@ -86,33 +84,72 @@ test.describe('Content Visibility', async () => {
             await expect(card.getByTestId('visibility-message')).not.toBeVisible();
         });
 
+        test('toggling settings in visibility panel does not trigger edit mode', async function () {
+            const card = await insertHtmlCard();
+
+            await card.getByTestId('show-visibility').click();
+            await card.getByTestId('tab-visibility').click();
+            await card.getByTestId('visibility-toggle-web-nonMembers').click();
+            await expect(card).toHaveAttribute('data-kg-card-editing', 'false');
+        });
+
         test('visibility icon is shown when visibility changes from shown-to-all', async function () {
             const card = await insertHtmlCard();
 
             await expect(page.getByTestId('visibility-indicator')).not.toBeVisible();
 
-            await card.getByTestId('edit-html').click();
-            await expect(card).toHaveAttribute('data-kg-card-editing', 'true');
+            await card.getByTestId('show-visibility').click();
+            await card.getByTestId('tab-visibility').click();
+            await expect(card).toHaveAttribute('data-kg-card-editing', 'false');
             await card.getByTestId('visibility-toggle-web-nonMembers').click();
 
             await expect(page.getByTestId('visibility-indicator')).toBeVisible();
-
-            // clicking visibility indicator toggles edit mode
-            await page.getByTestId('visibility-indicator').click();
-            await expect(card).toHaveAttribute('data-kg-card-editing', 'false');
-            await page.getByTestId('visibility-indicator').click();
-            await expect(card).toHaveAttribute('data-kg-card-editing', 'true');
         });
 
         test('paid member visibility settings hidden when stripe is not enabled', async function () {
             await initialize({page, uri: '/#/?content=false&labs=contentVisibility&stripe=false'});
             const card = await insertHtmlCard();
 
-            await card.getByTestId('edit-html').click();
+            await card.getByTestId('show-visibility').click();
             await card.getByTestId('tab-visibility').click();
 
             await expect(card.getByTestId('visibility-toggle-web-paidMembers')).not.toBeVisible();
             await expect(card.getByTestId('visibility-toggle-email-paidMembers')).not.toBeVisible();
+        });
+
+        test('visibility indicator can toggle visibility settings panel', async function () {
+            const card = await insertHtmlCard();
+
+            await card.getByTestId('show-visibility').click();
+            await card.getByTestId('tab-visibility').click();
+
+            await card.getByTestId('visibility-toggle-web-nonMembers').click();
+
+            await page.getByTestId('post-title').click();
+            await page.getByTestId('visibility-indicator').click();
+
+            await expect(card.getByTestId('settings-panel')).toBeVisible();
+        });
+
+        test('clicking show visibility in toolbar does not trigger edit mode', async function () {
+            const card = await insertHtmlCard();
+
+            await page.getByTestId('show-visibility').click();
+            await expect(card).toHaveAttribute('data-kg-card-editing', 'false');
+        });
+
+        test('clicking visibility indicator does not trigger edit mode', async function () {
+            const card = await insertHtmlCard();
+
+            await card.getByTestId('show-visibility').click();
+            await card.getByTestId('tab-visibility').click();
+
+            await card.getByTestId('visibility-toggle-web-nonMembers').click();
+
+            await page.getByTestId('post-title').click();
+
+            await page.getByTestId('visibility-indicator').click();
+            await expect(card).toHaveAttribute('data-kg-card-editing', 'false');
         });
     });
 });

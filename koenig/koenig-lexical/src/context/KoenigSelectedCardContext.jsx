@@ -6,7 +6,7 @@ export const KoenigSelectedCardContext = ({children}) => {
     const [selectedCardKey, setSelectedCardKey] = React.useState(null);
     const [isEditingCard, setIsEditingCard] = React.useState(false);
     const [isDragging, setIsDragging] = React.useState(false);
-
+    const [showVisibilitySettings, setShowVisibilitySettings] = React.useState(false);
     const contextValue = React.useMemo(() => {
         return {
             selectedCardKey,
@@ -14,7 +14,9 @@ export const KoenigSelectedCardContext = ({children}) => {
             isEditingCard,
             setIsEditingCard,
             isDragging,
-            setIsDragging
+            setIsDragging,
+            showVisibilitySettings,
+            setShowVisibilitySettings
         };
     }, [
         selectedCardKey,
@@ -22,7 +24,9 @@ export const KoenigSelectedCardContext = ({children}) => {
         isEditingCard,
         setIsEditingCard,
         isDragging,
-        setIsDragging
+        setIsDragging,
+        showVisibilitySettings,
+        setShowVisibilitySettings
     ]);
 
     return <Context.Provider value={contextValue}>{children}</Context.Provider>;

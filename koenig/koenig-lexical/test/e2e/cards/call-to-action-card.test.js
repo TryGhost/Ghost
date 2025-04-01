@@ -281,7 +281,7 @@ test.describe('Call To Action Card', async () => {
 
     test('has a progress bar while uploading', async function () {
         const filePath = path.relative(process.cwd(), __dirname + `/../fixtures/large-image.jpeg`);
-    
+
         await focusEditor(page);
         await insertCard(page, {cardName: 'call-to-action'});
         const fileChooserPromise = page.waitForEvent('filechooser');
@@ -368,7 +368,7 @@ test.describe('Call To Action Card', async () => {
         await focusEditor(page);
         await insertCard(page, {cardName: 'call-to-action'});
         await page.getByTestId('tab-design').click();
-        
+
         // Verify alignment settings are not visible by default (minimal layout)
         await expect(page.getByTestId('left-align')).not.toBeVisible();
         await expect(page.getByTestId('center-align')).not.toBeVisible();
@@ -379,7 +379,7 @@ test.describe('Call To Action Card', async () => {
         await insertCard(page, {cardName: 'call-to-action'});
         await page.getByTestId('tab-design').click();
         await page.click('[data-testid="immersive-layout"]');
-        
+
         // Verify alignment settings are now visible
         await expect(page.getByTestId('left-align')).toBeVisible();
         await expect(page.getByTestId('center-align')).toBeVisible();
@@ -397,15 +397,15 @@ test.describe('Call To Action Card', async () => {
         await page.keyboard.type('Test content for alignment');
         await page.getByTestId('tab-design').click();
         await page.click('[data-testid="immersive-layout"]');
-        
+
         // Test left alignment (default)
         const contentEditor = page.locator('[data-testid="cta-card-content-editor"]');
         await expect(contentEditor).toHaveClass(/text-left/);
-        
+
         // Test center alignment
         await page.click('[data-testid="center-align"]');
         await expect(contentEditor).toHaveClass(/text-center/);
-        
+
         // Test switching back to left alignment
         await page.click('[data-testid="left-align"]');
         await expect(contentEditor).toHaveClass(/text-left/);
@@ -449,18 +449,18 @@ test.describe('Call To Action Card', async () => {
         await focusEditor(page);
         await insertCard(page, {cardName: 'call-to-action'});
         await page.getByTestId('tab-design').click();
-        
+
         // Get the initial link color (should be text color by default)
         const ctaCard = await page.locator('[data-kg-card="call-to-action"] > :first-child');
         const initialColor = await ctaCard.evaluate(el => getComputedStyle(el).getPropertyValue('--cta-link-color'));
         expect(initialColor.trim()).toBe('#394047'); // Default text color
-        
+
         // Change to accent color
         await page.locator('[data-testid="cta-link-color-picker"] button').click();
         await page.locator('[data-testid="color-picker-accent"]').click();
         const accentColor = await ctaCard.evaluate(el => getComputedStyle(el).getPropertyValue('--cta-link-color'));
         expect(accentColor.trim()).toBe('#ff0095'); // Default accent color
-        
+
         // Change back to text color
         await page.locator('[data-testid="cta-link-color-picker"] button').click();
         await page.locator('[data-testid="color-picker-text"]').click();
@@ -565,6 +565,22 @@ test.describe('Call To Action Card', async () => {
         });
     });
 
+    test('can toggle settings from visibility icon', async function () {
+        await focusEditor(page);
+        const card = await insertCard(page, {cardName: 'call-to-action'});
+
+        await page.fill('[data-testid="button-text"]', 'Click me');
+        await page.fill('[data-testid="button-url"]', 'https://example.com/somepost');
+        await card.getByTestId('tab-visibility').click();
+        // activate visibility settings
+        await card.getByTestId('visibility-toggle-web-nonMembers').click();
+
+        await page.getByTestId('post-title').click();
+
+        await page.getByTestId('visibility-indicator').click();
+        await expect(page.getByTestId('settings-panel')).toBeVisible();
+    });
+
     test('can import serialized visibility settings', async function () {
         const contentParam = encodeURIComponent(JSON.stringify({
             root: {
@@ -588,7 +604,7 @@ test.describe('Call To Action Card', async () => {
             }
         }));
 
-        await initialize({page, uri: `/#/?content=${contentParam}`});
+        await initialize({page, uri: `/#/?content=${contentParam}&labs=contentVisibility`});
 
         // assert visibility icon is visible
         await expect(page.getByTestId('visibility-indicator')).toBeVisible();

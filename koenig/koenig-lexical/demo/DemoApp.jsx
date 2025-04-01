@@ -50,7 +50,7 @@ const defaultCardConfig = {
     feature: {
         collections: true,
         collectionsCard: true,
-        contentVisibility: true,
+        contentVisibility: false,
         contentVisibilityAlpha: false
     },
     deprecated: {
