@@ -35,7 +35,7 @@
     "@ember/jquery": "2.0.0",
     "@ember/optional-features": "2.1.0",
     "@ember/render-modifiers": "2.1.0",
-    "@ember/test-helpers": "2.9.4",
+    "@ember/test-helpers": "2.9.6",
     "@ember/test-waiters": "3.1.0",
     "@embroider/macros": "1.13.4",
     "@faker-js/faker": "7.6.0",
