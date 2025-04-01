@@ -24,12 +24,12 @@ describe('Acceptance: Post email preview', function () {
         const post = this.server.create('post', {status: 'draft'});
         await visit(`/editor/post/${post.id}`);
         await click('[data-test-button="publish-preview"]');
-    }
+    };
 
     const openEmailPreviewModal = async function () {
         await openPreviewModal.call(this);
         await click('[data-test-button="email-preview"]');
-    }
+    };
 
     it('hides email preview option when members is disabled', async function () {
         disableMembers(this.server);
