@@ -2478,10 +2478,10 @@
   dependencies:
     ember-cli-babel "^7.26.6"
 
-"@ember/test-helpers@2.9.4":
-  version "2.9.4"
-  resolved "https://registry.yarnpkg.com/@ember/test-helpers/-/test-helpers-2.9.4.tgz#985022e9ba05cfc918bcf08b77cbb355f85b723e"
-  integrity sha512-z+Qs1NYWyIVDmrY6WdmOS5mdG1lJ5CFfzh6dRhLfs9lq45deDaDrVNcaCYhnNeJZTvUBK2XR2SvPcZm0RloXdA==
+"@ember/test-helpers@2.9.6":
+  version "2.9.6"
+  resolved "https://registry.yarnpkg.com/@ember/test-helpers/-/test-helpers-2.9.6.tgz#42b08eb6cd6d631bdee042acc42af6f97c1393c9"
+  integrity sha512-wUBB8e5nF24XSkl0TlRhHLs+WSf6yHimxDzo7L+a5n7mN5/omEdRkXMlm1qEp8N4+GNWfJKPHg9JTTm+9DA6uw==
   dependencies:
     "@ember/test-waiters" "^3.0.0"
     "@embroider/macros" "^1.10.0"
