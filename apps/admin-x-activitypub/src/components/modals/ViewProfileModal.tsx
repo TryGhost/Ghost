@@ -300,7 +300,7 @@ const ViewProfileModal: React.FC<ViewProfileModalProps> = ({
             <div className='sticky top-0 z-50 border-gray-200 bg-white py-3 dark:border-gray-950 dark:bg-black'>
                 <div className='grid h-8 grid-cols-3'>
                     <div className='col-[3/4] flex items-center justify-end space-x-6 px-8'>
-                        <Button className='transition-color flex h-10 w-10 items-center justify-center rounded-full bg-white hover:bg-gray-100 dark:bg-black dark:hover:bg-gray-950' icon='close' size='sm' unstyled onClick={() => modal.remove()}/>
+                        <Button className='transition-color flex size-10 items-center justify-center rounded-full bg-white hover:bg-gray-100 dark:bg-black dark:hover:bg-gray-950' icon='close' size='sm' unstyled onClick={() => modal.remove()}/>
                     </div>
                 </div>
             </div>
@@ -319,7 +319,7 @@ const ViewProfileModal: React.FC<ViewProfileModalProps> = ({
                             {profile.actor.image && (<div className='h-[200px] w-full overflow-hidden rounded-lg bg-gradient-to-tr from-gray-200 to-gray-100'>
                                 <img
                                     alt={profile.actor.name}
-                                    className='h-full w-full object-cover'
+                                    className='size-full object-cover'
                                     src={profile.actor.image.url}
                                 />
                             </div>)}

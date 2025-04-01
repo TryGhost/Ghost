@@ -561,19 +561,6 @@ body:not(.gh-body-fullscreen) .gh-viewport {
     margin-top: -2px;
 }
 
-.gh-nav-list svg.force-fill path {
-    fill: var(--midgrey);
-}
-
-.gh-nav-list a:not(.active):hover svg,
-.gh-nav-list button.main-menu-item:hover svg {
-    fill: var(--black);
-}
-
-.gh-nav-list .active svg {
-    fill: var(--black);
-}
-
 .gh-nav-list svg circle {
     fill: none !important;
 }
@@ -649,12 +636,8 @@ body:not(.gh-body-fullscreen) .gh-viewport {
     align-items: center;
     justify-content: center;
 }
-
 .gh-nav-list .gh-secondary-action span svg {
     margin-right: 0;
-    width: 14px;
-    height: 14px;
-    fill: color-mod(var(--middarkgrey) l(-10%));
 }
 
 .gh-nav-list .gh-secondary-action:not(.icon-only):hover span {
@@ -670,10 +653,6 @@ body:not(.gh-body-fullscreen) .gh-viewport {
     background: none;
 }
 
-.gh-nav-list .gh-secondary-action:hover span svg path {
-    fill: var(--black);
-}
-
 .gh-nav-list .gh-secondary-action.icon-only,
 .gh-nav-list .gh-secondary-action.icon-only span {
     pointer-events: none;
@@ -687,11 +666,6 @@ body:not(.gh-body-fullscreen) .gh-viewport {
 
 .gh-nav-list .gh-nav-new-post {
     opacity: 1;
-}
-
-.gh-nav-list .gh-nav-new-post span svg {
-    width: 1.8rem;
-    height: 1.8rem;
 }
 
 .gh-nav-list .gh-nav-new-post span svg path {

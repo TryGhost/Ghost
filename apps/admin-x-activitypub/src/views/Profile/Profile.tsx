@@ -22,6 +22,8 @@ import FollowButton from '@components/global/FollowButton';
 import Layout from '@components/layout';
 import Separator from '@components/global/Separator';
 import ViewProfileModal from '@components/modals/ViewProfileModal';
+import {useFeatureFlags} from '@src/lib/feature-flags';
+import {useNavigate} from '@tryghost/admin-x-framework';
 
 interface UseInfiniteScrollTabProps<TData> {
     useDataHook: (key: string) => ActivityPubCollectionQueryResult<TData> | AccountFollowsQueryResult;
@@ -161,6 +163,9 @@ const PostsTab: React.FC = () => {
         };
     }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
+    const {isEnabled} = useFeatureFlags();
+    const navigate = useNavigate();
+
     return (
         <>
             {hasNextPage === false && posts.length === 0 && (
@@ -183,8 +188,28 @@ const PostsTab: React.FC = () => {
                             object={activity.object}
                             repostCount={activity.object.repostCount}
                             type={activity.type}
-                            onClick={() => handleViewContent(activity, false)}
-                            onCommentClick={() => handleViewContent(activity, true)}
+                            onClick={() => {
+                                if (isEnabled('ap-routes')) {
+                                    if (activity.object.type === 'Note') {
+                                        navigate(`/feed-rr/${encodeURIComponent(activity.object.id)}`);
+                                    } else if (activity.object.type === 'Article') {
+                                        navigate(`/inbox-rr/${encodeURIComponent(activity.object.id)}`);
+                                    }
+                                } else {
+                                    handleViewContent(activity, false);
+                                }
+                            }}
+                            onCommentClick={() => {
+                                if (isEnabled('ap-routes')) {
+                                    if (activity.object.type === 'Note') {
+                                        navigate(`/feed-rr/${encodeURIComponent(activity.object.id)}`);
+                                    } else if (activity.object.type === 'Article') {
+                                        navigate(`/inbox-rr/${encodeURIComponent(activity.object.id)}`);
+                                    }
+                                } else {
+                                    handleViewContent(activity, true);
+                                }
+                            }}
                         />
                         {index < posts.length - 1 && <Separator />}
                         {index === loadMoreIndex && (
@@ -461,10 +486,10 @@ const Profile: React.FC<ProfileProps> = ({}) => {
             <div className='relative isolate'>
                 <div className='absolute -right-8 left-0 top-0 z-0 h-[5vw]'>
                     {account?.bannerImageUrl &&
-                    <div className='h-full w-full'>
+                    <div className='size-full'>
                         <img
                             alt={account?.name}
-                            className='h-full w-full object-cover'
+                            className='size-full object-cover'
                             src={account?.bannerImageUrl}
                         />
                     </div>

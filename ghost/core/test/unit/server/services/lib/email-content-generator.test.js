@@ -1,7 +1,7 @@
 const assert = require('assert/strict');
 const path = require('path');
 
-const EmailContentGenerator = require('../index');
+const EmailContentGenerator = require('../../../../../core/server/services/lib/EmailContentGenerator');
 
 describe('Mail: EmailContentGenerator', function () {
     it('generate welcome', async function () {
