@@ -1,6 +1,16 @@
 import React from 'react';
 import {Card, CardContent, CardHeader, ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, Recharts, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade';
+import {Config, useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
 import {useQuery} from '@tinybirdco/charts';
+
+type ConfigWithStats = Config & {
+    config: {
+        stats?: {
+            id: string;
+            token: string;
+        };
+    };
+}
 
 interface KpiTabTriggerProps extends React.ComponentProps<typeof TabsTrigger> {
     children: React.ReactNode;
@@ -29,8 +39,18 @@ const KpiTabValue: React.FC<KpiTabValueProps> = ({label, value}) => {
 };
 
 const Kpis:React.FC = () => {
+    const config = useBrowseConfig() as unknown as { data: ConfigWithStats | null, isLoading: boolean, error: Error | null };
+    const requests = [config];
+    const error = requests.map(request => request.error).find(Boolean);
+
+    if (error) {
+        throw error;
+    }
+
+    const configLoading = requests.some(request => request.isLoading);
+
     const params = {
-        site_uuid: '',
+        site_uuid: config.data?.config.stats?.id || '',
         date_from: '2025-03-01',
         date_to: '2025-03-31'
         // ...additionalParams
@@ -38,18 +58,11 @@ const Kpis:React.FC = () => {
 
     const {data, loading} = useQuery({
         endpoint: 'https://api.tinybird.co/v0/pipes/api_kpis__v7.json',
-        token: '',
+        token: config.data?.config.stats?.token || '',
         params
     });
 
-    // const chartData = [
-    //     {month: 'January', desktop: 186},
-    //     {month: 'February', desktop: 305},
-    //     {month: 'March', desktop: 237},
-    //     {month: 'April', desktop: 73},
-    //     {month: 'May', desktop: 209},
-    //     {month: 'June', desktop: 214}
-    // ];
+    const isLoading = configLoading || loading;
 
     const chartData = data?.map(item => ({
         date: item.date,
@@ -86,7 +99,7 @@ const Kpis:React.FC = () => {
                 </CardHeader>
                 <CardContent className='min-h-[20vw]'>
                     <TabsContent value="visits">
-                        {loading ? 'Loading' :
+                        {isLoading ? 'Loading' :
                             <ChartContainer className='max-h-[20vw] w-full' config={chartConfig}>
                                 <Recharts.LineChart
                                     data={chartData}
