@@ -90,7 +90,7 @@ const Step2: React.FC = () => {
                         </div>
                         <div className='flex h-full flex-col items-stretch gap-6 p-8'>
                             <Reply avatarNo={40} handle='@jamie@larson.com' name='Jamie Larson' timestamp='just now'>
-                                This resonates with me on so many levels. Especially the part about the difficulty of challenges that you can&apost anticipate!
+                                This resonates with me on so many levels. Especially the part about the difficulty of challenges that you can&apos;t anticipate!
                             </Reply>
                             <Separator />
                             <Reaction names='The Verge and 22 others' timestamp='Just now' type='like'>
