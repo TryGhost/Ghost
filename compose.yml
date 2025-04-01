@@ -52,7 +52,6 @@ services:
       - node_modules_ghost_job-manager:/home/ghost/ghost/job-manager/node_modules:delegated
       - node_modules_ghost_link-replacer:/home/ghost/ghost/link-replacer/node_modules:delegated
       - node_modules_ghost_magic-link:/home/ghost/ghost/magic-link/node_modules:delegated
-      - node_modules_ghost_mailgun-client:/home/ghost/ghost/mailgun-client/node_modules:delegated
       - node_modules_ghost_member-attribution:/home/ghost/ghost/member-attribution/node_modules:delegated
       - node_modules_ghost_member-events:/home/ghost/ghost/member-events/node_modules:delegated
       - node_modules_ghost_members-api:/home/ghost/ghost/members-api/node_modules:delegated
@@ -187,7 +186,6 @@ volumes:
   node_modules_ghost_job-manager: {}
   node_modules_ghost_link-replacer: {}
   node_modules_ghost_magic-link: {}
-  node_modules_ghost_mailgun-client: {}
   node_modules_ghost_member-attribution: {}
   node_modules_ghost_member-events: {}
   node_modules_ghost_members-api: {}

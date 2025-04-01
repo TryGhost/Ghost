@@ -89,7 +89,6 @@ COPY ghost/in-memory-repository/package.json ghost/in-memory-repository/package.
 COPY ghost/job-manager/package.json ghost/job-manager/package.json
 COPY ghost/link-replacer/package.json ghost/link-replacer/package.json
 COPY ghost/magic-link/package.json ghost/magic-link/package.json
-COPY ghost/mailgun-client/package.json ghost/mailgun-client/package.json
 COPY ghost/member-attribution/package.json ghost/member-attribution/package.json
 COPY ghost/member-events/package.json ghost/member-events/package.json
 COPY ghost/members-api/package.json ghost/members-api/package.json
