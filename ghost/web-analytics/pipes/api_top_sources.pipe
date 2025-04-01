@@ -1,4 +1,4 @@
-VERSION 7
+VERSION 8
 TOKEN "stats_page" READ
 
 NODE top_sources

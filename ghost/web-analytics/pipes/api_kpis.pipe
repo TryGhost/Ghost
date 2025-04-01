@@ -1,4 +1,4 @@
-VERSION 7
+VERSION 8
 TOKEN "stats_page" READ
 
 NODE timeseries
@@ -61,7 +61,6 @@ DESCRIPTION >
     Calculate session-level metrics (visits, pageviews, bounce rate, avg session duration)
 
 SQL >
-
     %
     select
         site_uuid,
@@ -76,8 +75,8 @@ SQL >
             (
                 select count()
                 from _mv_hits h 
-                inner join filtered_sessions
-                    on h.session_id = filtered_sessions.session_id
+                inner join filtered_sessions fs
+                    on h.session_id = fs.session_id
                 where h.pathname = {{ String(pathname) }}
                     and h.session_id = session_id
             ) as pageviews,
