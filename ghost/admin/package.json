@@ -50,7 +50,7 @@
     "@tryghost/helpers": "1.1.90",
     "@tryghost/kg-clean-basic-html": "4.2.0",
     "@tryghost/kg-converters": "1.1.0",
-    "@tryghost/koenig-lexical": "1.6.6",
+    "@tryghost/koenig-lexical": "1.6.7",
     "@tryghost/limit-service": "1.2.14",
     "@tryghost/members-csv": "0.0.0",
     "@tryghost/nql": "0.12.7",
