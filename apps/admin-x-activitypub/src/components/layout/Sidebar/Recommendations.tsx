@@ -4,8 +4,9 @@ import ActivityItem from '@components/activities/ActivityItem';
 import getName from '@utils/get-name';
 import getUsername from '@utils/get-username';
 import {Button, H4, LucideIcon, Skeleton} from '@tryghost/shade';
-import {handleProfileClick} from '@utils/handle-profile-click';
-import {useNavigate} from '@tryghost/admin-x-framework';
+import {handleProfileClick, handleProfileClickRR} from '@utils/handle-profile-click';
+import {useFeatureFlags} from '@src/lib/feature-flags';
+import {useNavigate, useNavigationStack} from '@tryghost/admin-x-framework';
 import {useSuggestedProfilesForUser} from '@hooks/use-activity-pub-queries';
 
 const Recommendations: React.FC = () => {
@@ -13,6 +14,9 @@ const Recommendations: React.FC = () => {
     const {data: suggestedData, isLoading: isLoadingSuggested} = suggestedProfilesQuery;
     const suggested = suggestedData || Array(3).fill({actor: {}});
     const navigate = useNavigate();
+    const {isEnabled} = useFeatureFlags();
+    const {resetStack} = useNavigationStack();
+
     let i = 0;
 
     const hideClassName = '[@media(max-height:740px)]:hidden';
@@ -48,9 +52,13 @@ const Recommendations: React.FC = () => {
                     return (
                         <React.Fragment key={actor.id}>
                             <li key={actor.id} className={className}>
-                                <ActivityItem
-                                    onClick={() => handleProfileClick(actor)}
-                                >
+                                <ActivityItem onClick={() => {
+                                    if (isEnabled('ap-routes')) {
+                                        handleProfileClickRR(actor, navigate);
+                                    } else {
+                                        handleProfileClick(actor);
+                                    }
+                                }}>
                                     {!isLoadingSuggested ? <APAvatar author={actor} /> : <Skeleton className='z-10 h-10 w-10' />}
                                     <div className='flex min-w-0  flex-col'>
                                         <span className='block max-w-[190px] truncate font-semibold text-black dark:text-white'>{!isLoadingSuggested ? getName(actor) : <Skeleton className='w-24' />}</span>
@@ -63,6 +71,7 @@ const Recommendations: React.FC = () => {
                 })}
             </ul>
             <Button className='p-0 font-medium text-purple' variant='link' onClick={() => {
+                resetStack();
                 navigate('/explore');
             }}>Find more &rarr;</Button>
         </div>

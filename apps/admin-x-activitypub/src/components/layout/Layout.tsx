@@ -1,8 +1,8 @@
 import Header from './Header';
 import Onboarding, {useOnboardingStatus} from './Onboarding';
-import React, {useEffect} from 'react';
+import React, {useEffect, useRef} from 'react';
 import Sidebar from './Sidebar';
-import {Navigate} from '@tryghost/admin-x-framework';
+import {Navigate, ScrollRestoration} from '@tryghost/admin-x-framework';
 import {useCurrentUser} from '@tryghost/admin-x-framework/api/currentUser';
 import {useExploreProfilesForUser} from '@src/hooks/use-activity-pub-queries';
 
@@ -10,6 +10,7 @@ const Layout: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({children, ...pr
     const {isOnboarded} = useOnboardingStatus();
     const {data: currentUser, isLoading} = useCurrentUser();
     const {prefetchExploreProfiles} = useExploreProfilesForUser('index');
+    const containerRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         prefetchExploreProfiles();
@@ -24,14 +25,17 @@ const Layout: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({children, ...pr
     }
 
     return (
-        <div className={`h-screen w-full ${isOnboarded && 'overflow-y-auto'}`}>
+        <div ref={containerRef} className={`h-screen w-full ${isOnboarded && 'overflow-y-auto'}`}>
+            <ScrollRestoration containerRef={containerRef} />
             <div className='relative mx-auto flex max-w-page flex-col' {...props}>
                 {isOnboarded ?
                     <>
-                        <Header />
-                        <div className='grid grid-cols-[auto_292px] items-start gap-8 px-8'>
+                        <div className='grid grid-cols-[auto_320px] items-start'>
                             <div className='z-0'>
-                                {children}
+                                <Header />
+                                <div className='px-8'>
+                                    {children}
+                                </div>
                             </div>
                             <Sidebar />
                         </div>
