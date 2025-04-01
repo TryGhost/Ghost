@@ -7,87 +7,103 @@ const fs = require('node:fs');
 const datafileDirectory = path.join(__dirname, '..', '..', '..', 'web-analytics');
 const fixtureDirectory = path.join(datafileDirectory, 'tests', 'fixtures');
 
-async function runTbCommand(command) {
-    console.log('Running Tinybird command:', command);
-    const {stdout, stderr } = await exec(command);
-    if (stderr) {
-        return Promise.reject(new Error(stderr));
-    }
-    return Promise.resolve(stdout);
-}
-
-async function checkAuth() {
-    const token = process.env.TB_TOKEN;
-    if (!token) {
-        throw new Error('TB_TOKEN is not set');
-    }
-    const result = await runTbCommand('tb auth');
-    if (!result.includes('Auth successful')) {
-        return Promise.reject(new Error('Failed to authenticate with Tinybird'));
-    }
-    console.log('Successfully authenticated with Tinybird');
-    return Promise.resolve();
-
-}
-
-async function createBranch(branchName) {
-    const command = `tb branch create ${branchName}`;
-    const result = await runTbCommand(command);
-    if (!result.includes(`Now using ${branchName}`)) {
-        return Promise.reject(new Error('Failed to create Tinybird branch'));
-    }
-    console.log('Successfully created Tinybird branch:', branchName);
-    return Promise.resolve(branchName);
-}
-
-async function deleteBranch(branchName) {
-    if (branchName.toLowerCase() === 'main') {
-        return Promise.reject(new Error('Cannot delete main branch'));
-    }
-    const command = `tb branch rm --yes ${branchName}`;
-    const result = await runTbCommand(command);
-    if (!result.includes(`Branch '${branchName}' deleted`)) {
-        return Promise.reject(new Error('Failed to delete Tinybird branch'));
-    }
-    console.log('Successfully deleted Tinybird branch:', branchName);
-    return Promise.resolve(branchName);
-}
-
-async function deploy() {
-    const command = `tb deploy`;
-    const result = await runTbCommand(command);
-    if (!result.includes('Deployed')) {
-        return Promise.reject(new Error('Failed to deploy Tinybird'));
-    }
-    console.log('Successfully deployed Tinybird');
-    return Promise.resolve();
-}
-
-async function appendFixtures() {
-    console.log('Appending fixtures');
-    console.log('Fixture directory:', fixtureDirectory);
-    const extensions = ['ndjson'];
-    for (const extension of extensions) {
-        const files = fs.readdirSync(fixtureDirectory, { withFileTypes: true })
-            .filter(file => file.isFile() && file.name.endsWith(`.${extension}`))
-            .map(file => path.join(fixtureDirectory, file.name));
-        console.log('Files:', files);
-        for (const file of files) {
-            const file_name_without_extension = path.basename(file, `.${extension}`);
-            const command = `tb datasource append ${file_name_without_extension} ${file}`;
-            console.log('Command:', command);
-            const result = await runTbCommand(command);
-            console.log('Result:', result);
+class TinybirdCLI {
+    constructor() {
+        if (!process.env.TB_TOKEN) {
+            throw new Error('TB_TOKEN is not set');
         }
     }
+
+    branch = null;
+
+    async run(command) {
+        // Some commands seem to ignore the current branch, so we need to specify it explicitly in the same child process
+        if (this.branch) {
+            command = `tb branch use ${this.branch} && ${command}`;
+
+        }
+        console.log('Running Tinybird command:', command);
+        const {stdout, stderr } = await exec(command);
+        if (stderr) {
+            console.log('Error:', stderr);
+            throw new Error(stderr);
+        }
+        console.log('Success:', stdout);
+        return stdout;
+    }
+
+    async auth() {
+        const command = `tb auth`;
+        const result = await this.run(command);
+        if (!result.includes('Auth successful')) {
+            throw new Error('Failed to authenticate with Tinybird');
+        }
+        console.log('Successfully authenticated with Tinybird');
+        return true;
+    }
+
+    async branchCreate(name) {
+        const command = `tb branch create ${name}`;
+        const result = await this.run(command);
+        if (!result.includes(`Now using ${name}`)) {
+            throw new Error('Failed to create Tinybird branch');
+        }
+        console.log('Successfully created Tinybird branch:', name);
+        this.branch = name;
+        return name;
+    }
+
+    async branchDelete(name) {
+        if (name.toLowerCase() === 'main') {
+            throw new Error('Cannot delete main branch');
+        }
+        const command = `tb branch rm --yes ${name}`;
+        const result = await this.run(command);
+        if (!result.includes(`Branch '${name}' deleted`)) {
+            throw new Error('Failed to delete Tinybird branch');
+        }
+        console.log('Successfully deleted Tinybird branch:', name);
+        return name;
+    }
+
+    async branchUse(name) {
+        const command = `tb branch use ${name}`;
+        const result = await this.run(command);
+        console.log(result);
+        this.branch = name;
+    }
+
+    async deploy() {
+        const command = `tb deploy`;
+        const result = await this.run(command);
+        if (!result.includes('Deployed')) {
+            throw new Error('Failed to deploy Tinybird');
+        }
+        console.log('Successfully deployed Tinybird');
+        return result;
+    }
+
+    async appendFixtures() {
+        const extensions = ['ndjson'];
+        for (const extension of extensions) {
+            const files = fs.readdirSync(fixtureDirectory, { withFileTypes: true })
+                .filter(file => file.isFile() && file.name.endsWith(`.${extension}`))
+                .map(file => path.join(fixtureDirectory, file.name));
+            for (const file of files) {
+                const file_name_without_extension = path.basename(file, `.${extension}`);
+                const command = `tb datasource ls`;
+                const result = await this.run(command);
+            }
+        }
+    }
+
+    async pipeData(pipeName, params) {
+        const paramsString = Object.entries(params).map(([key, value]) => `--${key}=${value}`).join(' ');
+        const command = `tb pipe data ${pipeName} ${paramsString}`;
+        const result = await this.run(command);
+        console.log('Result:', result);
+        return result;
+    }
 }
 
-
-module.exports = {
-    runTbCommand,
-    checkAuth,
-    createBranch,
-    deleteBranch,
-    deploy,
-    appendFixtures
-}
+module.exports = TinybirdCLI
