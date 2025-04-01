@@ -1,5 +1,1 @@
-<svg width="16" height="18" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <title>mobile-phone</title>
-  <path d="M3.166 14a.5.5 0 01.5-.5h8.667a.5.5 0 010 1H3.666a.5.5 0 01-.5-.5z"/>
-  <path d="M5 1.833a.833.833 0 00-.834.834v12.666c0 .46.373.834.833.834h6c.46 0 .834-.373.834-.834V2.668a.833.833 0 00-.834-.833H5zm-1.834.834c0-1.013.82-1.834 1.833-1.834h6c1.013 0 1.834.821 1.834 1.834v12.666c0 1.013-.821 1.834-1.834 1.834H5a1.833 1.833 0 01-1.833-1.834V2.668z"/>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>Mobile</title><g><rect x="5.25" y="0.75" width="13.5" height="22.5" rx="3" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5px"></rect><line x1="5.25" y1="17.75" x2="18.75" y2="17.75" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5px"></line></g></svg>

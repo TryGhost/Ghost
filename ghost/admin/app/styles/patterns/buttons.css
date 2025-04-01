@@ -438,7 +438,7 @@ Usage: CTA buttons grouped together horizontally.
     box-shadow: none;
     margin: 2px;
     border-radius: 2px;
-    color: var(--midgrey);
+    color: var(--midgrey-l1);
 }
 
 .gh-btn-group .gh-btn span {

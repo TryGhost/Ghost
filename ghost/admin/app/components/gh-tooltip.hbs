@@ -1,0 +1,13 @@
+<span 
+    class="gh-tooltip"
+    ...attributes
+>
+    {{#if @shortcut}}
+        {{@text}}
+        {{#each @shortcut as |key|}}
+            <p class="gh-shortcut-key">{{html-safe key}}</p>
+        {{/each}}
+    {{else}}
+        {{@text}}
+    {{/if}}
+</span>

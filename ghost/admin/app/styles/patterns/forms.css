@@ -99,8 +99,8 @@ input[type=number] {
 
 .form-group p {
     margin: 4px 0 0 0;
-    color: var(--middarkgrey);
-    font-size: 1.25rem;
+    color: var(--midgrey);
+    font-size: 1.2rem;
     font-weight: 400;
 }
 
@@ -179,8 +179,8 @@ input[type=number] {
     transform: translateY(-7px);
 }
 
-.gh-input-icon.gh-icon-link svg path {
-    stroke: color-mod(var(--lightgrey) l(-15%) s(-10%));
+.gh-input-icon.gh-icon-link svg {
+    fill: none;
 }
 
 .gh-input-icon input {
@@ -303,6 +303,22 @@ textarea {
 textarea.gh-input-x {
     padding-block: 8px;
     max-width: unset;
+}
+
+.gh-input-x.ember-basic-dropdown-trigger--below.ember-power-select-trigger[aria-expanded="true"],
+.gh-input-x.ember-power-select-trigger:focus {
+    border-radius: 8px;
+    background: var(--grey-150);
+    border: 1px solid transparent;
+    box-shadow: none;
+    outline: none;
+}
+
+.gh-dropdown-x.ember-power-select-dropdown.ember-basic-dropdown-content--below {
+    margin-top: 4px;
+    border: none;
+    border-radius: 8px;
+    box-shadow: var(--shadow-2);
 }
 
 .ember-power-select-multiple-trigger {

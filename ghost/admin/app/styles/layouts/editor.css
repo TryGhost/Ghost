@@ -313,7 +313,7 @@
     justify-content: space-between;
     height: 34px;
     padding: 0;
-    margin: 30px;
+    margin: 24px;
     z-index: 799;
 }
 
@@ -330,20 +330,20 @@
 }
 
 .gh-btn-editor {
-    background: var(--white) !important;
-    border-color: transparent !important;
+    background: var(--white);
+    border-color: transparent;
 }
 
-.gh-btn-editor:not(.gh-publish-trigger) span {
+.gh-btn-editor:not(.gh-publish-trigger):not(.gh-tooltip-trigger) span {
     color: var(--darkgrey);
 }
 
 .gh-btn-editor:hover {
-    background: var(--whitegrey-l1) !important;
+    background: var(--whitegrey-l1);
 }
 
 .gh-btn-editor.active {
-    background: var(--whitegrey-l1) !important;
+    background: var(--whitegrey-l1);
 }
 
 .gh-btn-editor.green span {
@@ -1010,14 +1010,18 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
 }
 
 .gh-editor-preview-trigger {
+    height: 34px;
     background: var(--white);
     font-size: 1.35rem;
     font-weight: 500;
-    margin-right: 8px;
     outline: none;
     border: none;
     white-space: nowrap;
     transition: all 0.25s ease;
+}
+
+.gh-post-preview-header .gh-editor-preview-trigger {
+    margin-left: 4px;
 }
 
 .gh-editor-preview-trigger:hover {
