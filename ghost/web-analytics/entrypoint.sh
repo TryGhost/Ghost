@@ -27,7 +27,7 @@ tbsql() {
     while [[ $# -gt 0 ]]; do
         case $1 in
             --format)
-                if [[ ! " $valid_formats " =~ " $2 " ]]; then
+                if [[ ! " $valid_formats " =~ $2 ]]; then
                     echo "Error: Invalid format '$2'. Valid formats are: $valid_formats"
                     return 1
                 fi
