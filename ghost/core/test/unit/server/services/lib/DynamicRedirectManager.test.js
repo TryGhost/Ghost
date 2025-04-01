@@ -1,5 +1,5 @@
 const should = require('should');
-const DynamicRedirectManager = require('../');
+const DynamicRedirectManager = require('../../../../../core/server/services/lib/DynamicRedirectManager');
 
 const urlJoin = (...parts) => {
     let url = parts.join('/');
