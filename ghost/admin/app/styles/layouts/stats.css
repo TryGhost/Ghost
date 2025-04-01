@@ -302,14 +302,6 @@ a.gh-stats-data-label:hover {
     line-height: 1.3em;
 }
 
-.gh-stats-bar-text-nolink {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    color: var(--black);
-    line-height: 1.3em;
-}
-
 .gh-stats-bar-text:hover span {
     text-decoration: underline;
 }
