@@ -84,6 +84,7 @@ services:
       - node_modules_apps_shade:/home/ghost/apps/shade/node_modules:delegated
       - node_modules_apps_signup-form:/home/ghost/apps/signup-form/node_modules:delegated
       - node_modules_apps_sodo-search:/home/ghost/apps/sodo-search/node_modules:delegated
+      - node_modules_apps_stats:/home/ghost/apps/stats/node_modules:delegated
     tty: true
     depends_on:
       mysql:
@@ -102,7 +103,9 @@ services:
   mysql:
     image: mysql:8.0.35
     container_name: ghost-mysql
-    command: --innodb-buffer-pool-size=1G --innodb-log-buffer-size=500M --innodb-change-buffer-max-size=50 --innodb-flush-log-at-trx_commit=0 --innodb-flush-method=O_DIRECT
+    command: --innodb-buffer-pool-size=1G --innodb-log-buffer-size=500M
+      --innodb-change-buffer-max-size=50 --innodb-flush-log-at-trx_commit=0
+      --innodb-flush-method=O_DIRECT
     ports:
       - 3306:3306
     environment:
@@ -218,3 +221,4 @@ volumes:
   node_modules_apps_shade: {}
   node_modules_apps_signup-form: {}
   node_modules_apps_sodo-search: {}
+  node_modules_apps_stats: {}
