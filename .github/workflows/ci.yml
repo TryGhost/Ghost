@@ -991,8 +991,8 @@ jobs:
             echo "Skipping clean up: The Branch '$TB_BRANCH_NAME' does not exist."
           fi
 
-      - name: Format datafiles
-        run: ./scripts/check_datafiles.sh
+      - name: Check datafiles format (lint)
+        run: ./scripts/check_format_datafiles.sh
 
   job_ghost-cli:
     name: Ghost-CLI tests
