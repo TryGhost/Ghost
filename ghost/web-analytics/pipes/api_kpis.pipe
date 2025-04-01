@@ -17,6 +17,12 @@ SQL >
                     }}
                 )
             ) as start,
+
+
+
+
+
+
         {% else %} toStartOfDay(timestampAdd(today(), interval -7 day)) as start,
         {% end %}
         {% if defined(date_to) %}
