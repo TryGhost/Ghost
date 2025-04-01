@@ -19,18 +19,47 @@ prompt_tb() {
 
 # Function to run SQL queries from files
 tbsql() {
-    if [ -z "$1" ]; then
-        echo "Usage: tbsql <filename without .sql>"
+    local format="csv"
+    local query_file=""
+    local valid_formats="json csv human"
+
+    # Parse arguments
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            --format)
+                if [[ ! " $valid_formats " =~ $2 ]]; then
+                    echo "Error: Invalid format '$2'. Valid formats are: $valid_formats"
+                    return 1
+                fi
+                format="$2"
+                shift 2
+                ;;
+            *)
+                query_file="$1"
+                shift
+                ;;
+        esac
+    done
+
+    if [ -z "$query_file" ]; then
+        echo "Usage: tbsql [--format <json|csv|human>] <filename without .sql>"
         return 1
     fi
 
-    local sql_file="/ghost/ghost/web-analytics/sql/$1.sql"
+    # Get the directory where this script is located
+    SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+    local sql_file="$SCRIPT_DIR/sql/$query_file.sql"
+
     if [ ! -f "$sql_file" ]; then
         echo "Error: SQL file not found: $sql_file"
         return 1
     fi
 
-    tb sql "$(cat $sql_file)"
+    # Read SQL file and process environment variables with bash parameter expansion
+    local query
+    # Use eval to process the SQL content with bash parameter expansion
+    eval "query=\"$(cat "$sql_file")\""
+    tb sql --format="$format" "$query"
 }
 
 # Export the prompt with Tinybird branch information
