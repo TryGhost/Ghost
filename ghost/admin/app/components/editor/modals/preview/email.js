@@ -62,10 +62,6 @@ export default class ModalPostPreviewEmailComponent extends Component {
             !!(this.settings.mailgunApiKey && this.settings.mailgunDomain && this.settings.mailgunBaseUrl);
     }
 
-    get paidMembersEnabled() {
-        return this.settings.paidMembersEnabled;
-    }
-
     get selectedSegment() {
         return this.segments.find(segment => segment.alias === this.args.memberSegment);
     }

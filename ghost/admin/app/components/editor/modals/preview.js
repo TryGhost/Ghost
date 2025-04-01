@@ -53,15 +53,20 @@ export default class EditorPostPreviewModal extends Component {
     setPreviewAsOptions() {
         if (this.previewFormat === 'email') {
             this.previewAsOptions = [
-                {label: 'Free member', value: 'free'},
-                {label: 'Paid member', value: 'paid'}
+                {label: 'Free member', value: 'free'}
             ];
         } else {
             this.previewAsOptions = [
                 {label: 'Anonymous', value: 'anonymous'},
-                {label: 'Free member', value: 'free'},
-                {label: 'Paid member', value: 'paid'}
+                {label: 'Free member', value: 'free'}
             ];
+        }
+
+        // add paid options if Stripe is enabled
+        if (this.settings.paidMembersEnabled) {
+            this.previewAsOptions.push(
+                {label: 'Paid member', value: 'paid'}
+            );
         }
     }
 

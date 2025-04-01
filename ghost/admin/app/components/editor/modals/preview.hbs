@@ -6,7 +6,7 @@
         <div class="gh-post-preview-btn-group">
             <div class="gh-contentfilter gh-btn-group">
                 <button type="button" class="gh-btn gh-post-preview-mode {{if (eq this.previewFormat "browser") "gh-btn-group-selected"}}" {{on "click" (fn this.changePreviewFormat "browser")}}><span>Web</span></button>
-                {{#if (and (not-eq this.settings.membersSignupAccess "none") (not-eq this.settings.editorDefaultEmailRecipients "disabled"))}}
+                {{#if (and this.settings.membersEnabled (not-eq this.settings.editorDefaultEmailRecipients "disabled"))}}
                     {{#if (and @data.publishOptions.post.isPost (not @data.publishOptions.user.isContributor))}}
                         <button type="button" class="gh-btn {{if (eq this.previewFormat "email") "gh-btn-group-selected"}} gh-post-preview-mode" {{on "click" (fn this.changePreviewFormat "email")}} data-test-button="email-preview"><span>Email</span></button>
                     {{/if}}
