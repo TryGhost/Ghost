@@ -1,0 +1,72 @@
+#!/bin/bash
+
+# Get the commit message file path from the first argument
+commit_msg_file="$1"
+
+# Read the commit message
+commit_msg=$(cat "$commit_msg_file")
+
+# Colors for output
+red='\033[0;31m'
+yellow='\033[1;33m'
+no_color='\033[0m'
+
+# Get the first line (subject)
+subject=$(echo "$commit_msg" | head -n1)
+
+# Get the second line
+second_line=$(echo "$commit_msg" | sed -n '2p')
+
+# Get the third line
+third_line=$(echo "$commit_msg" | sed -n '3p')
+
+# Get the rest of the message (body)
+body=$(echo "$commit_msg" | tail -n +4)
+
+# Check subject length (max 80 characters)
+if [ ${#subject} -gt 80 ]; then
+    echo -e "${yellow}Warning: Commit message subject is too long (max 80 characters)${no_color}"
+    echo -e "Current length: ${#subject} characters"
+fi
+
+# Check if second line is blank
+if [ ! -z "$second_line" ]; then
+    echo -e "${yellow}Warning: Second line should be blank${no_color}"
+fi
+
+# Check third line format
+if [ ! -z "$third_line" ]; then
+    if [[ "$third_line" =~ ^(refs|ref:) ]]; then
+        echo -e "${red}Error: Third line should not start with 'refs' or 'ref:'${no_color}"
+        echo -e "Use 'ref <issue link>', 'fixes <issue link>', or 'closes <issue link>' instead"
+        exit 1
+    fi
+
+    if ! [[ "$third_line" =~ ^(ref|fixes|closes)\ .*$ ]]; then
+        echo -e "${yellow}Warning: Third line should start with 'ref', 'fixes', or 'closes' followed by an issue link${no_color}"
+    fi
+fi
+
+# Check for body content (why explanation)
+if [ -z "$body" ]; then
+    echo -e "${yellow}Warning: Missing explanation of why this change was made${no_color}"
+    echo -e "The body should explain: why this, why now, why not something else?"
+fi
+
+# Check for emoji in user-facing changes
+if [[ "$subject" =~ ^[^[:space:]]*[[:space:]] ]]; then
+    first_word="${subject%% *}"
+    if [[ ! "$first_word" =~ ^[[:punct:]] ]]; then
+        echo -e "${yellow}Warning: User-facing changes should start with an emoji${no_color}"
+        echo -e "Common emojis: ✨ (Feature), 🎨 (Improvement), 🐛 (Bug Fix), 🌐 (i18n), 💡 (User-facing)"
+    fi
+fi
+
+# Check for past tense verbs in subject
+past_tense_words="Fixed|Changed|Updated|Improved|Added|Removed|Reverted|Moved|Released|Bumped|Cleaned"
+if ! echo "$subject" | grep -iE "$past_tense_words" > /dev/null; then
+    echo -e "${yellow}Warning: Subject line should use past tense${no_color}"
+    echo -e "Use one of: Fixed, Changed, Updated, Improved, Added, Removed, Reverted, Moved, Released, Bumped, Cleaned"
+fi
+
+exit 0
