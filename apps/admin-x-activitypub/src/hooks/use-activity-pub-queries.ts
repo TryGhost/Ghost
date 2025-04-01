@@ -23,6 +23,7 @@ import {formatPendingActivityContent, generatePendingActivity, generatePendingAc
 import {mapPostToActivity} from '../utils/posts';
 import {showToast} from '@tryghost/admin-x-design-system';
 import {useCallback} from 'react';
+import React from 'react';
 
 export type ActivityPubCollectionQueryResult<TData> = UseInfiniteQueryResult<ActivityPubCollectionResponse<TData>>;
 export type AccountFollowsQueryResult = UseInfiniteQueryResult<GetAccountFollowsResponse>;
@@ -834,18 +835,18 @@ export function useSuggestedProfilesForUser(handle: string, limit = 3) {
     return {suggestedProfilesQuery, updateSuggestedProfile};
 }
 
-export function useProfileForUser(handle: string, profileHandle: string, enabled: boolean = true) {
-    return useQuery({
-        queryKey: QUERY_KEYS.profile(profileHandle),
-        enabled,
-        async queryFn() {
-            const siteUrl = await getSiteUrl();
-            const api = createActivityPubAPI(handle, siteUrl);
+// export function useProfileForUser(handle: string, profileHandle: string, enabled: boolean = true) {
+//     return useQuery({
+//         queryKey: QUERY_KEYS.profile(profileHandle),
+//         enabled,
+//         async queryFn() {
+//             const siteUrl = await getSiteUrl();
+//             const api = createActivityPubAPI(handle, siteUrl);
 
-            return api.getProfile(profileHandle);
-        }
-    });
-}
+//             return api.getProfile(profileHandle);
+//         }
+//     });
+// }
 
 export function useProfilePostsForUser(handle: string, profileHandle: string) {
     return useInfiniteQuery({
@@ -1226,14 +1227,22 @@ export function useNoteMutationForUser(handle: string, actorProps?: ActorPropert
     });
 }
 
-export function useAccountForUser(handle: string) {
+export function useAccountForUser(handle: string, profileHandle: string) {
+    const queryClient = useQueryClient();
+
+    // Invalidate the cache when profileHandle changes
+    React.useEffect(() => {
+        queryClient.invalidateQueries({queryKey: QUERY_KEYS.account(profileHandle)});
+    }, [profileHandle, queryClient]);
+
     return useQuery({
-        queryKey: QUERY_KEYS.account(handle),
+        queryKey: QUERY_KEYS.account(profileHandle),
         async queryFn() {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
+            console.log('useAccountForUser: ', profileHandle);
 
-            return api.getAccount();
+            return api.getAccount(profileHandle);
         }
     });
 }

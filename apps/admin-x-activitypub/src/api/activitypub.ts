@@ -29,6 +29,7 @@ export interface Account {
     followerCount: number;
     followsMe: boolean;
     followedByMe: boolean;
+    attachment: {name: string, value: string}[];
 }
 
 export type AccountSearchResult = Pick<
@@ -427,12 +428,11 @@ export class ActivityPubAPI {
         return json as Thread;
     }
 
-    get accountApiUrl() {
-        return new URL(`.ghost/activitypub/account/${this.handle}`, this.apiUrl);
-    }
-
-    async getAccount(): Promise<GetAccountResponse> {
-        const json = await this.fetchJSON(this.accountApiUrl);
+    async getAccount(profileHandle: string): Promise<GetAccountResponse> {
+        console.log('getAccount: ', profileHandle);
+        const url = new URL(`.ghost/activitypub/account`, this.apiUrl);
+        profileHandle ? url.searchParams.set('handle', profileHandle) : null;
+        const json = await this.fetchJSON(url);
 
         return json as GetAccountResponse;
     }
