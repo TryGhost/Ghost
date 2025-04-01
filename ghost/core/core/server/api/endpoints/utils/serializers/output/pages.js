@@ -35,9 +35,13 @@ module.exports = {
             };
         }) || [];
 
-        if (models.meta) {
-            for (let model of models.data) {
-                let page = await mappers.pages(model, frame, {tiers});
+        // paginated response
+        //   models.data = models from findPage
+        //   models.posts = POJOs from PostsService.browse
+        if (models.data || models.posts) {
+            const data = models.data || models.posts;
+            for (const model of data) {
+                const page = await mappers.pages(model, frame, {tiers});
                 pages.push(page);
             }
             frame.response = {
@@ -47,6 +51,8 @@ module.exports = {
 
             return;
         }
+
+        // single response
         let page = await mappers.pages(models, frame, {tiers});
         frame.response = {
             pages: [page]

@@ -35,9 +35,14 @@ module.exports = {
                 yearly_price_id: null
             };
         }) || [];
-        if (models.meta) {
-            for (let model of models.data) {
-                let post = await mappers.posts(model, frame, {tiers});
+
+        // paginated response
+        //   models.data = models from findPage
+        //   models.posts = POJOs from PostsService.browse
+        if (models.data || models.posts) {
+            const data = models.data || models.posts;
+            for (const model of data) {
+                const post = await mappers.posts(model, frame, {tiers});
                 posts.push(post);
             }
             frame.response = {
@@ -47,6 +52,8 @@ module.exports = {
 
             return;
         }
+
+        // single response
         let post = await mappers.posts(models, frame, {tiers});
         frame.response = {
             posts: [post]

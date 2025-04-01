@@ -1,13 +1,9 @@
-const tpl = require('@tryghost/tpl');
-const errors = require('@tryghost/errors');
 const {mapQuery} = require('@tryghost/mongo-utils');
 const models = require('../../models');
+const getPostServiceInstance = require('../../services/posts/posts-service');
+const postsService = getPostServiceInstance();
 
 const ALLOWED_INCLUDES = ['tags', 'authors', 'tiers'];
-
-const messages = {
-    pageNotFound: 'Page not found.'
-};
 
 const rejectPrivateFieldsTransformer = input => mapQuery(input, function (value, key) {
     let lowerCaseKey = key.toLowerCase();
@@ -55,7 +51,8 @@ const controller = {
                 ...frame.options,
                 mongoTransformer: rejectPrivateFieldsTransformer
             };
-            return models.Post.findPage(options);
+
+            return postsService.browsePosts({...frame, options});
         }
     },
 
@@ -91,16 +88,7 @@ const controller = {
                 ...frame.options,
                 mongoTransformer: rejectPrivateFieldsTransformer
             };
-            return models.Post.findOne(frame.data, options)
-                .then((model) => {
-                    if (!model) {
-                        throw new errors.NotFoundError({
-                            message: tpl(messages.pageNotFound)
-                        });
-                    }
-
-                    return model;
-                });
+            return postsService.readPost({...frame, options});
         }
     }
 };

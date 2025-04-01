@@ -21,39 +21,119 @@ const messages = {
     invalidTags: 'Invalid tags value.',
     invalidEmailSegment: 'The email segment parameter doesn\'t contain a valid filter',
     unsupportedBulkAction: 'Unsupported bulk action',
-    postNotFound: 'Post not found.'
+    postNotFound: 'Post not found.',
+    pageNotFound: 'Page not found.'
 };
 
+function shouldIncludeAttr(options, column) {
+    const formatsIncludesColumn = options?.formats?.includes(column);
+    const optionsHasNoColumns = !options || !Object.prototype.hasOwnProperty.call(options, 'columns');
+
+    return optionsHasNoColumns
+        || options.columns.includes(column)
+        || formatsIncludesColumn;
+}
+function shouldNotIncludeAttr(options, column) {
+    return options && Object.prototype.hasOwnProperty.call(options, 'columns') && !options.columns.includes(column);
+}
+
 class PostsService {
-    constructor({urlUtils, models, isSet, stats, emailService, postsExporter}) {
+    constructor({urlUtils, models, labs, stats, emailService, postsExporter, contentGating}) {
         this.urlUtils = urlUtils;
         this.models = models;
-        this.isSet = isSet;
+        this.labs = labs;
         this.stats = stats;
         this.emailService = emailService;
         this.postsExporter = postsExporter;
+        this.contentGating = contentGating;
     }
 
     /**
      *
-     * @param {Object} options - frame options
+     * @param {Object} frame
+     * @param {Object} frame.options
+     * @param {string} frame.apiType
      * @returns {Promise<Object>}
      */
-    async browsePosts(options) {
-        const posts = await this.models.Post.findPage(options);
-        return posts;
+    async browsePosts({options = {}, apiType}) {
+        const {data: models, meta} = await this.models.Post.findPage(options);
+
+        const posts = [];
+        for (const postModel of models) {
+            posts.push(this.serializePostModel(postModel, {options, apiType}));
+        }
+
+        return {
+            posts,
+            meta
+        };
     }
 
-    async readPost(frame) {
-        const model = await this.models.Post.findOne(frame.data, frame.options);
+    /**
+     *
+     * @param {Object} frame - frame object
+     * @param {Object} frame.data
+     * @param {Object} frame.options
+     * @param {string} frame.apiType
+     * @returns {Promise<Object>}
+     */
+    async readPost({data, options = {}, apiType}) {
+        const model = await this.models.Post.findOne(data, options);
 
         if (!model) {
+            const isPageRequest = options?.filter?.includes('type:page') || false;
             throw new errors.NotFoundError({
-                message: tpl(messages.postNotFound)
+                message: tpl(isPageRequest ? messages.pageNotFound : messages.postNotFound)
             });
         }
 
-        return model.toJSON(frame.options);
+        return this.serializePostModel(model, {options, apiType});
+    }
+
+    serializePostModel(model, {options, apiType}) {
+        const postAttrs = model.toJSON(options);
+
+        // console.log({postAttrs});
+
+        // We have some virtual properties that need to be added to the JSON output
+        // manually because they are not added at the model level.
+        //
+        // These can have dependencies on fields that weren't requested and therefore
+        // are not included in the model's `toJSON` output, so we have to read them
+        // via model.get(). Some fields are also always given to us with .toJSON()
+        // even when not requested so we have to manually remove them.
+        // TODO: why is this the case? It's not obvious from looking at Post.toJSON
+        if (shouldNotIncludeAttr(options, 'custom_excerpt')) {
+            delete postAttrs.custom_excerpt;
+        }
+        if (shouldIncludeAttr(options, 'plaintext')) {
+            postAttrs.plaintext = model.get('plaintext');
+        }
+        if (shouldIncludeAttr(options, 'excerpt')) {
+            postAttrs.excerpt = model.get('custom_excerpt') || model.get('plaintext')?.substring(0, 500) || null;
+        }
+        if (shouldIncludeAttr(options, 'reading_time')) {
+
+        }
+
+        // re-add `id` in case it's been excluded by toJSON due to fields/columns
+        // options, otherwise URL lookups will fail in the posts output serializer
+        // TODO: can Post.toJSON be changed to always include id?
+        postAttrs.id = model.id;
+
+        // for public requests we want to exclude any content that should not be
+        // visible to anonymous viewers or members with insufficient permissions
+        if (this.#isPublicRequest({apiType})) {
+            // add an extra `access` attribute to the postAttrs object unless explicitly not requested
+            const addAccessAttr = shouldIncludeAttr(options, 'access');
+            this.contentGating.gatePostAttrs(postAttrs, options?.context?.member, {addAccessAttr, labs: this.labs});
+        }
+
+        return postAttrs;
+    }
+
+    #isPublicRequest({apiType}) {
+        return apiType === 'content';
     }
 
     /**

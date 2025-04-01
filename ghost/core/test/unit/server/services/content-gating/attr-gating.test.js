@@ -1,0 +1,165 @@
+const assert = require('assert/strict');
+const sinon = require('sinon');
+const contentGatingService = require('../../../../../core/server/services/content-gating');
+const gatedBlocks = require('../../../../../core/server/services/content-gating/gated-blocks');
+const labs = require('../../../../../core/shared/labs');
+
+describe('Unit: Content gating service: gatePostAttrs', function () {
+    const gatePostAttrs = contentGatingService.gatePostAttrs;
+
+    afterEach(function () {
+        sinon.restore();
+    });
+
+    it('adds access attr by default', function () {
+        const attrs = {visibility: 'public'};
+        gatePostAttrs(attrs, null);
+        assert.equal(attrs.access, true);
+    });
+
+    it('sets access attr to false when member does not have full access', function () {
+        const attrs = {visibility: 'paid'};
+        gatePostAttrs(attrs, {status: 'free'});
+        assert.equal(attrs.access, false);
+    });
+
+    it('should NOT hide content attributes when visibility is public', function () {
+        const attrs = {
+            visibility: 'public',
+            plaintext: 'no touching',
+            html: '<p>I am here to stay</p>'
+        };
+
+        assert.equal(attrs.plaintext, 'no touching');
+    });
+
+    it('should hide content attributes when visibility is "members"', function () {
+        const attrs = {
+            visibility: 'members',
+            plaintext: 'no touching. secret stuff',
+            html: '<p>I am here to stay</p>'
+        };
+
+        gatePostAttrs(attrs, null);
+
+        assert.equal(attrs.plaintext, '');
+        assert.equal(attrs.html, '');
+    });
+
+    it('should NOT hide content attributes when visibility is "members" and member is present', function () {
+        const attrs = {
+            visibility: 'members',
+            plaintext: 'I see dead people',
+            html: '<p>What\'s the matter?</p>'
+        };
+
+        gatePostAttrs(attrs, {});
+
+        assert.equal(attrs.plaintext, 'I see dead people');
+        assert.equal(attrs.html, '<p>What\'s the matter?</p>');
+    });
+
+    it('should hide content attributes when visibility is "paid" and member has status of "free"', function () {
+        const attrs = {
+            visibility: 'paid',
+            plaintext: 'I see dead people',
+            html: '<p>What\'s the matter?</p>'
+        };
+
+        gatePostAttrs(attrs, {status: 'free'});
+
+        assert.equal(attrs.plaintext, '');
+        assert.equal(attrs.html, '');
+    });
+
+    it('should NOT hide content attributes when visibility is "paid" and member has status of "paid"', function () {
+        const attrs = {
+            visibility: 'paid',
+            plaintext: 'Secret paid content',
+            html: '<p>Can read this</p>'
+        };
+
+        gatePostAttrs(attrs, {status: 'paid'});
+
+        assert.equal(attrs.plaintext, 'Secret paid content');
+        assert.equal(attrs.html, '<p>Can read this</p>');
+    });
+
+    describe('contentVisibility', function () {
+        let contentVisibilityStub;
+
+        beforeEach(function () {
+            contentVisibilityStub = sinon.stub(labs, 'isSet').withArgs('contentVisibility').returns(true);
+        });
+
+        it('does not call removeGatedBlocksFromHtml when a post has no gated blocks', function () {
+            const attrs = {
+                visibility: 'public',
+                html: '<p>no gated blocks</p>'
+            };
+
+            const removeGatedBlocksFromHtmlStub = sinon.stub(gatedBlocks, 'removeGatedBlocksFromHtml');
+            gatePostAttrs(attrs, null, {labs});
+            sinon.assert.notCalled(removeGatedBlocksFromHtmlStub);
+        });
+
+        it('calls removeGatedBlocksFromHtml when a post has gated blocks', function () {
+            const attrs = {
+                visibility: 'public',
+                html: '<!--kg-gated-block:begin nonMember:true--><p>gated block</p><!--kg-gated-block:end-->'
+            };
+
+            const removeGatedBlocksFromHtmlStub = sinon.stub(gatedBlocks, 'removeGatedBlocksFromHtml');
+            gatePostAttrs(attrs, null, {labs});
+            sinon.assert.calledOnce(removeGatedBlocksFromHtmlStub);
+        });
+
+        it('does not call removeGatedBlocksFromHtml when contentVisibility is disabled', function () {
+            contentVisibilityStub.returns(false);
+
+            const attrs = {
+                visibility: 'public',
+                html: '<!--kg-gated-block:begin nonMember:true--><p>gated block</p><!--kg-gated-block:end-->'
+            };
+
+            const removeGatedBlocksFromHtmlStub = sinon.stub(gatedBlocks, 'removeGatedBlocksFromHtml');
+            gatePostAttrs(attrs, null, {labs});
+            sinon.assert.notCalled(removeGatedBlocksFromHtmlStub);
+        });
+
+        it('updates html, plaintext, and excerpt when a post has gated blocks', function () {
+            const attrs = {
+                visibility: 'public',
+                html: `
+                <!--kg-gated-block:begin nonMember:false memberSegment:"status:free,status:-free"--><p>Members only.</p><!--kg-gated-block:end-->
+                <p>Everyone can see this.</p>
+                <!--kg-gated-block:begin nonMember:true--><p>Anonymous only.</p><!--kg-gated-block:end-->
+                `,
+                plaintext: 'Members only. Everyone can see this. Anonymous only.',
+                excerpt: 'Members only. Everyone can see this. Anonymous only.'
+            };
+
+            gatePostAttrs(attrs, null, {labs});
+
+            assert.match(attrs.html, /^\s+<p>Everyone can see this\.<\/p>\n\s+<p>Anonymous only.<\/p>/);
+            assert.match(attrs.plaintext, /^\s+Everyone can see this.\n+Anonymous only.\n$/);
+            assert.match(attrs.excerpt, /^\s+Everyone can see this.\n+Anonymous only.\n$/);
+        });
+
+        it('does not process gated blocks with contentVisibility flag disabled', function () {
+            contentVisibilityStub.returns(false);
+
+            const regexSpy = sinon.spy(RegExp.prototype, 'test');
+            const removeGatedBlocksFromHtmlStub = sinon.stub(contentGatingService, 'removeGatedBlocksFromHtml');
+
+            const attrs = {
+                visibility: 'public',
+                html: '<!--kg-gated-block:begin nonMember:true--><p>gated block</p><!--kg-gated-block:end-->'
+            };
+            gatePostAttrs(attrs, null, {labs});
+
+            sinon.assert.notCalled(regexSpy);
+            sinon.assert.notCalled(removeGatedBlocksFromHtmlStub);
+        });
+    });
+});
