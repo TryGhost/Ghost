@@ -70,4 +70,44 @@ export default function mockStats(server) {
             meta: {}
         };
     });
+
+    server.get('/stats/mrr/', function () {
+        return {
+            stats: [
+                {
+                    date: '2025-01-08',
+                    mrr: 18333,
+                    currency: 'usd'
+                },
+                {
+                    date: '2025-01-09',
+                    mrr: 18749,
+                    currency: 'usd'
+                },
+                {
+                    date: '2025-02-19',
+                    mrr: 8749,
+                    currency: 'usd'
+                },
+                {
+                    date: '2025-03-05',
+                    mrr: 416,
+                    currency: 'usd'
+                },
+                {
+                    date: '2025-03-27',
+                    mrr: 832,
+                    currency: 'usd'
+                }
+            ],
+            meta: {
+                totals: [
+                    {
+                        currency: 'usd',
+                        mrr: 832
+                    }
+                ]
+            }
+        };
+    });
 }

@@ -63,7 +63,7 @@
                             @tagName="ul"
                             @classNames="gh-member-actions-menu dropdown-menu dropdown-triangle-top-right"
                         >
-                            {{#if (not-eq this.settings.membersSignupAccess "none")}}
+                            {{#if this.settings.membersEnabled}}
                                 <li>
                                     <LinkTo @route="members.import" class="mr2" data-test-link="import-csv">
                                         <span>Import members</span>
@@ -97,7 +97,7 @@
                                         <span>Remove label from selected members ({{this.members.length}})</span>
                                     </button>
                                 </li>
-                                {{#if (not-eq this.settings.membersSignupAccess "none")}}
+                                {{#if this.settings.membersEnabled}}
                                     <li>
                                         <button class="mr2" data-test-button="unsubscribe-selected" type="button" {{on "click" this.bulkUnsubscribe}}>
                                             <span>Unsubscribe selected members ({{this.members.length}})</span>
@@ -115,7 +115,7 @@
                             {{/if}}
                         </GhDropdown>
                     </span>
-                    {{#if (not-eq this.settings.membersSignupAccess "none")}}
+                    {{#if this.settings.membersEnabled}}
                         <LinkTo @route="member.new" class="gh-btn gh-btn-primary" data-test-new-member-button="true"><span>New member</span><span class="gh-btn-text-hide-for-mobile">New</span></LinkTo>
                     {{/if}}
                 </div>

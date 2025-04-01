@@ -1,6 +1,7 @@
 import loginAsRole from '../../helpers/login-as-role';
 import {click, find, findAll} from '@ember/test-helpers';
 import {clickTrigger, selectChoose} from 'ember-power-select/test-support/helpers';
+import {disablePaidMembers} from '../../helpers/members';
 import {enableMailgun} from '../../helpers/mailgun';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
@@ -16,24 +17,25 @@ describe('Acceptance: Post email preview', function () {
     });
 
     it('should hide newsletters list and paid/free select by default', async function () {
+        disablePaidMembers(this.server);
+
         await loginAsRole('Administrator', this.server);
 
         const post = this.server.create('post', {status: 'draft'});
         await visit(`/editor/post/${post.id}`);
 
         // go to email preview modal
-        expect(find('[data-test-button="publish-preview"]'), 'Preview').to.exist;
         await click('[data-test-button="publish-preview"]');
-
-        expect(find('[data-test-button="email-preview"]')).to.exist;
         await click('[data-test-button="email-preview"]');
 
-        expect(find('[data-test-email-preview-newsletter-select]')).not.to.exist;
-        expect(find('[data-test-email-preview-segment-select]')).not.to.exist;
+        expect(find('[data-test-email-preview-newsletter-select]'), 'newsletter select').not.to.exist;
+        expect(find('[data-test-email-preview-segment-select]'), 'segment select').not.to.exist;
     });
 
     it('can select newsletter and paid/free member for preview', async function () {
         enableMailgun(this.server);
+        disablePaidMembers(this.server);
+
         await loginAsRole('Administrator', this.server);
         const post = this.server.create('post', {status: 'draft'});
         this.server.create('newsletter', {
@@ -50,8 +52,8 @@ describe('Acceptance: Post email preview', function () {
         expect(find('[data-test-button="email-preview"]')).to.exist;
         await click('[data-test-button="email-preview"]');
 
-        expect(find('[data-test-email-preview-newsletter-select]')).to.exist;
-        expect(find('[data-test-email-preview-segment-select]')).not.to.exist;
+        expect(find('[data-test-email-preview-newsletter-select]'), 'newsletter select').to.exist;
+        expect(find('[data-test-email-preview-segment-select]'), 'segment select').not.to.exist;
 
         // check newsletters options
         await clickTrigger('[data-test-email-preview-newsletter-select-section]');
@@ -77,11 +79,6 @@ describe('Acceptance: Post email preview', function () {
         enableMailgun(this.server);
         await loginAsRole('Administrator', this.server);
         const post = this.server.create('post', {status: 'draft'});
-        this.server.create('setting', {
-            group: 'site',
-            key: 'paid_members_enabled',
-            value: true
-        });
 
         await visit(`/editor/post/${post.id}`);
 

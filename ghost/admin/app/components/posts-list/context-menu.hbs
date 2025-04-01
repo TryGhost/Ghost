@@ -51,7 +51,7 @@
         </button>
     </li>
 
-    {{#if this.membersUtils.isMembersEnabled}}
+    {{#if this.settings.membersEnabled}}
         <li>
             <button class="mr2" type="button" {{on "click" this.editPostsAccess}} data-test-button="change-access">
                 <span>{{svg-jar "lock"}}Change access</span>

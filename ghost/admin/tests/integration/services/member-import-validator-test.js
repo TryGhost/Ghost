@@ -1,12 +1,7 @@
 import Pretender from 'pretender';
-import Service from '@ember/service';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
 import {setupTest} from 'ember-mocha';
-
-let MembersUtilsStub = Service.extend({
-    isStripeEnabled: true
-});
 
 describe('Integration: Service: member-import-validator', function () {
     setupTest();
@@ -15,7 +10,6 @@ describe('Integration: Service: member-import-validator', function () {
 
     beforeEach(function () {
         server = new Pretender();
-        this.owner.register('service:membersUtils', MembersUtilsStub);
     });
 
     afterEach(function () {
@@ -35,10 +29,6 @@ describe('Integration: Service: member-import-validator', function () {
 
     describe('data sampling method', function () {
         it('returns whole data set when sampled size is less then default 30', async function () {
-            this.owner.register('service:membersUtils', Service.extend({
-                isStripeEnabled: false
-            }));
-
             let service = this.owner.lookup('service:member-import-validator');
 
             const result = await service._sampleData([{
@@ -51,10 +41,6 @@ describe('Integration: Service: member-import-validator', function () {
         });
 
         it('returns dataset with sample size for non empty values only', async function () {
-            this.owner.register('service:membersUtils', Service.extend({
-                isStripeEnabled: false
-            }));
-
             let service = this.owner.lookup('service:member-import-validator');
             let data = [{
                 email: null
@@ -77,10 +63,6 @@ describe('Integration: Service: member-import-validator', function () {
         });
 
         it('returns dataset with sample size for non empty values for objects with multiple properties', async function () {
-            this.owner.register('service:membersUtils', Service.extend({
-                isStripeEnabled: false
-            }));
-
             let service = this.owner.lookup('service:member-import-validator');
             let data = [{
                 email: null,
@@ -112,10 +94,6 @@ describe('Integration: Service: member-import-validator', function () {
 
     describe('data detection method', function () {
         it('correctly detects only email mapping', async function () {
-            this.owner.register('service:membersUtils', Service.extend({
-                isStripeEnabled: false
-            }));
-
             let service = this.owner.lookup('service:member-import-validator');
 
             const result = service._detectDataTypes([{
@@ -129,10 +107,6 @@ describe('Integration: Service: member-import-validator', function () {
         });
 
         it('correctly detects email mapping', async function () {
-            this.owner.register('service:membersUtils', Service.extend({
-                isStripeEnabled: false
-            }));
-
             let service = this.owner.lookup('service:member-import-validator');
 
             const result = service._detectDataTypes([{
@@ -147,10 +121,6 @@ describe('Integration: Service: member-import-validator', function () {
         });
 
         it('correctly detects variation of "name" mapping', async function () {
-            this.owner.register('service:membersUtils', Service.extend({
-                isStripeEnabled: false
-            }));
-
             let service = this.owner.lookup('service:member-import-validator');
 
             const result = service._detectDataTypes([{

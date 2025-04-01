@@ -9,7 +9,7 @@ import {tracked} from '@glimmer/tracking';
 const BASE_FILTERS = ['status:free', 'status:-free'];
 
 export default class GhMembersRecipientSelect extends Component {
-    @service membersUtils;
+    @service settings;
     @service store;
 
     @tracked forceSpecificChecked = false;
@@ -40,7 +40,7 @@ export default class GhMembersRecipientSelect extends Component {
     }
 
     get isPaidAvailable() {
-        return this.membersUtils.isStripeEnabled;
+        return this.settings.paidMembersEnabled;
     }
 
     get specificFilters() {

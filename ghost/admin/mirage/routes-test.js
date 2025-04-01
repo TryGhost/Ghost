@@ -32,7 +32,7 @@ import mockWebhooks from './config/webhooks';
 export default function () {
     this.namespace = ghostPaths().apiRoot;
     // this.timing = 400;      // delay for each request, automatically set to 0 during testing
-    this.logging = false;
+    this.logging = true;
 
     mockApiKeys(this);
     mockAuthentication(this);

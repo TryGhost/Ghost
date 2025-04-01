@@ -65,7 +65,7 @@ export default class PostsContextMenu extends Component {
     @service infinity;
     @service store;
     @service notifications;
-    @service membersUtils;
+    @service settings;
 
     get menu() {
         return this.args.menu;

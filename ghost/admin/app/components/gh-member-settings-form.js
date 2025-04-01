@@ -6,7 +6,6 @@ import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
 
 export default class extends Component {
-    @service membersUtils;
     @service ghostPaths;
     @service ajax;
     @service store;
@@ -24,7 +23,7 @@ export default class extends Component {
     @tracked newslettersList;
 
     get isAddComplimentaryAllowed() {
-        if (!this.membersUtils.paidMembersEnabled) {
+        if (!this.settings.paidMembersEnabled) {
             return false;
         }
 

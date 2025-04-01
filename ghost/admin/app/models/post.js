@@ -73,7 +73,6 @@ export default Model.extend(Comparable, ValidationEngine, {
     clock: service(),
     search: service(),
     settings: service(),
-    membersUtils: service(),
 
     config: inject(),
 
@@ -195,7 +194,7 @@ export default Model.extend(Comparable, ValidationEngine, {
     showEmailOpenAnalytics: computed('hasBeenEmailed', 'isSent', 'isPublished', function () {
         return this.hasBeenEmailed
             && !this.session.user.isContributor
-            && this.settings.membersSignupAccess !== 'none'
+            && this.settings.membersEnabled
             && this.email.trackOpens
             && this.settings.emailTrackOpens;
     }),
@@ -203,21 +202,21 @@ export default Model.extend(Comparable, ValidationEngine, {
     showEmailClickAnalytics: computed('hasBeenEmailed', 'isSent', 'isPublished', 'email', function () {
         return this.hasBeenEmailed
             && !this.session.user.isContributor
-            && this.settings.membersSignupAccess !== 'none'
+            && this.settings.membersEnabled
             && (this.isSent || this.isPublished)
             && this.email.trackClicks
             && this.settings.emailTrackClicks;
     }),
 
-    showAttributionAnalytics: computed('isPage', 'emailOnly', 'isPublished', 'membersUtils.isMembersInviteOnly', 'settings.membersTrackSources', function () {
+    showAttributionAnalytics: computed('isPage', 'emailOnly', 'isPublished', 'settings.{membersInviteOnly,membersTrackSources}', function () {
         return (this.isPage || !this.emailOnly)
                 && this.isPublished
                 && this.settings.membersTrackSources
-                && !this.membersUtils.isMembersInviteOnly
+                && !this.settings.membersInviteOnly
                 && !this.session.user.isContributor;
     }),
 
-    showPaidAttributionAnalytics: computed.and('showAttributionAnalytics', 'membersUtils.paidMembersEnabled'),
+    showPaidAttributionAnalytics: computed.and('showAttributionAnalytics', 'settings.paidMembersEnabled'),
 
     hasAnalyticsPage: computed('isPost', 'showEmailOpenAnalytics', 'showEmailClickAnalytics', 'showAttributionAnalytics', function () {
         return this.isPost

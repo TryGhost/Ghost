@@ -1,7 +1,7 @@
 <div class="gh-members-empty">
     {{svg-jar "members-placeholder" class="gh-members-placeholder"}}
     <h4>Start building your audience</h4>
-    {{#if (not-eq this.settings.membersSignupAccess "none")}}
+    {{#if this.settings.membersEnabled}}
         <p>Use memberships to allow your readers to sign up and subscribe to your content.</p>
         <button class="gh-btn gh-btn-green" type="button" {{on "click" this.addYourself}} data-test-button="add-yourself">
             <span>Add yourself as a member to test</span>

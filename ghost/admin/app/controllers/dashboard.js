@@ -19,9 +19,9 @@ const DAYS_OPTIONS = [{
 export default class DashboardController extends Controller {
     @service dashboardStats;
     @service feature;
-    @service membersUtils;
     @service mentionUtils;
     @service onboarding;
+    @service settings;
     @service store;
 
     @tracked mentions = [];

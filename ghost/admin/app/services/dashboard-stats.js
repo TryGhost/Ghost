@@ -86,7 +86,6 @@ export default class DashboardStatsService extends Service {
     @service ghostPaths;
     @service membersCountCache;
     @service settings;
-    @service membersUtils;
     @service membersStats;
 
     /**
@@ -362,17 +361,17 @@ export default class DashboardStatsService extends Service {
             return;
         }
 
-        if (this.membersUtils.paidMembersEnabled) {
+        if (this.settings.paidMembersEnabled) {
             yield this.loadPaidTiers();
         }
 
-        const hasPaidTiers = this.membersUtils.paidMembersEnabled && this.activePaidTiers && this.activePaidTiers.length > 0;
+        const hasPaidTiers = this.settings.paidMembersEnabled && this.activePaidTiers && this.activePaidTiers.length > 0;
 
         this.siteStatus = {
             hasPaidTiers,
             hasMultipleTiers: hasPaidTiers && this.activePaidTiers.length > 1,
             newslettersEnabled: this.settings.editorDefaultEmailRecipients !== 'disabled',
-            membersEnabled: this.membersUtils.isMembersEnabled
+            membersEnabled: this.settings.membersEnabled
         };
     }
 

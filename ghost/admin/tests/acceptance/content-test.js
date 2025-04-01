@@ -145,6 +145,8 @@ describe('Acceptance: Posts / Pages', function () {
             let editor, editorPost;
 
             beforeEach(async function () {
+                this.server.loadFixtures('settings');
+
                 let editorRole = this.server.create('role', {name: 'Editor'});
                 editor = this.server.create('user', {roles: [editorRole]});
                 editorPost = this.server.create('post', {authors: [editor], status: 'published', title: 'Editor Post'});
@@ -167,12 +169,13 @@ describe('Acceptance: Posts / Pages', function () {
 
                     // Test that the context menu has the correct buttons
                     const buttons = contextMenu.querySelectorAll('button');
-                    expect(buttons.length, 'context menu buttons').to.equal(5);
+                    expect(buttons.length, 'context menu buttons').to.equal(6);
                     expect(buttons[0].innerText.trim(), 'context menu button 1').to.contain('Copy link to post');
                     expect(buttons[1].innerText.trim(), 'context menu button 2').to.contain('Unpublish');
                     expect(buttons[2].innerText.trim(), 'context menu button 3').to.contain('Feature');
                     expect(buttons[3].innerText.trim(), 'context menu button 4').to.contain('Add a tag');
-                    expect(buttons[4].innerText.trim(), 'context menu button 5').to.contain('Duplicate');
+                    expect(buttons[4].innerText.trim(), 'context menu button 5').to.contain('Change access');
+                    expect(buttons[5].innerText.trim(), 'context menu button 6').to.contain('Duplicate');
                 });
 
                 // Note: we cover the functionality of the context menu buttons in the 'as admin' section
@@ -333,16 +336,17 @@ describe('Acceptance: Posts / Pages', function () {
                         let buttons = contextMenu.querySelectorAll('button');
 
                         expect(contextMenu, 'context menu').to.exist;
-                        expect(buttons.length, 'context menu buttons').to.equal(6);
+                        expect(buttons.length, 'context menu buttons').to.equal(7);
                         expect(buttons[0].innerText.trim(), 'context menu button 1').to.contain('Copy link to post');
-                        expect(buttons[1].innerText.trim(), 'context menu button 1').to.contain('Unpublish');
-                        expect(buttons[2].innerText.trim(), 'context menu button 2').to.contain('Feature'); // or Unfeature
-                        expect(buttons[3].innerText.trim(), 'context menu button 3').to.contain('Add a tag');
-                        expect(buttons[4].innerText.trim(), 'context menu button 4').to.contain('Duplicate');
-                        expect(buttons[5].innerText.trim(), 'context menu button 5').to.contain('Delete');
+                        expect(buttons[1].innerText.trim(), 'context menu button 2').to.contain('Unpublish');
+                        expect(buttons[2].innerText.trim(), 'context menu button 3').to.contain('Feature'); // or Unfeature
+                        expect(buttons[3].innerText.trim(), 'context menu button 4').to.contain('Add a tag');
+                        expect(buttons[4].innerText.trim(), 'context menu button 5').to.contain('Change access');
+                        expect(buttons[5].innerText.trim(), 'context menu button 6').to.contain('Duplicate');
+                        expect(buttons[6].innerText.trim(), 'context menu button 7').to.contain('Delete');
 
                         // duplicate the post
-                        await click(buttons[4]);
+                        await click(buttons[5]);
 
                         const posts = findAll('[data-test-post-id]');
                         expect(posts.length, 'all posts count').to.equal(5);
@@ -366,15 +370,9 @@ describe('Acceptance: Posts / Pages', function () {
                         let buttons = contextMenu.querySelectorAll('button');
 
                         expect(contextMenu, 'context menu').to.exist;
-                        expect(buttons.length, 'context menu buttons').to.equal(6);
-                        expect(buttons[0].innerText.trim(), 'context menu button 1').to.contain('Copy link to post');
-                        expect(buttons[1].innerText.trim(), 'context menu button 1').to.contain('Unpublish');
-                        expect(buttons[2].innerText.trim(), 'context menu button 2').to.contain('Feature'); // or Unfeature
-                        expect(buttons[3].innerText.trim(), 'context menu button 3').to.contain('Add a tag');
-                        expect(buttons[4].innerText.trim(), 'context menu button 4').to.contain('Duplicate');
-                        expect(buttons[5].innerText.trim(), 'context menu button 5').to.contain('Delete');
 
                         // Copy the post link
+                        expect(buttons[0].innerText.trim(), 'context menu button 1').to.contain('Copy link to post');
                         await click(buttons[0]);
 
                         // Check that the notification is displayed
@@ -400,15 +398,9 @@ describe('Acceptance: Posts / Pages', function () {
 
                         let buttons = contextMenu.querySelectorAll('button');
 
-                        expect(contextMenu, 'context menu').to.exist;
-                        expect(buttons.length, 'context menu buttons').to.equal(5);
-                        expect(buttons[0].innerText.trim(), 'context menu button 1').to.contain('Copy preview link');
-                        expect(buttons[1].innerText.trim(), 'context menu button 2').to.contain('Feature'); // or Unfeature
-                        expect(buttons[2].innerText.trim(), 'context menu button 3').to.contain('Add a tag');
-                        expect(buttons[3].innerText.trim(), 'context menu button 4').to.contain('Duplicate');
-                        expect(buttons[4].innerText.trim(), 'context menu button 5').to.contain('Delete');
-
                         // Copy the preview link
+                        expect(contextMenu, 'context menu').to.exist;
+                        expect(buttons[0].innerText.trim(), 'context menu button 1').to.contain('Copy preview link');
                         await click(buttons[0]);
 
                         // Check that the notification is displayed

@@ -11,24 +11,16 @@ export default class MembersUtilsService extends Service {
 
     paidTiers = null;
 
-    get isMembersEnabled() {
-        return this.settings.membersEnabled;
-    }
-
-    get paidMembersEnabled() {
-        return this.settings.paidMembersEnabled;
-    }
-
     get isMembersInviteOnly() {
         return this.settings.membersInviteOnly;
     }
 
     get hasMultipleTiers() {
-        return this.paidMembersEnabled && this.paidTiers && this.paidTiers.length > 1;
+        return this.settings.paidMembersEnabled && this.paidTiers && this.paidTiers.length > 1;
     }
 
     get hasActiveTiers() {
-        return this.paidMembersEnabled && this.paidTiers && this.paidTiers.length > 0;
+        return this.settings.paidMembersEnabled && this.paidTiers && this.paidTiers.length > 0;
     }
 
     async fetch() {
@@ -54,7 +46,7 @@ export default class MembersUtilsService extends Service {
     }
 
     /**
-     * Note: always use paidMembersEnabled! Only use this getter for the Stripe Connection UI.
+     * Note: always use settings.paidMembersEnabled! Only use this getter for the Stripe Connection UI.
      */
     get isStripeEnabled() {
         const stripeDirect = this.config.stripeDirect;
