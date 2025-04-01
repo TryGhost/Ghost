@@ -31,6 +31,8 @@ const KpiTabValue: React.FC<KpiTabValueProps> = ({label, value}) => {
     );
 };
 
+// TODO: clean up data formatters. It's all over the place ATM
+
 const Kpis:React.FC = () => {
     const {data: configData, isLoading: isConfigLoading} = useGlobalData();
     const [currentTab, setCurrentTab] = useState('visits');
@@ -54,6 +56,7 @@ const Kpis:React.FC = () => {
 
     const isLoading = isConfigLoading || loading;
 
+    // TODO: update this to use non-hardcoded setup
     let dataKey = '';
     let dataLabel = '';
     switch (currentTab) {
@@ -123,7 +126,7 @@ const Kpis:React.FC = () => {
 
     const kpiValues = getKpiValues();
 
-    // Calculate Y-axis ticks for round numbers
+    // TODO: move these out to Chart helper functions
     const getYTicks = () => {
         if (!chartData?.length) {
             return [];
@@ -177,14 +180,6 @@ const Kpis:React.FC = () => {
             label: dataLabel
         }
     } satisfies ChartConfig;
-
-    // console.log('Data:', JSON.stringify(data, null, 2));
-
-    // "date": "2025-03-31",
-    // "visits": 1,
-    // "pageviews": 1,
-    // "bounce_rate": 1,
-    // "avg_session_sec": 0
 
     return (
         <Card className='col-span-2'>
