@@ -10,7 +10,6 @@ const Layout: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({children, ...pr
     const {isOnboarded} = useOnboardingStatus();
     const {data: currentUser, isLoading} = useCurrentUser();
     const {prefetchExploreProfiles} = useExploreProfilesForUser('index');
-    // const containerRef = useScrollableContainer();
     const containerRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
