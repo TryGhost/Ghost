@@ -197,10 +197,10 @@ test.describe('Publishing', () => {
             await createMember(sharedPage, {email: 'test+recipient1@example.com', name: 'Publishing member'});
 
             await sharedPage.goto('/ghost');
-            const postSlug = await createPostDraft(sharedPage, postData);
+            await createPostDraft(sharedPage, postData);
             await publishPost(sharedPage, {type: 'publish+send'});
             await closePublishFlow(sharedPage);
-            await checkPostPublished(sharedPage, {...postData, slug: postSlug});
+            await checkPostPublished(sharedPage, postData);
         });
 
         // Post should only be available on web
@@ -211,12 +211,12 @@ test.describe('Publishing', () => {
             };
 
             await sharedPage.goto('/ghost');
-            const postSlug = await createPostDraft(sharedPage, postData);
+            await createPostDraft(sharedPage, postData);
             await publishPost(sharedPage);
             await closePublishFlow(sharedPage);
 
             await checkPostStatus(sharedPage, 'Published');
-            await checkPostPublished(sharedPage, {...postData, slug: postSlug});
+            await checkPostPublished(sharedPage, postData);
         });
 
         // Post should be available on web and sent as a newsletter
@@ -229,10 +229,10 @@ test.describe('Publishing', () => {
             await createMember(sharedPage, {email: 'test+recipient2@example.com', name: 'Publishing member'});
 
             await sharedPage.goto('/ghost');
-            const postSlug = await createPostDraft(sharedPage, postData);
+            await createPostDraft(sharedPage, postData);
             await publishPost(sharedPage, {type: 'send'});
             await closePublishFlow(sharedPage);
-            await checkPostNotPublished(sharedPage, {...postData, slug: postSlug});
+            await checkPostNotPublished(sharedPage, postData);
         });
     });
 
