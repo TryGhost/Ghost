@@ -2,15 +2,10 @@ const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../utils');
 const configUtils = require('../utils/configUtils');
-const models = require('../../core/server/models');
 const UrlService = require('../../core/server/services/url/UrlService');
 
 describe('Integration: services/url/UrlService', function () {
     let urlService;
-
-    before(function () {
-        models.init();
-    });
 
     before(testUtils.teardownDb);
     before(testUtils.setup('users:roles', 'posts'));
