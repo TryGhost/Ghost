@@ -3,7 +3,7 @@ const nock = require('nock');
 const sinon = require('sinon');
 
 // module under test
-const MailgunClient = require('../');
+const MailgunClient = require('../../../../../core/server/services/lib/MailgunClient');
 
 // Some sample Mailgun API options we might want to use
 const MAILGUN_OPTIONS = {

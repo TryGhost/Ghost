@@ -1,7 +1,7 @@
-const MailgunClient = require('@tryghost/mailgun-client');
 const models = require('../../models');
 const configService = require('../../../shared/config');
 const settingsCache = require('../../../shared/settings-cache');
+const MailgunClient = require('../lib/MailgunClient');
 const MailgunEmailSuppressionList = require('./MailgunEmailSuppressionList');
 
 const mailgunClient = new MailgunClient({
