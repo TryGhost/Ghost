@@ -9,14 +9,12 @@ import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, LucideIcon} from '@tryghost/shade';
 import {EmptyViewIcon, EmptyViewIndicator} from '@src/components/global/EmptyViewIndicator';
 import {LoadingIndicator} from '@tryghost/admin-x-design-system';
-import {handleViewContent} from '@utils/content-handlers';
 import {isPendingActivity} from '@utils/pending-activity';
 import {
     useFeedForUser,
-    useInboxForUser,
     useUserDataForUser
 } from '@hooks/use-activity-pub-queries';
-import {useLocation, useNavigate} from '@tryghost/admin-x-framework';
+import {useNavigate} from '@tryghost/admin-x-framework';
 
 const FeedInput: React.FC<{user?: ActorProperties}> = ({user}) => {
     return (
@@ -31,13 +29,10 @@ const FeedInput: React.FC<{user?: ActorProperties}> = ({user}) => {
     );
 };
 
-const Inbox: React.FC = () => {
-    const location = useLocation();
-    const layout = location.pathname === '/feed' ? 'feed' : 'inbox';
-    const {inboxQuery} = useInboxForUser({enabled: layout === 'inbox'});
-    const {feedQuery} = useFeedForUser({enabled: layout === 'feed'});
+const Feed: React.FC = () => {
+    const {feedQuery} = useFeedForUser({enabled: true});
 
-    const feedQueryData = layout === 'inbox' ? inboxQuery : feedQuery;
+    const feedQueryData = feedQuery;
     const {data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading} = feedQueryData;
 
     const activities = (data?.pages.flatMap(page => page.posts) ?? Array.from({length: 5}, (_, index) => ({id: `placeholder-${index}`, object: {}})));
@@ -85,11 +80,11 @@ const Inbox: React.FC = () => {
                 <div className='w-full'>
                     {activities.length > 0 ? (
                         <div className='my-4'>
-                            <div className={`mx-auto flex min-h-[calc(100dvh_-_117px)] items-start gap-11`}>
+                            <div className='mx-auto flex items-start gap-11'>
                                 <div className='flex w-full min-w-0 flex-col items-center'>
-                                    <div className={`flex w-full min-w-0 flex-col items-start ${layout !== 'inbox' && 'max-w-[620px]'}`}>
-                                        {layout === 'feed' && <FeedInput user={user} />}
-                                        <ul className='mx-auto flex w-full flex-col'>
+                                    <div className='flex w-full min-w-0 max-w-[620px] flex-col items-start'>
+                                        <FeedInput user={user} />
+                                        <ul className='mx-auto flex w-full flex-col px-4'>
                                             {activities.map((activity, index) => (
                                                 <li
                                                     // eslint-disable-next-line react/no-array-index-key
@@ -102,14 +97,16 @@ const Inbox: React.FC = () => {
                                                         commentCount={activity.object.replyCount ?? 0}
                                                         isLoading={isLoading}
                                                         isPending={isPendingActivity(activity.id)}
-                                                        layout={layout}
+                                                        layout={'feed'}
                                                         object={activity.object}
                                                         repostCount={activity.object.repostCount ?? 0}
                                                         type={activity.type}
                                                         onClick={() => {
-                                                            handleViewContent(activity, false);
+                                                            navigate(`/feed-rr/${encodeURIComponent(activity.id)}`);
                                                         }}
-                                                        onCommentClick={() => handleViewContent(activity, true)}
+                                                        onCommentClick={() => {
+                                                            navigate(`/feed-rr/${encodeURIComponent(activity.id)}?focusReply=true`);
+                                                        }}
                                                     />
                                                     {index < activities.length - 1 && (
                                                         <Separator />
@@ -132,33 +129,19 @@ const Inbox: React.FC = () => {
                         </div>
                     ) : (
                         <div className='flex w-full flex-col items-center gap-10'>
-                            {layout === 'inbox' ?
-                                <div className='flex w-full max-w-[620px] flex-col items-center'>
+                            <div className='mt-4 flex w-full max-w-[620px] flex-col items-center'>
+                                <FeedInput user={user} />
+                                <div className='mt-[-128px]'>
                                     <EmptyViewIndicator>
-                                        <EmptyViewIcon><LucideIcon.Inbox /></EmptyViewIcon>
-                                        <div>Your inbox is the home for <span className='text-black dark:text-white'>long-form posts</span>. It’s empty for now, but posts will show up as soon as the people you follow share something.</div>
-                                        <Button className='text-white dark:text-black' onClick={() => {
-                                            navigate('/explore');
-                                        }}>
-                                        Find accounts to follow &rarr;
+                                        <EmptyViewIcon><LucideIcon.Hash /></EmptyViewIcon>
+                                        <div>The Feed is the stream of thoughts and <span className='text-black dark:text-white'>bite-sized updates</span> from people you follow in the Social Web. It&apos;s looking a little empty right now but once the people you follow start posting, their updates will show up here.</div>
+                                        <Button className='text-white dark:text-black' onClick={() => NiceModal.show(NewPostModal)}>
+                                            <LucideIcon.FilePen />
+                                                Write your first note
                                         </Button>
                                     </EmptyViewIndicator>
                                 </div>
-                                :
-                                <div className='mt-4 flex w-full max-w-[620px] flex-col items-center'>
-                                    <FeedInput user={user} />
-                                    <div className='mt-[-128px]'>
-                                        <EmptyViewIndicator>
-                                            <EmptyViewIcon><LucideIcon.Hash /></EmptyViewIcon>
-                                            <div>The Feed is the stream of thoughts and <span className='text-black dark:text-white'>bite-sized updates</span> from people you follow in the Social Web. It&apos;s looking a little empty right now but once the people you follow start posting, their updates will show up here.</div>
-                                            <Button className='text-white dark:text-black' onClick={() => NiceModal.show(NewPostModal)}>
-                                                <LucideIcon.FilePen />
-                                                Write your first note
-                                            </Button>
-                                        </EmptyViewIndicator>
-                                    </div>
-                                </div>
-                            }
+                            </div>
                         </div>
                     )}
                 </div>
@@ -167,4 +150,4 @@ const Inbox: React.FC = () => {
     );
 };
 
-export default Inbox;
+export default Feed;
