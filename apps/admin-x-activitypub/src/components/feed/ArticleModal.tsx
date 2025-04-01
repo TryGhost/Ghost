@@ -671,7 +671,7 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
         }
 
         const setupObserver = () => {
-            const container = document.querySelector('.overflow-y-auto');
+            const container = modalRef.current;
             if (!container) {
                 return;
             }
@@ -682,34 +682,34 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
                     return;
                 }
 
+                const scrollTop = container.scrollTop;
+
                 const headings = tocItems
                     .map(item => doc.getElementById(item.id))
                     .filter((el): el is HTMLElement => el !== null)
                     .map(el => ({
                         element: el,
                         id: el.id,
-                        position: el.getBoundingClientRect().top - container.getBoundingClientRect().top
+                        top: el.offsetTop
                     }));
 
                 if (!headings.length) {
                     return;
                 }
 
-                // Find the last visible heading
-                const viewportCenter = container.clientHeight / 2;
                 const buffer = 100;
 
-                // Find the last heading that's above the viewport center
-                const lastVisibleHeading = headings.reduce((last, current) => {
-                    if (current.position < (viewportCenter + buffer)) {
-                        return current;
-                    }
-                    return last;
-                }, headings[0]);
+                let activeHeading = null;
 
-                if (lastVisibleHeading && lastVisibleHeading.element.id !== activeHeadingId) {
-                    setActiveHeadingId(lastVisibleHeading.element.id);
+                for (const heading of headings) {
+                    if (heading.top - buffer <= scrollTop) {
+                        activeHeading = heading;
+                    } else {
+                        break;
+                    }
                 }
+
+                setActiveHeadingId(activeHeading?.id || null);
             };
 
             container.addEventListener('scroll', handleScroll);
@@ -877,6 +877,7 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
                                     <div className="!visible absolute inset-y-0 right-7 z-40 hidden lg:!block">
                                         <div className="sticky top-1/2 -translate-y-1/2">
                                             <TableOfContents
+                                                activeHeading={activeHeadingId || ''}
                                                 items={tocItems}
                                                 onItemClick={scrollToHeading}
                                             />
