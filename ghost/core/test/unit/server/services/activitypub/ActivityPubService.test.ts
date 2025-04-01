@@ -1,7 +1,7 @@
 import assert from 'assert/strict';
 import {ActivityPubService} from '../../../../../core/server/services/activitypub/ActivityPubService';
 import knex, {Knex} from 'knex';
-import {IdentityTokenService} from '@tryghost/identity-token-service';
+import type {IdentityTokenService} from '../../../../../core/server/services/identity-tokens/IdentityTokenService';
 import nock from 'nock';
 
 async function getKnexInstance() {

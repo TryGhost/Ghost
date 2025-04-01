@@ -520,6 +520,13 @@ jobs:
         run: sudo service mysql stop
         if: matrix.env.DB == 'mysql8'
 
+      - name: Login to Docker Hub
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
       - uses: tryghost/mysql-action@main
         if: matrix.env.DB == 'mysql8'
         timeout-minutes: 3
@@ -944,6 +951,7 @@ jobs:
           fi
       - name: Custom deployment to the test Branch
         run: |
+          source .tinyenv
           DEPLOY_FILE=./deploy/${VERSION}/deploy.sh
           if [ -f "$DEPLOY_FILE" ]; then
               echo "$DEPLOY_FILE found"
@@ -1328,6 +1336,7 @@ jobs:
         run: tb --host=${{ secrets.TB_HOST }} --token=${{ secrets.TB_ADMIN_TOKEN_PRODUCTION }} auth info
       - name: Deploy changes to the main Workspace
         run: |
+          source .tinyenv
           DEPLOY_FILE=./deploy/${VERSION}/deploy.sh
           if [ ! -f "$DEPLOY_FILE" ]; then
             echo "$DEPLOY_FILE not found, running default tb push command"
@@ -1336,6 +1345,7 @@ jobs:
           fi
       - name: Custom deployment to the main Workspace
         run: |
+            source .tinyenv
             DEPLOY_FILE=./deploy/${VERSION}/deploy.sh
             if [ -f "$DEPLOY_FILE" ]; then
               echo "$DEPLOY_FILE found"

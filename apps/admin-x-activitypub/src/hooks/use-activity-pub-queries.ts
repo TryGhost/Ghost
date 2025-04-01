@@ -62,16 +62,6 @@ const QUERY_KEYS = {
     profileFollowing: (profileHandle: string) => ['profile_following', profileHandle],
     account: (handle: string) => ['account', handle],
     accountFollows: (handle: string, type: AccountFollowsType) => ['account_follows', handle, type],
-    activities: (
-        handle: string,
-        key?: string | null,
-        options?: {
-            includeOwn?: boolean,
-            includeReplies?: boolean,
-            filter?: {type?: string[]} | null,
-            limit?: number,
-        }
-    ) => ['activities', handle, key, options].filter(value => value !== undefined),
     searchResults: (query: string) => ['search_results', query],
     suggestedProfiles: (limit: number) => ['suggested_profiles', limit],
     exploreProfiles: (handle: string) => ['explore_profiles', handle],
@@ -392,11 +382,72 @@ export function useUnfollowMutationForUser(handle: string, onSuccess: () => void
                 };
             });
 
-            // Invalidate the profile followers query cache for the profile being unfollowed
-            // because we cannot directly remove from it as we don't have the data for the unfollowed follower
+            // Update the profile followers query cache for the profile being unfollowed
             const profileFollowersQueryKey = QUERY_KEYS.profileFollowers(fullHandle);
 
-            queryClient.invalidateQueries({queryKey: profileFollowersQueryKey});
+            queryClient.setQueryData(profileFollowersQueryKey, (oldData?: {
+                pages: Array<{
+                    followers: Array<{
+                        actor: {
+                            id: string;
+                            type: string;
+                            preferredUsername: string;
+                            name: string;
+                            url: string;
+                            icon: {
+                                type: string;
+                                url: string;
+                            };
+                        };
+                        isFollowing: boolean;
+                    }>;
+                }>;
+            }) => {
+                if (!oldData?.pages?.[0]) {
+                    return oldData;
+                }
+
+                const currentAccount = queryClient.getQueryData<Account>(QUERY_KEYS.account('index'));
+                if (!currentAccount) {
+                    return oldData;
+                }
+
+                return {
+                    ...oldData,
+                    pages: oldData.pages.map((page: {
+                        followers: Array<{
+                            actor: {
+                                id: string;
+                                type: string;
+                                preferredUsername: string;
+                                name: string;
+                                url: string;
+                                icon: {
+                                    type: string;
+                                    url: string;
+                                };
+                            };
+                            isFollowing: boolean;
+                        }>;
+                    }) => ({
+                        ...page,
+                        followers: page.followers.filter((follower: {
+                            actor: {
+                                id: string;
+                                type: string;
+                                preferredUsername: string;
+                                name: string;
+                                url: string;
+                                icon: {
+                                    type: string;
+                                    url: string;
+                                };
+                            };
+                            isFollowing: boolean;
+                        }) => follower.actor.id !== currentAccount.id)
+                    }))
+                };
+            });
 
             // Update the "followingCount" property of the account performing the follow
             const accountQueryKey = QUERY_KEYS.account('index');
@@ -461,12 +512,6 @@ export function useFollowMutationForUser(handle: string, onSuccess: () => void, 
                 };
             });
 
-            // Invalidate the profile followers query cache for the profile being followed
-            // because we cannot directly add to it as we don't have the data for the new follower
-            const profileFollowersQueryKey = QUERY_KEYS.profileFollowers(fullHandle);
-
-            queryClient.invalidateQueries({queryKey: profileFollowersQueryKey});
-
             // Update the "followingCount" property of the account performing the follow
             const accountQueryKey = QUERY_KEYS.account('index');
 
@@ -481,6 +526,8 @@ export function useFollowMutationForUser(handle: string, onSuccess: () => void, 
                 };
             });
 
+            const profileFollowersQueryKey = QUERY_KEYS.profileFollowers(fullHandle);
+
             // Invalidate the follows query cache for the account performing the follow
             // because we cannot directly add to it due to potentially incompatible data
             // shapes
@@ -488,74 +535,62 @@ export function useFollowMutationForUser(handle: string, onSuccess: () => void, 
 
             queryClient.invalidateQueries({queryKey: accountFollowsQueryKey});
 
+            // Add new follower to the followers list cache
+            queryClient.setQueryData(profileFollowersQueryKey, (oldData?: {
+                pages: Array<{
+                    followers: Array<{
+                        actor: {
+                            id: string;
+                            type: string;
+                            preferredUsername: string;
+                            name: string;
+                            url: string;
+                            icon: {
+                                type: string;
+                                url: string;
+                            };
+                        };
+                        isFollowing: boolean;
+                    }>;
+                }>;
+            }) => {
+                if (!oldData?.pages?.[0]) {
+                    return oldData;
+                }
+
+                const currentAccount = queryClient.getQueryData<Account>(QUERY_KEYS.account('index'));
+                if (!currentAccount) {
+                    return oldData;
+                }
+
+                const newFollower = {
+                    actor: {
+                        id: currentAccount.id,
+                        type: 'Person',
+                        preferredUsername: 'index',
+                        name: currentAccount.name,
+                        url: currentAccount.url,
+                        icon: {
+                            type: 'Image',
+                            url: currentAccount.avatarUrl
+                        }
+                    },
+                    isFollowing: false
+                };
+
+                return {
+                    ...oldData,
+                    pages: [{
+                        ...oldData.pages[0],
+                        followers: [newFollower, ...oldData.pages[0].followers]
+                    }, ...oldData.pages.slice(1)]
+                };
+            });
+
             onSuccess();
         },
         onError
     });
-}
-
-export const GET_ACTIVITIES_QUERY_KEY_INBOX = 'inbox';
-export const GET_ACTIVITIES_QUERY_KEY_FEED = 'feed';
-export const GET_ACTIVITIES_QUERY_KEY_NOTIFICATIONS = 'notifications';
-
-export function useActivitiesForUser({
-    handle,
-    includeOwn = false,
-    includeReplies = false,
-    filter = null,
-    limit = undefined,
-    key = null
-}: {
-    handle: string;
-    includeOwn?: boolean;
-    includeReplies?: boolean;
-    filter?: {type?: string[]} | null;
-    limit?: number;
-    key?: string | null;
-}) {
-    const queryClient = useQueryClient();
-    const queryKey = QUERY_KEYS.activities(handle, key, {includeOwn, includeReplies, filter});
-
-    const getActivitiesQuery = useInfiniteQuery({
-        queryKey,
-        staleTime: 5 * 60 * 1000, // 5m
-        async queryFn({pageParam}: {pageParam?: string}) {
-            const siteUrl = await getSiteUrl();
-            const api = createActivityPubAPI(handle, siteUrl);
-
-            return api.getActivities(includeOwn, includeReplies, filter, limit, pageParam);
-        },
-        getNextPageParam(prevPage) {
-            return prevPage.next;
-        }
-    });
-
-    const updateActivity = (id: string, updated: Partial<Activity>) => {
-        // Update the activity stored in the activities query cache
-        queryClient.setQueryData(queryKey, (current: {pages: {data: Activity[]}[]} | undefined) => {
-            if (!current) {
-                return current;
-            }
-
-            return {
-                ...current,
-                pages: current.pages.map((page: {data: Activity[]}) => {
-                    return {
-                        ...page,
-                        data: page.data.map((item: Activity) => {
-                            if (item.id === id) {
-                                return {...item, ...updated};
-                            }
-
-                            return item;
-                        })
-                    };
-                })
-            };
-        });
-    };
-
-    return {getActivitiesQuery, updateActivity};
 }
 
 export function useSearchForUser(handle: string, query: string) {

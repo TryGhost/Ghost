@@ -34,10 +34,10 @@
   ],
   "devDependencies": {
     "c8": "10.1.2",
-    "mocha": "10.7.3",
-    "sinon": "19.0.2",
+    "mocha": "10.8.2",
+    "sinon": "19.0.5",
     "ts-node": "10.9.2",
-    "typescript": "5.6.2"
+    "typescript": "5.8.2"
   },
   "dependencies": {}
 }
