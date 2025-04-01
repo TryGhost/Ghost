@@ -1,7 +1,7 @@
 const config = require('../../../shared/config');
 const urlUtils = require('../../../shared/url-utils');
 
-const DynamicRedirectManager = require('@tryghost/express-dynamic-redirects');
+const DynamicRedirectManager = require('../lib/DynamicRedirectManager');
 const CustomRedirectsAPI = require('./CustomRedirectsAPI');
 const validation = require('./validation');
 const {getBackupRedirectsFilePath} = require('./utils');
