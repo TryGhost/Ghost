@@ -43,7 +43,6 @@ services:
       - node_modules_ghost_domain-events:/home/ghost/ghost/domain-events/node_modules:delegated
       - node_modules_ghost_donations:/home/ghost/ghost/donations/node_modules:delegated
       - node_modules_ghost_email-addresses:/home/ghost/ghost/email-addresses/node_modules:delegated
-      - node_modules_ghost_email-content-generator:/home/ghost/ghost/email-content-generator/node_modules:delegated
       - node_modules_ghost_email-service:/home/ghost/ghost/email-service/node_modules:delegated
       - node_modules_ghost_email-suppression-list:/home/ghost/ghost/email-suppression-list/node_modules:delegated
       - node_modules_ghost_express-dynamic-redirects:/home/ghost/ghost/express-dynamic-redirects/node_modules:delegated
@@ -180,7 +179,6 @@ volumes:
   node_modules_ghost_domain-events: {}
   node_modules_ghost_donations: {}
   node_modules_ghost_email-addresses: {}
-  node_modules_ghost_email-content-generator: {}
   node_modules_ghost_email-service: {}
   node_modules_ghost_email-suppression-list: {}
   node_modules_ghost_express-dynamic-redirects: {}
