@@ -1,8 +1,6 @@
 VERSION 7
 TOKEN "stats_page" READ
 
-INCLUDE "../includes/filtered_sessions.incl"
-
 NODE _top_locations_0
 SQL >
 

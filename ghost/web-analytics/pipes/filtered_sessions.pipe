@@ -1,3 +1,5 @@
+VERSION 7
+
 NODE query_filters
 DESCRIPTION >
     Get sessions that match the filter criteria
@@ -19,7 +21,7 @@ SQL >
         {% if defined(pathname) %} and pathname = {{ String(pathname, description="Pathname to filter on", required=False) }} {% end %}
 
 
-NODE filtered_sessions
+NODE sessions_filtered_by_source
 DESCRIPTION > 
     Further filter by source when using the source filter. This is necessary because the source is specific to the first hit in a session,
     whereas other filters are on hits.
@@ -33,4 +35,3 @@ SQL >
     where
         site_uuid = {{ String(site_uuid, 'mock_site_uuid', description="Tenant ID", required=True) }}
         {% if defined(source) %} and source = {{ String(source, description="Source to filter on", required=False) }} {% end %}
-
