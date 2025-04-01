@@ -992,7 +992,7 @@ jobs:
           fi
 
       - name: Check datafiles format (lint)
-        run: ./scripts/check_format_datafiles.sh
+        run: ./scripts/format_datafiles_check.sh
 
   job_ghost-cli:
     name: Ghost-CLI tests
