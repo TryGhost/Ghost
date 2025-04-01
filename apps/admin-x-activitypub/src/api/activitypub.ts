@@ -375,8 +375,7 @@ export class ActivityPubAPI {
         return json as Thread;
     }
 
-    async getAccount(profileHandle: string): Promise<GetAccountResponse> {
-        console.log('getAccount: ', profileHandle);
+    async getAccount(profileHandle: string): Promise<GetAccountResponse> {        
         const url = new URL(`.ghost/activitypub/account`, this.apiUrl);
         profileHandle ? url.searchParams.set('handle', profileHandle) : null;
         const json = await this.fetchJSON(url);

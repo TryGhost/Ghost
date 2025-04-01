@@ -761,19 +761,6 @@ export function useSuggestedProfilesForUser(handle: string, limit = 3) {
     return {suggestedProfilesQuery, updateSuggestedProfile};
 }
 
-// export function useProfileForUser(handle: string, profileHandle: string, enabled: boolean = true) {
-//     return useQuery({
-//         queryKey: QUERY_KEYS.profile(profileHandle),
-//         enabled,
-//         async queryFn() {
-//             const siteUrl = await getSiteUrl();
-//             const api = createActivityPubAPI(handle, siteUrl);
-
-//             return api.getProfile(profileHandle);
-//         }
-//     });
-// }
-
 export function useProfilePostsForUser(handle: string, profileHandle: string) {
     return useInfiniteQuery({
         queryKey: QUERY_KEYS.profilePosts(profileHandle),
@@ -1166,8 +1153,6 @@ export function useAccountForUser(handle: string, profileHandle: string) {
         async queryFn() {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
-            console.log('useAccountForUser: ', profileHandle);
-
             return api.getAccount(profileHandle);
         }
     });
