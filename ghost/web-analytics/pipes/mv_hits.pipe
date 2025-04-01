@@ -1,8 +1,9 @@
 VERSION 8
+
 NODE mv_hits_0
 SQL >
-
-    SELECT timestamp,
+    SELECT
+        timestamp,
         action,
         version,
         coalesce(session_id, '0') as session_id,
@@ -16,15 +17,12 @@ SQL >
         toString(payload.member_status) as member_status,
         toString(payload.post_uuid) as post_uuid,
         toString(payload.post_type) as post_type,
-        lower(toString(getSubcolumn(payload,'user-agent'))) as user_agent
+        lower(toString(getSubcolumn(payload, 'user-agent'))) as user_agent
     FROM analytics_events
     where action = 'page_hit'
 
-
-
 NODE mv_hits_1
 SQL >
-
     SELECT
         site_uuid,
         timestamp,
@@ -76,7 +74,5 @@ SQL >
         END as browser
     FROM mv_hits_0
 
-TYPE materialized
+TYPE MATERIALIZED
 DATASOURCE _mv_hits
-
-
