@@ -1,3 +1,4 @@
+/** @type {import('knex').Knex} */
 let connection;
 
 Object.defineProperty(exports, 'knex', {
