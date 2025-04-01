@@ -70,19 +70,17 @@ SQL >
             toDate(toTimezone(first_pageview, {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}})) as date,
         {% end %}
         session_id,
-        {% if defined(pathname) %}
-            -- Count only hits matching the pathname
-            (
-                select count()
-                from _mv_hits h 
-                inner join filtered_sessions fs
-                    on h.session_id = fs.session_id
-                where h.pathname = {{ String(pathname) }}
-                    and h.session_id = session_id
-            ) as pageviews,
-        {% else %}
-            pageviews,
-        {% end %}
+        -- Count only hits matching the pathname
+        (
+            select count()
+            from _mv_hits h 
+            inner join filtered_sessions fs
+                on h.session_id = fs.session_id
+            where h.session_id = session_id
+                {% if defined(pathname) %}
+                    and h.pathname = {{ String(pathname) }}
+                {% end %}
+        ) as pageviews,
         is_bounce,
         duration as session_sec
     from mv_session_data sd 
@@ -133,7 +131,7 @@ SQL >
             {% end %}
             count() pageviews
         from timeseries a
-        inner join mv_hits h on 
+        inner join _mv_hits h on 
             {% if defined(date_from) and day_diff(date_from, date_to) == 0 %}
                 a.date = toStartOfHour(toTimezone(timestamp, {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}}))
             {% else %}
