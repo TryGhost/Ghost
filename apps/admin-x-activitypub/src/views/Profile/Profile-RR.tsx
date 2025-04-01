@@ -1,22 +1,23 @@
 import React, {useEffect, useRef, useState} from 'react';
 
-import NiceModal, {useModal} from '@ebay/nice-modal-react';
-
-import {Button, Heading, Icon, List, LoadingIndicator, Modal, NoValueLabel, Tab,TabView, useDesignSystem} from '@tryghost/admin-x-design-system';
+import {Button, Heading, Icon, List, LoadingIndicator, NoValueLabel, Tab,TabView} from '@tryghost/admin-x-design-system';
 import {UseInfiniteQueryResult} from '@tanstack/react-query';
 
 import {type GetProfileFollowersResponse, type GetProfileFollowingResponse} from '../../api/activitypub';
-import {useAccountForUser, useProfileFollowersForUser, useProfileFollowingForUser, useProfilePostsForUser} from '@hooks/use-activity-pub-queries';
+import {useAccountForUser, usePostsLikedByAccount, useProfileFollowersForUser, useProfileFollowingForUser, useProfileForUser, useProfilePostsForUser} from '@hooks/use-activity-pub-queries';
 
-import APAvatar from '../global/APAvatar';
-import ActivityItem from '../activities/ActivityItem';
-import FeedItem from '../feed/FeedItem';
-import FollowButton from '../global/FollowButton';
-import Separator from '../global/Separator';
+import APAvatar from '@src/components/global/APAvatar';
+import ActivityItem from '@src/components/activities/ActivityItem';
+import FeedItem from '@src/components/feed/FeedItem';
+import FollowButton from '@src/components/global/FollowButton';
+import Layout from '@src/components/layout';
 import getName from '../../utils/get-name';
 import getUsername from '../../utils/get-username';
-import {handleProfileClick} from '../../utils/handle-profile-click';
+import {Separator} from '@tryghost/shade';
+import {handleProfileClick, handleProfileClickRR} from '../../utils/handle-profile-click';
 import {handleViewContent} from '../../utils/content-handlers';
+import {useFeatureFlags} from '@src/lib/feature-flags';
+import {useNavigate, useParams} from '@tryghost/admin-x-framework';
 
 const noop = () => {};
 
@@ -72,6 +73,9 @@ const ActorList: React.FC<ActorListProps> = ({
         };
     }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
+    const {isEnabled} = useFeatureFlags();
+    const navigate = useNavigate();
+
     return (
         <div className='pt-3'>
             {
@@ -85,7 +89,13 @@ const ActorList: React.FC<ActorListProps> = ({
                             return (
                                 <React.Fragment key={actor.id}>
                                     <ActivityItem key={actor.id}
-                                        onClick={() => handleProfileClick(actor)}
+                                        onClick={() => {
+                                            if (isEnabled('ap-routes')) {
+                                                handleProfileClickRR(actor, navigate);
+                                            } else {
+                                                handleProfileClick(actor);
+                                            }
+                                        }}
                                     >
                                         <APAvatar author={actor} />
                                         <div>
@@ -156,6 +166,9 @@ const PostsTab: React.FC<{handle: string}> = ({handle}) => {
     const posts = (data?.pages.flatMap(page => page.posts) ?? [])
         .filter(post => (post.type === 'Announce' || post.type === 'Create') && !post.object?.inReplyTo);
 
+    const {isEnabled} = useFeatureFlags();
+    const navigate = useNavigate();
+
     return (
         <div>
             {
@@ -175,14 +188,36 @@ const PostsTab: React.FC<{handle: string}> = ({handle}) => {
                                     object={post.object}
                                     repostCount={post.object.repostCount}
                                     type={post.type}
-                                    onClick={() => handleViewContent({
-                                        ...post,
-                                        id: post.object.id
-                                    }, false)}
-                                    onCommentClick={() => handleViewContent({
-                                        ...post,
-                                        id: post.object.id
-                                    }, true)}
+                                    onClick={() => {
+                                        if (isEnabled('ap-routes')) {
+                                            if (post.object.type === 'Note') {
+                                                navigate(`/feed-rr/${encodeURIComponent(post.object.id)}`);
+                                            }
+                                            if (post.object.type === 'Article') {
+                                                navigate(`/inbox-rr/${encodeURIComponent(post.object.id)}`);
+                                            }
+                                        } else {
+                                            handleViewContent({
+                                                ...post,
+                                                id: post.object.id
+                                            }, false);
+                                        }
+                                    }}
+                                    onCommentClick={() => {
+                                        if (isEnabled('ap-routes')) {
+                                            if (post.object.type === 'Note') {
+                                                navigate(`/feed-rr/${encodeURIComponent(post.object.id)}?focusReply=true`);
+                                            }
+                                            if (post.object.type === 'Article') {
+                                                navigate(`/inbox-rr/${encodeURIComponent(post.object.id)}?focusReply=true`);
+                                            }
+                                        } else {
+                                            handleViewContent({
+                                                ...post,
+                                                id: post.object.id
+                                            }, true);
+                                        }
+                                    }}
                                 />
                                 {index < posts.length - 1 && <Separator />}
                             </div>
@@ -224,33 +259,123 @@ const FollowersTab: React.FC<{handle: string}> = ({handle}) => {
     );
 };
 
-interface ViewProfileModalProps {
-    handle: string;
-    onFollow?: () => void;
-    onUnfollow?: () => void;
-}
+const LikesTab: React.FC = () => {
+    const {postsLikedByAccountQuery} = usePostsLikedByAccount({enabled: true});
+    const {data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading} = postsLikedByAccountQuery;
 
-type ProfileTab = 'posts' | 'following' | 'followers';
+    const posts = data?.pages.flatMap(page => page.posts) ?? Array.from({length: 5}, (_, index) => ({id: `placeholder-${index}`, object: {}}));
 
-const ViewProfileModal: React.FC<ViewProfileModalProps> = ({
-    handle,
-    onFollow = noop,
-    onUnfollow = noop
-}) => {
-    const modal = useModal();
+    const observerRef = useRef<IntersectionObserver | null>(null);
+    const loadMoreRef = useRef<HTMLDivElement | null>(null);
+    const endLoadMoreRef = useRef<HTMLDivElement | null>(null);
+
+    // Calculate the index at which to place the loadMoreRef - This will place it ~75% through the list
+    const loadMoreIndex = Math.max(0, Math.floor(posts.length * 0.75) - 1);
+
+    useEffect(() => {
+        if (observerRef.current) {
+            observerRef.current.disconnect();
+        }
+
+        observerRef.current = new IntersectionObserver((entries) => {
+            if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+                fetchNextPage();
+            }
+        });
+
+        if (loadMoreRef.current) {
+            observerRef.current.observe(loadMoreRef.current);
+        }
+        if (endLoadMoreRef.current) {
+            observerRef.current.observe(endLoadMoreRef.current);
+        }
+
+        return () => {
+            if (observerRef.current) {
+                observerRef.current.disconnect();
+            }
+        };
+    }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+    return (
+        <>
+            {hasNextPage === false && posts.length === 0 && (
+                <NoValueLabel icon='heart'>
+                    You haven&apos;t liked anything yet.
+                </NoValueLabel>
+            )}
+            <ul className='mx-auto flex max-w-[640px] flex-col'>
+                {posts.map((activity, index) => (
+                    <li
+                        key={`likes-${activity.id}`}
+                        data-test-view-article
+                    >
+                        <FeedItem
+                            actor={activity.actor}
+                            allowDelete={activity.object.authored}
+                            commentCount={activity.object.replyCount}
+                            isLoading={isLoading}
+                            layout='feed'
+                            object={activity.object}
+                            repostCount={activity.object.repostCount}
+                            type={activity.type}
+                            onClick={() => handleViewContent(activity, false)}
+                            onCommentClick={() => handleViewContent(activity, true)}
+                        />
+                        {index < posts.length - 1 && <Separator />}
+                        {index === loadMoreIndex && (
+                            <div ref={loadMoreRef} className='h-1'></div>
+                        )}
+                    </li>
+                ))}
+                {isFetchingNextPage && (
+                    <li className='flex flex-col items-center justify-center space-y-4 text-center'>
+                        <LoadingIndicator size='md' />
+                    </li>
+                )}
+            </ul>
+            <div ref={endLoadMoreRef} className='h-1'></div>
+        </>
+    );
+};
+
+type ProfileTab = 'posts' | 'likes' | 'following' | 'followers';
+
+const Profile: React.FC = () => {
     const [selectedTab, setSelectedTab] = useState<ProfileTab>('posts');
-    const {darkMode} = useDesignSystem();
-    
-    const {data: profile, isLoading} = useAccountForUser('index', handle);
+    const {handle: urlHandle} = useParams();
 
-    const attachments = profile?.attachment || [];
+    // Reset selected tab when route changes
+    useEffect(() => {
+        setSelectedTab('posts');
+    }, [urlHandle]);
 
-    const tabs = isLoading === false && profile ? [
+    // Get current user's handle if no handle provided in URL
+    const {data: currentUser, isLoading: isLoadingCurrentUser} = useAccountForUser('index');
+    const handle = urlHandle || currentUser?.handle || '';
+
+    // Only call useProfileForUser when we have a valid handle
+    const {data: profile, isLoading: isLoadingProfile} = useProfileForUser('index', handle, Boolean(handle));
+    const isCurrentUser = profile?.handle === currentUser?.handle;
+
+    const isLoading = isLoadingCurrentUser || isLoadingProfile;
+
+    const attachments = (profile?.actor.attachment || []);
+
+    const tabs = isLoading === false && typeof profile !== 'string' && profile ? [
         {
             id: 'posts',
             title: 'Posts',
             contents: (
                 <PostsTab handle={profile.handle} />
+            )
+        },
+        // Only show Likes tab for current user
+        isCurrentUser && {
+            id: 'likes',
+            title: 'Likes',
+            contents: (
+                <LikesTab />
             )
         },
         {
@@ -287,24 +412,8 @@ const ViewProfileModal: React.FC<ViewProfileModalProps> = ({
     }, [isExpanded, profile]);
 
     return (
-        <Modal
-            align='right'
-            animate={true}
-            backDrop={darkMode}
-            footer={<></>}
-            height={'full'}
-            padding={false}
-            size='bleed'
-            width={640}
-        >
-            <div className='sticky top-0 z-50 border-gray-200 bg-white py-3 dark:border-gray-950 dark:bg-black'>
-                <div className='grid h-8 grid-cols-3'>
-                    <div className='col-[3/4] flex items-center justify-end space-x-6 px-8'>
-                        <Button className='transition-color flex size-10 items-center justify-center rounded-full bg-white hover:bg-gray-100 dark:bg-black dark:hover:bg-gray-950' icon='close' size='sm' unstyled onClick={() => modal.remove()}/>
-                    </div>
-                </div>
-            </div>
-            <div className='z-0 mx-auto mt-4 flex w-full max-w-[580px] flex-col items-center pb-16'>
+        <Layout>
+            <div className='z-0 -mx-8 -mt-9 flex flex-col items-center pb-16'>
                 <div className='mx-auto w-full'>
                     {isLoading && (
                         <LoadingIndicator size='lg' />
@@ -316,38 +425,40 @@ const ViewProfileModal: React.FC<ViewProfileModalProps> = ({
                     )}
                     {!isLoading && profile && (
                         <>
-                            {profile.bannerImageUrl && (<div className='h-[200px] w-full overflow-hidden rounded-lg bg-gradient-to-tr from-gray-200 to-gray-100'>
-                                <img
-                                    alt={profile.name}
-                                    className='size-full object-cover'
-                                    src={profile.bannerImageUrl}
-                                />
-                            </div>)}
-                            <div className={`${profile.bannerImageUrl && '-mt-12'} px-6`}>
+                            {profile.actor.image ?
+                                <div className='h-[15vw] w-full overflow-hidden bg-gradient-to-tr from-gray-200 to-gray-100'>
+                                    <img
+                                        alt={profile.actor.name}
+                                        className='size-full object-cover'
+                                        src={profile.actor.image.url}
+                                    />
+                                </div>
+                                :
+                                <div className='h-[8vw] w-full overflow-hidden bg-gradient-to-tr from-white to-white'></div>
+                            }
+                            <div className='mx-auto -mt-12 max-w-[620px] px-6'>
                                 <div className='flex items-end justify-between'>
                                     <div className='-ml-2 rounded-full bg-white p-1 dark:bg-black'>
                                         <APAvatar
-                                            author={{
-                                                icon: {url: profile.avatarUrl},
-                                                name: profile.name,
-                                                handle: profile.handle
-                                            }}
+                                            author={profile.actor}
                                             size='lg'
                                         />
                                     </div>
-                                    <FollowButton
-                                        following={profile.followedByMe}
-                                        handle={profile.handle}
-                                        type='primary'
-                                        onFollow={onFollow}
-                                        onUnfollow={onUnfollow}
-                                    />
+                                    {!isCurrentUser &&
+                                        <FollowButton
+                                            following={profile.isFollowing}
+                                            handle={profile.handle}
+                                            type='primary'
+                                            onFollow={noop}
+                                            onUnfollow={noop}
+                                        />
+                                    }
                                 </div>
-                                <Heading className='mt-4' level={3}>{profile.name}</Heading>
-                                <a className='group/handle mt-1 flex items-center gap-1 text-[1.5rem] text-gray-800 hover:text-gray-900' href={profile.url} rel='noopener noreferrer' target='_blank'><span>{profile.handle}</span><Icon className='opacity-0 transition-opacity group-hover/handle:opacity-100' name='arrow-top-right' size='xs'/></a>
-                                {(profile.bio || attachments.length > 0) && (<div ref={contentRef} className={`ap-profile-content transition-max-height relative text-[1.5rem] duration-300 ease-in-out [&>p]:mb-3 ${isExpanded ? 'max-h-none pb-7' : 'max-h-[160px] overflow-hidden'} relative`}>
+                                <Heading className='mt-4' level={3}>{profile.actor.name}</Heading>
+                                <a className='group/handle mt-1 flex items-center gap-1 text-[1.5rem] text-gray-800 hover:text-gray-900' href={profile?.actor.url} rel='noopener noreferrer' target='_blank'><span>{profile.handle}</span><Icon className='opacity-0 transition-opacity group-hover/handle:opacity-100' name='arrow-top-right' size='xs'/></a>
+                                {(profile.actor.summary || attachments.length > 0) && (<div ref={contentRef} className={`ap-profile-content transition-max-height relative text-[1.5rem] duration-300 ease-in-out [&>p]:mb-3 ${isExpanded ? 'max-h-none pb-7' : 'max-h-[160px] overflow-hidden'} relative`}>
                                     <div
-                                        dangerouslySetInnerHTML={{__html: profile.bio}}
+                                        dangerouslySetInnerHTML={{__html: profile.actor.summary}}
                                         className='ap-profile-content mt-3 text-[1.5rem] [&>p]:mb-3'
                                     />
                                     {attachments.map((attachment: {name: string, value: string}) => (
@@ -378,8 +489,8 @@ const ViewProfileModal: React.FC<ViewProfileModalProps> = ({
                     )}
                 </div>
             </div>
-        </Modal>
+        </Layout>
     );
 };
 
-export default NiceModal.create(ViewProfileModal);
+export default Profile;

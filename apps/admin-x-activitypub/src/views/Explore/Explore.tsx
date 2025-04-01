@@ -7,6 +7,8 @@ import ViewProfileModal from '@src/components/modals/ViewProfileModal';
 import {type Account} from '@src/api/activitypub';
 import {Button, H4, LucideIcon, Skeleton} from '@tryghost/shade';
 import {useExploreProfilesForUser} from '@hooks/use-activity-pub-queries';
+import {useFeatureFlags} from '@src/lib/feature-flags';
+import {useNavigate} from '@tryghost/admin-x-framework';
 import {useOnboardingStatus} from '@src/components/layout/Onboarding';
 
 interface ExploreProfileProps {
@@ -32,12 +34,19 @@ export const ExploreProfile: React.FC<ExploreProfileProps & {
         });
     };
 
+    const {isEnabled} = useFeatureFlags();
+    const navigate = useNavigate();
+
     return (
         <div
             className='flex w-full cursor-pointer items-start gap-3 pt-4 [&:last-of-type>:nth-child(2)]:border-none'
             onClick={() => {
-                onOpenChange?.(false);
-                NiceModal.show(ViewProfileModal, {handle: profile.handle, onFollow, onUnfollow});
+                if (isEnabled('ap-routes')) {
+                    navigate(`/profile-rr/${profile.handle}`);
+                } else {
+                    onOpenChange?.(false);
+                    NiceModal.show(ViewProfileModal, {handle: profile.handle, onFollow, onUnfollow});
+                }
             }}
         >
             <APAvatar author={

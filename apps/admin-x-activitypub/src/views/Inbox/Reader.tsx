@@ -1,46 +1,26 @@
-import FeedItem from './FeedItem';
-import FeedItemStats from './FeedItemStats';
-import NiceModal from '@ebay/nice-modal-react';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
-import articleBodyStyles from '../articleBodyStyles';
 import getUsername from '../../utils/get-username';
 import {OptionProps, SingleValueProps, components} from 'react-select';
 import {Popover, PopoverContent, PopoverTrigger, Skeleton} from '@tryghost/shade';
 
-import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
-import {Button, Icon, LoadingIndicator, Modal, Select, SelectOption} from '@tryghost/admin-x-design-system';
+import {Button, Icon, LoadingIndicator, Select, SelectOption} from '@tryghost/admin-x-design-system';
 import {renderTimestamp} from '../../utils/render-timestamp';
-import {useFocusedState} from '@components/global/APReplyBox';
-import {useModal} from '@ebay/nice-modal-react';
 import {usePostForUser, useThreadForUser} from '@hooks/use-activity-pub-queries';
 
-import APAvatar from '../global/APAvatar';
-import APReplyBox from '../global/APReplyBox';
-import DeletedFeedItem from './DeletedFeedItem';
-import TableOfContents, {TOCItem} from './TableOfContents';
+import APAvatar from '@src/components/global/APAvatar';
+import APReplyBox from '@src/components/global/APReplyBox';
+import BackButton from '@src/components/global/BackButton';
+import DeletedFeedItem from '@src/components/feed/DeletedFeedItem';
+import FeedItem from '@src/components/feed/FeedItem';
+import FeedItemStats from '@src/components/feed/FeedItemStats';
+import TableOfContents, {TOCItem} from '@src/components/feed/TableOfContents';
+import articleBodyStyles from '@src/components/articleBodyStyles';
 import getReadingTime from '../../utils/get-reading-time';
-import {handleProfileClick, handleProfileClickRR} from '@src/utils/handle-profile-click';
+import {handleProfileClickRR} from '@src/utils/handle-profile-click';
 import {isPendingActivity} from '../../utils/pending-activity';
 import {openLinksInNewTab} from '@src/utils/content-formatters';
 import {useDebounce} from 'use-debounce';
-import {useFeatureFlags} from '@src/lib/feature-flags';
-import {useNavigate} from '@tryghost/admin-x-framework';
-
-interface ArticleModalProps {
-    activityId: string;
-    object: ObjectProperties;
-    actor: ActorProperties;
-    focusReply: boolean;
-    focusReplies: boolean;
-    width?: 'narrow' | 'wide';
-    disableStats?: boolean;
-    history: {
-        activityId: string;
-        object: ObjectProperties;
-        actor: ActorProperties;
-    }[];
-    remotePostId: string;
-}
+import {useLocation, useNavigate} from '@tryghost/admin-x-framework';
 
 interface IframeWindow extends Window {
     resizeIframe?: () => void;
@@ -391,88 +371,37 @@ interface FontSelectOption {
     className?: string;
 }
 
-export const ArticleModal: React.FC<ArticleModalProps> = ({
-    activityId: initialActivityId,
-    object: initialObject,
-    actor: initialActor,
-    focusReply,
-    focusReplies,
-    width = 'narrow',
-    disableStats = false,
-    history = [],
-    remotePostId = null
+interface ReaderProps {
+    postId: string;
+    onClose?: () => void;
+}
+
+export const Reader: React.FC<ReaderProps> = ({
+    postId = null,
+    onClose
 }) => {
     const modalRef = useRef<HTMLElement>(null);
-    const MODAL_SIZE_SM = 640;
-    const MODAL_SIZE_LG = 1420;
-    const [isFocused, setIsFocused] = useFocusedState(focusReply);
+    const [focusReply, setFocusReply] = useState(false);
+    const location = useLocation();
 
-    const {data: post, isLoading: isRemotelyLoadingPost} = usePostForUser('index', remotePostId);
-    const isLoadingPost = remotePostId && isRemotelyLoadingPost;
-    const activityData = post ? post : {
-        id: initialActivityId,
-        object: initialObject,
-        actor: initialActor
-    };
-    const activityId = activityData.id;
-    const object = activityData.object;
-    const actor = activityData.actor;
+    useEffect(() => {
+        const searchParams = new URLSearchParams(location.search);
+        if (searchParams.get('focusReply') === 'true') {
+            setFocusReply(true);
+        }
+    }, [location.search, setFocusReply]);
+
+    const {data: post, isLoading: isLoadingPost} = usePostForUser('index', postId);
+    const activityData = post;
+    const activityId = activityData?.id;
+    const object = activityData?.object;
+    const actor = activityData?.actor;
 
     const {data: thread, isLoading: isLoadingThread} = useThreadForUser('index', activityId);
     const threadPostIdx = (thread?.posts ?? []).findIndex(item => item.object.id === activityId);
     const threadChildren = (thread?.posts ?? []).slice(threadPostIdx + 1);
-    const threadParents = (thread?.posts ?? []).slice(0, threadPostIdx);
 
-    const modalSize = width === 'narrow' ? MODAL_SIZE_SM : MODAL_SIZE_LG;
-    const modal = useModal();
-    const darkMode = document.documentElement.classList.contains('dark');
     const [replyCount, setReplyCount] = useState(object?.replyCount ?? 0);
-
-    const canNavigateBack = history.length > 0;
-    const navigateBack = () => {
-        const prevProps = history.pop();
-
-        // This shouldn't happen, but if it does, just remove the modal
-        if (!prevProps) {
-            modal.remove();
-
-            return;
-        }
-
-        setReplyCount(prevProps.object.replyCount ?? 0);
-
-        modal.show({
-            activityId: prevProps.activityId,
-            object: prevProps.object,
-            actor: prevProps.actor,
-            width,
-            history
-        });
-    };
-    const navigateForward = (_: string, nextObject: ObjectProperties, nextActor: ActorProperties, nextFocusReply: boolean) => {
-        // Trigger the modal to show the next activity and add the existing
-        // activity to the history so we can navigate back
-
-        setReplyCount(nextObject.replyCount ?? 0);
-
-        modal.show({
-            // We need to use the object as the API expects an object ID but
-            // returns a full activity object
-            activityId: nextObject.id,
-            object: nextObject,
-            actor: nextActor,
-            width,
-            focusReply: nextFocusReply,
-            history: [
-                ...history,
-                {
-                    activityId: activityId,
-                    object: object,
-                    actor: actor
-                }
-            ]
-        });
-    };
 
     const onLikeClick = () => {
         // Do API req or smth
@@ -489,24 +418,6 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
 
     const replyBoxRef = useRef<HTMLDivElement>(null);
     const repliesRef = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-        // Combine both scroll behaviors into a single effect
-        setTimeout(() => {
-            if (focusReply && replyBoxRef.current) {
-                replyBoxRef.current.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'center'
-                });
-            } else if (focusReplies && repliesRef.current) {
-                repliesRef.current.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'center'
-                });
-            }
-        }, 100);
-    }, [focusReply, focusReplies]);
-
     const iframeRef = useRef<HTMLIFrameElement>(null);
 
     // Initialize state with values from localStorage, falling back to defaults
@@ -726,225 +637,156 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
         return () => clearTimeout(timeoutId);
     }, [iframeElement, tocItems, activeHeadingId]);
 
-    const {isEnabled} = useFeatureFlags();
     const navigate = useNavigate();
 
     return (
-        <Modal
-            ref={modalRef}
-            align='right'
-            allowBackgroundInteraction={false}
-            animate={true}
-            backDrop={darkMode && width === 'narrow'}
-            backDropClick={true}
-            footer={<></>}
-            height={'full'}
-            padding={false}
-            scrolling={true}
-            size='bleed'
-            width={modalSize === MODAL_SIZE_LG ? 'toSidebar' : modalSize}
-        >
+        <div ref={modalRef as React.RefObject<HTMLDivElement>} className='max-h-full overflow-auto'>
             {
                 isLoadingPost ? (
                     <LoadingIndicator size='lg' />
                 ) : (
                     <>
                         <div className='flex h-full flex-col'>
-                            <div className='sticky top-0 z-50 flex h-[102px] items-center justify-center border-b border-gray-200 bg-white dark:border-gray-950 dark:bg-black'>
-                                <div
-                                    className={`w-full ${modalSize === MODAL_SIZE_LG ? 'grid px-8' : 'flex justify-between gap-2 px-8'}`}
-                                    style={modalSize === MODAL_SIZE_LG ? {
-                                        gridTemplateColumns: `1fr minmax(0,${currentGridWidth}) 1fr`
-                                    } : undefined}
-                                >
-                                    {(canNavigateBack || (threadParents.length > 0)) ? (
-                                        <div className='col-[1/2] flex items-center justify-between'>
-                                            <Button className='transition-color flex size-10 items-center justify-center rounded-full bg-white hover:bg-gray-100' icon='arrow-left' size='sm' unstyled onClick={navigateBack}/>
+                            <div className='relative flex-1'>
+                                <div className='sticky top-0 z-50 flex h-[102px] items-center justify-center rounded-t-md border-b border-gray-200 bg-white dark:border-gray-950 dark:bg-black'>
+                                    <div
+                                        className='grid w-full px-8'
+                                        style={{
+                                            gridTemplateColumns: `1fr minmax(0,${currentGridWidth}) 1fr`
+                                        }}
+                                    >
+                                        <div className='flex items-center'>
+                                            <BackButton onClick={onClose} />
                                         </div>
-                                    ) : (<div className='col-[2/3] mx-auto flex w-full items-center gap-3'>
-                                        <div className='relative z-10 pt-[3px]'>
-                                            <APAvatar author={actor}/>
-                                        </div>
-                                        <div className='relative z-10 flex w-full min-w-0 cursor-pointer flex-col overflow-visible text-[1.5rem]' onClick={(e) => {
-                                            if (isEnabled('ap-routes')) {
-                                                handleProfileClickRR(actor, navigate, e);
-                                            } else {
-                                                handleProfileClick(actor, e);
-                                            }
-                                        }}>
-                                            <div className='flex w-full'>
-                                                <span className='min-w-0 truncate whitespace-nowrap font-semibold tracking-tight hover:underline'>{actor.name}</span>
+                                        <div className='col-[2/3] mx-auto flex w-full items-center gap-3'>
+                                            <div className='relative z-10 pt-[3px]'>
+                                                <APAvatar author={actor}/>
                                             </div>
-                                            <div className='flex w-full'>
-                                                <span className='text-gray-700 after:mx-1 after:font-normal after:text-gray-700 after:content-["·"]'>{getUsername(actor)}</span>
-                                                <span className='text-gray-700'>{renderTimestamp(object, !object.authored)}</span>
+                                            <div className='relative z-10 flex w-full min-w-0 cursor-pointer flex-col overflow-visible text-[1.5rem]' onClick={e => handleProfileClickRR(actor, navigate, e)}>
+                                                <div className='flex w-full'>
+                                                    <span className='min-w-0 truncate whitespace-nowrap font-semibold hover:underline'>{actor.name}</span>
+                                                </div>
+                                                <div className='flex w-full'>
+                                                    <span className='text-gray-700 after:mx-1 after:font-normal after:text-gray-700 after:content-["·"]'>{getUsername(actor)}</span>
+                                                    <span className='text-gray-700'>{renderTimestamp(object, !object.authored)}</span>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>)}
-                                    <div className='col-[3/4] flex items-center justify-end gap-2'>
-                                        {modalSize === MODAL_SIZE_LG && object.type === 'Article' && <Popover modal={false}>
-                                            <PopoverTrigger asChild>
-                                                <Button className='transition-color flex size-10 items-center justify-center rounded-full bg-white hover:bg-gray-100 dark:bg-black dark:hover:bg-gray-950' icon='typography' size='sm' unstyled />
-                                            </PopoverTrigger>
-                                            <PopoverContent align='end' className='w-[300px]' onCloseAutoFocus={e => e.preventDefault()} onOpenAutoFocus={e => e.preventDefault()}>
-                                                <div className='flex flex-col'>
-                                                    <Select
-                                                        className='mb-3'
-                                                        components={{Option, SingleValue}}
-                                                        controlClasses={{control: '!min-h-[40px] !py-0 !pl-1 dark:!bg-grey-925', option: '!pl-1 !py-[4px]'}}
-                                                        options={[
-                                                            {
+                                        <div className='col-[3/4] flex items-center justify-end gap-2'>
+                                            <Popover modal={false}>
+                                                <PopoverTrigger asChild>
+                                                    <Button className='transition-color flex size-10 items-center justify-center rounded-full bg-white hover:bg-gray-100 dark:bg-black dark:hover:bg-gray-950' icon='typography' size='sm' unstyled />
+                                                </PopoverTrigger>
+                                                <PopoverContent align='end' className='w-[300px]' onCloseAutoFocus={e => e.preventDefault()} onOpenAutoFocus={e => e.preventDefault()}>
+                                                    <div className='flex flex-col'>
+                                                        <Select
+                                                            className='mb-3'
+                                                            components={{Option, SingleValue}}
+                                                            controlClasses={{control: '!min-h-[40px] !py-0 !pl-1 dark:!bg-grey-925', option: '!pl-1 !py-[4px]'}}
+                                                            options={[
+                                                                {
+                                                                    value: FONT_SANS,
+                                                                    label: 'Clean sans-serif',
+                                                                    className: 'font-sans'
+                                                                },
+                                                                {
+                                                                    value: 'Georgia, Times, serif',
+                                                                    label: 'Elegant serif',
+                                                                    className: 'font-serif'
+                                                                }
+                                                            ]}
+                                                            title='Typeface'
+                                                            value={fontFamily}
+                                                            onFocus={() => {}}
+                                                            onSelect={option => setFontFamily(option || {
                                                                 value: FONT_SANS,
                                                                 label: 'Clean sans-serif',
                                                                 className: 'font-sans'
-                                                            },
-                                                            {
-                                                                value: 'Georgia, Times, serif',
-                                                                label: 'Elegant serif',
-                                                                className: 'font-serif'
-                                                            }
-                                                        ]}
-                                                        title='Typeface'
-                                                        value={fontFamily}
-                                                        onFocus={() => {}}
-                                                        onSelect={option => setFontFamily(option || {
-                                                            value: FONT_SANS,
-                                                            label: 'Clean sans-serif',
-                                                            className: 'font-sans'
-                                                        })}
-                                                    />
-                                                    <div className='mb-2 flex items-center justify-between'>
-                                                        <span className='text-sm font-medium text-gray-900 dark:text-white'>Font size</span>
-                                                        <div className='flex items-center'>
-                                                            <Button
-                                                                className={`transition-color flex size-8 items-center justify-center rounded-full bg-white dark:bg-grey-900 dark:hover:bg-grey-925 ${currentFontSizeIndex === 0 ? 'opacity-20 hover:bg-white' : 'hover:bg-gray-100'}`}
-                                                                disabled={currentFontSizeIndex === 0}
-                                                                hideLabel={true}
-                                                                icon='substract'
-                                                                iconSize='xs'
-                                                                label='Decrease font size'
-                                                                unstyled={true}
-                                                                onClick={decreaseFontSize}
-                                                            />
-                                                            <Button
-                                                                className={`transition-color flex size-8 items-center justify-center rounded-full bg-white hover:bg-gray-100 dark:bg-grey-900 dark:hover:bg-grey-925 ${currentFontSizeIndex === FONT_SIZES.length - 1 ? 'opacity-20 hover:bg-white' : 'hover:bg-gray-100'}`}
-                                                                disabled={currentFontSizeIndex === FONT_SIZES.length - 1}
-                                                                hideLabel={true}
-                                                                icon='add'
-                                                                iconSize='xs'
-                                                                label='Increase font size'
-                                                                unstyled={true}
-                                                                onClick={increaseFontSize}
-                                                            />
+                                                            })}
+                                                        />
+                                                        <div className='mb-2 flex items-center justify-between'>
+                                                            <span className='text-sm font-medium text-gray-900 dark:text-white'>Font size</span>
+                                                            <div className='flex items-center'>
+                                                                <Button
+                                                                    className={`transition-color flex size-8 items-center justify-center rounded-full bg-white dark:bg-grey-900 dark:hover:bg-grey-925 ${currentFontSizeIndex === 0 ? 'opacity-20 hover:bg-white' : 'hover:bg-gray-100'}`}
+                                                                    disabled={currentFontSizeIndex === 0}
+                                                                    hideLabel={true}
+                                                                    icon='substract'
+                                                                    iconSize='xs'
+                                                                    label='Decrease font size'
+                                                                    unstyled={true}
+                                                                    onClick={decreaseFontSize}
+                                                                />
+                                                                <Button
+                                                                    className={`transition-color flex size-8 items-center justify-center rounded-full bg-white hover:bg-gray-100 dark:bg-grey-900 dark:hover:bg-grey-925 ${currentFontSizeIndex === FONT_SIZES.length - 1 ? 'opacity-20 hover:bg-white' : 'hover:bg-gray-100'}`}
+                                                                    disabled={currentFontSizeIndex === FONT_SIZES.length - 1}
+                                                                    hideLabel={true}
+                                                                    icon='add'
+                                                                    iconSize='xs'
+                                                                    label='Increase font size'
+                                                                    unstyled={true}
+                                                                    onClick={increaseFontSize}
+                                                                />
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                    <div className='mb-5 flex items-center justify-between'>
-                                                        <span className='text-sm font-medium text-gray-900 dark:text-white'>Line spacing</span>
-                                                        <div className='flex items-center'>
-                                                            <Button
-                                                                className={`transition-color flex size-8 items-center justify-center rounded-full bg-white hover:bg-gray-100 dark:bg-grey-900 dark:hover:bg-grey-925 ${currentLineHeightIndex === 0 ? 'opacity-20 hover:bg-white' : 'hover:bg-gray-100'}`}
-                                                                disabled={currentLineHeightIndex === 0}
-                                                                hideLabel={true}
-                                                                icon='substract'
-                                                                iconSize='xs'
-                                                                label='Decrease line spacing'
-                                                                unstyled={true}
-                                                                onClick={decreaseLineHeight}
-                                                            />
-                                                            <Button
-                                                                className={`transition-color flex size-8 items-center justify-center rounded-full bg-white hover:bg-gray-100 dark:bg-grey-900 dark:hover:bg-grey-925 ${currentLineHeightIndex === LINE_HEIGHTS.length - 1 ? 'opacity-20 hover:bg-white' : 'hover:bg-gray-100'}`}
-                                                                disabled={currentLineHeightIndex === LINE_HEIGHTS.length - 1}
-                                                                hideLabel={true}
-                                                                icon='add'
-                                                                iconSize='xs'
-                                                                label='Increase line spacing'
-                                                                unstyled={true}
-                                                                onClick={increaseLineHeight}
-                                                            />
+                                                        <div className='mb-5 flex items-center justify-between'>
+                                                            <span className='text-sm font-medium text-gray-900 dark:text-white'>Line spacing</span>
+                                                            <div className='flex items-center'>
+                                                                <Button
+                                                                    className={`transition-color flex size-8 items-center justify-center rounded-full bg-white hover:bg-gray-100 dark:bg-grey-900 dark:hover:bg-grey-925 ${currentLineHeightIndex === 0 ? 'opacity-20 hover:bg-white' : 'hover:bg-gray-100'}`}
+                                                                    disabled={currentLineHeightIndex === 0}
+                                                                    hideLabel={true}
+                                                                    icon='substract'
+                                                                    iconSize='xs'
+                                                                    label='Decrease line spacing'
+                                                                    unstyled={true}
+                                                                    onClick={decreaseLineHeight}
+                                                                />
+                                                                <Button
+                                                                    className={`transition-color flex size-8 items-center justify-center rounded-full bg-white hover:bg-gray-100 dark:bg-grey-900 dark:hover:bg-grey-925 ${currentLineHeightIndex === LINE_HEIGHTS.length - 1 ? 'opacity-20 hover:bg-white' : 'hover:bg-gray-100'}`}
+                                                                    disabled={currentLineHeightIndex === LINE_HEIGHTS.length - 1}
+                                                                    hideLabel={true}
+                                                                    icon='add'
+                                                                    iconSize='xs'
+                                                                    label='Increase line spacing'
+                                                                    unstyled={true}
+                                                                    onClick={increaseLineHeight}
+                                                                />
+                                                            </div>
                                                         </div>
+                                                        <Button
+                                                            className="text-sm text-gray-600 hover:text-gray-700 dark:text-gray-500 dark:hover:text-gray-600"
+                                                            label="Reset to default"
+                                                            link={true}
+                                                            onClick={() => {
+                                                                setCurrentFontSizeIndex(1); // Default font size
+                                                                setCurrentLineHeightIndex(2); // Default line height
+                                                                setFontFamily({
+                                                                    value: FONT_SANS,
+                                                                    label: 'Clean sans-serif'
+                                                                });
+                                                            }}
+                                                        />
                                                     </div>
-                                                    <Button
-                                                        className="text-sm text-gray-600 hover:text-gray-700 dark:text-gray-500 dark:hover:text-gray-600"
-                                                        label="Reset to default"
-                                                        link={true}
-                                                        onClick={() => {
-                                                            setCurrentFontSizeIndex(1); // Default font size
-                                                            setCurrentLineHeightIndex(2); // Default line height
-                                                            setFontFamily({
-                                                                value: FONT_SANS,
-                                                                label: 'Clean sans-serif'
-                                                            });
-                                                        }}
-                                                    />
-                                                </div>
-                                            </PopoverContent>
-                                        </Popover>}
-                                        <Button className='transition-color flex size-10 items-center justify-center rounded-full bg-white hover:bg-gray-100 dark:bg-black dark:hover:bg-gray-950' icon='close' size='sm' unstyled onClick={() => modal.remove()}/>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className='relative flex-1'>
-                                {modalSize === MODAL_SIZE_LG && object.type === 'Article' && tocItems.length > 1 && (
-                                    <div className="!visible absolute inset-y-0 right-7 z-40 hidden lg:!block">
-                                        <div className="sticky top-1/2 -translate-y-1/2">
-                                            <TableOfContents
-                                                activeHeading={activeHeadingId || ''}
-                                                items={tocItems}
-                                                onItemClick={scrollToHeading}
-                                            />
+                                                </PopoverContent>
+                                            </Popover>
                                         </div>
                                     </div>
-                                )}
-                                <div className='grow overflow-y-auto'>
-                                    <div className={`mx-auto px-8 pb-10 pt-5`} style={{maxWidth: currentMaxWidth}}>
-                                        {threadParents.map((item) => {
-                                            return (
-                                                item.object.type === 'Tombstone' ? (
-                                                    <DeletedFeedItem last={false} />
-                                                ) : (
-                                                    <FeedItem
-                                                        actor={item.actor}
-                                                        allowDelete={false}
-                                                        commentCount={item.object.replyCount ?? 0}
-                                                        last={false}
-                                                        layout='reply'
-                                                        object={item.object}
-                                                        repostCount={item.object.repostCount ?? 0}
-                                                        type='Note'
-                                                        onClick={() => {
-                                                            navigateForward(item.id, item.object, item.actor, false);
-                                                        }}
-                                                        onCommentClick={() => {
-                                                            navigateForward(item.id, item.object, item.actor, true);
-                                                            setIsFocused(true);
-                                                        }}
-                                                    />
-                                                )
-                                            );
-                                        })}
-
-                                        {object.type === 'Note' && (
-                                            <FeedItem
-                                                actor={actor}
-                                                allowDelete={false}
-                                                commentCount={replyCount}
-                                                last={true}
-                                                layout={'modal'}
-                                                object={object}
-                                                repostCount={object.repostCount ?? 0}
-                                                showHeader={(canNavigateBack || (threadParents.length > 0))}
-                                                showStats={!disableStats}
-                                                type='Note'
-                                                onCommentClick={() => {
-                                                    repliesRef.current?.scrollIntoView({
-                                                        behavior: 'smooth',
-                                                        block: 'center'
-                                                    });
-                                                    setIsFocused(true);
-                                                }}
-                                            />
-                                        )}
-                                        {object.type === 'Article' && (
+                                </div>
+                                <div className='relative flex-1'>
+                                    {tocItems.length > 1 && (
+                                        <div className="!visible absolute inset-y-0 right-7 z-40 hidden lg:!block">
+                                            <div className="sticky top-1/2 -translate-y-1/2">
+                                                <TableOfContents
+                                                    activeHeading={activeHeadingId || ''}
+                                                    items={tocItems}
+                                                    onItemClick={scrollToHeading}
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
+                                    <div className='grow overflow-y-auto'>
+                                        <div className={`mx-auto px-8 pb-10 pt-5`} style={{maxWidth: currentMaxWidth}}>
                                             <div className='flex flex-col items-center pb-8' id='object-content'>
                                                 <ArticleBody
                                                     excerpt={object?.preview?.content ?? ''}
@@ -971,65 +813,62 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
                                                                 behavior: 'smooth',
                                                                 block: 'center'
                                                             });
-                                                            setIsFocused(true);
+                                                            setFocusReply(true);
                                                         }}
                                                         onLikeClick={onLikeClick}
                                                     />
                                                 </div>
                                             </div>
-                                        )}
-                                        {object.type === 'Tombstone' && (
-                                            <DeletedFeedItem last={true} />
-                                        )}
+                                            {object.type === 'Tombstone' && (
+                                                <DeletedFeedItem last={true} />
+                                            )}
 
-                                        <div ref={replyBoxRef} className='mx-auto w-full border-t border-gray-200 dark:border-gray-950' style={{maxWidth: currentGridWidth}}>
-                                            <APReplyBox
-                                                focused={isFocused}
-                                                object={object}
-                                                onReply={incrementReplyCount}
-                                                onReplyError={decrementReplyCount}
-                                            />
-                                            <FeedItemDivider />
-                                        </div>
+                                            <div ref={replyBoxRef} className='mx-auto w-full border-t border-gray-200 dark:border-gray-950' style={{maxWidth: currentGridWidth}}>
+                                                <APReplyBox
+                                                    focused={focusReply ? 1 : 0}
+                                                    object={object}
+                                                    onReply={incrementReplyCount}
+                                                    onReplyError={decrementReplyCount}
+                                                />
+                                                <FeedItemDivider />
+                                            </div>
 
-                                        {isLoadingThread && <LoadingIndicator size='lg' />}
+                                            {isLoadingThread && <LoadingIndicator size='lg' />}
 
-                                        <div ref={repliesRef} className='mx-auto w-full' style={{maxWidth: currentGridWidth}}>
-                                            {threadChildren.map((item, index) => {
-                                                const showDivider = index !== threadChildren.length - 1;
+                                            <div ref={repliesRef} className='mx-auto w-full' style={{maxWidth: currentGridWidth}}>
+                                                {threadChildren.map((item, index) => {
+                                                    const showDivider = index !== threadChildren.length - 1;
 
-                                                return (
-                                                    <React.Fragment key={item.id}>
-                                                        <FeedItem
-                                                            actor={item.actor}
-                                                            allowDelete={item.object.authored}
-                                                            commentCount={item.object.replyCount ?? 0}
-                                                            isPending={isPendingActivity(item.id)}
-                                                            last={true}
-                                                            layout='reply'
-                                                            object={item.object}
-                                                            parentId={object.id}
-                                                            repostCount={item.object.repostCount ?? 0}
-                                                            type='Note'
-                                                            onClick={() => {
-                                                                navigateForward(item.id, item.object, item.actor, false);
-                                                            }}
-                                                            onCommentClick={() => {
-                                                                navigateForward(item.id, item.object, item.actor, true);
-                                                                setIsFocused(true);
-                                                            }}
-                                                            onDelete={decrementReplyCount}
-                                                        />
-                                                        {showDivider && <FeedItemDivider />}
-                                                    </React.Fragment>
-                                                );
-                                            })}
+                                                    return (
+                                                        <React.Fragment key={item.id}>
+                                                            <FeedItem
+                                                                actor={item.actor}
+                                                                allowDelete={item.object.authored}
+                                                                commentCount={item.object.replyCount ?? 0}
+                                                                isPending={isPendingActivity(item.id)}
+                                                                last={true}
+                                                                layout='reply'
+                                                                object={item.object}
+                                                                parentId={object.id}
+                                                                repostCount={item.object.repostCount ?? 0}
+                                                                type='Note'
+                                                                onClick={() => {
+                                                                    navigate(`/feed-rr/${encodeURIComponent(item.object.id)}`);
+                                                                }}
+                                                                onCommentClick={() => {
+                                                                    navigate(`/feed-rr/${encodeURIComponent(item.object.id)}?focusReply=true`);
+                                                                }}
+                                                                onDelete={decrementReplyCount}
+                                                            />
+                                                            {showDivider && <FeedItemDivider />}
+                                                        </React.Fragment>
+                                                    );
+                                                })}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        {modalSize === MODAL_SIZE_LG && object.type === 'Article' && (
                             <div className='pointer-events-none !visible sticky bottom-0 hidden items-end justify-between px-10 pb-[42px] lg:!flex'>
                                 <div className='pointer-events-auto text-gray-600'>
                                     {getReadingTime(object.content ?? '')}
@@ -1038,12 +877,12 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
                                     {readingProgress}%
                                 </div>
                             </div>
-                        )}
+                        </div>
                     </>
                 )
             }
-        </Modal>
+        </div>
     );
 };
 
-export default NiceModal.create(ArticleModal);
+export default Reader;

@@ -2,7 +2,6 @@ const errors = require('@tryghost/errors');
 const sinon = require('sinon');
 const assert = require('assert/strict');
 const nock = require('nock');
-const MailgunClient = require('@tryghost/mailgun-client');
 
 // Helper services
 const configUtils = require('./configUtils');
@@ -14,6 +13,7 @@ let mocks = {};
 let emailCount = 0;
 
 // Mockable services
+const MailgunClient = require('../../core/server/services/lib/MailgunClient');
 const mailService = require('../../core/server/services/mail/index');
 const originalMailServiceSendMail = mailService.GhostMailer.prototype.sendMail;
 const labs = require('../../core/shared/labs');
