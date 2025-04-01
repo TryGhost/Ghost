@@ -30867,10 +30867,10 @@ test-exclude@^7.0.1:
     glob "^10.4.1"
     minimatch "^9.0.4"
 
-testem@3.15.1, testem@^3.2.0:
-  version "3.15.1"
-  resolved "https://registry.yarnpkg.com/testem/-/testem-3.15.1.tgz#bb39b41b6928bf347fbb9ea1bfe1e085b15ecb7e"
-  integrity sha512-532OJy6VVsnDFEGZBdWVywvceNWdjdxJruC6qCDzLH586+eh1duWk5ju6QSRqQdP6gZB7zNiUJU9dSQdHPzFuA==
+testem@3.15.2, testem@^3.2.0:
+  version "3.15.2"
+  resolved "https://registry.yarnpkg.com/testem/-/testem-3.15.2.tgz#abd6a96077a6576cd730f3d2e476039044c5cb34"
+  integrity sha512-mRzqZktqTCWi/rUP/RQOKXvMtuvY3lxuzBVb1xGXPnRNGMEj/1DaLGn6X447yOsz6SlWxSsZfcNuiE7fT1MOKg==
   dependencies:
     "@xmldom/xmldom" "^0.8.0"
     backbone "^1.1.2"
