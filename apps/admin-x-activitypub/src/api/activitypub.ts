@@ -6,14 +6,6 @@ export type Actor = any;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type Activity = any;
 
-export interface Profile {
-    actor: Actor;
-    handle: string;
-    followerCount: number;
-    followingCount: number;
-    isFollowing: boolean;
-}
-
 export interface Account {
     id: string;
     name: string;
@@ -268,12 +260,6 @@ export class ActivityPubAPI {
         return {
             accounts: []
         };
-    }
-
-    async getProfile(handle: string): Promise<Profile> {
-        const url = new URL(`.ghost/activitypub/profile/${handle}`, this.apiUrl);
-        const json = await this.fetchJSON(url);
-        return json as Profile;
     }
 
     async getProfileFollowers(handle: string, next?: string): Promise<GetProfileFollowersResponse> {

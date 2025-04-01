@@ -6,7 +6,7 @@ import {Button, Heading, Icon, List, LoadingIndicator, Modal, NoValueLabel, Tab,
 import {UseInfiniteQueryResult} from '@tanstack/react-query';
 
 import {type GetProfileFollowersResponse, type GetProfileFollowingResponse} from '../../api/activitypub';
-import {useProfileFollowersForUser, useProfileFollowingForUser, useAccountForUser, useProfilePostsForUser} from '@hooks/use-activity-pub-queries';
+import {useAccountForUser, useProfileFollowersForUser, useProfileFollowingForUser, useProfilePostsForUser} from '@hooks/use-activity-pub-queries';
 
 import APAvatar from '../global/APAvatar';
 import ActivityItem from '../activities/ActivityItem';

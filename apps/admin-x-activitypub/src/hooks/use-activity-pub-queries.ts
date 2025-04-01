@@ -1,3 +1,4 @@
+import React from 'react';
 import {
     type Account,
     type AccountFollowsType,
@@ -6,7 +7,6 @@ import {
     ActivityPubCollectionResponse,
     FollowAccount,
     type GetAccountFollowsResponse,
-    type Profile,
     type SearchResults
 } from '../api/activitypub';
 import {Activity, ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
@@ -23,7 +23,6 @@ import {formatPendingActivityContent, generatePendingActivity, generatePendingAc
 import {mapPostToActivity} from '../utils/posts';
 import {showToast} from '@tryghost/admin-x-design-system';
 import {useCallback} from 'react';
-import React from 'react';
 
 export type ActivityPubCollectionQueryResult<TData> = UseInfiniteQueryResult<ActivityPubCollectionResponse<TData>>;
 export type AccountFollowsQueryResult = UseInfiniteQueryResult<GetAccountFollowsResponse>;
@@ -64,7 +63,7 @@ const QUERY_KEYS = {
     account: (handle: string) => ['account', handle],
     accountFollows: (handle: string, type: AccountFollowsType) => ['account_follows', handle, type],
     searchResults: (query: string) => ['search_results', query],
-    suggestedProfiles: (limit: number) => ['suggested_profiles', limit],
+    suggestedProfiles: (handle: string, limit: number) => ['suggested_profiles', handle, limit],
     exploreProfiles: (handle: string) => ['explore_profiles', handle],
     thread: (id: string | null) => {
         if (id === null) {
@@ -649,16 +648,16 @@ export function useExploreProfilesForUser(handle: string) {
 
         // Fetch all profiles in parallel
         const allResults = await Promise.allSettled(
-            allHandles.map(item => api.getProfile(item.profileHandle)
+            allHandles.map(item => api.getAccount(item.profileHandle)
                 .then(profile => ({...item, profile}))
             )
         );
 
         // Organize results back into categories
-        const results: Record<string, { categoryName: string; sites: Profile[] }> = {};
+        const results: Record<string, { categoryName: string; sites: Account[] }> = {};
 
         allResults
-            .filter((result): result is PromiseFulfilledResult<typeof allHandles[0] & { profile: Profile }> => result.status === 'fulfilled'
+            .filter((result): result is PromiseFulfilledResult<typeof allHandles[0] & { profile: Account }> => result.status === 'fulfilled'
             )
             .forEach((result) => {
                 const {key, categoryName, profile} = result.value;
@@ -685,9 +684,9 @@ export function useExploreProfilesForUser(handle: string) {
         });
     }, [queryClient, fetchExploreProfiles, queryKey]);
 
-    const updateExploreProfile = (id: string, updated: Partial<Profile>) => {
+    const updateExploreProfile = (id: string, updated: Partial<Account>) => {
         // Update the suggested profiles stored in explore profiles query cache
-        queryClient.setQueryData(queryKey, (current: Record<string, { categoryName: string; sites: Profile[] }> | undefined) => {
+        queryClient.setQueryData(queryKey, (current: Record<string, { categoryName: string; sites: Account[] }> | undefined) => {
             if (!current) {
                 return current;
             }
@@ -697,8 +696,8 @@ export function useExploreProfilesForUser(handle: string) {
                     key,
                     {
                         ...category,
-                        sites: category.sites.map((item: Profile) => {
-                            if (item.actor.id === id) {
+                        sites: category.sites.map((item: Account) => {
+                            if (item.id === id) {
                                 return {...item, ...updated};
                             }
                             return item;
@@ -718,7 +717,7 @@ export function useExploreProfilesForUser(handle: string) {
 
 export function useSuggestedProfilesForUser(handle: string, limit = 3) {
     const queryClient = useQueryClient();
-    const queryKey = QUERY_KEYS.suggestedProfiles(limit);
+    const queryKey = QUERY_KEYS.suggestedProfiles(handle, limit);
 
     const suggestedHandles = Object.values(exploreSites).flatMap(category => category.sites);
 
@@ -732,24 +731,24 @@ export function useSuggestedProfilesForUser(handle: string, limit = 3) {
                 suggestedHandles
                     .sort(() => Math.random() - 0.5)
                     .slice(0, limit)
-                    .map(suggestedHandle => api.getProfile(suggestedHandle))
+                    .map(suggestedHandle => api.getAccount(suggestedHandle))
             ).then((results) => {
                 return results
-                    .filter((result): result is PromiseFulfilledResult<Profile> => result.status === 'fulfilled')
+                    .filter((result): result is PromiseFulfilledResult<Account> => result.status === 'fulfilled')
                     .map(result => result.value);
             });
         }
     });
 
-    const updateSuggestedProfile = (id: string, updated: Partial<Profile>) => {
+    const updateSuggestedProfile = (id: string, updated: Partial<Account>) => {
         // Update the suggested profiles stored in the suggested profiles query cache
-        queryClient.setQueryData(queryKey, (current: Profile[] | undefined) => {
+        queryClient.setQueryData(queryKey, (current: Account[] | undefined) => {
             if (!current) {
                 return current;
             }
 
-            return current.map((item: Profile) => {
-                if (item.actor.id === id) {
+            return current.map((item: Account) => {
+                if (item.id === id) {
                     return {...item, ...updated};
                 }
 
