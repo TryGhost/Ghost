@@ -256,6 +256,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
     };
 
     let author = actor;
+    console.log('FeedItem actor: ', actor);
     if (type === 'Announce') {
         author = typeof object.attributedTo === 'object' ? object.attributedTo as ActorProperties : actor;
     }

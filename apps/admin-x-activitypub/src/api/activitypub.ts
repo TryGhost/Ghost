@@ -16,6 +16,7 @@ export interface Profile {
 
 export interface Account {
     id: string;
+    apId: string;
     name: string;
     handle: string;
     bio: string;
@@ -29,11 +30,12 @@ export interface Account {
     followerCount: number;
     followsMe: boolean;
     followedByMe: boolean;
+    attachment: {name: string, value: string}[];
 }
 
 export type AccountSearchResult = Pick<
     Account,
-    'id' | 'name' | 'handle' | 'avatarUrl' | 'followedByMe' | 'followerCount'
+    'id' | 'apId' | 'name' | 'handle' | 'avatarUrl' | 'followedByMe' | 'followerCount'
 >;
 
 export interface SearchResults {
@@ -71,7 +73,7 @@ export type AccountFollowsType = 'following' | 'followers';
 
 type GetAccountResponse = Account
 
-export type FollowAccount = Pick<Account, 'id' | 'name' | 'handle' | 'avatarUrl'> & {isFollowing: true};
+export type FollowAccount = Pick<Account, 'id' | 'apId' | 'name' | 'handle' | 'avatarUrl'> & {isFollowing: true};
 
 export interface GetAccountFollowsResponse {
     accounts: FollowAccount[];
@@ -134,13 +136,13 @@ export interface Post {
         name: string;
         url: string;
     }[];
-    author: Pick<Account, 'id' | 'handle' | 'avatarUrl' | 'name' | 'url'>;
+    author: Pick<Account, 'apId' | 'id' | 'handle' | 'avatarUrl' | 'name' | 'url'>;
     authoredByMe: boolean;
     repostCount: number;
     repostedByMe: boolean;
     repostedBy: Pick<
         Account,
-        'id' | 'handle' | 'avatarUrl' | 'name' | 'url'
+        'apId' | 'id' | 'handle' | 'avatarUrl' | 'name' | 'url'
     > | null;
 }
 
@@ -427,12 +429,11 @@ export class ActivityPubAPI {
         return json as Thread;
     }
 
-    get accountApiUrl() {
-        return new URL(`.ghost/activitypub/account/${this.handle}`, this.apiUrl);
-    }
-
-    async getAccount(): Promise<GetAccountResponse> {
-        const json = await this.fetchJSON(this.accountApiUrl);
+    async getAccount(accountApId: string): Promise<GetAccountResponse> {
+        console.log('getAccount: ', accountApId);
+        const url = new URL(`.ghost/activitypub/account`, this.apiUrl);
+        accountApId ? url.searchParams.set('account_ap_id', encodeURIComponent(accountApId)) : null;
+        const json = await this.fetchJSON(url);
 
         return json as GetAccountResponse;
     }

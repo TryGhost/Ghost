@@ -18,7 +18,7 @@ export function mapPostToActivity(post: Post): Activity {
     }
 
     const actor: ActorProperties = {
-        id: post.author.url,
+        id: post.author.apId,
         icon: {
             url: post.author.avatarUrl
         },
@@ -42,14 +42,14 @@ export function mapPostToActivity(post: Post): Activity {
         published: '',
         summary: '',
         type: 'Person',
-        url: ''
+        url: post.author.url
     };
 
     let repostedBy: ActorProperties | null = null;
 
     if (post.repostedBy !== null) {
         repostedBy = {
-            id: post.repostedBy.url,
+            id: post.repostedBy.apId,
             icon: {
                 url: post.repostedBy.avatarUrl
             },
@@ -73,7 +73,7 @@ export function mapPostToActivity(post: Post): Activity {
             published: '',
             summary: '',
             type: 'Person',
-            url: ''
+            url: post.repostedBy.url
         };
     }
 

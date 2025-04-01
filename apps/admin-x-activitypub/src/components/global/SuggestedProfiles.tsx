@@ -32,11 +32,12 @@ export const SuggestedProfile: React.FC<SuggestedProfileProps & {
     };
 
     return (
+        console.log('profile in suggested profiles: ', JSON.stringify(profile)),
         <ActivityItem
             key={profile.actor.id}
             onClick={() => {
                 onOpenChange?.(false);
-                NiceModal.show(ViewProfileModal, {handle: profile.handle, onFollow, onUnfollow});
+                NiceModal.show(ViewProfileModal, {accountApId: profile.actor.id, onFollow, onUnfollow});
             }}
         >
             <APAvatar author={profile.actor} onClick={() => onOpenChange?.(false)} />

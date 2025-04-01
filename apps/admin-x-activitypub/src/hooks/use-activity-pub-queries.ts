@@ -23,6 +23,7 @@ import {formatPendingActivityContent, generatePendingActivity, generatePendingAc
 import {mapPostToActivity} from '../utils/posts';
 import {showToast} from '@tryghost/admin-x-design-system';
 import {useCallback} from 'react';
+import React from 'react';
 
 export type ActivityPubCollectionQueryResult<TData> = UseInfiniteQueryResult<ActivityPubCollectionResponse<TData>>;
 export type AccountFollowsQueryResult = UseInfiniteQueryResult<GetAccountFollowsResponse>;
@@ -1226,14 +1227,22 @@ export function useNoteMutationForUser(handle: string, actorProps?: ActorPropert
     });
 }
 
-export function useAccountForUser(handle: string) {
+export function useAccountForUser(handle: string, accountApId: string) {
+    const queryClient = useQueryClient();
+
+    // Invalidate the cache when profileHandle changes
+    React.useEffect(() => {
+        queryClient.invalidateQueries({queryKey: QUERY_KEYS.account(accountApId)});
+    }, [accountApId, queryClient]);
+
     return useQuery({
-        queryKey: QUERY_KEYS.account(handle),
+        queryKey: QUERY_KEYS.account(accountApId),
         async queryFn() {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
+            console.log('useAccountForUser: ', accountApId);
 
-            return api.getAccount();
+            return api.getAccount(accountApId);
         }
     });
 }

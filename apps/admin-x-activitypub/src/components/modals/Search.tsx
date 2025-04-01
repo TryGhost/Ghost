@@ -46,7 +46,7 @@ const AccountSearchResultItem: React.FC<AccountSearchResultItemProps & {
             key={account.id}
             onClick={() => {
                 onOpenChange?.(false);
-                NiceModal.show(ViewProfileModal, {handle: account.handle, onFollow, onUnfollow});
+                NiceModal.show(ViewProfileModal, {accountApId: account.id, onFollow, onUnfollow});
             }}
         >
             <APAvatar author={{
@@ -54,7 +54,8 @@ const AccountSearchResultItem: React.FC<AccountSearchResultItemProps & {
                     url: account.avatarUrl
                 },
                 name: account.name,
-                handle: account.handle
+                handle: account.handle,
+                id: account.id
             }}/>
             <div className='flex flex-col'>
                 <span className='font-semibold text-black dark:text-white'>{account.name}</span>

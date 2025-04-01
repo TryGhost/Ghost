@@ -6,7 +6,7 @@ import {Button, Heading, Icon, List, LoadingIndicator, Modal, NoValueLabel, Tab,
 import {UseInfiniteQueryResult} from '@tanstack/react-query';
 
 import {type GetProfileFollowersResponse, type GetProfileFollowingResponse} from '../../api/activitypub';
-import {useProfileFollowersForUser, useProfileFollowingForUser, useProfileForUser, useProfilePostsForUser} from '@hooks/use-activity-pub-queries';
+import {useProfileFollowersForUser, useProfileFollowingForUser, useAccountForUser, useProfilePostsForUser} from '@hooks/use-activity-pub-queries';
 
 import APAvatar from '../global/APAvatar';
 import ActivityItem from '../activities/ActivityItem';
@@ -225,7 +225,7 @@ const FollowersTab: React.FC<{handle: string}> = ({handle}) => {
 };
 
 interface ViewProfileModalProps {
-    handle: string;
+    accountApId: string;
     onFollow?: () => void;
     onUnfollow?: () => void;
 }
@@ -233,41 +233,41 @@ interface ViewProfileModalProps {
 type ProfileTab = 'posts' | 'following' | 'followers';
 
 const ViewProfileModal: React.FC<ViewProfileModalProps> = ({
-    handle,
+    accountApId,
     onFollow = noop,
     onUnfollow = noop
 }) => {
     const modal = useModal();
     const [selectedTab, setSelectedTab] = useState<ProfileTab>('posts');
     const {darkMode} = useDesignSystem();
+    
+    const {data: account, isLoading} = useAccountForUser('index', accountApId);
 
-    const {data: profile, isLoading} = useProfileForUser('index', handle);
+    const attachments = account?.attachment || [];
 
-    const attachments = (profile?.actor.attachment || []);
-
-    const tabs = isLoading === false && typeof profile !== 'string' && profile ? [
+    const tabs = isLoading === false && account ? [
         {
             id: 'posts',
             title: 'Posts',
             contents: (
-                <PostsTab handle={profile.handle} />
+                <PostsTab handle={account.handle} />
             )
         },
         {
             id: 'following',
             title: 'Following',
             contents: (
-                <FollowingTab handle={profile.handle} />
+                <FollowingTab handle={account.handle} />
             ),
-            counter: profile.followingCount
+            counter: account.followingCount
         },
         {
             id: 'followers',
             title: 'Followers',
             contents: (
-                <FollowersTab handle={profile.handle} />
+                <FollowersTab handle={account.handle} />
             ),
-            counter: profile.followerCount
+            counter: account.followerCount
         }
     ].filter(Boolean) as Tab<ProfileTab>[] : [];
 
@@ -284,7 +284,7 @@ const ViewProfileModal: React.FC<ViewProfileModalProps> = ({
         if (contentRef.current) {
             setIsOverflowing(contentRef.current.scrollHeight > 160); // Compare content height to max height
         }
-    }, [isExpanded, profile]);
+    }, [isExpanded, account]);
 
     return (
         <Modal
@@ -309,41 +309,46 @@ const ViewProfileModal: React.FC<ViewProfileModalProps> = ({
                     {isLoading && (
                         <LoadingIndicator size='lg' />
                     )}
-                    {!isLoading && !profile && (
+                    {!isLoading && !account && (
                         <NoValueLabel icon='user-add'>
                             Profile not found
                         </NoValueLabel>
                     )}
-                    {!isLoading && profile && (
+                    {!isLoading && account && (
                         <>
-                            {profile.actor.image && (<div className='h-[200px] w-full overflow-hidden rounded-lg bg-gradient-to-tr from-gray-200 to-gray-100'>
+                            {account.bannerImageUrl && (<div className='h-[200px] w-full overflow-hidden rounded-lg bg-gradient-to-tr from-gray-200 to-gray-100'>
                                 <img
-                                    alt={profile.actor.name}
+                                    alt={account.name}
                                     className='h-full w-full object-cover'
-                                    src={profile.actor.image.url}
+                                    src={account.bannerImageUrl}
                                 />
                             </div>)}
-                            <div className={`${profile.actor.image && '-mt-12'} px-6`}>
+                            <div className={`${account.bannerImageUrl && '-mt-12'} px-6`}>
                                 <div className='flex items-end justify-between'>
                                     <div className='-ml-2 rounded-full bg-white p-1 dark:bg-black'>
                                         <APAvatar
-                                            author={profile.actor}
+                                            author={{
+                                                icon: {url: account.avatarUrl},
+                                                name: account.name,
+                                                handle: account.handle,
+                                                id: account.id
+                                            }}
                                             size='lg'
                                         />
                                     </div>
                                     <FollowButton
-                                        following={profile.isFollowing}
-                                        handle={profile.handle}
+                                        following={account.followedByMe}
+                                        handle={account.handle}
                                         type='primary'
                                         onFollow={onFollow}
                                         onUnfollow={onUnfollow}
                                     />
                                 </div>
-                                <Heading className='mt-4' level={3}>{profile.actor.name}</Heading>
-                                <a className='group/handle mt-1 flex items-center gap-1 text-[1.5rem] text-gray-800 hover:text-gray-900' href={profile?.actor.url} rel='noopener noreferrer' target='_blank'><span>{profile.handle}</span><Icon className='opacity-0 transition-opacity group-hover/handle:opacity-100' name='arrow-top-right' size='xs'/></a>
-                                {(profile.actor.summary || attachments.length > 0) && (<div ref={contentRef} className={`ap-profile-content transition-max-height relative text-[1.5rem] duration-300 ease-in-out [&>p]:mb-3 ${isExpanded ? 'max-h-none pb-7' : 'max-h-[160px] overflow-hidden'} relative`}>
+                                <Heading className='mt-4' level={3}>{account.name}</Heading>
+                                <a className='group/handle mt-1 flex items-center gap-1 text-[1.5rem] text-gray-800 hover:text-gray-900' href={account.url} rel='noopener noreferrer' target='_blank'><span>{account.handle}</span><Icon className='opacity-0 transition-opacity group-hover/handle:opacity-100' name='arrow-top-right' size='xs'/></a>
+                                {(account.bio || attachments.length > 0) && (<div ref={contentRef} className={`ap-profile-content transition-max-height relative text-[1.5rem] duration-300 ease-in-out [&>p]:mb-3 ${isExpanded ? 'max-h-none pb-7' : 'max-h-[160px] overflow-hidden'} relative`}>
                                     <div
-                                        dangerouslySetInnerHTML={{__html: profile.actor.summary}}
+                                        dangerouslySetInnerHTML={{__html: account.bio}}
                                         className='ap-profile-content mt-3 text-[1.5rem] [&>p]:mb-3'
                                     />
                                     {attachments.map((attachment: {name: string, value: string}) => (

@@ -16,6 +16,7 @@ interface APAvatarProps {
         };
         name: string;
         handle?: string;
+        id?: string | null;
     } | undefined;
     size?: AvatarSize;
     isLoading?: boolean;
@@ -79,7 +80,7 @@ const APAvatar: React.FC<APAvatarProps> = ({author, size, isLoading = false, onC
 
     const handleClick = (e: React.MouseEvent) => {
         e.stopPropagation();
-        NiceModal.show(ViewProfileModal, {handle});
+        NiceModal.show(ViewProfileModal, {accountApId: author?.id || ''});
         onClick?.();
     };
 

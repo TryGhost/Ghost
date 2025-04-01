@@ -37,7 +37,7 @@ export const ExploreProfile: React.FC<ExploreProfileProps & {
             className='flex w-full cursor-pointer items-start gap-3 pt-4 [&:last-of-type>:nth-child(2)]:border-none'
             onClick={() => {
                 onOpenChange?.(false);
-                NiceModal.show(ViewProfileModal, {handle: profile.handle, onFollow, onUnfollow});
+                NiceModal.show(ViewProfileModal, {accountApId: profile.actor.id, onFollow, onUnfollow});
             }}
         >
             <APAvatar author={profile.actor} onClick={() => onOpenChange?.(false)} />

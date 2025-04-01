@@ -244,7 +244,8 @@ const NotificationsV2: React.FC = () => {
                                                                         url: actor.avatarUrl || ''
                                                                     },
                                                                     name: actor.name,
-                                                                    handle: actor.handle
+                                                                    handle: actor.handle,
+                                                                    id: actor.id
                                                                 }}
                                                                 size='notification'
                                                             />
@@ -285,7 +286,8 @@ const NotificationsV2: React.FC = () => {
                                                                                 url: actor.avatarUrl || ''
                                                                             },
                                                                             name: actor.name,
-                                                                            handle: actor.handle
+                                                                            handle: actor.handle,
+                                                                            id: actor.id
                                                                         }} size='xs' />
                                                                         <span className='ml-2 text-base font-semibold dark:text-white'>{actor.name}</span>
                                                                         <span className='ml-1 text-base text-gray-700 dark:text-gray-600'>{actor.handle}</span>

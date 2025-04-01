@@ -20,6 +20,7 @@ import {
 import {useLocation, useNavigate} from '@tryghost/admin-x-framework';
 
 const FeedInput: React.FC<{user?: ActorProperties}> = ({user}) => {
+    console.log('User in FeedInput: ', user as ActorProperties);
     return (
         <>
             <div className='relative my-5 w-full'>

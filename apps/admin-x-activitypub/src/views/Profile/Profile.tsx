@@ -283,8 +283,8 @@ const LikesTab: React.FC = () => {
     );
 };
 
-const handleAccountClick = (handle: string) => {
-    NiceModal.show(ViewProfileModal, {handle});
+const handleAccountClick = (apId: string) => {
+    NiceModal.show(ViewProfileModal, {accountApId: apId});
 };
 
 const FollowingTab: React.FC = () => {
@@ -303,14 +303,15 @@ const FollowingTab: React.FC = () => {
                         <React.Fragment key={account.id}>
                             <ActivityItem
                                 key={account.id}
-                                onClick={() => handleAccountClick(account.handle)}
+                                onClick={() => handleAccountClick(account.apId)}
                             >
                                 <APAvatar author={{
                                     icon: {
                                         url: account.avatarUrl
                                     },
                                     name: account.name,
-                                    handle: account.handle
+                                    handle: account.handle,
+                                    id: account.apId
                                 }} />
                                 <div>
                                     <div className='text-gray-600'>
@@ -351,14 +352,15 @@ const FollowersTab: React.FC = () => {
                         <React.Fragment key={account.id}>
                             <ActivityItem
                                 key={account.id}
-                                onClick={() => handleAccountClick(account.handle)}
+                                onClick={() => handleAccountClick(account.apId)}
                             >
                                 <APAvatar author={{
                                     icon: {
                                         url: account.avatarUrl
                                     },
                                     name: account.name,
-                                    handle: account.handle
+                                    handle: account.handle,
+                                    id: account.apId
                                 }} />
                                 <div>
                                     <div className='text-gray-600'>
@@ -388,7 +390,7 @@ type ProfileTab = 'posts' | 'likes' | 'following' | 'followers';
 interface ProfileProps {}
 
 const Profile: React.FC<ProfileProps> = ({}) => {
-    const {data: account, isLoading: isLoadingAccount} = useAccountForUser('index');
+    const {data: account, isLoading: isLoadingAccount} = useAccountForUser('index', '');
 
     const [selectedTab, setSelectedTab] = useState<ProfileTab>('posts');
 
@@ -481,7 +483,8 @@ const Profile: React.FC<ProfileProps> = ({}) => {
                                                 url: account?.avatarUrl
                                             },
                                             name: account?.name,
-                                            handle: account?.handle
+                                            handle: account?.handle,
+                                            id: account?.id
                                         }}
                                         size='lg'
                                     />
