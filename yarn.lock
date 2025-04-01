@@ -7591,6 +7591,14 @@
     echarts "^5.5.0"
     swr "^2.2.5"
 
+"@tinybirdco/charts@^0.2.4":
+  version "0.2.4"
+  resolved "https://registry.yarnpkg.com/@tinybirdco/charts/-/charts-0.2.4.tgz#4dbfefd5acdc11a8f016e89b94ea377da0172dc8"
+  integrity sha512-0N8fYPY8uxO5KcBkW5Dgmapj4AqcWgyCmWnZBYsugXnnbx4/yg//f3/9oMWnM3RZ6ltt9moltYIzF/95NO2zNg==
+  dependencies:
+    echarts "^5.5.0"
+    swr "^2.2.5"
+
 "@tiptap/core@2.9.0":
   version "2.9.0"
   resolved "https://registry.yarnpkg.com/@tiptap/core/-/core-2.9.0.tgz#686c2829d213faa20d46036ff2ccfff50449e03d"
