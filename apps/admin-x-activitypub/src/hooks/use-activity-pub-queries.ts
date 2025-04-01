@@ -63,16 +63,6 @@ const QUERY_KEYS = {
     profileFollowing: (profileHandle: string) => ['profile_following', profileHandle],
     account: (handle: string) => ['account', handle],
     accountFollows: (handle: string, type: AccountFollowsType) => ['account_follows', handle, type],
-    activities: (
-        handle: string,
-        key?: string | null,
-        options?: {
-            includeOwn?: boolean,
-            includeReplies?: boolean,
-            filter?: {type?: string[]} | null,
-            limit?: number,
-        }
-    ) => ['activities', handle, key, options].filter(value => value !== undefined),
     searchResults: (query: string) => ['search_results', query],
     suggestedProfiles: (limit: number) => ['suggested_profiles', limit],
     exploreProfiles: (handle: string) => ['explore_profiles', handle],
@@ -573,7 +563,7 @@ export function useFollowMutationForUser(handle: string, onSuccess: () => void, 
                 if (!currentAccount) {
                     return oldData;
                 }
-                
+
                 const newFollower = {
                     actor: {
                         id: currentAccount.id,
@@ -602,70 +592,6 @@ export function useFollowMutationForUser(handle: string, onSuccess: () => void, 
         },
         onError
     });
-}
-
-export const GET_ACTIVITIES_QUERY_KEY_INBOX = 'inbox';
-export const GET_ACTIVITIES_QUERY_KEY_FEED = 'feed';
-export const GET_ACTIVITIES_QUERY_KEY_NOTIFICATIONS = 'notifications';
-
-export function useActivitiesForUser({
-    handle,
-    includeOwn = false,
-    includeReplies = false,
-    filter = null,
-    limit = undefined,
-    key = null
-}: {
-    handle: string;
-    includeOwn?: boolean;
-    includeReplies?: boolean;
-    filter?: {type?: string[]} | null;
-    limit?: number;
-    key?: string | null;
-}) {
-    const queryClient = useQueryClient();
-    const queryKey = QUERY_KEYS.activities(handle, key, {includeOwn, includeReplies, filter});
-
-    const getActivitiesQuery = useInfiniteQuery({
-        queryKey,
-        staleTime: 5 * 60 * 1000, // 5m
-        async queryFn({pageParam}: {pageParam?: string}) {
-            const siteUrl = await getSiteUrl();
-            const api = createActivityPubAPI(handle, siteUrl);
-
-            return api.getActivities(includeOwn, includeReplies, filter, limit, pageParam);
-        },
-        getNextPageParam(prevPage) {
-            return prevPage.next;
-        }
-    });
-
-    const updateActivity = (id: string, updated: Partial<Activity>) => {
-        // Update the activity stored in the activities query cache
-        queryClient.setQueryData(queryKey, (current: {pages: {data: Activity[]}[]} | undefined) => {
-            if (!current) {
-                return current;
-            }
-
-            return {
-                ...current,
-                pages: current.pages.map((page: {data: Activity[]}) => {
-                    return {
-                        ...page,
-                        data: page.data.map((item: Activity) => {
-                            if (item.id === id) {
-                                return {...item, ...updated};
-                            }
-
-                            return item;
-                        })
-                    };
-                })
-            };
-        });
-    };
-
-    return {getActivitiesQuery, updateActivity};
 }
 
 export function useSearchForUser(handle: string, query: string) {

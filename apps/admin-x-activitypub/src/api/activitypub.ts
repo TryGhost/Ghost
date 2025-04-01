@@ -224,59 +224,6 @@ export class ActivityPubAPI {
         await this.fetchJSON(url, 'POST');
     }
 
-    get activitiesApiUrl() {
-        return new URL(`.ghost/activitypub/activities/${this.handle}`, this.apiUrl);
-    }
-
-    async getActivities(
-        includeOwn: boolean = false,
-        includeReplies: boolean = false,
-        filter: {type?: string[]} | null = null,
-        limit: number = 50,
-        cursor?: string
-    ): Promise<{data: Activity[], next: string | null}> {
-        const url = new URL(this.activitiesApiUrl);
-
-        url.searchParams.set('limit', limit.toString());
-
-        if (includeOwn) {
-            url.searchParams.set('includeOwn', includeOwn.toString());
-        }
-        if (includeReplies) {
-            url.searchParams.set('includeReplies', includeReplies.toString());
-        }
-        if (filter) {
-            url.searchParams.set('filter', JSON.stringify(filter));
-        }
-        if (cursor) {
-            url.searchParams.set('cursor', cursor);
-        }
-
-        const json = await this.fetchJSON(url);
-
-        if (json === null) {
-            return {
-                data: [],
-                next: null
-            };
-        }
-
-        if (!('items' in json)) {
-            return {
-                data: [],
-                next: null
-            };
-        }
-
-        const data = Array.isArray(json.items) ? json.items : [];
-        const next = 'next' in json && typeof json.next === 'string' ? json.next : null;
-
-        return {
-            data,
-            next
-        };
-    }
-
     async reply(id: string, content: string): Promise<Activity> {
         const url = new URL(`.ghost/activitypub/actions/reply/${encodeURIComponent(id)}`, this.apiUrl);
         const response = await this.fetchJSON(url, 'POST', {content});
