@@ -1,16 +1,7 @@
 import React from 'react';
 import {Card, CardContent, CardHeader, ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, Recharts, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade';
-import {Config, useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
+import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useQuery} from '@tinybirdco/charts';
-
-type ConfigWithStats = Config & {
-    config: {
-        stats?: {
-            id: string;
-            token: string;
-        };
-    };
-}
 
 interface KpiTabTriggerProps extends React.ComponentProps<typeof TabsTrigger> {
     children: React.ReactNode;
@@ -39,18 +30,10 @@ const KpiTabValue: React.FC<KpiTabValueProps> = ({label, value}) => {
 };
 
 const Kpis:React.FC = () => {
-    const config = useBrowseConfig() as unknown as { data: ConfigWithStats | null, isLoading: boolean, error: Error | null };
-    const requests = [config];
-    const error = requests.map(request => request.error).find(Boolean);
-
-    if (error) {
-        throw error;
-    }
-
-    const configLoading = requests.some(request => request.isLoading);
+    const {data: configData, isLoading: isConfigLoading} = useGlobalData();
 
     const params = {
-        site_uuid: config.data?.config.stats?.id || '',
+        site_uuid: configData?.config.stats?.id || '',
         date_from: '2025-03-01',
         date_to: '2025-03-31'
         // ...additionalParams
@@ -58,11 +41,11 @@ const Kpis:React.FC = () => {
 
     const {data, loading} = useQuery({
         endpoint: 'https://api.tinybird.co/v0/pipes/api_kpis__v7.json',
-        token: config.data?.config.stats?.token || '',
+        token: configData?.config.stats?.token || '',
         params
     });
 
-    const isLoading = configLoading || loading;
+    const isLoading = isConfigLoading || loading;
 
     const chartData = data?.map(item => ({
         date: item.date,
@@ -75,8 +58,6 @@ const Kpis:React.FC = () => {
             color: 'hsl(var(--chart-1))'
         }
     } satisfies ChartConfig;
-
-    // console.log('Transformed Data:', JSON.stringify(chartData, null, 2));
 
     return (
         <Card className='col-span-2'>
