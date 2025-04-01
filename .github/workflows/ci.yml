@@ -220,7 +220,7 @@ jobs:
         with:
           push: false
           context: .
-          file: .docker/Dockerfile
+          file: ./.docker/Dockerfile
           target: development
 
   job_lint:
