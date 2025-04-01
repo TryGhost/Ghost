@@ -1562,6 +1562,16 @@ describe('{{ghost_head}} helper', function () {
 
             rendered.should.match(/data-datasource="analytics_events_json_v1"/);
         }); 
+
+        it('does not include tracker script when preview is set', async function () {
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    context: ['preview', 'post']
+                }
+            }));
+
+            rendered.should.not.match(/script defer src="\/public\/ghost-stats\.js"/);
+        });
     });
     describe('respects values from excludes: ', function () {
         it('when excludes is empty', async function () {
