@@ -224,6 +224,8 @@ jobs:
           context: .
           file: ./.docker/Dockerfile
           target: development
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
   job_lint:
     runs-on: ubuntu-latest
