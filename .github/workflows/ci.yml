@@ -211,6 +211,8 @@ jobs:
     if: needs.job_setup.outputs.changed_any_code == 'true'
     name: Docker build
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
       - name: Setup QEMU
         uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
