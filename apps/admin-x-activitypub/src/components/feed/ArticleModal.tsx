@@ -364,7 +364,7 @@ const SingleValue: React.FC<SingleValueProps<FontSelectOption, false>> = ({child
     <components.SingleValue {...props}>
         <div className='group' data-testid="select-current-option" data-value={props.data.value}>
             <div className='flex items-center gap-2.5'>
-                <div className={`${props.data.className} flex h-8 w-8 items-center justify-center rounded-md bg-white text-[1.5rem] font-semibold dark:bg-black`}>Aa</div>
+                <div className={`${props.data.className} flex size-8 items-center justify-center rounded-md bg-white text-[1.5rem] font-semibold dark:bg-black`}>Aa</div>
                 <span className={`text-md ${props.data.className}`}>{children}</span>
             </div>
         </div>
@@ -375,7 +375,7 @@ const Option: React.FC<OptionProps<FontSelectOption, false>> = ({children, ...pr
     <components.Option {...props}>
         <div className={props.isSelected ? 'relative flex w-full items-center justify-between gap-2' : 'group'} data-testid="select-option" data-value={props.data.value}>
             <div className='flex items-center gap-2.5'>
-                <div className='flex h-8 w-8 items-center justify-center rounded-md bg-gray-150 text-[1.5rem] font-semibold group-hover:bg-gray-250 dark:bg-gray-900 dark:group-hover:bg-gray-800'>Aa</div>
+                <div className='flex size-8 items-center justify-center rounded-md bg-gray-150 text-[1.5rem] font-semibold group-hover:bg-gray-250 dark:bg-gray-900 dark:group-hover:bg-gray-800'>Aa</div>
                 <span className={`text-md ${props.data.className}`}>{children}</span>
             </div>
             {props.isSelected && <span><Icon name='check' size='xs' /></span>}
@@ -754,7 +754,7 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
                                 >
                                     {(canNavigateBack || (threadParents.length > 0)) ? (
                                         <div className='col-[1/2] flex items-center justify-between'>
-                                            <Button className='transition-color flex h-10 w-10 items-center justify-center rounded-full bg-white hover:bg-gray-100' icon='arrow-left' size='sm' unstyled onClick={navigateBack}/>
+                                            <Button className='transition-color flex size-10 items-center justify-center rounded-full bg-white hover:bg-gray-100' icon='arrow-left' size='sm' unstyled onClick={navigateBack}/>
                                         </div>
                                     ) : (<div className='col-[2/3] mx-auto flex w-full items-center gap-3'>
                                         <div className='relative z-10 pt-[3px]'>
@@ -773,7 +773,7 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
                                     <div className='col-[3/4] flex items-center justify-end gap-2'>
                                         {modalSize === MODAL_SIZE_LG && object.type === 'Article' && <Popover modal={false}>
                                             <PopoverTrigger asChild>
-                                                <Button className='transition-color flex h-10 w-10 items-center justify-center rounded-full bg-white hover:bg-gray-100 dark:bg-black dark:hover:bg-gray-950' icon='typography' size='sm' unstyled />
+                                                <Button className='transition-color flex size-10 items-center justify-center rounded-full bg-white hover:bg-gray-100 dark:bg-black dark:hover:bg-gray-950' icon='typography' size='sm' unstyled />
                                             </PopoverTrigger>
                                             <PopoverContent align='end' className='w-[300px]' onCloseAutoFocus={e => e.preventDefault()} onOpenAutoFocus={e => e.preventDefault()}>
                                                 <div className='flex flex-col'>
@@ -806,7 +806,7 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
                                                         <span className='text-sm font-medium text-gray-900 dark:text-white'>Font size</span>
                                                         <div className='flex items-center'>
                                                             <Button
-                                                                className={`transition-color flex h-8 w-8 items-center justify-center rounded-full bg-white dark:bg-grey-900 dark:hover:bg-grey-925 ${currentFontSizeIndex === 0 ? 'opacity-20 hover:bg-white' : 'hover:bg-gray-100'}`}
+                                                                className={`transition-color flex size-8 items-center justify-center rounded-full bg-white dark:bg-grey-900 dark:hover:bg-grey-925 ${currentFontSizeIndex === 0 ? 'opacity-20 hover:bg-white' : 'hover:bg-gray-100'}`}
                                                                 disabled={currentFontSizeIndex === 0}
                                                                 hideLabel={true}
                                                                 icon='substract'
@@ -816,7 +816,7 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
                                                                 onClick={decreaseFontSize}
                                                             />
                                                             <Button
-                                                                className={`transition-color flex h-8 w-8 items-center justify-center rounded-full bg-white hover:bg-gray-100 dark:bg-grey-900 dark:hover:bg-grey-925 ${currentFontSizeIndex === FONT_SIZES.length - 1 ? 'opacity-20 hover:bg-white' : 'hover:bg-gray-100'}`}
+                                                                className={`transition-color flex size-8 items-center justify-center rounded-full bg-white hover:bg-gray-100 dark:bg-grey-900 dark:hover:bg-grey-925 ${currentFontSizeIndex === FONT_SIZES.length - 1 ? 'opacity-20 hover:bg-white' : 'hover:bg-gray-100'}`}
                                                                 disabled={currentFontSizeIndex === FONT_SIZES.length - 1}
                                                                 hideLabel={true}
                                                                 icon='add'
@@ -831,7 +831,7 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
                                                         <span className='text-sm font-medium text-gray-900 dark:text-white'>Line spacing</span>
                                                         <div className='flex items-center'>
                                                             <Button
-                                                                className={`transition-color flex h-8 w-8 items-center justify-center rounded-full bg-white hover:bg-gray-100 dark:bg-grey-900 dark:hover:bg-grey-925 ${currentLineHeightIndex === 0 ? 'opacity-20 hover:bg-white' : 'hover:bg-gray-100'}`}
+                                                                className={`transition-color flex size-8 items-center justify-center rounded-full bg-white hover:bg-gray-100 dark:bg-grey-900 dark:hover:bg-grey-925 ${currentLineHeightIndex === 0 ? 'opacity-20 hover:bg-white' : 'hover:bg-gray-100'}`}
                                                                 disabled={currentLineHeightIndex === 0}
                                                                 hideLabel={true}
                                                                 icon='substract'
@@ -841,7 +841,7 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
                                                                 onClick={decreaseLineHeight}
                                                             />
                                                             <Button
-                                                                className={`transition-color flex h-8 w-8 items-center justify-center rounded-full bg-white hover:bg-gray-100 dark:bg-grey-900 dark:hover:bg-grey-925 ${currentLineHeightIndex === LINE_HEIGHTS.length - 1 ? 'opacity-20 hover:bg-white' : 'hover:bg-gray-100'}`}
+                                                                className={`transition-color flex size-8 items-center justify-center rounded-full bg-white hover:bg-gray-100 dark:bg-grey-900 dark:hover:bg-grey-925 ${currentLineHeightIndex === LINE_HEIGHTS.length - 1 ? 'opacity-20 hover:bg-white' : 'hover:bg-gray-100'}`}
                                                                 disabled={currentLineHeightIndex === LINE_HEIGHTS.length - 1}
                                                                 hideLabel={true}
                                                                 icon='add'
@@ -868,7 +868,7 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
                                                 </div>
                                             </PopoverContent>
                                         </Popover>}
-                                        <Button className='transition-color flex h-10 w-10 items-center justify-center rounded-full bg-white hover:bg-gray-100 dark:bg-black dark:hover:bg-gray-950' icon='close' size='sm' unstyled onClick={() => modal.remove()}/>
+                                        <Button className='transition-color flex size-10 items-center justify-center rounded-full bg-white hover:bg-gray-100 dark:bg-black dark:hover:bg-gray-950' icon='close' size='sm' unstyled onClick={() => modal.remove()}/>
                                     </div>
                                 </div>
                             </div>
