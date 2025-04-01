@@ -70,7 +70,6 @@ COPY ghost/admin/lib/asset-delivery/package.json ghost/admin/lib/asset-delivery/
 COPY ghost/admin/lib/ember-power-calendar-moment/package.json ghost/admin/lib/ember-power-calendar-moment/package.json
 COPY ghost/admin/lib/ember-power-calendar-utils/package.json ghost/admin/lib/ember-power-calendar-utils/package.json
 COPY ghost/admin/package.json ghost/admin/package.json
-COPY ghost/announcement-bar-settings/package.json ghost/announcement-bar-settings/package.json
 COPY ghost/api-framework/package.json ghost/api-framework/package.json
 COPY ghost/constants/package.json ghost/constants/package.json
 COPY ghost/core/package.json ghost/core/package.json
