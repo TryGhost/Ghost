@@ -1,14 +1,13 @@
 function toggleMembers(server, enabled) {
-    const members_signup_access = enabled ? 'all' : 'none';
-    const members_enabled = enabled;
+    const membersSignupAccess = enabled ? 'all' : 'none';
 
     server.db.settings.findBy({key: 'members_signup_access'})
-        ? server.db.settings.update({key: 'members_signup_access'}, {value: members_signup_access})
-        : server.create('setting', {key: 'members_signup_access', value: members_signup_access, group: 'members'});
+        ? server.db.settings.update({key: 'members_signup_access'}, {value: membersSignupAccess})
+        : server.create('setting', {key: 'members_signup_access', value: membersSignupAccess, group: 'members'});
 
     server.db.settings.findBy({key: 'members_enabled'})
-        ? server.db.settings.update({key: 'members_enabled'}, {value: members_enabled})
-        : server.create('setting', {key: 'members_enabled', value: members_enabled, group: 'members'});
+        ? server.db.settings.update({key: 'members_enabled'}, {value: enabled})
+        : server.create('setting', {key: 'members_enabled', value: enabled, group: 'members'});
 }
 
 export function enableMembers(server) {
