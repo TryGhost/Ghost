@@ -2,15 +2,13 @@ import React, {useCallback, useEffect, useRef, useState} from 'react';
 import getUsername from '../../utils/get-username';
 import {OptionProps, SingleValueProps, components} from 'react-select';
 import {Popover, PopoverContent, PopoverTrigger, Skeleton} from '@tryghost/shade';
-import {useLocation} from '@tryghost/admin-x-framework';
 
-import APReplyBox from '@components/global/APReplyBox';
 import {Button, Icon, LoadingIndicator, Select, SelectOption} from '@tryghost/admin-x-design-system';
 import {renderTimestamp} from '../../utils/render-timestamp';
-import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
 import {usePostForUser, useThreadForUser} from '@hooks/use-activity-pub-queries';
 
 import APAvatar from '@src/components/global/APAvatar';
+import APReplyBox from '@src/components/global/APReplyBox';
 import BackButton from '@src/components/global/BackButton';
 import DeletedFeedItem from '@src/components/feed/DeletedFeedItem';
 import FeedItem from '@src/components/feed/FeedItem';
@@ -22,7 +20,7 @@ import {handleProfileClickRR} from '@src/utils/handle-profile-click';
 import {isPendingActivity} from '../../utils/pending-activity';
 import {openLinksInNewTab} from '@src/utils/content-formatters';
 import {useDebounce} from 'use-debounce';
-import {useNavigate} from '@tryghost/admin-x-framework';
+import {useLocation, useNavigate} from '@tryghost/admin-x-framework';
 
 interface IframeWindow extends Window {
     resizeIframe?: () => void;
@@ -43,6 +41,7 @@ const ArticleBody: React.FC<{
     onIframeLoad?: (iframe: HTMLIFrameElement) => void;
     onLoadingChange?: (isLoading: boolean) => void;
 }> = ({
+    postUrl,
     heading,
     image,
     excerpt,
@@ -54,25 +53,21 @@ const ArticleBody: React.FC<{
     onIframeLoad,
     onLoadingChange
 }) => {
-    const site = useBrowseSite();
-    const siteData = site.data?.site;
     const iframeRef = useRef<HTMLIFrameElement>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [iframeHeight, setIframeHeight] = useState('0px');
     const darkMode = document.documentElement.classList.contains('dark');
 
-    const cssContent = articleBodyStyles(siteData?.url.replace(/\/$/, ''));
+    const cssContent = articleBodyStyles();
 
     const htmlContent = `
-        <html class="has-${!darkMode ? 'dark' : 'light'}-text">
+        <html class="has-${!darkMode ? 'dark' : 'light'}-text has-${fontFamily.className === 'font-sans' ? 'sans' : 'serif'}-body">
         <head>
             ${cssContent}
             <style>
                 :root {
                     --font-size: ${fontSize};
                     --line-height: ${lineHeight};
-                    --font-family: ${(fontFamily.value === 'sans-serif' ? FONT_SANS : fontFamily.value)};
-                    --letter-spacing: ${fontFamily.label === 'Clean sans-serif' ? '-0.013em' : '0'};
                     --content-spacing-factor: ${SPACING_FACTORS[FONT_SIZES.indexOf(fontSize)]};
                 }
                 body {
@@ -160,9 +155,10 @@ const ArticleBody: React.FC<{
         <body>
             <header class='gh-article-header gh-canvas'>
                 <h1 class='gh-article-title is-title' data-test-article-heading>${heading}</h1>
-                ${excerpt ? `
-                    <p class='gh-article-excerpt'>${excerpt}</p>
-                    ` : ''}
+                ${excerpt ? `<p class='gh-article-excerpt'>${excerpt}</p>` : ''}
+                <a href="${postUrl}" target="_blank" rel="noopener noreferrer" class="gh-article-source">
+                    ${postUrl ? new URL(postUrl).hostname : ''} <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-external-link-icon lucide-external-link"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
+                </a>
                 ${image ? `
                 <figure class='gh-article-image'>
                     <img src='${image}' alt='${heading}' />
@@ -230,8 +226,8 @@ const ArticleBody: React.FC<{
         const root = iframeDocument.documentElement;
         root.style.setProperty('--font-size', fontSize);
         root.style.setProperty('--line-height', lineHeight);
-        root.style.setProperty('--font-family', fontFamily.value);
-        root.style.setProperty('--letter-spacing', fontFamily.label === 'Clean sans-serif' ? '-0.013em' : '0');
+        root.classList.remove('has-sans-body', 'has-serif-body');
+        root.classList.add(fontFamily.value === FONT_SANS ? 'has-sans-body' : 'has-serif-body');
         root.style.setProperty('--content-spacing-factor', SPACING_FACTORS[FONT_SIZES.indexOf(fontSize)]);
 
         const iframeWindow = iframe.contentWindow as IframeWindow;
@@ -302,7 +298,7 @@ const ArticleBody: React.FC<{
         <div className='w-full pb-6'>
             <div className='relative'>
                 {isLoading && (
-                    <div className='mt-6'>
+                    <div className='mx-auto mt-6 w-full max-w-[640px]'>
                         <div className='mb-6 flex flex-col gap-2'>
                             <Skeleton className='h-8' />
                             <Skeleton className='h-8 w-full max-w-md' />
@@ -346,19 +342,11 @@ const STORAGE_KEYS = {
     FONT_FAMILY: 'ghost-ap-font-family'
 } as const;
 
-const MAX_WIDTHS = {
-    '1.5rem': '544px',
-    '1.6rem': '644px',
-    '1.7rem': '684px',
-    '1.8rem': '724px',
-    '2rem': '764px'
-} as const;
-
 const SingleValue: React.FC<SingleValueProps<FontSelectOption, false>> = ({children, ...props}) => (
     <components.SingleValue {...props}>
         <div className='group' data-testid="select-current-option" data-value={props.data.value}>
             <div className='flex items-center gap-2.5'>
-                <div className={`${props.data.className} flex h-8 w-8 items-center justify-center rounded-md bg-white text-[1.5rem] font-semibold dark:bg-black`}>Aa</div>
+                <div className={`${props.data.className} flex size-8 items-center justify-center rounded-md bg-white text-[1.5rem] font-semibold dark:bg-black`}>Aa</div>
                 <span className={`text-md ${props.data.className}`}>{children}</span>
             </div>
         </div>
@@ -369,7 +357,7 @@ const Option: React.FC<OptionProps<FontSelectOption, false>> = ({children, ...pr
     <components.Option {...props}>
         <div className={props.isSelected ? 'relative flex w-full items-center justify-between gap-2' : 'group'} data-testid="select-option" data-value={props.data.value}>
             <div className='flex items-center gap-2.5'>
-                <div className='flex h-8 w-8 items-center justify-center rounded-md bg-gray-150 text-[1.5rem] font-semibold group-hover:bg-gray-250 dark:bg-gray-900 dark:group-hover:bg-gray-800'>Aa</div>
+                <div className='flex size-8 items-center justify-center rounded-md bg-gray-150 text-[1.5rem] font-semibold group-hover:bg-gray-250 dark:bg-gray-900 dark:group-hover:bg-gray-800'>Aa</div>
                 <span className={`text-md ${props.data.className}`}>{children}</span>
             </div>
             {props.isSelected && <span><Icon name='check' size='xs' /></span>}
@@ -393,15 +381,9 @@ export const Reader: React.FC<ReaderProps> = ({
     onClose
 }) => {
     const modalRef = useRef<HTMLElement>(null);
-    const location = useLocation();
-    // const [isFocused, setIsFocused] = useFocusedState(false);
-    const {data: post, isLoading: isLoadingPost} = usePostForUser('index', postId);
-    const activityData = post;
-    const activityId = activityData?.id;
-    const object = activityData?.object;
-    const actor = activityData?.actor;
-
     const [focusReply, setFocusReply] = useState(false);
+    const location = useLocation();
+
     useEffect(() => {
         const searchParams = new URLSearchParams(location.search);
         if (searchParams.get('focusReply') === 'true') {
@@ -409,11 +391,16 @@ export const Reader: React.FC<ReaderProps> = ({
         }
     }, [location.search, setFocusReply]);
 
+    const {data: post, isLoading: isLoadingPost} = usePostForUser('index', postId);
+    const activityData = post;
+    const activityId = activityData?.id;
+    const object = activityData?.object;
+    const actor = activityData?.actor;
+
     const {data: thread, isLoading: isLoadingThread} = useThreadForUser('index', activityId);
     const threadPostIdx = (thread?.posts ?? []).findIndex(item => item.object.id === activityId);
     const threadChildren = (thread?.posts ?? []).slice(threadPostIdx + 1);
 
-    // const darkMode = document.documentElement.classList.contains('dark');
     const [replyCount, setReplyCount] = useState(object?.replyCount ?? 0);
 
     const onLikeClick = () => {
@@ -431,7 +418,6 @@ export const Reader: React.FC<ReaderProps> = ({
 
     const replyBoxRef = useRef<HTMLDivElement>(null);
     const repliesRef = useRef<HTMLDivElement>(null);
-
     const iframeRef = useRef<HTMLIFrameElement>(null);
 
     // Initialize state with values from localStorage, falling back to defaults
@@ -442,7 +428,7 @@ export const Reader: React.FC<ReaderProps> = ({
 
     const [currentLineHeightIndex, setCurrentLineHeightIndex] = useState(() => {
         const saved = localStorage.getItem(STORAGE_KEYS.LINE_HEIGHT);
-        return saved ? parseInt(saved) : 1;
+        return saved ? parseInt(saved) : 2;
     });
 
     const [fontFamily, setFontFamily] = useState<SelectOption>(() => {
@@ -489,17 +475,13 @@ export const Reader: React.FC<ReaderProps> = ({
             if (iframeDocument) {
                 iframeDocument.documentElement.style.setProperty('--font-size', FONT_SIZES[currentFontSizeIndex]);
                 iframeDocument.documentElement.style.setProperty('--line-height', LINE_HEIGHTS[currentLineHeightIndex]);
-                iframeDocument.documentElement.style.setProperty('--font-family', fontFamily.value);
-                iframeDocument.documentElement.style.setProperty('--letter-spacing', fontFamily.label === 'Clean sans-serif' ? '-0.013em' : '0');
                 iframeDocument.documentElement.style.setProperty('--content-spacing-factor', SPACING_FACTORS[FONT_SIZES.indexOf(FONT_SIZES[currentFontSizeIndex])]);
             }
         }
     }, [currentFontSizeIndex, currentLineHeightIndex, fontFamily]);
 
-    // Get the current max width based on font size
-    const currentMaxWidth = MAX_WIDTHS[FONT_SIZES[currentFontSizeIndex]];
-    // Calculate the grid column width by subtracting 64px from the current max width
-    const currentGridWidth = `${parseInt(currentMaxWidth) - 64}px`;
+    const currentMaxWidth = '904px';
+    const currentGridWidth = '640px';
 
     const [readingProgress, setReadingProgress] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
@@ -522,18 +504,23 @@ export const Reader: React.FC<ReaderProps> = ({
                 return;
             }
 
-            // Get scroll position
-            const scrollTop = container.scrollTop;
-            // Get the total scrollable height (content height - viewport height)
-            const scrollHeight = container.scrollHeight - container.clientHeight;
+            const articleRect = article.getBoundingClientRect();
+            const containerRect = container.getBoundingClientRect();
 
-            // Calculate percentage
-            const rawProgress = (scrollTop / scrollHeight) * 100;
+            const isContentShorterThanViewport = articleRect.height <= containerRect.height;
+
+            if (isContentShorterThanViewport) {
+                debouncedSetReadingProgress(100);
+                return;
+            }
+
+            const scrolledPast = Math.max(0, containerRect.top - articleRect.top);
+            const totalHeight = (article as HTMLElement).offsetHeight - (container as HTMLElement).offsetHeight;
+
+            const rawProgress = Math.min(Math.max((scrolledPast / totalHeight) * 100, 0), 100);
             const progress = Math.round(rawProgress / PROGRESS_INCREMENT) * PROGRESS_INCREMENT;
 
-            // Ensure progress stays between 0 and 100
-            const boundedProgress = Math.min(Math.max(progress, 0), 100);
-            debouncedSetReadingProgress(boundedProgress);
+            debouncedSetReadingProgress(progress);
         };
 
         if (isLoading) {
@@ -585,7 +572,7 @@ export const Reader: React.FC<ReaderProps> = ({
             const headingOffset = heading.offsetTop;
 
             container.scrollTo({
-                top: headingOffset - 120,
+                top: headingOffset - 20,
                 behavior: 'smooth'
             });
         }
@@ -608,34 +595,34 @@ export const Reader: React.FC<ReaderProps> = ({
                     return;
                 }
 
+                const scrollTop = container.scrollTop;
+
                 const headings = tocItems
                     .map(item => doc.getElementById(item.id))
                     .filter((el): el is HTMLElement => el !== null)
                     .map(el => ({
                         element: el,
                         id: el.id,
-                        position: el.getBoundingClientRect().top - container.getBoundingClientRect().top
+                        top: el.offsetTop
                     }));
 
                 if (!headings.length) {
                     return;
                 }
 
-                // Find the last visible heading
-                const viewportCenter = container.clientHeight / 2;
                 const buffer = 100;
 
-                // Find the last heading that's above the viewport center
-                const lastVisibleHeading = headings.reduce((last, current) => {
-                    if (current.position < (viewportCenter + buffer)) {
-                        return current;
-                    }
-                    return last;
-                }, headings[0]);
+                let activeHeading = null;
 
-                if (lastVisibleHeading && lastVisibleHeading.element.id !== activeHeadingId) {
-                    setActiveHeadingId(lastVisibleHeading.element.id);
+                for (const heading of headings) {
+                    if (heading.top - buffer <= scrollTop) {
+                        activeHeading = heading;
+                    } else {
+                        break;
+                    }
                 }
+
+                setActiveHeadingId(activeHeading?.id || null);
             };
 
             container.addEventListener('scroll', handleScroll);
@@ -688,7 +675,7 @@ export const Reader: React.FC<ReaderProps> = ({
                                         <div className='col-[3/4] flex items-center justify-end gap-2'>
                                             <Popover modal={false}>
                                                 <PopoverTrigger asChild>
-                                                    <Button className='transition-color flex h-10 w-10 items-center justify-center rounded-full bg-white hover:bg-gray-100 dark:bg-black dark:hover:bg-gray-950' icon='typography' size='sm' unstyled />
+                                                    <Button className='transition-color flex size-10 items-center justify-center rounded-full bg-white hover:bg-gray-100 dark:bg-black dark:hover:bg-gray-950' icon='typography' size='sm' unstyled />
                                                 </PopoverTrigger>
                                                 <PopoverContent align='end' className='w-[300px]' onCloseAutoFocus={e => e.preventDefault()} onOpenAutoFocus={e => e.preventDefault()}>
                                                     <div className='flex flex-col'>
@@ -721,7 +708,7 @@ export const Reader: React.FC<ReaderProps> = ({
                                                             <span className='text-sm font-medium text-gray-900 dark:text-white'>Font size</span>
                                                             <div className='flex items-center'>
                                                                 <Button
-                                                                    className={`transition-color flex h-8 w-8 items-center justify-center rounded-full bg-white dark:bg-grey-900 dark:hover:bg-grey-925 ${currentFontSizeIndex === 0 ? 'opacity-20 hover:bg-white' : 'hover:bg-gray-100'}`}
+                                                                    className={`transition-color flex size-8 items-center justify-center rounded-full bg-white dark:bg-grey-900 dark:hover:bg-grey-925 ${currentFontSizeIndex === 0 ? 'opacity-20 hover:bg-white' : 'hover:bg-gray-100'}`}
                                                                     disabled={currentFontSizeIndex === 0}
                                                                     hideLabel={true}
                                                                     icon='substract'
@@ -731,7 +718,7 @@ export const Reader: React.FC<ReaderProps> = ({
                                                                     onClick={decreaseFontSize}
                                                                 />
                                                                 <Button
-                                                                    className={`transition-color flex h-8 w-8 items-center justify-center rounded-full bg-white hover:bg-gray-100 dark:bg-grey-900 dark:hover:bg-grey-925 ${currentFontSizeIndex === FONT_SIZES.length - 1 ? 'opacity-20 hover:bg-white' : 'hover:bg-gray-100'}`}
+                                                                    className={`transition-color flex size-8 items-center justify-center rounded-full bg-white hover:bg-gray-100 dark:bg-grey-900 dark:hover:bg-grey-925 ${currentFontSizeIndex === FONT_SIZES.length - 1 ? 'opacity-20 hover:bg-white' : 'hover:bg-gray-100'}`}
                                                                     disabled={currentFontSizeIndex === FONT_SIZES.length - 1}
                                                                     hideLabel={true}
                                                                     icon='add'
@@ -746,7 +733,7 @@ export const Reader: React.FC<ReaderProps> = ({
                                                             <span className='text-sm font-medium text-gray-900 dark:text-white'>Line spacing</span>
                                                             <div className='flex items-center'>
                                                                 <Button
-                                                                    className={`transition-color flex h-8 w-8 items-center justify-center rounded-full bg-white hover:bg-gray-100 dark:bg-grey-900 dark:hover:bg-grey-925 ${currentLineHeightIndex === 0 ? 'opacity-20 hover:bg-white' : 'hover:bg-gray-100'}`}
+                                                                    className={`transition-color flex size-8 items-center justify-center rounded-full bg-white hover:bg-gray-100 dark:bg-grey-900 dark:hover:bg-grey-925 ${currentLineHeightIndex === 0 ? 'opacity-20 hover:bg-white' : 'hover:bg-gray-100'}`}
                                                                     disabled={currentLineHeightIndex === 0}
                                                                     hideLabel={true}
                                                                     icon='substract'
@@ -756,7 +743,7 @@ export const Reader: React.FC<ReaderProps> = ({
                                                                     onClick={decreaseLineHeight}
                                                                 />
                                                                 <Button
-                                                                    className={`transition-color flex h-8 w-8 items-center justify-center rounded-full bg-white hover:bg-gray-100 dark:bg-grey-900 dark:hover:bg-grey-925 ${currentLineHeightIndex === LINE_HEIGHTS.length - 1 ? 'opacity-20 hover:bg-white' : 'hover:bg-gray-100'}`}
+                                                                    className={`transition-color flex size-8 items-center justify-center rounded-full bg-white hover:bg-gray-100 dark:bg-grey-900 dark:hover:bg-grey-925 ${currentLineHeightIndex === LINE_HEIGHTS.length - 1 ? 'opacity-20 hover:bg-white' : 'hover:bg-gray-100'}`}
                                                                     disabled={currentLineHeightIndex === LINE_HEIGHTS.length - 1}
                                                                     hideLabel={true}
                                                                     icon='add'
@@ -773,7 +760,7 @@ export const Reader: React.FC<ReaderProps> = ({
                                                             link={true}
                                                             onClick={() => {
                                                                 setCurrentFontSizeIndex(1); // Default font size
-                                                                setCurrentLineHeightIndex(1); // Default line height
+                                                                setCurrentLineHeightIndex(2); // Default line height
                                                                 setFontFamily({
                                                                     value: FONT_SANS,
                                                                     label: 'Clean sans-serif'
@@ -786,20 +773,21 @@ export const Reader: React.FC<ReaderProps> = ({
                                         </div>
                                     </div>
                                 </div>
-                                {tocItems.length > 1 && (
-                                    <div className="!visible absolute inset-y-0 right-7 z-40 hidden lg:!block">
-                                        <div className="sticky top-1/2 -translate-y-1/2">
-                                            <TableOfContents
-                                                items={tocItems}
-                                                onItemClick={scrollToHeading}
-                                            />
+                                <div className='relative flex-1'>
+                                    {tocItems.length > 1 && (
+                                        <div className="!visible absolute inset-y-0 right-7 z-40 hidden lg:!block">
+                                            <div className="sticky top-1/2 -translate-y-1/2">
+                                                <TableOfContents
+                                                    activeHeading={activeHeadingId || ''}
+                                                    items={tocItems}
+                                                    onItemClick={scrollToHeading}
+                                                />
+                                            </div>
                                         </div>
-                                    </div>
-                                )}
-                                <div className='grow overflow-y-auto'>
-                                    <div className={`mx-auto px-8 pb-10 pt-5`} style={{maxWidth: currentMaxWidth}}>
-                                        {object.type === 'Article' && (
-                                            <div className='border-b border-gray-200 pb-8 dark:border-gray-950' id='object-content'>
+                                    )}
+                                    <div className='grow overflow-y-auto'>
+                                        <div className={`mx-auto px-8 pb-10 pt-5`} style={{maxWidth: currentMaxWidth}}>
+                                            <div className='flex flex-col items-center pb-8' id='object-content'>
                                                 <ArticleBody
                                                     excerpt={object?.preview?.content ?? ''}
                                                     fontFamily={fontFamily}
@@ -813,7 +801,7 @@ export const Reader: React.FC<ReaderProps> = ({
                                                     onIframeLoad={handleIframeLoad}
                                                     onLoadingChange={setIsLoading}
                                                 />
-                                                <div className='ml-[-7px]'>
+                                                <div className='-ml-3 w-full' style={{maxWidth: currentGridWidth}}>
                                                     <FeedItemStats
                                                         commentCount={replyCount}
                                                         layout={'modal'}
@@ -825,59 +813,58 @@ export const Reader: React.FC<ReaderProps> = ({
                                                                 behavior: 'smooth',
                                                                 block: 'center'
                                                             });
-                                                            // setIsFocused(true);
                                                             setFocusReply(true);
                                                         }}
                                                         onLikeClick={onLikeClick}
                                                     />
                                                 </div>
                                             </div>
-                                        )}
-                                        {object.type === 'Tombstone' && (
-                                            <DeletedFeedItem last={true} />
-                                        )}
+                                            {object.type === 'Tombstone' && (
+                                                <DeletedFeedItem last={true} />
+                                            )}
 
-                                        <div ref={replyBoxRef}>
-                                            <APReplyBox
-                                                focused={focusReply ? 1 : 0}
-                                                object={object}
-                                                onReply={incrementReplyCount}
-                                                onReplyError={decrementReplyCount}
-                                            />
-                                        </div>
-                                        <FeedItemDivider />
+                                            <div ref={replyBoxRef} className='mx-auto w-full border-t border-gray-200 dark:border-gray-950' style={{maxWidth: currentGridWidth}}>
+                                                <APReplyBox
+                                                    focused={focusReply ? 1 : 0}
+                                                    object={object}
+                                                    onReply={incrementReplyCount}
+                                                    onReplyError={decrementReplyCount}
+                                                />
+                                                <FeedItemDivider />
+                                            </div>
 
-                                        {isLoadingThread && <LoadingIndicator size='lg' />}
+                                            {isLoadingThread && <LoadingIndicator size='lg' />}
 
-                                        <div ref={repliesRef}>
-                                            {threadChildren.map((item, index) => {
-                                                const showDivider = index !== threadChildren.length - 1;
+                                            <div ref={repliesRef} className='mx-auto w-full' style={{maxWidth: currentGridWidth}}>
+                                                {threadChildren.map((item, index) => {
+                                                    const showDivider = index !== threadChildren.length - 1;
 
-                                                return (
-                                                    <React.Fragment key={item.id}>
-                                                        <FeedItem
-                                                            actor={item.actor}
-                                                            allowDelete={item.object.authored}
-                                                            commentCount={item.object.replyCount ?? 0}
-                                                            isPending={isPendingActivity(item.id)}
-                                                            last={true}
-                                                            layout='reply'
-                                                            object={item.object}
-                                                            parentId={object.id}
-                                                            repostCount={item.object.repostCount ?? 0}
-                                                            type='Note'
-                                                            onClick={() => {
-                                                                navigate(`/feed-rr/${encodeURIComponent(item.object.id)}`);
-                                                            }}
-                                                            onCommentClick={() => {
-                                                                navigate(`/feed-rr/${encodeURIComponent(item.object.id)}?focusReply=true`);
-                                                            }}
-                                                            onDelete={decrementReplyCount}
-                                                        />
-                                                        {showDivider && <FeedItemDivider />}
-                                                    </React.Fragment>
-                                                );
-                                            })}
+                                                    return (
+                                                        <React.Fragment key={item.id}>
+                                                            <FeedItem
+                                                                actor={item.actor}
+                                                                allowDelete={item.object.authored}
+                                                                commentCount={item.object.replyCount ?? 0}
+                                                                isPending={isPendingActivity(item.id)}
+                                                                last={true}
+                                                                layout='reply'
+                                                                object={item.object}
+                                                                parentId={object.id}
+                                                                repostCount={item.object.repostCount ?? 0}
+                                                                type='Note'
+                                                                onClick={() => {
+                                                                    navigate(`/feed-rr/${encodeURIComponent(item.object.id)}`);
+                                                                }}
+                                                                onCommentClick={() => {
+                                                                    navigate(`/feed-rr/${encodeURIComponent(item.object.id)}?focusReply=true`);
+                                                                }}
+                                                                onDelete={decrementReplyCount}
+                                                            />
+                                                            {showDivider && <FeedItemDivider />}
+                                                        </React.Fragment>
+                                                    );
+                                                })}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
