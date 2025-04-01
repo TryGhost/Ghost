@@ -429,7 +429,7 @@ const Profile: React.FC = () => {
                                 <div className='h-[15vw] w-full overflow-hidden bg-gradient-to-tr from-gray-200 to-gray-100'>
                                     <img
                                         alt={profile.actor.name}
-                                        className='h-full w-full object-cover'
+                                        className='size-full object-cover'
                                         src={profile.actor.image.url}
                                     />
                                 </div>

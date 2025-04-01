@@ -48,8 +48,8 @@ export const routes: CustomRouteObject[] = [
                 pageTitle: 'Note'
             },
             {
-                path: 'profile-rr',
-                element: <ProfileRR />,
+                path: 'profile',
+                element: <Profile />,
                 pageTitle: 'Profile'
             },
             {

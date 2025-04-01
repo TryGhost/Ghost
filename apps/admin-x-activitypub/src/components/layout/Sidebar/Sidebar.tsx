@@ -47,7 +47,7 @@ const Sidebar: React.FC = () => {
                             <LucideIcon.Globe size={18} strokeWidth={1.5} />
                             Explore
                         </SidebarMenuLink>
-                        <SidebarMenuLink to={(isEnabled('ap-routes') ? '/profile-rr' : '/profile')}>
+                        <SidebarMenuLink to='/profile'>
                             <LucideIcon.User size={18} strokeWidth={1.5} />
                             Profile
                         </SidebarMenuLink>

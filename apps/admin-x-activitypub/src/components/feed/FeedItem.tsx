@@ -66,7 +66,7 @@ export function renderFeedAttachment(object: ObjectProperties) {
         return (
             <div className={`attachment-gallery mt-3 grid ${gridClass} gap-2`}>
                 {attachment.map((item, index) => (
-                    <img key={item.url} alt={item.name || `Image-${index}`} className={`h-full w-full rounded-md object-cover outline outline-1 -outline-offset-1 outline-black/10 ${attachmentCount === 3 && index === 0 ? 'row-span-2' : ''}`} src={item.url} />
+                    <img key={item.url} alt={item.name || `Image-${index}`} className={`size-full rounded-md object-cover outline outline-1 -outline-offset-1 outline-black/10 ${attachmentCount === 3 && index === 0 ? 'row-span-2' : ''}`} src={item.url} />
                 ))}
             </div>
         );
@@ -263,7 +263,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
     }
 
     const UserMenuTrigger = (
-        <Button className={`relative z-10 h-[34px] w-[34px] rounded-md ${layout === 'inbox' || layout === 'modal' ? 'text-gray-900 hover:text-gray-900 dark:text-gray-600 dark:hover:text-gray-600' : 'text-gray-500 hover:text-gray-500'} dark:bg-black dark:hover:bg-gray-950 [&_svg]:size-5`} variant='ghost'>
+        <Button className={`relative z-10 size-[34px] rounded-md ${layout === 'inbox' || layout === 'modal' ? 'text-gray-900 hover:text-gray-900 dark:text-gray-600 dark:hover:text-gray-600' : 'text-gray-500 hover:text-gray-500'} dark:bg-black dark:hover:bg-gray-950 [&_svg]:size-5`} variant='ghost'>
             <LucideIcon.Ellipsis />
         </Button>
     );

@@ -25,7 +25,7 @@ const Header: React.FC = () => {
 
     // Logic for special pages
     let onlyBackButton = false;
-    if (baseRoute === 'profile-rr') {
+    if (baseRoute === 'profile-rr' || baseRoute === 'profile') {
         onlyBackButton = true;
     }
 
