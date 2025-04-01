@@ -1,6 +1,6 @@
 import moment from 'moment-timezone';
 
-export const TB_VERSION = 7;
+export const TB_VERSION = 8;
 
 export const RANGE_OPTIONS = [
     {name: 'Today', value: 1},
