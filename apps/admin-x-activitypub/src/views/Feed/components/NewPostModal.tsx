@@ -13,7 +13,7 @@ const NewPostModal = NiceModal.create(() => {
     const {data: user} = useUserDataForUser('index');
     const noteMutation = useNoteMutationForUser('index', user);
     const {updateRoute} = useRouting();
-    const {data: account, isLoading: isLoadingAccount} = useAccountForUser('index', '');
+    const {data: account, isLoading: isLoadingAccount} = useAccountForUser('index', 'index');
 
     const [content, setContent] = useState('');
 

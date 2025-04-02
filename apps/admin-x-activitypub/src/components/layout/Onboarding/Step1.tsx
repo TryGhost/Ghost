@@ -8,7 +8,7 @@ import {useBrowseUsers} from '@tryghost/admin-x-framework/api/users';
 import {useNavigate} from '@tryghost/admin-x-framework';
 
 const Step1: React.FC = () => {
-    const {data: account} = useAccountForUser('index', '');
+    const {data: account} = useAccountForUser('index', 'index');
     const {data: {users, meta} = {users: []}, isLoading: usersLoading} = useBrowseUsers();
     const navigate = useNavigate();
     const [copied, setCopied] = useState(false);
