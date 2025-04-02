@@ -2495,7 +2495,7 @@
     ember-cli-htmlbars-inline-precompile "^2.1.0"
     ember-test-waiters "^1.1.1"
 
-"@ember/test-waiters@3.1.0", "@ember/test-waiters@^3.0.0", "@ember/test-waiters@^3.0.1":
+"@ember/test-waiters@3.1.0", "@ember/test-waiters@^3.0.0", "@ember/test-waiters@^3.0.1", "@ember/test-waiters@^3.1.0":
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/@ember/test-waiters/-/test-waiters-3.1.0.tgz#61399919cbf793978da0b8bfdfdb7bca0cb80e9e"
   integrity sha512-bb9h95ktG2wKY9+ja1sdsFBdOms2lB19VWs8wmNpzgHv1NCetonBoV5jHBV4DHt0uS1tg9z66cZqhUVlYs96KQ==
@@ -2513,7 +2513,7 @@
     "@embroider/shared-internals" "^0.50.2"
     semver "^7.3.5"
 
-"@embroider/addon-shim@^1.8.3", "@embroider/addon-shim@^1.8.4", "@embroider/addon-shim@^1.8.7":
+"@embroider/addon-shim@^1.8.3", "@embroider/addon-shim@^1.8.4", "@embroider/addon-shim@^1.8.7", "@embroider/addon-shim@^1.8.9":
   version "1.9.0"
   resolved "https://registry.yarnpkg.com/@embroider/addon-shim/-/addon-shim-1.9.0.tgz#f729cfaf0f2d5f3c178808a546251743335c62f4"
   integrity sha512-fMzayl/licUL8VRAy4qXROKcYvHwUbV8aTh4m97L5/MRuVpxbcAy92DGGTqx5OBKCSQN3gMg+sUKeE6AviefpQ==
@@ -14676,7 +14676,7 @@ decompress-response@^6.0.0:
   dependencies:
     mimic-response "^3.1.0"
 
-decorator-transforms@^2.0.0:
+decorator-transforms@^2.0.0, decorator-transforms@^2.2.2:
   version "2.3.0"
   resolved "https://registry.yarnpkg.com/decorator-transforms/-/decorator-transforms-2.3.0.tgz#521d0617627e289dc47c2186787ac80390ee988a"
   integrity sha512-jo8c1ss9yFPudHuYYcrJ9jpkDZIoi+lOGvt+Uyp9B+dz32i50icRMx9Bfa8hEt7TnX1FyKWKkjV+cUdT/ep2kA==
@@ -16189,13 +16189,14 @@ ember-could-get-used-to-this@1.0.1:
     ember-cli-babel "^7.22.1"
     ember-cli-htmlbars "^4.2.0"
 
-ember-css-transitions@4.4.0:
-  version "4.4.0"
-  resolved "https://registry.yarnpkg.com/ember-css-transitions/-/ember-css-transitions-4.4.0.tgz#24664c86eb485785952ed6430e2a07ddb2d099d4"
-  integrity sha512-Ztnj7+TDpe8F4//VIB2fQJS4ZlPZPmbJXJMPENrZ3Kr262+wMXFM1NlCHfIfheyg1gTI/04AcdAhnK58JkAmQg==
+ember-css-transitions@4.4.1:
+  version "4.4.1"
+  resolved "https://registry.yarnpkg.com/ember-css-transitions/-/ember-css-transitions-4.4.1.tgz#d1d4dd8073d3213cb7415d7788558d30dabc92f1"
+  integrity sha512-QSUc+bDNMU/3vbJZuSWz14a4V/wQbHDq/zY37pzqzZRMXBANGwpjy+KXTyWqDqi1XeXvnMf2BX/nbjYSC3ycbg==
   dependencies:
-    "@ember/test-waiters" "^3.0.0"
-    "@embroider/addon-shim" "^1.8.3"
+    "@ember/test-waiters" "^3.1.0"
+    "@embroider/addon-shim" "^1.8.9"
+    decorator-transforms "^2.2.2"
     ember-modifier "^2.1.2 || ^3.1.0 || ^4.0.0"
 
 ember-data@3.24.0:
