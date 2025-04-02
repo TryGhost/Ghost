@@ -68,10 +68,12 @@ function useSlashCardMenu(editor) {
         }
         setIsShowingMenu(false);
         setQuery('');
-        setCommandParams([]);
+        if (commandParams.length > 0) {
+            setCommandParams([]);
+        }
         setScrollToSelectedItem(false);
         cachedRange.current = null;
-    }, [setIsShowingMenu]);
+    }, [setIsShowingMenu, commandParams]);
 
     const insert = React.useCallback((insertCommand, {insertParams = {}, queryParams = {}} = {}) => {
         const dataset = {...insertParams};
