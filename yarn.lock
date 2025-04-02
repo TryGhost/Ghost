@@ -15394,10 +15394,10 @@ ember-assign-polyfill@^2.6.0:
     ember-cli-babel "^7.20.5"
     ember-cli-version-checker "^2.0.0"
 
-ember-auto-import@2.8.1, "ember-auto-import@^1.12.1 || ^2.4.3", ember-auto-import@^2.2.3:
-  version "2.8.1"
-  resolved "https://registry.yarnpkg.com/ember-auto-import/-/ember-auto-import-2.8.1.tgz#03977e87ce178e6f9e4f89809185ff8f0fee9fcb"
-  integrity sha512-R5RpJmhycU6YKryzsIL/wP42r0e2PPfLRsFECoGvb1st2eEnU1Q7XyLVC1txd/XvURfu7x3Z7hKtZtYUxy61oQ==
+ember-auto-import@2.10.0, "ember-auto-import@^1.12.1 || ^2.4.3", ember-auto-import@^2.2.3:
+  version "2.10.0"
+  resolved "https://registry.yarnpkg.com/ember-auto-import/-/ember-auto-import-2.10.0.tgz#2a29b82335eba4375d115570cbe836666ed2e7cc"
+  integrity sha512-bcBFDYVTFHyqyq8BNvsj6UO3pE6Uqou/cNmee0WaqBgZ+1nQqFz0UE26usrtnFAT+YaFZSkqF2H36QW84k0/cg==
   dependencies:
     "@babel/core" "^7.16.7"
     "@babel/plugin-proposal-class-properties" "^7.16.7"
