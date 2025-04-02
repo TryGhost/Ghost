@@ -14,9 +14,9 @@ test.describe('Mailgun settings', async () => {
 
         await page.goto('/');
 
-        const section = page.getByTestId('mailgun');
+        const section = page.getByTestId('bulk-email');
 
-        await expect(section.getByText('Mailgun is not set up')).toHaveCount(1);
+        await expect(section.getByText('Email provider is not set up')).toHaveCount(1);
 
         await section.getByRole('button', {name: 'Edit'}).click();
 

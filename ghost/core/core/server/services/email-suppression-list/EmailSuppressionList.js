@@ -5,17 +5,17 @@ const logging = require('@tryghost/logging');
 const models = require('../../models');
 
 /**
- * @typedef {object} IMailgunAPIClient
+ * @typedef {object} IEmailAPIClient
  * @prop {(email: string) => Promise<any>} removeBounce
  * @prop {(email: string) => Promise<any>} removeComplaint
  * @prop {(email: string) => Promise<any>} removeUnsubscribe
  */
 
-class MailgunEmailSuppressionList extends AbstractEmailSuppressionList {
+class EmailSuppressionList extends AbstractEmailSuppressionList {
     /**
      * @param {object} deps
      * @param {import('bookshelf').Model} deps.Suppression
-     * @param {IMailgunAPIClient} deps.apiClient
+     * @param {IEmailAPIClient} deps.apiClient
      */
     constructor(deps) {
         super();
@@ -138,4 +138,4 @@ class MailgunEmailSuppressionList extends AbstractEmailSuppressionList {
     }
 }
 
-module.exports = MailgunEmailSuppressionList;
+module.exports = EmailSuppressionList;
