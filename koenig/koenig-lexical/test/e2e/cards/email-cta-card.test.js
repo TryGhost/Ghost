@@ -30,7 +30,7 @@ test.describe('Email card', async () => {
         await focusEditor(page);
         await page.keyboard.press('/');
         await page.keyboard.type('cta');
-        await expect(page.locator('[data-kg-card-menu-item="Call to Action"]')).toBeVisible();
+        await expect(page.locator('[data-kg-card-menu-item="Call to action"]')).toBeVisible();
         await expect(page.locator('[data-kg-card-menu-item="Email call to action"]')).not.toBeVisible();
     });
 
@@ -40,7 +40,7 @@ test.describe('Email card', async () => {
         await focusEditor(page);
         await page.keyboard.press('/');
         await page.keyboard.type('cta');
-        await expect(page.locator('[data-kg-card-menu-item="Call to Action"]')).toBeVisible();
+        await expect(page.locator('[data-kg-card-menu-item="Call to action"]')).toBeVisible();
         await expect(page.locator('[data-kg-card-menu-item="Email call to action"]')).toBeVisible();
     });
 
@@ -50,7 +50,7 @@ test.describe('Email card', async () => {
         await page.keyboard.press('/');
         await page.keyboard.type('cta');
         await expect(page.locator('[data-kg-card-menu-item="Email call to action"]')).toBeVisible();
-        await expect(page.locator('[data-kg-card-menu-item="Call to Action"]')).not.toBeVisible();
+        await expect(page.locator('[data-kg-card-menu-item="Call to action"]')).not.toBeVisible();
     });
 
     test.describe('import JSON', async () => {

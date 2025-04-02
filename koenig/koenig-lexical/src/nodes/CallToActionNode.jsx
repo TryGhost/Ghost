@@ -17,11 +17,11 @@ export class CallToActionNode extends BaseCallToActionNode {
     __sponsorLabelHtmlEditorInitialState;
 
     static kgMenu = {
-        label: 'Call to Action',
+        label: 'Call to action',
         desc: 'Add a call to action to your post',
         Icon: EmailCtaCardIcon,
         insertCommand: INSERT_CALL_TO_ACTION_COMMAND,
-        matches: ['cta', 'call-to-action'],
+        matches: ['cta', 'call-to-action', 'email', 'email-cta'],
         priority: 10,
         shortcut: '/cta',
         isHidden: ({config}) => {
