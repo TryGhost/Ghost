@@ -4,7 +4,7 @@ import {Button, Heading, Icon, List, LoadingIndicator, NoValueLabel, Tab,TabView
 import {UseInfiniteQueryResult} from '@tanstack/react-query';
 
 import {type GetProfileFollowersResponse, type GetProfileFollowingResponse} from '../../api/activitypub';
-import {useAccountForUser, usePostsLikedByAccount, useProfileFollowersForUser, useProfileFollowingForUser, useProfileForUser, useProfilePostsForUser} from '@hooks/use-activity-pub-queries';
+import {useAccountForUser, usePostsLikedByAccount, useProfileFollowersForUser, useProfileFollowingForUser, useProfilePostsForUser} from '@hooks/use-activity-pub-queries';
 
 import APAvatar from '@src/components/global/APAvatar';
 import ActivityItem from '@src/components/activities/ActivityItem';
@@ -351,18 +351,18 @@ const Profile: React.FC = () => {
     }, [urlHandle]);
 
     // Get current user's handle if no handle provided in URL
-    const {data: currentUser, isLoading: isLoadingCurrentUser} = useAccountForUser('index');
+    const {data: currentUser, isLoading: isLoadingCurrentUser} = useAccountForUser('index', 'me');
     const handle = urlHandle || currentUser?.handle || '';
 
     // Only call useProfileForUser when we have a valid handle
-    const {data: profile, isLoading: isLoadingProfile} = useProfileForUser('index', handle, Boolean(handle));
+    const {data: profile, isLoading: isLoadingProfile} = useAccountForUser('index', handle);
     const isCurrentUser = profile?.handle === currentUser?.handle;
 
     const isLoading = isLoadingCurrentUser || isLoadingProfile;
 
-    const attachments = (profile?.actor.attachment || []);
+    const attachments = (profile?.attachment || []);
 
-    const tabs = isLoading === false && typeof profile !== 'string' && profile ? [
+    const tabs = isLoading === false && profile ? [
         {
             id: 'posts',
             title: 'Posts',
@@ -425,12 +425,12 @@ const Profile: React.FC = () => {
                     )}
                     {!isLoading && profile && (
                         <>
-                            {profile.actor.image ?
+                            {profile.avatarUrl ?
                                 <div className='h-[15vw] w-full overflow-hidden bg-gradient-to-tr from-gray-200 to-gray-100'>
                                     <img
-                                        alt={profile.actor.name}
+                                        alt={profile.name}
                                         className='size-full object-cover'
-                                        src={profile.actor.image.url}
+                                        src={profile.avatarUrl}
                                     />
                                 </div>
                                 :
@@ -440,13 +440,21 @@ const Profile: React.FC = () => {
                                 <div className='flex items-end justify-between'>
                                     <div className='-ml-2 rounded-full bg-white p-1 dark:bg-black'>
                                         <APAvatar
-                                            author={profile.actor}
+                                            author={
+                                                {
+                                                    icon: {
+                                                        url: profile.avatarUrl
+                                                    },
+                                                    name: profile.name,
+                                                    handle: profile.handle
+                                                }
+                                            }
                                             size='lg'
                                         />
                                     </div>
                                     {!isCurrentUser &&
                                         <FollowButton
-                                            following={profile.isFollowing}
+                                            following={profile.followedByMe}
                                             handle={profile.handle}
                                             type='primary'
                                             onFollow={noop}
@@ -454,11 +462,11 @@ const Profile: React.FC = () => {
                                         />
                                     }
                                 </div>
-                                <Heading className='mt-4' level={3}>{profile.actor.name}</Heading>
-                                <a className='group/handle mt-1 flex items-center gap-1 text-[1.5rem] text-gray-800 hover:text-gray-900' href={profile?.actor.url} rel='noopener noreferrer' target='_blank'><span>{profile.handle}</span><Icon className='opacity-0 transition-opacity group-hover/handle:opacity-100' name='arrow-top-right' size='xs'/></a>
-                                {(profile.actor.summary || attachments.length > 0) && (<div ref={contentRef} className={`ap-profile-content transition-max-height relative text-[1.5rem] duration-300 ease-in-out [&>p]:mb-3 ${isExpanded ? 'max-h-none pb-7' : 'max-h-[160px] overflow-hidden'} relative`}>
+                                <Heading className='mt-4' level={3}>{profile.name}</Heading>
+                                <a className='group/handle mt-1 flex items-center gap-1 text-[1.5rem] text-gray-800 hover:text-gray-900' href={profile.url} rel='noopener noreferrer' target='_blank'><span>{profile.handle}</span><Icon className='opacity-0 transition-opacity group-hover/handle:opacity-100' name='arrow-top-right' size='xs'/></a>
+                                {(profile.bio || attachments.length > 0) && (<div ref={contentRef} className={`ap-profile-content transition-max-height relative text-[1.5rem] duration-300 ease-in-out [&>p]:mb-3 ${isExpanded ? 'max-h-none pb-7' : 'max-h-[160px] overflow-hidden'} relative`}>
                                     <div
-                                        dangerouslySetInnerHTML={{__html: profile.actor.summary}}
+                                        dangerouslySetInnerHTML={{__html: profile.bio}}
                                         className='ap-profile-content mt-3 text-[1.5rem] [&>p]:mb-3'
                                     />
                                     {attachments.map((attachment: {name: string, value: string}) => (

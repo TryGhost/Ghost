@@ -169,43 +169,6 @@ describe('ActivityPubAPI', function () {
         });
     });
 
-    describe('getProfile', function () {
-        test('It returns a profile', async function () {
-            const handle = '@foo@bar.baz';
-
-            const fakeFetch = Fetch({
-                'https://auth.api/': {
-                    response: JSONResponse({
-                        identities: [{
-                            token: 'fake-token'
-                        }]
-                    })
-                },
-                [`https://activitypub.api/.ghost/activitypub/profile/${handle}`]: {
-                    response: JSONResponse({
-                        handle,
-                        name: 'Foo Bar'
-                    })
-                }
-            });
-
-            const api = new ActivityPubAPI(
-                new URL('https://activitypub.api'),
-                new URL('https://auth.api'),
-                'index',
-                fakeFetch
-            );
-
-            const actual = await api.getProfile(handle);
-            const expected = {
-                handle,
-                name: 'Foo Bar'
-            };
-
-            expect(actual).toEqual(expected);
-        });
-    });
-
     describe('getProfileFollowers', function () {
         test('It returns an array of followers for a profile', async function () {
             const handle = '@foo@bar.baz';

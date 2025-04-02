@@ -6,14 +6,6 @@ export type Actor = any;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type Activity = any;
 
-export interface Profile {
-    actor: Actor;
-    handle: string;
-    followerCount: number;
-    followingCount: number;
-    isFollowing: boolean;
-}
-
 export interface Account {
     id: string;
     name: string;
@@ -29,6 +21,7 @@ export interface Account {
     followerCount: number;
     followsMe: boolean;
     followedByMe: boolean;
+    attachment: {name: string, value: string}[];
 }
 
 export type AccountSearchResult = Pick<
@@ -269,12 +262,6 @@ export class ActivityPubAPI {
         };
     }
 
-    async getProfile(handle: string): Promise<Profile> {
-        const url = new URL(`.ghost/activitypub/profile/${handle}`, this.apiUrl);
-        const json = await this.fetchJSON(url);
-        return json as Profile;
-    }
-
     async getProfileFollowers(handle: string, next?: string): Promise<GetProfileFollowersResponse> {
         const url = new URL(`.ghost/activitypub/profile/${handle}/followers`, this.apiUrl);
         if (next) {
@@ -374,12 +361,9 @@ export class ActivityPubAPI {
         return json as Thread;
     }
 
-    get accountApiUrl() {
-        return new URL(`.ghost/activitypub/account/${this.handle}`, this.apiUrl);
-    }
-
-    async getAccount(): Promise<GetAccountResponse> {
-        const json = await this.fetchJSON(this.accountApiUrl);
+    async getAccount(handle: string): Promise<GetAccountResponse> {        
+        const url = new URL(`.ghost/activitypub/account/${handle}`, this.apiUrl);
+        const json = await this.fetchJSON(url);
 
         return json as GetAccountResponse;
     }
