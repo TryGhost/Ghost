@@ -158,17 +158,18 @@ if [[ -n "${test_name:-}" ]]; then
 else
     # If no test name provided, run all tests in parallel
     echo "Running tests in parallel using $jobs workers"
-    # Use parallel to run the tests, maintaining output order
+
+    # Run tests in parallel and store exit code directly
     find ./tests -name "*.test" -print0 | \
         parallel -0 --jobs "$jobs" --keep-order --line-buffer \
-        'run_test {} || echo "PARALLEL_TEST_FAILED"' | \
-        tee >(if grep -q "PARALLEL_TEST_FAILED"; then exit 1; fi)
-    fail=${PIPESTATUS[1]}
-fi
+        'run_test {}'
+    fail=$?
+    echo "Parallel exit code: $fail"
 
-if [ $fail == 1 ]; then
-    echo "🚨 ERROR: Some tests failed"
-    exit 1
+    if [ $fail -ne 0 ]; then
+        echo "🚨 ERROR: Some tests failed"
+        exit 1
+    fi
 fi
 
 # Calculate and display duration
