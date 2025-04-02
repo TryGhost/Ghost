@@ -1,7 +1,8 @@
 import CustomTooltipContent from '@src/components/chart/CustomTooltipContent';
 import React, {useState} from 'react';
 import {Card, CardContent, CardHeader, ChartConfig, ChartContainer, ChartTooltip, Recharts, Tabs, TabsList, TabsTrigger} from '@tryghost/shade';
-import {formatDisplayDate, formatDuration, formatNumber, formatQueryDate} from '@src/utils/data-formatters';
+import {calculateYAxisWidth, getYTicks} from '@src/utils/chart-helpers';
+import {formatDisplayDate, formatDuration, formatNumber, formatPercentage, formatQueryDate} from '@src/utils/data-formatters';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useQuery} from '@tinybirdco/charts';
 
@@ -31,13 +32,41 @@ const KpiTabValue: React.FC<KpiTabValueProps> = ({label, value}) => {
     );
 };
 
-// TODO: clean up data formatters. It's all over the place ATM
+type KpiMetric = {
+    dataKey: string;
+    label: string;
+    formatter: (value: number) => string;
+};
+
+const KPI_METRICS: Record<string, KpiMetric> = {
+    visits: {
+        dataKey: 'visits',
+        label: 'Visits',
+        formatter: formatNumber
+    },
+    views: {
+        dataKey: 'pageviews',
+        label: 'Pageviews',
+        formatter: formatNumber
+    },
+    'bounce-rate': {
+        dataKey: 'bounce_rate',
+        label: 'Bounce rate',
+        formatter: formatPercentage
+    },
+    'visit-duration': {
+        dataKey: 'avg_session_sec',
+        label: 'Visit duration',
+        formatter: formatDuration
+    }
+};
 
 const Kpis:React.FC = () => {
     const {data: configData, isLoading: isConfigLoading} = useGlobalData();
     const [currentTab, setCurrentTab] = useState('visits');
 
     // Calculate last 30 days range
+    // TODO: move this to a selectable date range
     const today = new Date();
     const thirtyDaysAgo = new Date(today);
     thirtyDaysAgo.setDate(today.getDate() - 30);
@@ -56,52 +85,15 @@ const Kpis:React.FC = () => {
 
     const isLoading = isConfigLoading || loading;
 
-    // TODO: update this to use non-hardcoded setup
-    let dataKey = '';
-    let dataLabel = '';
-    switch (currentTab) {
-    case 'visits':
-        dataKey = 'visits';
-        dataLabel = 'Visits';
-        break;
-    case 'views':
-        dataKey = 'pageviews';
-        dataLabel = 'Pageviews';
-        break;
-    case 'bounce-rate':
-        dataKey = 'bounce_rate';
-        dataLabel = 'Bounce rate';
-        break;
-    case 'visit-duration':
-        dataKey = 'avg_session_sec';
-        dataLabel = 'Visit duration';
-        break;
-    }
+    const currentMetric = KPI_METRICS[currentTab];
 
     const chartData = data?.map((item) => {
-        const value = Number(item[dataKey]);
-        let formattedValue;
-
-        switch (currentTab) {
-        case 'bounce-rate':
-            formattedValue = `${Math.round(value * 100)}%`;
-            break;
-        case 'visit-duration':
-            formattedValue = formatDuration(value);
-            break;
-        case 'visits':
-        case 'views':
-            formattedValue = formatNumber(value);
-            break;
-        default:
-            formattedValue = value.toLocaleString();
-        }
-
+        const value = Number(item[currentMetric.dataKey]);
         return {
             date: item.date,
             value,
-            formattedValue,
-            label: dataLabel
+            formattedValue: currentMetric.formatter(value),
+            label: currentMetric.label
         };
     });
 
@@ -119,65 +111,16 @@ const Kpis:React.FC = () => {
         return {
             visits: formatNumber(totalVisits),
             views: formatNumber(totalViews),
-            bounceRate: `${Math.round(avgBounceRate * 100)}%`,
+            bounceRate: formatPercentage(avgBounceRate),
             duration: formatDuration(avgDuration)
         };
     };
 
     const kpiValues = getKpiValues();
 
-    // TODO: move these out to Chart helper functions
-    const getYTicks = () => {
-        if (!chartData?.length) {
-            return [];
-        }
-        const values = chartData.map(d => Number(d.value));
-        const max = Math.max(...values);
-        const min = Math.min(...values);
-        const step = Math.pow(10, Math.floor(Math.log10(max - min)));
-        const ticks = [];
-        for (let i = Math.floor(min / step) * step; i <= Math.ceil(max / step) * step; i += step) {
-            ticks.push(i);
-        }
-        return ticks;
-    };
-
-    const calculateYAxisWidth = () => {
-        const ticks = getYTicks();
-        if (!ticks.length) {
-            return 40;
-        }
-
-        const formatValue = (value: number) => {
-            switch (currentTab) {
-            case 'bounce-rate':
-                return `${Math.round(value * 100)}%`;
-            case 'visit-duration':
-                return formatDuration(value);
-            case 'visits':
-            case 'views':
-                return formatNumber(value);
-            default:
-                return value.toLocaleString();
-            }
-        };
-
-        // Get the longest formatted tick value
-        const maxFormattedLength = Math.max(...ticks.map(tick => formatValue(tick).length));
-
-        // Approximate width based on character count (assuming monospace font)
-        // Add padding for safety
-        const width = Math.max(20, maxFormattedLength * 8 + 8);
-        return width;
-    };
-
-    // console.log('Chart Data:', chartData);
-    // console.log('First date:', chartData?.[0]?.date);
-    // console.log('Last date:', chartData?.[chartData?.length - 1]?.date);
-
     const chartConfig = {
         value: {
-            label: dataLabel
+            label: currentMetric.label
         }
     } satisfies ChartConfig;
 
@@ -235,7 +178,7 @@ const Kpis:React.FC = () => {
                                     tickFormatter={(value) => {
                                         switch (currentTab) {
                                         case 'bounce-rate':
-                                            return `${Math.round(value * 100)}%`;
+                                            return formatPercentage(value);
                                         case 'visit-duration':
                                             return formatDuration(value);
                                         case 'visits':
@@ -246,8 +189,8 @@ const Kpis:React.FC = () => {
                                         }
                                     }}
                                     tickLine={false}
-                                    ticks={getYTicks()}
-                                    width={calculateYAxisWidth()}
+                                    ticks={getYTicks(chartData || [])}
+                                    width={calculateYAxisWidth(getYTicks(chartData || []), currentMetric.formatter)}
                                 />
                                 <ChartTooltip
                                     content={<CustomTooltipContent />}

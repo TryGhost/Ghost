@@ -1,16 +1,3 @@
-export const formatChartValue = (value: number, type: string) => {
-    switch (type) {
-    case 'percentage':
-        return Math.round(value * 100);
-    case 'duration':
-        return formatDuration(value);
-    case 'number':
-        return formatNumber(value);
-    default:
-        return value;
-    }
-};
-
 export const formatQueryDate = (date: Date) => {
     return date.toISOString().split('T')[0];
 };
@@ -50,4 +37,8 @@ export const formatDuration = (seconds: number): string => {
     }
 
     return `${hours}:${minutes}:${remainingSeconds}`;
+};
+
+export const formatPercentage = (value: number) => {
+    return `${Math.round(value * 100)}%`;
 };
