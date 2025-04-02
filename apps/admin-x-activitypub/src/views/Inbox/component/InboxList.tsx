@@ -7,25 +7,23 @@ import {EmptyViewIcon, EmptyViewIndicator} from '@src/components/global/EmptyVie
 import {LoadingIndicator} from '@tryghost/admin-x-design-system';
 import {handleViewContent} from '@src/utils/content-handlers';
 import {isPendingActivity} from '@src/utils/pending-activity';
-import {useEffect, useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import {useFeatureFlags} from '@src/lib/feature-flags';
 import {useNavigate, useNavigationStack, useParams} from '@tryghost/admin-x-framework';
 
 export type InboxListProps = {
     isLoading: boolean,
     activities: Activity[],
-    loadMoreIndex: number,
-    loadMoreRef: React.RefObject<HTMLDivElement>,
-    endLoadMoreRef: React.RefObject<HTMLDivElement>,
+    fetchNextPage: () => void,
+    hasNextPage: boolean,
     isFetchingNextPage: boolean
 }
 
 const InboxList:React.FC<InboxListProps> = ({
     isLoading,
     activities,
-    loadMoreIndex,
-    loadMoreRef,
-    endLoadMoreRef,
+    fetchNextPage,
+    hasNextPage,
     isFetchingNextPage
 }) => {
     const navigate = useNavigate();
@@ -37,6 +35,39 @@ const InboxList:React.FC<InboxListProps> = ({
     useEffect(() => {
         setIsReaderOpen(!!params.postId);
     }, [params.postId]);
+
+    const observerRef = useRef<IntersectionObserver | null>(null);
+    const loadMoreRef = useRef<HTMLDivElement | null>(null);
+    const endLoadMoreRef = useRef<HTMLDivElement | null>(null);
+
+    useEffect(() => {
+        if (observerRef.current) {
+            observerRef.current.disconnect();
+        }
+
+        observerRef.current = new IntersectionObserver((entries) => {
+            if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+                fetchNextPage();
+            }
+        });
+
+        if (loadMoreRef.current) {
+            observerRef.current.observe(loadMoreRef.current);
+        }
+
+        if (endLoadMoreRef.current) {
+            observerRef.current.observe(endLoadMoreRef.current);
+        }
+
+        return () => {
+            if (observerRef.current) {
+                observerRef.current.disconnect();
+            }
+        };
+    }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+    // Calculate the index at which to place the loadMoreRef - This will place it ~75% through the list
+    const loadMoreIndex = Math.max(0, Math.floor(activities.length * 0.75) - 1);
 
     return (
         <Layout>
