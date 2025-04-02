@@ -1,9 +1,6 @@
-select
-    row_number() over () as row_num,
-    dense_rank() over (order by session_id) as session_num,
-    *
-from (
-select timestamp, session_id, browser, os, device, location, pathname from _mv_hits__v${TB_VERSION:-0}
+select h.timestamp, h.session_id, h.browser, h.os, h.device, h.location, h.pathname, s.source
+from _mv_hits__v${TB_VERSION:-0} h
+    join mv_session_data__v${TB_VERSION:-0} s
+        on _mv_hits__v${TB_VERSION:-0}.session_id = mv_session_data__v${TB_VERSION:-0}.session_id
 where browser = 'chrome'
-order by session_id, timestamp
-)
+order by timestamp
