@@ -26,6 +26,7 @@ RUN curl -s https://packages.stripe.dev/api/security/keypair/stripe-cli-gpg/publ
     apt install -y \
     git \
     stripe \
+    parallel \
     python3-pip \
     procps && \
     rm -rf /var/lib/apt/lists/* && \
