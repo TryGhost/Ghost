@@ -26,6 +26,7 @@ RUN curl -s https://packages.stripe.dev/api/security/keypair/stripe-cli-gpg/publ
     apt install -y \
     git \
     stripe \
+    parallel \
     python3-pip \
     procps && \
     rm -rf /var/lib/apt/lists/* && \
@@ -53,6 +54,7 @@ ENV NX_REJECT_UNKNOWN_LOCAL_CACHE=false
 COPY package.json yarn.lock ./
 
 # Copy all package.json files
+COPY apps/stats/package.json apps/stats/package.json
 COPY apps/admin-x-activitypub/package.json apps/admin-x-activitypub/package.json
 COPY apps/admin-x-demo/package.json apps/admin-x-demo/package.json
 COPY apps/admin-x-design-system/package.json apps/admin-x-design-system/package.json
@@ -70,7 +72,6 @@ COPY ghost/admin/lib/asset-delivery/package.json ghost/admin/lib/asset-delivery/
 COPY ghost/admin/lib/ember-power-calendar-moment/package.json ghost/admin/lib/ember-power-calendar-moment/package.json
 COPY ghost/admin/lib/ember-power-calendar-utils/package.json ghost/admin/lib/ember-power-calendar-utils/package.json
 COPY ghost/admin/package.json ghost/admin/package.json
-COPY ghost/announcement-bar-settings/package.json ghost/announcement-bar-settings/package.json
 COPY ghost/api-framework/package.json ghost/api-framework/package.json
 COPY ghost/constants/package.json ghost/constants/package.json
 COPY ghost/core/package.json ghost/core/package.json

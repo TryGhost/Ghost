@@ -56,13 +56,10 @@ services:
       - node_modules_ghost_member-events:/home/ghost/ghost/member-events/node_modules:delegated
       - node_modules_ghost_members-api:/home/ghost/ghost/members-api/node_modules:delegated
       - node_modules_ghost_members-csv:/home/ghost/ghost/members-csv/node_modules:delegated
-      - node_modules_ghost_metrics-server:/home/ghost/ghost/metrics-server/node_modules:delegated
       - node_modules_ghost_milestones:/home/ghost/ghost/milestones/node_modules:delegated
       - node_modules_ghost_minifier:/home/ghost/ghost/minifier/node_modules:delegated
-      - node_modules_ghost_model-to-domain-event-interceptor:/home/ghost/ghost/model-to-domain-event-interceptor/node_modules:delegated
       - node_modules_ghost_mw-error-handler:/home/ghost/ghost/mw-error-handler/node_modules:delegated
       - node_modules_ghost_mw-vhost:/home/ghost/ghost/mw-vhost/node_modules:delegated
-      - node_modules_ghost_nql-filter-expansions:/home/ghost/ghost/nql-filter-expansions/node_modules:delegated
       - node_modules_ghost_offers:/home/ghost/ghost/offers/node_modules:delegated
       - node_modules_ghost_post-events:/home/ghost/ghost/post-events/node_modules:delegated
       - node_modules_ghost_post-revisions:/home/ghost/ghost/post-revisions/node_modules:delegated
@@ -84,6 +81,7 @@ services:
       - node_modules_apps_shade:/home/ghost/apps/shade/node_modules:delegated
       - node_modules_apps_signup-form:/home/ghost/apps/signup-form/node_modules:delegated
       - node_modules_apps_sodo-search:/home/ghost/apps/sodo-search/node_modules:delegated
+      - node_modules_apps_stats:/home/ghost/apps/stats/node_modules:delegated
     tty: true
     depends_on:
       mysql:
@@ -102,7 +100,9 @@ services:
   mysql:
     image: mysql:8.0.35
     container_name: ghost-mysql
-    command: --innodb-buffer-pool-size=1G --innodb-log-buffer-size=500M --innodb-change-buffer-max-size=50 --innodb-flush-log-at-trx_commit=0 --innodb-flush-method=O_DIRECT
+    command: --innodb-buffer-pool-size=1G --innodb-log-buffer-size=500M
+      --innodb-change-buffer-max-size=50 --innodb-flush-log-at-trx_commit=0
+      --innodb-flush-method=O_DIRECT
     ports:
       - 3306:3306
     environment:
@@ -190,13 +190,10 @@ volumes:
   node_modules_ghost_member-events: {}
   node_modules_ghost_members-api: {}
   node_modules_ghost_members-csv: {}
-  node_modules_ghost_metrics-server: {}
   node_modules_ghost_milestones: {}
   node_modules_ghost_minifier: {}
-  node_modules_ghost_model-to-domain-event-interceptor: {}
   node_modules_ghost_mw-error-handler: {}
   node_modules_ghost_mw-vhost: {}
-  node_modules_ghost_nql-filter-expansions: {}
   node_modules_ghost_offers: {}
   node_modules_ghost_post-events: {}
   node_modules_ghost_post-revisions: {}
@@ -218,3 +215,4 @@ volumes:
   node_modules_apps_shade: {}
   node_modules_apps_signup-form: {}
   node_modules_apps_sodo-search: {}
+  node_modules_apps_stats: {}
