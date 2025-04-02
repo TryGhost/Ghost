@@ -61,7 +61,7 @@
   "dependencies": {
     "@extractus/oembed-extractor": "3.2.1",
     "@isaacs/ttlcache": "1.4.1",
-    "@sentry/node": "7.119.2",
+    "@sentry/node": "7.120.3",
     "@slack/webhook": "7.0.5",
     "@tryghost/adapter-base-cache": "0.1.12",
     "@tryghost/adapter-cache-redis": "0.0.0",
@@ -252,7 +252,7 @@
     "should": "13.2.3",
     "sinon": "15.2.0",
     "supertest": "6.3.4",
-    "tmp": "0.2.1",
+    "tmp": "0.2.3",
     "toml": "3.0.0",
     "tsx": "4.19.3",
     "typescript": "5.8.2"

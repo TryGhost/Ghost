@@ -42,7 +42,8 @@ materialized_views=(
 )
 
 data_pipes=(
-    "mv_hits"
+    "mv_hits",
+    "filtered_sessions"
 )
 
 endpoint_pipes=(
