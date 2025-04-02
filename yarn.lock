@@ -2513,13 +2513,14 @@
     "@embroider/shared-internals" "^0.50.2"
     semver "^7.3.5"
 
-"@embroider/addon-shim@^1.8.3", "@embroider/addon-shim@^1.8.4":
-  version "1.8.4"
-  resolved "https://registry.yarnpkg.com/@embroider/addon-shim/-/addon-shim-1.8.4.tgz#0e7f32c5506bf0f3eb0840506e31c36c7053763c"
-  integrity sha512-sFhfWC0vI18KxVenmswQ/ShIvBg4juL8ubI+Q3NTSdkCTeaPQ/DIOUF6oR5DCQ8eO/TkIaw+kdG3FkTY6yNJqA==
+"@embroider/addon-shim@^1.8.3", "@embroider/addon-shim@^1.8.4", "@embroider/addon-shim@^1.8.7":
+  version "1.9.0"
+  resolved "https://registry.yarnpkg.com/@embroider/addon-shim/-/addon-shim-1.9.0.tgz#f729cfaf0f2d5f3c178808a546251743335c62f4"
+  integrity sha512-fMzayl/licUL8VRAy4qXROKcYvHwUbV8aTh4m97L5/MRuVpxbcAy92DGGTqx5OBKCSQN3gMg+sUKeE6AviefpQ==
   dependencies:
-    "@embroider/shared-internals" "^2.0.0"
+    "@embroider/shared-internals" "^2.8.1"
     broccoli-funnel "^3.0.8"
+    common-ancestor-path "^1.0.1"
     semver "^7.3.8"
 
 "@embroider/core@0.29.0":
@@ -2637,7 +2638,7 @@
     semver "^7.3.5"
     typescript-memoize "^1.0.1"
 
-"@embroider/shared-internals@2.9.0", "@embroider/shared-internals@^2.0.0":
+"@embroider/shared-internals@2.9.0", "@embroider/shared-internals@^2.0.0", "@embroider/shared-internals@^2.8.1":
   version "2.9.0"
   resolved "https://registry.yarnpkg.com/@embroider/shared-internals/-/shared-internals-2.9.0.tgz#5d945b92e08db163de60d82f7c388e2b7260f0cc"
   integrity sha512-8untWEvGy6av/oYibqZWMz/yB+LHsKxEOoUZiLvcpFwWj2Sipc0DcXeTJQZQZ++otNkLCWyDrDhOLrOkgjOPSg==
@@ -13552,6 +13553,11 @@ commander@~11.1.0:
   resolved "https://registry.yarnpkg.com/commander/-/commander-11.1.0.tgz#62fdce76006a68e5c1ab3314dc92e800eb83d906"
   integrity sha512-yPVavfyCcRhmorC7rWlkHn15b4wDVgVmBA7kV4QVBsF7kv/9TKJAbAXVTxvTnwP8HHKjRCJDClKbciiYS7p0DQ==
 
+common-ancestor-path@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/common-ancestor-path/-/common-ancestor-path-1.0.1.tgz#4f7d2d1394d91b7abdf51871c62f71eadb0182a7"
+  integrity sha512-L3sHRo1pXXEqX8VU28kfgUY+YGsk09hPqZiZmLacNib6XNTCM8ubYeT7ryXQw8asB1sKgcU5lkB7ONug08aB8w==
+
 common-tags@1.8.2, common-tags@^1.8.0, common-tags@^1.8.2:
   version "1.8.2"
   resolved "https://registry.yarnpkg.com/common-tags/-/common-tags-1.8.2.tgz#94ebb3c076d26032745fd54face7f688ef5ac9c6"
@@ -15336,13 +15342,12 @@ ember-ajax@5.1.2:
     ember-cli-babel "^7.5.0"
     najax "^1.0.7"
 
-ember-assign-helper@0.4.0, ember-assign-helper@^0.4.0:
-  version "0.4.0"
-  resolved "https://registry.yarnpkg.com/ember-assign-helper/-/ember-assign-helper-0.4.0.tgz#f0a313033656c0d2cbbcb29d55b9cd13f04bc7c1"
-  integrity sha512-GKHhT4HD2fhtDnuBk6eCdCA8XGew9hY7TVs8zjrykegiI7weC0CGtpJscmIG3O0gEEb0d07UTkF2pjfNGLx4Nw==
+ember-assign-helper@0.5.0:
+  version "0.5.0"
+  resolved "https://registry.yarnpkg.com/ember-assign-helper/-/ember-assign-helper-0.5.0.tgz#73de4e2a96922162db78ab600038010d04773a89"
+  integrity sha512-swH7FqmqB5iSeoKlU6X41iqw5HQ+EdBDyFDXmwytTyUd5GRvfGfZUn2SMUUGdyvo5FxXJWqMJ0rBT//EcGC0+Q==
   dependencies:
-    ember-cli-babel "^7.26.0"
-    ember-cli-htmlbars "^6.0.0"
+    "@embroider/addon-shim" "^1.8.7"
 
 ember-assign-helper@^0.3.0:
   version "0.3.0"
@@ -15351,6 +15356,14 @@ ember-assign-helper@^0.3.0:
   dependencies:
     ember-cli-babel "^7.19.0"
     ember-cli-htmlbars "^4.3.1"
+
+ember-assign-helper@^0.4.0:
+  version "0.4.0"
+  resolved "https://registry.yarnpkg.com/ember-assign-helper/-/ember-assign-helper-0.4.0.tgz#f0a313033656c0d2cbbcb29d55b9cd13f04bc7c1"
+  integrity sha512-GKHhT4HD2fhtDnuBk6eCdCA8XGew9hY7TVs8zjrykegiI7weC0CGtpJscmIG3O0gEEb0d07UTkF2pjfNGLx4Nw==
+  dependencies:
+    ember-cli-babel "^7.26.0"
+    ember-cli-htmlbars "^6.0.0"
 
 ember-assign-polyfill@^2.6.0:
   version "2.7.2"
