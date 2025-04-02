@@ -304,7 +304,7 @@ test.describe('Product card', async () => {
                         </div>
                     </div>
                     <div>
-                        <div draggable="true">
+                        <div data-kg-settings-panel="true" draggable="true">
                             <label>
                                 <div><div>Rating</div></div>
                                 <div>
@@ -715,7 +715,7 @@ test.describe('Product card', async () => {
                         </div>
                     </div>
                     <div>
-                        <div draggable="true">
+                        <div data-kg-settings-panel="true" draggable="true">
                             <label>
                                 <div><div>Rating</div></div>
                                 <div>

@@ -315,7 +315,7 @@ test.describe('Email card', async () => {
                     <hr />
                 </div>
                 <div>
-                    <div draggable="true">
+                    <div data-kg-settings-panel="true" draggable="true">
                         <div>
                             <div>Visibility</div>
                             <div>

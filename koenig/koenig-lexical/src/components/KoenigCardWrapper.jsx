@@ -54,7 +54,7 @@ const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, childre
                         const cardNode = $getNodeByKey(nodeKey);
                         const clickedDifferentEditor = !cardNode;
                         const clickedToolbar = event.target.closest('[data-kg-allow-clickthrough="false"]');
-                        const clickedSettingsPanel = event.target.closest('[data-testid="settings-panel"]');
+                        const clickedSettingsPanel = event.target.closest('[data-kg-settings-panel]');
 
                         if (isSelected && (cardNode?.hasEditMode?.() && !isEditing && !clickedToolbar && !clickedSettingsPanel)) {
                             editor.dispatchCommand(EDIT_CARD_COMMAND, {cardKey: nodeKey, focusEditor: !clickedDifferentEditor});
