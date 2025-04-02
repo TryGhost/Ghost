@@ -1,4 +1,3 @@
-import React from 'react';
 import {
     type Account,
     type AccountFollowsType,
@@ -51,7 +50,6 @@ const QUERY_KEYS = {
     outbox: (handle: string) => ['outbox', handle],
     liked: (handle: string) => ['liked', handle],
     user: (handle: string) => ['user', handle],
-    profile: (handle: string) => ['profile', handle],
     profilePosts: (profileHandle: string | null) => {
         if (profileHandle === null) {
             return ['profile_posts'];
@@ -368,7 +366,7 @@ export function useUnfollowMutationForUser(handle: string, onSuccess: () => void
         },
         onSuccess(_, fullHandle) {
             // Update the "isFollowing" and "followerCount" properties of the profile being unfollowed
-            const profileQueryKey = QUERY_KEYS.profile(fullHandle);
+            const profileQueryKey = QUERY_KEYS.account(fullHandle);
 
             queryClient.setQueryData(profileQueryKey, (currentProfile?: {isFollowing: boolean, followerCount: number}) => {
                 if (!currentProfile) {
@@ -407,7 +405,7 @@ export function useUnfollowMutationForUser(handle: string, onSuccess: () => void
                     return oldData;
                 }
 
-                const currentAccount = queryClient.getQueryData<Account>(QUERY_KEYS.account('index'));
+                const currentAccount = queryClient.getQueryData<Account>(QUERY_KEYS.account('me'));
                 if (!currentAccount) {
                     return oldData;
                 }
@@ -450,7 +448,7 @@ export function useUnfollowMutationForUser(handle: string, onSuccess: () => void
             });
 
             // Update the "followingCount" property of the account performing the follow
-            const accountQueryKey = QUERY_KEYS.account('index');
+            const accountQueryKey = QUERY_KEYS.account('me');
 
             queryClient.setQueryData(accountQueryKey, (currentAccount?: { followingCount: number }) => {
                 if (!currentAccount) {
@@ -498,7 +496,7 @@ export function useFollowMutationForUser(handle: string, onSuccess: () => void, 
         },
         onSuccess(_, fullHandle) {
             // Update the "isFollowing" and "followerCount" properties of the profile being followed
-            const profileQueryKey = QUERY_KEYS.profile(fullHandle);
+            const profileQueryKey = QUERY_KEYS.account(fullHandle);
 
             queryClient.setQueryData(profileQueryKey, (currentProfile?: {isFollowing: boolean, followerCount: number}) => {
                 if (!currentProfile) {
@@ -513,7 +511,7 @@ export function useFollowMutationForUser(handle: string, onSuccess: () => void, 
             });
 
             // Update the "followingCount" property of the account performing the follow
-            const accountQueryKey = QUERY_KEYS.account('index');
+            const accountQueryKey = QUERY_KEYS.account('me');
 
             queryClient.setQueryData(accountQueryKey, (currentAccount?: { followingCount: number }) => {
                 if (!currentAccount) {
@@ -558,7 +556,7 @@ export function useFollowMutationForUser(handle: string, onSuccess: () => void, 
                     return oldData;
                 }
 
-                const currentAccount = queryClient.getQueryData<Account>(QUERY_KEYS.account('index'));
+                const currentAccount = queryClient.getQueryData<Account>(QUERY_KEYS.account('me'));
                 if (!currentAccount) {
                     return oldData;
                 }
@@ -1140,13 +1138,6 @@ export function useNoteMutationForUser(handle: string, actorProps?: ActorPropert
 }
 
 export function useAccountForUser(handle: string, profileHandle: string) {
-    const queryClient = useQueryClient();
-
-    // Invalidate the cache when profileHandle changes
-    React.useEffect(() => {
-        queryClient.invalidateQueries({queryKey: QUERY_KEYS.account(profileHandle)});
-    }, [profileHandle, queryClient]);
-
     return useQuery({
         queryKey: QUERY_KEYS.account(profileHandle),
         async queryFn() {

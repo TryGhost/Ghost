@@ -413,7 +413,7 @@ type ProfileTab = 'posts' | 'likes' | 'following' | 'followers';
 interface ProfileProps {}
 
 const Profile: React.FC<ProfileProps> = ({}) => {
-    const {data: account, isLoading: isLoadingAccount} = useAccountForUser('index', 'index');
+    const {data: account, isLoading: isLoadingAccount} = useAccountForUser('index', 'me');
 
     const [selectedTab, setSelectedTab] = useState<ProfileTab>('posts');
 

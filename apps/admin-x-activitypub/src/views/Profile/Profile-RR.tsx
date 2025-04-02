@@ -351,7 +351,7 @@ const Profile: React.FC = () => {
     }, [urlHandle]);
 
     // Get current user's handle if no handle provided in URL
-    const {data: currentUser, isLoading: isLoadingCurrentUser} = useAccountForUser('index', 'index');
+    const {data: currentUser, isLoading: isLoadingCurrentUser} = useAccountForUser('index', 'me');
     const handle = urlHandle || currentUser?.handle || '';
 
     // Only call useProfileForUser when we have a valid handle
