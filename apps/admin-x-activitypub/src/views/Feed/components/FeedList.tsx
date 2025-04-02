@@ -10,6 +10,7 @@ import {EmptyViewIcon, EmptyViewIndicator} from '@src/components/global/EmptyVie
 import {LoadingIndicator} from '@tryghost/admin-x-design-system';
 import {handleViewContent} from '@src/utils/content-handlers';
 import {isPendingActivity} from '@src/utils/pending-activity';
+import {useEffect, useRef} from 'react';
 import {useFeatureFlags} from '@src/lib/feature-flags';
 import {useNavigate} from '@tryghost/admin-x-framework';
 
@@ -17,9 +18,8 @@ export type FeedListProps = {
     isLoading: boolean,
     activities: Activity[],
     user: ActorProperties,
-    loadMoreIndex: number,
-    loadMoreRef: React.RefObject<HTMLDivElement>,
-    endLoadMoreRef: React.RefObject<HTMLDivElement>,
+    fetchNextPage: () => void,
+    hasNextPage: boolean,
     isFetchingNextPage: boolean
 }
 
@@ -27,13 +27,44 @@ const FeedList:React.FC<FeedListProps> = ({
     isLoading,
     activities,
     user,
-    loadMoreIndex,
-    loadMoreRef,
-    endLoadMoreRef,
+    fetchNextPage,
+    hasNextPage,
     isFetchingNextPage
 }) => {
     const navigate = useNavigate();
     const {isEnabled} = useFeatureFlags();
+
+    const observerRef = useRef<IntersectionObserver | null>(null);
+    const loadMoreRef = useRef<HTMLDivElement | null>(null);
+    const endLoadMoreRef = useRef<HTMLDivElement | null>(null);
+
+    useEffect(() => {
+        if (observerRef.current) {
+            observerRef.current.disconnect();
+        }
+
+        observerRef.current = new IntersectionObserver((entries) => {
+            if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+                fetchNextPage();
+            }
+        });
+
+        if (loadMoreRef.current) {
+            observerRef.current.observe(loadMoreRef.current);
+        }
+
+        if (endLoadMoreRef.current) {
+            observerRef.current.observe(endLoadMoreRef.current);
+        }
+
+        return () => {
+            if (observerRef.current) {
+                observerRef.current.disconnect();
+            }
+        };
+    }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+    const loadMoreIndex = Math.max(0, Math.floor(activities.length * 0.75) - 1);
 
     return (
         <Layout>
