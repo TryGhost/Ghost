@@ -84,9 +84,9 @@ export default class TopSources extends Component {
                                 style={{cursor: 'default'}}
                                 onClick={(e) => {
                                     e.preventDefault();
-                                //     this.navigateToFilter(label || 'direct');
+                                    this.navigateToFilter(label || 'direct');
                                 }}
-                                className="gh-stats-bar-text-nolink"
+                                className="gh-stats-bar-text"
                             >
                                 <img
                                     src={`https://www.faviconextractor.com/favicon/${label || 'direct'}?larger=true`}

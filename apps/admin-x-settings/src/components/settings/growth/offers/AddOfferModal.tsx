@@ -454,7 +454,7 @@ const AddOfferModal = () => {
     const handleAmountTypeChange = (amountType: string) => {
         updateForm(state => ({
             ...state,
-            type: amountType === 'percent' ? 'percent' : 'fixed' || state.type
+            type: amountType === 'percent' ? 'percent' : 'fixed'
         }));
     };
 

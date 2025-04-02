@@ -4,8 +4,7 @@ const MagicLink = require('@tryghost/magic-link');
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 
-const PaymentsService = require('@tryghost/members-payments');
-
+const PaymentsService = require('./services/PaymentsService');
 const TokenService = require('./services/TokenService');
 const GeolocationService = require('./services/GeolocationService');
 const MemberBREADService = require('./services/MemberBREADService');

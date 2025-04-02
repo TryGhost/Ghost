@@ -33,7 +33,6 @@ services:
       ## Prevent collisions between host and container node_modules
       - node_modules_ghost_root:/home/ghost/node_modules:delegated
       - node_modules_ghost_adapter-cache-redis:/home/ghost/ghost/adapter-cache-redis/node_modules:delegated
-      - node_modules_ghost_adapter-manager:/home/ghost/ghost/adapter-manager/node_modules:delegated
       - node_modules_ghost_admin:/home/ghost/ghost/admin/node_modules:delegated
       - node_modules_ghost_api-framework:/home/ghost/ghost/api-framework/node_modules:delegated
       - node_modules_ghost_constants:/home/ghost/ghost/constants/node_modules:delegated
@@ -44,20 +43,15 @@ services:
       - node_modules_ghost_domain-events:/home/ghost/ghost/domain-events/node_modules:delegated
       - node_modules_ghost_donations:/home/ghost/ghost/donations/node_modules:delegated
       - node_modules_ghost_email-addresses:/home/ghost/ghost/email-addresses/node_modules:delegated
-      - node_modules_ghost_email-content-generator:/home/ghost/ghost/email-content-generator/node_modules:delegated
-      - node_modules_ghost_email-events:/home/ghost/ghost/email-events/node_modules:delegated
       - node_modules_ghost_email-service:/home/ghost/ghost/email-service/node_modules:delegated
       - node_modules_ghost_email-suppression-list:/home/ghost/ghost/email-suppression-list/node_modules:delegated
-      - node_modules_ghost_express-dynamic-redirects:/home/ghost/ghost/express-dynamic-redirects/node_modules:delegated
       - node_modules_ghost_ghost:/home/ghost/ghost/ghost/node_modules:delegated
       - node_modules_ghost_html-to-plaintext:/home/ghost/ghost/html-to-plaintext/node_modules:delegated
       - node_modules_ghost_i18n:/home/ghost/ghost/i18n/node_modules:delegated
       - node_modules_ghost_in-memory-repository:/home/ghost/ghost/in-memory-repository/node_modules:delegated
       - node_modules_ghost_job-manager:/home/ghost/ghost/job-manager/node_modules:delegated
-      - node_modules_ghost_link-redirects:/home/ghost/ghost/link-redirects/node_modules:delegated
       - node_modules_ghost_link-replacer:/home/ghost/ghost/link-replacer/node_modules:delegated
       - node_modules_ghost_magic-link:/home/ghost/ghost/magic-link/node_modules:delegated
-      - node_modules_ghost_mailgun-client:/home/ghost/ghost/mailgun-client/node_modules:delegated
       - node_modules_ghost_member-attribution:/home/ghost/ghost/member-attribution/node_modules:delegated
       - node_modules_ghost_member-events:/home/ghost/ghost/member-events/node_modules:delegated
       - node_modules_ghost_members-api:/home/ghost/ghost/members-api/node_modules:delegated
@@ -70,14 +64,12 @@ services:
       - node_modules_ghost_mw-vhost:/home/ghost/ghost/mw-vhost/node_modules:delegated
       - node_modules_ghost_nql-filter-expansions:/home/ghost/ghost/nql-filter-expansions/node_modules:delegated
       - node_modules_ghost_offers:/home/ghost/ghost/offers/node_modules:delegated
-      - node_modules_ghost_payments:/home/ghost/ghost/payments/node_modules:delegated
       - node_modules_ghost_post-events:/home/ghost/ghost/post-events/node_modules:delegated
       - node_modules_ghost_post-revisions:/home/ghost/ghost/post-revisions/node_modules:delegated
       - node_modules_ghost_posts-service:/home/ghost/ghost/posts-service/node_modules:delegated
       - node_modules_ghost_prometheus-metrics:/home/ghost/ghost/prometheus-metrics/node_modules:delegated
       - node_modules_ghost_recommendations:/home/ghost/ghost/recommendations/node_modules:delegated
       - node_modules_ghost_security:/home/ghost/ghost/security/node_modules:delegated
-      - node_modules_ghost_slack-notifications:/home/ghost/ghost/slack-notifications/node_modules:delegated
       - node_modules_ghost_tiers:/home/ghost/ghost/tiers/node_modules:delegated
       - node_modules_ghost_webmentions:/home/ghost/ghost/webmentions/node_modules:delegated
       - node_modules_apps_admin-x-activitypub:/home/ghost/apps/admin-x-activitypub/node_modules:delegated
@@ -92,6 +84,7 @@ services:
       - node_modules_apps_shade:/home/ghost/apps/shade/node_modules:delegated
       - node_modules_apps_signup-form:/home/ghost/apps/signup-form/node_modules:delegated
       - node_modules_apps_sodo-search:/home/ghost/apps/sodo-search/node_modules:delegated
+      - node_modules_apps_stats:/home/ghost/apps/stats/node_modules:delegated
     tty: true
     depends_on:
       mysql:
@@ -103,13 +96,16 @@ services:
       - SSH_AUTH_SOCK=/ssh-agent
       - GHOST_DEV_IS_DOCKER=true
       - GHOST_DEV_APP_FLAGS=${GHOST_DEV_APP_FLAGS:-}
+      - GHOST_UPSTREAM=${GHOST_UPSTREAM:-}
       - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY:-}
       - STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY:-}
       - STRIPE_ACCOUNT_ID=${STRIPE_ACCOUNT_ID:-}
   mysql:
     image: mysql:8.0.35
     container_name: ghost-mysql
-    command: --innodb-buffer-pool-size=1G --innodb-log-buffer-size=500M --innodb-change-buffer-max-size=50 --innodb-flush-log-at-trx_commit=0 --innodb-flush-method=O_DIRECT
+    command: --innodb-buffer-pool-size=1G --innodb-log-buffer-size=500M
+      --innodb-change-buffer-max-size=50 --innodb-flush-log-at-trx_commit=0
+      --innodb-flush-method=O_DIRECT
     ports:
       - 3306:3306
     environment:
@@ -174,7 +170,6 @@ volumes:
   redis-data: {}
   node_modules_ghost_root: {}
   node_modules_ghost_adapter-cache-redis: {}
-  node_modules_ghost_adapter-manager: {}
   node_modules_ghost_admin: {}
   node_modules_ghost_api-framework: {}
   node_modules_ghost_constants: {}
@@ -185,20 +180,15 @@ volumes:
   node_modules_ghost_domain-events: {}
   node_modules_ghost_donations: {}
   node_modules_ghost_email-addresses: {}
-  node_modules_ghost_email-content-generator: {}
-  node_modules_ghost_email-events: {}
   node_modules_ghost_email-service: {}
   node_modules_ghost_email-suppression-list: {}
-  node_modules_ghost_express-dynamic-redirects: {}
   node_modules_ghost_ghost: {}
   node_modules_ghost_html-to-plaintext: {}
   node_modules_ghost_i18n: {}
   node_modules_ghost_in-memory-repository: {}
   node_modules_ghost_job-manager: {}
-  node_modules_ghost_link-redirects: {}
   node_modules_ghost_link-replacer: {}
   node_modules_ghost_magic-link: {}
-  node_modules_ghost_mailgun-client: {}
   node_modules_ghost_member-attribution: {}
   node_modules_ghost_member-events: {}
   node_modules_ghost_members-api: {}
@@ -211,14 +201,12 @@ volumes:
   node_modules_ghost_mw-vhost: {}
   node_modules_ghost_nql-filter-expansions: {}
   node_modules_ghost_offers: {}
-  node_modules_ghost_payments: {}
   node_modules_ghost_post-events: {}
   node_modules_ghost_post-revisions: {}
   node_modules_ghost_posts-service: {}
   node_modules_ghost_prometheus-metrics: {}
   node_modules_ghost_recommendations: {}
   node_modules_ghost_security: {}
-  node_modules_ghost_slack-notifications: {}
   node_modules_ghost_tiers: {}
   node_modules_ghost_webmentions: {}
   node_modules_apps_admin-x-activitypub: {}
@@ -233,3 +221,4 @@ volumes:
   node_modules_apps_shade: {}
   node_modules_apps_signup-form: {}
   node_modules_apps_sodo-search: {}
+  node_modules_apps_stats: {}

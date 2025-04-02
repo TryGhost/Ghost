@@ -3,8 +3,8 @@ import {useLocation} from '@tryghost/admin-x-framework';
 
 // Define all available feature flags here
 export const FEATURE_FLAGS = [
-    'notificationsV2',
-    'feed-routes'
+    'feed-routes',
+    'ap-routes'
 ] as const;
 
 // ---
