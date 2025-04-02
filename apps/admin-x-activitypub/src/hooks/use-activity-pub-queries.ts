@@ -368,14 +368,14 @@ export function useUnfollowMutationForUser(handle: string, onSuccess: () => void
             // Update the "isFollowing" and "followerCount" properties of the profile being unfollowed
             const profileQueryKey = QUERY_KEYS.account(fullHandle);
 
-            queryClient.setQueryData(profileQueryKey, (currentProfile?: {isFollowing: boolean, followerCount: number}) => {
+            queryClient.setQueryData(profileQueryKey, (currentProfile?: {followedByMe: boolean, followerCount: number}) => {
                 if (!currentProfile) {
                     return currentProfile;
                 }
 
                 return {
                     ...currentProfile,
-                    isFollowing: false,
+                    followedByMe: false,
                     followerCount: currentProfile.followerCount - 1 < 0 ? 0 : currentProfile.followerCount - 1
                 };
             });
@@ -442,7 +442,7 @@ export function useUnfollowMutationForUser(handle: string, onSuccess: () => void
                                 };
                             };
                             isFollowing: boolean;
-                        }) => follower.actor.id !== currentAccount.id)
+                        }) => follower.actor.name !== currentAccount.name)
                     }))
                 };
             });
@@ -498,14 +498,14 @@ export function useFollowMutationForUser(handle: string, onSuccess: () => void, 
             // Update the "isFollowing" and "followerCount" properties of the profile being followed
             const profileQueryKey = QUERY_KEYS.account(fullHandle);
 
-            queryClient.setQueryData(profileQueryKey, (currentProfile?: {isFollowing: boolean, followerCount: number}) => {
+            queryClient.setQueryData(profileQueryKey, (currentProfile?: {followedByMe: boolean, followerCount: number}) => {
                 if (!currentProfile) {
                     return currentProfile;
                 }
 
                 return {
                     ...currentProfile,
-                    isFollowing: true,
+                    followedByMe: true,
                     followerCount: currentProfile.followerCount + 1
                 };
             });
@@ -563,7 +563,7 @@ export function useFollowMutationForUser(handle: string, onSuccess: () => void, 
 
                 const newFollower = {
                     actor: {
-                        id: currentAccount.id,
+                        id: currentAccount.url,
                         type: 'Person',
                         preferredUsername: 'index',
                         name: currentAccount.name,
