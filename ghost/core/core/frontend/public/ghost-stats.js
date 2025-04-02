@@ -279,8 +279,23 @@
     const referrerMedium = utmMediumParam || null;
     const referrerUrl = window.document.referrer || null;
 
-    // Return based on priority
-    return referrerSource || referrerMedium || referrerUrl || null;
+    // Get the final referrer value based on priority
+    const finalReferrer = referrerSource || referrerMedium || referrerUrl || null;
+
+    // If the final referrer matches the current site's domain, return null
+    if (finalReferrer) {
+        try {
+            const referrerHost = new URL(finalReferrer).hostname;
+            const currentHost = window.location.hostname;
+            if (referrerHost === currentHost) {
+                return null;
+            }
+        } catch (e) {
+            // If URL parsing fails, return the original value
+        }
+    }
+
+    return finalReferrer;
   }
 
   // Client
