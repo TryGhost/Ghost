@@ -116,7 +116,7 @@
       const now = new Date()
       const item = {
         value: sessionId,
-        expiry: now.getTime() + 1800 * 1000,
+        expiry: now.getTime() + 14400 * 1000, // 4 hours
       }
       const value = JSON.stringify(item)
       const storage =
