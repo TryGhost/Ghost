@@ -50,9 +50,9 @@ export expected_count=$(grep -c '^' "$ndjson_file" || echo "0")
 # Get number of CPU cores if not overridden
 if [[ -z "$jobs" ]]; then
     if [[ "$(uname)" == "Darwin" ]]; then
-        jobs=$(sysctl -n hw.ncpu)
+        jobs=$(( $(sysctl -n hw.ncpu) * 2 ))
     else
-        jobs=$(nproc)
+        jobs=$(( $(nproc) * 2 ))
     fi
 fi
 
@@ -157,7 +157,7 @@ if [[ -n "${test_name:-}" ]]; then
     fi
 else
     # If no test name provided, run all tests in parallel
-    echo "Running tests in parallel using $jobs cores"
+    echo "Running tests in parallel using $jobs workers"
     # Use parallel to run the tests, maintaining output order
     find ./tests -name "*.test" -print0 | \
         parallel -0 --jobs "$jobs" --keep-order --line-buffer \
