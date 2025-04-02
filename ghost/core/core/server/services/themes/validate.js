@@ -44,25 +44,27 @@ const getErrorsFromCheckedTheme = function getErrorsFromCheckedTheme(checkedThem
     };
 };
 
-const check = async function check(themeName, theme, isZip) {
+const check = async function check(themeName, theme, options = {}) {
     debug('Begin: Check');
     // gscan can slow down boot time if we require on boot, for now nest the require.
     const gscan = require('gscan');
     const checkedVersion = 'v5';
     let checkedTheme;
 
-    if (isZip) {
+    if (options.isZip === true) {
         debug('zip mode');
         checkedTheme = await gscan.checkZip(theme, {
             keepExtractedDir: true,
             checkVersion: checkedVersion,
-            labs: labs.getAll()
+            labs: labs.getAll(),
+            skipChecks: options.skipChecks || false
         });
     } else {
         debug('non-zip mode');
         checkedTheme = await gscan.check(theme.path, {
             checkVersion: checkedVersion,
-            labs: labs.getAll()
+            labs: labs.getAll(),
+            skipChecks: options.skipChecks || false
         });
     }
 
@@ -119,7 +121,7 @@ const getThemeErrors = async function getThemeErrors(themeName) {
 };
 
 const checkSafe = async function checkSafe(themeName, theme, isZip) {
-    const checkedTheme = await check(themeName, theme, isZip);
+    const checkedTheme = await check(themeName, theme, {isZip});
 
     if (canActivate(checkedTheme)) {
         return checkedTheme;

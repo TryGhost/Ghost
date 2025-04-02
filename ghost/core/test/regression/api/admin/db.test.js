@@ -2,7 +2,7 @@ const path = require('path');
 const _ = require('lodash');
 const os = require('os');
 const fs = require('fs-extra');
-const uuid = require('uuid');
+const crypto = require('crypto');
 const should = require('should');
 const supertest = require('supertest');
 const sinon = require('sinon');
@@ -61,7 +61,7 @@ describe('DB API', function () {
     });
 
     it('can export & import', function () {
-        const exportFolder = path.join(os.tmpdir(), uuid.v4());
+        const exportFolder = path.join(os.tmpdir(), crypto.randomUUID());
         const exportPath = path.join(exportFolder, 'export.json');
 
         return request.put(localUtils.API.getApiQuery('settings/'))

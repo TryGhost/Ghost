@@ -69,10 +69,12 @@
                 @excerpt={{readonly this.post.customExcerpt}}
                 @excerptHasTk={{this.excerptHasTk}}
                 @setExcerpt={{this.updateExcerpt}}
+                @onExcerptBlur={{perform this.saveExcerptTask}}
                 @excerptErrorMessage={{this.excerptErrorMessage}}
                 @body={{readonly this.post.lexicalScratch}}
                 @bodyPlaceholder={{concat "Begin writing your " this.post.displayName "..."}}
                 @onBodyChange={{this.updateScratch}}
+                @updateSecondaryInstanceModel={{this.updateSecondaryInstanceModel}}
                 @headerOffset={{editor.headerHeight}}
                 @scrollContainerSelector=".gh-koenig-editor"
                 @scrollOffsetBottomSelector=".gh-mobile-nav-bar"
@@ -91,12 +93,12 @@
                 @cardOptions={{hash
                     post=this.post
                     snippets=this.snippets
-                    collections=this.collections
                     deleteSnippet=(if this.canManageSnippets this.confirmDeleteSnippet)
                     createSnippet=(if this.canManageSnippets this.createSnippet)
                 }}
                 @postType={{this.post.displayName}}
                 @registerAPI={{this.registerEditorAPI}}
+                @registerSecondaryAPI={{this.registerSecondaryEditorAPI}}
                 @savePostTask={{this.savePostTask}}
             />
 
@@ -136,6 +138,7 @@
                 @updateSlugTask={{this.updateSlugTask}}
                 @savePostTask={{this.savePostTask}}
                 @editorAPI={{this.editorAPI}}
+                @secondaryEditorAPI={{this.secondaryEditorAPI}}
                 @toggleSettingsMenu={{this.toggleSettingsMenu}}
             />
         {{/if}}

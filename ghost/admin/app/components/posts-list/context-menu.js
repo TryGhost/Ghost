@@ -3,11 +3,13 @@ import Component from '@glimmer/component';
 import DeletePostsModal from './modals/delete-posts';
 import EditPostsAccessModal from './modals/edit-posts-access';
 import UnpublishPostsModal from './modals/unpublish-posts';
+import UnschedulePostsModal from './modals/unschedule-posts';
+import copyTextToClipboard from 'ghost-admin/utils/copy-text-to-clipboard';
 import nql from '@tryghost/nql';
 import {action} from '@ember/object';
 import {capitalizeFirstLetter} from 'ghost-admin/helpers/capitalize-first-letter';
 import {inject as service} from '@ember/service';
-import {task} from 'ember-concurrency';
+import {task, timeout} from 'ember-concurrency';
 
 /**
  * @tryghost/tpl doesn't work in admin yet (Safari)
@@ -28,6 +30,10 @@ const messages = {
         single: '{Type} reverted to a draft',
         multiple: '{count} {type}s reverted to drafts'
     },
+    unscheduled: {
+        single: '{Type} unscheduled',
+        multiple: '{count} {type}s unscheduled'
+    },
     accessUpdated: {
         single: '{Type} access updated',
         multiple: '{Type} access updated for {count} {type}s'
@@ -43,6 +49,12 @@ const messages = {
     duplicated: {
         single: '{Type} duplicated',
         multiple: '{count} {type}s duplicated'
+    },
+    copiedPostUrl: {
+        single: 'Post link copied'
+    },
+    copiedPreviewUrl: {
+        single: 'Preview link copied'
     }
 };
 
@@ -72,6 +84,16 @@ export default class PostsContextMenu extends Component {
             return tpl(messages[type].single, {count: this.selectionList.count, type: this.type, Type: capitalizeFirstLetter(this.type)});
         }
         return tpl(messages[type].multiple, {count: this.selectionList.count, type: this.type, Type: capitalizeFirstLetter(this.type)});
+    }
+
+    @action
+    async copyPostLink() {
+        this.menu.performTask(this.copyPostLinkTask);
+    }
+
+    @action
+    async copyPreviewLink() {
+        this.menu.performTask(this.copyPreviewLinkTask);
     }
 
     @action
@@ -108,6 +130,15 @@ export default class PostsContextMenu extends Component {
             type: this.type,
             selectionList: this.selectionList,
             confirm: this.unpublishPostsTask
+        });
+    }
+
+    @action
+    async unschedulePosts() {
+        await this.menu.openModal(UnschedulePostsModal, {
+            type: this.type,
+            selectionList: this.selectionList,
+            confirm: this.unschedulePostsTask
         });
     }
 
@@ -216,11 +247,14 @@ export default class PostsContextMenu extends Component {
         yield this.performBulkDestroy();
         this.notifications.showNotification(this.#getToastMessage('deleted'), {type: 'success'});
 
-        const remainingModels = this.selectionList.infinityModel.content.filter((model) => {
-            return !deletedModels.includes(model);
-        });
-        // Deleteobjects method from infintiymodel is broken for all models except the first page, so we cannot use this
-        this.infinity.replace(this.selectionList.infinityModel, remainingModels);
+        for (const key in this.selectionList.infinityModel) {
+            const remainingModels = this.selectionList.infinityModel[key].content.filter((model) => {
+                return !deletedModels.includes(model);
+            });
+            // Deleteobjects method from infintiymodel is broken for all models except the first page, so we cannot use this
+            this.infinity.replace(this.selectionList.infinityModel[key], remainingModels);
+        }
+
         this.selectionList.clearSelection({force: true});
         return true;
     }
@@ -247,9 +281,34 @@ export default class PostsContextMenu extends Component {
             }
         }
 
-        // Remove posts that no longer match the filter
         this.updateFilteredPosts();
+        return true;
+    }
 
+    @task
+    *unschedulePostsTask() {
+        const updatedModels = this.selectionList.availableModels;
+        yield this.performBulkEdit('unschedule');
+        this.notifications.showNotification(this.#getToastMessage('unscheduled'), {type: 'success'});
+
+        // Update the models on the client side
+        for (const post of updatedModels) {
+            if (post.status === 'scheduled') {
+                // We need to do it this way to prevent marking the model as dirty
+                this.store.push({
+                    data: {
+                        id: post.id,
+                        type: this.type,
+                        attributes: {
+                            status: 'draft',
+                            published_at: null
+                        }
+                    }
+                });
+            }
+        }
+
+        this.updateFilteredPosts();
         return true;
     }
 
@@ -282,14 +341,16 @@ export default class PostsContextMenu extends Component {
             ]
         });
 
-        const remainingModels = this.selectionList.infinityModel.content.filter((model) => {
-            if (!updatedModels.find(u => u.id === model.id)) {
-                return true;
-            }
-            return filterNql.queryJSON(model.serialize({includeId: true}));
-        });
-        // Deleteobjects method from infintiymodel is broken for all models except the first page, so we cannot use this
-        this.infinity.replace(this.selectionList.infinityModel, remainingModels);
+        for (const key in this.selectionList.infinityModel) {
+            const remainingModels = this.selectionList.infinityModel[key].content.filter((model) => {
+                if (!updatedModels.find(u => u.id === model.id)) {
+                    return true;
+                }
+                return filterNql.queryJSON(model.serialize({includeId: true}));
+            });
+            // Deleteobjects method from infinitymodel is broken for all models except the first page, so we cannot use this
+            this.infinity.replace(this.selectionList.infinityModel[key], remainingModels);
+        }
 
         this.selectionList.clearUnavailableItems();
     }
@@ -308,12 +369,8 @@ export default class PostsContextMenu extends Component {
                     id: post.id,
                     type: this.type,
                     attributes: {
-                        visibility
-                    },
-                    relationships: {
-                        links: {
-                            data: tiers
-                        }
+                        visibility,
+                        tiers // tiers is a weird one, it's set up as an attribute but represents a relationship
                     }
                 }
             });
@@ -323,6 +380,8 @@ export default class PostsContextMenu extends Component {
         this.updateFilteredPosts();
 
         close();
+
+        return true;
     }
 
     @task
@@ -386,8 +445,10 @@ export default class PostsContextMenu extends Component {
             const data = result[this.type === 'post' ? 'posts' : 'pages'][0];
             const model = this.store.peekRecord(this.type, data.id);
 
-            // Update infinity list
-            this.selectionList.infinityModel.content.unshiftObject(model);
+            // Update infinity draft posts content - copied posts are always drafts
+            if (this.selectionList.infinityModel.draftInfinityModel) {
+                this.selectionList.infinityModel.draftInfinityModel.content.unshiftObject(model);
+            }
 
             // Show notification
             this.notifications.showNotification(this.#getToastMessage('duplicated'), {type: 'success'});
@@ -395,6 +456,22 @@ export default class PostsContextMenu extends Component {
             this.notifications.showAPIError(error, {key: `${this.type}.copy.failed`});
         }
 
+        return true;
+    }
+
+    @task
+    *copyPostLinkTask() {
+        copyTextToClipboard(this.selectionList.availableModels[0].url);
+        this.notifications.showNotification(this.#getToastMessage('copiedPostUrl'), {type: 'success'});
+        yield timeout(1000);
+        return true;
+    }
+
+    @task
+    *copyPreviewLinkTask() {
+        copyTextToClipboard(this.selectionList.availableModels[0].url);
+        this.notifications.showNotification(this.#getToastMessage('copiedPreviewUrl'), {type: 'success'});
+        yield timeout(1000);
         return true;
     }
 
@@ -445,6 +522,15 @@ export default class PostsContextMenu extends Component {
     get canUnpublishSelection() {
         for (const m of this.selectionList.availableModels) {
             if (m.status === 'published') {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    get canUnscheduleSelection() {
+        for (const m of this.selectionList.availableModels) {
+            if (m.status === 'scheduled') {
                 return true;
             }
         }

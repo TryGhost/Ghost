@@ -4,7 +4,7 @@ import {ReactComponent as ThumbDownIcon} from '../../images/icons/thumbs-down.sv
 import {ReactComponent as ThumbUpIcon} from '../../images/icons/thumbs-up.svg';
 import {ReactComponent as ThumbErrorIcon} from '../../images/icons/thumbs-error.svg';
 import setupGhostApi from '../../utils/api';
-import {HumanReadableError} from '../../utils/errors';
+import {chooseBestErrorMessage} from '../../utils/errors';
 import ActionButton from '../common/ActionButton';
 import CloseButton from '../common/CloseButton';
 import LoadingPage from './LoadingPage';
@@ -82,6 +82,10 @@ export const FeedbackPageStyles = `
         background: currentColor;
         opacity: 0.10;
     }
+    html[dir="rtl"] .gh-feedback-button::before {
+        right: 0;
+        left: unset;
+    }
 
     .gh-feedback-button-selected {
         box-shadow: inset 0 0 0 2px currentColor;
@@ -111,8 +115,8 @@ export const FeedbackPageStyles = `
         }
 
         .gh-portal-feedback .gh-portal-text-center {
-            padding-left: 8px;
-            padding-right: 8px;
+            padding-inline-start: 8px;
+            padding-inline-end: 8px;
         }
 
         .gh-portal-popup-wrapper.feedback {
@@ -120,7 +124,7 @@ export const FeedbackPageStyles = `
             position: relative;
             width: 100%;
             background: none;
-            padding-right: 0 !important;
+            padding-inline-end: 0 !important;
             overflow: hidden;
             overflow-y: hidden !important;
             animation: none;
@@ -258,9 +262,9 @@ const ConfirmDialog = ({onConfirm, loading, initialScore}) => {
     );
 };
 
-async function sendFeedback({siteUrl, uuid, postId, score}) {
-    const ghostApi = setupGhostApi({siteUrl});
-    await ghostApi.feedback.add({uuid, postId, score});
+async function sendFeedback({siteUrl, uuid, key, postId, score}, api) {
+    const ghostApi = api || setupGhostApi({siteUrl});
+    await ghostApi.feedback.add({uuid, postId, key, score});
 }
 
 const LoadingFeedbackView = ({action, score}) => {
@@ -301,11 +305,10 @@ const ConfirmFeedback = ({positive}) => {
 };
 
 export default function FeedbackPage() {
-    const {site, pageData, member, t} = useContext(AppContext);
-    const {uuid, postId, score: initialScore} = pageData;
+    const {site, pageData, member, t, api} = useContext(AppContext);
+    const {uuid, key, postId, score: initialScore} = pageData;
     const [score, setScore] = useState(initialScore);
     const positive = score === 1;
-
     const isLoggedIn = !!member;
 
     const [confirmed, setConfirmed] = useState(isLoggedIn);
@@ -315,10 +318,10 @@ export default function FeedbackPage() {
     const doSendFeedback = async (selectedScore) => {
         setLoading(true);
         try {
-            await sendFeedback({siteUrl: site.url, uuid, postId, score: selectedScore});
+            await sendFeedback({siteUrl: site.url, uuid, key, postId, score: selectedScore}, api);
             setScore(selectedScore);
         } catch (e) {
-            const text = HumanReadableError.getMessageFromError(e, t('There was a problem submitting your feedback. Please try again a little later.'));
+            const text = chooseBestErrorMessage(e, t('There was a problem submitting your feedback. Please try again a little later.'), t);
             setError(text);
         }
         setLoading(false);
@@ -341,6 +344,5 @@ export default function FeedbackPage() {
             return <LoadingFeedbackView action={doSendFeedback} score={score} />;
         }
     }
-
     return (<ConfirmFeedback positive={positive} />);
 }

@@ -139,7 +139,10 @@ const SortableList = <Item extends {id: string}>({
             <div className={`${title && titleSeparator ? '-mt-2' : ''}`}>
                 <DndContext
                     collisionDetection={closestCenter}
-                    onDragEnd={event => onMove(event.active.id as string, event.over?.id as string)}
+                    onDragEnd={(event) => {
+                        onMove(event.active.id as string, event.over?.id as string);
+                        setDraggingId(null);
+                    }}
                     onDragStart={event => setDraggingId(event.active.id as string)}
                 >
                     <Wrapper>

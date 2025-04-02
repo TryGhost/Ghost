@@ -1,7 +1,10 @@
 import App from '../App.js';
+import {vi} from 'vitest';
 import {fireEvent, appRender, within, waitFor} from '../utils/test-utils';
 import {offer as FixtureOffer, site as FixtureSite} from '../utils/test-fixtures';
 import setupGhostApi from '../utils/api.js';
+
+vi.mock('@hcaptcha/react-hcaptcha');
 
 const offerSetup = async ({site, member = null, offer}) => {
     const ghostApi = setupGhostApi({siteUrl: 'https://example.com'});
@@ -14,6 +17,10 @@ const offerSetup = async ({site, member = null, offer}) => {
 
     ghostApi.member.sendMagicLink = jest.fn(() => {
         return Promise.resolve('success');
+    });
+
+    ghostApi.member.getIntegrityToken = jest.fn(() => {
+        return Promise.resolve(`testtoken`);
     });
 
     ghostApi.site.offer = jest.fn(() => {
@@ -33,19 +40,25 @@ const offerSetup = async ({site, member = null, offer}) => {
     const popupFrame = await utils.findByTitle(/portal-popup/i);
     const triggerButtonFrame = await utils.queryByTitle(/portal-trigger/i);
     const popupIframeDocument = popupFrame.contentDocument;
-    const emailInput = within(popupIframeDocument).queryByLabelText(/email/i);
-    const nameInput = within(popupIframeDocument).queryByLabelText(/name/i);
-    const submitButton = within(popupIframeDocument).queryByRole('button', {name: 'Continue'});
-    const chooseBtns = within(popupIframeDocument).queryAllByRole('button', {name: 'Choose'});
-    const signinButton = within(popupIframeDocument).queryByRole('button', {name: 'Sign in'});
-    const siteTitle = within(popupIframeDocument).queryByText(site.title);
-    const offerName = within(popupIframeDocument).queryByText(offer.display_title);
-    const offerDescription = within(popupIframeDocument).queryByText(offer.display_description);
 
-    const freePlanTitle = within(popupIframeDocument).queryByText('Free');
-    const monthlyPlanTitle = within(popupIframeDocument).queryByText('Monthly');
-    const yearlyPlanTitle = within(popupIframeDocument).queryByText('Yearly');
-    const fullAccessTitle = within(popupIframeDocument).queryByText('Full access');
+    let emailInput, nameInput, continueButton, chooseBtns, signinButton, siteTitle, offerName, offerDescription, freePlanTitle, monthlyPlanTitle, yearlyPlanTitle, fullAccessTitle;
+
+    if (popupIframeDocument) {
+        emailInput = within(popupIframeDocument).queryByLabelText(/email/i);
+        nameInput = within(popupIframeDocument).queryByLabelText(/name/i);
+        continueButton = within(popupIframeDocument).queryByRole('button', {name: 'Continue'});
+        chooseBtns = within(popupIframeDocument).queryAllByRole('button', {name: 'Choose'});
+        signinButton = within(popupIframeDocument).queryByRole('button', {name: 'Sign in'});
+        siteTitle = within(popupIframeDocument).queryByText(site.title);
+        offerName = within(popupIframeDocument).queryByText(offer.display_title);
+        offerDescription = within(popupIframeDocument).queryByText(offer.display_description);
+
+        freePlanTitle = within(popupIframeDocument).queryByText('Free');
+        monthlyPlanTitle = within(popupIframeDocument).queryByText('Monthly');
+        yearlyPlanTitle = within(popupIframeDocument).queryByText('Yearly');
+        fullAccessTitle = within(popupIframeDocument).queryByText('Full access');
+    }
+
     return {
         ghostApi,
         popupIframeDocument,
@@ -55,7 +68,7 @@ const offerSetup = async ({site, member = null, offer}) => {
         emailInput,
         nameInput,
         signinButton,
-        submitButton,
+        submitButton: continueButton,
         chooseBtns,
         freePlanTitle,
         monthlyPlanTitle,
@@ -80,6 +93,10 @@ const setup = async ({site, member = null}) => {
         return Promise.resolve('success');
     });
 
+    ghostApi.member.getIntegrityToken = jest.fn(() => {
+        return Promise.resolve(`testtoken`);
+    });
+
     ghostApi.member.checkoutPlan = jest.fn(() => {
         return Promise.resolve();
     });
@@ -90,7 +107,8 @@ const setup = async ({site, member = null}) => {
 
     const triggerButtonFrame = await utils.findByTitle(/portal-trigger/i);
     const popupFrame = utils.queryByTitle(/portal-popup/i);
-    const popupIframeDocument = popupFrame.contentDocument;
+    const popupIframeDocument = popupFrame?.contentDocument;
+
     const emailInput = within(popupIframeDocument).queryByLabelText(/email/i);
     const nameInput = within(popupIframeDocument).queryByLabelText(/name/i);
     const submitButton = within(popupIframeDocument).queryByRole('button', {name: 'Continue'});
@@ -101,6 +119,7 @@ const setup = async ({site, member = null}) => {
     const monthlyPlanTitle = within(popupIframeDocument).queryByText('Monthly');
     const yearlyPlanTitle = within(popupIframeDocument).queryByText('Yearly');
     const fullAccessTitle = within(popupIframeDocument).queryByText('Full access');
+
     return {
         ghostApi,
         popupIframeDocument,
@@ -131,6 +150,10 @@ const multiTierSetup = async ({site, member = null}) => {
 
     ghostApi.member.sendMagicLink = jest.fn(() => {
         return Promise.resolve('success');
+    });
+
+    ghostApi.member.getIntegrityToken = jest.fn(() => {
+        return Promise.resolve(`testtoken`);
     });
 
     ghostApi.member.checkoutPlan = jest.fn(() => {
@@ -184,6 +207,7 @@ describe('Signup', () => {
             } = await setup({
                 site: FixtureSite.singleTier.basic
             });
+
             const continueButton = within(popupIframeDocument).queryAllByRole('button', {name: 'Continue'});
             expect(popupFrame).toBeInTheDocument();
             expect(triggerButtonFrame).toBeInTheDocument();
@@ -205,14 +229,17 @@ describe('Signup', () => {
             expect(emailInput).toHaveValue('jamie@example.com');
             expect(nameInput).toHaveValue('Jamie Larsen');
             fireEvent.click(chooseBtns[0]);
+
+            const magicLink = await within(popupIframeDocument).findByText(/now check your email/i);
+            expect(magicLink).toBeInTheDocument();
+
             expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
                 email: 'jamie@example.com',
                 emailType: 'signup',
                 name: 'Jamie Larsen',
-                plan: 'free'
+                plan: 'free',
+                integrityToken: 'testtoken'
             });
-            const magicLink = await within(popupIframeDocument).findByText(/now check your email/i);
-            expect(magicLink).toBeInTheDocument();
         });
 
         test('without name field', async () => {
@@ -240,16 +267,17 @@ describe('Signup', () => {
             expect(emailInput).toHaveValue('jamie@example.com');
             fireEvent.click(chooseBtns[0]);
 
+            // Check if magic link page is shown
+            const magicLink = await within(popupIframeDocument).findByText(/now check your email/i);
+            expect(magicLink).toBeInTheDocument();
+
             expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
                 email: 'jamie@example.com',
                 emailType: 'signup',
                 name: '',
-                plan: 'free'
+                plan: 'free',
+                integrityToken: 'testtoken'
             });
-
-            // Check if magic link page is shown
-            const magicLink = await within(popupIframeDocument).findByText(/now check your email/i);
-            expect(magicLink).toBeInTheDocument();
         });
 
         test('with only free plan', async () => {
@@ -288,16 +316,17 @@ describe('Signup', () => {
             expect(nameInput).toHaveValue('Jamie Larsen');
             fireEvent.click(submitButton);
 
+            // Check if magic link page is shown
+            const magicLink = await within(popupIframeDocument).findByText(/now check your email/i);
+            expect(magicLink).toBeInTheDocument();
+
             expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
                 email: 'jamie@example.com',
                 emailType: 'signup',
                 name: 'Jamie Larsen',
-                plan: 'free'
+                plan: 'free',
+                integrityToken: 'testtoken'
             });
-
-            // Check if magic link page is shown
-            const magicLink = await within(popupIframeDocument).findByText(/now check your email/i);
-            expect(magicLink).toBeInTheDocument();
         });
     });
 
@@ -570,14 +599,17 @@ describe('Signup', () => {
             expect(emailInput).toHaveValue('jamie@example.com');
             expect(nameInput).toHaveValue('Jamie Larsen');
             fireEvent.click(chooseBtns[0]);
+
+            const magicLink = await within(popupIframeDocument).findByText(/now check your email/i);
+            expect(magicLink).toBeInTheDocument();
+
             expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
                 email: 'jamie@example.com',
                 emailType: 'signup',
                 name: 'Jamie Larsen',
-                plan: 'free'
+                plan: 'free',
+                integrityToken: 'testtoken'
             });
-            const magicLink = await within(popupIframeDocument).findByText(/now check your email/i);
-            expect(magicLink).toBeInTheDocument();
         });
 
         test('without name field', async () => {
@@ -601,16 +633,17 @@ describe('Signup', () => {
             expect(emailInput).toHaveValue('jamie@example.com');
             fireEvent.click(chooseBtns[0]);
 
+            // Check if magic link page is shown
+            const magicLink = await within(popupIframeDocument).findByText(/now check your email/i);
+            expect(magicLink).toBeInTheDocument();
+
             expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
                 email: 'jamie@example.com',
                 emailType: 'signup',
                 name: '',
-                plan: 'free'
+                plan: 'free',
+                integrityToken: 'testtoken'
             });
-
-            // Check if magic link page is shown
-            const magicLink = await within(popupIframeDocument).findByText(/now check your email/i);
-            expect(magicLink).toBeInTheDocument();
         });
 
         test('with only free plan available', async () => {
@@ -646,16 +679,17 @@ describe('Signup', () => {
             expect(nameInput).toHaveValue('Jamie Larsen');
             fireEvent.click(submitButton);
 
+            // Check if magic link page is shown
+            const magicLink = await within(popupIframeDocument).findByText(/now check your email/i);
+            expect(magicLink).toBeInTheDocument();
+
             expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
                 email: 'jamie@example.com',
                 emailType: 'signup',
                 name: 'Jamie Larsen',
-                plan: 'free'
+                plan: 'free',
+                integrityToken: 'testtoken'
             });
-
-            // Check if magic link page is shown
-            const magicLink = await within(popupIframeDocument).findByText(/now check your email/i);
-            expect(magicLink).toBeInTheDocument();
         });
 
         test('should not show free plan if it is hidden', async () => {
@@ -798,5 +832,114 @@ describe('Signup', () => {
             window.location.hash = '';
         });
     });
-});
 
+    describe('on a paid-members only site', () => {
+        describe('with only a free plan', () => {
+            test('the trigger button redirects to signin instead of signup', async () => {
+                let {
+                    popupFrame, emailInput,
+                    freePlanTitle, monthlyPlanTitle, yearlyPlanTitle, fullAccessTitle
+                } = await setup({
+                    site: {...FixtureSite.singleTier.onlyFreePlan, members_signup_access: 'paid'}
+                });
+
+                expect(popupFrame).toBeInTheDocument();
+
+                // Check that the signup form is not rendered
+                // - No tiers
+                // - No submit button
+                expect(freePlanTitle).not.toBeInTheDocument();
+                expect(monthlyPlanTitle).not.toBeInTheDocument();
+                expect(yearlyPlanTitle).not.toBeInTheDocument();
+                expect(fullAccessTitle).not.toBeInTheDocument();
+
+                // Check that the signin form is rendered instead
+                const signinTitle = within(popupFrame.contentDocument).queryByText(/Sign in/i);
+                expect(signinTitle).toBeInTheDocument();
+                expect(emailInput).toBeInTheDocument();
+            });
+        });
+
+        test('does not render the free tier, only paid tiers', async () => {
+            // Setup paid-members only site with 4 tiers: free + 3 paid
+            let {
+                popupFrame, emailInput, nameInput,
+                freePlanTitle, monthlyPlanTitle, yearlyPlanTitle, chooseBtns
+            } = await setup({
+                site: {...FixtureSite.multipleTiers.basic, members_signup_access: 'paid'}
+            });
+
+            expect(popupFrame).toBeInTheDocument();
+
+            // The free tier should not render, as the site is set to paid-members only
+            expect(freePlanTitle).not.toBeInTheDocument('Free');
+
+            // Paid tiers should render
+            expect(monthlyPlanTitle).toBeInTheDocument();
+            expect(yearlyPlanTitle).toBeInTheDocument();
+
+            // The signup form should render
+            expect(emailInput).toBeInTheDocument();
+            expect(nameInput).toBeInTheDocument();
+
+            // There should be three paid tiers to choose from
+            expect(chooseBtns).toHaveLength(3);
+        });
+    });
+
+    describe('with captcha enabled', () => {
+        test('on a simple site', async () => {
+            const {
+                ghostApi, emailInput, nameInput, popupIframeDocument, chooseBtns
+            } = await setup({
+                site: Object.assign({}, FixtureSite.singleTier.basic, {
+                    captcha_enabled: true,
+                    captcha_sitekey: '20000000-ffff-ffff-ffff-000000000002'
+                })
+            });
+
+            fireEvent.change(nameInput, {target: {value: 'Jamie Larsen'}});
+            fireEvent.change(emailInput, {target: {value: 'jamie@example.com'}});
+            fireEvent.click(chooseBtns[0]);
+
+            const magicLink = await within(popupIframeDocument).findByText(/now check your email/i);
+            expect(magicLink).toBeInTheDocument();
+
+            expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
+                email: 'jamie@example.com',
+                emailType: 'signup',
+                name: 'Jamie Larsen',
+                plan: 'free',
+                integrityToken: 'testtoken',
+                token: 'mocked-token'
+            });
+        });
+
+        test('on a site with multiple tiers', async () => {
+            const {
+                ghostApi, emailInput, nameInput,chooseBtns, popupIframeDocument
+            } = await multiTierSetup({
+                site: Object.assign({}, FixtureSite.multipleTiers.basic, {
+                    captcha_enabled: true,
+                    captcha_sitekey: '20000000-ffff-ffff-ffff-000000000002'
+                })
+            });
+
+            fireEvent.change(nameInput, {target: {value: 'Jamie Larsen'}});
+            fireEvent.change(emailInput, {target: {value: 'jamie@example.com'}});
+            fireEvent.click(chooseBtns[0]);
+
+            const magicLink = await within(popupIframeDocument).findByText(/now check your email/i);
+            expect(magicLink).toBeInTheDocument();
+
+            expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
+                email: 'jamie@example.com',
+                emailType: 'signup',
+                name: 'Jamie Larsen',
+                plan: 'free',
+                integrityToken: 'testtoken',
+                token: 'mocked-token'
+            });
+        });
+    });
+});

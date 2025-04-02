@@ -6,13 +6,12 @@ class EmailAnalyticsServiceWrapper {
             return;
         }
 
-        const {EmailAnalyticsService} = require('@tryghost/email-analytics-service');
+        const EmailAnalyticsService = require('./EmailAnalyticsService');
         const {EmailEventStorage, EmailEventProcessor} = require('@tryghost/email-service');
-        const MailgunProvider = require('@tryghost/email-analytics-provider-mailgun');
+        const MailgunProvider = require('./EmailAnalyticsProviderMailgun');
         const PostmarkProvider = require('@tryghost/email-analytics-provider-postmark');
         const {EmailRecipientFailure, EmailSpamComplaintEvent, Email} = require('../../models');
         const StartEmailAnalyticsJobEvent = require('./events/StartEmailAnalyticsJobEvent');
-
         const domainEvents = require('@tryghost/domain-events');
         const config = require('../../../shared/config');
         const settings = require('../../../shared/settings-cache');
@@ -21,6 +20,7 @@ class EmailAnalyticsServiceWrapper {
         const membersService = require('../members');
         const membersRepository = membersService.api.members;
         const emailSuppressionList = require('../email-suppression-list');
+        const prometheusClient = require('../../../shared/prometheus-client');
 
         this.eventStorage = new EmailEventStorage({
             db,
@@ -30,7 +30,8 @@ class EmailAnalyticsServiceWrapper {
                 EmailRecipientFailure,
                 EmailSpamComplaintEvent
             },
-            emailSuppressionList
+            emailSuppressionList,
+            prometheusClient
         });
 
         // Since this is running in a worker thread, we cant dispatch directly
@@ -38,7 +39,8 @@ class EmailAnalyticsServiceWrapper {
         const eventProcessor = new EmailEventProcessor({
             domainEvents,
             db,
-            eventStorage: this.eventStorage
+            eventStorage: this.eventStorage,
+            prometheusClient
         });
 
         this.service = new EmailAnalyticsService({
@@ -49,7 +51,9 @@ class EmailAnalyticsServiceWrapper {
                 new MailgunProvider({config, settings}),
                 new PostmarkProvider({config, settings})
             ],
-            queries
+            queries,
+            domainEvents,
+            prometheusClient
         });
 
         // We currently cannot trigger a non-offloaded job from the job manager
@@ -59,11 +63,22 @@ class EmailAnalyticsServiceWrapper {
         });
     }
 
-    async fetchLatest({maxEvents} = {maxEvents: Infinity}) {
-        logging.info('[EmailAnalytics] Fetch latest started');
+    async fetchLatestOpenedEvents({maxEvents} = {maxEvents: Infinity}) {
+        logging.info('[EmailAnalytics] Fetch latest opened events started');
 
         const fetchStartDate = new Date();
-        const totalEvents = await this.service.fetchLatest({maxEvents});
+        const totalEvents = await this.service.fetchLatestOpenedEvents({maxEvents});
+        const fetchEndDate = new Date();
+
+        logging.info(`[EmailAnalytics] Fetched ${totalEvents} events and aggregated stats in ${fetchEndDate.getTime() - fetchStartDate.getTime()}ms (latest opens)`);
+        return totalEvents;
+    }
+
+    async fetchLatestNonOpenedEvents({maxEvents} = {maxEvents: Infinity}) {
+        logging.info('[EmailAnalytics] Fetch latest non-opened events started');
+
+        const fetchStartDate = new Date();
+        const totalEvents = await this.service.fetchLatestNonOpenedEvents({maxEvents});
         const fetchEndDate = new Date();
 
         logging.info(`[EmailAnalytics] Fetched ${totalEvents} events and aggregated stats in ${fetchEndDate.getTime() - fetchStartDate.getTime()}ms (latest)`);
@@ -71,7 +86,7 @@ class EmailAnalyticsServiceWrapper {
     }
 
     async fetchMissing({maxEvents} = {maxEvents: Infinity}) {
-        logging.info('[EmailAnalytics] Fetch missing started');
+        logging.info('[EmailAnalytics] Fetch missing events started');
 
         const fetchStartDate = new Date();
         const totalEvents = await this.service.fetchMissing({maxEvents});
@@ -85,7 +100,7 @@ class EmailAnalyticsServiceWrapper {
         if (maxEvents < 300) {
             return 0;
         }
-        logging.info('[EmailAnalytics] Fetch scheduled started');
+        logging.info('[EmailAnalytics] Fetch scheduled events started');
 
         const fetchStartDate = new Date();
         const totalEvents = await this.service.fetchScheduled({maxEvents});
@@ -102,12 +117,33 @@ class EmailAnalyticsServiceWrapper {
         }
         this.fetching = true;
 
+        // NOTE: Data shows we can process ~2500 events per minute on Pro for a large-ish db (150k members).
+        //       This can vary locally, but we should be conservative with the number of events we fetch.
         try {
-            const c1 = await this.fetchLatest({maxEvents: Infinity});
-            const c2 = await this.fetchMissing({maxEvents: Infinity});
+            // Prioritize opens since they are the most important (only data directly displayed to users)
+            const c1 = await this.fetchLatestOpenedEvents({maxEvents: 10000});
+            if (c1 >= 10000) {
+                this._restartFetch('high opened event count');
+                return;
+            }
 
-            // Only fetch scheduled if we didn't fetch a lot of normal events
-            await this.fetchScheduled({maxEvents: 20000 - c1 - c2});
+            // Set limits on how much we fetch without checkings for opened events. During surge events (following newsletter send)
+            //  we want to make sure we don't spend too much time collecting delivery data.
+            const c2 = await this.fetchLatestNonOpenedEvents({maxEvents: 10000 - c1});
+            const c3 = await this.fetchMissing({maxEvents: 10000 - c1 - c2});
+
+            // Always restart immediately instead of waiting for the next scheduled job if we're fetching a lot of events
+            if ((c1 + c2 + c3) > 10000) {
+                this._restartFetch('high event count');
+                return;
+            }
+
+            // Only backfill if we're not currently fetching a lot of events
+            const c4 = await this.fetchScheduled({maxEvents: 10000});
+            if (c4 > 0) {
+                this._restartFetch('scheduled backfill');
+                return;
+            }
 
             this.fetching = false;
         } catch (e) {
@@ -117,6 +153,12 @@ class EmailAnalyticsServiceWrapper {
             logging.error(e);
         }
         this.fetching = false;
+    }
+
+    _restartFetch(reason) {
+        this.fetching = false;
+        logging.info(`[EmailAnalytics] Restarting fetch due to ${reason}`);
+        this.startFetch();
     }
 }
 

@@ -1,6 +1,6 @@
 import NewsletterPreview from './NewsletterPreview';
 import NiceModal from '@ebay/nice-modal-react';
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
 import validator from 'validator';
@@ -10,7 +10,7 @@ import {HostLimitError, useLimiter} from '../../../../hooks/useLimiter';
 import {Newsletter, useBrowseNewsletters, useEditNewsletter} from '@tryghost/admin-x-framework/api/newsletters';
 import {RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
-import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
+import {getSettingValue, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {hasSendingDomain, isManagedEmail, sendingDomain} from '@tryghost/admin-x-framework/api/config';
 import {renderReplyToEmail, renderSenderEmail} from '../../../../utils/newsletterEmails';
 import {textColorForBackgroundColor} from '@tryghost/color-utils';
@@ -25,45 +25,17 @@ const ReplyToEmailField: React.FC<{
 }> = ({newsletter, updateNewsletter, errors, clearError}) => {
     const {settings, config} = useGlobalData();
     const [defaultEmailAddress, supportEmailAddress] = getSettingValues<string>(settings, ['default_email_address', 'support_email_address']);
-    const newEmailAddressesFlag = useFeatureFlag('newEmailAddresses');
 
     // When editing the senderReplyTo, we use a state, so we don't cause jumps when the 'rendering' method decides to change the value
     // Because 'newsletter' 'support' or an empty value can be mapped to a default value, we don't want those changes to happen when entering text
     const [senderReplyTo, setSenderReplyTo] = useState(renderReplyToEmail(newsletter, config, supportEmailAddress, defaultEmailAddress) || '');
 
     let newsletterAddress = renderSenderEmail(newsletter, config, defaultEmailAddress);
-    const replyToEmails = useMemo(() => [
-        {label: `Newsletter address (${newsletterAddress})`, value: 'newsletter'},
-        {label: `Support address (${supportEmailAddress})`, value: 'support'}
-    ], [newsletterAddress, supportEmailAddress]);
-
-    useEffect(() => {
-        if (!isManagedEmail(config) && !newEmailAddressesFlag) {
-            // Autocorrect invalid values
-            const foundValue = replyToEmails.find(option => option.value === newsletter.sender_reply_to);
-            if (!foundValue) {
-                updateNewsletter({sender_reply_to: 'newsletter'});
-            }
-        }
-    }, [config, replyToEmails, updateNewsletter, newsletter.sender_reply_to, newEmailAddressesFlag]);
 
     const onChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         setSenderReplyTo(e.target.value);
         updateNewsletter({sender_reply_to: e.target.value || 'newsletter'});
     }, [updateNewsletter, setSenderReplyTo]);
-
-    // Self-hosters, or legacy Pro users
-    if (!isManagedEmail(config) && !newEmailAddressesFlag) {
-        // Only allow some choices
-        return (
-            <Select
-                options={replyToEmails}
-                selectedOption={replyToEmails.find(option => option.value === newsletter.sender_reply_to)}
-                title="Reply-to email"
-                onSelect={option => updateNewsletter({sender_reply_to: option?.value})}
-            />
-        );
-    }
 
     const onBlur = () => {
         // Update the senderReplyTo to the rendered value again
@@ -103,12 +75,19 @@ const Sidebar: React.FC<{
     const {mutateAsync: uploadImage} = useUploadImage();
     const [selectedTab, setSelectedTab] = useState('generalSettings');
     const hasEmailCustomization = useFeatureFlag('emailCustomization');
-    const hasNewsletterExcerpt = useFeatureFlag('newsletterExcerpt');
     const {localSettings} = useSettingGroup();
     const [siteTitle] = getSettingValues(localSettings, ['title']) as string[];
     const handleError = useHandleError();
+    const {data: {newsletters: apiNewsletters} = {}} = useBrowseNewsletters();
+    const commentsEnabled = ['all', 'paid'].includes(getSettingValue(settings, 'comments_enabled') || '');
 
     let newsletterAddress = renderSenderEmail(newsletter, config, defaultEmailAddress);
+    const [newsletters, setNewsletters] = useState<Newsletter[]>(apiNewsletters || []);
+    const activeNewsletters = newsletters.filter(n => n.status === 'active');
+
+    useEffect(() => {
+        setNewsletters(apiNewsletters || []);
+    }, [apiNewsletters]);
 
     const fontOptions: SelectOption[] = [
         {value: 'serif', label: 'Elegant serif', className: 'font-serif'},
@@ -130,8 +109,8 @@ const Sidebar: React.FC<{
             NiceModal.show(ConfirmationModal, {
                 title: 'Archive newsletter',
                 prompt: <>
-                    <p>Your newsletter <strong>{newsletter.name}</strong> will no longer be visible to members or available as an option when publishing new posts.</p>
-                    <p>Existing posts previously sent as this newsletter will remain unchanged.</p>
+                    <div className="mb-6">Your newsletter <strong>{newsletter.name}</strong> will no longer be visible to members or available as an option when publishing new posts.</div>
+                    <div>Existing posts previously sent as this newsletter will remain unchanged.</div>
                 </>,
                 okLabel: 'Archive',
                 okColor: 'red',
@@ -182,7 +161,7 @@ const Sidebar: React.FC<{
     };
 
     const renderSenderEmailField = () => {
-        // Self-hosters, or legacy Pro users
+        // Self-hosters
         if (!isManagedEmail(config)) {
             return (
                 <TextField
@@ -253,7 +232,7 @@ const Sidebar: React.FC<{
                     />
                 </Form>
                 <div className='mb-5 mt-10'>
-                    {newsletter.status === 'active' ? (!onlyOne && <Button color='red' label='Archive newsletter' link onClick={confirmStatusChange} />) : <Button color='green' label='Reactivate newsletter' link onClick={confirmStatusChange} />}
+                    {newsletter.status === 'active' ? (!onlyOne && <Button color='red' disabled={activeNewsletters.length === 1} label='Archive newsletter' link onClick={confirmStatusChange}/>) : <Button color='green' label='Reactivate newsletter' link onClick={confirmStatusChange} />}
                 </div>
             </>
         },
@@ -418,7 +397,7 @@ const Sidebar: React.FC<{
                         onChange={color => updateNewsletter({title_color: color})}
                     />}
                     <ToggleGroup gap='lg'>
-                        {(hasNewsletterExcerpt && newsletter.show_post_title_section) &&
+                        {newsletter.show_post_title_section &&
                             <Toggle
                                 checked={newsletter.show_excerpt}
                                 direction="rtl"
@@ -450,12 +429,12 @@ const Sidebar: React.FC<{
                             label='Ask your readers for feedback'
                             onChange={e => updateNewsletter({feedback_enabled: e.target.checked})}
                         />
-                        <Toggle
+                        {commentsEnabled && <Toggle
                             checked={newsletter.show_comment_cta}
                             direction="rtl"
                             label='Add a link to your comments'
                             onChange={e => updateNewsletter({show_comment_cta: e.target.checked})}
-                        />
+                        />}
                         <Toggle
                             checked={newsletter.show_latest_posts}
                             direction="rtl"
@@ -508,8 +487,8 @@ const Sidebar: React.FC<{
 
     return (
         <div className='flex flex-col'>
-            <div className='px-7 pb-7 pt-5'>
-                <TabView selectedTab={selectedTab} tabs={tabs} onTabChange={handleTabChange} />
+            <div className='px-7 pb-7 pt-0'>
+                <TabView selectedTab={selectedTab} stickyHeader={true} tabs={tabs} onTabChange={handleTabChange} />
             </div>
         </div>
     );
@@ -547,17 +526,17 @@ const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter; onlyOne: b
             const newErrors: Record<string, string> = {};
 
             if (!formState.name) {
-                newErrors.name = 'Name is required';
+                newErrors.name = 'A name is required for your newsletter';
             }
 
             if (formState.sender_email && !validator.isEmail(formState.sender_email)) {
-                newErrors.sender_email = 'Invalid email';
+                newErrors.sender_email = 'Enter a valid email address';
             } else if (formState.sender_email && hasSendingDomain(config) && formState.sender_email.split('@')[1] !== sendingDomain(config)) {
-                newErrors.sender_email = `Email must end with @${sendingDomain(config)}`;
+                newErrors.sender_email = `Email address must end with @${sendingDomain(config)}`;
             }
 
             if (formState.sender_reply_to && !validator.isEmail(formState.sender_reply_to) && !['newsletter', 'support'].includes(formState.sender_reply_to)) {
-                newErrors.sender_reply_to = 'Invalid email';
+                newErrors.sender_reply_to = 'Enter a valid email address';
             }
 
             return newErrors;

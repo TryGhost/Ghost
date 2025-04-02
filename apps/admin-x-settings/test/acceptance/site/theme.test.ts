@@ -22,18 +22,26 @@ test.describe('Theme settings', async () => {
                     active: true,
                     templates: []
                 }]
-            }}
+            }},
+            activeTheme: {
+                method: 'GET',
+                path: '/themes/active/',
+                response: {
+                    themes: [{
+                        name: 'casper',
+                        package: {},
+                        active: true,
+                        templates: []
+                    }]
+                }
+            }
         }});
 
         await page.goto('/');
 
-        const designSection = page.getByTestId('design');
+        const themeSection = page.getByTestId('theme');
 
-        await designSection.getByRole('button', {name: 'Customize'}).click();
-
-        const designModal = page.getByTestId('design-modal');
-
-        await designModal.getByTestId('change-theme').click();
+        await themeSection.getByRole('button', {name: 'Change theme'}).click();
 
         const modal = page.getByTestId('theme-modal');
 
@@ -77,13 +85,9 @@ test.describe('Theme settings', async () => {
 
         await page.goto('/');
 
-        const designSection = page.getByTestId('design');
+        const themeSection = page.getByTestId('theme');
 
-        await designSection.getByRole('button', {name: 'Customize'}).click();
-
-        const designModal = page.getByTestId('design-modal');
-
-        await designModal.getByTestId('change-theme').click();
+        await themeSection.getByRole('button', {name: 'Change theme'}).click();
 
         const modal = page.getByTestId('theme-modal');
 
@@ -142,13 +146,9 @@ test.describe('Theme settings', async () => {
 
         await page.goto('/');
 
-        const designSection = page.getByTestId('design');
+        const themeSection = page.getByTestId('theme');
 
-        await designSection.getByRole('button', {name: 'Customize'}).click();
-
-        const designModal = page.getByTestId('design-modal');
-
-        await designModal.getByTestId('change-theme').click();
+        await themeSection.getByRole('button', {name: 'Change theme'}).click();
 
         const modal = page.getByTestId('theme-modal');
 
@@ -168,7 +168,7 @@ test.describe('Theme settings', async () => {
         expect(lastApiRequests.uploadTheme).toBeTruthy();
     });
 
-    test('Limits uploading new themes', async ({page}) => {
+    test('Limits uploading new themes and redirect to /pro', async ({page}) => {
         await mockApi({page, requests: {
             ...globalDataRequests,
             ...limitRequests,
@@ -193,19 +193,27 @@ test.describe('Theme settings', async () => {
 
         await page.goto('/');
 
-        const designSection = page.getByTestId('design');
+        const themeSection = page.getByTestId('theme');
 
-        await designSection.getByRole('button', {name: 'Customize'}).click();
-
-        const designModal = page.getByTestId('design-modal');
-
-        await designModal.getByTestId('change-theme').click();
+        await themeSection.getByRole('button', {name: 'Change theme'}).click();
 
         const modal = page.getByTestId('theme-modal');
 
         await modal.getByRole('button', {name: 'Upload theme'}).click();
 
         await expect(page.getByTestId('limit-modal')).toHaveText(/Upgrade to enable custom themes/);
+
+        const limitModal = page.getByTestId('limit-modal');
+
+        await limitModal.getByRole('button', {name: 'Upgrade'}).click();
+
+        // The route should be updated
+        const newPageUrl = page.url();
+        const newPageUrlObject = new URL(newPageUrl);
+        const decodedUrl = decodeURIComponent(newPageUrlObject.pathname);
+
+        // expect the route to be updated to /pro
+        await expect(decodedUrl).toMatch(/\/\{\"route\":\"\/pro\",\"isExternal\":true\}$/);
     });
 
     test('Prevents overwriting the default theme', async ({page}) => {
@@ -224,13 +232,9 @@ test.describe('Theme settings', async () => {
 
         await page.goto('/');
 
-        const designSection = page.getByTestId('design');
+        const themeSection = page.getByTestId('theme');
 
-        await designSection.getByRole('button', {name: 'Customize'}).click();
-
-        const designModal = page.getByTestId('design-modal');
-
-        await designModal.getByTestId('change-theme').click();
+        await themeSection.getByRole('button', {name: 'Change theme'}).click();
 
         const modal = page.getByTestId('theme-modal');
 
@@ -244,5 +248,20 @@ test.describe('Theme settings', async () => {
         await fileChooser.setFiles(`${__dirname}/../../utils/responses/source.zip`);
 
         await expect(page.getByTestId('confirmation-modal')).toHaveText(/Upload failed/);
+    });
+
+    test('fires Install Theme modal when redirected from markerplace url', async ({page}) => {
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseThemes: {method: 'GET', path: '/themes/', response: responseFixtures.themes}
+        }});
+        await page.goto('/#/settings/theme/install?source=github&ref=TryGhost/Taste');
+
+        await page.waitForSelector('[data-testid="theme-modal"]');
+
+        const confirmation = page.getByTestId('confirmation-modal');
+
+        await expect(confirmation).toHaveText(/Install Theme/);
+        await expect(confirmation).toHaveText(/By clicking below, Taste will automatically be activated as the theme for your site/);
     });
 });

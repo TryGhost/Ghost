@@ -11,5 +11,6 @@ module.exports = {
     SubscriptionCreatedEvent: require('./lib/SubscriptionCreatedEvent'),
     SubscriptionActivatedEvent: require('./lib/SubscriptionActivatedEvent'),
     SubscriptionCancelledEvent: require('./lib/SubscriptionCancelledEvent'),
+    OfferRedemptionEvent: require('./lib/OfferRedemptionEvent'),
     MemberLinkClickEvent: require('./lib/MemberLinkClickEvent')
 };

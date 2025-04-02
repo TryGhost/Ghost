@@ -1,4 +1,6 @@
 import AddDetailsPopup from './components/popups/AddDetailsPopup';
+import CTAPopup from './components/popups/CTAPopup';
+import DeletePopup from './components/popups/DeletePopup';
 import React from 'react';
 import ReportPopup from './components/popups/ReportPopup';
 
@@ -7,7 +9,9 @@ import ReportPopup from './components/popups/ReportPopup';
 */
 export const Pages = {
     addDetailsPopup: AddDetailsPopup,
-    reportPopup: ReportPopup
+    reportPopup: ReportPopup,
+    ctaPopup: CTAPopup,
+    deletePopup: DeletePopup
 };
 export type PageName = keyof typeof Pages;
 

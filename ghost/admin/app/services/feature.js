@@ -59,32 +59,24 @@ export default class FeatureService extends Service {
     @feature('referralInviteDismissed', {user: true}) referralInviteDismissed;
 
     // labs flags
-    @feature('urlCache') urlCache;
-    @feature('lexicalMultiplayer') lexicalMultiplayer;
     @feature('audienceFeedback') audienceFeedback;
     @feature('webmentions') webmentions;
-    @feature('websockets') websockets;
     @feature('stripeAutomaticTax') stripeAutomaticTax;
     @feature('emailCustomization') emailCustomization;
     @feature('i18n') i18n;
     @feature('announcementBar') announcementBar;
     @feature('signupCard') signupCard;
-    @feature('signupForm') signupForm;
-    @feature('collections') collections;
     @feature('mailEvents') mailEvents;
     @feature('collectionsCard') collectionsCard;
     @feature('importMemberTier') importMemberTier;
-    @feature('tipsAndDonations') tipsAndDonations;
-    @feature('recommendations') recommendations;
     @feature('lexicalIndicators') lexicalIndicators;
-    @feature('filterEmailDisabled') filterEmailDisabled;
     @feature('adminXDemo') adminXDemo;
-    @feature('portalImprovements') portalImprovements;
     @feature('ActivityPub') ActivityPub;
-    @feature('internalLinking') internalLinking;
     @feature('editorExcerpt') editorExcerpt;
-    @feature('newsletterExcerpt') newsletterExcerpt;
     @feature('contentVisibility') contentVisibility;
+    @feature('contentVisibilityAlpha') contentVisibilityAlpha;
+    @feature('postsX') postsX;
+    @feature('statsX') statsX;
 
     _user = null;
 
@@ -161,11 +153,14 @@ export default class FeatureService extends Service {
             nightShift = enabled || this.nightShift;
         }
 
+        document.documentElement.classList.toggle('dark', nightShift ?? false);
+
         return this.lazyLoader.loadStyle('dark', 'assets/ghost-dark.css', true).then(() => {
             $('link[title=dark]').prop('disabled', !nightShift);
         }).catch(() => {
             //TODO: Also disable toggle from settings and Labs hover
             $('link[title=dark]').prop('disabled', true);
+            document.documentElement.classList.remove('dark');
         });
     }
 }

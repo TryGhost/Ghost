@@ -13,6 +13,7 @@ export interface HtmlEditorProps {
     placeholder?: string
     nodes?: 'DEFAULT_NODES' | 'BASIC_NODES' | 'MINIMAL_NODES'
     emojiPicker?: boolean;
+    darkMode?: boolean;
 }
 
 declare global {
@@ -61,7 +62,8 @@ const KoenigWrapper: React.FC<HtmlEditorProps & { editor: EditorResource }> = ({
     onBlur,
     placeholder,
     nodes,
-    emojiPicker = true
+    emojiPicker = true,
+    darkMode = false
 }) => {
     const onError = useCallback((error: unknown) => {
         try {
@@ -128,12 +130,12 @@ const KoenigWrapper: React.FC<HtmlEditorProps & { editor: EditorResource }> = ({
 
     return (
         <koenig.KoenigComposer
+            darkMode={darkMode}
             nodes={koenig[nodes || 'DEFAULT_NODES']}
             onError={onError}
         >
             <koenig.KoenigComposableEditor
                 className='koenig-lexical koenig-lexical-editor-input'
-                darkMode={false}
                 isSnippetsEnabled={false}
                 markdownTransformers={transformers[nodes || 'DEFAULT_NODES']}
                 placeholderClassName='koenig-lexical-editor-input-placeholder line-clamp-1'
@@ -155,14 +157,14 @@ const HtmlEditor: React.FC<HtmlEditorProps & {
     className,
     ...props
 }) => {
-    const {fetchKoenigLexical} = useDesignSystem();
+    const {fetchKoenigLexical, darkMode} = useDesignSystem();
     const editorResource = useMemo(() => loadKoenig(fetchKoenigLexical), [fetchKoenigLexical]);
 
     return <div className={className || 'w-full'}>
         <div className="koenig-react-editor w-full [&_*]:!font-inherit [&_*]:!text-inherit">
             <ErrorBoundary name='editor'>
                 <Suspense fallback={<p className="koenig-react-editor-loading">Loading editor...</p>}>
-                    <KoenigWrapper {...props} editor={editorResource} />
+                    <KoenigWrapper {...props} darkMode={darkMode} editor={editorResource} />
                 </Suspense>
             </ErrorBoundary>
         </div>

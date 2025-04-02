@@ -1,4 +1,3 @@
-const cheerio = require('cheerio');
 const logging = require('@tryghost/logging');
 
 module.exports = class MentionDiscoveryService {
@@ -62,6 +61,7 @@ module.exports = class MentionDiscoveryService {
             return null;
         }
 
+        const cheerio = require('cheerio');
         const $ = cheerio.load(response.body);
 
         // must be first <link> OR <a> element with rel=webmention

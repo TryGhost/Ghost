@@ -2,8 +2,8 @@ const debug = require('@tryghost/debug')('web:endpoints:admin:app');
 const boolParser = require('express-query-boolean');
 const bodyParser = require('body-parser');
 const errorHandler = require('@tryghost/mw-error-handler');
-const versionMatch = require('@tryghost/mw-version-match');
 
+const versionMatch = require('../../middleware/version-match');
 const labs = require('../../../../../shared/labs');
 const shared = require('../../../shared');
 const express = require('../../../../../shared/express');
@@ -39,7 +39,7 @@ module.exports = function setupApiApp() {
     apiApp.use(routes());
 
     apiApp.use(async function nestApp(req, res, next) {
-        if (labs.isSet('NestPlayground')) {
+        if (process.env.GHOST_ENABLE_NEST_FRAMEWORK && labs.isSet('NestPlayground')) {
             const originalExpressApp = req.app;
             const app = await GhostNestApp.getApp();
 

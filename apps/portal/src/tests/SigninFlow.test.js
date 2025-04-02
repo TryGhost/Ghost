@@ -1,7 +1,10 @@
 import App from '../App.js';
+import {vi} from 'vitest';
 import {fireEvent, appRender, within} from '../utils/test-utils';
 import {site as FixtureSite} from '../utils/test-fixtures';
 import setupGhostApi from '../utils/api.js';
+
+vi.mock('@hcaptcha/react-hcaptcha');
 
 const setup = async ({site, member = null}) => {
     const ghostApi = setupGhostApi({siteUrl: 'https://example.com'});
@@ -14,6 +17,10 @@ const setup = async ({site, member = null}) => {
 
     ghostApi.member.sendMagicLink = jest.fn(() => {
         return Promise.resolve('success');
+    });
+
+    ghostApi.member.getIntegrityToken = jest.fn(() => {
+        return Promise.resolve('testtoken');
     });
 
     ghostApi.member.checkoutPlan = jest.fn(() => {
@@ -65,6 +72,10 @@ const multiTierSetup = async ({site, member = null}) => {
 
     ghostApi.member.sendMagicLink = jest.fn(() => {
         return Promise.resolve('success');
+    });
+
+    ghostApi.member.getIntegrityToken = jest.fn(() => {
+        return Promise.resolve(`testtoken`);
     });
 
     ghostApi.member.checkoutPlan = jest.fn(() => {
@@ -139,13 +150,15 @@ describe('Signin', () => {
             expect(emailInput).toHaveValue('jamie@example.com');
 
             fireEvent.click(submitButton);
-            expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
-                email: 'jamie@example.com',
-                emailType: 'signin'
-            });
 
             const magicLink = await within(popupIframeDocument).findByText(/Now check your email/i);
             expect(magicLink).toBeInTheDocument();
+
+            expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
+                email: 'jamie@example.com',
+                emailType: 'signin',
+                integrityToken: 'testtoken'
+            });
         });
 
         test('without name field', async () => {
@@ -165,13 +178,15 @@ describe('Signin', () => {
             expect(emailInput).toHaveValue('jamie@example.com');
 
             fireEvent.click(submitButton);
-            expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
-                email: 'jamie@example.com',
-                emailType: 'signin'
-            });
 
             const magicLink = await within(popupIframeDocument).findByText(/Now check your email/i);
             expect(magicLink).toBeInTheDocument();
+
+            expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
+                email: 'jamie@example.com',
+                emailType: 'signin',
+                integrityToken: 'testtoken'
+            });
         });
 
         test('with only free plan', async () => {
@@ -191,13 +206,15 @@ describe('Signin', () => {
             expect(emailInput).toHaveValue('jamie@example.com');
 
             fireEvent.click(submitButton);
-            expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
-                email: 'jamie@example.com',
-                emailType: 'signin'
-            });
 
             const magicLink = await within(popupIframeDocument).findByText(/Now check your email/i);
             expect(magicLink).toBeInTheDocument();
+
+            expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
+                email: 'jamie@example.com',
+                emailType: 'signin',
+                integrityToken: 'testtoken'
+            });
         });
     });
 });
@@ -231,13 +248,15 @@ describe('Signin', () => {
             expect(emailInput).toHaveValue('jamie@example.com');
 
             fireEvent.click(submitButton);
-            expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
-                email: 'jamie@example.com',
-                emailType: 'signin'
-            });
 
             const magicLink = await within(popupIframeDocument).findByText(/Now check your email/i);
             expect(magicLink).toBeInTheDocument();
+
+            expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
+                email: 'jamie@example.com',
+                emailType: 'signin',
+                integrityToken: 'testtoken'
+            });
         });
 
         test('without name field', async () => {
@@ -257,13 +276,15 @@ describe('Signin', () => {
             expect(emailInput).toHaveValue('jamie@example.com');
 
             fireEvent.click(submitButton);
-            expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
-                email: 'jamie@example.com',
-                emailType: 'signin'
-            });
 
             const magicLink = await within(popupIframeDocument).findByText(/Now check your email/i);
             expect(magicLink).toBeInTheDocument();
+
+            expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
+                email: 'jamie@example.com',
+                emailType: 'signin',
+                integrityToken: 'testtoken'
+            });
         });
 
         test('with only free plan available', async () => {
@@ -283,13 +304,74 @@ describe('Signin', () => {
             expect(emailInput).toHaveValue('jamie@example.com');
 
             fireEvent.click(submitButton);
-            expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
-                email: 'jamie@example.com',
-                emailType: 'signin'
-            });
 
             const magicLink = await within(popupIframeDocument).findByText(/Now check your email/i);
             expect(magicLink).toBeInTheDocument();
+
+            expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
+                email: 'jamie@example.com',
+                emailType: 'signin',
+                integrityToken: 'testtoken'
+            });
+        });
+    });
+
+    describe('with captcha enabled', () => {
+        beforeEach(() => {
+            // Mock window.location
+            Object.defineProperty(window, 'location', {
+                value: new URL('https://portal.localhost/#/portal/signin'),
+                writable: true
+            });
+        });
+        afterEach(() => {
+            window.location = realLocation;
+        });
+
+        test('on a simple site', async () => {
+            const {ghostApi, emailInput, submitButton, popupIframeDocument} = await setup({
+                site: Object.assign({}, FixtureSite.singleTier.basic, {
+                    captcha_enabled: true,
+                    captcha_sitekey: '20000000-ffff-ffff-ffff-000000000002'
+                })
+            });
+
+            fireEvent.change(emailInput, {target: {value: 'jamie@example.com'}});
+
+            fireEvent.click(submitButton);
+
+            const magicLink = await within(popupIframeDocument).findByText(/Now check your email/i);
+            expect(magicLink).toBeInTheDocument();
+
+            expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
+                email: 'jamie@example.com',
+                emailType: 'signin',
+                integrityToken: 'testtoken',
+                token: 'mocked-token'
+            });
+        });
+
+        test('with multiple tiers', async () => {
+            const {ghostApi, emailInput, submitButton, popupIframeDocument} = await multiTierSetup({
+                site: Object.assign({}, FixtureSite.multipleTiers.basic, {
+                    captcha_enabled: true,
+                    captcha_sitekey: '20000000-ffff-ffff-ffff-000000000002'
+                })
+            });
+
+            fireEvent.change(emailInput, {target: {value: 'jamie@example.com'}});
+
+            fireEvent.click(submitButton);
+
+            const magicLink = await within(popupIframeDocument).findByText(/Now check your email/i);
+            expect(magicLink).toBeInTheDocument();
+
+            expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
+                email: 'jamie@example.com',
+                emailType: 'signin',
+                integrityToken: 'testtoken',
+                token: 'mocked-token'
+            });
         });
     });
 });

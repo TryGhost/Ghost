@@ -1,126 +1,54 @@
 import {MATCH_RELATION_OPTIONS} from './relation-options';
 
-export const SUBSCRIBED_FILTER = ({newsletters, feature, group}) => {
-    if (feature.filterEmailDisabled) {
-        return {
-            label: newsletters.length > 1 ? 'All newsletters' : 'Newsletter subscription',
-            name: 'subscribed',
-            columnLabel: 'Subscribed',
-            relationOptions: MATCH_RELATION_OPTIONS,
-            valueType: 'options',
-            group: newsletters.length > 1 ? 'Newsletters' : group,
-            // Only show the filter for multiple newsletters if feature flag is enabled
-            feature: newsletters.length > 1 ? 'filterEmailDisabled' : undefined,
-            buildNqlFilter: (flt) => {
-                const relation = flt.relation;
-                const value = flt.value;
-
-                if (value === 'email-disabled') {
-                    if (relation === 'is') {
-                        return '(email_disabled:1)';
-                    }
-                    return '(email_disabled:0)';
-                }
-
-                if (relation === 'is') {
-                    if (value === 'subscribed') {
-                        return '(subscribed:true+email_disabled:0)';
-                    }
-                    return '(subscribed:false+email_disabled:0)';
-                }
-
-                // relation === 'is-not'
-                if (value === 'subscribed') {
-                    return '(subscribed:false,email_disabled:1)';
-                }
-                return '(subscribed:true,email_disabled:1)';
-            },
-            parseNqlFilter: (flt) => {
-                const comparator = flt.$and || flt.$or; // $or for legacy filter backwards compatibility
-
-                if (!comparator || comparator.length !== 2) {
-                    const filter = flt;
-                    if (filter && filter.email_disabled !== undefined) {
-                        if (filter.email_disabled) {
-                            return {
-                                value: 'email-disabled',
-                                relation: 'is'
-                            };
-                        }
-                        return {
-                            value: 'email-disabled',
-                            relation: 'is-not'
-                        };
-                    }
-                    return;
-                }
-
-                if (comparator[0].subscribed === undefined || comparator[1].email_disabled === undefined) {
-                    return;
-                }
-
-                const usedOr = flt.$or !== undefined;
-                const subscribed = comparator[0].subscribed;
-
-                if (usedOr) {
-                    // Is not
-                    return {
-                        value: !subscribed ? 'subscribed' : 'unsubscribed',
-                        relation: 'is-not'
-                    };
-                }
-
-                return {
-                    value: subscribed ? 'subscribed' : 'unsubscribed',
-                    relation: 'is'
-                };
-            },
-            options: [
-                {label: newsletters.length > 1 ? 'Subscribed to at least one' : 'Subscribed', name: 'subscribed'},
-                {label: newsletters.length > 1 ? 'Unsubscribed from all' : 'Unsubscribed', name: 'unsubscribed'},
-                {label: 'Email disabled', name: 'email-disabled'}
-            ],
-            getColumnValue: (member) => {
-                if (member.emailSuppression && member.emailSuppression.suppressed) {
-                    return {
-                        text: 'Email disabled'
-                    };
-                }
-
-                return member.newsletters.length > 0 ? {
-                    text: 'Subscribed'
-                } : {
-                    text: 'Unsubscribed'
-                };
-            }
-        };
-    }
-
-    if (newsletters.length > 1) {
-        // Disable
-        // Only show the filter for multiple newsletters if feature flag is enabled
-        return [];
-    }
-
+export const SUBSCRIBED_FILTER = ({newsletters, group}) => {
     return {
-        label: 'Newsletter subscription',
+        label: newsletters.length > 1 ? 'All newsletters' : 'Newsletter subscription',
         name: 'subscribed',
         columnLabel: 'Subscribed',
         relationOptions: MATCH_RELATION_OPTIONS,
         valueType: 'options',
-        group: group,
+        group: newsletters.length > 1 ? 'Newsletters' : group,
         buildNqlFilter: (flt) => {
             const relation = flt.relation;
             const value = flt.value;
 
-            return (relation === 'is' && value === 'true') || (relation === 'is-not' && value === 'false')
-                ? '(subscribed:true+email_disabled:0)'
-                : '(subscribed:false,email_disabled:1)';
+            if (value === 'email-disabled') {
+                if (relation === 'is') {
+                    return '(email_disabled:1)';
+                }
+                return '(email_disabled:0)';
+            }
+
+            if (relation === 'is') {
+                if (value === 'subscribed') {
+                    return '(subscribed:true+email_disabled:0)';
+                }
+                return '(subscribed:false+email_disabled:0)';
+            }
+
+            // relation === 'is-not'
+            if (value === 'subscribed') {
+                return '(subscribed:false,email_disabled:1)';
+            }
+            return '(subscribed:true,email_disabled:1)';
         },
         parseNqlFilter: (flt) => {
-            const comparator = flt.$and || flt.$or;
+            const comparator = flt.$and || flt.$or; // $or for legacy filter backwards compatibility
 
             if (!comparator || comparator.length !== 2) {
+                const filter = flt;
+                if (filter && filter.email_disabled !== undefined) {
+                    if (filter.email_disabled) {
+                        return {
+                            value: 'email-disabled',
+                            relation: 'is'
+                        };
+                    }
+                    return {
+                        value: 'email-disabled',
+                        relation: 'is-not'
+                    };
+                }
                 return;
             }
 
@@ -128,31 +56,44 @@ export const SUBSCRIBED_FILTER = ({newsletters, feature, group}) => {
                 return;
             }
 
+            const usedOr = flt.$or !== undefined;
             const subscribed = comparator[0].subscribed;
 
+            if (usedOr) {
+                // Is not
+                return {
+                    value: !subscribed ? 'subscribed' : 'unsubscribed',
+                    relation: 'is-not'
+                };
+            }
+
             return {
-                value: subscribed ? 'true' : 'false',
+                value: subscribed ? 'subscribed' : 'unsubscribed',
                 relation: 'is'
             };
         },
         options: [
-            {label: 'Subscribed', name: 'true'},
-            {label: 'Unsubscribed', name: 'false'}
+            {label: newsletters.length > 1 ? 'Subscribed to at least one' : 'Subscribed', name: 'subscribed'},
+            {label: newsletters.length > 1 ? 'Unsubscribed from all' : 'Unsubscribed', name: 'unsubscribed'},
+            {label: 'Email disabled', name: 'email-disabled'}
         ],
-        getColumnValue: (member, flt) => {
-            const relation = flt.relation;
-            const value = flt.value;
+        getColumnValue: (member) => {
+            if (member.emailSuppression && member.emailSuppression.suppressed) {
+                return {
+                    text: 'Email disabled'
+                };
+            }
 
-            return {
-                text: (relation === 'is' && value === 'true') || (relation === 'is-not' && value === 'false')
-                    ? 'Subscribed'
-                    : 'Unsubscribed'
+            return member.newsletters.length > 0 ? {
+                text: 'Subscribed'
+            } : {
+                text: 'Unsubscribed'
             };
         }
     };
 };
 
-export const NEWSLETTERS_FILTERS = ({newsletters, group, feature}) => {
+export const NEWSLETTERS_FILTERS = ({newsletters, group}) => {
     if (newsletters.length <= 1) {
         return [];
     }
@@ -210,12 +151,10 @@ export const NEWSLETTERS_FILTERS = ({newsletters, group, feature}) => {
                 const relation = flt.relation;
                 const value = flt.value;
 
-                if (feature.filterEmailDisabled) {
-                    if (member.emailSuppression && member.emailSuppression.suppressed) {
-                        return {
-                            text: 'Email disabled'
-                        };
-                    }
+                if (member.emailSuppression && member.emailSuppression.suppressed) {
+                    return {
+                        text: 'Email disabled'
+                    };
                 }
 
                 return {

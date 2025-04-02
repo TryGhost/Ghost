@@ -8,7 +8,7 @@ class StaffServiceWrapper {
             return;
         }
 
-        const StaffService = require('@tryghost/staff-service');
+        const StaffService = require('./StaffService');
 
         const logging = require('@tryghost/logging');
         const models = require('../../models');
@@ -17,6 +17,7 @@ class StaffServiceWrapper {
         const mailer = new GhostMailer();
         const settingsCache = require('../../../shared/settings-cache');
         const urlUtils = require('../../../shared/url-utils');
+        const {blogIcon} = require('../../../server/lib/image');
         const settingsHelpers = require('../settings-helpers');
 
         this.api = new StaffService({
@@ -26,6 +27,7 @@ class StaffServiceWrapper {
             settingsHelpers,
             settingsCache,
             urlUtils,
+            blogIcon,
             DomainEvents,
             memberAttributionService: memberAttribution.service,
             labs

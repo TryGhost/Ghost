@@ -1,4 +1,5 @@
 import MainContent from './MainContent';
+import NiceModal from '@ebay/nice-modal-react';
 import SettingsAppProvider, {OfficialTheme, UpgradeStatusType} from './components/providers/SettingsAppProvider';
 import SettingsRouter, {loadModals, modalPaths} from './components/providers/SettingsRouter';
 import {DesignSystemApp, DesignSystemAppProps} from '@tryghost/admin-x-design-system';
@@ -18,12 +19,17 @@ function App({framework, designSystem, officialThemes, zapierTemplates, upgradeS
     return (
         <FrameworkProvider {...framework}>
             <SettingsAppProvider officialThemes={officialThemes} upgradeStatus={upgradeStatus} zapierTemplates={zapierTemplates}>
-                <RoutingProvider basePath='settings' modals={{paths: modalPaths, load: loadModals}}>
-                    <DesignSystemApp className='admin-x-settings' {...designSystem}>
-                        <SettingsRouter />
-                        <MainContent />
-                    </DesignSystemApp>
-                </RoutingProvider>
+                {/* NOTE: we need to have an extra NiceModal.Provider here because the one inside DesignSystemApp
+                    is loaded too late for possible modals in RoutingProvider, and it's quite hard to change it at
+                    this point */}
+                <NiceModal.Provider>
+                    <RoutingProvider basePath='settings' modals={{paths: modalPaths, load: loadModals}}>
+                        <DesignSystemApp className='admin-x-settings' {...designSystem}>
+                            <SettingsRouter />
+                            <MainContent />
+                        </DesignSystemApp>
+                    </RoutingProvider>
+                </NiceModal.Provider>
             </SettingsAppProvider>
         </FrameworkProvider>
     );

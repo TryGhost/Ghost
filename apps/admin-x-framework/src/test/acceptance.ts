@@ -76,7 +76,6 @@ const defaultLabFlags = {
     themeErrorsNotification: false,
     outboundLinkTagging: false,
     announcementBar: false,
-    signupForm: false,
     members: false
 };
 
@@ -187,7 +186,14 @@ export async function mockApi<Requests extends Record<string, MockRequestConfig>
             });
         }
 
-        const requestBody = JSON.parse(route.request().postData() || 'null');
+        let requestBody = null;
+        try {
+            // Try to parse the post data as JSON
+            requestBody = JSON.parse(route.request().postData() || 'null');
+        } catch {
+            // Post data isn't JSON (e.g. file upload) — use the raw post data
+            requestBody = route.request().postData();
+        }
 
         lastApiRequests[matchingMock.name] = {
             body: requestBody,
@@ -205,13 +211,17 @@ export async function mockApi<Requests extends Record<string, MockRequestConfig>
     return {lastApiRequests};
 }
 
-export function updatedSettingsResponse(newSettings: Array<{ key: string, value: string | boolean | null }>) {
+export function updatedSettingsResponse(newSettings: Array<{ key: string, value: string | boolean | null, is_read_only?: boolean }>) {
     return {
         ...responseFixtures.settings,
         settings: responseFixtures.settings.settings.map((setting) => {
             const newSetting = newSettings.find(({key}) => key === setting.key);
 
-            return {key: setting.key, value: newSetting?.value || setting.value};
+            return {
+                key: setting.key,
+                value: newSetting?.value !== undefined ? newSetting.value : setting.value,
+                ...(newSetting?.is_read_only ? {is_read_only: true} : {})
+            };
         })
     };
 }
@@ -230,6 +240,7 @@ export function meWithRole(name: string) {
 
 export async function mockSitePreview({page, url, response}: {page: Page, url: string, response: string}) {
     const lastRequest: {previewHeader?: string} = {};
+    const previewRequests: string[] = [];
 
     await page.route(url, async (route) => {
         if (route.request().method() !== 'POST') {
@@ -240,6 +251,10 @@ export async function mockSitePreview({page, url, response}: {page: Page, url: s
             return route.continue();
         }
 
+        if (route.request().headers()['x-ghost-preview']) {
+            previewRequests.push(route.request().headers()['x-ghost-preview']);
+        }
+
         lastRequest.previewHeader = route.request().headers()['x-ghost-preview'];
 
         await route.fulfill({
@@ -248,12 +263,28 @@ export async function mockSitePreview({page, url, response}: {page: Page, url: s
         });
     });
 
-    return lastRequest;
+    return {
+        lastRequest,
+        previewRequests
+    };
 }
 
 export async function chooseOptionInSelect(select: Locator, optionText: string | RegExp) {
     await select.click();
     await select.page().locator('[data-testid="select-option"]', {hasText: optionText}).click();
+}
+
+export async function getOptionsFromSelect(select: Locator): Promise<string[]> {
+    // Open the select dropdown
+    await select.click();
+
+    const options = await select.page().locator('[data-testid="select-option"]');
+    const optionTexts = await options.allTextContents();
+
+    // Close the select dropdown
+    await select.press('Escape');
+
+    return optionTexts;
 }
 
 export async function testUrlValidation(input: Locator, textToEnter: string, expectedResult: string, expectedError?: string) {

@@ -10,6 +10,7 @@ const mockAjax = Service.extend({
     init() {
         this._super(...arguments);
         this.post = sinon.stub().resolves();
+        this.put = sinon.stub().resolves();
         this.del = sinon.stub().resolves();
     }
 });
@@ -61,7 +62,7 @@ describe('Unit: Authenticator: cookie', () => {
             let authenticator = this.owner.lookup('authenticator:cookie');
             let post = authenticator.ajax.post;
 
-            return authenticator.authenticate('AzureDiamond', 'hunter2').then(() => {
+            return authenticator.authenticate({identification: 'AzureDiamond', password: 'hunter2'}).then(() => {
                 expect(post.args[0][0]).to.equal(`${ghostPaths().apiRoot}/session`);
                 expect(post.args[0][1]).to.deep.include({
                     data: {
@@ -74,6 +75,46 @@ describe('Unit: Authenticator: cookie', () => {
                 });
                 expect(post.args[0][1]).to.deep.include({
                     contentType: 'application/json;charset=utf-8'
+                });
+            });
+        });
+
+        it('puts the token to the sessionVerifyEndpoint and returns the promise', function () {
+            let authenticator = this.owner.lookup('authenticator:cookie');
+            let put = authenticator.ajax.put;
+
+            return authenticator.authenticate({token: '123456'}).then(() => {
+                expect(put.args[0][0]).to.equal(`${ghostPaths().apiRoot}/session/verify`);
+                expect(put.args[0][1]).to.deep.include({
+                    data: {
+                        token: '123456'
+                    }
+                });
+                expect(put.args[0][1]).to.deep.include({
+                    dataType: 'text'
+                });
+                expect(put.args[0][1]).to.deep.include({
+                    contentType: 'application/json;charset=utf-8'
+                });
+            });
+        });
+
+        it('includes skipEmailVerification in request data when provided', function () {
+            let authenticator = this.owner.lookup('authenticator:cookie');
+            let post = authenticator.ajax.post;
+
+            return authenticator.authenticate({
+                identification: 'AzureDiamond', 
+                password: 'hunter2',
+                skipEmailVerification: true
+            }).then(() => {
+                expect(post.args[0][0]).to.equal(`${ghostPaths().apiRoot}/session`);
+                expect(post.args[0][1]).to.deep.include({
+                    data: {
+                        username: 'AzureDiamond',
+                        password: 'hunter2',
+                        skipEmailVerification: true
+                    }
                 });
             });
         });

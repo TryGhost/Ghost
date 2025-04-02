@@ -7,9 +7,7 @@ import Route from '@ember/routing/route';
 import ShortcutsRoute from 'ghost-admin/mixins/shortcuts-route';
 import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import windowProxy from 'ghost-admin/utils/window-proxy';
-import {Debug} from '@sentry/integrations';
-import {Replay} from '@sentry/replay';
-import {beforeSend} from 'ghost-admin/utils/sentry';
+import {getSentryConfig} from '../utils/sentry';
 import {importComponent} from '../components/admin-x/admin-x-component';
 import {inject} from 'ghost-admin/decorators/inject';
 import {
@@ -106,7 +104,7 @@ export default Route.extend(ShortcutsRoute, {
         save: K,
 
         error(error, transition) {
-            // unauthoirized errors are already handled in the ajax service
+            // unauthorized errors are already handled in the ajax service
             if (isUnauthorizedError(error)) {
                 return false;
             }
@@ -114,22 +112,27 @@ export default Route.extend(ShortcutsRoute, {
             if (isNotFoundError(error)) {
                 if (transition) {
                     transition.abort();
+
+                    let routeInfo = transition?.to;
+                    let router = this.router;
+                    let params = [];
+
+                    if (routeInfo) {
+                        for (let key of Object.keys(routeInfo.params)) {
+                            params.push(routeInfo.params[key]);
+                        }
+
+                        let url = router.urlFor(routeInfo.name, ...params)
+                            .replace(/^#\//, '')
+                            .replace(/^\//, '')
+                            .replace(/^ghost\//, '');
+
+                        return this.replaceWith('error404', url);
+                    }
                 }
 
-                let routeInfo = transition.to;
-                let router = this.router;
-                let params = [];
-
-                for (let key of Object.keys(routeInfo.params)) {
-                    params.push(routeInfo.params[key]);
-                }
-
-                let url = router.urlFor(routeInfo.name, ...params)
-                    .replace(/^#\//, '')
-                    .replace(/^\//, '')
-                    .replace(/^ghost\//, '');
-
-                return this.replaceWith('error404', url);
+                // when there's no transition we fall through to our generic error handler
+                // for network errors that will hit the isAjaxError branch below
             }
 
             if (isVersionMismatchError(error)) {
@@ -179,61 +182,7 @@ export default Route.extend(ShortcutsRoute, {
         // init Sentry here rather than app.js so that we can use API-supplied
         // sentry_dsn and sentry_env rather than building it into release assets
         if (this.config.sentry_dsn) {
-            const sentryConfig = {
-                dsn: this.config.sentry_dsn,
-                environment: this.config.sentry_env,
-                release: `ghost@${this.config.version}`,
-                beforeSend,
-                ignoreErrors: [
-                    // Browser autoplay policies (this regex covers a few)
-                    /The play() request was interrupted/,
-                    /The request is not allowed by the user agent or the platform in the current context/,
-
-                    // Network errors that we don't control
-                    /Server was unreachable/,
-                    /NetworkError when attempting to fetch resource./,
-                    /Failed to fetch/,
-                    /Load failed/,
-                    /The operation was aborted./,
-
-                    // TransitionAborted errors surface from normal application behaviour
-                    // - https://github.com/emberjs/ember.js/issues/12505
-                    /^TransitionAborted$/,
-                    // ResizeObserver loop errors occur often from extensions and
-                    // embedded content, generally harmless and not useful to report
-                    /^ResizeObserver loop completed with undelivered notifications/,
-                    /^ResizeObserver loop limit exceeded/,
-                    // When tasks in ember-concurrency are canceled, they sometimes lead to unhandled Promise rejections
-                    // This doesn't affect the application and is not useful to report
-                    // - http://ember-concurrency.com/docs/cancelation
-                    'TaskCancelation'
-                ],
-                integrations: []
-            };
-
-            try {
-                // Session Replay on errors
-                // Docs: https://docs.sentry.io/platforms/javascript/session-replay
-                sentryConfig.replaysOnErrorSampleRate = 0.5;
-                sentryConfig.integrations.push(
-                    // Replace with `Sentry.replayIntegration()` once we've migrated to @sentry/ember 8.x
-                    // Docs: https://docs.sentry.io/platforms/javascript/migration/v7-to-v8/#removal-of-sentryreplay-package
-                    new Replay({
-                        mask: ['.koenig-lexical', '.gh-dashboard'],
-                        unmask: ['[role="menu"]', '[data-testid="settings-panel"]', '.gh-nav'],
-                        maskAllText: false,
-                        maskAllInputs: true,
-                        blockAllMedia: true
-                    })
-                );
-            } catch (e) {
-                // no-op, Session Replay is not critical
-                console.error('Error enabling Sentry Replay:', e); // eslint-disable-line no-console
-            }
-
-            if (this.config.sentry_env === 'development') {
-                sentryConfig.integrations.push(new Debug());
-            }
+            const sentryConfig = getSentryConfig(this.config.sentry_dsn, this.config.sentry_env, this.config.version);
             Sentry.init(sentryConfig);
         }
 

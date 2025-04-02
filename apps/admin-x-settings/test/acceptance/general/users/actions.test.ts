@@ -173,7 +173,7 @@ test.describe('User actions', async () => {
 
         await modal.getByRole('button', {name: 'Actions'}).click();
         await expect(page.getByTestId('popover-content').getByRole('button', {name: 'Make owner'})).toHaveCount(0);
-        await page.getByTestId('popover-overlay').click();
+        await modal.getByRole('button', {name: 'Actions'}).click();
 
         await modal.getByRole('button', {name: 'Close'}).click();
 

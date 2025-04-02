@@ -15,6 +15,7 @@ const logging = require('@tryghost/logging');
  * @typedef {object} IEmailProviderService
  * @prop {(emailData: EmailData, options: EmailSendingOptions) => Promise<EmailProviderSuccessResponse>} send
  * @prop {() => number} getMaximumRecipients
+ * @prop {() => number} getTargetDeliveryWindow
  *
  * @typedef {object} Post
  * @typedef {object} Newsletter
@@ -29,6 +30,7 @@ const logging = require('@tryghost/logging');
  * @typedef {object} EmailSendingOptions
  * @prop {boolean} clickTrackingEnabled
  * @prop {boolean} openTrackingEnabled
+ * @prop {Date} deliveryTime
  * @prop {{get(id: string): EmailBody | null, set(id: string, body: EmailBody): void}} [emailBodyCache]
  */
 
@@ -73,6 +75,15 @@ class SendingService {
 
     getMaximumRecipients() {
         return this.#emailProvider.getMaximumRecipients();
+    }
+
+    /**
+     * Returns the configured target delivery window in seconds
+     * 
+     * @returns {number}
+     */
+    getTargetDeliveryWindow() {
+        return this.#emailProvider.getTargetDeliveryWindow();
     }
 
     /**
@@ -125,7 +136,8 @@ class SendingService {
             replacementDefinitions: emailBody.replacements
         }, {
             clickTrackingEnabled: !!options.clickTrackingEnabled,
-            openTrackingEnabled: !!options.openTrackingEnabled
+            openTrackingEnabled: !!options.openTrackingEnabled,
+            ...(options.deliveryTime && {deliveryTime: options.deliveryTime})
         });
     }
 

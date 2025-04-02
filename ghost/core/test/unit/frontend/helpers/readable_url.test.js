@@ -1,7 +1,21 @@
-const should = require('should');
 const readable_url = require('../../../../core/frontend/helpers/readable_url');
+const logging = require('@tryghost/logging');
+const sinon = require('sinon');
+const errors = require('@tryghost/errors');
 
 describe('{{#readable_url}} helper', function () {
+    let loggingErrorStub; 
+
+    beforeEach(function () {
+        // Stub the logging.error method
+        loggingErrorStub = sinon.stub(logging, 'error');
+    });
+
+    afterEach(function () {
+        // Restore the original logging.error method
+        loggingErrorStub.restore();
+    });
+
     it('renders a short URL, without protocol, www, query params nor hash fragments', function () {
         const readable = readable_url.call(
             {},
@@ -16,6 +30,9 @@ describe('{{#readable_url}} helper', function () {
             {},
             {foo: 'bar'}
         );
+
+        sinon.assert.calledOnce(loggingErrorStub);
+        sinon.assert.calledWith(loggingErrorStub, sinon.match.instanceOf(errors.IncorrectUsageError));
 
         readable.string.should.equal('');
     });

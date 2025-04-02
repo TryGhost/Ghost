@@ -33,6 +33,7 @@ export type User = {
     mention_notifications: boolean;
     recommendation_notifications: boolean;
     milestone_notifications: boolean;
+    donation_notifications: boolean;
     roles: UserRole[];
     url: string;
 }
@@ -147,7 +148,9 @@ export function isAdminUser(user: User) {
 }
 
 export function isEditorUser(user: User) {
-    return user.roles.some(role => role.name === 'Editor');
+    const isAnyEditor = user.roles.some(role => role.name === 'Editor') 
+        || user.roles.some(role => role.name === 'Super Editor');
+    return isAnyEditor;
 }
 
 export function isAuthorUser(user: User) {

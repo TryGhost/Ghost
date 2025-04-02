@@ -197,7 +197,7 @@ exports[`Posts API Can browse 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "10736",
+  "content-length": "10732",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -421,7 +421,7 @@ exports[`Posts API Can browse filtering by a collection 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "11731",
+  "content-length": "11727",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -766,7 +766,7 @@ exports[`Posts API Can browse with formats 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "13534",
+  "content-length": "13530",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -874,7 +874,7 @@ exports[`Posts API Convert can convert a mobiledoc post to lexical 2: [headers] 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "4102",
+  "content-length": "4100",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -983,7 +983,7 @@ exports[`Posts API Convert can convert a mobiledoc post to lexical 4: [headers] 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "4102",
+  "content-length": "4100",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1089,7 +1089,7 @@ exports[`Posts API Copy Can copy a post 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "3894",
+  "content-length": "3892",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1198,7 +1198,7 @@ exports[`Posts API Create Can create a post with html 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "4124",
+  "content-length": "4122",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1307,7 +1307,7 @@ exports[`Posts API Create Can create a post with lexical 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "4136",
+  "content-length": "4134",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1416,7 +1416,7 @@ exports[`Posts API Create Can create a post with mobiledoc 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "3952",
+  "content-length": "3950",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1454,6 +1454,24 @@ Object {
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
+}
+`;
+
+exports[`Posts API Create Errors if feature_image_alt is too long 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": StringMatching /\\.\\*post_revisions\\\\\\.feature_image_alt\\] exceeds maximum length of 191 characters\\.\\*/,
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Validation error, cannot save post.",
+      "property": null,
+      "type": "ValidationError",
+    },
+  ],
 }
 `;
 
@@ -1703,7 +1721,7 @@ exports[`Posts API Delete Can delete posts belonging to a collection and returns
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "11731",
+  "content-length": "11727",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -2054,565 +2072,12 @@ exports[`Posts API Update Access Visibility is set to tiers Saves only paid tier
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "3527",
+  "content-length": "3525",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-cache-invalidate": Any<String>,
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Posts API Update Can add and remove collections 1: [body] 1`] = `
-Object {
-  "posts": Array [
-    Object {
-      "authors": Any<Array>,
-      "canonical_url": null,
-      "codeinjection_foot": null,
-      "codeinjection_head": null,
-      "comment_id": Any<String>,
-      "count": Object {
-        "clicks": 0,
-        "negative_feedback": 0,
-        "positive_feedback": 0,
-      },
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "custom_excerpt": null,
-      "custom_template": null,
-      "email": null,
-      "email_only": false,
-      "email_segment": "all",
-      "email_subject": null,
-      "excerpt": null,
-      "feature_image": null,
-      "feature_image_alt": null,
-      "feature_image_caption": null,
-      "featured": false,
-      "frontmatter": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "lexical": "{\\"root\\":{\\"children\\":[{\\"children\\":[],\\"direction\\":null,\\"format\\":\\"\\",\\"indent\\":0,\\"type\\":\\"paragraph\\",\\"version\\":1}],\\"direction\\":null,\\"format\\":\\"\\",\\"indent\\":0,\\"type\\":\\"root\\",\\"version\\":1}}",
-      "meta_description": null,
-      "meta_title": null,
-      "mobiledoc": null,
-      "newsletter": null,
-      "og_description": null,
-      "og_image": null,
-      "og_title": null,
-      "primary_author": Any<Object>,
-      "primary_tag": Any<Object>,
-      "published_at": null,
-      "slug": "collection-update-test",
-      "status": "draft",
-      "tags": Any<Array>,
-      "tiers": Array [
-        Object {
-          "active": true,
-          "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-          "currency": null,
-          "description": null,
-          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "monthly_price": null,
-          "monthly_price_id": null,
-          "name": "Free",
-          "slug": "free",
-          "trial_days": 0,
-          "type": "free",
-          "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-          "visibility": "public",
-          "welcome_page_url": null,
-          "yearly_price": null,
-          "yearly_price_id": null,
-        },
-        Object {
-          "active": true,
-          "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-          "currency": "usd",
-          "description": null,
-          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "monthly_price": 500,
-          "monthly_price_id": null,
-          "name": "Default Product",
-          "slug": "default-product",
-          "trial_days": 0,
-          "type": "paid",
-          "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-          "visibility": "public",
-          "welcome_page_url": null,
-          "yearly_price": 5000,
-          "yearly_price_id": null,
-        },
-      ],
-      "title": "Collection update test",
-      "twitter_description": null,
-      "twitter_image": null,
-      "twitter_title": null,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "url": Any<String>,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-      "visibility": "public",
-    },
-  ],
-}
-`;
-
-exports[`Posts API Update Can add and remove collections 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "3908",
-  "content-type": "application/json; charset=utf-8",
-  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/posts\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
-  "vary": "Accept-Version, Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Posts API Update Can add and remove collections 3: [body] 1`] = `
-Object {
-  "posts": Array [
-    Object {
-      "authors": Any<Array>,
-      "canonical_url": null,
-      "codeinjection_foot": null,
-      "codeinjection_head": null,
-      "collections": Array [
-        Object {
-          "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.\\\\d\\{3\\}Z/,
-          "description": null,
-          "feature_image": null,
-          "filter": null,
-          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "posts": Array [
-            Object {
-              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-              "sort_order": 0,
-            },
-          ],
-          "slug": "collection-to-remove",
-          "title": "Collection to remove.",
-          "type": "manual",
-          "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.\\\\d\\{3\\}Z/,
-        },
-        Object {
-          "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.\\\\d\\{3\\}Z/,
-          "description": "All posts",
-          "feature_image": null,
-          "filter": "",
-          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "posts": Array [
-            Object {
-              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-              "sort_order": 0,
-            },
-            Object {
-              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-              "sort_order": 1,
-            },
-            Object {
-              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-              "sort_order": 2,
-            },
-            Object {
-              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-              "sort_order": 3,
-            },
-            Object {
-              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-              "sort_order": 4,
-            },
-            Object {
-              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-              "sort_order": 5,
-            },
-            Object {
-              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-              "sort_order": 6,
-            },
-            Object {
-              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-              "sort_order": 7,
-            },
-            Object {
-              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-              "sort_order": 8,
-            },
-            Object {
-              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-              "sort_order": 9,
-            },
-            Object {
-              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-              "sort_order": 10,
-            },
-            Object {
-              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-              "sort_order": 11,
-            },
-            Object {
-              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-              "sort_order": 12,
-            },
-            Object {
-              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-              "sort_order": 13,
-            },
-            Object {
-              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-              "sort_order": 14,
-            },
-            Object {
-              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-              "sort_order": 15,
-            },
-            Object {
-              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-              "sort_order": 16,
-            },
-            Object {
-              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-              "sort_order": 17,
-            },
-            Object {
-              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-              "sort_order": 18,
-            },
-            Object {
-              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-              "sort_order": 19,
-            },
-            Object {
-              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-              "sort_order": 20,
-            },
-          ],
-          "slug": "latest",
-          "title": "Latest",
-          "type": "automatic",
-          "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.\\\\d\\{3\\}Z/,
-        },
-      ],
-      "comment_id": Any<String>,
-      "count": Object {
-        "clicks": 0,
-        "negative_feedback": 0,
-        "positive_feedback": 0,
-      },
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "custom_excerpt": null,
-      "custom_template": null,
-      "email": null,
-      "email_only": false,
-      "email_segment": "all",
-      "email_subject": null,
-      "excerpt": null,
-      "feature_image": null,
-      "feature_image_alt": null,
-      "feature_image_caption": null,
-      "featured": false,
-      "frontmatter": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "lexical": "{\\"root\\":{\\"children\\":[{\\"children\\":[],\\"direction\\":null,\\"format\\":\\"\\",\\"indent\\":0,\\"type\\":\\"paragraph\\",\\"version\\":1}],\\"direction\\":null,\\"format\\":\\"\\",\\"indent\\":0,\\"type\\":\\"root\\",\\"version\\":1}}",
-      "meta_description": null,
-      "meta_title": null,
-      "mobiledoc": null,
-      "newsletter": null,
-      "og_description": null,
-      "og_image": null,
-      "og_title": null,
-      "primary_author": Any<Object>,
-      "primary_tag": Any<Object>,
-      "published_at": null,
-      "slug": "collection-update-test",
-      "status": "draft",
-      "tags": Any<Array>,
-      "tiers": Array [
-        Object {
-          "active": true,
-          "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-          "currency": null,
-          "description": null,
-          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "monthly_price": null,
-          "monthly_price_id": null,
-          "name": "Free",
-          "slug": "free",
-          "trial_days": 0,
-          "type": "free",
-          "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-          "visibility": "public",
-          "welcome_page_url": null,
-          "yearly_price": null,
-          "yearly_price_id": null,
-        },
-        Object {
-          "active": true,
-          "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-          "currency": "usd",
-          "description": null,
-          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "monthly_price": 500,
-          "monthly_price_id": null,
-          "name": "Default Product",
-          "slug": "default-product",
-          "trial_days": 0,
-          "type": "paid",
-          "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-          "visibility": "public",
-          "welcome_page_url": null,
-          "yearly_price": 5000,
-          "yearly_price_id": null,
-        },
-      ],
-      "title": "Collection update test",
-      "twitter_description": null,
-      "twitter_image": null,
-      "twitter_title": null,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "url": Any<String>,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-      "visibility": "public",
-    },
-  ],
-}
-`;
-
-exports[`Posts API Update Can add and remove collections 4: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "5504",
-  "content-type": "application/json; charset=utf-8",
-  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Version, Origin, Accept-Encoding",
-  "x-cache-invalidate": StringMatching /\\\\/p\\\\/\\[0-9a-f\\]\\{8\\}-\\[0-9a-f\\]\\{4\\}-\\[0-9a-f\\]\\{4\\}-\\[0-9a-f\\]\\{4\\}-\\[0-9a-f\\]\\{12\\}/,
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Posts API Update Can add and remove collections 5: [body] 1`] = `
-Object {
-  "posts": Array [
-    Object {
-      "authors": Any<Array>,
-      "canonical_url": null,
-      "codeinjection_foot": null,
-      "codeinjection_head": null,
-      "collections": Array [
-        Object {
-          "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.\\\\d\\{3\\}Z/,
-          "description": null,
-          "feature_image": null,
-          "filter": null,
-          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "posts": Array [
-            Object {
-              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-              "sort_order": 0,
-            },
-          ],
-          "slug": "collection-to-add",
-          "title": "Collection to add.",
-          "type": "manual",
-          "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.\\\\d\\{3\\}Z/,
-        },
-        Object {
-          "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.\\\\d\\{3\\}Z/,
-          "description": "All posts",
-          "feature_image": null,
-          "filter": "",
-          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "posts": Array [
-            Object {
-              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-              "sort_order": 0,
-            },
-            Object {
-              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-              "sort_order": 1,
-            },
-            Object {
-              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-              "sort_order": 2,
-            },
-            Object {
-              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-              "sort_order": 3,
-            },
-            Object {
-              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-              "sort_order": 4,
-            },
-            Object {
-              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-              "sort_order": 5,
-            },
-            Object {
-              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-              "sort_order": 6,
-            },
-            Object {
-              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-              "sort_order": 7,
-            },
-            Object {
-              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-              "sort_order": 8,
-            },
-            Object {
-              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-              "sort_order": 9,
-            },
-            Object {
-              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-              "sort_order": 10,
-            },
-            Object {
-              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-              "sort_order": 11,
-            },
-            Object {
-              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-              "sort_order": 12,
-            },
-            Object {
-              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-              "sort_order": 13,
-            },
-            Object {
-              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-              "sort_order": 14,
-            },
-            Object {
-              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-              "sort_order": 15,
-            },
-            Object {
-              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-              "sort_order": 16,
-            },
-            Object {
-              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-              "sort_order": 17,
-            },
-            Object {
-              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-              "sort_order": 18,
-            },
-            Object {
-              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-              "sort_order": 19,
-            },
-            Object {
-              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-              "sort_order": 20,
-            },
-          ],
-          "slug": "latest",
-          "title": "Latest",
-          "type": "automatic",
-          "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.\\\\d\\{3\\}Z/,
-        },
-      ],
-      "comment_id": Any<String>,
-      "count": Object {
-        "clicks": 0,
-        "negative_feedback": 0,
-        "positive_feedback": 0,
-      },
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "custom_excerpt": null,
-      "custom_template": null,
-      "email": null,
-      "email_only": false,
-      "email_segment": "all",
-      "email_subject": null,
-      "excerpt": null,
-      "feature_image": null,
-      "feature_image_alt": null,
-      "feature_image_caption": null,
-      "featured": false,
-      "frontmatter": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "lexical": "{\\"root\\":{\\"children\\":[{\\"children\\":[],\\"direction\\":null,\\"format\\":\\"\\",\\"indent\\":0,\\"type\\":\\"paragraph\\",\\"version\\":1}],\\"direction\\":null,\\"format\\":\\"\\",\\"indent\\":0,\\"type\\":\\"root\\",\\"version\\":1}}",
-      "meta_description": null,
-      "meta_title": null,
-      "mobiledoc": null,
-      "newsletter": null,
-      "og_description": null,
-      "og_image": null,
-      "og_title": null,
-      "primary_author": Any<Object>,
-      "primary_tag": Any<Object>,
-      "published_at": null,
-      "slug": "collection-update-test",
-      "status": "draft",
-      "tags": Any<Array>,
-      "tiers": Array [
-        Object {
-          "active": true,
-          "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-          "currency": null,
-          "description": null,
-          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "monthly_price": null,
-          "monthly_price_id": null,
-          "name": "Free",
-          "slug": "free",
-          "trial_days": 0,
-          "type": "free",
-          "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-          "visibility": "public",
-          "welcome_page_url": null,
-          "yearly_price": null,
-          "yearly_price_id": null,
-        },
-        Object {
-          "active": true,
-          "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-          "currency": "usd",
-          "description": null,
-          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "monthly_price": 500,
-          "monthly_price_id": null,
-          "name": "Default Product",
-          "slug": "default-product",
-          "trial_days": 0,
-          "type": "paid",
-          "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-          "visibility": "public",
-          "welcome_page_url": null,
-          "yearly_price": 5000,
-          "yearly_price_id": null,
-        },
-      ],
-      "title": "Collection update test",
-      "twitter_description": null,
-      "twitter_image": null,
-      "twitter_title": null,
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "url": Any<String>,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-      "visibility": "public",
-    },
-  ],
-}
-`;
-
-exports[`Posts API Update Can add and remove collections 6: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "5498",
-  "content-type": "application/json; charset=utf-8",
-  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Version, Origin, Accept-Encoding",
-  "x-cache-invalidate": StringMatching /\\\\/p\\\\/\\[0-9a-f\\]\\{8\\}-\\[0-9a-f\\]\\{4\\}-\\[0-9a-f\\]\\{4\\}-\\[0-9a-f\\]\\{4\\}-\\[0-9a-f\\]\\{12\\}/,
   "x-powered-by": "Express",
 }
 `;
@@ -2716,7 +2181,7 @@ exports[`Posts API Update Can update a post with lexical 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "4087",
+  "content-length": "4085",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -2825,7 +2290,7 @@ exports[`Posts API Update Can update a post with lexical 4: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "4084",
+  "content-length": "4082",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -2934,7 +2399,7 @@ exports[`Posts API Update Can update a post with mobiledoc 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "3897",
+  "content-length": "3895",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -3043,7 +2508,7 @@ exports[`Posts API Update Can update a post with mobiledoc 4: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "3894",
+  "content-length": "3892",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,

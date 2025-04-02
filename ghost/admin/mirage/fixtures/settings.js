@@ -75,7 +75,7 @@ export default [
 
     // PORTAL
     setting('portal', 'portal_name', true),
-    setting('portal', 'portal_button', true),
+    setting('portal', 'portal_button', false),
     setting('portal', 'portal_plans', JSON.stringify(['free'])),
     setting('portal', 'portal_default_plan', 'yearly'),
     setting('portal', 'portal_products', JSON.stringify([])),
@@ -94,6 +94,7 @@ export default [
     setting('email', 'email_track_opens', true),
     setting('email', 'email_track_clicks', true),
     setting('email', 'email_verification_required', false),
+    setting('email', 'default_email_address', 'noreply@example.com'),
 
     // ANALYTICS
     setting('email', 'outbound_link_tagging', true),
@@ -131,6 +132,6 @@ export default [
     setting('editor', 'editor_default_email_recipients_filter', 'all'),
 
     // DONATIONS
-    setting('donations_suggested_amount', 'donations', 0),
+    setting('donations_suggested_amount', 'donations', 500),
     setting('donations_currency', 'donations', 'USD')
 ];

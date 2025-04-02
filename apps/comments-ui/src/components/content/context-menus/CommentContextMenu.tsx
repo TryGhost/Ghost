@@ -3,6 +3,7 @@ import AuthorContextMenu from './AuthorContextMenu';
 import NotAuthorContextMenu from './NotAuthorContextMenu';
 import {Comment, useAppContext} from '../../../AppContext';
 import {useEffect, useRef} from 'react';
+import {useOutOfViewportClasses} from '../../../utils/hooks';
 
 type Props = {
     comment: Comment;
@@ -14,6 +15,15 @@ const CommentContextMenu: React.FC<Props> = ({comment, close, toggleEdit}) => {
     const isAuthor = member && comment.member?.uuid === member?.uuid;
     const isAdmin = !!admin;
     const element = useRef<HTMLDivElement>(null);
+    const innerElement = useRef<HTMLDivElement>(null);
+
+    // By default display dropdown below but move above if that renders off-screen
+    useOutOfViewportClasses(innerElement, {
+        bottom: {
+            default: 'top-0',
+            outOfViewport: 'bottom-full mb-6'
+        }
+    });
 
     useEffect(() => {
         const listener = () => {
@@ -76,8 +86,8 @@ const CommentContextMenu: React.FC<Props> = ({comment, close, toggleEdit}) => {
     }
 
     return (
-        <div ref={element} onClick={stopPropagation}>
-            <div className="absolute z-10 min-w-min whitespace-nowrap rounded bg-white py-3 pl-4 pr-8 font-sans text-sm shadow-lg outline-0 sm:min-w-[150px] dark:bg-zinc-900 dark:text-white">
+        <div ref={element} className="relative" data-testid="comment-context-menu" onClick={stopPropagation}>
+            <div ref={innerElement} className={`absolute z-10 min-w-min whitespace-nowrap rounded bg-white p-1 font-sans text-sm shadow-lg outline-0 sm:min-w-[80px] dark:bg-neutral-800 dark:text-white`} data-testid="comment-context-menu-inner">
                 {contextMenu}
             </div>
         </div>

@@ -1,7 +1,7 @@
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
 const {anyContentVersion, anyEtag, anyString, anyContentLength} = matchers;
 
-const uuid = require('uuid');
+const crypto = require('crypto');
 const should = require('should');
 const Papa = require('papaparse');
 const models = require('../../../core/server/models');
@@ -9,7 +9,7 @@ const moment = require('moment');
 
 async function createMember(data) {
     const member = await models.Member.add({
-        email: uuid.v4() + '@example.com',
+        email: crypto.randomUUID() + '@example.com',
         name: '',
         email_disabled: false,
         ...data

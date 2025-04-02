@@ -7,6 +7,7 @@ const EVENT_TYPES = [
     'login_event',
     'subscription_event',
     'payment_event',
+    'donation_event',
     'login_event',
     'signup_event',
     'email_delivered_event',

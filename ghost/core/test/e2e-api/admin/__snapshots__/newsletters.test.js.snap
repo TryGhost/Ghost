@@ -236,7 +236,7 @@ Object {
       "show_post_title_section": true,
       "show_subscription_details": false,
       "slug": "new-newsletter-with-existing-members-subscribed",
-      "sort_order": 8,
+      "sort_order": 7,
       "status": "active",
       "subscribe_on_signup": true,
       "title_alignment": "center",
@@ -476,7 +476,7 @@ exports[`Newsletters API Can add a newsletter - with custom sender_email 4: [htm
                         </table>
                         <p style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; color: #3A464C; font-weight: normal; line-height: 24px; margin: 0; margin-bottom: 11px;\\">For your security, the link will expire in 24 hours time.</p>
                         <hr/>
-                        <p style=\\"word-break: break-all; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 15px; color: #3A464C; font-weight: normal; line-height: 24px; margin: 0;\\">You can also copy & paste this URL into your browser:</p>
+                        <p style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 15px; color: #3A464C; font-weight: normal; line-height: 24px; margin: 0;\\">You can also copy & paste this URL into your browser:</p>
                         <p style=\\"word-break: break-all; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 15px; line-height: 22px; margin-top: 0; color: #3A464C;\\">http://127.0.0.1:2369/ghost/#/settings/newsletters/?verifyEmail=REPLACED_TOKEN</p>
                       </td>
                     </tr>
@@ -723,7 +723,7 @@ exports[`Newsletters API Can add a newsletter - with custom sender_email and sub
                         </table>
                         <p style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; color: #3A464C; font-weight: normal; margin: 0; line-height: 25px; margin-bottom: 25px;\\">For your security, the link will expire in 24 hours time.</p>
                         <hr/>
-                        <p style=\\"word-break: break-all; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 15px; color: #3A464C; font-weight: normal; margin: 0; line-height: 25px; margin-bottom: 5px;\\">You can also copy & paste this URL into your browser:</p>
+                        <p style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 15px; color: #3A464C; font-weight: normal; margin: 0; line-height: 25px; margin-bottom: 5px;\\">You can also copy & paste this URL into your browser:</p>
                         <p style=\\"word-break: break-all; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; line-height: 21px; margin-top: 0; color: #738A94;\\">http://127.0.0.1:2369/ghost/#/settings/newsletters/?verifyEmail=REPLACED_TOKEN</p>
                       </td>
                     </tr>
@@ -911,7 +911,7 @@ exports[`Newsletters API Can add a newsletter - with custom sender_email and sub
                         </table>
                         <p style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; color: #3A464C; font-weight: normal; line-height: 24px; margin: 0; margin-bottom: 11px;\\">For your security, the link will expire in 24 hours time.</p>
                         <hr/>
-                        <p style=\\"word-break: break-all; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 15px; color: #3A464C; font-weight: normal; line-height: 24px; margin: 0;\\">You can also copy & paste this URL into your browser:</p>
+                        <p style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 15px; color: #3A464C; font-weight: normal; line-height: 24px; margin: 0;\\">You can also copy & paste this URL into your browser:</p>
                         <p style=\\"word-break: break-all; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 15px; line-height: 22px; margin-top: 0; color: #3A464C;\\">http://127.0.0.1:2369/ghost/#/settings/newsletters/?verifyEmail=REPLACED_TOKEN</p>
                       </td>
                     </tr>
@@ -1029,6 +1029,66 @@ Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": "937",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/newsletters\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-cache-invalidate": "/*",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Newsletters API Can add a newsletter and subscribe existing members 1: [body] 1`] = `
+Object {
+  "meta": Object {
+    "opted_in_member_count": 6,
+  },
+  "newsletters": Array [
+    Object {
+      "background_color": "light",
+      "body_font_category": "serif",
+      "border_color": null,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "description": null,
+      "feedback_enabled": false,
+      "footer_content": null,
+      "header_image": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "name": "My test newsletter where I want to subscribe existing members",
+      "sender_email": null,
+      "sender_name": null,
+      "sender_reply_to": "newsletter",
+      "show_badge": true,
+      "show_comment_cta": true,
+      "show_excerpt": false,
+      "show_feature_image": true,
+      "show_header_icon": true,
+      "show_header_name": true,
+      "show_header_title": true,
+      "show_latest_posts": false,
+      "show_post_title_section": true,
+      "show_subscription_details": false,
+      "slug": "my-test-newsletter-where-i-want-to-subscribe-existing-members",
+      "sort_order": 9,
+      "status": "active",
+      "subscribe_on_signup": true,
+      "title_alignment": "center",
+      "title_color": null,
+      "title_font_category": "serif",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "visibility": "members",
+    },
+  ],
+}
+`;
+
+exports[`Newsletters API Can add a newsletter and subscribe existing members 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "998",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1533,7 +1593,7 @@ exports[`Newsletters API Can edit a newsletters and update the sender_email when
                         </table>
                         <p style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; color: #3A464C; font-weight: normal; line-height: 24px; margin: 0; margin-bottom: 11px;\\">For your security, the link will expire in 24 hours time.</p>
                         <hr/>
-                        <p style=\\"word-break: break-all; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 15px; color: #3A464C; font-weight: normal; line-height: 24px; margin: 0;\\">You can also copy & paste this URL into your browser:</p>
+                        <p style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 15px; color: #3A464C; font-weight: normal; line-height: 24px; margin: 0;\\">You can also copy & paste this URL into your browser:</p>
                         <p style=\\"word-break: break-all; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 15px; line-height: 22px; margin-top: 0; color: #3A464C;\\">http://127.0.0.1:2369/ghost/#/settings/newsletters/?verifyEmail=REPLACED_TOKEN</p>
                       </td>
                     </tr>
@@ -2321,7 +2381,7 @@ exports[`Newsletters API Can verify property updates 2: [html 1] 1`] = `
                         </table>
                         <p style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; color: #3A464C; font-weight: normal; line-height: 24px; margin: 0; margin-bottom: 11px;\\">For your security, the link will expire in 24 hours time.</p>
                         <hr/>
-                        <p style=\\"word-break: break-all; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 15px; color: #3A464C; font-weight: normal; line-height: 24px; margin: 0;\\">You can also copy & paste this URL into your browser:</p>
+                        <p style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 15px; color: #3A464C; font-weight: normal; line-height: 24px; margin: 0;\\">You can also copy & paste this URL into your browser:</p>
                         <p style=\\"word-break: break-all; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 15px; line-height: 22px; margin-top: 0; color: #3A464C;\\">http://127.0.0.1:2369/ghost/#/settings/newsletters/?verifyEmail=REPLACED_TOKEN</p>
                       </td>
                     </tr>
@@ -3416,7 +3476,7 @@ exports[`Newsletters API Managed email with custom sending domain Can set newsle
                         </table>
                         <p style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; color: #3A464C; font-weight: normal; line-height: 24px; margin: 0; margin-bottom: 11px;\\">For your security, the link will expire in 24 hours time.</p>
                         <hr/>
-                        <p style=\\"word-break: break-all; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 15px; color: #3A464C; font-weight: normal; line-height: 24px; margin: 0;\\">You can also copy & paste this URL into your browser:</p>
+                        <p style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 15px; color: #3A464C; font-weight: normal; line-height: 24px; margin: 0;\\">You can also copy & paste this URL into your browser:</p>
                         <p style=\\"word-break: break-all; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 15px; line-height: 22px; margin-top: 0; color: #3A464C;\\">http://127.0.0.1:2369/ghost/#/settings/newsletters/?verifyEmail=REPLACED_TOKEN</p>
                       </td>
                     </tr>
@@ -4773,7 +4833,7 @@ exports[`Newsletters API Managed email without custom sending domain Can set new
                         </table>
                         <p style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; color: #3A464C; font-weight: normal; line-height: 24px; margin: 0; margin-bottom: 11px;\\">For your security, the link will expire in 24 hours time.</p>
                         <hr/>
-                        <p style=\\"word-break: break-all; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 15px; color: #3A464C; font-weight: normal; line-height: 24px; margin: 0;\\">You can also copy & paste this URL into your browser:</p>
+                        <p style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 15px; color: #3A464C; font-weight: normal; line-height: 24px; margin: 0;\\">You can also copy & paste this URL into your browser:</p>
                         <p style=\\"word-break: break-all; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 15px; line-height: 22px; margin-top: 0; color: #3A464C;\\">http://127.0.0.1:2369/ghost/#/settings/newsletters/?verifyEmail=REPLACED_TOKEN</p>
                       </td>
                     </tr>

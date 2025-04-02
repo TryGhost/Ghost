@@ -22,7 +22,7 @@ describe('Acceptance: Onboarding', function () {
         beforeEach(async function () {
             let role = this.server.create('role', {name: 'Owner'});
             this.server.create('user', {roles: [role], slug: 'owner'});
-            return await authenticateSession();
+            await authenticateSession();
         });
 
         it('dashboard does not show checklist by default', async function () {
@@ -67,7 +67,7 @@ describe('Acceptance: Onboarding', function () {
         beforeEach(async function () {
             let role = this.server.create('role', {name: 'Administrator'});
             this.server.create('user', {roles: [role], slug: 'admin'});
-            return await authenticateSession();
+            await authenticateSession();
         });
 
         it('dashboard doesn\'t show the checklist', async function () {

@@ -4,14 +4,15 @@ const {agentProvider, mockManager, fixtureManager, matchers} = require('../utils
 const urlUtils = require('../../core/shared/url-utils');
 const jobService = require('../../core/server/services/jobs/job-service');
 const {anyGhostAgent, anyContentVersion, anyNumber, anyISODateTime, anyObjectId} = matchers;
+const membersEventsService = require('../../core/server/services/members-events');
 
 describe('Click Tracking', function () {
     let agent;
+    let ghostServer;
     let webhookMockReceiver;
 
     before(async function () {
-        const {adminAgent} = await agentProvider.getAgentsWithFrontend();
-        agent = adminAgent;
+        ({adminAgent: agent, ghostServer} = await agentProvider.getAgentsWithFrontend());
         await fixtureManager.init('newsletters', 'members:newsletters', 'integrations');
         await agent.loginAsOwner();
     });
@@ -20,10 +21,15 @@ describe('Click Tracking', function () {
         mockManager.mockMail();
         mockManager.mockMailgun();
         webhookMockReceiver = mockManager.mockWebhookRequests();
+        membersEventsService.clearLastSeenAtCache();
     });
 
     afterEach(function () {
         mockManager.restore();
+    });
+
+    after(async function () {
+        await ghostServer.stop();
     });
 
     it('Full test', async function () {

@@ -12,7 +12,7 @@
                     </header>
                 </div>
             {{else}}
-                <form id="login" method="post" class="gh-signin" novalidate="novalidate" {{on "submit" (perform this.validateAndAuthenticateTask)}}>
+                <form id="login" method="post" action="javascript:void(0)" class="gh-signin" novalidate="novalidate" {{on "submit" (perform this.validateAndAuthenticateTask)}}>
                     <header>
                         <div class="gh-site-icon" style={{site-icon-style}}></div>
                         <h1>{{this.config.blogTitle}}</h1>
@@ -30,6 +30,7 @@
                                 autocorrect="off"
                                 autocomplete="username"
                                 value={{this.signin.identification}}
+                                data-test-input="email"
                                 {{on "input" this.handleInput}}
                                 {{on "blur" (fn this.validateProperty "identification")}}
                             />
@@ -47,6 +48,7 @@
                                 autocomplete="current-password"
                                 autocorrect="off"
                                 value={{this.signin.password}}
+                                data-test-input="password"
                                 {{on "input" this.handleInput}}
                             />
 
@@ -69,7 +71,7 @@
                         @showSuccess={{false}}
                         @class="login gh-btn gh-btn-login gh-btn-block gh-btn-icon"
                         @type="submit"
-                        style={{accent-color-background}}
+                        @useAccentColor={{true}}
                         data-test-button="sign-in" />
                 </form>
 

@@ -1,4 +1,5 @@
 /* eslint-disable no-unused-vars */
+/* eslint-disable no-shadow */
 
 const logging = require('@tryghost/logging');
 const fs = require('fs').promises;
@@ -7,19 +8,25 @@ const {isUnsplashImage} = require('@tryghost/kg-default-cards/lib/utils');
 const {textColorForBackgroundColor, darkenToContrastThreshold} = require('@tryghost/color-utils');
 const {DateTime} = require('luxon');
 const htmlToPlaintext = require('@tryghost/html-to-plaintext');
-const tpl = require('@tryghost/tpl');
-const cheerio = require('cheerio');
 const {EmailAddressParser} = require('@tryghost/email-addresses');
 const {registerHelpers} = require('./helpers/register-helpers');
+const crypto = require('crypto');
+
+const DEFAULT_LOCALE = 'en-gb';
+
+// Wrapper function so that i18next-parser can find these strings
+const t = (x) => {
+    return x;
+};
 
 const messages = {
     subscriptionStatus: {
         free: '',
-        expired: 'Your subscription has expired.',
-        canceled: 'Your subscription has been canceled and will expire on {date}. You can resume your subscription via your account settings.',
-        active: 'Your subscription will renew on {date}.',
-        trial: 'Your free trial ends on {date}, at which time you will be charged the regular price. You can always cancel before then.',
-        complimentaryExpires: 'Your subscription will expire on {date}.',
+        expired: t('Your subscription has expired.'),
+        canceled: t('Your subscription has been canceled and will expire on {date}. You can resume your subscription via your account settings.'),
+        active: t('Your subscription will renew on {date}.'),
+        trial: t('Your free trial ends on {date}, at which time you will be charged the regular price. You can always cancel before then.'),
+        complimentaryExpires: t('Your subscription will expire on {date}.'),
         complimentaryInfinite: ''
     }
 };
@@ -33,8 +40,18 @@ function escapeHtml(unsafe) {
         .replace(/'/g, '&#039;');
 }
 
-function formatDateLong(date, timezone) {
-    return DateTime.fromJSDate(date).setZone(timezone).setLocale('en-gb').toLocaleString({
+function isValidLocale(locale) {
+    try {
+        // Attempt to create a DateTimeFormat with the locale
+        new Intl.DateTimeFormat(locale);
+        return true; // No error means it's a valid locale
+    } catch (e) {
+        return false; // RangeError means invalid locale
+    }
+}
+
+function formatDateLong(date, timezone, locale = DEFAULT_LOCALE) {
+    return DateTime.fromJSDate(date).setZone(timezone).setLocale(locale).toLocaleString({
         year: 'numeric',
         month: 'long',
         day: 'numeric'
@@ -43,6 +60,12 @@ function formatDateLong(date, timezone) {
 
 function escapeRegExp(string) {
     return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+// This aids with lazyloading the cheerio dependency
+function cheerioLoad(html) {
+    const cheerio = require('cheerio');
+    return cheerio.load(html);
 }
 
 /**
@@ -113,11 +136,12 @@ class EmailRenderer {
     #emailAddressService;
     #labs;
     #models;
+    #t;
 
     /**
      * @param {object} dependencies
      * @param {object} dependencies.settingsCache
-     * @param {{getNoReplyAddress(): string, getMembersSupportAddress(): string}} dependencies.settingsHelpers
+     * @param {{getNoReplyAddress(): string, getMembersSupportAddress(): string, getMembersValidationKey(): string, createUnsubscribeUrl(uuid: string, options: object): string}} dependencies.settingsHelpers
      * @param {object} dependencies.renderers
      * @param {{render(object, options): string}} dependencies.renderers.lexical
      * @param {{render(object, options): string}} dependencies.renderers.mobiledoc
@@ -133,6 +157,7 @@ class EmailRenderer {
      * @param {object} dependencies.outboundLinkTagger
      * @param {object} dependencies.labs
      * @param {{Post: object}} dependencies.models
+     * @param {Function} dependencies.t
      */
     constructor({
         settingsCache,
@@ -149,7 +174,8 @@ class EmailRenderer {
         emailAddressService,
         outboundLinkTagger,
         labs,
-        models
+        models,
+        t
     }) {
         this.#settingsCache = settingsCache;
         this.#settingsHelpers = settingsHelpers;
@@ -166,6 +192,7 @@ class EmailRenderer {
         this.#outboundLinkTagger = outboundLinkTagger;
         this.#labs = labs;
         this.#models = models;
+        this.#t = t;
     }
 
     getSubject(post, isTestEmail = false) {
@@ -196,6 +223,25 @@ class EmailRenderer {
             address: fromAddress,
             name: senderName || undefined
         };
+    }
+
+    // Locale is user-input, so we need to ensure it's valid
+    #getValidLocale() {
+        let locale = this.#settingsCache.get('locale') || DEFAULT_LOCALE;
+
+        if (!this.#labs.isSet('i18n')) {
+            locale = DEFAULT_LOCALE;
+        }
+
+        // Remove any trailing whitespace
+        locale = locale.trim();
+
+        // If the locale is just "en", or is not valid, revert to default
+        if (locale === 'en' || !isValidLocale(locale)) {
+            locale = DEFAULT_LOCALE;
+        }
+
+        return locale;
     }
 
     getFromAddress(post, newsletter) {
@@ -252,7 +298,7 @@ class EmailRenderer {
             return allowedSegments;
         }
 
-        const $ = cheerio.load(html);
+        const $ = cheerioLoad(html);
 
         let allSegments = $('[data-gh-segment]')
             .get()
@@ -315,7 +361,7 @@ class EmailRenderer {
             }
         }
 
-        let $ = cheerio.load(html);
+        let $ = cheerioLoad(html);
 
         // Remove parts of the HTML not applicable to the current segment - We do this
         // before rendering the template as the preheader for the email may be generated
@@ -411,7 +457,7 @@ class EmailRenderer {
         // juice will explicitly set the width/height attributes to `auto` on the <img /> tag
         // This is not supported by Outlook, so we need to reset the width/height attributes to the original values
         // Other clients will ignore the width/height attributes and use the inlined CSS instead
-        $ = cheerio.load(html);
+        $ = cheerioLoad(html);
         const originalImageSizes = $('img').get().map((image) => {
             const src = image.attribs.src;
             const width = image.attribs.width;
@@ -428,7 +474,7 @@ class EmailRenderer {
         html = juice(html, {inlinePseudoElements: true, removeStyleTags: true});
 
         // happens after inlining of CSS so we can change element types without worrying about styling
-        $ = cheerio.load(html);
+        $ = cheerioLoad(html);
 
         // Reset any `height="auto"` or `width="auto"` attributes to their original values before inlining CSS
         const imageTags = $('img').get();
@@ -499,22 +545,7 @@ class EmailRenderer {
      * @param {boolean} [options.comments] Unsubscribe from comment emails
      */
     createUnsubscribeUrl(uuid, options = {}) {
-        const siteUrl = this.#urlUtils.urlFor('home', true);
-        const unsubscribeUrl = new URL(siteUrl);
-        unsubscribeUrl.pathname = `${unsubscribeUrl.pathname}/unsubscribe/`.replace('//', '/');
-        if (uuid) {
-            unsubscribeUrl.searchParams.set('uuid', uuid);
-        } else {
-            unsubscribeUrl.searchParams.set('preview', '1');
-        }
-        if (options.newsletterUuid) {
-            unsubscribeUrl.searchParams.set('newsletter', options.newsletterUuid);
-        }
-        if (options.comments) {
-            unsubscribeUrl.searchParams.set('comments', '1');
-        }
-
-        return unsubscribeUrl.href;
+        return this.#settingsHelpers.createUnsubscribeUrl(uuid, options);
     }
 
     /**
@@ -558,9 +589,12 @@ class EmailRenderer {
      * @returns {string}
      */
     getMemberStatusText(member) {
+        const t = this.#t;
+        const locale = this.#getValidLocale();
+
         if (member.status === 'free') {
             // Not really used, but as a backup
-            return tpl(messages.subscriptionStatus.free);
+            return t(messages.subscriptionStatus.free);
         }
 
         // Do we have an active subscription?
@@ -573,12 +607,12 @@ class EmailRenderer {
 
             if (!activeSubscription && !member.tiers.length) {
                 // No subscription?
-                return tpl(messages.subscriptionStatus.expired);
+                return t(messages.subscriptionStatus.expired);
             }
 
             if (!activeSubscription) {
                 if (!member.tiers[0]?.expiry_at) {
-                    return tpl(messages.subscriptionStatus.complimentaryInfinite);
+                    return t(messages.subscriptionStatus.complimentaryInfinite);
                 }
                 // Create one manually that is expiring
                 activeSubscription = {
@@ -589,30 +623,28 @@ class EmailRenderer {
                 };
             }
             const timezone = this.#settingsCache.get('timezone');
-
             // Translate to a human readable string
             if (activeSubscription.trial_end_at && activeSubscription.trial_end_at > new Date() && activeSubscription.status === 'trialing') {
-                const date = formatDateLong(activeSubscription.trial_end_at, timezone);
-                return tpl(messages.subscriptionStatus.trial, {date});
+                const date = formatDateLong(activeSubscription.trial_end_at, timezone, locale);
+                return t(messages.subscriptionStatus.trial, {date});
             }
 
-            const date = formatDateLong(activeSubscription.current_period_end, timezone);
+            const date = formatDateLong(activeSubscription.current_period_end, timezone, locale);
             if (activeSubscription.cancel_at_period_end) {
-                return tpl(messages.subscriptionStatus.canceled, {date});
+                return t(messages.subscriptionStatus.canceled, {date});
             }
-
-            return tpl(messages.subscriptionStatus.active, {date});
+            return t(messages.subscriptionStatus.active, {date});
         }
 
         const expires = member.tiers[0]?.expiry_at ?? null;
 
         if (expires) {
             const timezone = this.#settingsCache.get('timezone');
-            const date = formatDateLong(expires, timezone);
-            return tpl(messages.subscriptionStatus.complimentaryExpires, {date});
+            const date = formatDateLong(expires, timezone, locale);
+            return t(messages.subscriptionStatus.complimentaryExpires, {date});
         }
 
-        return tpl(messages.subscriptionStatus.complimentaryInfinite);
+        return t(messages.subscriptionStatus.complimentaryInfinite);
     }
 
     /**
@@ -620,6 +652,9 @@ class EmailRenderer {
      * @returns {ReplacementDefinition[]}
      */
     buildReplacementDefinitions({html, newsletterUuid}) {
+        const t = this.#t; // es-lint-disable-line no-shadow
+        const locale = this.#getValidLocale();
+
         const baseDefinitions = [
             {
                 id: 'unsubscribe_url',
@@ -637,6 +672,12 @@ class EmailRenderer {
                 id: 'uuid',
                 getValue: (member) => {
                     return member.uuid;
+                }
+            },
+            {
+                id: 'key',
+                getValue: (member) => {
+                    return crypto.createHmac('sha256', this.#settingsHelpers.getMembersValidationKey()).update(member.uuid).digest('hex');
                 }
             },
             {
@@ -667,41 +708,38 @@ class EmailRenderer {
                 id: 'created_at',
                 getValue: (member) => {
                     const timezone = this.#settingsCache.get('timezone');
-                    return member.createdAt ? formatDateLong(member.createdAt, timezone) : '';
+                    return member.createdAt ? formatDateLong(member.createdAt, timezone, locale) : '';
                 }
             },
             {
                 id: 'status',
                 getValue: (member) => {
                     if (member.status === 'comped') {
-                        return 'complimentary';
+                        return t('complimentary');
                     }
                     if (this.isMemberTrialing(member)) {
-                        return 'trialing';
+                        return t('trialing');
                     }
-                    return member.status;
+                    // other possible statuses: t('free'), t('paid') //
+                    return t(member.status);
                 }
             },
             {
+                //TODO i18n
                 id: 'status_text',
                 getValue: (member) => {
                     return this.getMemberStatusText(member);
                 }
+            },
+            // List unsubscribe header to unsubcribe in one-click
+            {
+                id: 'list_unsubscribe',
+                getValue: (member) => {
+                    return this.createUnsubscribeUrl(member.uuid, {newsletterUuid});
+                },
+                required: true // Used in email headers
             }
         ];
-
-        if (this.#labs.isSet('listUnsubscribeHeader')) {
-            baseDefinitions.push(
-                {
-                    id: 'list_unsubscribe',
-                    getValue: (member) => {
-                        // Same URL
-                        return this.createUnsubscribeUrl(member.uuid, {newsletterUuid});
-                    },
-                    required: true // Used in email headers
-                }
-            );
-        }
 
         // Now loop through all the definenitions to see which ones are actually used + to add fallbacks if needed
         const EMAIL_REPLACEMENT_REGEX = /%%\{(.*?)\}%%/g;
@@ -756,7 +794,6 @@ class EmailRenderer {
             }
             delete replacement.originalId;
         }
-
         return replacements;
     }
 
@@ -769,7 +806,7 @@ class EmailRenderer {
         this.#handlebars = require('handlebars').create();
 
         // Register helpers
-        registerHelpers(this.#handlebars, labs);
+        registerHelpers(this.#handlebars, labs, this.#t);
 
         // Partials
         const cssPartialSource = await fs.readFile(path.join(__dirname, './email-templates/partials/', `styles.hbs`), 'utf8');
@@ -781,16 +818,13 @@ class EmailRenderer {
         const feedbackButtonPartial = await fs.readFile(path.join(__dirname, './email-templates/partials/', `feedback-button.hbs`), 'utf8');
         this.#handlebars.registerPartial('feedbackButton', feedbackButtonPartial);
 
-        const feedbackButtonMobilePartial = await fs.readFile(path.join(__dirname, './email-templates/partials/', `feedback-button-mobile.hbs`), 'utf8');
-        this.#handlebars.registerPartial('feedbackButtonMobile', feedbackButtonMobilePartial);
-
         const latestPostsPartial = await fs.readFile(path.join(__dirname, './email-templates/partials/', `latest-posts.hbs`), 'utf8');
         this.#handlebars.registerPartial('latestPosts', latestPostsPartial);
 
         // Actual template
         const htmlTemplateSource = await fs.readFile(path.join(__dirname, './email-templates/', `template.hbs`), 'utf8');
         this.#renderTemplate = this.#handlebars.compile(Buffer.from(htmlTemplateSource).toString());
-    
+
         return this.#renderTemplate(data);
     }
 
@@ -941,7 +975,8 @@ class EmailRenderer {
         const {href: postFeatureImage, width: postFeatureImageWidth, height: postFeatureImageHeight} = await this.limitImageWidth(post.get('feature_image'));
 
         const timezone = this.#settingsCache.get('timezone');
-        const publishedAt = (post.get('published_at') ? DateTime.fromJSDate(post.get('published_at')) : DateTime.local()).setZone(timezone).setLocale('en-gb').toLocaleString({
+        const locale = this.#getValidLocale();
+        const publishedAt = (post.get('published_at') ? DateTime.fromJSDate(post.get('published_at')) : DateTime.local()).setZone(timezone).setLocale(locale).toLocaleString({
             year: 'numeric',
             month: 'short',
             day: 'numeric'
@@ -967,13 +1002,15 @@ class EmailRenderer {
         const positiveLink = this.#audienceFeedbackService.buildLink(
             '--uuid--',
             post.id,
-            1
-        ).href.replace('--uuid--', '%%{uuid}%%');
+            1,
+            '--key--'
+        ).href.replace('--uuid--', '%%{uuid}%%').replace('--key--', '%%{key}%%');
         const negativeLink = this.#audienceFeedbackService.buildLink(
             '--uuid--',
             post.id,
-            0
-        ).href.replace('--uuid--', '%%{uuid}%%');
+            0,
+            '--key--'
+        ).href.replace('--uuid--', '%%{uuid}%%').replace('--key--', '%%{key}%%');
 
         const commentUrl = new URL(postUrl);
         commentUrl.hash = '#ghost-comments';

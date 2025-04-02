@@ -1,6 +1,7 @@
 import {render, fireEvent} from '../../../utils/test-utils';
 import AccountHomePage from './AccountHomePage';
 import {site} from '../../../utils/fixtures';
+import {getSiteData, getNewslettersData} from '../../../utils/fixtures-generator';
 
 const setup = (overrides) => {
     const {mockOnActionFn, ...utils} = render(
@@ -21,7 +22,8 @@ const setup = (overrides) => {
 
 describe('Account Home Page', () => {
     test('renders', () => {
-        const {logoutBtn, utils} = setup();
+        const siteData = getSiteData({commentsEnabled: 'off'});
+        const {logoutBtn, utils} = setup({site: siteData});
         expect(logoutBtn).toBeInTheDocument();
         expect(utils.queryByText('You\'re currently not receiving emails')).not.toBeInTheDocument();
         expect(utils.queryByText('Email newsletter')).toBeInTheDocument();
@@ -45,5 +47,38 @@ describe('Account Home Page', () => {
 
         fireEvent.click(manageBtn);
         expect(mockOnActionFn).toHaveBeenCalledWith('switchPage', {lastPage: 'accountHome', page: 'accountEmail'});
+    });
+
+    test('hides Newsletter toggle if newsletters are disabled', () => {
+        const siteData = getSiteData({editorDefaultEmailRecipients: 'disabled'});
+        const {logoutBtn, utils} = setup({site: siteData});
+        expect(logoutBtn).toBeInTheDocument();
+        expect(utils.queryByText('Email newsletter')).not.toBeInTheDocument();
+    });
+
+    test('newsletter settings is not visible when newsletters are disabled and comments are disabled', async () => {
+        const siteData = getSiteData({
+            editorDefaultEmailRecipients: 'disabled',
+            commentsEnabled: 'off'
+        });
+
+        const {utils} = setup({site: siteData});
+
+        expect(utils.queryByText('Email preferences')).not.toBeInTheDocument();
+    });
+
+    test('Email preferences / settings is visible when newsletters are disabled and comments are enabled', async () => {
+        const newsletterData = getNewslettersData({numOfNewsletters: 2});
+        const siteData = getSiteData({
+            newsletters: newsletterData,
+            editorDefaultEmailRecipients: 'disabled',
+            commentsEnabled: 'all'
+        });
+
+        const {utils} = setup({site: siteData});
+
+        expect(utils.queryByText('Emails')).toBeInTheDocument();
+        expect(utils.queryByText('Update your preferences')).toBeInTheDocument();
+        expect(utils.queryByText('Newsletters')).not.toBeInTheDocument(); // there should be no sign of newsletters
     });
 });

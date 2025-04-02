@@ -1,6 +1,10 @@
 import Component from '@glimmer/component';
+import DeletePostModal from '../modals/delete-post';
+import PostSuccessModal from '../modal-post-success';
+import anime from 'animejs/lib/anime.es.js';
 import {action} from '@ember/object';
 import {didCancel, task} from 'ember-concurrency';
+import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
 
@@ -24,6 +28,12 @@ export default class Analytics extends Component {
     @service utils;
     @service feature;
     @service store;
+    @service router;
+    @service modals;
+    @service notifications;
+    @service session;
+
+    @inject config;
 
     @tracked sources = null;
     @tracked links = null;
@@ -31,10 +41,45 @@ export default class Analytics extends Component {
     @tracked sortColumn = 'signups';
     @tracked showSuccess;
     @tracked updateLinkId;
+    @tracked _post = null;
+    @tracked postCount = null;
+    @tracked showPostCount = false;
+    @tracked shouldAnimate = false;
+    @tracked previousSentCount = this.post.email?.emailCount;
+    @tracked previousOpenedCount = this.post.email?.openedCount;
+    @tracked previousClickedCount = this.post.count.clicks;
+    @tracked previousFeedbackCount = this.totalFeedback;
+    @tracked previousConversionsCount = this.post.count.conversions;
     displayOptions = DISPLAY_OPTIONS;
 
+    constructor() {
+        super(...arguments);
+        this.checkPublishFlowModal();
+    }
+
+    openPublishFlowModal() {
+        this.modals.open(PostSuccessModal, {
+            post: this.post,
+            postCount: this.postCount,
+            showPostCount: this.showPostCount
+        });
+    }
+
+    async checkPublishFlowModal() {
+        if (localStorage.getItem('ghost-last-published-post')) {
+            await this.fetchPostCountTask.perform();
+            this.showPostCount = true;
+            this.openPublishFlowModal();
+            localStorage.removeItem('ghost-last-published-post');
+        }
+    }
+
     get post() {
-        return this.args.post;
+        return this._post ?? this.args.post;
+    }
+
+    set post(value) {
+        this._post = value;
     }
 
     get allowedDisplayOptions() {
@@ -142,40 +187,33 @@ export default class Analytics extends Component {
         }
     }
 
-    updateLinkData(linksData) {
-        let updatedLinks;
-        if (this.links?.length) {
-            updatedLinks = this.links.map((link) => {
-                let linkData = linksData.find(l => l.link.link_id === link.link.link_id);
-                if (linkData) {
-                    return {
-                        ...linkData,
-                        link: {
-                            ...linkData.link,
-                            originalTo: linkData.link.to,
-                            to: this.utils.cleanTrackedUrl(linkData.link.to, false),
-                            title: this.utils.cleanTrackedUrl(linkData.link.to, true)
-                        }
-                    };
-                }
-                return link;
-            });
-        } else {
-            updatedLinks = linksData.map((link) => {
-                return {
-                    ...link,
-                    link: {
-                        ...link.link,
-                        originalTo: link.link.to,
-                        to: this.utils.cleanTrackedUrl(link.link.to, false),
-                        title: this.utils.cleanTrackedUrl(link.link.to, true)
-                    }
-                };
-            });
-        }
+    @action
+    togglePublishFlowModal() {
+        this.showPostCount = false;
+        this.openPublishFlowModal();
+    }
 
-        // Remove duplicates by title ad merge
-        const linksByTitle = updatedLinks.reduce((acc, link) => {
+    @action
+    confirmDeleteMember() {
+        this.modals.open(DeletePostModal, {
+            post: this.post
+        });
+    }
+
+    updateLinkData(linksData) {
+        let cleanedLinks = linksData.map((link) => {
+            return {
+                ...link,
+                link: {
+                    ...link.link,
+                    originalTo: link.link.to,
+                    to: this.utils.cleanTrackedUrl(link.link.to, false),
+                    title: this.utils.cleanTrackedUrl(link.link.to, true)
+                }
+            };
+        });
+
+        const linksByTitle = cleanedLinks.reduce((acc, link) => {
             if (!acc[link.link.title]) {
                 acc[link.link.title] = link;
             } else {
@@ -191,7 +229,11 @@ export default class Analytics extends Component {
             return acc;
         }, {});
 
-        this.links = Object.values(linksByTitle);
+        this.links = Object.values(linksByTitle).sort((a, b) => {
+            const aClicks = a.count?.clicks || 0;
+            const bClicks = b.count?.clicks || 0;
+            return bClicks - aClicks;
+        });
     }
 
     async fetchReferrersStats() {
@@ -300,6 +342,73 @@ export default class Analytics extends Component {
     *_fetchMentions() {
         const filter = `resource_id:'${this.post.id}'+resource_type:post`;
         this.mentions = yield this.store.query('mention', {limit: 5, order: 'created_at desc', filter});
+    }
+
+    @task
+    *fetchPostCountTask() {
+        if (!this.post.emailOnly) {
+            const result = yield this.store.query('post', {filter: 'status:published', limit: 1});
+            let count = result.meta.pagination.total;
+
+            this.postCount = count;
+        }
+    }
+
+    @task
+    *fetchPostTask() {
+        const currentSentCount = this.post.email?.emailCount;
+        const currentOpenedCount = this.post.email?.openedCount;
+        const currentClickedCount = this.post.count.clicks;
+        const currentFeedbackCount = this.totalFeedback;
+        const currentConversionsCount = this.post.count.conversions;
+
+        this.shouldAnimate = true;
+
+        const result = yield this.store.query('post', {filter: `id:${this.post.id}`, include: 'email,count.clicks,count.conversions,count.positive_feedback,count.negative_feedback,sentiment', limit: 1});
+        this.post = result.toArray()[0];
+
+        this.previousSentCount = currentSentCount;
+        this.previousOpenedCount = currentOpenedCount;
+        this.previousClickedCount = currentClickedCount;
+        this.previousFeedbackCount = currentFeedbackCount;
+        this.previousConversionsCount = currentConversionsCount;
+
+        yield this.fetchLinks();
+
+        return true;
+    }
+
+    @action
+    applyClasses(element) {
+        if (!this.shouldAnimate ||
+            (element.classList.contains('sent') && this.post.email.emailCount === this.previousSentCount) ||
+            (element.classList.contains('opened') && this.post.email.openedCount === this.previousOpenedCount) ||
+            (element.classList.contains('clicked') && this.post.count.clicks === this.previousClickedCount) ||
+            (element.classList.contains('feedback') && this.totalFeedback === this.previousFeedbackCount) ||
+            (element.classList.contains('conversions') && this.post.count.conversions === this.previousConversionsCount)
+        ) {
+            return;
+        }
+
+        anime({
+            targets: `${Array.from(element.classList).map(className => `.${className}`).join('')} .new-number span`,
+            translateY: [10,0],
+            // translateZ: 0,
+            opacity: [0,1],
+            easing: 'easeOutElastic',
+            elasticity: 650,
+            duration: 1000,
+            delay: (el, i) => 100 + 30 * i
+        });
+
+        anime({
+            targets: `${Array.from(element.classList).map(className => `.${className}`).join('')} .old-number span`,
+            translateY: [0,-10],
+            opacity: [1,0],
+            easing: 'easeOutExpo',
+            duration: 400,
+            delay: (el, i) => 100 + 10 * i
+        });
     }
 
     get showLinks() {

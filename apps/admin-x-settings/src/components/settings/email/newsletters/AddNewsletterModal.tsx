@@ -39,7 +39,7 @@ const AddNewsletterModal: React.FC<RoutingModalProps> = () => {
             const newErrors: Record<string, string> = {};
 
             if (!formState.name) {
-                newErrors.name = 'Name is required';
+                newErrors.name = 'A name is required for your newsletter';
             }
 
             return newErrors;
@@ -71,6 +71,7 @@ const AddNewsletterModal: React.FC<RoutingModalProps> = () => {
         }}
         backDropClick={false}
         okColor='black'
+        okDisabled={saveState === 'saving'}
         okLabel='Create'
         okLoading={saveState === 'saving'}
         size='sm'

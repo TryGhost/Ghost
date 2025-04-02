@@ -6,6 +6,7 @@ const linkReplacer = require('@tryghost/link-replacer');
 const sinon = require('sinon');
 const logging = require('@tryghost/logging');
 const {HtmlValidate} = require('html-validate');
+const crypto = require('crypto');
 
 async function validateHtml(html) {
     const htmlvalidate = new HtmlValidate({
@@ -60,6 +61,29 @@ async function validateHtml(html) {
     assert.equal(report.valid, true, 'Expected valid HTML without warnings, got errors:\n' + parsedErrors.join('\n\n'));
 }
 
+const createUnsubscribeUrl = (uuid) => {
+    return `https://example.com/unsubscribe/?uuid=${uuid}&key=456`;
+};
+
+const getMembersValidationKey = () => {
+    return 'members-key';
+};
+// stub the t function so that we don't need to load the i18n module
+// actually, no, this is a terrible option, because then we don't actually get interpolation.
+// we should probably just load the i18n module
+
+// load the i18n module
+const i18nLib = require('@tryghost/i18n');
+const i18n = i18nLib('en', 'newsletter');
+const t = (key, options) => {
+    return i18n.t(key, options);
+};
+
+const i18nFr = i18nLib('fr', 'newsletter');
+const tFr = (key, options) => {
+    return i18nFr.t(key, options);
+};
+
 describe('Email renderer', function () {
     let logStub;
 
@@ -92,7 +116,9 @@ describe('Email renderer', function () {
                             return 'UTC';
                         }
                     }
-                }
+                },
+                settingsHelpers: {getMembersValidationKey,createUnsubscribeUrl},
+                t: t
             });
             newsletter = createModel({
                 uuid: 'newsletteruuid'
@@ -107,16 +133,20 @@ describe('Email renderer', function () {
             };
         });
 
-        it('returns an empty list of replacements if nothing is used', function () {
+        it('returns the unsubscribe header replacement by default', function () {
             const html = 'Hello world';
             const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
-            assert.equal(replacements.length, 0);
+            assert.equal(replacements.length, 1);
+            assert.equal(replacements[0].token.toString(), '/%%\\{list_unsubscribe\\}%%/g');
+            assert.equal(replacements[0].id, 'list_unsubscribe');
+            const unsubscribeUrl = createUnsubscribeUrl(member.uuid);
+            assert.equal(replacements[0].getValue(member), unsubscribeUrl);
         });
 
         it('returns a replacement if it is used', function () {
             const html = 'Hello world %%{uuid}%%';
             const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
-            assert.equal(replacements.length, 1);
+            assert.equal(replacements.length, 2);
             assert.equal(replacements[0].token.toString(), '/%%\\{uuid\\}%%/g');
             assert.equal(replacements[0].id, 'uuid');
             assert.equal(replacements[0].getValue(member), 'myuuid');
@@ -125,7 +155,7 @@ describe('Email renderer', function () {
         it('returns a replacement only once if used multiple times', function () {
             const html = 'Hello world %%{uuid}%% And %%{uuid}%%';
             const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
-            assert.equal(replacements.length, 1);
+            assert.equal(replacements.length, 2);
             assert.equal(replacements[0].token.toString(), '/%%\\{uuid\\}%%/g');
             assert.equal(replacements[0].id, 'uuid');
             assert.equal(replacements[0].getValue(member), 'myuuid');
@@ -134,7 +164,7 @@ describe('Email renderer', function () {
         it('returns correct first name', function () {
             const html = 'Hello %%{first_name}%%,';
             const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
-            assert.equal(replacements.length, 1);
+            assert.equal(replacements.length, 2);
             assert.equal(replacements[0].token.toString(), '/%%\\{first_name\\}%%/g');
             assert.equal(replacements[0].id, 'first_name');
             assert.equal(replacements[0].getValue(member), 'Test');
@@ -143,26 +173,17 @@ describe('Email renderer', function () {
         it('returns correct unsubscribe url', function () {
             const html = 'Hello %%{unsubscribe_url}%%,';
             const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
-            assert.equal(replacements.length, 1);
+            assert.equal(replacements.length, 2);
             assert.equal(replacements[0].token.toString(), '/%%\\{unsubscribe_url\\}%%/g');
             assert.equal(replacements[0].id, 'unsubscribe_url');
-            assert.equal(replacements[0].getValue(member), `http://example.com/subdirectory/unsubscribe/?uuid=myuuid&newsletter=newsletteruuid`);
-        });
-
-        it('returns correct list-unsubscribe value', function () {
-            labsEnabled = true;
-            const html = 'Hello';
-            const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
-            assert.equal(replacements.length, 1);
-            assert.equal(replacements[0].token.toString(), '/%%\\{list_unsubscribe\\}%%/g');
-            assert.equal(replacements[0].id, 'list_unsubscribe');
-            assert.equal(replacements[0].getValue(member), `http://example.com/subdirectory/unsubscribe/?uuid=myuuid&newsletter=newsletteruuid`);
+            const unsubscribeUrl = createUnsubscribeUrl(member.uuid);
+            assert.equal(replacements[0].getValue(member), unsubscribeUrl);
         });
 
         it('returns correct name', function () {
             const html = 'Hello %%{name}%%,';
             const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
-            assert.equal(replacements.length, 1);
+            assert.equal(replacements.length, 2);
             assert.equal(replacements[0].token.toString(), '/%%\\{name\\}%%/g');
             assert.equal(replacements[0].id, 'name');
             assert.equal(replacements[0].getValue(member), 'Test User');
@@ -172,7 +193,7 @@ describe('Email renderer', function () {
             member.name = '';
             const html = 'Hello %%{name_class}%%,';
             const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
-            assert.equal(replacements.length, 1);
+            assert.equal(replacements.length, 2);
             assert.equal(replacements[0].token.toString(), '/%%\\{name_class\\}%%/g');
             assert.equal(replacements[0].id, 'name_class');
             assert.equal(replacements[0].getValue(member), 'hidden');
@@ -181,7 +202,7 @@ describe('Email renderer', function () {
         it('returns empty class for available name', function () {
             const html = 'Hello %%{name_class}%%,';
             const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
-            assert.equal(replacements.length, 1);
+            assert.equal(replacements.length, 2);
             assert.equal(replacements[0].token.toString(), '/%%\\{name_class\\}%%/g');
             assert.equal(replacements[0].id, 'name_class');
             assert.equal(replacements[0].getValue(member), '');
@@ -190,7 +211,7 @@ describe('Email renderer', function () {
         it('returns correct email', function () {
             const html = 'Hello %%{email}%%,';
             const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
-            assert.equal(replacements.length, 1);
+            assert.equal(replacements.length, 2);
             assert.equal(replacements[0].token.toString(), '/%%\\{email\\}%%/g');
             assert.equal(replacements[0].id, 'email');
             assert.equal(replacements[0].getValue(member), 'test@example.com');
@@ -199,7 +220,7 @@ describe('Email renderer', function () {
         it('returns correct status', function () {
             const html = 'Hello %%{status}%%,';
             const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
-            assert.equal(replacements.length, 1);
+            assert.equal(replacements.length, 2);
             assert.equal(replacements[0].token.toString(), '/%%\\{status\\}%%/g');
             assert.equal(replacements[0].id, 'status');
             assert.equal(replacements[0].getValue(member), 'free');
@@ -209,7 +230,7 @@ describe('Email renderer', function () {
             member.status = 'comped';
             const html = 'Hello %%{status}%%,';
             const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
-            assert.equal(replacements.length, 1);
+            assert.equal(replacements.length, 2);
             assert.equal(replacements[0].token.toString(), '/%%\\{status\\}%%/g');
             assert.equal(replacements[0].id, 'status');
             assert.equal(replacements[0].getValue(member), 'complimentary');
@@ -227,7 +248,7 @@ describe('Email renderer', function () {
             ];
             const html = 'Hello %%{status}%%,';
             const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
-            assert.equal(replacements.length, 1);
+            assert.equal(replacements.length, 2);
             assert.equal(replacements[0].token.toString(), '/%%\\{status\\}%%/g');
             assert.equal(replacements[0].id, 'status');
             assert.equal(replacements[0].getValue(member), 'trialing');
@@ -236,7 +257,7 @@ describe('Email renderer', function () {
         it('returns manage_account_url', function () {
             const html = 'Hello %%{manage_account_url}%%,';
             const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
-            assert.equal(replacements.length, 1);
+            assert.equal(replacements.length, 2);
             assert.equal(replacements[0].token.toString(), '/%%\\{manage_account_url\\}%%/g');
             assert.equal(replacements[0].id, 'manage_account_url');
             assert.equal(replacements[0].getValue(member), 'http://example.com/subdirectory/#/portal/account');
@@ -255,7 +276,7 @@ describe('Email renderer', function () {
             ];
 
             const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
-            assert.equal(replacements.length, 1);
+            assert.equal(replacements.length, 2);
             assert.equal(replacements[0].token.toString(), '/%%\\{status_text\\}%%/g');
             assert.equal(replacements[0].id, 'status_text');
             assert.equal(replacements[0].getValue(member), 'Your free trial ends on 13 March 2050, at which time you will be charged the regular price. You can always cancel before then.');
@@ -264,7 +285,7 @@ describe('Email renderer', function () {
         it('returns correct createdAt', function () {
             const html = 'Hello %%{created_at}%%,';
             const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
-            assert.equal(replacements.length, 1);
+            assert.equal(replacements.length, 2);
             assert.equal(replacements[0].token.toString(), '/%%\\{created_at\\}%%/g');
             assert.equal(replacements[0].id, 'created_at');
             assert.equal(replacements[0].getValue(member), '13 March 2023');
@@ -274,7 +295,7 @@ describe('Email renderer', function () {
             member.createdAt = null;
             const html = 'Hello %%{created_at}%%,';
             const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
-            assert.equal(replacements.length, 1);
+            assert.equal(replacements.length, 2);
             assert.equal(replacements[0].token.toString(), '/%%\\{created_at\\}%%/g');
             assert.equal(replacements[0].id, 'created_at');
             assert.equal(replacements[0].getValue(member), '');
@@ -283,7 +304,7 @@ describe('Email renderer', function () {
         it('supports fallback values', function () {
             const html = 'Hey %%{first_name, "there"}%%,';
             const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
-            assert.equal(replacements.length, 1);
+            assert.equal(replacements.length, 2);
             assert.equal(replacements[0].token.toString(), '/%%\\{first_name, (?:"|&quot;)there(?:"|&quot;)\\}%%/g');
             assert.equal(replacements[0].id, 'first_name_2');
             assert.equal(replacements[0].getValue(member), 'Test');
@@ -295,7 +316,7 @@ describe('Email renderer', function () {
         it('supports combination of multiple fallback values', function () {
             const html = 'Hey %%{first_name, "there"}%%, %%{first_name, "member"}%% %%{first_name}%% %%{first_name, "there"}%%';
             const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
-            assert.equal(replacements.length, 3);
+            assert.equal(replacements.length, 4);
             assert.equal(replacements[0].token.toString(), '/%%\\{first_name, (?:"|&quot;)there(?:"|&quot;)\\}%%/g');
             assert.equal(replacements[0].id, 'first_name_2');
             assert.equal(replacements[0].getValue(member), 'Test');
@@ -317,8 +338,213 @@ describe('Email renderer', function () {
             // In case of empty name
             assert.equal(replacements[2].getValue({name: ''}), '');
         });
+
+        it('handles members uuid and key', function () {
+            const html = '%%{uuid}%% %%{key}%%';
+            const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
+            assert.equal(replacements.length, 3);
+            assert.equal(replacements[0].token.toString(), '/%%\\{uuid\\}%%/g');
+            assert.equal(replacements[0].id, 'uuid');
+            assert.equal(replacements[0].getValue(member), 'myuuid');
+
+            assert.equal(replacements[1].token.toString(), '/%%\\{key\\}%%/g');
+            assert.equal(replacements[1].id, 'key');
+            const memberHmac = crypto.createHmac('sha256', getMembersValidationKey()).update(member.uuid).digest('hex');
+            assert.equal(replacements[1].getValue(member), memberHmac);
+        });
     });
 
+    describe('buildReplacementDefinitions with locales', function () {
+        let emailRenderer;
+        let newsletter;
+        let member;
+
+        beforeEach(function () {
+            emailRenderer = new EmailRenderer({
+                urlUtils: {
+                    urlFor: () => 'http://example.com/subdirectory/'
+                },
+                labs: {
+                    isSet: () => true
+                },
+                settingsCache: {
+                    get: (key) => {
+                        if (key === 'timezone') {
+                            return 'UTC';
+                        }
+                    }
+                },
+                settingsHelpers: {getMembersValidationKey,createUnsubscribeUrl},
+                t: t
+            });
+            newsletter = createModel({
+                uuid: 'newsletteruuid'
+            });
+            member = {
+                id: '456',
+                uuid: 'myuuid',
+                name: 'Test User',
+                email: 'test@example.com',
+                createdAt: new Date(2023, 2, 13, 12, 0),
+                status: 'free'
+            };
+        });
+
+        it('handles dates when the locale is en-gb (default)', function () {
+            const html = '%%{created_at}%%';
+            const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
+            assert.equal(replacements.length, 2);
+            assert.equal(replacements[0].token.toString(), '/%%\\{created_at\\}%%/g');
+            assert.equal(replacements[0].id, 'created_at');
+            assert.equal(replacements[0].getValue(member), '13 March 2023');
+        });
+
+        it('handles dates when the locale is fr and labs enabled', function () {
+            emailRenderer = new EmailRenderer({
+                urlUtils: {
+                    urlFor: () => 'http://example.com/subdirectory/'
+                },
+                labs: {
+                    isSet: () => true
+                },
+                settingsCache: {
+                    get: (key) => {
+                        if (key === 'timezone') {
+                            return 'UTC';
+                        }
+                        if (key === 'locale') {
+                            return 'fr';
+                        }
+                    }
+                },
+                settingsHelpers: {getMembersValidationKey,createUnsubscribeUrl},
+                t: tFr
+            });
+            const html = '%%{created_at}%%';
+            const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
+            assert.equal(replacements.length, 2);
+            assert.equal(replacements[0].token.toString(), '/%%\\{created_at\\}%%/g');
+            assert.equal(replacements[0].id, 'created_at');
+            assert.equal(replacements[0].getValue(member), '13 mars 2023');
+        });
+
+        it('handles dates when the locale is fr and labs is disabled', function () {
+            emailRenderer = new EmailRenderer({
+                urlUtils: {
+                    urlFor: () => 'http://example.com/subdirectory/'
+                },
+                labs: {
+                    isSet: () => false
+                },
+                settingsCache: {
+                    get: (key) => {
+                        if (key === 'timezone') {
+                            return 'UTC';
+                        }
+                        if (key === 'locale') {
+                            return 'fr';
+                        }
+                    }
+                },
+                settingsHelpers: {getMembersValidationKey,createUnsubscribeUrl},
+                t: tFr
+            });
+            const html = '%%{created_at}%%';
+            const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
+            assert.equal(replacements.length, 2);
+            assert.equal(replacements[0].token.toString(), '/%%\\{created_at\\}%%/g');
+            assert.equal(replacements[0].id, 'created_at');
+            assert.equal(replacements[0].getValue(member), '13 March 2023');
+        });
+
+        it('handles dates when the locale is en (US)', function () {
+            emailRenderer = new EmailRenderer({
+                urlUtils: {
+                    urlFor: () => 'http://example.com/subdirectory/'
+                },
+                labs: {
+                    isSet: () => true
+                },
+                settingsCache: {
+                    get: (key) => {
+                        if (key === 'timezone') {
+                            return 'UTC';
+                        }
+                        if (key === 'locale') {
+                            return 'en';
+                        }
+                    }
+                },
+                settingsHelpers: {getMembersValidationKey,createUnsubscribeUrl},
+                t: t
+            });
+            const html = '%%{created_at}%%';
+            const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
+            assert.equal(replacements.length, 2);
+            assert.equal(replacements[0].token.toString(), '/%%\\{created_at\\}%%/g');
+            assert.equal(replacements[0].id, 'created_at');
+            assert.equal(replacements[0].getValue(member), '13 March 2023');
+        });
+
+        it('handles dates when the locale has whitespace like "en "', function () {
+            emailRenderer = new EmailRenderer({
+                urlUtils: {
+                    urlFor: () => 'http://example.com/subdirectory/'
+                },
+                labs: {
+                    isSet: () => true
+                },
+                settingsCache: {
+                    get: (key) => {
+                        if (key === 'timezone') {
+                            return 'UTC';
+                        }
+                        if (key === 'locale') {
+                            return 'en ';
+                        }
+                    }
+                },
+                settingsHelpers: {getMembersValidationKey,createUnsubscribeUrl},
+                t: t
+            });
+            const html = '%%{created_at}%%';
+            const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
+            assert.equal(replacements.length, 2);
+            assert.equal(replacements[0].token.toString(), '/%%\\{created_at\\}%%/g');
+            assert.equal(replacements[0].id, 'created_at');
+            assert.equal(replacements[0].getValue(member), '13 March 2023');
+        });
+
+        it('handles dates when the locale is invalid like "(en)"', function () {
+            emailRenderer = new EmailRenderer({
+                urlUtils: {
+                    urlFor: () => 'http://example.com/subdirectory/'
+                },
+                labs: {
+                    isSet: () => true
+                },
+                settingsCache: {
+                    get: (key) => {
+                        if (key === 'timezone') {
+                            return 'UTC';
+                        }
+                        if (key === 'locale') {
+                            return '(en)';
+                        }
+                    }
+                },
+                settingsHelpers: {getMembersValidationKey,createUnsubscribeUrl},
+                t: t
+            });
+
+            const html = '%%{created_at}%%';
+            const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
+            assert.equal(replacements.length, 2);
+            assert.equal(replacements[0].token.toString(), '/%%\\{created_at\\}%%/g');
+            assert.equal(replacements[0].id, 'created_at');
+            assert.equal(replacements[0].getValue(member), '13 March 2023');
+        });
+    });
     describe('isMemberTrialing', function () {
         let emailRenderer;
 
@@ -336,7 +562,8 @@ describe('Email renderer', function () {
                             return 'UTC';
                         }
                     }
-                }
+                },
+                t: t
             });
         });
 
@@ -439,7 +666,8 @@ describe('Email renderer', function () {
                             return 'UTC';
                         }
                     }
-                }
+                },
+                t: t
             });
         });
 
@@ -965,8 +1193,8 @@ describe('Email renderer', function () {
             });
             emailRenderer = new EmailRenderer({
                 audienceFeedbackService: {
-                    buildLink: (_uuid, _postId, score) => {
-                        return new URL('http://feedback-link.com/?score=' + encodeURIComponent(score) + '&uuid=' + encodeURIComponent(_uuid));
+                    buildLink: (_uuid, _postId, score, key) => {
+                        return new URL('http://feedback-link.com/?score=' + encodeURIComponent(score) + '&uuid=' + encodeURIComponent(_uuid) + '&key=' + encodeURIComponent(key));
                     }
                 },
                 urlUtils: {
@@ -1040,7 +1268,8 @@ describe('Email renderer', function () {
 
                         return labsEnabled;
                     }
-                }
+                },
+                t: t
             });
         });
 
@@ -1065,7 +1294,7 @@ describe('Email renderer', function () {
             );
         });
 
-        it('returns feedback buttons and unsubcribe links', async function () {
+        it('returns feedback buttons and unsubscribe links', async function () {
             const post = createModel(basePost);
             const newsletter = createModel({
                 header_image: null,
@@ -1091,14 +1320,16 @@ describe('Email renderer', function () {
             // Unsubscribe button included
             response.plaintext.should.containEql('Unsubscribe [%%{unsubscribe_url}%%]');
             response.html.should.containEql('Unsubscribe');
-            response.replacements.length.should.eql(3);
+            response.replacements.length.should.eql(4);
             response.replacements.should.match([
                 {
                     id: 'uuid'
                 },
                 {
-                    id: 'unsubscribe_url',
-                    token: /%%\{unsubscribe_url\}%%/g
+                    id: 'key'
+                },
+                {
+                    id: 'unsubscribe_url'
                 },
                 {
                     id: 'list_unsubscribe'
@@ -1237,7 +1468,6 @@ describe('Email renderer', function () {
                 segment,
                 options
             );
-
             assert.match(response.html, /By A &amp; 2 others/);
             assert.match(response.plaintext, /By A & 2 others/);
         });
@@ -1447,21 +1677,21 @@ describe('Email renderer', function () {
                 `http://tracked-link.com/?m=%%{uuid}%%&url=https%3A%2F%2Fencoded-link.com%2F%3Fcode%3Dtest%26source_tracking%3Dsite`,
                 `http://tracked-link.com/?m=%%{uuid}%%&url=https%3A%2F%2Fexample.com%2F%3Fref%3D123%26source_tracking%3DTest%2BNewsletter%26post_tracking%3Dadded`,
                 '#',
-                `http://feedback-link.com/?score=1&uuid=%%{uuid}%%`,
-                `http://feedback-link.com/?score=0&uuid=%%{uuid}%%`,
-                `http://feedback-link.com/?score=1&uuid=%%{uuid}%%`,
-                `http://feedback-link.com/?score=0&uuid=%%{uuid}%%`,
+                `http://feedback-link.com/?score=1&uuid=%%{uuid}%%&key=%%{key}%%`,
+                `http://feedback-link.com/?score=0&uuid=%%{uuid}%%&key=%%{key}%%`,
                 `%%{unsubscribe_url}%%`,
                 `https://ghost.org/?via=pbg-newsletter&source_tracking=site`
             ]);
 
             // Check uuid in replacements
-            response.replacements.length.should.eql(3);
+            response.replacements.length.should.eql(4);
             response.replacements[0].id.should.eql('uuid');
             response.replacements[0].token.should.eql(/%%\{uuid\}%%/g);
-            response.replacements[1].id.should.eql('unsubscribe_url');
-            response.replacements[1].token.should.eql(/%%\{unsubscribe_url\}%%/g);
-            response.replacements[2].id.should.eql('list_unsubscribe');
+            response.replacements[1].id.should.eql('key');
+            response.replacements[1].token.should.eql(/%%\{key\}%%/g);
+            response.replacements[2].id.should.eql('unsubscribe_url');
+            response.replacements[2].token.should.eql(/%%\{unsubscribe_url\}%%/g);
+            response.replacements[3].id.should.eql('list_unsubscribe');
         });
 
         it('replaces all relative links if click tracking is disabled', async function () {
@@ -1502,10 +1732,8 @@ describe('Email renderer', function () {
                 'http://example.com/',
                 'http://example.com/#relative-test',
                 '#',
-                'http://feedback-link.com/?score=1&uuid=%%{uuid}%%',
-                'http://feedback-link.com/?score=0&uuid=%%{uuid}%%',
-                'http://feedback-link.com/?score=1&uuid=%%{uuid}%%',
-                'http://feedback-link.com/?score=0&uuid=%%{uuid}%%',
+                'http://feedback-link.com/?score=1&uuid=%%{uuid}%%&key=%%{key}%%',
+                'http://feedback-link.com/?score=0&uuid=%%{uuid}%%&key=%%{key}%%',
                 '%%{unsubscribe_url}%%',
                 'https://ghost.org/?via=pbg-newsletter'
             ]);
@@ -1559,21 +1787,21 @@ describe('Email renderer', function () {
                 `http://tracked-link.com/?m=%%{uuid}%%&url=http%3A%2F%2Fexample.com%2F%3Fsource_tracking%3DTest%2BNewsletter%26post_tracking%3Dadded`,
                 `http://tracked-link.com/?m=%%{uuid}%%&url=https%3A%2F%2Fexternal-domain.com%2F%3Fref%3D123%26source_tracking%3Dsite`,
                 `http://tracked-link.com/?m=%%{uuid}%%&url=https%3A%2F%2Fexample.com%2F%3Fref%3D123%26source_tracking%3DTest%2BNewsletter%26post_tracking%3Dadded`,
-                `http://feedback-link.com/?score=1&uuid=%%{uuid}%%`,
-                `http://feedback-link.com/?score=0&uuid=%%{uuid}%%`,
-                `http://feedback-link.com/?score=1&uuid=%%{uuid}%%`,
-                `http://feedback-link.com/?score=0&uuid=%%{uuid}%%`,
+                `http://feedback-link.com/?score=1&uuid=%%{uuid}%%&key=%%{key}%%`,
+                `http://feedback-link.com/?score=0&uuid=%%{uuid}%%&key=%%{key}%%`,
                 `%%{unsubscribe_url}%%`,
                 `https://ghost.org/?via=pbg-newsletter&source_tracking=site`
             ]);
 
             // Check uuid in replacements
-            response.replacements.length.should.eql(3);
+            response.replacements.length.should.eql(4);
             response.replacements[0].id.should.eql('uuid');
             response.replacements[0].token.should.eql(/%%\{uuid\}%%/g);
-            response.replacements[1].id.should.eql('unsubscribe_url');
-            response.replacements[1].token.should.eql(/%%\{unsubscribe_url\}%%/g);
-            response.replacements[2].id.should.eql('list_unsubscribe');
+            response.replacements[1].id.should.eql('key');
+            response.replacements[1].token.should.eql(/%%\{key\}%%/g);
+            response.replacements[2].id.should.eql('unsubscribe_url');
+            response.replacements[2].token.should.eql(/%%\{unsubscribe_url\}%%/g);
+            response.replacements[3].id.should.eql('list_unsubscribe');
         });
 
         it('removes data-gh-segment and renders paywall', async function () {
@@ -1650,14 +1878,16 @@ describe('Email renderer', function () {
 
             response.html.should.containEql('Unsubscribe');
             response.html.should.containEql('http://example.com');
-            response.replacements.length.should.eql(3);
+            response.replacements.length.should.eql(4);
             response.replacements.should.match([
                 {
                     id: 'uuid'
                 },
                 {
-                    id: 'unsubscribe_url',
-                    token: /%%\{unsubscribe_url\}%%/g
+                    id: 'key'
+                },
+                {
+                    id: 'unsubscribe_url'
                 },
                 {
                     id: 'list_unsubscribe'
@@ -1770,12 +2000,6 @@ describe('Email renderer', function () {
         });
 
         describe('show excerpt', function () {
-            beforeEach(function () {
-                labsEnabled = {
-                    newsletterExcerpt: true
-                };
-            });
-
             it('is rendered when enabled and customExcerpt is present', async function () {
                 const post = createModel(Object.assign({}, basePost, {custom_excerpt: 'This is an excerpt'}));
                 const newsletter = createModel({
@@ -1903,7 +2127,8 @@ describe('Email renderer', function () {
                             }
                         ]
                     })
-                }
+                },
+                t: t
             });
         });
 
@@ -2276,44 +2501,46 @@ describe('Email renderer', function () {
     });
 
     describe('createUnsubscribeUrl', function () {
-        it('includes member uuid and newsletter id', async function () {
-            const emailRenderer = new EmailRenderer({
+        let emailRenderer;
+
+        beforeEach(function () {
+            emailRenderer = new EmailRenderer({
                 urlUtils: {
                     urlFor() {
                         return 'http://example.com/subdirectory';
                     }
+                },
+                settingsHelpers: {
+                    getMembersValidationKey,
+                    createUnsubscribeUrl
                 }
             });
+        });
+
+        it('includes member uuid and newsletter id', async function () {
             const response = await emailRenderer.createUnsubscribeUrl('memberuuid', {
                 newsletterUuid: 'newsletteruuid'
             });
-            assert.equal(response, `http://example.com/subdirectory/unsubscribe/?uuid=memberuuid&newsletter=newsletteruuid`);
+            const unsubscribeUrl = createUnsubscribeUrl('memberuuid', {
+                newsletterUuid: 'newsletteruuid'
+            });
+            assert.equal(response, unsubscribeUrl);
         });
 
         it('includes comments', async function () {
-            const emailRenderer = new EmailRenderer({
-                urlUtils: {
-                    urlFor() {
-                        return 'http://example.com/subdirectory';
-                    }
-                }
-            });
             const response = await emailRenderer.createUnsubscribeUrl('memberuuid', {
                 comments: true
             });
-            assert.equal(response, `http://example.com/subdirectory/unsubscribe/?uuid=memberuuid&comments=1`);
+            const unsubscribeUrl = createUnsubscribeUrl('memberuuid', {
+                comments: true
+            });
+            assert.equal(response, unsubscribeUrl);
         });
 
         it('works for previews', async function () {
-            const emailRenderer = new EmailRenderer({
-                urlUtils: {
-                    urlFor() {
-                        return 'http://example.com/subdirectory';
-                    }
-                }
-            });
             const response = await emailRenderer.createUnsubscribeUrl();
-            assert.equal(response, `http://example.com/subdirectory/unsubscribe/?preview=1`);
+            const unsubscribeUrl = createUnsubscribeUrl();
+            assert.equal(response, unsubscribeUrl);
         });
     });
 

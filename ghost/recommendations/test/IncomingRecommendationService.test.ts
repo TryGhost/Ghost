@@ -52,6 +52,10 @@ describe('IncomingRecommendationService', function () {
                 await service.init();
                 clock.tick(1000 * 60 * 60 * 24);
                 assert(refreshMentions.calledOnce);
+                assert(refreshMentions.calledWith({
+                    filter: `source:~$'/.well-known/recommendations.json'+deleted:[true,false]`,
+                    limit: 100
+                }));
             } finally {
                 process.env.NODE_ENV = saved;
             }

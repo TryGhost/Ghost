@@ -21,7 +21,8 @@ const urlUtils = require('../../../core/shared/url-utils');
 const settingsCache = require('../../../core/shared/settings-cache');
 const DomainEvents = require('@tryghost/domain-events');
 const logging = require('@tryghost/logging');
-const {stripeMocker, mockLabsDisabled} = require('../../utils/e2e-framework-mock-manager');
+const {stripeMocker} = require('../../utils/e2e-framework-mock-manager');
+const settingsHelpers = require('../../../core/server/services/settings-helpers');
 
 /**
  * Assert that haystack and needles match, ignoring the order.
@@ -136,7 +137,8 @@ function buildMemberWithIncludesSnapshot(options) {
         attribution: attributionSnapshot,
         newsletters: new Array(options.newsletters).fill(newsletterSnapshot),
         subscriptions: anyArray,
-        labels: anyArray
+        labels: anyArray,
+        unsubscribe_url: anyString
     };
 }
 
@@ -154,7 +156,8 @@ const memberMatcherShallowIncludes = {
     created_at: anyISODateTime,
     updated_at: anyISODateTime,
     subscriptions: anyArray,
-    labels: anyArray
+    labels: anyArray,
+    unsubscribe_url: anyString
 };
 
 /**
@@ -194,7 +197,6 @@ describe('Members API without Stripe', function () {
 
     beforeEach(function () {
         mockManager.mockMail();
-        mockLabsDisabled('newEmailAddresses');
     });
 
     afterEach(function () {
@@ -494,6 +496,7 @@ describe('Members API', function () {
     beforeEach(function () {
         mockManager.mockStripe();
         emailMockReceiver = mockManager.mockMail();
+        sinon.stub(settingsHelpers, 'createUnsubscribeUrl').returns('http://domain.com/unsubscribe/?uuid=memberuuid&key=abc123dontstealme');
     });
 
     afterEach(function () {
@@ -505,6 +508,67 @@ describe('Members API', function () {
     it('Can browse', async function () {
         await agent
             .get('/members/')
+            .expectStatus(200)
+            .matchBodySnapshot({
+                members: [
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 2),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1)
+                ]
+            })
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            });
+    });
+
+    it('Can browse with limit', async function () {
+        await agent
+            .get('/members/?limit=3')
+            .expectStatus(200)
+            .matchBodySnapshot({
+                members: [
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1)
+                ]
+            })
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            });
+    });
+
+    it('Can browse with more than maximum allowed limit', async function () {
+        await agent
+            .get('/members/?limit=300')
+            .expectStatus(200)
+            .matchBodySnapshot({
+                members: [
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 0),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 2),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1),
+                    buildMemberMatcherShallowIncludesWithTiers(undefined, 1)
+                ]
+            })
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            });
+    });
+
+    it('Can browse with limit=all', async function () {
+        await agent
+            .get('/members/?limit=all')
             .expectStatus(200)
             .matchBodySnapshot({
                 members: [
@@ -904,6 +968,7 @@ describe('Members API', function () {
         await agent.delete(`/members/${memberFailVerification.id}`);
 
         await configUtils.restore();
+        settingsCache.set('email_verification_required', {value: false});
     });
 
     it('Can add and send a signup confirmation email', async function () {
@@ -1015,6 +1080,85 @@ describe('Members API', function () {
                 ]
             })
             .expectStatus(200);
+    });
+
+    it('Does not send a signup email when email verification is required', async function () {
+        mockManager.mockSetting('email_verification_required', true);
+
+        const member = {
+            name: 'Do not Send Me Confirmation',
+            email: 'member_not_getting_confirmation@test.com',
+            newsletters: [
+                newsletters[0],
+                newsletters[1]
+            ]
+        };
+
+        const {body} = await agent
+            .post('/members/?send_email=true&email_type=signup')
+            .body({members: [member]})
+            .expectStatus(201)
+            .matchBodySnapshot({
+                members: [
+                    buildMemberWithoutIncludesSnapshot({
+                        newsletters: 2
+                    })
+                ]
+            })
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag,
+                location: anyString
+            });
+
+        const newMember = body.members[0];
+
+        emailMockReceiver
+            .assertSentEmailCount(0);
+
+        await assertMemberEvents({
+            eventType: 'MemberStatusEvent',
+            memberId: newMember.id,
+            asserts: [
+                {
+                    from_status: null,
+                    to_status: 'free'
+                }
+            ]
+        });
+
+        await assertMemberEvents({
+            eventType: 'MemberSubscribeEvent',
+            memberId: newMember.id,
+            asserts: [
+                {
+                    subscribed: true,
+                    source: 'admin',
+                    newsletter_id: newsletters[0].id
+                },
+                {
+                    subscribed: true,
+                    source: 'admin',
+                    newsletter_id: newsletters[1].id
+                }
+            ]
+        });
+
+        // @TODO: do we really need to delete this member here?
+        await agent
+            .delete(`members/${body.members[0].id}/`)
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            })
+            .expectStatus(204);
+
+        // There should be no MemberSubscribeEvent remaining.
+        await assertMemberEvents({
+            eventType: 'MemberSubscribeEvent',
+            memberId: newMember.id,
+            asserts: []
+        });
     });
 
     it('Add should fail when passing incorrect email_type query parameter', async function () {

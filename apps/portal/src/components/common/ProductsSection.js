@@ -41,10 +41,17 @@ export const ProductsSectionStyles = () => {
             border-radius: 999px;
             transition: all 0.15s ease-in-out;
         }
+        html[dir="rtl"] .gh-portal-products-pricetoggle:before {
+            left: 4px;
+            right: unset;
+    }
 
         .gh-portal-products-pricetoggle.left:before {
             transform: translateX(calc(-100% + 8px));
         }
+        html[dir="rtl"] .gh-portal-products-pricetoggle.left:before {
+            transform: translateX(calc(100% - 8px));
+    }
 
         .gh-portal-products-pricetoggle .gh-portal-btn {
             border: 0;
@@ -80,7 +87,7 @@ export const ProductsSectionStyles = () => {
 
         .gh-portal-maximum-discount {
             font-weight: 400;
-            margin-left: 4px;
+            margin-inline-start: 4px;
             opacity: 0.5;
         }
 
@@ -193,7 +200,7 @@ export const ProductsSectionStyles = () => {
             text-align: center;
             white-space: nowrap;
             border-radius: 999px;
-            margin-right: -4px;
+            margin-inline-end: -4px;
             max-height: 24.5px;
         }
 
@@ -243,7 +250,7 @@ export const ProductsSectionStyles = () => {
         }
 
         .gh-portal-product-price .currency-sign.long {
-            margin-right: 5px;
+            margin-inline-end: 5px;
         }
 
         .gh-portal-product-price .amount {
@@ -264,7 +271,7 @@ export const ProductsSectionStyles = () => {
             line-height: 1.6em;
             color: var(--grey5);
             letter-spacing: 0.3px;
-            margin-left: 5px;
+            margin-inline-start: 5px;
         }
 
         .gh-portal-product-alternative-price {
@@ -316,6 +323,9 @@ export const ProductsSectionStyles = () => {
             margin: 3px 10px 0 0;
             overflow: visible;
         }
+        html[dir="rtl"] .gh-portal-benefit-checkmark {
+            margin: 3px 0 0 10px;
+        }
 
         .gh-portal-benefit-checkmark polyline,
         .gh-portal-benefit-checkmark g {
@@ -353,7 +363,7 @@ export const ProductsSectionStyles = () => {
             z-index: 800;
         }
 
-        .gh-portal-btn-product .gh-portal-btn {
+        .gh-portal-btn-product:not(.gh-portal-btn-unsubscribe) .gh-portal-btn {
             background: var(--brandcolor);
             color: var(--white);
             border: none;
@@ -361,11 +371,11 @@ export const ProductsSectionStyles = () => {
             z-index: 900;
         }
 
-        .gh-portal-btn-product .gh-portal-btn:hover {
+        .gh-portal-btn-product:not(.gh-portal-btn-unsubscribe) .gh-portal-btn:hover {
             opacity: 0.9;
         }
 
-        .gh-portal-btn-product .gh-portal-btn {
+        .gh-portal-btn-product:not(.gh-portal-btn-unsubscribe) .gh-portal-btn {
             background: var(--brandcolor);
             color: var(--white);
             border: none;
@@ -452,11 +462,11 @@ export const ProductsSectionStyles = () => {
                 min-width: unset;
             }
 
-            .gh-portal-btn-product {
+            .gh-portal-btn-product:not(.gh-portal-btn-unsubscribe) {
                 position: static;
             }
 
-            .gh-portal-btn-product::before {
+            .gh-portal-btn-product:not(.gh-portal-btn-unsubscribe)::before {
                 display: none;
             }
         }
@@ -594,12 +604,13 @@ function ProductCardTrialDays({trialDays, discount, selectedInterval}) {
 
 function ProductCardPrice({product}) {
     const {selectedInterval} = useContext(ProductsContext);
-    const {site} = useContext(AppContext);
+    const {t, site} = useContext(AppContext);
     const monthlyPrice = product.monthlyPrice;
     const yearlyPrice = product.yearlyPrice;
     const trialDays = product.trial_days;
     const activePrice = selectedInterval === 'month' ? monthlyPrice : yearlyPrice;
     const alternatePrice = selectedInterval === 'month' ? yearlyPrice : monthlyPrice;
+    const interval = activePrice.interval === 'year' ? t('year') : t('month');
     if (!monthlyPrice || !yearlyPrice) {
         return null;
     }
@@ -615,7 +626,7 @@ function ProductCardPrice({product}) {
                         <div className="gh-portal-product-price">
                             <span className={'currency-sign' + (currencySymbol.length > 1 ? ' long' : '')}>{currencySymbol}</span>
                             <span className="amount" data-testid="product-amount">{formatNumber(getStripeAmount(activePrice.amount))}</span>
-                            <span className="billing-period">/{activePrice.interval}</span>
+                            <span className="billing-period">/{interval}</span>
                         </div>
                         <ProductCardTrialDays trialDays={trialDays} discount={yearlyDiscount} selectedInterval={selectedInterval} />
                     </div>
@@ -633,7 +644,7 @@ function ProductCardPrice({product}) {
                 <div className="gh-portal-product-price">
                     <span className={'currency-sign' + (currencySymbol.length > 1 ? ' long' : '')}>{currencySymbol}</span>
                     <span className="amount" data-testid="product-amount">{formatNumber(getStripeAmount(activePrice.amount))}</span>
-                    <span className="billing-period">/{activePrice.interval}</span>
+                    <span className="billing-period">/{interval}</span>
                 </div>
                 {(selectedInterval === 'year' ? <YearlyDiscount discount={yearlyDiscount} /> : '')}
             </div>

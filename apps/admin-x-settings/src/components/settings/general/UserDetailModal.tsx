@@ -85,7 +85,7 @@ export interface UserDetailProps {
     clearError: (key: keyof User) => void;
 }
 
-const UserMenuTrigger = () => (
+const UserMenuTrigger = (
     <button className='flex h-8 cursor-pointer items-center justify-center rounded bg-[rgba(0,0,0,0.75)] px-3 opacity-80 hover:opacity-100' type='button'>
         <span className='sr-only'>Actions</span>
         <Icon colorClass='text-white' name='ellipsis' size='md' />
@@ -362,9 +362,10 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
         >
             <div>
                 <div className={`relative ${canAccessSettings(currentUser) ? '-mx-8 -mt-8 rounded-t' : '-mx-10 -mt-10'} bg-gradient-to-tr from-grey-900 to-black`}>
-                    <div className='flex min-h-[40vmin] flex-wrap items-end justify-between bg-cover bg-center' style={{
-                        backgroundImage: `url(${formState.cover_image})`
-                    }}>
+                    <div className='flex min-h-[40vmin] flex-wrap items-end justify-between bg-cover bg-center' 
+                        style={{
+                            backgroundImage: formState.cover_image ? `url(${formState.cover_image})` : 'none'
+                        }}>
                         <div className='flex w-full max-w-[620px] flex-col gap-5 p-8 md:max-w-[auto] md:flex-row md:items-center'>
                             <div>
                                 <ImageUpload
@@ -435,7 +436,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                                 }}
                             >Upload cover image</ImageUpload>
                             {showMenu && <div className="z-10">
-                                <Menu items={menuItems} position='right' trigger={<UserMenuTrigger />}></Menu>
+                                <Menu items={menuItems} position='end' trigger={UserMenuTrigger} />
                             </div>}
                         </div>
                     </div>

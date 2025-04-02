@@ -1,13 +1,11 @@
 name: CI
 on:
   pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
   push:
     branches:
       - main
-      - arch
       - 'v5.*'
-      - 3.x
-      - 2.x
 
 env:
   FORCE_COLOR: 1
@@ -19,20 +17,20 @@ env:
     ~/.cache/ms-playwright/
   CACHED_BUILD_PATHS: |
     ${{ github.workspace }}/ghost/*/build
-  NX_CACHE_RESTORE_KEYS: |
-    nx-Linux-${{ github.ref }}-${{ github.sha }}
-    nx-Linux-${{ github.ref }}
-    nx-Linux
   NX_REJECT_UNKNOWN_LOCAL_CACHE: 0
+  NODE_VERSION: 20.11.1
 
 concurrency:
   group: ${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
 
 jobs:
-  job_get_metadata:
-    name: Metadata
+  job_setup:
+    name: Setup
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      IS_MAIN: ${{ github.ref == 'refs/heads/main' }}
     permissions:
       pull-requests: read
     steps:
@@ -61,6 +59,23 @@ jobs:
           echo "Setting BASE_COMMIT to $BASE_COMMIT"
           echo "BASE_COMMIT=$BASE_COMMIT" >> $GITHUB_ENV
 
+      - name: Check user org membership
+        id: check_user_org_membership
+        if: github.event_name == 'pull_request'
+        run: |
+          echo "Looking up: ${{ github.triggering_actor }}"
+          ENCODED_USERNAME=$(printf '%s' '${{ github.triggering_actor }}' | jq -sRr @uri)
+
+          LOOKUP_USER=$(curl --write-out "%{http_code}" --silent --output /dev/null --location "https://api.github.com/orgs/tryghost/members/$ENCODED_USERNAME" --header "Authorization: Bearer ${{ secrets.CANARY_DOCKER_BUILD }}")
+
+          if [ "$LOOKUP_USER" == "204" ]; then
+            echo "User is in the org"
+            echo "is_member=true" >> $GITHUB_OUTPUT
+          else
+            echo "User is not in the org"
+            echo "is_member=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Determine added packages
         uses: dorny/paths-filter@v2.12.0
         id: added
@@ -82,12 +97,14 @@ jobs:
               - *shared
               - 'ghost/**'
               - '!ghost/admin/**'
+              - '!ghost/web-analytics/**'
             admin:
               - *shared
               - 'ghost/admin/**'
             admin-x-settings:
               - *shared
               - 'apps/admin-x-settings/**'
+              - 'apps/admin-x-design-system/**'
             announcement-bar:
               - *shared
               - 'apps/announcement-bar/**'
@@ -103,30 +120,12 @@ jobs:
             sodo-search:
               - *shared
               - 'apps/sodo-search/**'
+            tinybird:
+              - 'ghost/web-analytics/**'
+              - '!ghost/web-analytics/**/*.md'
             any-code:
               - '!**/*.md'
-    outputs:
-      changed_admin: ${{ steps.changed.outputs.admin }}
-      changed_core: ${{ steps.changed.outputs.core }}
-      changed_admin_x_settings: ${{ steps.changed.outputs.admin-x-settings }}
-      changed_announcement_bar: ${{ steps.changed.outputs.announcement-bar }}
-      changed_comments_ui: ${{ steps.changed.outputs.comments-ui }}
-      changed_portal: ${{ steps.changed.outputs.portal }}
-      changed_signup_form: ${{ steps.changed.outputs.signup-form }}
-      changed_sodo_search: ${{ steps.changed.outputs.sodo-search }}
-      changed_any_code: ${{ steps.changed.outputs.any-code }}
-      changed_new_package: ${{ steps.added.outputs.new-package }}
-      base_commit: ${{ env.BASE_COMMIT }}
-      is_canary_branch: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/arch') }}
-      is_main: ${{ github.ref == 'refs/heads/main' }}
-      has_browser_tests_label: ${{ github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'browser-tests') }}
 
-  job_install_deps:
-    name: Install Dependencies
-    needs: job_get_metadata
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
       - name: 'Checkout current commit'
         uses: actions/checkout@v4
         with:
@@ -153,7 +152,10 @@ jobs:
         with:
           path: .nxcache
           key: nx-Linux-${{ github.ref }}-${{ env.HEAD_COMMIT }}
-          restore-keys: ${{needs.job_get_metadata.outputs.is_main == 'false' && env.NX_CACHE_RESTORE_KEYS || 'nx-never-restore'}}
+          restore-keys: |
+            nx-Linux-${{ github.ref }}-${{ env.HEAD_COMMIT }}
+            nx-Linux-${{ github.ref }}
+            nx-Linux
 
       - name: Check dependency cache
         uses: actions/cache@v4
@@ -161,7 +163,7 @@ jobs:
         with:
           path: ${{ env.CACHED_DEPENDENCY_PATHS }}
           key: ${{ env.cachekey }}
-          restore-keys: ${{needs.job_get_metadata.outputs.is_main == 'false' && env.DEPENDENCY_CACHE_RESTORE_KEYS || 'dep-never-restore'}}
+          restore-keys: ${{ env.IS_MAIN == 'false' && env.DEPENDENCY_CACHE_RESTORE_KEYS || 'dep-never-restore'}}
 
       - name: Check build cache
         uses: actions/cache@v4
@@ -175,7 +177,7 @@ jobs:
         env:
           FORCE_COLOR: 0
         with:
-          node-version: '18.12.1'
+          node-version: ${{ env.NODE_VERSION }}
           cache: yarn
 
       - name: Install dependencies
@@ -184,35 +186,51 @@ jobs:
       - name: Build packages
         if: steps.cache_built_packages.outputs.cache-hit != 'true'
         run: yarn nx run-many -t build:ts
+
     outputs:
+      changed_admin: ${{ steps.changed.outputs.admin }}
+      changed_core: ${{ steps.changed.outputs.core }}
+      changed_admin_x_settings: ${{ steps.changed.outputs.admin-x-settings }}
+      changed_announcement_bar: ${{ steps.changed.outputs.announcement-bar }}
+      changed_comments_ui: ${{ steps.changed.outputs.comments-ui }}
+      changed_portal: ${{ steps.changed.outputs.portal }}
+      changed_signup_form: ${{ steps.changed.outputs.signup-form }}
+      changed_sodo_search: ${{ steps.changed.outputs.sodo-search }}
+      changed_tinybird: ${{ steps.changed.outputs.tinybird }}
+      changed_any_code: ${{ steps.changed.outputs.any-code }}
+      changed_new_package: ${{ steps.added.outputs.new-package }}
+      base_commit: ${{ env.BASE_COMMIT }}
+      is_main: ${{ env.IS_MAIN }}
+      member_is_in_org: ${{ steps.check_user_org_membership.outputs.is_member }}
+      has_browser_tests_label: ${{ github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'browser-tests') }}
       dependency_cache_key: ${{ env.cachekey }}
 
   job_lint:
     runs-on: ubuntu-latest
-    needs: [job_get_metadata, job_install_deps]
-    if: needs.job_get_metadata.outputs.changed_any_code == 'true'
+    needs: [job_setup]
+    if: needs.job_setup.outputs.changed_any_code == 'true'
     name: Lint
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 100
+          fetch-depth: 1000
       - uses: actions/setup-node@v4
         env:
           FORCE_COLOR: 0
         with:
-          node-version: '18.12.1'
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: Restore caches
         uses: ./.github/actions/restore-cache
         env:
-          DEPENDENCY_CACHE_KEY: ${{ needs.job_install_deps.outputs.dependency_cache_key }}
+          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
 
       - uses: actions/cache@v4
         with:
           path: ghost/**/.eslintcache
           key: eslint-cache
 
-      - run: yarn nx affected -t lint --base=${{ needs.job_get_metadata.outputs.BASE_COMMIT }}
+      - run: yarn nx affected -t lint --base=${{ needs.job_setup.outputs.BASE_COMMIT }}
 
       - uses: tryghost/actions/actions/slack-build@main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -223,31 +241,32 @@ jobs:
 
   job_i18n:
     runs-on: ubuntu-latest
-    needs: [job_get_metadata, job_install_deps]
+    needs: [job_setup]
     name: i18n
     if: |
-        needs.job_get_metadata.outputs.changed_comments_ui == 'true'
-        || needs.job_get_metadata.outputs.changed_signup_form == 'true'
-        || needs.job_get_metadata.outputs.changed_portal == 'true'
-        || needs.job_get_metadata.outputs.changed_core == 'true'
+        needs.job_setup.outputs.changed_comments_ui == 'true'
+        || needs.job_setup.outputs.changed_signup_form == 'true'
+        || needs.job_setup.outputs.changed_sodo_search == 'true'
+        || needs.job_setup.outputs.changed_portal == 'true'
+        || needs.job_setup.outputs.changed_core == 'true'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: "18.12.1"
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: Restore caches
         uses: ./.github/actions/restore-cache
         env:
-          DEPENDENCY_CACHE_KEY: ${{ needs.job_install_deps.outputs.dependency_cache_key }}
+          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
 
       - name: Run i18n tests
         run: yarn nx run @tryghost/i18n:test
 
   job_admin-tests:
     runs-on: ubuntu-latest
-    needs: [job_get_metadata, job_install_deps]
-    if: needs.job_get_metadata.outputs.changed_admin == 'true'
+    needs: [job_setup]
+    if: needs.job_setup.outputs.changed_admin == 'true'
     name: Admin tests - Chrome
     env:
       MOZ_HEADLESS: 1
@@ -258,12 +277,12 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: "18.12.1"
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: Restore caches
         uses: ./.github/actions/restore-cache
         env:
-          DEPENDENCY_CACHE_KEY: ${{ needs.job_install_deps.outputs.dependency_cache_key }}
+          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
 
       - run: yarn nx run ghost-admin:test
         env:
@@ -290,19 +309,29 @@ jobs:
     timeout-minutes: 60
     runs-on:
       labels: ubuntu-latest
-    needs: [job_get_metadata, job_install_deps]
-    if: needs.job_get_metadata.outputs.changed_any_code == 'true' && (needs.job_get_metadata.outputs.is_main == 'true' || needs.job_get_metadata.outputs.has_browser_tests_label == 'true')
+    needs: [job_setup]
+    if: needs.job_setup.outputs.changed_any_code == 'true' && (needs.job_setup.outputs.is_main == 'true' || needs.job_setup.outputs.has_browser_tests_label == 'true')
     concurrency:
       group: ${{ github.workflow }}
     steps:
     - uses: actions/checkout@v4
       with:
         submodules: true
+    - name: Check secrets
+      if: github.event_name == 'pull_request'
+      env:
+        STRIPE_PUBLISHABLE_KEY: ${{ secrets.STRIPE_PUBLISHABLE_KEY }}
+      run: |
+        if [ -z "${{ env.STRIPE_PUBLISHABLE_KEY }}" ]; then
+          echo "Stripe Publishable Key is not available. Did you open this PR from a fork?"
+          echo "If so, please re-open the PR from a branch in the upstream TryGhost/Ghost repository."
+          exit 1
+        fi
     - uses: actions/setup-node@v4
       env:
         FORCE_COLOR: 0
       with:
-        node-version: '18.x'
+        node-version: ${{ env.NODE_VERSION }}
         cache: yarn
 
     - name: Install Stripe-CLI
@@ -316,7 +345,7 @@ jobs:
     - name: Restore caches
       uses: ./.github/actions/restore-cache
       env:
-        DEPENDENCY_CACHE_KEY: ${{ needs.job_install_deps.outputs.dependency_cache_key }}
+        DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
 
     - name: Run migrations
       working-directory: ghost/core
@@ -342,7 +371,6 @@ jobs:
       run: yarn nx run ghost-admin:build:dev
 
     - name: Run Playwright tests locally
-      working-directory: ghost/core
       run: yarn test:browser
       env:
         CI: true
@@ -366,8 +394,8 @@ jobs:
   job_perf-tests:
     runs-on:
       labels: ubuntu-latest-4-cores
-    needs: [job_get_metadata, job_install_deps]
-    if: needs.job_get_metadata.outputs.changed_core == 'true' && needs.job_get_metadata.outputs.is_main == 'true'
+    needs: [job_setup]
+    if: needs.job_setup.outputs.changed_core == 'true' && needs.job_setup.outputs.is_main == 'true'
     name: Performance tests
     steps:
       - uses: actions/checkout@v4
@@ -377,12 +405,12 @@ jobs:
         env:
           FORCE_COLOR: 0
         with:
-          node-version: '18.12.1'
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: Restore caches
         uses: ./.github/actions/restore-cache
         env:
-          DEPENDENCY_CACHE_KEY: ${{ needs.job_install_deps.outputs.dependency_cache_key }}
+          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
 
       - name: Install hyperfine
         run: |
@@ -391,6 +419,9 @@ jobs:
           tar -zxvf hyperfine-v$HYPERFINE_VERSION-x86_64-unknown-linux-gnu.tar.gz
           mv hyperfine-v$HYPERFINE_VERSION-x86_64-unknown-linux-gnu/hyperfine /usr/local/bin
           chmod +x /usr/local/bin/hyperfine
+
+      - name: Build TS code
+        run: yarn nx run-many -t build:tsc
 
       - name: Run hyperfine on boot
         working-directory: ghost/core
@@ -402,7 +433,7 @@ jobs:
           jq '[{ name: "Boot time", unit: "s", value: .results[0].median, range: ((.results[0].max - .results[0].min) | tostring) }]' < boot-perf.json > boot-perf-formatted.json
 
       - name: Run analysis
-        uses: benchmark-action/github-action-benchmark@v1.20.3
+        uses: benchmark-action/github-action-benchmark@v1.20.4
         with:
           tool: 'customSmallerIsBetter'
           output-file-path: ghost/core/boot-perf-formatted.json
@@ -413,16 +444,16 @@ jobs:
 
   job_unit-tests:
     runs-on: ubuntu-latest
-    needs: [job_get_metadata, job_install_deps]
-    if: needs.job_get_metadata.outputs.changed_any_code == 'true'
+    needs: [job_setup]
+    if: needs.job_setup.outputs.changed_any_code == 'true'
     strategy:
       matrix:
-        node: [ '18.12.1', '20.11.1' ]
+        node: [ '18.12.1', '20.11.1', '22.13.1' ]
     name: Unit tests (Node ${{ matrix.node }})
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 100
+          fetch-depth: 1000
       - uses: actions/setup-node@v4
         env:
           FORCE_COLOR: 0
@@ -432,9 +463,18 @@ jobs:
       - name: Restore caches
         uses: ./.github/actions/restore-cache
         env:
-          DEPENDENCY_CACHE_KEY: ${{ needs.job_install_deps.outputs.dependency_cache_key }}
+          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
 
-      - run: yarn nx affected -t test:unit --base=${{ needs.job_get_metadata.outputs.BASE_COMMIT }}
+      - name: Set timezone (non-UTC)
+        uses: szenius/set-timezone@v1.2
+        with:
+          timezoneLinux: "America/New_York"
+
+      # Ensure all built packages are built before running tests (admin is built in job_setup)
+      - name: Build remaining assets
+        run: yarn nx run-many -t build --exclude=ghost-admin
+
+      - run: yarn nx affected -t test:unit --base=${{ needs.job_setup.outputs.BASE_COMMIT }}
 
       - uses: actions/upload-artifact@v4
         if: startsWith(matrix.node, '18')
@@ -451,16 +491,16 @@ jobs:
 
   job_database-tests:
     runs-on: ubuntu-latest
-    needs: [job_get_metadata, job_install_deps]
-    if: needs.job_get_metadata.outputs.changed_core == 'true'
+    needs: [job_setup]
+    if: needs.job_setup.outputs.changed_core == 'true'
     strategy:
       matrix:
-        node: [ '18.12.1', '20.11.1' ]
+        node: [ '18.12.1', '20.11.1', '22.13.1' ]
         env:
           - DB: mysql8
             NODE_ENV: testing-mysql
         include:
-          - node: 18.12.1
+          - node: 20.11.1
             env:
               DB: sqlite3
               NODE_ENV: testing
@@ -480,8 +520,16 @@ jobs:
         run: sudo service mysql stop
         if: matrix.env.DB == 'mysql8'
 
-      - uses: daniellockyer/mysql-action@main
+      - name: Login to Docker Hub
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - uses: tryghost/mysql-action@main
         if: matrix.env.DB == 'mysql8'
+        timeout-minutes: 3
         with:
           authentication plugin: 'caching_sha2_password'
           mysql version: '8.0'
@@ -491,7 +539,12 @@ jobs:
       - name: Restore caches
         uses: ./.github/actions/restore-cache
         env:
-          DEPENDENCY_CACHE_KEY: ${{ needs.job_install_deps.outputs.dependency_cache_key }}
+          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
+
+      - name: Set timezone (non-UTC)
+        uses: szenius/set-timezone@v1.2
+        with:
+          timezoneLinux: "America/New_York"
 
       - name: Record start time
         run: date +%s > ${{ runner.temp }}/startTime # Get start time for test suite
@@ -572,16 +625,16 @@ jobs:
 
   job_regression-tests:
     runs-on: ubuntu-latest
-    needs: [job_get_metadata, job_install_deps]
-    if: needs.job_get_metadata.outputs.changed_core == 'true'
+    needs: [job_setup]
+    if: needs.job_setup.outputs.changed_core == 'true'
     strategy:
       matrix:
         include:
-          - node: 18.12.1
+          - node: 20.11.1
             env:
               DB: mysql8
               NODE_ENV: testing-mysql
-          - node: 18.12.1
+          - node: 20.11.1
             env:
               DB: sqlite3
               NODE_ENV: testing
@@ -603,8 +656,9 @@ jobs:
         run: sudo service mysql stop
         if: matrix.env.DB == 'mysql8'
 
-      - uses: daniellockyer/mysql-action@main
+      - uses: tryghost/mysql-action@main
         if: matrix.env.DB == 'mysql8'
+        timeout-minutes: 3
         with:
           authentication plugin: 'caching_sha2_password'
           mysql version: '8.0'
@@ -614,7 +668,7 @@ jobs:
       - name: Restore caches
         uses: ./.github/actions/restore-cache
         env:
-          DEPENDENCY_CACHE_KEY: ${{ needs.job_install_deps.outputs.dependency_cache_key }}
+          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
 
       - name: Set env vars (SQLite)
         if: contains(matrix.env.DB, 'sqlite')
@@ -637,8 +691,8 @@ jobs:
 
   job_admin_x_settings:
     runs-on: ubuntu-latest
-    needs: [job_get_metadata, job_install_deps]
-    if: needs.job_get_metadata.outputs.changed_admin_x_settings == 'true'
+    needs: [job_setup]
+    if: needs.job_setup.outputs.changed_admin_x_settings == 'true'
     name: Admin-X Settings tests
     env:
       CI: true
@@ -648,12 +702,12 @@ jobs:
         env:
           FORCE_COLOR: 0
         with:
-          node-version: "18.12.1"
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: Restore caches
         uses: ./.github/actions/restore-cache
         env:
-          DEPENDENCY_CACHE_KEY: ${{ needs.job_install_deps.outputs.dependency_cache_key }}
+          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
 
       - name: Get Playwright version
         id: playwright-version
@@ -690,8 +744,8 @@ jobs:
 
   job_comments_ui:
     runs-on: ubuntu-latest
-    needs: [job_get_metadata, job_install_deps]
-    if: needs.job_get_metadata.outputs.changed_comments_ui == 'true'
+    needs: [job_setup]
+    if: needs.job_setup.outputs.changed_comments_ui == 'true'
     name: Comments-UI tests
     env:
       CI: true
@@ -701,12 +755,12 @@ jobs:
         env:
           FORCE_COLOR: 0
         with:
-          node-version: "18.12.1"
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: Restore caches
         uses: ./.github/actions/restore-cache
         env:
-          DEPENDENCY_CACHE_KEY: ${{ needs.job_install_deps.outputs.dependency_cache_key }}
+          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
 
       - name: Get Playwright version
         id: playwright-version
@@ -743,8 +797,8 @@ jobs:
 
   job_signup_form:
     runs-on: ubuntu-latest
-    needs: [job_get_metadata, job_install_deps]
-    if: needs.job_get_metadata.outputs.changed_signup_form == 'true'
+    needs: [job_setup]
+    if: needs.job_setup.outputs.changed_signup_form == 'true'
     name: Signup-form tests
     env:
       CI: true
@@ -754,12 +808,12 @@ jobs:
         env:
           FORCE_COLOR: 0
         with:
-          node-version: "18.12.1"
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: Restore caches
         uses: ./.github/actions/restore-cache
         env:
-          DEPENDENCY_CACHE_KEY: ${{ needs.job_install_deps.outputs.dependency_cache_key }}
+          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
 
       - name: Get Playwright version
         id: playwright-version
@@ -794,10 +848,153 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
+  job_tinybird:
+    name: Tinybird Tests (Web Analytics)
+    runs-on: ubuntu-latest
+    needs: [
+      job_setup
+    ]
+    defaults:
+      run:
+        working-directory: ghost/web-analytics
+    if: needs.job_setup.outputs.changed_tinybird == 'true'
+    steps:
+      - name: Get User Permission
+        id: get-user-permission
+        uses: actions-cool/check-user-permission@v2
+        with:
+          require: write
+          username: ${{ github.triggering_actor }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Check User Permission
+        id: check-user-permission
+        if: steps.get-user-permission.outputs.require-result == 'false'
+        run: |
+          echo "${{ github.triggering_actor }} does not have permissions on this repo."
+          echo "Current permission level is ${{ steps.get-user-permission.outputs.user-permission }}"
+          echo "Job originally triggered by ${{ github.actor }}"
+          exit 1
+      - name: Checkout current commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 300
+      - name: Check secrets
+        if: github.event_name == 'pull_request'
+        env:
+          TB_ADMIN_TOKEN: ${{ secrets.TB_ADMIN_TOKEN_STAGING }}
+        run: |
+          if [ -z "${{ env.TB_ADMIN_TOKEN }}" ]; then
+            echo "Tinybird admin token is not available. Did you open this PR from a fork?"
+            echo "If so, please re-open the PR from a branch in the upstream TryGhost/Ghost repository."
+            exit 1
+          fi
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.11
+          architecture: "x64"
+          cache: "pip"
+      - name: Set environment variables
+        run: |
+          _ENV_FLAGS="${ENV_FLAGS:=--wait}"
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            TB_BRANCH_NAME="tmp_ci_pr_${{ github.event.pull_request.number }}"
+          else
+            TB_BRANCH_NAME="tmp_ci_main_$(echo ${{ github.sha }} | cut -c1-7)"
+          fi
+          GIT_BRANCH=${GITHUB_HEAD_REF}
+          echo "GIT_BRANCH=$GIT_BRANCH" >> $GITHUB_ENV
+          echo "_ENV_FLAGS=$_ENV_FLAGS" >> $GITHUB_ENV
+          echo "TB_BRANCH_NAME=$TB_BRANCH_NAME" >> $GITHUB_ENV
+      - name: Install Tinybird CLI
+        run: |
+          if [ -f "requirements.txt" ]; then
+            pip install -r requirements.txt
+          else
+            pip install tinybird-cli
+          fi
+      - name: Tinybird CLI Version
+        run: tb --version
+      - name: Check all the datafiles syntax
+        run: tb check
+      - name: Check auth
+        run: tb --host=${{ secrets.TB_HOST }} --token=${{ secrets.TB_ADMIN_TOKEN_STAGING }} auth info
+      - name: Try to delete previous Branch
+        run: |
+          output=$(tb --host ${{ secrets.TB_HOST }} --token ${{ secrets.TB_ADMIN_TOKEN_STAGING }} branch ls)
+          # Check if the branch name exists in the output
+          if echo "$output" | grep -q "\b$TB_BRANCH_NAME\b"; then
+            tb \
+            --host ${{ secrets.TB_HOST }} \
+            --token ${{ secrets.TB_ADMIN_TOKEN_STAGING }} \
+            branch rm $TB_BRANCH_NAME \
+            --yes
+          else
+            echo "Skipping clean up: The Branch '$TB_BRANCH_NAME' does not exist."
+          fi
+      - name: Create new test Branch with data
+        run: |
+          tb \
+          --host ${{ secrets.TB_HOST }} \
+          --token ${{ secrets.TB_ADMIN_TOKEN_STAGING }} \
+          branch create $TB_BRANCH_NAME \
+          ${_ENV_FLAGS}
+      - name: Deploy changes to the test Branch
+        run: |
+          source .tinyenv
+          DEPLOY_FILE=./deploy/${VERSION}/deploy.sh
+          if [ ! -f "$DEPLOY_FILE" ]; then
+            echo "$DEPLOY_FILE not found, running default tb deploy command"
+            tb deploy
+            tb release ls
+          fi
+      - name: Custom deployment to the test Branch
+        run: |
+          source .tinyenv
+          DEPLOY_FILE=./deploy/${VERSION}/deploy.sh
+          if [ -f "$DEPLOY_FILE" ]; then
+              echo "$DEPLOY_FILE found"
+              if ! [ -x "$DEPLOY_FILE" ]; then
+                echo "Error: You do not have permission to execute '$DEPLOY_FILE'. Run:"
+                echo "> chmod +x $DEPLOY_FILE"
+                echo "and commit your changes"
+                exit 1
+              else
+                $DEPLOY_FILE
+              fi
+          fi
+      - name: Append fixtures
+        run: |
+          if [ -f ./scripts/append_fixtures.sh ]; then
+          echo "append_fixtures script found"
+          ./scripts/append_fixtures.sh
+          fi
+      - name: Run fixture tests
+        run: |
+          if [ -f ./scripts/exec_test.sh ]; then
+          ./scripts/exec_test.sh
+          fi
+
+      - name: Try to delete previous Branch
+        if: always()
+        run: |
+          output=$(tb --host ${{ secrets.TB_HOST }} --token ${{ secrets.TB_ADMIN_TOKEN_STAGING }} branch ls)
+          # Check if the branch name exists in the output
+          if echo "$output" | grep -q "\b$TB_BRANCH_NAME\b"; then
+            tb \
+                --host ${{ secrets.TB_HOST }} \
+                --token ${{ secrets.TB_ADMIN_TOKEN_STAGING }} \
+                branch rm $TB_BRANCH_NAME \
+                --yes
+          else
+            echo "Skipping clean up: The Branch '$TB_BRANCH_NAME' does not exist."
+          fi
+
   job_ghost-cli:
     name: Ghost-CLI tests
-    needs: [job_get_metadata, job_install_deps]
-    if: needs.job_get_metadata.outputs.changed_core == 'true'
+    needs: [job_setup]
+    if: needs.job_setup.outputs.changed_core == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -808,7 +1005,10 @@ jobs:
         env:
           FORCE_COLOR: 0
         with:
-          node-version: '16.14.0'
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install npm v8 # downgrade from v10 to v8 due to https://github.com/npm/cli/issues/6738
+        run: npm install -g npm@8
 
       - name: Install Ghost-CLI
         run: npm install -g ghost-cli@latest
@@ -816,16 +1016,21 @@ jobs:
       - name: Restore caches
         uses: ./.github/actions/restore-cache
         env:
-          DEPENDENCY_CACHE_KEY: ${{ needs.job_install_deps.outputs.dependency_cache_key }}
+          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
 
-      - run: npm --no-git-tag-version version minor # We need to artificially bump the minor version to get migrations to run
-        working-directory: ghost/core
+      - run: node .github/scripts/bump-version.js canary
 
-      - run: npm pack
-        working-directory: ghost/core
+      - run: yarn archive
 
       - run: mv ghost-*.tgz ghost.tgz
         working-directory: ghost/core
+
+      - name: Switch back to Node v16.14.0 (for v4)
+        uses: actions/setup-node@v4
+        env:
+          FORCE_COLOR: 0
+        with:
+          node-version: '16.14.0'
 
       - name: Install latest v4
         run: |
@@ -833,15 +1038,23 @@ jobs:
           echo "V4_DIR=$DIR" >> $GITHUB_ENV
           ghost install v4 --local -d $DIR
 
-      - uses: actions/setup-node@v4
+      - name: Switch back to ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
         env:
           FORCE_COLOR: 0
         with:
-          node-version: '18.12.1'
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: Update from v4
         run: |
           ghost update -f -d $V4_DIR --archive $(pwd)/ghost/core/ghost.tgz
+
+      - name: Save Ghost CLI Debug Logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ghost-cli-debug-logs
+          path: /home/runner/.ghost/logs/
 
       - name: Clean Install
         run: |
@@ -916,8 +1129,7 @@ jobs:
     name: All required tests passed or skipped
     needs:
       [
-        job_get_metadata,
-        job_install_deps,
+        job_setup,
         job_lint,
         job_i18n,
         job_ghost-cli,
@@ -929,6 +1141,7 @@ jobs:
         job_admin_x_settings,
         job_comments_ui,
         job_signup_form,
+        job_tinybird
       ]
     if: always()
     runs-on: ubuntu-latest
@@ -943,19 +1156,37 @@ jobs:
 
   canary:
     needs: [
-      job_get_metadata,
+      job_setup,
       job_required_tests
     ]
     name: Canary
     runs-on: ubuntu-latest
-    if: always() && needs.job_get_metadata.outputs.is_canary_branch == 'true' && needs.job_required_tests.result == 'success' && needs.job_get_metadata.result == 'success'
+    if: |
+      always()
+      && needs.job_setup.result == 'success'
+      && needs.job_required_tests.result == 'success'
+      && (
+        needs.job_setup.outputs.is_main == 'true'
+        || (
+          github.event_name == 'pull_request'
+          && (
+            needs.job_setup.outputs.member_is_in_org == 'true'
+            || github.event.pull_request.user.login == 'renovate[bot]'
+          )
+          && contains(github.event.pull_request.labels.*.name, 'deploy-to-staging')
+        )
+      )
     steps:
       - name: Output needs (for debugging)
         run: echo "${{ toJson(needs) }}"
 
-      - name: Set env variables
-        run: |
-          echo "CANARY_BUILD_INPUTS={\"version\":\"canary\",\"environment\":\"staging\"}" >> $GITHUB_ENV
+      - name: Compute branch name (push)
+        if: github.event_name == 'push'
+        run: echo "branch_name=${{ github.ref_name }}" >> $GITHUB_ENV
+
+      - name: Compute branch name (pull_request)
+        if: github.event_name == 'pull_request'
+        run: echo "branch_name=${{ github.ref }}" >> $GITHUB_ENV
 
       - name: Invoke build
         uses: aurelien-baudet/workflow-dispatch@v2
@@ -964,6 +1195,166 @@ jobs:
           workflow: .github/workflows/deploy.yml
           ref: 'refs/heads/main'
           repo: TryGhost/Ghost-Moya
-          inputs: ${{ env.CANARY_BUILD_INPUTS }}
+          inputs: '{"version":"canary","environment":"staging","version_extra":"${{ env.branch_name }}"}'
           wait-for-completion-timeout: 25m
           wait-for-completion-interval: 30s
+
+  publish_packages:
+    needs: [
+      job_setup,
+      job_lint,
+      job_unit-tests
+    ]
+    name: Publish ${{ matrix.package_name }}
+    runs-on: ubuntu-latest
+    if: always() && needs.job_setup.result == 'success' && needs.job_lint.result == 'success' && needs.job_unit-tests.result == 'success' && needs.job_setup.outputs.is_main == 'true'
+    strategy:
+      matrix:
+        include:
+          - package_name: '@tryghost/admin-x-activitypub'
+            package_path: 'apps/admin-x-activitypub'
+            cdn_paths: 'https://cdn.jsdelivr.net/ghost/admin-x-activitypub@0/dist/admin-x-activitypub.js'
+          - package_name: '@tryghost/portal'
+            package_path: 'apps/portal'
+            cdn_paths: 'https://cdn.jsdelivr.net/ghost/portal@~CURRENT_MINOR/umd/portal.min.js'
+          - package_name: '@tryghost/sodo-search'
+            package_path: 'apps/sodo-search'
+            cdn_paths: |
+              'https://cdn.jsdelivr.net/ghost/sodo-search@~CURRENT_MINOR/umd/sodo-search.min.js'
+              'https://cdn.jsdelivr.net/ghost/sodo-search@~CURRENT_MINOR/umd/main.css'
+          - package_name: '@tryghost/comments-ui'
+            package_path: 'apps/comments-ui'
+            cdn_paths: 'https://cdn.jsdelivr.net/ghost/comments-ui@~CURRENT_MINOR/umd/comments-ui.min.js'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Restore caches
+        uses: ./.github/actions/restore-cache
+        env:
+          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
+
+      - name: Check if version changed
+        id: version_check
+        working-directory: ${{ matrix.package_path }}
+        run: |
+          CURRENT_VERSION=$(cat package.json | jq -r .version)
+          PUBLISHED_VERSION=$(npm show ${{ matrix.package_name }} version || echo "0.0.0")
+          echo "Current version: $CURRENT_VERSION"
+          echo "Published version: $PUBLISHED_VERSION"
+
+          CURRENT_MINOR=$(cat package.json | jq -r .version | awk -F. '{print $1"."$2}')
+          echo "current_minor=$CURRENT_MINOR" >> $GITHUB_OUTPUT
+
+          if [ "$CURRENT_VERSION" = "$PUBLISHED_VERSION" ]; then
+            echo "Version is unchanged."
+            echo "version_changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "Version has changed."
+            echo "version_changed=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build the package
+        if: steps.version_check.outputs.version_changed == 'true'
+        run: yarn run nx build ${{ matrix.package_name }}
+
+      - name: Configure .npmrc
+        if: steps.version_check.outputs.version_changed == 'true'
+        run: |
+          echo "@tryghost:registry=https://registry.npmjs.org/" >> ~/.npmrc
+          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" >> ~/.npmrc
+
+      - name: Publish to npm
+        if: steps.version_check.outputs.version_changed == 'true'
+        working-directory: ${{ matrix.package_path }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --access public
+
+      - name: Replace CURRENT_MINOR in cdn-paths
+        id: cdn_paths
+        if: steps.version_check.outputs.version_changed == 'true'
+        run: |
+          cdn_paths="${{ matrix.cdn_paths }}"
+          echo "cdn_paths<<EOF" >> $GITHUB_OUTPUT
+          echo "$cdn_paths" | sed 's/CURRENT_MINOR/${{ steps.version_check.outputs.current_minor }}/g' >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Print cdn_paths
+        if: steps.version_check.outputs.version_changed == 'true'
+        run: echo "${{ steps.cdn_paths.outputs.cdn_paths }}"
+
+      - name: Purge jsdelivr cache
+        if: steps.version_check.outputs.version_changed == 'true'
+        uses: gacts/purge-jsdelivr-cache@v1
+        with:
+          url: ${{ steps.cdn_paths.outputs.cdn_paths }}
+  deploy_tinybird:
+    runs-on: ubuntu-latest
+    needs: [
+      job_setup,
+      job_tinybird
+    ]
+    if: always() && needs.job_setup.outputs.changed_tinybird == 'true' && needs.job_setup.result == 'success' && needs.job_tinybird.result == 'success' && needs.job_setup.outputs.is_main == 'true'
+    strategy:
+      matrix:
+        environment: [ 'staging', 'production']
+    name: Deploy Tinybird
+    defaults:
+      run:
+        working-directory: ghost/web-analytics
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 300
+          submodules: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.11
+          architecture: "x64"
+          cache: "pip"
+      - name: Install Tinybird CLI
+        run: |
+          if [ -f "requirements.txt" ]; then
+            pip install -r requirements.txt
+          else
+            pip install tinybird-cli
+          fi
+      - name: Tinybird version
+        run: tb --version
+      - name: Check auth (staging)
+        if: matrix.environment == 'staging'
+        run: tb --host=${{ secrets.TB_HOST }} --token=${{ secrets.TB_ADMIN_TOKEN_STAGING }} auth info
+      - name: Check auth (production)
+        if: matrix.environment == 'production'
+        run: tb --host=${{ secrets.TB_HOST }} --token=${{ secrets.TB_ADMIN_TOKEN_PRODUCTION }} auth info
+      - name: Deploy changes to the main Workspace
+        run: |
+          source .tinyenv
+          DEPLOY_FILE=./deploy/${VERSION}/deploy.sh
+          if [ ! -f "$DEPLOY_FILE" ]; then
+            echo "$DEPLOY_FILE not found, running default tb push command"
+            tb branch current
+            tb deploy
+          fi
+      - name: Custom deployment to the main Workspace
+        run: |
+            source .tinyenv
+            DEPLOY_FILE=./deploy/${VERSION}/deploy.sh
+            if [ -f "$DEPLOY_FILE" ]; then
+              echo "$DEPLOY_FILE found"
+              if ! [ -x "$DEPLOY_FILE" ]; then
+                  echo "Error: You don't have permission to execute '$DEPLOY_FILE'. Run:"
+                  echo "> chmod +x $DEPLOY_FILE"
+                  echo "and commit your changes"
+                  exit 1
+              else
+                  $DEPLOY_FILE
+              fi
+            fi

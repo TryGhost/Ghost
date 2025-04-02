@@ -223,6 +223,7 @@
     align-items: center;
     height: 2.9em;
     min-height: 46px;
+    height: 100%;
     padding: 0 1.2em;
     outline: none;
     border: none;

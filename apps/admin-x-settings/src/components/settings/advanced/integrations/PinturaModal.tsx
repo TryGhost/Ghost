@@ -120,7 +120,7 @@ const PinturaModal = NiceModal.create(() => {
                     </div>
                     <div className='flex grow flex-col items-end justify-between gap-2 md:basis-1/2 md:gap-0'>
                         <img alt='Pintura screenshot' src={pinturaScreenshot} />
-                        <a className='-mb-1 text-sm font-bold text-green' href="https://pqina.nl/pintura/?ref=ghost.org" rel="noopener noreferrer" target="_blank">Find out more &rarr;</a>
+                        <a className='-mb-1 text-sm font-bold text-green' href="https://pqina.nl/pintura/ghost/?ref=ghost.org" rel="noopener noreferrer" target="_blank">Find out more &rarr;</a>
                     </div>
                 </div>}
 
@@ -128,7 +128,7 @@ const PinturaModal = NiceModal.create(() => {
                     <Toggle
                         checked={enabled}
                         direction='rtl'
-                        hint={<>Enable <a className='text-green' href="https://pqina.nl/pintura/?ref=ghost.org" rel="noopener noreferrer" target="_blank">Pintura</a> for editing your images in Ghost</>}
+                        hint={<>Enable <a className='text-green' href="https://pqina.nl/pintura/ghost/?ref=ghost.org" rel="noopener noreferrer" target="_blank">Pintura</a> for editing your images in Ghost</>}
                         label='Enable Pintura'
                         onChange={(e) => {
                             setEnabled(e.target.checked);

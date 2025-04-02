@@ -36,6 +36,11 @@ async function runAndStream(command, args, options) {
         return;
     }
 
+    if (process.env.DEVCONTAINER === 'true') {
+        console.log(chalk.yellow(`Devcontainer detected, skipping setup`));
+        return;
+    }
+
     const coreFolder = path.join(__dirname, '../../ghost/core');
     const rootFolder = path.join(__dirname, '../..');
     const config = require('../../ghost/core/core/shared/config/loader').loadNconf({

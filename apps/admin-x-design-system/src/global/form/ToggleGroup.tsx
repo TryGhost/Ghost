@@ -28,7 +28,7 @@ const ToggleGroup: React.FC<ToggleGroupProps> = ({children, gap = 'md', classNam
     }
 
     className = clsx(
-        'flex flex-col gap-3',
+        'flex flex-col',
         gapClass,
         className
     );

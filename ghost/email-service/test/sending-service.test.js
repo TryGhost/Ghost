@@ -53,6 +53,8 @@ describe('Sending service', function () {
                 emailProvider
             });
 
+            const deliveryTime = new Date();
+
             const response = await sendingService.send({
                 post: {},
                 newsletter: {},
@@ -66,7 +68,68 @@ describe('Sending service', function () {
                 ]
             }, {
                 clickTrackingEnabled: true,
-                openTrackingEnabled: true
+                openTrackingEnabled: true,
+                deliveryTime
+            });
+            assert.equal(response.id, 'provider-123');
+            sinon.assert.calledOnce(sendStub);
+            assert(sendStub.calledWith(
+                {
+                    subject: 'Hi',
+                    from: 'ghost@example.com',
+                    replyTo: 'ghost+reply@example.com',
+                    html: '<html><body>Hi {{name}}</body></html>',
+                    plaintext: 'Hi',
+                    emailId: '123',
+                    replacementDefinitions: [
+                        {
+                            id: 'name',
+                            token: '{{name}}',
+                            getValue: sinon.match.func
+                        }
+                    ],
+                    recipients: [
+                        {
+                            email: 'member@example.com',
+                            replacements: [{
+                                id: 'name',
+                                token: '{{name}}',
+                                value: 'John'
+                            }]
+                        }
+                    ]
+                },
+                {
+                    clickTrackingEnabled: true,
+                    openTrackingEnabled: true,
+                    deliveryTime
+                }
+            ));
+        });
+
+        it('calls mailgun client without the deliverytime if it is not defined', async function () {
+            const sendingService = new SendingService({
+                emailRenderer,
+                emailProvider
+            });
+
+            const deliveryTime = undefined;
+
+            const response = await sendingService.send({
+                post: {},
+                newsletter: {},
+                segment: null,
+                emailId: '123',
+                members: [
+                    {
+                        email: 'member@example.com',
+                        name: 'John'
+                    }
+                ]
+            }, {
+                clickTrackingEnabled: true,
+                openTrackingEnabled: true,
+                deliveryTime
             });
             assert.equal(response.id, 'provider-123');
             sinon.assert.calledOnce(sendStub);
@@ -371,6 +434,19 @@ describe('Sending service', function () {
             });
             assert.equal(sendingService.getMaximumRecipients(), 12);
             sinon.assert.calledOnce(emailProvider.getMaximumRecipients);
+        });
+    });
+
+    describe('getTargetDeliveryWindow', function () {
+        it('returns the target delivery window of the email provider', function () {
+            const emailProvider = {
+                getTargetDeliveryWindow: sinon.stub().returns(0)
+            };
+            const sendingService = new SendingService({
+                emailProvider
+            });
+            assert.equal(sendingService.getTargetDeliveryWindow(), 0);
+            sinon.assert.calledOnce(emailProvider.getTargetDeliveryWindow);
         });
     });
 });

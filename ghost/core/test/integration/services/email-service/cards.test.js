@@ -1,5 +1,7 @@
+const sinon = require('sinon');
 const {agentProvider, fixtureManager, mockManager} = require('../../../utils/e2e-framework');
 const models = require('../../../../core/server/models');
+const labs = require('../../../../core/shared/labs');
 const assert = require('assert/strict');
 const configUtils = require('../../../utils/configUtils');
 const {sendEmail, matchEmailSnapshot} = require('../../../utils/batch-email-utils');
@@ -76,6 +78,7 @@ describe('Can send cards via email', function () {
             value: false
         }], {context: {internal: true}});
         mockManager.restore();
+        sinon.restore();
     });
 
     before(async function () {
@@ -143,14 +146,38 @@ describe('Can send cards via email', function () {
         await matchEmailSnapshot();
     });
 
-    it('renders the golden post correctly', async function () {
-        const data = await sendEmail(agent, {
-            lexical: JSON.stringify(goldenPost)
+    // Run the tests for a free and non-free member
+    // NOTE: this is to workaround the email snapshot utils not handling slight discrepancies in email body, but it
+    // means we can have snapshots for both free and non-free members
+    ['status:free', 'status:-free'].forEach(function (status) {
+        it(`renders the golden post correctly (no labs flags) (${status})`, async function () {
+            sinon.stub(labs, 'isSet').returns(false);
+
+            const data = await sendEmail(agent, {
+                lexical: JSON.stringify(goldenPost)
+            }, status);
+
+            splitPreheader(data);
+
+            await matchEmailSnapshot();
         });
 
-        splitPreheader(data);
+        it(`renders the golden post correctly (labs flag: contentVisibility) (${status})`, async function () {
+            sinon.stub(labs, 'isSet').callsFake((key) => {
+                if (key === 'contentVisibility') {
+                    return true;
+                }
+                return false;
+            });
 
-        await matchEmailSnapshot();
+            const data = await sendEmail(agent, {
+                lexical: JSON.stringify(goldenPost)
+            }, status);
+
+            splitPreheader(data);
+
+            await matchEmailSnapshot();
+        });
     });
 
     it('renders all of the default nodes in the golden post', async function () {
@@ -169,6 +196,7 @@ describe('Can send cards via email', function () {
             'extended-text', // not a card
             'extended-quote', // not a card
             'extended-heading', // not a card
+            'call-to-action', // behind the contentVisibility labs flag
             // not a card and shouldn't be present in published posts / emails
             'tk',
             'at-link',

@@ -1,6 +1,6 @@
 // # Post Model
 const _ = require('lodash');
-const uuid = require('uuid');
+const crypto = require('crypto');
 const moment = require('moment');
 const {sequence} = require('@tryghost/promise');
 const tpl = require('@tryghost/tpl');
@@ -21,6 +21,7 @@ const {BadRequestError} = require('@tryghost/errors');
 const {PostRevisions} = require('@tryghost/post-revisions');
 const {mobiledocToLexical} = require('@tryghost/kg-converters');
 const labs = require('../../shared/labs');
+const {setIsRoles} = require('./role-utils');
 
 const messages = {
     isAlreadyPublished: 'Your post is already published, please reload your page.',
@@ -89,7 +90,7 @@ Post = ghostBookshelf.Model.extend({
         }
 
         return {
-            uuid: uuid.v4(),
+            uuid: crypto.randomUUID(),
             status: 'draft',
             featured: false,
             type: 'post',
@@ -742,7 +743,7 @@ Post = ghostBookshelf.Model.extend({
             )
         ) {
             try {
-                this.set('html', mobiledocLib.mobiledocHtmlRenderer.render(JSON.parse(this.get('mobiledoc'))));
+                this.set('html', mobiledocLib.render(JSON.parse(this.get('mobiledoc'))));
             } catch (err) {
                 throw new errors.ValidationError({
                     message: tpl(messages.invalidMobiledocStructure),
@@ -1290,11 +1291,13 @@ Post = ghostBookshelf.Model.extend({
             options.withRelated = _.union(['authors', 'tags', 'post_revisions', 'post_revisions.author'], options.withRelated || []);
         }
 
-        const META_ATTRIBUTES = _.without(ghostBookshelf.model('PostsMeta').prototype.permittedAttributes(), 'id', 'post_id');
-
         // NOTE: only include post_meta relation when requested in 'columns' or by default
         //       optimization is needed to be able to perform .findAll on large SQLite datasets
-        if (!options.columns || (options.columns && _.intersection(META_ATTRIBUTES, options.columns).length)) {
+        if (!options.columns
+        || (
+            options.columns
+            && _.intersection(_.without(ghostBookshelf.model('PostsMeta').prototype.permittedAttributes(), 'id', 'post_id'), options.columns).length)
+        ) {
             options.withRelated = _.union(['posts_meta'], options.withRelated || []);
         }
 
@@ -1476,10 +1479,7 @@ Post = ghostBookshelf.Model.extend({
 
     // NOTE: the `authors` extension is the parent of the post model. It also has a permissible function.
     permissible: async function permissible(postModel, action, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasApiKeyPermission) {
-        let isContributor;
-        let isOwner;
-        let isAdmin;
-        let isEditor;
+        let {isContributor, isOwner, isAdmin, isEitherEditor} = setIsRoles(loadedPermissions);
         let isIntegration;
         let isEdit;
         let isAdd;
@@ -1497,10 +1497,6 @@ Post = ghostBookshelf.Model.extend({
             return postModel.get('status') === 'draft';
         }
 
-        isContributor = loadedPermissions.user && _.some(loadedPermissions.user.roles, {name: 'Contributor'});
-        isOwner = loadedPermissions.user && _.some(loadedPermissions.user.roles, {name: 'Owner'});
-        isAdmin = loadedPermissions.user && _.some(loadedPermissions.user.roles, {name: 'Administrator'});
-        isEditor = loadedPermissions.user && _.some(loadedPermissions.user.roles, {name: 'Editor'});
         isIntegration = loadedPermissions.apiKey && _.some(loadedPermissions.apiKey.roles, {name: 'Admin Integration'});
 
         isEdit = (action === 'edit');
@@ -1523,7 +1519,7 @@ Post = ghostBookshelf.Model.extend({
         } else if (isContributor && isDestroy) {
             // If destroying, only allow contributor to destroy their own draft posts
             hasUserPermission = isDraft();
-        } else if (!(isOwner || isAdmin || isEditor || isIntegration)) {
+        } else if (!(isOwner || isAdmin || isEitherEditor || isIntegration)) {
             hasUserPermission = !isChanging('visibility');
         }
 

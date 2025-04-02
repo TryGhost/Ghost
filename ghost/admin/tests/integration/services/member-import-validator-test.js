@@ -128,7 +128,7 @@ describe('Integration: Service: member-import-validator', function () {
             expect(result.stripe_customer_id).to.equal(undefined);
         });
 
-        it('correctly detects only email mapping', async function () {
+        it('correctly detects email mapping', async function () {
             this.owner.register('service:membersUtils', Service.extend({
                 isStripeEnabled: false
             }));

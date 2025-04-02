@@ -54,7 +54,7 @@ describe('generateCode', function () {
     it('renders a preview with a minimal layout', function () {
         genOptions.preview = true;
         genOptions.layout = 'minimal';
-        assert.equal(generateCode(genOptions), '<div style="min-height: 58px; max-width: 440px;width: 100%;position: absolute; left: 50%; top:50%; transform: translate(-50%, -50%);"><script src="https://example.com" data-button-color="#000000" data-button-text-color="#FFFFFF" data-site="https://example.com" async></script></div>');
+        assert.equal(generateCode(genOptions), '<div style="position: absolute; z-index: -1; top: 0; left: 0; width: 100%; height: 100%; background-image: linear-gradient(45deg, #eee 25%, transparent 25%, transparent 75%, #eee 75%), linear-gradient(45deg, #eee 25%, transparent 25%, transparent 75%, #eee 75%);background-size: 16px 16px;background-position: 0 0, 8px 8px;;"></div><div style="min-height: 58px; max-width: 440px;width: 100%;position: absolute; left: 50%; top:50%; transform: translate(-50%, -50%);"><script src="https://example.com" data-button-color="#000000" data-button-text-color="#FFFFFF" data-site="https://example.com" async></script></div>');
     });
 
     it('generates text color based on background color - light background, black text', function () {

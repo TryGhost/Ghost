@@ -1,5 +1,6 @@
 import React from 'react';
 import {ReactComponent as UserIcon} from '../assets/icons/single-user-fill.svg';
+import * as AvatarPrimitive from '@radix-ui/react-avatar';
 
 type AvatarSize = 'sm' | 'md' | 'lg' | 'xl' | '2xl';
 
@@ -44,21 +45,17 @@ const Avatar: React.FC<AvatarProps> = ({image, label, labelColor, bgColor, size,
         break;
     }
 
-    if (image) {
-        return (
-            <img alt="" className={`inline-flex shrink-0 items-center justify-center rounded-full object-cover font-semibold ${avatarSize} ${className && className}`} src={image}/>
-        );
-    } else if (label) {
-        return (
-            <div className={`${labelColor && `text-${labelColor}`} inline-flex items-center justify-center rounded-full p-2 font-semibold ${avatarSize} ${className && className}`} style={bgColor ? {backgroundColor: bgColor} : {}}>{label}</div>
-        );
-    } else {
-        return (
-            <div className={`inline-flex items-center justify-center overflow-hidden rounded-full bg-grey-100 p-1 font-semibold ${avatarSize} ${className && className}`}>
-                <UserIcon className={`${fallbackPosition} h-full w-full  text-grey-300`} />
-            </div>
-        );
-    }
+    return (
+        <AvatarPrimitive.Root className={`relative inline-flex select-none items-center justify-center overflow-hidden rounded-full align-middle ${avatarSize}`}>
+            {image ?
+                <AvatarPrimitive.Image className={`absolute z-20 h-full w-full object-cover ${className && className}`} src={image} /> :
+                <span className={`${labelColor && `text-${labelColor}`} relative z-10 inline-flex h-full w-full items-center justify-center p-2 font-semibold ${className && className}`} style={bgColor ? {backgroundColor: bgColor} : {}}>{label}</span>
+            }
+            <AvatarPrimitive.Fallback asChild>
+                <UserIcon className={`${fallbackPosition} absolute z-0 h-full w-full text-grey-300`} />
+            </AvatarPrimitive.Fallback>
+        </AvatarPrimitive.Root>
+    );
 };
 
 export default Avatar;

@@ -3,15 +3,18 @@ const base = require('@playwright/test');
 const {promisify} = require('util');
 const {spawn, exec} = require('child_process');
 const {setupGhost, setupMailgun, enableLabs, setupStripe, getStripeAccountId, generateStripeIntegrationToken} = require('../utils/e2e-browser-utils');
-const {allowStripe, mockMail} = require('../../utils/e2e-framework-mock-manager');
-const MailgunClient = require('@tryghost/mailgun-client');
+const {allowStripe, mockMail, mockGeojs, assert} = require('../../utils/e2e-framework-mock-manager');
 const sinon = require('sinon');
 const ObjectID = require('bson-objectid').default;
 const Stripe = require('stripe').Stripe;
 const configUtils = require('../../utils/configUtils');
+const MailgunClient = require('../../../core/server/services/lib/MailgunClient');
 
 const startWebhookServer = (port) => {
-    const command = `stripe listen --forward-connect-to http://127.0.0.1:${port}/members/webhooks/stripe/ ${process.env.CI ? `--api-key ${process.env.STRIPE_SECRET_KEY}` : ''}`.trim();
+    const isCI = process.env.CI;
+    const isDocker = process.env.GHOST_DEV_IS_DOCKER === 'true';
+    const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
+    const command = `stripe listen --forward-connect-to http://127.0.0.1:${port}/members/webhooks/stripe/ ${isDocker || isCI ? `--api-key ${stripeSecretKey}` : ''}`.trim();
     const webhookServer = spawn(command.split(' ')[0], command.split(' ').slice(1));
 
     // Adding event listeners here seems to prevent heisenbug where webhooks aren't received
@@ -22,7 +25,10 @@ const startWebhookServer = (port) => {
 };
 
 const getWebhookSecret = async () => {
-    const command = `stripe listen --print-secret ${process.env.CI ? `--api-key ${process.env.STRIPE_SECRET_KEY}` : ''}`.trim();
+    const isCI = process.env.CI;
+    const isDocker = process.env.GHOST_DEV_IS_DOCKER === 'true';
+    const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
+    const command = `stripe listen --print-secret ${isDocker || isCI ? `--api-key ${stripeSecretKey}` : ''}`.trim();
     const webhookSecret = (await promisify(exec)(command)).stdout;
     return webhookSecret.toString().trim();
 };
@@ -57,6 +63,42 @@ module.exports = base.test.extend({
     }, {scope: 'worker'}],
 
     // eslint-disable-next-line no-empty-pattern
+    verificationToken: [async ({}, use) => {
+        const getToken = async () => {
+            const tryGetToken = () => {
+                try {
+                    const email = assert.sentEmail({
+                        subject: /[0-9]{6} is your Ghost sign in verification code/
+                    });
+                    return email.subject.match(/[0-9]{6}/)[0];
+                } catch (error) {
+                    return null;
+                }
+            };
+
+            const timeout = ms => new Promise((resolve) => {
+                setTimeout(resolve, ms);
+            });
+            let timeoutMs = 10;
+            let timeoutRetries = 5;
+
+            while (timeoutRetries > 0) {
+                const token = tryGetToken();
+                if (token) {
+                    return token;
+                }
+                await timeout(timeoutMs);
+                timeoutMs *= 2;
+                timeoutRetries -= 1;
+            }
+
+            return null;
+        };
+
+        await use({getToken});
+    }, {scope: 'worker'}],
+
+    // eslint-disable-next-line no-empty-pattern
     port: [async ({}, use, workerInfo) => {
         await use(2369 + workerInfo.parallelIndex);
     }, {scope: 'worker'}],
@@ -73,7 +115,7 @@ module.exports = base.test.extend({
         const stripeAccountId = await getStripeAccountId();
         const stripeIntegrationToken = await generateStripeIntegrationToken(stripeAccountId);
 
-        const WebhookManager = require('../../../../stripe/lib/WebhookManager');
+        const WebhookManager = require('../../../core/server/services/stripe/WebhookManager');
         const originalParseWebhook = WebhookManager.prototype.parseWebhook;
         const sandbox = sinon.createSandbox();
         sandbox.stub(WebhookManager.prototype, 'parseWebhook').callsFake(function (body, signature) {
@@ -87,7 +129,7 @@ module.exports = base.test.extend({
             }
         });
 
-        const StripeAPI = require('../../../../stripe/lib/StripeAPI');
+        const StripeAPI = require('../../../core/server/services/stripe/StripeAPI');
         const originalStripeConfigure = StripeAPI.prototype.configure;
         sandbox.stub(StripeAPI.prototype, 'configure').callsFake(function (stripeConfig) {
             originalStripeConfigure.call(this, stripeConfig);
@@ -125,6 +167,8 @@ module.exports = base.test.extend({
 
         // StartGhost automatically disables network, so we need to re-enable it for Stripe
         allowStripe();
+
+        mockGeojs();
 
         const page = await browser.newPage({
             baseURL: `http://127.0.0.1:${port}/`,
