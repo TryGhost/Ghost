@@ -8,7 +8,9 @@ import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, LucideIcon, Separator} from '@tryghost/shade';
 import {EmptyViewIcon, EmptyViewIndicator} from '@src/components/global/EmptyViewIndicator';
 import {LoadingIndicator} from '@tryghost/admin-x-design-system';
+import {handleViewContent} from '@src/utils/content-handlers';
 import {isPendingActivity} from '@src/utils/pending-activity';
+import {useFeatureFlags} from '@src/lib/feature-flags';
 import {useNavigate} from '@tryghost/admin-x-framework';
 
 export type FeedListProps = {
@@ -31,6 +33,7 @@ const FeedList:React.FC<FeedListProps> = ({
     isFetchingNextPage
 }) => {
     const navigate = useNavigate();
+    const {isEnabled} = useFeatureFlags();
 
     return (
         <Layout>
@@ -60,10 +63,18 @@ const FeedList:React.FC<FeedListProps> = ({
                                                         repostCount={activity.object.repostCount ?? 0}
                                                         type={activity.type}
                                                         onClick={() => {
-                                                            navigate(`/feed-rr/${encodeURIComponent(activity.id)}`);
+                                                            if (isEnabled('ap-routes')) {
+                                                                navigate(`/feed/${encodeURIComponent(activity.id)}`);
+                                                            } else {
+                                                                handleViewContent(activity, false);
+                                                            }
                                                         }}
                                                         onCommentClick={() => {
-                                                            navigate(`/feed-rr/${encodeURIComponent(activity.id)}?focusReply=true`);
+                                                            if (isEnabled('ap-routes')) {
+                                                                navigate(`/feed/${encodeURIComponent(activity.id)}?focusReply=true`);
+                                                            } else {
+                                                                handleViewContent(activity, true);
+                                                            }
                                                         }}
                                                     />
                                                     {index < activities.length - 1 && (

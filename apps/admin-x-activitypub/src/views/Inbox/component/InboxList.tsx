@@ -5,8 +5,10 @@ import {Activity} from '@src/api/activitypub';
 import {Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, LucideIcon, Separator} from '@tryghost/shade';
 import {EmptyViewIcon, EmptyViewIndicator} from '@src/components/global/EmptyViewIndicator';
 import {LoadingIndicator} from '@tryghost/admin-x-design-system';
+import {handleViewContent} from '@src/utils/content-handlers';
 import {isPendingActivity} from '@src/utils/pending-activity';
 import {useEffect, useState} from 'react';
+import {useFeatureFlags} from '@src/lib/feature-flags';
 import {useNavigate, useNavigationStack, useParams} from '@tryghost/admin-x-framework';
 
 export type InboxListProps = {
@@ -30,6 +32,7 @@ const InboxList:React.FC<InboxListProps> = ({
     const {canGoBack, goBack} = useNavigationStack();
     const [isReaderOpen, setIsReaderOpen] = useState(false);
     const params = useParams();
+    const {isEnabled} = useFeatureFlags();
 
     useEffect(() => {
         setIsReaderOpen(!!params.postId);
@@ -62,10 +65,18 @@ const InboxList:React.FC<InboxListProps> = ({
                                                         repostCount={activity.object.repostCount ?? 0}
                                                         type={activity.type}
                                                         onClick={() => {
-                                                            navigate(`/inbox-rr/${encodeURIComponent(activity.id)}`);
+                                                            if (isEnabled('ap-routes')) {
+                                                                navigate(`/inbox/${encodeURIComponent(activity.id)}`);
+                                                            } else {
+                                                                handleViewContent(activity, false);
+                                                            }
                                                         }}
                                                         onCommentClick={() => {
-                                                            navigate(`/inbox-rr/${encodeURIComponent(activity.id)}?focusReply=true`);
+                                                            if (isEnabled('ap-routes')) {
+                                                                navigate(`/inbox/${encodeURIComponent(activity.id)}?focusReply=true`);
+                                                            } else {
+                                                                handleViewContent(activity, true);
+                                                            }
                                                         }}
                                                     />
                                                     {index < activities.length - 1 && (
@@ -111,7 +122,7 @@ const InboxList:React.FC<InboxListProps> = ({
                         if (canGoBack) {
                             goBack();
                         } else {
-                            navigate('/inbox-rr');
+                            navigate('/inbox');
                         }
                     }
                     setIsReaderOpen(open);
@@ -126,7 +137,7 @@ const InboxList:React.FC<InboxListProps> = ({
                         if (canGoBack) {
                             goBack();
                         } else {
-                            navigate('/inbox-rr');
+                            navigate('/inbox');
                         }
                     }} />}
                 </DialogContent>
