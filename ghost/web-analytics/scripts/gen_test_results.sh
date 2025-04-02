@@ -4,6 +4,44 @@ set -euo pipefail
 # Directory containing the test files
 TEST_DIR="./tests"
 
+# Parse command line options
+jobs=""
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -j|--jobs)
+            if [[ -n "${2:-}" ]]; then
+                jobs="$2"
+                shift 2
+            else
+                echo "Error: -j|--jobs requires a number argument"
+                exit 1
+            fi
+            ;;
+        *)
+            shift
+            ;;
+    esac
+done
+
+# Check if GNU Parallel is available
+if ! command -v parallel >/dev/null 2>&1; then
+    echo "GNU Parallel is required but not installed. Please install it first."
+    echo "On Ubuntu/Debian: sudo apt-get install parallel"
+    echo "On macOS: brew install parallel"
+    exit 1
+fi
+
+# Get number of CPU cores if not overridden
+if [[ -z "$jobs" ]]; then
+    if [[ "$(uname)" == "Darwin" ]]; then
+        jobs=$(( $(sysctl -n hw.ncpu) * 2 ))
+    else
+        jobs=$(( $(nproc) * 2 ))
+    fi
+fi
+
+echo "Using $jobs parallel jobs for test result generation"
+
 # Function to execute a test and update its result file
 execute_and_update() {
     local test_file="$1"
@@ -21,12 +59,14 @@ execute_and_update() {
     echo "------------------------"
 }
 
+export -f execute_and_update
+
 # Main execution
 echo "Starting test result regeneration..."
 
-# Find all .test files and process them
-find "$TEST_DIR" -name "*.test" -type f | while read -r test_file; do
-    execute_and_update "$test_file"
-done
+# Use parallel to process all test files
+find "$TEST_DIR" -name "*.test" -type f -print0 | \
+    parallel -0 --jobs "$jobs" --keep-order --line-buffer \
+    'execute_and_update {}'
 
 echo "Test result regeneration complete."
