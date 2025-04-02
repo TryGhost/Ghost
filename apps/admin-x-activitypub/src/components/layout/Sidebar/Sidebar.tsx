@@ -11,8 +11,6 @@ import {useFeatureFlags} from '@src/lib/feature-flags';
 
 const Sidebar: React.FC = () => {
     const {allFlags, flags} = useFeatureFlags();
-    const {isEnabled} = useFeatureFlags();
-
     const [isSearchOpen, setIsSearchOpen] = React.useState(false);
     const [searchQuery, setSearchQuery] = React.useState('');
 
@@ -31,11 +29,11 @@ const Sidebar: React.FC = () => {
                         </Dialog>
                     </div>
                     <div className='flex w-full flex-col gap-px'>
-                        <SidebarMenuLink to={(isEnabled('ap-routes') ? '/inbox-rr' : '/inbox')}>
+                        <SidebarMenuLink to='/inbox'>
                             <LucideIcon.Inbox size={18} strokeWidth={1.5} />
                             Inbox
                         </SidebarMenuLink>
-                        <SidebarMenuLink to={(isEnabled('ap-routes') ? '/feed-rr' : '/feed')}>
+                        <SidebarMenuLink to='/feed'>
                             <LucideIcon.Hash size={18} strokeWidth={1.5} />
                             Feed
                         </SidebarMenuLink>

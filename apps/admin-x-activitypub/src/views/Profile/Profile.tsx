@@ -191,9 +191,9 @@ const PostsTab: React.FC = () => {
                             onClick={() => {
                                 if (isEnabled('ap-routes')) {
                                     if (activity.object.type === 'Note') {
-                                        navigate(`/feed-rr/${encodeURIComponent(activity.object.id)}`);
+                                        navigate(`/feed/${encodeURIComponent(activity.object.id)}`);
                                     } else if (activity.object.type === 'Article') {
-                                        navigate(`/inbox-rr/${encodeURIComponent(activity.object.id)}`);
+                                        navigate(`/inbox/${encodeURIComponent(activity.object.id)}`);
                                     }
                                 } else {
                                     handleViewContent(activity, false);
@@ -202,9 +202,9 @@ const PostsTab: React.FC = () => {
                             onCommentClick={() => {
                                 if (isEnabled('ap-routes')) {
                                     if (activity.object.type === 'Note') {
-                                        navigate(`/feed-rr/${encodeURIComponent(activity.object.id)}`);
+                                        navigate(`/feed/${encodeURIComponent(activity.object.id)}`);
                                     } else if (activity.object.type === 'Article') {
-                                        navigate(`/inbox-rr/${encodeURIComponent(activity.object.id)}`);
+                                        navigate(`/inbox/${encodeURIComponent(activity.object.id)}`);
                                     }
                                 } else {
                                     handleViewContent(activity, true);

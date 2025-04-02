@@ -191,10 +191,10 @@ const PostsTab: React.FC<{handle: string}> = ({handle}) => {
                                     onClick={() => {
                                         if (isEnabled('ap-routes')) {
                                             if (post.object.type === 'Note') {
-                                                navigate(`/feed-rr/${encodeURIComponent(post.object.id)}`);
+                                                navigate(`/feed/${encodeURIComponent(post.object.id)}`);
                                             }
                                             if (post.object.type === 'Article') {
-                                                navigate(`/inbox-rr/${encodeURIComponent(post.object.id)}`);
+                                                navigate(`/inbox/${encodeURIComponent(post.object.id)}`);
                                             }
                                         } else {
                                             handleViewContent({
@@ -206,10 +206,10 @@ const PostsTab: React.FC<{handle: string}> = ({handle}) => {
                                     onCommentClick={() => {
                                         if (isEnabled('ap-routes')) {
                                             if (post.object.type === 'Note') {
-                                                navigate(`/feed-rr/${encodeURIComponent(post.object.id)}?focusReply=true`);
+                                                navigate(`/feed/${encodeURIComponent(post.object.id)}?focusReply=true`);
                                             }
                                             if (post.object.type === 'Article') {
-                                                navigate(`/inbox-rr/${encodeURIComponent(post.object.id)}?focusReply=true`);
+                                                navigate(`/inbox/${encodeURIComponent(post.object.id)}?focusReply=true`);
                                             }
                                         } else {
                                             handleViewContent({

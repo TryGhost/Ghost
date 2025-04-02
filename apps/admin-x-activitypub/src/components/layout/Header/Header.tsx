@@ -29,7 +29,7 @@ const Header: React.FC = () => {
         onlyBackButton = true;
     }
 
-    if (baseRoute === 'feed-rr' && canGoBack) {
+    if (baseRoute === 'feed' && canGoBack) {
         onlyBackButton = true;
     }
 

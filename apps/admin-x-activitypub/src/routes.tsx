@@ -2,7 +2,6 @@ import Error from '@components/layout/Error';
 import Explore from '@views/Explore';
 import Feed from './views/Feed/Feed';
 import Inbox from '@views/Inbox';
-import InboxRR from './views/Inbox/Inbox-RR';
 import Note from './views/Feed/Note';
 import Notifications from '@views/Notifications';
 import Onboarding from '@components/layout/Onboarding';
@@ -26,27 +25,6 @@ export const routes: CustomRouteObject[] = [
         path: '',
         errorElement: <Error />, // This will catch all errors in child routes
         children: [
-            // `ap-routes` related routes
-            {
-                path: 'inbox-rr',
-                element: <InboxRR />,
-                pageTitle: 'Inbox'
-            },
-            {
-                path: 'inbox-rr/:postId',
-                element: <InboxRR />,
-                pageTitle: 'Inbox'
-            },
-            {
-                path: 'feed-rr',
-                element: <Feed />,
-                pageTitle: 'Feed'
-            },
-            {
-                path: 'feed-rr/:postId',
-                element: <Note />,
-                pageTitle: 'Note'
-            },
             {
                 path: 'profile',
                 element: <Profile />,
@@ -69,9 +47,19 @@ export const routes: CustomRouteObject[] = [
                 pageTitle: 'Inbox'
             },
             {
-                path: 'feed',
+                path: 'inbox/:postId',
                 element: <Inbox />,
+                pageTitle: 'Inbox'
+            },
+            {
+                path: 'feed',
+                element: <Feed />,
                 pageTitle: 'Feed'
+            },
+            {
+                path: 'feed/:postId',
+                element: <Note />,
+                pageTitle: 'Note'
             },
             {
                 path: 'notifications',

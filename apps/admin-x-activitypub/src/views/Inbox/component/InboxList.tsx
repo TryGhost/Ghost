@@ -1,35 +1,40 @@
-import FeedItem from '@components/feed/FeedItem';
-import Layout from '@components/layout';
-import React, {useEffect, useRef, useState} from 'react';
-import Reader from './Reader';
-import Separator from '@components/global/Separator';
-import {Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, LucideIcon} from '@tryghost/shade';
+import FeedItem from '@src/components/feed/FeedItem';
+import Layout from '@src/components/layout';
+import Reader from '../Reader';
+import {Activity} from '@src/api/activitypub';
+import {Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, LucideIcon, Separator} from '@tryghost/shade';
 import {EmptyViewIcon, EmptyViewIndicator} from '@src/components/global/EmptyViewIndicator';
 import {LoadingIndicator} from '@tryghost/admin-x-design-system';
-import {Navigate, useNavigate, useNavigationStack, useParams} from '@tryghost/admin-x-framework';
-import {isPendingActivity} from '@utils/pending-activity';
+import {handleViewContent} from '@src/utils/content-handlers';
+import {isPendingActivity} from '@src/utils/pending-activity';
+import {useEffect, useRef, useState} from 'react';
 import {useFeatureFlags} from '@src/lib/feature-flags';
-import {useInboxForUser} from '@hooks/use-activity-pub-queries';
+import {useNavigate, useNavigationStack, useParams} from '@tryghost/admin-x-framework';
 
-/**
- * TODO: Before merge:
- * 1. Remove Inbox and rename this to `Inbox`
- * 2. Update routes to use this component
- * 3. Update routes to use `inbox` instead of `inbox-rr`
- */
+export type InboxListProps = {
+    isLoading: boolean,
+    activities: Activity[],
+    fetchNextPage: () => void,
+    hasNextPage: boolean,
+    isFetchingNextPage: boolean
+}
 
-const Inbox: React.FC = () => {
-    const {canGoBack, goBack} = useNavigationStack();
-
+const InboxList:React.FC<InboxListProps> = ({
+    isLoading,
+    activities,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage
+}) => {
     const navigate = useNavigate();
-    const params = useParams();
+    const {canGoBack, goBack} = useNavigationStack();
     const [isReaderOpen, setIsReaderOpen] = useState(false);
+    const params = useParams();
+    const {isEnabled} = useFeatureFlags();
 
-    const {inboxQuery} = useInboxForUser({enabled: true});
-    const feedQueryData = inboxQuery;
-    const {data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading} = feedQueryData;
-
-    const activities = (data?.pages.flatMap(page => page.posts) ?? Array.from({length: 5}, (_, index) => ({id: `placeholder-${index}`, object: {}})));
+    useEffect(() => {
+        setIsReaderOpen(!!params.postId);
+    }, [params.postId]);
 
     const observerRef = useRef<IntersectionObserver | null>(null);
     const loadMoreRef = useRef<HTMLDivElement | null>(null);
@@ -61,17 +66,8 @@ const Inbox: React.FC = () => {
         };
     }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-    useEffect(() => {
-        setIsReaderOpen(!!params.postId);
-    }, [params.postId]);
-
     // Calculate the index at which to place the loadMoreRef - This will place it ~75% through the list
     const loadMoreIndex = Math.max(0, Math.floor(activities.length * 0.75) - 1);
-
-    const {isEnabled} = useFeatureFlags();
-    if (!isEnabled('ap-routes')) {
-        return <Navigate to='/inbox' />;
-    }
 
     return (
         <Layout>
@@ -85,7 +81,7 @@ const Inbox: React.FC = () => {
                                         <ul className='mx-auto flex w-full flex-col'>
                                             {activities.map((activity, index) => (
                                                 <li
-                                                    // eslint-disable-next-line react/no-array-index-key
+                                                // eslint-disable-next-line react/no-array-index-key
                                                     key={`${activity.id}-${activity.type}-${index}`} // We are using index here as activity.id is cannot be guaranteed to be unique at the moment
                                                     data-test-view-article
                                                 >
@@ -100,10 +96,18 @@ const Inbox: React.FC = () => {
                                                         repostCount={activity.object.repostCount ?? 0}
                                                         type={activity.type}
                                                         onClick={() => {
-                                                            navigate(`/inbox-rr/${encodeURIComponent(activity.id)}`);
+                                                            if (isEnabled('ap-routes')) {
+                                                                navigate(`/inbox/${encodeURIComponent(activity.id)}`);
+                                                            } else {
+                                                                handleViewContent(activity, false);
+                                                            }
                                                         }}
                                                         onCommentClick={() => {
-                                                            navigate(`/inbox-rr/${encodeURIComponent(activity.id)}?focusReply=true`);
+                                                            if (isEnabled('ap-routes')) {
+                                                                navigate(`/inbox/${encodeURIComponent(activity.id)}?focusReply=true`);
+                                                            } else {
+                                                                handleViewContent(activity, true);
+                                                            }
                                                         }}
                                                     />
                                                     {index < activities.length - 1 && (
@@ -134,7 +138,7 @@ const Inbox: React.FC = () => {
                                     <Button className='text-white dark:text-black' onClick={() => {
                                         navigate('/explore');
                                     }}>
-                                        Find accounts to follow &rarr;
+                                    Find accounts to follow &rarr;
                                     </Button>
                                 </EmptyViewIndicator>
                             </div>
@@ -149,7 +153,7 @@ const Inbox: React.FC = () => {
                         if (canGoBack) {
                             goBack();
                         } else {
-                            navigate('/inbox-rr');
+                            navigate('/inbox');
                         }
                     }
                     setIsReaderOpen(open);
@@ -164,7 +168,7 @@ const Inbox: React.FC = () => {
                         if (canGoBack) {
                             goBack();
                         } else {
-                            navigate('/inbox-rr');
+                            navigate('/inbox');
                         }
                     }} />}
                 </DialogContent>
@@ -173,4 +177,4 @@ const Inbox: React.FC = () => {
     );
 };
 
-export default Inbox;
+export default InboxList;
