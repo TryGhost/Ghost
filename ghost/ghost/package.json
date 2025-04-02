@@ -39,7 +39,7 @@
     "@tryghost/errors": "1.3.5",
     "bson-objectid": "2.0.4",
     "express": "4.21.2",
-    "reflect-metadata": "0.1.14",
+    "reflect-metadata": "0.2.2",
     "rxjs": "7.8.2"
   }
 }
