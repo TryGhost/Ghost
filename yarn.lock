@@ -17962,7 +17962,7 @@ express@4.21.0:
     utils-merge "1.0.1"
     vary "~1.1.2"
 
-express@4.21.2, express@^4.10.7, express@^4.17.1, express@^4.17.2, express@^4.17.3, express@^4.18.2:
+express@4.21.2, express@^4.10.7, express@^4.17.1, express@^4.17.2, express@^4.17.3, express@^4.18.2, express@^4.21.2:
   version "4.21.2"
   resolved "https://registry.yarnpkg.com/express/-/express-4.21.2.tgz#cf250e48362174ead6cea4a566abef0162c1ec32"
   integrity sha512-28HqgMZAmih1Czt9ny7qr6ek2qddF4FclbMzwhCREB6OFfH+rXAnuNCwo1/wFvrtbgsQDb4kSbX9de9lFbrXnA==
@@ -29058,13 +29058,13 @@ send@0.19.0:
     range-parser "~1.2.1"
     statuses "2.0.1"
 
-sentry-testkit@5.0.9:
-  version "5.0.9"
-  resolved "https://registry.yarnpkg.com/sentry-testkit/-/sentry-testkit-5.0.9.tgz#28356612116aff9c7f3398913cef63d677ac1b4a"
-  integrity sha512-b9oa3juBM3EXKDU/v5aL4HEC41yGxQZY4pluFN+nvRJLyvHc+JQWPWxxkOPAAr1vGY/4zH+V9NGS+ojIQkc88w==
+sentry-testkit@5.0.10:
+  version "5.0.10"
+  resolved "https://registry.yarnpkg.com/sentry-testkit/-/sentry-testkit-5.0.10.tgz#b60648662af028a9e464499c1c8fd353f19a79fe"
+  integrity sha512-wpvt29IIK+L1Pe02uc0y7rJkXQcnIk46hvB02Zqd4UNgP2lIhzv80GjR2lu8RtsbAmf7LJnGz8zLuV3rVa69ew==
   dependencies:
     body-parser "^1.20.1"
-    express "^4.18.2"
+    express "^4.21.2"
 
 seq-queue@^0.0.5:
   version "0.0.5"
