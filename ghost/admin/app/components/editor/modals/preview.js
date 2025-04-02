@@ -57,7 +57,7 @@ export default class EditorPostPreviewModal extends Component {
             ];
         } else {
             this.previewAsOptions = [
-                {label: 'Anonymous', value: 'anonymous'},
+                {label: 'Public visitor', value: 'anonymous'},
                 {label: 'Free member', value: 'free'}
             ];
         }
