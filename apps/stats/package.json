@@ -26,6 +26,7 @@
     },
     "devDependencies": {
         "@testing-library/react": "14.3.1",
+        "@tinybirdco/charts": "^0.2.4",
         "@tryghost/admin-x-framework": "0.0.0",
         "@tryghost/shade": "0.0.0",
         "@types/react": "18.3.3",
@@ -54,8 +55,8 @@
     },
     "dependencies": {
         "@radix-ui/react-form": "0.0.3",
-        "@tryghost/shade": "0.0.0",
         "@tryghost/admin-x-framework": "0.0.0",
+        "@tryghost/shade": "0.0.0",
         "clsx": "2.1.1",
         "react": "18.3.1",
         "react-dom": "18.3.1",
