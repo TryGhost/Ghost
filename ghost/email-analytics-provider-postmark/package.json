@@ -18,11 +18,11 @@
     "lib"
   ],
   "devDependencies": {
-    "mocha": "10.2.0",
+    "mocha": "10.8.2",
     "sinon": "15.2.0"
   },
   "dependencies": {
     "@tryghost/postmark-client": "0.0.0",
-    "moment": "2.29.1"
+    "moment": "2.30.1"
   }
 }

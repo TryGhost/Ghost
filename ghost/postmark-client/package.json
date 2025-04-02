@@ -19,14 +19,14 @@
   ],
   "devDependencies": {
     "c8": "8.0.1",
-    "mocha": "10.2.0",
-    "nock": "13.3.3",
+    "mocha": "10.8.2",
+    "nock": "13.5.6",
     "sinon": "15.2.0"
   },
   "dependencies": {
-    "@tryghost/debug": "0.1.26",
-    "@tryghost/logging": "2.4.8",
-    "@tryghost/metrics": "1.0.27",
+    "@tryghost/debug": "0.1.32",
+    "@tryghost/logging": "2.4.21",
+    "@tryghost/metrics": "1.0.37",
     "form-data": "4.0.0",
     "lodash": "4.17.21",
     "postmark": "^3.11.0"
