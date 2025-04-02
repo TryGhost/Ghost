@@ -32,6 +32,18 @@ const params = new URLSearchParams(url.search);
 const WEBSOCKET_ENDPOINT = params.get('multiplayerEndpoint') || 'ws://localhost:1234';
 const WEBSOCKET_ID = params.get('multiplayerId') || '0';
 
+// show deprecated cards by default so they can be tested, unless explicitly hidden
+// so we can test they are removed from the menu when deprecated/behind a feature flag
+function hideDeprecatedCardInMenu(searchParams) {
+    // allow tests to opt in to hiding deprecated cards
+    if (searchParams.get('hideDeprecatedCards') === 'true') {
+        return true;
+    }
+
+    // otherwise show deprecated cards by default so tests don't need updating
+    return process.env.NODE_ENV === 'test' ? false : true;
+}
+
 const defaultCardConfig = {
     unsplash: defaultUnsplashHeaders,
     fetchEmbed: fetchEmbed,
@@ -52,9 +64,6 @@ const defaultCardConfig = {
         collectionsCard: true,
         contentVisibility: false,
         contentVisibilityAlpha: false
-    },
-    deprecated: {
-        headerV1: process.env.NODE_ENV === 'test' ? false : true // show header v1 only for tests
     },
     // this enables the internal linking feature, can be disabled with `/#/?searchLinks=false`
     searchLinks: async (term) => {
@@ -314,7 +323,11 @@ function DemoComposer({editorType, isMultiplayer, setWordCount, setTKCount}) {
             contentVisibilityAlpha: searchParams.get('labs')?.includes('contentVisibilityAlpha') || defaultCardConfig.feature.contentVisibilityAlpha
         },
         searchLinks: searchParams.get('searchLinks') === 'false' ? undefined : defaultCardConfig.searchLinks,
-        stripeEnabled: searchParams.get('stripe') === 'false' ? false : defaultCardConfig.stripeEnabled
+        stripeEnabled: searchParams.get('stripe') === 'false' ? false : defaultCardConfig.stripeEnabled,
+        deprecated: {
+            headerV1: hideDeprecatedCardInMenu(searchParams),
+            emailCta: hideDeprecatedCardInMenu(searchParams)
+        }
     };
 
     return (

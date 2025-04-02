@@ -24,7 +24,10 @@ export class EmailCtaNode extends BaseEmailCtaNode {
         matches: ['email', 'cta', 'email-cta'],
         priority: 8,
         postType: 'post',
-        shortcut: '/email-cta'
+        shortcut: '/email-cta',
+        isHidden: ({config}) => {
+            return config?.feature?.contentVisibility && (config?.deprecated?.emailCta ?? true);
+        }
     };
 
     getIcon() {
