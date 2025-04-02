@@ -27,6 +27,7 @@
                     @triggerClass="gh-preview-segment-trigger"
                     @dropdownClass="gh-preview-segment-dropdown"
                     @matchTriggerWidth={{false}}
+                    @onOpen={{this.dropdown.closeDropdowns}}
                     as |option|
                 >
                     {{option.label}}

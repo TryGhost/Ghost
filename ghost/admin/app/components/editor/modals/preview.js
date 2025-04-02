@@ -6,6 +6,7 @@ import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
 export default class EditorPostPreviewModal extends Component {
+    @service dropdown;
     @service settings;
     @service session;
 
