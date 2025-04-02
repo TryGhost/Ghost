@@ -22,7 +22,7 @@ export class EmailNode extends BaseEmailNode {
         Icon: EmailCardIcon,
         insertCommand: INSERT_EMAIL_COMMAND,
         matches: ['email content', 'only email'],
-        priority: 7,
+        priority: 8,
         postType: 'post',
         shortcut: '/email'
     }];

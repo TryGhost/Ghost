@@ -35,7 +35,7 @@ export class GalleryNode extends BaseGalleryNode {
             triggerFileDialog: true
         },
         matches: ['gallery'],
-        priority: 4,
+        priority: 5,
         shortcut: '/gallery'
     }];
 

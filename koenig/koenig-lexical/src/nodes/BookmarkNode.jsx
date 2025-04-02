@@ -22,7 +22,7 @@ export class BookmarkNode extends BaseBookmarkNode {
         insertCommand: INSERT_BOOKMARK_COMMAND,
         matches: ['bookmark'],
         queryParams: ['url'],
-        priority: 6,
+        priority: 4,
         shortcut: '/bookmark [url]'
     }];
 

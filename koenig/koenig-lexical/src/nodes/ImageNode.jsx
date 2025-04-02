@@ -57,6 +57,7 @@ export class ImageNode extends BaseImageNode {
             triggerFileDialog: false
         },
         matches: ['gif', 'giphy', 'tenor'],
+        priority: 17,
         queryParams: ['src'],
         isHidden: ({config}) => !config?.tenor,
         shortcut: '/gif'

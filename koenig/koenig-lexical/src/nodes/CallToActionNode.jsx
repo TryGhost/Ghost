@@ -21,8 +21,8 @@ export class CallToActionNode extends BaseCallToActionNode {
         desc: 'Add a call to action to your post',
         Icon: EmailCtaCardIcon,
         insertCommand: INSERT_CALL_TO_ACTION_COMMAND,
-        matches: ['cta', 'call-to-action', 'email', 'email-cta'],
-        priority: 10,
+        matches: ['cta', 'call-to-action', 'email', 'email-cta', 'ad', 'sponsored', 'hidden'],
+        priority: 7,
         shortcut: '/cta',
         isHidden: ({config}) => {
             return !(config?.feature?.contentVisibility === true);

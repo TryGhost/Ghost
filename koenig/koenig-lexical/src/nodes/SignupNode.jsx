@@ -26,6 +26,7 @@ export class SignupNode extends BaseSignupNode {
         Icon: SignupCardIcon,
         insertCommand: INSERT_SIGNUP_COMMAND,
         matches: ['signup', 'subscribe'],
+        priority: 10,
         isHidden: ({config}) => {
             const isMembersEnabled = config?.membersEnabled;
             return !(isMembersEnabled);

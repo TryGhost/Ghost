@@ -14,7 +14,7 @@ export class HorizontalRuleNode extends BaseHorizontalRuleNode {
         Icon: DividerCardIcon,
         insertCommand: INSERT_HORIZONTAL_RULE_COMMAND,
         matches: ['divider', 'horizontal-rule', 'hr'],
-        priority: 5,
+        priority: 2,
         shortcut: '/hr'
     };
 

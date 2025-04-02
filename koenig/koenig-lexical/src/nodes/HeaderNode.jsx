@@ -28,7 +28,7 @@ export class HeaderNode extends BaseHeaderNode {
             Icon: HeaderCardIcon,
             insertCommand: INSERT_HEADER_COMMAND,
             matches: ['v1_header', 'v1_heading'],
-            priority: 17,
+            priority: 11,
             insertParams: () => ({
                 version: 1
             }),
@@ -43,7 +43,7 @@ export class HeaderNode extends BaseHeaderNode {
             Icon: HeaderCardIcon,
             insertCommand: INSERT_HEADER_COMMAND,
             matches: ['header', 'heading'],
-            priority: 17,
+            priority: 11,
             insertParams: () => ({
                 version: 2
             }),
