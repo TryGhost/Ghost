@@ -113,10 +113,10 @@ const Note = () => {
                                                         repostCount={item.object.repostCount ?? 0}
                                                         type='Note'
                                                         onClick={() => {
-                                                            navigate(`/feed-rr/${encodeURIComponent(item.object.id)}`);
+                                                            navigate(`/feed/${encodeURIComponent(item.object.id)}`);
                                                         }}
                                                         onCommentClick={() => {
-                                                            navigate(`/feed-rr/${encodeURIComponent(item.object.id)}?focusReply=true`);
+                                                            navigate(`/feed/${encodeURIComponent(item.object.id)}?focusReply=true`);
                                                         }}
                                                     />
                                                 )
@@ -170,10 +170,10 @@ const Note = () => {
                                                                     repostCount={item.object.repostCount ?? 0}
                                                                     type='Note'
                                                                     onClick={() => {
-                                                                        navigate(`/feed-rr/${encodeURIComponent(item.id)}`);
+                                                                        navigate(`/feed/${encodeURIComponent(item.id)}`);
                                                                     }}
                                                                     onCommentClick={() => {
-                                                                        navigate(`/feed-rr/${encodeURIComponent(item.id)}?focusReply=true`);
+                                                                        navigate(`/feed/${encodeURIComponent(item.id)}?focusReply=true`);
                                                                     }}
                                                                     // onDelete={decrementReplyCount}
                                                                 />

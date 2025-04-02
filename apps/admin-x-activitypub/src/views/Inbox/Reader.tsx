@@ -853,10 +853,10 @@ export const Reader: React.FC<ReaderProps> = ({
                                                                 repostCount={item.object.repostCount ?? 0}
                                                                 type='Note'
                                                                 onClick={() => {
-                                                                    navigate(`/feed-rr/${encodeURIComponent(item.object.id)}`);
+                                                                    navigate(`/feed/${encodeURIComponent(item.object.id)}`);
                                                                 }}
                                                                 onCommentClick={() => {
-                                                                    navigate(`/feed-rr/${encodeURIComponent(item.object.id)}?focusReply=true`);
+                                                                    navigate(`/feed/${encodeURIComponent(item.object.id)}?focusReply=true`);
                                                                 }}
                                                                 onDelete={decrementReplyCount}
                                                             />
