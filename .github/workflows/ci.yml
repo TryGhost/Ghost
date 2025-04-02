@@ -973,7 +973,7 @@ jobs:
       - name: Run fixture tests
         run: |
           if [ -f ./scripts/exec_test.sh ]; then
-          ./scripts/exec_test.sh
+          ./scripts/exec_test.sh -j 10
           fi
 
       - name: Try to delete previous Branch
