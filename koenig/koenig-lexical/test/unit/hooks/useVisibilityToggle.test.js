@@ -72,7 +72,7 @@ describe('useVisibilityToggle', () => {
                 label: 'Web',
                 key: 'web',
                 toggles: [
-                    {key: 'nonMembers', label: 'Anonymous visitors', checked: true},
+                    {key: 'nonMembers', label: 'Public visitors', checked: true},
                     {key: 'freeMembers', label: 'Free members', checked: true},
                     {key: 'paidMembers', label: 'Paid members', checked: false}
                 ]

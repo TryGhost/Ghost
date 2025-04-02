@@ -53,7 +53,7 @@ export function getVisibilityOptions(visibility, {isStripeEnabled = true} = {}) 
             label: 'Web',
             key: 'web',
             toggles: [
-                {key: 'nonMembers', label: 'Anonymous visitors', checked: toggles.web.nonMembers},
+                {key: 'nonMembers', label: 'Public visitors', checked: toggles.web.nonMembers},
                 {key: 'freeMembers', label: 'Free members', checked: toggles.web.freeMembers},
                 {key: 'paidMembers', label: 'Paid members', checked: toggles.web.paidMembers}
             ]
