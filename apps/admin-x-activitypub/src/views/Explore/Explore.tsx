@@ -2,7 +2,7 @@ import APAvatar from '@src/components/global/APAvatar';
 import FollowButton from '@src/components/global/FollowButton';
 import Layout from '@components/layout';
 import NiceModal from '@ebay/nice-modal-react';
-import React, {useCallback} from 'react';
+import React, {useEffect} from 'react';
 import ViewProfileModal from '@src/components/modals/ViewProfileModal';
 import {type Account} from '@src/api/activitypub';
 import {Button, H4, LucideIcon, Skeleton} from '@tryghost/shade';
@@ -119,14 +119,17 @@ const Explore: React.FC = () => {
             if (!acc[key]) {
                 acc[key] = category;
             } else {
-                acc[key].sites = [...acc[key].sites, ...category.sites];
+                // Only add profiles that haven't been seen before
+                const existingProfileIds = new Set(acc[key].sites.map(p => p.id));
+                const newProfiles = category.sites.filter(profile => !existingProfileIds.has(profile.id));
+                acc[key].sites = [...acc[key].sites, ...newProfiles];
             }
         });
         return acc;
     }, {} as Record<string, { categoryName: string; sites: Account[] }>) || {};
 
-    // Intersection observer for infinite scroll
-    const loadMoreRef = useCallback((node: HTMLDivElement | null) => {
+    useEffect(() => {
+        const node = document.querySelector('.load-more-trigger');
         if (!node) {
             return;
         }
@@ -195,7 +198,7 @@ const Explore: React.FC = () => {
                         ))
                     )
                 }
-                <div ref={loadMoreRef} className='h-4 w-full' />
+                <div className='load-more-trigger h-4 w-full' />
                 {isFetchingNextPage && (
                     <div className='flex justify-center'>
                         <LoadingIndicator size='sm' />
