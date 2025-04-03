@@ -1,5 +1,5 @@
 const assert = require('assert/strict');
-const redisStoreFactory = require('../lib/redis-store-factory');
+const redisStoreFactory = require('../../../../../../core/server/adapters/lib/redis/redis-store-factory');
 
 class CacheManagerMock {
     static create() {
