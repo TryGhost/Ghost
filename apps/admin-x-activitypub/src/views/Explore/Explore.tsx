@@ -2,10 +2,12 @@ import APAvatar from '@src/components/global/APAvatar';
 import FollowButton from '@src/components/global/FollowButton';
 import Layout from '@components/layout';
 import NiceModal from '@ebay/nice-modal-react';
-import React from 'react';
+import React, {useCallback} from 'react';
 import ViewProfileModal from '@src/components/modals/ViewProfileModal';
 import {type Account} from '@src/api/activitypub';
 import {Button, H4, LucideIcon, Skeleton} from '@tryghost/shade';
+import {LoadingIndicator} from '@tryghost/admin-x-design-system';
+import {formatFollowNumber} from '@src/utils/content-formatters';
 import {useExploreProfilesForUser} from '@hooks/use-activity-pub-queries';
 import {useFeatureFlags} from '@src/lib/feature-flags';
 import {useNavigate} from '@tryghost/admin-x-framework';
@@ -58,11 +60,11 @@ export const ExploreProfile: React.FC<ExploreProfileProps & {
                     handle: profile.handle
                 }
             } onClick={() => onOpenChange?.(false)} />
-            <div className='flex w-full flex-col gap-2 border-b border-gray-200 pb-4 dark:border-gray-950'>
+            <div className='flex w-full flex-col gap-1 border-b border-gray-200 pb-4 dark:border-gray-950'>
                 <div className='flex items-center justify-between gap-3'>
                     <div className='flex grow flex-col'>
                         <span className='font-semibold text-black dark:text-white'>{!isLoading ? profile.name : <Skeleton className='w-full max-w-64' />}</span>
-                        <span className='text-sm text-gray-600'>{!isLoading ? profile.handle : <Skeleton className='w-24' />}</span>
+                        <span className='text-sm text-gray-700'>{!isLoading ? profile.handle : <Skeleton className='w-24' />}</span>
                     </div>
                     {!isLoading ?
                         <FollowButton
@@ -84,6 +86,12 @@ export const ExploreProfile: React.FC<ExploreProfileProps & {
                         className='ap-profile-content pointer-events-none mt-0 max-w-[500px]'
                     />
                 }
+                {!isLoading &&
+                <div className='mt-2 flex items-center gap-1 text-sm text-gray-700'>
+                    <LucideIcon.UserRound size={14} strokeWidth={1.5} />
+                    {formatFollowNumber(profile.followerCount)} followers
+                </div>
+                }
             </div>
         </div>
     );
@@ -92,7 +100,7 @@ export const ExploreProfile: React.FC<ExploreProfileProps & {
 const Explore: React.FC = () => {
     const {isExplainerClosed, setExplainerClosed} = useOnboardingStatus();
     const {exploreProfilesQuery, updateExploreProfile} = useExploreProfilesForUser('index');
-    const {data: exploreProfilesData, isLoading: isLoadingExploreProfiles} = exploreProfilesQuery;
+    const {data: exploreProfilesData, isLoading: isLoadingExploreProfiles, fetchNextPage, hasNextPage, isFetchingNextPage} = exploreProfilesQuery;
 
     const emptyProfiles = Array(5).fill({
         id: '',
@@ -105,6 +113,37 @@ const Explore: React.FC = () => {
         followedByMe: false
     });
 
+    // Merge all pages of results
+    const allProfiles = exploreProfilesData?.pages.reduce((acc, page) => {
+        Object.entries(page.results).forEach(([key, category]) => {
+            if (!acc[key]) {
+                acc[key] = category;
+            } else {
+                acc[key].sites = [...acc[key].sites, ...category.sites];
+            }
+        });
+        return acc;
+    }, {} as Record<string, { categoryName: string; sites: Account[] }>) || {};
+
+    // Intersection observer for infinite scroll
+    const loadMoreRef = useCallback((node: HTMLDivElement | null) => {
+        if (!node) {
+            return;
+        }
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+                    fetchNextPage();
+                }
+            },
+            {threshold: 0.1}
+        );
+
+        observer.observe(node);
+        return () => observer.disconnect();
+    }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
     return (
         <Layout>
             {!isExplainerClosed &&
@@ -116,7 +155,7 @@ const Explore: React.FC = () => {
                         <H4 className='text-pretty'>The fastest way to grow your followers, is to follow others!</H4>
                         <p className='2xl:text-pretty text-balance text-sm text-black/60 dark:text-white/60'>Here are some recommendations to get you started, from Ghost publishers and other great accounts from around the social web.</p>
                     </div>
-                    <Button className='absolute right-4 top-[17px] h-6 w-6 opacity-40' variant='link' onClick={() => setExplainerClosed(true)}><LucideIcon.X size={20} /></Button>
+                    <Button className='absolute right-4 top-[17px] size-6 opacity-40' variant='link' onClick={() => setExplainerClosed(true)}><LucideIcon.X size={20} /></Button>
                 </div>
             }
             <div className='mt-12 flex flex-col gap-12 pb-20'>
@@ -134,11 +173,13 @@ const Explore: React.FC = () => {
                             ))}
                         </div>
                     ) : (
-                        exploreProfilesData && Object.entries(exploreProfilesData).map(([category, data]) => (
+                        Object.entries(allProfiles).map(([category, data]) => (
                             <div key={category} className='mx-auto flex w-full max-w-[640px] flex-col items-center'>
-                                <H4 className='w-full border-b border-gray-200 pb-2 text-xs font-medium uppercase tracking-wider text-gray-800 dark:border-gray-900'>
-                                    {data.categoryName}
-                                </H4>
+                                {category !== 'uncategorized' &&
+                                    <H4 className='w-full border-b border-gray-200 pb-2 text-xs font-medium uppercase tracking-wider text-gray-800 dark:border-gray-900'>
+                                        {data.categoryName}
+                                    </H4>
+                                }
                                 <div className='w-full'>
                                     {data.sites.map(profile => (
                                         <React.Fragment key={profile.id}>
@@ -154,6 +195,12 @@ const Explore: React.FC = () => {
                         ))
                     )
                 }
+                <div ref={loadMoreRef} className='h-4 w-full' />
+                {isFetchingNextPage && (
+                    <div className='flex justify-center'>
+                        <LoadingIndicator size='sm' />
+                    </div>
+                )}
             </div>
         </Layout>
     );
