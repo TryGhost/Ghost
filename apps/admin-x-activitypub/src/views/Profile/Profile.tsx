@@ -102,7 +102,7 @@ const FollowingTab: React.FC<{handle: string}> = ({handle}) => {
             hasNextPage={hasNextPage!}
             isFetchingNextPage={isFetchingNextPage}
             isLoading={isLoading}
-            noResultsMessage={`${handle || 'You'} have no followers yet`}
+            noResultsMessage={`${handle || 'You'} have no following`}
         />
     );
 };
@@ -160,7 +160,7 @@ const Profile: React.FC<ProfileProps> = ({}) => {
     const [selectedTab, setSelectedTab] = useState<ProfileTab>('posts');
     const params = useParams();
 
-    const {data: account, isLoading: isLoadingAccount} = useAccountForUser('index', 'me');
+    const {data: account, isLoading: isLoadingAccount} = useAccountForUser('index', (params.handle || 'me'));
 
     const tabs = [
         {
@@ -190,7 +190,7 @@ const Profile: React.FC<ProfileProps> = ({}) => {
                     <FollowingTab handle={params.handle || ''} />
                 </div>
             ),
-            counter: account?.followingCount || 0
+            counter: account?.followingCount || '0'
         },
         {
             id: 'followers',
@@ -200,7 +200,7 @@ const Profile: React.FC<ProfileProps> = ({}) => {
                     <FollowersTab handle={params.handle || ''} />
                 </div>
             ),
-            counter: account?.followerCount || 0
+            counter: account?.followerCount || '0'
         }
     ].filter(Boolean) as Tab<ProfileTab>[];
 
