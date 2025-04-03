@@ -7,19 +7,19 @@
                 <button
                     type="button"
                     class="gh-btn gh-btn-editor gh-editor-preview-trigger"
-                    {{on "click" @data.togglePreviewPublish}}
-                    data-test-button="publish-flow-preview"
-                >
-                    <span>Preview</span>
-                </button>
-                <button
-                    type="button"
-                    class="gh-btn"
                     title="Close"
                     {{on "click" @close}}
                     data-test-button="publish-flow-publish"
                 >
                     <span>Close</span>
+                </button>
+                <button
+                    type="button"
+                    class="gh-btn"
+                    {{on "click" @data.togglePreviewPublish}}
+                    data-test-button="publish-flow-preview"
+                >
+                    <span>Preview</span>
                 </button>
             </div>
         {{/if}}
