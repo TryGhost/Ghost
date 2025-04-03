@@ -14,8 +14,10 @@ import Layout from '@components/layout';
 import truncate from '@utils/truncate';
 import {EmptyViewIcon, EmptyViewIndicator} from '@src/components/global/EmptyViewIndicator';
 import {Notification} from '@src/api/activitypub';
-import {handleProfileClick} from '@utils/handle-profile-click';
+import {handleProfileClick, handleProfileClickRR} from '@utils/handle-profile-click';
 import {stripHtml} from '@src/utils/content-formatters';
+import {useFeatureFlags} from '@src/lib/feature-flags';
+import {useNavigate} from '@tryghost/admin-x-framework';
 import {useNotificationsForUser} from '@hooks/use-activity-pub-queries';
 
 interface NotificationGroup {
@@ -86,11 +88,21 @@ const NotificationGroupDescription: React.FC<NotificationGroupDescriptionProps> 
 
     const actorClass = 'cursor-pointer font-semibold hover:underline';
 
+    const {isEnabled} = useFeatureFlags();
+    const navigate = useNavigate();
+
     const actorText = (
         <>
             <span
                 className={actorClass}
-                onClick={e => handleProfileClick(firstActor.handle, e)}
+                onClick={(e) => {
+                    e?.stopPropagation();
+                    if (isEnabled('ap-routes')) {
+                        handleProfileClickRR(firstActor.handle, navigate);
+                    } else {
+                        handleProfileClick(firstActor.handle, e);
+                    }
+                }}
             >
                 {firstActor.name}
             </span>
@@ -99,7 +111,14 @@ const NotificationGroupDescription: React.FC<NotificationGroupDescriptionProps> 
                     {hasOthers ? ', ' : ' and '}
                     <span
                         className={actorClass}
-                        onClick={e => handleProfileClick(secondActor.handle, e)}
+                        onClick={(e) => {
+                            e?.stopPropagation();
+                            if (isEnabled('ap-routes')) {
+                                handleProfileClickRR(secondActor.handle, navigate);
+                            } else {
+                                handleProfileClick(secondActor.handle, e);
+                            }
+                        }}
                     >
                         {secondActor.name}
                     </span>
@@ -134,6 +153,8 @@ const NotificationGroupDescription: React.FC<NotificationGroupDescriptionProps> 
 
 const Notifications: React.FC = () => {
     const [openStates, setOpenStates] = React.useState<{[key: string]: boolean}>({});
+    const {isEnabled} = useFeatureFlags();
+    const navigate = useNavigate();
 
     const toggleOpen = (groupId: string) => {
         setOpenStates(prev => ({
@@ -181,28 +202,44 @@ const Notifications: React.FC = () => {
     const handleNotificationClick = (group: NotificationGroup, index: number) => {
         switch (group.type) {
         case 'like':
-            NiceModal.show(ArticleModal, {
-                remotePostId: group.post?.id || '',
-                width: group.post?.type === 'article' ? 'wide' : 'narrow'
-            });
+            if (isEnabled('ap-routes') && group.post) {
+                navigate(`/${group.post.type === 'article' ? 'inbox' : 'feed'}/${encodeURIComponent(group.post.id)}`);
+            } else {
+                NiceModal.show(ArticleModal, {
+                    remotePostId: group.post?.id || '',
+                    width: group.post?.type === 'article' ? 'wide' : 'narrow'
+                });
+            }
             break;
         case 'reply':
-            NiceModal.show(ArticleModal, {
-                remotePostId: group.post?.id || '',
-                width: group.inReplyTo?.type === 'article' ? 'wide' : 'narrow'
-            });
+            if (isEnabled('ap-routes') && group.post && group.inReplyTo) {
+                navigate(`/${group.inReplyTo.type === 'article' ? 'inbox' : 'feed'}/${encodeURIComponent(group.post.id)}`);
+            } else {
+                NiceModal.show(ArticleModal, {
+                    remotePostId: group.post?.id || '',
+                    width: group.inReplyTo?.type === 'article' ? 'wide' : 'narrow'
+                });
+            }
             break;
         case 'repost':
-            NiceModal.show(ArticleModal, {
-                remotePostId: group.post?.id || '',
-                width: group.post?.type === 'article' ? 'wide' : 'narrow'
-            });
+            if (isEnabled('ap-routes') && group.post) {
+                navigate(`/${group.post.type === 'article' ? 'inbox' : 'feed'}/${encodeURIComponent(group.post.id)}`);
+            } else {
+                NiceModal.show(ArticleModal, {
+                    remotePostId: group.post?.id || '',
+                    width: group.post?.type === 'article' ? 'wide' : 'narrow'
+                });
+            }
             break;
         case 'follow':
             if (group.actors.length > 1) {
                 toggleOpen(group.id || `${group.type}_${index}`);
             } else {
-                handleProfileClick(group.actors[0].handle);
+                if (isEnabled('ap-routes')) {
+                    handleProfileClickRR(group.actors[0].handle, navigate);
+                } else {
+                    handleProfileClick(group.actors[0].handle);
+                }
             }
             break;
         }
@@ -278,7 +315,13 @@ const Notifications: React.FC = () => {
                                                                     <div
                                                                         key={actor.id}
                                                                         className='flex items-center hover:opacity-80'
-                                                                        onClick={e => handleProfileClick(actor.handle, e)}
+                                                                        onClick={(e) => {
+                                                                            if (isEnabled('ap-routes')) {
+                                                                                handleProfileClickRR(actor.handle, navigate);
+                                                                            } else {
+                                                                                handleProfileClick(actor.handle, e);
+                                                                            }
+                                                                        }}
                                                                     >
                                                                         <APAvatar author={{
                                                                             icon: {
