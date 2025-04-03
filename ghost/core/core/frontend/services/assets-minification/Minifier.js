@@ -1,3 +1,24 @@
+/**
+ * ```
+ * const Minifier = require('./Minifier');
+ * const minifier = new Minifier({
+ *     src: 'my/src/path',
+ *     dest: 'my/dest/path'
+ * });
+ *
+ * minifier.minify({
+ *     'some.css': '*.css',
+ *     'then.js': '!(other).js'
+ * });
+ * ```
+ *
+ * - Minfier constructor requires a src and a dest
+ * - minify() function takes an object with destination file as the key and source glob as the value
+ *    - globs can be anything tiny-glob supports
+ *    - destination files must end with .css or .js
+ *    - src files will be minified according to their destination file extension
+ */
+
 const errors = require('@tryghost/errors');
 const debug = require('@tryghost/debug')('minifier');
 const tpl = require('@tryghost/tpl');
@@ -19,7 +40,7 @@ const messages = {
         message: 'Minifier missing {opt} option',
         context: 'new Minifier({}) requires a {opt} option'
     },
-    globalHelp: 'Refer to the readme for @tryghost/minifier for how to use this module'
+    globalHelp: 'Refer to the README for Minifier for how to use this module'
 };
 
 // public API for minify hooks
@@ -71,7 +92,7 @@ class Minifier {
 
     async getMatchingFiles(src) {
         let fullSrc = this.getFullSrc(src);
-        if (isWin) { 
+        if (isWin) {
             fullSrc = fullSrc.replace(/\\/g,'/');
         }
         return await glob(fullSrc);
