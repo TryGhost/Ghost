@@ -17,6 +17,9 @@ ROOT_DIR="$( cd "$SCRIPT_DIR/.." && pwd )"
 errors=0
 declare -a error_messages
 
+# Store the reference version (first one encountered)
+reference_version=""
+
 # Function to run all checks on a file
 run_checks() {
     local file="$1"
@@ -29,6 +32,7 @@ run_checks() {
         "check_filename"
         "check_token"
         "check_version_parameter"
+        "check_consistent_version"
         # Add more check functions here as we create them
     )
 
@@ -89,6 +93,44 @@ check_version_parameter() {
     if [[ "$file" == *.datasource || "$file" == *.pipe ]]; then
         if ! grep -q '^VERSION [0-9]\+' "$file"; then
             error_messages+=("→ $relative_file is missing required 'VERSION' parameter")
+            ((errors++))
+            return 1
+        fi
+    fi
+
+    return 0
+}
+
+# Check that all datasource and pipe files have the same VERSION value
+check_consistent_version() {
+    local file="$1"
+    local relative_file="$2"
+    local basename=$(basename "$file")
+
+    # Skip analytics_events.datasource
+    if [[ "$basename" == "analytics_events.datasource" ]]; then
+        return 0
+    fi
+
+    # Only check .datasource and .pipe files
+    if [[ "$file" == *.datasource || "$file" == *.pipe ]]; then
+        # Extract version number if present
+        local file_version=$(grep -o '^VERSION [0-9]\+' "$file" | awk '{print $2}')
+
+        # Skip files without version (they will be caught by check_version_parameter)
+        if [ -z "$file_version" ]; then
+            return 0
+        fi
+
+        # Set reference version if it's the first file with a version
+        if [ -z "$reference_version" ]; then
+            reference_version="$file_version"
+            return 0
+        fi
+
+        # Check if current file version matches reference version
+        if [ "$file_version" != "$reference_version" ]; then
+            error_messages+=("→ $relative_file has VERSION $file_version, but should be $reference_version (found in other files)")
             ((errors++))
             return 1
         fi
