@@ -859,9 +859,6 @@ jobs:
         working-directory: ghost/web-analytics
     if: needs.job_setup.outputs.changed_tinybird == 'true'
     steps:
-      - name: Lint datasources and pipes
-        run: |
-          ./scripts/lint.sh
       - name: Get User Permission
         id: get-user-permission
         uses: actions-cool/check-user-permission@v2
@@ -883,6 +880,9 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 300
+      - name: Lint datasources and pipes
+        run: |
+          ./scripts/lint.sh
       - name: Check secrets
         if: github.event_name == 'pull_request'
         env:
