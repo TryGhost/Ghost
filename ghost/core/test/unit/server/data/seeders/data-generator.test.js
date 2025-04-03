@@ -93,11 +93,7 @@ describe('Data Generator', function () {
             }],
             withDefault: true
         });
-        try {
-            return await dataGenerator.importData();
-        } catch (err) {
-            (false).should.eql(true, err.message);
-        }
+        await dataGenerator.importData();
     });
 });
 
@@ -239,11 +235,7 @@ describe('Events Generator', function () {
         const shapes = ['linear', 'flat', 'ease-in', 'ease-out'];
 
         for (const shape of shapes) {
-            try {
-                generateEvents(Object.assign({}, options, {shape}));
-            } catch (err) {
-                (false).should.eql(true, err.message);
-            }
+            generateEvents(Object.assign({}, options, {shape}));
         }
     });
 });
