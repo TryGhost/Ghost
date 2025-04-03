@@ -3,15 +3,16 @@ import {Button, LucideIcon} from '@tryghost/shade';
 import {useNavigate, useNavigationStack} from '@tryghost/admin-x-framework';
 
 interface BackButtonProps {
+    className?: string;
     onClick?: () => void;
 }
 
-const BackButton: React.FC<BackButtonProps> = ({onClick}) => {
+const BackButton: React.FC<BackButtonProps> = ({className, onClick}) => {
     const navigate = useNavigate();
     const {previousPath} = useNavigationStack();
 
     return (
-        <Button className='h-9 w-9 rounded-full bg-white/85 px-2 backdrop-blur-md dark:text-white [&_svg]:size-6' variant='ghost' onClick={() => {
+        <Button className={`size-9 rounded-full bg-white/85 px-2 backdrop-blur-md dark:text-white [&_svg]:size-6 ${className || ''}`} variant='ghost' onClick={() => {
             if (onClick) {
                 onClick();
                 return;
