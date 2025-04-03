@@ -1,6 +1,6 @@
 /* eslint-disable ghost/filenames/match-exported-class */
 const Command = require('./command');
-const DataGenerator = require('@tryghost/data-generator');
+const DataGenerator = require('../server/data/seeders/DataGenerator');
 const config = require('../shared/config');
 
 const schemaTables = require('../server/data/schema').tables;

@@ -1,16 +1,17 @@
 require('should');
 
 const knex = require('knex');
-const importers = require('../lib/importers');
+
+const importers = require('../../../../../core/server/data/seeders/importers');
 const ProductsImporter = importers.find(i => i.table === 'products');
 const StripeProductsImporter = importers.find(i => i.table === 'stripe_products');
 const StripePricesImporter = importers.find(i => i.table === 'stripe_prices');
 
-const generateEvents = require('../lib/utils/event-generator');
+const generateEvents = require('../../../../../core/server/data/seeders/utils/event-generator');
 
-const DataGenerator = require('../index');
+const DataGenerator = require('../../../../../core/server/data/seeders/DataGenerator');
 
-const schema = require('../../core/core/server/data/schema');
+const schema = require('../../../../../core/server/data/schema');
 
 const schemaTables = schema.tables;
 
