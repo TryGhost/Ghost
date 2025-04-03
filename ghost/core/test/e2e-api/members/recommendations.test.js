@@ -2,7 +2,7 @@ const assert = require('assert/strict');
 const {agentProvider, mockManager, fixtureManager, matchers, configUtils} = require('../../utils/e2e-framework');
 const {anyEtag} = matchers;
 const recommendationsService = require('../../../core/server/services/recommendations');
-const {Recommendation} = require('@tryghost/recommendations');
+const {Recommendation} = require('../../../core/server/services/recommendations/service');
 
 async function testClicked({recommendationId, memberId}, test) {
     const before = await recommendationsService.clickEventRepository.getAll({
