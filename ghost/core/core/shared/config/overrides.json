@@ -30,7 +30,7 @@
             "contentTypes": ["image/jpeg", "image/png", "image/gif", "image/svg+xml", "image/x-icon", "image/vnd.microsoft.icon", "image/webp"]
         },
         "media": {
-            "extensions": [".mp4",".webm", ".ogv", ".mp3", ".wav", ".ogg", ".m4a"],
+            "extensions": [".mp4",".webm", ".ogv", ".mov", ".mp3", ".wav", ".ogg", ".m4a"],
             "contentTypes": [
                 "video/mp4",
                 "video/webm",
