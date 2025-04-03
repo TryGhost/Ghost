@@ -776,19 +776,13 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
                                         </div>
                                     </div>)}
                                     <div className='col-[3/4] flex items-center justify-end gap-2'>
-                                        {modalSize === MODAL_SIZE_LG && object.type === 'Article' && <Popover modal={false} open={true}>
+                                        {modalSize === MODAL_SIZE_LG && object.type === 'Article' && <Popover modal={false}>
                                             <PopoverTrigger asChild>
                                                 <Button className='transition-color flex size-10 items-center justify-center rounded-full bg-white hover:bg-gray-100 dark:bg-black dark:hover:bg-gray-950' icon='typography' size='sm' unstyled />
                                             </PopoverTrigger>
                                             <PopoverContent align='end' className='w-[300px]' onCloseAutoFocus={e => e.preventDefault()} onOpenAutoFocus={e => e.preventDefault()}>
                                                 <div className='flex flex-col'>
-                                                    <div className='flex justify-between'>
-                                                        <div className='size-8 rounded-full bg-blue'></div>
-                                                        <div className='size-8 rounded-full'></div>
-                                                        <div className='size-8 rounded-full bg-yellow-400'></div>
-                                                        <div className='size-8 rounded-full bg-black'></div>
-                                                    </div>
-                                                    {/* <Select
+                                                    <Select
                                                         className='mb-3'
                                                         components={{Option, SingleValue}}
                                                         controlClasses={{control: '!min-h-[40px] !py-0 !pl-1 dark:!bg-grey-925', option: '!pl-1 !py-[4px]'}}
@@ -838,6 +832,31 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
                                                             />
                                                         </div>
                                                     </div>
+                                                    <div className='mb-5 flex items-center justify-between'>
+                                                        <span className='text-sm font-medium text-gray-900 dark:text-white'>Line spacing</span>
+                                                        <div className='flex items-center'>
+                                                            <Button
+                                                                className={`transition-color flex size-8 items-center justify-center rounded-full bg-white hover:bg-gray-100 dark:bg-grey-900 dark:hover:bg-grey-925 ${currentLineHeightIndex === 0 ? 'opacity-20 hover:bg-white' : 'hover:bg-gray-100'}`}
+                                                                disabled={currentLineHeightIndex === 0}
+                                                                hideLabel={true}
+                                                                icon='substract'
+                                                                iconSize='xs'
+                                                                label='Decrease line spacing'
+                                                                unstyled={true}
+                                                                onClick={decreaseLineHeight}
+                                                            />
+                                                            <Button
+                                                                className={`transition-color flex size-8 items-center justify-center rounded-full bg-white hover:bg-gray-100 dark:bg-grey-900 dark:hover:bg-grey-925 ${currentLineHeightIndex === LINE_HEIGHTS.length - 1 ? 'opacity-20 hover:bg-white' : 'hover:bg-gray-100'}`}
+                                                                disabled={currentLineHeightIndex === LINE_HEIGHTS.length - 1}
+                                                                hideLabel={true}
+                                                                icon='add'
+                                                                iconSize='xs'
+                                                                label='Increase line spacing'
+                                                                unstyled={true}
+                                                                onClick={increaseLineHeight}
+                                                            />
+                                                        </div>
+                                                    </div>
                                                     <Button
                                                         className="text-sm text-gray-600 hover:text-gray-700 dark:text-gray-500 dark:hover:text-gray-600"
                                                         label="Reset to default"
@@ -850,7 +869,7 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
                                                                 label: 'Clean sans-serif'
                                                             });
                                                         }}
-                                                    /> */}
+                                                    />
                                                 </div>
                                             </PopoverContent>
                                         </Popover>}
