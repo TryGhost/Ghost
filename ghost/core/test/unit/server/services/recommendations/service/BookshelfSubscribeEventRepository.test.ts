@@ -1,5 +1,5 @@
 import assert from 'assert/strict';
-import {BookshelfSubscribeEventRepository, SubscribeEvent} from '../src';
+import {BookshelfSubscribeEventRepository, SubscribeEvent} from '../../../../../../core/server/services/recommendations/service';
 import sinon from 'sinon';
 
 describe('BookshelfSubscribeEventRepository', function () {

@@ -118,7 +118,6 @@
     "@tryghost/pretty-cli": "1.2.44",
     "@tryghost/prometheus-metrics": "0.0.0",
     "@tryghost/promise": "0.3.12",
-    "@tryghost/recommendations": "0.0.0",
     "@tryghost/request": "1.0.8",
     "@tryghost/root-utils": "0.3.30",
     "@tryghost/security": "0.0.0",

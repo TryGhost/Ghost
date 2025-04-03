@@ -10,4 +10,4 @@ export interface RecommendationRepository {
     getCount(options: {
         filter?: string;
     }): Promise<number>;
-};
+}

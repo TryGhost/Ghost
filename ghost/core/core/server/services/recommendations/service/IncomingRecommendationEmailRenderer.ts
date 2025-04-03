@@ -34,4 +34,4 @@ export class IncomingRecommendationEmailRenderer {
             recipient
         });
     }
-};
+}

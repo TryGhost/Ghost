@@ -1,3 +1,5 @@
+/* eslint-disable ghost/filenames/match-exported-class */
+
 import {Knex} from 'knex';
 import {mapKeys, chainTransformers} from '@tryghost/mongo-utils';
 import errors from '@tryghost/errors';

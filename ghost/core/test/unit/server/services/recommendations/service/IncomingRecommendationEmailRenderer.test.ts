@@ -1,5 +1,5 @@
 import assert from 'assert/strict';
-import {IncomingRecommendationEmailRenderer} from '../src';
+import {IncomingRecommendationEmailRenderer} from '../../../../../../core/server/services/recommendations/service';
 
 describe('IncomingRecommendationEmailRenderer', function () {
     it('passes all calls', async function () {

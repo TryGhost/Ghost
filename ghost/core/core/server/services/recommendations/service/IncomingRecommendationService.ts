@@ -1,3 +1,5 @@
+/* eslint-disable ghost/filenames/match-exported-class */
+
 import {IncomingRecommendationEmailRenderer} from './IncomingRecommendationEmailRenderer';
 import {RecommendationService} from './RecommendationService';
 import logging from '@tryghost/logging';
