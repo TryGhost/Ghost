@@ -12,13 +12,9 @@ export type ProfileTab = 'posts' | 'likes' | 'following' | 'followers';
 interface ProfileProps {}
 
 const PostsTab:React.FC<{handle?: string}> = ({handle}) => {
-    // TODO: for some reason if the last activity for the current account is a repost then it sticks on the top of the postlist
-
-    // Call both hooks unconditionally
     const postsByAccountQuery = usePostsByAccount({enabled: true}).postsByAccountQuery;
     const profilePostsQuery = useProfilePostsForUser('index', handle || '');
 
-    // Use the appropriate query result based on whether handle is provided
     const {
         data,
         fetchNextPage,
@@ -57,7 +53,6 @@ const FollowingTab: React.FC<{handle: string}> = ({handle}) => {
     const accountQuery = useAccountFollowsForUser('index', 'following');
     const profileQuery = useProfileFollowingForUser('index', handle);
 
-    // Use account query for our own profile (empty handle) and profile query for others
     const {
         data,
         fetchNextPage,
@@ -66,7 +61,6 @@ const FollowingTab: React.FC<{handle: string}> = ({handle}) => {
         isLoading
     } = handle === '' ? accountQuery : profileQuery;
 
-    // Transform the data into the format expected by ActorList
     const actors = data?.pages.flatMap((page) => {
         if ('following' in page) {
             return page.following;
@@ -102,7 +96,6 @@ const FollowersTab: React.FC<{handle: string}> = ({handle}) => {
     const accountQuery = useAccountFollowsForUser('index', 'followers');
     const profileQuery = useProfileFollowersForUser('index', handle);
 
-    // Use account query for our own profile (empty handle) and profile query for others
     const {
         data,
         fetchNextPage,
@@ -111,7 +104,6 @@ const FollowersTab: React.FC<{handle: string}> = ({handle}) => {
         isLoading
     } = handle === '' ? accountQuery : profileQuery;
 
-    // Transform the data into the format expected by ActorList
     const actors = data?.pages.flatMap((page) => {
         if ('followers' in page) {
             return page.followers;
