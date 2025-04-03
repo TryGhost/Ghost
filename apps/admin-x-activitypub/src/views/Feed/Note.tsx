@@ -65,9 +65,9 @@ const Note = () => {
     return (
         <Layout>
             {isPostLoading ?
-                <div className='mx-auto mt-8 flex max-w-[620px] items-center gap-3 px-8'>
+                <div className='mx-auto mt-8 flex max-w-[620px] items-center gap-3 px-8 pt-7'>
                     <Skeleton className='size-10 rounded-full' />
-                    <div className='grow'>
+                    <div className='grow pt-1'>
                         <Skeleton className='w-full' />
                         <Skeleton className='w-2/3' />
                     </div>
@@ -80,22 +80,22 @@ const Note = () => {
                                 <div className='grow overflow-y-auto'>
                                     <div className={`mx-auto px-8 pb-10 pt-5`}>
                                         {!threadParents.length &&
-                                    <div className='col-[2/3] mx-auto flex w-full items-center gap-3'>
-                                        <div className='relative z-10 pt-[3px]'>
-                                            <APAvatar author={post.actor}/>
-                                        </div>
-                                        <div className='relative z-10 flex w-full min-w-0 cursor-pointer flex-col overflow-visible text-[1.5rem]' onClick={(e) => {
-                                            handleProfileClickRR(post.actor, navigate, e);
-                                        }}>
-                                            <div className='flex w-full'>
-                                                <span className='min-w-0 truncate whitespace-nowrap font-semibold hover:underline'>{post.actor.name}</span>
+                                        <div className={`col-[2/3] mx-auto flex w-full items-center gap-3 ${canGoBack ? 'pt-10' : 'pt-5'}`}>
+                                            <div className='relative z-10 pt-[3px]'>
+                                                <APAvatar author={post.actor}/>
                                             </div>
-                                            <div className='flex w-full'>
-                                                <span className='text-gray-700 after:mx-1 after:font-normal after:text-gray-700 after:content-["·"]'>{getUsername(post.actor)}</span>
-                                                <span className='text-gray-700'>{renderTimestamp(object, !object.authored)}</span>
+                                            <div className='relative z-10 flex w-full min-w-0 cursor-pointer flex-col overflow-visible text-[1.5rem]' onClick={(e) => {
+                                                handleProfileClickRR(post.actor, navigate, e);
+                                            }}>
+                                                <div className='flex w-full'>
+                                                    <span className='min-w-0 truncate whitespace-nowrap font-semibold hover:underline'>{post.actor.name}</span>
+                                                </div>
+                                                <div className='flex w-full'>
+                                                    <span className='text-gray-700 after:mx-1 after:font-normal after:text-gray-700 after:content-["·"]'>{getUsername(post.actor)}</span>
+                                                    <span className='text-gray-700'>{renderTimestamp(object, !object.authored)}</span>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
                                         }
 
                                         {threadParents.map((item) => {
