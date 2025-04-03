@@ -316,6 +316,7 @@ const Notifications: React.FC = () => {
                                                                         key={actor.id}
                                                                         className='flex items-center hover:opacity-80'
                                                                         onClick={(e) => {
+                                                                            e?.stopPropagation();
                                                                             if (isEnabled('ap-routes')) {
                                                                                 handleProfileClickRR(actor.handle, navigate);
                                                                             } else {
