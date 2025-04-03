@@ -476,10 +476,10 @@ class PostsService {
             }, true);
             cacheInvalidate = {
                 value: [
-                    baseUrl,
                     `${baseUrl}?member_status=anonymous`,
                     `${baseUrl}?member_status=free`,
-                    `${baseUrl}?member_status=paid`
+                    `${baseUrl}?member_status=paid`,
+                    baseUrl
                 ].join(', ')
             };
         } else {
