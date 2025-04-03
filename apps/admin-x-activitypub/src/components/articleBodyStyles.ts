@@ -166,6 +166,7 @@ a:hover {
     font-size: 1.5rem;
     line-height: 1.2;
     color: var(--color-secondary-text);
+    width: fit-content;
 }
 
 .gh-article-source:hover {
