@@ -1,6 +1,6 @@
 import {Recommendation} from './Recommendation';
 import {RecommendationRepository} from './RecommendationRepository';
-import {InMemoryRepository} from '@tryghost/in-memory-repository';
+import {InMemoryRepository} from '../../lib/InMemoryRepository';
 
 export class InMemoryRecommendationRepository extends InMemoryRepository<string, Recommendation> implements RecommendationRepository {
     toPrimitive(entity: Recommendation): object {
