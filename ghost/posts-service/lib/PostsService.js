@@ -480,7 +480,7 @@ class PostsService {
                     `${baseUrl}?member_status=anonymous`,
                     `${baseUrl}?member_status=free`,
                     `${baseUrl}?member_status=paid`
-                ].join(',')
+                ].join(', ')
             };
         } else {
             cacheInvalidate = false;

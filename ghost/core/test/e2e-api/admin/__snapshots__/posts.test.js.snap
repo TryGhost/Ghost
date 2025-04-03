@@ -1529,7 +1529,7 @@ Object {
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
-  "x-cache-invalidate": StringMatching /\\^\\\\/p\\\\/\\[a-z0-9-\\]\\+\\\\/,\\\\/p\\\\/\\[a-z0-9-\\]\\+\\\\/\\\\\\?member_status=anonymous,\\\\/p\\\\/\\[a-z0-9-\\]\\+\\\\/\\\\\\?member_status=free,\\\\/p\\\\/\\[a-z0-9-\\]\\+\\\\/\\\\\\?member_status=paid\\$/,
+  "x-cache-invalidate": StringMatching /\\^\\\\/p\\\\/\\[a-z0-9-\\]\\+\\\\/, \\\\/p\\\\/\\[a-z0-9-\\]\\+\\\\/\\\\\\?member_status=anonymous, \\\\/p\\\\/\\[a-z0-9-\\]\\+\\\\/\\\\\\?member_status=free, \\\\/p\\\\/\\[a-z0-9-\\]\\+\\\\/\\\\\\?member_status=paid\\$/,
   "x-powered-by": "Express",
 }
 `;

@@ -425,7 +425,7 @@ describe('Posts API', function () {
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
                     etag: anyEtag,
-                    'x-cache-invalidate': stringMatching(/^\/p\/[a-z0-9-]+\/,\/p\/[a-z0-9-]+\/\?member_status=anonymous,\/p\/[a-z0-9-]+\/\?member_status=free,\/p\/[a-z0-9-]+\/\?member_status=paid$/)
+                    'x-cache-invalidate': stringMatching(/^\/p\/[a-z0-9-]+\/, \/p\/[a-z0-9-]+\/\?member_status=anonymous, \/p\/[a-z0-9-]+\/\?member_status=free, \/p\/[a-z0-9-]+\/\?member_status=paid$/)
                 });
         });
 

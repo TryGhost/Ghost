@@ -275,7 +275,7 @@ describe('Posts Service', function () {
                     'http://example.com/p/123/?member_status=anonymous',
                     'http://example.com/p/123/?member_status=free',
                     'http://example.com/p/123/?member_status=paid'
-                ].join(',')
+                ].join(', ')
             });
         });
 
@@ -293,7 +293,7 @@ describe('Posts Service', function () {
                     'http://example.com/p/123/?member_status=anonymous',
                     'http://example.com/p/123/?member_status=free',
                     'http://example.com/p/123/?member_status=paid'
-                ].join(',')
+                ].join(', ')
             });
         });
     });

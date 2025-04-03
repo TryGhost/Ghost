@@ -408,7 +408,7 @@ describe('Posts API', function () {
             .expect(200);
 
         const uuid = res2.body.posts[0].uuid;
-        const expectedPattern = `/p/${uuid}/,/p/${uuid}/?member_status=anonymous,/p/${uuid}/?member_status=free,/p/${uuid}/?member_status=paid`;
+        const expectedPattern = `/p/${uuid}/, /p/${uuid}/?member_status=anonymous, /p/${uuid}/?member_status=free, /p/${uuid}/?member_status=paid`;
         res2.headers['x-cache-invalidate'].should.eql(expectedPattern);
 
         // Newsletter should be returned as null
@@ -447,7 +447,7 @@ describe('Posts API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private);
 
         const uuid = res2.body.posts[0].uuid;
-        const expectedPattern = `/p/${uuid}/,/p/${uuid}/?member_status=anonymous,/p/${uuid}/?member_status=free,/p/${uuid}/?member_status=paid`;
+        const expectedPattern = `/p/${uuid}/, /p/${uuid}/?member_status=anonymous, /p/${uuid}/?member_status=free, /p/${uuid}/?member_status=paid`;
         res2.headers['x-cache-invalidate'].should.eql(expectedPattern);
 
         unsplashMock.isDone().should.be.true();
