@@ -10,12 +10,10 @@ import {useSuggestedProfilesForUser} from '@hooks/use-activity-pub-queries';
 const Recommendations: React.FC = () => {
     const {suggestedProfilesQuery} = useSuggestedProfilesForUser('index', 3);
     const {data: suggestedData, isLoading: isLoadingSuggested} = suggestedProfilesQuery;
-    const suggested = suggestedData || Array(3).fill({id: '', name: '', handle: '', avatarUrl: '', bio: '', followerCount: 0, followingCount: 0, followedByMe: false});
+    const suggested = isLoadingSuggested ? Array(3).fill(null) : (suggestedData || []);
     const navigate = useNavigate();
     const {isEnabled} = useFeatureFlags();
     const {resetStack} = useNavigationStack();
-
-    let i = 0;
 
     const hideClassName = '[@media(max-height:740px)]:hidden';
 
@@ -31,13 +29,13 @@ const Recommendations: React.FC = () => {
                 </span>
             </div>
             <ul className='grow'>
-                {suggested.map((profile) => {
-                    const actorId = profile.id;
-                    const actorName = profile.name;
-                    const actorHandle = profile.handle;
-                    const actorAvatarUrl = profile.avatarUrl;
+                {suggested.map((profile, index) => {
+                    const actorId = profile?.id || `loading-${index}`;
+                    const actorName = profile?.name || '';
+                    const actorHandle = profile?.handle || '';
+                    const actorAvatarUrl = profile?.avatarUrl || '';
                     let className;
-                    switch (i) {
+                    switch (index) {
                     case 0:
                         className = '[@media(max-height:740px)]:hidden';
                         break;
@@ -48,16 +46,17 @@ const Recommendations: React.FC = () => {
                         className = '[@media(max-height:860px)]:hidden';
                         break;
                     }
-                    i = i + 1;
 
                     return (
                         <React.Fragment key={actorId}>
                             <li key={actorId} className={className}>
                                 <ActivityItem onClick={() => {
-                                    if (isEnabled('ap-routes')) {
-                                        handleProfileClickRR(actorHandle, navigate);
-                                    } else {
-                                        handleProfileClick(actorHandle);
+                                    if (!isLoadingSuggested && profile) {
+                                        if (isEnabled('ap-routes')) {
+                                            handleProfileClickRR(actorHandle, navigate);
+                                        } else {
+                                            handleProfileClick(actorHandle);
+                                        }
                                     }
                                 }}>
                                     {!isLoadingSuggested ? <APAvatar author={
