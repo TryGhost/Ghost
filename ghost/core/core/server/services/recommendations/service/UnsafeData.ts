@@ -214,4 +214,4 @@ export class UnsafeData {
         }
         return arr[index];
     }
-};
+}

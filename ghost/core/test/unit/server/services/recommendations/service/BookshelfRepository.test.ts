@@ -1,7 +1,7 @@
 import nql from '@tryghost/nql';
 import assert from 'assert/strict';
 import {Knex} from 'knex';
-import {BookshelfRepository, ModelClass, ModelInstance} from '../src/BookshelfRepository';
+import {BookshelfRepository, ModelClass, ModelInstance} from '../../../../../../core/server/services/recommendations/service/BookshelfRepository';
 
 type SimpleEntity = {
     id: string;

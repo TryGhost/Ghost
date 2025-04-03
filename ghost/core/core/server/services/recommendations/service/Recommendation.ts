@@ -1,3 +1,5 @@
+/* eslint-disable ghost/filenames/match-exported-class */
+
 import ObjectId from 'bson-objectid';
 import errors from '@tryghost/errors';
 import {UnsafeData} from './UnsafeData';

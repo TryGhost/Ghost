@@ -1,5 +1,5 @@
 import assert from 'assert/strict';
-import {UnsafeData} from '../src/UnsafeData';
+import {UnsafeData} from '../../../../../../core/server/services/recommendations/service/UnsafeData';
 
 describe('UnsafeData', function () {
     describe('optionalKey', function () {

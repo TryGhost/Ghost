@@ -1,8 +1,7 @@
 import assert from 'assert/strict';
 import fs from 'fs/promises';
 import path from 'path';
-import {Recommendation} from '../src/Recommendation';
-import {WellknownService} from '../src/WellknownService';
+import {Recommendation, WellknownService} from '../../../../../../core/server/services/recommendations/service';
 
 const dir = path.join(__dirname, 'data');
 

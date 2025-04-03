@@ -1,7 +1,7 @@
 import assert from 'assert/strict';
 import got from 'got';
 import nock from 'nock';
-import {RecommendationMetadataService} from '../src';
+import {RecommendationMetadataService} from '../../../../../../core/server/services/recommendations/service';
 import sinon from 'sinon';
 
 describe('RecommendationMetadataService', function () {

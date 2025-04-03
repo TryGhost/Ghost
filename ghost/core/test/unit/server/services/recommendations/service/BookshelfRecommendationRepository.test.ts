@@ -1,5 +1,5 @@
 import assert from 'assert/strict';
-import {BookshelfRecommendationRepository, Recommendation} from '../src';
+import {BookshelfRecommendationRepository, Recommendation} from '../../../../../../core/server/services/recommendations/service';
 import sinon from 'sinon';
 
 describe('BookshelfRecommendationRepository', function () {
