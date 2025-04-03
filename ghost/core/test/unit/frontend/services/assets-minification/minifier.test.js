@@ -3,7 +3,7 @@ require('should');
 const path = require('path');
 const fs = require('fs').promises;
 const os = require('os');
-const Minifier = require('../');
+const Minifier = require('../../../../../core/frontend/services/assets-minification/Minifier');
 
 describe('Minifier', function () {
     let minifier;
@@ -27,31 +27,31 @@ describe('Minifier', function () {
             let result = await minifier.getMatchingFiles('css/*.css');
 
             result.should.be.an.Array().with.lengthOf(3);
-            result[0].should.eql(path.join('test','fixtures','basic-cards','css','bookmark.css'));
-            result[1].should.eql(path.join('test','fixtures','basic-cards','css','empty.css'));
-            result[2].should.eql(path.join('test','fixtures','basic-cards','css','gallery.css'));
+            result[0].should.eql(path.join('test','unit','frontend','services','assets-minification','fixtures','basic-cards','css','bookmark.css'));
+            result[1].should.eql(path.join('test','unit','frontend','services','assets-minification','fixtures','basic-cards','css','empty.css'));
+            result[2].should.eql(path.join('test','unit','frontend','services','assets-minification','fixtures','basic-cards','css','gallery.css'));
         });
 
         it('match glob range e.g. css/bookmark.css and css/empty.css (css/@(bookmark|empty).css)', async function () {
             let result = await minifier.getMatchingFiles('css/@(bookmark|empty).css');
 
             result.should.be.an.Array().with.lengthOf(2);
-            result[0].should.eql(path.join('test','fixtures','basic-cards','css','bookmark.css'));
-            result[1].should.eql(path.join('test','fixtures','basic-cards','css','empty.css'));
+            result[0].should.eql(path.join('test','unit','frontend','services','assets-minification','fixtures','basic-cards','css','bookmark.css'));
+            result[1].should.eql(path.join('test','unit','frontend','services','assets-minification','fixtures','basic-cards','css','empty.css'));
         });
 
         it('reverse match glob e.g. css/!(bookmark).css', async function () {
             let result = await minifier.getMatchingFiles('css/!(bookmark).css');
 
             result.should.be.an.Array().with.lengthOf(2);
-            result[0].should.eql(path.join('test','fixtures','basic-cards','css','empty.css'));
-            result[1].should.eql(path.join('test','fixtures','basic-cards','css','gallery.css'));
+            result[0].should.eql(path.join('test','unit','frontend','services','assets-minification','fixtures','basic-cards','css','empty.css'));
+            result[1].should.eql(path.join('test','unit','frontend','services','assets-minification','fixtures','basic-cards','css','gallery.css'));
         });
         it('reverse match glob e.g. css/!(bookmark|gallery).css', async function () {
             let result = await minifier.getMatchingFiles('css/!(bookmark|gallery).css');
 
             result.should.be.an.Array().with.lengthOf(1);
-            result[0].should.eql(path.join('test','fixtures','basic-cards','css','empty.css'));
+            result[0].should.eql(path.join('test','unit','frontend','services','assets-minification','fixtures','basic-cards','css','empty.css'));
         });
     });
 
