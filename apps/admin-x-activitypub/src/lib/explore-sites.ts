@@ -34,7 +34,6 @@ export const exploreSites = {
             '@index@www.nevillehobson.io',
             '@index@www.leadsticks.com',
             '@index@minus1.ghost.io',
-            '@index@main.ghost.org',
             '@index@blogpocket-week.ghost.io',
             '@index@erreur2000.info',
             '@index@www.nightwater.email',
@@ -101,7 +100,8 @@ export const exploreSites = {
             '@index@blog.warrenweb.net',
             '@index@bibelotages.com',
             '@index@www.ryanhamilton.work',
-            '@index@www.dalekeiger.net'
+            '@index@www.dalekeiger.net',
+            '@index@onemilliongoal.com'
         ]
     }
     // featured: {
