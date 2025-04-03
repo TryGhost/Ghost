@@ -11,6 +11,7 @@ const TitleAndDescription: React.FC<{ keywords: string[] }> = ({keywords}) => {
         isEditing,
         saveState,
         focusRef,
+        clearError,
         handleSave,
         handleCancel,
         updateSetting,
@@ -84,6 +85,7 @@ const TitleAndDescription: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 title="Site title"
                 value={title}
                 onChange={handleTitleChange}
+                onKeyDown={() => clearError('title')}
             />
             <TextField
                 hint="A short description, used in your theme, meta data and search results"
