@@ -30,6 +30,7 @@ const PostsTab:React.FC<{handle?: string}> = ({handle}) => {
         hasNextPage={hasNextPage!}
         isFetchingNextPage={isFetchingNextPage}
         isLoading={isLoading}
+        noResultsMessage={handle ? `${handle} hasn't posted anything yet` : `You haven't posted anything yet.`}
         posts={posts}
     />;
 };

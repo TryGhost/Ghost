@@ -12,7 +12,8 @@ export type PostsProps = {
     isLoading: boolean,
     fetchNextPage: () => void,
     hasNextPage: boolean,
-    isFetchingNextPage: boolean
+    isFetchingNextPage: boolean,
+    noResultsMessage: string
 }
 
 const Posts: React.FC<PostsProps> = ({
@@ -20,7 +21,8 @@ const Posts: React.FC<PostsProps> = ({
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-    isLoading
+    isLoading,
+    noResultsMessage
 }) => {
     const observerRef = useRef<IntersectionObserver | null>(null);
     const loadMoreRef = useRef<HTMLDivElement | null>(null);
@@ -61,7 +63,7 @@ const Posts: React.FC<PostsProps> = ({
         <>
             {hasNextPage === false && posts.length === 0 && (
                 <NoValueLabel icon='pen'>
-                    You haven&apos;t posted anything yet.
+                    {noResultsMessage}
                 </NoValueLabel>
             )}
             <ul className='mx-auto flex max-w-[640px] flex-col'>
