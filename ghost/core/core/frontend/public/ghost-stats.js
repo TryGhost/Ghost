@@ -282,16 +282,18 @@
     // Get the final referrer value based on priority
     const finalReferrer = referrerSource || referrerMedium || referrerUrl || null;
 
-    // If the final referrer matches the current site's domain, return null
     if (finalReferrer) {
         try {
             const referrerHost = new URL(finalReferrer).hostname;
             const currentHost = window.location.hostname;
+            // If the final referrer matches the current site's domain, return null
             if (referrerHost === currentHost) {
                 return null;
             }
         } catch (e) {
-            // If URL parsing fails, return the original value
+            // If URL parsing fails (e.g. for non-URL refs like "ghost-newsletter"),
+            // just return the original referrer value
+            return finalReferrer;
         }
     }
 
