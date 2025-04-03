@@ -21969,10 +21969,10 @@ json-stable-stringify-without-jsonify@^1.0.1:
   resolved "https://registry.yarnpkg.com/json-stable-stringify-without-jsonify/-/json-stable-stringify-without-jsonify-1.0.1.tgz#9db7b59496ad3f3cfef30a75142d2d930ad72651"
   integrity sha512-Bdboy+l7tA3OGW6FjyFHWkP5LuByj1Tk33Ljyq0axyzdk9//JSi2u3fP1QSmd1KNwq6VOKYGlAu87CisVir6Pw==
 
-json-stable-stringify@1.2.0, json-stable-stringify@^1.0.0, json-stable-stringify@^1.0.1:
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/json-stable-stringify/-/json-stable-stringify-1.2.0.tgz#2c974b1e9e8c0655cc32d4a7315c23bf122e3d3a"
-  integrity sha512-ex8jk9BZHBolvbd5cRnAgwyaYcYB0qZldy1e+LCOdcF6+AUmVZ6LcGUMzsRTW83QMeu+GxZGrcLqxqrgfXGvIw==
+json-stable-stringify@1.2.1, json-stable-stringify@^1.0.0, json-stable-stringify@^1.0.1:
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/json-stable-stringify/-/json-stable-stringify-1.2.1.tgz#addb683c2b78014d0b78d704c2fcbdf0695a60e2"
+  integrity sha512-Lp6HbbBgosLmJbjx0pBLbgvx68FaFU1sdkmBuckmhhJ88kL13OA51CDtR2yJB50eCNMH9wRqtQNNiAqQH4YXnA==
   dependencies:
     call-bind "^1.0.8"
     call-bound "^1.0.3"
