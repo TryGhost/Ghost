@@ -1,20 +1,14 @@
 import Header from './Header';
 import Onboarding, {useOnboardingStatus} from './Onboarding';
-import React, {useEffect, useRef} from 'react';
+import React, {useRef} from 'react';
 import Sidebar from './Sidebar';
 import {Navigate, ScrollRestoration} from '@tryghost/admin-x-framework';
 import {useCurrentUser} from '@tryghost/admin-x-framework/api/currentUser';
-import {useExploreProfilesForUser} from '@src/hooks/use-activity-pub-queries';
 
 const Layout: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({children, ...props}) => {
     const {isOnboarded} = useOnboardingStatus();
     const {data: currentUser, isLoading} = useCurrentUser();
-    const {prefetchExploreProfiles} = useExploreProfilesForUser('index');
     const containerRef = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-        prefetchExploreProfiles();
-    }, [prefetchExploreProfiles]);
 
     if (isLoading || !currentUser) {
         return null;

@@ -633,7 +633,7 @@ export function useExploreProfilesForUser(handle: string) {
     const queryClient = useQueryClient();
     const queryKey = QUERY_KEYS.exploreProfiles(handle);
 
-    const fetchExploreProfiles = useCallback(async () => {
+    const fetchExploreProfiles = useCallback(async ({pageParam = 0}: {pageParam?: number}) => {
         const siteUrl = await getSiteUrl();
         const api = createActivityPubAPI(handle, siteUrl);
 
@@ -644,9 +644,15 @@ export function useExploreProfilesForUser(handle: string) {
             profileHandle
         })));
 
-        // Fetch all profiles in parallel
+        // Calculate pagination
+        const pageSize = 10; // Number of profiles per page
+        const startIndex = pageParam * pageSize;
+        const endIndex = startIndex + pageSize;
+        const paginatedHandles = allHandles.slice(startIndex, endIndex);
+
+        // Fetch profiles for current page
         const allResults = await Promise.allSettled(
-            allHandles.map(item => api.getAccount(item.profileHandle)
+            paginatedHandles.map(item => api.getAccount(item.profileHandle)
                 .then(profile => ({...item, profile}))
             )
         );
@@ -667,48 +673,60 @@ export function useExploreProfilesForUser(handle: string) {
                 results[key].sites.push(profile);
             });
 
-        return results;
+        return {
+            results,
+            nextPage: endIndex < allHandles.length ? pageParam + 1 : undefined
+        };
     }, [handle]);
 
-    const exploreProfilesQuery = useQuery({
+    const exploreProfilesQuery = useInfiniteQuery({
         queryKey,
-        queryFn: fetchExploreProfiles
+        queryFn: ({pageParam = 0}) => fetchExploreProfiles({pageParam}),
+        getNextPageParam: lastPage => lastPage.nextPage
     });
 
-    const prefetchExploreProfiles = useCallback(() => {
-        return queryClient.prefetchQuery({
-            queryKey,
-            queryFn: fetchExploreProfiles
-        });
-    }, [queryClient, fetchExploreProfiles, queryKey]);
-
     const updateExploreProfile = (id: string, updated: Partial<Account>) => {
-        // Update the suggested profiles stored in explore profiles query cache
-        queryClient.setQueryData(queryKey, (current: Record<string, { categoryName: string; sites: Account[] }> | undefined) => {
+        queryClient.setQueryData(queryKey, (current: {pages: Array<{results: Record<string, { categoryName: string; sites: Account[] }>}>} | undefined) => {
             if (!current) {
                 return current;
             }
 
-            return Object.fromEntries(
-                Object.entries(current).map(([key, category]) => [
-                    key,
-                    {
+            // Create a new pages array with updated profiles
+            const updatedPages = current.pages.map((page) => {
+                // Create a new results object with updated categories
+                const updatedResults = Object.entries(page.results).reduce((acc, [categoryKey, category]) => {
+                    // Update the sites array for this category
+                    const updatedSites = category.sites.map((profile) => {
+                        if (profile.id === id) {
+                            return {...profile, ...updated};
+                        }
+                        return profile;
+                    });
+
+                    // Add the updated category to the results
+                    acc[categoryKey] = {
                         ...category,
-                        sites: category.sites.map((item: Account) => {
-                            if (item.id === id) {
-                                return {...item, ...updated};
-                            }
-                            return item;
-                        })
-                    }
-                ])
-            );
+                        sites: updatedSites
+                    };
+
+                    return acc;
+                }, {} as Record<string, { categoryName: string; sites: Account[] }>);
+
+                return {
+                    ...page,
+                    results: updatedResults
+                };
+            });
+
+            return {
+                ...current,
+                pages: updatedPages
+            };
         });
     };
 
     return {
         exploreProfilesQuery,
-        prefetchExploreProfiles,
         updateExploreProfile
     };
 }

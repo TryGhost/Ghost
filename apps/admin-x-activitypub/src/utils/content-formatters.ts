@@ -57,3 +57,14 @@ export const openLinksInNewTab = (content: string) => {
 
     return div.innerHTML;
 };
+
+export const formatFollowNumber = (n: number) => {
+    if (n < 10000) {
+        return n.toLocaleString();
+    }
+
+    const kValue = n / 1000;
+    // Round to 1 decimal place if needed
+    const formatted = kValue % 1 === 0 ? kValue : kValue.toFixed(1);
+    return `${formatted}K`;
+};
