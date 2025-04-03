@@ -247,4 +247,54 @@ describe('Posts Service', function () {
             assert.equal(postsService.generateCopiedPostLocationFromUrl(url), expectedUrl);
         });
     });
+
+    describe('handleCacheInvalidation', function () {
+        let postsService;
+        let urlUtils;
+
+        beforeEach(function () {
+            urlUtils = {
+                urlFor: sinon.stub().returns('http://example.com/p/123/'),
+                urlJoin: sinon.stub().returns('/p/123/')
+            };
+            postsService = new PostsService({urlUtils});
+        });
+
+        it('returns comma-separated URLs for draft posts that were changed', function () {
+            const model = {
+                get: sinon.stub().returns('draft'),
+                previous: sinon.stub().returns('draft'),
+                wasChanged: sinon.stub().returns(true),
+                uuid: '123'
+            };
+
+            const result = postsService.handleCacheInvalidation(model);
+            assert.deepEqual(result, {
+                value: [
+                    'http://example.com/p/123/',
+                    'http://example.com/p/123/?member_status=anonymous',
+                    'http://example.com/p/123/?member_status=free',
+                    'http://example.com/p/123/?member_status=paid'
+                ].join(', ')
+            });
+        });
+
+        it('returns comma-separated URLs for scheduled posts that were changed', function () {
+            const model = {
+                get: sinon.stub().returns('scheduled'),
+                wasChanged: sinon.stub().returns(true),
+                uuid: '123'
+            };
+
+            const result = postsService.handleCacheInvalidation(model);
+            assert.deepEqual(result, {
+                value: [
+                    'http://example.com/p/123/',
+                    'http://example.com/p/123/?member_status=anonymous',
+                    'http://example.com/p/123/?member_status=free',
+                    'http://example.com/p/123/?member_status=paid'
+                ].join(', ')
+            });
+        });
+    });
 });
