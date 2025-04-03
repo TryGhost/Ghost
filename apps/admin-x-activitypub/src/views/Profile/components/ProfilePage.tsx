@@ -5,6 +5,7 @@ import {Button, Heading, Tab, TabView} from '@tryghost/admin-x-design-system';
 import {ProfileTab} from '../Profile';
 import {Skeleton} from '@tryghost/shade';
 import {useEffect, useRef, useState} from 'react';
+import {useParams} from '@tryghost/admin-x-framework';
 
 type ProfilePageProps = {
     account: Account,
@@ -12,20 +13,51 @@ type ProfilePageProps = {
         name: string;
         value: string;
     }>,
-    isLoadingAccount: boolean,
-    selectedTab: ProfileTab,
-    tabs: Tab<ProfileTab>[],
-    setSelectedTab: (tab: ProfileTab) => void
+    postsTab: React.ReactNode,
+    likesTab: React.ReactNode,
+    followingTab: React.ReactNode,
+    followersTab: React.ReactNode,
+    isLoadingAccount: boolean
 }
 
 const ProfilePage:React.FC<ProfilePageProps> = ({
     account,
     customFields,
     isLoadingAccount,
-    selectedTab,
-    tabs,
-    setSelectedTab
+    postsTab,
+    likesTab,
+    followingTab,
+    followersTab
 }) => {
+    const [selectedTab, setSelectedTab] = useState<ProfileTab>('posts');
+    const params = useParams();
+
+    const tabs = [
+        {
+            id: 'posts',
+            title: 'Posts',
+            contents: postsTab
+        },
+        !params.handle && {
+            id: 'likes',
+            title: 'Likes',
+            contents: likesTab,
+            counter: account?.likedCount || 0
+        },
+        {
+            id: 'following',
+            title: 'Following',
+            contents: followingTab,
+            counter: account?.followingCount || '0'
+        },
+        {
+            id: 'followers',
+            title: 'Followers',
+            contents: followersTab,
+            counter: account?.followerCount || '0'
+        }
+    ].filter(Boolean) as Tab<ProfileTab>[];
+
     const [isExpanded, setisExpanded] = useState(false);
 
     const toggleExpand = () => {

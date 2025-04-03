@@ -55,6 +55,8 @@ const ActorList: React.FC<ActorListProps> = ({
     const {isEnabled} = useFeatureFlags();
     const navigate = useNavigate();
 
+    // TODO: getUsername doesn't work for own profile
+
     return (
         <div className='pt-3'>
             {
@@ -80,13 +82,13 @@ const ActorList: React.FC<ActorListProps> = ({
                                         <div>
                                             <div className='text-gray-600'>
                                                 <span className='mr-1 font-bold text-black'>{getName(actor)}</span>
-                                                <div className='text-sm'>{getUsername(actor)}</div>
+                                                <div className='text-sm'>{actor.handle || getUsername(actor)}</div>
                                             </div>
                                         </div>
                                         <FollowButton
                                             className='ml-auto'
                                             following={isFollowing}
-                                            handle={getUsername(actor)}
+                                            handle={actor.handle || getUsername(actor)}
                                             type='secondary'
                                         />
                                     </ActivityItem>

@@ -2,19 +2,14 @@ import ActorList from './components/ActorList';
 import Likes from './components/Likes';
 import Posts from './components/Posts';
 import ProfilePage from './components/ProfilePage';
-import React, {useState} from 'react';
-import {Activity} from '../../api/activitypub';
-import {Tab} from '@tryghost/admin-x-design-system';
-import {
-    useAccountFollowsForUser,
-    useAccountForUser,
-    usePostsByAccount,
-    usePostsLikedByAccount,
-    useProfileFollowersForUser,
-    useProfileFollowingForUser,
-    useProfilePostsForUser
-} from '@hooks/use-activity-pub-queries';
+import React from 'react';
+import {Activity} from '@src/api/activitypub';
+import {useAccountFollowsForUser, useAccountForUser, usePostsByAccount, usePostsLikedByAccount, useProfileFollowersForUser, useProfileFollowingForUser, useProfilePostsForUser} from '@hooks/use-activity-pub-queries';
 import {useParams} from '@tryghost/admin-x-framework';
+
+export type ProfileTab = 'posts' | 'likes' | 'following' | 'followers';
+
+interface ProfileProps {}
 
 const PostsTab:React.FC<{handle?: string}> = ({handle}) => {
     // TODO: for some reason if the last activity for the current account is a repost then it sticks on the top of the postlist
@@ -148,57 +143,10 @@ const FollowersTab: React.FC<{handle: string}> = ({handle}) => {
     );
 };
 
-export type ProfileTab = 'posts' | 'likes' | 'following' | 'followers';
-
-interface ProfileProps {}
-
 const Profile: React.FC<ProfileProps> = ({}) => {
-    const [selectedTab, setSelectedTab] = useState<ProfileTab>('posts');
     const params = useParams();
 
     const {data: account, isLoading: isLoadingAccount} = useAccountForUser('index', (params.handle || 'me'));
-
-    const tabs = [
-        {
-            id: 'posts',
-            title: 'Posts',
-            contents: (
-                <div className='ap-posts'>
-                    <PostsTab handle={params.handle} />
-                </div>
-            )
-        },
-        !params.handle && {
-            id: 'likes',
-            title: 'Likes',
-            contents: (
-                <div className='ap-likes'>
-                    <LikesTab />
-                </div>
-            ),
-            counter: account?.likedCount || 0
-        },
-        {
-            id: 'following',
-            title: 'Following',
-            contents: (
-                <div className='ap-following'>
-                    <FollowingTab handle={params.handle || ''} />
-                </div>
-            ),
-            counter: account?.followingCount || '0'
-        },
-        {
-            id: 'followers',
-            title: 'Followers',
-            contents: (
-                <div className='ap-followers'>
-                    <FollowersTab handle={params.handle || ''} />
-                </div>
-            ),
-            counter: account?.followerCount || '0'
-        }
-    ].filter(Boolean) as Tab<ProfileTab>[];
 
     const customFields = Object.keys(account?.customFields || {}).map((key) => {
         return {
@@ -207,13 +155,19 @@ const Profile: React.FC<ProfileProps> = ({}) => {
         };
     }) || [];
 
+    const postsTab = <PostsTab handle={params.handle} />;
+    const likesTab = <LikesTab />;
+    const followingTab = <FollowingTab handle={params.handle || ''} />;
+    const followersTab = <FollowersTab handle={params.handle || ''} />;
+
     return <ProfilePage
         account={account!}
         customFields={customFields}
+        followersTab={followersTab}
+        followingTab={followingTab}
         isLoadingAccount={isLoadingAccount}
-        selectedTab={selectedTab}
-        setSelectedTab={setSelectedTab}
-        tabs={tabs}
+        likesTab={likesTab}
+        postsTab={postsTab}
     />;
 };
 

@@ -13,5 +13,5 @@ export const handleProfileClick = (actorOrHandle: ActorProperties | string, e?: 
 
 export const handleProfileClickRR = (actor: ActorProperties, navigate: ReturnType<typeof useNavigate>, e?: React.MouseEvent) => {
     e?.stopPropagation();
-    navigate(`/profile/${getUsername(actor)}`);
+    navigate(`/profile/${actor.handle || getUsername(actor)}`);
 };
