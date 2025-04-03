@@ -648,6 +648,15 @@ export function useExploreProfilesForUser(handle: string) {
         const pageSize = 10; // Number of profiles per page
         const startIndex = pageParam * pageSize;
         const endIndex = startIndex + pageSize;
+
+        // Ensure we don't go beyond the total number of handles
+        if (startIndex >= allHandles.length) {
+            return {
+                results: {},
+                nextPage: undefined
+            };
+        }
+
         const paginatedHandles = allHandles.slice(startIndex, endIndex);
 
         // Fetch profiles for current page
