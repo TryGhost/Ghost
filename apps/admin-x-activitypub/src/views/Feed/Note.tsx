@@ -181,7 +181,7 @@ const Note = () => {
                                                                     onCommentClick={() => {
                                                                         navigate(`/feed/${encodeURIComponent(item.id)}?focusReply=true`);
                                                                     }}
-                                                                    // onDelete={decrementReplyCount}
+                                                                    onDelete={decrementReplyCount}
                                                                 />
                                                                 {showDivider && <FeedItemDivider />}
                                                             </React.Fragment>
