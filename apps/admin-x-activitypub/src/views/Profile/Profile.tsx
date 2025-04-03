@@ -1,131 +1,24 @@
 import React, {useEffect, useRef, useState} from 'react';
 
-import NiceModal from '@ebay/nice-modal-react';
-import {Button, Heading, List, LoadingIndicator, NoValueLabel, Tab, TabView} from '@tryghost/admin-x-design-system';
+import {Button, Heading, Tab, TabView} from '@tryghost/admin-x-design-system';
 import {Skeleton} from '@tryghost/shade';
 
+import APAvatar from '@components/global/APAvatar';
+import ActorList from './components/ActorList';
+import Layout from '@components/layout';
+import Likes from './components/Likes';
+import Posts from './components/Posts';
+import {Activity} from '../../api/activitypub';
 import {
-    type AccountFollowsQueryResult,
-    type ActivityPubCollectionQueryResult,
     useAccountFollowsForUser,
     useAccountForUser,
     usePostsByAccount,
     usePostsLikedByAccount,
+    useProfileFollowersForUser,
+    useProfileFollowingForUser,
     useProfilePostsForUser
 } from '@hooks/use-activity-pub-queries';
-import {Activity, FollowAccount} from '../../api/activitypub';
-import {handleViewContent} from '@utils/content-handlers';
-
-import APAvatar from '@components/global/APAvatar';
-import ActivityItem from '@components/activities/ActivityItem';
-import FeedItem from '@components/feed/FeedItem';
-import FollowButton from '@components/global/FollowButton';
-import Layout from '@components/layout';
-import Likes from './components/Likes';
-import Posts from './components/Posts';
-import Separator from '@components/global/Separator';
-import ViewProfileModal from '@components/modals/ViewProfileModal';
 import {useParams} from '@tryghost/admin-x-framework';
-
-interface UseInfiniteScrollTabProps<TData> {
-    useDataHook: (key: string) => ActivityPubCollectionQueryResult<TData> | AccountFollowsQueryResult;
-    emptyStateLabel: string;
-    emptyStateIcon: string;
-}
-
-/**
- * Hook to abstract away the common logic for infinite scroll in the tabs
- */
-const useInfiniteScrollTab = <TData,>({useDataHook, emptyStateLabel, emptyStateIcon}: UseInfiniteScrollTabProps<TData>) => {
-    const {
-        data,
-        fetchNextPage,
-        hasNextPage,
-        isFetchingNextPage,
-        isLoading
-    } = useDataHook('index');
-
-    const items = (data?.pages.flatMap((page) => {
-        if ('data' in page) {
-            return page.data;
-        } else if ('accounts' in page) {
-            return page.accounts as TData[];
-        }
-
-        return [];
-    }) ?? []);
-
-    const observerRef = useRef<IntersectionObserver | null>(null);
-    const loadMoreRef = useRef<HTMLDivElement | null>(null);
-
-    useEffect(() => {
-        if (observerRef.current) {
-            observerRef.current.disconnect();
-        }
-
-        observerRef.current = new IntersectionObserver((entries) => {
-            if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
-                fetchNextPage();
-            }
-        });
-
-        if (loadMoreRef.current) {
-            observerRef.current.observe(loadMoreRef.current);
-        }
-
-        return () => {
-            if (observerRef.current) {
-                observerRef.current.disconnect();
-            }
-        };
-    }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
-
-    const EmptyState = () => (
-        hasNextPage === false && items.length === 0 && (
-            <NoValueLabel icon={emptyStateIcon}>
-                {emptyStateLabel}
-            </NoValueLabel>
-        )
-    );
-
-    const placeholderPosts = Array(4).fill({object: {}, actor: {}});
-
-    const LoadingState = () => (
-        <>
-            <div ref={loadMoreRef} className='h-1'></div>
-            {
-                (isLoading || isFetchingNextPage) && (
-                    !isLoading ?
-                        <div className='mt-6 flex flex-col items-center justify-center space-y-4 text-center'>
-                            <LoadingIndicator size='md' />
-                        </div> :
-                        <ul>
-                            {placeholderPosts.map((activity, index) => (
-                                <li
-                                    key={`loading-${activity.id}`}
-                                    className=''
-                                    data-test-view-article
-                                >
-                                    <FeedItem
-                                        actor={activity.actor}
-                                        isLoading={true}
-                                        layout='feed'
-                                        object={activity.object}
-                                        type={activity.type}
-                                        onClick={() => handleViewContent(activity, false)}
-                                        onCommentClick={() => handleViewContent(activity, true)}
-                                    />
-                                    {index < placeholderPosts.length - 1 && <Separator />}
-                                </li>
-                            ))}
-                        </ul>
-                )
-            }
-        </>
-    );
-
-    return {items, EmptyState, LoadingState};
-};
 
 const PostsTab:React.FC<{handle?: string}> = ({handle}) => {
     // TODO: for some reason if the last activity for the current account is a repost then it sticks on the top of the postlist
@@ -169,103 +62,93 @@ const LikesTab: React.FC = () => {
     />;
 };
 
-const handleAccountClick = (handle: string) => {
-    NiceModal.show(ViewProfileModal, {handle});
-};
+const FollowingTab: React.FC<{handle: string}> = ({handle}) => {
+    const accountQuery = useAccountFollowsForUser('index', 'following');
+    const profileQuery = useProfileFollowingForUser('index', handle);
 
-const FollowingTab: React.FC = () => {
-    const {items: accounts, EmptyState, LoadingState} = useInfiniteScrollTab<FollowAccount>({
-        useDataHook: handle => useAccountFollowsForUser(handle, 'following'),
-        emptyStateLabel: 'You aren\'t following anyone yet.',
-        emptyStateIcon: 'user-add'
-    });
+    // Use account query for our own profile (empty handle) and profile query for others
+    const {
+        data,
+        fetchNextPage,
+        hasNextPage,
+        isFetchingNextPage,
+        isLoading
+    } = handle === '' ? accountQuery : profileQuery;
+
+    // Transform the data into the format expected by ActorList
+    const actors = data?.pages.flatMap((page) => {
+        if ('following' in page) {
+            return page.following;
+        } else if ('accounts' in page) {
+            return page.accounts.map(account => ({
+                actor: {
+                    id: account.id,
+                    name: account.name,
+                    handle: account.handle,
+                    icon: {
+                        url: account.avatarUrl
+                    }
+                },
+                isFollowing: account.isFollowing
+            }));
+        }
+        return [];
+    }) ?? [];
 
     return (
-        <>
-            <EmptyState />
-            {
-                <List className='pt-3'>
-                    {accounts.map((account, index) => (
-                        <React.Fragment key={account.id}>
-                            <ActivityItem
-                                key={account.id}
-                                onClick={() => handleAccountClick(account.handle)}
-                            >
-                                <APAvatar author={{
-                                    icon: {
-                                        url: account.avatarUrl
-                                    },
-                                    name: account.name,
-                                    handle: account.handle
-                                }} />
-                                <div>
-                                    <div className='text-gray-600'>
-                                        <span className='mr-1 font-bold text-black'>{account.name}</span>
-                                        <div className='text-sm'>{account.handle}</div>
-                                    </div>
-                                </div>
-                                <FollowButton
-                                    className='ml-auto'
-                                    following={account.isFollowing}
-                                    handle={account.handle}
-                                    type='secondary'
-                                />
-                            </ActivityItem>
-                            {index < accounts.length - 1 && <Separator />}
-                        </React.Fragment>
-                    ))}
-                </List>
-            }
-            <LoadingState />
-        </>
+        <ActorList
+            actors={actors}
+            fetchNextPage={fetchNextPage}
+            hasNextPage={hasNextPage!}
+            isFetchingNextPage={isFetchingNextPage}
+            isLoading={isLoading}
+            noResultsMessage={`${handle || 'You'} have no followers yet`}
+        />
     );
 };
 
-const FollowersTab: React.FC = () => {
-    const {items: accounts, EmptyState, LoadingState} = useInfiniteScrollTab<FollowAccount>({
-        useDataHook: handle => useAccountFollowsForUser(handle, 'followers'),
-        emptyStateLabel: 'Nobody\'s following you yet. Their loss!',
-        emptyStateIcon: 'user-add'
-    });
+const FollowersTab: React.FC<{handle: string}> = ({handle}) => {
+    const accountQuery = useAccountFollowsForUser('index', 'followers');
+    const profileQuery = useProfileFollowersForUser('index', handle);
+
+    // Use account query for our own profile (empty handle) and profile query for others
+    const {
+        data,
+        fetchNextPage,
+        hasNextPage,
+        isFetchingNextPage,
+        isLoading
+    } = handle === '' ? accountQuery : profileQuery;
+
+    // Transform the data into the format expected by ActorList
+    const actors = data?.pages.flatMap((page) => {
+        if ('followers' in page) {
+            return page.followers;
+        } else if ('accounts' in page) {
+            return page.accounts.map(account => ({
+                actor: {
+                    id: account.id,
+                    name: account.name,
+                    handle: account.handle,
+                    icon: {
+                        url: account.avatarUrl
+                    }
+                },
+                isFollowing: account.isFollowing
+            }));
+        }
+        return [];
+    }) ?? [];
 
     return (
-        <>
-            <EmptyState />
-            {
-                <List className='pt-3'>
-                    {accounts.map((account, index) => (
-                        <React.Fragment key={account.id}>
-                            <ActivityItem
-                                key={account.id}
-                                onClick={() => handleAccountClick(account.handle)}
-                            >
-                                <APAvatar author={{
-                                    icon: {
-                                        url: account.avatarUrl
-                                    },
-                                    name: account.name,
-                                    handle: account.handle
-                                }} />
-                                <div>
-                                    <div className='text-gray-600'>
-                                        <span className='mr-1 font-bold text-black'>{account.name}</span>
-                                        <div className='text-sm'>{account.handle}</div>
-                                    </div>
-                                </div>
-                                <FollowButton
-                                    className='ml-auto'
-                                    following={account.isFollowing}
-                                    handle={account.handle}
-                                    type='secondary'
-                                />
-                            </ActivityItem>
-                            {index < accounts.length - 1 && <Separator />}
-                        </React.Fragment>
-                    ))}
-                </List>
-            }
-            <LoadingState />
-        </>
+        <ActorList
+            actors={actors}
+            fetchNextPage={fetchNextPage}
+            hasNextPage={hasNextPage!}
+            isFetchingNextPage={isFetchingNextPage}
+            isLoading={isLoading}
+            noResultsMessage={`${handle || 'You'} have no followers yet`}
+        />
     );
 };
 
@@ -304,7 +187,7 @@ const Profile: React.FC<ProfileProps> = ({}) => {
             title: 'Following',
             contents: (
                 <div className='ap-following'>
-                    <FollowingTab />
+                    <FollowingTab handle={params.handle || ''} />
                 </div>
             ),
             counter: account?.followingCount || 0
@@ -314,7 +197,7 @@ const Profile: React.FC<ProfileProps> = ({}) => {
             title: 'Followers',
             contents: (
                 <div className='ap-followers'>
-                    <FollowersTab />
+                    <FollowersTab handle={params.handle || ''} />
                 </div>
             ),
             counter: account?.followerCount || 0

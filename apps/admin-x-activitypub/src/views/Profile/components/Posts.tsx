@@ -8,8 +8,8 @@ import {useFeatureFlags} from '@src/lib/feature-flags';
 import {useNavigate} from '@tryghost/admin-x-framework';
 
 export type PostsProps = {
-    isLoading: boolean,
     posts: Activity[],
+    isLoading: boolean,
     fetchNextPage: () => void,
     hasNextPage: boolean,
     isFetchingNextPage: boolean
