@@ -1472,7 +1472,7 @@ describe('{{ghost_head}} helper', function () {
                 }
             }));
 
-            rendered.should.match(/script defer src="\/public\/ghost-stats\.js"/);
+            rendered.should.match(/script defer src="\/public\/ghost-stats\.js/);
         });
 
         it('includes tracker script with subdir', async function () {
@@ -1486,7 +1486,7 @@ describe('{{ghost_head}} helper', function () {
                 }
             }));
 
-            rendered.should.match(/script defer src="\/blog\/public\/ghost-stats\.js"/);
+            rendered.should.match(/script defer src="\/blog\/public\/ghost-stats\.js/);
         });
 
         it('with all tb_variables set to undefined on logged out home page', async function () {

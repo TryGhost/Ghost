@@ -156,7 +156,7 @@ function getTinybirdTrackerScript(dataRoot) {
         return '';
     }
 
-    const src = urlUtils.getSubdir() + '/public/ghost-stats.js';
+    const src = getAssetUrl('public/ghost-stats.js');
 
     const endpoint = config.get('tinybird:tracker:endpoint');
     const token = config.get('tinybird:tracker:token');
