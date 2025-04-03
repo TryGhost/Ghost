@@ -1393,6 +1393,7 @@ describe('{{ghost_head}} helper', function () {
 
         it('returns CAPTCHA script when enabled', async function () {
             sinon.stub(labs, 'isSet').withArgs('captcha').returns(true);
+            settingsCache.get.withArgs('captcha_enabled').returns(true);
 
             const rendered = await testGhostHead(testUtils.createHbsResponse({
                 locals: {
@@ -1561,7 +1562,7 @@ describe('{{ghost_head}} helper', function () {
             }));
 
             rendered.should.match(/data-datasource="analytics_events_json_v1"/);
-        }); 
+        });
 
         it('does not include tracker script when preview is set', async function () {
             const rendered = await testGhostHead(testUtils.createHbsResponse({

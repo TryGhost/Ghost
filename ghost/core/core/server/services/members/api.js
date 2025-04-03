@@ -242,7 +242,7 @@ function createApiInstance(config) {
         sentry,
         settingsHelpers,
         captchaService: new CaptchaService({
-            enabled: labsService.isSet('captcha') && sharedConfig.get('captcha:enabled'),
+            enabled: labsService.isSet('captcha') && settingsCache.get('captcha_enabled'),
             scoreThreshold: sharedConfig.get('captcha:scoreThreshold'),
             secretKey: sharedConfig.get('captcha:secretKey')
         })

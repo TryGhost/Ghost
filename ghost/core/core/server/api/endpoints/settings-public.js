@@ -5,7 +5,7 @@ const config = require('../../../shared/config');
 const labs = require('../../../shared/labs');
 
 const getCaptchaSettings = () => {
-    if (labs.isSet('captcha')) {
+    if (labs.isSet('captcha') && settingsCache.get('captcha_enabled')) {
         return {
             captcha_sitekey: config.get('captcha:siteKey')
         };

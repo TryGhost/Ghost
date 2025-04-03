@@ -364,7 +364,7 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
                 head.push(getTinybirdTrackerScript(dataRoot));
             }
 
-            if (labs.isSet('captcha') && config.get('captcha:enabled')) {
+            if (labs.isSet('captcha') && settingsCache.get('captcha_enabled')) {
                 head.push(getHCaptchaScript());
             }
 
