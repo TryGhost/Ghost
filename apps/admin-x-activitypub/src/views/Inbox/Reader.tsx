@@ -33,7 +33,7 @@ const ArticleBody: React.FC<{
     html: string;
     backgroundColor: ColorOption;
     fontSize: FontSize;
-    fontFamily: string;
+    fontStyle: string;
     onHeadingsExtracted?: (headings: TOCItem[]) => void;
     onIframeLoad?: (iframe: HTMLIFrameElement) => void;
     onLoadingChange?: (isLoading: boolean) => void;
@@ -45,7 +45,7 @@ const ArticleBody: React.FC<{
     html,
     backgroundColor,
     fontSize,
-    fontFamily,
+    fontStyle,
     onHeadingsExtracted,
     onIframeLoad,
     onLoadingChange
@@ -58,7 +58,7 @@ const ArticleBody: React.FC<{
     const cssContent = articleBodyStyles();
 
     const htmlContent = `
-        <html class="has-${!darkMode ? 'dark' : 'light'}-text has-${fontFamily}-body ${backgroundColor === 'SEPIA' && 'has-sepia-bg'}">
+        <html class="has-${!darkMode ? 'dark' : 'light'}-text has-${fontStyle}-body ${backgroundColor === 'SEPIA' && 'has-sepia-bg'}">
         <head>
             ${cssContent}
             <style>
@@ -71,7 +71,7 @@ const ArticleBody: React.FC<{
                     overflow-y: hidden;
                 }
                 .has-sepia-bg {
-                    --background-color: #f8f2e2;
+                    --background-color: #FCF8F1;
                 }
             </style>
 
@@ -224,11 +224,9 @@ const ArticleBody: React.FC<{
         const root = iframeDocument.documentElement;
         root.style.setProperty('--font-size', fontSize);
         root.classList.remove('has-sans-body', 'has-serif-body');
-        root.classList.add(`has-${fontFamily}-body`);
+        root.classList.add(`has-${fontStyle}-body`);
         root.classList.remove('has-dark-text', 'has-light-text');
         root.classList.add(`has-${!darkMode ? 'dark' : 'light'}-text`);
-        // root.style.setProperty('--background-color', COLOR_OPTIONS[backgroundColor].color);
-        console.log(backgroundColor);
         if (backgroundColor === 'SEPIA') {
             root.classList.add('has-sepia-bg');
         } else {
@@ -242,7 +240,7 @@ const ArticleBody: React.FC<{
             const resizeEvent = new Event('resize');
             iframeDocument.dispatchEvent(resizeEvent);
         }
-    }, [fontSize, fontFamily, backgroundColor, darkMode]);
+    }, [fontSize, fontStyle, backgroundColor, darkMode]);
 
     useEffect(() => {
         const iframe = iframeRef.current;
@@ -345,9 +343,9 @@ const COLOR_OPTIONS = {
     },
     SEPIA: {
         id: 'sepia',
-        color: '#f8f2e2',
-        background: 'bg-[#f8f2e2]',
-        button: 'bg-[#f8f2e2] hover:bg-black/[3%] text-black hover:text-black',
+        color: '#FCF8F1',
+        background: 'bg-[#FCF8F1]',
+        button: 'bg-[#FCF8F1] hover:bg-black/[3%] text-black hover:text-black',
         border: 'border-black/[8%]'
     },
     LIGHT: {
@@ -373,7 +371,8 @@ type FontSize = typeof FONT_SIZES[number];
 const STORAGE_KEYS = {
     BACKGROUND_COLOR: 'ghost-ap-background-color',
     FONT_SIZE: 'ghost-ap-font-size',
-    FONT_FAMILY: 'ghost-ap-font-family'
+    FONT_FAMILY: 'ghost-ap-font-family',
+    FONT_STYLE: 'ghost-ap-font-style'
 } as const;
 
 interface ReaderProps {
@@ -449,29 +448,12 @@ export const Reader: React.FC<ReaderProps> = ({
         return saved ? parseInt(saved) : 1;
     });
 
-    const [fontFamily, setFontFamily] = useState(() => {
-        const saved = localStorage.getItem(STORAGE_KEYS.FONT_FAMILY);
-
-        if (!saved) {
-            return 'sans';
-        }
-
-        try {
-            const parsedValue = JSON.parse(saved);
-
-            if (parsedValue && typeof parsedValue === 'object') {
-                const newValue = parsedValue.className?.includes('serif') ? 'serif' : 'sans';
-                localStorage.setItem(STORAGE_KEYS.FONT_FAMILY, newValue);
-                return newValue;
-            }
-
-            return saved;
-        } catch (e) {
-            return saved;
-        }
+    const [fontStyle, setFontStyle] = useState(() => {
+        const saved = localStorage.getItem(STORAGE_KEYS.FONT_STYLE);
+        return saved || 'sans';
     });
 
-    const isActiveFont = (font: 'serif' | 'sans') => fontFamily === font;
+    const isActiveFont = (font: 'serif' | 'sans') => fontStyle === font;
 
     // Update localStorage when values change
     useEffect(() => {
@@ -479,8 +461,8 @@ export const Reader: React.FC<ReaderProps> = ({
     }, [currentFontSizeIndex]);
 
     useEffect(() => {
-        localStorage.setItem(STORAGE_KEYS.FONT_FAMILY, fontFamily);
-    }, [fontFamily]);
+        localStorage.setItem(STORAGE_KEYS.FONT_STYLE, fontStyle);
+    }, [fontStyle]);
 
     const increaseFontSize = () => {
         setCurrentFontSizeIndex(prevIndex => Math.min(prevIndex + 1, FONT_SIZES.length - 1));
@@ -691,20 +673,18 @@ export const Reader: React.FC<ReaderProps> = ({
                                                 </PopoverTrigger>
                                                 <PopoverContent align='end' className='w-[224px]' onCloseAutoFocus={e => e.preventDefault()} onOpenAutoFocus={e => e.preventDefault()}>
                                                     <div className='flex flex-col gap-4'>
-                                                        <div className='flex items-center justify-between'>
-                                                            <Button className={`size-[34px] rounded-full bg-gray-200 text-black hover:bg-gray-250 dark:bg-gray-925 dark:text-white dark:hover:bg-gray-900 [&_svg]:size-[14px] ${isActiveColor('SYSTEM') ? 'outline outline-2 outline-green' : ''}`} variant="secondary" onClick={() => handleColorChange('SYSTEM')}>
-                                                                <LucideIcon.Monitor />
-                                                            </Button>
-                                                            <Button className={`size-8 rounded-full bg-[#ece6d9] hover:bg-[#ece6d9] ${isActiveColor('SEPIA') ? 'outline outline-2 outline-green' : 'border border-[#ece6d9]'}`} onClick={() => handleColorChange('SEPIA')} />
-                                                            <Button className={`size-8 rounded-full bg-white hover:bg-white ${isActiveColor('LIGHT') ? 'outline outline-2 outline-green' : 'border border-gray-200'}`} onClick={() => handleColorChange('LIGHT')} />
-                                                            <Button className={`size-8 rounded-full bg-black hover:bg-black ${isActiveColor('DARK') ? 'outline outline-2 outline-green' : ''}`} onClick={() => handleColorChange('DARK')} />
+                                                        <div className='flex items-center justify-between gap-[6px]'>
+                                                            <Button className={`h-7 flex-1 rounded-[6px] bg-gray-200 p-0 text-[1.1rem] text-black hover:bg-gray-250 dark:bg-gray-925 dark:text-white dark:hover:bg-gray-900 [&_svg]:size-[14px] ${isActiveColor('SYSTEM') ? 'outline outline-2 outline-green' : ''}`} variant="secondary" onClick={() => handleColorChange('SYSTEM')}>Auto</Button>
+                                                            <Button className={`h-7 flex-1 rounded-[6px] bg-[#ece6d9] p-0 hover:bg-[#ece6d9] ${isActiveColor('SEPIA') ? 'outline outline-2 outline-green' : 'border border-[#ece6d9]'}`} onClick={() => handleColorChange('SEPIA')} />
+                                                            <Button className={`h-7 flex-1 rounded-[6px] bg-white p-0 hover:bg-white ${isActiveColor('LIGHT') ? 'outline outline-2 outline-green' : 'border border-gray-200'}`} onClick={() => handleColorChange('LIGHT')} />
+                                                            <Button className={`h-7 flex-1 rounded-[6px] bg-black p-0 hover:bg-black dark:border dark:border-gray-925 ${isActiveColor('DARK') ? 'outline outline-2 outline-green' : ''}`} onClick={() => handleColorChange('DARK')} />
                                                         </div>
                                                         <div className='flex gap-2'>
-                                                            <Button className={`flex h-auto w-full flex-col gap-1 rounded-[6px] bg-gray-200 text-black hover:bg-gray-250 dark:bg-gray-925 dark:text-white dark:hover:bg-gray-900 ${isActiveFont('sans') && 'outline outline-2 outline-green'}`} variant="secondary" onClick={() => setFontFamily('sans')}>
+                                                            <Button className={`flex h-auto w-full flex-col gap-1 rounded-[6px] bg-gray-200 text-black hover:bg-gray-250 dark:bg-gray-925 dark:text-white dark:hover:bg-gray-900 ${isActiveFont('sans') && 'outline outline-2 outline-green'}`} variant="secondary" onClick={() => setFontStyle('sans')}>
                                                                 <span className='text-[2rem] font-bold leading-none'>Aa</span>
                                                                 <span className='text-[1.1rem]'>System</span>
                                                             </Button>
-                                                            <Button className={`flex h-auto w-full flex-col gap-1 rounded-[6px] bg-gray-200 text-black hover:bg-gray-250 dark:bg-gray-925 dark:text-white dark:hover:bg-gray-900 ${isActiveFont('serif') && 'outline outline-2 outline-green'}`} variant="secondary" onClick={() => setFontFamily('serif')}>
+                                                            <Button className={`flex h-auto w-full flex-col gap-1 rounded-[6px] bg-gray-200 text-black hover:bg-gray-250 dark:bg-gray-925 dark:text-white dark:hover:bg-gray-900 ${isActiveFont('serif') && 'outline outline-2 outline-green'}`} variant="secondary" onClick={() => setFontStyle('serif')}>
                                                                 <span className='pt-1 font-serif text-[2rem] font-bold leading-none'>Aa</span>
                                                                 <span className='font-serif text-[1.2rem]'>Serif</span>
                                                             </Button>
@@ -744,8 +724,8 @@ export const Reader: React.FC<ReaderProps> = ({
                                                 <ArticleBody
                                                     backgroundColor={backgroundColor}
                                                     excerpt={object?.preview?.content ?? ''}
-                                                    fontFamily={fontFamily}
                                                     fontSize={FONT_SIZES[currentFontSizeIndex]}
+                                                    fontStyle={fontStyle}
                                                     heading={object.name}
                                                     html={object.content ?? ''}
                                                     image={typeof object.image === 'string' ? object.image : object.image?.url}
