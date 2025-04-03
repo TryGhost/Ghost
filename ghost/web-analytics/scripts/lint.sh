@@ -29,11 +29,9 @@ run_checks() {
 
     # List of check functions - we'll add more here
     checks=(
-        "check_filename"
         "check_token"
         "check_version_parameter"
         "check_consistent_version"
-        # Add more check functions here as we create them
     )
 
     # Run each check
@@ -46,17 +44,6 @@ run_checks() {
     if [ $file_errors -gt 0 ]; then
         return 1
     fi
-    return 0
-}
-
-# Example check function - validates filename format
-check_filename() {
-    local file="$1"
-    local relative_file="$2"
-    local basename=$(basename "$file")
-
-    # For now just return true
-    # We'll add actual checks later
     return 0
 }
 
