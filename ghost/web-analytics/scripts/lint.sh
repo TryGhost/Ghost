@@ -28,6 +28,7 @@ run_checks() {
     checks=(
         "check_filename"
         "check_token"
+        "check_version_parameter"
         # Add more check functions here as we create them
     )
 
@@ -65,6 +66,29 @@ check_token() {
     if [[ "$basename" == api*.pipe ]]; then
         if ! grep -q 'TOKEN "stats_page" READ' "$file"; then
             error_messages+=("→ $relative_file is missing required 'TOKEN \"stats_page\" READ' declaration")
+            ((errors++))
+            return 1
+        fi
+    fi
+
+    return 0
+}
+
+# Check that all datasource and pipe files (except analytics_events.datasource) have a VERSION parameter
+check_version_parameter() {
+    local file="$1"
+    local relative_file="$2"
+    local basename=$(basename "$file")
+
+    # Skip analytics_events.datasource
+    if [[ "$basename" == "analytics_events.datasource" ]]; then
+        return 0
+    fi
+
+    # Only check .datasource and .pipe files
+    if [[ "$file" == *.datasource || "$file" == *.pipe ]]; then
+        if ! grep -q '^VERSION [0-9]\+' "$file"; then
+            error_messages+=("→ $relative_file is missing required 'VERSION' parameter")
             ((errors++))
             return 1
         fi
