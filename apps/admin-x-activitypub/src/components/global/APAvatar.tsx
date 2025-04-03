@@ -40,34 +40,34 @@ const APAvatar: React.FC<APAvatarProps> = ({author, size, isLoading = false, onC
     switch (size) {
     case '2xs':
         iconSize = 10;
-        containerClass = clsx('h-4 w-4', containerClass);
-        imageClass = clsx('h-4 w-4', imageClass);
+        containerClass = clsx('size-4', containerClass);
+        imageClass = clsx('size-4', imageClass);
         break;
     case 'xs':
         iconSize = 12;
-        containerClass = clsx('h-6 w-6', containerClass);
-        imageClass = clsx('h-6 w-6', imageClass);
+        containerClass = clsx('size-6', containerClass);
+        imageClass = clsx('size-6', imageClass);
         break;
     case 'notification':
         iconSize = 12;
-        containerClass = clsx('h-9 w-9', containerClass);
-        imageClass = clsx('h-9 w-9', imageClass);
+        containerClass = clsx('size-9', containerClass);
+        imageClass = clsx('size-9', imageClass);
         break;
     case 'sm':
-        containerClass = clsx('h-10 w-10', containerClass);
-        imageClass = clsx('h-10 w-10', imageClass);
+        containerClass = clsx('size-10', containerClass);
+        imageClass = clsx('size-10', imageClass);
         break;
     case 'md':
-        containerClass = clsx('h-[60px] w-[60px]', containerClass);
-        imageClass = clsx('h-[60px] w-[60px]', imageClass);
+        containerClass = clsx('size-[60px]', containerClass);
+        imageClass = clsx('size-[60px]', imageClass);
         break;
     case 'lg':
-        containerClass = clsx('h-22 w-22', containerClass);
-        imageClass = clsx('h-22 w-22', imageClass);
+        containerClass = clsx('size-22', containerClass);
+        imageClass = clsx('size-22', imageClass);
         break;
     default:
-        containerClass = clsx('h-10 w-10', containerClass);
-        imageClass = clsx('h-10 w-10', imageClass);
+        containerClass = clsx('size-10', containerClass);
+        imageClass = clsx('size-10', imageClass);
         break;
     }
 
@@ -84,7 +84,7 @@ const APAvatar: React.FC<APAvatarProps> = ({author, size, isLoading = false, onC
     const handleClick = (e: React.MouseEvent) => {
         e.stopPropagation();
         if (isEnabled('ap-routes')) {
-            navigate(`/profile-rr/${handle}`);
+            navigate(`/profile/${handle}`);
         } else {
             NiceModal.show(ViewProfileModal, {handle});
             onClick?.();

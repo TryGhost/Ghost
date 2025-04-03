@@ -51,7 +51,7 @@ const AccountSearchResultItem: React.FC<AccountSearchResultItemProps & {
             key={account.id}
             onClick={() => {
                 if (isEnabled('ap-routes')) {
-                    navigate(`/profile-rr/${account.handle}`);
+                    navigate(`/profile/${account.handle}`);
                 } else {
                     onOpenChange?.(false);
                     NiceModal.show(ViewProfileModal, {handle: account.handle, onFollow, onUnfollow});

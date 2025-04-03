@@ -41,7 +41,7 @@ export const SuggestedProfile: React.FC<SuggestedProfileProps & {
             key={profile.id}
             onClick={() => {
                 if (isEnabled('ap-routes')) {
-                    navigate(`/profile-rr/${profile.handle}`);
+                    navigate(`/profile/${profile.handle}`);
                 } else {
                     onOpenChange?.(false);
                     NiceModal.show(ViewProfileModal, {handle: profile.handle, onFollow, onUnfollow});

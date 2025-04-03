@@ -44,7 +44,7 @@ export const ExploreProfile: React.FC<ExploreProfileProps & {
             className='flex w-full cursor-pointer items-start gap-3 pt-4 [&:last-of-type>:nth-child(2)]:border-none'
             onClick={() => {
                 if (isEnabled('ap-routes')) {
-                    navigate(`/profile-rr/${profile.handle}`);
+                    navigate(`/profile/${profile.handle}`);
                 } else {
                     onOpenChange?.(false);
                     NiceModal.show(ViewProfileModal, {handle: profile.handle, onFollow, onUnfollow});

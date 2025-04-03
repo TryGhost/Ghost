@@ -34,6 +34,7 @@ const Recommendations: React.FC = () => {
                     const actorName = profile?.name || '';
                     const actorHandle = profile?.handle || '';
                     const actorAvatarUrl = profile?.avatarUrl || '';
+
                     let className;
                     switch (index) {
                     case 0:
@@ -53,7 +54,7 @@ const Recommendations: React.FC = () => {
                                 <ActivityItem onClick={() => {
                                     if (!isLoadingSuggested && profile) {
                                         if (isEnabled('ap-routes')) {
-                                            handleProfileClickRR(actorHandle, navigate);
+                                            handleProfileClickRR(profile, navigate);
                                         } else {
                                             handleProfileClick(actorHandle);
                                         }
@@ -67,7 +68,7 @@ const Recommendations: React.FC = () => {
                                             name: actorName,
                                             handle: actorHandle
                                         }
-                                    } /> : <Skeleton className='z-10 h-10 w-10' />}
+                                    } /> : <Skeleton className='z-10 size-10' />}
                                     <div className='flex min-w-0  flex-col'>
                                         <span className='block max-w-[190px] truncate font-semibold text-black dark:text-white'>{!isLoadingSuggested ? actorName : <Skeleton className='w-24' />}</span>
                                         <span className='block max-w-[190px] truncate text-sm text-gray-600'>{!isLoadingSuggested ? actorHandle : <Skeleton className='w-40' />}</span>

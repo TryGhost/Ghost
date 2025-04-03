@@ -3,6 +3,7 @@ import React from 'react';
 import useActiveRoute from '@src/hooks/use-active-route';
 import {H1} from '@tryghost/shade';
 import {useBaseRoute, useNavigationStack, useRouteHasParams} from '@tryghost/admin-x-framework';
+import {useFeatureFlags} from '@src/lib/feature-flags';
 
 interface HeaderTitleProps {
     title: string;
@@ -22,10 +23,11 @@ const Header: React.FC = () => {
     const {canGoBack} = useNavigationStack();
     const baseRoute = useBaseRoute();
     const routeHasParams = useRouteHasParams();
+    const {isEnabled} = useFeatureFlags();
 
     // Logic for special pages
     let onlyBackButton = false;
-    if (baseRoute === 'profile-rr' || baseRoute === 'profile') {
+    if (baseRoute === 'profile' && isEnabled('ap-routes')) {
         onlyBackButton = true;
     }
 
