@@ -7539,7 +7539,7 @@
     echarts "^5.5.0"
     swr "^2.2.5"
 
-"@tinybirdco/charts@^0.2.4":
+"@tinybirdco/charts@0.2.4":
   version "0.2.4"
   resolved "https://registry.yarnpkg.com/@tinybirdco/charts/-/charts-0.2.4.tgz#4dbfefd5acdc11a8f016e89b94ea377da0172dc8"
   integrity sha512-0N8fYPY8uxO5KcBkW5Dgmapj4AqcWgyCmWnZBYsugXnnbx4/yg//f3/9oMWnM3RZ6ltt9moltYIzF/95NO2zNg==
@@ -20058,10 +20058,10 @@ husky@8.0.3:
   resolved "https://registry.yarnpkg.com/husky/-/husky-8.0.3.tgz#4936d7212e46d1dea28fef29bb3a108872cd9184"
   integrity sha512-+dQSyqPh4x1hlO1swXBiNb2HzTDN1I2IGLQx1GrBuiqFJfoMrnZWwVmatvSiO+Iz8fBUnf+lekwNo4c2LlXItg==
 
-i18n-iso-countries@7.12.0:
-  version "7.12.0"
-  resolved "https://registry.yarnpkg.com/i18n-iso-countries/-/i18n-iso-countries-7.12.0.tgz#e189d85a505ee025f0f48b5ccc35fa66c436e99c"
-  integrity sha512-NDFf5j/raA5JrcPT/NcHP3RUMH7TkdkxQKAKdvDlgb+MS296WJzzqvV0Y5uwavSm7A6oYvBeSV0AxoHdDiHIiw==
+i18n-iso-countries@7.14.0:
+  version "7.14.0"
+  resolved "https://registry.yarnpkg.com/i18n-iso-countries/-/i18n-iso-countries-7.14.0.tgz#cd5ae098198bce1cc40cadbf0a37ce6c8e9d0edf"
+  integrity sha512-nXHJZYtNrfsi1UQbyRqm3Gou431elgLjKl//CYlnBGt5aTWdRPH1PiS2T/p/n8Q8LnqYqzQJik3Q7mkwvLokeg==
   dependencies:
     diacritics "1.3.0"
 
@@ -21969,10 +21969,10 @@ json-stable-stringify-without-jsonify@^1.0.1:
   resolved "https://registry.yarnpkg.com/json-stable-stringify-without-jsonify/-/json-stable-stringify-without-jsonify-1.0.1.tgz#9db7b59496ad3f3cfef30a75142d2d930ad72651"
   integrity sha512-Bdboy+l7tA3OGW6FjyFHWkP5LuByj1Tk33Ljyq0axyzdk9//JSi2u3fP1QSmd1KNwq6VOKYGlAu87CisVir6Pw==
 
-json-stable-stringify@1.2.0, json-stable-stringify@^1.0.0, json-stable-stringify@^1.0.1:
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/json-stable-stringify/-/json-stable-stringify-1.2.0.tgz#2c974b1e9e8c0655cc32d4a7315c23bf122e3d3a"
-  integrity sha512-ex8jk9BZHBolvbd5cRnAgwyaYcYB0qZldy1e+LCOdcF6+AUmVZ6LcGUMzsRTW83QMeu+GxZGrcLqxqrgfXGvIw==
+json-stable-stringify@1.2.1, json-stable-stringify@^1.0.0, json-stable-stringify@^1.0.1:
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/json-stable-stringify/-/json-stable-stringify-1.2.1.tgz#addb683c2b78014d0b78d704c2fcbdf0695a60e2"
+  integrity sha512-Lp6HbbBgosLmJbjx0pBLbgvx68FaFU1sdkmBuckmhhJ88kL13OA51CDtR2yJB50eCNMH9wRqtQNNiAqQH4YXnA==
   dependencies:
     call-bind "^1.0.8"
     call-bound "^1.0.3"
@@ -28772,10 +28772,10 @@ sane@^4.0.0, sane@^4.1.0:
     minimist "^1.1.1"
     walker "~1.0.5"
 
-sanitize-html@2.14.0:
-  version "2.14.0"
-  resolved "https://registry.yarnpkg.com/sanitize-html/-/sanitize-html-2.14.0.tgz#bd2a7b97ee1d86a7f0e0babf3a4468f639c3a429"
-  integrity sha512-CafX+IUPxZshXqqRaG9ZClSlfPVjSxI0td7n07hk8QO2oO+9JDnlcL8iM8TWeOXOIBFgIOx6zioTzM53AOMn3g==
+sanitize-html@2.15.0:
+  version "2.15.0"
+  resolved "https://registry.yarnpkg.com/sanitize-html/-/sanitize-html-2.15.0.tgz#8e7f97ee1fecdec1bb1fb2e37f6d2c6acfdbabe3"
+  integrity sha512-wIjst57vJGpLyBP8ioUbg6ThwJie5SuSIjHxJg53v5Fg+kUK+AXlb7bK3RNXpp315MvwM+0OBGCV6h5pPHsVhA==
   dependencies:
     deepmerge "^4.2.2"
     escape-string-regexp "^4.0.0"
@@ -30695,10 +30695,10 @@ terser-webpack-plugin@^5.3.11:
     serialize-javascript "^6.0.2"
     terser "^5.31.1"
 
-terser@5.36.0:
-  version "5.36.0"
-  resolved "https://registry.yarnpkg.com/terser/-/terser-5.36.0.tgz#8b0dbed459ac40ff7b4c9fd5a3a2029de105180e"
-  integrity sha512-IYV9eNMuFAV4THUspIRXkLakHnV6XO7FEdtKjf/mDyrnqUg9LnlOn6/RwRvM9SZjR4GUq8Nk8zj67FzVARr74w==
+terser@5.39.0, terser@^5.31.1, terser@^5.7.0:
+  version "5.39.0"
+  resolved "https://registry.yarnpkg.com/terser/-/terser-5.39.0.tgz#0e82033ed57b3ddf1f96708d123cca717d86ca3a"
+  integrity sha512-LBAhFyLho16harJoWMg/nZsQYgTrg5jXOn2nCYjRUcZZEdE3qa2zb8QEDRUGVZBW4rlazf2fxkg8tztybTaqWw==
   dependencies:
     "@jridgewell/source-map" "^0.3.3"
     acorn "^8.8.2"
@@ -30713,16 +30713,6 @@ terser@^4.1.2:
     commander "^2.20.0"
     source-map "~0.6.1"
     source-map-support "~0.5.12"
-
-terser@^5.31.1, terser@^5.7.0:
-  version "5.39.0"
-  resolved "https://registry.yarnpkg.com/terser/-/terser-5.39.0.tgz#0e82033ed57b3ddf1f96708d123cca717d86ca3a"
-  integrity sha512-LBAhFyLho16harJoWMg/nZsQYgTrg5jXOn2nCYjRUcZZEdE3qa2zb8QEDRUGVZBW4rlazf2fxkg8tztybTaqWw==
-  dependencies:
-    "@jridgewell/source-map" "^0.3.3"
-    acorn "^8.8.2"
-    commander "^2.20.0"
-    source-map-support "~0.5.20"
 
 test-exclude@^6.0.0:
   version "6.0.0"
