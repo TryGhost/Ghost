@@ -1,5 +1,5 @@
 import assert from 'assert/strict';
-import {BookshelfClickEventRepository, ClickEvent} from '../src';
+import {BookshelfClickEventRepository, ClickEvent} from '../../../../../../core/server/services/recommendations/service';
 import sinon from 'sinon';
 
 describe('BookshelfClickEventRepository', function () {

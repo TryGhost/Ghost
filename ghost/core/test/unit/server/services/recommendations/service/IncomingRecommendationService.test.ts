@@ -1,6 +1,6 @@
 import assert from 'assert/strict';
 import sinon from 'sinon';
-import {IncomingRecommendationEmailRenderer, IncomingRecommendationService, RecommendationService} from '../src';
+import {IncomingRecommendationEmailRenderer, IncomingRecommendationService, RecommendationService} from '../../../../../../core/server/services/recommendations/service';
 
 describe('IncomingRecommendationService', function () {
     let service: IncomingRecommendationService;

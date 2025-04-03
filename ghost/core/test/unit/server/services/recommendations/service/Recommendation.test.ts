@@ -1,5 +1,5 @@
 import assert from 'assert/strict';
-import {Recommendation} from '../src';
+import {Recommendation} from '../../../../../../core/server/services/recommendations/service';
 
 describe('Recommendation', function () {
     describe('validate', function () {

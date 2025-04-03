@@ -8119,7 +8119,7 @@
     lodash "^4.17.21"
     luxon "^1.26.0"
 
-"@tryghost/logging@2.4.18", "@tryghost/logging@2.4.19", "@tryghost/logging@2.4.21", "@tryghost/logging@^2.4.7":
+"@tryghost/logging@2.4.19", "@tryghost/logging@2.4.21", "@tryghost/logging@^2.4.7":
   version "2.4.21"
   resolved "https://registry.yarnpkg.com/@tryghost/logging/-/logging-2.4.21.tgz#3fd922c19fe8ea0950d83554a8c68ff338700e13"
   integrity sha512-9Yzkzl1k81b0kEAWUfR3Lc8RQtWrX7SYGy/b3brUthhsigjacCENo7tMGOhMIG/ZKVDbtwa39T7Rnvk5qR6Asg==

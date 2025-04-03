@@ -1,5 +1,5 @@
 import assert from 'assert/strict';
-import {RecommendationController, RecommendationService} from '../src';
+import {RecommendationController, RecommendationService} from '../../../../../../core/server/services/recommendations/service';
 import sinon, {SinonSpy} from 'sinon';
 
 describe('RecommendationController', function () {
