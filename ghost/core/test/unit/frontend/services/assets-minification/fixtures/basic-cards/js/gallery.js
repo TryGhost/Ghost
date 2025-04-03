@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-undef
 var images = document.querySelectorAll('.kg-gallery-image img');
 images.forEach(function (image) {
     var container = image.closest('.kg-gallery-image');
@@ -5,4 +6,4 @@ images.forEach(function (image) {
     var height = image.attributes.height.value;
     var ratio = width / height;
     container.style.flex = ratio + ' 1 0%';
-})
+});

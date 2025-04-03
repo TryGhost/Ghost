@@ -1,10 +1,11 @@
 // const debug = require('@tryghost/debug')('comments-counts-assets');
-const Minifier = require('@tryghost/minifier');
 const path = require('path');
 const fs = require('fs');
 const logging = require('@tryghost/logging');
 const config = require('../../../shared/config');
 const urlUtils = require('../../../shared/url-utils');
+
+const Minifier = require('./Minifier');
 const AssetsMinificationBase = require('./AssetsMinificationBase');
 
 module.exports = class AdminAuthAssets extends AssetsMinificationBase {
