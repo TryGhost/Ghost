@@ -1,4 +1,4 @@
-const {DonationPaymentEvent} = require('@tryghost/donations');
+const {DonationPaymentEvent} = require('../../../donations/service/DonationPaymentEvent');
 const _ = require('lodash');
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');

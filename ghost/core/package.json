@@ -76,7 +76,6 @@
     "@tryghost/database-info": "0.3.27",
     "@tryghost/debug": "0.1.32",
     "@tryghost/domain-events": "0.0.0",
-    "@tryghost/donations": "0.0.0",
     "@tryghost/email-addresses": "0.0.0",
     "@tryghost/email-mock-receiver": "0.3.8",
     "@tryghost/email-service": "0.0.0",
