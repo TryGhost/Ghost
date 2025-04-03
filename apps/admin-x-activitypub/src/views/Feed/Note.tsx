@@ -8,6 +8,7 @@ import getUsername from '@src/utils/get-username';
 import {EmptyViewIcon, EmptyViewIndicator} from '@src/components/global/EmptyViewIndicator';
 import {LucideIcon, Skeleton} from '@tryghost/shade';
 import {handleProfileClickRR} from '@src/utils/handle-profile-click';
+import {isPendingActivity} from '@src/utils/pending-activity';
 import {renderTimestamp} from '@src/utils/render-timestamp';
 import {useLocation, useNavigate, useNavigationStack, useParams} from '@tryghost/admin-x-framework';
 import {usePostForUser, useThreadForUser} from '@hooks/use-activity-pub-queries';
@@ -45,7 +46,6 @@ const Note = () => {
     const threadChildren = (thread?.posts ?? []).slice(threadPostIdx + 1);
     const threadParents = (thread?.posts ?? []).slice(0, threadPostIdx);
 
-    // const [replyCount] = useState(object.replyCount ?? 0);
     function incrementReplyCount(step: number = 1) {
         setReplyCount((current: number) => current + step);
     }
@@ -168,7 +168,7 @@ const Note = () => {
                                                                     actor={item.actor}
                                                                     allowDelete={item.object.authored}
                                                                     commentCount={item.object.replyCount ?? 0}
-                                                                    // isPending={isPendingActivity(item.id)}
+                                                                    isPending={isPendingActivity(item.id)}
                                                                     last={true}
                                                                     layout='reply'
                                                                     object={item.object}
