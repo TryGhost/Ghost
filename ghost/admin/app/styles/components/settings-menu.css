@@ -6,10 +6,9 @@
 
 .settings-menu-toggle {
     position: absolute;
-    top: 24px;
+    top: 30px;
     right: 24px;
     z-index: 9999;
-    height: 34px;
     margin-right: 0 !important;
 }
 
@@ -117,9 +116,8 @@
 .settings-menu-header {
     position: fixed;
     display: flex;
-    height: 82px; /* 34px + 24px + 24px */
     width: 100%;
-    padding: 24px;
+    padding: 36px 24px 24px;
     justify-content: space-between;
     align-items: center;
     z-index: 3;

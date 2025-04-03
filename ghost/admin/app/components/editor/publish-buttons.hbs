@@ -2,13 +2,12 @@
     {{#if @publishManagement.post.isDraft}}
         <button
             type="button"
-            class="gh-btn gh-btn-editor gh-editor-preview-trigger gh-tooltip-trigger tooltip-bottom no-text"
+            class="gh-btn gh-btn-editor gh-editor-preview-trigger"
             {{on "click" @publishManagement.openPreview}}
             {{on-key "cmd+p" @publishManagement.togglePreview}}
             data-test-button="contributor-preview"
         >
             <span>Preview</span>
-            <GhTooltip @shortcut={{array "⌘" "P"}}  />
         </button>
     {{/if}}
 
@@ -22,25 +21,23 @@
     {{#if @publishManagement.post.isDraft}}
         <button
             type="button"
-            class="gh-btn gh-btn-editor gh-editor-preview-trigger gh-tooltip-trigger tooltip-bottom no-text"
+            class="gh-btn gh-btn-editor gh-editor-preview-trigger"
             {{on "click" @publishManagement.openPreview}}
             {{on-key "cmd+p" @publishManagement.togglePreview}}
             data-test-button="publish-preview"
         >
             <span>Preview</span>
-            <GhTooltip @shortcut={{array "⌘" "P"}}  />
         </button>
 
         <button
             type="button"
-            class="gh-btn gh-btn-editor darkgrey gh-publish-trigger gh-tooltip-trigger tooltip-bottom no-text"
+            class="gh-btn gh-btn-editor darkgrey gh-publish-trigger"
             {{on "click" @publishManagement.openPublishFlow}}
             {{on-key "cmd+shift+p"}}
             disabled={{@publishManagement.publishOptions.isLoading}}
             data-test-button="publish-flow"
         >
             <span>Publish</span>
-            <GhTooltip @shortcut={{array "⌘" "&#8679;" "P"}}  />
         </button>
     {{else}}
         <GhTaskButton

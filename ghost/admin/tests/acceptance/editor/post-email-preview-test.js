@@ -1,7 +1,6 @@
 import loginAsRole from '../../helpers/login-as-role';
 import {click, find, findAll} from '@ember/test-helpers';
 import {clickTrigger, selectChoose} from 'ember-power-select/test-support/helpers';
-import {disableMembers, disablePaidMembers, enableMembers, enablePaidMembers} from '../../helpers/members';
 import {enableMailgun} from '../../helpers/mailgun';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
@@ -14,48 +13,54 @@ describe('Acceptance: Post email preview', function () {
 
     beforeEach(async function () {
         this.server.loadFixtures();
-        enableMailgun(this.server);
-        enableMembers(this.server);
-        enablePaidMembers(this.server);
-        await loginAsRole('Administrator', this.server);
     });
 
-    const openPreviewModal = async function () {
+    it('should hide newsletters list and paid/free select by default', async function () {
+        await loginAsRole('Administrator', this.server);
+
         const post = this.server.create('post', {status: 'draft'});
         await visit(`/editor/post/${post.id}`);
+
+        // go to email preview modal
+        expect(find('[data-test-button="publish-preview"]'), 'Preview').to.exist;
         await click('[data-test-button="publish-preview"]');
-    };
 
-    const openEmailPreviewModal = async function () {
-        await openPreviewModal.call(this);
+        expect(find('[data-test-button="email-preview"]')).to.exist;
         await click('[data-test-button="email-preview"]');
-    };
 
-    it('hides email preview option when members is disabled', async function () {
-        disableMembers(this.server);
-        await openPreviewModal.call(this);
-
-        expect(find('[data-test-button="email-preview"]')).not.to.exist;
+        expect(find('[data-test-email-preview-newsletter-select]')).not.to.exist;
+        expect(find('[data-test-email-preview-segment-select]')).not.to.exist;
     });
 
-    it('can select newsletter for preview', async function () {
+    it('can select newsletter and paid/free member for preview', async function () {
+        enableMailgun(this.server);
+        await loginAsRole('Administrator', this.server);
+        const post = this.server.create('post', {status: 'draft'});
         this.server.create('newsletter', {
             name: 'Awesome newsletter',
-            slug: 'awesome-newsletter',
-            sender_email: 'awesome@example.com'
+            slug: 'awesome-newsletter'
         });
 
-        await openEmailPreviewModal.call(this);
+        await visit(`/editor/post/${post.id}`);
 
-        expect(find('[data-test-email-preview-newsletter-select]'), 'newsletter dropdown').to.exist;
+        // go to email preview modal
+        expect(find('[data-test-button="publish-preview"]'), 'Preview').to.exist;
+        await click('[data-test-button="publish-preview"]');
+
+        expect(find('[data-test-button="email-preview"]')).to.exist;
+        await click('[data-test-button="email-preview"]');
+
+        expect(find('[data-test-email-preview-newsletter-select]')).to.exist;
+        expect(find('[data-test-email-preview-segment-select]')).not.to.exist;
 
         // check newsletters options
         await clickTrigger('[data-test-email-preview-newsletter-select-section]');
 
         const options = findAll('.ember-power-select-option');
+
         expect(options.length).to.equal(2);
-        expect(options[0]).to.have.rendered.text('Default newsletter <noreply@example.com>');
-        expect(options[1]).to.have.rendered.text('Awesome newsletter <awesome@example.com>');
+        expect(options[0].textContent.trim()).to.equal('Default newsletter');
+        expect(options[1].textContent.trim()).to.equal('Awesome newsletter');
 
         await selectChoose('[data-test-email-preview-newsletter-select]', 'Awesome newsletter');
 
@@ -68,33 +73,36 @@ describe('Acceptance: Post email preview', function () {
         expect(requestBody.memberSegment).to.equal('status:free');
     });
 
-    it('should hide newsletters list when only 1 newsletter exists', async function () {
-        await openEmailPreviewModal.call(this);
-
-        // newsletter select should not be present
-        expect(find('[data-test-email-preview-newsletter-select]')).not.to.exist;
-
-        // single newsletter name and from address should be present
-        expect(find('[data-test-text="newsletter-from"]')).to.contain.rendered.text('Default newsletter');
-        expect(find('[data-test-text="newsletter-from"]')).to.contain.rendered.text('noreply@example.com');
-    });
-
     it('can select paid/free member for preview', async function () {
-        await openEmailPreviewModal.call(this);
+        enableMailgun(this.server);
+        await loginAsRole('Administrator', this.server);
+        const post = this.server.create('post', {status: 'draft'});
+        this.server.create('setting', {
+            group: 'site',
+            key: 'paid_members_enabled',
+            value: true
+        });
 
-        expect(find('[data-test-email-preview-newsletter-select]'), 'newsletter select').not.to.exist;
-        expect(find('[data-test-select="preview-segment"]'), 'segment select').to.exist;
+        await visit(`/editor/post/${post.id}`);
+
+        // go to email preview modal
+        await click('[data-test-button="publish-preview"]');
+        await click('[data-test-button="email-preview"]');
+
+        expect(find('[data-test-email-preview-newsletter-select]')).not.to.exist;
+        expect(find('[data-test-email-preview-segment-select]')).to.exist;
 
         // check segments options
-        await clickTrigger('[data-test-select="preview-segment"]');
+        await clickTrigger('[data-test-email-preview-segment-select-section]');
 
         const options = findAll('.ember-power-select-option');
+
         expect(options.length).to.equal(2);
         expect(options[0].textContent.trim()).to.equal('Free member');
         expect(options[1].textContent.trim()).to.equal('Paid member');
 
         // can switch free/paid member in preview
-        await selectChoose('[data-test-select="preview-segment"]', 'Paid member');
+        await selectChoose('[data-test-email-preview-segment-select]', 'Paid member');
 
         // send chosen segment on backend
         await click(find('[data-test-button="post-preview-test-email"]'));
@@ -102,17 +110,5 @@ describe('Acceptance: Post email preview', function () {
         const [lastRequest] = this.server.pretender.handledRequests.slice(-1);
         const requestBody = JSON.parse(lastRequest.requestBody);
         expect(requestBody.memberSegment).to.equal('status:-free');
-    });
-
-    it('hides paid member option when paid members is disabled', async function () {
-        disablePaidMembers(this.server);
-
-        await openEmailPreviewModal.call(this);
-
-        await clickTrigger('[data-test-select="preview-segment"]');
-
-        const options = findAll('.ember-power-select-option');
-        expect(options.length).to.equal(1);
-        expect(options[0].textContent.trim()).to.equal('Free member');
     });
 });

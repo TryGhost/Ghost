@@ -1,5 +1,5 @@
 // Available visibilities:
-// 'visitors' - anonymous visitors
+// 'visitors' - logged out visitors
 // 'free_members' - free members
 // 'paid_members' - paid members (aka non-free members)
 class AnnouncementVisibilityValues {
