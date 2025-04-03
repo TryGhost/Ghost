@@ -55,8 +55,6 @@ const ActorList: React.FC<ActorListProps> = ({
     const {isEnabled} = useFeatureFlags();
     const navigate = useNavigate();
 
-    // TODO: getUsername doesn't work for own profile
-
     return (
         <div className='pt-3'>
             {

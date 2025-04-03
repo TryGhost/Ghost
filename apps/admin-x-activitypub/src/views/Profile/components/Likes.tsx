@@ -20,11 +20,6 @@ const Likes: React.FC<LikesProps> = ({
     isFetchingNextPage,
     isLoading
 }) => {
-    // const {postsLikedByAccountQuery} = usePostsLikedByAccount({enabled: true});
-    // const {data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading} = postsLikedByAccountQuery;
-
-    // const posts = data?.pages.flatMap(page => page.posts) ?? Array.from({length: 5}, (_, index) => ({id: `placeholder-${index}`, object: {}}));
-
     const observerRef = useRef<IntersectionObserver | null>(null);
     const loadMoreRef = useRef<HTMLDivElement | null>(null);
     const endLoadMoreRef = useRef<HTMLDivElement | null>(null);
