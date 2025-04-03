@@ -34,6 +34,12 @@ const Note = () => {
 
     const [replyCount, setReplyCount] = useState(object?.replyCount ?? 0);
 
+    useEffect(() => {
+        if (object?.replyCount !== undefined) {
+            setReplyCount(object.replyCount);
+        }
+    }, [object?.replyCount]);
+
     const {data: thread} = useThreadForUser('index', activityId);
     const threadPostIdx = (thread?.posts ?? []).findIndex(item => item.object.id === activityId);
     const threadChildren = (thread?.posts ?? []).slice(threadPostIdx + 1);
@@ -133,7 +139,7 @@ const Note = () => {
                                                     object={object}
                                                     repostCount={object.repostCount}
                                                     showHeader={threadParents.length > 0}
-                                                    // showStats={!disableStats}
+                                                    showStats={true}
                                                     type='Note'
                                                     onCommentClick={() => {
                                                         repliesRef.current?.scrollIntoView({
