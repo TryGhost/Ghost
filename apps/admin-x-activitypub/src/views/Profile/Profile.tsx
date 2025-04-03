@@ -10,9 +10,10 @@ import {
     useAccountFollowsForUser,
     useAccountForUser,
     usePostsByAccount,
-    usePostsLikedByAccount
+    usePostsLikedByAccount,
+    useProfilePostsForUser
 } from '@hooks/use-activity-pub-queries';
-import {FollowAccount} from '../../api/activitypub';
+import {Activity, FollowAccount} from '../../api/activitypub';
 import {handleViewContent} from '@utils/content-handlers';
 
 import APAvatar from '@components/global/APAvatar';
@@ -20,10 +21,10 @@ import ActivityItem from '@components/activities/ActivityItem';
 import FeedItem from '@components/feed/FeedItem';
 import FollowButton from '@components/global/FollowButton';
 import Layout from '@components/layout';
+import Posts from './components/Posts';
 import Separator from '@components/global/Separator';
 import ViewProfileModal from '@components/modals/ViewProfileModal';
-import {useFeatureFlags} from '@src/lib/feature-flags';
-import {useNavigate} from '@tryghost/admin-x-framework';
+import {useParams} from '@tryghost/admin-x-framework';
 
 interface UseInfiniteScrollTabProps<TData> {
     useDataHook: (key: string) => ActivityPubCollectionQueryResult<TData> | AccountFollowsQueryResult;
@@ -125,107 +126,29 @@ const useInfiniteScrollTab = <TData,>({useDataHook, emptyStateLabel, emptyStateI
     return {items, EmptyState, LoadingState};
 };
 
-const PostsTab: React.FC = () => {
-    const {postsByAccountQuery} = usePostsByAccount({enabled: true});
-    const {data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading} = postsByAccountQuery;
+const PostsTab:React.FC<{handle?: string}> = ({handle}) => {
+    // Call both hooks unconditionally
+    const postsByAccountQuery = usePostsByAccount({enabled: true}).postsByAccountQuery;
+    const profilePostsQuery = useProfilePostsForUser('index', handle || '');
 
-    const posts = data?.pages.flatMap(page => page.posts) ?? Array.from({length: 5}, (_, index) => ({id: `placeholder-${index}`, object: {}}));
+    // Use the appropriate query result based on whether handle is provided
+    const {
+        data,
+        fetchNextPage,
+        hasNextPage,
+        isFetchingNextPage,
+        isLoading
+    } = handle ? profilePostsQuery : postsByAccountQuery;
 
-    const observerRef = useRef<IntersectionObserver | null>(null);
-    const loadMoreRef = useRef<HTMLDivElement | null>(null);
-    const endLoadMoreRef = useRef<HTMLDivElement | null>(null);
+    const posts = data?.pages.flatMap((page: {posts: Activity[]}) => page.posts) ?? Array.from({length: 5}, (_, index) => ({id: `placeholder-${index}`, object: {}}));
 
-    // Calculate the index at which to place the loadMoreRef - This will place it ~75% through the list
-    const loadMoreIndex = Math.max(0, Math.floor(posts.length * 0.75) - 1);
-
-    useEffect(() => {
-        if (observerRef.current) {
-            observerRef.current.disconnect();
-        }
-
-        observerRef.current = new IntersectionObserver((entries) => {
-            if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
-                fetchNextPage();
-            }
-        });
-
-        if (loadMoreRef.current) {
-            observerRef.current.observe(loadMoreRef.current);
-        }
-        if (endLoadMoreRef.current) {
-            observerRef.current.observe(endLoadMoreRef.current);
-        }
-
-        return () => {
-            if (observerRef.current) {
-                observerRef.current.disconnect();
-            }
-        };
-    }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
-
-    const {isEnabled} = useFeatureFlags();
-    const navigate = useNavigate();
-
-    return (
-        <>
-            {hasNextPage === false && posts.length === 0 && (
-                <NoValueLabel icon='pen'>
-                    You haven&apos;t posted anything yet.
-                </NoValueLabel>
-            )}
-            <ul className='mx-auto flex max-w-[640px] flex-col'>
-                {posts.map((activity, index) => (
-                    <li
-                        key={`posts-${activity.id}`}
-                        data-test-view-article
-                    >
-                        <FeedItem
-                            actor={activity.actor}
-                            allowDelete={activity.object.authored}
-                            commentCount={activity.object.replyCount}
-                            isLoading={isLoading}
-                            layout='feed'
-                            object={activity.object}
-                            repostCount={activity.object.repostCount}
-                            type={activity.type}
-                            onClick={() => {
-                                if (isEnabled('ap-routes')) {
-                                    if (activity.object.type === 'Note') {
-                                        navigate(`/feed/${encodeURIComponent(activity.object.id)}`);
-                                    } else if (activity.object.type === 'Article') {
-                                        navigate(`/inbox/${encodeURIComponent(activity.object.id)}`);
-                                    }
-                                } else {
-                                    handleViewContent(activity, false);
-                                }
-                            }}
-                            onCommentClick={() => {
-                                if (isEnabled('ap-routes')) {
-                                    if (activity.object.type === 'Note') {
-                                        navigate(`/feed/${encodeURIComponent(activity.object.id)}`);
-                                    } else if (activity.object.type === 'Article') {
-                                        navigate(`/inbox/${encodeURIComponent(activity.object.id)}`);
-                                    }
-                                } else {
-                                    handleViewContent(activity, true);
-                                }
-                            }}
-                        />
-                        {index < posts.length - 1 && <Separator />}
-                        {index === loadMoreIndex && (
-                            <div ref={loadMoreRef} className='h-1'></div>
-                        )}
-                    </li>
-                ))}
-                {isFetchingNextPage && (
-                    <li className='flex flex-col items-center justify-center space-y-4 text-center'>
-                        <LoadingIndicator size='md' />
-                    </li>
-                )}
-            </ul>
-            <div ref={endLoadMoreRef} className='h-1'></div>
-        </>
-    );
+    return <Posts
+        fetchNextPage={fetchNextPage}
+        hasNextPage={hasNextPage!}
+        isFetchingNextPage={isFetchingNextPage}
+        isLoading={isLoading}
+        posts={posts}
+    />;
 };
 
 const LikesTab: React.FC = () => {
@@ -413,9 +336,10 @@ type ProfileTab = 'posts' | 'likes' | 'following' | 'followers';
 interface ProfileProps {}
 
 const Profile: React.FC<ProfileProps> = ({}) => {
-    const {data: account, isLoading: isLoadingAccount} = useAccountForUser('index', 'me');
-
     const [selectedTab, setSelectedTab] = useState<ProfileTab>('posts');
+    const params = useParams();
+
+    const {data: account, isLoading: isLoadingAccount} = useAccountForUser('index', 'me');
 
     const tabs = [
         {
@@ -423,7 +347,7 @@ const Profile: React.FC<ProfileProps> = ({}) => {
             title: 'Posts',
             contents: (
                 <div className='ap-posts'>
-                    <PostsTab />
+                    <PostsTab handle={params.handle} />
                 </div>
             )
         },
