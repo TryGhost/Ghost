@@ -1,6 +1,6 @@
 const assert = require('assert/strict');
-const ObjectID = require('bson-objectid');
-const Milestone = require('../lib/Milestone');
+const ObjectID = require('bson-objectid').default;
+const Milestone = require('../../../../../core/server/services/milestones/Milestone');
 
 const validInputARR = {
     type: 'arr',
