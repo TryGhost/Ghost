@@ -1,6 +1,6 @@
+const crypto = require('crypto');
 const BaseCacheAdapter = require('@tryghost/adapter-base-cache');
 const logging = require('@tryghost/logging');
-const metrics = require('@tryghost/metrics');
 const debug = require('@tryghost/debug')('redis-cache');
 const cacheManager = require('cache-manager');
 const redisStoreFactory = require('./redis-store-factory');
@@ -63,22 +63,41 @@ class AdapterCacheRedis extends BaseCacheAdapter {
         this.refreshAheadFactor = config.refreshAheadFactor || 0;
         this.getTimeoutMilliseconds = config.getTimeoutMilliseconds || null;
         this.currentlyExecutingBackgroundRefreshes = new Set();
-        this.keyPrefix = config.keyPrefix;
-        this._keysPattern = config.keyPrefix ? `${config.keyPrefix}*` : '';
+        this._keyPrefix = config.keyPrefix || '';
         this.redisClient = this.cache.store.getClient();
         this.redisClient.on('error', this.handleRedisError);
+    }
+
+    async prefixHash() {
+        const currentPrefixHash = await this.cache.get(this._keyPrefix + 'prefix_hash');
+        if (currentPrefixHash) {
+            return currentPrefixHash;
+        }
+        const newPrefixHash = await this.cyclePrefixHash();
+        return newPrefixHash;
+    }
+
+    async keyPrefix() {
+        const prefixHash = await this.prefixHash();
+        return this._keyPrefix + prefixHash;
+    }
+
+    async keysPattern() {
+        const keyPrefix = await this.keyPrefix();
+        return keyPrefix + '*';
     }
 
     handleRedisError(error) {
         logging.error(error);
     }
 
-    #getPrimaryRedisNode() {
+    async #getPrimaryRedisNode() {
         debug('getPrimaryRedisNode');
         if (this.redisClient.constructor.name !== 'Cluster') {
             return this.redisClient;
         }
-        const slot = calculateSlot(this.keyPrefix);
+        const keyPrefix = await this.keyPrefix();
+        const slot = calculateSlot(keyPrefix);
         const [ip, port] = this.redisClient.slots[slot][0].split(':');
         for (const node of this.redisClient.nodes()) {
             if (node.options.host === ip && node.options.port === parseInt(port)) {
@@ -88,10 +107,11 @@ class AdapterCacheRedis extends BaseCacheAdapter {
         return null;
     }
 
-    #scanNodeForKeys(node) {
-        debug(`scanNodeForKeys matching ${this._keysPattern}`);
+    async #scanNodeForKeys(node) {
+        const keysPattern = await this.keysPattern();
+        debug(`scanNodeForKeys matching ${keysPattern}`);
         return new Promise((resolve, reject) => {
-            const stream = node.scanStream({match: this._keysPattern, count: 100});
+            const stream = node.scanStream({match: keysPattern, count: 100});
             let keys = [];
             stream.on('data', (resultKeys) => {
                 keys = keys.concat(resultKeys);
@@ -107,7 +127,7 @@ class AdapterCacheRedis extends BaseCacheAdapter {
 
     async #getKeys() {
         debug('#getKeys');
-        const primaryNode = this.#getPrimaryRedisNode();
+        const primaryNode = await this.#getPrimaryRedisNode();
         if (primaryNode === null) {
             return [];
         }
@@ -119,11 +139,12 @@ class AdapterCacheRedis extends BaseCacheAdapter {
      * the cache-manager package. Might be a good contribution to make
      * in the package itself (https://github.com/node-cache-manager/node-cache-manager/issues/158)
      * @param {string} key
-     * @returns {string}
+     * @returns {Promise<string>}
      */
-    _buildKey(key) {
-        if (this.keyPrefix) {
-            return `${this.keyPrefix}${key}`;
+    async _buildKey(key) {
+        const keyPrefix = await this.keyPrefix();
+        if (keyPrefix) {
+            return `${keyPrefix}${key}`;
         }
 
         return key;
@@ -132,10 +153,11 @@ class AdapterCacheRedis extends BaseCacheAdapter {
     /**
      * This is a method to remove the key prefix from any raw key returned from redis.
      * @param {string} key
-     * @returns {string}
+     * @returns {Promise<string>}
      */
-    _removeKeyPrefix(key) {
-        return key.slice(this.keyPrefix.length);
+    async _removeKeyPrefix(key) {
+        const keyPrefix = await this.keyPrefix();
+        return key.slice(keyPrefix.length);
     }
 
     /**
@@ -192,7 +214,7 @@ class AdapterCacheRedis extends BaseCacheAdapter {
      * @param {() => Promise<any>} [fetchData] An optional function to fetch the data, which will be used in the case of a cache MISS or a background refresh
      */
     async get(key, fetchData) {
-        const internalKey = this._buildKey(key);
+        const internalKey = await this._buildKey(key);
         try {
             const result = await this._get(internalKey);
             debug(`get ${internalKey}: Cache ${result ? 'HIT' : 'MISS'}`);
@@ -236,7 +258,7 @@ class AdapterCacheRedis extends BaseCacheAdapter {
      * @param {*} value
      */
     async set(key, value) {
-        const internalKey = this._buildKey(key);
+        const internalKey = await this._buildKey(key);
         debug('set', internalKey);
         try {
             return await this.cache.set(internalKey, value);
@@ -245,28 +267,18 @@ class AdapterCacheRedis extends BaseCacheAdapter {
         }
     }
 
+    async cyclePrefixHash() {
+        const value = crypto.randomBytes(12).toString('hex');
+        await this.cache.set(this._keyPrefix + 'prefix_hash', value, {ttl: 0});
+        return value;
+    }
+
     /**
-     * Reset the cache by deleting everything from redis
+     * Reset the cache by refreshing the current prefix hash
      */
     async reset() {
         debug('reset');
-        try {
-            const t0 = performance.now();
-            logging.debug(`[RedisAdapter] Clearing cache: scanning for keys matching ${this._keysPattern}`);
-            const keys = await this.#getKeys();
-            logging.debug(`[RedisAdapter] Clearing cache: found ${keys.length} keys matching ${this._keysPattern} in ${(performance.now() - t0).toFixed(1)}ms`);
-            metrics.metric('cache-reset-scan', (performance.now() - t0).toFixed(1));
-            const t1 = performance.now();
-            for (const key of keys) {
-                await this.cache.del(key);
-            }
-            logging.debug(`[RedisAdapter] Clearing cache: deleted ${keys.length} keys matching ${this._keysPattern} in ${(performance.now() - t1).toFixed(1)}ms`);
-            metrics.metric('cache-reset-delete', (performance.now() - t1).toFixed(1));
-            metrics.metric('cache-reset', (performance.now() - t0).toFixed(1));
-            metrics.metric('cache-reset-key-count', keys.length);
-        } catch (err) {
-            logging.error(err);
-        }
+        await this.cyclePrefixHash();
     }
 
     /**
@@ -275,9 +287,9 @@ class AdapterCacheRedis extends BaseCacheAdapter {
      */
     async keys() {
         try {
-            return (await this.#getKeys()).map((key) => {
+            return Promise.all((await this.#getKeys()).map((key) => {
                 return this._removeKeyPrefix(key);
-            });
+            }));
         } catch (err) {
             logging.error(err);
         }
