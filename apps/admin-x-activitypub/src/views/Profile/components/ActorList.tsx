@@ -72,7 +72,7 @@ const ActorList: React.FC<ActorListProps> = ({
                                             if (isEnabled('ap-routes')) {
                                                 handleProfileClickRR(actor, navigate);
                                             } else {
-                                                handleProfileClick(actor);
+                                                handleProfileClick(actor.handle || actor);
                                             }
                                         }}
                                     >

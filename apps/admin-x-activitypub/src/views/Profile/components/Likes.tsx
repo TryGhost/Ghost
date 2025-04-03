@@ -4,6 +4,8 @@ import {LoadingIndicator, NoValueLabel} from '@tryghost/admin-x-design-system';
 import {Separator} from '@tryghost/shade';
 import {handleViewContent} from '@src/utils/content-handlers';
 import {useEffect, useRef} from 'react';
+import {useFeatureFlags} from '@src/lib/feature-flags';
+import {useNavigate} from '@tryghost/admin-x-framework';
 
 export type LikesProps = {
     isLoading: boolean,
@@ -52,6 +54,9 @@ const Likes: React.FC<LikesProps> = ({
         };
     }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
+    const {isEnabled} = useFeatureFlags();
+    const navigate = useNavigate();
+
     return (
         <>
             {hasNextPage === false && posts.length === 0 && (
@@ -74,8 +79,28 @@ const Likes: React.FC<LikesProps> = ({
                             object={activity.object}
                             repostCount={activity.object.repostCount}
                             type={activity.type}
-                            onClick={() => handleViewContent(activity, false)}
-                            onCommentClick={() => handleViewContent(activity, true)}
+                            onClick={() => {
+                                if (isEnabled('ap-routes')) {
+                                    if (activity.object.type === 'Note') {
+                                        navigate(`/feed/${encodeURIComponent(activity.object.id)}`);
+                                    } else if (activity.object.type === 'Article') {
+                                        navigate(`/inbox/${encodeURIComponent(activity.object.id)}`);
+                                    }
+                                } else {
+                                    handleViewContent(activity, false);
+                                }
+                            }}
+                            onCommentClick={() => {
+                                if (isEnabled('ap-routes')) {
+                                    if (activity.object.type === 'Note') {
+                                        navigate(`/feed/${encodeURIComponent(activity.object.id)}`);
+                                    } else if (activity.object.type === 'Article') {
+                                        navigate(`/inbox/${encodeURIComponent(activity.object.id)}`);
+                                    }
+                                } else {
+                                    handleViewContent(activity, true);
+                                }
+                            }}
                         />
                         {index < posts.length - 1 && <Separator />}
                         {index === loadMoreIndex && (
