@@ -27,6 +27,7 @@
                     @triggerClass="gh-preview-segment-trigger"
                     @dropdownClass="gh-preview-segment-dropdown"
                     @matchTriggerWidth={{false}}
+                    @onOpen={{this.dropdown.closeDropdowns}}
                     as |option|
                 >
                     {{option.label}}
@@ -51,9 +52,10 @@
                         <GhTaskButton
                             @task={{this.copyPreviewUrlTask}}
                             @idleIcon="copy"
-                            @buttonText="Copy draft link"
-                            @runningText="Copy draft link"
+                            @buttonText="Copy preview link"
+                            @runningText="Copy preview link"
                             @successText="Copied"
+                            @successClass=""
                             @class="gh-btn gh-btn-icon gh-btn-preview gh-post-copy-url"
                             data-test-button="copy-draft-link"
                         />

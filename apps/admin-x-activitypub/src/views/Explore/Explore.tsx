@@ -4,16 +4,16 @@ import Layout from '@components/layout';
 import NiceModal from '@ebay/nice-modal-react';
 import React from 'react';
 import ViewProfileModal from '@src/components/modals/ViewProfileModal';
+import {type Account} from '@src/api/activitypub';
 import {Button, H4, LucideIcon, Skeleton} from '@tryghost/shade';
-import {type Profile} from '@src/api/activitypub';
 import {useExploreProfilesForUser} from '@hooks/use-activity-pub-queries';
 import {useFeatureFlags} from '@src/lib/feature-flags';
 import {useNavigate} from '@tryghost/admin-x-framework';
 import {useOnboardingStatus} from '@src/components/layout/Onboarding';
 
 interface ExploreProfileProps {
-    profile: Profile;
-    update: (id: string, updated: Partial<Profile>) => void;
+    profile: Account;
+    update: (id: string, updated: Partial<Account>) => void;
     isLoading: boolean;
 }
 
@@ -21,15 +21,15 @@ export const ExploreProfile: React.FC<ExploreProfileProps & {
     onOpenChange?: (open: boolean) => void;
 }> = ({profile, update, isLoading, onOpenChange}) => {
     const onFollow = () => {
-        update(profile.actor.id, {
-            isFollowing: true,
+        update(profile.id, {
+            followedByMe: true,
             followerCount: profile.followerCount + 1
         });
     };
 
     const onUnfollow = () => {
-        update(profile.actor.id, {
-            isFollowing: false,
+        update(profile.id, {
+            followedByMe: false,
             followerCount: profile.followerCount - 1
         });
     };
@@ -49,17 +49,25 @@ export const ExploreProfile: React.FC<ExploreProfileProps & {
                 }
             }}
         >
-            <APAvatar author={profile.actor} onClick={() => onOpenChange?.(false)} />
+            <APAvatar author={
+                {
+                    icon: {
+                        url: profile.avatarUrl
+                    },
+                    name: profile.name,
+                    handle: profile.handle
+                }
+            } onClick={() => onOpenChange?.(false)} />
             <div className='flex w-full flex-col gap-2 border-b border-gray-200 pb-4 dark:border-gray-950'>
                 <div className='flex items-center justify-between gap-3'>
                     <div className='flex grow flex-col'>
-                        <span className='font-semibold text-black dark:text-white'>{!isLoading ? profile.actor.name : <Skeleton className='w-full max-w-64' />}</span>
+                        <span className='font-semibold text-black dark:text-white'>{!isLoading ? profile.name : <Skeleton className='w-full max-w-64' />}</span>
                         <span className='text-sm text-gray-600'>{!isLoading ? profile.handle : <Skeleton className='w-24' />}</span>
                     </div>
                     {!isLoading ?
                         <FollowButton
                             className='ml-auto'
-                            following={profile.isFollowing}
+                            following={profile.followedByMe}
                             handle={profile.handle}
                             type='primary'
                             onFollow={onFollow}
@@ -70,9 +78,9 @@ export const ExploreProfile: React.FC<ExploreProfileProps & {
                         </div>
                     }
                 </div>
-                {profile.actor.summary &&
+                {profile.bio &&
                     <div
-                        dangerouslySetInnerHTML={{__html: profile.actor.summary}}
+                        dangerouslySetInnerHTML={{__html: profile.bio}}
                         className='ap-profile-content pointer-events-none mt-0 max-w-[500px]'
                     />
                 }
@@ -87,11 +95,14 @@ const Explore: React.FC = () => {
     const {data: exploreProfilesData, isLoading: isLoadingExploreProfiles} = exploreProfilesQuery;
 
     const emptyProfiles = Array(5).fill({
-        actor: {},
+        id: '',
+        name: '',
         handle: '',
+        avatarUrl: '',
+        bio: '',
         followerCount: 0,
         followingCount: 0,
-        isFollowing: false
+        followedByMe: false
     });
 
     return (
@@ -113,7 +124,7 @@ const Explore: React.FC = () => {
                     isLoadingExploreProfiles ? (
                         <div>
                             {emptyProfiles.map(profile => (
-                                <div key={profile.actor.id} className='mx-auto w-full max-w-[640px]'>
+                                <div key={profile.id} className='mx-auto w-full max-w-[640px]'>
                                     <ExploreProfile
                                         isLoading={isLoadingExploreProfiles}
                                         profile={profile}
@@ -130,7 +141,7 @@ const Explore: React.FC = () => {
                                 </H4>
                                 <div className='w-full'>
                                     {data.sites.map(profile => (
-                                        <React.Fragment key={profile.actor.id}>
+                                        <React.Fragment key={profile.id}>
                                             <ExploreProfile
                                                 isLoading={false}
                                                 profile={profile}

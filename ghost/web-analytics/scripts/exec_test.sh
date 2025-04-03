@@ -159,11 +159,16 @@ else
     # If no test name provided, run all tests in parallel
     echo "Running tests in parallel using $jobs workers"
     # Use parallel to run the tests, maintaining output order
+    output_file=$(mktemp)
     find ./tests -name "*.test" -print0 | \
         parallel -0 --jobs "$jobs" --keep-order --line-buffer \
-        'run_test {} || echo "PARALLEL_TEST_FAILED"' | \
-        tee >(if grep -q "PARALLEL_TEST_FAILED"; then exit 1; fi)
-    fail=${PIPESTATUS[1]}
+        'run_test {} || echo "PARALLEL_TEST_FAILED"' | tee "$output_file"
+    if grep -q "PARALLEL_TEST_FAILED" "$output_file"; then
+        rm "$output_file"
+        fail=1
+    else
+        rm "$output_file"
+    fi
 fi
 
 if [ $fail == 1 ]; then

@@ -116,7 +116,7 @@
       const now = new Date()
       const item = {
         value: sessionId,
-        expiry: now.getTime() + 1800 * 1000,
+        expiry: now.getTime() + 14400 * 1000, // 4 hours
       }
       const value = JSON.stringify(item)
       const storage =
@@ -240,11 +240,62 @@
         'user-agent': window.navigator.userAgent,
         locale,
         location: country,
-        referrer: document.referrer,
+        referrer: getReferrer(),
         pathname: window.location.pathname,
         href: window.location.href,
       })
     }, 300)
+  }
+
+  function getReferrer() {
+    // Fetch referrer data from query params - priority is the following order: ref, source, utm_source, utm_medium, referrer
+    let refParam;
+    let sourceParam;
+    let utmSourceParam;
+    let utmMediumParam;
+    let referrerSource;
+
+    // Fetch source/medium from query param
+    const url = new URL(window.location.href);
+    refParam = url.searchParams.get('ref');
+    sourceParam = url.searchParams.get('source');
+    utmSourceParam = url.searchParams.get('utm_source');
+    utmMediumParam = url.searchParams.get('utm_medium');
+
+    referrerSource = refParam || sourceParam || utmSourceParam || null;
+
+    // if referrerSource is not set, check to see if the url contains a hash like ghost.org/#/portal/signup?ref=ghost and pull the ref from the hash
+    if (!referrerSource && url.hash && url.hash.includes('#/portal')) {
+        const hashUrl = new URL(window.location.href.replace('/#/portal', ''));
+        refParam = hashUrl.searchParams.get('ref');
+        sourceParam = hashUrl.searchParams.get('source');
+        utmSourceParam = hashUrl.searchParams.get('utm_source');
+        utmMediumParam = hashUrl.searchParams.get('utm_medium');
+
+        referrerSource = refParam || sourceParam || utmSourceParam || null;
+    }
+
+    // Get referrer medium and url
+    const referrerMedium = utmMediumParam || null;
+    const referrerUrl = window.document.referrer || null;
+
+    // Get the final referrer value based on priority
+    const finalReferrer = referrerSource || referrerMedium || referrerUrl || null;
+
+    // If the final referrer matches the current site's domain, return null
+    if (finalReferrer) {
+        try {
+            const referrerHost = new URL(finalReferrer).hostname;
+            const currentHost = window.location.hostname;
+            if (referrerHost === currentHost) {
+                return null;
+            }
+        } catch (e) {
+            // If URL parsing fails, return the original value
+        }
+    }
+
+    return finalReferrer;
   }
 
   // Client

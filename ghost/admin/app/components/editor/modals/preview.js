@@ -6,6 +6,7 @@ import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
 export default class EditorPostPreviewModal extends Component {
+    @service dropdown;
     @service settings;
     @service session;
 
@@ -57,7 +58,7 @@ export default class EditorPostPreviewModal extends Component {
             ];
         } else {
             this.previewAsOptions = [
-                {label: 'Anonymous', value: 'anonymous'},
+                {label: 'Public visitor', value: 'anonymous'},
                 {label: 'Free member', value: 'free'}
             ];
         }
