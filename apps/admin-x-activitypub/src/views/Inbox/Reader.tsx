@@ -1,9 +1,8 @@
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import getUsername from '../../utils/get-username';
-import {OptionProps, SingleValueProps, components} from 'react-select';
-import {Popover, PopoverContent, PopoverTrigger, Skeleton} from '@tryghost/shade';
+import {Button, LucideIcon, Popover, PopoverContent, PopoverTrigger, Skeleton} from '@tryghost/shade';
 
-import {Button, Icon, LoadingIndicator, Select, SelectOption} from '@tryghost/admin-x-design-system';
+import {Icon, LoadingIndicator} from '@tryghost/admin-x-design-system';
 import {renderTimestamp} from '../../utils/render-timestamp';
 import {usePostForUser, useThreadForUser} from '@hooks/use-activity-pub-queries';
 
@@ -26,17 +25,15 @@ interface IframeWindow extends Window {
     resizeIframe?: () => void;
 }
 
-const FONT_SANS = 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif';
-
 const ArticleBody: React.FC<{
     postUrl?: string;
     heading: string;
     image: string|undefined;
     excerpt: string|undefined;
     html: string;
+    backgroundColor: ColorOption;
     fontSize: FontSize;
-    lineHeight: string;
-    fontFamily: SelectOption;
+    fontFamily: string;
     onHeadingsExtracted?: (headings: TOCItem[]) => void;
     onIframeLoad?: (iframe: HTMLIFrameElement) => void;
     onLoadingChange?: (isLoading: boolean) => void;
@@ -46,8 +43,8 @@ const ArticleBody: React.FC<{
     image,
     excerpt,
     html,
+    backgroundColor,
     fontSize,
-    lineHeight,
     fontFamily,
     onHeadingsExtracted,
     onIframeLoad,
@@ -56,24 +53,25 @@ const ArticleBody: React.FC<{
     const iframeRef = useRef<HTMLIFrameElement>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [iframeHeight, setIframeHeight] = useState('0px');
-    const darkMode = document.documentElement.classList.contains('dark');
+    const darkMode = (document.documentElement.classList.contains('dark') && backgroundColor === 'SYSTEM') || backgroundColor === 'DARK';
 
     const cssContent = articleBodyStyles();
 
     const htmlContent = `
-        <html class="has-${!darkMode ? 'dark' : 'light'}-text has-${fontFamily.className === 'font-sans' ? 'sans' : 'serif'}-body">
+        <html class="has-${!darkMode ? 'dark' : 'light'}-text has-${fontFamily}-body ${backgroundColor === 'SEPIA' && 'has-sepia-bg'}">
         <head>
             ${cssContent}
             <style>
                 :root {
                     --font-size: ${fontSize};
-                    --line-height: ${lineHeight};
-                    --content-spacing-factor: ${SPACING_FACTORS[FONT_SIZES.indexOf(fontSize)]};
                 }
                 body {
                     margin: 0;
                     padding: 0;
                     overflow-y: hidden;
+                }
+                .has-sepia-bg {
+                    --background-color: #f8f2e2;
                 }
             </style>
 
@@ -225,10 +223,17 @@ const ArticleBody: React.FC<{
 
         const root = iframeDocument.documentElement;
         root.style.setProperty('--font-size', fontSize);
-        root.style.setProperty('--line-height', lineHeight);
         root.classList.remove('has-sans-body', 'has-serif-body');
-        root.classList.add(fontFamily.value === FONT_SANS ? 'has-sans-body' : 'has-serif-body');
-        root.style.setProperty('--content-spacing-factor', SPACING_FACTORS[FONT_SIZES.indexOf(fontSize)]);
+        root.classList.add(`has-${fontFamily}-body`);
+        root.classList.remove('has-dark-text', 'has-light-text');
+        root.classList.add(`has-${!darkMode ? 'dark' : 'light'}-text`);
+        // root.style.setProperty('--background-color', COLOR_OPTIONS[backgroundColor].color);
+        console.log(backgroundColor);
+        if (backgroundColor === 'SEPIA') {
+            root.classList.add('has-sepia-bg');
+        } else {
+            root.classList.remove('has-sepia-bg');
+        }
 
         const iframeWindow = iframe.contentWindow as IframeWindow;
         if (iframeWindow && typeof iframeWindow.resizeIframe === 'function') {
@@ -237,7 +242,7 @@ const ArticleBody: React.FC<{
             const resizeEvent = new Event('resize');
             iframeDocument.dispatchEvent(resizeEvent);
         }
-    }, [fontSize, lineHeight, fontFamily]);
+    }, [fontSize, fontFamily, backgroundColor, darkMode]);
 
     useEffect(() => {
         const iframe = iframeRef.current;
@@ -327,49 +332,49 @@ const ArticleBody: React.FC<{
 };
 
 const FeedItemDivider: React.FC = () => (
-    <div className="h-px bg-gray-200 dark:bg-gray-950"></div>
+    <div className="h-px bg-black/[8%] dark:bg-gray-950"></div>
 );
 
-const FONT_SIZES = ['1.5rem', '1.6rem', '1.7rem', '1.8rem', '2rem'] as const;
-const LINE_HEIGHTS = ['1.3', '1.4', '1.5', '1.6', '1.7'] as const;
-const SPACING_FACTORS = ['0.85', '1', '1.1', '1.2', '1.3'] as const;
+const COLOR_OPTIONS = {
+    SYSTEM: {
+        id: 'system',
+        color: '#fff',
+        background: 'bg-white dark:bg-black',
+        button: 'bg-white dark:bg-black',
+        border: 'border-black/[8%] dark:border-gray-950'
+    },
+    SEPIA: {
+        id: 'sepia',
+        color: '#f8f2e2',
+        background: 'bg-[#f8f2e2]',
+        button: 'bg-[#f8f2e2] hover:bg-black/[3%] text-black hover:text-black',
+        border: 'border-black/[8%]'
+    },
+    LIGHT: {
+        id: 'light',
+        color: '#fff',
+        background: 'bg-white',
+        button: 'hover:bg-black/[3%] text-black hover:text-black',
+        border: 'border-black/[8%] dark:border-gray-950'
+    },
+    DARK: {
+        id: 'dark',
+        color: '#15171a',
+        background: 'bg-black',
+        button: 'text-white dark:bg-black dark:hover:bg-gray-900',
+        border: 'border-black/[8%] dark:border-gray-950'
+    }
+} as const;
+type ColorOption = keyof typeof COLOR_OPTIONS;
 
+const FONT_SIZES = ['1.5rem', '1.6rem', '1.7rem', '1.8rem', '2rem'] as const;
 type FontSize = typeof FONT_SIZES[number];
 
 const STORAGE_KEYS = {
+    BACKGROUND_COLOR: 'ghost-ap-background-color',
     FONT_SIZE: 'ghost-ap-font-size',
-    LINE_HEIGHT: 'ghost-ap-line-height',
     FONT_FAMILY: 'ghost-ap-font-family'
 } as const;
-
-const SingleValue: React.FC<SingleValueProps<FontSelectOption, false>> = ({children, ...props}) => (
-    <components.SingleValue {...props}>
-        <div className='group' data-testid="select-current-option" data-value={props.data.value}>
-            <div className='flex items-center gap-2.5'>
-                <div className={`${props.data.className} flex size-8 items-center justify-center rounded-md bg-white text-[1.5rem] font-semibold dark:bg-black`}>Aa</div>
-                <span className={`text-md ${props.data.className}`}>{children}</span>
-            </div>
-        </div>
-    </components.SingleValue>
-);
-
-const Option: React.FC<OptionProps<FontSelectOption, false>> = ({children, ...props}) => (
-    <components.Option {...props}>
-        <div className={props.isSelected ? 'relative flex w-full items-center justify-between gap-2' : 'group'} data-testid="select-option" data-value={props.data.value}>
-            <div className='flex items-center gap-2.5'>
-                <div className='flex size-8 items-center justify-center rounded-md bg-gray-150 text-[1.5rem] font-semibold group-hover:bg-gray-250 dark:bg-gray-900 dark:group-hover:bg-gray-800'>Aa</div>
-                <span className={`text-md ${props.data.className}`}>{children}</span>
-            </div>
-            {props.isSelected && <span><Icon name='check' size='xs' /></span>}
-        </div>
-    </components.Option>
-);
-
-interface FontSelectOption {
-    value: string;
-    label: string;
-    className?: string;
-}
 
 interface ReaderProps {
     postId: string;
@@ -424,26 +429,49 @@ export const Reader: React.FC<ReaderProps> = ({
 
     const replyBoxRef = useRef<HTMLDivElement>(null);
     const repliesRef = useRef<HTMLDivElement>(null);
-    const iframeRef = useRef<HTMLIFrameElement>(null);
+    // const iframeRef = useRef<HTMLIFrameElement>(null);
 
     // Initialize state with values from localStorage, falling back to defaults
+    const [backgroundColor, setBackgroundColor] = useState<ColorOption>(() => {
+        const saved = localStorage.getItem(STORAGE_KEYS.BACKGROUND_COLOR);
+        return (saved?.toUpperCase() as ColorOption) || 'SYSTEM';
+    });
+
+    const handleColorChange = (color: keyof typeof COLOR_OPTIONS) => {
+        setBackgroundColor(color);
+        localStorage.setItem(STORAGE_KEYS.BACKGROUND_COLOR, COLOR_OPTIONS[color].id);
+    };
+
+    const isActiveColor = (color: keyof typeof COLOR_OPTIONS) => backgroundColor === color;
+
     const [currentFontSizeIndex, setCurrentFontSizeIndex] = useState(() => {
         const saved = localStorage.getItem(STORAGE_KEYS.FONT_SIZE);
         return saved ? parseInt(saved) : 1;
     });
 
-    const [currentLineHeightIndex, setCurrentLineHeightIndex] = useState(() => {
-        const saved = localStorage.getItem(STORAGE_KEYS.LINE_HEIGHT);
-        return saved ? parseInt(saved) : 2;
+    const [fontFamily, setFontFamily] = useState(() => {
+        const saved = localStorage.getItem(STORAGE_KEYS.FONT_FAMILY);
+
+        if (!saved) {
+            return 'sans';
+        }
+
+        try {
+            const parsedValue = JSON.parse(saved);
+
+            if (parsedValue && typeof parsedValue === 'object') {
+                const newValue = parsedValue.className?.includes('serif') ? 'serif' : 'sans';
+                localStorage.setItem(STORAGE_KEYS.FONT_FAMILY, newValue);
+                return newValue;
+            }
+
+            return saved;
+        } catch (e) {
+            return saved;
+        }
     });
 
-    const [fontFamily, setFontFamily] = useState<SelectOption>(() => {
-        const saved = localStorage.getItem(STORAGE_KEYS.FONT_FAMILY);
-        return saved ? JSON.parse(saved) : {
-            value: FONT_SANS,
-            label: 'Clean sans-serif'
-        };
-    });
+    const isActiveFont = (font: 'serif' | 'sans') => fontFamily === font;
 
     // Update localStorage when values change
     useEffect(() => {
@@ -451,11 +479,7 @@ export const Reader: React.FC<ReaderProps> = ({
     }, [currentFontSizeIndex]);
 
     useEffect(() => {
-        localStorage.setItem(STORAGE_KEYS.LINE_HEIGHT, currentLineHeightIndex.toString());
-    }, [currentLineHeightIndex]);
-
-    useEffect(() => {
-        localStorage.setItem(STORAGE_KEYS.FONT_FAMILY, JSON.stringify(fontFamily));
+        localStorage.setItem(STORAGE_KEYS.FONT_FAMILY, fontFamily);
     }, [fontFamily]);
 
     const increaseFontSize = () => {
@@ -466,26 +490,6 @@ export const Reader: React.FC<ReaderProps> = ({
         setCurrentFontSizeIndex(prevIndex => Math.max(prevIndex - 1, 0));
     };
 
-    const increaseLineHeight = () => {
-        setCurrentLineHeightIndex(prevIndex => Math.min(prevIndex + 1, LINE_HEIGHTS.length - 1));
-    };
-
-    const decreaseLineHeight = () => {
-        setCurrentLineHeightIndex(prevIndex => Math.max(prevIndex - 1, 0));
-    };
-
-    useEffect(() => {
-        const iframe = iframeRef.current;
-        if (iframe) {
-            const iframeDocument = iframe.contentDocument || iframe.contentWindow?.document;
-            if (iframeDocument) {
-                iframeDocument.documentElement.style.setProperty('--font-size', FONT_SIZES[currentFontSizeIndex]);
-                iframeDocument.documentElement.style.setProperty('--line-height', LINE_HEIGHTS[currentLineHeightIndex]);
-                iframeDocument.documentElement.style.setProperty('--content-spacing-factor', SPACING_FACTORS[FONT_SIZES.indexOf(FONT_SIZES[currentFontSizeIndex])]);
-            }
-        }
-    }, [currentFontSizeIndex, currentLineHeightIndex, fontFamily]);
-
     const currentMaxWidth = '904px';
     const currentGridWidth = '640px';
 
@@ -495,7 +499,7 @@ export const Reader: React.FC<ReaderProps> = ({
     // Add debounced version of setReadingProgress
     const [debouncedSetReadingProgress] = useDebounce(setReadingProgress, 100);
 
-    const PROGRESS_INCREMENT = 1; // Progress is shown in 5% increments (0%, 5%, 10%, etc.)
+    const PROGRESS_INCREMENT = 1;
 
     useEffect(() => {
         const container = modalRef.current;
@@ -646,7 +650,7 @@ export const Reader: React.FC<ReaderProps> = ({
     const navigate = useNavigate();
 
     return (
-        <div ref={modalRef as React.RefObject<HTMLDivElement>} className='max-h-full overflow-auto'>
+        <div ref={modalRef as React.RefObject<HTMLDivElement>} className={`max-h-full overflow-auto rounded-md ${backgroundColor === 'DARK' && 'dark'} ${(backgroundColor === 'LIGHT' || backgroundColor === 'SEPIA') && 'light'} ${COLOR_OPTIONS[backgroundColor].background}`}>
             {
                 isLoadingPost ? (
                     <LoadingIndicator size='lg' />
@@ -654,7 +658,7 @@ export const Reader: React.FC<ReaderProps> = ({
                     <>
                         <div className='flex h-full flex-col'>
                             <div className='relative flex-1'>
-                                <div className='sticky top-0 z-50 flex h-[102px] items-center justify-center rounded-t-md border-b border-gray-200 bg-white dark:border-gray-950 dark:bg-black'>
+                                <div className={`sticky top-0 z-50 flex h-[102px] items-center justify-center rounded-t-md border-b ${COLOR_OPTIONS[backgroundColor].background} ${COLOR_OPTIONS[backgroundColor].border}`}>
                                     <div
                                         className='grid w-full px-8'
                                         style={{
@@ -662,7 +666,7 @@ export const Reader: React.FC<ReaderProps> = ({
                                         }}
                                     >
                                         <div className='flex items-center'>
-                                            <BackButton onClick={onClose} />
+                                            <BackButton className={COLOR_OPTIONS[backgroundColor].button} onClick={onClose} />
                                         </div>
                                         <div className='col-[2/3] mx-auto flex w-full items-center gap-3'>
                                             <div className='relative z-10 pt-[3px]'>
@@ -670,7 +674,7 @@ export const Reader: React.FC<ReaderProps> = ({
                                             </div>
                                             <div className='relative z-10 flex w-full min-w-0 cursor-pointer flex-col overflow-visible text-[1.5rem]' onClick={e => handleProfileClickRR(actor, navigate, e)}>
                                                 <div className='flex w-full'>
-                                                    <span className='min-w-0 truncate whitespace-nowrap font-semibold hover:underline'>{actor.name}</span>
+                                                    <span className='min-w-0 truncate whitespace-nowrap font-semibold text-black hover:underline dark:text-white'>{actor.name}</span>
                                                 </div>
                                                 <div className='flex w-full'>
                                                     <span className='text-gray-700 after:mx-1 after:font-normal after:text-gray-700 after:content-["·"]'>{getUsername(actor)}</span>
@@ -681,98 +685,41 @@ export const Reader: React.FC<ReaderProps> = ({
                                         <div className='col-[3/4] flex items-center justify-end gap-2'>
                                             <Popover modal={false}>
                                                 <PopoverTrigger asChild>
-                                                    <Button className='transition-color flex size-10 items-center justify-center rounded-full bg-white hover:bg-gray-100 dark:bg-black dark:hover:bg-gray-950' icon='typography' size='sm' unstyled />
+                                                    <Button className={`size-9 rounded-full ${COLOR_OPTIONS[backgroundColor].button}`} variant='ghost'>
+                                                        <Icon name='typography' />
+                                                    </Button>
                                                 </PopoverTrigger>
-                                                <PopoverContent align='end' className='w-[300px]' onCloseAutoFocus={e => e.preventDefault()} onOpenAutoFocus={e => e.preventDefault()}>
-                                                    <div className='flex flex-col'>
-                                                        <Select
-                                                            className='mb-3'
-                                                            components={{Option, SingleValue}}
-                                                            controlClasses={{control: '!min-h-[40px] !py-0 !pl-1 dark:!bg-grey-925', option: '!pl-1 !py-[4px]'}}
-                                                            options={[
-                                                                {
-                                                                    value: FONT_SANS,
-                                                                    label: 'Clean sans-serif',
-                                                                    className: 'font-sans'
-                                                                },
-                                                                {
-                                                                    value: 'Georgia, Times, serif',
-                                                                    label: 'Elegant serif',
-                                                                    className: 'font-serif'
-                                                                }
-                                                            ]}
-                                                            title='Typeface'
-                                                            value={fontFamily}
-                                                            onFocus={() => {}}
-                                                            onSelect={option => setFontFamily(option || {
-                                                                value: FONT_SANS,
-                                                                label: 'Clean sans-serif',
-                                                                className: 'font-sans'
-                                                            })}
-                                                        />
-                                                        <div className='mb-2 flex items-center justify-between'>
-                                                            <span className='text-sm font-medium text-gray-900 dark:text-white'>Font size</span>
-                                                            <div className='flex items-center'>
-                                                                <Button
-                                                                    className={`transition-color flex size-8 items-center justify-center rounded-full bg-white dark:bg-grey-900 dark:hover:bg-grey-925 ${currentFontSizeIndex === 0 ? 'opacity-20 hover:bg-white' : 'hover:bg-gray-100'}`}
-                                                                    disabled={currentFontSizeIndex === 0}
-                                                                    hideLabel={true}
-                                                                    icon='substract'
-                                                                    iconSize='xs'
-                                                                    label='Decrease font size'
-                                                                    unstyled={true}
-                                                                    onClick={decreaseFontSize}
-                                                                />
-                                                                <Button
-                                                                    className={`transition-color flex size-8 items-center justify-center rounded-full bg-white hover:bg-gray-100 dark:bg-grey-900 dark:hover:bg-grey-925 ${currentFontSizeIndex === FONT_SIZES.length - 1 ? 'opacity-20 hover:bg-white' : 'hover:bg-gray-100'}`}
-                                                                    disabled={currentFontSizeIndex === FONT_SIZES.length - 1}
-                                                                    hideLabel={true}
-                                                                    icon='add'
-                                                                    iconSize='xs'
-                                                                    label='Increase font size'
-                                                                    unstyled={true}
-                                                                    onClick={increaseFontSize}
-                                                                />
-                                                            </div>
+                                                <PopoverContent align='end' className='w-[224px]' onCloseAutoFocus={e => e.preventDefault()} onOpenAutoFocus={e => e.preventDefault()}>
+                                                    <div className='flex flex-col gap-4'>
+                                                        <div className='flex items-center justify-between'>
+                                                            <Button className={`size-[34px] rounded-full bg-gray-200 text-black hover:bg-gray-250 dark:bg-gray-925 dark:text-white dark:hover:bg-gray-900 [&_svg]:size-[14px] ${isActiveColor('SYSTEM') ? 'outline outline-2 outline-green' : ''}`} variant="secondary" onClick={() => handleColorChange('SYSTEM')}>
+                                                                <LucideIcon.Monitor />
+                                                            </Button>
+                                                            <Button className={`size-8 rounded-full bg-[#ece6d9] hover:bg-[#ece6d9] ${isActiveColor('SEPIA') ? 'outline outline-2 outline-green' : 'border border-[#ece6d9]'}`} onClick={() => handleColorChange('SEPIA')} />
+                                                            <Button className={`size-8 rounded-full bg-white hover:bg-white ${isActiveColor('LIGHT') ? 'outline outline-2 outline-green' : 'border border-gray-200'}`} onClick={() => handleColorChange('LIGHT')} />
+                                                            <Button className={`size-8 rounded-full bg-black hover:bg-black ${isActiveColor('DARK') ? 'outline outline-2 outline-green' : ''}`} onClick={() => handleColorChange('DARK')} />
                                                         </div>
-                                                        <div className='mb-5 flex items-center justify-between'>
-                                                            <span className='text-sm font-medium text-gray-900 dark:text-white'>Line spacing</span>
-                                                            <div className='flex items-center'>
-                                                                <Button
-                                                                    className={`transition-color flex size-8 items-center justify-center rounded-full bg-white hover:bg-gray-100 dark:bg-grey-900 dark:hover:bg-grey-925 ${currentLineHeightIndex === 0 ? 'opacity-20 hover:bg-white' : 'hover:bg-gray-100'}`}
-                                                                    disabled={currentLineHeightIndex === 0}
-                                                                    hideLabel={true}
-                                                                    icon='substract'
-                                                                    iconSize='xs'
-                                                                    label='Decrease line spacing'
-                                                                    unstyled={true}
-                                                                    onClick={decreaseLineHeight}
-                                                                />
-                                                                <Button
-                                                                    className={`transition-color flex size-8 items-center justify-center rounded-full bg-white hover:bg-gray-100 dark:bg-grey-900 dark:hover:bg-grey-925 ${currentLineHeightIndex === LINE_HEIGHTS.length - 1 ? 'opacity-20 hover:bg-white' : 'hover:bg-gray-100'}`}
-                                                                    disabled={currentLineHeightIndex === LINE_HEIGHTS.length - 1}
-                                                                    hideLabel={true}
-                                                                    icon='add'
-                                                                    iconSize='xs'
-                                                                    label='Increase line spacing'
-                                                                    unstyled={true}
-                                                                    onClick={increaseLineHeight}
-                                                                />
-                                                            </div>
+                                                        <div className='flex gap-2'>
+                                                            <Button className={`flex h-auto w-full flex-col gap-1 rounded-[6px] bg-gray-200 text-black hover:bg-gray-250 dark:bg-gray-925 dark:text-white dark:hover:bg-gray-900 ${isActiveFont('sans') && 'outline outline-2 outline-green'}`} variant="secondary" onClick={() => setFontFamily('sans')}>
+                                                                <span className='text-[2rem] font-bold leading-none'>Aa</span>
+                                                                <span className='text-[1.1rem]'>System</span>
+                                                            </Button>
+                                                            <Button className={`flex h-auto w-full flex-col gap-1 rounded-[6px] bg-gray-200 text-black hover:bg-gray-250 dark:bg-gray-925 dark:text-white dark:hover:bg-gray-900 ${isActiveFont('serif') && 'outline outline-2 outline-green'}`} variant="secondary" onClick={() => setFontFamily('serif')}>
+                                                                <span className='pt-1 font-serif text-[2rem] font-bold leading-none'>Aa</span>
+                                                                <span className='font-serif text-[1.2rem]'>Serif</span>
+                                                            </Button>
                                                         </div>
-                                                        <Button
-                                                            className="text-sm text-gray-600 hover:text-gray-700 dark:text-gray-500 dark:hover:text-gray-600"
-                                                            label="Reset to default"
-                                                            link={true}
-                                                            onClick={() => {
-                                                                setCurrentFontSizeIndex(1); // Default font size
-                                                                setCurrentLineHeightIndex(2); // Default line height
-                                                                setFontFamily({
-                                                                    value: FONT_SANS,
-                                                                    label: 'Clean sans-serif'
-                                                                });
-                                                            }}
-                                                        />
+                                                        <div className='flex gap-2'>
+                                                            <Button className='h-8 w-full rounded-[6px] bg-gray-200 text-black hover:bg-gray-250 dark:bg-gray-925 dark:text-white dark:hover:bg-gray-900 [&_svg]:size-[14px]' variant="secondary" onClick={decreaseFontSize}>
+                                                                <LucideIcon.Minus />
+                                                            </Button>
+                                                            <Button className='h-8 w-full rounded-[6px] bg-gray-200 text-black hover:bg-gray-250 dark:bg-gray-925 dark:text-white dark:hover:bg-gray-900' variant="secondary" onClick={() => setCurrentFontSizeIndex(1)}>
+                                                                <span className='text-[1.6rem] font-bold'>Aa</span>
+                                                            </Button>
+                                                            <Button className='h-8 w-full rounded-[6px] bg-gray-200 text-black hover:bg-gray-250 dark:bg-gray-925 dark:text-white dark:hover:bg-gray-900 [&_svg]:size-[14px]' variant="secondary" onClick={increaseFontSize}>
+                                                                <LucideIcon.Plus />
+                                                            </Button>
+                                                        </div>
                                                     </div>
                                                 </PopoverContent>
                                             </Popover>
@@ -795,13 +742,13 @@ export const Reader: React.FC<ReaderProps> = ({
                                         <div className={`mx-auto px-8 pb-10 pt-5`} style={{maxWidth: currentMaxWidth}}>
                                             <div className='flex flex-col items-center pb-8' id='object-content'>
                                                 <ArticleBody
+                                                    backgroundColor={backgroundColor}
                                                     excerpt={object?.preview?.content ?? ''}
                                                     fontFamily={fontFamily}
                                                     fontSize={FONT_SIZES[currentFontSizeIndex]}
                                                     heading={object.name}
                                                     html={object.content ?? ''}
                                                     image={typeof object.image === 'string' ? object.image : object.image?.url}
-                                                    lineHeight={LINE_HEIGHTS[currentLineHeightIndex]}
                                                     postUrl={object?.url || ''}
                                                     onHeadingsExtracted={handleHeadingsExtracted}
                                                     onIframeLoad={handleIframeLoad}
@@ -829,7 +776,7 @@ export const Reader: React.FC<ReaderProps> = ({
                                                 <DeletedFeedItem last={true} />
                                             )}
 
-                                            <div ref={replyBoxRef} className='mx-auto w-full border-t border-gray-200 dark:border-gray-950' style={{maxWidth: currentGridWidth}}>
+                                            <div ref={replyBoxRef} className='mx-auto w-full border-t border-black/[8%] dark:border-gray-950' style={{maxWidth: currentGridWidth}}>
                                                 <APReplyBox
                                                     focused={focusReply ? 1 : 0}
                                                     object={object}

@@ -50,7 +50,7 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({items, activeHeading, 
                 position='center'
                 side='right'
                 trigger={
-                    <div className='flex cursor-pointer flex-col items-end gap-2 rounded-md bg-white p-2 hover:bg-gray-75 dark:bg-black dark:hover:bg-gray-950'>
+                    <div className='flex cursor-pointer flex-col items-end gap-2 rounded-md p-2 hover:bg-black/[3%] dark:bg-black dark:hover:bg-gray-950'>
                         {items.map(item => (
                             <div
                                 key={item.id}

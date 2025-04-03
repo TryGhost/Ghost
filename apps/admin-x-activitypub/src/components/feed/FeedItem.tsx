@@ -448,7 +448,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                         }
                                     }}>
                                         <div className='flex'>
-                                            <span className='min-w-0 truncate whitespace-nowrap font-semibold after:mx-1 after:font-normal after:text-gray-700 after:content-["·"]' data-test-activity-heading>{author.name}</span>
+                                            <span className='min-w-0 truncate whitespace-nowrap font-semibold text-black after:mx-1 after:font-normal after:text-gray-700 after:content-["·"] dark:text-white' data-test-activity-heading>{author.name}</span>
                                             <div>{renderTimestamp(object, (isPending === false && !object.authored))}</div>
                                         </div>
                                         <div className='flex'>

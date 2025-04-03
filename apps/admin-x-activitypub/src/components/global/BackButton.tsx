@@ -3,7 +3,7 @@ import {Button, LucideIcon, cn} from '@tryghost/shade';
 import {useNavigate, useNavigationStack} from '@tryghost/admin-x-framework';
 
 interface BackButtonProps {
-    className?: string,
+    className?: string;
     onClick?: () => void;
 }
 
