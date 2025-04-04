@@ -2598,10 +2598,10 @@
     resolve "^1.20.0"
     semver "^7.3.2"
 
-"@embroider/macros@1.17.0", "@embroider/macros@^0.50.0 || ^1.0.0", "@embroider/macros@^1.0.0", "@embroider/macros@^1.10.0", "@embroider/macros@^1.12.2", "@embroider/macros@^1.2.0", "@embroider/macros@^1.8.0", "@embroider/macros@^1.8.3", "@embroider/macros@^1.9.0":
-  version "1.17.0"
-  resolved "https://registry.yarnpkg.com/@embroider/macros/-/macros-1.17.0.tgz#928bb6dafe2ea9df8e44bd75c29ef8a0998f174d"
-  integrity sha512-VtlntSWnS6hGXoVYXcvjeImu1ZHp1VWQmfowZAgirYLzpzipHcR+ELy3fRmUDVtP+0seR4vEc9Ib3stCJiFQEQ==
+"@embroider/macros@1.17.1", "@embroider/macros@^0.50.0 || ^1.0.0", "@embroider/macros@^1.0.0", "@embroider/macros@^1.10.0", "@embroider/macros@^1.12.2", "@embroider/macros@^1.2.0", "@embroider/macros@^1.8.0", "@embroider/macros@^1.8.3", "@embroider/macros@^1.9.0":
+  version "1.17.1"
+  resolved "https://registry.yarnpkg.com/@embroider/macros/-/macros-1.17.1.tgz#2cc9f55706af17e7569900517a68f49e814a3d65"
+  integrity sha512-pi039RDy2CvgM+RwJ9NMFU4wYMKlSp9p+WyHFfQpZ2e/HL78O1KM1+MEaKnIve6MrXvo7QD7/Kn6MpMTzV1MSQ==
   dependencies:
     "@embroider/shared-internals" "3.0.0"
     assert-never "^1.2.1"
