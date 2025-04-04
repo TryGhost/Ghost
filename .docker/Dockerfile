@@ -1,4 +1,4 @@
-ARG NODE_VERSION=20.15.1
+ARG NODE_VERSION=20.19.0
 ARG WORKDIR=/home/ghost
 
 # Base Image used for all targets

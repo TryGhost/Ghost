@@ -102,7 +102,7 @@ To stay up to date with all the latest news and product updates, make sure you [
 
   Node version is import because some package referened by import package's node version are specified different.
 
-  `v20.15.1`
+  `v20.19.0`
 
 - Build source 
   
