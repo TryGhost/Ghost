@@ -641,4 +641,43 @@ describe('SessionService', function () {
         should.equal(req.session.user_id, 'egg');
         should.equal(req.session.verified, undefined);
     });
+
+    describe('isVerificationRequired', function () {
+        let getSettingsCache;
+        beforeEach(function () {
+            getSettingsCache = sinon.stub();
+        });
+        it('returns true when require_email_mfa is true', async function () {
+            getSettingsCache.withArgs('require_email_mfa').returns(true);
+
+            const sessionService = SessionService({
+                getSettingsCache
+            });
+
+            const result = sessionService.isVerificationRequired();
+            should.equal(result, true);
+        });
+
+        it('returns false when require_email_mfa is false', async function () {
+            getSettingsCache.withArgs('require_email_mfa').returns(false);
+
+            const sessionService = SessionService({
+                getSettingsCache
+            });
+
+            const result = sessionService.isVerificationRequired();
+            should.equal(result, false);
+        });
+
+        it('returns false when require_email_mfa is not set', async function () {
+            getSettingsCache.withArgs('require_email_mfa').returns(undefined);
+
+            const sessionService = SessionService({
+                getSettingsCache
+            });
+
+            const result = sessionService.isVerificationRequired();
+            should.equal(result, false);
+        });
+    });
 });

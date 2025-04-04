@@ -46,6 +46,7 @@ totp.options = {
  * @prop {(req: Req, res: Res) => Promise<void>} sendAuthCodeToUser
  * @prop {(req: Req, res: Res) => Promise<boolean>} verifyAuthCodeForUser
  * @prop {(req: Req, res: Res) => Promise<boolean>} isVerifiedSession
+ * @prop {() => boolean} isVerificationRequired
  */
 
 /**
@@ -53,7 +54,7 @@ totp.options = {
  * @param {(req: Req, res: Res) => Promise<Session>} deps.getSession
  * @param {(data: {id: string}) => Promise<User>} deps.findUserById
  * @param {(req: Req) => string} deps.getOriginOfRequest
- * @param {(key: string) => string} deps.getSettingsCache
+ * @param {(key: 'require_email_mfa' | 'admin_session_secret' | 'title') => boolean | string} deps.getSettingsCache
  * @param {() => string} deps.getBlogLogo
  * @param {import('../../core/core/server/services/mail').GhostMailer} deps.mailer
  * @param {import('../../core/core/shared/labs')} deps.labs
@@ -94,6 +95,15 @@ module.exports = function createSessionService({
                 message: `Request made from incorrect origin. Expected '${session.origin}' received '${origin}'.`
             });
         }
+    }
+
+    /**
+     * isVerificationRequired
+     * Determines if 2FA verification is required based on site settings
+     * @returns {boolean}
+     */
+    function isVerificationRequired() {
+        return getSettingsCache('require_email_mfa') === true;
     }
 
     /**
@@ -261,7 +271,7 @@ module.exports = function createSessionService({
             siteLogo: siteLogo,
             token: token,
             deviceDetails: await getDeviceDetails(session.user_agent, session.ip),
-            is2FARequired: getSettingsCache('require_email_mfa')
+            is2FARequired: this.isVerificationRequired()
         });
 
         try {
@@ -310,8 +320,7 @@ module.exports = function createSessionService({
     async function removeUserForSession(req, res) {
         const session = await getSession(req, res);
 
-        const requireMfa = getSettingsCache('require_email_mfa');
-        if (requireMfa) {
+        if (this.isVerificationRequired()) {
             session.verified = undefined;
         }
 
@@ -359,6 +368,7 @@ module.exports = function createSessionService({
         isVerifiedSession,
         sendAuthCodeToUser,
         verifyAuthCodeForUser,
-        generateAuthCodeForUser
+        generateAuthCodeForUser,
+        isVerificationRequired
     };
 };
