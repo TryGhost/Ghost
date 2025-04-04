@@ -305,7 +305,7 @@ const Users: React.FC<{ keywords: string[], highlight?: boolean }> = ({keywords,
                     <div className='flex items-baseline justify-between'>
                         <div className='flex flex-col'>
                             <span className='text-[1.5rem] font-semibold tracking-tight'>Security settings</span>
-                            <span>Enable email 2FA for all staff logins</span>
+                            <span>Require email 2FA codes to be used on all staff logins</span>
                         </div>
                         <Toggle
                             checked={require2fa}
