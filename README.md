@@ -102,13 +102,21 @@ To stay up to date with all the latest news and product updates, make sure you [
 
   Node version is import because some package referened by import package's node version are specified different.
 
-  `v20.19.0`
+  `v20.15.1`
 
 - Build source 
   
-  `yarn fix` && `yarn build`
+  `yarn` && `yarn build`
 
 # Build local custom source to docker image
+
+- Create archive
+
+  *Avoid parallel build error, change nx.json's `"parallel": 4` to `"parallel": 1` because some ghost/core/build:assets permission error*
+
+  `yarn archive`
+
+  `npx update-browserslist-db@latest`
 
 
 # Copyright & license
