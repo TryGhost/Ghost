@@ -60,6 +60,8 @@ const _ = require('lodash');
  * @property {string|null} support_email_address - Support email address
  * @property {string|null} editor_default_email_recipients - Default email recipients for editor
  * @property {boolean|null} captcha_enabled - Whether captcha is enabled
+ * @property {string|null} captcha_sitekey - Unique sitekey for hCaptcha
+ * @property {string|null} captcha_secret - Private key to validate hCaptcha responses
  * @property {string|null} labs - JSON string of enabled labs features
  * @property {never} [x] - Prevent accessing undefined properties
  */
