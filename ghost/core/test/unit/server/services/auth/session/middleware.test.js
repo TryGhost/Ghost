@@ -75,10 +75,46 @@ describe('Session Service', function () {
             sessionMiddleware.createSession(req, res);
         });
 
-        it('errors with a 403 when signing in while not verified', function (done) {
+        it('errors with a 403 when signing in while not verified', async function () {
             sinon.stub(labs, 'isSet').returns(true);
             const req = fakeReq();
             const res = fakeRes();
+            const next = sinon.stub();
+            sinon.stub(req, 'get')
+                .withArgs('origin').returns('http://host.tld')
+                .withArgs('user-agent').returns('bububang');
+
+            req.ip = '127.0.0.1';
+            req.user = models.User.forge({id: 23});
+
+            const middleware = SessionMiddlware({
+                sessionService: {
+                    createSessionForUser: function () {
+                        return Promise.resolve();
+                    },
+                    isVerifiedSession: function () {
+                        return Promise.resolve(false);
+                    },
+                    sendAuthCodeToUser: function () {
+                        return Promise.resolve();
+                    },
+                    isVerificationRequired: function () {
+                        return false;
+                    }
+                }
+            });
+
+            await middleware.createSession(req, res, next);
+            should.equal(next.callCount, 1);
+            should.equal(next.args[0][0].statusCode, 403);
+            should.equal(next.args[0][0].code, '2FA_NEW_DEVICE_DETECTED');
+        });
+
+        it('errors with a 403 when require_email_mfa is true', async function () {
+            sinon.stub(labs, 'isSet').returns(true);
+            const req = fakeReq();
+            const res = fakeRes();
+            const next = sinon.stub();
 
             sinon.stub(req, 'get')
                 .withArgs('origin').returns('http://host.tld')
@@ -97,15 +133,17 @@ describe('Session Service', function () {
                     },
                     sendAuthCodeToUser: function () {
                         return Promise.resolve();
+                    },
+                    isVerificationRequired: function () {
+                        return true;
                     }
                 }
             });
 
-            middleware.createSession(req, res, (err) => {
-                should.equal(err.statusCode, 403);
-                should.equal(err.code, '2FA_TOKEN_REQUIRED');
-                done();
-            });
+            await middleware.createSession(req, res, next);
+            should.equal(next.callCount, 1);
+            should.equal(next.args[0][0].statusCode, 403);
+            should.equal(next.args[0][0].code, '2FA_TOKEN_REQUIRED');
         });
     });
 
