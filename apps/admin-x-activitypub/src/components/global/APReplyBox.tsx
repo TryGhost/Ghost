@@ -118,7 +118,7 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
 
     const styles = clsx(
         'ap-textarea order-2 w-full resize-none break-words rounded-lg border bg-transparent py-2 pr-3 text-[1.5rem] transition-all dark:text-white',
-        isFocused ? 'min-h-[80px]' : 'min-h-[41px]',
+        isFocused ? 'min-h-[20px]' : 'min-h-[41px]',
         (textValue || isFocused) && 'mb-10',
         error ? 'border-red' : 'border-transparent placeholder:text-gray-500 dark:placeholder:text-gray-800',
         title && 'mt-1.5',
