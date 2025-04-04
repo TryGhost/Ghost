@@ -28,7 +28,6 @@
     ],
     "devDependencies": {
         "@codemirror/lang-html": "6.4.9",
-        "@radix-ui/react-tooltip": "1.1.2",
         "@storybook/addon-essentials": "7.6.20",
         "@storybook/addon-interactions": "7.6.20",
         "@storybook/addon-links": "7.6.20",
