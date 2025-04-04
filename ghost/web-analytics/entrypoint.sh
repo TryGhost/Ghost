@@ -1,5 +1,13 @@
 #!/bin/bash
 
+# Get the directory where this script is located
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+# Set the TB_VERSION variable from .tinyenv file
+source "$SCRIPT_DIR/.tinyenv"
+export TB_VERSION
+echo "Using TB_VERSION: $TB_VERSION"
+
 # Function to prompt Tinybird branch information
 prompt_tb() {
     if [ -e ".tinyb" ]; then
