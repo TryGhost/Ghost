@@ -1,8 +1,9 @@
+import Customizer, {COLOR_OPTIONS, type ColorOption, type FontSize, useCustomizerSettings} from './Customizer';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import getUsername from '../../utils/get-username';
-import {Button, LucideIcon, Popover, PopoverContent, PopoverTrigger, Skeleton} from '@tryghost/shade';
+import {Skeleton} from '@tryghost/shade';
 
-import {Icon, LoadingIndicator} from '@tryghost/admin-x-design-system';
+import {LoadingIndicator} from '@tryghost/admin-x-design-system';
 import {renderTimestamp} from '../../utils/render-timestamp';
 import {usePostForUser, useThreadForUser} from '@hooks/use-activity-pub-queries';
 
@@ -333,48 +334,6 @@ const FeedItemDivider: React.FC = () => (
     <div className="h-px bg-black/[8%] dark:bg-gray-950"></div>
 );
 
-const COLOR_OPTIONS = {
-    SYSTEM: {
-        id: 'system',
-        color: '#fff',
-        background: 'bg-white dark:bg-black',
-        button: 'bg-white dark:bg-black',
-        border: 'border-black/[8%] dark:border-gray-950'
-    },
-    SEPIA: {
-        id: 'sepia',
-        color: '#FCF8F1',
-        background: 'bg-[#FCF8F1]',
-        button: 'bg-[#FCF8F1] hover:bg-black/[3%] text-black hover:text-black',
-        border: 'border-black/[8%]'
-    },
-    LIGHT: {
-        id: 'light',
-        color: '#fff',
-        background: 'bg-white',
-        button: 'hover:bg-black/[3%] text-black hover:text-black',
-        border: 'border-black/[8%] dark:border-gray-950'
-    },
-    DARK: {
-        id: 'dark',
-        color: '#15171a',
-        background: 'bg-black',
-        button: 'text-white dark:bg-black dark:hover:bg-gray-900',
-        border: 'border-black/[8%] dark:border-gray-950'
-    }
-} as const;
-type ColorOption = keyof typeof COLOR_OPTIONS;
-
-const FONT_SIZES = ['1.5rem', '1.6rem', '1.7rem', '1.8rem', '2rem'] as const;
-type FontSize = typeof FONT_SIZES[number];
-
-const STORAGE_KEYS = {
-    BACKGROUND_COLOR: 'ghost-ap-background-color',
-    FONT_SIZE: 'ghost-ap-font-size',
-    FONT_FAMILY: 'ghost-ap-font-family',
-    FONT_STYLE: 'ghost-ap-font-style'
-} as const;
-
 interface ReaderProps {
     postId: string;
     onClose?: () => void;
@@ -384,6 +343,16 @@ export const Reader: React.FC<ReaderProps> = ({
     postId = null,
     onClose
 }) => {
+    const {
+        backgroundColor,
+        fontStyle,
+        fontSize,
+        handleColorChange,
+        setFontStyle,
+        increaseFontSize,
+        decreaseFontSize,
+        resetFontSize
+    } = useCustomizerSettings();
     const modalRef = useRef<HTMLElement>(null);
     const [focusReply, setFocusReply] = useState(false);
     const location = useLocation();
@@ -428,49 +397,6 @@ export const Reader: React.FC<ReaderProps> = ({
 
     const replyBoxRef = useRef<HTMLDivElement>(null);
     const repliesRef = useRef<HTMLDivElement>(null);
-    // const iframeRef = useRef<HTMLIFrameElement>(null);
-
-    // Initialize state with values from localStorage, falling back to defaults
-    const [backgroundColor, setBackgroundColor] = useState<ColorOption>(() => {
-        const saved = localStorage.getItem(STORAGE_KEYS.BACKGROUND_COLOR);
-        return (saved?.toUpperCase() as ColorOption) || 'SYSTEM';
-    });
-
-    const handleColorChange = (color: keyof typeof COLOR_OPTIONS) => {
-        setBackgroundColor(color);
-        localStorage.setItem(STORAGE_KEYS.BACKGROUND_COLOR, COLOR_OPTIONS[color].id);
-    };
-
-    const isActiveColor = (color: keyof typeof COLOR_OPTIONS) => backgroundColor === color;
-
-    const [currentFontSizeIndex, setCurrentFontSizeIndex] = useState(() => {
-        const saved = localStorage.getItem(STORAGE_KEYS.FONT_SIZE);
-        return saved ? parseInt(saved) : 1;
-    });
-
-    const [fontStyle, setFontStyle] = useState(() => {
-        const saved = localStorage.getItem(STORAGE_KEYS.FONT_STYLE);
-        return saved || 'sans';
-    });
-
-    const isActiveFont = (font: 'serif' | 'sans') => fontStyle === font;
-
-    // Update localStorage when values change
-    useEffect(() => {
-        localStorage.setItem(STORAGE_KEYS.FONT_SIZE, currentFontSizeIndex.toString());
-    }, [currentFontSizeIndex]);
-
-    useEffect(() => {
-        localStorage.setItem(STORAGE_KEYS.FONT_STYLE, fontStyle);
-    }, [fontStyle]);
-
-    const increaseFontSize = () => {
-        setCurrentFontSizeIndex(prevIndex => Math.min(prevIndex + 1, FONT_SIZES.length - 1));
-    };
-
-    const decreaseFontSize = () => {
-        setCurrentFontSizeIndex(prevIndex => Math.max(prevIndex - 1, 0));
-    };
 
     const currentMaxWidth = '904px';
     const currentGridWidth = '640px';
@@ -548,27 +474,6 @@ export const Reader: React.FC<ReaderProps> = ({
     const handleIframeLoad = useCallback((iframe: HTMLIFrameElement) => {
         setIframeElement(iframe);
     }, []);
-
-    const scrollToHeading = useCallback((id: string) => {
-        if (!iframeElement?.contentDocument) {
-            return;
-        }
-
-        const heading = iframeElement.contentDocument.getElementById(id);
-        if (heading) {
-            const container = modalRef.current;
-            if (!container) {
-                return;
-            }
-
-            const headingOffset = heading.offsetTop;
-
-            container.scrollTo({
-                top: headingOffset - 20,
-                behavior: 'smooth'
-            });
-        }
-    }, [iframeElement]);
 
     useEffect(() => {
         if (!iframeElement?.contentDocument || !tocItems.length) {
@@ -665,66 +570,31 @@ export const Reader: React.FC<ReaderProps> = ({
                                             </div>
                                         </div>
                                         <div className='col-[3/4] flex items-center justify-end gap-2'>
-                                            <Popover modal={false}>
-                                                <PopoverTrigger asChild>
-                                                    <Button className={`size-9 rounded-full ${COLOR_OPTIONS[backgroundColor].button}`} variant='ghost'>
-                                                        <Icon name='typography' />
-                                                    </Button>
-                                                </PopoverTrigger>
-                                                <PopoverContent align='end' className='w-[224px]' onCloseAutoFocus={e => e.preventDefault()} onOpenAutoFocus={e => e.preventDefault()}>
-                                                    <div className='flex flex-col gap-4'>
-                                                        <div className='flex items-center justify-between gap-[6px]'>
-                                                            <Button className={`h-7 flex-1 rounded-[6px] bg-gray-200 p-0 text-[1.1rem] text-black hover:bg-gray-250 dark:bg-gray-925 dark:text-white dark:hover:bg-gray-900 [&_svg]:size-[14px] ${isActiveColor('SYSTEM') ? 'outline outline-2 outline-green' : ''}`} variant="secondary" onClick={() => handleColorChange('SYSTEM')}>Auto</Button>
-                                                            <Button className={`h-7 flex-1 rounded-[6px] bg-[#ece6d9] p-0 hover:bg-[#ece6d9] ${isActiveColor('SEPIA') ? 'outline outline-2 outline-green' : 'border border-[#ece6d9]'}`} onClick={() => handleColorChange('SEPIA')} />
-                                                            <Button className={`h-7 flex-1 rounded-[6px] bg-white p-0 hover:bg-white ${isActiveColor('LIGHT') ? 'outline outline-2 outline-green' : 'border border-gray-200'}`} onClick={() => handleColorChange('LIGHT')} />
-                                                            <Button className={`h-7 flex-1 rounded-[6px] bg-black p-0 hover:bg-black dark:border dark:border-gray-925 ${isActiveColor('DARK') ? 'outline outline-2 outline-green' : ''}`} onClick={() => handleColorChange('DARK')} />
-                                                        </div>
-                                                        <div className='flex gap-2'>
-                                                            <Button className={`flex h-auto w-full flex-col gap-1 rounded-[6px] bg-gray-200 text-black hover:bg-gray-250 dark:bg-gray-925 dark:text-white dark:hover:bg-gray-900 ${isActiveFont('sans') && 'outline outline-2 outline-green'}`} variant="secondary" onClick={() => setFontStyle('sans')}>
-                                                                <span className='text-[2rem] font-bold leading-none'>Aa</span>
-                                                                <span className='text-[1.1rem]'>System</span>
-                                                            </Button>
-                                                            <Button className={`flex h-auto w-full flex-col gap-1 rounded-[6px] bg-gray-200 text-black hover:bg-gray-250 dark:bg-gray-925 dark:text-white dark:hover:bg-gray-900 ${isActiveFont('serif') && 'outline outline-2 outline-green'}`} variant="secondary" onClick={() => setFontStyle('serif')}>
-                                                                <span className='pt-1 font-serif text-[2rem] font-bold leading-none'>Aa</span>
-                                                                <span className='font-serif text-[1.2rem]'>Serif</span>
-                                                            </Button>
-                                                        </div>
-                                                        <div className='flex gap-2'>
-                                                            <Button className='h-8 w-full rounded-[6px] bg-gray-200 text-black hover:bg-gray-250 dark:bg-gray-925 dark:text-white dark:hover:bg-gray-900 [&_svg]:size-[14px]' variant="secondary" onClick={decreaseFontSize}>
-                                                                <LucideIcon.Minus />
-                                                            </Button>
-                                                            <Button className='h-8 w-full rounded-[6px] bg-gray-200 text-black hover:bg-gray-250 dark:bg-gray-925 dark:text-white dark:hover:bg-gray-900' variant="secondary" onClick={() => setCurrentFontSizeIndex(1)}>
-                                                                <span className='text-[1.6rem] font-bold'>Aa</span>
-                                                            </Button>
-                                                            <Button className='h-8 w-full rounded-[6px] bg-gray-200 text-black hover:bg-gray-250 dark:bg-gray-925 dark:text-white dark:hover:bg-gray-900 [&_svg]:size-[14px]' variant="secondary" onClick={increaseFontSize}>
-                                                                <LucideIcon.Plus />
-                                                            </Button>
-                                                        </div>
-                                                    </div>
-                                                </PopoverContent>
-                                            </Popover>
+                                            <Customizer
+                                                backgroundColor={backgroundColor}
+                                                fontStyle={fontStyle}
+                                                onColorChange={handleColorChange}
+                                                onDecreaseFontSize={decreaseFontSize}
+                                                onFontStyleChange={setFontStyle}
+                                                onIncreaseFontSize={increaseFontSize}
+                                                onResetFontSize={resetFontSize}
+                                            />
                                         </div>
                                     </div>
                                 </div>
                                 <div className='relative flex-1'>
-                                    {tocItems.length > 1 && (
-                                        <div className="!visible absolute inset-y-0 right-7 z-40 hidden lg:!block">
-                                            <div className="sticky top-1/2 -translate-y-1/2">
-                                                <TableOfContents
-                                                    activeHeading={activeHeadingId || ''}
-                                                    items={tocItems}
-                                                    onItemClick={scrollToHeading}
-                                                />
-                                            </div>
-                                        </div>
-                                    )}
+                                    <TableOfContents
+                                        iframeElement={iframeElement}
+                                        modalRef={modalRef}
+                                        tocItems={tocItems}
+                                    />
                                     <div className='grow overflow-y-auto'>
                                         <div className={`mx-auto px-8 pb-10 pt-5`} style={{maxWidth: currentMaxWidth}}>
                                             <div className='flex flex-col items-center pb-8' id='object-content'>
                                                 <ArticleBody
                                                     backgroundColor={backgroundColor}
                                                     excerpt={object?.preview?.content ?? ''}
-                                                    fontSize={FONT_SIZES[currentFontSizeIndex]}
+                                                    fontSize={fontSize}
                                                     fontStyle={fontStyle}
                                                     heading={object.name}
                                                     html={object.content ?? ''}

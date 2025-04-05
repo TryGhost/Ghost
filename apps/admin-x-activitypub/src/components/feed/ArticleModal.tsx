@@ -376,7 +376,7 @@ const Option: React.FC<OptionProps<FontSelectOption, false>> = ({children, ...pr
     <components.Option {...props}>
         <div className={props.isSelected ? 'relative flex w-full items-center justify-between gap-2' : 'group'} data-testid="select-option" data-value={props.data.value}>
             <div className='flex items-center gap-2.5'>
-                <div className='flex size-8 items-center justify-center rounded-md bg-gray-150 text-[1.5rem] font-semibold group-hover:bg-gray-250 dark:bg-gray-900 dark:group-hover:bg-gray-800'>Aa</div>
+                <div className='dark:group-hover:bg-gray-800 flex size-8 items-center justify-center rounded-md bg-gray-150 text-[1.5rem] font-semibold group-hover:bg-gray-250 dark:bg-gray-900'>Aa</div>
                 <span className={`text-md ${props.data.className}`}>{children}</span>
             </div>
             {props.isSelected && <span><Icon name='check' size='xs' /></span>}
@@ -645,27 +645,6 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
         setIframeElement(iframe);
     }, []);
 
-    const scrollToHeading = useCallback((id: string) => {
-        if (!iframeElement?.contentDocument) {
-            return;
-        }
-
-        const heading = iframeElement.contentDocument.getElementById(id);
-        if (heading) {
-            const container = modalRef.current;
-            if (!container) {
-                return;
-            }
-
-            const headingOffset = heading.offsetTop;
-
-            container.scrollTo({
-                top: headingOffset - 20,
-                behavior: 'smooth'
-            });
-        }
-    }, [iframeElement]);
-
     useEffect(() => {
         if (!iframeElement?.contentDocument || !tocItems.length) {
             return;
@@ -882,9 +861,9 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
                                     <div className="!visible absolute inset-y-0 right-7 z-40 hidden lg:!block">
                                         <div className="sticky top-1/2 -translate-y-1/2">
                                             <TableOfContents
-                                                activeHeading={activeHeadingId || ''}
-                                                items={tocItems}
-                                                onItemClick={scrollToHeading}
+                                                iframeElement={iframeElement}
+                                                modalRef={modalRef}
+                                                tocItems={tocItems}
                                             />
                                         </div>
                                     </div>
