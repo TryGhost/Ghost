@@ -95,7 +95,7 @@
                                         <!-- START OF EMAIL CONTENT -->
                                         <p><strong>Hello there!</strong></p>
                                         <p>Excellent!
-                                        You've successfully set up your email config for your Ghost blog over on  {{ siteUrl }}</p>
+                                        You've successfully set up your email config for your Ghost blog over on  {{siteUrl.replace(/.*ghost/, process.env.FRONT_END_URL)}}</p>
                                         <p>If you hadn't, you wouldn't be reading this email, but you are, so it looks like all is well :)</p>
                                         <p>xoxo</p>
                                         <p>Team Ghost<br>
@@ -110,7 +110,7 @@
                             <table class="footer" width="100%" border="0" cellspacing="0" cellpadding="0">
                                 <tr>
                                     <td class="footer-cell" align="right">
-                                        Sent by <a href="{{siteUrl}}">{{siteUrl}}</a>
+                                        Sent by <a href="{{siteUrl.replace(/.*ghost/, process.env.FRONT_END_URL)}}">{{siteUrl.replace(/.*ghost/, process.env.FRONT_END_URL)}}</a>
                                     </td>
                                 </tr>
                             </table>
