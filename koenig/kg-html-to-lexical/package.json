@@ -44,7 +44,7 @@
     "@lexical/rich-text": "0.13.1",
     "@tryghost/kg-default-nodes": "1.4.5",
     "@tryghost/kg-default-transforms": "1.2.5",
-    "jsdom": "^24.1.0",
+    "jsdom": "^24.1.1",
     "lexical": "0.13.1"
   }
 }

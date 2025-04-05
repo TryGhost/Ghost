@@ -107,7 +107,7 @@
     "eslint-plugin-tailwindcss": "3.17.4",
     "eventemitter3": "^5.0.0",
     "fast-average-color": "^9.3.0",
-    "jsdom": "24.1.1",
+    "jsdom": "24.1.3",
     "lexical": "0.13.1",
     "luxon": "^3.5.0",
     "pluralize": "^8.0.0",
