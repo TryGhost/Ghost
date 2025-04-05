@@ -17,7 +17,7 @@ interface TierCardProps {
 }
 
 const cardContainerClasses = clsx(
-    'group/tiercard flex cursor-pointer flex-col items-start justify-between gap-4 self-stretch rounded-sm border border-transparent bg-grey-100 p-4 transition-all hover:border-grey-100 hover:bg-grey-75 hover:shadow-sm dark:bg-grey-950 dark:hover:border-grey-800 min-[900px]:min-h-[200px]'
+    'group/tiercard flex cursor-pointer flex-col items-start justify-between gap-4 self-stretch rounded-sm border border-transparent bg-grey-100 p-4 transition-all hover:border-grey-100 hover:bg-grey-75 hover:shadow-sm min-[900px]:min-h-[200px] dark:bg-grey-950 dark:hover:border-grey-800'
 );
 
 const TierCard: React.FC<TierCardProps> = ({tier}) => {
