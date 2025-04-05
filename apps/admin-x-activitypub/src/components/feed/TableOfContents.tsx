@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {Popover} from '@tryghost/admin-x-design-system';
 
 export interface TOCItem {
@@ -9,6 +9,103 @@ export interface TOCItem {
 }
 
 interface TableOfContentsProps {
+    tocItems: TOCItem[];
+    iframeElement: HTMLIFrameElement | null;
+    modalRef: React.RefObject<HTMLElement>;
+    className?: string;
+}
+
+// Main component that handles logic
+const TableOfContents: React.FC<TableOfContentsProps> = ({
+    tocItems,
+    iframeElement,
+    modalRef,
+    className = '!visible absolute inset-y-0 right-7 z-40 hidden lg:!block'
+}) => {
+    const [activeHeadingId, setActiveHeadingId] = useState<string | null>(null);
+
+    const handleHeadingClick = (id: string) => {
+        if (!iframeElement?.contentDocument) {
+            return;
+        }
+
+        const heading = iframeElement.contentDocument.getElementById(id);
+        if (heading && modalRef.current) {
+            modalRef.current.scrollTo({
+                top: heading.offsetTop - 20,
+                behavior: 'smooth'
+            });
+        }
+    };
+
+    useEffect(() => {
+        if (!iframeElement?.contentDocument || tocItems.length <= 1) {
+            return;
+        }
+
+        const container = modalRef.current;
+        if (!container) {
+            return;
+        }
+
+        const handleScroll = () => {
+            const doc = iframeElement.contentDocument;
+            if (!doc) {
+                return;
+            }
+
+            const scrollTop = container.scrollTop;
+            const buffer = 100;
+
+            const headings = tocItems
+                .map(item => doc.getElementById(item.id))
+                .filter((el): el is HTMLElement => el !== null)
+                .map(el => ({
+                    id: el.id,
+                    top: el.offsetTop
+                }));
+
+            if (!headings.length) {
+                return;
+            }
+
+            const activeHeading = headings.reduce((prev, curr) => {
+                return (curr.top - buffer <= scrollTop) ? curr : prev;
+            });
+
+            setActiveHeadingId(activeHeading?.id || null);
+        };
+
+        const scrollHandler = () => {
+            requestAnimationFrame(handleScroll);
+        };
+
+        container.addEventListener('scroll', scrollHandler);
+        handleScroll(); // Initial check
+
+        return () => {
+            container.removeEventListener('scroll', scrollHandler);
+        };
+    }, [iframeElement, tocItems, modalRef]);
+
+    if (tocItems.length <= 1) {
+        return null;
+    }
+
+    return (
+        <div className={className}>
+            <div className="sticky top-1/2 -translate-y-1/2">
+                <TableOfContentsView
+                    activeHeading={activeHeadingId || ''}
+                    items={tocItems}
+                    onItemClick={handleHeadingClick}
+                />
+            </div>
+        </div>
+    );
+};
+
+interface TableOfContentsViewProps {
     items: TOCItem[];
     activeHeading: string;
     onItemClick: (id: string) => void;
@@ -26,7 +123,7 @@ const HEADING_PADDINGS = {
     3: 'pl-10'
 } as const;
 
-const TableOfContents: React.FC<TableOfContentsProps> = ({items, activeHeading, onItemClick}) => {
+const TableOfContentsView: React.FC<TableOfContentsViewProps> = ({items, activeHeading, onItemClick}) => {
     if (items.length === 0) {
         return null;
     }
