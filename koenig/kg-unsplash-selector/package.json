@@ -44,7 +44,7 @@
     "concurrently": "8.2.2",
     "eslint": "8.57.1",
     "eslint-plugin-react-hooks": "4.6.2",
-    "eslint-plugin-react-refresh": "0.4.11",
+    "eslint-plugin-react-refresh": "0.4.19",
     "eslint-plugin-tailwindcss": "3.17.4",
     "jsdom": "24.1.1",
     "postcss": "8.5.3",
