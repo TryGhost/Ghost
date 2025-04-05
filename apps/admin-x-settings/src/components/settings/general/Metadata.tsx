@@ -22,7 +22,7 @@ const SearchEnginePreview: React.FC<SearchEnginePreviewProps> = ({
 
     return (
         <div>
-            <div className='-mx-5 -mb-5 overflow-hidden rounded-b-xl bg-grey-50 px-5 pt-5 dark:bg-grey-950 md:-mx-7 md:-mb-7 md:px-7 md:pt-7'>
+            <div className='-mx-5 -mb-5 overflow-hidden rounded-b-xl bg-grey-50 px-5 pt-5 md:-mx-7 md:-mb-7 md:px-7 md:pt-7 dark:bg-grey-950'>
                 <div className='rounded-t-sm bg-white px-5 py-3 shadow-lg dark:bg-grey-975'>
                     <div className='mt-3 flex items-center'>
                         <div className='basis-'>

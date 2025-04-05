@@ -70,7 +70,7 @@ const Option: React.FC<OptionProps<FontSelectOption, false>> = ({children, ...op
     <components.Option {...optionProps}>
         <div className={optionProps.isSelected ? 'relative flex w-full items-center justify-between gap-2' : 'group'} data-testid="select-option" data-value={optionProps.data.value}>
             <div className='flex items-center gap-3'>
-                <div className='flex h-12 w-12 items-center justify-center rounded-md bg-grey-150 text-2xl font-bold group-hover:bg-grey-250 dark:bg-grey-900 dark:group-hover:bg-grey-800'>Aa</div>
+                <div className='dark:group-hover:bg-grey-800 flex h-12 w-12 items-center justify-center rounded-md bg-grey-150 text-2xl font-bold group-hover:bg-grey-250 dark:bg-grey-900'>Aa</div>
                 <div className='flex flex-col'>
                     <span className='text-md'>{children}</span>
                     <span className='font-sans text-xs font-normal text-grey-700 dark:text-grey-600'>{optionProps.data.creator}</span>
