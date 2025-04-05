@@ -345,6 +345,7 @@ export const Reader: React.FC<ReaderProps> = ({
 }) => {
     const {
         backgroundColor,
+        currentFontSizeIndex,
         fontStyle,
         fontSize,
         handleColorChange,
@@ -572,6 +573,7 @@ export const Reader: React.FC<ReaderProps> = ({
                                         <div className='col-[3/4] flex items-center justify-end gap-2'>
                                             <Customizer
                                                 backgroundColor={backgroundColor}
+                                                currentFontSizeIndex={currentFontSizeIndex}
                                                 fontStyle={fontStyle}
                                                 onColorChange={handleColorChange}
                                                 onDecreaseFontSize={decreaseFontSize}
