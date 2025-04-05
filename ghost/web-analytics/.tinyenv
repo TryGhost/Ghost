@@ -5,6 +5,9 @@
 # bump major to deploy a new Release in preview status
 VERSION=0.0.2
 
+# Use TB_VERSION to specify the current VERSION for the pipes and datasources
+TB_VERSION=8
+
 
 
 ##########

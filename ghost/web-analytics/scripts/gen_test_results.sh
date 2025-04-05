@@ -4,6 +4,14 @@ set -euo pipefail
 # Directory containing the test files
 TEST_DIR="./tests"
 
+# Get the directory where the script is located
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+# Set the TB_VERSION variable from .tinyenv file
+source "$SCRIPT_DIR/../.tinyenv"
+export TB_VERSION
+echo "Using TB_VERSION: $TB_VERSION"
+
 # Parse command line options
 jobs=""
 while [[ $# -gt 0 ]]; do

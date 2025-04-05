@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Exit on error
 set -e
@@ -12,6 +12,11 @@ NC='\033[0m' # No Color
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 # Get the web-analytics root directory (parent of scripts)
 ROOT_DIR="$( cd "$SCRIPT_DIR/.." && pwd )"
+
+# Set the TB_VERSION variable from .tinyenv file
+source "$SCRIPT_DIR/../.tinyenv"
+export TB_VERSION
+echo "Using TB_VERSION: $TB_VERSION"
 
 # Initialize error counter and array for error messages
 errors=0
@@ -30,8 +35,7 @@ run_checks() {
     # List of check functions - we'll add more here
     checks=(
         "check_token"
-        "check_version_parameter"
-        "check_consistent_version"
+        "check_version"
     )
 
     # Run each check
@@ -66,7 +70,7 @@ check_token() {
 }
 
 # Check that all datasource and pipe files (except analytics_events.datasource) have a VERSION parameter
-check_version_parameter() {
+check_version() {
     local file="$1"
     local relative_file="$2"
     local basename=$(basename "$file")
@@ -83,41 +87,11 @@ check_version_parameter() {
             ((errors++))
             return 1
         fi
-    fi
 
-    return 0
-}
-
-# Check that all datasource and pipe files have the same VERSION value
-check_consistent_version() {
-    local file="$1"
-    local relative_file="$2"
-    local basename=$(basename "$file")
-
-    # Skip analytics_events.datasource
-    if [[ "$basename" == "analytics_events.datasource" ]]; then
-        return 0
-    fi
-
-    # Only check .datasource and .pipe files
-    if [[ "$file" == *.datasource || "$file" == *.pipe ]]; then
-        # Extract version number if present
-        local file_version=$(grep -o '^VERSION [0-9]\+' "$file" | awk '{print $2}')
-
-        # Skip files without version (they will be caught by check_version_parameter)
-        if [ -z "$file_version" ]; then
-            return 0
-        fi
-
-        # Set reference version if it's the first file with a version
-        if [ -z "$reference_version" ]; then
-            reference_version="$file_version"
-            return 0
-        fi
-
-        # Check if current file version matches reference version
-        if [ "$file_version" != "$reference_version" ]; then
-            error_messages+=("→ $relative_file has VERSION $file_version, but should be $reference_version (found in other files)")
+        # Extract the version number and compare with TB_VERSION
+        local file_version=$(grep -E '^VERSION [0-9]+' "$file" | awk '{print $2}')
+        if [[ "$file_version" != "$TB_VERSION" ]]; then
+            error_messages+=("→ $relative_file has VERSION $file_version but should be $TB_VERSION")
             ((errors++))
             return 1
         fi

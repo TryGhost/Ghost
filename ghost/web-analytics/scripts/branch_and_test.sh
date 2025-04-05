@@ -17,8 +17,9 @@ for arg in "$@"; do
     fi
 done
 
-# Allow version to be passed in or default to 0
-export TB_VERSION=${TB_VERSION:-0}
+# Set the TB_VERSION variable from .tinyenv file
+source "$SCRIPT_DIR/../.tinyenv"
+export TB_VERSION
 echo "Using TB_VERSION: $TB_VERSION"
 
 # Attempt to create the branch and check for errors
