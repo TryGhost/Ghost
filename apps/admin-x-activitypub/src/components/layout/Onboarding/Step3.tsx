@@ -203,7 +203,7 @@ const ShortFormContent: React.FC = () => {
         }
     ];
 
-    const {data: account} = useAccountForUser('index');
+    const {data: account} = useAccountForUser('index', 'me');
 
     return (
         <>

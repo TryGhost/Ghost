@@ -30,10 +30,16 @@ function getCacheHeaderFromEventString(event, dto) {
         return true;
     }
     if (event === 'scheduled_updated' || event === 'draft_updated') {
+        const baseUrl = urlUtils.urlFor({
+            relativeUrl: urlUtils.urlJoin('/p', dto.uuid, '/')
+        });
         return {
-            value: urlUtils.urlFor({
-                relativeUrl: urlUtils.urlJoin('/p', dto.uuid, '/')
-            })
+            value: [
+                baseUrl,
+                `${baseUrl}?member_status=anonymous`,
+                `${baseUrl}?member_status=free`,
+                `${baseUrl}?member_status=paid`
+            ].join(', ')
         };
     }
 }

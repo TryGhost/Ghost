@@ -4,37 +4,37 @@ const logging = require('@tryghost/logging');
 
 class RecommendationServiceWrapper {
     /**
-     * @type {import('@tryghost/recommendations').RecommendationRepository}
+     * @type {import('./service').RecommendationRepository}
      */
     repository;
 
     /**
-     * @type {import('@tryghost/recommendations').BookshelfClickEventRepository}
+     * @type {import('./service').BookshelfClickEventRepository}
      */
     clickEventRepository;
 
     /**
-     * @type {import('@tryghost/recommendations').BookshelfSubscribeEventRepository}
+     * @type {import('./service').BookshelfSubscribeEventRepository}
      */
     subscribeEventRepository;
 
     /**
-     * @type {import('@tryghost/recommendations').RecommendationController}
+     * @type {import('./service').RecommendationController}
      */
     controller;
 
     /**
-     * @type {import('@tryghost/recommendations').RecommendationService}
+     * @type {import('./service').RecommendationService}
      */
     service;
 
     /**
-     * @type {import('@tryghost/recommendations').IncomingRecommendationController}
+     * @type {import('./service').IncomingRecommendationController}
      */
     incomingRecommendationController;
 
     /**
-     * @type {import('@tryghost/recommendations').IncomingRecommendationService}
+     * @type {import('./service').IncomingRecommendationService}
      */
     incomingRecommendationService;
 
@@ -65,7 +65,7 @@ class RecommendationServiceWrapper {
             IncomingRecommendationService,
             IncomingRecommendationEmailRenderer,
             RecommendationMetadataService
-        } = require('@tryghost/recommendations');
+        } = require('./service');
 
         const mentions = require('../mentions');
 

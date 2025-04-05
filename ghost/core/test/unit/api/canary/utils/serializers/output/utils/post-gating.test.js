@@ -1,5 +1,6 @@
 const assert = require('assert/strict');
 const sinon = require('sinon');
+const htmlToPlaintext = require('@tryghost/html-to-plaintext');
 const gating = require('../../../../../../../../core/server/api/endpoints/utils/serializers/output/utils/post-gating');
 const membersContentGating = require('../../../../../../../../core/server/services/members/content-gating');
 const labs = require('../../../../../../../../core/shared/labs');
@@ -157,6 +158,19 @@ describe('Unit: endpoints/utils/serializers/output/utils/post-gating', function 
 
                 sinon.assert.notCalled(regexSpy);
                 sinon.assert.notCalled(stripGatedBlocksStub);
+            });
+
+            it('does not call htmlToPlaintext.excerpt more than once', function () {
+                const excerptStub = sinon.stub(htmlToPlaintext, 'excerpt').returns('excerpt');
+
+                const attrs = {
+                    visibility: 'public',
+                    html: '<!--kg-gated-block:begin nonMember:true--><p>gated block</p><!--kg-gated-block:end-->',
+                    excerpt: 'gated block'
+                };
+
+                gating.forPost(attrs, frame);
+                sinon.assert.calledOnce(excerptStub);
             });
         });
     });

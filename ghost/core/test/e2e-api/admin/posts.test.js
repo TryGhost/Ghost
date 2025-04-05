@@ -403,6 +403,33 @@ describe('Posts API', function () {
             should.exist(emptyPageCount);
             emptyPageCount.should.equal(0, 'post-creation empty page count');
         });
+
+        it('invalidates preview cache when updating a draft post', async function () {
+            const post = {
+                title: 'Cache invalidation test',
+                status: 'draft'
+            };
+
+            const {body: postBody} = await agent
+                .post('/posts/?formats=mobiledoc,lexical,html')
+                .body({posts: [post]})
+                .expectStatus(201);
+
+            const [postResponse] = postBody.posts;
+
+            // check that header contains the correct cache invalidation pattern which is the post url and the post url with member_status=anonymous, free, paid
+            await agent
+                .put(`/posts/${postResponse.id}/?formats=mobiledoc,lexical,html`)
+                .body({posts: [Object.assign({}, postResponse, {status: 'draft'})]})
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag,
+                    'x-cache-invalidate': stringMatching(/^\/p\/[a-z0-9-]+\/, \/p\/[a-z0-9-]+\/\?member_status=anonymous, \/p\/[a-z0-9-]+\/\?member_status=free, \/p\/[a-z0-9-]+\/\?member_status=paid$/)
+                });
+        });
+
+        // update when updating a scheduled post
     });
 
     describe('Update', function () {

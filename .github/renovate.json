@@ -1,0 +1,56 @@
+{
+    "extends": [
+        "github>tryghost/renovate-config:quiet"
+    ],
+    "rebaseWhen": "never",
+    "ignoreDeps": [
+        "got",
+        "intl-messageformat",
+        "moment",
+        "moment-timezone",
+        "simple-dom",
+        "ember-drag-drop",
+        "normalize.css",
+        "validator",
+        "codemirror",
+        "faker",
+        "ember-cli-code-coverage",
+        "ember-cli-terser"
+    ],
+    "ignorePaths": [
+        "test",
+        "ghost/admin/lib/koenig-editor/package.json"
+    ],
+    "packageRules": [
+        {
+        "groupName": "ember-basic-dropdown addons",
+        "packagePatterns": [
+            "^ember-basic",
+            "^ember-power"
+        ]
+        },
+        {
+        "groupName": "ember core",
+        "packageNames": [
+            "ember-source",
+            "ember-cli",
+            "ember-data"
+        ]
+        },
+        {
+        "groupName": "disable css",
+        "matchFiles": [
+            "ghost/admin/package.json"
+        ],
+        "packagePatterns": [
+            "^postcss",
+            "^css"
+        ],
+        "packageNames": [
+            "autoprefixer",
+            "ember-cli-postcss"
+        ],
+        "enabled": false
+        }
+    ]
+}

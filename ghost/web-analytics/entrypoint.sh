@@ -1,15 +1,22 @@
 #!/bin/bash
 
+# Get the directory where this script is located
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+# Set the TB_VERSION variable from .tinyenv file
+source "$SCRIPT_DIR/.tinyenv"
+export TB_VERSION
+echo "Using TB_VERSION: $TB_VERSION"
+
 # Function to prompt Tinybird branch information
 prompt_tb() {
     if [ -e ".tinyb" ]; then
-        TB_CHAR=$'\U1F423'
         branch_name=$(grep '"name":' .tinyb | cut -d : -f 2 | cut -d '"' -f 2)
         region=$(grep '"host":' .tinyb | cut -d / -f 3 | cut -d . -f 2 | cut -d : -f 1)
         if [ "$region" = "tinybird" ]; then
             region=$(grep '"host":' .tinyb | cut -d / -f 3 | cut -d . -f 1)
         fi
-        TB_BRANCH="${TB_CHAR}tb:${region}=>${branch_name}"
+        TB_BRANCH=":tb=>${branch_name}"
     else
         TB_BRANCH=''
     fi

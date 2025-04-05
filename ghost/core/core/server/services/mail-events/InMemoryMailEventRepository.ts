@@ -1,4 +1,4 @@
-import {InMemoryRepository} from '@tryghost/in-memory-repository';
+import {InMemoryRepository} from '../lib/InMemoryRepository';
 import {MailEvent} from './MailEvent';
 
 export class InMemoryMailEventRepository extends InMemoryRepository<string, MailEvent> {
