@@ -48,6 +48,7 @@ export type FontStyle = 'sans' | 'serif';
 
 interface CustomizerProps {
     backgroundColor: ColorOption;
+    currentFontSizeIndex: number;
     fontStyle: FontStyle;
     onColorChange: (color: ColorOption) => void;
     onFontStyleChange: (style: FontStyle) => void;
@@ -110,6 +111,7 @@ export const useCustomizerSettings = () => {
 
 const Customizer: React.FC<CustomizerProps> = ({
     backgroundColor,
+    currentFontSizeIndex,
     fontStyle,
     onColorChange,
     onFontStyleChange,
@@ -123,6 +125,7 @@ const Customizer: React.FC<CustomizerProps> = ({
     return (
         <CustomizerView
             backgroundColor={backgroundColor}
+            currentFontSizeIndex={currentFontSizeIndex}
             fontStyle={fontStyle}
             isActiveColor={isActiveColor}
             isActiveFont={isActiveFont}
@@ -138,6 +141,7 @@ const Customizer: React.FC<CustomizerProps> = ({
 interface CustomizerViewProps extends CustomizerProps {
     isActiveColor: (color: ColorOption) => boolean;
     isActiveFont: (font: FontStyle) => boolean;
+    currentFontSizeIndex: number;
 }
 
 const CustomizerView: React.FC<CustomizerViewProps> = ({
@@ -146,6 +150,7 @@ const CustomizerView: React.FC<CustomizerViewProps> = ({
     isActiveFont,
     onColorChange,
     onFontStyleChange,
+    currentFontSizeIndex,
     onDecreaseFontSize,
     onIncreaseFontSize,
     onResetFontSize
@@ -200,6 +205,7 @@ const CustomizerView: React.FC<CustomizerViewProps> = ({
                 <div className='flex gap-2'>
                     <Button
                         className='h-8 w-full rounded-[6px] bg-gray-200 text-black hover:bg-gray-250 dark:bg-gray-925 dark:text-white dark:hover:bg-gray-900 [&_svg]:size-[14px]'
+                        disabled={currentFontSizeIndex === 0}
                         variant="secondary"
                         onClick={onDecreaseFontSize}
                     >
@@ -214,6 +220,7 @@ const CustomizerView: React.FC<CustomizerViewProps> = ({
                     </Button>
                     <Button
                         className='h-8 w-full rounded-[6px] bg-gray-200 text-black hover:bg-gray-250 dark:bg-gray-925 dark:text-white dark:hover:bg-gray-900 [&_svg]:size-[14px]'
+                        disabled={currentFontSizeIndex === FONT_SIZES.length - 1}
                         variant="secondary"
                         onClick={onIncreaseFontSize}
                     >
