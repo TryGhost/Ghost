@@ -35,6 +35,7 @@
                 "video/mp4",
                 "video/webm",
                 "video/ogg",
+                "video/quicktime",
                 "audio/mpeg",
                 "audio/vnd.wav",
                 "audio/wave",
