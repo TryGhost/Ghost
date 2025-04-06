@@ -47,9 +47,9 @@
   "devDependencies": {
     "@babel/core": "7.25.2",
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
-    "@codemirror/lang-css": "6.2.1",
+    "@codemirror/lang-css": "6.3.1",
     "@codemirror/lang-html": "6.4.9",
-    "@codemirror/lang-javascript": "6.2.2",
+    "@codemirror/lang-javascript": "6.2.3",
     "@emoji-mart/data": "^1.1.2",
     "@emoji-mart/react": "^1.1.1",
     "@etchteam/storybook-addon-status": "^5.0.0",
