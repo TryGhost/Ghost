@@ -38,7 +38,7 @@
     "@types/react-dom": "18.3.6",
     "@typescript-eslint/eslint-plugin": "7.18.0",
     "@typescript-eslint/parser": "7.18.0",
-    "@vitejs/plugin-react": "4.3.1",
+    "@vitejs/plugin-react": "4.3.4",
     "@vitest/coverage-v8": "1.6.1",
     "autoprefixer": "10.4.21",
     "concurrently": "8.2.2",
@@ -52,9 +52,9 @@
     "tailwindcss": "3.4.17",
     "typescript": "5.5.4",
     "vite": "5.4.17",
-    "vite-plugin-css-injected-by-js": "3.5.1",
+    "vite-plugin-css-injected-by-js": "3.5.2",
     "vite-plugin-dts": "3.9.1",
-    "vite-plugin-svgr": "4.2.0",
+    "vite-plugin-svgr": "4.3.0",
     "vitest": "1.6.1"
   }
 }
