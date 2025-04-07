@@ -210,11 +210,11 @@ class BulkEmailProvider {
 
     /**
      * Returns the configured delay between batches in milliseconds
-     * 
+     *
      * @returns {number}
      */
     getTargetDeliveryWindow() {
-        return this.#mailgunClient.getTargetDeliveryWindow();
+        return this.#mailClient.getTargetDeliveryWindow();
     }
 }
 
