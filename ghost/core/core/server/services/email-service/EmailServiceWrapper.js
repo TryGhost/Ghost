@@ -2,7 +2,7 @@ const debug = require('@tryghost/debug')('i18n');
 const logging = require('@tryghost/logging');
 const url = require('../../api/endpoints/utils/serializers/output/utils/url');
 const events = require('../../lib/common/events');
-const MailgunClient = require('@tryghost/mailgun-client');
+const MailgunClient = require('../lib/MailgunClient');
 const PostmarkClient = require('@tryghost/postmark-client');
 
 class EmailServiceWrapper {
@@ -33,7 +33,6 @@ class EmailServiceWrapper {
 
         const {EmailService, EmailController, EmailRenderer, SendingService, BatchSendingService, EmailSegmenter, BulkEmailProvider} = require('@tryghost/email-service');
         const {Post, Newsletter, Email, EmailBatch, EmailRecipient, Member} = require('../../models');
-        const MailgunClient = require('../lib/MailgunClient');
         const configService = require('../../../shared/config');
         const settingsCache = require('../../../shared/settings-cache');
         const settingsHelpers = require('../settings-helpers');
