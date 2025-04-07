@@ -1393,7 +1393,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/posts/liked`]: {
+                [`https://activitypub.api/.ghost/activitypub/posts/liked/me`]: {
                     response: JSONResponse({
                         posts: [
                             {
@@ -1415,7 +1415,7 @@ describe('ActivityPubAPI', function () {
                 fakeFetch
             );
 
-            const actual = await api.getPostsLikedByAccount();
+            const actual = await api.getPostsLikedByAccount('me');
 
             expect(actual.posts).toEqual([
                 {
@@ -1436,7 +1436,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/posts/liked`]: {
+                [`https://activitypub.api/.ghost/activitypub/posts/liked/me`]: {
                     response: JSONResponse({
                         posts: [],
                         next: 'abc123'
@@ -1451,7 +1451,7 @@ describe('ActivityPubAPI', function () {
                 fakeFetch
             );
 
-            const actual = await api.getPostsLikedByAccount();
+            const actual = await api.getPostsLikedByAccount('me');
 
             expect(actual.next).toEqual('abc123');
         });
@@ -1467,7 +1467,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/posts/liked?next=${next}`]: {
+                [`https://activitypub.api/.ghost/activitypub/posts/liked/me?next=${next}`]: {
                     response: JSONResponse({
                         posts: [
                             {
@@ -1486,7 +1486,7 @@ describe('ActivityPubAPI', function () {
                 fakeFetch
             );
 
-            const actual = await api.getPostsLikedByAccount(next);
+            const actual = await api.getPostsLikedByAccount('me', next);
             const expected = {
                 posts: [
                     {
@@ -1508,7 +1508,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/posts/liked`]: {
+                [`https://activitypub.api/.ghost/activitypub/posts/liked/me`]: {
                     response: JSONResponse(null)
                 }
             });
@@ -1520,7 +1520,7 @@ describe('ActivityPubAPI', function () {
                 fakeFetch
             );
 
-            const actual = await api.getPostsLikedByAccount();
+            const actual = await api.getPostsLikedByAccount('me');
             const expected = {
                 posts: [],
                 next: null
@@ -1538,7 +1538,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/posts/liked`]: {
+                [`https://activitypub.api/.ghost/activitypub/posts/liked/me`]: {
                     response: JSONResponse({})
                 }
             });
@@ -1550,7 +1550,7 @@ describe('ActivityPubAPI', function () {
                 fakeFetch
             );
 
-            const actual = await api.getPostsLikedByAccount();
+            const actual = await api.getPostsLikedByAccount('me');
             const expected = {
                 posts: [],
                 next: null
@@ -1568,7 +1568,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/posts/liked`]: {
+                [`https://activitypub.api/.ghost/activitypub/posts/liked/me`]: {
                     response: JSONResponse({
                         posts: []
                     })
@@ -1582,7 +1582,7 @@ describe('ActivityPubAPI', function () {
                 fakeFetch
             );
 
-            const actual = await api.getPostsLikedByAccount();
+            const actual = await api.getPostsLikedByAccount('me');
 
             expect(actual.posts).toEqual([]);
         });
