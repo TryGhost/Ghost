@@ -1295,7 +1295,7 @@ export function usePostsLikedByAccount(options: {enabled: boolean}) {
         async queryFn({pageParam}: {pageParam?: string}) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI('index', siteUrl);
-            return api.getPostsLikedByAccount('me', pageParam).then((response) => {
+            return api.getPostsLikedByAccount(pageParam).then((response) => {
                 return {
                     posts: response.posts.map(mapPostToActivity),
                     next: response.next

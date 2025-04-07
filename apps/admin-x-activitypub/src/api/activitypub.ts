@@ -380,8 +380,8 @@ export class ActivityPubAPI {
         return this.getPaginatedPosts(`.ghost/activitypub/posts/${handle}`, next);
     }
 
-    async getPostsLikedByAccount(handle: string, next?: string): Promise<PaginatedPostsResponse> {
-        return this.getPaginatedPosts(`.ghost/activitypub/posts/liked/${handle}`, next);
+    async getPostsLikedByAccount(next?: string): Promise<PaginatedPostsResponse> {
+        return this.getPaginatedPosts(`.ghost/activitypub/posts/me/liked`, next);
     }
 
     private async getPaginatedPosts(endpoint: string, next?: string): Promise<PaginatedPostsResponse> {
