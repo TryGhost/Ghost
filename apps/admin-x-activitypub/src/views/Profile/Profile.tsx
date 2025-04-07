@@ -4,16 +4,15 @@ import Posts from './components/Posts';
 import ProfilePage from './components/ProfilePage';
 import React from 'react';
 import {Activity} from '@src/api/activitypub';
-import {useAccountFollowsForUser, useAccountForUser, usePostsByAccount, usePostsLikedByAccount, useProfileFollowersForUser, useProfileFollowingForUser, useProfilePostsForUser} from '@hooks/use-activity-pub-queries';
+import {useAccountFollowsForUser, useAccountForUser, usePostsByAccount, usePostsLikedByAccount, useProfileFollowersForUser, useProfileFollowingForUser} from '@hooks/use-activity-pub-queries';
 import {useParams} from '@tryghost/admin-x-framework';
 
 export type ProfileTab = 'posts' | 'likes' | 'following' | 'followers';
 
 interface ProfileProps {}
 
-const PostsTab:React.FC<{handle?: string}> = ({handle}) => {
-    const postsByAccountQuery = usePostsByAccount({enabled: true}).postsByAccountQuery;
-    const profilePostsQuery = useProfilePostsForUser('index', handle || '');
+const PostsTab:React.FC<{handle?: string}> = ({}) => {
+    const postsByAccountQuery = usePostsByAccount('me', {enabled: true}).postsByAccountQuery;
 
     const {
         data,
@@ -21,7 +20,7 @@ const PostsTab:React.FC<{handle?: string}> = ({handle}) => {
         hasNextPage,
         isFetchingNextPage,
         isLoading
-    } = handle ? profilePostsQuery : postsByAccountQuery;
+    } = postsByAccountQuery;
 
     const posts = data?.pages.flatMap((page: {posts: Activity[]}) => page.posts) ?? Array.from({length: 5}, (_, index) => ({id: `placeholder-${index}`, object: {}}));
 
