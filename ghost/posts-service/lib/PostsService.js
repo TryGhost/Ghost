@@ -471,9 +471,7 @@ class PostsService {
             model.get('status') === 'draft' && model.previous('status') !== 'published' ||
             model.get('status') === 'scheduled' && model.wasChanged()
         ) {
-            const baseUrl = this.urlUtils.urlFor({
-                relativeUrl: this.urlUtils.urlJoin('/p', model.get('uuid'), '/')
-            }, true);
+            const baseUrl = this.urlUtils.urlJoin('/p', model.get('uuid'), '/');
             cacheInvalidate = {
                 value: [
                     baseUrl,
