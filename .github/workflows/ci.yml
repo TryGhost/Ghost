@@ -880,6 +880,9 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 300
+      - name: Lint datasources and pipes
+        run: |
+          ./scripts/lint.sh
       - name: Check secrets
         if: github.event_name == 'pull_request'
         env:

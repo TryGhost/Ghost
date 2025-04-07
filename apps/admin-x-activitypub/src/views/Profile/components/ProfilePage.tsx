@@ -5,8 +5,9 @@ import {Account} from '@src/api/activitypub';
 import {Button, Heading, Icon, NoValueLabel, Tab, TabView} from '@tryghost/admin-x-design-system';
 import {ProfileTab} from '../Profile';
 import {Skeleton} from '@tryghost/shade';
+import {useAccountForUser} from '@src/hooks/use-activity-pub-queries';
 import {useEffect, useRef, useState} from 'react';
-import {useParams} from '@tryghost/admin-x-framework';
+import {useNavigationStack, useParams} from '@tryghost/admin-x-framework';
 
 const noop = () => {};
 
@@ -34,12 +35,15 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
 }) => {
     const [selectedTab, setSelectedTab] = useState<ProfileTab>('posts');
     const params = useParams();
+    const {canGoBack} = useNavigationStack();
 
     useEffect(() => {
         setSelectedTab('posts');
     }, [params.handle]);
 
-    const isCurrentUser = params.handle === account?.handle || !params.handle;
+    const currentAccountQuery = useAccountForUser('index', 'me');
+    const {data: currentUser} = params.handle ? currentAccountQuery : {data: undefined};
+    const isCurrentUser = params.handle === currentUser?.handle || !params.handle;
 
     const tabs = [
         {
@@ -93,7 +97,7 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
                     )}
                     <>
                         {account?.bannerImageUrl ?
-                            <div className='h-[15vw] w-full overflow-hidden bg-gradient-to-tr from-gray-200 to-gray-100'>
+                            <div className='h-[15vw] min-h-[200px] w-full overflow-hidden bg-gradient-to-tr from-gray-200 to-gray-100'>
                                 <img
                                     alt={account?.name}
                                     className='size-full object-cover'
@@ -101,25 +105,29 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
                                 />
                             </div>
                             :
-                            <div className='h-[8vw] w-full overflow-hidden bg-gradient-to-tr from-white to-white'></div>
+                            <div className='h-[8vw] w-full overflow-hidden bg-gradient-to-tr from-white to-white dark:from-black dark:to-black'></div>
                         }
-                        <div className='mx-auto -mt-12 max-w-[620px] px-6'>
+                        <div className={`mx-auto max-w-[620px] px-6 ${(!account?.bannerImageUrl && !canGoBack) ? '-mt-8' : '-mt-12'}`}>
                             <div className='flex items-end justify-between'>
                                 <div className='-ml-2 rounded-full bg-white p-1 dark:bg-black'>
-                                    <APAvatar
-                                        author={
-                                            {
-                                                icon: {
-                                                    url: account?.avatarUrl
-                                                },
-                                                name: account?.name,
-                                                handle: account?.handle
+                                    {isLoadingAccount ?
+                                        <Skeleton className='size-[92px] rounded-full' />
+                                        :
+                                        <APAvatar
+                                            author={
+                                                {
+                                                    icon: {
+                                                        url: account?.avatarUrl
+                                                    },
+                                                    name: account?.name,
+                                                    handle: account?.handle
+                                                }
                                             }
-                                        }
-                                        size='lg'
-                                    />
+                                            size='lg'
+                                        />
+                                    }
                                 </div>
-                                {!isCurrentUser &&
+                                {!isCurrentUser && !isLoadingAccount &&
                                     <FollowButton
                                         following={account?.followedByMe}
                                         handle={account?.handle}

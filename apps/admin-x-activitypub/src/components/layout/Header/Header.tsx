@@ -42,8 +42,8 @@ const Header: React.FC = () => {
     return (
         <>
             {onlyBackButton ?
-                <div className='sticky left-8 top-8 z-50 inline-block'>
-                    {backActive && <BackButton />}
+                <div className='sticky left-0 top-8 z-50 inline-block'>
+                    {backActive && <BackButton className='ml-8' />}
                 </div>
                 :
                 <div className='sticky top-0 z-50 bg-white/85 backdrop-blur-md dark:bg-black'>

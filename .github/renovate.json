@@ -10,6 +10,7 @@
         "moment-timezone",
         "simple-dom",
         "ember-drag-drop",
+        "@embroider/macros",
         "normalize.css",
         "validator",
         "codemirror",

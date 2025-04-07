@@ -11,7 +11,7 @@ export type ProfileTab = 'posts' | 'likes' | 'following' | 'followers';
 
 interface ProfileProps {}
 
-const PostsTab:React.FC<{handle?: string}> = ({}) => {
+const PostsTab:React.FC<{}> = ({}) => {
     const postsByAccountQuery = usePostsByAccount('me', {enabled: true}).postsByAccountQuery;
 
     const {
@@ -29,6 +29,7 @@ const PostsTab:React.FC<{handle?: string}> = ({}) => {
         hasNextPage={hasNextPage!}
         isFetchingNextPage={isFetchingNextPage}
         isLoading={isLoading}
+        noResultsMessage={handle ? `${handle} hasn't posted anything yet` : `You haven't posted anything yet.`}
         posts={posts}
     />;
 };
@@ -146,7 +147,7 @@ const Profile: React.FC<ProfileProps> = ({}) => {
         };
     }) || [];
 
-    const postsTab = <PostsTab handle={params.handle} />;
+    const postsTab = isLoadingAccount ? <></> : <PostsTab currentUserHandle={account!.handle} handle={params.handle} />;
     const likesTab = <LikesTab />;
     const followingTab = <FollowingTab handle={params.handle || ''} />;
     const followersTab = <FollowersTab handle={params.handle || ''} />;
