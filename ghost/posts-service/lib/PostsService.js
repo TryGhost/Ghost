@@ -471,10 +471,14 @@ class PostsService {
             model.get('status') === 'draft' && model.previous('status') !== 'published' ||
             model.get('status') === 'scheduled' && model.wasChanged()
         ) {
+            const baseUrl = this.urlUtils.urlJoin('/p', model.get('uuid'), '/');
             cacheInvalidate = {
-                value: this.urlUtils.urlFor({
-                    relativeUrl: this.urlUtils.urlJoin('/p', model.get('uuid'), '/')
-                })
+                value: [
+                    baseUrl,
+                    `${baseUrl}?member_status=anonymous`,
+                    `${baseUrl}?member_status=free`,
+                    `${baseUrl}?member_status=paid`
+                ].join(', ')
             };
         } else {
             cacheInvalidate = false;

@@ -1,231 +1,38 @@
-import React, {useEffect, useRef, useState} from 'react';
+import ActorList from './components/ActorList';
+import Likes from './components/Likes';
+import Posts from './components/Posts';
+import ProfilePage from './components/ProfilePage';
+import React from 'react';
+import {Activity} from '@src/api/activitypub';
+import {useAccountFollowsForUser, useAccountForUser, usePostsByAccount, usePostsLikedByAccount, useProfileFollowersForUser, useProfileFollowingForUser, useProfilePostsForUser} from '@hooks/use-activity-pub-queries';
+import {useParams} from '@tryghost/admin-x-framework';
 
-import NiceModal from '@ebay/nice-modal-react';
-import {Button, Heading, List, LoadingIndicator, NoValueLabel, Tab, TabView} from '@tryghost/admin-x-design-system';
-import {Skeleton} from '@tryghost/shade';
+export type ProfileTab = 'posts' | 'likes' | 'following' | 'followers';
 
-import {
-    type AccountFollowsQueryResult,
-    type ActivityPubCollectionQueryResult,
-    useAccountFollowsForUser,
-    useAccountForUser,
-    usePostsByAccount,
-    usePostsLikedByAccount
-} from '@hooks/use-activity-pub-queries';
-import {FollowAccount} from '../../api/activitypub';
-import {handleViewContent} from '@utils/content-handlers';
+interface ProfileProps {}
 
-import APAvatar from '@components/global/APAvatar';
-import ActivityItem from '@components/activities/ActivityItem';
-import FeedItem from '@components/feed/FeedItem';
-import FollowButton from '@components/global/FollowButton';
-import Layout from '@components/layout';
-import Separator from '@components/global/Separator';
-import ViewProfileModal from '@components/modals/ViewProfileModal';
-import {useFeatureFlags} from '@src/lib/feature-flags';
-import {useNavigate} from '@tryghost/admin-x-framework';
+const PostsTab:React.FC<{handle?: string, currentUserHandle: string}> = ({handle, currentUserHandle}) => {
+    const postsByAccountQuery = usePostsByAccount({enabled: true}).postsByAccountQuery;
+    const profilePostsQuery = useProfilePostsForUser('index', handle || currentUserHandle);
 
-interface UseInfiniteScrollTabProps<TData> {
-    useDataHook: (key: string) => ActivityPubCollectionQueryResult<TData> | AccountFollowsQueryResult;
-    emptyStateLabel: string;
-    emptyStateIcon: string;
-}
-
-/**
- * Hook to abstract away the common logic for infinite scroll in the tabs
- */
-const useInfiniteScrollTab = <TData,>({useDataHook, emptyStateLabel, emptyStateIcon}: UseInfiniteScrollTabProps<TData>) => {
     const {
         data,
         fetchNextPage,
         hasNextPage,
         isFetchingNextPage,
         isLoading
-    } = useDataHook('index');
+    } = handle ? profilePostsQuery : postsByAccountQuery;
 
-    const items = (data?.pages.flatMap((page) => {
-        if ('data' in page) {
-            return page.data;
-        } else if ('accounts' in page) {
-            return page.accounts as TData[];
-        }
+    const posts = data?.pages.flatMap((page: {posts: Activity[]}) => page.posts) ?? Array.from({length: 5}, (_, index) => ({id: `placeholder-${index}`, object: {}}));
 
-        return [];
-    }) ?? []);
-
-    const observerRef = useRef<IntersectionObserver | null>(null);
-    const loadMoreRef = useRef<HTMLDivElement | null>(null);
-
-    useEffect(() => {
-        if (observerRef.current) {
-            observerRef.current.disconnect();
-        }
-
-        observerRef.current = new IntersectionObserver((entries) => {
-            if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
-                fetchNextPage();
-            }
-        });
-
-        if (loadMoreRef.current) {
-            observerRef.current.observe(loadMoreRef.current);
-        }
-
-        return () => {
-            if (observerRef.current) {
-                observerRef.current.disconnect();
-            }
-        };
-    }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
-
-    const EmptyState = () => (
-        hasNextPage === false && items.length === 0 && (
-            <NoValueLabel icon={emptyStateIcon}>
-                {emptyStateLabel}
-            </NoValueLabel>
-        )
-    );
-
-    const placeholderPosts = Array(4).fill({object: {}, actor: {}});
-
-    const LoadingState = () => (
-        <>
-            <div ref={loadMoreRef} className='h-1'></div>
-            {
-                (isLoading || isFetchingNextPage) && (
-                    !isLoading ?
-                        <div className='mt-6 flex flex-col items-center justify-center space-y-4 text-center'>
-                            <LoadingIndicator size='md' />
-                        </div> :
-                        <ul>
-                            {placeholderPosts.map((activity, index) => (
-                                <li
-                                    key={`loading-${activity.id}`}
-                                    className=''
-                                    data-test-view-article
-                                >
-                                    <FeedItem
-                                        actor={activity.actor}
-                                        isLoading={true}
-                                        layout='feed'
-                                        object={activity.object}
-                                        type={activity.type}
-                                        onClick={() => handleViewContent(activity, false)}
-                                        onCommentClick={() => handleViewContent(activity, true)}
-                                    />
-                                    {index < placeholderPosts.length - 1 && <Separator />}
-                                </li>
-                            ))}
-                        </ul>
-                )
-            }
-        </>
-    );
-
-    return {items, EmptyState, LoadingState};
-};
-
-const PostsTab: React.FC = () => {
-    const {postsByAccountQuery} = usePostsByAccount({enabled: true});
-    const {data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading} = postsByAccountQuery;
-
-    const posts = data?.pages.flatMap(page => page.posts) ?? Array.from({length: 5}, (_, index) => ({id: `placeholder-${index}`, object: {}}));
-
-    const observerRef = useRef<IntersectionObserver | null>(null);
-    const loadMoreRef = useRef<HTMLDivElement | null>(null);
-    const endLoadMoreRef = useRef<HTMLDivElement | null>(null);
-
-    // Calculate the index at which to place the loadMoreRef - This will place it ~75% through the list
-    const loadMoreIndex = Math.max(0, Math.floor(posts.length * 0.75) - 1);
-
-    useEffect(() => {
-        if (observerRef.current) {
-            observerRef.current.disconnect();
-        }
-
-        observerRef.current = new IntersectionObserver((entries) => {
-            if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
-                fetchNextPage();
-            }
-        });
-
-        if (loadMoreRef.current) {
-            observerRef.current.observe(loadMoreRef.current);
-        }
-        if (endLoadMoreRef.current) {
-            observerRef.current.observe(endLoadMoreRef.current);
-        }
-
-        return () => {
-            if (observerRef.current) {
-                observerRef.current.disconnect();
-            }
-        };
-    }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
-
-    const {isEnabled} = useFeatureFlags();
-    const navigate = useNavigate();
-
-    return (
-        <>
-            {hasNextPage === false && posts.length === 0 && (
-                <NoValueLabel icon='pen'>
-                    You haven&apos;t posted anything yet.
-                </NoValueLabel>
-            )}
-            <ul className='mx-auto flex max-w-[640px] flex-col'>
-                {posts.map((activity, index) => (
-                    <li
-                        key={`posts-${activity.id}`}
-                        data-test-view-article
-                    >
-                        <FeedItem
-                            actor={activity.actor}
-                            allowDelete={activity.object.authored}
-                            commentCount={activity.object.replyCount}
-                            isLoading={isLoading}
-                            layout='feed'
-                            object={activity.object}
-                            repostCount={activity.object.repostCount}
-                            type={activity.type}
-                            onClick={() => {
-                                if (isEnabled('ap-routes')) {
-                                    if (activity.object.type === 'Note') {
-                                        navigate(`/feed/${encodeURIComponent(activity.object.id)}`);
-                                    } else if (activity.object.type === 'Article') {
-                                        navigate(`/inbox/${encodeURIComponent(activity.object.id)}`);
-                                    }
-                                } else {
-                                    handleViewContent(activity, false);
-                                }
-                            }}
-                            onCommentClick={() => {
-                                if (isEnabled('ap-routes')) {
-                                    if (activity.object.type === 'Note') {
-                                        navigate(`/feed/${encodeURIComponent(activity.object.id)}`);
-                                    } else if (activity.object.type === 'Article') {
-                                        navigate(`/inbox/${encodeURIComponent(activity.object.id)}`);
-                                    }
-                                } else {
-                                    handleViewContent(activity, true);
-                                }
-                            }}
-                        />
-                        {index < posts.length - 1 && <Separator />}
-                        {index === loadMoreIndex && (
-                            <div ref={loadMoreRef} className='h-1'></div>
-                        )}
-                    </li>
-                ))}
-                {isFetchingNextPage && (
-                    <li className='flex flex-col items-center justify-center space-y-4 text-center'>
-                        <LoadingIndicator size='md' />
-                    </li>
-                )}
-            </ul>
-            <div ref={endLoadMoreRef} className='h-1'></div>
-        </>
-    );
+    return <Posts
+        fetchNextPage={fetchNextPage}
+        hasNextPage={hasNextPage!}
+        isFetchingNextPage={isFetchingNextPage}
+        isLoading={isLoading}
+        noResultsMessage={handle ? `${handle} hasn't posted anything yet` : `You haven't posted anything yet.`}
+        posts={posts}
+    />;
 };
 
 const LikesTab: React.FC = () => {
@@ -234,230 +41,105 @@ const LikesTab: React.FC = () => {
 
     const posts = data?.pages.flatMap(page => page.posts) ?? Array.from({length: 5}, (_, index) => ({id: `placeholder-${index}`, object: {}}));
 
-    const observerRef = useRef<IntersectionObserver | null>(null);
-    const loadMoreRef = useRef<HTMLDivElement | null>(null);
-    const endLoadMoreRef = useRef<HTMLDivElement | null>(null);
+    return <Likes
+        fetchNextPage={fetchNextPage}
+        hasNextPage={hasNextPage!}
+        isFetchingNextPage={isFetchingNextPage}
+        isLoading={isLoading}
+        posts={posts}
+    />;
+};
 
-    // Calculate the index at which to place the loadMoreRef - This will place it ~75% through the list
-    const loadMoreIndex = Math.max(0, Math.floor(posts.length * 0.75) - 1);
+const FollowingTab: React.FC<{handle: string}> = ({handle}) => {
+    const accountQuery = useAccountFollowsForUser('index', 'following');
+    const profileQuery = useProfileFollowingForUser('index', handle);
 
-    useEffect(() => {
-        if (observerRef.current) {
-            observerRef.current.disconnect();
+    const {
+        data,
+        fetchNextPage,
+        hasNextPage,
+        isFetchingNextPage,
+        isLoading
+    } = handle === '' ? accountQuery : profileQuery;
+
+    const actors = data?.pages.flatMap((page) => {
+        if ('following' in page) {
+            return page.following;
+        } else if ('accounts' in page) {
+            return page.accounts.map(account => ({
+                actor: {
+                    id: account.id,
+                    name: account.name,
+                    handle: account.handle,
+                    icon: {
+                        url: account.avatarUrl
+                    }
+                },
+                isFollowing: account.isFollowing
+            }));
         }
-
-        observerRef.current = new IntersectionObserver((entries) => {
-            if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
-                fetchNextPage();
-            }
-        });
-
-        if (loadMoreRef.current) {
-            observerRef.current.observe(loadMoreRef.current);
-        }
-        if (endLoadMoreRef.current) {
-            observerRef.current.observe(endLoadMoreRef.current);
-        }
-
-        return () => {
-            if (observerRef.current) {
-                observerRef.current.disconnect();
-            }
-        };
-    }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+        return [];
+    }) ?? [];
 
     return (
-        <>
-            {hasNextPage === false && posts.length === 0 && (
-                <NoValueLabel icon='heart'>
-                    You haven&apos;t liked anything yet.
-                </NoValueLabel>
-            )}
-            <ul className='mx-auto flex max-w-[640px] flex-col'>
-                {posts.map((activity, index) => (
-                    <li
-                        key={`likes-${activity.id}`}
-                        data-test-view-article
-                    >
-                        <FeedItem
-                            actor={activity.actor}
-                            allowDelete={activity.object.authored}
-                            commentCount={activity.object.replyCount}
-                            isLoading={isLoading}
-                            layout='feed'
-                            object={activity.object}
-                            repostCount={activity.object.repostCount}
-                            type={activity.type}
-                            onClick={() => handleViewContent(activity, false)}
-                            onCommentClick={() => handleViewContent(activity, true)}
-                        />
-                        {index < posts.length - 1 && <Separator />}
-                        {index === loadMoreIndex && (
-                            <div ref={loadMoreRef} className='h-1'></div>
-                        )}
-                    </li>
-                ))}
-                {isFetchingNextPage && (
-                    <li className='flex flex-col items-center justify-center space-y-4 text-center'>
-                        <LoadingIndicator size='md' />
-                    </li>
-                )}
-            </ul>
-            <div ref={endLoadMoreRef} className='h-1'></div>
-        </>
+        <ActorList
+            actors={actors}
+            fetchNextPage={fetchNextPage}
+            hasNextPage={hasNextPage!}
+            isFetchingNextPage={isFetchingNextPage}
+            isLoading={isLoading}
+            noResultsMessage={`${handle || 'You'} have no following`}
+        />
     );
 };
 
-const handleAccountClick = (handle: string) => {
-    NiceModal.show(ViewProfileModal, {handle});
-};
+const FollowersTab: React.FC<{handle: string}> = ({handle}) => {
+    const accountQuery = useAccountFollowsForUser('index', 'followers');
+    const profileQuery = useProfileFollowersForUser('index', handle);
 
-const FollowingTab: React.FC = () => {
-    const {items: accounts, EmptyState, LoadingState} = useInfiniteScrollTab<FollowAccount>({
-        useDataHook: handle => useAccountFollowsForUser(handle, 'following'),
-        emptyStateLabel: 'You aren\'t following anyone yet.',
-        emptyStateIcon: 'user-add'
-    });
+    const {
+        data,
+        fetchNextPage,
+        hasNextPage,
+        isFetchingNextPage,
+        isLoading
+    } = handle === '' ? accountQuery : profileQuery;
 
-    return (
-        <>
-            <EmptyState />
-            {
-                <List className='pt-3'>
-                    {accounts.map((account, index) => (
-                        <React.Fragment key={account.id}>
-                            <ActivityItem
-                                key={account.id}
-                                onClick={() => handleAccountClick(account.handle)}
-                            >
-                                <APAvatar author={{
-                                    icon: {
-                                        url: account.avatarUrl
-                                    },
-                                    name: account.name,
-                                    handle: account.handle
-                                }} />
-                                <div>
-                                    <div className='text-gray-600'>
-                                        <span className='mr-1 font-bold text-black'>{account.name}</span>
-                                        <div className='text-sm'>{account.handle}</div>
-                                    </div>
-                                </div>
-                                <FollowButton
-                                    className='ml-auto'
-                                    following={account.isFollowing}
-                                    handle={account.handle}
-                                    type='secondary'
-                                />
-                            </ActivityItem>
-                            {index < accounts.length - 1 && <Separator />}
-                        </React.Fragment>
-                    ))}
-                </List>
-            }
-            <LoadingState />
-        </>
-    );
-};
-
-const FollowersTab: React.FC = () => {
-    const {items: accounts, EmptyState, LoadingState} = useInfiniteScrollTab<FollowAccount>({
-        useDataHook: handle => useAccountFollowsForUser(handle, 'followers'),
-        emptyStateLabel: 'Nobody\'s following you yet. Their loss!',
-        emptyStateIcon: 'user-add'
-    });
+    const actors = data?.pages.flatMap((page) => {
+        if ('followers' in page) {
+            return page.followers;
+        } else if ('accounts' in page) {
+            return page.accounts.map(account => ({
+                actor: {
+                    id: account.id,
+                    name: account.name,
+                    handle: account.handle,
+                    icon: {
+                        url: account.avatarUrl
+                    }
+                },
+                isFollowing: account.isFollowing
+            }));
+        }
+        return [];
+    }) ?? [];
 
     return (
-        <>
-            <EmptyState />
-            {
-                <List className='pt-3'>
-                    {accounts.map((account, index) => (
-                        <React.Fragment key={account.id}>
-                            <ActivityItem
-                                key={account.id}
-                                onClick={() => handleAccountClick(account.handle)}
-                            >
-                                <APAvatar author={{
-                                    icon: {
-                                        url: account.avatarUrl
-                                    },
-                                    name: account.name,
-                                    handle: account.handle
-                                }} />
-                                <div>
-                                    <div className='text-gray-600'>
-                                        <span className='mr-1 font-bold text-black'>{account.name}</span>
-                                        <div className='text-sm'>{account.handle}</div>
-                                    </div>
-                                </div>
-                                <FollowButton
-                                    className='ml-auto'
-                                    following={account.isFollowing}
-                                    handle={account.handle}
-                                    type='secondary'
-                                />
-                            </ActivityItem>
-                            {index < accounts.length - 1 && <Separator />}
-                        </React.Fragment>
-                    ))}
-                </List>
-            }
-            <LoadingState />
-        </>
+        <ActorList
+            actors={actors}
+            fetchNextPage={fetchNextPage}
+            hasNextPage={hasNextPage!}
+            isFetchingNextPage={isFetchingNextPage}
+            isLoading={isLoading}
+            noResultsMessage={`${handle || 'You'} have no followers yet`}
+        />
     );
 };
-
-type ProfileTab = 'posts' | 'likes' | 'following' | 'followers';
-
-interface ProfileProps {}
 
 const Profile: React.FC<ProfileProps> = ({}) => {
-    const {data: account, isLoading: isLoadingAccount} = useAccountForUser('index', 'me');
+    const params = useParams();
 
-    const [selectedTab, setSelectedTab] = useState<ProfileTab>('posts');
-
-    const tabs = [
-        {
-            id: 'posts',
-            title: 'Posts',
-            contents: (
-                <div className='ap-posts'>
-                    <PostsTab />
-                </div>
-            )
-        },
-        {
-            id: 'likes',
-            title: 'Likes',
-            contents: (
-                <div className='ap-likes'>
-                    <LikesTab />
-                </div>
-            ),
-            counter: account?.likedCount || 0
-        },
-        {
-            id: 'following',
-            title: 'Following',
-            contents: (
-                <div className='ap-following'>
-                    <FollowingTab />
-                </div>
-            ),
-            counter: account?.followingCount || 0
-        },
-        {
-            id: 'followers',
-            title: 'Followers',
-            contents: (
-                <div className='ap-followers'>
-                    <FollowersTab />
-                </div>
-            ),
-            counter: account?.followerCount || 0
-        }
-    ].filter(Boolean) as Tab<ProfileTab>[];
+    const {data: account, isLoading: isLoadingAccount} = useAccountForUser('index', (params.handle || 'me'));
 
     const customFields = Object.keys(account?.customFields || {}).map((key) => {
         return {
@@ -466,96 +148,20 @@ const Profile: React.FC<ProfileProps> = ({}) => {
         };
     }) || [];
 
-    const [isExpanded, setisExpanded] = useState(false);
+    const postsTab = isLoadingAccount ? <></> : <PostsTab currentUserHandle={account!.handle} handle={params.handle} />;
+    const likesTab = <LikesTab />;
+    const followingTab = <FollowingTab handle={params.handle || ''} />;
+    const followersTab = <FollowersTab handle={params.handle || ''} />;
 
-    const toggleExpand = () => {
-        setisExpanded(!isExpanded);
-    };
-
-    const contentRef = useRef<HTMLDivElement | null>(null);
-    const [isOverflowing, setIsOverflowing] = useState(false);
-
-    useEffect(() => {
-        if (contentRef.current) {
-            setIsOverflowing(contentRef.current.scrollHeight > 160); // Compare content height to max height
-        }
-    }, [isExpanded]);
-
-    return (
-        <Layout>
-            <div className='relative isolate'>
-                <div className='absolute -right-8 left-0 top-0 z-0 h-[5vw]'>
-                    {account?.bannerImageUrl &&
-                    <div className='size-full'>
-                        <img
-                            alt={account?.name}
-                            className='size-full object-cover'
-                            src={account?.bannerImageUrl}
-                        />
-                    </div>
-                    }
-                </div>
-                <div className='relative z-10 mx-auto flex w-full max-w-[620px] flex-col items-center pb-16 pt-[calc(5vw-52px)]'>
-                    <div className='mx-auto w-full'>
-                        <div>
-                            <div className='flex items-end justify-between'>
-                                <div className='-ml-2 rounded-full bg-white p-1 dark:bg-black dark:outline-black'>
-                                    <APAvatar
-                                        author={account && {
-                                            icon: {
-                                                url: account?.avatarUrl
-                                            },
-                                            name: account?.name,
-                                            handle: account?.handle
-                                        }}
-                                        size='lg'
-                                    />
-                                </div>
-                            </div>
-                            <Heading className='mt-4' level={3}>{!isLoadingAccount ? account?.name : <Skeleton className='w-32' />}</Heading>
-                            <span className='mt-1 text-[1.5rem] text-gray-700 dark:text-gray-600'>
-                                <span>{!isLoadingAccount ? account?.handle : <Skeleton className='w-full max-w-56' />}</span>
-                            </span>
-                            {(account?.bio || customFields.length > 0 || isLoadingAccount) && (
-                                <div ref={contentRef} className={`ap-profile-content transition-max-height relative text-[1.5rem] duration-300 ease-in-out [&>p]:mb-3 ${isExpanded ? 'max-h-none pb-7' : 'max-h-[160px] overflow-hidden'} relative`}>
-                                    <div className='ap-profile-content mt-3 text-[1.5rem] [&>p]:mb-3'>
-                                        {!isLoadingAccount ?
-                                            <div dangerouslySetInnerHTML={{__html: account?.bio ?? ''}} /> :
-                                            <>
-                                                <Skeleton />
-                                                <Skeleton className='w-full max-w-48' />
-                                            </>
-                                        }
-                                    </div>
-                                    {customFields.map(customField => (
-                                        <span key={customField.name} className='mt-3 line-clamp-1 flex flex-col text-[1.5rem]'>
-                                            <span className={`text-xs font-semibold`}>{customField.name}</span>
-                                            <span dangerouslySetInnerHTML={{__html: customField.value}} className='ap-profile-content truncate'/>
-                                        </span>
-                                    ))}
-                                    {!isExpanded && isOverflowing && (
-                                        <div className='absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-white via-white/90 via-60% to-transparent' />
-                                    )}
-                                    {isOverflowing && <Button
-                                        className='absolute bottom-0 text-pink'
-                                        label={isExpanded ? 'Show less' : 'Show all'}
-                                        link={true}
-                                        onClick={toggleExpand}
-                                    />}
-                                </div>
-                            )}
-                            <TabView<ProfileTab>
-                                containerClassName='mt-6'
-                                selectedTab={selectedTab}
-                                tabs={tabs}
-                                onTabChange={setSelectedTab}
-                            />
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </Layout>
-    );
+    return <ProfilePage
+        account={account!}
+        customFields={customFields}
+        followersTab={followersTab}
+        followingTab={followingTab}
+        isLoadingAccount={isLoadingAccount}
+        likesTab={likesTab}
+        postsTab={postsTab}
+    />;
 };
 
 export default Profile;
