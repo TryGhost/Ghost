@@ -403,6 +403,12 @@ export const Reader: React.FC<ReaderProps> = ({
 
     const [replyCount, setReplyCount] = useState(object?.replyCount ?? 0);
 
+    useEffect(() => {
+        if (object?.replyCount !== undefined) {
+            setReplyCount(object.replyCount);
+        }
+    }, [object?.replyCount]);
+
     const onLikeClick = () => {
         // Do API req or smth
         // Don't need to know about setting timeouts or anything like that
