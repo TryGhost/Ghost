@@ -159,7 +159,7 @@ const InboxList:React.FC<InboxListProps> = ({
                     setIsReaderOpen(open);
                 }}
             >
-                <DialogContent className='inset-y-3 h-[calc(100vh-24px)] w-screen max-w-[calc(100vw-24px)] !animate-none p-0 focus:outline-none'>
+                <DialogContent className='inset-y-3 h-[calc(100vh-24px)] w-screen max-w-[calc(100vw-24px)] !animate-none p-0 focus:outline-none dark:bg-gray-950'>
                     <DialogHeader className='hidden'>
                         <DialogTitle>Reader</DialogTitle>
                         <DialogDescription>Ghost reader for long form articles</DialogDescription>

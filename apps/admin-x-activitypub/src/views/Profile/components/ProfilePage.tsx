@@ -97,7 +97,7 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
                     )}
                     <>
                         {account?.bannerImageUrl ?
-                            <div className='h-[15vw] w-full overflow-hidden bg-gradient-to-tr from-gray-200 to-gray-100'>
+                            <div className='h-[15vw] min-h-[200px] w-full overflow-hidden bg-gradient-to-tr from-gray-200 to-gray-100'>
                                 <img
                                     alt={account?.name}
                                     className='size-full object-cover'
@@ -105,7 +105,7 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
                                 />
                             </div>
                             :
-                            <div className='h-[8vw] w-full overflow-hidden bg-gradient-to-tr from-white to-white'></div>
+                            <div className='h-[8vw] w-full overflow-hidden bg-gradient-to-tr from-white to-white dark:from-black dark:to-black'></div>
                         }
                         <div className={`mx-auto max-w-[620px] px-6 ${(!account?.bannerImageUrl && !canGoBack) ? '-mt-8' : '-mt-12'}`}>
                             <div className='flex items-end justify-between'>
