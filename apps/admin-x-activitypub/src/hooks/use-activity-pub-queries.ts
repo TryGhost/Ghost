@@ -1258,11 +1258,8 @@ export function usePostsByAccount(profileHandle: string, options: {enabled: bool
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI('index', siteUrl);
             return api.getPostsByAccount(profileHandle, pageParam).then((response) => {
-                // This endpoint returns a list of activity in case of a remote profile
-                // and a list of posts in case of a local profile
-                const isActivity = response.posts.some(post => post.object && post.actor);
                 return {
-                    posts: isActivity ? response.posts : response.posts.map(mapPostToActivity),
+                    posts: response.posts.map(mapPostToActivity),
                     next: response.next
                 };
             });

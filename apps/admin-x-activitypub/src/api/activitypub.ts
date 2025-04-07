@@ -376,7 +376,7 @@ export class ActivityPubAPI {
         return this.getPaginatedPosts('.ghost/activitypub/inbox', next);
     }
 
-    async getPostsByAccount(handle: string, next?: string): Promise<PaginatedPostsResponse | GetProfilePostsResponse> {
+    async getPostsByAccount(handle: string, next?: string): Promise<PaginatedPostsResponse> {
         return this.getPaginatedPosts(`.ghost/activitypub/posts/${handle}`, next);
     }
 
