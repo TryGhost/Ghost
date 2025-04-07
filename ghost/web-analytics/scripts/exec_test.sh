@@ -43,6 +43,7 @@ done
 source "$SCRIPT_DIR/../.tinyenv"
 export TB_VERSION
 echo "Using TB_VERSION: $TB_VERSION"
+export TB_VERSION_WARNING=0
 
 # Get the expected count once, outside of any function
 ndjson_file="./tests/fixtures/analytics_events.ndjson"

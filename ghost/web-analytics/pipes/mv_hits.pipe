@@ -8,7 +8,10 @@ SQL >
         coalesce(session_id, '0') as session_id,
         toString(payload.locale) as locale,
         toString(payload.location) as location,
-        toString(payload.referrer) as referrer,
+        case -- this avoids really crappy null handling by the JSON type and downstream fns
+            when isNull(payload.referrer) then ''
+            else toString(payload.referrer)
+        end as referrer,
         toString(payload.pathname) as pathname,
         toString(payload.href) as href,
         site_uuid,
@@ -36,7 +39,12 @@ SQL >
         post_uuid,
         post_type,
         location,
-        coalesce(domainWithoutWWW(referrer), referrer, '') as source,
+        case
+            -- domainWithoutWWW returns '' if the referrer is not a valid domain
+            --  we want to maintain refs like 'ghost-newsletter'
+            when domainWithoutWWW(referrer) = '' then coalesce(referrer, '')
+            else domainWithoutWWW(referrer)
+        end as source,
         pathname,
         href,
         case
