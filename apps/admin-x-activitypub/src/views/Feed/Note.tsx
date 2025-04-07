@@ -8,6 +8,7 @@ import getUsername from '@src/utils/get-username';
 import {EmptyViewIcon, EmptyViewIndicator} from '@src/components/global/EmptyViewIndicator';
 import {LucideIcon, Skeleton} from '@tryghost/shade';
 import {handleProfileClickRR} from '@src/utils/handle-profile-click';
+import {isPendingActivity} from '@src/utils/pending-activity';
 import {renderTimestamp} from '@src/utils/render-timestamp';
 import {useLocation, useNavigate, useNavigationStack, useParams} from '@tryghost/admin-x-framework';
 import {usePostForUser, useThreadForUser} from '@hooks/use-activity-pub-queries';
@@ -34,12 +35,17 @@ const Note = () => {
 
     const [replyCount, setReplyCount] = useState(object?.replyCount ?? 0);
 
+    useEffect(() => {
+        if (object?.replyCount !== undefined) {
+            setReplyCount(object.replyCount);
+        }
+    }, [object?.replyCount]);
+
     const {data: thread} = useThreadForUser('index', activityId);
     const threadPostIdx = (thread?.posts ?? []).findIndex(item => item.object.id === activityId);
     const threadChildren = (thread?.posts ?? []).slice(threadPostIdx + 1);
     const threadParents = (thread?.posts ?? []).slice(0, threadPostIdx);
 
-    // const [replyCount] = useState(object.replyCount ?? 0);
     function incrementReplyCount(step: number = 1) {
         setReplyCount((current: number) => current + step);
     }
@@ -133,7 +139,7 @@ const Note = () => {
                                                     object={object}
                                                     repostCount={object.repostCount}
                                                     showHeader={threadParents.length > 0}
-                                                    // showStats={!disableStats}
+                                                    showStats={true}
                                                     type='Note'
                                                     onCommentClick={() => {
                                                         repliesRef.current?.scrollIntoView({
@@ -162,7 +168,7 @@ const Note = () => {
                                                                     actor={item.actor}
                                                                     allowDelete={item.object.authored}
                                                                     commentCount={item.object.replyCount ?? 0}
-                                                                    // isPending={isPendingActivity(item.id)}
+                                                                    isPending={isPendingActivity(item.id)}
                                                                     last={true}
                                                                     layout='reply'
                                                                     object={item.object}
@@ -175,7 +181,7 @@ const Note = () => {
                                                                     onCommentClick={() => {
                                                                         navigate(`/feed/${encodeURIComponent(item.id)}?focusReply=true`);
                                                                     }}
-                                                                    // onDelete={decrementReplyCount}
+                                                                    onDelete={decrementReplyCount}
                                                                 />
                                                                 {showDivider && <FeedItemDivider />}
                                                             </React.Fragment>
