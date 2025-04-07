@@ -271,10 +271,10 @@ describe('Posts Service', function () {
             const result = postsService.handleCacheInvalidation(model);
             assert.deepEqual(result, {
                 value: [
-                    'http://example.com/p/123/',
-                    'http://example.com/p/123/?member_status=anonymous',
-                    'http://example.com/p/123/?member_status=free',
-                    'http://example.com/p/123/?member_status=paid'
+                    '/p/123/',
+                    '/p/123/?member_status=anonymous',
+                    '/p/123/?member_status=free',
+                    '/p/123/?member_status=paid'
                 ].join(', ')
             });
         });
@@ -289,10 +289,10 @@ describe('Posts Service', function () {
             const result = postsService.handleCacheInvalidation(model);
             assert.deepEqual(result, {
                 value: [
-                    'http://example.com/p/123/',
-                    'http://example.com/p/123/?member_status=anonymous',
-                    'http://example.com/p/123/?member_status=free',
-                    'http://example.com/p/123/?member_status=paid'
+                    '/p/123/',
+                    '/p/123/?member_status=anonymous',
+                    '/p/123/?member_status=free',
+                    '/p/123/?member_status=paid'
                 ].join(', ')
             });
         });
