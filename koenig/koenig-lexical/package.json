@@ -102,7 +102,7 @@
     "emoji-mart": "^5.5.2",
     "eslint-config-react-app": "7.0.1",
     "eslint-plugin-jest": "27.9.0",
-    "eslint-plugin-react": "7.35.0",
+    "eslint-plugin-react": "7.37.5",
     "eslint-plugin-storybook": "^0.11.2",
     "eslint-plugin-tailwindcss": "3.17.4",
     "eventemitter3": "^5.0.0",
