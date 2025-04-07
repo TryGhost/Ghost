@@ -37,7 +37,7 @@
     "@ember/render-modifiers": "2.1.0",
     "@ember/test-helpers": "2.9.6",
     "@ember/test-waiters": "3.1.0",
-    "@embroider/macros": "1.17.0",
+    "@embroider/macros": "1.16.13",
     "@faker-js/faker": "7.6.0",
     "@glimmer/component": "1.1.2",
     "@html-next/vertical-collection": "3.0.0",
