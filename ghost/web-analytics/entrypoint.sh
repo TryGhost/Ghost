@@ -3,7 +3,7 @@
 # Get the directory where this script is located
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-# Set the TB_VERSION variable from .tinyenv file
+# Evaluate and export the environment variables from the .tinyenv file
 source "$SCRIPT_DIR/.tinyenv"
 export TB_VERSION
 echo "Using TB_VERSION: $TB_VERSION"
@@ -71,5 +71,11 @@ tbsql() {
 
 # Export the prompt with Tinybird branch information
 export PS1="\w\$(prompt_tb)\$ "
+
+# Define the wa function wrapper
+wa() {
+    # Execute the main wa script located in the same directory
+    "$SCRIPT_DIR/wa" "$@"
+}
 
 exec "$@"
