@@ -1,5 +1,4 @@
-const { JSDOM } = require('jsdom');
-const path = require('path');
+const {JSDOM} = require('jsdom');
 
 /**
  * @typedef {Object} BrowserEnvironment
@@ -32,8 +31,8 @@ function createBrowserEnvironment(options = {}) {
         url = 'https://example.com',
         referrer = 'https://referrer.com',
         html = '<!DOCTYPE html><html><body></body></html>',
-        runScripts = true,
-        storage = { type: 'localStorage' }
+        runScripts = true
+        // storage = {type: 'localStorage'}
     } = options;
 
     // Create JSDOM instance
@@ -51,17 +50,17 @@ function createBrowserEnvironment(options = {}) {
 
     // Mock localStorage
     const localStorageMock = {
-        getItem: function(key) {
+        getItem: function (key) {
             return this[key] || null;
         },
-        setItem: function(key, value) {
+        setItem: function (key, value) {
             this[key] = value;
         },
-        removeItem: function(key) {
+        removeItem: function (key) {
             delete this[key];
         },
-        clear: function() {
-            Object.keys(this).forEach(key => {
+        clear: function () {
+            Object.keys(this).forEach((key) => {
                 if (key !== 'getItem' && key !== 'setItem' && key !== 'removeItem' && key !== 'clear') {
                     delete this[key];
                 }
@@ -75,17 +74,17 @@ function createBrowserEnvironment(options = {}) {
 
     // Mock sessionStorage
     const sessionStorageMock = {
-        getItem: function(key) {
+        getItem: function (key) {
             return this[key] || null;
         },
-        setItem: function(key, value) {
+        setItem: function (key, value) {
             this[key] = value;
         },
-        removeItem: function(key) {
+        removeItem: function (key) {
             delete this[key];
         },
-        clear: function() {
-            Object.keys(this).forEach(key => {
+        clear: function () {
+            Object.keys(this).forEach((key) => {
                 if (key !== 'getItem' && key !== 'setItem' && key !== 'removeItem' && key !== 'clear') {
                     delete this[key];
                 }
@@ -132,12 +131,14 @@ function createBrowserEnvironment(options = {}) {
             lastXHR = this;
         }
 
-        open(method, url, async) {
+        open(method, _url, async) {
             this.method = method;
-            this.url = url;
+            this.url = _url;
             this.async = async;
             this.readyState = 1;
-            if (this.onreadystatechange) this.onreadystatechange();
+            if (this.onreadystatechange) {
+                this.onreadystatechange();
+            }
         }
 
         setRequestHeader(header, value) {
@@ -149,8 +150,12 @@ function createBrowserEnvironment(options = {}) {
             this.readyState = 4;
             this.status = 200;
             this.responseText = '{"success":true}';
-            if (this.onreadystatechange) this.onreadystatechange();
-            if (this.onload) this.onload();
+            if (this.onreadystatechange) {
+                this.onreadystatechange();
+            }
+            if (this.onload) {
+                this.onload();
+            }
         }
     }
 
@@ -197,15 +202,17 @@ function createBrowserEnvironment(options = {}) {
     // Mock history API
     Object.defineProperty(window, 'history', {
         value: {
-            pushState: function() {},
-            replaceState: function() {}
+            pushState: function () {},
+            replaceState: function () {}
         },
         configurable: true
     });
 
     // Mock document.visibilityState
     Object.defineProperty(document, 'visibilityState', {
-        get: function() { return 'visible'; }
+        get: function () {
+            return 'visible'; 
+        }
     });
 
     return {
@@ -232,7 +239,7 @@ function createBrowserEnvironment(options = {}) {
  * @returns {void}
  */
 function loadScript(env, scriptContent, options = {}) {
-    const { dataAttributes = {} } = options;
+    const {dataAttributes = {}} = options;
 
     // Create a script element with data attributes
     const scriptElement = env.document.createElement('script');
