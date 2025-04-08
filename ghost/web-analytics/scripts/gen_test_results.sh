@@ -11,6 +11,7 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source "$SCRIPT_DIR/../.tinyenv"
 export TB_VERSION
 echo "Using TB_VERSION: $TB_VERSION"
+export TB_VERSION_WARNING=0
 
 # Parse command line options
 jobs=""

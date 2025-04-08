@@ -1,4 +1,4 @@
-"pathname","visits","pageviews"
-"/blog/hello-world/",10,11
-"/about/",8,10
-"/",7,10
+"pathname","visits"
+"/blog/hello-world/",10
+"/about/",8
+"/",7

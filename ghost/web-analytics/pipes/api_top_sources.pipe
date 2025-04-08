@@ -6,8 +6,7 @@ SQL >
     %
     select
         source,
-        count() as visits,
-        sum(pageviews) as pageviews
+        count() as visits
     from mv_session_data sd
       inner join filtered_sessions fs
          on fs.session_id = sd.session_id
