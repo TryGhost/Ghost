@@ -157,7 +157,7 @@ const TableOfContentsView: React.FC<TableOfContentsViewProps> = ({items, activeH
                     </div>
                 }
             >
-                <div className='w-[220px] p-4'>
+                <div className='w-[240px] p-2'>
                     <nav
                         aria-label='Table of contents navigation'
                         className='max-h-[60vh] overflow-y-auto'
@@ -166,7 +166,7 @@ const TableOfContentsView: React.FC<TableOfContentsViewProps> = ({items, activeH
                         {items.map(item => (
                             <button
                                 key={item.id}
-                                className={`block w-full cursor-pointer truncate rounded py-1 text-left ${activeHeading === item.id ? 'text-gray-900 dark:text-white' : 'text-gray-700 dark:text-gray-600'} hover:bg-gray-75 hover:text-gray-900 dark:hover:bg-grey-925 dark:hover:text-white ${getHeadingPadding(item.level)}`}
+                                className={`block w-full cursor-pointer rounded py-1 text-left text-sm leading-tight ${activeHeading === item.id ? 'text-black dark:text-white' : 'text-gray-700 dark:text-gray-600'} hover:bg-gray-75 hover:text-gray-900 dark:hover:bg-grey-925 dark:hover:text-white ${getHeadingPadding(item.level)}`}
                                 title={item.text}
                                 type='button'
                                 onClick={() => onItemClick(item.id)}
