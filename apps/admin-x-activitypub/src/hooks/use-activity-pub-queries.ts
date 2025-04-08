@@ -56,8 +56,6 @@ const QUERY_KEYS = {
         }
         return ['profile_posts', profileHandle];
     },
-    profileFollowers: (profileHandle: string) => ['profile_followers', profileHandle],
-    profileFollowing: (profileHandle: string) => ['profile_following', profileHandle],
     account: (handle: string) => ['account', handle],
     accountFollows: (handle: string, type: AccountFollowsType) => ['account_follows', handle, type],
     searchResults: (query: string) => ['search_results', query],
@@ -381,22 +379,20 @@ export function useUnfollowMutationForUser(handle: string, onSuccess: () => void
             });
 
             // Update the profile followers query cache for the profile being unfollowed
-            const profileFollowersQueryKey = QUERY_KEYS.profileFollowers(fullHandle);
+            const profileFollowersQueryKey = QUERY_KEYS.accountFollows(fullHandle, 'followers');
 
             queryClient.setQueryData(profileFollowersQueryKey, (oldData?: {
                 pages: Array<{
-                    followers: Array<{
-                        actor: {
-                            id: string;
+                    accounts: Array<{
+                        id: string;
+                        type: string;
+                        preferredUsername: string;
+                        name: string;
+                        url: string;
+                        icon: {
                             type: string;
-                            preferredUsername: string;
-                            name: string;
                             url: string;
-                            icon: {
-                                type: string;
-                                url: string;
-                            };
-                        };
+                            },
                         isFollowing: boolean;
                     }>;
                 }>;
@@ -413,8 +409,7 @@ export function useUnfollowMutationForUser(handle: string, onSuccess: () => void
                 return {
                     ...oldData,
                     pages: oldData.pages.map((page: {
-                        followers: Array<{
-                            actor: {
+                        accounts: Array<{
                                 id: string;
                                 type: string;
                                 preferredUsername: string;
@@ -423,26 +418,23 @@ export function useUnfollowMutationForUser(handle: string, onSuccess: () => void
                                 icon: {
                                     type: string;
                                     url: string;
-                                };
-                            };
+                                },
                             isFollowing: boolean;
                         }>;
                     }) => ({
                         ...page,
-                        followers: page.followers.filter((follower: {
-                            actor: {
-                                id: string;
+                        accounts: page.accounts.filter((follower: {
+                            id: string;
+                            type: string;
+                            preferredUsername: string;
+                            name: string;
+                            url: string;
+                            icon: {
                                 type: string;
-                                preferredUsername: string;
-                                name: string;
                                 url: string;
-                                icon: {
-                                    type: string;
-                                    url: string;
-                                };
-                            };
+                                },
                             isFollowing: boolean;
-                        }) => follower.actor.name !== currentAccount.name)
+                        }) => follower.name !== currentAccount.name)
                     }))
                 };
             });
@@ -462,7 +454,7 @@ export function useUnfollowMutationForUser(handle: string, onSuccess: () => void
             });
 
             // Remove the unfollowed actor from the follows query cache for the account performing the unfollow
-            const accountFollowsQueryKey = QUERY_KEYS.accountFollows('index', 'following');
+            const accountFollowsQueryKey = QUERY_KEYS.accountFollows(handle, 'following');
 
             queryClient.setQueryData(accountFollowsQueryKey, (currentFollows?: {pages: {accounts: FollowAccount[]}[]}) => {
                 if (!currentFollows) {
@@ -524,30 +516,28 @@ export function useFollowMutationForUser(handle: string, onSuccess: () => void, 
                 };
             });
 
-            const profileFollowersQueryKey = QUERY_KEYS.profileFollowers(fullHandle);
+            const profileFollowersQueryKey = QUERY_KEYS.accountFollows(fullHandle, 'followers');
 
             // Invalidate the follows query cache for the account performing the follow
             // because we cannot directly add to it due to potentially incompatible data
             // shapes
-            const accountFollowsQueryKey = QUERY_KEYS.accountFollows('index', 'following');
+            const accountFollowsQueryKey = QUERY_KEYS.accountFollows(handle, 'following');
 
             queryClient.invalidateQueries({queryKey: accountFollowsQueryKey});
 
             // Add new follower to the followers list cache
             queryClient.setQueryData(profileFollowersQueryKey, (oldData?: {
                 pages: Array<{
-                    followers: Array<{
-                        actor: {
-                            id: string;
+                    accounts: Array<{
+                        id: string;
+                        type: string;
+                        preferredUsername: string;
+                        name: string;
+                        url: string;
+                        icon: {
                             type: string;
-                            preferredUsername: string;
-                            name: string;
                             url: string;
-                            icon: {
-                                type: string;
-                                url: string;
-                            };
-                        };
+                            },
                         isFollowing: boolean;
                     }>;
                 }>;
@@ -562,16 +552,15 @@ export function useFollowMutationForUser(handle: string, onSuccess: () => void, 
                 }
 
                 const newFollower = {
-                    actor: {
-                        id: currentAccount.url,
-                        type: 'Person',
-                        preferredUsername: 'index',
-                        name: currentAccount.name,
-                        url: currentAccount.url,
-                        icon: {
-                            type: 'Image',
-                            url: currentAccount.avatarUrl
-                        }
+                    id: currentAccount.url,
+                    type: 'Person',
+                    preferredUsername: 'index',
+                    name: currentAccount.name,
+                    url: currentAccount.url,
+                    handle: `index@${new URL(currentAccount.url).hostname}`,
+                    icon: {
+                        type: 'Image',
+                        url: currentAccount.avatarUrl
                     },
                     isFollowing: false
                 };
@@ -580,7 +569,7 @@ export function useFollowMutationForUser(handle: string, onSuccess: () => void, 
                     ...oldData,
                     pages: [{
                         ...oldData.pages[0],
-                        followers: [newFollower, ...oldData.pages[0].followers]
+                        accounts: [newFollower, ...oldData.pages[0].accounts]
                     }, ...oldData.pages.slice(1)]
                 };
             });
@@ -783,36 +772,6 @@ export function useSuggestedProfilesForUser(handle: string, limit = 3) {
     };
 
     return {suggestedProfilesQuery, updateSuggestedProfile};
-}
-
-export function useProfileFollowersForUser(handle: string, profileHandle: string) {
-    return useInfiniteQuery({
-        queryKey: QUERY_KEYS.profileFollowers(profileHandle),
-        async queryFn({pageParam}: {pageParam?: string}) {
-            const siteUrl = await getSiteUrl();
-            const api = createActivityPubAPI(handle, siteUrl);
-
-            return api.getProfileFollowers(profileHandle, pageParam);
-        },
-        getNextPageParam(prevPage) {
-            return prevPage.next;
-        }
-    });
-}
-
-export function useProfileFollowingForUser(handle: string, profileHandle: string) {
-    return useInfiniteQuery({
-        queryKey: QUERY_KEYS.profileFollowing(profileHandle),
-        async queryFn({pageParam}: {pageParam?: string}) {
-            const siteUrl = await getSiteUrl();
-            const api = createActivityPubAPI(handle, siteUrl);
-
-            return api.getProfileFollowing(profileHandle, pageParam);
-        },
-        getNextPageParam(prevPage) {
-            return prevPage.next;
-        }
-    });
 }
 
 export function useThreadForUser(handle: string, id?: string) {
@@ -1160,14 +1119,14 @@ export function useAccountForUser(handle: string, profileHandle: string) {
     });
 }
 
-export function useAccountFollowsForUser(handle: string, type: AccountFollowsType) {
+export function useAccountFollowsForUser(profileHandle: string, type: AccountFollowsType) {
     return useInfiniteQuery({
-        queryKey: QUERY_KEYS.accountFollows(handle, type),
+        queryKey: QUERY_KEYS.accountFollows(profileHandle, type),
         async queryFn({pageParam}: {pageParam?: string}) {
             const siteUrl = await getSiteUrl();
-            const api = createActivityPubAPI(handle, siteUrl);
+            const api = createActivityPubAPI('index', siteUrl);
 
-            return api.getAccountFollows(type, pageParam);
+            return api.getAccountFollows(profileHandle, type, pageParam);
         },
         getNextPageParam(prevPage) {
             return prevPage.next;
