@@ -67,7 +67,7 @@ const FeedItemStats: React.FC<FeedItemStatsProps> = ({
         onLikeClick();
     };
 
-    const buttonClassName = `transition-color flex p-2 ap-action-button items-center justify-center rounded-md bg-white text-gray-900 leading-none hover:bg-gray-100 dark:bg-black dark:hover:bg-gray-950 dark:text-gray-600`;
+    const buttonClassName = `transition-color flex p-2 ap-action-button items-center justify-center rounded-md text-gray-900 leading-none hover:bg-black/[3%] dark:bg-black dark:hover:bg-gray-950 dark:text-gray-600`;
 
     return (<div className={`flex ${layout !== 'inbox' && 'gap-1'}`}>
         <Button
