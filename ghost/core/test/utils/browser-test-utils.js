@@ -48,49 +48,37 @@ function createBrowserEnvironment(options = {}) {
     const window = dom.window;
     const document = window.document;
 
+    // Create a storage mock
+    function createStorageMock() {
+        return {
+            getItem: function (key) {
+                return this[key] || null;
+            },
+            setItem: function (key, value) {
+                this[key] = value;
+            },
+            removeItem: function (key) {
+                delete this[key];
+            },
+            clear: function () {
+                Object.keys(this).forEach((key) => {
+                    if (key !== 'getItem' && key !== 'setItem' && key !== 'removeItem' && key !== 'clear') {
+                        delete this[key];
+                    }
+                });
+            }
+        };
+    }
+
     // Mock localStorage
-    const localStorageMock = {
-        getItem: function (key) {
-            return this[key] || null;
-        },
-        setItem: function (key, value) {
-            this[key] = value;
-        },
-        removeItem: function (key) {
-            delete this[key];
-        },
-        clear: function () {
-            Object.keys(this).forEach((key) => {
-                if (key !== 'getItem' && key !== 'setItem' && key !== 'removeItem' && key !== 'clear') {
-                    delete this[key];
-                }
-            });
-        }
-    };
+    const localStorageMock = createStorageMock();
+    const sessionStorageMock = createStorageMock();
+
     Object.defineProperty(window, 'localStorage', {
         value: localStorageMock,
         configurable: true
     });
-
-    // Mock sessionStorage
-    const sessionStorageMock = {
-        getItem: function (key) {
-            return this[key] || null;
-        },
-        setItem: function (key, value) {
-            this[key] = value;
-        },
-        removeItem: function (key) {
-            delete this[key];
-        },
-        clear: function () {
-            Object.keys(this).forEach((key) => {
-                if (key !== 'getItem' && key !== 'setItem' && key !== 'removeItem' && key !== 'clear') {
-                    delete this[key];
-                }
-            });
-        }
-    };
+    
     Object.defineProperty(window, 'sessionStorage', {
         value: sessionStorageMock,
         configurable: true
@@ -246,12 +234,8 @@ function loadScript(env, scriptContent, options = {}) {
     Object.entries(dataAttributes).forEach(([key, value]) => {
         scriptElement.setAttribute(`data-${key}`, value);
     });
+    scriptElement.textContent = scriptContent;
     env.document.body.appendChild(scriptElement);
-
-    // Execute the script
-    const script = env.document.createElement('script');
-    script.textContent = scriptContent;
-    env.document.body.appendChild(script);
 }
 
 module.exports = {
