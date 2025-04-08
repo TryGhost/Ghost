@@ -21,21 +21,31 @@ fi
 
 # Parse command line options
 jobs=""
+test_name=""
 while [[ $# -gt 0 ]]; do
     case $1 in
         -j|--jobs)
-            if [[ -n "${2:-}" ]]; then
-                jobs="$2"
-                shift 2
-            else
+            if [[ -z "${2:-}" || "$2" == -* ]]; then
                 echo "Error: -j|--jobs requires a number argument"
                 exit 1
             fi
+            jobs="$2"
+            shift 2
+            ;;
+        -n|--name)
+            if [[ -z "${2:-}" || "$2" == -* ]]; then
+                echo "Error: -n|--name requires a <test_name> argument"
+                exit 1
+            fi
+            test_name="$2"
+            shift 2
             ;;
         *)
             # Store the test name if provided
-            test_name="$1"
-            shift
+            # test_name="$1"
+            # shift
+            echo "Error: Unknown option: $1"
+            exit 1
             ;;
     esac
 done
