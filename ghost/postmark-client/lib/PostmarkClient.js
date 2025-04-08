@@ -63,7 +63,7 @@ module.exports = class PostmarkClient {
                     TextBody: messageContent.plaintext,
                     Metadata: {},
                     TrackOpens: message.track_opens,
-                    Headers: [],
+                    Headers: {},
                     MessageStream: config.streamId,
                     Tag: 'ghost-email|' + message.id
                 };
@@ -286,6 +286,6 @@ module.exports = class PostmarkClient {
      * @returns {number}
      */
     getBatchSize() {
-        return this.#config.get('bulkEmail')?.batchSize ?? this.DEFAULT_BATCH_SIZE;
+        return this.#config.get('bulkEmail')?.batchSize ?? this.constructor.DEFAULT_BATCH_SIZE;
     }
 };
