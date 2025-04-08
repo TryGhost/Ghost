@@ -38,7 +38,7 @@ const ArticleBody: React.FC<{
     onHeadingsExtracted?: (headings: TOCItem[]) => void;
     onIframeLoad?: (iframe: HTMLIFrameElement) => void;
     onLoadingChange?: (isLoading: boolean) => void;
-    isCustomizerOpen: boolean;
+    isPopoverOpen: boolean;
 }> = ({
     postUrl,
     heading,
@@ -51,7 +51,7 @@ const ArticleBody: React.FC<{
     onHeadingsExtracted,
     onIframeLoad,
     onLoadingChange,
-    isCustomizerOpen
+    isPopoverOpen
 }) => {
     const iframeRef = useRef<HTMLIFrameElement>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -324,7 +324,7 @@ const ArticleBody: React.FC<{
                         overflow: 'hidden',
                         opacity: isLoading ? 0 : 1,
                         transition: 'opacity 0.2s ease-in-out',
-                        pointerEvents: isCustomizerOpen ? 'none' : 'auto'
+                        pointerEvents: isPopoverOpen ? 'none' : 'auto'
                     }}
                     title='Embedded Content'
                 />
@@ -360,6 +360,7 @@ export const Reader: React.FC<ReaderProps> = ({
     const modalRef = useRef<HTMLElement>(null);
     const [focusReply, setFocusReply] = useState(false);
     const [isCustomizerOpen, setIsCustomizerOpen] = useState(false);
+    const [isTOCOpen, setIsTOCOpen] = useState(false);
     const location = useLocation();
 
     useEffect(() => {
@@ -594,6 +595,7 @@ export const Reader: React.FC<ReaderProps> = ({
                                         iframeElement={iframeElement}
                                         modalRef={modalRef}
                                         tocItems={tocItems}
+                                        onOpenChange={setIsTOCOpen}
                                     />
                                     <div className='grow overflow-y-auto'>
                                         <div className={`mx-auto px-8 pb-10 pt-5`} style={{maxWidth: currentMaxWidth}}>
@@ -606,7 +608,7 @@ export const Reader: React.FC<ReaderProps> = ({
                                                     heading={object.name}
                                                     html={object.content ?? ''}
                                                     image={typeof object.image === 'string' ? object.image : object.image?.url}
-                                                    isCustomizerOpen={isCustomizerOpen}
+                                                    isPopoverOpen={isCustomizerOpen || isTOCOpen}
                                                     postUrl={object?.url || ''}
                                                     onHeadingsExtracted={handleHeadingsExtracted}
                                                     onIframeLoad={handleIframeLoad}
