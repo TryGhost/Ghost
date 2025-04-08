@@ -118,4 +118,29 @@ if [[ "$AP_BUMP_NEEDED" == true ]]; then
     fi
 fi
 
+##
+## 3) Lint Tinybird datafiles if they have been modified
+##
+
+echo -e "Checking Tinybird datafiles ${grey}(pre-commit hook)${no_color}"
+
+MODIFIED_FILES=$(git diff --cached --name-only)
+TINYBIRD_FILES_MODIFIED=false
+
+for FILE in $MODIFIED_FILES; do
+    if [[ "$FILE" == ghost/web-analytics/*.pipe || "$FILE" == ghost/web-analytics/*.datasource ]]; then
+        TINYBIRD_FILES_MODIFIED=true
+        break
+    fi
+done
+
+if [[ "$TINYBIRD_FILES_MODIFIED" == true ]]; then
+    echo -e "Tinybird datafiles have been modified. Running linter..."
+    if ! ghost/web-analytics/scripts/lint.sh; then
+        echo -e "${red}❌ Tinybird datafile linting failed${no_color}"
+        exit 1
+    fi
+    echo -e "${green}✓ Tinybird datafile linting passed${no_color}"
+fi
+
 exit 0
