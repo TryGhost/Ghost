@@ -38,6 +38,7 @@ const ArticleBody: React.FC<{
     onHeadingsExtracted?: (headings: TOCItem[]) => void;
     onIframeLoad?: (iframe: HTMLIFrameElement) => void;
     onLoadingChange?: (isLoading: boolean) => void;
+    isCustomizerOpen: boolean;
 }> = ({
     postUrl,
     heading,
@@ -49,7 +50,8 @@ const ArticleBody: React.FC<{
     fontStyle,
     onHeadingsExtracted,
     onIframeLoad,
-    onLoadingChange
+    onLoadingChange,
+    isCustomizerOpen
 }) => {
     const iframeRef = useRef<HTMLIFrameElement>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -321,7 +323,8 @@ const ArticleBody: React.FC<{
                         height: iframeHeight,
                         overflow: 'hidden',
                         opacity: isLoading ? 0 : 1,
-                        transition: 'opacity 0.2s ease-in-out'
+                        transition: 'opacity 0.2s ease-in-out',
+                        pointerEvents: isCustomizerOpen ? 'none' : 'auto'
                     }}
                     title='Embedded Content'
                 />
@@ -356,6 +359,7 @@ export const Reader: React.FC<ReaderProps> = ({
     } = useCustomizerSettings();
     const modalRef = useRef<HTMLElement>(null);
     const [focusReply, setFocusReply] = useState(false);
+    const [isCustomizerOpen, setIsCustomizerOpen] = useState(false);
     const location = useLocation();
 
     useEffect(() => {
@@ -579,6 +583,7 @@ export const Reader: React.FC<ReaderProps> = ({
                                                 onDecreaseFontSize={decreaseFontSize}
                                                 onFontStyleChange={setFontStyle}
                                                 onIncreaseFontSize={increaseFontSize}
+                                                onOpenChange={setIsCustomizerOpen}
                                                 onResetFontSize={resetFontSize}
                                             />
                                         </div>
@@ -601,6 +606,7 @@ export const Reader: React.FC<ReaderProps> = ({
                                                     heading={object.name}
                                                     html={object.content ?? ''}
                                                     image={typeof object.image === 'string' ? object.image : object.image?.url}
+                                                    isCustomizerOpen={isCustomizerOpen}
                                                     postUrl={object?.url || ''}
                                                     onHeadingsExtracted={handleHeadingsExtracted}
                                                     onIframeLoad={handleIframeLoad}
