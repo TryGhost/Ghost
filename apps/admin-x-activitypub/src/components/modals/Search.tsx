@@ -1,14 +1,11 @@
 import APAvatar from '@components/global/APAvatar';
 import ActivityItem from '@components/activities/ActivityItem';
 import FollowButton from '@components/global/FollowButton';
-import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useRef} from 'react';
-import ViewProfileModal from '@components/modals/ViewProfileModal';
 import {H4, LucideIcon} from '@tryghost/shade';
 import {LoadingIndicator, NoValueLabel, TextField} from '@tryghost/admin-x-design-system';
 import {SuggestedProfiles} from '../global/SuggestedProfiles';
 import {useDebounce} from 'use-debounce';
-import {useFeatureFlags} from '@src/lib/feature-flags';
 import {useNavigate} from '@tryghost/admin-x-framework';
 import {useSearchForUser} from '@hooks/use-activity-pub-queries';
 
@@ -28,7 +25,7 @@ interface AccountSearchResultItemProps {
 
 const AccountSearchResultItem: React.FC<AccountSearchResultItemProps & {
     onOpenChange?: (open: boolean) => void;
-}> = ({account, update, onOpenChange}) => {
+}> = ({account, update}) => {
     const onFollow = () => {
         update(account.id, {
             followedByMe: true,
@@ -43,19 +40,13 @@ const AccountSearchResultItem: React.FC<AccountSearchResultItemProps & {
         });
     };
 
-    const {isEnabled} = useFeatureFlags();
     const navigate = useNavigate();
 
     return (
         <ActivityItem
             key={account.id}
             onClick={() => {
-                if (isEnabled('ap-routes')) {
-                    navigate(`/profile/${account.handle}`);
-                } else {
-                    onOpenChange?.(false);
-                    NiceModal.show(ViewProfileModal, {handle: account.handle, onFollow, onUnfollow});
-                }
+                navigate(`/profile/${account.handle}`);
             }}
         >
             <APAvatar author={{

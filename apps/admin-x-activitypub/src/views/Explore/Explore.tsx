@@ -1,15 +1,12 @@
 import APAvatar from '@src/components/global/APAvatar';
 import FollowButton from '@src/components/global/FollowButton';
 import Layout from '@components/layout';
-import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect} from 'react';
-import ViewProfileModal from '@src/components/modals/ViewProfileModal';
 import {type Account} from '@src/api/activitypub';
 import {Button, H4, LucideIcon, Skeleton} from '@tryghost/shade';
 import {LoadingIndicator} from '@tryghost/admin-x-design-system';
 import {formatFollowNumber} from '@src/utils/content-formatters';
 import {useExploreProfilesForUser} from '@hooks/use-activity-pub-queries';
-import {useFeatureFlags} from '@src/lib/feature-flags';
 import {useNavigate} from '@tryghost/admin-x-framework';
 import {useOnboardingStatus} from '@src/components/layout/Onboarding';
 
@@ -36,19 +33,13 @@ export const ExploreProfile: React.FC<ExploreProfileProps & {
         });
     };
 
-    const {isEnabled} = useFeatureFlags();
     const navigate = useNavigate();
 
     return (
         <div
             className='flex w-full cursor-pointer items-start gap-3 pt-4 [&:last-of-type>:nth-child(2)]:border-none'
             onClick={() => {
-                if (isEnabled('ap-routes')) {
-                    navigate(`/profile/${profile.handle}`);
-                } else {
-                    onOpenChange?.(false);
-                    NiceModal.show(ViewProfileModal, {handle: profile.handle, onFollow, onUnfollow});
-                }
+                navigate(`/profile/${profile.handle}`);
             }}
         >
             <APAvatar author={

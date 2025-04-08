@@ -1,12 +1,9 @@
 import APAvatar from './APAvatar';
 import ActivityItem from '../activities/ActivityItem';
 import FollowButton from './FollowButton';
-import NiceModal from '@ebay/nice-modal-react';
 import React from 'react';
-import ViewProfileModal from '../modals/ViewProfileModal';
 import {type Account} from '../../api/activitypub';
 import {Skeleton} from '@tryghost/shade';
-import {useFeatureFlags} from '@src/lib/feature-flags';
 import {useNavigate} from '@tryghost/admin-x-framework';
 import {useSuggestedProfilesForUser} from '@src/hooks/use-activity-pub-queries';
 
@@ -33,19 +30,13 @@ export const SuggestedProfile: React.FC<SuggestedProfileProps & {
         });
     };
 
-    const {isEnabled} = useFeatureFlags();
     const navigate = useNavigate();
 
     return (
         <ActivityItem
             key={profile.id}
             onClick={() => {
-                if (isEnabled('ap-routes')) {
-                    navigate(`/profile/${profile.handle}`);
-                } else {
-                    onOpenChange?.(false);
-                    NiceModal.show(ViewProfileModal, {handle: profile.handle, onFollow, onUnfollow});
-                }
+                navigate(`/profile/${profile.handle}`);
             }}
         >
             <APAvatar author={

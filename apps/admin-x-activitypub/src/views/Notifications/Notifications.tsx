@@ -1,4 +1,3 @@
-import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useRef} from 'react';
 import {LucideIcon, Skeleton} from '@tryghost/shade';
 
@@ -9,14 +8,12 @@ import APAvatar from '@components/global/APAvatar';
 import NotificationItem from '@components/activities/NotificationItem';
 import Separator from '@components/global/Separator';
 
-import ArticleModal from '@src/components/feed/ArticleModal';
 import Layout from '@components/layout';
 import truncate from '@utils/truncate';
 import {EmptyViewIcon, EmptyViewIndicator} from '@src/components/global/EmptyViewIndicator';
 import {Notification} from '@src/api/activitypub';
-import {handleProfileClick, handleProfileClickRR} from '@utils/handle-profile-click';
+import {handleProfileClickRR} from '@utils/handle-profile-click';
 import {stripHtml} from '@src/utils/content-formatters';
-import {useFeatureFlags} from '@src/lib/feature-flags';
 import {useNavigate} from '@tryghost/admin-x-framework';
 import {useNotificationsForUser} from '@hooks/use-activity-pub-queries';
 
@@ -88,7 +85,6 @@ const NotificationGroupDescription: React.FC<NotificationGroupDescriptionProps> 
 
     const actorClass = 'cursor-pointer font-semibold hover:underline';
 
-    const {isEnabled} = useFeatureFlags();
     const navigate = useNavigate();
 
     const actorText = (
@@ -97,11 +93,7 @@ const NotificationGroupDescription: React.FC<NotificationGroupDescriptionProps> 
                 className={actorClass}
                 onClick={(e) => {
                     e?.stopPropagation();
-                    if (isEnabled('ap-routes')) {
-                        handleProfileClickRR(firstActor.handle, navigate);
-                    } else {
-                        handleProfileClick(firstActor.handle, e);
-                    }
+                    handleProfileClickRR(firstActor.handle, navigate);
                 }}
             >
                 {firstActor.name}
@@ -113,11 +105,7 @@ const NotificationGroupDescription: React.FC<NotificationGroupDescriptionProps> 
                         className={actorClass}
                         onClick={(e) => {
                             e?.stopPropagation();
-                            if (isEnabled('ap-routes')) {
-                                handleProfileClickRR(secondActor.handle, navigate);
-                            } else {
-                                handleProfileClick(secondActor.handle, e);
-                            }
+                            handleProfileClickRR(secondActor.handle, navigate);
                         }}
                     >
                         {secondActor.name}
@@ -153,7 +141,6 @@ const NotificationGroupDescription: React.FC<NotificationGroupDescriptionProps> 
 
 const Notifications: React.FC = () => {
     const [openStates, setOpenStates] = React.useState<{[key: string]: boolean}>({});
-    const {isEnabled} = useFeatureFlags();
     const navigate = useNavigate();
 
     const toggleOpen = (groupId: string) => {
@@ -202,44 +189,25 @@ const Notifications: React.FC = () => {
     const handleNotificationClick = (group: NotificationGroup, index: number) => {
         switch (group.type) {
         case 'like':
-            if (isEnabled('ap-routes') && group.post) {
+            if (group.post) {
                 navigate(`/${group.post.type === 'article' ? 'inbox' : 'feed'}/${encodeURIComponent(group.post.id)}`);
-            } else {
-                NiceModal.show(ArticleModal, {
-                    remotePostId: group.post?.id || '',
-                    width: group.post?.type === 'article' ? 'wide' : 'narrow'
-                });
             }
             break;
         case 'reply':
-            if (isEnabled('ap-routes') && group.post && group.inReplyTo) {
+            if (group.post && group.inReplyTo) {
                 navigate(`/${group.inReplyTo.type === 'article' ? 'inbox' : 'feed'}/${encodeURIComponent(group.post.id)}`);
-            } else {
-                NiceModal.show(ArticleModal, {
-                    remotePostId: group.post?.id || '',
-                    width: group.inReplyTo?.type === 'article' ? 'wide' : 'narrow'
-                });
             }
             break;
         case 'repost':
-            if (isEnabled('ap-routes') && group.post) {
+            if (group.post) {
                 navigate(`/${group.post.type === 'article' ? 'inbox' : 'feed'}/${encodeURIComponent(group.post.id)}`);
-            } else {
-                NiceModal.show(ArticleModal, {
-                    remotePostId: group.post?.id || '',
-                    width: group.post?.type === 'article' ? 'wide' : 'narrow'
-                });
             }
             break;
         case 'follow':
             if (group.actors.length > 1) {
                 toggleOpen(group.id || `${group.type}_${index}`);
             } else {
-                if (isEnabled('ap-routes')) {
-                    handleProfileClickRR(group.actors[0].handle, navigate);
-                } else {
-                    handleProfileClick(group.actors[0].handle);
-                }
+                handleProfileClickRR(group.actors[0].handle, navigate);
             }
             break;
         }
@@ -317,11 +285,7 @@ const Notifications: React.FC = () => {
                                                                         className='flex items-center hover:opacity-80'
                                                                         onClick={(e) => {
                                                                             e?.stopPropagation();
-                                                                            if (isEnabled('ap-routes')) {
-                                                                                handleProfileClickRR(actor.handle, navigate);
-                                                                            } else {
-                                                                                handleProfileClick(actor.handle, e);
-                                                                            }
+                                                                            handleProfileClickRR(actor.handle, navigate);
                                                                         }}
                                                                     >
                                                                         <APAvatar author={{
