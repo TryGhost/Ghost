@@ -3,11 +3,10 @@
   const STORAGE_KEY = 'session-id'
   let DATASOURCE = 'analytics_events'
   const storageMethods = {
-    cookie: 'cookie',
     localStorage: 'localStorage',
     sessionStorage: 'sessionStorage',
   }
-  let STORAGE_METHOD = storageMethods.cookie
+  let STORAGE_METHOD = storageMethods.localStorage
   let globalAttributes = {}
   let stringifyPayload = true
 
@@ -40,64 +39,37 @@
     )
   }
 
-  function _getSessionIdFromCookie() {
-    let cookie = {}
-    document.cookie.split(';').forEach(function (el) {
-      let [key, value] = el.split('=')
-      cookie[key.trim()] = value
-    })
-    return cookie[STORAGE_KEY]
-  }
-
   function _getSessionId() {
-    if (
-      [storageMethods.localStorage, storageMethods.sessionStorage].includes(
-        STORAGE_METHOD
-      )
-    ) {
-      const storage =
-        STORAGE_METHOD === storageMethods.localStorage
-          ? localStorage
-          : sessionStorage
-      const serializedItem = storage.getItem(STORAGE_KEY)
+    const storage =
+      STORAGE_METHOD === storageMethods.localStorage
+        ? localStorage
+        : sessionStorage
+    const serializedItem = storage.getItem(STORAGE_KEY)
 
-      if (!serializedItem) {
-        return null
-      }
-
-      let item = null;
-
-      try {
-        item = JSON.parse(serializedItem)
-      } catch (error) {
-        return null
-      }
-
-      if(typeof item !== 'object' || item === null) {
-        return null
-      }
-
-      const now = new Date()
-
-      if (now.getTime() > item.expiry) {
-        storage.removeItem(STORAGE_KEY)
-        return null
-      }
-
-      return item.value
+    if (!serializedItem) {
+      return null
     }
 
-    return _getSessionIdFromCookie()
-  }
+    let item = null;
 
-  function _setSessionIdFromCookie(sessionId) {
-    let cookieValue = `${STORAGE_KEY}=${sessionId}; Max-Age=1800; path=/; secure`
-
-    if (domain) {
-      cookieValue += `; domain=${domain}`
+    try {
+      item = JSON.parse(serializedItem)
+    } catch (error) {
+      return null
     }
 
-    document.cookie = cookieValue
+    if(typeof item !== 'object' || item === null) {
+      return null
+    }
+
+    const now = new Date()
+
+    if (now.getTime() > item.expiry) {
+      storage.removeItem(STORAGE_KEY)
+      return null
+    }
+
+    return item.value
   }
 
   function _setSessionId() {
@@ -108,25 +80,17 @@
      */
 
     const sessionId = _getSessionId() || _uuidv4()
-    if (
-      [storageMethods.localStorage, storageMethods.sessionStorage].includes(
-        STORAGE_METHOD
-      )
-    ) {
-      const now = new Date()
-      const item = {
-        value: sessionId,
-        expiry: now.getTime() + 14400 * 1000, // 4 hours
-      }
-      const value = JSON.stringify(item)
-      const storage =
-        STORAGE_METHOD === storageMethods.localStorage
-          ? localStorage
-          : sessionStorage
-      return STORAGE_METHOD === storage.setItem(STORAGE_KEY, value)
+    const now = new Date()
+    const item = {
+      value: sessionId,
+      expiry: now.getTime() + 14400 * 1000, // 4 hours
     }
-
-    return _setSessionIdFromCookie(sessionId)
+    const value = JSON.stringify(item)
+    const storage =
+      STORAGE_METHOD === storageMethods.localStorage
+        ? localStorage
+        : sessionStorage
+    storage.setItem(STORAGE_KEY, value)
   }
 
   /**
@@ -176,7 +140,7 @@
    *
    * @param  { string } name Event name
    * @param  { object } payload Event payload
-   * @return { object } request response
+   * @return { Promise<any> } request response
    */
   async function _sendEvent(name, payload) {
     _setSessionId()
@@ -240,14 +204,14 @@
         'user-agent': window.navigator.userAgent,
         locale,
         location: country,
-        referrer: getReferrer(),
+        referrer: _getReferrer(),
         pathname: window.location.pathname,
         href: window.location.href,
       })
     }, 300)
   }
 
-  function getReferrer() {
+  function _getReferrer() {
     // Fetch referrer data from query params - priority is the following order: ref, source, utm_source, utm_medium, referrer
     let refParam;
     let sourceParam;
@@ -301,7 +265,10 @@
   }
 
   // Client
-  window.Tinybird = { trackEvent: _sendEvent }
+  window.Tinybird = { 
+    trackEvent: _sendEvent,
+    _trackPageHit: _trackPageHit
+  }
 
   // Event listener
   window.addEventListener('hashchange', _trackPageHit)
