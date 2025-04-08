@@ -6,6 +6,7 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 # Evaluate and export the environment variables from the .tinyenv file
 source "$SCRIPT_DIR/.tinyenv"
 export TB_VERSION
+export TB_VERSION_WARNING
 echo "Using TB_VERSION: $TB_VERSION"
 
 # Function to prompt Tinybird branch information
