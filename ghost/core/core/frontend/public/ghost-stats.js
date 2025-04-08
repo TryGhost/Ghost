@@ -265,7 +265,10 @@
   }
 
   // Client
-  window.Tinybird = { trackEvent: _sendEvent }
+  window.Tinybird = { 
+    trackEvent: _sendEvent,
+    _trackPageHit: _trackPageHit
+  }
 
   // Event listener
   window.addEventListener('hashchange', _trackPageHit)
