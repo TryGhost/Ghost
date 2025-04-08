@@ -126,10 +126,11 @@ module.exports = class PostmarkClient {
     /**
      * @param {ServerClient} postmarkInstance
      * @param {Date} startTime
+     * @param {number} offset - The offset for pagination
      */
-    async getEventsFromPostmark(postmarkInstance, startTime) {
+    async getEventsFromPostmark(postmarkInstance, startTime, offset = 0) {
         try {
-            const page = await postmarkInstance.getMessageOpens();
+            const page = await postmarkInstance.getMessageOpens({offset});
             metrics.metric('postmark-get-events', {
                 value: Date.now() - startTime,
                 statusCode: 200
@@ -173,7 +174,7 @@ module.exports = class PostmarkClient {
                 logging.info('[Postmark Client] Processed ' + events.length + ' events');
                 currentOffset += page.Opens.length;
 
-                page = await this.getEventsFromPostmark(postmarkInstance, startDate);
+                page = await this.getEventsFromPostmark(postmarkInstance, startDate, currentOffset);
 
                 events = (page?.Opens?.map(this.normalizeEvent) || []).filter(e => !!e && e.timestamp <= endDate && e.timestamp >= startDate);
             }
