@@ -169,28 +169,28 @@ const CustomizerView: React.FC<CustomizerViewProps> = ({
             <div className='flex flex-col gap-4'>
                 <div className='flex items-center justify-between gap-[6px]'>
                     <Button
-                        className={`hover:bg-gray-250 dark:bg-gray-925 h-7 flex-1 rounded-[6px] bg-gray-200 p-0 text-[1.1rem] text-black dark:text-white dark:hover:bg-gray-900 [&_svg]:size-[14px] ${isActiveColor('SYSTEM') ? 'outline-green outline outline-2' : ''}`}
+                        className={`h-7 flex-1 rounded-[6px] bg-gray-200 p-0 text-[1.1rem] text-black hover:bg-gray-250 dark:bg-gray-925 dark:text-white dark:hover:bg-gray-900 [&_svg]:size-[14px] ${isActiveColor('SYSTEM') ? 'outline outline-2 outline-green' : ''}`}
                         variant="secondary"
                         onClick={() => onColorChange('SYSTEM')}
                     >
                         Auto
                     </Button>
                     <Button
-                        className={`h-7 flex-1 rounded-[6px] bg-[#ece6d9] p-0 hover:bg-[#ece6d9] ${isActiveColor('SEPIA') ? 'outline-green outline outline-2' : 'border border-[#ece6d9]'}`}
+                        className={`h-7 flex-1 rounded-[6px] bg-[#ece6d9] p-0 hover:bg-[#ece6d9] ${isActiveColor('SEPIA') ? 'outline outline-2 outline-green' : 'border border-[#ece6d9]'}`}
                         onClick={() => onColorChange('SEPIA')}
                     />
                     <Button
-                        className={`h-7 flex-1 rounded-[6px] bg-white p-0 hover:bg-white ${isActiveColor('LIGHT') ? 'outline-green outline outline-2' : 'border border-gray-200'}`}
+                        className={`h-7 flex-1 rounded-[6px] bg-white p-0 hover:bg-white ${isActiveColor('LIGHT') ? 'outline outline-2 outline-green' : 'border border-gray-200'}`}
                         onClick={() => onColorChange('LIGHT')}
                     />
                     <Button
-                        className={`dark:border-gray-925 h-7 flex-1 rounded-[6px] bg-black p-0 hover:bg-black dark:border ${isActiveColor('DARK') ? 'outline-green outline outline-2' : ''}`}
+                        className={`h-7 flex-1 rounded-[6px] bg-black p-0 hover:bg-black dark:border dark:border-gray-925 ${isActiveColor('DARK') ? 'outline outline-2 outline-green' : ''}`}
                         onClick={() => onColorChange('DARK')}
                     />
                 </div>
                 <div className='flex gap-2'>
                     <Button
-                        className={`hover:bg-gray-250 dark:bg-gray-925 flex h-auto w-full flex-col gap-1 rounded-[6px] bg-gray-200 text-black dark:text-white dark:hover:bg-gray-900 ${isActiveFont('sans') && 'outline-green outline outline-2'}`}
+                        className={`flex h-auto w-full flex-col gap-1 rounded-[6px] bg-gray-200 text-black hover:bg-gray-250 dark:bg-gray-925 dark:text-white dark:hover:bg-gray-900 ${isActiveFont('sans') && 'outline outline-2 outline-green'}`}
                         variant="secondary"
                         onClick={() => onFontStyleChange('sans')}
                     >
@@ -198,7 +198,7 @@ const CustomizerView: React.FC<CustomizerViewProps> = ({
                         <span className='text-[1.1rem]'>System</span>
                     </Button>
                     <Button
-                        className={`hover:bg-gray-250 dark:bg-gray-925 flex h-auto w-full flex-col gap-1 rounded-[6px] bg-gray-200 text-black dark:text-white dark:hover:bg-gray-900 ${isActiveFont('serif') && 'outline-green outline outline-2'}`}
+                        className={`flex h-auto w-full flex-col gap-1 rounded-[6px] bg-gray-200 text-black hover:bg-gray-250 dark:bg-gray-925 dark:text-white dark:hover:bg-gray-900 ${isActiveFont('serif') && 'outline outline-2 outline-green'}`}
                         variant="secondary"
                         onClick={() => onFontStyleChange('serif')}
                     >
@@ -208,7 +208,7 @@ const CustomizerView: React.FC<CustomizerViewProps> = ({
                 </div>
                 <div className='flex gap-2'>
                     <Button
-                        className='hover:bg-gray-250 dark:bg-gray-925 h-8 w-full rounded-[6px] bg-gray-200 text-black dark:text-white dark:hover:bg-gray-900 [&_svg]:size-[14px]'
+                        className='h-8 w-full rounded-[6px] bg-gray-200 text-black hover:bg-gray-250 dark:bg-gray-925 dark:text-white dark:hover:bg-gray-900 [&_svg]:size-[14px]'
                         disabled={currentFontSizeIndex === 0}
                         variant="secondary"
                         onClick={onDecreaseFontSize}
@@ -216,14 +216,14 @@ const CustomizerView: React.FC<CustomizerViewProps> = ({
                         <LucideIcon.Minus />
                     </Button>
                     <Button
-                        className='hover:bg-gray-250 dark:bg-gray-925 h-8 w-full rounded-[6px] bg-gray-200 text-black dark:text-white dark:hover:bg-gray-900'
+                        className='h-8 w-full rounded-[6px] bg-gray-200 text-black hover:bg-gray-250 dark:bg-gray-925 dark:text-white dark:hover:bg-gray-900'
                         variant="secondary"
                         onClick={onResetFontSize}
                     >
                         <span className='text-[1.6rem] font-bold'>Aa</span>
                     </Button>
                     <Button
-                        className='hover:bg-gray-250 dark:bg-gray-925 h-8 w-full rounded-[6px] bg-gray-200 text-black dark:text-white dark:hover:bg-gray-900 [&_svg]:size-[14px]'
+                        className='h-8 w-full rounded-[6px] bg-gray-200 text-black hover:bg-gray-250 dark:bg-gray-925 dark:text-white dark:hover:bg-gray-900 [&_svg]:size-[14px]'
                         disabled={currentFontSizeIndex === FONT_SIZES.length - 1}
                         variant="secondary"
                         onClick={onIncreaseFontSize}
