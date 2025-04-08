@@ -24,7 +24,7 @@ const RecommendationIcon: React.FC<Props> = ({title, favicon, featured_image, is
     const hint = isGhostSite ? 'This is a Ghost site that supports one-click subscribe' : '';
 
     return (
-        <div className="relative h-6 w-6 shrink-0 rounded-sm dark:group-hover/table-row:bg-grey-950" title={hint}>
+        <div className="dark:group-hover/table-row:bg-grey-950 relative h-6 w-6 shrink-0 rounded-sm" title={hint}>
             <img alt={title} className="h-6 w-6 rounded-sm" src={icon} onError={clearIcon} />
             {isGhostSite && <img alt='Ghost Logo' className='absolute bottom-[-3px] right-[-3px] h-[14px] w-[14px]' src={GhostLogo} />}
         </div>

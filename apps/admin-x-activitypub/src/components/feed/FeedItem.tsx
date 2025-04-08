@@ -10,11 +10,10 @@ import FeedItemStats from './FeedItemStats';
 import clsx from 'clsx';
 import getReadingTime from '../../utils/get-reading-time';
 import getUsername from '../../utils/get-username';
-import {handleProfileClick, handleProfileClickRR} from '../../utils/handle-profile-click';
+import {handleProfileClickRR} from '../../utils/handle-profile-click';
 import {openLinksInNewTab, stripHtml} from '../../utils/content-formatters';
 import {renderTimestamp} from '../../utils/render-timestamp';
 import {useDeleteMutationForUser} from '../../hooks/use-activity-pub-queries';
-import {useFeatureFlags} from '@src/lib/feature-flags';
 import {useNavigate} from '@tryghost/admin-x-framework';
 
 function getAttachment(object: ObjectProperties) {
@@ -268,7 +267,6 @@ const FeedItem: React.FC<FeedItemProps> = ({
         </Button>
     );
 
-    const {isEnabled} = useFeatureFlags();
     const navigate = useNavigate();
 
     if (layout === 'feed') {
@@ -280,11 +278,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                             <Icon colorClass='text-gray-700 shrink-0 dark:text-gray-600' name='reload' size={'sm'} />
                             <div className='flex min-w-0 items-center gap-1 text-sm'>
                                 <span className='truncate break-all hover:underline' title={getUsername(actor)} onClick={(e) => {
-                                    if (isEnabled('ap-routes')) {
-                                        handleProfileClickRR(actor, navigate, e);
-                                    } else {
-                                        handleProfileClick(actor, e);
-                                    }
+                                    handleProfileClickRR(actor, navigate, e);
                                 }}>{actor.name}</span>
                                 reposted
                             </div>
@@ -294,11 +288,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                 <APAvatar author={author} disabled={isPending} />
                                 <div className='flex min-w-0 grow flex-col gap-0.5' onClick={(e) => {
                                     if (!isPending) {
-                                        if (isEnabled('ap-routes')) {
-                                            handleProfileClickRR(author, navigate, e);
-                                        } else {
-                                            handleProfileClick(author, e);
-                                        }
+                                        handleProfileClickRR(author, navigate, e);
                                     }
                                 }}>
                                     <span className={`min-w-0 truncate break-all font-semibold leading-[normal] ${!isPending ? 'hover-underline' : ''} dark:text-white`}
@@ -393,11 +383,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                 {(type === 'Announce') && <div className='z-10 col-span-2 mb-2 flex items-center gap-2 text-gray-700 dark:text-gray-600'>
                                     <div><Icon colorClass='text-gray-700 shrink-0 dark:text-gray-600' name='reload' size={'sm'}></Icon></div>
                                     <span className='flex min-w-0 items-center gap-1'><span className='truncate break-all hover:underline' title={getUsername(actor)} onClick={(e) => {
-                                        if (isEnabled('ap-routes')) {
-                                            handleProfileClickRR(actor, navigate, e);
-                                        } else {
-                                            handleProfileClick(actor, e);
-                                        }
+                                        handleProfileClickRR(actor, navigate, e);
                                     }}>{actor.name}</span> reposted</span>
                                 </div>}
                                 {(showHeader) && <>
@@ -406,11 +392,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                     </div>
                                     <div className='relative z-10 flex w-full min-w-0 cursor-pointer flex-col overflow-visible text-[1.5rem]' onClick={(e) => {
                                         if (!isPending) {
-                                            if (isEnabled('ap-routes')) {
-                                                handleProfileClickRR(author, navigate, e);
-                                            } else {
-                                                handleProfileClick(author, e);
-                                            }
+                                            handleProfileClickRR(author, navigate, e);
                                         }
                                     }}>
                                         <div className='flex w-full'>
@@ -462,15 +444,11 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                 <div className='flex w-full items-center justify-between'>
                                     <div className='relative z-10 flex w-full min-w-0 flex-col overflow-visible' onClick={(e) => {
                                         if (!isPending) {
-                                            if (isEnabled('ap-routes')) {
-                                                handleProfileClickRR(author, navigate, e);
-                                            } else {
-                                                handleProfileClick(author, e);
-                                            }
+                                            handleProfileClickRR(author, navigate, e);
                                         }
                                     }}>
                                         <div className='flex'>
-                                            <span className='min-w-0 truncate whitespace-nowrap font-semibold after:mx-1 after:font-normal after:text-gray-700 after:content-["·"]' data-test-activity-heading>{author.name}</span>
+                                            <span className='min-w-0 truncate whitespace-nowrap font-semibold text-black after:mx-1 after:font-normal after:text-gray-700 after:content-["·"] dark:text-white' data-test-activity-heading>{author.name}</span>
                                             <div>{renderTimestamp(object, (isPending === false && !object.authored))}</div>
                                         </div>
                                         <div className='flex'>
@@ -536,20 +514,12 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                             title={getUsername(author)}
                                             data-test-activity-heading
                                             onClick={(e) => {
-                                                if (isEnabled('ap-routes')) {
-                                                    handleProfileClickRR(author, navigate, e);
-                                                } else {
-                                                    handleProfileClick(author, e);
-                                                }
+                                                handleProfileClickRR(author, navigate, e);
                                             }}
                                         >{author.name}
                                         </span>
                                         {(type === 'Announce') && <span className='z-10 flex items-center gap-1 text-gray-700 dark:text-gray-600'><Icon colorClass='text-gray-700 shrink-0 dark:text-gray-600' name='reload' size={'sm'}></Icon><span className='hover:underline' title={getUsername(actor)} onClick={(e) => {
-                                            if (isEnabled('ap-routes')) {
-                                                handleProfileClickRR(actor, navigate, e);
-                                            } else {
-                                                handleProfileClick(actor, e);
-                                            }
+                                            handleProfileClickRR(actor, navigate, e);
                                         }}>{actor.name}</span> reposted</span>}
                                         <span className='shrink-0 whitespace-nowrap text-gray-600 before:mr-1 before:content-["·"]' title={`${timestamp}`}>{renderTimestamp(object, !object.authored)}</span>
                                     </> :

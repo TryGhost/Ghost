@@ -2,9 +2,7 @@ import FeedItem from '@src/components/feed/FeedItem';
 import {Activity} from '@src/api/activitypub';
 import {LoadingIndicator, NoValueLabel} from '@tryghost/admin-x-design-system';
 import {Separator} from '@tryghost/shade';
-import {handleViewContent} from '@src/utils/content-handlers';
 import {useEffect, useRef} from 'react';
-import {useFeatureFlags} from '@src/lib/feature-flags';
 import {useNavigate} from '@tryghost/admin-x-framework';
 
 export type LikesProps = {
@@ -54,7 +52,6 @@ const Likes: React.FC<LikesProps> = ({
         };
     }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-    const {isEnabled} = useFeatureFlags();
     const navigate = useNavigate();
 
     return (
@@ -80,25 +77,17 @@ const Likes: React.FC<LikesProps> = ({
                             repostCount={activity.object.repostCount}
                             type={activity.type}
                             onClick={() => {
-                                if (isEnabled('ap-routes')) {
-                                    if (activity.object.type === 'Note') {
-                                        navigate(`/feed/${encodeURIComponent(activity.object.id)}`);
-                                    } else if (activity.object.type === 'Article') {
-                                        navigate(`/inbox/${encodeURIComponent(activity.object.id)}`);
-                                    }
-                                } else {
-                                    handleViewContent(activity, false);
+                                if (activity.object.type === 'Note') {
+                                    navigate(`/feed/${encodeURIComponent(activity.object.id)}`);
+                                } else if (activity.object.type === 'Article') {
+                                    navigate(`/inbox/${encodeURIComponent(activity.object.id)}`);
                                 }
                             }}
                             onCommentClick={() => {
-                                if (isEnabled('ap-routes')) {
-                                    if (activity.object.type === 'Note') {
-                                        navigate(`/feed/${encodeURIComponent(activity.object.id)}`);
-                                    } else if (activity.object.type === 'Article') {
-                                        navigate(`/inbox/${encodeURIComponent(activity.object.id)}`);
-                                    }
-                                } else {
-                                    handleViewContent(activity, true);
+                                if (activity.object.type === 'Note') {
+                                    navigate(`/feed/${encodeURIComponent(activity.object.id)}`);
+                                } else if (activity.object.type === 'Article') {
+                                    navigate(`/inbox/${encodeURIComponent(activity.object.id)}`);
                                 }
                             }}
                         />
