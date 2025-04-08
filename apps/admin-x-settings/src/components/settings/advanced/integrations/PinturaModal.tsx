@@ -112,7 +112,7 @@ const PinturaModal = NiceModal.create(() => {
                 title='Pintura'
             />
             <div className='mt-7'>
-                {!config.pintura && <div className='mb-7 flex flex-col items-stretch justify-between gap-4 rounded-sm bg-grey-75 p-4 dark:bg-grey-950 md:flex-row md:p-7'>
+                {!config.pintura && <div className='mb-7 flex flex-col items-stretch justify-between gap-4 rounded-sm bg-grey-75 p-4 md:flex-row md:p-7 dark:bg-grey-950'>
                     <div className='md:basis-1/2'>
                         <p className='mb-4 font-bold'>Add advanced image editing to Ghost, with Pintura</p>
                         <p className='mb-4 text-sm'>Pintura is a powerful JavaScript image editor that allows you to crop, rotate, annotate and modify images directly inside Ghost.</p>

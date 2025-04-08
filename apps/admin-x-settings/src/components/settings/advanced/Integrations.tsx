@@ -225,15 +225,15 @@ const Integrations: React.FC<{ keywords: string[] }> = ({keywords}) => {
     ] as const;
 
     const buttons = (
-        <Button 
-            className='mt-[-5px] inline-flex h-7 cursor-pointer items-center justify-center whitespace-nowrap rounded px-3 text-sm font-semibold text-grey-900 transition hover:bg-grey-200 dark:text-white dark:hover:bg-grey-900 [&:hover]:text-black' 
+        <Button
+            className='mt-[-5px] inline-flex h-7 cursor-pointer items-center justify-center whitespace-nowrap rounded px-3 text-sm font-semibold text-grey-900 transition hover:bg-grey-200 dark:text-white dark:hover:bg-grey-900 [&:hover]:text-black'
             color='clear'
-            label='Add custom integration' 
-            link 
+            label='Add custom integration'
+            link
             onClick={() => {
                 updateRoute('integrations/new');
                 setSelectedTab('custom');
-            }} 
+            }}
         />
     );
 
@@ -242,7 +242,7 @@ const Integrations: React.FC<{ keywords: string[] }> = ({keywords}) => {
             customButtons={buttons}
             customHeader={
                 <div className='sm:-mt-5 md:-mt-7'>
-                    <div className='-mx-5 overflow-hidden rounded-t-xl border-b border-grey-200 dark:border-grey-800 md:-mx-7'>
+                    <div className='-mx-5 overflow-hidden rounded-t-xl border-b border-grey-200 md:-mx-7 dark:border-grey-800'>
                         <img className='h-full w-full' src={IntegrationsSettingsImg} />
                     </div>
                     <div className=' z-10 mt-6 flex items-start justify-between'>

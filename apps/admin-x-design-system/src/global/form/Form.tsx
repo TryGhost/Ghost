@@ -59,7 +59,7 @@ const Form: React.FC<FormProps> = ({
     if (grouped) {
         classes = clsx(
             classes,
-            'rounded-sm border border-grey-200 p-4 dark:border-grey-900 md:p-7'
+            'rounded-sm border border-grey-200 p-4 md:p-7 dark:border-grey-900'
         );
     }
 

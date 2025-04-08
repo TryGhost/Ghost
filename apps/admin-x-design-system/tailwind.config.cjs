@@ -6,7 +6,8 @@ module.exports = {
     corePlugins: {
         preflight: false // we're providing our own scoped CSS reset
     },
-    darkMode: 'class',
+    // darkMode: 'class',
+    darkMode: ['variant', [':is(.dark &):not(.light &)']],
     theme: {
         screens: {
             sm: '480px',
