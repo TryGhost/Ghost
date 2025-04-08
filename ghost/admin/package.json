@@ -178,7 +178,7 @@
     "i18n-iso-countries": "7.14.0",
     "jose": "4.15.9",
     "path-browserify": "1.0.1",
-    "webpack": "5.99.0"
+    "webpack": "5.99.1"
   },
   "nx": {
     "targets": {
