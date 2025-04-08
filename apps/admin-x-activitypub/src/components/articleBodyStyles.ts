@@ -359,8 +359,16 @@ unless a heading is the very first element in the post content */
 }
 
 .gh-content a {
-    color: rgb(29 78 216);
+    color: #14B8FF;
     text-decoration: underline;
+}
+
+html.has-light-text .gh-content a {
+    color: #14B8FF;
+}
+
+html.has-sepia-bg .gh-content a {
+    color: #DD6B02;
 }
 
 .gh-content .kg-callout-card .kg-callout-text,

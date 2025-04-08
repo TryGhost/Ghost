@@ -1,10 +1,10 @@
 import Customizer, {COLOR_OPTIONS, type ColorOption, type FontSize, useCustomizerSettings} from './Customizer';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
-import getUsername from '../../utils/get-username';
+import getUsername from '../../../utils/get-username';
 import {Skeleton} from '@tryghost/shade';
 
 import {LoadingIndicator} from '@tryghost/admin-x-design-system';
-import {renderTimestamp} from '../../utils/render-timestamp';
+import {renderTimestamp} from '../../../utils/render-timestamp';
 import {usePostForUser, useThreadForUser} from '@hooks/use-activity-pub-queries';
 
 import APAvatar from '@src/components/global/APAvatar';
@@ -15,9 +15,9 @@ import FeedItem from '@src/components/feed/FeedItem';
 import FeedItemStats from '@src/components/feed/FeedItemStats';
 import TableOfContents, {TOCItem} from '@src/components/feed/TableOfContents';
 import articleBodyStyles from '@src/components/articleBodyStyles';
-import getReadingTime from '../../utils/get-reading-time';
+import getReadingTime from '../../../utils/get-reading-time';
 import {handleProfileClickRR} from '@src/utils/handle-profile-click';
-import {isPendingActivity} from '../../utils/pending-activity';
+import {isPendingActivity} from '../../../utils/pending-activity';
 import {openLinksInNewTab} from '@src/utils/content-formatters';
 import {useDebounce} from 'use-debounce';
 import {useLocation, useNavigate} from '@tryghost/admin-x-framework';
