@@ -1,6 +1,6 @@
 import FeedItem from '@src/components/feed/FeedItem';
 import Layout from '@src/components/layout';
-import Reader from '../Reader';
+import Reader from './Reader';
 import {Activity} from '@src/api/activitypub';
 import {Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, LucideIcon, Separator} from '@tryghost/shade';
 import {EmptyViewIcon, EmptyViewIndicator} from '@src/components/global/EmptyViewIndicator';
