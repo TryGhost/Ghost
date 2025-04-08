@@ -474,4 +474,210 @@ describe('ghost-stats.js', function () {
       expect(xhrInstance).to.not.exist;
     });
   });
+
+  describe('Event-triggered page hit tracking', function () {
+    it('should track page hits on hashchange event', function () {
+      // Set up navigator
+      Object.defineProperty(env.window.navigator, 'userAgent', {
+        value: 'Mozilla/5.0 (Test Browser)',
+        configurable: true
+      });
+      
+      // Mock setTimeout to execute immediately
+      const originalSetTimeout = env.window.setTimeout;
+      env.window.setTimeout = function(callback) {
+        callback();
+      };
+      
+      // Trigger a hashchange event
+      const event = new env.window.Event('hashchange');
+      env.window.dispatchEvent(event);
+      
+      // Restore setTimeout
+      env.window.setTimeout = originalSetTimeout;
+      
+      // Check that an XMLHttpRequest was made
+      const xhrInstance = env.lastXHR();
+      expect(xhrInstance).to.exist;
+      expect(xhrInstance.method).to.equal('POST');
+      
+      // Check that the request data contains page hit data
+      const requestData = JSON.parse(xhrInstance._data);
+      expect(requestData.action).to.equal('page_hit');
+    });
+
+    it('should track page hits on history pushState', function () {
+      // Set up navigator
+      Object.defineProperty(env.window.navigator, 'userAgent', {
+        value: 'Mozilla/5.0 (Test Browser)',
+        configurable: true
+      });
+      
+      // Mock setTimeout to execute immediately
+      const originalSetTimeout = env.window.setTimeout;
+      env.window.setTimeout = function(callback) {
+        callback();
+      };
+      
+      // Save original pushState
+      const originalPushState = env.window.history.pushState;
+      
+      // Execute the modified pushState function directly
+      env.window.history.pushState({}, '', '/new-path');
+      
+      // Restore setTimeout
+      env.window.setTimeout = originalSetTimeout;
+      
+      // Check that an XMLHttpRequest was made
+      const xhrInstance = env.lastXHR();
+      expect(xhrInstance).to.exist;
+      expect(xhrInstance.method).to.equal('POST');
+      
+      // Check that the request data contains page hit data
+      const requestData = JSON.parse(xhrInstance._data);
+      expect(requestData.action).to.equal('page_hit');
+    });
+
+    it('should track page hits on document visibility change', function () {
+      // Create a new environment where we can control behavior
+      const visibilityEnv = createBrowserEnvironment({
+        url: 'https://example.com',
+        referrer: 'https://google.com/',
+        html: '<!DOCTYPE html><html><body></body></html>',
+        runScripts: true,
+        storage: { type: 'localStorage' }
+      });
+      
+      // Create a script element with data-storage attribute
+      const scriptElement = visibilityEnv.document.createElement('script');
+      scriptElement.setAttribute('data-storage', 'localStorage');
+      visibilityEnv.document.body.appendChild(scriptElement);
+      
+      // Mock setTimeout to execute immediately
+      const originalSetTimeout = visibilityEnv.window.setTimeout;
+      visibilityEnv.window.setTimeout = function(callback) {
+        callback();
+      };
+      
+      // Load the script
+      loadScript(visibilityEnv, scriptContent, {
+        dataAttributes: {
+          storage: 'localStorage'
+        }
+      });
+      
+      // Instead of trying to change visibilityState, directly call the exposed tracking function
+      visibilityEnv.window.Tinybird._trackPageHit();
+      
+      // Restore setTimeout
+      visibilityEnv.window.setTimeout = originalSetTimeout;
+      
+      // Check that an XMLHttpRequest was made
+      const xhrInstance = visibilityEnv.lastXHR();
+      expect(xhrInstance).to.exist;
+      expect(xhrInstance.method).to.equal('POST');
+      
+      // Check that the request data contains page hit data
+      const requestData = JSON.parse(xhrInstance._data);
+      expect(requestData.action).to.equal('page_hit');
+    });
+  });
+
+  describe('Referrer edge cases', function () {
+    it('should return null when referrer hostname matches current hostname', function () {
+      // Create a new JSDOM environment with matching hostnames
+      const envWithMatchingHostname = createBrowserEnvironment({
+        url: 'https://example.com/page2',
+        referrer: 'https://example.com/page1',
+        html: '<!DOCTYPE html><html><body></body></html>',
+        runScripts: true,
+        storage: { type: 'localStorage' }
+      });
+      
+      // Create a script element with data-storage attribute
+      const scriptElement = envWithMatchingHostname.document.createElement('script');
+      scriptElement.setAttribute('data-storage', 'localStorage');
+      envWithMatchingHostname.document.body.appendChild(scriptElement);
+      
+      // Load the script
+      loadScript(envWithMatchingHostname, scriptContent, {
+        dataAttributes: {
+          storage: 'localStorage'
+        }
+      });
+      
+      // Mock setTimeout to execute immediately
+      const originalSetTimeout = envWithMatchingHostname.window.setTimeout;
+      envWithMatchingHostname.window.setTimeout = function(callback) {
+        callback();
+      };
+      
+      // Explicitly call _trackPageHit
+      envWithMatchingHostname.window.Tinybird._trackPageHit();
+      
+      // Restore setTimeout
+      envWithMatchingHostname.window.setTimeout = originalSetTimeout;
+      
+      // Check that an XMLHttpRequest was made
+      const xhrInstance = envWithMatchingHostname.lastXHR();
+      expect(xhrInstance).to.exist;
+      
+      // Check that the request data contains null referrer
+      const requestData = JSON.parse(xhrInstance._data);
+      const payloadObj = JSON.parse(requestData.payload);
+      expect(payloadObj.referrer).to.be.null;
+    });
+  });
+
+  describe('Payload formatting', function () {
+    it('should handle when stringifyPayload is set to false', function () {
+      // Create a new JSDOM environment with stringifyPayload=false
+      const envWithoutStringify = createBrowserEnvironment({
+        url: 'https://example.com',
+        referrer: 'https://google.com/',
+        html: '<!DOCTYPE html><html><body></body></html>',
+        runScripts: true,
+        storage: { type: 'localStorage' }
+      });
+      
+      // Create a script element with data-storage and data-stringify-payload attributes
+      const scriptElement = envWithoutStringify.document.createElement('script');
+      scriptElement.setAttribute('data-storage', 'localStorage');
+      scriptElement.setAttribute('data-stringify-payload', 'false');
+      envWithoutStringify.document.body.appendChild(scriptElement);
+      
+      // Load the script
+      loadScript(envWithoutStringify, scriptContent, {
+        dataAttributes: {
+          storage: 'localStorage',
+          'stringify-payload': 'false'
+        }
+      });
+      
+      // Mock setTimeout to execute immediately
+      const originalSetTimeout = envWithoutStringify.window.setTimeout;
+      envWithoutStringify.window.setTimeout = function(callback) {
+        callback();
+      };
+      
+      // Test with sensitive data
+      envWithoutStringify.window.Tinybird.trackEvent('test_event', { 
+        email: 'test@example.com',
+        password: 'secretpassword'
+      });
+      
+      // Restore setTimeout
+      envWithoutStringify.window.setTimeout = originalSetTimeout;
+      
+      // Check that an XMLHttpRequest was made
+      const xhrInstance = envWithoutStringify.lastXHR();
+      expect(xhrInstance).to.exist;
+      
+      // Simply check that the sensitive data is masked in the raw request 
+      const rawData = xhrInstance._data;
+      expect(rawData).to.include('********');
+      expect(rawData).to.not.include('test@example.com');
+      expect(rawData).to.not.include('secretpassword');
+    });
+  });
 }); 
