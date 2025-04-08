@@ -32320,10 +32320,10 @@ webpack-virtual-modules@^0.5.0:
   resolved "https://registry.yarnpkg.com/webpack-virtual-modules/-/webpack-virtual-modules-0.5.0.tgz#362f14738a56dae107937ab98ea7062e8bdd3b6c"
   integrity sha512-kyDivFZ7ZM0BVOUteVbDFhlRt7Ah/CSPwJdi8hBpkK7QLumUqdLtVfm/PX/hkcnrvr0i77fO5+TjZ94Pe+C9iw==
 
-webpack@5.99.3:
-  version "5.99.3"
-  resolved "https://registry.yarnpkg.com/webpack/-/webpack-5.99.3.tgz#b22c8e824c700c5470c4a9027a7cf9a4242807c6"
-  integrity sha512-Sb8csGqLL9kY7nqHyJq9Yw1sx+/mpBLXuqM6edfjFOpODiFjzkLUKF08s5WxDxWg9akMklrbTsVsoj7jBULhfw==
+webpack@5.99.4:
+  version "5.99.4"
+  resolved "https://registry.yarnpkg.com/webpack/-/webpack-5.99.4.tgz#2fc93f3c2190db167cf4bd5ad5265efdd4576f24"
+  integrity sha512-TkHfuepzYbQ02GMRzZABrkguDyG6p5gaw4qxFb/cuE+XjN21lecJsNATdphBMXawFxIZxUvDHJfrs8BEfyZFzg==
   dependencies:
     "@types/eslint-scope" "^3.7.7"
     "@types/estree" "^1.0.6"
