@@ -851,6 +851,8 @@ jobs:
   job_tinybird:
     name: Tinybird Tests (Web Analytics)
     runs-on: ubuntu-latest
+    env:
+      TB_VERSION_WARNING: 0
     needs: [
       job_setup
     ]
@@ -1299,6 +1301,8 @@ jobs:
           url: ${{ steps.cdn_paths.outputs.cdn_paths }}
   deploy_tinybird:
     runs-on: ubuntu-latest
+    env:
+      TB_VERSION_WARNING: 0
     needs: [
       job_setup,
       job_tinybird
