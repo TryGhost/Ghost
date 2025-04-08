@@ -12,7 +12,7 @@ export type ProfileTab = 'posts' | 'likes' | 'following' | 'followers';
 interface ProfileProps {}
 
 const PostsTab:React.FC<{handle: string}> = ({handle}) => {
-    const {postsByAccountQuery} = usePostsByAccount('me', {enabled: true});
+    const {postsByAccountQuery} = usePostsByAccount(handle ? handle : 'me', {enabled: true});
 
     const {
         data,

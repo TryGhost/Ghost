@@ -234,7 +234,7 @@ export function useLikeMutationForUser(handle: string) {
             updateLikedCache(queryClient, QUERY_KEYS.postsLikedByAccount, id, true);
 
             // Update account liked count
-            queryClient.setQueryData(QUERY_KEYS.account(handle === 'me' ? 'index' : handle), (currentAccount?: Account) => {
+            queryClient.setQueryData(QUERY_KEYS.account('index'), (currentAccount?: Account) => {
                 if (!currentAccount) {
                     return currentAccount;
                 }
@@ -405,7 +405,7 @@ export function useUnfollowMutationForUser(handle: string, onSuccess: () => void
                     return oldData;
                 }
 
-                const currentAccount = queryClient.getQueryData<Account>(QUERY_KEYS.account(fullHandle === 'me' ? 'index' : fullHandle));
+                const currentAccount = queryClient.getQueryData<Account>(QUERY_KEYS.account('index'));
                 if (!currentAccount) {
                     return oldData;
                 }
