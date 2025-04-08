@@ -204,14 +204,14 @@
         'user-agent': window.navigator.userAgent,
         locale,
         location: country,
-        referrer: getReferrer(),
+        referrer: _getReferrer(),
         pathname: window.location.pathname,
         href: window.location.href,
       })
     }, 300)
   }
 
-  function getReferrer() {
+  function _getReferrer() {
     // Fetch referrer data from query params - priority is the following order: ref, source, utm_source, utm_medium, referrer
     let refParam;
     let sourceParam;
