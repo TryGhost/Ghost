@@ -19,11 +19,10 @@ import APReplyBox from '../global/APReplyBox';
 import DeletedFeedItem from './DeletedFeedItem';
 import TableOfContents, {TOCItem} from './TableOfContents';
 import getReadingTime from '../../utils/get-reading-time';
-import {handleProfileClick, handleProfileClickRR} from '@src/utils/handle-profile-click';
+import {handleProfileClickRR} from '@src/utils/handle-profile-click';
 import {isPendingActivity} from '../../utils/pending-activity';
 import {openLinksInNewTab} from '@src/utils/content-formatters';
 import {useDebounce} from 'use-debounce';
-import {useFeatureFlags} from '@src/lib/feature-flags';
 import {useNavigate} from '@tryghost/admin-x-framework';
 
 interface ArticleModalProps {
@@ -726,7 +725,6 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
         return () => clearTimeout(timeoutId);
     }, [iframeElement, tocItems, activeHeadingId]);
 
-    const {isEnabled} = useFeatureFlags();
     const navigate = useNavigate();
 
     return (
@@ -766,11 +764,7 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
                                             <APAvatar author={actor}/>
                                         </div>
                                         <div className='relative z-10 flex w-full min-w-0 cursor-pointer flex-col overflow-visible text-[1.5rem]' onClick={(e) => {
-                                            if (isEnabled('ap-routes')) {
-                                                handleProfileClickRR(actor, navigate, e);
-                                            } else {
-                                                handleProfileClick(actor, e);
-                                            }
+                                            handleProfileClickRR(actor, navigate, e);
                                         }}>
                                             <div className='flex w-full'>
                                                 <span className='min-w-0 truncate whitespace-nowrap font-semibold tracking-tight hover:underline'>{actor.name}</span>

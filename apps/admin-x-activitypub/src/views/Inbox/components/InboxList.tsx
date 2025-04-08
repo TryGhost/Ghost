@@ -5,10 +5,8 @@ import {Activity} from '@src/api/activitypub';
 import {Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, LucideIcon, Separator} from '@tryghost/shade';
 import {EmptyViewIcon, EmptyViewIndicator} from '@src/components/global/EmptyViewIndicator';
 import {LoadingIndicator} from '@tryghost/admin-x-design-system';
-import {handleViewContent} from '@src/utils/content-handlers';
 import {isPendingActivity} from '@src/utils/pending-activity';
 import {useEffect, useRef, useState} from 'react';
-import {useFeatureFlags} from '@src/lib/feature-flags';
 import {useNavigate, useNavigationStack, useParams} from '@tryghost/admin-x-framework';
 
 export type InboxListProps = {
@@ -30,7 +28,6 @@ const InboxList:React.FC<InboxListProps> = ({
     const {canGoBack, goBack} = useNavigationStack();
     const [isReaderOpen, setIsReaderOpen] = useState(false);
     const params = useParams();
-    const {isEnabled} = useFeatureFlags();
 
     useEffect(() => {
         setIsReaderOpen(!!params.postId);
@@ -96,18 +93,10 @@ const InboxList:React.FC<InboxListProps> = ({
                                                         repostCount={activity.object.repostCount ?? 0}
                                                         type={activity.type}
                                                         onClick={() => {
-                                                            if (isEnabled('ap-routes')) {
-                                                                navigate(`/inbox/${encodeURIComponent(activity.id)}`);
-                                                            } else {
-                                                                handleViewContent(activity, false);
-                                                            }
+                                                            navigate(`/inbox/${encodeURIComponent(activity.id)}`);
                                                         }}
                                                         onCommentClick={() => {
-                                                            if (isEnabled('ap-routes')) {
-                                                                navigate(`/inbox/${encodeURIComponent(activity.id)}?focusReply=true`);
-                                                            } else {
-                                                                handleViewContent(activity, true);
-                                                            }
+                                                            navigate(`/inbox/${encodeURIComponent(activity.id)}?focusReply=true`);
                                                         }}
                                                     />
                                                     {index < activities.length - 1 && (

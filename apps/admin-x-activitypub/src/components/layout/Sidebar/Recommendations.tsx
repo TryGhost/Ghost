@@ -2,8 +2,7 @@ import * as React from 'react';
 import APAvatar from '@components/global/APAvatar';
 import ActivityItem from '@components/activities/ActivityItem';
 import {Button, H4, LucideIcon, Skeleton} from '@tryghost/shade';
-import {handleProfileClick, handleProfileClickRR} from '@utils/handle-profile-click';
-import {useFeatureFlags} from '@src/lib/feature-flags';
+import {handleProfileClickRR} from '@utils/handle-profile-click';
 import {useNavigate, useNavigationStack} from '@tryghost/admin-x-framework';
 import {useSuggestedProfilesForUser} from '@hooks/use-activity-pub-queries';
 
@@ -12,7 +11,6 @@ const Recommendations: React.FC = () => {
     const {data: suggestedData, isLoading: isLoadingSuggested} = suggestedProfilesQuery;
     const suggested = isLoadingSuggested ? Array(3).fill(null) : (suggestedData || []);
     const navigate = useNavigate();
-    const {isEnabled} = useFeatureFlags();
     const {resetStack} = useNavigationStack();
 
     const hideClassName = '[@media(max-height:740px)]:hidden';
@@ -53,11 +51,7 @@ const Recommendations: React.FC = () => {
                             <li key={actorId} className={className}>
                                 <ActivityItem onClick={() => {
                                     if (!isLoadingSuggested && profile) {
-                                        if (isEnabled('ap-routes')) {
-                                            handleProfileClickRR(profile, navigate);
-                                        } else {
-                                            handleProfileClick(actorHandle);
-                                        }
+                                        handleProfileClickRR(profile, navigate);
                                     }
                                 }}>
                                     {!isLoadingSuggested ? <APAvatar author={
