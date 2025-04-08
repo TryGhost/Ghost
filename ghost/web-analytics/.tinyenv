@@ -23,7 +23,7 @@ TB_VERSION=8
 # TB_FORCE_REMOVE_OLDEST_ROLLBACK=0
 
 # Don't print CLI version warning message if there's a new available version
-# TB_VERSION_WARNING=0
+TB_VERSION_WARNING=0
 
 # Skip regression tests
 # TB_SKIP_REGRESSION=0
