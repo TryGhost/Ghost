@@ -248,18 +248,18 @@ describe('Bulk Email Provider', function () {
     });
 
     describe('getTargetDeliveryWindow', function () {
-        let mailgunClient;
+        let mailClient;
         let getTargetDeliveryWindowStub;
 
         it('returns the configured target delivery window', function () {
             getTargetDeliveryWindowStub = sinon.stub().returns(0);
 
-            mailgunClient = {
+            mailClient = {
                 getTargetDeliveryWindow: getTargetDeliveryWindowStub
             };
             
-            const provider = new MailgunEmailProvider({
-                mailgunClient,
+            const provider = new BulkEmailProvider({
+                mailClient,
                 errorHandler: () => {}
             });
             assert.equal(provider.getTargetDeliveryWindow(), 0);
