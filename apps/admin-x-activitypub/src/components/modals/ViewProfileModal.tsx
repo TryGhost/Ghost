@@ -6,7 +6,7 @@ import {Button, Heading, Icon, List, LoadingIndicator, Modal, NoValueLabel, Tab,
 import {UseInfiniteQueryResult} from '@tanstack/react-query';
 
 import {type GetProfileFollowersResponse, type GetProfileFollowingResponse} from '../../api/activitypub';
-import {useAccountForUser, useProfileFollowersForUser, useProfileFollowingForUser, useProfilePostsForUser} from '@hooks/use-activity-pub-queries';
+import {useAccountForUser, usePostsByAccount, useProfileFollowersForUser, useProfileFollowingForUser} from '@hooks/use-activity-pub-queries';
 
 import APAvatar from '../global/APAvatar';
 import ActivityItem from '../activities/ActivityItem';
@@ -126,7 +126,7 @@ const PostsTab: React.FC<{handle: string}> = ({handle}) => {
         hasNextPage,
         isFetchingNextPage,
         isLoading
-    } = useProfilePostsForUser('index', handle);
+    } = usePostsByAccount(handle, {enabled: true}).postsByAccountQuery;
 
     const observerRef = useRef<IntersectionObserver | null>(null);
     const loadMoreRef = useRef<HTMLDivElement | null>(null);
