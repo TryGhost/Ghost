@@ -2,7 +2,7 @@ const _ = require('lodash');
 const logging = require('@tryghost/logging');
 const metrics = require('@tryghost/metrics');
 const errors = require('@tryghost/errors');
-const {ServerClient} = require('postmark');
+const {ServerClient, Header} = require('postmark');
 
 module.exports = class PostmarkClient {
     #config;
@@ -63,7 +63,7 @@ module.exports = class PostmarkClient {
                     TextBody: messageContent.plaintext,
                     Metadata: {},
                     TrackOpens: message.track_opens,
-                    Headers: {},
+                    Headers: [],
                     MessageStream: config.streamId,
                     Tag: 'ghost-email|' + message.id
                 };
@@ -77,8 +77,8 @@ module.exports = class PostmarkClient {
                 // Do we have a custom List-Unsubscribe header set?
                 // (we need a variable for this, as this is a per-email setting)
                 if (recipientData[recipient].list_unsubscribe) {
-                    messageData.Headers['List-Unsubscribe'] = recipientData[recipient].list_unsubscribe;
-                    messageData.Headers['List-Unsubscribe-Post'] = 'List-Unsubscribe=One-Click';
+                    messageData.Headers.push(new Header('List-Unsubscribe', recipientData[recipient].list_unsubscribe));
+                    messageData.Headers.push(new Header('List-Unsubscribe-Post', 'List-Unsubscribe=One-Click'));
                 }
 
                 if (message.id) {
@@ -287,5 +287,22 @@ module.exports = class PostmarkClient {
      */
     getBatchSize() {
         return this.#config.get('bulkEmail')?.batchSize ?? this.constructor.DEFAULT_BATCH_SIZE;
+    }
+
+    /**
+     * Returns the configured target delivery window in seconds
+     * Ghost will attempt to deliver emails evenly distributed over this window
+     *
+     * Defaults to 0 (no delay) if not set
+     *
+     * @returns {number}
+     */
+    getTargetDeliveryWindow() {
+        const targetDeliveryWindow = this.#config.get('bulkEmail')?.targetDeliveryWindow;
+        // If targetDeliveryWindow is not set or is not a positive integer, return 0
+        if (targetDeliveryWindow === undefined || !Number.isInteger(parseInt(targetDeliveryWindow)) || parseInt(targetDeliveryWindow) < 0) {
+            return 0;
+        }
+        return parseInt(targetDeliveryWindow);
     }
 };
