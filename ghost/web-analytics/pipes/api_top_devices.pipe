@@ -7,8 +7,7 @@ SQL >
     %
         select
             device,
-            uniqExact(session_id) as visits,
-            count() as pageviews
+            uniqExact(session_id) as visits
         from _mv_hits h
         inner join filtered_sessions fs
             on fs.session_id = h.session_id
@@ -32,7 +31,14 @@ SQL >
                 <=
                 today()
             {% end %}
-            {% if defined(member_status) %} and member_status IN {{ Array(member_status, "'undefined', 'free', 'paid'", description="Member status to filter on", required=False) }} {% end %}
+            {% if defined(member_status) %}
+                and member_status IN (
+                    select arrayJoin(
+                        {{ Array(member_status, "'undefined', 'free', 'paid'", description="Member status to filter on", required=False) }}
+                        || if('paid' IN {{ Array(member_status) }}, ['comped'], [])
+                    )
+                )
+            {% end %}
             {% if defined(device) %} and device = {{ String(device, description="Device to filter on", required=False) }} {% end %}
             {% if defined(browser) %} and browser = {{ String(browser, description="Browser to filter on", required=False) }} {% end %}
             {% if defined(os) %} and os = {{ String(os, description="Operating system to filter on", required=False) }} {% end %}

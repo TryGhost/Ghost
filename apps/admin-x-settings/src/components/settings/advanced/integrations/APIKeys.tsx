@@ -27,7 +27,7 @@ const APIKeyField: React.FC<APIKeyFieldProps> = ({label, text = '', hint, onRege
         <div className={containerClasses}>
             <span>{text}</span>
             {hint}
-            <div className='visible absolute right-0 top-1/2 flex translate-y-[-50%] gap-1 bg-white pl-1 text-sm group-hover/api-keys:visible dark:bg-black md:invisible'>
+            <div className='visible absolute right-0 top-1/2 flex translate-y-[-50%] gap-1 bg-white pl-1 text-sm group-hover/api-keys:visible md:invisible dark:bg-black'>
                 {onRegenerate && <Button color='outline' label='Regenerate' size='sm' onClick={onRegenerate} />}
                 <Button color='outline' label={copied ? 'Copied' : 'Copy'} size='sm' onClick={copyText} />
             </div>

@@ -162,7 +162,7 @@ function updateReplyCountInCache(queryClient: QueryClient, id: string, delta: nu
     const queryKeys = [
         QUERY_KEYS.feed,
         QUERY_KEYS.inbox,
-        QUERY_KEYS.postsByAccount,
+        QUERY_KEYS.profilePosts('index'),
         QUERY_KEYS.postsLikedByAccount
     ];
 
@@ -230,11 +230,11 @@ export function useLikeMutationForUser(handle: string) {
         onMutate: (id) => {
             updateLikedCache(queryClient, QUERY_KEYS.feed, id, true);
             updateLikedCache(queryClient, QUERY_KEYS.inbox, id, true);
-            updateLikedCache(queryClient, QUERY_KEYS.postsByAccount, id, true);
+            updateLikedCache(queryClient, QUERY_KEYS.profilePosts('index'), id, true);
             updateLikedCache(queryClient, QUERY_KEYS.postsLikedByAccount, id, true);
 
             // Update account liked count
-            queryClient.setQueryData(QUERY_KEYS.account(handle), (currentAccount?: Account) => {
+            queryClient.setQueryData(QUERY_KEYS.account('index'), (currentAccount?: Account) => {
                 if (!currentAccount) {
                     return currentAccount;
                 }
@@ -260,11 +260,11 @@ export function useUnlikeMutationForUser(handle: string) {
         onMutate: (id) => {
             updateLikedCache(queryClient, QUERY_KEYS.feed, id, false);
             updateLikedCache(queryClient, QUERY_KEYS.inbox, id, false);
-            updateLikedCache(queryClient, QUERY_KEYS.postsByAccount, id, false);
+            updateLikedCache(queryClient, QUERY_KEYS.profilePosts('index'), id, false);
             updateLikedCache(queryClient, QUERY_KEYS.postsLikedByAccount, id, false);
 
             // Update account liked count
-            queryClient.setQueryData(QUERY_KEYS.account(handle), (currentAccount?: Account) => {
+            queryClient.setQueryData(QUERY_KEYS.account(handle === 'me' ? 'index' : handle), (currentAccount?: Account) => {
                 if (!currentAccount) {
                     return currentAccount;
                 }
@@ -366,7 +366,7 @@ export function useUnfollowMutationForUser(handle: string, onSuccess: () => void
         },
         onSuccess(_, fullHandle) {
             // Update the "isFollowing" and "followerCount" properties of the profile being unfollowed
-            const profileQueryKey = QUERY_KEYS.account(fullHandle);
+            const profileQueryKey = QUERY_KEYS.account(fullHandle === 'me' ? 'index' : fullHandle);
 
             queryClient.setQueryData(profileQueryKey, (currentProfile?: {followedByMe: boolean, followerCount: number}) => {
                 if (!currentProfile) {
@@ -405,7 +405,7 @@ export function useUnfollowMutationForUser(handle: string, onSuccess: () => void
                     return oldData;
                 }
 
-                const currentAccount = queryClient.getQueryData<Account>(QUERY_KEYS.account('me'));
+                const currentAccount = queryClient.getQueryData<Account>(QUERY_KEYS.account('index'));
                 if (!currentAccount) {
                     return oldData;
                 }
@@ -448,7 +448,7 @@ export function useUnfollowMutationForUser(handle: string, onSuccess: () => void
             });
 
             // Update the "followingCount" property of the account performing the follow
-            const accountQueryKey = QUERY_KEYS.account('me');
+            const accountQueryKey = QUERY_KEYS.account('index');
 
             queryClient.setQueryData(accountQueryKey, (currentAccount?: { followingCount: number }) => {
                 if (!currentAccount) {
@@ -496,7 +496,7 @@ export function useFollowMutationForUser(handle: string, onSuccess: () => void, 
         },
         onSuccess(_, fullHandle) {
             // Update the "isFollowing" and "followerCount" properties of the profile being followed
-            const profileQueryKey = QUERY_KEYS.account(fullHandle);
+            const profileQueryKey = QUERY_KEYS.account(fullHandle === 'me' ? 'index' : fullHandle);
 
             queryClient.setQueryData(profileQueryKey, (currentProfile?: {followedByMe: boolean, followerCount: number}) => {
                 if (!currentProfile) {
@@ -511,7 +511,7 @@ export function useFollowMutationForUser(handle: string, onSuccess: () => void, 
             });
 
             // Update the "followingCount" property of the account performing the follow
-            const accountQueryKey = QUERY_KEYS.account('me');
+            const accountQueryKey = QUERY_KEYS.account('index');
 
             queryClient.setQueryData(accountQueryKey, (currentAccount?: { followingCount: number }) => {
                 if (!currentAccount) {
@@ -556,7 +556,7 @@ export function useFollowMutationForUser(handle: string, onSuccess: () => void, 
                     return oldData;
                 }
 
-                const currentAccount = queryClient.getQueryData<Account>(QUERY_KEYS.account('me'));
+                const currentAccount = queryClient.getQueryData<Account>(QUERY_KEYS.account('index'));
                 if (!currentAccount) {
                     return oldData;
                 }
@@ -633,7 +633,7 @@ export function useExploreProfilesForUser(handle: string) {
     const queryClient = useQueryClient();
     const queryKey = QUERY_KEYS.exploreProfiles(handle);
 
-    const fetchExploreProfiles = useCallback(async () => {
+    const fetchExploreProfiles = useCallback(async ({pageParam = 0}: {pageParam?: number}) => {
         const siteUrl = await getSiteUrl();
         const api = createActivityPubAPI(handle, siteUrl);
 
@@ -644,9 +644,24 @@ export function useExploreProfilesForUser(handle: string) {
             profileHandle
         })));
 
-        // Fetch all profiles in parallel
+        // Calculate pagination
+        const pageSize = 10; // Number of profiles per page
+        const startIndex = pageParam * pageSize;
+        const endIndex = startIndex + pageSize;
+
+        // Ensure we don't go beyond the total number of handles
+        if (startIndex >= allHandles.length) {
+            return {
+                results: {},
+                nextPage: undefined
+            };
+        }
+
+        const paginatedHandles = allHandles.slice(startIndex, endIndex);
+
+        // Fetch profiles for current page
         const allResults = await Promise.allSettled(
-            allHandles.map(item => api.getAccount(item.profileHandle)
+            paginatedHandles.map(item => api.getAccount(item.profileHandle)
                 .then(profile => ({...item, profile}))
             )
         );
@@ -667,48 +682,60 @@ export function useExploreProfilesForUser(handle: string) {
                 results[key].sites.push(profile);
             });
 
-        return results;
+        return {
+            results,
+            nextPage: endIndex < allHandles.length ? pageParam + 1 : undefined
+        };
     }, [handle]);
 
-    const exploreProfilesQuery = useQuery({
+    const exploreProfilesQuery = useInfiniteQuery({
         queryKey,
-        queryFn: fetchExploreProfiles
+        queryFn: ({pageParam = 0}) => fetchExploreProfiles({pageParam}),
+        getNextPageParam: lastPage => lastPage.nextPage
     });
 
-    const prefetchExploreProfiles = useCallback(() => {
-        return queryClient.prefetchQuery({
-            queryKey,
-            queryFn: fetchExploreProfiles
-        });
-    }, [queryClient, fetchExploreProfiles, queryKey]);
-
     const updateExploreProfile = (id: string, updated: Partial<Account>) => {
-        // Update the suggested profiles stored in explore profiles query cache
-        queryClient.setQueryData(queryKey, (current: Record<string, { categoryName: string; sites: Account[] }> | undefined) => {
+        queryClient.setQueryData(queryKey, (current: {pages: Array<{results: Record<string, { categoryName: string; sites: Account[] }>}>} | undefined) => {
             if (!current) {
                 return current;
             }
 
-            return Object.fromEntries(
-                Object.entries(current).map(([key, category]) => [
-                    key,
-                    {
+            // Create a new pages array with updated profiles
+            const updatedPages = current.pages.map((page) => {
+                // Create a new results object with updated categories
+                const updatedResults = Object.entries(page.results).reduce((acc, [categoryKey, category]) => {
+                    // Update the sites array for this category
+                    const updatedSites = category.sites.map((profile) => {
+                        if (profile.id === id) {
+                            return {...profile, ...updated};
+                        }
+                        return profile;
+                    });
+
+                    // Add the updated category to the results
+                    acc[categoryKey] = {
                         ...category,
-                        sites: category.sites.map((item: Account) => {
-                            if (item.id === id) {
-                                return {...item, ...updated};
-                            }
-                            return item;
-                        })
-                    }
-                ])
-            );
+                        sites: updatedSites
+                    };
+
+                    return acc;
+                }, {} as Record<string, { categoryName: string; sites: Account[] }>);
+
+                return {
+                    ...page,
+                    results: updatedResults
+                };
+            });
+
+            return {
+                ...current,
+                pages: updatedPages
+            };
         });
     };
 
     return {
         exploreProfilesQuery,
-        prefetchExploreProfiles,
         updateExploreProfile
     };
 }
@@ -756,21 +783,6 @@ export function useSuggestedProfilesForUser(handle: string, limit = 3) {
     };
 
     return {suggestedProfilesQuery, updateSuggestedProfile};
-}
-
-export function useProfilePostsForUser(handle: string, profileHandle: string) {
-    return useInfiniteQuery({
-        queryKey: QUERY_KEYS.profilePosts(profileHandle),
-        async queryFn({pageParam}: {pageParam?: string}) {
-            const siteUrl = await getSiteUrl();
-            const api = createActivityPubAPI(handle, siteUrl);
-
-            return api.getProfilePosts(profileHandle, pageParam);
-        },
-        getNextPageParam(prevPage) {
-            return prevPage.next;
-        }
-    });
 }
 
 export function useProfileFollowersForUser(handle: string, profileHandle: string) {
@@ -1083,7 +1095,7 @@ export function useNoteMutationForUser(handle: string, actorProps?: ActorPropert
     const queryClient = useQueryClient();
     const queryKeyFeed = QUERY_KEYS.feed;
     const queryKeyOutbox = QUERY_KEYS.outbox(handle);
-    const queryKeyPostsByAccount = QUERY_KEYS.postsByAccount;
+    const queryKeyPostsByAccount = QUERY_KEYS.profilePosts('index');
 
     return useMutation({
         async mutationFn(content: string) {
@@ -1139,7 +1151,7 @@ export function useNoteMutationForUser(handle: string, actorProps?: ActorPropert
 
 export function useAccountForUser(handle: string, profileHandle: string) {
     return useQuery({
-        queryKey: QUERY_KEYS.account(profileHandle),
+        queryKey: QUERY_KEYS.account(profileHandle === 'me' ? 'index' : profileHandle),
         async queryFn() {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
@@ -1235,8 +1247,8 @@ export function useInboxForUser(options: {enabled: boolean}) {
     return {inboxQuery, updateInboxActivity};
 }
 
-export function usePostsByAccount(options: {enabled: boolean}) {
-    const queryKey = QUERY_KEYS.postsByAccount;
+export function usePostsByAccount(profileHandle: string, options: {enabled: boolean}) {
+    const queryKey = QUERY_KEYS.profilePosts(profileHandle === 'me' ? 'index' : profileHandle);
     const queryClient = useQueryClient();
 
     const postsByAccountQuery = useInfiniteQuery({
@@ -1245,7 +1257,7 @@ export function usePostsByAccount(options: {enabled: boolean}) {
         async queryFn({pageParam}: {pageParam?: string}) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI('index', siteUrl);
-            return api.getPostsByAccount(pageParam).then((response) => {
+            return api.getPostsByAccount(profileHandle, pageParam).then((response) => {
                 return {
                     posts: response.posts.map(mapPostToActivity),
                     next: response.next
@@ -1461,7 +1473,7 @@ export function useDeleteMutationForUser(handle: string) {
             const wasLiked = [
                 QUERY_KEYS.feed,
                 QUERY_KEYS.inbox,
-                QUERY_KEYS.postsByAccount,
+                QUERY_KEYS.profilePosts('index'),
                 QUERY_KEYS.postsLikedByAccount
             ].some((key) => {
                 const queryData = queryClient.getQueryData<{pages: {posts: Activity[]}[]}>(key);
@@ -1469,7 +1481,7 @@ export function useDeleteMutationForUser(handle: string) {
             });
 
             if (wasLiked) {
-                queryClient.setQueryData(QUERY_KEYS.account(handle), (currentAccount?: Account) => {
+                queryClient.setQueryData(QUERY_KEYS.account(handle === 'me' ? 'index' : handle), (currentAccount?: Account) => {
                     if (!currentAccount) {
                         return currentAccount;
                     }
@@ -1507,7 +1519,7 @@ export function useDeleteMutationForUser(handle: string) {
             let previousAccount: Account | undefined;
 
             if (removedFromLiked) {
-                accountQueryKey = QUERY_KEYS.account(handle);
+                accountQueryKey = QUERY_KEYS.account(handle === 'me' ? 'index' : handle);
                 previousAccount = queryClient.getQueryData<Account>(accountQueryKey);
 
                 queryClient.setQueryData(accountQueryKey, (currentAccount?: {likedCount: number}) => {
@@ -1523,7 +1535,7 @@ export function useDeleteMutationForUser(handle: string) {
             }
 
             // Update the posts by account cache
-            const postsByAccountKey = QUERY_KEYS.postsByAccount;
+            const postsByAccountKey = QUERY_KEYS.profilePosts('index');
             const previousPostsByAccount = queryClient.getQueryData<{pages: {posts: Activity[]}[]}>(postsByAccountKey);
 
             queryClient.setQueryData(postsByAccountKey, (current?: {pages: {posts: Activity[]}[]}) => {
@@ -1588,7 +1600,7 @@ export function useDeleteMutationForUser(handle: string) {
                     data: previousAccount
                 } : null,
                 previousPostsByAccount: {
-                    key: QUERY_KEYS.postsByAccount,
+                    key: QUERY_KEYS.profilePosts('index'),
                     data: previousPostsByAccount
                 },
                 previousPostsLikedByAccount: {
@@ -1614,7 +1626,7 @@ export function useDeleteMutationForUser(handle: string) {
             }
 
             if (context.previousPostsByAccount) {
-                queryClient.setQueryData(QUERY_KEYS.postsByAccount, context.previousPostsByAccount);
+                queryClient.setQueryData(QUERY_KEYS.profilePosts('index'), context.previousPostsByAccount);
             }
             if (context.previousPostsLikedByAccount) {
                 queryClient.setQueryData(QUERY_KEYS.postsLikedByAccount, context.previousPostsLikedByAccount);

@@ -1,4 +1,6 @@
 VERSION 8
+TOKEN "stats_page" READ
+
 NODE timeseries
 SQL >
 
@@ -72,7 +74,7 @@ SQL >
             pageviews,
             is_bounce,
             duration as session_sec
-        from mv_session_data sd 
+        from mv_session_data sd
             inner join filtered_sessions fs
                 on fs.session_id = sd.session_id
         where
@@ -118,13 +120,13 @@ SQL >
                 {% end %}
                 count() pageviews
             from timeseries a
-            inner join _mv_hits h on 
+            inner join _mv_hits h on
                 {% if defined(date_from) and day_diff(date_from, date_to) == 0 %}
                     a.date = toStartOfHour(toTimezone(timestamp, {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}}))
                 {% else %}
                     a.date = toDate(toTimezone(timestamp, {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}}))
                 {% end %}
-            where 
+            where
                 site_uuid = {{ String(site_uuid, 'mock_site_uuid', description="Tenant ID", required=True) }}
                 {% if defined(date_from) and day_diff(date_from, date_to) == 0 %}
                     and toDate(toTimezone(timestamp, {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}})) = {{ Date(date_from) }}
@@ -156,5 +158,3 @@ SQL >
             from timeseries a
             left join data b on a.date = b.date
             {% if defined(pathname) %}left join pathname_pageviews c on a.date = c.date{% end %}
-
-

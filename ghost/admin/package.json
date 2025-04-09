@@ -1,6 +1,6 @@
 {
   "name": "ghost-admin",
-  "version": "5.115.1",
+  "version": "5.116.1",
   "description": "Ember.js admin client for Ghost",
   "author": "Ghost Foundation",
   "homepage": "http://ghost.org",
@@ -29,7 +29,7 @@
     "node": "^18.12.1 || ^20.11.1 || ^22.13.1"
   },
   "devDependencies": {
-    "@babel/eslint-parser": "7.23.3",
+    "@babel/eslint-parser": "7.27.0",
     "@babel/plugin-proposal-class-properties": "7.18.6",
     "@babel/plugin-proposal-decorators": "7.25.9",
     "@ember/jquery": "2.0.0",
@@ -37,7 +37,7 @@
     "@ember/render-modifiers": "2.1.0",
     "@ember/test-helpers": "2.9.6",
     "@ember/test-waiters": "3.1.0",
-    "@embroider/macros": "1.16.12",
+    "@embroider/macros": "1.16.13",
     "@faker-js/faker": "7.6.0",
     "@glimmer/component": "1.1.2",
     "@html-next/vertical-collection": "3.0.0",
@@ -50,7 +50,7 @@
     "@tryghost/helpers": "1.1.90",
     "@tryghost/kg-clean-basic-html": "4.2.0",
     "@tryghost/kg-converters": "1.1.0",
-    "@tryghost/koenig-lexical": "1.6.8",
+    "@tryghost/koenig-lexical": "1.6.9",
     "@tryghost/limit-service": "1.2.14",
     "@tryghost/members-csv": "0.0.0",
     "@tryghost/nql": "0.12.7",
@@ -59,7 +59,6 @@
     "@tryghost/timezone-data": "0.4.4",
     "animejs": "3.2.2",
     "autoprefixer": "9.8.6",
-    "@babel/eslint-parser": "7.27.0",
     "babel-plugin-transform-class-properties": "6.24.1",
     "babel-plugin-transform-react-jsx": "6.24.1",
     "broccoli-asset-rev": "3.0.0",
@@ -74,7 +73,7 @@
     "element-resize-detector": "1.2.4",
     "ember-ajax": "5.1.2",
     "ember-assign-helper": "0.5.0",
-    "ember-auto-import": "2.8.1",
+    "ember-auto-import": "2.10.0",
     "ember-classic-decorator": "3.0.1",
     "ember-cli": "3.24.0",
     "ember-cli-app-version": "5.0.0",
@@ -95,7 +94,7 @@
     "ember-composable-helpers": "5.0.0",
     "ember-concurrency": "2.3.7",
     "ember-could-get-used-to-this": "1.0.1",
-    "ember-css-transitions": "4.4.0",
+    "ember-css-transitions": "4.4.1",
     "ember-data": "3.24.0",
     "ember-decorators": "6.1.1",
     "ember-drag-drop": "0.4.8",
@@ -109,7 +108,7 @@
     "ember-load": "0.0.17",
     "ember-load-initializers": "2.1.2",
     "ember-mocha": "0.16.2",
-    "ember-modifier": "4.1.0",
+    "ember-modifier": "4.2.0",
     "ember-moment": "10.0.0",
     "ember-one-way-select": "4.0.1",
     "ember-power-datepicker": "cibernox/ember-power-datepicker",
@@ -176,10 +175,10 @@
     "*.js": "eslint"
   },
   "dependencies": {
-    "i18n-iso-countries": "7.12.0",
+    "i18n-iso-countries": "7.14.0",
     "jose": "4.15.9",
     "path-browserify": "1.0.1",
-    "webpack": "5.98.0"
+    "webpack": "5.99.4"
   },
   "nx": {
     "targets": {

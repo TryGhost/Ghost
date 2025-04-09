@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Get the directory where this script is located
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+
 # Record start time
 start_time=$(date +%s)
 
@@ -18,31 +21,40 @@ fi
 
 # Parse command line options
 jobs=""
+test_name=""
 while [[ $# -gt 0 ]]; do
     case $1 in
         -j|--jobs)
-            if [[ -n "${2:-}" ]]; then
-                jobs="$2"
-                shift 2
-            else
+            if [[ -z "${2:-}" || "$2" == -* ]]; then
                 echo "Error: -j|--jobs requires a number argument"
                 exit 1
             fi
+            jobs="$2"
+            shift 2
+            ;;
+        -n|--name)
+            if [[ -z "${2:-}" || "$2" == -* ]]; then
+                echo "Error: -n|--name requires a <test_name> argument"
+                exit 1
+            fi
+            test_name="$2"
+            shift 2
             ;;
         *)
             # Store the test name if provided
-            test_name="$1"
-            shift
+            # test_name="$1"
+            # shift
+            echo "Error: Unknown option: $1"
+            exit 1
             ;;
     esac
 done
-
+# Set and export the TB_VERSION variable from .tinyenv file
+source "$SCRIPT_DIR/../.tinyenv"
+export TB_VERSION
+echo "Using TB_VERSION: $TB_VERSION"
 export TB_VERSION_WARNING=0
 
-# Default version if not provided
-export TB_VERSION=${TB_VERSION:-8}
-
-echo "TB_VERSION: $TB_VERSION"
 # Get the expected count once, outside of any function
 ndjson_file="./tests/fixtures/analytics_events.ndjson"
 export expected_count=$(grep -c '^' "$ndjson_file" || echo "0")
@@ -159,11 +171,16 @@ else
     # If no test name provided, run all tests in parallel
     echo "Running tests in parallel using $jobs workers"
     # Use parallel to run the tests, maintaining output order
+    output_file=$(mktemp)
     find ./tests -name "*.test" -print0 | \
         parallel -0 --jobs "$jobs" --keep-order --line-buffer \
-        'run_test {} || echo "PARALLEL_TEST_FAILED"' | \
-        tee >(if grep -q "PARALLEL_TEST_FAILED"; then exit 1; fi)
-    fail=${PIPESTATUS[1]}
+        'run_test {} || echo "PARALLEL_TEST_FAILED"' | tee "$output_file"
+    if grep -q "PARALLEL_TEST_FAILED" "$output_file"; then
+        rm "$output_file"
+        fail=1
+    else
+        rm "$output_file"
+    fi
 fi
 
 if [ $fail == 1 ]; then

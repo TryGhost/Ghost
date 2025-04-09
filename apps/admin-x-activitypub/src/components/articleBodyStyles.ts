@@ -166,6 +166,7 @@ a:hover {
     font-size: 1.5rem;
     line-height: 1.2;
     color: var(--color-secondary-text);
+    width: fit-content;
 }
 
 .gh-article-source:hover {
@@ -315,7 +316,7 @@ unless a heading is the very first element in the post content */
 
 /* Add a small margin between a heading and paragraph after it */
 .gh-content > [id] + p {
-    margin-top: calc(8px * var(--content-spacing-factor, 1));
+    margin-top: calc(12px * var(--content-spacing-factor, 1));
 }
 
 /* A larger margin before/after dividers, blockquotes and embeds */
@@ -334,21 +335,40 @@ unless a heading is the very first element in the post content */
 }
 
 .gh-content h1 {
-    font-size: calc(2.2em * var(--factor, 1));
+    font-size: 1.9em;
 }
 
 .gh-content h2 {
-    font-size: calc(2.4rem * var(--content-spacing-factor, 1));
-    line-height: 1.4166666667;
+    font-size: 1.6em;
 }
 
 .gh-content h3 {
-    font-size: calc(1.3em * var(--factor, 1));
+    font-size: 1.3em;
+}
+
+.gh-content h4 {
+    font-size: 1.2em;
+}
+
+.gh-content h5 {
+    font-size: 1.1em;
+}
+
+.gh-content h6 {
+    font-size: 1em;
 }
 
 .gh-content a {
-    color: rgb(29 78 216);
+    color: #14B8FF;
     text-decoration: underline;
+}
+
+html.has-light-text .gh-content a {
+    color: #14B8FF;
+}
+
+html.has-sepia-bg .gh-content a {
+    color: #DD6B02;
 }
 
 .gh-content .kg-callout-card .kg-callout-text,
