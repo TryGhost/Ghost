@@ -6,9 +6,15 @@ const labs = require('../../../shared/labs');
 
 const getCaptchaSettings = () => {
     if (labs.isSet('captcha')) {
-        return {
-            captcha_sitekey: config.get('captcha:siteKey')
-        };
+        const siteKey = config.get('hostSettings:captcha:siteKey');
+        if (siteKey) {
+            return {
+                captcha_sitekey: siteKey
+            };
+        } else {
+            // Sitekey pulled from settings for self-hosters, no need to override
+            return {};
+        }
     } else {
         return {
             captcha_enabled: false
