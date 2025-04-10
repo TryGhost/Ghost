@@ -38,18 +38,20 @@ const Web:React.FC = () => {
             <Header>
                 Web
                 <div>
-                    <Select>
+                    <Select value='last-30-days'>
                         <SelectTrigger className="w-[180px]">
-                            <SelectValue placeholder="Select a fruit" />
+                            <SelectValue placeholder="Select a period" />
                         </SelectTrigger>
                         <SelectContent>
                             <SelectGroup>
-                                <SelectLabel>Fruits</SelectLabel>
-                                <SelectItem value="apple">Apple</SelectItem>
-                                <SelectItem value="banana">Banana</SelectItem>
-                                <SelectItem value="blueberry">Blueberry</SelectItem>
-                                <SelectItem value="grapes">Grapes</SelectItem>
-                                <SelectItem value="pineapple">Pineapple</SelectItem>
+                                <SelectLabel>Period</SelectLabel>
+                                <SelectItem value="today">Today</SelectItem>
+                                <SelectItem value="last-7-days">Last 7 days</SelectItem>
+                                <SelectItem value="last-30-days">Last 30 days</SelectItem>
+                                <SelectItem value="last-3-months">Last 3 months</SelectItem>
+                                <SelectItem value="year-to-date">Year to date</SelectItem>
+                                <SelectItem value="last-12-months">Last 12 months</SelectItem>
+                                <SelectItem value="all-time">All time</SelectItem>
                             </SelectGroup>
                         </SelectContent>
                     </Select>
