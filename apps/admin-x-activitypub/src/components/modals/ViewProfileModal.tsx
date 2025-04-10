@@ -202,7 +202,7 @@ const PostsTab: React.FC<{handle: string}> = ({handle}) => {
 };
 
 const useAccountFollowsQuery = (handle: string, type: AccountFollowsType) => {
-    const query = useAccountFollowsForUser(handle === '' ? 'index' : handle, type);
+    const query = useAccountFollowsForUser(handle === '' ? 'me' : handle, type);
     return () => query;
 };
 

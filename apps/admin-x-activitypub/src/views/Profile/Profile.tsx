@@ -50,7 +50,7 @@ const LikesTab: React.FC = () => {
 };
 
 const FollowingTab: React.FC<{handle: string}> = ({handle}) => {
-    const accountQuery = useAccountFollowsForUser(handle === '' ? 'index' : handle, 'following');
+    const accountQuery = useAccountFollowsForUser(handle === '' ? 'me' : handle, 'following');
 
     const {
         data,
@@ -92,7 +92,7 @@ const FollowingTab: React.FC<{handle: string}> = ({handle}) => {
 };
 
 const FollowersTab: React.FC<{handle: string}> = ({handle}) => {
-    const accountQuery = useAccountFollowsForUser(handle === '' ? 'index' : handle, 'followers');
+    const accountQuery = useAccountFollowsForUser(handle === '' ? 'me' : handle, 'followers');
 
     const {
         data,
