@@ -59,7 +59,8 @@ describe('MagicLink', function () {
                 },
                 config: {
                     get: sandbox.stub().resolves()
-                }
+                },
+                getOpenTrackingEnabled: sandbox.stub().resolves(true)
             };
             const service = new MagicLink(options);
 
@@ -105,7 +106,8 @@ describe('MagicLink', function () {
                 },
                 config: {
                     get: sandbox.stub().resolves()
-                }
+                },
+                getOpenTrackingEnabled: sandbox.stub().resolves(true)
             };
             const service = new MagicLink(options);
 
