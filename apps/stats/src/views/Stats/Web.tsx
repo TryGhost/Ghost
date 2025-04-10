@@ -2,7 +2,7 @@ import Header from '@src/components/layout/Header';
 import Kpis from './components/Kpis';
 import React from 'react';
 import StatsLayout from './layout/StatsLayout';
-import {H4, Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@tryghost/shade';
+import {H4, Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue, Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@tryghost/shade';
 import {formatNumber} from '@src/utils/data-formatters';
 
 const Web:React.FC = () => {
@@ -38,7 +38,21 @@ const Web:React.FC = () => {
             <Header>
                 Web
                 <div>
-                    This is filter
+                    <Select>
+                        <SelectTrigger className="w-[180px]">
+                            <SelectValue placeholder="Select a fruit" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectGroup>
+                                <SelectLabel>Fruits</SelectLabel>
+                                <SelectItem value="apple">Apple</SelectItem>
+                                <SelectItem value="banana">Banana</SelectItem>
+                                <SelectItem value="blueberry">Blueberry</SelectItem>
+                                <SelectItem value="grapes">Grapes</SelectItem>
+                                <SelectItem value="pineapple">Pineapple</SelectItem>
+                            </SelectGroup>
+                        </SelectContent>
+                    </Select>
                 </div>
             </Header>
             <div>

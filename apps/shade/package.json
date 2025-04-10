@@ -28,7 +28,7 @@
     ],
     "devDependencies": {
         "@codemirror/lang-html": "6.4.9",
-        "@radix-ui/react-tooltip": "1.1.2",
+        "@radix-ui/react-tooltip": "1.1.6",
         "@storybook/addon-essentials": "7.6.20",
         "@storybook/addon-interactions": "7.6.20",
         "@storybook/addon-links": "7.6.20",
@@ -73,6 +73,7 @@
         "@radix-ui/react-form": "0.0.3",
         "@radix-ui/react-popover": "1.1.6",
         "@radix-ui/react-radio-group": "1.2.0",
+        "@radix-ui/react-select": "^2.1.7",
         "@radix-ui/react-separator": "1.1.1",
         "@radix-ui/react-slot": "1.1.2",
         "@radix-ui/react-switch": "1.1.0",
