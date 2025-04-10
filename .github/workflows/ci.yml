@@ -877,7 +877,7 @@ jobs:
       - name: Test project
         run: tb test run
       - name: Deployment check
-        run: tb --cloud --host ${{ env.TINYBIRD_HOST }} --token ${{ env.TINYBIRD_TOKEN }} deploy --check
+        run: tb --cloud --host ${{ env.TINYBIRD_FORWARD_HOST }} --token ${{ env.TINYBIRD_FORWARD_TOKEN }} deploy --check
 
   # Tinyird Tests (Classic) — This test suite is deprecated and will be removed very soon.
   job_tinybird:
