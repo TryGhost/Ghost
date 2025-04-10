@@ -104,7 +104,7 @@ describe('Sessions API', function () {
                 .expectStatus(403)
                 .matchBodySnapshot({
                     errors: [{
-                        code: '2FA_TOKEN_REQUIRED',
+                        code: '2FA_NEW_DEVICE_DETECTED',
                         id: anyUuid,
                         message: 'User must verify session to login.',
                         type: 'Needs2FAError'
@@ -133,7 +133,7 @@ describe('Sessions API', function () {
                 .expectStatus(403)
                 .matchBodySnapshot({
                     errors: [{
-                        code: '2FA_TOKEN_REQUIRED',
+                        code: '2FA_NEW_DEVICE_DETECTED',
                         id: anyUuid,
                         message: 'User must verify session to login.',
                         type: 'Needs2FAError'
