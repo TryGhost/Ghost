@@ -5,17 +5,17 @@ import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Modal} from '@tryghost/admin-x-design-system';
 import {Skeleton} from '@tryghost/shade';
 import {useAccountForUser, useNoteMutationForUser, useUserDataForUser} from '@hooks/use-activity-pub-queries';
-import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {useNavigate} from '@tryghost/admin-x-framework';
 import {useState} from 'react';
 
 const NewPostModal = NiceModal.create(() => {
     const modal = useModal();
     const {data: user} = useUserDataForUser('index');
     const noteMutation = useNoteMutationForUser('index', user);
-    const {updateRoute} = useRouting();
     const {data: account, isLoading: isLoadingAccount} = useAccountForUser('index', 'me');
 
     const [content, setContent] = useState('');
+    const navigate = useNavigate();
 
     const isDisabled = !content.trim() || !user;
 
@@ -26,11 +26,14 @@ const NewPostModal = NiceModal.create(() => {
             return;
         }
 
-        noteMutation.mutate(trimmedContent);
-
-        updateRoute('feed');
-
-        modal.remove();
+        try {
+            await noteMutation.mutateAsync(trimmedContent);
+            navigate('/feed');
+            modal.remove();
+        } catch (error) {
+            // Handle error case if needed
+            // console.error('Failed to create post:', error);
+        }
     };
 
     const handleCancel = () => {
