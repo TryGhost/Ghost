@@ -4,9 +4,9 @@ import Component from '@glimmer/component';
 import React from 'react';
 import moment from 'moment-timezone';
 import {AreaChart, useQuery} from '@tinybirdco/charts';
-import {TB_VERSION, getDateRange, getStatsParams, statsStaticColors} from 'ghost-admin/utils/stats';
 import {formatNumber} from 'ghost-admin/helpers/format-number';
 import {formatVisitDuration} from '../../../utils/stats';
+import {getDateRange, getEndpointUrl, getStatsParams, getToken, statsStaticColors} from 'ghost-admin/utils/stats';
 import {hexToRgba} from 'ghost-admin/utils/stats';
 import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
@@ -23,9 +23,12 @@ export default class KpisComponent extends Component {
             props
         );
 
+        const endpoint = getEndpointUrl(this.config, 'api_kpis');
+        const token = getToken(this.config);
+
         const {data, meta, error, loading} = useQuery({
-            endpoint: `${this.config.stats.endpoint}/v0/pipes/api_kpis__v${TB_VERSION}.json`,
-            token: this.config.stats.token,
+            endpoint,
+            token,
             params
         });
 
