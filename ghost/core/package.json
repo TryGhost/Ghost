@@ -180,7 +180,7 @@
     "jsonwebtoken": "8.5.1",
     "juice": "9.1.0",
     "keypair": "1.0.4",
-    "knex": "2.4.2",
+    "knex": "2.5.1",
     "knex-migrator": "5.3.0",
     "leaky-bucket": "2.2.0",
     "lodash": "4.17.21",
