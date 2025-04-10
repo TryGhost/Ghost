@@ -37,7 +37,6 @@
   expected_result: |
     {"device":"desktop","visits":8}
 
-# TODO: CHECK THIS
 - name: Filtered by source - bing.com
   description: Filtered by source - bing.com
   parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&source=bing.com
