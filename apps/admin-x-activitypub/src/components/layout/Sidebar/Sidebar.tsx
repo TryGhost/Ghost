@@ -1,7 +1,6 @@
 import * as React from 'react';
 import FeedbackBox from './FeedbackBox';
-import NewPostModal from '@views/Feed/components/NewPostModal';
-import NiceModal from '@ebay/nice-modal-react';
+import NewNoteModal from '@src/components/modals/NewNoteModal';
 import Recommendations from './Recommendations';
 import Search from '@src/components/modals/Search';
 import SearchInput from '../Header/SearchInput';
@@ -50,10 +49,12 @@ const Sidebar: React.FC = () => {
                             Profile
                         </SidebarMenuLink>
                     </div>
-                    <Button className='h-9 rounded-full bg-purple-500 px-3 text-md text-white dark:hover:bg-purple-500' onClick={() => NiceModal.show(NewPostModal)}>
-                        <LucideIcon.FilePen />
-                        New note
-                    </Button>
+                    <NewNoteModal>
+                        <Button className='h-9 rounded-full bg-purple-500 px-3 text-md text-white dark:hover:bg-purple-500'>
+                            <LucideIcon.FilePen />
+                            New note
+                        </Button>
+                    </NewNoteModal>
 
                     <Recommendations />
 

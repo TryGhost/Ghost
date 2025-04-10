@@ -1,8 +1,7 @@
 import FeedInput from './FeedInput';
 import FeedItem from '@src/components/feed/FeedItem';
 import Layout from '@src/components/layout';
-import NewPostModal from './NewPostModal';
-import NiceModal from '@ebay/nice-modal-react';
+import NewNoteModal from '@src/components/modals/NewNoteModal';
 import {Activity} from '@src/api/activitypub';
 import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, LucideIcon, Separator} from '@tryghost/shade';
@@ -124,10 +123,12 @@ const FeedList:React.FC<FeedListProps> = ({
                                     <EmptyViewIndicator>
                                         <EmptyViewIcon><LucideIcon.Hash /></EmptyViewIcon>
                                         <div>The Feed is the stream of thoughts and <span className='text-black dark:text-white'>bite-sized updates</span> from people you follow in the Social Web. It&apos;s looking a little empty right now but once the people you follow start posting, their updates will show up here.</div>
-                                        <Button className='text-white dark:text-black' onClick={() => NiceModal.show(NewPostModal)}>
-                                            <LucideIcon.FilePen />
+                                        <NewNoteModal>
+                                            <Button className='text-white dark:text-black'>
+                                                <LucideIcon.FilePen />
                                             Write your first note
-                                        </Button>
+                                            </Button>
+                                        </NewNoteModal>
                                     </EmptyViewIndicator>
                                 </div>
                             </div>
