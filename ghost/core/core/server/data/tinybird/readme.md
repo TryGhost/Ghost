@@ -1,6 +1,11 @@
 ## Tinybird Analytics
 This is the web analytics implementation using [Tinybird Forward](https://www.tinybird.co/docs/forward).
 
+### Usage
+*Only for the first time: run `yarn tbf:install` from `/ghost/`*.
+
+Run `yarn tbf` from `/ghost/`. This will start/install the TB Local Docker container, change the path, and start `tb dev`.
+
 ### Local
 Run `yarn tb:local` from `/ghost/` to spin up a Docker container running Tinybird local.
 
