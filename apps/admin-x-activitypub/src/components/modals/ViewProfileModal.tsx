@@ -4,7 +4,9 @@ import NiceModal, {useModal} from '@ebay/nice-modal-react';
 
 import {Button, Heading, Icon, List, LoadingIndicator, Modal, NoValueLabel, Tab,TabView, useDesignSystem} from '@tryghost/admin-x-design-system';
 import {UseInfiniteQueryResult} from '@tanstack/react-query';
-import {useAccountFollowsForUser, useAccountForUser, usePostsByAccount} from '@hooks/use-activity-pub-queries';
+
+import {type GetProfileFollowersResponse, type GetProfileFollowingResponse} from '../../api/activitypub';
+import {useAccountForUser, usePostsByAccount, useProfileFollowersForUser, useProfileFollowingForUser} from '@hooks/use-activity-pub-queries';
 
 import APAvatar from '../global/APAvatar';
 import ActivityItem from '../activities/ActivityItem';
@@ -15,11 +17,10 @@ import getName from '../../utils/get-name';
 import getUsername from '../../utils/get-username';
 import {handleProfileClick} from '../../utils/handle-profile-click';
 import {handleViewContent} from '../../utils/content-handlers';
-import type {AccountFollowsType, GetAccountFollowsResponse, GetProfileFollowersResponse, GetProfileFollowingResponse} from '../../api/activitypub';
 
 const noop = () => {};
 
-type QueryPageData = GetProfileFollowersResponse | GetProfileFollowingResponse | GetAccountFollowsResponse;
+type QueryPageData = GetProfileFollowersResponse | GetProfileFollowingResponse;
 
 type QueryFn = (handle: string, profileHandle: string) => UseInfiniteQueryResult<QueryPageData>;
 
@@ -201,32 +202,23 @@ const PostsTab: React.FC<{handle: string}> = ({handle}) => {
     );
 };
 
-const useAccountFollowsQuery = (handle: string, type: AccountFollowsType) => {
-    const query = useAccountFollowsForUser(handle === '' ? 'me' : handle, type);
-    return () => query;
-};
-
 const FollowingTab: React.FC<{handle: string}> = ({handle}) => {
-    const queryFn = useAccountFollowsQuery(handle, 'following');
-    
     return (
         <ActorList
             handle={handle}
             noResultsMessage={`${handle} is not following anyone yet`}
-            queryFn={queryFn}
+            queryFn={useProfileFollowingForUser}
             resolveDataFn={page => ('following' in page ? page.following : [])}
         />
     );
 };
 
 const FollowersTab: React.FC<{handle: string}> = ({handle}) => {
-    const queryFn = useAccountFollowsQuery(handle, 'followers');
-    
     return (
         <ActorList
             handle={handle}
             noResultsMessage={`${handle} has no followers yet`}
-            queryFn={queryFn}
+            queryFn={useProfileFollowersForUser}
             resolveDataFn={page => ('followers' in page ? page.followers : [])}
         />
     );
