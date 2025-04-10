@@ -60,7 +60,7 @@
     "tb:local": "tb local start",
     "tb:local:stop": "docker stop tinybird-local && docker rm tinybird-local",
     "tbf:install": "curl https://tinybird.co | sh",
-    "tbf": "tb local start && cd ghost/core/core/server/data && tb dev"
+    "tbf": "tb local start && cd ghost/core/core/server/data/tinybird && tb dev"
   },
   "resolutions": {
     "@tryghost/errors": "1.3.5",
