@@ -4,7 +4,6 @@ import NiceModal, {useModal} from '@ebay/nice-modal-react';
 
 import {Button, Heading, Icon, List, LoadingIndicator, Modal, NoValueLabel, Tab,TabView, useDesignSystem} from '@tryghost/admin-x-design-system';
 import {UseInfiniteQueryResult} from '@tanstack/react-query';
-import {type AccountFollowsType, type GetAccountFollowsResponse, type GetProfileFollowersResponse, type GetProfileFollowingResponse} from '../../api/activitypub';
 import {useAccountFollowsForUser, useAccountForUser, usePostsByAccount} from '@hooks/use-activity-pub-queries';
 
 import APAvatar from '../global/APAvatar';
@@ -16,6 +15,7 @@ import getName from '../../utils/get-name';
 import getUsername from '../../utils/get-username';
 import {handleProfileClick} from '../../utils/handle-profile-click';
 import {handleViewContent} from '../../utils/content-handlers';
+import type {AccountFollowsType, GetAccountFollowsResponse, GetProfileFollowersResponse, GetProfileFollowingResponse} from '../../api/activitypub';
 
 const noop = () => {};
 
