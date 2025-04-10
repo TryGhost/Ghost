@@ -871,7 +871,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install Tinybird CLI
-        run: curl https://tinybird.co | sh
+        run: curl -fsSL https://tinybird.co/install.sh | sh
       - name: Build project
         run: tb build
       - name: Test project
