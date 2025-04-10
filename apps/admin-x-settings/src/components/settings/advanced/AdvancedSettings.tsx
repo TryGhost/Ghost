@@ -10,7 +10,7 @@ import SpamFilters from './SpamFilters';
 
 export const searchKeywords = {
     integrations: ['advanced', 'integrations', 'zapier', 'slack', 'unsplash', 'first promoter', 'firstpromoter', 'pintura', 'disqus', 'analytics', 'ulysses', 'typeform', 'buffer', 'plausible', 'github', 'webhooks'],
-    migrationtools: ['import', 'export', 'migrate', 'substack', 'substack', 'migration', 'medium', 'wordpress', 'wp'],
+    migrationtools: ['import', 'export', 'migrate', 'substack', 'substack', 'migration', 'medium', 'wordpress', 'wp', 'squarespace'],
     codeInjection: ['advanced', 'code injection', 'head', 'footer'],
     labs: ['advanced', 'labs', 'alpha', 'beta', 'flag', 'routes', 'redirect', 'translation', 'editor', 'portal'],
     history: ['advanced', 'history', 'log', 'events', 'user events', 'staff'],
