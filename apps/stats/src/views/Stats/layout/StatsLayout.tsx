@@ -14,7 +14,7 @@ const StatsLayout: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({children})
                     {children}
                 </div>
                 <div className='grow border-l py-8 pl-6 pr-8'>
-                    <RightSidebarMenu>
+                    <RightSidebarMenu className='sticky top-8'>
                         <RightSidebarMenuLink active={location.pathname === '/' || location.pathname === '/web/'} onClick={() => {
                             navigate('/');
                         }}>
