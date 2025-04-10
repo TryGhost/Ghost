@@ -25,7 +25,7 @@ interface KpiTabValueProps {
 
 const KpiTabValue: React.FC<KpiTabValueProps> = ({label, value}) => {
     return (
-        <div className='flex w-full min-w-[170px] flex-col items-start'>
+        <div className='flex w-full flex-col items-start'>
             <span className='text-[1.5rem] tracking-tight'>{label}</span>
             <span className='text-[2.3rem] tracking-[-0.04em]'>{value}</span>
         </div>
@@ -126,7 +126,7 @@ const Kpis:React.FC = () => {
 
     return (
         <Tabs defaultValue="visits" variant='underline'>
-            <TabsList className="flex">
+            <TabsList className="grid grid-cols-4 gap-5">
                 <KpiTabTrigger value="visits" onClick={() => {
                     setCurrentTab('visits');
                 }}>
