@@ -18,6 +18,7 @@ export * from './components/ui/table';
 export * from './components/ui/tabs';
 // export {Tooltip as ShadeTooltip, TooltipTrigger, TooltipContent, TooltipProvider} from './components/ui/tooltip';
 export * from './components/ui/tooltip';
+export * from './components/ui/right-sidebar';
 
 // Layout components
 export * from './components/layout/page';
