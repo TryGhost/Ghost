@@ -1,0 +1,89 @@
+NODE mv_hits_0
+SQL >
+
+    SELECT timestamp,
+        action,
+        version,
+        coalesce(session_id, '0') as session_id,
+        toString(payload.locale) as locale,
+        toString(payload.location) as location,
+        case -- this avoids really crappy null handling by the JSON type and downstream fns
+            when isNull(payload.referrer) then ''
+            else toString(payload.referrer)
+        end as referrer,
+        toString(payload.pathname) as pathname,
+        toString(payload.href) as href,
+        site_uuid,
+        toString(payload.member_uuid) as member_uuid,
+        toString(payload.member_status) as member_status,
+        toString(payload.post_uuid) as post_uuid,
+        toString(payload.post_type) as post_type,
+        lower(toString(getSubcolumn(payload,'user-agent'))) as user_agent
+    FROM analytics_events
+    where action = 'page_hit'
+
+
+
+NODE mv_hits_1
+SQL >
+
+    SELECT
+        site_uuid,
+        timestamp,
+        action,
+        version,
+        session_id,
+        member_uuid,
+        member_status,
+        post_uuid,
+        post_type,
+        location,
+        case
+            -- domainWithoutWWW returns '' if the referrer is not a valid domain
+            --  we want to maintain refs like 'ghost-newsletter'
+            when domainWithoutWWW(referrer) = '' then coalesce(referrer, '')
+            else domainWithoutWWW(referrer)
+        end as source,
+        pathname,
+        href,
+        case
+            when match(user_agent, 'wget|ahrefsbot|curl|urllib|bitdiscovery|\+https://|googlebot')
+            then 'bot'
+            when match(user_agent, 'android')
+            then 'mobile-android'
+            when match(user_agent, 'ipad|iphone|ipod')
+            then 'mobile-ios'
+            else 'desktop'
+        END as device,
+        case
+            when match(user_agent, 'windows')
+            then 'windows'
+            when match(user_agent, 'mac')
+            then 'macos'
+            when match(user_agent, 'linux')
+            then 'linux'
+            when match(user_agent, 'android')
+            then 'android'
+            when match(user_agent, 'iphone|ipad|ipod')
+            then 'ios'
+            else 'Unknown'
+        END as os,
+        case
+            when match(user_agent, 'firefox')
+            then 'firefox'
+            when match(user_agent, 'chrome|crios')
+            then 'chrome'
+            when match(user_agent, 'opera')
+            then 'opera'
+            when match(user_agent, 'msie|trident')
+            then 'ie'
+            when match(user_agent, 'iphone|ipad|safari')
+            then 'safari'
+            else 'Unknown'
+        END as browser
+    FROM mv_hits_0
+
+TYPE materialized
+DATASOURCE _mv_hits
+
+
