@@ -858,8 +858,8 @@ jobs:
     needs: [job_setup]
     if: needs.job_setup.outputs.changed_tinybird_forward == 'true'
     env:
-      TINYBIRD_HOST:
-      TINYBIRD_TOKEN:
+      TINYBIRD_HOST: ${{ secrets.TINYBIRD_HOST }}
+      TINYBIRD_TOKEN: ${{ secrets.TINYBIRD_TOKEN }}
     defaults:
         run:
           working-directory: ghost/core/core/server/data/tinybird
@@ -877,7 +877,7 @@ jobs:
       - name: Test project
         run: tb test run
       - name: Deployment check
-        run: tb --cloud --host ${{ env.TINYBIRD_FORWARD_HOST }} --token ${{ env.TINYBIRD_FORWARD_TOKEN }} deploy --check
+        run: tb --cloud --host ${{ env.TINYBIRD_HOST }} --token ${{ env.TINYBIRD_TOKEN }} deploy --check
 
   # Tinyird Tests (Classic) — This test suite is deprecated and will be removed very soon.
   job_tinybird:
