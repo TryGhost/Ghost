@@ -1352,10 +1352,10 @@ jobs:
         uses: actions/checkout@v4
       - name: Install Tinybird CLI
         run: curl -fsSL https://tinybird.co/install.sh | sh
-      - name: Deploy project
-        run: tb --cloud --host ${{ env.TINYBIRD_HOST }} --token ${{ env.TINYBIRD_TOKEN }} deploy
-
-
+      - name: Check the deployment
+        run: tb --cloud --host ${{ env.TINYBIRD_HOST }} --token ${{ env.TINYBIRD_TOKEN }} deployment create --check
+      - name: Create a staging deployment
+        run: tb --cloud --host ${{ env.TINYBIRD_HOST }} --token ${{ env.TINYBIRD_TOKEN }} deployment create --wait
 
   ## Tinybird Tests (Classic) — This job is deprecated and will be removed very soon.
   deploy_tinybird:
