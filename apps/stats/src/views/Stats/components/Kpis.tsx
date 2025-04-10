@@ -1,6 +1,6 @@
 import CustomTooltipContent from '@src/components/chart/CustomTooltipContent';
 import React, {useState} from 'react';
-import {ChartConfig, ChartContainer, ChartTooltip, Recharts, Tabs, TabsList, TabsTrigger} from '@tryghost/shade';
+import {ChartConfig, ChartContainer, ChartTooltip, Recharts, Separator, Tabs, TabsList, TabsTrigger} from '@tryghost/shade';
 import {calculateYAxisWidth, getYTicks} from '@src/utils/chart-helpers';
 import {formatDisplayDate, formatDuration, formatNumber, formatPercentage, formatQueryDate} from '@src/utils/data-formatters';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
@@ -143,7 +143,7 @@ const Kpis:React.FC = () => {
                     <KpiTabValue label="Avg. visit duration" value={kpiValues.duration} />
                 </KpiTabTrigger>
             </TabsList>
-            <div className='min-h-[15vw]'>
+            <div className='my-4 min-h-[15vw]'>
                 {isLoading ? 'Loading' :
                     <ChartContainer className='-mb-3 max-h-[15vw] min-h-[260px] w-full' config={chartConfig}>
                         <Recharts.LineChart
@@ -200,6 +200,7 @@ const Kpis:React.FC = () => {
                     </ChartContainer>
                 }
             </div>
+            <Separator />
         </Tabs>
     );
 };
