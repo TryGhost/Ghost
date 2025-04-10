@@ -8,25 +8,25 @@ import {formatNumber} from '@src/utils/data-formatters';
 const Web:React.FC = () => {
     const posts = [
         {
-            id: '1',
+            id: 1,
             title: 'Top 3D printing secrets',
             visitors: 8099,
             views: 12875
         },
         {
-            id: '1',
+            id: 2,
             title: 'Endless summer rusty dancemoves the scenic route captain’s table',
             visitors: 7536,
             views: 9746
         },
         {
-            id: '1',
+            id: 3,
             title: 'Three months in Asia the road less travelled whale shark diving vacation mood',
             visitors: 6735,
             views: 9644
         },
         {
-            id: '1',
+            id: 4,
             title: 'Minimal & Functional Desk Setup in Arizona',
             visitors: 5036,
             views: 8730
