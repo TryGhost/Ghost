@@ -1337,10 +1337,10 @@ jobs:
     name: Deploy Tinybird Forward
     runs-on: ubuntu-latest
     needs: [
-      job_setup
-      # job_tinybird_forward
+      job_setup,
+      job_tinybird_forward
     ]
-    # if: always() && needs.job_setup.outputs.changed_tinybird_forward == 'true' && needs.job_setup.result == 'success' && needs.job_tinybird_forward.result == 'success'
+    if: always() && needs.job_setup.outputs.changed_tinybird_forward == 'true' && needs.job_setup.result == 'success' && needs.job_tinybird_forward.result == 'success'
     env:
       TINYBIRD_HOST: ${{ secrets.TINYBIRD_HOST }}
       TINYBIRD_TOKEN: ${{ secrets.TINYBIRD_TOKEN }}
