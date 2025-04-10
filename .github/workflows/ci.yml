@@ -124,7 +124,7 @@ jobs:
               - 'ghost/web-analytics/**'
               - '!ghost/web-analytics/**/*.md'
             tinybird-forward:
-              - 'ghost/core/core/server/data/tinybird'
+              - 'ghost/core/core/server/data/tinybird/**'
               - '!ghost/core/core/server/data/tinybird/**/*.md'
             any-code:
               - '!**/*.md'
