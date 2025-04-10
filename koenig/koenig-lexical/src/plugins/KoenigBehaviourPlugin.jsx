@@ -49,6 +49,7 @@ import {
     $selectDecoratorNode,
     getTopLevelNativeElement
 } from '../utils/';
+import {$isHtmlNode} from '../nodes/HtmlNode';
 import {$isKoenigCard} from '@tryghost/kg-default-nodes';
 import {$isListItemNode, $isListNode, INSERT_ORDERED_LIST_COMMAND, INSERT_UNORDERED_LIST_COMMAND} from '@lexical/list';
 import {$setBlocksType} from '@lexical/selection';
@@ -65,7 +66,8 @@ export const DESELECT_CARD_COMMAND = createCommand('DESELECT_CARD_COMMAND');
 export const EDIT_CARD_COMMAND = createCommand('EDIT_CARD_COMMAND');
 export const DELETE_CARD_COMMAND = createCommand('DELETE_CARD_COMMAND');
 export const PASTE_LINK_COMMAND = createCommand('PASTE_LINK_COMMAND');
-
+export const SHOW_CARD_VISIBILITY_SETTINGS_COMMAND = createCommand('SHOW_CARD_VISIBILITY_SETTINGS_COMMAND');
+export const HIDE_CARD_VISIBILITY_SETTINGS_COMMAND = createCommand('HIDE_CARD_VISIBILITY_SETTINGS_COMMAND');
 const RANGE_TO_ELEMENT_BOUNDARY_THRESHOLD_PX = 10;
 const SPECIAL_MARKUPS = {
     code: '`',
@@ -120,7 +122,8 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
         selectedCardKey,
         setSelectedCardKey,
         isEditingCard,
-        setIsEditingCard
+        setIsEditingCard,
+        setShowVisibilitySettings
     } = useKoenigSelectedCardContext();
 
     const isShiftPressed = React.useRef(false);
@@ -283,6 +286,8 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
 
                     if (selectedCardKey && selectedCardKey !== cardKey) {
                         $deselectCard(editor, selectedCardKey);
+                        // Hide visibility settings when switching to a different card
+                        setShowVisibilitySettings(false);
                     }
 
                     $selectCard(editor, cardKey);
@@ -316,6 +321,8 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
 
                     setSelectedCardKey(null);
                     setIsEditingCard(false);
+                    // Hide visibility settings when deselecting a card
+                    setShowVisibilitySettings(false);
                 },
                 COMMAND_PRIORITY_LOW
             ),
@@ -1404,6 +1411,44 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                     }
 
                     return false;
+                },
+                COMMAND_PRIORITY_LOW
+            ),
+            editor.registerCommand(
+                SHOW_CARD_VISIBILITY_SETTINGS_COMMAND,
+                ({cardKey}) => {
+                    editor.update(() => {
+                        const cardNode = $getNodeByKey(cardKey);
+
+                        // If the card is an html card, we toggle the visibility settings differently
+                        // because we want to show the visibility settings panel while in selected mode
+                        // instead of entering edit mode
+                        if ($isHtmlNode(cardNode)) {
+                            setShowVisibilitySettings(true);
+                            if (!selectedCardKey) {
+                                editor.dispatchCommand(SELECT_CARD_COMMAND, {cardKey, focusEditor: true});
+                            }
+                        } else {
+                            if (cardNode?.hasEditMode?.() && !isEditingCard) {
+                                setShowVisibilitySettings(true);
+                                editor.dispatchCommand(EDIT_CARD_COMMAND, {cardKey, focusEditor: true});
+                            } else if (isEditingCard) {
+                                $deselectCard(editor, cardKey);
+                            }
+                        }
+                    });
+                    return true;
+                },
+                COMMAND_PRIORITY_LOW
+            ),
+            editor.registerCommand(
+                HIDE_CARD_VISIBILITY_SETTINGS_COMMAND,
+                ({cardKey}) => {
+                    editor.update(() => {
+                        setShowVisibilitySettings(false);
+                        editor.dispatchCommand(DESELECT_CARD_COMMAND, {cardKey});
+                    });
+                    return true;
                 },
                 COMMAND_PRIORITY_LOW
             )

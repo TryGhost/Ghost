@@ -3,7 +3,7 @@ import KoenigComposerContext from '../context/KoenigComposerContext.jsx';
 import React from 'react';
 import {$getNodeByKey} from 'lexical';
 import {ActionToolbar} from '../components/ui/ActionToolbar.jsx';
-import {DESELECT_CARD_COMMAND, EDIT_CARD_COMMAND} from '../plugins/KoenigBehaviourPlugin.jsx';
+import {DESELECT_CARD_COMMAND, EDIT_CARD_COMMAND, SHOW_CARD_VISIBILITY_SETTINGS_COMMAND} from '../plugins/KoenigBehaviourPlugin.jsx';
 import {HtmlCard} from '../components/ui/cards/HtmlCard';
 import {SettingsPanel} from '../components/ui/SettingsPanel.jsx';
 import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
@@ -11,7 +11,6 @@ import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/
 import {VisibilitySettings} from '../components/ui/VisibilitySettings.jsx';
 import {useKoenigSelectedCardContext} from '../context/KoenigSelectedCardContext.jsx';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
-import {useVisibilitySettingsToggle} from '../hooks/useVisibilitySettingsToggle';
 import {useVisibilityToggle} from '../hooks/useVisibilityToggle.js';
 
 export function HtmlNodeComponent({nodeKey, html}) {
@@ -20,16 +19,7 @@ export function HtmlNodeComponent({nodeKey, html}) {
     const {cardConfig, darkMode} = React.useContext(KoenigComposerContext);
     const [showSnippetToolbar, setShowSnippetToolbar] = React.useState(false);
 
-    const {selectedCardKey, showVisibilitySettings, setShowVisibilitySettings} = useKoenigSelectedCardContext();
-
-    const isSelected = selectedCardKey === nodeKey;
-
-    // Reset settings panel only when card loses selection
-    React.useEffect(() => {
-        if (!isSelected) {
-            setShowVisibilitySettings(false);
-        }
-    }, [isSelected, setShowVisibilitySettings]);
+    const {showVisibilitySettings} = useKoenigSelectedCardContext();
 
     const isContentVisibilityEnabled = cardConfig?.feature?.contentVisibility || false;
 
@@ -66,14 +56,11 @@ export function HtmlNodeComponent({nodeKey, html}) {
         />
     );
 
-    const toggleVisibilitySettings = useVisibilitySettingsToggle(
-        editor,
-        nodeKey,
-        isSelected,
-        showVisibilitySettings,
-        setShowVisibilitySettings,
-        cardContext.isEditing
-    );
+    const handleVisibilityToggle = React.useCallback((event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        editor.dispatchCommand(SHOW_CARD_VISIBILITY_SETTINGS_COMMAND, {cardKey: nodeKey});
+    }, [editor, nodeKey]);
 
     return (
         <>
@@ -112,7 +99,7 @@ export function HtmlNodeComponent({nodeKey, html}) {
                                 icon="visibility"
                                 isActive={showVisibilitySettings}
                                 label="Visibility"
-                                onClick={toggleVisibilitySettings}
+                                onClick={handleVisibilityToggle}
                             />
                         </>
                     )}

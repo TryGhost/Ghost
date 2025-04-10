@@ -8,6 +8,7 @@ import {CallToActionCard} from '../components/ui/cards/CallToActionCard.jsx';
 import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
 import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu.jsx';
 import {getImageDimensions} from '../utils/getImageDimensions';
+import {useKoenigSelectedCardContext} from '../context/KoenigSelectedCardContext.jsx';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import {useVisibilityToggle} from '../hooks/useVisibilityToggle.js';
 
@@ -37,6 +38,8 @@ export const CallToActionNodeComponent = ({
     const imageDragHandler = useFileDragAndDrop({handleDrop: handleImageDrop});
 
     const {visibilityOptions, toggleVisibility} = useVisibilityToggle(editor, nodeKey, cardConfig);
+
+    const {showVisibilitySettings} = useKoenigSelectedCardContext();
 
     const handleToolbarEdit = (event) => {
         event.preventDefault();
@@ -173,6 +176,7 @@ export const CallToActionNodeComponent = ({
                 setEditing={setEditing}
                 setFileInputRef={ref => fileInputRef.current = ref}
                 showButton={showButton}
+                showVisibilitySettings={showVisibilitySettings}
                 sponsorLabelHtmlEditor={sponsorLabelHtmlEditor}
                 sponsorLabelHtmlEditorInitialState={sponsorLabelHtmlEditorInitialState}
                 text={textValue}

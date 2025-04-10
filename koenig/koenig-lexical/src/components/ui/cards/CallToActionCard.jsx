@@ -115,7 +115,8 @@ export function CallToActionCard({
     toggleVisibility = () => {},
     imageDragHandler = {},
     imageUploader = () => {},
-    linkColor = 'text'
+    linkColor = 'text',
+    showVisibilitySettings = false
 }) {
     const [buttonColorPickerExpanded, setButtonColorPickerExpanded] = useState(false);
 
@@ -406,7 +407,7 @@ export function CallToActionCard({
 
             {isEditing && (
                 <SettingsPanel
-                    defaultTab="content"
+                    defaultTab={showVisibilitySettings ? 'visibility' : 'content'}
                     tabs={tabs}
                     onMouseDown={e => e.preventDefault()}
                 >
@@ -454,5 +455,6 @@ CallToActionCard.propTypes = {
     imageDragHandler: PropTypes.object,
     linkColor: PropTypes.oneOf(['text', 'accent']),
     handleLinkColorChange: PropTypes.func,
-    imageUploader: PropTypes.object
+    imageUploader: PropTypes.object,
+    showVisibilitySettings: PropTypes.bool
 };

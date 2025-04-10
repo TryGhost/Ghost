@@ -119,7 +119,6 @@ test.describe('Call To Action Card', async () => {
             <p><br /></p>
         `, {ignoreCardContents: true});
     });
-
     test('button and button settings are visible by default', async function () {
         await focusEditor(page);
         await insertCard(page, {cardName: 'call-to-action'});
@@ -579,6 +578,23 @@ test.describe('Call To Action Card', async () => {
 
         await page.getByTestId('visibility-indicator').click();
         await expect(page.getByTestId('settings-panel')).toBeVisible();
+    });
+
+    test('can toggle visibility settings from visibility icon', async function () {
+        await focusEditor(page);
+        const card = await insertCard(page, {cardName: 'call-to-action'});
+
+        await page.fill('[data-testid="button-text"]', 'Click me');
+        await page.fill('[data-testid="button-url"]', 'https://example.com/somepost');
+        await card.getByTestId('tab-visibility').click();
+        // activate visibility settings
+        await card.getByTestId('visibility-toggle-web-nonMembers').click();
+
+        await page.getByTestId('post-title').click();
+
+        await page.getByTestId('visibility-indicator').click();
+        await expect(page.getByTestId('settings-panel')).toBeVisible();
+        await expect(page.getByTestId('tab-contents-visibility')).toBeVisible();
     });
 
     test('can import serialized visibility settings', async function () {

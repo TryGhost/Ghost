@@ -3,7 +3,14 @@ import {focusEditor,initialize, insertCard} from '../utils/e2e';
 
 test.describe('Content Visibility', async () => {
     let page;
-
+    async function insertHtmlCard() {
+        await focusEditor(page);
+        await insertCard(page, {cardName: 'html'});
+        await expect(await page.locator('.cm-content[contenteditable="true"]')).toBeVisible();
+        await page.keyboard.type('Testing');
+        await page.keyboard.press('Meta+Enter');
+        return page.locator('[data-kg-card="html"]');
+    }
     test.beforeAll(async ({browser}) => {
         page = await browser.newPage();
     });
@@ -16,15 +23,6 @@ test.describe('Content Visibility', async () => {
         test.beforeEach(async () => {
             await initialize({page, uri: '/#/?content=false&labs=contentVisibility'});
         });
-
-        async function insertHtmlCard() {
-            await focusEditor(page);
-            await insertCard(page, {cardName: 'html'});
-            await expect(await page.locator('.cm-content[contenteditable="true"]')).toBeVisible();
-            await page.keyboard.type('Testing');
-            await page.keyboard.press('Meta+Enter');
-            return page.locator('[data-kg-card="html"]');
-        }
 
         test('toolbar shows edit icon', async function () {
             await insertHtmlCard();
@@ -150,6 +148,35 @@ test.describe('Content Visibility', async () => {
 
             await page.getByTestId('visibility-indicator').click();
             await expect(card).toHaveAttribute('data-kg-card-editing', 'false');
+        });
+    });
+
+    test.describe('Edge cases', async function () {
+        test.beforeEach(async () => {
+            await initialize({page, uri: '/#/?content=false&labs=contentVisibility'});
+        });
+        // We need to ensure that when we used the visibility indicator to toggle the visibility settings and then
+        // switch to a different card type, the visibility settings state is reset so that you don't have visibility settings
+        // to be visible when it was not explicitly set.
+        test('Visibility Settings Card state are reset when switching between different card types', async function () {
+            // Set up HTML card with visibility settings
+            const htmlCard = await insertHtmlCard();
+            await htmlCard.getByTestId('show-visibility').click();
+            await htmlCard.getByTestId('tab-visibility').click();
+            await htmlCard.getByTestId('visibility-toggle-web-nonMembers').click();
+
+            // Add CTA card and configure its visibility
+            await page.keyboard.press('Enter');
+            const ctaCard = await insertCard(page, {cardName: 'call-to-action'});
+            await page.click('[data-testid="cta-card-content-editor"]');
+            await page.keyboard.type('This is a new CTA Card.');
+
+            await ctaCard.getByTestId('tab-visibility').click();
+            await ctaCard.getByTestId('visibility-toggle-web-nonMembers').click();
+            await page.click('body');
+            // Verify visibility indicator works for HTML card
+            await page.getByTestId('visibility-indicator').first().click();
+            await expect(htmlCard.getByTestId('settings-panel')).toBeVisible();
         });
     });
 });

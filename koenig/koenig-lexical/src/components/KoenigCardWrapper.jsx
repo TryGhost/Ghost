@@ -3,11 +3,10 @@ import KoenigComposerContext from '../context/KoenigComposerContext';
 import React from 'react';
 import {$getNodeByKey, CLICK_COMMAND, COMMAND_PRIORITY_LOW} from 'lexical';
 import {CardWrapper} from './ui/CardWrapper';
-import {EDIT_CARD_COMMAND, SELECT_CARD_COMMAND} from '../plugins/KoenigBehaviourPlugin';
+import {EDIT_CARD_COMMAND, SELECT_CARD_COMMAND, SHOW_CARD_VISIBILITY_SETTINGS_COMMAND} from '../plugins/KoenigBehaviourPlugin';
 import {mergeRegister} from '@lexical/utils';
 import {useKoenigSelectedCardContext} from '../context/KoenigSelectedCardContext';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
-import {useVisibilitySettingsToggle} from '../hooks/useVisibilitySettingsToggle';
 
 const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, children}) => {
     const {cardConfig} = React.useContext(KoenigComposerContext);
@@ -18,19 +17,16 @@ const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, childre
     const containerRef = React.useRef(null);
     const skipClick = React.useRef(false);
 
-    const {selectedCardKey, isEditingCard, isDragging, showVisibilitySettings, setShowVisibilitySettings} = useKoenigSelectedCardContext();
+    const {selectedCardKey, isEditingCard, isDragging} = useKoenigSelectedCardContext();
 
     const isSelected = selectedCardKey === nodeKey;
     const isEditing = isSelected && isEditingCard;
 
-    const toggleVisibilitySettings = useVisibilitySettingsToggle(
-        editor,
-        nodeKey,
-        isSelected,
-        showVisibilitySettings,
-        setShowVisibilitySettings,
-        isEditing
-    );
+    const handleVisibilityToggle = React.useCallback((event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        editor.dispatchCommand(SHOW_CARD_VISIBILITY_SETTINGS_COMMAND, {cardKey: nodeKey});
+    }, [editor, nodeKey]);
 
     React.useLayoutEffect(() => {
         editor.getEditorState().read(() => {
@@ -171,7 +167,7 @@ const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, childre
                 isSelected={isSelected}
                 isVisibilityActive={isVisibilityActive}
                 wrapperStyle={wrapperStyle}
-                onIndicatorClick={toggleVisibilitySettings}
+                onIndicatorClick={handleVisibilityToggle}
             >
                 {children}
             </CardWrapper>
