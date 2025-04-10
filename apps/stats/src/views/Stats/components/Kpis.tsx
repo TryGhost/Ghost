@@ -27,7 +27,7 @@ const KpiTabValue: React.FC<KpiTabValueProps> = ({label, value}) => {
     return (
         <div className='flex w-full flex-col items-start'>
             <span className='text-[1.5rem] tracking-tight'>{label}</span>
-            <span className='text-[2.3rem] tracking-[-0.04em]'>{value}</span>
+            <span className='-mt-1 text-[2.3rem] tracking-[-0.04em]'>{value}</span>
         </div>
     );
 };
