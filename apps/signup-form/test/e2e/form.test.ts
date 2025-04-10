@@ -82,6 +82,7 @@ test.describe('Form', async () => {
             // Check the request body
             expect(lastApiRequest.body).not.toBeNull();
             expect(lastApiRequest.body).toHaveProperty('labels', []);
+            expect(lastApiRequest.body).toHaveProperty('newsletters', []);
             expect(lastApiRequest.body).toHaveProperty('email', 'jamie@example.com');
         });
 
@@ -143,6 +144,67 @@ test.describe('Form', async () => {
             // Check the request body
             expect(lastApiRequest.body).not.toBeNull();
             expect(lastApiRequest.body).toHaveProperty('labels', []);
+            expect(lastApiRequest.body).toHaveProperty('email', 'hey@example.com');
+        });
+
+        test('Send a newsletter when submitting the form', async ({page}) => {
+            const {frame, lastApiRequest} = await initialize({page, title: 'Sign up', 'newsletter-1': 'Hello world'});
+
+            // Fill out the form
+            const emailInput = frame.getByTestId('input');
+            await emailInput.fill('jamie@example.com');
+
+            // Click the submit button
+            const submitButton = frame.getByTestId('button');
+            await submitButton.click();
+
+            // Showing the success page
+            await expect(frame.getByTestId('success-page')).toHaveCount(1);
+
+            // Check the request body
+            expect(lastApiRequest.body).not.toBeNull();
+            expect(lastApiRequest.body).toHaveProperty('newsletters', ['Hello world']);
+            expect(lastApiRequest.body).toHaveProperty('email', 'jamie@example.com');
+        });
+
+        test('Sends multiple newsletters when submitting the form', async ({page}) => {
+            const {frame, lastApiRequest} = await initialize({page, title: 'Sign up', 'newsletter-1': 'Hello world', 'newsletter-2': 'and another one'});
+
+            // Fill out the form
+            const emailInput = frame.getByTestId('input');
+            await emailInput.fill('hey@example.com');
+
+            // Click the submit button
+            const submitButton = frame.getByTestId('button');
+            await submitButton.click();
+
+            // Showing the success page
+            await expect(frame.getByTestId('success-page')).toHaveCount(1);
+
+            // Check the request body
+            expect(lastApiRequest.body).not.toBeNull();
+            expect(lastApiRequest.body).toHaveProperty('newsletters', ['Hello world', 'and another one']);
+            expect(lastApiRequest.body).toHaveProperty('email', 'hey@example.com');
+        });
+
+        test('Does not send newsletters when not the right numbering is used', async ({page}) => {
+            // Skip setting newsletter-1, so newsletter-2 is ignored
+            const {frame, lastApiRequest} = await initialize({page, title: 'Sign up', 'newsletter-2': 'and another one'});
+
+            // Fill out the form
+            const emailInput = frame.getByTestId('input');
+            await emailInput.fill('hey@example.com');
+
+            // Click the submit button
+            const submitButton = frame.getByTestId('button');
+            await submitButton.click();
+
+            // Showing the success page
+            await expect(frame.getByTestId('success-page')).toHaveCount(1);
+
+            // Check the request body
+            expect(lastApiRequest.body).not.toBeNull();
+            expect(lastApiRequest.body).toHaveProperty('newsletters', []);
             expect(lastApiRequest.body).toHaveProperty('email', 'hey@example.com');
         });
 
