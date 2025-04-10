@@ -856,7 +856,6 @@ jobs:
     name: Tinybird Tests (Forward)
     runs-on: ubuntu-latest
     needs: [job_setup]
-    if: needs.job_setup.outputs.changed_tinybird_forward == 'true'
     env:
       TINYBIRD_HOST: ${{ secrets.TINYBIRD_HOST }}
       TINYBIRD_TOKEN: ${{ secrets.TINYBIRD_TOKEN }}
