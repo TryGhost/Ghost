@@ -1,9 +1,9 @@
 import Component from '@glimmer/component';
 import fetch from 'fetch';
-import {TB_VERSION, getStatsParams} from 'ghost-admin/utils/stats';
 import {action} from '@ember/object';
 import {formatNumber} from 'ghost-admin/helpers/format-number';
 import {formatVisitDuration} from '../../utils/stats';
+import {getEndpointUrl, getStatsParams, getToken} from 'ghost-admin/utils/stats';
 import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
@@ -62,13 +62,13 @@ export default class KpisOverview extends Component {
                 args
             ));
 
-            const endpoint = `${this.config.stats.endpoint}/v0/pipes/api_kpis__v${TB_VERSION}.json?${params}`;
-
+            const endpoint = getEndpointUrl(this.config, 'api_kpis', params);
+            const token = getToken(this.config);
             const response = yield fetch(endpoint, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
-                    Authorization: `Bearer ${this.config.stats.token}`
+                    Authorization: `Bearer ${token}`
                 }
             });
 

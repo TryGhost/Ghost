@@ -144,7 +144,7 @@
    */
   async function _sendEvent(name, payload) {
     _setSessionId()
-    const url = `https://e.ghost.org/tb/web_analytics?name=${DATASOURCE}&token=${token}`
+    const url = `${host}?name=${DATASOURCE}&token=${token}`
 
     let processedPayload
     if (stringifyPayload) {

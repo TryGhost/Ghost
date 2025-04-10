@@ -5,8 +5,8 @@ import React from 'react';
 import countries from 'i18n-iso-countries';
 import enLocale from 'i18n-iso-countries/langs/en.json';
 import {BarList, useQuery} from '@tinybirdco/charts';
-import {TB_VERSION, barListColor, getCountryFlag, getStatsParams} from 'ghost-admin/utils/stats';
 import {action} from '@ember/object';
+import {barListColor, getCountryFlag, getEndpointUrl, getStatsParams, getToken} from 'ghost-admin/utils/stats';
 import {formatNumber} from 'ghost-admin/helpers/format-number';
 import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
@@ -81,19 +81,19 @@ export default class AllStatsModal extends Component {
         let unknownOption = 'Unknown';
         switch (type) {
         case 'top-sources':
-            endpoint = `${this.config.stats.endpoint}/v0/pipes/api_top_sources__v${TB_VERSION}.json`;
+            endpoint = getEndpointUrl(this.config, 'api_top_sources');
             labelText = 'Source';
             indexBy = 'source';
             unknownOption = 'Direct';
             break;
         case 'top-locations':
-            endpoint = `${this.config.stats.endpoint}/v0/pipes/api_top_locations__v${TB_VERSION}.json`;
+            endpoint = getEndpointUrl(this.config, 'api_top_locations');
             labelText = 'Country';
             indexBy = 'location';
             unknownOption = 'Unknown';
             break;
         default:
-            endpoint = `${this.config.stats.endpoint}/v0/pipes/api_top_pages__v${TB_VERSION}.json`;
+            endpoint = getEndpointUrl(this.config, 'api_top_pages');
             labelText = 'Post or page';
             indexBy = 'pathname';
             break;
@@ -101,7 +101,7 @@ export default class AllStatsModal extends Component {
 
         const {data, meta, error, loading} = useQuery({
             endpoint: endpoint,
-            token: this.config.stats.token,
+            token: getToken(this.config),
             params
         });
 

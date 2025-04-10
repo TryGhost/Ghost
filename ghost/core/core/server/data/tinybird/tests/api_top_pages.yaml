@@ -1,0 +1,86 @@
+
+- name: Date range
+  description: All fixture data
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC
+  expected_result: |
+    {"pathname":"\/blog\/hello-world\/","visits":10}
+    {"pathname":"\/about\/","visits":8}
+    {"pathname":"\/","visits":7}
+
+- name: Filtered by browser - Chrome
+  description: Filtered by browser - Chrome
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&browser=chrome
+  expected_result: |
+    {"pathname":"\/blog\/hello-world\/","visits":6}
+    {"pathname":"\/about\/","visits":3}
+    {"pathname":"\/","visits":3}
+
+- name: Filtered by device - desktop
+  description: Filtered by device - desktop
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&device=desktop
+  expected_result: |
+    {"pathname":"\/blog\/hello-world\/","visits":9}
+    {"pathname":"\/about\/","visits":8}
+    {"pathname":"\/","visits":7}
+
+- name: Filtered by location - UK
+  description: Filtered by location - UK
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&location=GB
+  expected_result: |
+    {"pathname":"\/blog\/hello-world\/","visits":6}
+    {"pathname":"\/about\/","visits":4}
+    {"pathname":"\/","visits":4}
+
+- name: Filtered by OS - Windows
+  description: Filtered by OS - Windows
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&os=windows
+  expected_result: |
+    {"pathname":"\/blog\/hello-world\/","visits":9}
+    {"pathname":"\/about\/","visits":7}
+    {"pathname":"\/","visits":7}
+
+- name: Filtered by pathname - /about/
+  description: Filtered by pathname - /about/
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&pathname=%2Fabout%2F
+  expected_result: |
+    {"pathname":"\/about\/","visits":8}
+
+- name: Filtered by source - bing.com
+  description: Filtered by source - bing.com
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&source=bing.com
+  expected_result: |
+    {"pathname":"\/about\/","visits":2}
+    {"pathname":"\/","visits":1}
+    {"pathname":"\/blog\/hello-world\/","visits":1}
+
+- name: Filtered by member status - paid
+  description: Filtered by member status - paid
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&member_status=paid
+  expected_result: |
+    {"pathname":"\/about\/","visits":3}
+    {"pathname":"\/blog\/hello-world\/","visits":3}
+    {"pathname":"\/","visits":2}
+
+- name: Filtered by member status - undefined
+  description: Filtered by member status - undefined
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&member_status=undefined
+  expected_result: |
+    {"pathname":"\/blog\/hello-world\/","visits":5}
+    {"pathname":"\/about\/","visits":2}
+    {"pathname":"\/","visits":1}
+
+- name: Filtered by timezone - America/Los_Angeles
+  description: Filtered by timezone - America/Los_Angeles
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=America/Los_Angeles
+  expected_result: |
+    {"pathname":"\/blog\/hello-world\/","visits":9}
+    {"pathname":"\/about\/","visits":7}
+    {"pathname":"\/","visits":5}
+
+- name: Test with multiple filters combined
+  description: Test with multiple filters combined
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&device=desktop&browser=firefox
+  expected_result: |
+    {"pathname":"\/","visits":3}
+    {"pathname":"\/about\/","visits":2}
+    {"pathname":"\/blog\/hello-world\/","visits":2}

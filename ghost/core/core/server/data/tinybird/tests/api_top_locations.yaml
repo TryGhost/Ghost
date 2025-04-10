@@ -1,0 +1,95 @@
+
+- name: Date range
+  description: All fixture data
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC
+  expected_result: |
+    {"location":"GB","visits":8}
+    {"location":"US","visits":3}
+    {"location":"FR","visits":2}
+    {"location":"ES","visits":2}
+    {"location":"DE","visits":1}
+
+- name: Filtered by browser - Chrome
+  description: Filtered by browser - Chrome
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&browser=chrome
+  expected_result: |
+    {"location":"GB","visits":5}
+    {"location":"DE","visits":1}
+    {"location":"ES","visits":1}
+
+- name: Filtered by device - desktop
+  description: Filtered by device - desktop
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&device=desktop
+  expected_result: |
+    {"location":"GB","visits":7}
+    {"location":"US","visits":3}
+    {"location":"FR","visits":2}
+    {"location":"ES","visits":2}
+    {"location":"DE","visits":1}
+
+- name: Filtered by location - UK
+  description: Filtered by location - UK
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&location=GB
+  expected_result: |
+    {"location":"GB","visits":8}
+
+- name: Filtered by OS - Windows
+  description: Filtered by OS - Windows
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&os=windows
+  expected_result: |
+    {"location":"GB","visits":7}
+    {"location":"US","visits":3}
+    {"location":"ES","visits":2}
+    {"location":"FR","visits":1}
+    {"location":"DE","visits":1}
+
+- name: Filtered by pathname - /about/
+  description: Filtered by pathname - /about/
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&pathname=%2Fabout%2F
+  expected_result: |
+    {"location":"GB","visits":4}
+    {"location":"FR","visits":1}
+    {"location":"US","visits":1}
+    {"location":"DE","visits":1}
+    {"location":"ES","visits":1}
+
+- name: Filtered by source - bing.com
+  description: Filtered by source - bing.com
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&source=bing.com
+  expected_result: |
+    {"location":"DE","visits":1}
+    {"location":"GB","visits":1}
+
+- name: Filtered by member status - paid
+  description: Filtered by member status - paid
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&member_status=paid
+  expected_result: |
+    {"location":"GB","visits":2}
+    {"location":"FR","visits":1}
+    {"location":"DE","visits":1}
+    {"location":"ES","visits":1}
+
+- name: Filtered by member status - undefined
+  description: Filtered by member status - undefined
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&member_status=undefined
+  expected_result: |
+    {"location":"GB","visits":4}
+    {"location":"US","visits":2}
+
+- name: Filtered by timezone - America/Los_Angeles
+  description: Filtered by timezone - America/Los_Angeles
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=America/Los_Angeles
+  expected_result: |
+    {"location":"GB","visits":6}
+    {"location":"US","visits":3}
+    {"location":"FR","visits":2}
+    {"location":"DE","visits":1}
+    {"location":"ES","visits":1}
+
+- name: Test with multiple filters combined
+  description: Test with multiple filters combined
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&device=desktop&browser=firefox
+  expected_result: |
+    {"location":"US","visits":3}
+    {"location":"FR","visits":1}
+    {"location":"GB","visits":1}

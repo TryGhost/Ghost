@@ -36,7 +36,6 @@ describe('ghost-stats.js', function () {
 
         // Create script element with attributes
         const scriptElement = testEnv.document.createElement('script');
-        scriptElement.setAttribute('data-storage', 'localStorage');
 
         if (config.stringifyPayload === false) {
             scriptElement.setAttribute('data-stringify-payload', 'false');
@@ -46,7 +45,9 @@ describe('ghost-stats.js', function () {
 
         // Load the script with appropriate attributes
         const dataAttributes = {
-            storage: 'localStorage'
+            storage: 'localStorage',
+            host: 'https://e.ghost.org/tb/web_analytics',
+            token: 'tb_token'
         };
 
         if (config.stringifyPayload === false) {

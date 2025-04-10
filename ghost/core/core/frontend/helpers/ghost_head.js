@@ -156,11 +156,15 @@ function getTinybirdTrackerScript(dataRoot) {
         return '';
     }
 
-    const src = getAssetUrl('public/ghost-stats.js');
+    const src = getAssetUrl('public/ghost-stats.js', false);
 
-    const endpoint = config.get('tinybird:tracker:endpoint');
-    const token = config.get('tinybird:tracker:token');
-    const datasource = config.get('tinybird:tracker:datasource');
+    const statsConfig = config.get('tinybird:tracker');
+    const localConfig = config.get('tinybird:tracker:local');
+    const localEnabled = localConfig?.enabled ?? false;
+
+    const endpoint = localEnabled ? localConfig.endpoint : statsConfig.endpoint;
+    const token = localEnabled ? localConfig.token : statsConfig.token;
+    const datasource = localEnabled ? localConfig.datasource : statsConfig.datasource;
 
     const tbParams = _.map({
         site_uuid: config.get('tinybird:tracker:id'),
@@ -360,7 +364,7 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
                 head.push(tagCodeInjection);
             }
 
-            if (config.get('tinybird') && config.get('tinybird:tracker') && config.get('tinybird:tracker:scriptUrl')) {
+            if (config.get('tinybird') && config.get('tinybird:tracker')) {
                 head.push(getTinybirdTrackerScript(dataRoot));
             }
 
