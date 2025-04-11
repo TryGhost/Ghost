@@ -4,7 +4,7 @@ import Posts from './components/Posts';
 import ProfilePage from './components/ProfilePage';
 import React from 'react';
 import {Activity} from '@src/api/activitypub';
-import {useAccountFollowsForUser, useAccountForUser, usePostsByAccount, usePostsLikedByAccount, useProfileFollowersForUser, useProfileFollowingForUser} from '@hooks/use-activity-pub-queries';
+import {useAccountFollowsForUser, useAccountForUser, usePostsByAccount, usePostsLikedByAccount} from '@hooks/use-activity-pub-queries';
 import {useParams} from '@tryghost/admin-x-framework';
 
 export type ProfileTab = 'posts' | 'likes' | 'following' | 'followers';
@@ -50,8 +50,7 @@ const LikesTab: React.FC = () => {
 };
 
 const FollowingTab: React.FC<{handle: string}> = ({handle}) => {
-    const accountQuery = useAccountFollowsForUser('index', 'following');
-    const profileQuery = useProfileFollowingForUser('index', handle);
+    const accountQuery = useAccountFollowsForUser(handle === '' ? 'me' : handle, 'following');
 
     const {
         data,
@@ -59,7 +58,7 @@ const FollowingTab: React.FC<{handle: string}> = ({handle}) => {
         hasNextPage,
         isFetchingNextPage,
         isLoading
-    } = handle === '' ? accountQuery : profileQuery;
+    } = accountQuery;
 
     const actors = data?.pages.flatMap((page) => {
         if ('following' in page) {
@@ -93,8 +92,7 @@ const FollowingTab: React.FC<{handle: string}> = ({handle}) => {
 };
 
 const FollowersTab: React.FC<{handle: string}> = ({handle}) => {
-    const accountQuery = useAccountFollowsForUser('index', 'followers');
-    const profileQuery = useProfileFollowersForUser('index', handle);
+    const accountQuery = useAccountFollowsForUser(handle === '' ? 'me' : handle, 'followers');
 
     const {
         data,
@@ -102,7 +100,7 @@ const FollowersTab: React.FC<{handle: string}> = ({handle}) => {
         hasNextPage,
         isFetchingNextPage,
         isLoading
-    } = handle === '' ? accountQuery : profileQuery;
+    } = accountQuery;
 
     const actors = data?.pages.flatMap((page) => {
         if ('followers' in page) {
