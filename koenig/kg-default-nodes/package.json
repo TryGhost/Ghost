@@ -38,7 +38,7 @@
     "@rollup/plugin-babel": "6.0.4",
     "c8": "9.1.0",
     "html-minifier": "^4.0.0",
-    "mocha": "10.7.3",
+    "mocha": "10.8.2",
     "prettier": "3.3.3",
     "rollup": "4.22.4",
     "rollup-plugin-svg": "2.0.0",

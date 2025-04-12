@@ -30,7 +30,7 @@
     "@types/jsdom": "21.1.7",
     "@types/mocha": "10.0.10",
     "c8": "9.1.0",
-    "mocha": "10.7.3",
+    "mocha": "10.8.2",
     "sinon": "17.0.1",
     "ts-node": "10.9.2",
     "typescript": "5.5.4"
