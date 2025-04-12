@@ -113,7 +113,7 @@
     "pluralize": "^8.0.0",
     "postcss": "8.5.3",
     "postcss-import": "16.1.0",
-    "prettier": "3.3.3",
+    "prettier": "3.5.3",
     "react": "^18.2.0",
     "react-colorful": "^5.6.1",
     "react-dom": "^18.2.0",
