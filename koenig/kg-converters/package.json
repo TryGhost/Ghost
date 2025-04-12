@@ -33,7 +33,7 @@
     "@rollup/plugin-babel": "6.0.4",
     "c8": "9.1.0",
     "mocha": "10.8.2",
-    "rollup": "4.22.4",
+    "rollup": "4.40.0",
     "sinon": "17.0.1"
   },
   "dependencies": {
