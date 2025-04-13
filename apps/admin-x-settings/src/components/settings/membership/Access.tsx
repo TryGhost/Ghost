@@ -122,7 +122,7 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     />
                 </div>
             </div>
-            <Separator />
+            <Separator className="border-grey-200 dark:border-grey-900" />
             <div className="flex flex-col content-center items-center gap-4 md:flex-row">
                 <div className="w-full min-w-[160px] max-w-none md:w-2/3 md:max-w-[320px]">Who should have access to new posts?</div>
                 <div className="w-full md:flex-1">
@@ -154,7 +154,7 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     </div>
                 </div>
             )}
-            <Separator />
+            <Separator className="border-grey-200 dark:border-grey-900" />
             <div className="flex flex-col content-center items-center gap-4 md:flex-row">
                 <div className="w-full min-w-[160px] max-w-none md:w-2/3 md:max-w-[320px]">Who can comment on posts?</div>
                 <div className="w-full md:flex-1">

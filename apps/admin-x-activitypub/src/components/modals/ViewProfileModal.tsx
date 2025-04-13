@@ -1,13 +1,10 @@
 import React, {useEffect, useRef, useState} from 'react';
 
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
-import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 
-import {Button, Heading, Icon, List, LoadingIndicator, Modal, NoValueLabel, Tab,TabView} from '@tryghost/admin-x-design-system';
+import {Button, Heading, Icon, List, LoadingIndicator, Modal, NoValueLabel, Tab,TabView, useDesignSystem} from '@tryghost/admin-x-design-system';
 import {UseInfiniteQueryResult} from '@tanstack/react-query';
-
-import {type GetFollowersForProfileResponse, type GetFollowingForProfileResponse} from '../../api/activitypub';
-import {useFollowersForProfile, useFollowingForProfile, usePostsForProfile, useProfileForUser} from '../../hooks/useActivityPubQueries';
+import {useAccountFollowsForUser, useAccountForUser, usePostsByAccount} from '@hooks/use-activity-pub-queries';
 
 import APAvatar from '../global/APAvatar';
 import ActivityItem from '../activities/ActivityItem';
@@ -17,18 +14,20 @@ import Separator from '../global/Separator';
 import getName from '../../utils/get-name';
 import getUsername from '../../utils/get-username';
 import {handleProfileClick} from '../../utils/handle-profile-click';
+import {handleViewContent} from '../../utils/content-handlers';
+import type {AccountFollowsType, GetAccountFollowsResponse, GetProfileFollowersResponse, GetProfileFollowingResponse} from '../../api/activitypub';
 
 const noop = () => {};
 
-type QueryPageData = GetFollowersForProfileResponse | GetFollowingForProfileResponse;
+type QueryPageData = GetProfileFollowersResponse | GetProfileFollowingResponse | GetAccountFollowsResponse;
 
-type QueryFn = (handle: string) => UseInfiniteQueryResult<QueryPageData>;
+type QueryFn = (handle: string, profileHandle: string) => UseInfiniteQueryResult<QueryPageData>;
 
 type ActorListProps = {
     handle: string,
     noResultsMessage: string,
     queryFn: QueryFn,
-    resolveDataFn: (data: QueryPageData) => GetFollowersForProfileResponse['followers'] | GetFollowingForProfileResponse['following'];
+    resolveDataFn: (data: QueryPageData) => GetProfileFollowersResponse['followers'] | GetProfileFollowingResponse['following'];
 };
 
 const ActorList: React.FC<ActorListProps> = ({
@@ -43,7 +42,7 @@ const ActorList: React.FC<ActorListProps> = ({
         hasNextPage,
         isFetchingNextPage,
         isLoading
-    } = queryFn(handle);
+    } = queryFn('index', handle);
 
     const actors = (data?.pages.flatMap(resolveDataFn) ?? []);
 
@@ -73,7 +72,7 @@ const ActorList: React.FC<ActorListProps> = ({
     }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
     return (
-        <div>
+        <div className='pt-3'>
             {
                 hasNextPage === false && actors.length === 0 ? (
                     <NoValueLabel icon='user-add'>
@@ -81,7 +80,7 @@ const ActorList: React.FC<ActorListProps> = ({
                     </NoValueLabel>
                 ) : (
                     <List>
-                        {actors.map(({actor, isFollowing}, index) => {
+                        {actors.map(({actor, isFollowing}) => {
                             return (
                                 <React.Fragment key={actor.id}>
                                     <ActivityItem key={actor.id}
@@ -89,7 +88,7 @@ const ActorList: React.FC<ActorListProps> = ({
                                     >
                                         <APAvatar author={actor} />
                                         <div>
-                                            <div className='text-grey-600'>
+                                            <div className='text-gray-600'>
                                                 <span className='mr-1 font-bold text-black'>{getName(actor)}</span>
                                                 <div className='text-sm'>{getUsername(actor)}</div>
                                             </div>
@@ -98,10 +97,9 @@ const ActorList: React.FC<ActorListProps> = ({
                                             className='ml-auto'
                                             following={isFollowing}
                                             handle={getUsername(actor)}
-                                            type='link'
+                                            type='secondary'
                                         />
                                     </ActivityItem>
-                                    {index < actors.length - 1 && <Separator />}
                                 </React.Fragment>
                             );
                         })}
@@ -127,7 +125,7 @@ const PostsTab: React.FC<{handle: string}> = ({handle}) => {
         hasNextPage,
         isFetchingNextPage,
         isLoading
-    } = usePostsForProfile(handle);
+    } = usePostsByAccount(handle, {enabled: true}).postsByAccountQuery;
 
     const observerRef = useRef<IntersectionObserver | null>(null);
     const loadMoreRef = useRef<HTMLDivElement | null>(null);
@@ -155,7 +153,7 @@ const PostsTab: React.FC<{handle: string}> = ({handle}) => {
     }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
     const posts = (data?.pages.flatMap(page => page.posts) ?? [])
-        .filter(post => post.type === 'Create' && !post.object.inReplyTo);
+        .filter(post => (post.type === 'Announce' || post.type === 'Create') && !post.object?.inReplyTo);
 
     return (
         <div>
@@ -170,11 +168,20 @@ const PostsTab: React.FC<{handle: string}> = ({handle}) => {
                             <div>
                                 <FeedItem
                                     actor={post.actor}
+                                    allowDelete={post.object.authored}
                                     commentCount={post.object.replyCount}
                                     layout='feed'
                                     object={post.object}
+                                    repostCount={post.object.repostCount}
                                     type={post.type}
-                                    onCommentClick={() => {}}
+                                    onClick={() => handleViewContent({
+                                        ...post,
+                                        id: post.object.id
+                                    }, false)}
+                                    onCommentClick={() => handleViewContent({
+                                        ...post,
+                                        id: post.object.id
+                                    }, true)}
                                 />
                                 {index < posts.length - 1 && <Separator />}
                             </div>
@@ -194,36 +201,39 @@ const PostsTab: React.FC<{handle: string}> = ({handle}) => {
     );
 };
 
+const useAccountFollowsQuery = (handle: string, type: AccountFollowsType) => {
+    const query = useAccountFollowsForUser(handle === '' ? 'me' : handle, type);
+    return () => query;
+};
+
 const FollowingTab: React.FC<{handle: string}> = ({handle}) => {
+    const queryFn = useAccountFollowsQuery(handle, 'following');
+    
     return (
         <ActorList
             handle={handle}
             noResultsMessage={`${handle} is not following anyone yet`}
-            queryFn={useFollowingForProfile}
+            queryFn={queryFn}
             resolveDataFn={page => ('following' in page ? page.following : [])}
         />
     );
 };
 
 const FollowersTab: React.FC<{handle: string}> = ({handle}) => {
+    const queryFn = useAccountFollowsQuery(handle, 'followers');
+    
     return (
         <ActorList
             handle={handle}
             noResultsMessage={`${handle} has no followers yet`}
-            queryFn={useFollowersForProfile}
+            queryFn={queryFn}
             resolveDataFn={page => ('followers' in page ? page.followers : [])}
         />
     );
 };
 
 interface ViewProfileModalProps {
-    profile: {
-        actor: ActorProperties;
-        handle: string;
-        followerCount: number;
-        followingCount: number;
-        isFollowing: boolean;
-    } | string;
+    handle: string;
     onFollow?: () => void;
     onUnfollow?: () => void;
 }
@@ -231,24 +241,19 @@ interface ViewProfileModalProps {
 type ProfileTab = 'posts' | 'following' | 'followers';
 
 const ViewProfileModal: React.FC<ViewProfileModalProps> = ({
-    profile: initialProfile,
+    handle,
     onFollow = noop,
     onUnfollow = noop
 }) => {
     const modal = useModal();
     const [selectedTab, setSelectedTab] = useState<ProfileTab>('posts');
+    const {darkMode} = useDesignSystem();
+    
+    const {data: profile, isLoading} = useAccountForUser('index', handle);
 
-    const willLoadProfile = typeof initialProfile === 'string';
-    let {data: profile, isInitialLoading: isLoading} = useProfileForUser('index', initialProfile as string, willLoadProfile);
+    const attachments = profile?.attachment || [];
 
-    if (!willLoadProfile) {
-        profile = initialProfile;
-        isLoading = false;
-    }
-
-    const attachments = (profile?.actor.attachment || []);
-
-    const tabs = isLoading === false && typeof profile !== 'string' && profile ? [
+    const tabs = isLoading === false && profile ? [
         {
             id: 'posts',
             title: 'Posts',
@@ -287,23 +292,23 @@ const ViewProfileModal: React.FC<ViewProfileModalProps> = ({
         if (contentRef.current) {
             setIsOverflowing(contentRef.current.scrollHeight > 160); // Compare content height to max height
         }
-    }, [isExpanded]);
+    }, [isExpanded, profile]);
 
     return (
         <Modal
             align='right'
             animate={true}
-            backDrop={false}
+            backDrop={darkMode}
             footer={<></>}
             height={'full'}
             padding={false}
             size='bleed'
             width={640}
         >
-            <div className='sticky top-0 z-50 border-grey-200 bg-white py-3'>
+            <div className='sticky top-0 z-50 border-gray-200 bg-white py-3 dark:border-gray-950 dark:bg-black'>
                 <div className='grid h-8 grid-cols-3'>
                     <div className='col-[3/4] flex items-center justify-end space-x-6 px-8'>
-                        <Button className='transition-color flex h-10 w-10 items-center justify-center rounded-full bg-white hover:bg-grey-100' icon='close' size='sm' unstyled onClick={() => modal.remove()}/>
+                        <Button className='transition-color flex size-10 items-center justify-center rounded-full bg-white hover:bg-gray-100 dark:bg-black dark:hover:bg-gray-950' icon='close' size='sm' unstyled onClick={() => modal.remove()}/>
                     </div>
                 </div>
             </div>
@@ -319,33 +324,38 @@ const ViewProfileModal: React.FC<ViewProfileModalProps> = ({
                     )}
                     {!isLoading && profile && (
                         <>
-                            {profile.actor.image && (<div className='h-[200px] w-full overflow-hidden rounded-lg bg-gradient-to-tr from-grey-200 to-grey-100'>
+                            {profile.bannerImageUrl && (<div className='h-[200px] w-full overflow-hidden rounded-lg bg-gradient-to-tr from-gray-200 to-gray-100'>
                                 <img
-                                    alt={profile.actor.name}
-                                    className='h-full w-full object-cover'
-                                    src={profile.actor.image.url}
+                                    alt={profile.name}
+                                    className='size-full object-cover'
+                                    src={profile.bannerImageUrl}
                                 />
                             </div>)}
-                            <div className={`${profile.actor.image && '-mt-12'} px-4`}>
+                            <div className={`${profile.bannerImageUrl && '-mt-12'} px-6`}>
                                 <div className='flex items-end justify-between'>
-                                    <div className='rounded-xl outline outline-4 outline-white'>
+                                    <div className='-ml-2 rounded-full bg-white p-1 dark:bg-black'>
                                         <APAvatar
-                                            author={profile.actor}
+                                            author={{
+                                                icon: {url: profile.avatarUrl},
+                                                name: profile.name,
+                                                handle: profile.handle
+                                            }}
                                             size='lg'
                                         />
                                     </div>
                                     <FollowButton
-                                        following={profile.isFollowing}
+                                        following={profile.followedByMe}
                                         handle={profile.handle}
+                                        type='primary'
                                         onFollow={onFollow}
                                         onUnfollow={onUnfollow}
                                     />
                                 </div>
-                                <Heading className='mt-4' level={3}>{profile.actor.name}</Heading>
-                                <a className='group/handle mt-1 flex items-center gap-1 text-[1.5rem] text-grey-800 hover:text-grey-900' href={profile?.actor.url} rel='noopener noreferrer' target='_blank'><span>{profile.handle}</span><Icon className='opacity-0 transition-opacity group-hover/handle:opacity-100' name='arrow-top-right' size='xs'/></a>
-                                {(profile.actor.summary || attachments.length > 0) && (<div ref={contentRef} className={`ap-profile-content transition-max-height relative text-[1.5rem] duration-300 ease-in-out [&>p]:mb-3 ${isExpanded ? 'max-h-none pb-7' : 'max-h-[160px] overflow-hidden'} relative`}>
+                                <Heading className='mt-4' level={3}>{profile.name}</Heading>
+                                <a className='group/handle mt-1 flex items-center gap-1 text-[1.5rem] text-gray-800 hover:text-gray-900' href={profile.url} rel='noopener noreferrer' target='_blank'><span>{profile.handle}</span><Icon className='opacity-0 transition-opacity group-hover/handle:opacity-100' name='arrow-top-right' size='xs'/></a>
+                                {(profile.bio || attachments.length > 0) && (<div ref={contentRef} className={`ap-profile-content transition-max-height relative text-[1.5rem] duration-300 ease-in-out [&>p]:mb-3 ${isExpanded ? 'max-h-none pb-7' : 'max-h-[160px] overflow-hidden'} relative`}>
                                     <div
-                                        dangerouslySetInnerHTML={{__html: profile.actor.summary}}
+                                        dangerouslySetInnerHTML={{__html: profile.bio}}
                                         className='ap-profile-content mt-3 text-[1.5rem] [&>p]:mb-3'
                                     />
                                     {attachments.map((attachment: {name: string, value: string}) => (
@@ -358,9 +368,10 @@ const ViewProfileModal: React.FC<ViewProfileModalProps> = ({
                                         <div className='absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-white via-white/90 via-60% to-transparent' />
                                     )}
                                     {isOverflowing && <Button
-                                        className='absolute bottom-0 text-pink'
+                                        className='absolute bottom-0'
                                         label={isExpanded ? 'Show less' : 'Show all'}
                                         link={true}
+                                        size='sm'
                                         onClick={toggleExpand}
                                     />}
                                 </div>)}

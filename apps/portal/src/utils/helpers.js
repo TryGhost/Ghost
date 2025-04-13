@@ -87,7 +87,7 @@ export function getNewsletterFromUuid({site, uuid}) {
 }
 
 export function hasNewsletterSendingEnabled({site}) {
-    return site?.editor_default_email_recipients === 'visibility';
+    return site?.editor_default_email_recipients !== 'disabled';
 }
 
 export function allowCompMemberUpgrade({member}) {
@@ -509,6 +509,14 @@ export function getSiteNewsletters({site}) {
         return a.sort_order - b.sort_order;
     });
     return newsletters;
+}
+
+export function hasCaptchaEnabled({site}) {
+    return site?.captcha_enabled === true;
+}
+
+export function getCaptchaSitekey({site}) {
+    return site?.captcha_sitekey || '';
 }
 
 export function hasMultipleNewsletters({site}) {

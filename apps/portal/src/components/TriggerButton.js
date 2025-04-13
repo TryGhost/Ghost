@@ -221,12 +221,17 @@ export default class TriggerButton extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            width: null
+            width: null,
+            isMobile: window.innerWidth < 640
         };
         this.buttonRef = React.createRef();
+        this.handleResize = this.handleResize.bind(this);
     }
 
     componentDidMount() {
+        window.addEventListener('resize', this.handleResize);
+        this.handleResize();
+        
         setTimeout(() => {
             if (this.buttonRef.current) {
                 const iframeElement = this.buttonRef.current.node;
@@ -235,6 +240,16 @@ export default class TriggerButton extends React.Component {
                 }
             }
         }, 0);
+    }
+
+    componentWillUnmount() {
+        window.removeEventListener('resize', this.handleResize);
+    }
+
+    handleResize() {
+        this.setState({
+            isMobile: window.innerWidth < 640
+        });
     }
 
     onWidthChange(width) {
@@ -264,6 +279,10 @@ export default class TriggerButton extends React.Component {
         const site = this.context.site;
         const {portal_button: portalButton} = site;
         const {showPopup, scrollbarWidth} = this.context;
+
+        if (this.state.isMobile) {
+            return null;
+        }
 
         if (!portalButton || !isSigninAllowed({site}) || hasMode(['offerPreview'])) {
             return null;

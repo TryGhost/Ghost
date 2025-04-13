@@ -59,6 +59,9 @@ export function chooseBestErrorMessage(error, alreadyTranslatedDefaultMessage, t
             t('Too many different sign-in attempts, try again in {{number}} days');
             t('Failed to send magic link email');
             t('This site only accepts paid members.');
+            t('Signups from this email domain are currently restricted.');
+            t('Too many sign-up attempts, try again later');
+            t('Memberships from this email domain are currently restricted.');
         }
     };
 

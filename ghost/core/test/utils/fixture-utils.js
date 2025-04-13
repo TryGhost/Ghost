@@ -63,12 +63,12 @@ const fixtures = {
     },
 
     insertMultiAuthorPosts: function insertMultiAuthorPosts() {
+        // Creates two posts per staff member.
+        // (It used to create 10, but then other tests assumed two per staff member)
+
         let i;
         let k = 0;
         let posts = [];
-
-        // NOTE: this variable should become a parameter as test logic depends on it
-        const count = 10;
 
         // insert users of different roles
         return Promise.resolve(fixtures.createUsersWithRoles()).then(function () {
@@ -82,6 +82,7 @@ const fixtures = {
             ]);
         }).then(function (results) {
             let users = results[0];
+            const count = users.length * 2;
             let tags = results[1];
 
             tags = tags.toJSON();
@@ -89,7 +90,7 @@ const fixtures = {
             users = users.toJSON();
             users = _.map(users, 'id');
 
-            // Let's insert posts with random authors
+            // Let's insert posts for each staff member, two each.
             for (i = 0; i < count; i += 1) {
                 const author = users[i % users.length];
                 posts.push(DataGenerator.forKnex.createGenericPost(k, null, null, [{id: author}]));
@@ -144,6 +145,26 @@ const fixtures = {
                     return models.Post.add(posts[index], context.internal);
                 }));
             });
+    },
+
+    insertGatedPosts: async function insertGatedPosts() {
+        const owner = await models.User.getOwnerUser(context.internal);
+
+        const gatedPosts = [{
+            id: '618ba1ffbe2896088840a6ef',
+            title: 'This has a paywall',
+            slug: 'paywall',
+            lexical: '',
+            status: 'draft',
+            uuid: 'd52c42ae-2755-455c-80ec-70b2ec55c905',
+            mobiledoc: DataGenerator.markdownToMobiledoc('Before paywall\n\n<!--members-only-->\n\nAfter paywall'),
+            visibility: 'paid',
+            authors: [owner.toJSON()]
+        }];
+
+        for (const post of gatedPosts) {
+            await models.Post.add(post, context.internal);
+        }
     },
 
     insertTags: function insertTags() {
@@ -374,7 +395,8 @@ const fixtures = {
             Author: DataGenerator.Content.roles[2].id,
             Owner: DataGenerator.Content.roles[3].id,
             Contributor: DataGenerator.Content.roles[4].id,
-            'Admin Integration': DataGenerator.Content.roles[5].id
+            'Admin Integration': DataGenerator.Content.roles[5].id,
+            'Super Editor': DataGenerator.Content.roles[6].id
         };
 
         // CASE: if empty db will throw SQLITE_MISUSE, hard to debug

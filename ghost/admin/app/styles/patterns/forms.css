@@ -99,8 +99,8 @@ input[type=number] {
 
 .form-group p {
     margin: 4px 0 0 0;
-    color: var(--midgrey-d1);
-    font-size: 1.25rem;
+    color: var(--midgrey);
+    font-size: 1.2rem;
     font-weight: 400;
 }
 
@@ -179,8 +179,8 @@ input[type=number] {
     transform: translateY(-7px);
 }
 
-.gh-input-icon.gh-icon-link svg path {
-    stroke: color-mod(var(--lightgrey) l(-15%) s(-10%));
+.gh-input-icon.gh-icon-link svg {
+    fill: none;
 }
 
 .gh-input-icon input {
@@ -278,6 +278,77 @@ textarea {
     top: 6px;
     font-size: 1.3rem;
     color: var(--midgrey);
+}
+
+.gh-input-x {
+    width: 100%;
+    min-height: 38px;
+    height: auto;
+    padding: 4px 12px;
+    font-size: 1.4rem;
+    color: var(--black);
+    background-color: var(--grey-150);
+    border: 1px solid transparent;
+    border-radius: 8px;
+}
+
+.gh-input-x:focus:not(.ember-basic-dropdown-trigger),
+.gh-input-x:focus-visible:not(.ember-basic-dropdown-trigger) {
+    background-color: var(--white);
+    border: 1px solid var(--green);
+    box-shadow: 0 0 0 2px rgba(48,207,67,.25);
+    outline: none;
+}
+
+textarea.gh-input-x {
+    padding-block: 8px;
+    max-width: unset;
+}
+
+.gh-input-x.ember-basic-dropdown-trigger--below.ember-power-select-trigger[aria-expanded="true"],
+.gh-input-x.ember-power-select-trigger:focus {
+    border-radius: 8px;
+    background: var(--grey-150);
+    border: 1px solid transparent;
+    box-shadow: none;
+    outline: none;
+}
+
+.gh-dropdown-x.ember-power-select-dropdown.ember-basic-dropdown-content--below {
+    margin-top: 4px;
+    border: none;
+    border-radius: 8px;
+    box-shadow: var(--shadow-2);
+}
+
+.ember-power-select-multiple-trigger {
+    padding: 4px;
+    display: grid;
+    grid-template-columns: 1fr 24px;
+    position: relative;
+}
+
+.ember-power-select-multiple-options {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+    margin: 0;
+    padding: 0;
+}
+
+.ember-power-select-trigger-multiple-input {
+    margin: 2px;
+    padding: 0;
+    border: 0;
+    background: none;
+    min-width: 60px;
+}
+
+.ember-basic-dropdown-trigger[aria-expanded="true"] .ember-power-select-status-icon,
+.ember-power-select-status-icon {
+    margin: 0 auto;
+    transform: none;
 }
 
 

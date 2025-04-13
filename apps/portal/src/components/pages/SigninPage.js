@@ -14,8 +14,12 @@ export default class SigninPage extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            email: ''
+            email: '',
+            captchaLoaded: false,
+            token: undefined
         };
+
+        this.captchaRef = React.createRef();
     }
 
     componentDidMount() {
@@ -29,16 +33,20 @@ export default class SigninPage extends React.Component {
 
     handleSignin(e) {
         e.preventDefault();
+        this.doSignin();
+    }
+
+    doSignin() {
         this.setState((state) => {
             return {
                 errors: ValidateInputForm({fields: this.getInputFields({state}), t: this.context.t})
             };
         }, async () => {
-            const {email, phonenumber, errors} = this.state;
+            const {email, phonenumber, errors, token} = this.state;
             const {redirect} = this.context.pageData ?? {};
             const hasFormErrors = (errors && Object.values(errors).filter(d => !!d).length > 0);
             if (!hasFormErrors) {
-                this.context.onAction('signin', {email, phonenumber, redirect});
+                this.context.onAction('signin', {email, phonenumber, redirect, token});
             }
         });
     }

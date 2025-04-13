@@ -1,6 +1,5 @@
-// Switch these lines once there are useful utils
-// const testUtils = require('./utils');
-require('./utils');
+require('should');
+
 const UrlHistory = require('../lib/UrlHistory');
 const AttributionBuilder = require('../lib/AttributionBuilder');
 

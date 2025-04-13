@@ -1,14 +1,13 @@
+import clsx from 'clsx';
+import {Button} from '@tryghost/shade';
 import {useEffect, useState} from 'react';
-
-import {Button} from '@tryghost/admin-x-design-system';
-
-import {useFollow} from '../../hooks/useActivityPubQueries';
+import {useFollowMutationForUser, useUnfollowMutationForUser} from '@hooks/use-activity-pub-queries';
 
 interface FollowButtonProps {
     className?: string;
     following: boolean;
     handle: string;
-    type?: 'button' | 'link';
+    type?: 'primary' | 'secondary';
     onFollow?: () => void;
     onUnfollow?: () => void;
 }
@@ -19,13 +18,20 @@ const FollowButton: React.FC<FollowButtonProps> = ({
     className,
     following,
     handle,
-    type = 'button',
     onFollow = noop,
     onUnfollow = noop
 }) => {
     const [isFollowing, setIsFollowing] = useState(following);
 
-    const mutation = useFollow('index',
+    const unfollowMutation = useUnfollowMutationForUser('index',
+        noop,
+        () => {
+            setIsFollowing(false);
+            onUnfollow();
+        }
+    );
+
+    const followMutation = useFollowMutationForUser('index',
         noop,
         () => {
             setIsFollowing(false);
@@ -37,13 +43,11 @@ const FollowButton: React.FC<FollowButtonProps> = ({
         if (isFollowing) {
             setIsFollowing(false);
             onUnfollow();
-
-            // @TODO: Implement unfollow mutation
+            unfollowMutation.mutate(handle);
         } else {
             setIsFollowing(true);
             onFollow();
-
-            mutation.mutate(handle);
+            followMutation.mutate(handle);
         }
     };
 
@@ -53,18 +57,20 @@ const FollowButton: React.FC<FollowButtonProps> = ({
 
     return (
         <Button
-            className={className}
-            color='black'
-            disabled={isFollowing}
-            label={isFollowing ? 'Following' : 'Follow'}
-            link={type === 'link'}
+            className={clsx(
+                'min-w-[90px]',
+                className
+            )}
+            title={isFollowing ? 'Click to unfollow' : ''}
+            variant={!isFollowing ? 'default' : 'outline'}
             onClick={(event) => {
                 event?.preventDefault();
                 event?.stopPropagation();
-
                 handleClick();
             }}
-        />
+        >
+            {isFollowing ? 'Following' : 'Follow'}
+        </Button>
     );
 };
 

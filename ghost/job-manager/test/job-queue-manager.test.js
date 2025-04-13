@@ -7,32 +7,31 @@ describe('JobQueueManager', function () {
     let mockJobModel;
     let mockConfig;
     let mockLogger;
+    let mockMetricLogger;
     let mockWorkerPool;
-    let mockPrometheusClient;
-    let metricIncStub;
     let mockEventEmitter;
     beforeEach(function () {
-        metricIncStub = sinon.stub();
         mockJobModel = {};
         mockConfig = {
             get: sinon.stub().returns({})
         };
         mockLogger = {
+            debug: sinon.stub(),
             info: sinon.stub(),
             error: sinon.stub()
         };
-        mockPrometheusClient = {
-            getMetric: sinon.stub().returns({
-                set: sinon.stub(),
-                inc: metricIncStub
-            }),
-            registerCounter: sinon.stub(),
-            registerGauge: sinon.stub()
+        mockMetricLogger = {
+            metric: sinon.stub()
         };
         mockWorkerPool = {
             pool: sinon.stub().returns({
                 exec: sinon.stub(),
-                stats: sinon.stub().returns({}),
+                stats: sinon.stub().returns({
+                    totalWorkers: 1,
+                    busyWorkers: 0,
+                    idleWorkers: 1,
+                    activeTasks: 0
+                }),
                 terminate: sinon.stub()
             })
         };
@@ -44,8 +43,8 @@ describe('JobQueueManager', function () {
             JobModel: mockJobModel,
             config: mockConfig,
             logger: mockLogger,
+            metricLogger: mockMetricLogger,
             WorkerPool: mockWorkerPool,
-            prometheusClient: mockPrometheusClient,
             eventEmitter: mockEventEmitter
         });
     });
@@ -141,14 +140,27 @@ describe('JobQueueManager', function () {
             expect(jobQueueManager.jobsRepository.getQueuedJobs.calledOnce).to.be.true;
             expect(jobQueueManager.updatePollInterval.calledOnceWith(mockJobs)).to.be.true;
             expect(jobQueueManager.processJobs.calledOnceWith(mockJobs)).to.be.true;
+            expect(jobQueueManager.metricCache.queueDepth).to.equal(mockJobs.length);
         });
     });
 
     describe('createLogger', function () {
-        it('should create a logger with info level', function () {
-            const logger = jobQueueManager.createLogger(mockLogger, 'info');
+        it('should create a logger with debug level', function () {
+            const logger = jobQueueManager.createLogger(mockLogger, 'debug');
+            logger.debug('Test debug');
             logger.info('Test info');
             logger.error('Test error');
+            expect(mockLogger.debug.calledOnce).to.be.true;
+            expect(mockLogger.info.calledOnce).to.be.true;
+            expect(mockLogger.error.calledOnce).to.be.true;
+        });
+
+        it('should create a logger with info level', function () {
+            const logger = jobQueueManager.createLogger(mockLogger, 'info');
+            logger.debug('Test debug');
+            logger.info('Test info');
+            logger.error('Test error');
+            expect(mockLogger.debug.called).to.be.false;
             expect(mockLogger.info.calledOnce).to.be.true;
             expect(mockLogger.error.calledOnce).to.be.true;
         });
@@ -296,18 +308,18 @@ describe('JobQueueManager', function () {
             expect(jobQueueManager.state.queuedJobs.has('testJob')).to.be.false;
         });
 
-        it('should increment the job_manager_queue_job_completion_count metric', async function () {
+        it('should increment the metricCache.jobCompletionCount metric', async function () {
             const job = {id: '1', get: sinon.stub().returns('{"job": "testJob", "data": {}}')};
             sinon.stub(jobQueueManager.jobsRepository, 'delete').resolves();
             await jobQueueManager.executeJob(job, 'testJob', {job: 'testJob', data: {}});
-            expect(metricIncStub.calledOnce).to.be.true;
+            expect(jobQueueManager.metricCache.jobCompletionCount).to.equal(1);
         });
 
-        it('should increment the email_analytics_aggregate_member_stats_count metric', async function () {
+        it('should increment the metricCache.emailAnalyticsAggregateMemberStatsCount metric', async function () {
             const job = {id: '1', get: sinon.stub().returns('{"job": "update-member-email-analytics", "data": {}}')};
             sinon.stub(jobQueueManager.jobsRepository, 'delete').resolves();
             await jobQueueManager.executeJob(job, 'update-member-email-analytics', {job: 'update-member-email-analytics', data: {}});
-            expect(metricIncStub.calledTwice).to.be.true;
+            expect(jobQueueManager.metricCache.emailAnalyticsAggregateMemberStatsCount).to.equal(1);
         });
 
         it('should emit events if present in result', async function () {
@@ -357,13 +369,71 @@ describe('JobQueueManager', function () {
             
             expect(calledId).to.equal('1');
             expect(calledUpdateData).to.deep.include({
-                status: 'error',
-                metadata: {
-                    error: 'Test error',
-                    retries: 1
-                }
+                status: 'failed',
+                metadata: JSON.stringify({
+                    retries: 1,
+                    error: 'Test error'
+                })
             });
             expect(calledUpdateData.finished_at).to.be.instanceOf(Date);
+        });
+    });
+
+    describe('reportStats', function () {
+        it('should log the stats every reportInterval', async function () {
+            const clock = sinon.useFakeTimers();
+            const reportStatsStub = sinon.stub(jobQueueManager, '_doReportStats');
+            jobQueueManager.config.reportInterval = 1000;
+            jobQueueManager.reportStats();
+            await clock.tickAsync(1000);
+            expect(reportStatsStub.calledOnce).to.be.true;
+            clock.restore();
+        });
+
+        it('should not log the stats if reportStats is false', async function () {
+            const clock = sinon.useFakeTimers();
+            jobQueueManager.config.reportStats = false;
+            const reportStatsStub = sinon.stub(jobQueueManager, '_doReportStats');
+            jobQueueManager.reportStats();
+            await clock.tickAsync(2000);
+            expect(reportStatsStub.called).to.be.false;
+            clock.restore();
+        });
+    });
+
+    describe('_doReportStats', function () {
+        it('should log the stats using the logger', function () {
+            const loggerInfoStub = sinon.stub(jobQueueManager.logger, 'info');
+            jobQueueManager._doReportStats();
+            const expectedStats = {
+                totalWorkers: 1,
+                busyWorkers: 0,
+                idleWorkers: 1,
+                activeTasks: 0,
+                jobCompletionCount: 0,
+                queueDepth: 0,
+                emailAnalyticsAggregateMemberStatsCount: 0
+            };
+            const expectedLog = `Job Queue Stats: ${JSON.stringify(expectedStats, null, 2)}`;
+            expect(loggerInfoStub.calledOnce).to.be.true;
+            expect(loggerInfoStub.calledWith(expectedLog)).to.be.true;
+        });
+
+        it('should log the stats using the metricLogger', function () {
+            jobQueueManager._doReportStats();
+            const expectedStats = {
+                totalWorkers: 1,
+                busyWorkers: 0,
+                idleWorkers: 1,
+                activeTasks: 0,
+                jobCompletionCount: 0,
+                queueDepth: 0,
+                emailAnalyticsAggregateMemberStatsCount: 0
+            };
+            expect(mockMetricLogger.metric.calledOnce).to.be.true;
+            const args = mockMetricLogger.metric.args[0];
+            expect(args[0]).to.equal('job_manager_queue');
+            expect(args[1]).to.deep.equal(expectedStats);
         });
     });
 });

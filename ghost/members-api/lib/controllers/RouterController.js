@@ -1,10 +1,14 @@
 const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
+const sanitizeHtml = require('sanitize-html');
 const {BadRequestError, NoPermissionError, UnauthorizedError, DisabledFeatureError} = require('@tryghost/errors');
 const errors = require('@tryghost/errors');
+const {isEmail} = require('@tryghost/validator');
 
 const messages = {
     emailRequired: 'Email is required.',
+    invalidEmail: 'Email is not valid',
+    blockedEmailDomain: 'Signups from this email domain are currently restricted.',
     badRequest: 'Bad Request.',
     notFound: 'Not Found.',
     offerNotFound: 'This offer does not exist.',
@@ -475,6 +479,7 @@ module.exports = class RouterController {
                 ...data
             });
         } else if (type === 'donation') {
+            options.personalNote = parsePersonalNote(req.body.personalNote);
             response = await this._createDonationCheckoutSession(options);
         }
 
@@ -505,6 +510,12 @@ module.exports = class RouterController {
         if (!email) {
             throw new errors.BadRequestError({
                 message: tpl(messages.emailRequired)
+            });
+        }
+
+        if (!isEmail(email)) {
+            throw new errors.BadRequestError({
+                message: tpl(messages.invalidEmail)
             });
         }
 
@@ -562,6 +573,14 @@ module.exports = class RouterController {
             }
         }
 
+        const blockedEmailDomains = this._settingsCache.get('all_blocked_email_domains');
+        const emailDomain = req.body.email.split('@')[1]?.toLowerCase();
+        if (emailDomain && blockedEmailDomains.includes(emailDomain)) {
+            throw new errors.BadRequestError({
+                message: tpl(messages.blockedEmailDomain)
+            });
+        }
+
         const {email, emailType} = req.body;
 
         const tokenData = {
@@ -587,7 +606,7 @@ module.exports = class RouterController {
         }
 
         const tokenData = {};
-        await this._sendEmailWithMagicLink({email, tokenData, requestedType: emailType, referrer});
+        return await this._sendEmailWithMagicLink({email, tokenData, requestedType: emailType, referrer});
     }
 
     async _validateNewsletters(req) {
@@ -628,3 +647,21 @@ module.exports = class RouterController {
         }
     }
 };
+
+function parsePersonalNote(rawText) {
+    if (rawText && typeof rawText !== 'string') {
+        logging.warn('Donation personal note is not a string, ignoring');
+        return '';
+    }
+    if (rawText && rawText.length > 255) {
+        logging.warn('Donation personal note is too long, ignoring:', rawText);
+        return '';
+    }
+
+    const safeInput = sanitizeHtml(rawText, {
+        allowedTags: [],
+        allowedAttributes: {}
+    });
+
+    return safeInput;
+}

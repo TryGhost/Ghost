@@ -6,6 +6,7 @@ Object {
   "settings": Object {
     "accent_color": "#FF1A75",
     "allow_self_signup": true,
+    "captcha_enabled": null,
     "codeinjection_foot": null,
     "codeinjection_head": null,
     "comments_enabled": "off",
@@ -93,6 +94,113 @@ Object {
 `;
 
 exports[`Settings Content API Can request settings 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "public, max-age=0",
+  "content-length": StringMatching /\\\\d\\+/,
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Settings Content API Captcha settings Can request captcha settings 1: [body] 1`] = `
+Object {
+  "meta": Object {},
+  "settings": Object {
+    "accent_color": "#FF1A75",
+    "allow_self_signup": true,
+    "captcha_enabled": null,
+    "captcha_sitekey": "testkey",
+    "codeinjection_foot": null,
+    "codeinjection_head": null,
+    "comments_enabled": "off",
+    "cover_image": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg",
+    "default_email_address": "noreply@127.0.0.1",
+    "description": "Thoughts, stories and ideas",
+    "editor_default_email_recipients": "visibility",
+    "facebook": "ghost",
+    "firstpromoter_account": null,
+    "icon": null,
+    "labs": Any<Object>,
+    "lang": "en",
+    "locale": "en",
+    "logo": null,
+    "members_enabled": true,
+    "members_invite_only": false,
+    "members_signup_access": "all",
+    "members_support_address": "noreply",
+    "meta_description": null,
+    "meta_title": null,
+    "navigation": Array [
+      Object {
+        "label": "Home",
+        "url": "/",
+      },
+      Object {
+        "label": "About",
+        "url": "/about/",
+      },
+      Object {
+        "label": "Collection",
+        "url": "/tag/getting-started/",
+      },
+      Object {
+        "label": "Author",
+        "url": "/author/ghost/",
+      },
+      Object {
+        "label": "Portal",
+        "url": "/portal/",
+      },
+    ],
+    "og_description": null,
+    "og_image": null,
+    "og_title": null,
+    "outbound_link_tagging": true,
+    "paid_members_enabled": true,
+    "portal_button": true,
+    "portal_button_icon": null,
+    "portal_button_signup_text": "Subscribe",
+    "portal_button_style": "icon-and-text",
+    "portal_default_plan": "yearly",
+    "portal_name": true,
+    "portal_plans": Array [
+      "free",
+    ],
+    "portal_signup_checkbox_required": false,
+    "portal_signup_terms_html": null,
+    "recommendations_enabled": false,
+    "secondary_navigation": Array [
+      Object {
+        "label": "Data & privacy",
+        "url": "/privacy/",
+      },
+      Object {
+        "label": "Contact",
+        "url": "/contact/",
+      },
+      Object {
+        "label": "Contribute →",
+        "url": "/contribute/",
+      },
+    ],
+    "support_email_address": "noreply@127.0.0.1",
+    "timezone": "Etc/UTC",
+    "title": "Ghost",
+    "twitter": "@ghost",
+    "twitter_description": null,
+    "twitter_image": null,
+    "twitter_title": null,
+    "url": "http://127.0.0.1:2369/",
+    "version": Any<String>,
+  },
+}
+`;
+
+exports[`Settings Content API Captcha settings Can request captcha settings 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "public, max-age=0",

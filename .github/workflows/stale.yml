@@ -1,5 +1,6 @@
 name: 'Close stale issues and PRs'
 on:
+  workflow_dispatch:
   schedule:
     - cron: '0 * * * *'
 jobs:
@@ -19,8 +20,8 @@ jobs:
             Our bot has automatically marked this PR as stale because there has not been any activity here in some time.
 
             If we’ve missed reviewing your PR & you’re still interested in working on it, please let us know. Otherwise this PR will be closed shortly, but can always be reopened later. Thank you for understanding 🙂
-          exempt-issue-labels: 'feature,pinned'
-          exempt-pr-labels: 'feature,pinned'
+          exempt-issue-labels: 'feature,pinned,needs:triage'
+          exempt-pr-labels: 'feature,pinned,needs:triage'
           days-before-stale: 113
           days-before-pr-stale: 358
           stale-issue-label: 'stale'

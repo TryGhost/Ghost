@@ -1,28 +1,26 @@
 <h4 class="gh-main-section-header small bn">Newsletters</h4>
-<div class="gh-main-section-content grey {{unless this.suppressionData.suppressed 'gh-member-newsletter-section'}}">
+<div class="gh-main-section-content bordered {{unless this.suppressionData.suppressed 'gh-member-newsletter-section'}}">
     {{#unless this.suppressionData.suppressed}}
-        <div class="gh-member-newsletters">
-            {{#each this.newsletters as |newsletter|}}
-                <div class="gh-member-newsletter-row" data-test-member-settings-switch>
-                    <div>
-                        <h4 class="gh-member-newsletter-title">{{newsletter.name}}</h4>
-                    </div>
-                    <div class="for-switch xs {{if this.suppressionData.suppressed 'disabled'}}">
-                        <label class="switch" for={{newsletter.forId}}>
-                            <Input
-                                @checked={{newsletter.subscribed}}
-                                @type="checkbox"
-                                id={{newsletter.forId}}
-                                name="subscribed"
-                                data-test-checkbox="member-subscribed"
-                                {{on "click" (fn this.updateNewsletterPreference newsletter)}}
-                            />
-                            <span class="input-toggle-component"></span>
-                        </label>
-                    </div>
+        {{#each this.newsletters as |newsletter|}}
+            <div class="gh-member-newsletter-row" data-test-member-settings-switch>
+                <div>
+                    <h4 class="gh-member-newsletter-title">{{newsletter.name}}</h4>
                 </div>
-            {{/each}}
-        </div>
+                <div class="for-switch xs {{if this.suppressionData.suppressed 'disabled'}}">
+                    <label class="switch" for={{newsletter.forId}}>
+                        <Input
+                            @checked={{newsletter.subscribed}}
+                            @type="checkbox"
+                            id={{newsletter.forId}}
+                            name="subscribed"
+                            data-test-checkbox="member-subscribed"
+                            {{on "click" (fn this.updateNewsletterPreference newsletter)}}
+                        />
+                        <span class="input-toggle-component"></span>
+                    </label>
+                </div>
+            </div>
+        {{/each}}
     {{/unless}}
 
     {{#if this.suppressionData.suppressed}}
@@ -50,7 +48,7 @@
             </p>
         </div>
     {{else}}
-        <div class="gh-member-newsletter-footer midgrey">
+        <div class="gh-member-newsletter-footer middarkgrey">
             If disabled, member will <em>not</em> receive newsletter emails
         </div>
     {{/if}}

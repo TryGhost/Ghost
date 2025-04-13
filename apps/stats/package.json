@@ -1,0 +1,65 @@
+{
+    "name": "@tryghost/stats",
+    "version": "0.0.0",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/TryGhost/Ghost/tree/main/apps/stats"
+    },
+    "author": "Ghost Foundation",
+    "files": [
+        "LICENSE",
+        "README.md",
+        "dist/"
+    ],
+    "main": "./dist/stats.umd.cjs",
+    "module": "./dist/stats.js",
+    "private": true,
+    "scripts": {
+        "dev": "vite build --watch",
+        "dev:start": "vite",
+        "build": "tsc && vite build",
+        "lint": "yarn run lint:code && yarn run lint:test",
+        "lint:code": "eslint --ext .js,.ts,.cjs,.tsx --cache src",
+        "lint:test": "eslint -c test/.eslintrc.cjs --ext .js,.ts,.cjs,.tsx --cache test",
+        "preview": "vite preview"
+    },
+    "devDependencies": {
+        "@testing-library/react": "14.3.1",
+        "@tinybirdco/charts": "0.2.4",
+        "@tryghost/admin-x-framework": "0.0.0",
+        "@tryghost/shade": "0.0.0",
+        "@types/react": "18.3.3",
+        "@types/react-dom": "18.3.0",
+        "react": "18.3.1",
+        "react-dom": "18.3.1"
+    },
+    "nx": {
+        "targets": {
+            "dev": {
+                "dependsOn": [
+                    "^build"
+                ]
+            },
+            "test:unit": {
+                "dependsOn": [
+                    "^build"
+                ]
+            },
+            "test:acceptance": {
+                "dependsOn": [
+                    "^build"
+                ]
+            }
+        }
+    },
+    "dependencies": {
+        "@radix-ui/react-form": "0.0.3",
+        "@tryghost/admin-x-framework": "0.0.0",
+        "@tryghost/shade": "0.0.0",
+        "clsx": "2.1.1",
+        "react": "18.3.1",
+        "react-dom": "18.3.1",
+        "use-debounce": "10.0.4"
+    }
+}

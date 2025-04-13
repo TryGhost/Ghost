@@ -1,0 +1,281 @@
+#!/usr/bin/env bash
+
+# Exit immediately if a command exits with a non-zero status.
+# set -e
+# Treat unset variables as an error when substituting.
+# set -u
+# Ensures pipeline errors are propagated
+set -o pipefail
+
+# Get the directory where this script is located
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+SCRIPTS_SUBDIR="$SCRIPT_DIR/scripts"
+
+# Color definitions
+COLOR_RED='\033[0;31m'
+COLOR_GREEN='\033[0;32m'
+COLOR_YELLOW='\033[0;33m'
+COLOR_BLUE='\033[0;34m'
+COLOR_NC='\033[0m' # No Color
+
+# --- Helper Functions ---
+
+# Function to display help message
+show_help() {
+cat << EOF
+Usage: wa <command> [options]
+
+A CLI wrapper for common Tinybird development tasks.
+
+Commands:
+  test [-n|--name <test_name>] [-u|--update] Run the test suite or update test snapshots against the current branch.
+                          Use -n or --name to specify a single test file (without .test.sql).
+                          Use -u or --update to regenerate test result snapshots.
+                          (-n/--name and -u/--update are mutually exclusive).
+  branch [-a|--append] [-d|--deploy] Create a new Tinybird branch. Optionally append fixtures and/or deploy.
+  branch rm                 Delete the current Tinybird branch (prompts for confirmation).
+  lint                    Lint the Tinybird `.datasource` and `.pipe` files.
+  help, -h                Show this help message.
+
+Examples:
+  wa test
+  wa test -n my_specific_test
+  wa test --name my_specific_test
+  wa test -u
+  wa branch
+  wa branch -d
+  wa branch -a -d
+  wa branch rm
+  wa lint
+EOF
+}
+
+# Function for colored error messages
+echo_error() {
+    echo -e "${COLOR_RED}🚨 ERROR: $@${COLOR_NC}" >&2
+}
+
+# Function for colored success messages
+echo_success() {
+    echo -e "${COLOR_GREEN}✅ SUCCESS: $@${COLOR_NC}"
+}
+
+# Function for informational messages
+echo_info() {
+    echo -e "${COLOR_BLUE}ℹ️  INFO: $@${COLOR_NC}"
+}
+
+# --- Argument Parsing & Command Dispatch ---
+
+# Check if any command was provided
+if [ -z "$1" ]; then
+    show_help
+    exit 1
+fi
+
+# Main command dispatcher
+COMMAND=$1
+shift # Remove the command name from the arguments list
+
+case $COMMAND in
+    test)
+        test_name=""
+        update_snapshots=false
+        # Parse flags for the test command
+        while [[ $# -gt 0 ]]; do
+            case $1 in
+                -n|--name)
+                    if [[ -z "$2" || "$2" == --* ]]; then
+                        echo_error "Option -n/--name requires a <test_name> argument."
+                        exit 1
+                    fi
+                    test_name="$2"
+                    shift # past argument
+                    shift # past value
+                    ;;
+                -u|--update)
+                    update_snapshots=true
+                    shift # past argument
+                    ;;
+                *)
+                    echo_error "Unknown option for test command: $1"
+                    show_help
+                    exit 1
+                    ;;
+            esac
+        done
+
+        # Check for conflicting flags
+        if [ "$update_snapshots" = true ] && [ -n "$test_name" ]; then
+            echo_error "The -n/--name (specific test) and -u/--update (update snapshots) flags cannot be used together."
+            exit 1
+        fi
+
+        # Execute the appropriate script based on flags
+        if [ "$update_snapshots" = true ]; then
+            echo_info "Updating test snapshots..."
+            if ! "$SCRIPTS_SUBDIR/gen_test_results.sh"; then
+                 echo_error "Failed to update test snapshots."
+                 exit 1
+            fi
+            echo_success "Test snapshots updated."
+        elif [ -n "$test_name" ]; then
+            echo_info "Running test: $test_name..."
+            if ! "$SCRIPTS_SUBDIR/exec_test.sh" "$test_name"; then
+                echo_error "Test '$test_name' failed."
+                exit 1
+            fi
+            echo_success "Test '$test_name' completed."
+        else
+            echo_info "Running all tests..."
+            if ! "$SCRIPTS_SUBDIR/exec_test.sh"; then
+                 echo_error "Test suite failed."
+                 exit 1
+            fi
+            echo_success "Test suite completed."
+        fi
+        ;;
+    branch)
+        # Check if the first argument is a subcommand like 'rm'
+        if [ "$1" == "rm" ]; then
+            shift # Consume 'rm'
+            # Ensure no other arguments were passed with 'rm'
+            if [ $# -gt 0 ]; then
+                echo_error "Unknown arguments for 'branch rm' command: $@"
+                show_help
+                exit 1
+            fi
+
+            # Execute deletion script
+            echo_info "Running delete_branch.sh script..."
+            if ! "$SCRIPTS_SUBDIR/delete_branch.sh"; then
+                echo_error "Branch deletion process failed or was cancelled."
+                exit 1
+            fi
+            exit 0 # Exit successfully after handling delete
+        fi
+
+        # --- Branch Creation Logic (if no subcommand like 'rm' was found) ---
+
+        # Flags for branch creation
+        append_fixtures=false
+        deploy_branch=false
+
+        # Parse flags for branch creation
+        while [[ $# -gt 0 ]]; do
+            case $1 in
+                -a|--append)
+                    append_fixtures=true
+                    shift # past argument
+                    ;;
+                -d|--deploy)
+                    deploy_branch=true
+                    shift # past argument
+                    ;;
+                # -d|--delete) # This is now handled by the 'rm' subcommand
+                #     delete_branch_flag=true
+                #     shift # past argument
+                #     ;;
+                *)
+                    echo_error "Unknown option for branch creation: $1"
+                    show_help
+                    exit 1
+                    ;;
+            esac
+        done
+
+        # Handle delete action first if the flag is set # MOVED to subcommand logic
+        # if [ "$delete_branch_flag" = true ]; then ...
+
+        # --- Actual Branch Creation Steps ---
+
+        # 1. Create the new branch
+        echo_info "Running create_branch.sh script..."
+
+        # Run the script directly, letting its output (stdout/stderr) go to the terminal.
+        "$SCRIPTS_SUBDIR/create_branch.sh"
+        script_exit_code=$? # Capture exit code *immediately*
+
+        if [ $script_exit_code -ne 0 ]; then
+            # Error message should have been printed by create_branch.sh itself
+            echo_error "create_branch.sh script failed (Exit code: $script_exit_code)."
+            exit 1
+        fi
+
+        # Assume create_branch succeeded and updated the .tinyb file.
+        # Get the name of the newly created branch from .tinyb
+        echo_info "Fetching branch name from .tinyb file..."
+        created_branch_name=""
+        tinyb_file="$SCRIPT_DIR/.tinyb"
+
+        if [ ! -f "$tinyb_file" ]; then
+            echo_error ".tinyb file not found at $tinyb_file after branch creation."
+            echo_error "Did create_branch.sh run correctly and update the workspace?"
+            exit 1
+        fi
+
+        # Extract the name value from the JSON-like structure in .tinyb
+        created_branch_name=$(grep '"name":' "$tinyb_file" | cut -d : -f 2 | cut -d '"' -f 2)
+
+        if [ -z "$created_branch_name" ]; then
+            echo_error "Could not extract branch name from $tinyb_file."
+            echo_error "Is the file format correct?"
+            exit 1
+        fi
+
+        echo_success "Branch '$created_branch_name' is active."
+
+        # SAFETY CHECK: Ensure we are not operating on a main/production branch by calling the dedicated script
+        echo_info "Performing branch safety check..."
+        if ! "$SCRIPTS_SUBDIR/check_branch_safety.sh"; then
+            # Error message is printed by check_branch_safety.sh
+            echo_error "Branch safety check failed. Halting operation."
+            exit 1
+        fi
+        echo_success "Branch safety check passed."
+
+        # 2. Deploy the branch if requested
+        if [ "$deploy_branch" = true ]; then
+            echo_info "Deploying branch '$created_branch_name'..."
+            if ! tb deploy --branch "$created_branch_name"; then
+                echo_error "Deployment of branch '$created_branch_name' failed."
+                exit 1
+            fi
+            echo_success "Branch '$created_branch_name' deployed."
+        fi
+
+        # 3. Append fixtures if requested
+        if [ "$append_fixtures" = true ]; then
+
+            echo_info "Running append_fixtures.sh script..."
+            "$SCRIPTS_SUBDIR/append_fixtures.sh"
+            append_exit_code=$?
+
+            if [ $append_exit_code -ne 0 ]; then
+                echo_error "Appending fixtures failed for branch '$created_branch_name' (Exit code: $append_exit_code)."
+                exit 1
+            fi
+            echo_success "Fixtures appended to branch '$created_branch_name'."
+        fi
+        ;;
+    lint)
+        # Execute the lint script
+        echo_info "Running lint script..."
+        if ! "$SCRIPTS_SUBDIR/lint.sh"; then
+            echo_error "Linting failed."
+            exit 1
+        fi
+        echo_success "Linting completed."
+        ;;
+    help|-h|--help)
+        show_help
+        ;;
+    *)
+        echo_error "Unknown command: $COMMAND"
+        echo ""
+        show_help
+        exit 1
+        ;;
+esac
+
+exit 0

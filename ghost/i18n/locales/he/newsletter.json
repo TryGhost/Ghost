@@ -1,4 +1,6 @@
 {
+    "{date}": "{date}",
+    "Become a paid member of {site} to get access to all premium content.": "",
     "By {authors}": "מאת {authors}",
     "Comment": "תגובה",
     "complimentary": "על חשבון הבית",
@@ -14,6 +16,8 @@
     "Subscription details": "פרטי מינוי",
     "trialing": "בניסיון",
     "Unsubscribe": "הסר מהרשימה",
+    "Upgrade": "",
+    "Upgrade to continue reading.": "",
     "View in browser": "צפייה בדפדפן",
     "You are receiving this because you are a <strong>%%{status}%% subscriber</strong> to {site}.": "אתם מקבלים דואר זה מכיוון שאתם <strong>%%{status}%% מנויים</strong> ל{site}.",
     "Your free trial ends on {date}, at which time you will be charged the regular price. You can always cancel before then.": "המינוי החינמי שלך יסתיים ב-{date}, ואז תחוייב במחיר הרגיל. תמיד תוכל לבטל לפני כן.",

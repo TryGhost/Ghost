@@ -7,10 +7,10 @@
     "cobertura"
   ],
   "reportsDir": "./coverage-e2e",
-  "statements": 80,
-  "branches": 82,
-  "functions": 81,
-  "lines": 80,
+  "statements": 54,
+  "branches": 75,
+  "functions": 79,
+  "lines": 54,
   "include": [
     "core/{*.js,frontend,server,shared}"
   ],

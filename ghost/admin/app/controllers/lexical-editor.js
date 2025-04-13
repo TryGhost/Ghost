@@ -261,10 +261,10 @@ export default class LexicalEditorController extends Controller {
         });
     }
 
-    @computed('session.user.{isAdmin,isEditor}')
+    @computed('session.user.{isAdmin,isEitherEditor}')
     get canManageSnippets() {
         let {user} = this.session;
-        if (user.get('isAdmin') || user.get('isEditor')) {
+        if (user.get('isAdmin') || user.get('isEitherEditor')) {
             return true;
         }
         return false;
@@ -784,7 +784,7 @@ export default class LexicalEditorController extends Controller {
             return;
         }
 
-        serverSlug = yield this.slugGenerator.generateSlug('post', newSlug);
+        serverSlug = yield this.slugGenerator.generateSlug('post', newSlug, this.get('post.id'));
         // If after getting the sanitized and unique slug back from the API
         // we end up with a slug that matches the existing slug, abort the change
         if (serverSlug === slug) {
@@ -961,7 +961,7 @@ export default class LexicalEditorController extends Controller {
         }
 
         try {
-            const newSlug = yield this.slugGenerator.generateSlug('post', newTitle);
+            const newSlug = yield this.slugGenerator.generateSlug('post', newTitle, this.get('post.id'));
 
             if (!isBlank(newSlug)) {
                 this.set('post.slug', newSlug);

@@ -18,7 +18,7 @@ img.is-dark-background {
 
 body {
     background-color: #fff;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+    font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
     -webkit-font-smoothing: antialiased;
     font-size: 18px;
     line-height: 1.4;
@@ -37,7 +37,7 @@ table {
 }
 
 table td {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+    font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
     font-size: 18px;
     vertical-align: top;
     color: #15212A;
@@ -81,8 +81,9 @@ hr {
     margin: 3em 0;
     padding: 0;
     height: 1px;
+    background-color: transparent;
     border: 0;
-    border-top: 1px solid #e5eff5;
+    border-top: 1px solid #e0e7eb;
 }
 
 p,
@@ -171,7 +172,7 @@ blockquote.kg-blockquote-alt {
     text-align: center;
     font-size: 1.2em;
     font-style: italic;
-    color: #738a94;
+    color: #73818c;
 }
 
 blockquote p {
@@ -211,7 +212,7 @@ h4,
 h5,
 h6 {
     margin-top: 0;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+    font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
     line-height: 1.11em;
     font-weight: 700;
     text-rendering: optimizeLegibility;
@@ -272,12 +273,12 @@ figure {
 
 figcaption {
     text-align: center;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+    font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
     font-size: 13px;
     padding-top: 10px;
     padding-bottom: 10px;
     line-height: 1.5em;
-    color: #738a94;
+    color: #73818c;
 }
 
 figcaption a {
@@ -351,7 +352,7 @@ figure blockquote p {
 }
 
 .site-subtitle {
-    color: #738a94;
+    color: #73818c;
     font-size: 13px;
     font-weight: 400;
     text-transform: none;
@@ -429,7 +430,7 @@ figure blockquote p {
 
 .post-meta,
 .view-online {
-    color: #738a94;
+    color: #73818c;
     font-size: 13px;
     font-weight: 400;
     text-align: center;
@@ -463,7 +464,7 @@ figure blockquote p {
 .view-online-link {
     word-wrap: none;
     white-space: nowrap;
-    color: #738a94;
+    color: #73818c;
     text-decoration: underline !important;
 }
 
@@ -491,7 +492,7 @@ figure blockquote p {
     padding-bottom: 32px;
     text-align: center;
     font-size: 13px !important;
-    color: #738a94;
+    color: #73818c;
     line-height: 1.5em;
 }
 
@@ -517,7 +518,7 @@ figure blockquote p {
 
 .feedback-button-text {
     display: inline-block;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+    font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
     color: #15212A;
     font-size: 13px !important;
     font-weight: 500;
@@ -582,13 +583,13 @@ figure blockquote p {
 .latest-post p {
     margin: 0;
     padding: 0;
-    color: #738a94;
+    color: #73818c;
     font-size: 15px;
     font-weight: 400;
 }
 
 .latest-post p a {
-    color: #738a94 !important;
+    color: #73818c !important;
 }
 
 /* -------------------------------------
@@ -597,7 +598,7 @@ figure blockquote p {
 
 .subscription-box {
     padding: 32px 0;
-    border-bottom: 1px solid #e5eff5;
+    border-bottom: 1px solid #e0e7eb;
     color: #15212A;
 }
 
@@ -643,7 +644,7 @@ figure blockquote p {
     line-height: 1.5em;
     color: #15212A;
     padding-bottom: 20px;
-    border-bottom: 1px solid #e5eff5;
+    border-bottom: 1px solid #e0e7eb;
 }
 
 .post-content-sans-serif {
@@ -652,7 +653,7 @@ figure blockquote p {
     line-height: 1.5em;
     color: #15212A;
     padding-bottom: 20px;
-    border-bottom: 1px solid #e5eff5;
+    border-bottom: 1px solid #e0e7eb;
 }
 
 .post-content-row:first-child > td, .header-image-row + .post-content-row > td {
@@ -667,6 +668,15 @@ figure blockquote p {
 
 a[data-flickr-embed] img {
     height: auto;
+}
+
+/* Any card with altered visibility is wrapped in a div with the .kg-visibility-wrapper class */
+.kg-visibility-wrapper + * {
+    margin-top: 1.5em !important;
+}
+
+.kg-visibility-wrapper + hr {
+    margin-top: 3em !important;
 }
 
 .kg-bookmark-card {
@@ -697,10 +707,10 @@ a[data-flickr-embed] img {
     display: flex;
     min-height: 148px;
     color: #15212A;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
     text-decoration: none;
     border-radius: 3px;
-    border: 1px solid #e5eff5;
+    border: 1px solid #e0e7eb;
 }
 
 .kg-bookmark-content {
@@ -721,7 +731,7 @@ a[data-flickr-embed] img {
     overflow-y: hidden;
     margin-top: 12px;
     max-height: 40px;
-    color: #738a94;
+    color: #73818c;
     font-size: 13px;
     line-height: 1.5em;
     font-weight: 400;
@@ -853,17 +863,17 @@ a[data-flickr-embed] img {
 .kg-callout-card {
     display: flex;
     margin: 0 0 1.5em 0;
-    padding: 20px 28px;
-    border-radius: 3px;
+    padding: 24px;
+    border-radius: 8px;
 }
 
 .kg-callout-card-grey {
-    background: #eef0f2;
+    background: #f1f2f4;
 }
 
 .kg-callout-card-white {
     background: #fff;
-    box-shadow: inset 0 0 0 1px #dddedf;
+    border: 1px solid #dddedf;
 }
 
 .kg-callout-card-blue {
@@ -902,6 +912,287 @@ a[data-flickr-embed] img {
 .kg-callout-emoji {
     padding-right: 12px;
     font-size: 20px;
+}
+
+.kg-cta-card {
+    margin: 0 0 1.5em 0;
+    padding: 0 24px;
+    border-radius: 8px;
+}
+
+.kg-cta-card + * {
+    margin-top: 1.5em !important;
+}
+
+.kg-cta-card + hr {
+    margin-top: 3em !important;
+}
+
+.kg-cta-card.kg-cta-bg-none {
+    padding: 0;
+    border-bottom: 1px solid #e0e7eb;
+    border-radius: 0;
+}
+
+.kg-cta-bg-none.kg-cta-no-label {
+    border-top: 1px solid #e0e7eb;
+}
+
+.kg-cta-bg-white {
+    background: #fff;
+    border: 1px solid #e0e7eb;
+}
+
+.kg-cta-bg-grey {
+    background: #f1f2f4;
+}
+
+.kg-cta-bg-blue {
+    background: #E9F6FB;
+}
+
+.kg-cta-bg-green {
+    background: #E8F8EA;
+}
+
+.kg-cta-bg-yellow {
+    background: #FCF4E3;
+}
+
+.kg-cta-bg-red {
+    background: #FBE9E9;
+}
+
+.kg-cta-bg-pink {
+    background: #FCEEF8;
+}
+
+.kg-cta-bg-purple {
+    background: #F2EDFC;
+}
+
+.kg-cta-sponsor-label {
+    padding: 12px 0;
+    border-bottom: 1px solid #e0e7eb;
+}
+
+.kg-cta-bg-none .kg-cta-sponsor-label {
+    padding-top: 0;
+}
+
+.kg-cta-immersive.kg-cta-has-img:not(.kg-cta-bg-none) .kg-cta-sponsor-label {
+    border-bottom: 0;
+}
+
+.kg-cta-bg-none .kg-cta-sponsor-label,
+.kg-cta-bg-white .kg-cta-sponsor-label {
+    border-color: #e0e7eb;
+}
+
+.kg-cta-bg-grey .kg-cta-sponsor-label {
+    border-color: #d0d1d2;
+}
+
+.kg-cta-bg-blue .kg-cta-sponsor-label {
+    border-color: #cddee5;
+}
+
+.kg-cta-bg-green .kg-cta-sponsor-label {
+    border-color: #cce0ce;
+}
+
+.kg-cta-bg-yellow .kg-cta-sponsor-label {
+    border-color: #e3d9c4;
+}
+
+.kg-cta-bg-red .kg-cta-sponsor-label {
+    border-color: #e7d0d0;
+}
+
+.kg-cta-bg-pink .kg-cta-sponsor-label {
+    border-color: #e6d6e1;
+}
+
+.kg-cta-bg-purple .kg-cta-sponsor-label {
+    border-color: #dbd5e7;
+}
+
+.kg-cta-sponsor-label p {
+    margin: 0;
+    color: #89959f;
+    font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.kg-cta-bg-blue .kg-cta-sponsor-label p {
+    color: #97A0A3;
+}
+
+.kg-cta-bg-green .kg-cta-sponsor-label p {
+    color: #97A198;
+}
+
+.kg-cta-bg-yellow .kg-cta-sponsor-label p {
+    color: #A49F94;
+}
+
+.kg-cta-bg-red .kg-cta-sponsor-label p {
+    color: #A39797;
+}
+
+.kg-cta-bg-pink .kg-cta-sponsor-label p {
+    color: #A49BA1;
+}
+
+.kg-cta-bg-purple .kg-cta-sponsor-label p {
+    color: #9D9AA4;
+}
+
+.kg-cta-sponsor-label a {
+    color: #15212A;
+}
+
+.kg-cta-link-accent .kg-cta-sponsor-label a {
+    color: {{accentColor}} !important;
+}
+
+table.kg-cta-content-wrapper {
+    padding: 24px 0 26px;
+}
+
+.kg-cta-immersive.kg-cta-has-img:not(.kg-cta-bg-none):not(.kg-cta-no-label) table.kg-cta-content-wrapper {
+    padding-top: 0;
+}
+
+.kg-cta-minimal .kg-cta-image-container {
+    padding-right: 24px;
+}
+
+.kg-cta-immersive .kg-cta-image-container {
+    padding-bottom: 24px;
+}
+
+.kg-cta-immersive.kg-cta-no-text .kg-cta-image-container {
+    padding-bottom: 0;
+}
+
+img.kg-cta-image {
+    display: block;
+    border-radius: 6px;
+    border: 0;
+}
+
+.kg-cta-minimal img.kg-cta-image {
+    width: 64px;
+    height: 64px;
+    object-fit: cover;
+}
+
+.kg-cta-immersive img.kg-cta-image {
+    margin: 0 auto;
+    height: auto;
+    width: 100%;
+    max-width: 100%;
+}
+
+.post-content .kg-cta-text {
+    font-family: Georgia, serif;
+}
+
+.kg-cta-text a {
+    color: #15212A;
+}
+
+.kg-cta-link-accent .kg-cta-text a {
+    color: {{accentColor}} !important;
+}
+
+.post-content-sans-serif .kg-cta-text {
+    font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+    font-size: 17px;
+}
+
+.kg-cta-text p {
+    margin-bottom: 1em;
+    line-height: 1.4em;
+}
+
+.kg-cta-text p:last-child {
+    margin-bottom: 0;
+}
+
+.kg-cta-bg-none:not(.kg-cta-minimal.kg-cta-has-img) .kg-cta-text p {
+    line-height: 1.6em;
+}
+
+.kg-cta-immersive.kg-cta-centered .kg-cta-text p {
+    text-align: center;
+}
+
+.kg-cta-button-container {
+    padding-top: 20px;
+}
+
+.kg-cta-minimal table.kg-cta-button-wrapper,
+.kg-cta-immersive:not(.kg-cta-has-img) .kg-cta-button-container table {
+    width: unset !important;
+}
+
+.kg-cta-immersive.kg-cta-centered .kg-cta-button-container table {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.kg-cta-minimal table.kg-cta-button-wrapper td {
+    padding: 6px 18px 8px;
+    border-radius: 6px;
+}
+
+.kg-cta-minimal table.kg-cta-button-wrapper td.kg-style-accent {
+    background-color: {{accentColor}} !important;
+}
+
+.kg-cta-immersive .kg-cta-button-wrapper {
+    padding: 8px 20px 9px;
+    border-radius: 6px;
+    text-align: center;
+}
+
+.kg-cta-immersive .kg-cta-button-wrapper.kg-style-accent {
+    background-color: {{accentColor}} !important;
+    color: #fff !important;
+}
+
+.kg-cta-minimal a.kg-cta-button {
+    display: inline-block; 
+    font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+    font-size: 0.85em;
+    font-weight: 600;
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.kg-cta-minimal a.kg-cta-button.kg-style-accent {
+    background-color: {{accentColor}} !important;
+    color: #fff !important;
+}
+
+.kg-cta-immersive a.kg-cta-button {
+    display: inline-block; 
+    width: 100%;
+    font-size: 0.9em;
+    font-weight: 600;
+    font-weight: 500;
+    text-align: center;
+    text-decoration: none;
+    border-radius: 6px;
+}
+
+.kg-cta-immersive a.kg-cta-button.kg-style-accent {
+    background-color: {{accentColor}} !important;
+    color: #fff !important;
 }
 
 .kg-header-card {
@@ -1058,7 +1349,7 @@ a[data-flickr-embed] img {
     margin: 0 0 1.5em;
     padding: 20px;
     border-radius: 3px;
-    border: 1px solid #e5eff5;
+    border: 1px solid #e0e7eb;
 }
 .kg-product-card-image {
     width: 100%;
@@ -1072,7 +1363,7 @@ a[data-flickr-embed] img {
     width: 100%;
     margin: 0 auto 1.5em;
     border-radius: 3px;
-    border: 1px solid #e5eff5;
+    border: 1px solid #e0e7eb;
 }
 .kg-audio-title {
     display: block;
@@ -1102,14 +1393,14 @@ a[data-flickr-embed] img {
     color: #15171A !important;
 }
 .kg-audio-link {
-    color: #738a94 !important;
+    color: #73818c !important;
 }
 .kg-file-card {
     width: auto;
     width: 100%;
     margin: 0 0 1.5em 0;
     border-radius: 3px;
-    border: 1px solid #e5eff5;
+    border: 1px solid #e0e7eb;
 }
 .kg-file-title {
     display: block;
@@ -1130,7 +1421,7 @@ a[data-flickr-embed] img {
     font-size: 15px;
     line-height: 1.4em;
     text-decoration: none !important;
-    color: #738a94 !important;
+    color: #73818c !important;
 }
 .kg-file-meta {
     display: block;
@@ -1141,7 +1432,7 @@ a[data-flickr-embed] img {
     font-size: 13px;
     line-height: 1.4em;
     text-decoration: none !important;
-    color: #738a94 !important;
+    color: #73818c !important;
 }
 .kg-file-name {
     font-weight: 500;
@@ -1159,7 +1450,7 @@ a[data-flickr-embed] img {
     width: 100%;
     margin: 0 auto;
     border-radius: 12px;
-    border: 1px solid #e5eff5;
+    border: 1px solid #e0e7eb;
 }
 
 .kg-toggle-card {
@@ -1167,7 +1458,7 @@ a[data-flickr-embed] img {
     padding: 20px;
     margin-bottom: 1.5em;
     border-radius: 4px;
-    border: 1px solid #738a94;
+    border: 1px solid #73818c;
 }
 
 
@@ -1191,7 +1482,7 @@ a[data-flickr-embed] img {
 }
 
 .footer {
-    color: #738a94;
+    color: #73818c;
     margin-top: 20px;
     text-align: center;
     font-size: 13px!important;
@@ -1203,7 +1494,7 @@ a[data-flickr-embed] img {
 }
 
 .footer a {
-    color: #738a94;
+    color: #73818c;
     text-decoration: underline;
     font-size: 13px;
 }
@@ -1229,7 +1520,7 @@ a[data-flickr-embed] img {
     background-color: #ffffff;
     border-radius: 5px;
     text-align: center;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+    font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
 }
 
 .btn a {
@@ -1645,6 +1936,72 @@ a[data-flickr-embed] img {
         font-size: 13px!important;
    }
 
+   table.body .kg-cta-card {
+        padding: 0 20px;
+    }
+
+    table.body .kg-cta-card.kg-cta-bg-none {
+        padding: 0;
+    }
+
+    table.body .kg-cta-sponsor-label {
+        padding: 10px 0;
+    }
+
+    table.body table.kg-cta-content-wrapper {
+        padding: 20px 0;
+    }
+
+    table.body .kg-cta-immersive.kg-cta-has-img:not(.kg-cta-bg-none):not(.kg-cta-no-label) table.kg-cta-content-wrapper {
+        padding-top: 0;
+    }
+
+    table.body .kg-cta-minimal .kg-cta-image-container {
+        padding-right: 20px;
+    }
+
+    table.body .kg-cta-immersive .kg-cta-image-container {
+        padding-bottom: 20px;
+    }
+
+    table.body .kg-cta-immersive.kg-cta-no-text .kg-cta-image-container {
+        padding-bottom: 0;
+    }
+
+    table.body .kg-cta-button-container {
+        padding-top: 16px;
+    }
+
+    table.body .kg-cta-minimal .kg-cta-image-container {
+        display: inline-block !important;
+        width: 100% !important;
+        padding: 0 !important;
+        padding-bottom: 16px !important;
+        padding-right: 0 !important;  /* Reset the desktop padding */
+    }
+
+    table.body .kg-cta-minimal .kg-cta-content-inner {
+        display: inline-block !important;
+        width: 100% !important;
+        padding: 0 !important; 
+    }
+
+    table.body .kg-cta-minimal img.kg-cta-image {
+        width: 52px !important;
+        height: 52px !important;
+    }
+
+    table.body .kg-cta-minimal a.kg-cta-button {
+        display: inline-block !important;
+    }
+
+    table.body .kg-cta-minimal table.kg-cta-button-wrapper td {
+        padding: 4px 16px 5px;
+    }
+
+    table.body .kg-cta-immersive .kg-cta-button-wrapper {
+        padding: 6px 18px 7px;
+    }
 }
 
 /* -------------------------------------

@@ -30,47 +30,73 @@
 @layer base {
     :root {
         --background: 0 0% 100%;
-        --foreground: 222.2 47.4% 11.2%;
-        --muted: 210 40% 96.1%;
-        --muted-foreground: 215.4 16.3% 46.9%;
+        --foreground: 216 11% 9%;
+        --muted: 200 12% 96%;
+        --muted-foreground: 211 11% 43%;
         --popover: 0 0% 100%;
-        --popover-foreground: 222.2 47.4% 11.2%;
-        --border: 214.3 31.8% 91.4%;
-        --input: 214.3 31.8% 91.4%;
+        --popover-foreground: 216 11% 9%;
+        --border: 204 14% 93%;
+        --input: 204 14% 93%;
         --card: 0 0% 100%;
-        --card-foreground: 222.2 47.4% 11.2%;
-        --primary: 222.2 47.4% 11.2%;
-        --primary-foreground: 210 40% 98%;
-        --secondary: 210 40% 96.1%;
-        --secondary-foreground: 222.2 47.4% 11.2%;
-        --accent: 210 40% 96.1%;
-        --accent-foreground: 222.2 47.4% 11.2%;
-        --destructive: 0 100% 50%;
-        --destructive-foreground: 210 40% 98%;
-        --ring: 215 20.2% 65.1%;
+        --card-foreground: 216 11% 9%;
+        --primary: 216 11% 9%;
+        --primary-foreground: 0 0% 100%;
+        --secondary: 204 14% 93%;
+        --secondary-foreground: 216 11% 9%;
+        --accent: 200 12% 96%;
+        --accent-foreground: 216 11% 9%;
+        --destructive: 354 92% 50%;
+        --destructive-foreground: 0 0% 100%;
+        --ring: 215 13% 63%;
         --radius: 9px;
+        --chart-1: 264 100% 70%;
+        --chart-2: 240 100% 74%;
+        --chart-3: 219 100% 85%;
+        --chart-4: 199 69% 90%;
+        --chart-5: 180 78% 96%;
+        --sidebar-background: 0 0% 100%;
+        --sidebar-foreground: 216 11% 9%;
+        --sidebar-primary: 216 11% 9%;
+        --sidebar-primary-foreground: 0 0% 100%;
+        --sidebar-accent: 200 12% 96%;
+        --sidebar-accent-foreground: 216 11% 9%;
+        --sidebar-border: 210 13% 88%;
+        --sidebar-ring: 215 13% 63%;
     }
 
     .dark {
-        --background: 224 71% 4%;
-        --foreground: 213 31% 91%;
-        --muted: 223 47% 11%;
-        --muted-foreground: 215.4 16.3% 56.9%;
-        --accent: 216 34% 17%;
-        --accent-foreground: 210 40% 98%;
-        --popover: 224 71% 4%;
-        --popover-foreground: 215 20.2% 65.1%;
-        --border: 216 34% 17%;
-        --input: 216 34% 17%;
-        --card: 224 71% 4%;
+        --background: 216 11% 9%;
+        --foreground: 210 13% 88%;
+        --muted: 210 11% 25%;
+        --muted-foreground: 210 13% 63%;
+        --accent: 210 11% 25%;
+        --accent-foreground: 200 12% 96%;
+        --popover: 216 11% 9%;
+        --popover-foreground: 212 13% 72%;
+        --border: 210 11% 25%;
+        --input: 210 11% 25%;
+        --card: 216 11% 9%;
         --card-foreground: 213 31% 91%;
-        --primary: 210 40% 98%;
-        --primary-foreground: 222.2 47.4% 1.2%;
-        --secondary: 222.2 47.4% 11.2%;
-        --secondary-foreground: 210 40% 98%;
-        --destructive: 0 63% 31%;
-        --destructive-foreground: 210 40% 98%;
-        --ring: 216 34% 17%;
+        --primary: 200 12% 96%;
+        --primary-foreground: 216 11% 9%;
+        --secondary: 216 11% 9%;
+        --secondary-foreground: 200 12% 96%;
+        --destructive: 354 81% 31%;
+        --destructive-foreground: 240 11% 98%;
+        --ring: 210 11% 25%;
+        --chart-1: 264 100% 70%;
+        --chart-2: 240 100% 74%;
+        --chart-3: 219 100% 85%;
+        --chart-4: 199 69% 90%;
+        --chart-5: 180 78% 96%;
+        --sidebar-background: 216 11% 9%;
+        --sidebar-foreground: 200 12% 96%;
+        --sidebar-primary: 210 11% 25%;
+        --sidebar-primary-foreground: 0 0% 100%;
+        --sidebar-accent: 210 11% 25%;
+        --sidebar-accent-foreground: 200 12% 96%;
+        --sidebar-border: 210 11% 25%;
+        --sidebar-ring: 210 13% 55%;
     }
 
     /* This just serves as a placeholder; we actually load Inter from a font file in Ember admin */
@@ -119,15 +145,15 @@
     }
 }
 
-.shade.dark {
+.dark .shade {
     color: #fafafb;
 }
 
-.shade.dark .gh-loading-orb-container {
+.dark .shade .gh-loading-orb-container {
     background-color: #000000;
 }
 
-.shade.dark .gh-loading-orb {
+.dark .shade .gh-loading-orb {
     filter: invert(100%);
 }
 
@@ -143,4 +169,12 @@
 /* Prose classes are for formatting arbitrary HTML that comes from the API */
 .gh-prose-links a {
     color: #30cf43;
+}
+@layer base {
+    * {
+        @apply border-border;
+    }
+    body {
+        @apply bg-background text-foreground;
+    }
 }

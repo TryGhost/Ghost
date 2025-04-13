@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const validator = require('@tryghost/validator');
 const ObjectId = require('bson-objectid').default;
 const ghostBookshelf = require('./base');
@@ -11,8 +10,9 @@ const {pipeline} = require('@tryghost/promise');
 const validatePassword = require('../lib/validate-password');
 const permissions = require('../services/permissions');
 const urlUtils = require('../../shared/url-utils');
+const {setIsRoles} = require('./role-utils');
 const activeStates = ['active', 'warn-1', 'warn-2', 'warn-3', 'warn-4'];
-const ASSIGNABLE_ROLES = ['Administrator', 'Editor', 'Author', 'Contributor'];
+const ASSIGNABLE_ROLES = ['Administrator', 'Super Editor', 'Editor', 'Author', 'Contributor'];
 
 const messages = {
     valueCannotBeBlank: 'Value in [{tableName}.{columnKey}] cannot be blank.',
@@ -76,7 +76,7 @@ User = ghostBookshelf.Model.extend({
     },
 
     format(options) {
-        if (!_.isEmpty(options.website) &&
+        if (options.website && 
             !validator.isURL(options.website, {
                 require_protocol: true,
                 protocols: ['http', 'https']
@@ -129,7 +129,7 @@ User = ghostBookshelf.Model.extend({
     onDestroyed: function onDestroyed(model, options) {
         ghostBookshelf.Model.prototype.onDestroyed.apply(this, arguments);
 
-        if (_.includes(activeStates, model.previous('status'))) {
+        if (activeStates.includes(model.previous('status'))) {
             model.emitChange('deactivated', options);
         }
 
@@ -142,7 +142,7 @@ User = ghostBookshelf.Model.extend({
         model.emitChange('added', options);
 
         // active is the default state, so if status isn't provided, this will be an active user
-        if (!model.get('status') || _.includes(activeStates, model.get('status'))) {
+        if (!model.get('status') || activeStates.includes(model.get('status'))) {
             model.emitChange('activated', options);
         }
     },
@@ -151,7 +151,7 @@ User = ghostBookshelf.Model.extend({
         ghostBookshelf.Model.prototype.onUpdated.apply(this, arguments);
 
         model.statusChanging = model.get('status') !== model.previous('status');
-        model.isActive = _.includes(activeStates, model.get('status'));
+        model.isActive = activeStates.includes(model.get('status'));
 
         if (model.statusChanging) {
             model.emitChange(model.isActive ? 'activated' : 'deactivated', options);
@@ -287,8 +287,7 @@ User = ghostBookshelf.Model.extend({
     },
 
     toJSON: function toJSON(unfilteredOptions) {
-        const options = User.filterOptions(unfilteredOptions, 'toJSON');
-        const attrs = ghostBookshelf.Model.prototype.toJSON.call(this, options);
+        const attrs = ghostBookshelf.Model.prototype.toJSON.call(this, unfilteredOptions);
 
         // remove password hash for security reasons
         delete attrs.password;
@@ -456,18 +455,16 @@ User = ghostBookshelf.Model.extend({
         const options = this.filterOptions(unfilteredOptions, 'findOne');
         let query;
         let status;
-        let data = _.cloneDeep(dataToClone);
+        let data = JSON.parse(JSON.stringify(dataToClone));
         const lookupRole = data.role;
 
         // Ensure only valid fields/columns are added to query
         if (options.columns) {
-            options.columns = _.intersection(options.columns, this.prototype.permittedAttributes());
+            options.columns = options.columns.filter(col => this.prototype.permittedAttributes().includes(col));
         }
 
         delete data.role;
-        data = _.defaults(data || {}, {
-            status: 'all'
-        });
+        data = Object.assign({}, {status: 'all'}, data || {});
 
         status = data.status;
         delete data.status;
@@ -476,7 +473,7 @@ User = ghostBookshelf.Model.extend({
 
         // Support finding by role
         if (lookupRole) {
-            options.withRelated = _.union(options.withRelated, ['roles']);
+            options.withRelated = [...new Set([...(options.withRelated || []), 'roles'])];
             query = this.forge(data);
 
             query.query('join', 'roles_users', 'users.id', '=', 'roles_users.user_id');
@@ -520,7 +517,7 @@ User = ghostBookshelf.Model.extend({
         } else if (type === 'recommendation-received') {
             filter += '+recommendation_notifications:true';
         }
-        const updatedOptions = _.merge({}, options, {filter, withRelated: ['roles']});
+        const updatedOptions = Object.assign({}, options, {filter, withRelated: ['roles']});
         return this.findAll(updatedOptions).then((users) => {
             return users.toJSON().filter((user) => {
                 return user?.roles?.some((role) => {
@@ -641,7 +638,7 @@ User = ghostBookshelf.Model.extend({
     add: function add(dataToClone, unfilteredOptions) {
         const options = this.filterOptions(unfilteredOptions, 'add');
         const self = this;
-        const data = _.cloneDeep(dataToClone);
+        const data = JSON.parse(JSON.stringify(dataToClone));
         let userData = this.filterData(data);
         let roles;
 
@@ -653,7 +650,7 @@ User = ghostBookshelf.Model.extend({
         }
 
         function getAuthorRole() {
-            return ghostBookshelf.model('Role').findOne({name: 'Author'}, _.pick(options, 'transacting'))
+            return ghostBookshelf.model('Role').findOne({name: 'Author'}, {transacting: options.transacting})
                 .then(function then(authorRole) {
                     return [authorRole.get('id')];
                 });
@@ -684,7 +681,7 @@ User = ghostBookshelf.Model.extend({
                 roles = _roles;
 
                 // CASE: it is possible to add roles by name, by id or by object
-                if (_.isString(roles[0]) && !ObjectId.isValid(roles[0])) {
+                if (typeof roles[0] === 'string' && !ObjectId.isValid(roles[0])) {
                     const rolePromises = roles.map((roleName) => {
                         return ghostBookshelf.model('Role').findOne({
                             name: roleName
@@ -781,19 +778,37 @@ User = ghostBookshelf.Model.extend({
         });
     },
 
+    /**
+     * Checks if a user has permission to perform an action on another user
+     * 
+     * @param {Object|string|number} userModelOrId - The user model or ID being acted upon
+     * @param {'edit'|'destroy'} action - The action being performed:
+     *                                     - 'edit': Edit user details, status, or role
+     *                                     - 'destroy': Delete a user (Owner cannot be deleted)
+     * @param {Object} context - The context of the request, containing the current user's ID
+     * @param {Object} unsafeAttrs - The attributes being modified in the action
+     * @param {Object} loadedPermissions - The permissions of the user making the request
+     * @param {boolean} hasUserPermission - Whether the user has permission based on user roles
+     * @param {boolean} hasApiKeyPermission - Whether the user has permission based on API key
+     * @returns {Promise<boolean>} Resolves if the action is permitted, rejects with NoPermissionError if not
+     * @throws {errors.NotFoundError} When the target user is not found
+     * @throws {errors.NoPermissionError} When the action is not permitted
+     * @throws {errors.ValidationError} When role changes are invalid
+     */
     permissible: async function permissible(userModelOrId, action, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasApiKeyPermission) {
         const self = this;
         const userModel = userModelOrId;
         let origArgs;
+        const {isOwner, isEitherEditor} = setIsRoles(loadedPermissions);
 
         // If we passed in a model without its related roles, we need to fetch it again
-        if (_.isObject(userModelOrId) && !_.isObject(userModelOrId.related('roles'))) {
+        if (typeof userModelOrId === 'object' && !(typeof userModelOrId.related('roles') === 'object')) {
             userModelOrId = userModelOrId.id;
         }
         // If we passed in an id instead of a model get the model first
-        if (_.isNumber(userModelOrId) || _.isString(userModelOrId)) {
+        if (typeof userModelOrId === 'number' || typeof userModelOrId === 'string') {
             // Grab the original args without the first one
-            origArgs = _.toArray(arguments).slice(1);
+            origArgs = Array.from(arguments).slice(1);
 
             // Get the actual user model
             return this.findOne({
@@ -821,16 +836,13 @@ User = ghostBookshelf.Model.extend({
         }
 
         if (action === 'edit') {
-            // Users with the role 'Editor', 'Author', and 'Contributor' have complex permissions when the action === 'edit'
-            // We now have all the info we need to construct the permissions
-
             if (context.user === userModel.get('id')) {
                 // If this is the same user that requests the operation allow it.
                 hasUserPermission = true;
             } else if (loadedPermissions.user && userModel.hasRole('Owner')) {
                 // Owner can only be edited by owner
-                hasUserPermission = loadedPermissions.user && _.some(loadedPermissions.user.roles, {name: 'Owner'});
-            } else if (loadedPermissions.user && _.some(loadedPermissions.user.roles, {name: 'Editor'})) {
+                hasUserPermission = isOwner;
+            } else if (isEitherEditor) {
                 // If the user we are trying to edit is an Author or Contributor, allow it
                 hasUserPermission = userModel.hasRole('Author') || userModel.hasRole('Contributor');
             }
@@ -845,7 +857,7 @@ User = ghostBookshelf.Model.extend({
             }
 
             // Users with the role 'Editor' have complex permissions when the action === 'destroy'
-            if (loadedPermissions.user && _.some(loadedPermissions.user.roles, {name: 'Editor'})) {
+            if (isEitherEditor) {
                 // Alternatively, if the user we are trying to edit is an Author, allow it
                 hasUserPermission = context.user === userModel.get('id') || userModel.hasRole('Author') || userModel.hasRole('Contributor');
             }
@@ -1057,7 +1069,7 @@ User = ghostBookshelf.Model.extend({
 
                 // check if user has the owner role
                 const currentRoles = contextUser.toJSON(options).roles;
-                if (!_.some(currentRoles, {id: ownerRole.id})) {
+                if (!currentRoles.some(role => role.id === ownerRole.id)) {
                     return Promise.reject(new errors.NoPermissionError({
                         message: tpl(messages.onlyOwnerCanTransferOwnerRole)
                     }));
@@ -1080,7 +1092,7 @@ User = ghostBookshelf.Model.extend({
 
                 const {roles: currentRoles, status} = user.toJSON(options);
 
-                if (!_.some(currentRoles, {id: adminRole.id})) {
+                if (!currentRoles.some(role => role.id === adminRole.id)) {
                     return Promise.reject(new errors.ValidationError({
                         message: tpl(messages.onlyAdmCanBeAssignedOwnerRole)
                     }));

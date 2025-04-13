@@ -1,4 +1,6 @@
 {
+    "{date}": "{date}",
+    "Become a paid member of {site} to get access to all premium content.": "",
     "By {authors}": "Av {authors}",
     "Comment": "Kommentar",
     "complimentary": "gratis",
@@ -13,7 +15,9 @@
     "paid": "betalt",
     "Subscription details": "Abonnementsdetaljer",
     "trialing": "prøveperiode",
-    "Unsubscribe": "Avmeld",
+    "Unsubscribe": "Avslutt abonnement",
+    "Upgrade": "",
+    "Upgrade to continue reading.": "",
     "View in browser": "Vis i nettleser",
     "You are receiving this because you are a <strong>%%{status}%% subscriber</strong> to {site}.": "Du mottar dette fordi du er en <strong>%%{status}%% abonnent</strong> på {site}.",
     "Your free trial ends on {date}, at which time you will be charged the regular price. You can always cancel before then.": "Din gratis prøveperiode avsluttes {date}, da blir du belastet normal pris. Du kan alltid kansellere før den tid.",

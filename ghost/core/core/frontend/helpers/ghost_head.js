@@ -151,9 +151,20 @@ function getWebmentionDiscoveryLink() {
 }
 
 function getTinybirdTrackerScript(dataRoot) {
-    const scriptUrl = config.get('tinybird:tracker:scriptUrl');
-    const endpoint = config.get('tinybird:tracker:endpoint');
-    const token = config.get('tinybird:tracker:token');
+    const preview = dataRoot?.context?.includes('preview');
+    if (preview) {
+        return '';
+    }
+
+    const src = getAssetUrl('public/ghost-stats.js', false);
+
+    const statsConfig = config.get('tinybird:tracker');
+    const localConfig = config.get('tinybird:tracker:local');
+    const localEnabled = localConfig?.enabled ?? false;
+
+    const endpoint = localEnabled ? localConfig.endpoint : statsConfig.endpoint;
+    const token = localEnabled ? localConfig.token : statsConfig.token;
+    const datasource = localEnabled ? localConfig.datasource : statsConfig.datasource;
 
     const tbParams = _.map({
         site_uuid: config.get('tinybird:tracker:id'),
@@ -162,7 +173,11 @@ function getTinybirdTrackerScript(dataRoot) {
         member_status: dataRoot.member?.status
     }, (value, key) => `tb_${key}="${value}"`).join(' ');
 
-    return `<script defer src="${scriptUrl}" data-storage="localStorage" data-host="${endpoint}" data-token="${token}" ${tbParams}></script>`;
+    return `<script defer src="${src}" data-stringify-payload="false" ${datasource ? `data-datasource="${datasource}"` : ''} data-storage="localStorage" data-host="${endpoint}" data-token="${token}" ${tbParams}></script>`;
+}
+
+function getHCaptchaScript() {
+    return `<script defer async src="https://js.hcaptcha.com/1/api.js"></script>`;
 }
 
 /**
@@ -349,8 +364,12 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
                 head.push(tagCodeInjection);
             }
 
-            if (config.get('tinybird') && config.get('tinybird:tracker') && config.get('tinybird:tracker:scriptUrl')) {
+            if (config.get('tinybird') && config.get('tinybird:tracker')) {
                 head.push(getTinybirdTrackerScript(dataRoot));
+            }
+
+            if (labs.isSet('captcha') && config.get('captcha:enabled')) {
+                head.push(getHCaptchaScript());
             }
 
             // Check if if the request is for a site preview, in which case we **always** use the custom font values

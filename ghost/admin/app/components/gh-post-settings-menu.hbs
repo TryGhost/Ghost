@@ -29,7 +29,7 @@
                             <div class="gh-input-icon gh-icon-link">
                                 {{svg-jar "link"}}
                                 <GhTextInput
-                                    @class="post-setting-slug"
+                                    @class="post-setting-slug gh-input-x"
                                     @id="url"
                                     @name="post-setting-slug"
                                     @value={{readonly this.slugValue}}
@@ -70,7 +70,7 @@
                         {{#unless this.session.user.isContributor}}
                         <div class="form-group">
                             <label for="tag-input">Tags</label>
-                            <GhPsmTagsInput @post={{this.post}} @savePostOnChange={{action "savePost"}} @triggerId="tag-input" />
+                            <GhPsmTagsInput @triggerClass="gh-input-x" @post={{this.post}} @savePostOnChange={{action "savePost"}} @triggerId="tag-input" />
                         </div>
                         {{/unless}}
 
@@ -97,7 +97,7 @@
                         <GhFormGroup @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="customExcerpt">
                             <label for="custom-excerpt">Excerpt</label>
                             <GhTextarea
-                                @class="post-setting-custom-excerpt"
+                                @class="post-setting-custom-excerpt gh-input-x"
                                 @id="custom-excerpt"
                                 @name="post-setting-custom-excerpt"
                                 @value={{readonly this.customExcerptScratch}}
@@ -113,7 +113,7 @@
                         {{#unless this.session.user.isAuthorOrContributor}}
                             <GhFormGroup class="for-select mb8" @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="authors" data-test-input="authors">
                                 <label for="author-list">Authors</label>
-                                <GhPsmAuthorsInput @selectedAuthors={{this.post.authors}} @updateAuthors={{action "changeAuthors"}} @triggerId="author-list" />
+                                <GhPsmAuthorsInput @triggerClass="gh-input-x" @selectedAuthors={{this.post.authors}} @updateAuthors={{action "changeAuthors"}} @triggerId="author-list" />
                                 <GhErrorMessage @errors={{this.post.errors}} @property="authors" data-test-error="authors" />
                             </GhFormGroup>
                         {{/unless}}
@@ -136,7 +136,7 @@
                                             <input
                                                 type="checkbox"
                                                 checked={{this.post.showTitleAndFeatureImage}}
-                                                class="gh-input post-settings-featured"
+                                                class="gh-input post-settings-featured gh-input-x"
                                                 {{on "change" this.toggleShowTitleAndFeatureImage}}
                                                 data-test-checkbox="hide-title-and-feature-image"
                                             >
@@ -168,7 +168,7 @@
                                             <input
                                                 type="checkbox"
                                                 checked={{this.post.featured}}
-                                                class="gh-input post-settings-featured"
+                                                class="gh-input post-settings-featured gh-input-x"
                                                 onclick={{action (mut this.post.featured) value="target.checked"}}
                                                 data-test-checkbox="featured"
                                             >
@@ -198,7 +198,7 @@
                             </button>
                             {{svg-jar "arrow-right" class="arrow-right"}}
                         </li>
-                        <li class="nav-list-item">
+                        <li class="nav-list-item nav-list-item-twitter">
                             <button type="button"  {{action "showSubview" "twitter-data"}} data-test-button="twitter-data">
                                 <span>{{svg-jar "x-logo"}} X card</span>
                             </button>
@@ -608,7 +608,7 @@
                                 <GhFormGroup @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="metaTitle">
                                     <label for="meta-title">Meta title</label>
                                     <GhTextInput
-                                        @class="post-setting-meta-title"
+                                        @class="post-setting-meta-title gh-input-x"
                                         @id="meta-title"
                                         @name="post-setting-meta-title"
                                         @placeholder={{this.seoTitle}}
@@ -624,7 +624,7 @@
                                 <GhFormGroup @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="metaDescription">
                                     <label for="meta-description">Meta description</label>
                                     <GhTextarea
-                                        @class="post-setting-meta-description"
+                                        @class="post-setting-meta-description gh-input-x"
                                         @id="meta-description"
                                         @name="post-setting-meta-description"
                                         @placeholder={{truncate this.seoDescription 150}}
@@ -640,7 +640,7 @@
                                 <GhFormGroup @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="canonicalUrl">
                                     <label for="canonicalUrl">Canonical URL</label>
                                     <GhTextInput
-                                        @class="post-setting-canonicalUrl"
+                                        @class="post-setting-canonicalUrl gh-input-x"
                                         @name="post-setting-canonicalUrl"
                                         @placeholder={{this.post.url}}
                                         @value={{readonly this.canonicalUrlScratch}}
@@ -689,7 +689,7 @@
                                 <GhFormGroup @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="twitterTitle">
                                     <label for="twitter-title">X title</label>
                                     <GhTextInput
-                                        @class="post-setting-twitter-title"
+                                        @class="post-setting-twitter-title gh-input-x"
                                         @id="twitter-title"
                                         @name="post-setting-twitter-title"
                                         @placeholder={{truncate this.twitterTitle 40}}
@@ -704,7 +704,7 @@
                                 <GhFormGroup @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="twitterDescription">
                                     <label for="twitter-description">X description</label>
                                     <GhTextarea
-                                        @class="post-setting-twitter-description"
+                                        @class="post-setting-twitter-description gh-input-x"
                                         @id="twitter-description"
                                         @name="post-setting-twitter-description"
                                         @placeholder={{truncate this.twitterDescription 150}}
@@ -756,7 +756,7 @@
                                 <GhFormGroup @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="ogTitle">
                                     <label for="og-title">Facebook title</label>
                                     <GhTextInput
-                                        @class="post-setting-og-title"
+                                        @class="post-setting-og-title gh-input-x"
                                         @id="og-title"
                                         @name="post-setting-og-title"
                                         @placeholder={{truncate this.facebookTitle 40}}
@@ -771,7 +771,7 @@
                                 <GhFormGroup @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="ogDescription">
                                     <label for="og-description">Facebook description</label>
                                     <GhTextarea
-                                        @class="post-setting-og-description"
+                                        @class="post-setting-og-description gh-input-x"
                                         @id="og-description" @name="post-setting-og-description"
                                         @placeholder={{truncate this.facebookDescription 150}}
                                         @value={{readonly this.ogDescriptionScratch}}

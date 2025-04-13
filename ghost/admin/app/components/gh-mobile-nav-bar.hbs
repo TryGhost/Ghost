@@ -1,16 +1,16 @@
-<LinkTo @route="dashboard" data-test-mobile-nav="dashboard">{{svg-jar "house"}}Dashboard</LinkTo>
+<LinkTo @route="dashboard" data-test-mobile-nav="dashboard">{{svg-jar "house"}}</LinkTo>
 {{#if (eq this.router.currentRouteName "posts")}}
-    <LinkTo @route="posts" @query={{hash type=null}} class="active" data-test-mobile-nav="posts">{{svg-jar "posts"}}Posts</LinkTo>
+    <LinkTo @route="posts" @query={{hash type=null}} class="active" data-test-mobile-nav="posts">{{svg-jar "posts"}}</LinkTo>
 {{else}}
-    <LinkTo @route="posts">{{svg-jar "content" data-test-mobile-nav="posts"}}Posts</LinkTo>
+    <LinkTo @route="posts">{{svg-jar "posts" data-test-mobile-nav="posts" class="mobile-nav-posts-icon"}}</LinkTo>
 {{/if}}
-<LinkTo @route="members" class="gh-nav-main-users" data-test-mobile-nav="members">{{svg-jar "members"}}Members</LinkTo>
-<div 
-    role="button" 
-    class="gh-mobile-nav-bar-more" 
+<LinkTo @route="members" class="gh-nav-main-users" data-test-mobile-nav="members">{{svg-jar "members" class="mobile-nav-members-icon"}}</LinkTo>
+<div
+    role="button"
+    class="gh-mobile-nav-bar-more"
     {{on "click" this.ui.toggleMobileMenu}}
     data-test-mobile-nav="more"
 >
-    {{svg-jar "icon" class="icon-gh"}}More
+    {{svg-jar "dotdotdot"}}
 </div>
 {{yield}}

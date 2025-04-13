@@ -1,6 +1,13 @@
 <div class="flex flex-column h-100" {{css-transition (unless @firstRender "gh-nav-main" )}} data-test-nav-menu="main"
     ...attributes>
 
+    <div class="gh-toggle-nav-menu">
+        <button type="button" class="gh-btn-toggle-menu" {{on "click" (fn this.navigation.toggleMenu)}} title="Toggle sidebar">
+            <div class="segment-1"></div>
+            <div class="segment-2"></div>
+        </button>
+    </div>
+
     {{#unless this.session.user.isContributor}}
     <header class="gh-nav-menu">
         <div class="gh-nav-menu-details">
@@ -19,19 +26,25 @@
         {{#unless this.session.user.isContributor}}
         <div class="gh-nav-top">
             <ul class="gh-nav-list gh-nav-main">
-                {{#if (feature "ActivityPub")}}
-                <li>
-                    <LinkTo @route="activitypub-x" @current-when="activitypub-x">{{svg-jar "star"}}ActivityPub</LinkTo>
-                </li>
+                {{#if (and (feature "ActivityPub") this.session.user.isAdmin)}}
+                    <li>
+                        <LinkTo @route="activitypub-x" @current-when="activitypub-x">{{svg-jar "house"}}Home</LinkTo>
+                    </li>
                 {{/if}}
                 {{#if (gh-user-can-admin this.session.user)}}
-                <li class="relative gh-nav-list-home">
-                    <LinkTo @route="dashboard" @alt="Dashboard" title="Dashboard" data-test-nav="dashboard">{{svg-jar
-                        "house"}} Dashboard</LinkTo>
-                </li>
+                    <li class="relative gh-nav-list-home">
+                        <LinkTo @route="dashboard" @alt="Dashboard" data-test-nav="dashboard">
+                            {{#if (and (feature "ActivityPub") this.session.user.isAdmin)}}
+                                {{svg-jar "gauge"}}
+                            {{else}}
+                                {{svg-jar "house"}}
+                            {{/if}}
+                            Dashboard
+                        </LinkTo>
+                    </li>
                 {{/if}}
                 <li class="relative">
-                    <span {{action "transitionToOrRefreshSite" on="click" }}>
+                    <span {{action "transitionToOrRefreshSite" on="click" }} class="{{if this.isOnSite "active"}}">
                         <LinkTo @route="site" data-test-nav="site" @current-when={{this.isOnSite}}
                             @preventDefault={{false}}>
                             {{svg-jar "view-site"}} View site
@@ -43,23 +56,25 @@
                     </a>
                 </li>
                 {{#if (and (gh-user-can-admin this.session.user) this.config.stats)}}
-                <li class="relative">
-                    <LinkTo @route="stats">{{svg-jar "stats-outline"}}Stats</LinkTo>
-                </li>
+                    <li class="relative">
+                        <LinkTo @route="stats">{{svg-jar "stats-outline"}}Stats</LinkTo>
+                    </li>
                 {{/if}}
                 {{#if (gh-user-can-admin this.session.user)}}
-                <li class="relative">
-                    <a href="javascript:void(0)" class={{if this.explore.exploreWindowOpen "active" }} {{on "click" (fn
-                        this.toggleExploreWindow "" )}} data-test-nav="explore">
-                        {{svg-jar "globe-simple"}} Explore
-                    </a>
-                </li>
+                    {{#if (not (and (feature "ActivityPub") this.session.user.isAdmin))}}
+                        <li class="relative">
+                            <a href="javascript:void(0)" class={{if this.explore.exploreWindowOpen "active" }} {{on "click" (fn
+                                this.toggleExploreWindow "" )}} data-test-nav="explore">
+                                {{svg-jar "globe-simple"}} Explore
+                            </a>
+                        </li>
+                    {{/if}}
                 {{/if}}
             </ul>
             <ul class="gh-nav-list gh-nav-manage">
-                <li class="gh-nav-list-new relative">
+                <li class="gh-nav-list-new gh-nav-list-posts relative">
                     <GhLinkToCustomViewsIndex @route="posts" @query={{reset-query-params "posts" }}
-                        data-test-nav="posts">{{svg-jar "posts"}}Posts</GhLinkToCustomViewsIndex>
+                        data-test-nav="posts">{{svg-jar "posts" class="gh-nav-posts-icon"}}Posts</GhLinkToCustomViewsIndex>
                     <LinkTo @route="lexical-editor.new" @model="post" class="gh-secondary-action gh-nav-new-post"
                         @alt="New post" title="New post" data-test-nav="new-story"><span>{{svg-jar "plus"}}</span>
                     </LinkTo>
@@ -125,7 +140,7 @@
                     </LinkTo>
                 </li>
                 {{/if}}
-                {{#if (gh-user-can-admin this.session.user)}}
+                {{#if (gh-user-can-manage-members this.session.user)}}
                 <li class="relative">
                     {{#if (eq this.router.currentRouteName "members.index")}}
                     <LinkTo @route="members" @current-when="members member member.new"
@@ -159,6 +174,11 @@
                 <li>
                     <LinkTo @route="posts-x" @current-when="posts-x">{{svg-jar "chart"}}Post analytics</LinkTo>
                 </li>
+                {{/if}}
+                {{#if (and (gh-user-can-admin this.session.user) this.config.stats (feature "statsX"))}}
+                    <li class="relative">
+                        <LinkTo @route="stats-x">{{svg-jar "stats-outline"}}Stats X</LinkTo>
+                    </li>
                 {{/if}}
             </ul>
 

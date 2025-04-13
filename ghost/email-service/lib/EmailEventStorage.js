@@ -67,7 +67,7 @@ class EmailEventStorage {
     /**
      * @private
      * @param {'temporary'|'permanent'} severity
-     * @param {import('@tryghost/email-events').EmailTemporaryBouncedEvent|import('@tryghost/email-events').EmailBouncedEvent} event
+     * @param {import('@tryghost/email-service').EmailTemporaryBouncedEvent|import('@tryghost/email-service').EmailBouncedEvent} event
      * @param {{transacting?: any}} options
      * @returns
      */

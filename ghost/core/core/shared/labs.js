@@ -22,13 +22,11 @@ const messages = {
 // flags in this list always return `true`, allows quick global enable prior to full flag removal
 const GA_FEATURES = [
     'audienceFeedback',
-    'collections',
     'i18n',
     'themeErrorsNotification',
-    'outboundLinkTagging',
     'announcementBar',
-    'newEmailAddresses',
-    'customFonts'
+    'customFonts',
+    'contentVisibility'
 ];
 
 // NOTE: this allowlist is meant to be used to filter out any unexpected
@@ -41,7 +39,7 @@ const BETA_FEATURES = [
     'ActivityPub',
     'importMemberTier',
     'staff2fa',
-    'contentVisibility'
+    'superEditors'
 ];
 
 const ALPHA_FEATURES = [
@@ -52,7 +50,11 @@ const ALPHA_FEATURES = [
     'collectionsCard',
     'lexicalIndicators',
     'adminXDemo',
-    'postsX'
+    'postsX',
+    'statsX',
+    'captcha',
+    'contentVisibilityAlpha',
+    'explore'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

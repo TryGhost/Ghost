@@ -1,4 +1,6 @@
 {
+    "{date}": "{date}",
+    "Become a paid member of {site} to get access to all premium content.": "",
     "By {authors}": "Av {authors}",
     "Comment": "Kommentera",
     "complimentary": "gratis",
@@ -14,6 +16,8 @@
     "Subscription details": "Prenumerationsdetaljer",
     "trialing": "prov",
     "Unsubscribe": "Avanmäl",
+    "Upgrade": "",
+    "Upgrade to continue reading.": "",
     "View in browser": "Visa i webbläsare",
     "You are receiving this because you are a <strong>%%{status}%% subscriber</strong> to {site}.": "Du får det här eftersom du är en <strong>%%{status}%% medlem</strong> på {site}.",
     "Your free trial ends on {date}, at which time you will be charged the regular price. You can always cancel before then.": "Din kostnadsfria provperiod slutar den {date}, efter vilket du kommer bli debiterad det vanliga priset. Du kan alltid avbryta innan dess.",

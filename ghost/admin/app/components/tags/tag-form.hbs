@@ -1,111 +1,104 @@
 <div class="gh-main-section">
-    <div class="flex justify-between items-center">
-        <h4 class="gh-main-section-header small bn">Basic settings</h4>
-        <a href={{this.tagURL}} target="_blank" rel="noopener noreferrer" class="gh-view-tag-link">View tag {{svg-jar "external"}}</a>
-    </div>
-    <section class="gh-main-section-block">
-        <div class="gh-main-section-content grey columns-2">
-            <div>
-                <div class="gh-tag-settings-multiprop">
-                    <GhFormGroup @errors={{@tag.errors}} @hasValidated={{@tag.hasValidated}} @property="name" class="mr2 flex-auto">
-                        <label for="tag-name">Name</label>
-                        <input
-                            type="text"
-                            class="gh-input"
-                            id="tag-name"
-                            name="name"
-                            value={{@tag.name}}
-                            {{on "input" (pick "target.value" (fn this.setTagProperty "name"))}}
-                            {{on "blur" (fn this.validateTagProperty "name")}}
-                            data-test-input="tag-name"
-                        />
-                        <span class="error">
-                            <GhErrorMessage @errors={{@tag.errors}} @property="name" />
-                            <GhErrorMessage @errors={{@tag.errors}} @property="accentColor" data-test-error="accentColor" />
-                        </span>
-                        <p class="description">
-                            Start with # to create internal tags
-                            <a href="https://ghost.org/help/organising-content/#private-tags" target="_blank" rel="noopener noreferrer">Learn more</a>
-                        </p>
-                    </GhFormGroup>
-
-                    <GhFormGroup @errors={{@tag.errors}} @hasValidated={{@tag.hasValidated}} @property="accentColor" class="gh-tag-settings-colorcontainer">
-                        <label for="accent-color">Color</label>
-                        <div class="input-color">
-                            <input
-                                type="text"
-                                placeholder="15171A"
-                                name="accent-color"
-                                autocorrect="off"
-                                maxlength="6"
-                                value={{this.accentColor}}
-                                class="gh-input"
-                                {{on "input" (perform this.debounceUpdateAccentColorTask)}}
-                                {{on "blur" this.updateAccentColor}}
-                                aria-label="Accent color hex value"
-                                data-test-input="accentColor"
-                            />
-                            <div class="color-picker-horizontal-divider"></div>
-                            <div
-                                class="color-box-container"
-                                style={{this.accentColorBgStyle}}
-                            >
-                                <input
-                                    type="color"
-                                    name="accent-color"
-                                    class="color-picker"
-                                    value={{this.accentColorPickerValue}}
-                                    {{on "input" (perform this.debounceUpdateAccentColorTask)}}
-                                    aria-label="Accent color picker"
-                                >
-                            </div>
-                        </div>
-                    </GhFormGroup>
-                </div>
-
-                <GhFormGroup @errors={{@tag.errors}} @hasValidated={{@tag.hasValidated}} @property="slug">
-                    <label for="tag-slug">Slug</label>
+    <div class="gh-main-section-content bordered columns-2">
+        <div>
+            <div class="gh-tag-settings-multiprop">
+                <GhFormGroup @errors={{@tag.errors}} @hasValidated={{@tag.hasValidated}} @property="name" class="mr2 flex-auto">
+                    <label for="tag-name">Name</label>
                     <input
                         type="text"
-                        value={{@tag.slug}}
-                        id="tag-slug"
-                        name="slug"
-                        class="gh-input"
-                        {{on "input" (pick "target.value" (fn this.setTagProperty "slug"))}}
-                        {{on "blur" (fn this.validateTagProperty "slug")}}
-                        data-test-input="tag-slug"
+                        class="gh-input-x"
+                        id="tag-name"
+                        name="name"
+                        value={{@tag.name}}
+                        {{on "input" (pick "target.value" (fn this.setTagProperty "name"))}}
+                        {{on "blur" (fn this.validateTagProperty "name")}}
+                        data-test-input="tag-name"
                     />
-                    <GhUrlPreview @prefix="tag" @slug={{@tag.slug}} @tagName="p" @classNames="description" />
-                    <GhErrorMessage @errors={{@tag.errors}} @property="slug" />
+                    <span class="error">
+                        <GhErrorMessage @errors={{@tag.errors}} @property="name" />
+                        <GhErrorMessage @errors={{@tag.errors}} @property="accentColor" data-test-error="accentColor" />
+                    </span>
+                    <p class="description">
+                        Start with # to create internal tags.
+                        <a href="https://ghost.org/help/organising-content/#private-tags" target="_blank" rel="noopener noreferrer">Learn more</a>
+                    </p>
                 </GhFormGroup>
 
-                <GhFormGroup class="no-margin" @errors={{@tag.errors}} @hasValidated={{@tag.hasValidated}} @property="description">
-                    <label for="tag-description">Description</label>
-                    <textarea
-                        id="tag-description"
-                        name="description"
-                        class="gh-input gh-tag-details-textarea"
-                        {{on "input" (pick "target.value" (fn this.setTagProperty "description"))}}
-                        {{on "blur" (fn this.validateTagProperty "description")}}
-                        data-test-input="tag-description"
-                    >{{@tag.description}}</textarea>
-
-                    <GhErrorMessage @errors={{@tag.errors}} @property="description" />
-                    <p>Maximum: <b>500</b> characters. You’ve used {{gh-count-down-characters @tag.description 500}}</p>
+                <GhFormGroup @errors={{@tag.errors}} @hasValidated={{@tag.hasValidated}} @property="accentColor" class="gh-tag-settings-colorcontainer">
+                    <label for="accent-color">Color</label>
+                    <div class="input-color">
+                        <input
+                            type="text"
+                            placeholder="15171A"
+                            name="accent-color"
+                            autocorrect="off"
+                            maxlength="6"
+                            value={{this.accentColor}}
+                            class="gh-input-x"
+                            {{on "input" (perform this.debounceUpdateAccentColorTask)}}
+                            {{on "blur" this.updateAccentColor}}
+                            aria-label="Accent color hex value"
+                            data-test-input="accentColor"
+                        />
+                        <div
+                            class="color-box-container"
+                            style={{this.accentColorBgStyle}}
+                        >
+                            <input
+                                type="color"
+                                name="accent-color"
+                                class="color-picker"
+                                value={{this.accentColorPickerValue}}
+                                {{on "input" (perform this.debounceUpdateAccentColorTask)}}
+                                aria-label="Accent color picker"
+                            >
+                        </div>
+                    </div>
                 </GhFormGroup>
             </div>
-            <GhFormGroup class="gh-tag-image-uploader no-margin" @errors={{@tag.errors}} @hasValidated={{@tag.hasValidated}} @property="featureImage">
-                <label for="tag-image">Tag image</label>
-                <GhImageUploaderWithPreview
-                    @image={{@tag.featureImage}}
-                    @text="Upload tag image"
-                    @allowUnsplash={{true}}
-                    @update={{fn this.setTagProperty "featureImage"}}
-                    @remove={{fn this.setTagProperty "featureImage" ""}}
+
+            <GhFormGroup @errors={{@tag.errors}} @hasValidated={{@tag.hasValidated}} @property="slug">
+                <label for="tag-slug">Slug</label>
+                <input
+                    type="text"
+                    value={{@tag.slug}}
+                    id="tag-slug"
+                    name="slug"
+                    class="gh-input-x"
+                    {{on "input" (pick "target.value" (fn this.setTagProperty "slug"))}}
+                    {{on "blur" (fn this.validateTagProperty "slug")}}
+                    data-test-input="tag-slug"
                 />
+                <GhUrlPreview @prefix="tag" @slug={{@tag.slug}} @tagName="p" @classNames="description" />
+                <GhErrorMessage @errors={{@tag.errors}} @property="slug" />
+            </GhFormGroup>
+
+            <GhFormGroup class="no-margin" @errors={{@tag.errors}} @hasValidated={{@tag.hasValidated}} @property="description">
+                <label for="tag-description">Description</label>
+                <textarea
+                    id="tag-description"
+                    name="description"
+                    class="gh-input-x gh-tag-details-textarea"
+                    {{on "input" (pick "target.value" (fn this.setTagProperty "description"))}}
+                    {{on "blur" (fn this.validateTagProperty "description")}}
+                    data-test-input="tag-description"
+                >{{@tag.description}}</textarea>
+
+                <GhErrorMessage @errors={{@tag.errors}} @property="description" />
+                <p>Maximum: <b>500</b> characters. You’ve used {{gh-count-down-characters @tag.description 500}}</p>
             </GhFormGroup>
         </div>
-    </section>
+        <GhFormGroup class="gh-tag-image-uploader no-margin" @errors={{@tag.errors}} @hasValidated={{@tag.hasValidated}} @property="featureImage">
+            <label for="tag-image">Tag image</label>
+            <GhImageUploaderWithPreview
+                @image={{@tag.featureImage}}
+                @text="Upload tag image"
+                @allowUnsplash={{true}}
+                @update={{fn this.setTagProperty "featureImage"}}
+                @remove={{fn this.setTagProperty "featureImage" ""}}
+            />
+        </GhFormGroup>
+    </div>
 </div>
 
 <section class="gh-expandable">
@@ -128,7 +121,7 @@
                             <input
                                 id="meta-title"
                                 name="metaTitle"
-                                class="gh-input"
+                                class="gh-input-x"
                                 placeholder={{@tag.name}}
                                 value={{@tag.metaTitle}}
                                 {{on "input" (pick "target.value" (fn this.setTagProperty "metaTitle"))}}
@@ -143,7 +136,7 @@
                             <textarea
                                 id="meta-description"
                                 name="metaDescription"
-                                class="gh-input gh-tag-details-textarea"
+                                class="gh-input-x gh-tag-details-textarea"
                                 placeholder={{@tag.description}}
                                 {{on "input" (pick "target.value" (fn this.setTagProperty "metaDescription"))}}
                                 {{on "blur" (fn this.validateTagProperty "metaDescription")}}
@@ -157,7 +150,7 @@
                             <input
                                 id="canonical-url"
                                 name="canonicalUrl"
-                                class="gh-input"
+                                class="gh-input-x"
                                 value={{@tag.canonicalUrl}}
                                 {{on "input" (pick "target.value" (fn this.setTagProperty "canonicalUrl"))}}
                                 {{on "blur" this.validateCanonicalUrl}}
@@ -217,7 +210,7 @@
                                 type="text"
                                 id="twitter-title"
                                 name="twitterTitle"
-                                class="gh-input"
+                                class="gh-input-x"
                                 placeholder={{@tag.name}}
                                 value={{@tag.twitterTitle}}
                                 {{on "input" (pick "target.value" (fn this.setTagProperty "twitterTitle"))}}
@@ -232,7 +225,7 @@
                             <textarea
                                 id="twitter-description"
                                 name="twitterDescription"
-                                class="gh-input gh-tag-details-textarea"
+                                class="gh-input-x gh-tag-details-textarea"
                                 placeholder={{@tag.description}}
                                 {{on "input" (pick "target.value" (fn this.setTagProperty "twitterDescription"))}}
                                 {{on "blur" (fn this.validateTagProperty "twitterDescription")}}
@@ -314,7 +307,7 @@
                                 type="text"
                                 id="og-title"
                                 name="ogTitle"
-                                class="gh-input"
+                                class="gh-input-x"
                                 placeholder={{@tag.name}}
                                 value={{@tag.ogTitle}}
                                 {{on "input" (pick "target.value" (fn this.setTagProperty "ogTitle"))}}
@@ -329,7 +322,7 @@
                             <textarea
                                 id="og-description"
                                 name="ogDescription"
-                                class="gh-input gh-tag-details-textarea"
+                                class="gh-input-x gh-tag-details-textarea"
                                 placeholder={{@tag.description}}
                                 {{on "input" (pick "target.value" (fn this.setTagProperty "ogDescription"))}}
                                 {{on "blur" (fn this.validateTagProperty "ogDescription")}}

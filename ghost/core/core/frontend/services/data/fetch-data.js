@@ -66,7 +66,7 @@ function processQuery(query, slugParam, locals) {
  * Uses Promise.all to handle the queries and ensure concurrent execution.
  * Does a first round of formatting on the response, and returns
  */
-function fetchData(pathOptions, routerOptions, locals) {
+async function fetchData(pathOptions, routerOptions, locals) {
     pathOptions = pathOptions || {};
     routerOptions = routerOptions || {};
 
@@ -99,30 +99,28 @@ function fetchData(pathOptions, routerOptions, locals) {
         promises.push(processQuery(dataQueryOptions, pathOptions.slug, locals));
     });
 
-    return Promise.all(promises)
-        .then(function formatResponse(results) {
-            const response = _.cloneDeep(results[0]);
+    const results = await Promise.all(promises);
+    const response = _.cloneDeep(results[0]);
 
-            if (routerOptions.data) {
-                response.data = {};
+    if (routerOptions.data) {
+        response.data = {};
 
-                let resultIndex = 1;
+        let resultIndex = 1;
 
-                _.each(routerOptions.data, function (config, name) {
-                    if (results[resultIndex]) {
-                        response.data[name] = results[resultIndex][config.resource];
+        _.each(routerOptions.data, function (config, name) {
+            if (results[resultIndex]) {
+                response.data[name] = results[resultIndex][config.resource];
 
-                        if (config.type === 'browse') {
-                            response.data[name].meta = results[resultIndex].meta;
-                        }
+                if (config.type === 'browse') {
+                    response.data[name].meta = results[resultIndex].meta;
+                }
 
-                        resultIndex = resultIndex + 1;
-                    }
-                });
+                resultIndex = resultIndex + 1;
             }
-
-            return response;
         });
+    }
+
+    return response;
 }
 
 module.exports = fetchData;

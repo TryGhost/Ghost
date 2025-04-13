@@ -1,69 +1,145 @@
 name: ghost
-
 services:
   ghost:
     build:
       context: .
       dockerfile: ./.docker/Dockerfile
       target: development
+    entrypoint: [ "/home/ghost/.docker/development.entrypoint.sh" ]
+    command: [ "yarn", "dev" ]
     ports:
-      - "2368:2368"
-      - "4200:4200"
-    profiles: [full]
+      - "2368:2368" # Ghost
+      - "4200:4200" # Admin
+      - "4201:4201" # Admin tests
+      - "4175:4175" # Portal
+      - "4176:4176" # Portal HTTPS
+      - "4177:4177" # Announcement bar
+      - "4178:4178" # Search
+      - "6174:6174" # Signup form
+      - "7173:7173" # Comments
+      - "7174:7174" # Comments HTTPS
+    profiles: [ ghost ]
     volumes:
+      # Mount the source code
       - .:/home/ghost
+
+      ## SSH Agent forwarding
+      - ${SSH_AUTH_SOCK}:/ssh-agent
+
+      ## Git config
+      - ${HOME}/.gitconfig:/root/.gitconfig:ro
+
+      # Volume exclusions:
+      ## Prevent collisions between host and container node_modules
+      - node_modules_ghost_root:/home/ghost/node_modules:delegated
+      - node_modules_ghost_admin:/home/ghost/ghost/admin/node_modules:delegated
+      - node_modules_ghost_api-framework:/home/ghost/ghost/api-framework/node_modules:delegated
+      - node_modules_ghost_constants:/home/ghost/ghost/constants/node_modules:delegated
+      - node_modules_ghost_core:/home/ghost/ghost/core/node_modules:delegated
+      - node_modules_ghost_custom-fonts:/home/ghost/ghost/custom-fonts/node_modules:delegated
+      - node_modules_ghost_custom-theme-settings-service:/home/ghost/ghost/custom-theme-settings-service/node_modules:delegated
+      - node_modules_ghost_domain-events:/home/ghost/ghost/domain-events/node_modules:delegated
+      - node_modules_ghost_donations:/home/ghost/ghost/donations/node_modules:delegated
+      - node_modules_ghost_email-addresses:/home/ghost/ghost/email-addresses/node_modules:delegated
+      - node_modules_ghost_email-service:/home/ghost/ghost/email-service/node_modules:delegated
+      - node_modules_ghost_email-suppression-list:/home/ghost/ghost/email-suppression-list/node_modules:delegated
+      - node_modules_ghost_html-to-plaintext:/home/ghost/ghost/html-to-plaintext/node_modules:delegated
+      - node_modules_ghost_i18n:/home/ghost/ghost/i18n/node_modules:delegated
+      - node_modules_ghost_job-manager:/home/ghost/ghost/job-manager/node_modules:delegated
+      - node_modules_ghost_link-replacer:/home/ghost/ghost/link-replacer/node_modules:delegated
+      - node_modules_ghost_magic-link:/home/ghost/ghost/magic-link/node_modules:delegated
+      - node_modules_ghost_member-attribution:/home/ghost/ghost/member-attribution/node_modules:delegated
+      - node_modules_ghost_member-events:/home/ghost/ghost/member-events/node_modules:delegated
+      - node_modules_ghost_members-api:/home/ghost/ghost/members-api/node_modules:delegated
+      - node_modules_ghost_members-csv:/home/ghost/ghost/members-csv/node_modules:delegated
+      - node_modules_ghost_milestones:/home/ghost/ghost/milestones/node_modules:delegated
+      - node_modules_ghost_mw-error-handler:/home/ghost/ghost/mw-error-handler/node_modules:delegated
+      - node_modules_ghost_mw-vhost:/home/ghost/ghost/mw-vhost/node_modules:delegated
+      - node_modules_ghost_offers:/home/ghost/ghost/offers/node_modules:delegated
+      - node_modules_ghost_post-events:/home/ghost/ghost/post-events/node_modules:delegated
+      - node_modules_ghost_post-revisions:/home/ghost/ghost/post-revisions/node_modules:delegated
+      - node_modules_ghost_posts-service:/home/ghost/ghost/posts-service/node_modules:delegated
+      - node_modules_ghost_prometheus-metrics:/home/ghost/ghost/prometheus-metrics/node_modules:delegated
+      - node_modules_ghost_security:/home/ghost/ghost/security/node_modules:delegated
+      - node_modules_ghost_tiers:/home/ghost/ghost/tiers/node_modules:delegated
+      - node_modules_ghost_webmentions:/home/ghost/ghost/webmentions/node_modules:delegated
+      - node_modules_apps_admin-x-activitypub:/home/ghost/apps/admin-x-activitypub/node_modules:delegated
+      - node_modules_apps_admin-x-demo:/home/ghost/apps/admin-x-demo/node_modules:delegated
+      - node_modules_apps_admin-x-design-system:/home/ghost/apps/admin-x-design-system/node_modules:delegated
+      - node_modules_apps_admin-x-framework:/home/ghost/apps/admin-x-framework/node_modules:delegated
+      - node_modules_apps_admin-x-settings:/home/ghost/apps/admin-x-settings/node_modules:delegated
+      - node_modules_apps_announcement-bar:/home/ghost/apps/announcement-bar/node_modules:delegated
+      - node_modules_apps_comments-ui:/home/ghost/apps/comments-ui/node_modules:delegated
+      - node_modules_apps_portal:/home/ghost/apps/portal/node_modules:delegated
+      - node_modules_apps_posts:/home/ghost/apps/posts/node_modules:delegated
+      - node_modules_apps_shade:/home/ghost/apps/shade/node_modules:delegated
+      - node_modules_apps_signup-form:/home/ghost/apps/signup-form/node_modules:delegated
+      - node_modules_apps_sodo-search:/home/ghost/apps/sodo-search/node_modules:delegated
+      - node_modules_apps_stats:/home/ghost/apps/stats/node_modules:delegated
     tty: true
-    env_file:
-      - .env
     depends_on:
-      - mysql
-      - redis
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      - DEBUG=${DEBUG:-}
+      - SSH_AUTH_SOCK=/ssh-agent
+      - GHOST_DEV_IS_DOCKER=true
+      - GHOST_DEV_APP_FLAGS=${GHOST_DEV_APP_FLAGS:-}
+      - GHOST_UPSTREAM=${GHOST_UPSTREAM:-}
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY:-}
+      - STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY:-}
+      - STRIPE_ACCOUNT_ID=${STRIPE_ACCOUNT_ID:-}
   mysql:
     image: mysql:8.0.35
     container_name: ghost-mysql
-    # We'll need to look into how we can further fine tune the memory usage/performance here
     command: --innodb-buffer-pool-size=1G --innodb-log-buffer-size=500M --innodb-change-buffer-max-size=50 --innodb-flush-log-at-trx_commit=0 --innodb-flush-method=O_DIRECT
     ports:
-      - "3306:3306"
+      - 3306:3306
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: ghost
     restart: always
     volumes:
-      # Turns out you can drop .sql or .sql.gz files in here, cool!
       - ./.docker/mysql-preload:/docker-entrypoint-initdb.d
       - mysql-data:/var/lib/mysql
     healthcheck:
-      test: "mysql -uroot -proot ghost -e 'select 1'"
+      test: mysql -uroot -proot ghost -e 'select 1'
       interval: 1s
       retries: 120
   redis:
     image: redis:7.0
     container_name: ghost-redis
     ports:
-      - "6379:6379"
+      - 6379:6379
     restart: always
     volumes:
       - redis-data:/data
     healthcheck:
-      test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
+      test:
+        - CMD
+        - redis-cli
+        - --raw
+        - incr
+        - ping
       interval: 1s
       retries: 120
   prometheus:
-    profiles: [monitoring]
+    profiles: [ monitoring ]
     image: prom/prometheus:v2.30.3
     container_name: ghost-prometheus
     ports:
-      - "9090:9090"
+      - 9090:9090
     restart: always
     volumes:
       - ./.docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
   grafana:
-    profiles: [monitoring]
+    profiles: [ monitoring ]
     image: grafana/grafana:8.3.0
     container_name: ghost-grafana
     ports:
-      - "3000:3000"
+      - 3000:3000
     restart: always
     environment:
       - GF_AUTH_ANONYMOUS_ENABLED=true
@@ -73,11 +149,56 @@ services:
       - ./.docker/grafana/dashboard.yml:/etc/grafana/provisioning/dashboards/main.yaml
       - ./.docker/grafana/dashboards:/var/lib/grafana/dashboards
   pushgateway:
-    profiles: [monitoring]
+    profiles: [ monitoring ]
     image: prom/pushgateway:v1.6.0
     container_name: ghost-pushgateway
     ports:
-      - "9091:9091"
+      - 9091:9091
 volumes:
-  mysql-data:
-  redis-data:
+  mysql-data: {}
+  redis-data: {}
+  node_modules_ghost_root: {}
+  node_modules_ghost_admin: {}
+  node_modules_ghost_api-framework: {}
+  node_modules_ghost_constants: {}
+  node_modules_ghost_core: {}
+  node_modules_ghost_custom-fonts: {}
+  node_modules_ghost_custom-theme-settings-service: {}
+  node_modules_ghost_domain-events: {}
+  node_modules_ghost_donations: {}
+  node_modules_ghost_email-addresses: {}
+  node_modules_ghost_email-service: {}
+  node_modules_ghost_email-suppression-list: {}
+  node_modules_ghost_html-to-plaintext: {}
+  node_modules_ghost_i18n: {}
+  node_modules_ghost_job-manager: {}
+  node_modules_ghost_link-replacer: {}
+  node_modules_ghost_magic-link: {}
+  node_modules_ghost_member-attribution: {}
+  node_modules_ghost_member-events: {}
+  node_modules_ghost_members-api: {}
+  node_modules_ghost_members-csv: {}
+  node_modules_ghost_milestones: {}
+  node_modules_ghost_mw-error-handler: {}
+  node_modules_ghost_mw-vhost: {}
+  node_modules_ghost_offers: {}
+  node_modules_ghost_post-events: {}
+  node_modules_ghost_post-revisions: {}
+  node_modules_ghost_posts-service: {}
+  node_modules_ghost_prometheus-metrics: {}
+  node_modules_ghost_security: {}
+  node_modules_ghost_tiers: {}
+  node_modules_ghost_webmentions: {}
+  node_modules_apps_admin-x-activitypub: {}
+  node_modules_apps_admin-x-demo: {}
+  node_modules_apps_admin-x-design-system: {}
+  node_modules_apps_admin-x-framework: {}
+  node_modules_apps_admin-x-settings: {}
+  node_modules_apps_announcement-bar: {}
+  node_modules_apps_comments-ui: {}
+  node_modules_apps_portal: {}
+  node_modules_apps_posts: {}
+  node_modules_apps_shade: {}
+  node_modules_apps_signup-form: {}
+  node_modules_apps_sodo-search: {}
+  node_modules_apps_stats: {}

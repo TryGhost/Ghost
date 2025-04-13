@@ -250,8 +250,8 @@ export default class Anchor extends Component {
         const canvasFill = document.createElement('canvas');
         const ctxFill = canvasFill.getContext('2d');
         const gradientFill = ctxFill.createLinearGradient(0, 0, 1000, 0);
-        gradientFill.addColorStop(0, 'rgba(250, 45, 142, 0.2');
-        gradientFill.addColorStop(1, 'rgba(143, 66, 255, 0.1');
+        gradientFill.addColorStop(0, 'rgba(250, 45, 142, 0');
+        gradientFill.addColorStop(1, 'rgba(143, 66, 255, 0');
 
         return {
             labels: labels,
@@ -259,7 +259,7 @@ export default class Anchor extends Component {
                 data: data,
                 tension: 1,
                 cubicInterpolationMode: 'monotone',
-                fill: true,
+                fill: false,
                 fillColor: gradientFill,
                 backgroundColor: gradientFill,
                 pointRadius: 0,

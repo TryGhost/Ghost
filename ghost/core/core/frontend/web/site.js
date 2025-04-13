@@ -71,6 +71,7 @@ module.exports = function setupSiteApp(routerConfig) {
     // Serve stylesheets for default templates
     siteApp.use(mw.servePublicFile('static', 'public/ghost.css', 'text/css', config.get('caching:publicAssets:maxAge')));
     siteApp.use(mw.servePublicFile('static', 'public/ghost.min.css', 'text/css', config.get('caching:publicAssets:maxAge')));
+    siteApp.use(mw.servePublicFile('static', 'public/ghost-stats.js', 'application/javascript', config.get('caching:publicAssets:maxAge')));
 
     // Card assets
     siteApp.use(cardAssets.serveMiddleware(), mw.servePublicFile('built', 'public/cards.min.css', 'text/css', config.get('caching:publicAssets:maxAge')));
