@@ -4,7 +4,7 @@ import GhostContentAPI from '@tryghost/content-api';
 
 const cjkEncoderPresetCodepoint = {
     finalize: (terms) => {
-        let results = []
+        let results = [];
      
         for (const term of terms) {
             results.push(...tokenizeCjkByCodePoint(term));
@@ -32,22 +32,22 @@ function tokenizeCjkByCodePoint(text) {
     const result = [];
     let buffer = '';
 
-    for (const char of text) {      // loops over unicode characters
+    for (const char of text) { // loops over unicode characters
         const codePoint = char.codePointAt(0);
 
         if (isCJK(codePoint)) {
             if (buffer) {
-                result.push(buffer);  // Push any non-CJK word we’ve been building
+                result.push(buffer); // Push any non-CJK word we’ve been building
                 buffer = '';
             }
-            result.push(char);      // Push the CJK char as its own token
+            result.push(char); // Push the CJK char as its own token
         } else {
-            buffer += char;         // Keep building non-CJK text
+            buffer += char; // Keep building non-CJK text
         }
     }
 
     if (buffer) {
-        result.push(buffer);      // Push whatever is left when done
+        result.push(buffer); // Push whatever is left when done
     }
 
     return result;
@@ -55,7 +55,7 @@ function tokenizeCjkByCodePoint(text) {
 
 const encoderSet = new FlexSearch.Encoder(
     Charset.Default,
-    cjkEncoderPresetCodepoint,
+    cjkEncoderPresetCodepoint
 );
 
 export default class SearchIndex {
@@ -73,7 +73,7 @@ export default class SearchIndex {
             document: {
                 id: 'id',
                 index: ['title', 'excerpt'],
-                store: true,
+                store: true
             },
             encoder: encoderSet
         });
