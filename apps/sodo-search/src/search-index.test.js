@@ -43,7 +43,7 @@ describe('search index', function () {
                 posts: [{
                     id: 'sounique',
                     title: 'Awesome Barcelona Life',
-                    excerpt: 'We are sitting by the pool and smashing out search features. Barcelona life is great!',
+                    excerpt: 'We are sitting by the pool and smashing out search features. Barcelona life at 59 is great!',
                     url: 'http://localhost/ghost/awesome-barcelona-life/'
                 }]
             })
@@ -93,6 +93,13 @@ describe('search index', function () {
         expect(searchResults.posts.length).toEqual(0);
         expect(searchResults.authors.length).toEqual(0);
         expect(searchResults.tags.length).toEqual(0);
+
+        searchResults = searchIndex.search('59');
+        expect(searchResults.posts.length).toEqual(1);
+        expect(searchResults.posts[0].title).toEqual('Awesome Barcelona Life');
+
+        searchResults = searchIndex.search('12');
+        expect(searchResults.posts.length).toEqual(0);
 
         // confirms that search works in the forward direction for ltr languages:
         let searchWithStartResults = searchIndex.search('Barce');
@@ -237,6 +244,11 @@ describe('search index', function () {
         expect(searchResults.posts.length).toEqual(1);
         expect(searchResults.posts[0].url).toEqual('http://localhost/ghost/visting-china-as-a-polyglot/');
 
+        // search without accents (for a term with them)
+        searchResults = searchIndex.search('Regisztralj');
+        expect(searchResults.posts.length).toEqual(1);
+        expect(searchResults.posts[0].url).toEqual('http://localhost/ghost/visting-china-as-a-polyglot/');      
+
         searchResults = searchIndex.search('Nothing like this');
         expect(searchResults.posts.length).toEqual(0);
 
@@ -300,7 +312,11 @@ describe('search index', function () {
         searchResults = searchIndex.search('קונסקט');
         expect(searchResults.posts.length).toEqual(1);
         expect(searchResults.posts[0].url).toEqual('http://localhost/ghost/khdshvt-nyv-yvrq/');
-         
+        
+        // check that stemming doesn't happen from the wrong end of the word also.
+        searchResults = searchIndex.search('קטורר');
+        expect(searchResults.posts.length).toEqual(0);
+
         searchResults = searchIndex.search('סופר');
         expect(searchResults.authors.length).toEqual(1);
         expect(searchResults.authors[0].url).toEqual('http://localhost/ghost/authors/svpr/');
