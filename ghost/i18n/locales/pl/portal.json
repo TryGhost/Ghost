@@ -105,7 +105,7 @@
     "Manage": "Zarządzaj",
     "Maybe later": "Może później",
     "Memberships from this email domain are currently restricted.": "Członkostwo z tej domeny email jest obecnie ograniczone.",
-    "Memberships unavailable, contact the owner for access.": "Dostęp niemożliwy, skontaktuj się z właścielem strony w celu uzyskania dostępu.",
+    "Memberships unavailable, contact the owner for access.": "Dostęp niemożliwy, skontaktuj się z właścicielem strony w celu uzyskania dostępu.",
     "month": "miesiąc",
     "Monthly": "Miesięcznie",
     "More like this": "Więcej podobnych",
@@ -209,7 +209,7 @@
     "You've successfully subscribed to": "Pomyślnie zasubskrybowano",
     "Your account": "Twoje konto",
     "Your email has failed to resubscribe, please try again": "Ponowna subskrypcja Twojego emaila nie powiodła się, spróbuj ponownie",
-    "Your input helps shape what gets published.": "Twoja ocena pomoże nam lepiej kształtować nasz publikacje.",
+    "Your input helps shape what gets published.": "Twoja ocena pomoże nam lepiej kształtować nasze publikacje.",
     "Your subscription will expire on {{expiryDate}}": "Subskrypcja wygaśnie w dniu {{expiryDate}}",
     "Your subscription will renew on {{renewalDate}}": "Subskrypcja zostanie odnowiona w dniu {{renewalDate}}",
     "Your subscription will start on {{subscriptionStart}}": "Subskrypcja rozpocznie się w dniu {{subscriptionStart}}"
