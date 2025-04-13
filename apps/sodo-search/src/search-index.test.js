@@ -5,7 +5,7 @@ describe('search index', function () {
     test('initializes search index', async () => {
         const adminUrl = 'http://localhost:3000';
         const apiKey = '69010382388f9de5869ad6e558';
-        const searchIndex = new SearchIndex({adminUrl, apiKey, storage: localStorage});
+        const searchIndex = new SearchIndex({adminUrl, apiKey, storage: localStorage, locale: 'en'});
 
         const scope = nock('http://localhost:3000/ghost/api/content')
             .get('/posts/?key=69010382388f9de5869ad6e558&limit=10000&fields=id%2Cslug%2Ctitle%2Cexcerpt%2Curl%2Cupdated_at%2Cvisibility&order=updated_at%20DESC')
@@ -35,7 +35,7 @@ describe('search index', function () {
     test('allows to search for indexed posts and authors', async () => {
         const adminUrl = 'http://localhost:3000';
         const apiKey = '69010382388f9de5869ad6e558';
-        const searchIndex = new SearchIndex({adminUrl, apiKey, storage: localStorage});
+        const searchIndex = new SearchIndex({adminUrl, apiKey, storage: localStorage, locale: 'en'});
 
         nock('http://localhost:3000/ghost/api/content')
             .get('/posts/?key=69010382388f9de5869ad6e558&limit=10000&fields=id%2Cslug%2Ctitle%2Cexcerpt%2Curl%2Cupdated_at%2Cvisibility&order=updated_at%20DESC')
@@ -112,7 +112,7 @@ describe('search index', function () {
     test('searching works when dir = rtl also', async () => {
         const adminUrl = 'http://localhost:3000';
         const apiKey = '69010382388f9de5869ad6e558';
-        const searchIndex = new SearchIndex({adminUrl, apiKey, dir: 'ltr', storage: localStorage});
+        const searchIndex = new SearchIndex({adminUrl, apiKey, dir: 'ltr', storage: localStorage, locale: 'en'});
 
         nock('http://localhost:3000/ghost/api/content')
             .get('/posts/?key=69010382388f9de5869ad6e558&limit=10000&fields=id%2Cslug%2Ctitle%2Cexcerpt%2Curl%2Cupdated_at%2Cvisibility&order=updated_at%20DESC')
@@ -188,7 +188,7 @@ describe('search index', function () {
     test('searching handles CJK characters correctly', async () => {
         const adminUrl = 'http://localhost:3000';
         const apiKey = '69010382388f9de5869ad6e558';
-        const searchIndex = new SearchIndex({adminUrl, apiKey, dir: 'ltr', storage: localStorage});
+        const searchIndex = new SearchIndex({adminUrl, apiKey, dir: 'ltr', storage: localStorage, locale: 'en'});
 
         nock('http://localhost:3000/ghost/api/content')
             .get('/posts/?key=69010382388f9de5869ad6e558&limit=10000&fields=id%2Cslug%2Ctitle%2Cexcerpt%2Curl%2Cupdated_at%2Cvisibility&order=updated_at%20DESC')
@@ -210,7 +210,20 @@ describe('search index', function () {
                     title: '毅力和运气',
                     excerpt: '凭借运气和毅力，Cathy 将通过所有测试。',
                     url: 'http://localhost/ghost/a-post-in-chinese/'
-                }]
+                },
+                {
+                    id: 'sounique4',
+                    title: 'This is an expecially informational post',
+                    excerpt: 'This is an expecially informational post.',
+                    url: 'http://localhost/ghost/a-post-in-english/'
+                },
+                {
+                    id: 'sounique5',
+                    title: 'This is an expecially informative post',
+                    excerpt: 'This is an expecially informative post.',
+                    url: 'http://localhost/ghost/a-post-in-english2/'
+                }
+                ]
             })
             .get('/authors/?key=69010382388f9de5869ad6e558&limit=10000&fields=id,slug,name,url,profile_image&order=updated_at%20DESC')
             .reply(200, {
@@ -264,6 +277,22 @@ describe('search index', function () {
         // out of order English:
         searchResults = searchIndex.search('glenish');
         expect(searchResults.posts.length).toEqual(0);
+
+        // check stemming (note that locale is not set above, so it defaults to en)
+        searchResults = searchIndex.search('inform');
+        expect(searchResults.posts.length).toEqual(2);
+        expect(searchResults.posts[0].url).toEqual('http://localhost/ghost/a-post-in-english/');
+        expect(searchResults.posts[1].url).toEqual('http://localhost/ghost/a-post-in-english2/');
+
+        searchResults = searchIndex.search('informative');
+        expect(searchResults.posts.length).toEqual(2);
+        expect(searchResults.posts[0].url).toEqual('http://localhost/ghost/a-post-in-english/');
+        expect(searchResults.posts[1].url).toEqual('http://localhost/ghost/a-post-in-english2/');
+
+        searchResults = searchIndex.search('informational');
+        expect(searchResults.posts.length).toEqual(2);
+        expect(searchResults.posts[0].url).toEqual('http://localhost/ghost/a-post-in-english/');
+        expect(searchResults.posts[1].url).toEqual('http://localhost/ghost/a-post-in-english2/');
     });
 
     test('searching handles hebrew characters correctly', async () => {

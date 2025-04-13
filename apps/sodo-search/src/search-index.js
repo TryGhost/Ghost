@@ -1,7 +1,7 @@
-import Flexsearch, {Charset} from 'flexsearch';
-import englishPreset from 'flexsearch/lang/en';
-import frenchPreset from 'flexsearch/lang/fr';
-import germanPreset from 'flexsearch/lang/de';
+import {Charset, Document, Encoder} from 'flexsearch';
+const EnglishPreset = require('flexsearch/lang/en');
+const FrenchPreset = require('flexsearch/lang/fr');
+const GermanPreset = require('flexsearch/lang/de');
 import GhostContentAPI from '@tryghost/content-api';
 
 const cjkEncoderPresetCodepoint = {
@@ -58,25 +58,25 @@ function tokenizeCjkByCodePoint(text) {
 const chooseEncoder = (locale) => {
     switch (locale) {
     case 'en':
-        return new Flexsearch.Encoder(
+        return new Encoder(
             Charset.Default,
-            englishPreset,
+            EnglishPreset,
             cjkEncoderPresetCodepoint
         );
     case 'fr':
-        return new Flexsearch.Encoder(
+        return new Encoder(
             Charset.Default,
-            frenchPreset,
+            FrenchPreset,
             cjkEncoderPresetCodepoint
         );
     case 'de':
-        return new Flexsearch.Encoder(
+        return new Encoder(
             Charset.Default,
-            germanPreset,
+            GermanPreset,
             cjkEncoderPresetCodepoint
         );
     default:
-        return new Flexsearch.Encoder(
+        return new Encoder(
             Charset.Default,
             cjkEncoderPresetCodepoint
         );
@@ -92,7 +92,7 @@ export default class SearchIndex {
         });
         const rtl = (dir === 'rtl');
         const tokenize = (dir === 'rtl') ? 'reverse' : 'forward';
-        this.postsIndex = new Flexsearch.Document({
+        this.postsIndex = new Document({
             tokenize: tokenize,
             rtl: rtl,
             document: {
@@ -102,7 +102,7 @@ export default class SearchIndex {
             },
             encoder: chooseEncoder(locale)
         });
-        this.authorsIndex = new Flexsearch.Document({
+        this.authorsIndex = new Document({
             tokenize: tokenize,
             rtl: rtl,
             document: {
@@ -112,7 +112,7 @@ export default class SearchIndex {
             },
             encoder: chooseEncoder(locale)
         });
-        this.tagsIndex = new Flexsearch.Document({
+        this.tagsIndex = new Document({
             tokenize: tokenize,
             rtl: rtl,
             document: {

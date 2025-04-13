@@ -18473,6 +18473,11 @@ flexsearch@0.7.43:
   resolved "https://registry.yarnpkg.com/flexsearch/-/flexsearch-0.7.43.tgz#34f89b36278a466ce379c5bf6fb341965ed3f16c"
   integrity sha512-c5o/+Um8aqCSOXGcZoqZOm+NqtVwNsvVpWv6lfmSclU954O3wvQKxxK8zj74fPaSJbXpSLTs4PRhh+wnoCXnKg==
 
+flexsearch@0.8.153:
+  version "0.8.153"
+  resolved "https://registry.yarnpkg.com/flexsearch/-/flexsearch-0.8.153.tgz#31b60df47280929a026121f185972271bdfa5daf"
+  integrity sha512-IwD3iA4OcN+H5XihfbWEhK/QShx/31WT+RAB2ni/ICguQX+1w3iyP1w8mYEnCkQvj4jbAAE/uujaZocoB8TLKg==
+
 flow-parser@0.*:
   version "0.205.1"
   resolved "https://registry.yarnpkg.com/flow-parser/-/flow-parser-0.205.1.tgz#337464aaf027b00b2514610386cf21a5f7c94137"
