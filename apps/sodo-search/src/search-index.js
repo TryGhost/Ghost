@@ -1,4 +1,3 @@
-import Flexsearch from 'flexsearch';
 import FlexSearch, {Charset} from 'flexsearch';
 import GhostContentAPI from '@tryghost/content-api';
 
