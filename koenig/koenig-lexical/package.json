@@ -123,7 +123,7 @@
     "storybook": "^8.5.0",
     "stylelint": "16.18.0",
     "tailwindcss": "3.4.17",
-    "typescript": "5.5.4",
+    "typescript": "5.8.3",
     "vite": "4.5.13",
     "vite-plugin-svgr": "4.3.0",
     "vitest": "1.6.1",

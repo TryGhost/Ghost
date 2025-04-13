@@ -33,7 +33,7 @@
     "mocha": "10.8.2",
     "sinon": "17.0.1",
     "ts-node": "10.9.2",
-    "typescript": "5.5.4"
+    "typescript": "5.8.3"
   },
   "dependencies": {
     "@lexical/clipboard": "0.13.1",

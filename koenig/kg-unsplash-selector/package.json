@@ -50,7 +50,7 @@
     "postcss": "8.5.3",
     "postcss-import": "16.1.0",
     "tailwindcss": "3.4.17",
-    "typescript": "5.5.4",
+    "typescript": "5.8.3",
     "vite": "5.4.18",
     "vite-plugin-css-injected-by-js": "3.5.2",
     "vite-plugin-dts": "3.9.1",
