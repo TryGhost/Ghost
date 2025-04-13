@@ -57,34 +57,34 @@ function tokenizeCjkByCodePoint(text) {
 
 const chooseEncoder = (locale) => {
     switch (locale) {
-        case 'en':
-            return new Flexsearch.Encoder(
-                Charset.Default,
-                englishPreset,
-                cjkEncoderPresetCodepoint
-            );
-        case 'fr':
-            return new Flexsearch.Encoder(
-                Charset.Default,
-                frenchPreset,
-                cjkEncoderPresetCodepoint
-            );
-        case 'de':
-            return new Flexsearch.Encoder(
-                Charset.Default,
-                germanPreset,
-                cjkEncoderPresetCodepoint
-            );
-        default:
-            return new Flexsearch.Encoder(
-                Charset.Default,
-                cjkEncoderPresetCodepoint
-            );
+    case 'en':
+        return new Flexsearch.Encoder(
+            Charset.Default,
+            englishPreset,
+            cjkEncoderPresetCodepoint
+        );
+    case 'fr':
+        return new Flexsearch.Encoder(
+            Charset.Default,
+            frenchPreset,
+            cjkEncoderPresetCodepoint
+        );
+    case 'de':
+        return new Flexsearch.Encoder(
+            Charset.Default,
+            germanPreset,
+            cjkEncoderPresetCodepoint
+        );
+    default:
+        return new Flexsearch.Encoder(
+            Charset.Default,
+            cjkEncoderPresetCodepoint
+        );
     }
 };
 
 export default class SearchIndex {
-    constructor({adminUrl, apiKey, dir, locale='en'}) {
+    constructor({adminUrl, apiKey, dir, locale = 'en'}) {
         this.api = new GhostContentAPI({
             url: adminUrl,
             key: apiKey,
