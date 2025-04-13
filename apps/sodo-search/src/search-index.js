@@ -1,5 +1,87 @@
 import Flexsearch from 'flexsearch';
+import FlexSearch, {Charset} from 'flexsearch';
 import GhostContentAPI from '@tryghost/content-api';
+
+// We switch to specifying the CJK character ranges (which should change rarely?)
+// rather than specifying the non-CJK character ranges (hard!)
+const CJKRegex = new RegExp(
+    [
+      '[', // opening bracket for character set
+      // CJK Unified Ideographs
+      '\u{4E00}-\u{9FFF}',
+      // Japanese Hiragana and Katakana
+      '\u{3040}-\u{309F}\u{30A0}-\u{30FF}',
+      // Korean Hangul Syllables
+      '\u{AC00}-\u{D7A3}',
+      // CJK Unified Ideographs Extension A
+      '\u{3400}-\u{4DBF}',
+      // CJK Unified Ideographs Extension B
+      '\u{20000}-\u{2A6DF}',
+      // CJK Unified Ideographs Extension C
+      '\u{2A700}-\u{2B73F}',
+      // CJK Unified Ideographs Extension D
+      '\u{2B740}-\u{2B81F}',
+      // CJK Unified Ideographs Extension E
+      '\u{2B820}-\u{2CEAF}',
+      // CJK Unified Ideographs Extension F
+      '\u{2CEB0}-\u{2EBEF}',
+      // Additional ideographs
+      '\u{30000}-\u{3134F}',
+      '\u{31350}-\u{323AF}',
+      // More extensions
+      '\u{2EBF0}-\u{2EE5F}',
+      // Compatibility Ideographs
+      '\u{F900}-\u{FAFF}',
+      // Supplementary ideographs
+      '\u{2F800}-\u{2FA1F}',
+      ']'  // closing bracket for character set
+    ].join(''),
+    'mug'
+  );
+
+const CjkEncoderPreset = {
+    finalize: (terms) => {
+
+      let results = []
+  
+      const tokenizeCjkCharacterOnly = (text) => {
+        if (!text || text.length == 0) return [];
+  
+        const splited = [];
+        let lastIndex = -1;
+  
+        // Match CJK character one by one
+        for (const matched of text.matchAll(CJKRegex)) {
+          if (matched.index > lastIndex + 1) {
+            // Non-cjk string exists before the matched cjk character
+            splited.push(text.substring(lastIndex + 1, matched.index));
+            splited.push(text[matched.index]);
+          } else if (matched.index == lastIndex + 1) {
+            // It is continuous with the previous cjk character
+            splited.push(text[matched.index]);
+          } else {
+            // Actually this case should not happen
+          }
+          lastIndex = matched.index;
+        }
+  
+        if (lastIndex + 1 < text.length) {
+          // Add the rest of the string
+          splited.push(text.substring(lastIndex + 1, text.length));
+        }
+  
+        return splited;
+      }
+  
+      for (const term of terms) {
+        const splited = tokenizeCjkCharacterOnly(term);
+        results = results.concat(splited);
+      }
+  
+      return results;
+    },
+  
+  };
 
 export default class SearchIndex {
     constructor({adminUrl, apiKey, dir}) {
@@ -16,9 +98,13 @@ export default class SearchIndex {
             document: {
                 id: 'id',
                 index: ['title', 'excerpt'],
-                store: true
+                store: true,
             },
-            ...this.#getEncodeOptions()
+            encoder: new FlexSearch.Encoder(
+                Charset.Default,
+                CjkEncoderPreset
+            )
+            //...this.#getEncodeOptions()
         });
         this.authorsIndex = new Flexsearch.Document({
             tokenize: tokenize,
@@ -28,7 +114,11 @@ export default class SearchIndex {
                 index: ['name'],
                 store: true
             },
-            ...this.#getEncodeOptions()
+            encoder: new FlexSearch.Encoder(
+                Charset.Default,
+                CjkEncoderPreset
+            )
+                        //...this.#getEncodeOptions()
         });
         this.tagsIndex = new Flexsearch.Document({
             tokenize: tokenize,
@@ -38,7 +128,11 @@ export default class SearchIndex {
                 index: ['name'],
                 store: true
             },
-            ...this.#getEncodeOptions()
+            encoder: new FlexSearch.Encoder(
+                Charset.Default,
+                CjkEncoderPreset
+            )
+            //...this.#getEncodeOptions()
         });
 
         this.init = this.init.bind(this);
@@ -138,19 +232,6 @@ export default class SearchIndex {
             posts: this.#normalizeSearchResult(posts),
             authors: this.#normalizeSearchResult(authors),
             tags: this.#normalizeSearchResult(tags)
-        };
-    }
-
-    #getEncodeOptions() {
-        const regex = new RegExp(
-            `[\u{4E00}-\u{9FFF}\u{3040}-\u{309F}\u{30A0}-\u{30FF}\u{AC00}-\u{D7A3}\u{3400}-\u{4DBF}\u{20000}-\u{2A6DF}\u{2A700}-\u{2B73F}\u{2B740}-\u{2B81F}\u{2B820}-\u{2CEAF}\u{2CEB0}-\u{2EBEF}\u{30000}-\u{3134F}\u{31350}-\u{323AF}\u{2EBF0}-\u{2EE5F}\u{F900}-\u{FAFF}\u{2F800}-\u{2FA1F}]|[0-9A-Za-zа-я\u00C0-\u017F\u0400-\u04FF\u0600-\u06FF\u0980-\u09FF\u1E00-\u1EFF\u0590-\u05FF]+`,
-            'mug'
-        );
-
-        return {
-            encode: (str) => {
-                return ('' + str).toLowerCase().match(regex) ?? [];
-            }
         };
     }
 }
