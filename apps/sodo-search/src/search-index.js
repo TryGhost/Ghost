@@ -1,4 +1,4 @@
-import FlexSearch, {Charset} from 'flexsearch';
+import Flexsearch, {Charset} from 'flexsearch';
 import GhostContentAPI from '@tryghost/content-api';
 
 const cjkEncoderPresetCodepoint = {
@@ -52,7 +52,7 @@ function tokenizeCjkByCodePoint(text) {
     return result;
 }
 
-const encoderSet = new FlexSearch.Encoder(
+const encoderSet = new Flexsearch.Encoder(
     Charset.Default,
     cjkEncoderPresetCodepoint
 );
