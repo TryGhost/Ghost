@@ -1,36 +1,11 @@
 import CustomTooltipContent from '@src/components/chart/CustomTooltipContent';
 import React, {useState} from 'react';
-import {ChartConfig, ChartContainer, ChartTooltip, Recharts, Separator, Tabs, TabsList, TabsTrigger} from '@tryghost/shade';
+import {ChartConfig, ChartContainer, ChartTooltip, Recharts, Tabs, TabsList} from '@tryghost/shade';
+import {KpiTabTrigger, KpiTabValue} from './KpiTab';
 import {calculateYAxisWidth, getYTicks} from '@src/utils/chart-helpers';
 import {formatDisplayDate, formatDuration, formatNumber, formatPercentage, formatQueryDate} from '@src/utils/data-formatters';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useQuery} from '@tinybirdco/charts';
-
-interface KpiTabTriggerProps extends React.ComponentProps<typeof TabsTrigger> {
-    children: React.ReactNode;
-}
-
-const KpiTabTrigger: React.FC<KpiTabTriggerProps> = ({children, ...props}) => {
-    return (
-        <TabsTrigger className='h-auto' {...props}>
-            {children}
-        </TabsTrigger>
-    );
-};
-
-interface KpiTabValueProps {
-    label: string;
-    value: string | number;
-}
-
-const KpiTabValue: React.FC<KpiTabValueProps> = ({label, value}) => {
-    return (
-        <div className='flex w-full flex-col items-start'>
-            <span className='text-[1.5rem] tracking-tight'>{label}</span>
-            <span className='-mt-1 text-[2.3rem] tracking-[-0.04em]'>{value}</span>
-        </div>
-    );
-};
 
 type KpiMetric = {
     dataKey: string;
@@ -61,7 +36,7 @@ const KPI_METRICS: Record<string, KpiMetric> = {
     }
 };
 
-const Kpis:React.FC = () => {
+const WebKpis:React.FC = () => {
     const {data: configData, isLoading: isConfigLoading} = useGlobalData();
     const [currentTab, setCurrentTab] = useState('visits');
 
@@ -200,9 +175,8 @@ const Kpis:React.FC = () => {
                     </ChartContainer>
                 }
             </div>
-            <Separator />
         </Tabs>
     );
 };
 
-export default Kpis;
+export default WebKpis;
