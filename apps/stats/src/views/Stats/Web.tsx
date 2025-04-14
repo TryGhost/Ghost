@@ -1,13 +1,15 @@
+import DateRangeSelect from './components/DateRangeSelect';
 import Header from '@src/components/layout/Header';
-import React, {useState} from 'react';
+import React from 'react';
 import StatsLayout from './layout/StatsLayout';
 import WebKpis from './components/WebKpis';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle, Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue, Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@tryghost/shade';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle, Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@tryghost/shade';
 import {DEFAULT_RANGE_KEY, RANGE_OPTIONS} from '@src/utils/constants';
 import {formatNumber} from '@src/utils/data-formatters';
+import {useGlobalData} from '@src/providers/GlobalDataProvider';
 
 const Web:React.FC = () => {
-    const [range, setRange] = useState(RANGE_OPTIONS[DEFAULT_RANGE_KEY].value);
+    const {range} = useGlobalData();
 
     const posts = [
         {
@@ -18,7 +20,7 @@ const Web:React.FC = () => {
         },
         {
             id: 2,
-            title: 'Endless summer rusty dancemoves the scenic route captain’s table',
+            title: 'Endless summer rusty dancemoves the scenic route captain\'s table',
             visitors: 7536,
             views: 9746
         },
@@ -40,23 +42,7 @@ const Web:React.FC = () => {
         <StatsLayout>
             <Header>
                 Web
-                <Select value={`${range}`} onValueChange={(value) => {
-                    setRange(Number(value));
-                }}>
-                    <SelectTrigger className="w-[180px]">
-                        <SelectValue placeholder="Select a period" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectGroup>
-                            <SelectLabel>Period</SelectLabel>
-                            {RANGE_OPTIONS.map((option) => {
-                                return (
-                                    <SelectItem value={`${option.value}`}>{option.name}</SelectItem>
-                                );
-                            })}
-                        </SelectGroup>
-                    </SelectContent>
-                </Select>
+                <DateRangeSelect />
             </Header>
             <section className='grid grid-cols-1 gap-8'>
                 <Card variant='plain'>
