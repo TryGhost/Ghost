@@ -73,7 +73,7 @@
         "@radix-ui/react-form": "0.0.3",
         "@radix-ui/react-popover": "1.1.6",
         "@radix-ui/react-radio-group": "1.2.0",
-        "@radix-ui/react-select": "^2.1.7",
+        "@radix-ui/react-select": "2.1.7",
         "@radix-ui/react-separator": "1.1.1",
         "@radix-ui/react-slot": "1.1.2",
         "@radix-ui/react-switch": "1.1.0",
