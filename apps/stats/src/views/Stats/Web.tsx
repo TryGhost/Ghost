@@ -3,40 +3,39 @@ import Header from '@src/components/layout/Header';
 import React from 'react';
 import StatsLayout from './layout/StatsLayout';
 import WebKpis from './components/WebKpis';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle, Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@tryghost/shade';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle} from '@tryghost/shade';
 import {DEFAULT_RANGE_KEY, RANGE_OPTIONS} from '@src/utils/constants';
-import {formatNumber} from '@src/utils/data-formatters';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 
 const Web:React.FC = () => {
     const {range} = useGlobalData();
 
-    const posts = [
-        {
-            id: 1,
-            title: 'Top 3D printing secrets',
-            visitors: 8099,
-            views: 12875
-        },
-        {
-            id: 2,
-            title: 'Endless summer rusty dancemoves the scenic route captain\'s table',
-            visitors: 7536,
-            views: 9746
-        },
-        {
-            id: 3,
-            title: 'Three months in Asia the road less travelled whale shark diving vacation mood',
-            visitors: 6735,
-            views: 9644
-        },
-        {
-            id: 4,
-            title: 'Minimal & Functional Desk Setup in Arizona',
-            visitors: 5036,
-            views: 8730
-        }
-    ];
+    // const posts = [
+    //     {
+    //         id: 1,
+    //         title: 'Top 3D printing secrets',
+    //         visitors: 8099,
+    //         views: 12875
+    //     },
+    //     {
+    //         id: 2,
+    //         title: 'Endless summer rusty dancemoves the scenic route captain\'s table',
+    //         visitors: 7536,
+    //         views: 9746
+    //     },
+    //     {
+    //         id: 3,
+    //         title: 'Three months in Asia the road less travelled whale shark diving vacation mood',
+    //         visitors: 6735,
+    //         views: 9644
+    //     },
+    //     {
+    //         id: 4,
+    //         title: 'Minimal & Functional Desk Setup in Arizona',
+    //         visitors: 5036,
+    //         views: 8730
+    //     }
+    // ];
 
     return (
         <StatsLayout>
@@ -55,8 +54,9 @@ const Web:React.FC = () => {
                         <CardTitle>Top content on your website</CardTitle>
                         <CardDescription>Your highest viewed posts in the last 30 days.</CardDescription>
                     </CardHeader>
-                    <CardContent>
-                        <Table>
+                    <CardContent className='py-20 text-center text-gray-500'>
+                        Top posts table
+                        {/* <Table>
                             <TableHeader>
                                 <TableRow>
                                     <TableHead className='w-[60%]'>Post title</TableHead>
@@ -73,7 +73,7 @@ const Web:React.FC = () => {
                                     </TableRow>
                                 ))}
                             </TableBody>
-                        </Table>
+                        </Table> */}
                     </CardContent>
                 </Card>
             </section>
