@@ -4,6 +4,15 @@ const express = require('express');
 const SessionService = require('../../../../../../core/server/services/auth/session/session-service');
 
 describe('SessionService', function () {
+    let getSettingsCache;
+
+    beforeEach(function () {
+        getSettingsCache = sinon.stub();
+        getSettingsCache.withArgs('require_email_mfa').returns(false);
+        getSettingsCache.withArgs('title').returns('Test Title');
+        getSettingsCache.withArgs('admin_session_secret').returns('secret-key');
+    });
+
     it('Returns the user for the id stored on the session', async function () {
         const getSession = async (req) => {
             if (req.session) {
@@ -14,11 +23,7 @@ describe('SessionService', function () {
             };
             return req.session;
         };
-        const getSettingsCache = sinon.spy(async (key) => {
-            if (key === 'require_email_mfa') {
-                return false;
-            }
-        });
+
         const findUserById = sinon.spy(async ({id}) => ({id}));
         const getOriginOfRequest = sinon.stub().returns('origin');
         const labs = {
@@ -163,11 +168,7 @@ describe('SessionService', function () {
             };
             return req.session;
         };
-        const getSettingsCache = sinon.spy((key) => {
-            if (key === 'require_email_mfa') {
-                return false;
-            }
-        });
+
         const findUserById = sinon.spy(async ({id}) => ({id}));
         const getOriginOfRequest = sinon.stub().returns('origin');
         const labs = {
@@ -227,7 +228,6 @@ describe('SessionService', function () {
         };
         const findUserById = sinon.spy(async ({id}) => ({id}));
         const getOriginOfRequest = sinon.stub().returns('origin');
-        const getSettingsCache = sinon.stub().returns('secret-key');
         const labs = {
             isSet: () => true
         };
@@ -281,7 +281,6 @@ describe('SessionService', function () {
         };
         const findUserById = sinon.spy(async ({id}) => ({id}));
         const getOriginOfRequest = sinon.stub().returns('origin');
-        const getSettingsCache = sinon.stub().returns('secret-key');
         const labs = {
             isSet: true
         };
@@ -401,7 +400,6 @@ describe('SessionService', function () {
             send: sinon.stub().resolves()
         };
 
-        const getSettingsCache = sinon.stub().returns('site-title');
         const getBlogLogo = sinon.stub().returns('logo.png');
         const urlUtils = {
             urlFor: sinon.stub().returns('https://example.com')
@@ -455,7 +453,6 @@ describe('SessionService', function () {
             send: sinon.stub().rejects(new Error('Mail error'))
         };
 
-        const getSettingsCache = sinon.stub().returns('site-title');
         const getBlogLogo = sinon.stub().returns('logo.png');
         const urlUtils = {
             urlFor: sinon.stub().returns('https://example.com')
@@ -549,7 +546,6 @@ describe('SessionService', function () {
             send: sinon.stub().resolves()
         };
 
-        const getSettingsCache = sinon.stub().returns('site-title');
         const getBlogLogo = sinon.stub().returns('logo.png');
         const urlUtils = {
             urlFor: sinon.stub().returns('https://example.com')
@@ -573,7 +569,7 @@ describe('SessionService', function () {
         const req = Object.create(express.request);
         const res = Object.create(express.response);
 
-        await should(sessionService.sendAuthCodeToUser(req, res, {id: 'invalid'}))
+        await should(sessionService.sendAuthCodeToUser(req, res))
             .rejectedWith({
                 message: 'Could not fetch user from the session.'
             });
@@ -589,18 +585,14 @@ describe('SessionService', function () {
             };
             return req.session;
         };
-        const getSettingsCache = sinon.spy((key) => {
-            if (key === 'require_email_mfa') {
-                return true;
-            } else {
-                return 'site-title';
-            }
-        });
+
         const findUserById = sinon.spy(async ({id}) => ({id}));
         const getOriginOfRequest = sinon.stub().returns('origin');
         const labs = {
             isSet: () => true
         };
+
+        getSettingsCache.withArgs('require_email_mfa').returns(true);
 
         const sessionService = SessionService({
             getSession,
@@ -643,10 +635,6 @@ describe('SessionService', function () {
     });
 
     describe('isVerificationRequired', function () {
-        let getSettingsCache;
-        beforeEach(function () {
-            getSettingsCache = sinon.stub();
-        });
         it('returns true when require_email_mfa is true', async function () {
             getSettingsCache.withArgs('require_email_mfa').returns(true);
 
