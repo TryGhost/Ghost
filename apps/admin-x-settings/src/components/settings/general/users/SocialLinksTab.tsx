@@ -1,5 +1,4 @@
 import BehindFeatureFlag from '../../../BehindFeatureFlag';
-import CustomHeader from './CustomHeader';
 import {SettingGroup, SettingGroupContent, TextField} from '@tryghost/admin-x-design-system';
 import {UserDetailProps} from '../UserDetailModal';
 import {
@@ -226,11 +225,7 @@ export const DetailsInputs: React.FC<UserDetailProps> = ({errors, clearError, va
 
 const SocialLinksTab: React.FC<UserDetailProps> = (props) => {
     return (
-        <SettingGroup
-            border={false}
-            customHeader={<CustomHeader>Social links</CustomHeader>}
-            title='Details'
-        >
+        <SettingGroup border={false}>
             <DetailsInputs {...props} />
         </SettingGroup>
     );
