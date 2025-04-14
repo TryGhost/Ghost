@@ -112,7 +112,7 @@ test.describe('User profile', async () => {
             'The URL must be in a format like https://www.facebook.com/yourPage'
         );
 
-        const twitterInput = modal.getByLabel('X (formerly Twitter) profile');
+        const twitterInput = modal.getByLabel('X profile');
 
         await testUrlValidation(
             twitterInput,
@@ -155,7 +155,7 @@ test.describe('User profile', async () => {
         await modal.getByLabel('Location').fill('some location');
         await modal.getByLabel('Website').fill('https://example.com');
         await modal.getByLabel('Facebook profile').fill('fb');
-        await modal.getByLabel('X (formerly Twitter) profile').fill('tw');
+        await modal.getByLabel('X profile').fill('tw');
         await modal.getByLabel('Bio').fill('some bio');
 
         // Email notification settings
