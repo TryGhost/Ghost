@@ -430,17 +430,17 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
             dirty={saveState === 'unsaved'}
             okColor={okProps.color}
             okLabel={okProps.label || 'Save'}
-            size='md'
+            size={canAccessSettings(currentUser) ? 'md' : 'bleed'}
             stickyFooter={true}
             testId='user-detail-modal'
-            width={600}
+            width={canAccessSettings(currentUser) ? 600 : 'full'}
             onOk={async () => {
                 await (handleSave({fakeWhenUnchanged: true}));
             }}
         >
             <div>
-                <div className={`relative ${canAccessSettings(currentUser) ? '-mx-8 -mt-8 rounded-t' : '-mx-10 -mt-10'} bg-gradient-to-tr from-grey-900 to-black`}>
-                    <div className={`flex flex-wrap items-end justify-between gap-8 py-8 ${formState.cover_image ? 'bg-cover bg-center' : ''}`} 
+                <div className={`relative ${canAccessSettings(currentUser) ? '-mx-8 -mt-8 rounded-t' : '-mx-10 -mt-10'} from-grey-900 bg-gradient-to-tr to-black`}>
+                    <div className={`flex flex-wrap items-end justify-between gap-8 py-8 ${formState.cover_image ? 'bg-cover bg-center' : ''} ${!canAccessSettings(currentUser) && 'min-h-[30vmin]'}`} 
                         style={{
                             backgroundImage: formState.cover_image ? `url(${formState.cover_image})` : 'none'
                         }}>
@@ -519,7 +519,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                         </div>
                     </div>
                 </div>
-                <div className={`${!canAccessSettings(currentUser) && 'mx-auto max-w-4xl'} mt-10 flex flex-col`}>
+                <div className={`${!canAccessSettings(currentUser) && 'mx-auto max-w-[536px]'} mt-10 flex flex-col`}>
                     <TabView
                         selectedTab={selectedTab}
                         tabs={[
