@@ -24426,6 +24426,16 @@ nconf@0.12.1, nconf@^0.12.0:
     secure-keys "^1.0.0"
     yargs "^16.1.1"
 
+nconf@0.13.0:
+  version "0.13.0"
+  resolved "https://registry.yarnpkg.com/nconf/-/nconf-0.13.0.tgz#5a1c8d4376da06236ed5f3e38774b1cf62a19525"
+  integrity sha512-hJ/u2xCpA663h6xyOiztx3y+lg9eU0rdkwJ+c4FtiHo2g/gB0sjXtW31yTdMLWLOIj1gL2FcJMwfOqouuUK/Wg==
+  dependencies:
+    async "^3.0.0"
+    ini "^2.0.0"
+    secure-keys "^1.0.0"
+    yargs "^16.1.1"
+
 ncp@~2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/ncp/-/ncp-2.0.0.tgz#195a21d6c46e361d2fb1281ba38b91e9df7bdbb3"
