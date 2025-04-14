@@ -90,7 +90,7 @@ const EmailNotificationsInputs: React.FC<{ user: User; setUserData: (user: User)
     );
 };
 
-const EmailNotifications: React.FC<{ user: User; setUserData: (user: User) => void; }> = ({user, setUserData}) => {
+const EmailNotificationsTab: React.FC<{ user: User; setUserData: (user: User) => void; }> = ({user, setUserData}) => {
     return (
         <SettingGroup
             border={false}
@@ -103,4 +103,4 @@ const EmailNotifications: React.FC<{ user: User; setUserData: (user: User) => vo
     );
 };
 
-export default EmailNotifications;
+export default EmailNotificationsTab;

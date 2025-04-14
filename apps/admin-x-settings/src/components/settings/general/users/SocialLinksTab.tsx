@@ -1,6 +1,6 @@
 import BehindFeatureFlag from '../../../BehindFeatureFlag';
 import CustomHeader from './CustomHeader';
-import {SettingGroup, SettingGroupContent, TextArea, TextField} from '@tryghost/admin-x-design-system';
+import {SettingGroup, SettingGroupContent, TextField} from '@tryghost/admin-x-design-system';
 import {UserDetailProps} from '../UserDetailModal';
 import {
     blueskyHandleToUrl,
@@ -46,16 +46,6 @@ export const DetailsInputs: React.FC<UserDetailProps> = ({errors, clearError, va
 
     return (
         <SettingGroupContent>
-            <TextField
-                error={!!errors?.location}
-                hint={errors?.location || 'Where in the world do you live?'}
-                maxLength={65535}
-                title="Location"
-                value={user.location || ''}
-                onChange={(e) => {
-                    setUserData({...user, location: e.target.value});
-                }}
-                onKeyDown={() => clearError('location')} />
             <TextField
                 error={!!errors?.website}
                 hint={errors?.website || 'Have a website or blog other than this one? Link it!'}
@@ -230,25 +220,15 @@ export const DetailsInputs: React.FC<UserDetailProps> = ({errors, clearError, va
                     onKeyDown={() => clearError('mastodon')} />
 
             </BehindFeatureFlag>
-            <TextArea
-                error={!!errors?.bio}
-                hint={errors?.bio || <>Recommended: 200 characters. You&lsquo;ve used <span className='font-bold'>{user.bio?.length || 0}</span></>}
-                maxLength={65535}
-                title="Bio"
-                value={user.bio || ''}
-                onChange={(e) => {
-                    setUserData({...user, bio: e.target.value});
-                }}
-                onKeyDown={() => clearError('bio')} />
         </SettingGroupContent>
     );
 };
 
-const ProfileDetails: React.FC<UserDetailProps> = (props) => {
+const SocialLinksTab: React.FC<UserDetailProps> = (props) => {
     return (
         <SettingGroup
             border={false}
-            customHeader={<CustomHeader>Details</CustomHeader>}
+            customHeader={<CustomHeader>Social links</CustomHeader>}
             title='Details'
         >
             <DetailsInputs {...props} />
@@ -256,4 +236,4 @@ const ProfileDetails: React.FC<UserDetailProps> = (props) => {
     );
 };
 
-export default ProfileDetails;
+export default SocialLinksTab;
