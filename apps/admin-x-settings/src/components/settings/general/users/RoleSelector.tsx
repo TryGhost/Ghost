@@ -12,7 +12,7 @@ const RoleSelector: React.FC<{ user: User; setUserData: (user: User) => void; }>
         return (
             <>
                 <Heading level={6}>Role</Heading>
-                <div className='flex h-[295px] flex-col items-center justify-center gap-3 bg-grey-75 px-10 py-20 text-center text-sm text-grey-800 dark:bg-grey-950 dark:text-white'>
+                <div className='flex flex-col items-center justify-center gap-3 bg-grey-75 px-10 py-12 text-center text-sm text-grey-800 dark:bg-grey-950 dark:text-white'>
                     <Icon colorClass='text-grey-800 dark:text-white' name='crown' size='lg' />
                     This user is the owner of the site. To change their role, you need to transfer the ownership first.
                 </div>
