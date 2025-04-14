@@ -17,11 +17,12 @@
                         type="text"
                         inputmode="numeric"
                         pattern="[0-9]*"
-                        placeholder="123456"
+                        placeholder="******"
                         autocomplete="one-time-code"
                         class="gh-input"
                         value={{this.token}}
                         data-test-input="token"
+                        data-1p-ignore
                         {{on "input" this.handleTokenInput}}
                     />
 
@@ -54,7 +55,6 @@
             @useAccentColor={{true}}
             data-test-button="verify"
         />
-        <p class="main-notification">Not receiving the emails? <a href="https://ghost.org/docs/config/#mail" target="_blank" rel="noopener noreferrer">Learn more</a></p>
 
         {{#if (or this.flowErrors this.verifyData.validationMessage)}}
             <p class="response" data-test-error="verify">{{or this.flowErrors this.verifyData.validationMessage}}</p>

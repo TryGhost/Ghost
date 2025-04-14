@@ -1,0 +1,42 @@
+NODE query_filters
+DESCRIPTION >
+    Get sessions that match the filter criteria
+
+SQL >
+    %
+    select distinct session_id
+    from _mv_hits
+    where
+         site_uuid = {{ String(site_uuid, 'mock_site_uuid', description="Tenant ID", required=True) }}
+        {% if defined(date_from) %} and toDate(toTimezone(timestamp, {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}})) >= {{ Date(date_from) }} {% else %} and toDate(toTimezone(timestamp, {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}})) >= timestampAdd(today(), interval -7 day) {% end %}
+        {% if defined(date_to) %} and toDate(toTimezone(timestamp, {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}})) <= {{ Date(date_to) }} {% else %} and toDate(toTimezone(timestamp, {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}})) <= today() {% end %}
+        {% if defined(member_status) %}
+            and member_status IN (
+                select arrayJoin(
+                    {{ Array(member_status, "'undefined', 'free', 'paid'", description="Member status to filter on", required=False) }}
+                    || if('paid' IN {{ Array(member_status) }}, ['comped'], [])
+                )
+            )
+        {% end %}
+        {% if defined(device) %} and device = {{ String(device, description="Device to filter on", required=False) }} {% end %}
+        {% if defined(browser) %} and browser = {{ String(browser, description="Browser to filter on", required=False) }} {% end %}
+        {% if defined(os) %} and os = {{ String(os, description="Operating system to filter on", required=False) }} {% end %}
+        {% if defined(source) %} and source = {{ String(source, description="Source to filter on", required=False) }} {% end %}
+        {% if defined(location) %} and location = {{ String(location, description="Location to filter on", required=False) }} {% end %}
+        {% if defined(pathname) %} and pathname = {{ String(pathname, description="Pathname to filter on", required=False) }} {% end %}
+
+
+NODE sessions_filtered_by_source
+DESCRIPTION > 
+    Further filter by source when using the source filter. This is necessary because the source is specific to the first hit in a session,
+    whereas other filters are on hits.
+
+SQL >
+    %
+    select session_id
+    from mv_session_data sd
+    inner join query_filters qf
+      on qf.session_id = sd.session_id
+    where
+        site_uuid = {{ String(site_uuid, 'mock_site_uuid', description="Tenant ID", required=True) }}
+        {% if defined(source) %} and source = {{ String(source, description="Source to filter on", required=False) }} {% end %}

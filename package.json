@@ -57,8 +57,10 @@
     "tb": "COMPOSE_PROFILES=${COMPOSE_PROFILES:-ghost} docker compose run --rm --no-deps -it -w /home/ghost/ghost/web-analytics ghost /bin/bash --init-file /home/ghost/ghost/web-analytics/entrypoint.sh",
     "tbcli": "docker run --rm -v $(pwd):/ghost -w /ghost/ghost/web-analytics -it tinybirdco/tinybird-cli-docker /bin/bash --init-file /ghost/ghost/web-analytics/entrypoint.sh",
     "tb:update": "docker pull tinybirdco/tinybird-cli-docker",
-    "tb:local": "docker start tinybird-local 2>/dev/null || docker run --platform linux/amd64 -p 7181:7181 --name tinybird-local -d tinybirdco/tinybird-local:latest && echo 'Waiting for Tinybird to be ready...' && until curl -s http://localhost:7181/tokens > /dev/null; do sleep 1; done && docker run --rm -v $(pwd):/ghost -w /ghost/ghost/web-analytics -it tinybirdco/tinybird-cli-docker /bin/sh -c '(command -v curl >/dev/null && command -v jq >/dev/null) || (apt-get update && apt-get install -y curl jq) && TOKEN=$(curl -s http://host.docker.internal:7181/tokens | jq -r .workspace_admin_token) && tb auth --host http://host.docker.internal:7181 --token \"$TOKEN\" && /bin/sh'",
-    "tb:local:stop": "docker stop tinybird-local && docker rm tinybird-local"
+    "tb:local": "tb local start",
+    "tb:local:stop": "docker stop tinybird-local && docker rm tinybird-local",
+    "tbf:install": "curl https://tinybird.co | sh",
+    "tbf": "tb local start && cd ghost/core/core/server/data/tinybird && tb dev"
   },
   "resolutions": {
     "@tryghost/errors": "1.3.5",
@@ -79,7 +81,7 @@
     "eslint-plugin-react": "7.37.5",
     "husky": "8.0.3",
     "inquirer": "8.2.6",
-    "lint-staged": "15.5.0",
+    "lint-staged": "15.5.1",
     "nx": "19.8.14",
     "rimraf": "5.0.10",
     "ts-node": "10.9.2",

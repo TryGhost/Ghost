@@ -1,0 +1,28 @@
+NODE mv_hits_0
+SQL >
+
+    SELECT
+        site_uuid,
+        session_id,
+        finalizeAggregation(countState()) as pageviews,
+        finalizeAggregation(minState(timestamp)) as first_pageview,
+        finalizeAggregation(maxState(timestamp)) as last_pageview,
+        argMin(source, timestamp) as source
+    FROM _mv_hits
+    GROUP BY site_uuid, session_id
+
+
+
+NODE data
+SQL >
+
+    SELECT
+        site_uuid,
+        session_id,
+        pageviews,
+        first_pageview,
+        last_pageview,
+        last_pageview - first_pageview AS duration,
+        pageviews = 1 AS is_bounce,
+        source
+    FROM mv_hits_0
