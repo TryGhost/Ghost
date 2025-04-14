@@ -430,20 +430,21 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
             dirty={saveState === 'unsaved'}
             okColor={okProps.color}
             okLabel={okProps.label || 'Save'}
-            size={canAccessSettings(currentUser) ? 'lg' : 'bleed'}
+            size='md'
             stickyFooter={true}
             testId='user-detail-modal'
+            width={600}
             onOk={async () => {
                 await (handleSave({fakeWhenUnchanged: true}));
             }}
         >
             <div>
-                <div className={`relative bg-gradient-to-tr ${canAccessSettings(currentUser) ? '-mx-8 -mt-8 rounded-t' : '-mx-10 -mt-10'} from-grey-900 to-black`}>
-                    <div className='flex min-h-[40vmin] flex-wrap items-end justify-between bg-cover bg-center' 
+                <div className={`relative ${canAccessSettings(currentUser) ? '-mx-8 -mt-8 rounded-t' : '-mx-10 -mt-10'} bg-gradient-to-tr from-grey-900 to-black`}>
+                    <div className={`flex flex-wrap items-end justify-between gap-8 py-8 ${formState.cover_image ? 'bg-cover bg-center' : ''}`} 
                         style={{
                             backgroundImage: formState.cover_image ? `url(${formState.cover_image})` : 'none'
                         }}>
-                        <div className='flex w-full max-w-[620px] flex-col gap-5 p-8 md:max-w-[auto] md:flex-row md:items-center'>
+                        <div className='flex w-full max-w-[620px] flex-col gap-5 px-8 md:max-w-[auto] md:flex-row md:items-center'>
                             <div>
                                 <ImageUpload
                                     deleteButtonClassName='md:invisible absolute pr-3 -right-2 -top-2 flex h-8 w-10 cursor-pointer items-center justify-end rounded-full bg-[rgba(0,0,0,0.75)] text-white group-hover:!visible'
@@ -453,7 +454,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                                     fileUploadProps={{dragIndicatorClassName: 'rounded-full'}}
                                     id='avatar'
                                     imageClassName='w-full h-full object-cover rounded-full shrink-0'
-                                    imageContainerClassName='relative group bg-cover bg-center -ml-2 h-[80px] w-[80px] shrink-0'
+                                    imageContainerClassName='relative group bg-cover bg-center -ml-2 h-16 w-16 shrink-0'
                                     imageURL={formState.profile_image ?? undefined}
                                     pintura={
                                         {
@@ -479,11 +480,11 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                                 </ImageUpload>
                             </div>
                             <div>
-                                <Heading styles='break-words md:break-normal text-white'>{user.name}{suspendedText}</Heading>
-                                <span className='text-md font-semibold capitalize text-white'>{user.roles[0].name.toLowerCase()}</span>
+                                <Heading level={3} styles='break-words md:break-normal text-white'>{user.name}{suspendedText}</Heading>
+                                <span className='text-md font-medium capitalize text-white'>{user.roles[0].name.toLowerCase()}</span>
                             </div>
                         </div>
-                        <div className='flex flex-nowrap items-end gap-4 p-8'>
+                        <div className='flex flex-nowrap items-end gap-4 px-8'>
                             <ImageUpload
                                 buttonContainerClassName='flex items-end gap-4 justify-end flex-nowrap'
                                 deleteButtonClassName={deleteButtonClasses}
@@ -518,7 +519,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                         </div>
                     </div>
                 </div>
-                <div className={`${!canAccessSettings(currentUser) && 'mx-auto max-w-4xl'} mt-10 grid grid-cols-1 gap-x-12 gap-y-20 md:grid-cols-2`}>
+                <div className={`${!canAccessSettings(currentUser) && 'mx-auto max-w-4xl'} mt-10 flex flex-col`}>
                     <ProfileBasics clearError={clearError} errors={errors} setUserData={setUserData} user={formState} validateField={validateField} />
                     <div className='flex flex-col justify-between gap-10'>
                         <ProfileDetails clearError={clearError} errors={errors} setUserData={setUserData} user={formState} validateField={validateField} />
