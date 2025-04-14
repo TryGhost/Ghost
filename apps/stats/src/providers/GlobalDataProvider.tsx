@@ -5,6 +5,7 @@ import {ReactNode, createContext, useContext, useState} from 'react';
 type GlobalData = Config & {
     config: {
         stats?: {
+            endpoint: string;
             id: string;
             token: string;
         };
