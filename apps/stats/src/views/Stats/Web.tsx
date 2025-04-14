@@ -4,39 +4,31 @@ import React from 'react';
 import StatsLayout from './layout/StatsLayout';
 import WebKpis from './components/WebKpis';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle, Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@tryghost/shade';
-import {DEFAULT_RANGE_KEY, RANGE_OPTIONS} from '@src/utils/constants';
-import {formatNumber} from '@src/utils/data-formatters';
+import {STATS_DEFAULT_RANGE_KEY, STATS_RANGE_OPTIONS} from '@src/utils/constants';
+import {formatNumber, formatQueryDate} from '@src/utils/data-formatters';
+import {getRangeDates} from '@src/utils/chart-helpers';
+import {getStatEndpointUrl} from '@src/config/stats-config';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
+import {useQuery} from '@tinybirdco/charts';
 
 const Web:React.FC = () => {
+    const {data: configData, isLoading: isConfigLoading} = useGlobalData();
     const {range} = useGlobalData();
+    const {today, startDate} = getRangeDates(range);
 
-    const posts = [
-        {
-            id: 1,
-            title: 'Top 3D printing secrets',
-            visitors: 8099,
-            views: 12875
-        },
-        {
-            id: 2,
-            title: 'Endless summer rusty dancemoves the scenic route captain\'s table',
-            visitors: 7536,
-            views: 9746
-        },
-        {
-            id: 3,
-            title: 'Three months in Asia the road less travelled whale shark diving vacation mood',
-            visitors: 6735,
-            views: 9644
-        },
-        {
-            id: 4,
-            title: 'Minimal & Functional Desk Setup in Arizona',
-            visitors: 5036,
-            views: 8730
-        }
-    ];
+    const params = {
+        site_uuid: configData?.config.stats?.id || '',
+        date_from: formatQueryDate(startDate),
+        date_to: formatQueryDate(today)
+    };
+
+    const {data, loading} = useQuery({
+        endpoint: getStatEndpointUrl(configData?.config.stats?.endpoint, 'api_top_pages'),
+        token: configData?.config.stats?.token || '',
+        params
+    });
+
+    const isLoading = isConfigLoading || loading;
 
     return (
         <StatsLayout>
@@ -44,36 +36,38 @@ const Web:React.FC = () => {
                 Web
                 <DateRangeSelect />
             </Header>
-            <section className='grid grid-cols-1 gap-8'>
+            <section className='grid grid-cols-1 gap-8 pb-8'>
                 <Card variant='plain'>
                     <CardContent>
-                        <WebKpis range={isNaN(range) ? RANGE_OPTIONS[DEFAULT_RANGE_KEY].value : range} />
+                        <WebKpis range={isNaN(range) ? STATS_RANGE_OPTIONS[STATS_DEFAULT_RANGE_KEY].value : range} />
                     </CardContent>
                 </Card>
                 <Card variant='plain'>
                     <CardHeader>
                         <CardTitle>Top content on your website</CardTitle>
-                        <CardDescription>Your highest viewed posts in the last 30 days.</CardDescription>
+                        <CardDescription>Your highest viewed posts in this period</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead className='w-[60%]'>Post title</TableHead>
-                                    <TableHead className='w-[20%]'>Visitors</TableHead>
-                                    <TableHead>Views</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {posts.map(post => (
-                                    <TableRow key={post.id}>
-                                        <TableCell className="font-medium">{post.title}</TableCell>
-                                        <TableCell>{formatNumber(post.visitors)}</TableCell>
-                                        <TableCell>{formatNumber(post.views)}</TableCell>
+                        {isLoading ? 'Loading' :
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead className='w-[80%]'>Content</TableHead>
+                                        <TableHead className='w-[20%]'>Visitors</TableHead>
                                     </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
+                                </TableHeader>
+                                <TableBody>
+                                    {data?.map((row) => {
+                                        return (
+                                            <TableRow key={row.pathname}>
+                                                <TableCell className="font-medium">{row.pathname}</TableCell>
+                                                <TableCell>{formatNumber(Number(row.visits))}</TableCell>
+                                            </TableRow>
+                                        );
+                                    })}
+                                </TableBody>
+                            </Table>
+                        }
                     </CardContent>
                 </Card>
             </section>
