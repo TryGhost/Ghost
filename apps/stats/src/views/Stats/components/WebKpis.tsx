@@ -2,8 +2,9 @@ import CustomTooltipContent from '@src/components/chart/CustomTooltipContent';
 import React, {useState} from 'react';
 import {ChartConfig, ChartContainer, ChartTooltip, Recharts, Tabs, TabsList} from '@tryghost/shade';
 import {KpiTabTrigger, KpiTabValue} from './KpiTab';
-import {calculateYAxisWidth, getYTicks} from '@src/utils/chart-helpers';
+import {calculateYAxisWidth, getRangeDates, getYTicks} from '@src/utils/chart-helpers';
 import {formatDisplayDate, formatDuration, formatNumber, formatPercentage, formatQueryDate} from '@src/utils/data-formatters';
+import {getStatEndpointUrl} from '@src/config/stats-config';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useQuery} from '@tinybirdco/charts';
 
@@ -43,20 +44,16 @@ interface WebKpisProps {
 const WebKpis:React.FC<WebKpisProps> = ({range}) => {
     const {data: configData, isLoading: isConfigLoading} = useGlobalData();
     const [currentTab, setCurrentTab] = useState('visits');
-
-    // Calculate days to range
-    const today = new Date();
-    const thirtyDaysAgo = new Date(today);
-    thirtyDaysAgo.setDate(today.getDate() - range);
+    const {today, startDate} = getRangeDates(range);
 
     const params = {
         site_uuid: configData?.config.stats?.id || '',
-        date_from: formatQueryDate(thirtyDaysAgo),
+        date_from: formatQueryDate(startDate),
         date_to: formatQueryDate(today)
     };
 
     const {data, loading} = useQuery({
-        endpoint: 'https://api.tinybird.co/v0/pipes/api_kpis__v7.json',
+        endpoint: getStatEndpointUrl(configData?.config.stats?.endpoint, 'api_kpis'),
         token: configData?.config.stats?.token || '',
         params
     });
@@ -170,7 +167,7 @@ const WebKpis:React.FC<WebKpisProps> = ({range}) => {
                                 dataKey="value"
                                 dot={false}
                                 isAnimationActive={false}
-                                stroke="#8E42FF"
+                                stroke="hsl(var(--chart-1))"
                                 strokeWidth={2}
                                 type='bump'
                             />

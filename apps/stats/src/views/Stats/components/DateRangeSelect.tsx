@@ -1,5 +1,5 @@
 import React from 'react';
-import {RANGE_OPTIONS} from '@src/utils/constants';
+import {STATS_RANGE_OPTIONS} from '@src/utils/constants';
 import {Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue} from '@tryghost/shade';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 
@@ -16,7 +16,7 @@ const DateRangeSelect: React.FC = () => {
             <SelectContent>
                 <SelectGroup>
                     <SelectLabel>Period</SelectLabel>
-                    {RANGE_OPTIONS.map(option => (
+                    {STATS_RANGE_OPTIONS.map(option => (
                         <SelectItem key={option.value} value={`${option.value}`}>
                             {option.name}
                         </SelectItem>
