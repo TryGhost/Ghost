@@ -1,11 +1,14 @@
 import Header from '@src/components/layout/Header';
-import React from 'react';
+import React, {useState} from 'react';
 import StatsLayout from './layout/StatsLayout';
 import WebKpis from './components/WebKpis';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle, Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue, Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@tryghost/shade';
+import {DEFAULT_RANGE_KEY, RANGE_OPTIONS} from '@src/utils/constants';
 import {formatNumber} from '@src/utils/data-formatters';
 
 const Web:React.FC = () => {
+    const [range, setRange] = useState(RANGE_OPTIONS[DEFAULT_RANGE_KEY].value);
+
     const posts = [
         {
             id: 1,
@@ -37,20 +40,20 @@ const Web:React.FC = () => {
         <StatsLayout>
             <Header>
                 Web
-                <Select value='last-30-days'>
+                <Select value={`${range}`} onValueChange={(value) => {
+                    setRange(Number(value));
+                }}>
                     <SelectTrigger className="w-[180px]">
                         <SelectValue placeholder="Select a period" />
                     </SelectTrigger>
                     <SelectContent>
                         <SelectGroup>
                             <SelectLabel>Period</SelectLabel>
-                            <SelectItem value="today">Today</SelectItem>
-                            <SelectItem value="last-7-days">Last 7 days</SelectItem>
-                            <SelectItem value="last-30-days">Last 30 days</SelectItem>
-                            <SelectItem value="last-3-months">Last 3 months</SelectItem>
-                            <SelectItem value="year-to-date">Year to date</SelectItem>
-                            <SelectItem value="last-12-months">Last 12 months</SelectItem>
-                            <SelectItem value="all-time">All time</SelectItem>
+                            {RANGE_OPTIONS.map((option) => {
+                                return (
+                                    <SelectItem value={`${option.value}`}>{option.name}</SelectItem>
+                                );
+                            })}
                         </SelectGroup>
                     </SelectContent>
                 </Select>
@@ -58,7 +61,7 @@ const Web:React.FC = () => {
             <section className='grid grid-cols-1 gap-8'>
                 <Card variant='plain'>
                     <CardContent>
-                        <WebKpis />
+                        <WebKpis range={isNaN(range) ? RANGE_OPTIONS[DEFAULT_RANGE_KEY].value : range} />
                     </CardContent>
                 </Card>
                 <Card variant='plain'>

@@ -36,15 +36,18 @@ const KPI_METRICS: Record<string, KpiMetric> = {
     }
 };
 
-const WebKpis:React.FC = () => {
+interface WebKpisProps {
+    range: number;
+}
+
+const WebKpis:React.FC<WebKpisProps> = ({range}) => {
     const {data: configData, isLoading: isConfigLoading} = useGlobalData();
     const [currentTab, setCurrentTab] = useState('visits');
 
-    // Calculate last 30 days range
-    // TODO: move this to a selectable date range
+    // Calculate days to range
     const today = new Date();
     const thirtyDaysAgo = new Date(today);
-    thirtyDaysAgo.setDate(today.getDate() - 30);
+    thirtyDaysAgo.setDate(today.getDate() - range);
 
     const params = {
         site_uuid: configData?.config.stats?.id || '',
