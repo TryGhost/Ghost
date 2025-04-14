@@ -2,7 +2,7 @@ import DateRangeSelect from './components/DateRangeSelect';
 import Header from '@src/components/layout/Header';
 import React from 'react';
 import StatsLayout from './layout/StatsLayout';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle, Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@tryghost/shade';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, Recharts, Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@tryghost/shade';
 import {formatNumber, formatQueryDate} from '@src/utils/data-formatters';
 import {getRangeDates} from '@src/utils/chart-helpers';
 import {getStatEndpointUrl} from '@src/config/stats-config';
@@ -28,6 +28,45 @@ const Sources:React.FC = () => {
 
     const isLoading = isConfigLoading || loading;
 
+    const colors = React.useMemo(() => [
+        'hsl(var(--chart-1))',
+        'hsl(var(--chart-2))',
+        'hsl(var(--chart-3))',
+        'hsl(var(--chart-4))',
+        'hsl(var(--chart-5))'
+    ], []);
+
+    const chartData = React.useMemo(() => {
+        if (!data) {
+            return [];
+        }
+
+        // Sort by visits and take top 5
+        const topSources = [...data]
+            .sort((a, b) => Number(b.visits) - Number(a.visits))
+            .slice(0, 5);
+
+        // Transform into chart data format
+        return topSources.map((source, index) => ({
+            source: String(source.source || 'Direct'),
+            visitors: Number(source.visits),
+            fill: colors[index]
+        }));
+    }, [data, colors]);
+
+    const chartConfig = {
+        visitors: {
+            label: 'Visitors'
+        },
+        ...chartData.reduce((acc, source, index) => ({
+            ...acc,
+            [source.source.toLowerCase()]: {
+                label: source.source,
+                color: colors[index]
+            }
+        }), {})
+    } satisfies ChartConfig;
+
     return (
         <StatsLayout>
             <Header>
@@ -40,15 +79,31 @@ const Sources:React.FC = () => {
                         <CardTitle>Top sources</CardTitle>
                         <CardDescription>How readers are finding your site</CardDescription>
                     </CardHeader>
-                    <CardContent className='border-none py-20 text-center text-gray-500'>
-                        Top sources visuals
+                    <CardContent className='border-none text-gray-500'>
+                        <ChartContainer
+                            className="mx-auto aspect-square max-h-[320px]"
+                            config={chartConfig}
+                        >
+                            <Recharts.PieChart>
+                                <ChartTooltip
+                                    content={<ChartTooltipContent hideLabel />}
+                                    cursor={false}
+                                />
+                                <Recharts.Pie
+                                    data={chartData}
+                                    dataKey="visitors"
+                                    innerRadius={90}
+                                    nameKey="source"
+                                />
+                                {/* <ChartLegend
+                                    className="-translate-y-2 flex-wrap gap-2 [&>*]:basis-1/4 [&>*]:justify-center"
+                                    content={<ChartLegendContent nameKey="source" />}
+                                /> */}
+                            </Recharts.PieChart>
+                        </ChartContainer>
                     </CardContent>
                 </Card>
                 <Card variant='plain'>
-                    <CardHeader>
-                        <CardTitle>All sources</CardTitle>
-                        <CardDescription>A breakdown of where your traffic is coming from</CardDescription>
-                    </CardHeader>
                     <CardContent>
                         {isLoading ? 'Loading' :
                             <Table>
@@ -56,14 +111,16 @@ const Sources:React.FC = () => {
                                     <TableRow>
                                         <TableHead className='w-[80%]'>Source</TableHead>
                                         <TableHead className='w-[20%]'>Visitors</TableHead>
+                                        <TableHead className='w-5'></TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {data?.map((row) => {
+                                    {data?.map((row, key) => {
                                         return (
                                             <TableRow key={row.source || 'direct'}>
                                                 <TableCell className="font-medium">{row.source || 'Direct'}</TableCell>
                                                 <TableCell>{formatNumber(Number(row.visits))}</TableCell>
+                                                <TableCell>{key < 5 && <span className='inline-block size-[10px] rounded-[2px]' style={{backgroundColor: colors[key]}}></span>}</TableCell>
                                             </TableRow>
                                         );
                                     })}

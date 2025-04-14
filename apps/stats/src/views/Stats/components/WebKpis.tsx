@@ -167,7 +167,7 @@ const WebKpis:React.FC<WebKpisProps> = ({range}) => {
                                 dataKey="value"
                                 dot={false}
                                 isAnimationActive={false}
-                                stroke="#8E42FF"
+                                stroke="hsl(var(--chart-1))"
                                 strokeWidth={2}
                                 type='bump'
                             />
