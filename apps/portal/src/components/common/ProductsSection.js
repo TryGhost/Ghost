@@ -359,7 +359,7 @@ export const ProductsSectionStyles = () => {
             left: 0;
             right: 0;
             bottom: 0;
-            background: linear-gradient(0deg, rgba(var(--whitergb),1) 60%, rgba(var(--whitergb),0) 100%);
+            /*background: linear-gradient(0deg, rgba(var(--whitergb),1) 60%, rgba(var(--whitergb),0) 100%);*/
             z-index: 800;
         }
 
