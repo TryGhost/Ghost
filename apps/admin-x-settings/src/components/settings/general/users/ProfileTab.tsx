@@ -1,5 +1,4 @@
 import ChangePasswordForm from './ChangePasswordForm';
-import CustomHeader from './CustomHeader';
 import RoleSelector from './RoleSelector';
 import StaffToken from './StaffToken';
 import {SettingGroup, SettingGroupContent, TextArea, TextField} from '@tryghost/admin-x-design-system';
@@ -72,11 +71,7 @@ const BasicInputs: React.FC<UserDetailProps> = ({errors, clearError, user, setUs
 
 const ProfileTab: React.FC<UserDetailProps> = (props) => {
     return (
-        <SettingGroup
-            border={false}
-            customHeader={<CustomHeader>Profile</CustomHeader>}
-            title='Basic'
-        >
+        <SettingGroup border={false}>
             <BasicInputs {...props} />
         </SettingGroup>
     );

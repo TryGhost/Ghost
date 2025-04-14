@@ -1,14 +1,14 @@
 import EmailNotificationsTab from './users/EmailNotificationsTab';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import ProfileTab from './users/ProfileTab';
-import React, {useCallback, useEffect} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import SocialLinksTab from './users/SocialLinksTab';
 import clsx from 'clsx';
 import usePinturaEditor from '../../../hooks/usePinturaEditor';
 import useStaffUsers from '../../../hooks/useStaffUsers';
 import validator from 'validator';
 import {APIError} from '@tryghost/admin-x-framework/errors';
-import {ConfirmationModal, Heading, Icon, ImageUpload, LimitModal, Menu, MenuItem, Modal, showToast} from '@tryghost/admin-x-design-system';
+import {ConfirmationModal, Heading, Icon, ImageUpload, LimitModal, Menu, MenuItem, Modal, TabView, showToast} from '@tryghost/admin-x-design-system';
 import {ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {HostLimitError, useLimiter} from '../../../hooks/useLimiter';
 import {RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
@@ -340,6 +340,8 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
     );
 
     const suspendedText = formState.status === 'inactive' ? ' (Suspended)' : '';
+    
+    const [selectedTab, setSelectedTab] = useState<string>('profile');
 
     return (
         <Modal
@@ -441,9 +443,27 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                     </div>
                 </div>
                 <div className={`${!canAccessSettings(currentUser) && 'mx-auto max-w-4xl'} mt-10 flex flex-col`}>
-                    <ProfileTab clearError={clearError} errors={errors} setUserData={setUserData} user={formState} validateField={validateField} />
-                    <SocialLinksTab clearError={clearError} errors={errors} setUserData={setUserData} user={formState} validateField={validateField} />
-                    <EmailNotificationsTab setUserData={setUserData} user={formState} />
+                    <TabView
+                        selectedTab={selectedTab}
+                        tabs={[
+                            {
+                                id: 'profile',
+                                title: 'Profile',
+                                contents: <ProfileTab clearError={clearError} errors={errors} setUserData={setUserData} user={formState} validateField={validateField} />
+                            },
+                            {
+                                id: 'social-links',
+                                title: 'Social Links',
+                                contents: <SocialLinksTab clearError={clearError} errors={errors} setUserData={setUserData} user={formState} validateField={validateField} />
+                            },
+                            {
+                                id: 'email-notifications',
+                                title: 'Email Notifications',
+                                contents: <EmailNotificationsTab setUserData={setUserData} user={formState} />
+                            }
+                        ]}
+                        onTabChange={setSelectedTab}
+                    />
                 </div>
             </div>
         </Modal>
