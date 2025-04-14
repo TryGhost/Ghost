@@ -20,7 +20,7 @@ interface NotificationItemProps {
 const NotificationItem = ({children, onClick, url, className}: NotificationItemProps) => {
     return (
         <NotificationContext.Provider value={{onClick, url}}>
-            <div className={`relative -mx-4 -my-px grid cursor-pointer grid-cols-[auto_1fr] gap-x-3 gap-y-2 rounded-lg p-4 text-left hover:bg-gray-75 ${className}`}
+            <div className={`relative -mx-4 -my-px grid cursor-pointer grid-cols-[auto_1fr] gap-x-3 gap-y-2 break-all rounded-lg p-4 text-left hover:bg-gray-75 ${className}`}
                 role='button'
                 onClick={onClick}
             >
