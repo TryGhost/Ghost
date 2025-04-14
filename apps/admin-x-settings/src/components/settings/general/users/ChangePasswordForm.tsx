@@ -231,9 +231,8 @@ const ChangePasswordForm: React.FC<{user: User}> = ({user}) => {
     return (
         <SettingGroup
             border={false}
-            customHeader={<Heading level={4}>Password</Heading>}
+            customHeader={<Heading useLabelTag={true}>Password</Heading>}
             title='Password'
-
         >
             {editPassword ? form : view}
         </SettingGroup>

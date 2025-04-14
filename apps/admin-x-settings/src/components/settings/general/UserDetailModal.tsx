@@ -1,10 +1,8 @@
-import ChangePasswordForm from './users/ChangePasswordForm';
-import EmailNotifications from './users/EmailNotifications';
+import EmailNotificationsTab from './users/EmailNotificationsTab';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
-import ProfileBasics from './users/ProfileBasics';
-import ProfileDetails from './users/ProfileDetails';
+import ProfileTab from './users/ProfileTab';
 import React, {useCallback, useEffect} from 'react';
-import StaffToken from './users/StaffToken';
+import SocialLinksTab from './users/SocialLinksTab';
 import clsx from 'clsx';
 import usePinturaEditor from '../../../hooks/usePinturaEditor';
 import useStaffUsers from '../../../hooks/useStaffUsers';
@@ -443,13 +441,9 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                     </div>
                 </div>
                 <div className={`${!canAccessSettings(currentUser) && 'mx-auto max-w-4xl'} mt-10 flex flex-col`}>
-                    <ProfileBasics clearError={clearError} errors={errors} setUserData={setUserData} user={formState} validateField={validateField} />
-                    <div className='flex flex-col justify-between gap-10'>
-                        <ProfileDetails clearError={clearError} errors={errors} setUserData={setUserData} user={formState} validateField={validateField} />
-                        {user.id === currentUser.id && <StaffToken />}
-                    </div>
-                    <EmailNotifications setUserData={setUserData} user={formState} />
-                    <ChangePasswordForm user={formState} />
+                    <ProfileTab clearError={clearError} errors={errors} setUserData={setUserData} user={formState} validateField={validateField} />
+                    <SocialLinksTab clearError={clearError} errors={errors} setUserData={setUserData} user={formState} validateField={validateField} />
+                    <EmailNotificationsTab setUserData={setUserData} user={formState} />
                 </div>
             </div>
         </Modal>
