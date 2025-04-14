@@ -55,7 +55,7 @@ export const GlobalStyles = `
             --grey13: #333;
             --grey13rgb: 33,33,33;
             --grey14: #1d1d1d;
-            --white: #000;
+            --white: var(--grey14);
             --whitergb: 255,255,255;
             --brandcolor: #dea4ff;
         }

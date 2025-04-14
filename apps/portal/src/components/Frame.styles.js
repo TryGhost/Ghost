@@ -438,6 +438,7 @@ html[dir="rtl"] .gh-portal-btn-site-title-back span {
     bottom: 24px;
     left: 24px;
     z-index: 9999;
+    display: none;
 }
 html[dir="rtl"] .gh-portal-powered {
     left: unset;
