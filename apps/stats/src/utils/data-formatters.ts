@@ -36,7 +36,7 @@ export const formatDuration = (seconds: number): string => {
         return `${minutes}m ${remainingSeconds}s`;
     }
 
-    return `${hours}:${minutes}:${remainingSeconds}`;
+    return `${hours}h ${minutes}m ${remainingSeconds}s`;
 };
 
 export const formatPercentage = (value: number) => {

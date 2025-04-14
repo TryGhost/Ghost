@@ -1,5 +1,6 @@
 import {Config, useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
-import {ReactNode, createContext, useContext} from 'react';
+import {DEFAULT_RANGE_KEY, RANGE_OPTIONS} from '@src/utils/constants';
+import {ReactNode, createContext, useContext, useState} from 'react';
 
 type GlobalData = Config & {
     config: {
@@ -13,12 +14,23 @@ type GlobalData = Config & {
 type GlobalDataContextType = {
     data: GlobalData | undefined;
     isLoading: boolean;
+    range: number;
+    setRange: (value: number) => void;
 }
 
 const GlobalDataContext = createContext<GlobalDataContextType | undefined>(undefined);
 
+export const useGlobalData = () => {
+    const context = useContext(GlobalDataContext);
+    if (!context) {
+        throw new Error('useGlobalData must be used within a GlobalDataProvider');
+    }
+    return context;
+};
+
 const GlobalDataProvider = ({children}: { children: ReactNode }) => {
     const config = useBrowseConfig() as unknown as { data: GlobalData | null, isLoading: boolean, error: Error | null };
+    const [range, setRange] = useState(RANGE_OPTIONS[DEFAULT_RANGE_KEY].value);
 
     const requests = [config];
     const error = requests.map(request => request.error).find(Boolean);
@@ -30,18 +42,12 @@ const GlobalDataProvider = ({children}: { children: ReactNode }) => {
 
     return <GlobalDataContext.Provider value={{
         data: config.data ?? undefined,
-        isLoading
+        isLoading,
+        range,
+        setRange
     }}>
         {children}
     </GlobalDataContext.Provider>;
-};
-
-export const useGlobalData = () => {
-    const context = useContext(GlobalDataContext);
-    if (!context) {
-        throw new Error('useGlobalData must be used within a GlobalDataProvider');
-    }
-    return context;
 };
 
 export default GlobalDataProvider;

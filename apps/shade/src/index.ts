@@ -10,13 +10,14 @@ export * from './components/ui/dialog';
 export * from './components/ui/dropdown-menu';
 export * from './components/ui/input';
 export * from './components/ui/popover';
+export * from './components/ui/right-sidebar';
 export * from './components/ui/separator';
+export * from './components/ui/select';
 export * from './components/ui/sheet';
 export * from './components/ui/sidebar';
 export * from './components/ui/skeleton';
 export * from './components/ui/table';
 export * from './components/ui/tabs';
-// export {Tooltip as ShadeTooltip, TooltipTrigger, TooltipContent, TooltipProvider} from './components/ui/tooltip';
 export * from './components/ui/tooltip';
 
 // Layout components
