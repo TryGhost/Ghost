@@ -3,6 +3,7 @@ import Header from '@src/components/layout/Header';
 import React from 'react';
 import StatsLayout from './layout/StatsLayout';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, Recharts, Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@tryghost/shade';
+import {STATS_DEFAULT_SOURCE_ICON_URL} from '@src/utils/constants';
 import {formatNumber, formatQueryDate} from '@src/utils/data-formatters';
 import {getRangeDates} from '@src/utils/chart-helpers';
 import {getStatEndpointUrl} from '@src/config/stats-config';
@@ -73,7 +74,7 @@ const Sources:React.FC = () => {
                 Sources
                 <DateRangeSelect />
             </Header>
-            <section className='grid grid-cols-1 gap-8'>
+            <section className='grid grid-cols-1 gap-8 pb-8'>
                 <Card variant='plain'>
                     <CardHeader className='border-none'>
                         <CardTitle>Top sources</CardTitle>
@@ -81,7 +82,7 @@ const Sources:React.FC = () => {
                     </CardHeader>
                     <CardContent className='border-none text-gray-500'>
                         <ChartContainer
-                            className="mx-auto aspect-square max-h-[320px]"
+                            className="mx-auto aspect-square max-h-[300px]"
                             config={chartConfig}
                         >
                             <Recharts.PieChart>
@@ -95,15 +96,11 @@ const Sources:React.FC = () => {
                                     innerRadius={90}
                                     nameKey="source"
                                 />
-                                {/* <ChartLegend
-                                    className="-translate-y-2 flex-wrap gap-2 [&>*]:basis-1/4 [&>*]:justify-center"
-                                    content={<ChartLegendContent nameKey="source" />}
-                                /> */}
                             </Recharts.PieChart>
                         </ChartContainer>
                     </CardContent>
                 </Card>
-                <Card variant='plain'>
+                <Card className='-mt-10' variant='plain'>
                     <CardContent>
                         {isLoading ? 'Loading' :
                             <Table>
@@ -118,7 +115,17 @@ const Sources:React.FC = () => {
                                     {data?.map((row, key) => {
                                         return (
                                             <TableRow key={row.source || 'direct'}>
-                                                <TableCell className="font-medium">{row.source || 'Direct'}</TableCell>
+                                                <TableCell className="font-medium">
+                                                    <span className='flex items-center gap-1'>
+                                                        <img
+                                                            className="gh-stats-favicon"
+                                                            src={`https://www.faviconextractor.com/favicon/${row.source || 'direct'}?larger=true`}
+                                                            onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+                                                                e.currentTarget.src = STATS_DEFAULT_SOURCE_ICON_URL;
+                                                            }} />
+                                                        {row.source || 'Direct'}
+                                                    </span>
+                                                </TableCell>
                                                 <TableCell>{formatNumber(Number(row.visits))}</TableCell>
                                                 <TableCell>{key < 5 && <span className='inline-block size-[10px] rounded-[2px]' style={{backgroundColor: colors[key]}}></span>}</TableCell>
                                             </TableRow>

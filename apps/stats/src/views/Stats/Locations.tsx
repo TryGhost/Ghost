@@ -2,12 +2,20 @@ import DateRangeSelect from './components/DateRangeSelect';
 import Header from '@src/components/layout/Header';
 import React from 'react';
 import StatsLayout from './layout/StatsLayout';
+import countries from 'i18n-iso-countries';
+import enLocale from 'i18n-iso-countries/langs/en.json';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle, Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@tryghost/shade';
+import {STATS_LABEL_MAPPINGS} from '@src/utils/constants';
 import {formatNumber, formatQueryDate} from '@src/utils/data-formatters';
-import {getRangeDates} from '@src/utils/chart-helpers';
+import {getCountryFlag, getRangeDates} from '@src/utils/chart-helpers';
 import {getStatEndpointUrl} from '@src/config/stats-config';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useQuery} from '@tinybirdco/charts';
+
+countries.registerLocale(enLocale);
+const getCountryName = (label: string) => {
+    return STATS_LABEL_MAPPINGS[label as keyof typeof STATS_LABEL_MAPPINGS] || countries.getName(label, 'en') || 'Unknown';
+};
 
 const Locations:React.FC = () => {
     const {data: configData, isLoading: isConfigLoading} = useGlobalData();
@@ -34,7 +42,7 @@ const Locations:React.FC = () => {
                 Locations
                 <DateRangeSelect />
             </Header>
-            <section className='grid grid-cols-1 gap-8'>
+            <section className='grid grid-cols-1 gap-8 pb-8'>
                 <Card variant='plain'>
                     <CardContent className='border-none py-20 text-center text-gray-500'>
                         Map
@@ -56,9 +64,12 @@ const Locations:React.FC = () => {
                                 </TableHeader>
                                 <TableBody>
                                     {data?.map((row) => {
+                                        const countryName = getCountryName(`${row.location}`) || 'Unknown';
                                         return (
                                             <TableRow key={row.location || 'unknown'}>
-                                                <TableCell className="font-medium">{row.location || 'Unknown'}</TableCell>
+                                                <TableCell className="font-medium">
+                                                    <span title={countryName || 'Unknown'}>{getCountryFlag(`${row.location}`)} {countryName}</span>
+                                                </TableCell>
                                                 <TableCell>{formatNumber(Number(row.visits))}</TableCell>
                                             </TableRow>
                                         );

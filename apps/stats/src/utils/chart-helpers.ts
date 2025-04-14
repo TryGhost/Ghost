@@ -42,3 +42,14 @@ export const getRangeDates = (range: number) => {
     startDate.setDate(today.getDate() - range);
     return {today, startDate};
 };
+
+/**
+ * Converts a country code to corresponding flag emoji
+ */
+export function getCountryFlag(countryCode:string) {
+    if (!countryCode || countryCode === null || countryCode.toUpperCase() === 'ᴺᵁᴸᴸ') {
+        return '🏳️';
+    }
+    return countryCode.toUpperCase().replace(/./g, char => String.fromCodePoint(char.charCodeAt(0) + 127397)
+    );
+}
