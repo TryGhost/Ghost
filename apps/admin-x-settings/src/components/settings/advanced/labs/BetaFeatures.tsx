@@ -33,6 +33,10 @@ const BetaFeatures: React.FC = () => {
                 detail={<>Adds the excerpt input below the post title in the editor</>}
                 title='Show post excerpt inline' />
             <LabItem
+                action={<FeatureToggle flag="staff2fa" />}
+                detail={<>Enables support for staff multi-factor authentication</>}
+                title='Staff multi-factor authentication' />
+            <LabItem
                 action={<FeatureToggle flag="additionalPaymentMethods" />}
                 detail={<>Enable support for CashApp, iDEAL, Bancontact, and others. <a className='text-green' href="https://ghost.org/help/payment-methods" rel="noopener noreferrer" target="_blank">Learn more &rarr;</a></>}
                 title='Additional payment methods' />
