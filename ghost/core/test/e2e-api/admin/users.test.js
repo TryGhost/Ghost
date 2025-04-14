@@ -474,4 +474,19 @@ describe('User API', function () {
         should(res.body.id).not.be.equal(id);
         should(res.body.secret).not.be.equal(secret);
     });
+
+    it('can update a users social urls', async function () {
+        const res = await request.put(localUtils.API.getApiQuery('users/me/'))
+            .set('Origin', config.get('url'))
+            .send({
+                users: [{facebook: 'https://facebook.com/ronaldlangeveld', twitter: 'https://twitter.com/ronaldlangeveld', threads: 'https://threads.net/@ronaldlangeveld'}]
+            })
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200);
+
+        res.body.users[0].facebook.should.eql('https://facebook.com/ronaldlangeveld');
+        res.body.users[0].twitter.should.eql('https://twitter.com/ronaldlangeveld');
+        res.body.users[0].threads.should.eql('https://threads.net/@ronaldlangeveld');
+    });
 });
