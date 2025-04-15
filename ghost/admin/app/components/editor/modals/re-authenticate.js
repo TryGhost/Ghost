@@ -70,6 +70,9 @@ export default class ReAuthenticateModal extends Component {
             }
 
             if (isTwoFactorTokenRequiredError(error)) {
+                let errorCode = error.payload?.errors[0]?.code;
+                // login was successful, but 2FA verification is required
+                this.session.set('errorCode', errorCode);
                 yield this.modals.open('editor/modals/re-verify');
                 this.args.close();
                 return true;
