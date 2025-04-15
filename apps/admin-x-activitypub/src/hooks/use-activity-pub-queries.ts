@@ -1221,6 +1221,11 @@ export function usePostsByAccount(profileHandle: string, options: {enabled: bool
                     posts: response.posts.map(mapPostToActivity),
                     next: response.next
                 };
+            }).catch(() => {
+                return {
+                    posts: [],
+                    next: null
+                };
             });
         },
         getNextPageParam(prevPage) {
