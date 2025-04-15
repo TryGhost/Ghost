@@ -3,3 +3,14 @@
 .admin-x-base.shade {
     animation-name: none;
 }
+
+.map-chart-base-fill {
+    fill: #006DAB;
+}
+
+.svg-map-container .svg-map {
+    stroke: #FFFFFF;
+    stroke-width: 1;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
