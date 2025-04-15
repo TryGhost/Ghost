@@ -68,6 +68,27 @@ const author = (attrs, frame) => {
         if (attrs.location === '') {
             attrs.location = null;
         }
+        if (attrs.threads === '') {
+            attrs.threads = null;
+        }
+        if (attrs.bluesky === '') {
+            attrs.bluesky = null;
+        }
+        if (attrs.mastodon === '') {
+            attrs.mastodon = null;
+        }
+        if (attrs.tiktok === '') {
+            attrs.tiktok = null;
+        }
+        if (attrs.youtube === '') {
+            attrs.youtube = null;
+        }
+        if (attrs.instagram === '') {
+            attrs.instagram = null;
+        }
+        if (attrs.linkedin === '') {
+            attrs.linkedin = null;
+        }
     }
 
     // @NOTE: unused fields

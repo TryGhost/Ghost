@@ -18,6 +18,12 @@ export type User = {
     location: string|null;
     facebook: string|null;
     twitter: string|null;
+    threads: string|null;
+    bluesky: string|null;
+    mastodon: string|null;
+    tiktok: string|null;
+    youtube: string|null;
+    instagram: string|null;
     accessibility: string|null;
     status: string;
     meta_title: string|null;

@@ -1,7 +1,7 @@
 import {StaffTokenResponseType} from '@tryghost/admin-x-framework/api/staffToken';
 import {expect, test} from '@playwright/test';
 import {globalDataRequests} from '../../../utils/acceptance';
-import {mockApi, responseFixtures, settingsWithStripe, testUrlValidation} from '@tryghost/admin-x-framework/test/acceptance';
+import {mockApi, responseFixtures, settingsWithStripe, testUrlValidation, toggleLabsFlag} from '@tryghost/admin-x-framework/test/acceptance';
 
 test.describe('User profile', async () => {
     test('Validates basic profile fields', async ({page}) => {
@@ -55,7 +55,8 @@ test.describe('User profile', async () => {
 
     test('Validates social links', async ({page}) => {
         const userToEdit = responseFixtures.users.users.find(user => user.email === 'administrator@test.com')!;
-
+        // activate social links feature flag
+        toggleLabsFlag('socialLinks', true);
         await mockApi({page, requests: {
             ...globalDataRequests,
             browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
@@ -122,6 +123,23 @@ test.describe('User profile', async () => {
             'thisusernamehasmorethan15characters',
             'thisusernamehasmorethan15characters',
             'Your Username is not a valid Twitter Username'
+        );
+
+        // test Threads URL validation
+        const threadsInput = modal.getByLabel('Threads profile');
+
+        // await testUrlValidation(
+        //     threadsInput,
+        //     'threads.net/username',
+        //     'https://www.threads.net/@username',
+        //     'The URL must be in a format like https://www.threads.net/@yourUsername'
+        // );
+
+        await testUrlValidation(
+            threadsInput,
+            'threadsnotvalid.com/username',
+            'https://www.threadsinvalid.net/username',
+            'The URL must be in a format like https://www.threads.com/@yourUsername'
         );
     });
 

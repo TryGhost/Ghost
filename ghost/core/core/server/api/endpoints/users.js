@@ -56,7 +56,14 @@ function shouldInvalidateCacheAfterChange(model) {
         'status',
         'visibility',
         'meta_title',
-        'meta_description'
+        'meta_description',
+        'threads',
+        'bluesky',
+        'mastodon',
+        'tiktok',
+        'youtube',
+        'instagram',
+        'linkedin'
     ];
 
     if (model.wasChanged() === false) {

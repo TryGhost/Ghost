@@ -57,11 +57,50 @@ export function validateTwitterUrl(newUrl: string) {
     }
 }
 
+export function validateThreadsUrl(newUrl: string) {
+    const errMessage = 'The URL must be in a format like https://www.threads.net/@yourUsername';
+    if (!newUrl) {
+        return '';
+    }
+
+    // strip any threads URLs out
+    newUrl = newUrl.replace(/(https?:\/\/)?(www\.)?threads\.(?:com|net)/i, '');
+
+    // don't allow any non-threads urls
+    if (newUrl.match(/^(http|\/\/)/i)) {
+        throw new Error(errMessage);
+    }
+
+    // strip leading / if we have one
+    newUrl = newUrl.replace(/^\//, '');
+
+    // ensure username starts with @
+    if (!newUrl.startsWith('@')) {
+        newUrl = `@${newUrl}`;
+    }
+
+    // construct full threads URL
+    newUrl = `https://www.threads.net/${newUrl}`;
+
+    // don't allow URL if it's not valid
+    if (!validator.isURL(newUrl)) {
+        throw new Error(errMessage);
+    }
+
+    return newUrl;
+}
+
 export const facebookHandleToUrl = (handle: string) => `https://www.facebook.com/${handle}`;
 export const twitterHandleToUrl = (handle: string) => `https://x.com/${handle.replace('@', '')}`;
+export const threadsHandleToUrl = (handle: string) => `https://www.threads.net/${handle}`;
 
 export const facebookUrlToHandle = (url: string) => url.match(/(?:https:\/\/)(?:www\.)(?:facebook\.com)\/(?:#!\/)?(\w+\/?\S+)/mi)?.[1] || null;
 export const twitterUrlToHandle = (url: string) => {
     const handle = url.match(/(?:https:\/\/)(?:x\.com)\/(?:#!\/)?@?([^/]*)/)?.[1];
+    return handle ? `@${handle}` : null;
+};
+
+export const threadsUrlToHandle = (url: string) => {
+    const handle = url.match(/(?:https:\/\/)(?:www\.)?(?:threads\.(?:com|net))(?:\/)?(?:#!\/)?@?([^/]*)/)?.[1];
     return handle ? `@${handle}` : null;
 };
