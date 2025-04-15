@@ -14,12 +14,13 @@ import {useQuery} from '@tinybirdco/charts';
 const Web:React.FC = () => {
     const {data: configData, isLoading: isConfigLoading} = useGlobalData();
     const {range} = useGlobalData();
-    const {today, startDate} = getRangeDates(range);
+    const {startDate, endDate, timezone} = getRangeDates(range);
 
     const params = {
         site_uuid: configData?.config.stats?.id || '',
         date_from: formatQueryDate(startDate),
-        date_to: formatQueryDate(today)
+        date_to: formatQueryDate(endDate),
+        timezone: timezone
     };
 
     const {data, loading} = useQuery({
