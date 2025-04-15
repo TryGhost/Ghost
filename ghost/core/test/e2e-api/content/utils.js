@@ -58,7 +58,14 @@ const expectedProperties = {
         'facebook',
         'twitter',
         'meta_title',
-        'meta_description'
+        'meta_description',
+        'threads',
+        'bluesky',
+        'mastodon',
+        'tiktok',
+        'youtube',
+        'instagram',
+        'linkedin'
     ],
     tag: [
         'id',

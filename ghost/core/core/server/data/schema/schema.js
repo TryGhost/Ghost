@@ -131,6 +131,13 @@ module.exports = {
         location: {type: 'text', maxlength: 65535, nullable: true, validations: {isLength: {max: 150}}},
         facebook: {type: 'string', maxlength: 2000, nullable: true},
         twitter: {type: 'string', maxlength: 2000, nullable: true},
+        threads: {type: 'string', maxlength: 191, nullable: true},
+        bluesky: {type: 'string', maxlength: 191, nullable: true},
+        mastodon: {type: 'string', maxlength: 191, nullable: true},
+        tiktok: {type: 'string', maxlength: 191, nullable: true},
+        youtube: {type: 'string', maxlength: 191, nullable: true},
+        instagram: {type: 'string', maxlength: 191, nullable: true},
+        linkedin: {type: 'string', maxlength: 191, nullable: true},
         accessibility: {type: 'text', maxlength: 65535, nullable: true},
         status: {
             type: 'string',
