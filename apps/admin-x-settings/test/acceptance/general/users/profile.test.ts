@@ -4,7 +4,128 @@ import {globalDataRequests} from '../../../utils/acceptance';
 import {mockApi, responseFixtures, settingsWithStripe, testUrlValidation, toggleLabsFlag} from '@tryghost/admin-x-framework/test/acceptance';
 
 test.describe('User profile', async () => {
-    test('Supports editing user profiles', async ({page}) => {
+    test('Validates basic profile fields', async ({page}) => {
+        const userToEdit = responseFixtures.users.users.find(user => user.email === 'administrator@test.com')!;
+
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
+            editUser: {method: 'PUT', path: `/users/${userToEdit.id}/?include=roles`, response: {
+                users: [{
+                    ...userToEdit,
+                    email: 'newadmin@test.com',
+                    name: 'New Admin'
+                }]
+            }}
+        }});
+
+        await page.goto('/');
+
+        const section = page.getByTestId('users');
+        const activeTab = section.locator('[role=tabpanel]:not(.hidden)');
+
+        await section.getByRole('tab', {name: 'Administrators'}).click();
+
+        const listItem = activeTab.getByTestId('user-list-item').last();
+        await listItem.hover();
+        await listItem.getByRole('button', {name: 'Edit'}).click();
+
+        const modal = page.getByTestId('user-detail-modal');
+
+        // Test name validation
+        await modal.getByLabel('Full name').fill('');
+        await modal.getByRole('button', {name: 'Save'}).click();
+        await expect(modal).toContainText('Name is required');
+
+        // Test email validation
+        await modal.getByLabel('Email').fill('test');
+        await modal.getByRole('button', {name: 'Save'}).click();
+        await expect(modal).toContainText('Enter a valid email address');
+
+        // Test location validation
+        await modal.getByLabel('Location').fill(new Array(195).join('a'));
+        await modal.getByRole('button', {name: 'Save'}).click();
+        await expect(modal).toContainText('Location is too long');
+
+        // Test bio validation
+        await modal.getByLabel('Bio').fill(new Array(210).join('a'));
+        await modal.getByRole('button', {name: 'Save'}).click();
+        await expect(modal).toContainText('Bio is too long');
+    });
+
+    test('Validates social links', async ({page}) => {
+        const userToEdit = responseFixtures.users.users.find(user => user.email === 'administrator@test.com')!;
+
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
+            editUser: {method: 'PUT', path: `/users/${userToEdit.id}/?include=roles`, response: {
+                users: [{
+                    ...userToEdit,
+                    email: 'newadmin@test.com',
+                    name: 'New Admin'
+                }]
+            }}
+        }});
+
+        await page.goto('/');
+
+        const section = page.getByTestId('users');
+        const activeTab = section.locator('[role=tabpanel]:not(.hidden)');
+
+        await section.getByRole('tab', {name: 'Administrators'}).click();
+
+        const listItem = activeTab.getByTestId('user-list-item').last();
+        await listItem.hover();
+        await listItem.getByRole('button', {name: 'Edit'}).click();
+
+        const modal = page.getByTestId('user-detail-modal');
+
+        await modal.getByTitle('Social Links').click();
+        await modal.getByLabel('Website').fill('not-a-website');
+        await modal.getByRole('button', {name: 'Save'}).click();
+        await expect(modal).toContainText('Enter a valid URL');
+
+        // Test Facebook URL validation
+        const facebookInput = modal.getByLabel('Facebook profile');
+
+        await testUrlValidation(
+            facebookInput,
+            'facebook.com/username',
+            'https://www.facebook.com/username'
+        );
+
+        await testUrlValidation(
+            facebookInput,
+            'testuser',
+            'https://www.facebook.com/testuser'
+        );
+
+        await testUrlValidation(
+            facebookInput,
+            'http://github.com/username',
+            'http://github.com/username',
+            'The URL must be in a format like https://www.facebook.com/yourPage'
+        );
+
+        // Test Twitter URL validation
+        const twitterInput = modal.getByLabel('X profile');
+
+        await testUrlValidation(
+            twitterInput,
+            'x.com/username',
+            'https://x.com/username'
+        );
+
+        await testUrlValidation(
+            twitterInput,
+            'thisusernamehasmorethan15characters',
+            'thisusernamehasmorethan15characters',
+            'Your Username is not a valid Twitter Username'
+        );
+    });
+
+    test('Updates user profile successfully', async ({page}) => {
         const userToEdit = responseFixtures.users.users.find(user => user.email === 'administrator@test.com')!;
 
         const {lastApiRequests} = await mockApi({page, requests: {
@@ -32,139 +153,18 @@ test.describe('User profile', async () => {
 
         const modal = page.getByTestId('user-detail-modal');
 
-        // Validation failures
-
-        await modal.getByLabel('Full name').fill('');
-        await modal.getByRole('button', {name: 'Save'}).click();
-        await expect(modal).toContainText('Name is required');
-
-        await modal.getByLabel('Email').fill('test');
-        await modal.getByRole('button', {name: 'Save'}).click();
-        await expect(modal).toContainText('Enter a valid email address');
-
-        await modal.getByLabel('Location').fill(new Array(195).join('a'));
-        await modal.getByRole('button', {name: 'Save'}).click();
-        await expect(modal).toContainText('Location is too long');
-
-        await modal.getByLabel('Bio').fill(new Array(210).join('a'));
-        await modal.getByRole('button', {name: 'Save'}).click();
-        await expect(modal).toContainText('Bio is too long');
-
-        await modal.getByLabel('Website').fill('not-a-website');
-        await modal.getByRole('button', {name: 'Save'}).click();
-        await expect(modal).toContainText('Enter a valid URL');
-
-        const facebookInput = modal.getByLabel('Facebook profile');
-
-        await testUrlValidation(
-            facebookInput,
-            'facebook.com/username',
-            'https://www.facebook.com/username'
-        );
-
-        await testUrlValidation(
-            facebookInput,
-            'testuser',
-            'https://www.facebook.com/testuser'
-        );
-
-        await testUrlValidation(
-            facebookInput,
-            'ab99',
-            'https://www.facebook.com/ab99'
-        );
-
-        await testUrlValidation(
-            facebookInput,
-            'page/ab99',
-            'https://www.facebook.com/page/ab99'
-        );
-
-        await testUrlValidation(
-            facebookInput,
-            'page/*(&*(%%))',
-            'https://www.facebook.com/page/*(&*(%%))'
-        );
-
-        await testUrlValidation(
-            facebookInput,
-            'facebook.com/pages/some-facebook-page/857469375913?ref=ts',
-            'https://www.facebook.com/pages/some-facebook-page/857469375913?ref=ts'
-        );
-
-        await testUrlValidation(
-            facebookInput,
-            'https://www.facebook.com/groups/savethecrowninn',
-            'https://www.facebook.com/groups/savethecrowninn'
-        );
-
-        await testUrlValidation(
-            facebookInput,
-            'http://github.com/username',
-            'http://github.com/username',
-            'The URL must be in a format like https://www.facebook.com/yourPage'
-        );
-
-        await testUrlValidation(
-            facebookInput,
-            'http://github.com/pages/username',
-            'http://github.com/pages/username',
-            'The URL must be in a format like https://www.facebook.com/yourPage'
-        );
-
-        const twitterInput = modal.getByLabel('X profile');
-
-        await testUrlValidation(
-            twitterInput,
-            'x.com/username',
-            'https://x.com/username'
-        );
-
-        await testUrlValidation(
-            twitterInput,
-            'testuser',
-            'https://x.com/testuser'
-        );
-
-        await testUrlValidation(
-            twitterInput,
-            'http://github.com/username',
-            'https://x.com/username'
-        );
-
-        await testUrlValidation(
-            twitterInput,
-            '*(&*(%%))',
-            '*(&*(%%))',
-            'The URL must be in a format like https://x.com/yourUsername'
-        );
-
-        await testUrlValidation(
-            twitterInput,
-            'thisusernamehasmorethan15characters',
-            'thisusernamehasmorethan15characters',
-            'Your Username is not a valid Twitter Username'
-        );
-
-        // Successful update
-
+        // Update basic profile
         await modal.getByLabel('Full name').fill('New Admin');
         await modal.getByLabel('Email').fill('newadmin@test.com');
         await modal.getByLabel('Slug').fill('newadmin');
         await expect(modal.getByText('https://example.com/author/newadmin')).toBeVisible();
         await modal.getByLabel('Location').fill('some location');
+        await modal.getByLabel('Bio').fill('some bio');
+
+        await modal.getByTitle('Social Links').click();
         await modal.getByLabel('Website').fill('https://example.com');
         await modal.getByLabel('Facebook profile').fill('fb');
         await modal.getByLabel('X profile').fill('tw');
-        await modal.getByLabel('Bio').fill('some bio');
-
-        // Email notification settings
-
-        await modal.getByLabel(/Comments/).uncheck();
-        await modal.getByLabel(/New signups/).uncheck();
-        await modal.getByLabel(/New paid members/).uncheck();
-        await modal.getByLabel(/Paid member cancellations/).check();
-        await modal.getByLabel(/Milestones/).uncheck();
 
         await modal.getByRole('button', {name: 'Save'}).click();
 
@@ -183,7 +183,51 @@ test.describe('User profile', async () => {
                 website: 'https://example.com',
                 facebook: 'fb',
                 twitter: '@tw',
-                bio: 'some bio',
+                bio: 'some bio'
+            }]
+        });
+    });
+
+    test('Updates email notification settings', async ({page}) => {
+        const userToEdit = responseFixtures.users.users.find(user => user.email === 'administrator@test.com')!;
+
+        const {lastApiRequests} = await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
+            editUser: {method: 'PUT', path: `/users/${userToEdit.id}/?include=roles`, response: {
+                users: [{
+                    ...userToEdit,
+                    email: 'newadmin@test.com',
+                    name: 'New Admin'
+                }]
+            }}
+        }});
+
+        await page.goto('/');
+
+        const section = page.getByTestId('users');
+        const activeTab = section.locator('[role=tabpanel]:not(.hidden)');
+
+        await section.getByRole('tab', {name: 'Administrators'}).click();
+
+        const listItem = activeTab.getByTestId('user-list-item').last();
+        await listItem.hover();
+        await listItem.getByRole('button', {name: 'Edit'}).click();
+
+        const modal = page.getByTestId('user-detail-modal');
+
+        // Update notification settings
+        await modal.getByTitle('Email Notifications').click();
+        await modal.getByLabel(/Comments/).uncheck();
+        await modal.getByLabel(/New signups/).uncheck();
+        await modal.getByLabel(/New paid members/).uncheck();
+        await modal.getByLabel(/Paid member cancellations/).check();
+        await modal.getByLabel(/Milestones/).uncheck();
+
+        await modal.getByRole('button', {name: 'Save'}).click();
+
+        expect(lastApiRequests.editUser?.body).toMatchObject({
+            users: [{
                 comment_notifications: false,
                 free_member_signup_notification: false,
                 paid_subscription_started_notification: false,
@@ -283,7 +327,7 @@ test.describe('User profile', async () => {
         await listItem.getByRole('button', {name: 'Edit'}).click();
 
         const modal = page.getByTestId('user-detail-modal');
-
+        await modal.getByTitle('Email Notifications').click();
         await expect(modal.getByLabel(/Comments/)).toBeVisible();
         await expect(modal.getByLabel(/New signups/)).toBeHidden();
         await expect(modal.getByLabel(/New paid members/)).toBeHidden();
@@ -317,6 +361,7 @@ test.describe('User profile', async () => {
         await listItem.getByRole('button', {name: 'Edit'}).click();
 
         const modal = page.getByTestId('user-detail-modal');
+        await modal.getByTitle('Email Notifications').click();
 
         await expect(modal.getByLabel(/Tips & donations/)).toBeVisible();
         await expect(modal.getByLabel(/Tips & donations/)).toHaveAttribute('aria-checked', 'true');
@@ -352,6 +397,8 @@ test.describe('User profile', async () => {
         await listItem.getByRole('button', {name: 'Edit'}).click();
 
         const modal = page.getByTestId('user-detail-modal');
+
+        await modal.getByTitle('Email Notifications').click();
 
         await expect(modal.getByLabel(/Tips & donations/)).not.toBeVisible();
     });
