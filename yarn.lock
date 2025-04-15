@@ -7517,7 +7517,7 @@
     "@types/express" "^4.7.0"
     file-system-cache "2.3.0"
 
-"@svg-maps/world@^1.0.1":
+"@svg-maps/world@1.0.1":
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/@svg-maps/world/-/world-1.0.1.tgz#12d9cc263a1e3c25778c768687368fb6165a42d9"
   integrity sha512-Mawh/jEYBBHnug9S17PyePLYKJ+Xd0Bbh96mCePebpbvcbJu5YKpfKhpyMeLFmmdWPrSFxl0f0MTsJfXU0gSaQ==
@@ -27916,7 +27916,7 @@ react-style-singleton@^2.2.1, react-style-singleton@^2.2.2, react-style-singleto
     get-nonce "^1.0.0"
     tslib "^2.0.0"
 
-react-svg-map@^2.2.0:
+react-svg-map@2.2.0:
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/react-svg-map/-/react-svg-map-2.2.0.tgz#ecdeb8898e6e34953c83afbf7433a621925a8f0b"
   integrity sha512-slZTt4ffXgOb3ND/WEHOc0ojX5lBEv9FKbTU3tWnTLZPQ9L0e686SBqgVxmsuTD+o52Aor87InMzAzDRTQedpA==
