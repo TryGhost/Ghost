@@ -135,6 +135,12 @@ export interface Post {
         Account,
         'id' | 'handle' | 'avatarUrl' | 'name' | 'url'
     > | null;
+    metadata?: {
+        ghostAuthors?: Array<{
+            name: string;
+            profile_image: string;
+        }>;
+    };
 }
 
 export interface PaginatedPostsResponse {
@@ -268,7 +274,7 @@ export class ActivityPubAPI {
         return json as Thread;
     }
 
-    async getAccount(handle: string): Promise<GetAccountResponse> {        
+    async getAccount(handle: string): Promise<GetAccountResponse> {
         const url = new URL(`.ghost/activitypub/account/${handle}`, this.apiUrl);
         const json = await this.fetchJSON(url);
 

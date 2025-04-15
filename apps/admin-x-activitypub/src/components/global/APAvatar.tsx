@@ -24,7 +24,7 @@ interface APAvatarProps {
 
 const APAvatar: React.FC<APAvatarProps> = ({author, size, isLoading = false, disabled = false}) => {
     let iconSize = 18;
-    let containerClass = `shrink-0 items-center justify-center rounded-full overflow-hidden relative z-10 flex bg-gray-100 dark:bg-gray-900 ${size === 'lg' || disabled ? '' : 'hover:opacity-80 cursor-pointer'}`;
+    let containerClass = `shrink-0 items-center justify-center rounded-full overflow-hidden relative z-10 flex bg-black/5 dark:bg-gray-900 ${size === 'lg' || disabled ? '' : 'hover:opacity-80 cursor-pointer'}`;
     let imageClass = 'z-10 object-cover';
     const [iconUrl, setIconUrl] = useState(author?.icon?.url);
     const navigate = useNavigate();

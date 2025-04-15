@@ -31,6 +31,10 @@ const ArticleBody: React.FC<{
     heading: string;
     image: string|undefined;
     excerpt: string|undefined;
+    authors: Array<{
+        name: string;
+        profile_image: string;
+    }>;
     html: string;
     backgroundColor: ColorOption;
     fontSize: FontSize;
@@ -44,6 +48,7 @@ const ArticleBody: React.FC<{
     heading,
     image,
     excerpt,
+    authors,
     html,
     backgroundColor,
     fontSize,
@@ -157,8 +162,27 @@ const ArticleBody: React.FC<{
             <header class='gh-article-header gh-canvas'>
                 <h1 class='gh-article-title is-title' data-test-article-heading>${heading}</h1>
                 ${excerpt ? `<p class='gh-article-excerpt'>${excerpt}</p>` : ''}
-                <a href="${postUrl}" target="_blank" rel="noopener noreferrer" class="gh-article-source">
-                    ${postUrl ? new URL(postUrl).hostname : ''} <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-external-link-icon lucide-external-link"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
+                <a href="${postUrl}" target="_blank" rel="noopener noreferrer" class="gh-article-meta">
+                    ${authors && authors.length > 0 ? `
+                        <div class="gh-article-author-image">
+                        ${authors.map(author => `
+                                <span>
+                                    ${author.profile_image
+        ? `<img src="${author.profile_image}" alt="${author.name}">`
+        : `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" height="24" width="24"><path d="M6.75 6a5.25 5.25 0 1 0 10.5 0 5.25 5.25 0 1 0 -10.5 0" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path><path d="M2.25 23.25a9.75 9.75 0 0 1 19.5 0" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path></svg>`
+}
+                                </span>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+                    <div class="gh-article-meta-wrapper">
+                        ${authors && authors.length > 0 ? `
+                            <span class="gh-article-author-name">
+                                ${authors.length > 1 ? `${authors[0].name} and ${authors.length - 1} ${authors.length - 1 === 1 ? 'other' : 'others'}` : authors[0].name}
+                            </span>
+                        ` : ''}
+                        <span class="gh-article-source">${postUrl ? new URL(postUrl).hostname : ''} <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-external-link-icon lucide-external-link"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg></span>
+                    </div>
                 </a>
                 ${image ? `
                 <figure class='gh-article-image'>
@@ -375,6 +399,7 @@ export const Reader: React.FC<ReaderProps> = ({
     const activityId = activityData?.id;
     const object = activityData?.object;
     const actor = activityData?.actor;
+    const authors = activityData?.object.metadata.ghostAuthors;
 
     const {data: thread, isLoading: isLoadingThread} = useThreadForUser('index', activityId);
     const threadPostIdx = (thread?.posts ?? []).findIndex(item => item.object.id === activityId);
@@ -601,6 +626,7 @@ export const Reader: React.FC<ReaderProps> = ({
                                         <div className={`mx-auto px-8 pb-10 pt-5`} style={{maxWidth: currentMaxWidth}}>
                                             <div className='flex flex-col items-center pb-8' id='object-content'>
                                                 <ArticleBody
+                                                    authors={authors}
                                                     backgroundColor={backgroundColor}
                                                     excerpt={object?.preview?.content ?? ''}
                                                     fontSize={fontSize}
