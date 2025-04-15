@@ -1,6 +1,7 @@
 import DateRangeSelect from './components/DateRangeSelect';
 import Header from '@src/components/layout/Header';
 import React from 'react';
+import StatsContent from './layout/StatsContent';
 import StatsLayout from './layout/StatsLayout';
 import WebKpis from './components/WebKpis';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle, Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@tryghost/shade';
@@ -37,7 +38,7 @@ const Web:React.FC = () => {
                 Web
                 <DateRangeSelect />
             </Header>
-            <section className='grid grid-cols-1 gap-8 pb-8'>
+            <StatsContent>
                 <Card variant='plain'>
                     <CardContent>
                         <WebKpis range={isNaN(range) ? STATS_RANGE_OPTIONS[STATS_DEFAULT_RANGE_KEY].value : range} />
@@ -71,7 +72,7 @@ const Web:React.FC = () => {
                         }
                     </CardContent>
                 </Card>
-            </section>
+            </StatsContent>
         </StatsLayout>
     );
 };

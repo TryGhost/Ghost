@@ -1,6 +1,7 @@
 import DateRangeSelect from './components/DateRangeSelect';
 import Header from '@src/components/layout/Header';
 import React from 'react';
+import StatsContent from './layout/StatsContent';
 import StatsLayout from './layout/StatsLayout';
 import countries from 'i18n-iso-countries';
 import enLocale from 'i18n-iso-countries/langs/en.json';
@@ -43,7 +44,7 @@ const Locations:React.FC = () => {
                 Locations
                 <DateRangeSelect />
             </Header>
-            <section className='grid grid-cols-1 gap-8 pb-8'>
+            <StatsContent>
                 <Card variant='plain'>
                     <CardContent className='border-none py-20 text-center text-gray-500'>
                         Map
@@ -80,7 +81,7 @@ const Locations:React.FC = () => {
                         }
                     </CardContent>
                 </Card>
-            </section>
+            </StatsContent>
         </StatsLayout>
     );
 };
