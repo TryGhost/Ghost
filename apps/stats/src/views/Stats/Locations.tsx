@@ -1,4 +1,4 @@
-import AudienceSelect from './components/AudienceSelect';
+import AudienceSelect, {getAudienceQueryParam} from './components/AudienceSelect';
 import DateRangeSelect from './components/DateRangeSelect';
 import React, {useState} from 'react';
 import StatsContent from './layout/StatsContent';
@@ -31,7 +31,7 @@ interface TooltipData {
 
 const Locations:React.FC = () => {
     const {data: configData, isLoading: isConfigLoading} = useGlobalData();
-    const {range} = useGlobalData();
+    const {range, audience} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
     const [tooltipData, setTooltipData] = useState<TooltipData | null>(null);
 
@@ -39,7 +39,8 @@ const Locations:React.FC = () => {
         site_uuid: configData?.config.stats?.id || '',
         date_from: formatQueryDate(startDate),
         date_to: formatQueryDate(endDate),
-        timezone: timezone
+        timezone: timezone,
+        member_status: getAudienceQueryParam(audience)
     };
 
     const {data, loading} = useQuery({

@@ -1,4 +1,4 @@
-import AudienceSelect from './components/AudienceSelect';
+import AudienceSelect, {getAudienceQueryParam} from './components/AudienceSelect';
 import DateRangeSelect from './components/DateRangeSelect';
 import React from 'react';
 import StatsContent from './layout/StatsContent';
@@ -6,7 +6,6 @@ import StatsLayout from './layout/StatsLayout';
 import WebKpis from './components/WebKpis';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle, Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@tryghost/shade';
 import {Header, HeaderActions} from '@src/components/layout/Header';
-import {STATS_DEFAULT_RANGE_KEY, STATS_RANGE_OPTIONS} from '@src/utils/constants';
 import {formatNumber, formatQueryDate} from '@src/utils/data-formatters';
 import {getRangeDates} from '@src/utils/chart-helpers';
 import {getStatEndpointUrl} from '@src/config/stats-config';
@@ -15,14 +14,15 @@ import {useQuery} from '@tinybirdco/charts';
 
 const Web:React.FC = () => {
     const {data: configData, isLoading: isConfigLoading} = useGlobalData();
-    const {range} = useGlobalData();
+    const {range, audience} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
 
     const params = {
         site_uuid: configData?.config.stats?.id || '',
         date_from: formatQueryDate(startDate),
         date_to: formatQueryDate(endDate),
-        timezone: timezone
+        timezone: timezone,
+        member_status: getAudienceQueryParam(audience)
     };
 
     const {data, loading} = useQuery({
@@ -45,7 +45,7 @@ const Web:React.FC = () => {
             <StatsContent>
                 <Card variant='plain'>
                     <CardContent>
-                        <WebKpis range={isNaN(range) ? STATS_RANGE_OPTIONS[STATS_DEFAULT_RANGE_KEY].value : range} />
+                        <WebKpis />
                     </CardContent>
                 </Card>
                 <Card variant='plain'>

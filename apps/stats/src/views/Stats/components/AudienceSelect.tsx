@@ -8,6 +8,28 @@ const AUDIENCE_BITS = {
     PAID: 1 << 2 // 4
 };
 
+export const AUDIENCE_TYPES = [
+    {name: 'Public visitors', value: 'undefined'},
+    {name: 'Free members', value: 'free'},
+    {name: 'Paid members', value: 'paid'}
+];
+
+export const getAudienceQueryParam = (audience: number) => {
+    const selectedValues = [];
+
+    if ((audience & AUDIENCE_BITS.PUBLIC) !== 0) {
+        selectedValues.push(AUDIENCE_TYPES[0].value);
+    }
+    if ((audience & AUDIENCE_BITS.FREE) !== 0) {
+        selectedValues.push(AUDIENCE_TYPES[1].value);
+    }
+    if ((audience & AUDIENCE_BITS.PAID) !== 0) {
+        selectedValues.push(AUDIENCE_TYPES[2].value);
+    }
+
+    return selectedValues.join(',');
+};
+
 const AudienceSelect: React.FC = () => {
     const {audience, setAudience} = useGlobalData();
 

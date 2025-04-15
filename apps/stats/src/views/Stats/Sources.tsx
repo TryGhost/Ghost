@@ -1,4 +1,4 @@
-import AudienceSelect from './components/AudienceSelect';
+import AudienceSelect, {getAudienceQueryParam} from './components/AudienceSelect';
 import DateRangeSelect from './components/DateRangeSelect';
 import React from 'react';
 import StatsContent from './layout/StatsContent';
@@ -33,14 +33,15 @@ const SourceRow: React.FC<SourceRowProps> = ({className, source}) => {
 
 const Sources:React.FC = () => {
     const {data: configData, isLoading: isConfigLoading} = useGlobalData();
-    const {range} = useGlobalData();
+    const {range, audience} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
 
     const params = {
         site_uuid: configData?.config.stats?.id || '',
         date_from: formatQueryDate(startDate),
         date_to: formatQueryDate(endDate),
-        timezone: timezone
+        timezone: timezone,
+        member_status: getAudienceQueryParam(audience)
     };
 
     const {data, loading} = useQuery({
