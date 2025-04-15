@@ -189,6 +189,14 @@ a:hover {
     border: 3px solid var(--background-color);
 }
 
+html.has-sepia-bg .gh-article-author-image span {
+    background-color: #EFEDE6;
+}
+
+html.has-light-text .gh-article-author-image span {
+    background-color: #394047;
+}
+
 .gh-article-author-image span:first-child {
     z-index: 10;
 }
