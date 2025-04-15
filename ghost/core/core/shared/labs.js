@@ -54,7 +54,8 @@ const ALPHA_FEATURES = [
     'statsX',
     'captcha',
     'contentVisibilityAlpha',
-    'explore'
+    'explore',
+    'socialLinks'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
