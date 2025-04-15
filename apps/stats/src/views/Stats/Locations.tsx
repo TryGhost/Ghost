@@ -164,7 +164,7 @@ const Locations:React.FC = () => {
             </Header>
             <StatsContent>
                 <Card variant='plain'>
-                    <CardContent className='border-none pb-4 pt-8'>
+                    <CardContent className='-mb-5 border-none pt-8'>
                         <div className='svg-map-container relative mx-auto max-w-[680px]'>
                             <SVGMap
                                 locationClassName={getLocationClassName}

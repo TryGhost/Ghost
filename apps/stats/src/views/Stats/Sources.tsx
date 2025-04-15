@@ -11,6 +11,25 @@ import {getStatEndpointUrl} from '@src/config/stats-config';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useQuery} from '@tinybirdco/charts';
 
+interface SourceRowProps {
+    className?: string;
+    source?: string | number;
+}
+
+const SourceRow: React.FC<SourceRowProps> = ({className, source}) => {
+    return (
+        <>
+            <img
+                className="gh-stats-favicon"
+                src={`https://www.faviconextractor.com/favicon/${source || 'direct'}?larger=true`}
+                onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+                    e.currentTarget.src = STATS_DEFAULT_SOURCE_ICON_URL;
+                }} />
+            <span className={className}>{source || 'Direct'}</span>
+        </>
+    );
+};
+
 const Sources:React.FC = () => {
     const {data: configData, isLoading: isConfigLoading} = useGlobalData();
     const {range} = useGlobalData();
@@ -77,7 +96,7 @@ const Sources:React.FC = () => {
                 <DateRangeSelect />
             </Header>
             <StatsContent>
-                <Card variant='plain'>
+                <Card className='-mb-5' variant='plain'>
                     <CardHeader className='border-none'>
                         <CardTitle>Top sources</CardTitle>
                         <CardDescription>How readers are finding your site</CardDescription>
@@ -118,15 +137,15 @@ const Sources:React.FC = () => {
                                         return (
                                             <TableRow key={row.source || 'direct'}>
                                                 <TableCell className="font-medium">
-                                                    <span className='flex items-center gap-1'>
-                                                        <img
-                                                            className="gh-stats-favicon"
-                                                            src={`https://www.faviconextractor.com/favicon/${row.source || 'direct'}?larger=true`}
-                                                            onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                                                                e.currentTarget.src = STATS_DEFAULT_SOURCE_ICON_URL;
-                                                            }} />
-                                                        {row.source || 'Direct'}
-                                                    </span>
+                                                    {row.source ?
+                                                        <a className='group flex items-center gap-1' href={`https://${row.source}`} rel="noreferrer" target="_blank">
+                                                            <SourceRow className='group-hover:underline' source={row.source} />
+                                                        </a>
+                                                        :
+                                                        <span className='flex items-center gap-1'>
+                                                            <SourceRow source={row.source} />
+                                                        </span>
+                                                    }
                                                 </TableCell>
                                                 <TableCell>{formatNumber(Number(row.visits))}</TableCell>
                                                 <TableCell>{key < 5 && <span className='inline-block size-[10px] rounded-[2px]' style={{backgroundColor: colors[key]}}></span>}</TableCell>
