@@ -27,25 +27,25 @@ test.describe('User passwords', async () => {
 
         // Validation failures
 
-        await modal.getByTestId('change-password-button').click();
+        await modal.getByTestId('save-password-button').click();
 
         await expect(modal).toContainText('Password must be at least 10 characters long.');
 
-        await modal.getByLabel('New password').fill('1234567890');
-        await modal.getByTestId('change-password-button').click();
+        await modal.getByTestId('new-password').fill('1234567890');
+        await modal.getByTestId('save-password-button').click();
         await expect(modal).not.toContainText('Sorry, you cannot use an insecure password.');
 
-        await modal.getByLabel('New password').fill('newpasshere');
-        await modal.getByLabel('Verify password').fill('notthesame');
-        await modal.getByTestId('change-password-button').click();
+        await modal.getByTestId('new-password').fill('newpasshere');
+        await modal.getByTestId('confirm-password').fill('notthesame');
+        await modal.getByTestId('save-password-button').click();
         await expect(modal).toContainText('Your new passwords do not match');
 
         // Successful update
 
-        await modal.getByLabel('New password').fill('newpasshere');
-        await modal.getByLabel('Verify password').fill('newpasshere');
+        await modal.getByTestId('new-password').fill('newpasshere');
+        await modal.getByTestId('confirm-password').fill('newpasshere');
 
-        await modal.getByTestId('change-password-button').click();
+        await modal.getByTestId('save-password-button').click();
 
         await expect(modal.getByRole('button', {name: 'Updated'})).toBeVisible();
 
@@ -80,31 +80,31 @@ test.describe('User passwords', async () => {
 
         // Validation failures
 
-        await modal.getByTestId('change-password-button').click();
+        await modal.getByTestId('save-password-button').click();
         await expect(modal).toContainText('Your current password is required to set a new one');
 
-        await modal.getByLabel('Old password').fill('oldpass');
-        await modal.getByTestId('change-password-button').click();
+        await modal.getByTestId('old-password').fill('oldpass');
+        await modal.getByTestId('save-password-button').click();
         await expect(modal).toContainText('Password must be at least 10 characters long.');
 
-        await modal.getByLabel('Old password').fill('oldpass');
-        await modal.getByLabel('New password').fill('1234567890');
-        await modal.getByTestId('change-password-button').click();
+        await modal.getByTestId('old-password').fill('oldpass');
+        await modal.getByTestId('new-password').fill('1234567890');
+        await modal.getByTestId('save-password-button').click();
         await expect(modal).not.toContainText('Sorry, you cannot use an insecure password.');
 
-        await modal.getByLabel('Old password').fill('oldpass');
-        await modal.getByLabel('New password').fill('newpasshere');
-        await modal.getByLabel('Verify password').fill('notthesame');
-        await modal.getByTestId('change-password-button').click();
+        await modal.getByTestId('old-password').fill('oldpass');
+        await modal.getByTestId('new-password').fill('newpasshere');
+        await modal.getByTestId('confirm-password').fill('notthesame');
+        await modal.getByTestId('save-password-button').click();
         await expect(modal).toContainText('Your new passwords do not match');
 
         // Successful update
 
-        await modal.getByLabel('Old password').fill('oldpasshere');
-        await modal.getByLabel('New password').fill('newpasshere');
-        await modal.getByLabel('Verify password').fill('newpasshere');
+        await modal.getByTestId('old-password').fill('oldpasshere');
+        await modal.getByTestId('new-password').fill('newpasshere');
+        await modal.getByTestId('confirm-password').fill('newpasshere');
 
-        await modal.getByTestId('change-password-button').click();
+        await modal.getByTestId('save-password-button').click();
 
         await expect(modal.getByRole('button', {name: 'Updated'})).toBeVisible();
 

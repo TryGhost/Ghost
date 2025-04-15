@@ -169,6 +169,7 @@ const ChangePasswordForm: React.FC<{user: User}> = ({user}) => {
     const form = (
         <>
             {isCurrentUser && <TextField
+                data-testid="old-password"
                 error={!!errors.oldPassword}
                 hint={errors.oldPassword}
                 inputRef={oldPasswordRef}
@@ -180,6 +181,7 @@ const ChangePasswordForm: React.FC<{user: User}> = ({user}) => {
                 }}
             />}
             <TextField
+                data-testid="new-password"
                 error={!!errors.newPassword}
                 hint={errors.newPassword}
                 inputRef={newPasswordRef}
@@ -191,6 +193,7 @@ const ChangePasswordForm: React.FC<{user: User}> = ({user}) => {
                 }}
             />
             <TextField
+                data-testid="confirm-password"
                 error={!!errors.confirmNewPassword}
                 hint={errors.confirmNewPassword}
                 inputRef={confirmNewPasswordRef}
@@ -216,6 +219,7 @@ const ChangePasswordForm: React.FC<{user: User}> = ({user}) => {
                 />
                 <Button
                     color='green'
+                    data-testid='save-password-button'
                     label={buttonLabel}
                     onClick={async () => {
                         setSaveState('saving');
