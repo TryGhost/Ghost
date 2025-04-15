@@ -47,7 +47,7 @@ test.describe('User passwords', async () => {
 
         await modal.getByTestId('save-password-button').click();
 
-        await expect(modal.getByRole('button', {name: 'Updated'})).toBeVisible();
+        await expect(modal.getByRole('button', {name: 'Saved'})).toBeVisible();
 
         expect(lastApiRequests.updatePassword?.body).toMatchObject({
             password: [{
@@ -106,7 +106,7 @@ test.describe('User passwords', async () => {
 
         await modal.getByTestId('save-password-button').click();
 
-        await expect(modal.getByRole('button', {name: 'Updated'})).toBeVisible();
+        await expect(modal.getByRole('button', {name: 'Saved'})).toBeVisible();
 
         expect(lastApiRequests.updatePassword?.body).toMatchObject({
             password: [{
