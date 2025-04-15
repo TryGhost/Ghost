@@ -4,12 +4,16 @@
             <form id="login" method="post" action="javascript:void(0)" class="gh-signin" novalidate="novalidate" {{on "submit" (perform this.verifyTokenTask)}}>
                 <header>
                     <div class="gh-site-icon" style={{site-icon-style}}></div>
-                    <h1>Verify it's really you</h1>
+                    <h1>{{#if this.twoFactorRequired}}2FA confirmation{{else}}Verify it's really you{{/if}}</h1>
                 </header>
 
-                <p>
-                    To keep your account safe, we've sent a 6-digit verification code to your email to make sure it's you.
-                </p>
+
+                {{#if this.twoFactorRequired}}
+                    <p>Enter the sign-in verification code sent to your email.</p>
+                {{else}}
+                    <p>It looks like you're signing in from a new device. A 6-digit sign-in verification code has been sent to your email to keep your account safe.</p>
+                {{/if}}
+
                 <GhFormGroup @errors={{this.verifyData.errors}} @hasValidated={{this.verifyData.hasValidated}} @property="token">
                     <label for="token">Verification code</label>
 
