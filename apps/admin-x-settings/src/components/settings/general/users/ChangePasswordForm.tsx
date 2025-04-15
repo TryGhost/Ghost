@@ -204,7 +204,6 @@ const ChangePasswordForm: React.FC<{user: User}> = ({user}) => {
                     setConfirmNewPassword(e.target.value);
                 }}
             />
-            {/* Button group for Cancel and Save */}
             <div className='mt-1 flex items-center justify-end gap-3'>
                 <Button
                     color='outline'

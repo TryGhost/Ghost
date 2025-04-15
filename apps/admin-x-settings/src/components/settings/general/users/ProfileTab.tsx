@@ -44,16 +44,6 @@ const BasicInputs: React.FC<UserDetailProps> = ({errors, clearError, user, setUs
                     setUserData({...user, slug: e.target.value});
                 }}
             />
-            <TextArea
-                error={!!errors?.bio}
-                hint={errors?.bio || <>Recommended: 200 characters. You&lsquo;ve used <span className='font-bold'>{user.bio?.length || 0}</span></>}
-                maxLength={65535}
-                title="Bio"
-                value={user.bio || ''}
-                onChange={(e) => {
-                    setUserData({...user, bio: e.target.value});
-                }}
-                onKeyDown={() => clearError('bio')} />
             <TextField
                 error={!!errors?.location}
                 hint={errors?.location || 'Where in the world do you live?'}
@@ -64,6 +54,16 @@ const BasicInputs: React.FC<UserDetailProps> = ({errors, clearError, user, setUs
                     setUserData({...user, location: e.target.value});
                 }}
                 onKeyDown={() => clearError('location')} />
+            <TextArea
+                error={!!errors?.bio}
+                hint={errors?.bio || <>Recommended: 200 characters. You&lsquo;ve used <span className='font-bold'>{user.bio?.length || 0}</span></>}
+                maxLength={65535}
+                title="Bio"
+                value={user.bio || ''}
+                onChange={(e) => {
+                    setUserData({...user, bio: e.target.value});
+                }}
+                onKeyDown={() => clearError('bio')} />
             {user.id === currentUser.id && <StaffToken />}
         </SettingGroupContent>
     );
