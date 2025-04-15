@@ -1,10 +1,11 @@
+import AudienceSelect from './components/AudienceSelect';
 import DateRangeSelect from './components/DateRangeSelect';
-import Header from '@src/components/layout/Header';
 import React from 'react';
 import StatsContent from './layout/StatsContent';
 import StatsLayout from './layout/StatsLayout';
 import WebKpis from './components/WebKpis';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle, Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@tryghost/shade';
+import {Header, HeaderActions} from '@src/components/layout/Header';
 import {STATS_DEFAULT_RANGE_KEY, STATS_RANGE_OPTIONS} from '@src/utils/constants';
 import {formatNumber, formatQueryDate} from '@src/utils/data-formatters';
 import {getRangeDates} from '@src/utils/chart-helpers';
@@ -36,7 +37,10 @@ const Web:React.FC = () => {
         <StatsLayout>
             <Header>
                 Web
-                <DateRangeSelect />
+                <HeaderActions>
+                    <AudienceSelect />
+                    <DateRangeSelect />
+                </HeaderActions>
             </Header>
             <StatsContent>
                 <Card variant='plain'>

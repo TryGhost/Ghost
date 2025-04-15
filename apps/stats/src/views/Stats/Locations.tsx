@@ -1,5 +1,5 @@
+import AudienceSelect from './components/AudienceSelect';
 import DateRangeSelect from './components/DateRangeSelect';
-import Header from '@src/components/layout/Header';
 import React, {useState} from 'react';
 import StatsContent from './layout/StatsContent';
 import StatsLayout from './layout/StatsLayout';
@@ -7,6 +7,7 @@ import World from '@svg-maps/world';
 import countries from 'i18n-iso-countries';
 import enLocale from 'i18n-iso-countries/langs/en.json';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, cn} from '@tryghost/shade';
+import {Header, HeaderActions} from '@src/components/layout/Header';
 import {STATS_LABEL_MAPPINGS} from '@src/utils/constants';
 import {SVGMap} from 'react-svg-map';
 import {formatNumber, formatQueryDate} from '@src/utils/data-formatters';
@@ -160,7 +161,10 @@ const Locations:React.FC = () => {
         <StatsLayout>
             <Header>
                 Locations
-                <DateRangeSelect />
+                <HeaderActions>
+                    <AudienceSelect />
+                    <DateRangeSelect />
+                </HeaderActions>
             </Header>
             <StatsContent>
                 <Card variant='plain'>
