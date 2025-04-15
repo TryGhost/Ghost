@@ -1,3 +1,5 @@
+import moment from 'moment-timezone';
+
 /**
  * Calculates Y-axis ticks based on the data values
  */
@@ -37,10 +39,10 @@ export const calculateYAxisWidth = (ticks: number[], formatter: (value: number) 
  * Return today and startdate for charts
  */
 export const getRangeDates = (range: number) => {
-    const today = new Date();
-    const startDate = new Date(today);
-    startDate.setDate(today.getDate() - range);
-    return {today, startDate};
+    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const endDate = moment().tz(timezone).endOf('day');
+    const startDate = moment().tz(timezone).subtract(range - 1, 'days').startOf('day');
+    return {startDate, endDate, timezone};
 };
 
 /**

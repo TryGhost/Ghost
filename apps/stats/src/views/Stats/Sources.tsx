@@ -1,6 +1,7 @@
 import DateRangeSelect from './components/DateRangeSelect';
 import Header from '@src/components/layout/Header';
 import React from 'react';
+import StatsContent from './layout/StatsContent';
 import StatsLayout from './layout/StatsLayout';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, Recharts, Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@tryghost/shade';
 import {STATS_DEFAULT_SOURCE_ICON_URL} from '@src/utils/constants';
@@ -13,12 +14,13 @@ import {useQuery} from '@tinybirdco/charts';
 const Sources:React.FC = () => {
     const {data: configData, isLoading: isConfigLoading} = useGlobalData();
     const {range} = useGlobalData();
-    const {today, startDate} = getRangeDates(range);
+    const {startDate, endDate, timezone} = getRangeDates(range);
 
     const params = {
         site_uuid: configData?.config.stats?.id || '',
         date_from: formatQueryDate(startDate),
-        date_to: formatQueryDate(today)
+        date_to: formatQueryDate(endDate),
+        timezone: timezone
     };
 
     const {data, loading} = useQuery({
@@ -74,7 +76,7 @@ const Sources:React.FC = () => {
                 Sources
                 <DateRangeSelect />
             </Header>
-            <section className='grid grid-cols-1 gap-8 pb-8'>
+            <StatsContent>
                 <Card variant='plain'>
                     <CardHeader className='border-none'>
                         <CardTitle>Top sources</CardTitle>
@@ -100,7 +102,7 @@ const Sources:React.FC = () => {
                         </ChartContainer>
                     </CardContent>
                 </Card>
-                <Card className='-mt-10' variant='plain'>
+                <Card variant='plain'>
                     <CardContent>
                         {isLoading ? 'Loading' :
                             <Table>
@@ -136,7 +138,7 @@ const Sources:React.FC = () => {
                         }
                     </CardContent>
                 </Card>
-            </section>
+            </StatsContent>
         </StatsLayout>
     );
 };
