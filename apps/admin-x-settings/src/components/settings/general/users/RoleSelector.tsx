@@ -72,6 +72,7 @@ const RoleSelector: React.FC<{ user: User; setUserData: (user: User) => void; }>
         <Select
             options={optionsArray}
             selectedOption={optionsArray.find(option => option.value === user.roles[0].name.toLowerCase())}
+            testId='role-select'
             title="Role"
             onSelect={(option) => {
                 if (option) {
