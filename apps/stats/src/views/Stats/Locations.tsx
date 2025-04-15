@@ -1,5 +1,5 @@
+import AudienceSelect, {getAudienceQueryParam} from './components/AudienceSelect';
 import DateRangeSelect from './components/DateRangeSelect';
-import Header from '@src/components/layout/Header';
 import React, {useState} from 'react';
 import StatsContent from './layout/StatsContent';
 import StatsLayout from './layout/StatsLayout';
@@ -7,6 +7,7 @@ import World from '@svg-maps/world';
 import countries from 'i18n-iso-countries';
 import enLocale from 'i18n-iso-countries/langs/en.json';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, cn} from '@tryghost/shade';
+import {Header, HeaderActions} from '@src/components/layout/Header';
 import {STATS_LABEL_MAPPINGS} from '@src/utils/constants';
 import {SVGMap} from 'react-svg-map';
 import {formatNumber, formatQueryDate} from '@src/utils/data-formatters';
@@ -30,7 +31,7 @@ interface TooltipData {
 
 const Locations:React.FC = () => {
     const {data: configData, isLoading: isConfigLoading} = useGlobalData();
-    const {range} = useGlobalData();
+    const {range, audience} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
     const [tooltipData, setTooltipData] = useState<TooltipData | null>(null);
 
@@ -38,7 +39,8 @@ const Locations:React.FC = () => {
         site_uuid: configData?.config.stats?.id || '',
         date_from: formatQueryDate(startDate),
         date_to: formatQueryDate(endDate),
-        timezone: timezone
+        timezone: timezone,
+        member_status: getAudienceQueryParam(audience)
     };
 
     const {data, loading} = useQuery({
@@ -160,11 +162,14 @@ const Locations:React.FC = () => {
         <StatsLayout>
             <Header>
                 Locations
-                <DateRangeSelect />
+                <HeaderActions>
+                    <AudienceSelect />
+                    <DateRangeSelect />
+                </HeaderActions>
             </Header>
             <StatsContent>
                 <Card variant='plain'>
-                    <CardContent className='border-none pb-4 pt-8'>
+                    <CardContent className='-mb-5 border-none pt-8'>
                         <div className='svg-map-container relative mx-auto max-w-[680px]'>
                             <SVGMap
                                 locationClassName={getLocationClassName}

@@ -4,6 +4,7 @@ import {ChartConfig, ChartContainer, ChartTooltip, Recharts, Tabs, TabsList} fro
 import {KpiTabTrigger, KpiTabValue} from './KpiTab';
 import {calculateYAxisWidth, getRangeDates, getYTicks} from '@src/utils/chart-helpers';
 import {formatDisplayDate, formatDuration, formatNumber, formatPercentage, formatQueryDate} from '@src/utils/data-formatters';
+import {getAudienceQueryParam} from './AudienceSelect';
 import {getStatEndpointUrl} from '@src/config/stats-config';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useQuery} from '@tinybirdco/charts';
@@ -37,20 +38,18 @@ const KPI_METRICS: Record<string, KpiMetric> = {
     }
 };
 
-interface WebKpisProps {
-    range: number;
-}
-
-const WebKpis:React.FC<WebKpisProps> = ({range}) => {
+const WebKpis:React.FC = ({}) => {
     const {data: configData, isLoading: isConfigLoading} = useGlobalData();
     const [currentTab, setCurrentTab] = useState('visits');
+    const {range, audience} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
 
     const params = {
         site_uuid: configData?.config.stats?.id || '',
         date_from: formatQueryDate(startDate),
         date_to: formatQueryDate(endDate),
-        timezone: timezone
+        timezone: timezone,
+        member_status: getAudienceQueryParam(audience)
     };
 
     const {data, loading} = useQuery({

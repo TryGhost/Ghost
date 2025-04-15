@@ -8,6 +8,7 @@ export * from './components/ui/card';
 export * from './components/ui/chart';
 export * from './components/ui/dialog';
 export * from './components/ui/dropdown-menu';
+export type {DropdownMenuCheckboxItemProps as DropdownMenuCheckboxItemProps} from '@radix-ui/react-dropdown-menu';
 export * from './components/ui/input';
 export * from './components/ui/popover';
 export * from './components/ui/right-sidebar';

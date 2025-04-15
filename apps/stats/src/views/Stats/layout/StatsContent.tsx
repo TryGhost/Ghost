@@ -5,7 +5,7 @@ import {cn} from '@tryghost/shade';
 const StatsContent: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({children, className, ...props}) => {
     return (
         <section className={cn('gap-8 pb-8 grid w-full grow grid-cols-[auto_288px]', className)} {...props}>
-            <div className='grid grid-cols-1 gap-8'>
+            <div className='flex size-full flex-col gap-8'>
                 {children}
             </div>
             <Sidebar />

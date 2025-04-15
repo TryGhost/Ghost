@@ -16,6 +16,8 @@ type GlobalDataContextType = {
     data: GlobalData | undefined;
     isLoading: boolean;
     range: number;
+    audience: number;
+    setAudience: (value: number) => void;
     setRange: (value: number) => void;
 }
 
@@ -32,6 +34,8 @@ export const useGlobalData = () => {
 const GlobalDataProvider = ({children}: { children: ReactNode }) => {
     const config = useBrowseConfig() as unknown as { data: GlobalData | null, isLoading: boolean, error: Error | null };
     const [range, setRange] = useState(STATS_RANGE_OPTIONS[STATS_DEFAULT_RANGE_KEY].value);
+    // Initialize with all audiences selected (binary 111 = 7)
+    const [audience, setAudience] = useState(7);
 
     const requests = [config];
     const error = requests.map(request => request.error).find(Boolean);
@@ -45,7 +49,9 @@ const GlobalDataProvider = ({children}: { children: ReactNode }) => {
         data: config.data ?? undefined,
         isLoading,
         range,
-        setRange
+        setRange,
+        audience,
+        setAudience
     }}>
         {children}
     </GlobalDataContext.Provider>;
