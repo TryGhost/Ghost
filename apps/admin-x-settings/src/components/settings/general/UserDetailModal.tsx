@@ -17,7 +17,7 @@ import {RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing
 import {User, canAccessSettings, hasAdminAccess, isAdminUser, isAuthorOrContributor, isEditorUser, isOwnerUser, useDeleteUser, useEditUser, useMakeOwner} from '@tryghost/admin-x-framework/api/users';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
-import {validateBlueskyUrl, validateFacebookUrl, validateInstagramUrl, validateLinkedInUrl, validateThreadsUrl, validateTwitterUrl} from '../../../utils/socialUrls/index';
+import {validateBlueskyUrl, validateFacebookUrl, validateInstagramUrl, validateLinkedInUrl, validateThreadsUrl, validateTwitterUrl, validateYouTubeUrl} from '../../../utils/socialUrls/index';
 
 const validators: Record<string, (u: Partial<User>) => string> = {
     name: ({name}) => {
@@ -111,6 +111,17 @@ const validators: Record<string, (u: Partial<User>) => string> = {
     instagram: ({instagram}) => {
         try {
             validateInstagramUrl(instagram || '');
+            return '';
+        } catch (e) {
+            if (e instanceof Error) {
+                return e.message;
+            }
+            return '';
+        }
+    },
+    youtube: ({youtube}) => {
+        try {
+            validateYouTubeUrl(youtube || '');
             return '';
         } catch (e) {
             if (e instanceof Error) {

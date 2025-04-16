@@ -20,7 +20,10 @@ import {
     validateInstagramUrl,
     validateLinkedInUrl,
     validateThreadsUrl,
-    validateTwitterUrl
+    validateTwitterUrl,
+    validateYouTubeUrl,
+    youtubeHandleToUrl,
+    youtubeUrlToHandle
 } from '../../../../utils/socialUrls/index';
 import {useState} from 'react';
 
@@ -31,7 +34,7 @@ export const DetailsInputs: React.FC<UserDetailProps> = ({errors, clearError, va
     const [blueskyUrl, setBlueskyUrl] = useState(user.bluesky ? blueskyHandleToUrl(user.bluesky) : '');
     const [linkedinUrl, setLinkedinUrl] = useState(user.linkedin ? linkedinHandleToUrl(user.linkedin) : '');
     const [instagramUrl, setInstagramUrl] = useState(user.instagram ? instagramHandleToUrl(user.instagram) : '');
-
+    const [youtubeUrl, setYoutubeUrl] = useState(user.youtube ? youtubeHandleToUrl(user.youtube) : '');
     return (
         <SettingGroupContent>
             <TextField
@@ -162,6 +165,24 @@ export const DetailsInputs: React.FC<UserDetailProps> = ({errors, clearError, va
                         setInstagramUrl(e.target.value);
                     }}
                     onKeyDown={() => clearError('instagram')} />
+
+                <TextField
+                    error={!!errors?.youtube}
+                    hint={errors?.youtube}
+                    maxLength={2000}
+                    title="YouTube profile"
+                    value={youtubeUrl}
+                    onBlur={(e) => {
+                        if (validateField('youtube', e.target.value)) {
+                            const url = validateYouTubeUrl(e.target.value);
+                            setYoutubeUrl(url);
+                            setUserData({...user, youtube: youtubeUrlToHandle(url)});
+                        }
+                    }}
+                    onChange={(e) => {
+                        setYoutubeUrl(e.target.value);
+                    }}
+                    onKeyDown={() => clearError('youtube')} />
 
             </BehindFeatureFlag>
             <TextArea

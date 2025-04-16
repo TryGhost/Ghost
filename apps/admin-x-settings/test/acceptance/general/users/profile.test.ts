@@ -546,7 +546,7 @@ test.describe('User profile', async () => {
 
             expect(lastApiRequests.editUser?.body).toMatchObject({
                 users: [{
-                    bluesky: '@username'
+                    bluesky: 'username'
                 }]
             });
         });
@@ -637,6 +637,51 @@ test.describe('User profile', async () => {
             expect(lastApiRequests.editUser?.body).toMatchObject({
                 users: [{
                     instagram: 'yourUsername'
+                }]
+            });
+        });
+
+        test('Validates YouTube URL', async ({page}) => {
+            const userToEdit = responseFixtures.users.users.find(user => user.email === 'administrator@test.com')!;
+            // activate social links feature flag
+            toggleLabsFlag('socialLinks', true);
+
+            const {lastApiRequests} = await mockApi({page, requests: {
+                ...globalDataRequests,
+                browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
+                editUser: {method: 'PUT', path: `/users/${userToEdit.id}/?include=roles`, response: {
+                    users: [{
+                        ...userToEdit
+                    }]
+                }}
+            }});
+
+            await page.goto('/');
+
+            const section = page.getByTestId('users');
+            const activeTab = section.locator('[role=tabpanel]:not(.hidden)');
+
+            await section.getByRole('tab', {name: 'Administrators'}).click();
+
+            const listItem = activeTab.getByTestId('user-list-item').last();
+            await listItem.hover();
+            await listItem.getByRole('button', {name: 'Edit'}).click();
+
+            const modal = page.getByTestId('user-detail-modal');
+
+            const youtubeInput = modal.getByLabel('YouTube profile');
+
+            await testUrlValidation(youtubeInput, 'https://www.youutbe/gsg', 'https://www.youutbe/gsg', 'The URL must be in a format like https://www.youtube.com/@yourUsername, https://www.youtube.com/user/yourUsername, or https://www.youtube.com/channel/yourChannelId');
+
+            await testUrlValidation(youtubeInput, 'https://www.youtube.com/@yourUsername', 'https://www.youtube.com/@yourUsername');
+
+            await modal.getByRole('button', {name: 'Save'}).click();
+
+            await expect(modal.getByRole('button', {name: 'Saved'})).toBeVisible();
+
+            expect(lastApiRequests.editUser?.body).toMatchObject({
+                users: [{
+                    youtube: '@yourUsername'
                 }]
             });
         });
