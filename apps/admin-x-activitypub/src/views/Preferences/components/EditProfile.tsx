@@ -2,6 +2,7 @@ import React, {ChangeEvent, useEffect, useRef, useState} from 'react';
 import {Account} from '@src/api/activitypub';
 import {Button, DialogClose, DialogFooter, Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage, Input, LucideIcon, Textarea} from '@tryghost/shade';
 import {useForm} from 'react-hook-form';
+import {useUpdateAccountMutationForUser} from '@hooks/use-activity-pub-queries';
 import {z} from 'zod';
 import {zodResolver} from '@hookform/resolvers/zod';
 
@@ -27,6 +28,8 @@ const EditProfile: React.FC<EditProfileProps> = ({account}) => {
     const [coverImagePreview, setCoverImagePreview] = useState<string | null>(account?.bannerImageUrl || null);
     const coverImageInputRef = useRef<HTMLInputElement>(null);
     const [handleDomain, setHandleDomain] = useState<string>('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const {mutate: updateAccount} = useUpdateAccountMutationForUser(account?.handle || '');
 
     const form = useForm<z.infer<typeof FormSchema>>({
         resolver: zodResolver(FormSchema),
@@ -135,14 +138,19 @@ const EditProfile: React.FC<EditProfileProps> = ({account}) => {
     };
 
     function onSubmit(data: z.infer<typeof FormSchema>) {
-        const submitData = {...data};
+        setIsSubmitting(true);
 
-        if (handleDomain) {
-            submitData.handle = `@${data.handle}@${handleDomain}`;
-        }
-
-        // eslint-disable-next-line no-console
-        console.log('Submitted:', submitData);
+        updateAccount({
+            name: data.name || account?.name || '',
+            username: data.handle || account?.handle || '',
+            bio: data.bio || account?.bio || '',
+            avatarUrl: data.profileImage || account?.avatarUrl || '',
+            bannerImageUrl: data.coverImage || account?.bannerImageUrl || ''
+        }, {
+            onSettled() {
+                setIsSubmitting(false);
+            }
+        });
     }
 
     return (
@@ -269,7 +277,7 @@ const EditProfile: React.FC<EditProfileProps> = ({account}) => {
                     <DialogClose>
                         <Button variant='outline'>Cancel</Button>
                     </DialogClose>
-                    <Button type="submit">Save</Button>
+                    <Button disabled={isSubmitting} type="submit">Save</Button>
                 </DialogFooter>
             </form>
         </Form>
