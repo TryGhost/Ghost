@@ -1,5 +1,5 @@
 import * as assert from 'assert/strict';
-import {blueskyHandleToUrl, blueskyUrlToHandle, facebookHandleToUrl, facebookUrlToHandle, threadsHandleToUrl, threadsUrlToHandle, twitterHandleToUrl, twitterUrlToHandle, validateBlueskyUrl, validateFacebookUrl, validateThreadsUrl, validateTwitterUrl} from '../../../src/utils/socialUrls';
+import {blueskyHandleToUrl, blueskyUrlToHandle, facebookHandleToUrl, facebookUrlToHandle, threadsHandleToUrl, threadsUrlToHandle, twitterHandleToUrl, twitterUrlToHandle, validateBlueskyUrl, validateFacebookUrl, validateThreadsUrl, validateTwitterUrl} from '../../../src/utils/socialUrls/index';
 
 describe('socialUrls', () => {
     describe('Facebook URL validation', () => {

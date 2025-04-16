@@ -2,7 +2,7 @@ import BehindFeatureFlag from '../../../BehindFeatureFlag';
 import CustomHeader from './CustomHeader';
 import {SettingGroup, SettingGroupContent, TextArea, TextField} from '@tryghost/admin-x-design-system';
 import {UserDetailProps} from '../UserDetailModal';
-import {blueskyHandleToUrl, blueskyUrlToHandle, facebookHandleToUrl, facebookUrlToHandle, threadsHandleToUrl, threadsUrlToHandle, twitterHandleToUrl, twitterUrlToHandle, validateBlueskyUrl, validateFacebookUrl, validateThreadsUrl, validateTwitterUrl} from '../../../../utils/socialUrls';
+import {blueskyHandleToUrl, blueskyUrlToHandle, facebookHandleToUrl, facebookUrlToHandle, threadsHandleToUrl, threadsUrlToHandle, twitterHandleToUrl, twitterUrlToHandle, validateBlueskyUrl, validateFacebookUrl, validateThreadsUrl, validateTwitterUrl} from '../../../../utils/socialUrls/index';
 import {useState} from 'react';
 
 export const DetailsInputs: React.FC<UserDetailProps> = ({errors, clearError, validateField, user, setUserData}) => {
