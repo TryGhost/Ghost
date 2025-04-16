@@ -3,7 +3,7 @@ const sinon = require('sinon');
 const knex = require('knex');
 const {Tier} = require('@tryghost/tiers');
 
-const PaymentsService = require('../../../../lib/services/PaymentsService');
+const PaymentsService = require('../../../../../../../core/server/services/members/members-api/services/PaymentsService');
 
 describe('PaymentsService', function () {
     let Bookshelf;
