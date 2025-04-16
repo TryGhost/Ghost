@@ -1,9 +1,7 @@
 const assert = require('assert/strict');
-const {
-    MilestonesService,
-    InMemoryMilestoneRepository
-} = require('../index');
-const Milestone = require('../lib/Milestone');
+const MilestonesService = require('../../../../../core/server/services/milestones/MilestonesService');
+const InMemoryMilestoneRepository = require('../../../../../core/server/services/milestones/InMemoryMilestoneRepository');
+const Milestone = require('../../../../../core/server/services/milestones/Milestone');
 const DomainEvents = require('@tryghost/domain-events');
 const sinon = require('sinon');
 
