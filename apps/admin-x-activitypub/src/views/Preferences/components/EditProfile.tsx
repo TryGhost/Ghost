@@ -1,7 +1,7 @@
 import React, {ChangeEvent, useEffect, useRef, useState} from 'react';
 import {Account} from '@src/api/activitypub';
 import {Button, DialogClose, DialogFooter, Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage, Input, LucideIcon, Textarea} from '@tryghost/shade';
-import {useForm, useFormContext} from 'react-hook-form';
+import {useForm} from 'react-hook-form';
 import {z} from 'zod';
 import {zodResolver} from '@hookform/resolvers/zod';
 
@@ -39,6 +39,7 @@ const EditProfile: React.FC<EditProfileProps> = ({account}) => {
         }
     });
 
+    const hasNameError = !!form.formState.errors.name;
     const hasHandleError = !!form.formState.errors.handle;
 
     useEffect(() => {
@@ -220,9 +221,11 @@ const EditProfile: React.FC<EditProfileProps> = ({account}) => {
                             <FormControl>
                                 <Input placeholder="Jamie Larson" {...field} />
                             </FormControl>
-                            <FormDescription>
-                                The name shown to your followers in the Inbox and Feed
-                            </FormDescription>
+                            {!hasNameError && (
+                                <FormDescription>
+                                    The name shown to your followers in the Inbox and Feed
+                                </FormDescription>
+                            )}
                             <FormMessage />
                         </FormItem>
                     )}
