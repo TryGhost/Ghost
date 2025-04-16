@@ -2,13 +2,14 @@ import BehindFeatureFlag from '../../../BehindFeatureFlag';
 import CustomHeader from './CustomHeader';
 import {SettingGroup, SettingGroupContent, TextArea, TextField} from '@tryghost/admin-x-design-system';
 import {UserDetailProps} from '../UserDetailModal';
-import {facebookHandleToUrl, facebookUrlToHandle, threadsHandleToUrl, threadsUrlToHandle, twitterHandleToUrl, twitterUrlToHandle, validateFacebookUrl, validateThreadsUrl, validateTwitterUrl} from '../../../../utils/socialUrls';
+import {blueskyHandleToUrl, blueskyUrlToHandle, facebookHandleToUrl, facebookUrlToHandle, threadsHandleToUrl, threadsUrlToHandle, twitterHandleToUrl, twitterUrlToHandle, validateBlueskyUrl, validateFacebookUrl, validateThreadsUrl, validateTwitterUrl} from '../../../../utils/socialUrls';
 import {useState} from 'react';
 
 export const DetailsInputs: React.FC<UserDetailProps> = ({errors, clearError, validateField, user, setUserData}) => {
     const [facebookUrl, setFacebookUrl] = useState(user.facebook ? facebookHandleToUrl(user.facebook) : '');
     const [twitterUrl, setTwitterUrl] = useState(user.twitter ? twitterHandleToUrl(user.twitter) : '');
     const [threadsUrl, setThreadsUrl] = useState(user.threads ? threadsHandleToUrl(user.threads) : '');
+    const [blueskyUrl, setBlueskyUrl] = useState(user.bluesky ? blueskyHandleToUrl(user.bluesky) : '');
 
     return (
         <SettingGroupContent>
@@ -87,6 +88,25 @@ export const DetailsInputs: React.FC<UserDetailProps> = ({errors, clearError, va
                         setThreadsUrl(e.target.value);
                     }}
                     onKeyDown={() => clearError('threads')} />
+
+                <TextField
+                    error={!!errors?.bluesky}
+                    hint={errors?.bluesky}
+                    maxLength={2000}
+                    title="Bluesky profile"
+                    value={blueskyUrl}
+                    onBlur={(e) => {
+                        if (validateField('bluesky', e.target.value)) {
+                            const url = validateBlueskyUrl(e.target.value);
+                            setBlueskyUrl(url);
+                            setUserData({...user, bluesky: blueskyUrlToHandle(url)});
+                        }
+                    }}
+                    onChange={(e) => {
+                        setBlueskyUrl(e.target.value);
+                    }}
+                    onKeyDown={() => clearError('bluesky')} />
+                
             </BehindFeatureFlag>
             <TextArea
                 error={!!errors?.bio}

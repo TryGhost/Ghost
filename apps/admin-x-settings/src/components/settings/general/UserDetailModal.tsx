@@ -17,7 +17,7 @@ import {RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing
 import {User, canAccessSettings, hasAdminAccess, isAdminUser, isAuthorOrContributor, isEditorUser, isOwnerUser, useDeleteUser, useEditUser, useMakeOwner} from '@tryghost/admin-x-framework/api/users';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
-import {validateFacebookUrl, validateThreadsUrl, validateTwitterUrl} from '../../../utils/socialUrls';
+import {validateBlueskyUrl, validateFacebookUrl, validateThreadsUrl, validateTwitterUrl} from '../../../utils/socialUrls';
 
 const validators: Record<string, (u: Partial<User>) => string> = {
     name: ({name}) => {
@@ -78,6 +78,17 @@ const validators: Record<string, (u: Partial<User>) => string> = {
     threads: ({threads}) => {
         try {
             validateThreadsUrl(threads || '');
+            return '';
+        } catch (e) {
+            if (e instanceof Error) {
+                return e.message;
+            }
+            return '';
+        }
+    },
+    bluesky: ({bluesky}) => {
+        try {
+            validateBlueskyUrl(bluesky || '');
             return '';
         } catch (e) {
             if (e instanceof Error) {
