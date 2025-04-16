@@ -1,3 +1,4 @@
+import BehindFeatureFlag from '../../BehindFeatureFlag';
 import React, {useEffect, useState} from 'react';
 import TopLevelGroup from '../../TopLevelGroup';
 import clsx from 'clsx';
@@ -278,7 +279,6 @@ const Users: React.FC<{ keywords: string[], highlight?: boolean }> = ({keywords,
 
     const {settings} = useGlobalData();
     const require2fa = getSettingValue<boolean>(settings, 'require_email_mfa') || false;
-    const labs = JSON.parse(getSettingValue<string>(settings, 'labs') || '{}');
     const {mutateAsync: editSettings} = useEditSettings();
     const handleError = useHandleError();
 
@@ -299,33 +299,36 @@ const Users: React.FC<{ keywords: string[], highlight?: boolean }> = ({keywords,
                 link
                 onClick={() => fetchNextPage()}
             />}
-            {labs.staff2fa && !isEditorUser(currentUser) && (
-                <div className={`flex flex-col gap-6 ${users.length > 1 || invites.length > 0 ? '-mt-6' : ''}`}>
-                    <Separator />
-                    <div className='flex items-baseline justify-between'>
-                        <div className='flex flex-col'>
-                            <span className='text-[1.5rem] font-semibold tracking-tight'>Security settings</span>
-                            <span>Require email 2FA codes to be used on all staff logins</span>
+
+            <BehindFeatureFlag flag='staff2fa'>
+                {hasAdminAccess(currentUser) && (
+                    <div className={`flex flex-col gap-6 ${users.length > 1 || invites.length > 0 ? '-mt-6' : ''}`}>
+                        <Separator />
+                        <div className='flex items-baseline justify-between'>
+                            <div className='flex flex-col'>
+                                <span className='text-[1.5rem] font-semibold tracking-tight'>Security settings</span>
+                                <span>Require email 2FA codes to be used on all staff logins</span>
+                            </div>
+                            <Toggle
+                                checked={require2fa}
+                                direction='rtl'
+                                gap='gap-0'
+                                onChange={async () => {
+                                    const newValue = !require2fa;
+                                    try {
+                                        await editSettings([{
+                                            key: 'require_email_mfa',
+                                            value: newValue
+                                        }]);
+                                    } catch (error) {
+                                        handleError(error);
+                                    }
+                                }}
+                            />
                         </div>
-                        <Toggle
-                            checked={require2fa}
-                            direction='rtl'
-                            gap='gap-0'
-                            onChange={async () => {
-                                const newValue = !require2fa;
-                                try {
-                                    await editSettings([{
-                                        key: 'require_email_mfa',
-                                        value: newValue
-                                    }]);
-                                } catch (error) {
-                                    handleError(error);
-                                }
-                            }}
-                        />
                     </div>
-                </div>
-            )}
+                )}
+            </BehindFeatureFlag>
         </TopLevelGroup>
     );
 };
