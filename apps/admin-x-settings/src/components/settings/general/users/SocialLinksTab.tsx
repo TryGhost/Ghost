@@ -46,6 +46,7 @@ export const DetailsInputs: React.FC<UserDetailProps> = ({errors, clearError, va
     return (
         <SettingGroupContent>
             <TextField
+                data-testid="website-input"
                 error={!!errors?.website}
                 hint={errors?.website}
                 maxLength={2000}
@@ -60,6 +61,7 @@ export const DetailsInputs: React.FC<UserDetailProps> = ({errors, clearError, va
                 }}
                 onKeyDown={() => clearError('url')} />
             <TextField
+                data-testid="x-input"
                 error={!!errors?.twitter}
                 hint={errors?.twitter}
                 maxLength={2000}
@@ -78,6 +80,7 @@ export const DetailsInputs: React.FC<UserDetailProps> = ({errors, clearError, va
                 }}
                 onKeyDown={() => clearError('twitter')} />
             <TextField
+                data-testid="facebook-input"
                 error={!!errors?.facebook}
                 hint={errors?.facebook}
                 maxLength={2000}
@@ -97,6 +100,7 @@ export const DetailsInputs: React.FC<UserDetailProps> = ({errors, clearError, va
                 onKeyDown={() => clearError('facebook')} />
             <BehindFeatureFlag flag='socialLinks'>
                 <TextField
+                    data-testid="linkedin-input"
                     error={!!errors?.linkedin}
                     hint={errors?.linkedin}
                     maxLength={2000}
@@ -115,6 +119,7 @@ export const DetailsInputs: React.FC<UserDetailProps> = ({errors, clearError, va
                     }}
                     onKeyDown={() => clearError('linkedin')} />
                 <TextField
+                    data-testid="bluesky-input"
                     error={!!errors?.bluesky}
                     hint={errors?.bluesky}
                     maxLength={2000}
@@ -133,6 +138,7 @@ export const DetailsInputs: React.FC<UserDetailProps> = ({errors, clearError, va
                     }}
                     onKeyDown={() => clearError('bluesky')} />
                 <TextField
+                    data-testid="threads-input"
                     error={!!errors?.threads}
                     hint={errors?.threads}
                     maxLength={2000}
@@ -151,6 +157,7 @@ export const DetailsInputs: React.FC<UserDetailProps> = ({errors, clearError, va
                     }}
                     onKeyDown={() => clearError('threads')} />
                 <TextField
+                    data-testid="mastodon-input"
                     error={!!errors?.mastodon}
                     hint={errors?.mastodon}
                     maxLength={2000}
@@ -169,6 +176,7 @@ export const DetailsInputs: React.FC<UserDetailProps> = ({errors, clearError, va
                     }}
                     onKeyDown={() => clearError('mastodon')} />
                 <TextField
+                    data-testid="tiktok-input"
                     error={!!errors?.tiktok}
                     hint={errors?.tiktok}
                     maxLength={2000}
@@ -187,6 +195,7 @@ export const DetailsInputs: React.FC<UserDetailProps> = ({errors, clearError, va
                     }}
                     onKeyDown={() => clearError('tiktok')} />
                 <TextField
+                    data-testid="youtube-input"
                     error={!!errors?.youtube}
                     hint={errors?.youtube}
                     maxLength={2000}
@@ -205,6 +214,7 @@ export const DetailsInputs: React.FC<UserDetailProps> = ({errors, clearError, va
                     }}
                     onKeyDown={() => clearError('youtube')} />
                 <TextField
+                    data-testid="instagram-input"
                     error={!!errors?.instagram}
                     hint={errors?.instagram}
                     maxLength={2000}

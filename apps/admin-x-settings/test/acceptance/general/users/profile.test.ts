@@ -82,12 +82,12 @@ test.describe('User profile', async () => {
         const modal = page.getByTestId('user-detail-modal');
 
         await modal.getByTitle('Social Links').click();
-        await modal.getByLabel('Website').fill('not-a-website');
+        await modal.getByTestId('website-input').fill('not-a-website');
         await modal.getByRole('button', {name: 'Save'}).click();
         await expect(modal).toContainText('Enter a valid URL');
 
         // Test Facebook URL validation
-        const facebookInput = modal.getByLabel('Facebook profile');
+        const facebookInput = modal.getByTestId('facebook-input');
 
         await testUrlValidation(
             facebookInput,
@@ -109,7 +109,7 @@ test.describe('User profile', async () => {
         );
 
         // Test Twitter URL validation
-        const twitterInput = modal.getByLabel('X profile');
+        const twitterInput = modal.getByTestId('x-input');
 
         await testUrlValidation(
             twitterInput,
@@ -162,9 +162,9 @@ test.describe('User profile', async () => {
         await modal.getByLabel('Bio').fill('some bio');
 
         await modal.getByTitle('Social Links').click();
-        await modal.getByLabel('Website').fill('https://example.com');
-        await modal.getByLabel('Facebook profile').fill('fb');
-        await modal.getByLabel('X profile').fill('tw');
+        await modal.getByTestId('website-input').fill('https://example.com');
+        await modal.getByTestId('facebook-input').fill('fb');
+        await modal.getByTestId('x-input').fill('tw');
 
         await modal.getByRole('button', {name: 'Save'}).click();
 
@@ -536,7 +536,7 @@ test.describe('User profile', async () => {
 
             const modal = page.getByTestId('user-detail-modal');
 
-            const threadsInput = modal.getByLabel('Threads profile');
+            const threadsInput = modal.getByTestId('threads-input');
 
             await testUrlValidation(threadsInput, 'https://www.notthreads.com', 'https://www.notthreads.com', 'The URL must be in a format like https://www.threads.net/@yourUsername');
 
@@ -581,7 +581,7 @@ test.describe('User profile', async () => {
 
             const modal = page.getByTestId('user-detail-modal');
 
-            const blueskyInput = modal.getByLabel('Bluesky profile');
+            const blueskyInput = modal.getByTestId('bluesky-input');
 
             await testUrlValidation(blueskyInput, 'https://notbluesky.com', 'https://notbluesky.com', 'The URL must be in a format like https://bsky.app/profile/yourUsername');
 
@@ -626,7 +626,7 @@ test.describe('User profile', async () => {
 
             const modal = page.getByTestId('user-detail-modal');
 
-            const linkedinInput = modal.getByLabel('LinkedIn profile');
+            const linkedinInput = modal.getByTestId('linkedin-input');
 
             await testUrlValidation(linkedinInput, 'https://notlinkedin.com', 'https://notlinkedin.com', 'The URL must be in a format like https://www.linkedin.com/in/yourUsername');
 
@@ -671,7 +671,7 @@ test.describe('User profile', async () => {
 
             const modal = page.getByTestId('user-detail-modal');
 
-            const instagramInput = modal.getByLabel('Instagram profile');
+            const instagramInput = modal.getByTestId('instagram-input');
 
             await testUrlValidation(instagramInput, 'https://twitter.com/johnsmith', 'https://twitter.com/johnsmith', 'The URL must be in a format like https://www.instagram.com/yourUsername');
 
@@ -716,7 +716,7 @@ test.describe('User profile', async () => {
 
             const modal = page.getByTestId('user-detail-modal');
 
-            const youtubeInput = modal.getByLabel('YouTube profile');
+            const youtubeInput = modal.getByTestId('youtube-input');
 
             await testUrlValidation(youtubeInput, 'https://www.youutbe/gsg', 'https://www.youutbe/gsg', 'The URL must be in a format like https://www.youtube.com/@yourUsername, https://www.youtube.com/user/yourUsername, or https://www.youtube.com/channel/yourChannelId');
 
@@ -761,7 +761,7 @@ test.describe('User profile', async () => {
 
             const modal = page.getByTestId('user-detail-modal');
 
-            const tiktokInput = modal.getByLabel('TikTok profile');
+            const tiktokInput = modal.getByTestId('tiktok-input');
 
             await testUrlValidation(tiktokInput, 'https://www.tik.com/nottiktok', 'https://www.tik.com/nottiktok', 'The URL must be in a format like https://www.tiktok.com/@yourUsername');
 
@@ -806,7 +806,7 @@ test.describe('User profile', async () => {
 
             const modal = page.getByTestId('user-detail-modal');
 
-            const mastodonInput = modal.getByLabel('Mastodon profile');
+            const mastodonInput = modal.getByTestId('mastodon-input');
 
             await testUrlValidation(mastodonInput, 'https://mastodon.social/johnsmith', 'https://mastodon.social/johnsmith', 'The URL must be in a format like instance/@yourUsername or instance/@yourUsername@instance');
 
