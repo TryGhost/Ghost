@@ -5,3 +5,4 @@ export * from './bluesky';
 export * from './linkedin';
 export * from './instagram';
 export * from './youtube';
+export * from './tiktok';

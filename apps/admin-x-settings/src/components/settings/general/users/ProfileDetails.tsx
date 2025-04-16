@@ -13,6 +13,8 @@ import {
     linkedinUrlToHandle,
     threadsHandleToUrl,
     threadsUrlToHandle,
+    tiktokHandleToUrl,
+    tiktokUrlToHandle,
     twitterHandleToUrl,
     twitterUrlToHandle,
     validateBlueskyUrl,
@@ -20,6 +22,7 @@ import {
     validateInstagramUrl,
     validateLinkedInUrl,
     validateThreadsUrl,
+    validateTikTokUrl,
     validateTwitterUrl,
     validateYouTubeUrl,
     youtubeHandleToUrl,
@@ -35,6 +38,8 @@ export const DetailsInputs: React.FC<UserDetailProps> = ({errors, clearError, va
     const [linkedinUrl, setLinkedinUrl] = useState(user.linkedin ? linkedinHandleToUrl(user.linkedin) : '');
     const [instagramUrl, setInstagramUrl] = useState(user.instagram ? instagramHandleToUrl(user.instagram) : '');
     const [youtubeUrl, setYoutubeUrl] = useState(user.youtube ? youtubeHandleToUrl(user.youtube) : '');
+    const [tiktokUrl, setTiktokUrl] = useState(user.tiktok ? tiktokHandleToUrl(user.tiktok) : '');
+
     return (
         <SettingGroupContent>
             <TextField
@@ -183,6 +188,24 @@ export const DetailsInputs: React.FC<UserDetailProps> = ({errors, clearError, va
                         setYoutubeUrl(e.target.value);
                     }}
                     onKeyDown={() => clearError('youtube')} />
+
+                <TextField
+                    error={!!errors?.tiktok}
+                    hint={errors?.tiktok}
+                    maxLength={2000}
+                    title="TikTok profile"
+                    value={tiktokUrl}
+                    onBlur={(e) => {
+                        if (validateField('tiktok', e.target.value)) {
+                            const url = validateTikTokUrl(e.target.value);
+                            setTiktokUrl(url);
+                            setUserData({...user, tiktok: tiktokUrlToHandle(url)});
+                        }
+                    }}
+                    onChange={(e) => {
+                        setTiktokUrl(e.target.value);
+                    }}
+                    onKeyDown={() => clearError('tiktok')} />
 
             </BehindFeatureFlag>
             <TextArea
