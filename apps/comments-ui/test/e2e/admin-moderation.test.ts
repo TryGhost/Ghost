@@ -275,6 +275,14 @@ test.describe('Admin moderation', async () => {
         await expect(replyToHide).not.toContainText('Hidden for members');
     });
 
+    test('can see hidden comments if you are an admin', async ({page}) => {
+        mockedApi.addComment({html: '<p>This is comment 1</p>', status: 'hidden'});
+        const {frame} = await initializeTest(page);
+        const comments = await frame.getByTestId('comment-component');
+        await expect(comments).toHaveCount(1);
+        await expect(comments.nth(0)).toContainText('Hidden for members');
+    });
+    
     test('updates in-reply-to snippets when hiding', async ({page}) => {
         mockedApi.addComment({
             id: '1',
