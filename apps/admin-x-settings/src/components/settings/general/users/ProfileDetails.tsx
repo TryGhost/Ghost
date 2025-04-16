@@ -7,6 +7,8 @@ import {
     blueskyUrlToHandle,
     facebookHandleToUrl,
     facebookUrlToHandle,
+    instagramHandleToUrl,
+    instagramUrlToHandle,
     linkedinHandleToUrl,
     linkedinUrlToHandle,
     threadsHandleToUrl,
@@ -15,6 +17,7 @@ import {
     twitterUrlToHandle,
     validateBlueskyUrl,
     validateFacebookUrl,
+    validateInstagramUrl,
     validateLinkedInUrl,
     validateThreadsUrl,
     validateTwitterUrl
@@ -27,6 +30,7 @@ export const DetailsInputs: React.FC<UserDetailProps> = ({errors, clearError, va
     const [threadsUrl, setThreadsUrl] = useState(user.threads ? threadsHandleToUrl(user.threads) : '');
     const [blueskyUrl, setBlueskyUrl] = useState(user.bluesky ? blueskyHandleToUrl(user.bluesky) : '');
     const [linkedinUrl, setLinkedinUrl] = useState(user.linkedin ? linkedinHandleToUrl(user.linkedin) : '');
+    const [instagramUrl, setInstagramUrl] = useState(user.instagram ? instagramHandleToUrl(user.instagram) : '');
 
     return (
         <SettingGroupContent>
@@ -141,6 +145,24 @@ export const DetailsInputs: React.FC<UserDetailProps> = ({errors, clearError, va
                     }}
                     onKeyDown={() => clearError('linkedin')} />
                 
+                <TextField
+                    error={!!errors?.instagram}
+                    hint={errors?.instagram}
+                    maxLength={2000}
+                    title="Instagram profile"
+                    value={instagramUrl}
+                    onBlur={(e) => {
+                        if (validateField('instagram', e.target.value)) {
+                            const url = validateInstagramUrl(e.target.value);
+                            setInstagramUrl(url);
+                            setUserData({...user, instagram: instagramUrlToHandle(url)});
+                        }
+                    }}
+                    onChange={(e) => {
+                        setInstagramUrl(e.target.value);
+                    }}
+                    onKeyDown={() => clearError('instagram')} />
+
             </BehindFeatureFlag>
             <TextArea
                 error={!!errors?.bio}

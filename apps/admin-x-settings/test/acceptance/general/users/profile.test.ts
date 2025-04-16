@@ -555,7 +555,7 @@ test.describe('User profile', async () => {
             const userToEdit = responseFixtures.users.users.find(user => user.email === 'administrator@test.com')!;
             // activate social links feature flag
             toggleLabsFlag('socialLinks', true);
-            
+
             const {lastApiRequests} = await mockApi({page, requests: {
                 ...globalDataRequests,
                 browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
@@ -592,6 +592,51 @@ test.describe('User profile', async () => {
             expect(lastApiRequests.editUser?.body).toMatchObject({
                 users: [{
                     linkedin: 'yourUsername'
+                }]
+            });
+        });
+
+        test('Validates Instagram URL', async ({page}) => {
+            const userToEdit = responseFixtures.users.users.find(user => user.email === 'administrator@test.com')!;
+            // activate social links feature flag
+            toggleLabsFlag('socialLinks', true);
+            
+            const {lastApiRequests} = await mockApi({page, requests: {
+                ...globalDataRequests,
+                browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
+                editUser: {method: 'PUT', path: `/users/${userToEdit.id}/?include=roles`, response: {
+                    users: [{
+                        ...userToEdit
+                    }]
+                }}
+            }});
+
+            await page.goto('/');
+
+            const section = page.getByTestId('users');
+            const activeTab = section.locator('[role=tabpanel]:not(.hidden)');
+
+            await section.getByRole('tab', {name: 'Administrators'}).click();
+
+            const listItem = activeTab.getByTestId('user-list-item').last();
+            await listItem.hover();
+            await listItem.getByRole('button', {name: 'Edit'}).click();
+
+            const modal = page.getByTestId('user-detail-modal');
+
+            const instagramInput = modal.getByLabel('Instagram profile');
+
+            await testUrlValidation(instagramInput, 'https://twitter.com/johnsmith', 'https://twitter.com/johnsmith', 'The URL must be in a format like https://www.instagram.com/yourUsername');
+
+            await testUrlValidation(instagramInput, 'https://www.instagram.com/yourUsername', 'https://www.instagram.com/yourUsername');
+
+            await modal.getByRole('button', {name: 'Save'}).click();
+
+            await expect(modal.getByRole('button', {name: 'Saved'})).toBeVisible();
+
+            expect(lastApiRequests.editUser?.body).toMatchObject({
+                users: [{
+                    instagram: 'yourUsername'
                 }]
             });
         });
