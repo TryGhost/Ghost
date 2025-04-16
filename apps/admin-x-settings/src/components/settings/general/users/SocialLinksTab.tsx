@@ -47,8 +47,9 @@ export const DetailsInputs: React.FC<UserDetailProps> = ({errors, clearError, va
         <SettingGroupContent>
             <TextField
                 error={!!errors?.website}
-                hint={errors?.website || 'Have a website or blog other than this one? Link it!'}
+                hint={errors?.website}
                 maxLength={2000}
+                placeholder='https://example.com'
                 title="Website"
                 value={user.website || ''}
                 // onBlur={(e) => {
@@ -59,27 +60,11 @@ export const DetailsInputs: React.FC<UserDetailProps> = ({errors, clearError, va
                 }}
                 onKeyDown={() => clearError('url')} />
             <TextField
-                error={!!errors?.facebook}
-                hint={errors?.facebook || 'URL of your personal Facebook Profile'}
-                maxLength={2000}
-                title="Facebook profile"
-                value={facebookUrl}
-                onBlur={(e) => {
-                    if (validateField('facebook', e.target.value)) {
-                        const url = validateFacebookUrl(e.target.value);
-                        setFacebookUrl(url);
-                        setUserData({...user, facebook: facebookUrlToHandle(url)});
-                    }
-                }}
-                onChange={(e) => {
-                    setFacebookUrl(e.target.value);
-                }}
-                onKeyDown={() => clearError('facebook')} />
-            <TextField
                 error={!!errors?.twitter}
-                hint={errors?.twitter || 'URL of your X profile'}
+                hint={errors?.twitter}
                 maxLength={2000}
-                title="X (formerly Twitter) profile"
+                placeholder='https://x.com/username'
+                title="X"
                 value={twitterUrl}
                 onBlur={(e) => {
                     if (validateField('twitter', e.target.value)) {
@@ -92,30 +77,49 @@ export const DetailsInputs: React.FC<UserDetailProps> = ({errors, clearError, va
                     setTwitterUrl(e.target.value);
                 }}
                 onKeyDown={() => clearError('twitter')} />
+            <TextField
+                error={!!errors?.facebook}
+                hint={errors?.facebook}
+                maxLength={2000}
+                placeholder='https://www.facebook.com/username'
+                title="Facebook"
+                value={facebookUrl}
+                onBlur={(e) => {
+                    if (validateField('facebook', e.target.value)) {
+                        const url = validateFacebookUrl(e.target.value);
+                        setFacebookUrl(url);
+                        setUserData({...user, facebook: facebookUrlToHandle(url)});
+                    }
+                }}
+                onChange={(e) => {
+                    setFacebookUrl(e.target.value);
+                }}
+                onKeyDown={() => clearError('facebook')} />
             <BehindFeatureFlag flag='socialLinks'>
                 <TextField
-                    error={!!errors?.threads}
-                    hint={errors?.threads}
+                    error={!!errors?.linkedin}
+                    hint={errors?.linkedin}
                     maxLength={2000}
-                    title="Threads profile"
-                    value={threadsUrl}
+                    placeholder='https://www.linkedin.com/in/username'
+                    title="LinkedIn"
+                    value={linkedinUrl}
                     onBlur={(e) => {
-                        if (validateField('threads', e.target.value)) {
-                            const url = validateThreadsUrl(e.target.value);
-                            setThreadsUrl(url);
-                            setUserData({...user, threads: threadsUrlToHandle(url)});
+                        if (validateField('linkedin', e.target.value)) {
+                            const url = validateLinkedInUrl(e.target.value);
+                            setLinkedinUrl(url);
+                            setUserData({...user, linkedin: linkedinUrlToHandle(url)});
                         }
                     }}
                     onChange={(e) => {
-                        setThreadsUrl(e.target.value);
+                        setLinkedinUrl(e.target.value);
                     }}
-                    onKeyDown={() => clearError('threads')} />
-
+                    onKeyDown={() => clearError('linkedin')} />
                 <TextField
                     error={!!errors?.bluesky}
                     hint={errors?.bluesky}
                     maxLength={2000}
-                    title="Bluesky profile"
+                    placeholder='https://bsky.social/username'
+                    title="Bluesky"
                     value={blueskyUrl}
                     onBlur={(e) => {
                         if (validateField('bluesky', e.target.value)) {
@@ -129,82 +133,29 @@ export const DetailsInputs: React.FC<UserDetailProps> = ({errors, clearError, va
                     }}
                     onKeyDown={() => clearError('bluesky')} />
                 <TextField
-                    error={!!errors?.linkedin}
-                    hint={errors?.linkedin}
+                    error={!!errors?.threads}
+                    hint={errors?.threads}
                     maxLength={2000}
-                    title="LinkedIn profile"
-                    value={linkedinUrl}
+                    placeholder='https://threads.net/@username'
+                    title="Threads"
+                    value={threadsUrl}
                     onBlur={(e) => {
-                        if (validateField('linkedin', e.target.value)) {
-                            const url = validateLinkedInUrl(e.target.value);
-                            setLinkedinUrl(url);
-                            setUserData({...user, linkedin: linkedinUrlToHandle(url)});
+                        if (validateField('threads', e.target.value)) {
+                            const url = validateThreadsUrl(e.target.value);
+                            setThreadsUrl(url);
+                            setUserData({...user, threads: threadsUrlToHandle(url)});
                         }
                     }}
                     onChange={(e) => {
-                        setLinkedinUrl(e.target.value);
+                        setThreadsUrl(e.target.value);
                     }}
-                    onKeyDown={() => clearError('linkedin')} />
-                
-                <TextField
-                    error={!!errors?.instagram}
-                    hint={errors?.instagram}
-                    maxLength={2000}
-                    title="Instagram profile"
-                    value={instagramUrl}
-                    onBlur={(e) => {
-                        if (validateField('instagram', e.target.value)) {
-                            const url = validateInstagramUrl(e.target.value);
-                            setInstagramUrl(url);
-                            setUserData({...user, instagram: instagramUrlToHandle(url)});
-                        }
-                    }}
-                    onChange={(e) => {
-                        setInstagramUrl(e.target.value);
-                    }}
-                    onKeyDown={() => clearError('instagram')} />
-
-                <TextField
-                    error={!!errors?.youtube}
-                    hint={errors?.youtube}
-                    maxLength={2000}
-                    title="YouTube profile"
-                    value={youtubeUrl}
-                    onBlur={(e) => {
-                        if (validateField('youtube', e.target.value)) {
-                            const url = validateYouTubeUrl(e.target.value);
-                            setYoutubeUrl(url);
-                            setUserData({...user, youtube: youtubeUrlToHandle(url)});
-                        }
-                    }}
-                    onChange={(e) => {
-                        setYoutubeUrl(e.target.value);
-                    }}
-                    onKeyDown={() => clearError('youtube')} />
-
-                <TextField
-                    error={!!errors?.tiktok}
-                    hint={errors?.tiktok}
-                    maxLength={2000}
-                    title="TikTok profile"
-                    value={tiktokUrl}
-                    onBlur={(e) => {
-                        if (validateField('tiktok', e.target.value)) {
-                            const url = validateTikTokUrl(e.target.value);
-                            setTiktokUrl(url);
-                            setUserData({...user, tiktok: tiktokUrlToHandle(url)});
-                        }
-                    }}
-                    onChange={(e) => {
-                        setTiktokUrl(e.target.value);
-                    }}
-                    onKeyDown={() => clearError('tiktok')} />
-
+                    onKeyDown={() => clearError('threads')} />
                 <TextField
                     error={!!errors?.mastodon}
                     hint={errors?.mastodon}
                     maxLength={2000}
-                    title="Mastodon profile"
+                    placeholder='https://mastodon.social/@username'
+                    title="Mastodon"
                     value={mastodonUrl}
                     onBlur={(e) => {
                         if (validateField('mastodon', e.target.value)) {
@@ -217,7 +168,60 @@ export const DetailsInputs: React.FC<UserDetailProps> = ({errors, clearError, va
                         setMastodonUrl(e.target.value);
                     }}
                     onKeyDown={() => clearError('mastodon')} />
-
+                <TextField
+                    error={!!errors?.tiktok}
+                    hint={errors?.tiktok}
+                    maxLength={2000}
+                    placeholder='https://www.tiktok.com/@username'
+                    title="TikTok"
+                    value={tiktokUrl}
+                    onBlur={(e) => {
+                        if (validateField('tiktok', e.target.value)) {
+                            const url = validateTikTokUrl(e.target.value);
+                            setTiktokUrl(url);
+                            setUserData({...user, tiktok: tiktokUrlToHandle(url)});
+                        }
+                    }}
+                    onChange={(e) => {
+                        setTiktokUrl(e.target.value);
+                    }}
+                    onKeyDown={() => clearError('tiktok')} />
+                <TextField
+                    error={!!errors?.youtube}
+                    hint={errors?.youtube}
+                    maxLength={2000}
+                    placeholder='https://www.youtube.com/username'
+                    title="YouTube"
+                    value={youtubeUrl}
+                    onBlur={(e) => {
+                        if (validateField('youtube', e.target.value)) {
+                            const url = validateYouTubeUrl(e.target.value);
+                            setYoutubeUrl(url);
+                            setUserData({...user, youtube: youtubeUrlToHandle(url)});
+                        }
+                    }}
+                    onChange={(e) => {
+                        setYoutubeUrl(e.target.value);
+                    }}
+                    onKeyDown={() => clearError('youtube')} />
+                <TextField
+                    error={!!errors?.instagram}
+                    hint={errors?.instagram}
+                    maxLength={2000}
+                    placeholder='https://www.instagram.com/username'
+                    title="Instagram"
+                    value={instagramUrl}
+                    onBlur={(e) => {
+                        if (validateField('instagram', e.target.value)) {
+                            const url = validateInstagramUrl(e.target.value);
+                            setInstagramUrl(url);
+                            setUserData({...user, instagram: instagramUrlToHandle(url)});
+                        }
+                    }}
+                    onChange={(e) => {
+                        setInstagramUrl(e.target.value);
+                    }}
+                    onKeyDown={() => clearError('instagram')} />
             </BehindFeatureFlag>
         </SettingGroupContent>
     );

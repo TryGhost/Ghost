@@ -26,7 +26,7 @@ const BasicInputs: React.FC<UserDetailProps> = ({errors, clearError, user, setUs
             {hasAdminAccess(currentUser) && <RoleSelector setUserData={setUserData} user={user} />}
             <TextField
                 error={!!errors?.name}
-                hint={errors?.name || 'Use real name so people can recognize you'}
+                hint={errors?.name || 'Use your real name so people can recognize you'}
                 maxLength={191}
                 title="Full name"
                 value={user.name}
