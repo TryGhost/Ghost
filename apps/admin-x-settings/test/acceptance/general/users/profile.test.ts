@@ -1,7 +1,7 @@
 import {StaffTokenResponseType} from '@tryghost/admin-x-framework/api/staffToken';
 import {expect, test} from '@playwright/test';
 import {globalDataRequests} from '../../../utils/acceptance';
-import {mockApi, responseFixtures, settingsWithStripe, testUrlValidation} from '@tryghost/admin-x-framework/test/acceptance';
+import {mockApi, responseFixtures, settingsWithStripe, testUrlValidation, toggleLabsFlag} from '@tryghost/admin-x-framework/test/acceptance';
 
 test.describe('User profile', async () => {
     test('Supports editing user profiles', async ({page}) => {
@@ -458,5 +458,54 @@ test.describe('User profile', async () => {
         await expect(modal.getByTestId('api-keys')).toContainText('token-id:new-secret');
 
         expect(lastApiRequests.genStaffToken).toBeTruthy();
+    });
+
+    test.describe('Social links', () => {
+        test('Validates Threads URL', async ({page}) => {
+            const userToEdit = responseFixtures.users.users.find(user => user.email === 'administrator@test.com')!;
+            // activate social links feature flag
+            toggleLabsFlag('socialLinks', true);
+
+            const {lastApiRequests} = await mockApi({page, requests: {
+                ...globalDataRequests,
+                browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
+                editUser: {method: 'PUT', path: `/users/${userToEdit.id}/?include=roles`, response: {
+                    users: [{
+                        ...userToEdit,
+                        email: 'newadmin@test.com',
+                        name: 'New Admin'
+                    }]
+                }}
+            }});
+
+            await page.goto('/');
+
+            const section = page.getByTestId('users');
+            const activeTab = section.locator('[role=tabpanel]:not(.hidden)');
+
+            await section.getByRole('tab', {name: 'Administrators'}).click();
+
+            const listItem = activeTab.getByTestId('user-list-item').last();
+            await listItem.hover();
+            await listItem.getByRole('button', {name: 'Edit'}).click();
+
+            const modal = page.getByTestId('user-detail-modal');
+
+            const threadsInput = modal.getByLabel('Threads profile');
+
+            await testUrlValidation(threadsInput, 'https://www.notthreads.com', 'https://www.notthreads.com', 'The URL must be in a format like https://www.threads.net/@yourUsername');
+
+            await testUrlValidation(threadsInput, 'https://www.threads.net/@username', 'https://www.threads.net/@username');
+
+            await modal.getByRole('button', {name: 'Save'}).click();
+
+            await expect(modal.getByRole('button', {name: 'Saved'})).toBeVisible();
+
+            expect(lastApiRequests.editUser?.body).toMatchObject({
+                users: [{
+                    threads: '@username'
+                }]
+            });
+        });
     });
 });

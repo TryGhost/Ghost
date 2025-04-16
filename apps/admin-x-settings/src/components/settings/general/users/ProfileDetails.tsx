@@ -1,13 +1,14 @@
+import BehindFeatureFlag from '../../../BehindFeatureFlag';
 import CustomHeader from './CustomHeader';
 import {SettingGroup, SettingGroupContent, TextArea, TextField} from '@tryghost/admin-x-design-system';
 import {UserDetailProps} from '../UserDetailModal';
-import {facebookHandleToUrl, facebookUrlToHandle, twitterHandleToUrl, twitterUrlToHandle, validateFacebookUrl, validateTwitterUrl} from '../../../../utils/socialUrls';
-
+import {facebookHandleToUrl, facebookUrlToHandle, threadsHandleToUrl, threadsUrlToHandle, twitterHandleToUrl, twitterUrlToHandle, validateFacebookUrl, validateThreadsUrl, validateTwitterUrl} from '../../../../utils/socialUrls';
 import {useState} from 'react';
 
 export const DetailsInputs: React.FC<UserDetailProps> = ({errors, clearError, validateField, user, setUserData}) => {
     const [facebookUrl, setFacebookUrl] = useState(user.facebook ? facebookHandleToUrl(user.facebook) : '');
     const [twitterUrl, setTwitterUrl] = useState(user.twitter ? twitterHandleToUrl(user.twitter) : '');
+    const [threadsUrl, setThreadsUrl] = useState(user.threads ? threadsHandleToUrl(user.threads) : '');
 
     return (
         <SettingGroupContent>
@@ -68,6 +69,25 @@ export const DetailsInputs: React.FC<UserDetailProps> = ({errors, clearError, va
                     setTwitterUrl(e.target.value);
                 }}
                 onKeyDown={() => clearError('twitter')} />
+            <BehindFeatureFlag flag='socialLinks'>
+                <TextField
+                    error={!!errors?.threads}
+                    hint={errors?.threads}
+                    maxLength={2000}
+                    title="Threads profile"
+                    value={threadsUrl}
+                    onBlur={(e) => {
+                        if (validateField('threads', e.target.value)) {
+                            const url = validateThreadsUrl(e.target.value);
+                            setThreadsUrl(url);
+                            setUserData({...user, threads: threadsUrlToHandle(url)});
+                        }
+                    }}
+                    onChange={(e) => {
+                        setThreadsUrl(e.target.value);
+                    }}
+                    onKeyDown={() => clearError('threads')} />
+            </BehindFeatureFlag>
             <TextArea
                 error={!!errors?.bio}
                 hint={errors?.bio || <>Recommended: 200 characters. You&lsquo;ve used <span className='font-bold'>{user.bio?.length || 0}</span></>}

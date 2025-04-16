@@ -17,7 +17,7 @@ import {RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing
 import {User, canAccessSettings, hasAdminAccess, isAdminUser, isAuthorOrContributor, isEditorUser, isOwnerUser, useDeleteUser, useEditUser, useMakeOwner} from '@tryghost/admin-x-framework/api/users';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
-import {validateFacebookUrl, validateTwitterUrl} from '../../../utils/socialUrls';
+import {validateFacebookUrl, validateThreadsUrl, validateTwitterUrl} from '../../../utils/socialUrls';
 
 const validators: Record<string, (u: Partial<User>) => string> = {
     name: ({name}) => {
@@ -67,6 +67,17 @@ const validators: Record<string, (u: Partial<User>) => string> = {
     twitter: ({twitter}) => {
         try {
             validateTwitterUrl(twitter || '');
+            return '';
+        } catch (e) {
+            if (e instanceof Error) {
+                return e.message;
+            }
+            return '';
+        }
+    },
+    threads: ({threads}) => {
+        try {
+            validateThreadsUrl(threads || '');
             return '';
         } catch (e) {
             if (e instanceof Error) {
@@ -361,7 +372,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
             }}
         >
             <div>
-                <div className={`relative ${canAccessSettings(currentUser) ? '-mx-8 -mt-8 rounded-t' : '-mx-10 -mt-10'} bg-gradient-to-tr from-grey-900 to-black`}>
+                <div className={`relative ${canAccessSettings(currentUser) ? '-mx-8 -mt-8 rounded-t' : '-mx-10 -mt-10'} from-grey-900 bg-gradient-to-tr to-black`}>
                     <div className='flex min-h-[40vmin] flex-wrap items-end justify-between bg-cover bg-center' 
                         style={{
                             backgroundImage: formState.cover_image ? `url(${formState.cover_image})` : 'none'
