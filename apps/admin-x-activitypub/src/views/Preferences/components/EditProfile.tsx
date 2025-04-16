@@ -179,7 +179,7 @@ const EditProfile: React.FC<EditProfileProps> = ({account}) => {
                 <FormField
                     control={form.control}
                     name="profileImage"
-                    render={({field}) => (
+                    render={() => (
                         <FormItem>
                             <FormControl>
                                 <Input
@@ -197,7 +197,7 @@ const EditProfile: React.FC<EditProfileProps> = ({account}) => {
                 <FormField
                     control={form.control}
                     name="coverImage"
-                    render={({field}) => (
+                    render={() => (
                         <FormItem>
                             <FormControl>
                                 <Input
