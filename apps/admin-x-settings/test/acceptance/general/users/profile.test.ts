@@ -536,6 +536,7 @@ test.describe('User profile', async () => {
 
             const modal = page.getByTestId('user-detail-modal');
 
+            await modal.getByTitle('Social Links').click();
             const threadsInput = modal.getByTestId('threads-input');
 
             await testUrlValidation(threadsInput, 'https://www.notthreads.com', 'https://www.notthreads.com', 'The URL must be in a format like https://www.threads.net/@yourUsername');
@@ -581,6 +582,7 @@ test.describe('User profile', async () => {
 
             const modal = page.getByTestId('user-detail-modal');
 
+            await modal.getByTitle('Social Links').click();
             const blueskyInput = modal.getByTestId('bluesky-input');
 
             await testUrlValidation(blueskyInput, 'https://notbluesky.com', 'https://notbluesky.com', 'The URL must be in a format like https://bsky.app/profile/yourUsername');
@@ -626,6 +628,7 @@ test.describe('User profile', async () => {
 
             const modal = page.getByTestId('user-detail-modal');
 
+            await modal.getByTitle('Social Links').click();
             const linkedinInput = modal.getByTestId('linkedin-input');
 
             await testUrlValidation(linkedinInput, 'https://notlinkedin.com', 'https://notlinkedin.com', 'The URL must be in a format like https://www.linkedin.com/in/yourUsername');
@@ -671,6 +674,7 @@ test.describe('User profile', async () => {
 
             const modal = page.getByTestId('user-detail-modal');
 
+            await modal.getByTitle('Social Links').click();
             const instagramInput = modal.getByTestId('instagram-input');
 
             await testUrlValidation(instagramInput, 'https://twitter.com/johnsmith', 'https://twitter.com/johnsmith', 'The URL must be in a format like https://www.instagram.com/yourUsername');
@@ -716,6 +720,7 @@ test.describe('User profile', async () => {
 
             const modal = page.getByTestId('user-detail-modal');
 
+            await modal.getByTitle('Social Links').click();
             const youtubeInput = modal.getByTestId('youtube-input');
 
             await testUrlValidation(youtubeInput, 'https://www.youutbe/gsg', 'https://www.youutbe/gsg', 'The URL must be in a format like https://www.youtube.com/@yourUsername, https://www.youtube.com/user/yourUsername, or https://www.youtube.com/channel/yourChannelId');
@@ -761,6 +766,7 @@ test.describe('User profile', async () => {
 
             const modal = page.getByTestId('user-detail-modal');
 
+            await modal.getByTitle('Social Links').click();
             const tiktokInput = modal.getByTestId('tiktok-input');
 
             await testUrlValidation(tiktokInput, 'https://www.tik.com/nottiktok', 'https://www.tik.com/nottiktok', 'The URL must be in a format like https://www.tiktok.com/@yourUsername');
@@ -806,6 +812,7 @@ test.describe('User profile', async () => {
 
             const modal = page.getByTestId('user-detail-modal');
 
+            await modal.getByTitle('Social Links').click();
             const mastodonInput = modal.getByTestId('mastodon-input');
 
             await testUrlValidation(mastodonInput, 'https://mastodon.social/johnsmith', 'https://mastodon.social/johnsmith', 'The URL must be in a format like instance/@yourUsername or instance/@yourUsername@instance');
