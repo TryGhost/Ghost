@@ -130,7 +130,7 @@ const SocialAccounts: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     error={!!errors.twitter}
                     hint={errors.twitter}
                     placeholder="https://x.com/ghost"
-                    title="URL of your X (formerly Twitter) profile"
+                    title="URL of your X profile"
                     value={twitterUrl}
                     onChange={e => handleTwitterChange(e.target.value)}
                 />
