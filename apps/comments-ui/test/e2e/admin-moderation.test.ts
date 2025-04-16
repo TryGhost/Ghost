@@ -44,11 +44,11 @@ test.describe('Admin moderation', async () => {
         });
     }
 
-    test('skips rendering the auth frame with no comments', async ({page}) => {
+    test('renders the auth frame when there are no comments', async ({page}) => {
         await initializeTest(page);
 
         const iframeElement = page.locator('iframe[data-frame="admin-auth"]');
-        await expect(iframeElement).toHaveCount(0);
+        await expect(iframeElement).toHaveCount(1);
     });
 
     test('renders the auth frame when there are comments', async ({page}) => {
