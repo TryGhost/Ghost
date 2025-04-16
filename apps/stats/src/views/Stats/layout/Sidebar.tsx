@@ -7,8 +7,8 @@ const Sidebar:React.FC = () => {
     const location = useLocation();
 
     return (
-        <div className='grow border-l py-8 pl-6 pr-8'>
-            <RightSidebarMenu className='sticky top-8'>
+        <div className='grow border-l py-8 pl-6 pr-0'>
+            <RightSidebarMenu className='sticky top-[134px]'>
                 <RightSidebarMenuLink active={location.pathname === '/' || location.pathname === '/web/'} onClick={() => {
                     navigate('/');
                 }}>

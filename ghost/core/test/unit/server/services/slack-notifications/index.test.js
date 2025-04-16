@@ -2,7 +2,7 @@ const {configUtils} = require('../../../../utils/e2e-framework');
 const assert = require('assert/strict');
 const nock = require('nock');
 const DomainEvents = require('@tryghost/domain-events');
-const {MilestoneCreatedEvent} = require('@tryghost/milestones');
+const MilestoneCreatedEvent = require('../../../../../core/server/services/milestones/MilestoneCreatedEvent');
 const slackNotifications = require('../../../../../core/server/services/slack-notifications');
 
 describe('Slack Notifications Service', function () {

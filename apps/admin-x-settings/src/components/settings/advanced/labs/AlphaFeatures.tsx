@@ -59,6 +59,11 @@ const features = [{
     title: 'Explore',
     description: 'Enables keeping in touch with the new Explore API',
     flag: 'explore'
+},
+{
+    title: 'Social Links',
+    description: 'Adds additional social links to your staff profile',
+    flag: 'socialLinks'
 }];
 
 const AlphaFeatures: React.FC = () => {

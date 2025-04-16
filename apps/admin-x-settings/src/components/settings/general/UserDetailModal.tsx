@@ -1,23 +1,21 @@
-import ChangePasswordForm from './users/ChangePasswordForm';
-import EmailNotifications from './users/EmailNotifications';
+import EmailNotificationsTab from './users/EmailNotificationsTab';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
-import ProfileBasics from './users/ProfileBasics';
-import ProfileDetails from './users/ProfileDetails';
-import React, {useCallback, useEffect} from 'react';
-import StaffToken from './users/StaffToken';
+import ProfileTab from './users/ProfileTab';
+import React, {useCallback, useEffect, useState} from 'react';
+import SocialLinksTab from './users/SocialLinksTab';
 import clsx from 'clsx';
 import usePinturaEditor from '../../../hooks/usePinturaEditor';
 import useStaffUsers from '../../../hooks/useStaffUsers';
 import validator from 'validator';
 import {APIError} from '@tryghost/admin-x-framework/errors';
-import {ConfirmationModal, Heading, Icon, ImageUpload, LimitModal, Menu, MenuItem, Modal, showToast} from '@tryghost/admin-x-design-system';
+import {ConfirmationModal, Heading, Icon, ImageUpload, LimitModal, Menu, MenuItem, Modal, TabView, showToast} from '@tryghost/admin-x-design-system';
 import {ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {HostLimitError, useLimiter} from '../../../hooks/useLimiter';
 import {RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {User, canAccessSettings, hasAdminAccess, isAdminUser, isAuthorOrContributor, isEditorUser, isOwnerUser, useDeleteUser, useEditUser, useMakeOwner} from '@tryghost/admin-x-framework/api/users';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
-import {validateFacebookUrl, validateTwitterUrl} from '../../../utils/socialUrls';
+import {validateBlueskyUrl, validateFacebookUrl, validateInstagramUrl, validateLinkedInUrl, validateMastodonUrl, validateThreadsUrl, validateTikTokUrl, validateTwitterUrl, validateYouTubeUrl} from '../../../utils/socialUrls/index';
 
 const validators: Record<string, (u: Partial<User>) => string> = {
     name: ({name}) => {
@@ -67,6 +65,83 @@ const validators: Record<string, (u: Partial<User>) => string> = {
     twitter: ({twitter}) => {
         try {
             validateTwitterUrl(twitter || '');
+            return '';
+        } catch (e) {
+            if (e instanceof Error) {
+                return e.message;
+            }
+            return '';
+        }
+    },
+    threads: ({threads}) => {
+        try {
+            validateThreadsUrl(threads || '');
+            return '';
+        } catch (e) {
+            if (e instanceof Error) {
+                return e.message;
+            }
+            return '';
+        }
+    },
+    bluesky: ({bluesky}) => {
+        try {
+            validateBlueskyUrl(bluesky || '');
+            return '';
+        } catch (e) {
+            if (e instanceof Error) {
+                return e.message;
+            }
+            return '';
+        }
+    },
+    linkedin: ({linkedin}) => {
+        try {
+            validateLinkedInUrl(linkedin || '');
+            return '';
+        } catch (e) {
+            if (e instanceof Error) {
+                return e.message;
+            }
+            return '';
+        }
+    },
+    instagram: ({instagram}) => {
+        try {
+            validateInstagramUrl(instagram || '');
+            return '';
+        } catch (e) {
+            if (e instanceof Error) {
+                return e.message;
+            }
+            return '';
+        }
+    },
+    youtube: ({youtube}) => {
+        try {
+            validateYouTubeUrl(youtube || '');
+            return '';
+        } catch (e) {
+            if (e instanceof Error) {
+                return e.message;
+            }
+            return '';
+        }
+    },
+    tiktok: ({tiktok}) => {
+        try {
+            validateTikTokUrl(tiktok || '');
+            return '';
+        } catch (e) {
+            if (e instanceof Error) {
+                return e.message;
+            }
+            return '';
+        }
+    },
+    mastodon: ({mastodon}) => {
+        try {
+            validateMastodonUrl(mastodon || '');
             return '';
         } catch (e) {
             if (e instanceof Error) {
@@ -342,6 +417,8 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
     );
 
     const suspendedText = formState.status === 'inactive' ? ' (Suspended)' : '';
+    
+    const [selectedTab, setSelectedTab] = useState<string>('profile');
 
     return (
         <Modal
@@ -353,20 +430,21 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
             dirty={saveState === 'unsaved'}
             okColor={okProps.color}
             okLabel={okProps.label || 'Save'}
-            size={canAccessSettings(currentUser) ? 'lg' : 'bleed'}
+            size={canAccessSettings(currentUser) ? 'md' : 'bleed'}
             stickyFooter={true}
             testId='user-detail-modal'
+            width={canAccessSettings(currentUser) ? 600 : 'full'}
             onOk={async () => {
                 await (handleSave({fakeWhenUnchanged: true}));
             }}
         >
             <div>
-                <div className={`relative ${canAccessSettings(currentUser) ? '-mx-8 -mt-8 rounded-t' : '-mx-10 -mt-10'} bg-gradient-to-tr from-grey-900 to-black`}>
-                    <div className='flex min-h-[40vmin] flex-wrap items-end justify-between bg-cover bg-center' 
+                <div className={`relative bg-gradient-to-tr from-grey-900 to-black ${canAccessSettings(currentUser) ? '-mx-8 -mt-8 rounded-t' : '-mx-10 -mt-10'}`}>
+                    <div className={`flex flex-wrap items-end justify-between gap-8 py-8 ${formState.cover_image ? 'bg-cover bg-center' : ''} ${!canAccessSettings(currentUser) && 'min-h-[30vmin]'}`} 
                         style={{
                             backgroundImage: formState.cover_image ? `url(${formState.cover_image})` : 'none'
                         }}>
-                        <div className='flex w-full max-w-[620px] flex-col gap-5 p-8 md:max-w-[auto] md:flex-row md:items-center'>
+                        <div className='flex w-full max-w-[620px] flex-col gap-5 px-8 md:max-w-[auto] md:flex-row md:items-center'>
                             <div>
                                 <ImageUpload
                                     deleteButtonClassName='md:invisible absolute pr-3 -right-2 -top-2 flex h-8 w-10 cursor-pointer items-center justify-end rounded-full bg-[rgba(0,0,0,0.75)] text-white group-hover:!visible'
@@ -376,7 +454,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                                     fileUploadProps={{dragIndicatorClassName: 'rounded-full'}}
                                     id='avatar'
                                     imageClassName='w-full h-full object-cover rounded-full shrink-0'
-                                    imageContainerClassName='relative group bg-cover bg-center -ml-2 h-[80px] w-[80px] shrink-0'
+                                    imageContainerClassName='relative group bg-cover bg-center -ml-2 h-16 w-16 shrink-0'
                                     imageURL={formState.profile_image ?? undefined}
                                     pintura={
                                         {
@@ -402,11 +480,11 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                                 </ImageUpload>
                             </div>
                             <div>
-                                <Heading styles='break-words md:break-normal text-white'>{user.name}{suspendedText}</Heading>
-                                <span className='text-md font-semibold capitalize text-white'>{user.roles[0].name.toLowerCase()}</span>
+                                <Heading level={3} styles='break-words md:break-normal text-white'>{user.name}{suspendedText}</Heading>
+                                <span className='text-md font-medium capitalize text-white'>{user.roles[0].name.toLowerCase()}</span>
                             </div>
                         </div>
-                        <div className='flex flex-nowrap items-end gap-4 p-8'>
+                        <div className='flex flex-nowrap items-end gap-4 px-8'>
                             <ImageUpload
                                 buttonContainerClassName='flex items-end gap-4 justify-end flex-nowrap'
                                 deleteButtonClassName={deleteButtonClasses}
@@ -441,14 +519,28 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                         </div>
                     </div>
                 </div>
-                <div className={`${!canAccessSettings(currentUser) && 'mx-auto max-w-4xl'} mt-10 grid grid-cols-1 gap-x-12 gap-y-20 md:grid-cols-2`}>
-                    <ProfileBasics clearError={clearError} errors={errors} setUserData={setUserData} user={formState} validateField={validateField} />
-                    <div className='flex flex-col justify-between gap-10'>
-                        <ProfileDetails clearError={clearError} errors={errors} setUserData={setUserData} user={formState} validateField={validateField} />
-                        {user.id === currentUser.id && <StaffToken />}
-                    </div>
-                    <EmailNotifications setUserData={setUserData} user={formState} />
-                    <ChangePasswordForm user={formState} />
+                <div className={`${!canAccessSettings(currentUser) && 'mx-auto max-w-[536px]'} mt-10 flex flex-col`}>
+                    <TabView
+                        selectedTab={selectedTab}
+                        tabs={[
+                            {
+                                id: 'profile',
+                                title: 'Profile',
+                                contents: <ProfileTab clearError={clearError} errors={errors} setUserData={setUserData} user={formState} validateField={validateField} />
+                            },
+                            {
+                                id: 'social-links',
+                                title: 'Social Links',
+                                contents: <SocialLinksTab clearError={clearError} errors={errors} setUserData={setUserData} user={formState} validateField={validateField} />
+                            },
+                            {
+                                id: 'email-notifications',
+                                title: 'Email Notifications',
+                                contents: <EmailNotificationsTab setUserData={setUserData} user={formState} />
+                            }
+                        ]}
+                        onTabChange={setSelectedTab}
+                    />
                 </div>
             </div>
         </Modal>
