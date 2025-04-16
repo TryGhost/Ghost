@@ -224,7 +224,7 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
             <CommentsFrame ref={iframeRef}>
                 <ContentBox done={done} />
             </CommentsFrame>
-            {state.initStatus === 'success' && <AuthFrame adminUrl={options.adminUrl} onLoad={initAdminAuth}/>}
+            {done && <AuthFrame adminUrl={options.adminUrl} onLoad={initAdminAuth}/>}
             <PopupBox />
         </AppContext.Provider>
     );
