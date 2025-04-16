@@ -648,7 +648,7 @@
 
 //                 await testTwitterValidation(
 //                     'testuser',
-//                     'https://twitter.com/testuser');
+//                     'https://x.com/testuser');
 
 //                 await testTwitterValidation(
 //                     'http://github.com/username',

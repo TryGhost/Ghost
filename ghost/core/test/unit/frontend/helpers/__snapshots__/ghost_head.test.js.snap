@@ -152,7 +152,7 @@ Object {
         \\"sameAs\\": [
             \\"http://authorwebsite.com\\",
             \\"https://www.facebook.com/testuser\\",
-            \\"https://twitter.com/testuser\\"
+            \\"https://x.com/testuser\\"
         ]
     },
     \\"headline\\": \\"About\\",
@@ -289,7 +289,7 @@ Object {
         \\"sameAs\\": [
             \\"http://authorwebsite.com\\",
             \\"https://www.facebook.com/testuser\\",
-            \\"https://twitter.com/testuser\\"
+            \\"https://x.com/testuser\\"
         ]
     },
     \\"headline\\": \\"About\\",
@@ -359,7 +359,7 @@ Object {
         \\"sameAs\\": [
             \\"http://authorwebsite.com\\",
             \\"https://www.facebook.com/testuser\\",
-            \\"https://twitter.com/testuser\\"
+            \\"https://x.com/testuser\\"
         ]
     },
     \\"headline\\": \\"About\\",
@@ -457,7 +457,7 @@ Object {
         \\"sameAs\\": [
             \\"http://authorwebsite.com\\",
             \\"https://www.facebook.com/testuser\\",
-            \\"https://twitter.com/testuser\\"
+            \\"https://x.com/testuser\\"
         ]
     },
     \\"headline\\": \\"About\\",
@@ -530,7 +530,7 @@ Object {
         \\"sameAs\\": [
             \\"http://authorwebsite.com\\",
             \\"https://www.facebook.com/testuser\\",
-            \\"https://twitter.com/testuser\\"
+            \\"https://x.com/testuser\\"
         ]
     },
     \\"headline\\": \\"About\\",
@@ -1116,7 +1116,7 @@ Object {
         \\"sameAs\\": [
             \\"http://authorwebsite.com\\",
             \\"https://www.facebook.com/testuser\\",
-            \\"https://twitter.com/testuser\\"
+            \\"https://x.com/testuser\\"
         ]
     },
     \\"headline\\": \\"About\\",
@@ -1190,7 +1190,7 @@ Object {
         \\"sameAs\\": [
             \\"http://authorwebsite.com\\",
             \\"https://www.facebook.com/testuser\\",
-            \\"https://twitter.com/testuser\\"
+            \\"https://x.com/testuser\\"
         ]
     },
     \\"headline\\": \\"About\\",
@@ -1264,7 +1264,7 @@ Object {
         \\"sameAs\\": [
             \\"http://authorwebsite.com\\",
             \\"https://www.facebook.com/testuser\\",
-            \\"https://twitter.com/testuser\\"
+            \\"https://x.com/testuser\\"
         ]
     },
     \\"headline\\": \\"About\\",
@@ -1338,7 +1338,7 @@ Object {
         \\"sameAs\\": [
             \\"http://authorwebsite.com\\",
             \\"https://www.facebook.com/testuser\\",
-            \\"https://twitter.com/testuser\\"
+            \\"https://x.com/testuser\\"
         ]
     },
     \\"headline\\": \\"About\\",
@@ -1487,7 +1487,7 @@ Object {
         \\"sameAs\\": [
             \\"http://authorwebsite.com\\",
             \\"https://www.facebook.com/testuser\\",
-            \\"https://twitter.com/testuser\\"
+            \\"https://x.com/testuser\\"
         ]
     },
     \\"headline\\": \\"About\\",
@@ -1637,7 +1637,7 @@ Object {
         \\"sameAs\\": [
             \\"http://authorwebsite.com\\",
             \\"https://www.facebook.com/testuser\\",
-            \\"https://twitter.com/testuser\\"
+            \\"https://x.com/testuser\\"
         ]
     },
     \\"headline\\": \\"About\\",
@@ -1711,7 +1711,7 @@ Object {
         \\"sameAs\\": [
             \\"http://authorwebsite.com\\",
             \\"https://www.facebook.com/testuser\\",
-            \\"https://twitter.com/testuser\\"
+            \\"https://x.com/testuser\\"
         ]
     },
     \\"headline\\": \\"Testing stats\\",
@@ -2015,7 +2015,7 @@ Object {
         \\"sameAs\\": [
             \\"http://authorwebsite.com\\",
             \\"https://www.facebook.com/testuser\\",
-            \\"https://twitter.com/testuser\\"
+            \\"https://x.com/testuser\\"
         ]
     },
     \\"headline\\": \\"Testing stats\\",
@@ -4203,7 +4203,7 @@ Object {
         \\"sameAs\\": [
             \\"http://authorwebsite.com\\",
             \\"https://www.facebook.com/testuser\\",
-            \\"https://twitter.com/testuser\\"
+            \\"https://x.com/testuser\\"
         ]
     },
     \\"headline\\": \\"About\\",
@@ -4754,7 +4754,7 @@ Object {
     \\"sameAs\\": [
         \\"http://authorwebsite.com\\",
         \\"https://www.facebook.com/testuser\\",
-        \\"https://twitter.com/testuser\\"
+        \\"https://x.com/testuser\\"
     ],
     \\"name\\": \\"Author name\\",
     \\"url\\": \\"https://mysite.com/fakeauthor/\\",
@@ -4831,7 +4831,7 @@ Object {
         \\"sameAs\\": [
             \\"http://authorwebsite.com\\",
             \\"https://www.facebook.com/testuser\\",
-            \\"https://twitter.com/testuser\\"
+            \\"https://x.com/testuser\\"
         ]
     },
     \\"headline\\": \\"Welcome to Ghost &quot;test&quot;\\",
@@ -4911,7 +4911,7 @@ Object {
         \\"sameAs\\": [
             \\"http://authorwebsite.com\\",
             \\"https://www.facebook.com/testuser\\",
-            \\"https://twitter.com/testuser\\"
+            \\"https://x.com/testuser\\"
         ]
     },
     \\"headline\\": \\"Welcome to Ghost\\",
@@ -5039,7 +5039,7 @@ Object {
         \\"sameAs\\": [
             \\"http://authorwebsite.com\\",
             \\"https://www.facebook.com/testuser\\",
-            \\"https://twitter.com/testuser\\"
+            \\"https://x.com/testuser\\"
         ]
     },
     \\"headline\\": \\"Welcome to Ghost\\",
@@ -5120,7 +5120,7 @@ Object {
         \\"sameAs\\": [
             \\"http://authorwebsite.com\\",
             \\"https://www.facebook.com/testuser\\",
-            \\"https://twitter.com/testuser\\"
+            \\"https://x.com/testuser\\"
         ]
     },
     \\"headline\\": \\"Welcome to Ghost\\",
@@ -5194,7 +5194,7 @@ Object {
         \\"sameAs\\": [
             \\"http://authorwebsite.com\\",
             \\"https://www.facebook.com/testuser\\",
-            \\"https://twitter.com/testuser\\"
+            \\"https://x.com/testuser\\"
         ]
     },
     \\"headline\\": \\"Welcome to Ghost\\",
@@ -5266,7 +5266,7 @@ Object {
         \\"sameAs\\": [
             \\"http://authorwebsite.com\\",
             \\"https://www.facebook.com/testuser\\",
-            \\"https://twitter.com/testuser\\"
+            \\"https://x.com/testuser\\"
         ]
     },
     \\"headline\\": \\"Welcome to Ghost\\",
@@ -5336,7 +5336,7 @@ Object {
         \\"sameAs\\": [
             \\"http://authorwebsite.com\\",
             \\"https://www.facebook.com/testuser\\",
-            \\"https://twitter.com/testuser\\"
+            \\"https://x.com/testuser\\"
         ]
     },
     \\"headline\\": \\"About\\",
@@ -5409,7 +5409,7 @@ Object {
         \\"sameAs\\": [
             \\"http://authorwebsite.com\\",
             \\"https://www.facebook.com/testuser\\",
-            \\"https://twitter.com/testuser\\"
+            \\"https://x.com/testuser\\"
         ]
     },
     \\"headline\\": \\"About\\",
@@ -5483,7 +5483,7 @@ Object {
         \\"sameAs\\": [
             \\"http://authorwebsite.com\\",
             \\"https://www.facebook.com/testuser\\",
-            \\"https://twitter.com/testuser\\"
+            \\"https://x.com/testuser\\"
         ]
     },
     \\"headline\\": \\"Welcome to Ghost\\",
