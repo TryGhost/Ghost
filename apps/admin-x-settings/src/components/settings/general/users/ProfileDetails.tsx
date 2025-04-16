@@ -11,6 +11,8 @@ import {
     instagramUrlToHandle,
     linkedinHandleToUrl,
     linkedinUrlToHandle,
+    mastodonHandleToUrl,
+    mastodonUrlToHandle,
     threadsHandleToUrl,
     threadsUrlToHandle,
     tiktokHandleToUrl,
@@ -21,6 +23,7 @@ import {
     validateFacebookUrl,
     validateInstagramUrl,
     validateLinkedInUrl,
+    validateMastodonUrl,
     validateThreadsUrl,
     validateTikTokUrl,
     validateTwitterUrl,
@@ -39,6 +42,7 @@ export const DetailsInputs: React.FC<UserDetailProps> = ({errors, clearError, va
     const [instagramUrl, setInstagramUrl] = useState(user.instagram ? instagramHandleToUrl(user.instagram) : '');
     const [youtubeUrl, setYoutubeUrl] = useState(user.youtube ? youtubeHandleToUrl(user.youtube) : '');
     const [tiktokUrl, setTiktokUrl] = useState(user.tiktok ? tiktokHandleToUrl(user.tiktok) : '');
+    const [mastodonUrl, setMastodonUrl] = useState(user.mastodon ? mastodonHandleToUrl(user.mastodon) : '');
 
     return (
         <SettingGroupContent>
@@ -206,6 +210,24 @@ export const DetailsInputs: React.FC<UserDetailProps> = ({errors, clearError, va
                         setTiktokUrl(e.target.value);
                     }}
                     onKeyDown={() => clearError('tiktok')} />
+
+                <TextField
+                    error={!!errors?.mastodon}
+                    hint={errors?.mastodon}
+                    maxLength={2000}
+                    title="Mastodon profile"
+                    value={mastodonUrl}
+                    onBlur={(e) => {
+                        if (validateField('mastodon', e.target.value)) {
+                            const url = validateMastodonUrl(e.target.value);
+                            setMastodonUrl(url);
+                            setUserData({...user, mastodon: mastodonUrlToHandle(url)});
+                        }
+                    }}
+                    onChange={(e) => {
+                        setMastodonUrl(e.target.value);
+                    }}
+                    onKeyDown={() => clearError('mastodon')} />
 
             </BehindFeatureFlag>
             <TextArea
