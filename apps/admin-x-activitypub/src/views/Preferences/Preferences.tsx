@@ -11,7 +11,7 @@ const Preferences: React.FC = () => {
         <Layout>
             <div className='mx-auto max-w-[620px] px-6 py-12'>
                 <Profile account={account} isLoading={isLoadingAccount} />
-                <Settings className='mt-9' />
+                <Settings account={account} className='mt-9' />
             </div>
         </Layout>
     );

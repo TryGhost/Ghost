@@ -1,12 +1,17 @@
-import React from 'react';
-import {Button, H4, LucideIcon, cn} from '@tryghost/shade';
+import EditProfile from './EditProfile';
+import React, {useState} from 'react';
+import {Account} from '@src/api/activitypub';
+import {Button, Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, H4, LucideIcon, cn} from '@tryghost/shade';
 import {Link} from '@tryghost/admin-x-framework';
 
 interface SettingsProps {
+    account?: Account;
     className?: string;
 }
 
-const Settings: React.FC<SettingsProps> = ({className = ''}) => {
+const Settings: React.FC<SettingsProps> = ({account, className = ''}) => {
+    const [isEditingProfile, setIsEditingProfile] = useState(false);
+
     return (
         <div className={`flex flex-col ${className}`}>
             <SettingSeparator />
@@ -15,7 +20,17 @@ const Settings: React.FC<SettingsProps> = ({className = ''}) => {
                     <SettingTitle>Account</SettingTitle>
                     <SettingDescription>Edit your profile information and account details</SettingDescription>
                 </SettingHeader>
-                <SettingAction><Button variant='secondary'>Edit profile</Button></SettingAction>
+                <Dialog open={isEditingProfile} onOpenChange={setIsEditingProfile}>
+                    <DialogTrigger>
+                        <SettingAction><Button variant='secondary'>Edit profile</Button></SettingAction>
+                    </DialogTrigger>
+                    <DialogContent onOpenAutoFocus={e => e.preventDefault()}>
+                        <DialogHeader>
+                            <DialogTitle>Profile settings</DialogTitle>
+                        </DialogHeader>
+                        <EditProfile account={account} />
+                    </DialogContent>
+                </Dialog>
             </SettingItem>
             <SettingItem withHover>
                 <SettingHeader>
@@ -65,9 +80,9 @@ interface SettingHeaderProps {
 
 const SettingHeader: React.FC<SettingHeaderProps> = ({children, className = ''}) => {
     return (
-        <p className={`relative flex flex-col gap-1 ${className}`}>
+        <div className={`relative flex flex-col gap-1 ${className}`}>
             {children}
-        </p>
+        </div>
     );
 };
 
