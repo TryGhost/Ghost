@@ -4,6 +4,7 @@ import {ChartConfig, ChartContainer, ChartTooltip, Recharts, Tabs, TabsList} fro
 import {KpiTabTrigger, KpiTabValue} from './KpiTab';
 import {calculateYAxisWidth, getRangeDates, getYTicks} from '@src/utils/chart-helpers';
 import {formatDisplayDate, formatDuration, formatNumber, formatPercentage, formatQueryDate} from '@src/utils/data-formatters';
+import {getAudienceQueryParam} from './AudienceSelect';
 import {getStatEndpointUrl} from '@src/config/stats-config';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useQuery} from '@tinybirdco/charts';
@@ -37,19 +38,18 @@ const KPI_METRICS: Record<string, KpiMetric> = {
     }
 };
 
-interface WebKpisProps {
-    range: number;
-}
-
-const WebKpis:React.FC<WebKpisProps> = ({range}) => {
+const WebKpis:React.FC = ({}) => {
     const {data: configData, isLoading: isConfigLoading} = useGlobalData();
     const [currentTab, setCurrentTab] = useState('visits');
-    const {today, startDate} = getRangeDates(range);
+    const {range, audience} = useGlobalData();
+    const {startDate, endDate, timezone} = getRangeDates(range);
 
     const params = {
         site_uuid: configData?.config.stats?.id || '',
         date_from: formatQueryDate(startDate),
-        date_to: formatQueryDate(today)
+        date_to: formatQueryDate(endDate),
+        timezone: timezone,
+        member_status: getAudienceQueryParam(audience)
     };
 
     const {data, loading} = useQuery({
@@ -78,10 +78,19 @@ const WebKpis:React.FC<WebKpisProps> = ({range}) => {
             return {visits: 0, views: 0, bounceRate: 0, duration: 0};
         }
 
+        // Sum total KPI value from the trend, ponderating using sessions
+        const _ponderatedKPIsTotal = (kpi: keyof typeof data[0]) => {
+            return data.reduce((prev, curr) => {
+                const currValue = Number(curr[kpi] ?? 0);
+                const currVisits = Number(curr.visits);
+                return prev + (currValue * currVisits / totalVisits);
+            }, 0);
+        };
+
         const totalVisits = data.reduce((sum, item) => sum + Number(item.visits), 0);
         const totalViews = data.reduce((sum, item) => sum + Number(item.pageviews), 0);
-        const avgBounceRate = data.reduce((sum, item) => sum + Number(item.bounce_rate), 0) / data.length;
-        const avgDuration = data.reduce((sum, item) => sum + Number(item.avg_session_sec), 0) / data.length;
+        const avgBounceRate = _ponderatedKPIsTotal('bounce_rate');
+        const avgDuration = _ponderatedKPIsTotal('avg_session_sec');
 
         return {
             visits: formatNumber(totalVisits),

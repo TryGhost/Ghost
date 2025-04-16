@@ -200,13 +200,13 @@ export class TwoFactorTokenRequiredError extends AjaxError {
 }
 
 export function isTwoFactorTokenRequiredError(errorOrStatus, payload) {
-    const tokenRequiredCode = '2FA_TOKEN_REQUIRED';
+    const twoFactorAuthCodes = ['2FA_TOKEN_REQUIRED', '2FA_NEW_DEVICE_DETECTED'];
 
     if (isAjaxError(errorOrStatus)) {
-        return errorOrStatus instanceof TwoFactorTokenRequiredError || getErrorCode(errorOrStatus) === tokenRequiredCode;
+        return errorOrStatus instanceof TwoFactorTokenRequiredError || twoFactorAuthCodes.includes(getErrorCode(errorOrStatus));
     } else {
         payload = getJSONPayload(payload);
-        return get(payload || {}, 'errors.firstObject.code') === tokenRequiredCode;
+        return twoFactorAuthCodes.includes(get(payload || {}, 'errors.firstObject.code'));
     }
 }
 

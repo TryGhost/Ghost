@@ -1,8 +1,10 @@
+import AudienceSelect, {getAudienceQueryParam} from './components/AudienceSelect';
 import DateRangeSelect from './components/DateRangeSelect';
-import Header from '@src/components/layout/Header';
 import React from 'react';
+import StatsContent from './layout/StatsContent';
 import StatsLayout from './layout/StatsLayout';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, Recharts, Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@tryghost/shade';
+import {Header, HeaderActions} from '@src/components/layout/Header';
 import {STATS_DEFAULT_SOURCE_ICON_URL} from '@src/utils/constants';
 import {formatNumber, formatQueryDate} from '@src/utils/data-formatters';
 import {getRangeDates} from '@src/utils/chart-helpers';
@@ -10,15 +12,36 @@ import {getStatEndpointUrl} from '@src/config/stats-config';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useQuery} from '@tinybirdco/charts';
 
+interface SourceRowProps {
+    className?: string;
+    source?: string | number;
+}
+
+const SourceRow: React.FC<SourceRowProps> = ({className, source}) => {
+    return (
+        <>
+            <img
+                className="gh-stats-favicon"
+                src={`https://www.faviconextractor.com/favicon/${source || 'direct'}?larger=true`}
+                onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+                    e.currentTarget.src = STATS_DEFAULT_SOURCE_ICON_URL;
+                }} />
+            <span className={className}>{source || 'Direct'}</span>
+        </>
+    );
+};
+
 const Sources:React.FC = () => {
     const {data: configData, isLoading: isConfigLoading} = useGlobalData();
-    const {range} = useGlobalData();
-    const {today, startDate} = getRangeDates(range);
+    const {range, audience} = useGlobalData();
+    const {startDate, endDate, timezone} = getRangeDates(range);
 
     const params = {
         site_uuid: configData?.config.stats?.id || '',
         date_from: formatQueryDate(startDate),
-        date_to: formatQueryDate(today)
+        date_to: formatQueryDate(endDate),
+        timezone: timezone,
+        member_status: getAudienceQueryParam(audience)
     };
 
     const {data, loading} = useQuery({
@@ -72,10 +95,13 @@ const Sources:React.FC = () => {
         <StatsLayout>
             <Header>
                 Sources
-                <DateRangeSelect />
+                <HeaderActions>
+                    <AudienceSelect />
+                    <DateRangeSelect />
+                </HeaderActions>
             </Header>
-            <section className='grid grid-cols-1 gap-8 pb-8'>
-                <Card variant='plain'>
+            <StatsContent>
+                <Card className='-mb-5' variant='plain'>
                     <CardHeader className='border-none'>
                         <CardTitle>Top sources</CardTitle>
                         <CardDescription>How readers are finding your site</CardDescription>
@@ -100,7 +126,7 @@ const Sources:React.FC = () => {
                         </ChartContainer>
                     </CardContent>
                 </Card>
-                <Card className='-mt-10' variant='plain'>
+                <Card variant='plain'>
                     <CardContent>
                         {isLoading ? 'Loading' :
                             <Table>
@@ -116,15 +142,15 @@ const Sources:React.FC = () => {
                                         return (
                                             <TableRow key={row.source || 'direct'}>
                                                 <TableCell className="font-medium">
-                                                    <span className='flex items-center gap-1'>
-                                                        <img
-                                                            className="gh-stats-favicon"
-                                                            src={`https://www.faviconextractor.com/favicon/${row.source || 'direct'}?larger=true`}
-                                                            onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                                                                e.currentTarget.src = STATS_DEFAULT_SOURCE_ICON_URL;
-                                                            }} />
-                                                        {row.source || 'Direct'}
-                                                    </span>
+                                                    {row.source ?
+                                                        <a className='group flex items-center gap-1' href={`https://${row.source}`} rel="noreferrer" target="_blank">
+                                                            <SourceRow className='group-hover:underline' source={row.source} />
+                                                        </a>
+                                                        :
+                                                        <span className='flex items-center gap-1'>
+                                                            <SourceRow source={row.source} />
+                                                        </span>
+                                                    }
                                                 </TableCell>
                                                 <TableCell>{formatNumber(Number(row.visits))}</TableCell>
                                                 <TableCell>{key < 5 && <span className='inline-block size-[10px] rounded-[2px]' style={{backgroundColor: colors[key]}}></span>}</TableCell>
@@ -136,7 +162,7 @@ const Sources:React.FC = () => {
                         }
                     </CardContent>
                 </Card>
-            </section>
+            </StatsContent>
         </StatsLayout>
     );
 };
