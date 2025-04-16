@@ -1,5 +1,5 @@
 import React from 'react';
-import {Button, DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger, LucideIcon} from '@tryghost/shade';
+import {Button, DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger, LucideIcon} from '@tryghost/shade';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 
 const AUDIENCE_BITS = {
@@ -60,7 +60,7 @@ const AudienceSelect: React.FC = () => {
         }
 
         if (selectedAudiences.length === 0) {
-            return 'Audience';
+            return 'Select audience';
         }
 
         if (selectedAudiences.length === 3) {
@@ -77,11 +77,9 @@ const AudienceSelect: React.FC = () => {
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button variant="outline"><LucideIcon.User2 /><span className='lowercase first-letter:capitalize'>{getAudienceLabel()}</span></Button>
+                <Button variant="dropdown"><LucideIcon.User2 /><span className='lowercase first-letter:capitalize'>{getAudienceLabel()}</span></Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align='end' className="w-56">
-                <DropdownMenuLabel>Filter by audience</DropdownMenuLabel>
-                <DropdownMenuSeparator />
                 <DropdownMenuCheckboxItem
                     checked={isAudienceSelected(AUDIENCE_BITS.PUBLIC)}
                     onSelect={e => handleSelect(e, AUDIENCE_BITS.PUBLIC)}

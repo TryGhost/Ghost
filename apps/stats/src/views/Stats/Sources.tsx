@@ -1,8 +1,8 @@
 import AudienceSelect, {getAudienceQueryParam} from './components/AudienceSelect';
 import DateRangeSelect from './components/DateRangeSelect';
 import React from 'react';
-import StatsContent from './layout/StatsContent';
 import StatsLayout from './layout/StatsLayout';
+import StatsView from './layout/StatsView';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, Recharts, Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@tryghost/shade';
 import {Header, HeaderActions} from '@src/components/layout/Header';
 import {STATS_DEFAULT_SOURCE_ICON_URL} from '@src/utils/constants';
@@ -100,7 +100,7 @@ const Sources:React.FC = () => {
                     <DateRangeSelect />
                 </HeaderActions>
             </Header>
-            <StatsContent>
+            <StatsView data={data} isLoading={isLoading}>
                 <Card className='-mb-5' variant='plain'>
                     <CardHeader className='border-none'>
                         <CardTitle>Top sources</CardTitle>
@@ -119,8 +119,10 @@ const Sources:React.FC = () => {
                                 <Recharts.Pie
                                     data={chartData}
                                     dataKey="visitors"
-                                    innerRadius={90}
+                                    innerRadius={'55%'}
                                     nameKey="source"
+                                    stroke="hsl(var(--background))"
+                                    strokeWidth={3}
                                 />
                             </Recharts.PieChart>
                         </ChartContainer>
@@ -162,7 +164,7 @@ const Sources:React.FC = () => {
                         }
                     </CardContent>
                 </Card>
-            </StatsContent>
+            </StatsView>
         </StatsLayout>
     );
 };

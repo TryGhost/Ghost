@@ -1,8 +1,8 @@
 import AudienceSelect, {getAudienceQueryParam} from './components/AudienceSelect';
 import DateRangeSelect from './components/DateRangeSelect';
 import React from 'react';
-import StatsContent from './layout/StatsContent';
 import StatsLayout from './layout/StatsLayout';
+import StatsView from './layout/StatsView';
 import WebKpis from './components/WebKpis';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle, Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@tryghost/shade';
 import {Header, HeaderActions} from '@src/components/layout/Header';
@@ -42,7 +42,7 @@ const Web:React.FC = () => {
                     <DateRangeSelect />
                 </HeaderActions>
             </Header>
-            <StatsContent>
+            <StatsView data={data} isLoading={isLoading}>
                 <Card variant='plain'>
                     <CardContent>
                         <WebKpis />
@@ -54,29 +54,27 @@ const Web:React.FC = () => {
                         <CardDescription>Your highest viewed posts in this period</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        {isLoading ? 'Loading' :
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead className='w-[80%]'>Content</TableHead>
-                                        <TableHead className='w-[20%]'>Visitors</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {data?.map((row) => {
-                                        return (
-                                            <TableRow key={row.pathname}>
-                                                <TableCell className="font-medium">{row.pathname}</TableCell>
-                                                <TableCell>{formatNumber(Number(row.visits))}</TableCell>
-                                            </TableRow>
-                                        );
-                                    })}
-                                </TableBody>
-                            </Table>
-                        }
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead className='w-[80%]'>Content</TableHead>
+                                    <TableHead className='w-[20%]'>Visitors</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {data?.map((row) => {
+                                    return (
+                                        <TableRow key={row.pathname}>
+                                            <TableCell className="font-medium">{row.pathname}</TableCell>
+                                            <TableCell>{formatNumber(Number(row.visits))}</TableCell>
+                                        </TableRow>
+                                    );
+                                })}
+                            </TableBody>
+                        </Table>
                     </CardContent>
                 </Card>
-            </StatsContent>
+            </StatsView>
         </StatsLayout>
     );
 };

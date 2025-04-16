@@ -1,8 +1,8 @@
 import AudienceSelect, {getAudienceQueryParam} from './components/AudienceSelect';
 import DateRangeSelect from './components/DateRangeSelect';
 import React, {useState} from 'react';
-import StatsContent from './layout/StatsContent';
 import StatsLayout from './layout/StatsLayout';
+import StatsView from './layout/StatsView';
 import World from '@svg-maps/world';
 import countries from 'i18n-iso-countries';
 import enLocale from 'i18n-iso-countries/langs/en.json';
@@ -167,7 +167,7 @@ const Locations:React.FC = () => {
                     <DateRangeSelect />
                 </HeaderActions>
             </Header>
-            <StatsContent>
+            <StatsView data={data} isLoading={isLoading}>
                 <Card variant='plain'>
                     <CardContent className='-mb-5 border-none pt-8'>
                         <div className='svg-map-container relative mx-auto max-w-[680px]'>
@@ -230,7 +230,7 @@ const Locations:React.FC = () => {
                         }
                     </CardContent>
                 </Card>
-            </StatsContent>
+            </StatsView>
         </StatsLayout>
     );
 };
