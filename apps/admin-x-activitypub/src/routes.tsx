@@ -8,6 +8,7 @@ import Onboarding from '@components/layout/Onboarding';
 import OnboardingStep1 from '@components/layout/Onboarding/Step1';
 import OnboardingStep2 from '@components/layout/Onboarding/Step2';
 import OnboardingStep3 from '@components/layout/Onboarding/Step3';
+import Preferences from '@views/Preferences';
 import Profile from '@views/Profile';
 import {Navigate, RouteObject} from '@tryghost/admin-x-framework';
 
@@ -67,6 +68,11 @@ export const routes: CustomRouteObject[] = [
                 path: 'profile/:handle',
                 element: <Profile />,
                 pageTitle: 'Profile'
+            },
+            {
+                path: 'preferences',
+                element: <Preferences />,
+                pageTitle: 'Preferences'
             },
             {
                 path: 'welcome',
