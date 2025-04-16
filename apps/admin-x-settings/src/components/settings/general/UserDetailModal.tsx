@@ -383,7 +383,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
             }}
         >
             <div>
-                <div className={`relative ${canAccessSettings(currentUser) ? '-mx-8 -mt-8 rounded-t' : '-mx-10 -mt-10'} from-grey-900 bg-gradient-to-tr to-black`}>
+                <div className={`relative bg-gradient-to-tr ${canAccessSettings(currentUser) ? '-mx-8 -mt-8 rounded-t' : '-mx-10 -mt-10'} from-grey-900 to-black`}>
                     <div className='flex min-h-[40vmin] flex-wrap items-end justify-between bg-cover bg-center' 
                         style={{
                             backgroundImage: formState.cover_image ? `url(${formState.cover_image})` : 'none'
