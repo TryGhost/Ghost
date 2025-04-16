@@ -550,5 +550,50 @@ test.describe('User profile', async () => {
                 }]
             });
         });
+
+        test('Validates Linkedin URL', async ({page}) => {
+            const userToEdit = responseFixtures.users.users.find(user => user.email === 'administrator@test.com')!;
+            // activate social links feature flag
+            toggleLabsFlag('socialLinks', true);
+            
+            const {lastApiRequests} = await mockApi({page, requests: {
+                ...globalDataRequests,
+                browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
+                editUser: {method: 'PUT', path: `/users/${userToEdit.id}/?include=roles`, response: {
+                    users: [{
+                        ...userToEdit
+                    }]
+                }}
+            }});
+
+            await page.goto('/');
+
+            const section = page.getByTestId('users');
+            const activeTab = section.locator('[role=tabpanel]:not(.hidden)');
+
+            await section.getByRole('tab', {name: 'Administrators'}).click();
+
+            const listItem = activeTab.getByTestId('user-list-item').last();
+            await listItem.hover();
+            await listItem.getByRole('button', {name: 'Edit'}).click();
+
+            const modal = page.getByTestId('user-detail-modal');
+
+            const linkedinInput = modal.getByLabel('LinkedIn profile');
+
+            await testUrlValidation(linkedinInput, 'https://notlinkedin.com', 'https://notlinkedin.com', 'The URL must be in a format like https://www.linkedin.com/in/yourUsername');
+
+            await testUrlValidation(linkedinInput, 'https://www.linkedin.com/in/yourUsername', 'https://www.linkedin.com/in/yourUsername');
+
+            await modal.getByRole('button', {name: 'Save'}).click();
+
+            await expect(modal.getByRole('button', {name: 'Saved'})).toBeVisible();
+
+            expect(lastApiRequests.editUser?.body).toMatchObject({
+                users: [{
+                    linkedin: 'yourUsername'
+                }]
+            });
+        });
     });
 });

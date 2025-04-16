@@ -2,7 +2,23 @@ import BehindFeatureFlag from '../../../BehindFeatureFlag';
 import CustomHeader from './CustomHeader';
 import {SettingGroup, SettingGroupContent, TextArea, TextField} from '@tryghost/admin-x-design-system';
 import {UserDetailProps} from '../UserDetailModal';
-import {blueskyHandleToUrl, blueskyUrlToHandle, facebookHandleToUrl, facebookUrlToHandle, threadsHandleToUrl, threadsUrlToHandle, twitterHandleToUrl, twitterUrlToHandle, validateBlueskyUrl, validateFacebookUrl, validateThreadsUrl, validateTwitterUrl} from '../../../../utils/socialUrls/index';
+import {
+    blueskyHandleToUrl,
+    blueskyUrlToHandle,
+    facebookHandleToUrl,
+    facebookUrlToHandle,
+    linkedinHandleToUrl,
+    linkedinUrlToHandle,
+    threadsHandleToUrl,
+    threadsUrlToHandle,
+    twitterHandleToUrl,
+    twitterUrlToHandle,
+    validateBlueskyUrl,
+    validateFacebookUrl,
+    validateLinkedInUrl,
+    validateThreadsUrl,
+    validateTwitterUrl
+} from '../../../../utils/socialUrls/index';
 import {useState} from 'react';
 
 export const DetailsInputs: React.FC<UserDetailProps> = ({errors, clearError, validateField, user, setUserData}) => {
@@ -10,6 +26,7 @@ export const DetailsInputs: React.FC<UserDetailProps> = ({errors, clearError, va
     const [twitterUrl, setTwitterUrl] = useState(user.twitter ? twitterHandleToUrl(user.twitter) : '');
     const [threadsUrl, setThreadsUrl] = useState(user.threads ? threadsHandleToUrl(user.threads) : '');
     const [blueskyUrl, setBlueskyUrl] = useState(user.bluesky ? blueskyHandleToUrl(user.bluesky) : '');
+    const [linkedinUrl, setLinkedinUrl] = useState(user.linkedin ? linkedinHandleToUrl(user.linkedin) : '');
 
     return (
         <SettingGroupContent>
@@ -106,6 +123,23 @@ export const DetailsInputs: React.FC<UserDetailProps> = ({errors, clearError, va
                         setBlueskyUrl(e.target.value);
                     }}
                     onKeyDown={() => clearError('bluesky')} />
+                <TextField
+                    error={!!errors?.linkedin}
+                    hint={errors?.linkedin}
+                    maxLength={2000}
+                    title="LinkedIn profile"
+                    value={linkedinUrl}
+                    onBlur={(e) => {
+                        if (validateField('linkedin', e.target.value)) {
+                            const url = validateLinkedInUrl(e.target.value);
+                            setLinkedinUrl(url);
+                            setUserData({...user, linkedin: linkedinUrlToHandle(url)});
+                        }
+                    }}
+                    onChange={(e) => {
+                        setLinkedinUrl(e.target.value);
+                    }}
+                    onKeyDown={() => clearError('linkedin')} />
                 
             </BehindFeatureFlag>
             <TextArea

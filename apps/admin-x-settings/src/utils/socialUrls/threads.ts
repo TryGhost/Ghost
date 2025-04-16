@@ -59,4 +59,4 @@ export const threadsHandleToUrl = (handle: string) => `https://www.threads.net/$
 export const threadsUrlToHandle = (url: string) => {
     const handle = url.match(/(?:https:\/\/)(?:www\.)?(?:threads\.(?:com|net))(?:\/)?(?:#!\/)?@?([^/]*)/)?.[1];
     return handle ? `@${handle}` : null;
-}; 
+};

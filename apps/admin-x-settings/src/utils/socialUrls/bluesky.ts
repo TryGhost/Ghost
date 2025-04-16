@@ -78,5 +78,5 @@ export const blueskyHandleToUrl = (handle: string) => {
 
 export const blueskyUrlToHandle = (url: string) => {
     const handleMatch = url.match(/(?:https?:\/\/)?(?:www\.)?bsky\.app\/profile\/@?([^/]*)/);
-    return handleMatch ? `@${handleMatch[1]}` : null;
-}; 
+    return handleMatch ? `${handleMatch[1]}` : null;
+};
