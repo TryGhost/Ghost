@@ -1,6 +1,6 @@
 const assert = require('assert/strict');
 const sinon = require('sinon');
-const MemberBreadService = require('../../../../lib/services/MemberBREADService');
+const MemberBreadService = require('../../../../../../../core/server/services/members/members-api/services/MemberBREADService');
 const moment = require('moment');
 
 describe('MemberBreadService', function () {
