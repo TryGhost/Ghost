@@ -1,7 +1,7 @@
 import {StaffTokenResponseType} from '@tryghost/admin-x-framework/api/staffToken';
 import {expect, test} from '@playwright/test';
 import {globalDataRequests} from '../../../utils/acceptance';
-import {mockApi, responseFixtures, settingsWithStripe, testUrlValidation} from '@tryghost/admin-x-framework/test/acceptance';
+import {mockApi, responseFixtures, settingsWithStripe, testUrlValidation, toggleLabsFlag} from '@tryghost/admin-x-framework/test/acceptance';
 
 test.describe('User profile', async () => {
     test('Supports editing user profiles', async ({page}) => {
@@ -458,5 +458,322 @@ test.describe('User profile', async () => {
         await expect(modal.getByTestId('api-keys')).toContainText('token-id:new-secret');
 
         expect(lastApiRequests.genStaffToken).toBeTruthy();
+    });
+
+    test.describe('Social links', () => {
+        test('Validates Threads URL', async ({page}) => {
+            const userToEdit = responseFixtures.users.users.find(user => user.email === 'administrator@test.com')!;
+            // activate social links feature flag
+            toggleLabsFlag('socialLinks', true);
+
+            const {lastApiRequests} = await mockApi({page, requests: {
+                ...globalDataRequests,
+                browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
+                editUser: {method: 'PUT', path: `/users/${userToEdit.id}/?include=roles`, response: {
+                    users: [{
+                        ...userToEdit
+                    }]
+                }}
+            }});
+
+            await page.goto('/');
+
+            const section = page.getByTestId('users');
+            const activeTab = section.locator('[role=tabpanel]:not(.hidden)');
+
+            await section.getByRole('tab', {name: 'Administrators'}).click();
+
+            const listItem = activeTab.getByTestId('user-list-item').last();
+            await listItem.hover();
+            await listItem.getByRole('button', {name: 'Edit'}).click();
+
+            const modal = page.getByTestId('user-detail-modal');
+
+            const threadsInput = modal.getByLabel('Threads profile');
+
+            await testUrlValidation(threadsInput, 'https://www.notthreads.com', 'https://www.notthreads.com', 'The URL must be in a format like https://www.threads.net/@yourUsername');
+
+            await testUrlValidation(threadsInput, 'https://www.threads.net/@username', 'https://www.threads.net/@username');
+
+            await modal.getByRole('button', {name: 'Save'}).click();
+
+            await expect(modal.getByRole('button', {name: 'Saved'})).toBeVisible();
+
+            expect(lastApiRequests.editUser?.body).toMatchObject({
+                users: [{
+                    threads: '@username'
+                }]
+            });
+        });
+
+        test('Validates Bluesky URL', async ({page}) => {
+            const userToEdit = responseFixtures.users.users.find(user => user.email === 'administrator@test.com')!;
+            // activate social links feature flag
+            toggleLabsFlag('socialLinks', true);
+            
+            const {lastApiRequests} = await mockApi({page, requests: {
+                ...globalDataRequests,
+                browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
+                editUser: {method: 'PUT', path: `/users/${userToEdit.id}/?include=roles`, response: {
+                    users: [{
+                        ...userToEdit
+                    }]
+                }}
+            }});
+
+            await page.goto('/');
+
+            const section = page.getByTestId('users');
+            const activeTab = section.locator('[role=tabpanel]:not(.hidden)');
+
+            await section.getByRole('tab', {name: 'Administrators'}).click();
+
+            const listItem = activeTab.getByTestId('user-list-item').last();
+            await listItem.hover();
+            await listItem.getByRole('button', {name: 'Edit'}).click();
+
+            const modal = page.getByTestId('user-detail-modal');
+
+            const blueskyInput = modal.getByLabel('Bluesky profile');
+
+            await testUrlValidation(blueskyInput, 'https://notbluesky.com', 'https://notbluesky.com', 'The URL must be in a format like https://bsky.app/profile/yourUsername');
+
+            await testUrlValidation(blueskyInput, 'https://bsky.app/profile/username', 'https://bsky.app/profile/username');
+
+            await modal.getByRole('button', {name: 'Save'}).click();
+
+            await expect(modal.getByRole('button', {name: 'Saved'})).toBeVisible();
+
+            expect(lastApiRequests.editUser?.body).toMatchObject({
+                users: [{
+                    bluesky: 'username'
+                }]
+            });
+        });
+
+        test('Validates Linkedin URL', async ({page}) => {
+            const userToEdit = responseFixtures.users.users.find(user => user.email === 'administrator@test.com')!;
+            // activate social links feature flag
+            toggleLabsFlag('socialLinks', true);
+
+            const {lastApiRequests} = await mockApi({page, requests: {
+                ...globalDataRequests,
+                browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
+                editUser: {method: 'PUT', path: `/users/${userToEdit.id}/?include=roles`, response: {
+                    users: [{
+                        ...userToEdit
+                    }]
+                }}
+            }});
+
+            await page.goto('/');
+
+            const section = page.getByTestId('users');
+            const activeTab = section.locator('[role=tabpanel]:not(.hidden)');
+
+            await section.getByRole('tab', {name: 'Administrators'}).click();
+
+            const listItem = activeTab.getByTestId('user-list-item').last();
+            await listItem.hover();
+            await listItem.getByRole('button', {name: 'Edit'}).click();
+
+            const modal = page.getByTestId('user-detail-modal');
+
+            const linkedinInput = modal.getByLabel('LinkedIn profile');
+
+            await testUrlValidation(linkedinInput, 'https://notlinkedin.com', 'https://notlinkedin.com', 'The URL must be in a format like https://www.linkedin.com/in/yourUsername');
+
+            await testUrlValidation(linkedinInput, 'https://www.linkedin.com/in/yourUsername', 'https://www.linkedin.com/in/yourUsername');
+
+            await modal.getByRole('button', {name: 'Save'}).click();
+
+            await expect(modal.getByRole('button', {name: 'Saved'})).toBeVisible();
+
+            expect(lastApiRequests.editUser?.body).toMatchObject({
+                users: [{
+                    linkedin: 'yourUsername'
+                }]
+            });
+        });
+
+        test('Validates Instagram URL', async ({page}) => {
+            const userToEdit = responseFixtures.users.users.find(user => user.email === 'administrator@test.com')!;
+            // activate social links feature flag
+            toggleLabsFlag('socialLinks', true);
+            
+            const {lastApiRequests} = await mockApi({page, requests: {
+                ...globalDataRequests,
+                browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
+                editUser: {method: 'PUT', path: `/users/${userToEdit.id}/?include=roles`, response: {
+                    users: [{
+                        ...userToEdit
+                    }]
+                }}
+            }});
+
+            await page.goto('/');
+
+            const section = page.getByTestId('users');
+            const activeTab = section.locator('[role=tabpanel]:not(.hidden)');
+
+            await section.getByRole('tab', {name: 'Administrators'}).click();
+
+            const listItem = activeTab.getByTestId('user-list-item').last();
+            await listItem.hover();
+            await listItem.getByRole('button', {name: 'Edit'}).click();
+
+            const modal = page.getByTestId('user-detail-modal');
+
+            const instagramInput = modal.getByLabel('Instagram profile');
+
+            await testUrlValidation(instagramInput, 'https://twitter.com/johnsmith', 'https://twitter.com/johnsmith', 'The URL must be in a format like https://www.instagram.com/yourUsername');
+
+            await testUrlValidation(instagramInput, 'https://www.instagram.com/yourUsername', 'https://www.instagram.com/yourUsername');
+
+            await modal.getByRole('button', {name: 'Save'}).click();
+
+            await expect(modal.getByRole('button', {name: 'Saved'})).toBeVisible();
+
+            expect(lastApiRequests.editUser?.body).toMatchObject({
+                users: [{
+                    instagram: 'yourUsername'
+                }]
+            });
+        });
+
+        test('Validates YouTube URL', async ({page}) => {
+            const userToEdit = responseFixtures.users.users.find(user => user.email === 'administrator@test.com')!;
+            // activate social links feature flag
+            toggleLabsFlag('socialLinks', true);
+
+            const {lastApiRequests} = await mockApi({page, requests: {
+                ...globalDataRequests,
+                browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
+                editUser: {method: 'PUT', path: `/users/${userToEdit.id}/?include=roles`, response: {
+                    users: [{
+                        ...userToEdit
+                    }]
+                }}
+            }});
+
+            await page.goto('/');
+
+            const section = page.getByTestId('users');
+            const activeTab = section.locator('[role=tabpanel]:not(.hidden)');
+
+            await section.getByRole('tab', {name: 'Administrators'}).click();
+
+            const listItem = activeTab.getByTestId('user-list-item').last();
+            await listItem.hover();
+            await listItem.getByRole('button', {name: 'Edit'}).click();
+
+            const modal = page.getByTestId('user-detail-modal');
+
+            const youtubeInput = modal.getByLabel('YouTube profile');
+
+            await testUrlValidation(youtubeInput, 'https://www.youutbe/gsg', 'https://www.youutbe/gsg', 'The URL must be in a format like https://www.youtube.com/@yourUsername, https://www.youtube.com/user/yourUsername, or https://www.youtube.com/channel/yourChannelId');
+
+            await testUrlValidation(youtubeInput, 'https://www.youtube.com/@yourUsername', 'https://www.youtube.com/@yourUsername');
+
+            await modal.getByRole('button', {name: 'Save'}).click();
+
+            await expect(modal.getByRole('button', {name: 'Saved'})).toBeVisible();
+
+            expect(lastApiRequests.editUser?.body).toMatchObject({
+                users: [{
+                    youtube: '@yourUsername'
+                }]
+            });
+        });
+
+        test('Validates TikTok URL', async ({page}) => {
+            const userToEdit = responseFixtures.users.users.find(user => user.email === 'administrator@test.com')!;
+            // activate social links feature flag
+            toggleLabsFlag('socialLinks', true);
+
+            const {lastApiRequests} = await mockApi({page, requests: {
+                ...globalDataRequests,
+                browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
+                editUser: {method: 'PUT', path: `/users/${userToEdit.id}/?include=roles`, response: {
+                    users: [{
+                        ...userToEdit
+                    }]
+                }}
+            }});
+
+            await page.goto('/');
+
+            const section = page.getByTestId('users');
+            const activeTab = section.locator('[role=tabpanel]:not(.hidden)');
+
+            await section.getByRole('tab', {name: 'Administrators'}).click();
+
+            const listItem = activeTab.getByTestId('user-list-item').last();
+            await listItem.hover();
+            await listItem.getByRole('button', {name: 'Edit'}).click();
+
+            const modal = page.getByTestId('user-detail-modal');
+
+            const tiktokInput = modal.getByLabel('TikTok profile');
+
+            await testUrlValidation(tiktokInput, 'https://www.tik.com/nottiktok', 'https://www.tik.com/nottiktok', 'The URL must be in a format like https://www.tiktok.com/@yourUsername');
+
+            await testUrlValidation(tiktokInput, 'https://www.tiktok.com/@yourUsername', 'https://www.tiktok.com/@yourUsername');
+
+            await modal.getByRole('button', {name: 'Save'}).click();
+
+            await expect(modal.getByRole('button', {name: 'Saved'})).toBeVisible();
+
+            expect(lastApiRequests.editUser?.body).toMatchObject({
+                users: [{
+                    tiktok: '@yourUsername'
+                }]
+            });
+        });
+
+        test('Validates Mastodon URL', async ({page}) => {
+            const userToEdit = responseFixtures.users.users.find(user => user.email === 'administrator@test.com')!;
+            // activate social links feature flag
+            toggleLabsFlag('socialLinks', true);
+            
+            const {lastApiRequests} = await mockApi({page, requests: {
+                ...globalDataRequests,
+                browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
+                editUser: {method: 'PUT', path: `/users/${userToEdit.id}/?include=roles`, response: {
+                    users: [{
+                        ...userToEdit
+                    }]
+                }}
+            }});
+
+            await page.goto('/');
+            
+            const section = page.getByTestId('users');
+            const activeTab = section.locator('[role=tabpanel]:not(.hidden)');
+
+            await section.getByRole('tab', {name: 'Administrators'}).click();
+
+            const listItem = activeTab.getByTestId('user-list-item').last();
+            await listItem.hover();
+            await listItem.getByRole('button', {name: 'Edit'}).click();
+
+            const modal = page.getByTestId('user-detail-modal');
+
+            const mastodonInput = modal.getByLabel('Mastodon profile');
+
+            await testUrlValidation(mastodonInput, 'https://mastodon.social/johnsmith', 'https://mastodon.social/johnsmith', 'The URL must be in a format like instance/@yourUsername or instance/@yourUsername@instance');
+
+            await testUrlValidation(mastodonInput, 'https://mastodon.social/@johnsmith@decentra.io', 'https://mastodon.social/@johnsmith@decentra.io');
+
+            await modal.getByRole('button', {name: 'Save'}).click();
+
+            await expect(modal.getByRole('button', {name: 'Saved'})).toBeVisible();
+
+            expect(lastApiRequests.editUser?.body).toMatchObject({
+                users: [{
+                    mastodon: 'mastodon.social/@johnsmith@decentra.io'
+                }]
+            });
+        });
     });
 });
