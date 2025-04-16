@@ -9,7 +9,7 @@ describe('getUsername', function () {
 
         const result = getUsername(user);
 
-        expect(result).toBe('@index@www.platformer.news');
+        expect(result).toBe('@index@platformer.news');
     });
 
     it('returns a default username if the user object is missing data', async function () {
