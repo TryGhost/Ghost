@@ -2,7 +2,7 @@ const sinon = require('sinon');
 const assert = require('assert').strict;
 const errors = require('@tryghost/errors');
 
-const RouterController = require('../../../../lib/controllers/RouterController');
+const RouterController = require('../../../../../../../core/server/services/members/members-api/controllers/RouterController');
 
 describe('RouterController', function () {
     let offersAPI;
@@ -298,8 +298,8 @@ describe('RouterController', function () {
                     metadata: {
                         test: 'hello'
                     }
-                })).should.be.true(); 
-            }); 
+                })).should.be.true();
+            });
             it('accepts requests without a personalNote included', async function () {
                 const routerController = new RouterController({
                     tiersService,
@@ -344,7 +344,7 @@ describe('RouterController', function () {
                     metadata: {
                         test: 'hello'
                     }
-                })).should.be.true(); 
+                })).should.be.true();
             });
             it('silently discards too-long personal notes', async function () {
                 const routerController = new RouterController({
@@ -390,7 +390,7 @@ describe('RouterController', function () {
                     metadata: {
                         test: 'hello'
                     }
-                })).should.be.true(); 
+                })).should.be.true();
             });
             it('silently discards invalid personal notes', async function () {
                 const routerController = new RouterController({
@@ -436,7 +436,7 @@ describe('RouterController', function () {
                     metadata: {
                         test: 'hello'
                     }
-                })).should.be.true(); 
+                })).should.be.true();
             });
             it('strips any html from the personal note', async function () {
                 const routerController = new RouterController({
@@ -482,8 +482,8 @@ describe('RouterController', function () {
                     metadata: {
                         test: 'hello'
                     }
-                })).should.be.true(); 
-            });    
+                })).should.be.true();
+            });
         });
 
         afterEach(function () {

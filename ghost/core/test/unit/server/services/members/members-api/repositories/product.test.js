@@ -1,6 +1,6 @@
 const assert = require('assert/strict');
 const sinon = require('sinon');
-const ProductRepository = require('../../../../lib/repositories/ProductRepository');
+const ProductRepository = require('../../../../../../../core/server/services/members/members-api/repositories/ProductRepository');
 
 describe('MemberRepository', function () {
     describe('getDefaultProduct', function () {
