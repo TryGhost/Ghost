@@ -1,4 +1,3 @@
-import CustomHeader from './CustomHeader';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import {SettingGroup, SettingGroupContent, Toggle} from '@tryghost/admin-x-design-system';
 import {User, hasAdminAccess} from '@tryghost/admin-x-framework/api/users';
@@ -90,17 +89,12 @@ const EmailNotificationsInputs: React.FC<{ user: User; setUserData: (user: User)
     );
 };
 
-const EmailNotifications: React.FC<{ user: User; setUserData: (user: User) => void; }> = ({user, setUserData}) => {
+const EmailNotificationsTab: React.FC<{ user: User; setUserData: (user: User) => void; }> = ({user, setUserData}) => {
     return (
-        <SettingGroup
-            border={false}
-            customHeader={<CustomHeader>Email notifications</CustomHeader>}
-            title='Email notifications'
-
-        >
+        <SettingGroup border={false}>
             <EmailNotificationsInputs setUserData={setUserData} user={user} />
         </SettingGroup>
     );
 };
 
-export default EmailNotifications;
+export default EmailNotificationsTab;
