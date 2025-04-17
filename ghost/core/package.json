@@ -117,7 +117,7 @@
     "@tryghost/request": "1.0.8",
     "@tryghost/root-utils": "0.3.30",
     "@tryghost/security": "0.0.0",
-    "@tryghost/social-urls": "0.1.45",
+    "@tryghost/social-urls": "0.1.46",
     "@tryghost/string": "0.2.12",
     "@tryghost/tiers": "0.0.0",
     "@tryghost/tpl": "0.1.32",

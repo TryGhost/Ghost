@@ -8448,10 +8448,10 @@
     "@tryghost/debug" "^0.1.26"
     "@tryghost/logging" "^2.4.7"
 
-"@tryghost/social-urls@0.1.45":
-  version "0.1.45"
-  resolved "https://registry.yarnpkg.com/@tryghost/social-urls/-/social-urls-0.1.45.tgz#4df7f2ecd610973b98a76326a05981689ba663be"
-  integrity sha512-W4O9L2QwTy/oVJ0TdH4Byr1kI1B7xLM7YXyw0c8kBX9uyG57rs978N4sRttpDpBYm5ZhaXfdOuNW79qGfoDHQA==
+"@tryghost/social-urls@0.1.46":
+  version "0.1.46"
+  resolved "https://registry.yarnpkg.com/@tryghost/social-urls/-/social-urls-0.1.46.tgz#eb9d1a45d343bab7126c542e36208c9def089f95"
+  integrity sha512-lTQEoeH3ZIshxtN1yPitD3V85HBzbqrAQ2wdUeh4XthLG8I4lz6N/8r3Q0kcHHpnLbKJU1QaQ85oO/Zy86aSpA==
 
 "@tryghost/string@0.2.12":
   version "0.2.12"
