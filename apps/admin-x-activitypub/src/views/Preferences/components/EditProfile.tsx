@@ -141,6 +141,18 @@ const EditProfile: React.FC<EditProfileProps> = ({account, setIsEditingProfile})
     function onSubmit(data: z.infer<typeof FormSchema>) {
         setIsSubmitting(true);
 
+        if (
+            data.name === account.name &&
+            data.handle === account.handle.split('@')[1] &&
+            data.bio === account.bio &&
+            data.profileImage === account.avatarUrl &&
+            data.coverImage === account.bannerImageUrl
+        ) {
+            setIsSubmitting(false);
+            setIsEditingProfile(false);
+
+            return;
+        }
 
         updateAccount({
             name: data.name || account.name,
