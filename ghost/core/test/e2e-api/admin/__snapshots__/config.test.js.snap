@@ -40,7 +40,7 @@ Object {
     "mail": "",
     "mailgunIsConfigured": false,
     "security": Object {
-      "staffDeviceVerification": true,
+      "staffDeviceVerification": false,
     },
     "signupForm": Object {
       "url": "https://cdn.jsdelivr.net/ghost/signup-form@~{version}/umd/signup-form.min.js",
