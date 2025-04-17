@@ -108,3 +108,7 @@ export const mastodonUrlToHandle = (url: string) => {
 
     return null;
 };
+
+export const sanitiseMastodonUrl = (url: string) => {
+    return url.replace(/^https?:\/\//, '');
+};
