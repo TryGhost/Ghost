@@ -20,7 +20,7 @@ const emailAddressService = require('../email-address');
 
 const MAGIC_LINK_TOKEN_VALIDITY = 24 * 60 * 60 * 1000;
 const MAGIC_LINK_TOKEN_VALIDITY_AFTER_USAGE = 10 * 60 * 1000;
-const MAGIC_LINK_TOKEN_MAX_USAGE_COUNT = 3;
+const MAGIC_LINK_TOKEN_MAX_USAGE_COUNT = 7;
 
 /**
  * @returns {SettingsBREADService} instance of the PostsService
