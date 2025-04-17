@@ -1,4 +1,5 @@
 import moment from 'moment-timezone';
+import {STATS_RANGE_OPTIONS} from '@src/utils/constants';
 
 /**
  * Calculates Y-axis ticks based on the data values
@@ -55,3 +56,20 @@ export function getCountryFlag(countryCode:string) {
     return countryCode.toUpperCase().replace(/./g, char => String.fromCodePoint(char.charCodeAt(0) + 127397)
     );
 }
+
+/**
+ * Returns additional text for subheads
+ */
+export const getPeriodText = (range: number): string => {
+    const option = STATS_RANGE_OPTIONS.find((opt: {value: number; name: string}) => opt.value === range);
+    if (option) {
+        if (['Last 7 days', 'Last 30 days', 'Last 3 months', 'Last 12 months'].includes(option.name)) {
+            return `in the last ${option.name.toLowerCase()}`;
+        }
+        if (option.name === 'All time') {
+            return '(all time)';
+        }
+        return option.name.toLowerCase();
+    }
+    return '';
+};
