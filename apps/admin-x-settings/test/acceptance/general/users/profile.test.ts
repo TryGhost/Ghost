@@ -761,9 +761,9 @@ test.describe('User profile', async () => {
 
             const mastodonInput = modal.getByLabel('Mastodon profile');
 
-            await testUrlValidation(mastodonInput, 'https://mastodon.social/johnsmith', 'https://mastodon.social/johnsmith', 'The URL must be in a format like instance/@yourUsername or instance/@yourUsername@instance');
+            await testUrlValidation(mastodonInput, 'https://mastodon.social/johnsmith', 'https://mastodon.social/johnsmith', 'The URL must be in a format like @username@instance or https://instance/@username');
 
-            await testUrlValidation(mastodonInput, 'https://mastodon.social/@johnsmith@decentra.io', 'https://mastodon.social/@johnsmith@decentra.io');
+            await testUrlValidation(mastodonInput, 'https://mastodon.xyz/@Flipboard@flipboard.social', 'https://mastodon.xyz/@Flipboard@flipboard.social');
 
             await modal.getByRole('button', {name: 'Save'}).click();
 
@@ -771,7 +771,7 @@ test.describe('User profile', async () => {
 
             expect(lastApiRequests.editUser?.body).toMatchObject({
                 users: [{
-                    mastodon: 'mastodon.social/@johnsmith@decentra.io'
+                    mastodon: 'mastodon.xyz/@Flipboard@flipboard.social'
                 }]
             });
         });
