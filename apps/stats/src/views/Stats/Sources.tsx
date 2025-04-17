@@ -106,9 +106,9 @@ const Sources:React.FC = () => {
                         <CardTitle>Top sources</CardTitle>
                         <CardDescription>How readers are found your site {getPeriodText(range)}</CardDescription>
                     </CardHeader>
-                    <CardContent className='border-none text-gray-500'>
+                    <CardContent className='border-none text-gray-500 [&_.recharts-pie-label-line]:stroke-gray-300'>
                         <ChartContainer
-                            className="mx-auto aspect-square max-h-[300px]"
+                            className="mx-auto max-h-[300px] w-full"
                             config={chartConfig}
                         >
                             <Recharts.PieChart>
@@ -120,10 +120,25 @@ const Sources:React.FC = () => {
                                     data={chartData}
                                     dataKey="visitors"
                                     innerRadius={'55%'}
+                                    isAnimationActive={false}
+                                    label={({name, ...props}) => {
+                                        return (
+                                            <text
+                                                className='fill-gray-700 text-sm'
+                                                cx={props.cx}
+                                                cy={props.cy}
+                                                dominantBaseline={props.dominantBaseline}
+                                                textAnchor={props.textAnchor}
+                                                x={props.x + (props.textAnchor === 'end' ? -6 : 6)}
+                                                y={props.y + 3}
+                                            >
+                                                <tspan>{name}</tspan>
+                                            </text>
+                                        );
+                                    }}
                                     nameKey="source"
                                     stroke="hsl(var(--background))"
-                                    strokeWidth={3}
-                                />
+                                    strokeWidth={1} />
                             </Recharts.PieChart>
                         </ChartContainer>
                     </CardContent>
