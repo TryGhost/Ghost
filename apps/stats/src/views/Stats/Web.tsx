@@ -7,7 +7,7 @@ import WebKpis from './components/WebKpis';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle, Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@tryghost/shade';
 import {Header, HeaderActions} from '@src/components/layout/Header';
 import {formatNumber, formatQueryDate} from '@src/utils/data-formatters';
-import {getRangeDates} from '@src/utils/chart-helpers';
+import {getPeriodText, getRangeDates} from '@src/utils/chart-helpers';
 import {getStatEndpointUrl} from '@src/config/stats-config';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useQuery} from '@tinybirdco/charts';
@@ -50,23 +50,23 @@ const Web:React.FC = () => {
                 </Card>
                 <Card variant='plain'>
                     <CardHeader>
-                        <CardTitle>Top content on your website</CardTitle>
-                        <CardDescription>Your highest viewed posts in this period</CardDescription>
+                        <CardTitle>Top content</CardTitle>
+                        <CardDescription>Your highest viewed posts or pages {getPeriodText(range)}</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <Table>
                             <TableHeader>
                                 <TableRow>
                                     <TableHead className='w-[80%]'>Content</TableHead>
-                                    <TableHead className='w-[20%]'>Visitors</TableHead>
+                                    <TableHead className='w-[20%] text-right'>Visitors</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {data?.map((row) => {
                                     return (
                                         <TableRow key={row.pathname}>
-                                            <TableCell className="font-medium">{row.pathname}</TableCell>
-                                            <TableCell>{formatNumber(Number(row.visits))}</TableCell>
+                                            <TableCell className="font-medium"><a className='-mx-2 inline-block px-2 hover:underline' href={`${row.pathname}`} rel="noreferrer" target='_blank'>{row.pathname}</a></TableCell>
+                                            <TableCell className='text-right font-mono text-sm'>{formatNumber(Number(row.visits))}</TableCell>
                                         </TableRow>
                                     );
                                 })}

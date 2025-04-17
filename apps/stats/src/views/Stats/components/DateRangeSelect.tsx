@@ -10,10 +10,10 @@ const DateRangeSelect: React.FC = () => {
         <Select value={`${range}`} onValueChange={(value) => {
             setRange(Number(value));
         }}>
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger>
                 <SelectValue placeholder="Select a period" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent align='end'>
                 <SelectGroup>
                     <SelectLabel>Period</SelectLabel>
                     {STATS_RANGE_OPTIONS.map(option => (

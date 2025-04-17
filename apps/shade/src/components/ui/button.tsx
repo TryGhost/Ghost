@@ -1,6 +1,7 @@
 import * as React from 'react';
 import {Slot} from '@radix-ui/react-slot';
 import {cva, type VariantProps} from 'class-variance-authority';
+import {ChevronDown} from 'lucide-react';
 
 import {cn} from '@/lib/utils';
 
@@ -12,7 +13,7 @@ const buttonVariants = cva(
                 default: 'bg-primary font-medium text-primary-foreground hover:bg-primary/90',
                 destructive: 'bg-destructive font-medium text-destructive-foreground hover:bg-destructive/90',
                 outline: 'border border-input bg-transparent font-medium hover:bg-accent hover:text-accent-foreground',
-                secondary: 'bg-secondary font-medium text-secondary-foreground hover:bg-secondary/80',
+                secondary: 'bg-secondary font-medium text-secondary-foreground hover:bg-secondary/80 dark:bg-gray-925/70 dark:hover:bg-gray-900',
                 ghost: 'font-medium hover:bg-accent hover:text-accent-foreground',
                 link: 'font-medium text-primary underline-offset-4 hover:underline',
                 dropdown: 'border border-input bg-transparent hover:bg-accent hover:text-accent-foreground'
@@ -38,14 +39,23 @@ export interface ButtonProps
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-    ({className, variant, size, asChild = false, ...props}, ref) => {
+    ({className, variant, size, asChild = false, children, ...props}, ref) => {
         const Comp = asChild ? Slot : 'button';
+        const content = variant === 'dropdown' ? (
+            <>
+                {children}
+                <ChevronDown className="!-ml-1 !-mr-0.5 size-4 !stroke-[2px] opacity-50" strokeWidth={2} />
+            </>
+        ) : children;
+
         return (
             <Comp
                 ref={ref}
                 className={cn(buttonVariants({variant, size, className}))}
                 {...props}
-            />
+            >
+                {content}
+            </Comp>
         );
     }
 );
