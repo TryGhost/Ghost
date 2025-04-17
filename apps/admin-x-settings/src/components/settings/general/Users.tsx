@@ -1,4 +1,3 @@
-import BehindFeatureFlag from '../../BehindFeatureFlag';
 import React, {useEffect, useState} from 'react';
 import TopLevelGroup from '../../TopLevelGroup';
 import clsx from 'clsx';
@@ -47,8 +46,8 @@ const Owner: React.FC<OwnerProps> = ({user}) => {
         <div className={clsx('group flex gap-3', hasAdminAccess(currentUser) && 'cursor-pointer')} data-testid='owner-user' onClick={showDetailModal}>
             <Avatar bgColor={generateAvatarColor((user.name ? user.name : user.email))} image={user.profile_image ?? undefined} label={getInitials(user.name)} labelColor='white' size='lg' />
             <div className='flex flex-col'>
-                <span>{user.name} &mdash; <strong>Owner</strong> {hasAdminAccess(currentUser) && <button className='ml-2 inline-block text-sm font-bold text-green group-hover:visible md:invisible' type='button'>View profile</button>}</span>
-                <span className='text-xs text-grey-700'>{user.email}</span>
+                <span>{user.name} &mdash; <strong>Owner</strong> {hasAdminAccess(currentUser) && <button className='text-green ml-2 inline-block text-sm font-bold group-hover:visible md:invisible' type='button'>View profile</button>}</span>
+                <span className='text-grey-700 text-xs'>{user.email}</span>
             </div>
         </div>
     );
@@ -217,7 +216,7 @@ const Users: React.FC<{ keywords: string[], highlight?: boolean }> = ({keywords,
         fetchNextPage
     } = useStaffUsers();
     const {updateRoute} = useRouting();
-    const {currentUser} = useGlobalData();
+    const {settings, config, currentUser} = useGlobalData();
 
     const showInviteModal = () => {
         updateRoute('staff/invite');
@@ -277,7 +276,6 @@ const Users: React.FC<{ keywords: string[], highlight?: boolean }> = ({keywords,
         }
     ];
 
-    const {settings} = useGlobalData();
     const require2fa = getSettingValue<boolean>(settings, 'require_email_mfa') || false;
     const {mutateAsync: editSettings} = useEditSettings();
     const handleError = useHandleError();
@@ -292,7 +290,6 @@ const Users: React.FC<{ keywords: string[], highlight?: boolean }> = ({keywords,
             title='Staff'
         >
             <Owner user={ownerUser} />
-            {/* if there are no users besides the owner user, hide the tabs*/}
             {(users.length > 1 || invites.length > 0) && <TabView selectedTab={selectedTab} tabs={tabs} testId='user-tabview' onTabChange={updateSelectedTab} />}
             {hasNextPage && <Button
                 label={`Load more (showing ${users.length}/${totalUsers} users)`}
@@ -300,35 +297,33 @@ const Users: React.FC<{ keywords: string[], highlight?: boolean }> = ({keywords,
                 onClick={() => fetchNextPage()}
             />}
 
-            <BehindFeatureFlag flag='staff2fa'>
-                {hasAdminAccess(currentUser) && (
-                    <div className={`flex flex-col gap-6 ${users.length > 1 || invites.length > 0 ? '-mt-6' : ''}`}>
-                        <Separator />
-                        <div className='flex items-baseline justify-between'>
-                            <div className='flex flex-col'>
-                                <span className='text-[1.5rem] font-semibold tracking-tight'>Security settings</span>
-                                <span>Require email 2FA codes to be used on all staff logins</span>
-                            </div>
-                            <Toggle
-                                checked={require2fa}
-                                direction='rtl'
-                                gap='gap-0'
-                                onChange={async () => {
-                                    const newValue = !require2fa;
-                                    try {
-                                        await editSettings([{
-                                            key: 'require_email_mfa',
-                                            value: newValue
-                                        }]);
-                                    } catch (error) {
-                                        handleError(error);
-                                    }
-                                }}
-                            />
+            {config?.security?.staffDeviceVerification && hasAdminAccess(currentUser) && (
+                <div className={`flex flex-col gap-6 ${users.length > 1 || invites.length > 0 ? '-mt-6' : ''}`}>
+                    <Separator />
+                    <div className='flex items-baseline justify-between'>
+                        <div className='flex flex-col'>
+                            <span className='text-[1.5rem] font-semibold tracking-tight'>Security settings</span>
+                            <span>Require email 2FA codes to be used on all staff logins</span>
                         </div>
+                        <Toggle
+                            checked={require2fa}
+                            direction='rtl'
+                            gap='gap-0'
+                            onChange={async () => {
+                                const newValue = !require2fa;
+                                try {
+                                    await editSettings([{
+                                        key: 'require_email_mfa',
+                                        value: newValue
+                                    }]);
+                                } catch (error) {
+                                    handleError(error);
+                                }
+                            }}
+                        />
                     </div>
-                )}
-            </BehindFeatureFlag>
+                </div>
+            )}
         </TopLevelGroup>
     );
 };

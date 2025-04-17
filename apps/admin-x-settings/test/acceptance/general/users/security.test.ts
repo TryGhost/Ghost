@@ -4,14 +4,13 @@ import {meWithRole, mockApi, responseFixtures, toggleLabsFlag} from '@tryghost/a
 
 test.describe('User security settings', async () => {
     test('Owners can see 2FA settings', async ({page}) => {
-        // Enable staff2fa
-        toggleLabsFlag('staff2fa', true);
-
         // Mock the API with an editor user
         await mockApi({
             page, requests: {
                 ...globalDataRequests,
-                browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users}
+                browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
+                // Enable staffDeviceVerification
+                browseConfig: {method: 'GET', path: '/config', response: {config: {security: {staffDeviceVerification: true}}}}
             }
         });
 
