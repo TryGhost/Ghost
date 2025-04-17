@@ -24,9 +24,9 @@ describe('Mastodon URL validation', () => {
     });
 
     it('should reject invalid Mastodon URLs', () => {
-        assert.throws(() => validateMastodonUrl('example.com/johnsmith'), /The URL must be in a format like @username@instance or https:\/\/instance\/@username/);
-        assert.throws(() => validateMastodonUrl('invalid/@johnsmith'), /The URL must be in a format like @username@instance or https:\/\/instance\/@username/);
-        assert.throws(() => validateMastodonUrl('@johnsmith'), /The URL must be in a format like @username@instance or https:\/\/instance\/@username/);
+        assert.throws(() => validateMastodonUrl('example.com/johnsmith'), /The URL must be in a format like @username@instance\.tld or https:\/\/instance\.tld\/@username or https:\/\/website\.com\/@username@instance\.tld/);
+        assert.throws(() => validateMastodonUrl('invalid/@johnsmith'), /The URL must be in a format like @username@instance\.tld or https:\/\/instance\.tld\/@username or https:\/\/website\.com\/@username@instance\.tld/);
+        assert.throws(() => validateMastodonUrl('@johnsmith'), /The URL must be in a format like @username@instance\.tld or https:\/\/instance\.tld\/@username or https:\/\/website\.com\/@username@instance\.tld/);
     });
 });
 

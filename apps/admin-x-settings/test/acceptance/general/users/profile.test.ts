@@ -815,7 +815,7 @@ test.describe('User profile', async () => {
             await modal.getByTitle('Social Links').click();
             const mastodonInput = modal.getByTestId('mastodon-input');
 
-            await testUrlValidation(mastodonInput, 'https://mastodon.social/johnsmith', 'https://mastodon.social/johnsmith', 'The URL must be in a format like @username@instance or https://instance/@username');
+            await testUrlValidation(mastodonInput, 'https://mastodon.social/johnsmith', 'https://mastodon.social/johnsmith', 'The URL must be in a format like @username@instance.tld or https://instance.tld/@username or https://website.com/@username@instance.tld');
 
             await testUrlValidation(mastodonInput, 'https://mastodon.xyz/@Flipboard@flipboard.social', 'https://mastodon.xyz/@Flipboard@flipboard.social');
 
