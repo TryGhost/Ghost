@@ -7,7 +7,7 @@ import {Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, 
 import {Header, HeaderActions} from '@src/components/layout/Header';
 import {STATS_DEFAULT_SOURCE_ICON_URL} from '@src/utils/constants';
 import {formatNumber, formatQueryDate} from '@src/utils/data-formatters';
-import {getRangeDates} from '@src/utils/chart-helpers';
+import {getPeriodText, getRangeDates} from '@src/utils/chart-helpers';
 import {getStatEndpointUrl} from '@src/config/stats-config';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useQuery} from '@tinybirdco/charts';
@@ -104,11 +104,11 @@ const Sources:React.FC = () => {
                 <Card className='-mb-5' variant='plain'>
                     <CardHeader className='border-none'>
                         <CardTitle>Top sources</CardTitle>
-                        <CardDescription>How readers are finding your site</CardDescription>
+                        <CardDescription>How readers are found your site {getPeriodText(range)}</CardDescription>
                     </CardHeader>
-                    <CardContent className='border-none text-gray-500'>
+                    <CardContent className='border-none text-gray-500 [&_.recharts-pie-label-line]:stroke-gray-300'>
                         <ChartContainer
-                            className="mx-auto aspect-square max-h-[300px]"
+                            className="mx-auto h-[16vw] max-h-[320px] w-full"
                             config={chartConfig}
                         >
                             <Recharts.PieChart>
@@ -120,10 +120,25 @@ const Sources:React.FC = () => {
                                     data={chartData}
                                     dataKey="visitors"
                                     innerRadius={'55%'}
+                                    isAnimationActive={false}
+                                    label={({name, ...props}) => {
+                                        return (
+                                            <text
+                                                className='fill-gray-700 text-sm'
+                                                cx={props.cx}
+                                                cy={props.cy}
+                                                dominantBaseline={props.dominantBaseline}
+                                                textAnchor={props.textAnchor}
+                                                x={props.x + (props.textAnchor === 'end' ? -6 : 6)}
+                                                y={props.y + 3}
+                                            >
+                                                <tspan>{name}</tspan>
+                                            </text>
+                                        );
+                                    }}
                                     nameKey="source"
                                     stroke="hsl(var(--background))"
-                                    strokeWidth={3}
-                                />
+                                    strokeWidth={1} />
                             </Recharts.PieChart>
                         </ChartContainer>
                     </CardContent>
@@ -135,8 +150,8 @@ const Sources:React.FC = () => {
                                 <TableHeader>
                                     <TableRow>
                                         <TableHead className='w-[80%]'>Source</TableHead>
-                                        <TableHead className='w-[20%]'>Visitors</TableHead>
-                                        <TableHead className='w-5'></TableHead>
+                                        <TableHead className='text-right'>Visitors</TableHead>
+                                        <TableHead className='w-5 text-right'></TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -154,8 +169,8 @@ const Sources:React.FC = () => {
                                                         </span>
                                                     }
                                                 </TableCell>
-                                                <TableCell>{formatNumber(Number(row.visits))}</TableCell>
-                                                <TableCell>{key < 5 && <span className='inline-block size-[10px] rounded-[2px]' style={{backgroundColor: colors[key]}}></span>}</TableCell>
+                                                <TableCell className='text-right font-mono text-sm'>{formatNumber(Number(row.visits))}</TableCell>
+                                                <TableCell className='text-right'>{key < 5 && <span className='inline-block size-[10px] rounded-[2px]' style={{backgroundColor: colors[key]}}></span>}</TableCell>
                                             </TableRow>
                                         );
                                     })}
