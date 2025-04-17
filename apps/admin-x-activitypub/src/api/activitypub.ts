@@ -167,7 +167,7 @@ export class ActivityPubAPI {
         }
     }
 
-    private async fetchJSON(url: URL, method: 'DELETE' | 'GET' | 'POST' = 'GET', body?: object): Promise<object | null> {
+    private async fetchJSON(url: URL, method: 'DELETE' | 'GET' | 'POST' | 'PUT' = 'GET', body?: object): Promise<object | null> {
         const token = await this.getToken();
         const options: RequestInit = {
             method,
@@ -388,5 +388,29 @@ export class ActivityPubAPI {
         const url = new URL(`.ghost/activitypub/post/${encodeURIComponent(id)}`, this.apiUrl);
         const json = await this.fetchJSON(url);
         return json as Post;
+    }
+
+    async updateAccount({
+        name,
+        username,
+        bio,
+        avatarUrl,
+        bannerImageUrl
+    }: {
+        name: string;
+        username: string;
+        bio: string;
+        avatarUrl: string;
+        bannerImageUrl: string;
+    }) {
+        const url = new URL(`.ghost/activitypub/account`, this.apiUrl);
+
+        await this.fetchJSON(url, 'PUT', {
+            name,
+            username,
+            bio,
+            avatarUrl,
+            bannerImageUrl
+        });
     }
 }
