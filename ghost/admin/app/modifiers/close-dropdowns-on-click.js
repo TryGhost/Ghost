@@ -18,8 +18,11 @@ export default class CloseDropdownsOnClickModifier extends Modifier {
     modify(element) {
         if (element.tagName === 'IFRAME') {
             element.addEventListener('load', () => {
-                this.element = element.contentDocument;
-                this.element.addEventListener('click', this.onClick);
+                // Extra check for cross-origin iframes
+                if (element.contentDocument) {
+                    this.element = element.contentDocument;
+                    this.element.addEventListener('click', this.onClick);
+                }
             });
         } else {
             this.element = element;
