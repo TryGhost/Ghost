@@ -108,7 +108,7 @@ const Sources:React.FC = () => {
                     </CardHeader>
                     <CardContent className='border-none text-gray-500 [&_.recharts-pie-label-line]:stroke-gray-300'>
                         <ChartContainer
-                            className="mx-auto max-h-[300px] w-full"
+                            className="mx-auto h-[16vw] max-h-[320px] w-full"
                             config={chartConfig}
                         >
                             <Recharts.PieChart>
