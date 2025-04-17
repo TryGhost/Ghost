@@ -22,6 +22,7 @@ const Header: React.FC = () => {
     const {canGoBack} = useNavigationStack();
     const baseRoute = useBaseRoute();
     const routeHasParams = useRouteHasParams();
+    const activeRoute = useActiveRoute();
 
     // Logic for special pages
     let onlyBackButton = false;
@@ -34,9 +35,8 @@ const Header: React.FC = () => {
     }
 
     // Avoid back button on main routes
-    const backActive = canGoBack && routeHasParams;
+    const backActive = (canGoBack && routeHasParams) || activeRoute?.showBackButton === true;
 
-    const activeRoute = useActiveRoute();
     return (
         <>
             {onlyBackButton ?
