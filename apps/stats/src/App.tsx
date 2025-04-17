@@ -1,7 +1,6 @@
 import GlobalDataProvider from './providers/GlobalDataProvider';
-import Stats from './Stats';
 import {APP_ROUTE_PREFIX, routes} from '@src/routes';
-import {FrameworkProvider, RouterProvider, TopLevelFrameworkProps} from '@tryghost/admin-x-framework';
+import {FrameworkProvider, Outlet, RouterProvider, TopLevelFrameworkProps} from '@tryghost/admin-x-framework';
 import {ShadeApp, ShadeAppProps} from '@tryghost/shade';
 
 interface AppProps {
@@ -15,7 +14,7 @@ const App: React.FC<AppProps> = ({framework, designSystem}) => {
             <RouterProvider prefix={APP_ROUTE_PREFIX} routes={routes}>
                 <GlobalDataProvider>
                     <ShadeApp darkMode={designSystem.darkMode} fetchKoenigLexical={null}>
-                        <Stats />
+                        <Outlet />
                     </ShadeApp>
                 </GlobalDataProvider>
             </RouterProvider>
