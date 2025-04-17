@@ -148,7 +148,7 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
                                         </DialogTrigger>
                                         <DialogContent className='w-full max-w-xl' onOpenAutoFocus={e => e.preventDefault()}>
                                             <DialogHeader>
-                                                <DialogTitle>{isEnabled('settings-full') ? 'Profile settings' : 'Handle'}</DialogTitle>
+                                                <DialogTitle>{isEnabled('settings-full') ? 'Profile settings' : 'Edit handle'}</DialogTitle>
                                             </DialogHeader>
                                             {account && <EditProfile account={account} setIsEditingProfile={setIsEditingProfile} />}
                                         </DialogContent>
