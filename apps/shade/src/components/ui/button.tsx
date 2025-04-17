@@ -47,8 +47,10 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
                 className={cn(buttonVariants({variant, size, className}))}
                 {...props}
             >
-                {children}
-                {variant === 'dropdown' && <ChevronDown className="!-ml-1 !-mr-0.5 size-4 !stroke-[2px] opacity-50" strokeWidth={2} />}
+                <>
+                    {children}
+                    {variant === 'dropdown' && <ChevronDown className="!-ml-1 !-mr-0.5 size-4 !stroke-[2px] opacity-50" strokeWidth={2} />}
+                </>
             </Comp>
         );
     }
