@@ -395,9 +395,9 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
         }
     });
 
-    const noCoverEditButtonClasses = 'rounded text-sm flex items-center justify-center px-3 h-8 transition-all cursor-pointer font-medium nowrap border border-grey-300 bg-transparent text-black dark:border-grey-800 dark:text-white';
+    const noCoverButtonClasses = 'rounded text-sm flex flex-nowrap items-center justify-center px-3 h-8 transition-all cursor-pointer font-medium border border-grey-300 bg-transparent text-black dark:border-grey-800 dark:text-white';
 
-    const coverEditButtonClasses = 'bg-[rgba(0,0,0,0.75)] rounded text-sm text-white flex items-center justify-center px-3 h-8 opacity-80 hover:opacity-100 transition-all cursor-pointer font-medium nowrap';
+    const coverButtonClasses = 'flex flex-nowrap items-center justify-center px-3 h-8 opacity-80 hover:opacity-100 bg-[rgba(0,0,0,0.75)] rounded text-sm text-white transition-all cursor-pointer font-medium nowrap';
 
     const suspendedText = formState.status === 'inactive' ? ' (Suspended)' : '';
     
@@ -466,10 +466,10 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                                 <div className='flex flex-nowrap items-start gap-3'>
                                     <ImageUpload
                                         buttonContainerClassName='flex items-end gap-4 justify-end flex-nowrap'
-                                        deleteButtonClassName={coverEditButtonClasses}
+                                        deleteButtonClassName={coverButtonClasses}
                                         deleteButtonContent='Delete cover image'
-                                        editButtonClassName={coverEditButtonClasses}
-                                        fileUploadClassName={noCoverEditButtonClasses}
+                                        editButtonClassName={coverButtonClasses}
+                                        fileUploadClassName={noCoverButtonClasses}
                                         id='cover-image'
                                         imageClassName='hidden'
                                         imageURL={formState.cover_image || ''}
@@ -499,16 +499,16 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                                             trigger={
                                                 <button
                                                     className={clsx(
-                                                        'flex h-8 cursor-pointer items-center justify-center rounded px-3', // Base styles
+                                                        'flex h-8 cursor-pointer items-center justify-center rounded px-3',
                                                         formState.cover_image
-                                                            ? 'bg-[rgba(0,0,0,0.75)] opacity-80 hover:opacity-100' // Styles when cover image exists
-                                                            : 'border border-grey-300 bg-transparent text-black dark:border-grey-800 dark:text-white' // Original styles when no cover image
+                                                            ? 'bg-[rgba(0,0,0,0.75)] opacity-80 hover:opacity-100'
+                                                            : 'border border-grey-300 bg-transparent text-black dark:border-grey-800 dark:text-white'
                                                     )}
                                                     type='button'
                                                 >
                                                     <span className='sr-only'>Actions</span>
                                                     <Icon
-                                                        colorClass={formState.cover_image ? 'text-white' : undefined} // Conditional text color
+                                                        colorClass={formState.cover_image ? 'text-white' : undefined}
                                                         name='ellipsis'
                                                         size='md'
                                                     />
