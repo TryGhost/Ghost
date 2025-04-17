@@ -1,11 +1,11 @@
 import React, {ChangeEvent, useEffect, useRef, useState} from 'react';
 import {Account} from '@src/api/activitypub';
 import {Button, DialogClose, DialogFooter, Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage, Input, LucideIcon, Textarea} from '@tryghost/shade';
+import {uploadFile} from '@hooks/use-activity-pub-queries';
 import {useForm} from 'react-hook-form';
 import {useUpdateAccountMutationForUser} from '@hooks/use-activity-pub-queries';
 import {z} from 'zod';
 import {zodResolver} from '@hookform/resolvers/zod';
-import {uploadFile} from '@hooks/use-activity-pub-queries';
 
 const FormSchema = z.object({
     profileImage: z.string().optional(),
