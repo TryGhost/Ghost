@@ -1,12 +1,9 @@
 import {expect, test} from '@playwright/test';
 import {globalDataRequests} from '../../../utils/acceptance';
-import {meWithRole, mockApi, responseFixtures, toggleLabsFlag} from '@tryghost/admin-x-framework/test/acceptance';
+import {meWithRole, mockApi, responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
 
 test.describe('User security settings', async () => {
     test('Owners can see 2FA settings', async ({page}) => {
-        // Enable staff2fa
-        toggleLabsFlag('staff2fa', true);
-
         // Mock the API with an editor user
         await mockApi({
             page, requests: {
@@ -29,9 +26,6 @@ test.describe('User security settings', async () => {
     });
 
     test('Admins can see 2FA settings', async ({page}) => {
-        // Enable staff2fa
-        toggleLabsFlag('staff2fa', true);
-
         // Mock the API with an editor user
         await mockApi({
             page, requests: {
@@ -55,10 +49,6 @@ test.describe('User security settings', async () => {
     });
 
     test('Editor users cannot see 2FA settings', async ({page}) => {
-        // Enable staff2fa
-        toggleLabsFlag('staff2fa', true);
-
-        // Mock the API with an editor user and staff2fa enabled
         await mockApi({
             page, requests: {
                 ...globalDataRequests,

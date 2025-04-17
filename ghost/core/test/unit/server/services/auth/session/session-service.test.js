@@ -26,16 +26,15 @@ describe('SessionService', function () {
 
         const findUserById = sinon.spy(async ({id}) => ({id}));
         const getOriginOfRequest = sinon.stub().returns('origin');
-        const labs = {
-            isSet: () => false
-        };
+
+        const isStaffDeviceVerificationDisabled = sinon.stub().returns(false);
 
         const sessionService = SessionService({
             getSession,
             findUserById,
             getOriginOfRequest,
             getSettingsCache,
-            labs
+            isStaffDeviceVerificationDisabled
         });
 
         const req = Object.create(express.request, {
@@ -83,15 +82,11 @@ describe('SessionService', function () {
         };
         const findUserById = sinon.spy(async ({id}) => ({id}));
         const getOriginOfRequest = sinon.stub().returns('other-origin');
-        const labs = {
-            isSet: () => false
-        };
 
         const sessionService = SessionService({
             getSession,
             findUserById,
-            getOriginOfRequest,
-            labs
+            getOriginOfRequest
         });
 
         const req = Object.create(express.request, {
@@ -126,15 +121,11 @@ describe('SessionService', function () {
         };
         const findUserById = sinon.spy(async ({id}) => ({id}));
         const getOriginOfRequest = sinon.stub().returns('other-origin');
-        const labs = {
-            isSet: () => false
-        };
 
         const sessionService = SessionService({
             getSession,
             findUserById,
-            getOriginOfRequest,
-            labs
+            getOriginOfRequest
         });
 
         const req = Object.create(express.request, {
@@ -171,16 +162,15 @@ describe('SessionService', function () {
 
         const findUserById = sinon.spy(async ({id}) => ({id}));
         const getOriginOfRequest = sinon.stub().returns('origin');
-        const labs = {
-            isSet: () => true
-        };
+
+        const isStaffDeviceVerificationDisabled = sinon.stub().returns(false);
 
         const sessionService = SessionService({
             getSession,
             findUserById,
             getOriginOfRequest,
             getSettingsCache,
-            labs
+            isStaffDeviceVerificationDisabled
         });
 
         const req = Object.create(express.request, {
@@ -228,16 +218,12 @@ describe('SessionService', function () {
         };
         const findUserById = sinon.spy(async ({id}) => ({id}));
         const getOriginOfRequest = sinon.stub().returns('origin');
-        const labs = {
-            isSet: () => true
-        };
 
         const sessionService = SessionService({
             getSession,
             findUserById,
             getOriginOfRequest,
-            getSettingsCache,
-            labs
+            getSettingsCache
         });
 
         const req = Object.create(express.request, {
@@ -281,16 +267,12 @@ describe('SessionService', function () {
         };
         const findUserById = sinon.spy(async ({id}) => ({id}));
         const getOriginOfRequest = sinon.stub().returns('origin');
-        const labs = {
-            isSet: true
-        };
 
         const sessionService = SessionService({
             getSession,
             findUserById,
             getOriginOfRequest,
-            getSettingsCache,
-            labs
+            getSettingsCache
         });
 
         const req = Object.create(express.request, {
@@ -334,9 +316,6 @@ describe('SessionService', function () {
         };
         const findUserById = sinon.spy(async ({id}) => ({id}));
         const getOriginOfRequest = sinon.stub().returns('origin');
-        const labs = {
-            isSet: () => true
-        };
 
         const req = Object.create(express.request, {
             ip: {
@@ -359,8 +338,7 @@ describe('SessionService', function () {
             getSession,
             findUserById,
             getOriginOfRequest,
-            getSettingsCache: getSecretFirst,
-            labs
+            getSettingsCache: getSecretFirst
         });
 
         const authCodeFirst = await sessionServiceFirst.generateAuthCodeForUser(req, res);
@@ -414,10 +392,7 @@ describe('SessionService', function () {
             getBlogLogo,
             urlUtils,
             mailer,
-            t,
-            labs: {
-                isSet: () => false
-            }
+            t
         });
 
         const req = Object.create(express.request);
@@ -467,10 +442,7 @@ describe('SessionService', function () {
             getBlogLogo,
             urlUtils,
             mailer,
-            t,
-            labs: {
-                isSet: () => false
-            }
+            t
         });
 
         const req = Object.create(express.request);
@@ -494,15 +466,14 @@ describe('SessionService', function () {
         };
         const findUserById = sinon.spy(async ({id}) => ({id}));
         const getOriginOfRequest = sinon.stub().returns('origin');
-        const labs = {
-            isSet: () => false
-        };
+
+        const isStaffDeviceVerificationDisabled = sinon.stub().returns(false);
 
         const sessionService = SessionService({
             getSession,
             findUserById,
             getOriginOfRequest,
-            labs
+            isStaffDeviceVerificationDisabled
         });
 
         const req = Object.create(express.request, {
@@ -560,10 +531,7 @@ describe('SessionService', function () {
             getBlogLogo,
             urlUtils,
             mailer,
-            t,
-            labs: {
-                isSet: () => false
-            }
+            t
         });
 
         const req = Object.create(express.request);
@@ -588,10 +556,8 @@ describe('SessionService', function () {
 
         const findUserById = sinon.spy(async ({id}) => ({id}));
         const getOriginOfRequest = sinon.stub().returns('origin');
-        const labs = {
-            isSet: () => true
-        };
 
+        const isStaffDeviceVerificationDisabled = sinon.stub().returns(false);
         getSettingsCache.withArgs('require_email_mfa').returns(true);
 
         const sessionService = SessionService({
@@ -599,7 +565,7 @@ describe('SessionService', function () {
             findUserById,
             getOriginOfRequest,
             getSettingsCache,
-            labs
+            isStaffDeviceVerificationDisabled
         });
 
         const req = Object.create(express.request, {

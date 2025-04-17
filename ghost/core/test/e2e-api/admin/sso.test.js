@@ -1,5 +1,5 @@
-const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
-const {mockLabsEnabled, mockLabsDisabled, restore} = require('../../utils/e2e-framework-mock-manager');
+const {agentProvider, fixtureManager, matchers, configUtils} = require('../../utils/e2e-framework');
+const {restore} = require('../../utils/e2e-framework-mock-manager');
 const {stringMatching} = matchers;
 const sinon = require('sinon');
 const adapterManager = require('../../../core/server/services/adapter-manager');
@@ -51,11 +51,12 @@ describe('SSO API', function () {
 
     describe('SSO with 2FA enabled', function () {
         beforeEach(async function () {
-            mockLabsEnabled('staff2fa');
+            configUtils.set('security.staffDeviceVerification', true);
         });
 
         afterEach(async function () {
-            mockLabsDisabled('staff2fa');
+            configUtils.set('security.staffDeviceVerification', false);
+            restore();
         });
 
         it('can sign in with SSO when 2FA is enabled', async function () {
