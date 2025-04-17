@@ -23,7 +23,7 @@ const Profile: React.FC<ProfileProps> = ({account, isLoading}) => {
                 }
                 size='lg'
             />
-            <Heading className='mb-1 mt-4' level={3}>{!isLoading ? account?.name : <Skeleton className='w-32' />}</Heading>
+            <Heading className='mb-0.5 mt-4' level={3}>{!isLoading ? account?.name : <Skeleton className='w-32' />}</Heading>
             <span className='text-[1.5rem] text-gray-700'>{!isLoading ? account?.handle : <Skeleton className='w-full max-w-56' />}</span>
         </div>
     );

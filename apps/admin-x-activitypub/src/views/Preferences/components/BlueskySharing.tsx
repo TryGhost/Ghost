@@ -60,7 +60,7 @@ const BlueskySharing: React.FC = () => {
                     </div> :
                     <>
                         <p className='mt-3 text-base'>Your content is now live on Bluesky! We&apos;ve created a dedicated Bluesky account shown below. This account automatically displays everything you publish on Ghost.</p>
-                        <div className='mt-6 flex flex-col items-center gap-4 rounded-lg bg-gray-150 p-8'>
+                        <div className='mt-6 flex flex-col items-center gap-4 rounded-lg border border-gray-200 p-8 dark:border-gray-950'>
                             <div className='relative'>
                                 <APAvatar
                                     author={
@@ -80,9 +80,9 @@ const BlueskySharing: React.FC = () => {
                             </div>
                             <div className='flex grow flex-col items-center'>
                                 <H3>{account.name}</H3>
-                                <div className='flex items-center gap-1'>
+                                <div className='flex items-center gap-1 text-gray-800'>
                                     <span className='text-lg font-medium'>@{convertedHandle}.ap.brid.gy</span>
-                                    <Button className='size-6 p-0 hover:opacity-80' variant='link' onClick={handleCopy}>
+                                    <Button className='size-6 p-0 hover:opacity-80' title='Copy handle' variant='link' onClick={handleCopy}>
                                         {!copied ?
                                             <LucideIcon.Copy size={16} /> :
                                             <LucideIcon.Check size={16} />
@@ -90,10 +90,10 @@ const BlueskySharing: React.FC = () => {
                                     </Button>
                                 </div>
                             </div>
-                            <Button className='mt-2 h-10 px-6 text-base' asChild>
+                            <Button className='mt-2 w-full' size='lg' variant='secondary' asChild>
                                 <a href={`https://bsky.app/profile/${convertedHandle}.ap.brid.gy`} rel='noreferrer' target='_blank'>
-                                    Go to profile
-                                    <LucideIcon.ExternalLink size={14} />
+                                    Open profile
+                                    <LucideIcon.ExternalLink size={14} strokeWidth={1.25} />
                                 </a>
                             </Button>
                         </div>

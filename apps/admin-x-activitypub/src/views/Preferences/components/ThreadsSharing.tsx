@@ -60,7 +60,7 @@ const ThreadsSharing: React.FC = () => {
                     </div> :
                     <>
                         <p className='mt-3 text-base'>Your content is now being shared to Threads. To view your Threads profile, you&apos;ll need to enable the <a className='text-purple' href="https://www.threads.net/settings/fediverse" rel="noreferrer" target="_blank">Fediverse beta</a> feature in your Threads account. Please note that Thread&apos;s Fediverse features are not available for users in the EU.</p>
-                        <div className='mt-6 flex flex-col items-center gap-4 rounded-lg bg-gray-150 p-8'>
+                        <div className='mt-6 flex flex-col items-center gap-4 rounded-lg border border-gray-200 p-8 dark:border-gray-950'>
                             <div className='relative'>
                                 <APAvatar
                                     author={
@@ -90,10 +90,10 @@ const ThreadsSharing: React.FC = () => {
                                     </Button>
                                 </div>
                             </div>
-                            <Button className='mt-2 h-10 px-6 text-base' asChild>
+                            <Button className='mt-2 w-full px-6' size='lg' variant='secondary' asChild>
                                 <a href={`https://www.threads.net/fediverse_profile/${convertedHandle}`} rel='noreferrer' target='_blank'>
                                     Go to profile
-                                    <LucideIcon.ExternalLink size={14} />
+                                    <LucideIcon.ExternalLink size={14} strokeWidth={1.25} />
                                 </a>
                             </Button>
                         </div>
