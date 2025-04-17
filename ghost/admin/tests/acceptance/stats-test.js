@@ -1,5 +1,5 @@
 import loginAsRole from '../helpers/login-as-role';
-import {currentURL, find, visit} from '@ember/test-helpers';
+import {currentURL, visit} from '@ember/test-helpers';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
 import {invalidateSession} from 'ember-simple-auth/test-support';
