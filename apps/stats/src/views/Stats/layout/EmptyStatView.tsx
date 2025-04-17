@@ -7,9 +7,9 @@ const EmptyStatView:React.FC = () => {
     const {setRange, setAudience} = useGlobalData();
 
     return (
-        <div className='flex min-h-[40vh] flex-col items-center justify-center gap-4 text-gray-700'>
-            <div className='flex size-14 max-h-14 max-w-14 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-950'>
-                <LucideIcon.ChartScatter size={20} />
+        <div className='flex h-full flex-col items-center justify-center gap-4 text-gray-700'>
+            <div className='size-18 -mt-10 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-950'>
+                <LucideIcon.ChartScatter size={24} strokeWidth={1.5} />
             </div>
             No stats available for this filter.
             <Button className='text-foreground' variant='outline' onClick={() => {
