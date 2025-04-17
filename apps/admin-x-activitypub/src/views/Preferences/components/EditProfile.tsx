@@ -19,7 +19,7 @@ const FormSchema = z.object({
 });
 
 type EditProfileProps = {
-    account?: Account,
+    account: Account,
     setIsEditingProfile: (value: boolean) => void;
 }
 
