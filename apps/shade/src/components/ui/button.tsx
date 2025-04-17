@@ -41,16 +41,20 @@ export interface ButtonProps
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     ({className, variant, size, asChild = false, children, ...props}, ref) => {
         const Comp = asChild ? Slot : 'button';
+        const content = variant === 'dropdown' ? (
+            <>
+                {children}
+                <ChevronDown className="!-ml-1 !-mr-0.5 size-4 !stroke-[2px] opacity-50" strokeWidth={2} />
+            </>
+        ) : children;
+
         return (
             <Comp
                 ref={ref}
                 className={cn(buttonVariants({variant, size, className}))}
                 {...props}
             >
-                <>
-                    {children}
-                    {variant === 'dropdown' && <ChevronDown className="!-ml-1 !-mr-0.5 size-4 !stroke-[2px] opacity-50" strokeWidth={2} />}
-                </>
+                {content}
             </Comp>
         );
     }

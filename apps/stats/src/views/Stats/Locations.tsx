@@ -132,7 +132,7 @@ const Locations:React.FC = () => {
             return cn('fill-[hsl(var(--chart-1))]', opacity);
         }
 
-        return 'fill-gray-300';
+        return 'fill-gray-300 dark:fill-gray-900/75';
     };
 
     const handleLocationMouseOver = (e: React.MouseEvent<SVGPathElement>) => {
@@ -170,7 +170,7 @@ const Locations:React.FC = () => {
             <StatsView data={data} isLoading={isLoading}>
                 <Card variant='plain'>
                     <CardContent className='-mb-5 border-none pt-8'>
-                        <div className='svg-map-container relative mx-auto max-w-[680px]'>
+                        <div className='svg-map-container [&_.svg-map]:stroke-background relative mx-auto max-w-[680px]'>
                             <SVGMap
                                 locationClassName={getLocationClassName}
                                 map={World}
@@ -179,7 +179,7 @@ const Locations:React.FC = () => {
                             />
                             {tooltipData && (
                                 <div
-                                    className="pointer-events-none fixed z-50 min-w-[120px] rounded-lg border bg-white px-3 py-2 text-sm shadow-lg transition-all duration-150 ease-in-out"
+                                    className="bg-background text-foreground pointer-events-none fixed z-50 min-w-[120px] rounded-lg border px-3 py-2 text-sm shadow-lg transition-all duration-150 ease-in-out"
                                     style={{
                                         left: tooltipData.x + 10,
                                         top: tooltipData.y + 10,
@@ -191,7 +191,7 @@ const Locations:React.FC = () => {
                                         <span className="font-medium">{tooltipData.countryName}</span>
                                     </div>
                                     <div className='flex grow items-center justify-between gap-3'>
-                                        <div className="text-sm text-gray-800">Visitors</div>
+                                        <div className="text-muted-foreground text-sm">Visitors</div>
                                         <div className="font-mono font-medium">{formatNumber(tooltipData.visits)}</div>
                                     </div>
                                 </div>
