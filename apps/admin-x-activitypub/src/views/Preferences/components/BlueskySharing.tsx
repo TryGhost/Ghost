@@ -56,7 +56,7 @@ const BlueskySharing: React.FC = () => {
                         </Button>
                     </div> :
                     <>
-                        <p className='mt-3 text-base'>Your content is now being shared to Bluesky. This connection creates a dedicated account on Bluesky that displays the content you publish on Ghost. Please allow 4-5 minutes for Bluesky to create your account before your content becomes visible.</p>
+                        <p className='mt-3 text-base'>Your content is now live on Bluesky! We&apos;ve created a dedicated Bluesky account shown below. This account automatically displays everything you publish on Ghost.</p>
                         <div className='mt-6 flex flex-col items-center gap-4 rounded-lg bg-gray-150 p-8'>
                             <div className='relative'>
                                 <APAvatar
