@@ -48,35 +48,32 @@ const Settings: React.FC<SettingsProps> = ({account, className = ''}) => {
                     </DialogContent>
                 </Dialog>
             </SettingItem>
-            {isEnabled('settings-full') && (
-                <>
-                    <SettingItem withHover onClick={() => navigate('/preferences/threads-sharing', {state: {account, threadsAccount: threadsData?.accounts[0], isEnabled: threadsEnabled}})}>
-                        <SettingHeader>
-                            <SettingTitle>Threads sharing</SettingTitle>
-                            <SettingDescription>Share content directly on Threads</SettingDescription>
-                        </SettingHeader>
-                        <SettingAction className='flex items-center gap-2'>
-                            {threadsIsFetching ? <LoadingIndicator size='sm' /> : threadsEnabled ? <span className='font-medium text-black'>On</span> : <span>Off</span>}
-                            <LucideIcon.ChevronRight size={20} />
-                        </SettingAction>
-                    </SettingItem>
-                    <SettingItem withHover onClick={() => navigate('/preferences/bluesky-sharing', {state: {account, blueskyAccount: blueskyData?.accounts[0], isEnabled: blueskyEnabled}})}>
-                        <SettingHeader>
-                            <SettingTitle>Bluesky sharing</SettingTitle>
-                            <SettingDescription>Share content directly on Bluesky</SettingDescription>
-                        </SettingHeader>
-                        <SettingAction className='flex items-center gap-2'>
-                            {blueskyIsFetching ? <LoadingIndicator size='sm' /> : blueskyEnabled ? <span className='font-medium text-black'>On</span> : <span>Off</span>}
-                            <LucideIcon.ChevronRight size={20} />
-                        </SettingAction>
-                    </SettingItem>
-                </>
-            )}
+
+            <SettingItem withHover onClick={() => navigate('/preferences/threads-sharing', {state: {account, threadsAccount: threadsData?.accounts[0], isEnabled: threadsEnabled}})}>
+                <SettingHeader>
+                    <SettingTitle>Threads sharing</SettingTitle>
+                    <SettingDescription>Share content directly on Threads</SettingDescription>
+                </SettingHeader>
+                <SettingAction className='flex items-center gap-2'>
+                    {threadsIsFetching ? <LoadingIndicator size='sm' /> : threadsEnabled ? <span className='font-medium text-black'>On</span> : <span>Off</span>}
+                    <LucideIcon.ChevronRight size={20} />
+                </SettingAction>
+            </SettingItem>
+            <SettingItem withHover onClick={() => navigate('/preferences/bluesky-sharing', {state: {account, blueskyAccount: blueskyData?.accounts[0], isEnabled: blueskyEnabled}})}>
+                <SettingHeader>
+                    <SettingTitle>Bluesky sharing</SettingTitle>
+                    <SettingDescription>Share content directly on Bluesky</SettingDescription>
+                </SettingHeader>
+                <SettingAction className='flex items-center gap-2'>
+                    {blueskyIsFetching ? <LoadingIndicator size='sm' /> : blueskyEnabled ? <span className='font-medium text-black'>On</span> : <span>Off</span>}
+                    <LucideIcon.ChevronRight size={20} />
+                </SettingAction>
+            </SettingItem>
             <SettingSeparator />
             <SettingItem href='https://ghost.org/help/social-web/' withHover>
                 <SettingHeader>
                     <SettingTitle>Help</SettingTitle>
-                    <SettingDescription>Access guides and support resources</SettingDescription>
+                    <SettingDescription>Social web guides and support resources</SettingDescription>
                 </SettingHeader>
                 <SettingAction><LucideIcon.ExternalLink size={18} /></SettingAction>
             </SettingItem>
@@ -106,7 +103,7 @@ interface SettingHeaderProps {
 
 const SettingHeader: React.FC<SettingHeaderProps> = ({children, className = ''}) => {
     return (
-        <div className={`relative flex flex-col gap-1 ${className}`}>
+        <div className={`relative flex flex-col gap-0.5 ${className}`}>
             {children}
         </div>
     );
@@ -117,7 +114,7 @@ interface SettingActionProps {
     className?: string;
 }
 
-const SettingAction: React.FC<SettingActionProps> = ({children, className = ''}) => {
+export const SettingAction: React.FC<SettingActionProps> = ({children, className = ''}) => {
     return (
         <div className={`relative text-gray-500 ${className}`}>
             {children}
