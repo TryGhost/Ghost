@@ -3,6 +3,7 @@ import React, {useState} from 'react';
 import {Account} from '@src/api/activitypub';
 import {Button, Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, H4, LucideIcon, cn} from '@tryghost/shade';
 import {Link} from '@tryghost/admin-x-framework';
+import {useFeatureFlags} from '@src/lib/feature-flags';
 
 interface SettingsProps {
     account?: Account;
@@ -11,6 +12,7 @@ interface SettingsProps {
 
 const Settings: React.FC<SettingsProps> = ({account, className = ''}) => {
     const [isEditingProfile, setIsEditingProfile] = useState(false);
+    const {isEnabled} = useFeatureFlags();
 
     return (
         <div className={`flex flex-col ${className}`}>
@@ -18,15 +20,17 @@ const Settings: React.FC<SettingsProps> = ({account, className = ''}) => {
             <SettingItem>
                 <SettingHeader>
                     <SettingTitle>Account</SettingTitle>
-                    <SettingDescription>Edit your profile information and account details</SettingDescription>
+                    <SettingDescription>
+                        {isEnabled('settings-full') ? 'Edit your profile information and account details' : 'Edit your social web handle'}
+                    </SettingDescription>
                 </SettingHeader>
                 <Dialog open={isEditingProfile} onOpenChange={setIsEditingProfile}>
                     <DialogTrigger>
-                        <SettingAction><Button variant='secondary'>Edit profile</Button></SettingAction>
+                        <SettingAction><Button variant='secondary'>{isEnabled('settings-full') ? 'Edit profile' : 'Edit handle'}</Button></SettingAction>
                     </DialogTrigger>
                     <DialogContent onOpenAutoFocus={e => e.preventDefault()}>
                         <DialogHeader>
-                            <DialogTitle>Profile settings</DialogTitle>
+                            <DialogTitle>{isEnabled('settings-full') ? 'Profile settings' : 'Handle'}</DialogTitle>
                         </DialogHeader>
                         {account && <EditProfile account={account} setIsEditingProfile={setIsEditingProfile} />}
                     </DialogContent>
