@@ -25,9 +25,9 @@ type EditProfileProps = {
 }
 
 const EditProfile: React.FC<EditProfileProps> = ({account, setIsEditingProfile}) => {
-    const [profileImagePreview, setProfileImagePreview] = useState<string | null>(account?.avatarUrl || null);
+    const [profileImagePreview, setProfileImagePreview] = useState<string | null>(account.avatarUrl || null);
     const profileImageInputRef = useRef<HTMLInputElement>(null);
-    const [coverImagePreview, setCoverImagePreview] = useState<string | null>(account?.bannerImageUrl || null);
+    const [coverImagePreview, setCoverImagePreview] = useState<string | null>(account.bannerImageUrl || null);
     const coverImageInputRef = useRef<HTMLInputElement>(null);
     const [handleDomain, setHandleDomain] = useState<string>('');
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -36,11 +36,11 @@ const EditProfile: React.FC<EditProfileProps> = ({account, setIsEditingProfile})
     const form = useForm<z.infer<typeof FormSchema>>({
         resolver: zodResolver(FormSchema),
         defaultValues: {
-            profileImage: account?.avatarUrl,
-            coverImage: account?.bannerImageUrl || '',
-            name: account?.name,
+            profileImage: account.avatarUrl,
+            coverImage: account.bannerImageUrl || '',
+            name: account.name,
             handle: '',
-            bio: account?.bio
+            bio: account.bio
         }
     });
 
@@ -48,14 +48,14 @@ const EditProfile: React.FC<EditProfileProps> = ({account, setIsEditingProfile})
     const hasHandleError = !!form.formState.errors.handle;
 
     useEffect(() => {
-        if (account?.handle) {
+        if (account.handle) {
             const match = account.handle.match(/@([^@]+)@(.+)/);
             if (match) {
                 form.setValue('handle', match[1]);
                 setHandleDomain(match[2]);
             }
         }
-    }, [account?.handle, form]);
+    }, [account.handle, form]);
 
     const triggerProfileImageInput = () => {
         profileImageInputRef.current?.click();
@@ -116,12 +116,25 @@ const EditProfile: React.FC<EditProfileProps> = ({account, setIsEditingProfile})
     function onSubmit(data: z.infer<typeof FormSchema>) {
         setIsSubmitting(true);
 
+        if (
+            data.name === account.name &&
+            data.handle === account.handle.split('@')[1] &&
+            data.bio === account.bio &&
+            data.profileImage === account.avatarUrl &&
+            data.coverImage === account.bannerImageUrl
+        ) {
+            setIsSubmitting(false);
+            setIsEditingProfile(false);
+
+            return;
+        }
+
         updateAccount({
-            name: data.name || account?.name || '',
-            username: data.handle || account?.handle || '',
-            bio: data.bio || account?.bio || '',
-            avatarUrl: data.profileImage || account?.avatarUrl || '',
-            bannerImageUrl: data.coverImage || account?.bannerImageUrl || ''
+            name: data.name || account.name,
+            username: data.handle || account.handle,
+            bio: data.bio || account.bio,
+            avatarUrl: data.profileImage || account.avatarUrl,
+            bannerImageUrl: data.coverImage || account.bannerImageUrl || ''
         }, {
             onSettled() {
                 setIsSubmitting(false);
