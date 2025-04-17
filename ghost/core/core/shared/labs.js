@@ -26,7 +26,8 @@ const GA_FEATURES = [
     'themeErrorsNotification',
     'announcementBar',
     'customFonts',
-    'contentVisibility'
+    'contentVisibility',
+    'socialLinks'
 ];
 
 // NOTE: this allowlist is meant to be used to filter out any unexpected
@@ -53,8 +54,7 @@ const ALPHA_FEATURES = [
     'statsX',
     'captcha',
     'contentVisibilityAlpha',
-    'explore',
-    'socialLinks'
+    'explore'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
