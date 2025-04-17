@@ -1,8 +1,10 @@
 import EditProfile from './EditProfile';
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {Account} from '@src/api/activitypub';
 import {Button, Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, H4, LucideIcon, cn} from '@tryghost/shade';
 import {Link, useNavigate} from '@tryghost/admin-x-framework';
+import {LoadingIndicator} from '@tryghost/admin-x-design-system';
+import {useSearchForUser} from '@hooks/use-activity-pub-queries';
 
 interface SettingsProps {
     account?: Account;
@@ -11,7 +13,29 @@ interface SettingsProps {
 
 const Settings: React.FC<SettingsProps> = ({account, className = ''}) => {
     const [isEditingProfile, setIsEditingProfile] = useState(false);
+    const [threadsEnabled, setThreadsEnabled] = useState(false);
+    const [blueskyEnabled, setBlueskyEnabled] = useState(false);
     const navigate = useNavigate();
+
+    const {searchQuery: threadsSearchQuery} = useSearchForUser('index', '@ghost@threads.net');
+    const {data: threadsData, isFetching: threadsIsFetching} = threadsSearchQuery;
+
+    const {searchQuery: blueskySearchQuery} = useSearchForUser('index', '@bsky.brid.gy@bsky.brid.gy');
+    const {data: blueskyData, isFetching: blueskyIsFetching} = blueskySearchQuery;
+
+    useEffect(() => {
+        const results = threadsData?.accounts || [];
+        if (results.length > 0 && results[0].followedByMe) {
+            setThreadsEnabled(true);
+        }
+    }, [threadsData?.accounts]);
+
+    useEffect(() => {
+        const results = blueskyData?.accounts || [];
+        if (results.length > 0 && results[0].followedByMe) {
+            setBlueskyEnabled(true);
+        }
+    }, [blueskyData?.accounts]);
 
     return (
         <div className={`flex flex-col ${className}`}>
@@ -33,19 +57,25 @@ const Settings: React.FC<SettingsProps> = ({account, className = ''}) => {
                     </DialogContent>
                 </Dialog>
             </SettingItem>
-            <SettingItem withHover onClick={() => navigate('/preferences/threads-sharing', {state: {account}})}>
+            <SettingItem withHover onClick={() => navigate('/preferences/threads-sharing', {state: {account, isEnabled: threadsEnabled}})}>
                 <SettingHeader>
                     <SettingTitle>Threads sharing</SettingTitle>
                     <SettingDescription>Share content directly on Threads</SettingDescription>
                 </SettingHeader>
-                <SettingAction><LucideIcon.ChevronRight size={20} /></SettingAction>
+                <SettingAction className='flex items-center gap-2'>
+                    {threadsIsFetching ? <LoadingIndicator size='sm' /> : threadsEnabled ? <span className='font-medium text-black'>On</span> : <span>Off</span>}
+                    <LucideIcon.ChevronRight size={20} />
+                </SettingAction>
             </SettingItem>
-            <SettingItem withHover onClick={() => navigate('/preferences/bluesky-sharing', {state: {account}})}>
+            <SettingItem withHover onClick={() => navigate('/preferences/bluesky-sharing', {state: {account, isEnabled: blueskyEnabled}})}>
                 <SettingHeader>
                     <SettingTitle>Bluesky sharing</SettingTitle>
                     <SettingDescription>Share content directly on Bluesky</SettingDescription>
                 </SettingHeader>
-                <SettingAction><LucideIcon.ChevronRight size={20} /></SettingAction>
+                <SettingAction className='flex items-center gap-2'>
+                    {blueskyIsFetching ? <LoadingIndicator size='sm' /> : blueskyEnabled ? <span className='font-medium text-black'>On</span> : <span>Off</span>}
+                    <LucideIcon.ChevronRight size={20} />
+                </SettingAction>
             </SettingItem>
             <SettingSeparator />
             <SettingItem href='https://ghost.org/help/social-web/' withHover>
