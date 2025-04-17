@@ -5,6 +5,7 @@ import {useForm} from 'react-hook-form';
 import {useUpdateAccountMutationForUser} from '@hooks/use-activity-pub-queries';
 import {z} from 'zod';
 import {zodResolver} from '@hookform/resolvers/zod';
+import {uploadFile} from '@hooks/use-activity-pub-queries';
 
 const FormSchema = z.object({
     profileImage: z.string().optional(),
@@ -62,20 +63,7 @@ const EditProfile: React.FC<EditProfileProps> = ({account, setIsEditingProfile})
 
     const handleProfileImageUpload = async (file: File) => {
         try {
-            // eslint-disable-next-line no-console
-            console.log('Uploading profile image:', file);
-
-            // Simulating the upload process
-            await new Promise((resolve) => {
-                setTimeout(resolve, 2000);
-            });
-
-            // This should be replaced with actual image upload logic
-            const uploadedImageUrl = URL.createObjectURL(file);
-
-            // eslint-disable-next-line no-console
-            console.log('Profile image upload complete!');
-
+            const uploadedImageUrl = await uploadFile(file);
             return uploadedImageUrl;
         } catch (error) {
             // eslint-disable-next-line no-console
@@ -103,20 +91,7 @@ const EditProfile: React.FC<EditProfileProps> = ({account, setIsEditingProfile})
 
     const handleCoverImageUpload = async (file: File) => {
         try {
-            // eslint-disable-next-line no-console
-            console.log('Uploading cover image:', file);
-
-            // Simulating the upload process
-            await new Promise((resolve) => {
-                setTimeout(resolve, 2000);
-            });
-
-            // This should be replaced with actual image upload logic
-            const uploadedImageUrl = URL.createObjectURL(file);
-
-            // eslint-disable-next-line no-console
-            console.log('Cover image upload complete!');
-
+            const uploadedImageUrl = await uploadFile(file);
             return uploadedImageUrl;
         } catch (error) {
             // eslint-disable-next-line no-console
