@@ -250,7 +250,7 @@ const EditProfile: React.FC<EditProfileProps> = ({account, setIsEditingProfile})
                                 <div className='relative flex items-center'>
                                     <Input className='pl-8' placeholder="index" {...field} />
                                     <LucideIcon.AtSign className='absolute left-3 text-gray-700' size={16} />
-                                    <span className='pointer-events-none absolute right-3 text-gray-700'>{handleDomain}</span>
+                                    <span className='pointer-events-none absolute right-3 text-gray-700'>@{handleDomain}</span>
                                 </div>
                             </FormControl>
                             {!hasHandleError && (

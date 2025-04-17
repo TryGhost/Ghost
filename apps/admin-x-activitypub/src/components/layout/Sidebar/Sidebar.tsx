@@ -48,7 +48,7 @@ const Sidebar: React.FC = () => {
                             <LucideIcon.User size={18} strokeWidth={1.5} />
                             Profile
                         </SidebarMenuLink>
-                        {isEnabled('settings') &&
+                        {isEnabled('settings-full') &&
                             <SidebarMenuLink to='/preferences'>
                                 <LucideIcon.Settings2 size={18} strokeWidth={1.5} />
                                 Preferences
