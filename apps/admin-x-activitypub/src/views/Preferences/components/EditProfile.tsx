@@ -19,10 +19,11 @@ const FormSchema = z.object({
 });
 
 type EditProfileProps = {
-    account?: Account
+    account?: Account,
+    setIsEditingProfile: (value: boolean) => void;
 }
 
-const EditProfile: React.FC<EditProfileProps> = ({account}) => {
+const EditProfile: React.FC<EditProfileProps> = ({account, setIsEditingProfile}) => {
     const [profileImagePreview, setProfileImagePreview] = useState<string | null>(account?.avatarUrl || null);
     const profileImageInputRef = useRef<HTMLInputElement>(null);
     const [coverImagePreview, setCoverImagePreview] = useState<string | null>(account?.bannerImageUrl || null);
@@ -149,6 +150,7 @@ const EditProfile: React.FC<EditProfileProps> = ({account}) => {
         }, {
             onSettled() {
                 setIsSubmitting(false);
+                setIsEditingProfile(false);
             }
         });
     }

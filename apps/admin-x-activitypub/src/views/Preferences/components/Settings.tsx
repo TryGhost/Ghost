@@ -28,7 +28,7 @@ const Settings: React.FC<SettingsProps> = ({account, className = ''}) => {
                         <DialogHeader>
                             <DialogTitle>Profile settings</DialogTitle>
                         </DialogHeader>
-                        <EditProfile account={account} />
+                        <EditProfile account={account} setIsEditingProfile={setIsEditingProfile} />
                     </DialogContent>
                 </Dialog>
             </SettingItem>
