@@ -38,7 +38,6 @@ const BETA_FEATURES = [
     'editorExcerpt',
     'ActivityPub',
     'importMemberTier',
-    'staff2fa',
     'superEditors'
 ];
 
