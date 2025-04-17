@@ -160,13 +160,6 @@ export interface UserDetailProps {
     clearError: (key: keyof User) => void;
 }
 
-const UserMenuTrigger = (
-    <button className='flex h-8 cursor-pointer items-center justify-center rounded bg-[rgba(0,0,0,0.75)] px-3 opacity-80 hover:opacity-100' type='button'>
-        <span className='sr-only'>Actions</span>
-        <Icon colorClass='text-white' name='ellipsis' size='md' />
-    </button>
-);
-
 const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
     const {updateRoute} = useRouting();
     const {ownerUser} = useStaffUsers();
@@ -402,19 +395,9 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
         }
     });
 
-    const coverEditButtonBaseClasses = 'bg-[rgba(0,0,0,0.75)] rounded text-sm text-white flex items-center justify-center px-3 h-8 opacity-80 hover:opacity-100 transition-all cursor-pointer font-medium nowrap';
+    const noCoverButtonClasses = 'rounded text-sm flex flex-nowrap items-center justify-center px-3 h-8 transition-all cursor-pointer font-medium border border-grey-300 bg-transparent text-black dark:border-grey-800 dark:text-white';
 
-    const fileUploadButtonClasses = clsx(
-        coverEditButtonBaseClasses
-    );
-
-    const deleteButtonClasses = clsx(
-        coverEditButtonBaseClasses
-    );
-
-    const editButtonClasses = clsx(
-        coverEditButtonBaseClasses
-    );
+    const coverButtonClasses = 'flex flex-nowrap items-center justify-center px-3 h-8 opacity-80 hover:opacity-100 bg-[rgba(0,0,0,0.75)] rounded text-sm text-white transition-all cursor-pointer font-medium nowrap';
 
     const suspendedText = formState.status === 'inactive' ? ' (Suspended)' : '';
     
@@ -439,87 +422,110 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
             }}
         >
             <div>
-                <div className={`relative bg-gradient-to-tr from-grey-900 to-black ${canAccessSettings(currentUser) ? '-mx-8 -mt-8 rounded-t' : '-mx-10 -mt-10'}`}>
-                    <div className={`flex flex-wrap items-end justify-between gap-8 py-8 ${formState.cover_image ? 'bg-cover bg-center' : ''} ${!canAccessSettings(currentUser) && 'min-h-[30vmin]'}`} 
+                <div className={`relative ${canAccessSettings(currentUser) ? '-mx-8 -mt-8 rounded-t' : '-mx-10 -mt-10'}`}>
+                    <div className={`flex flex-wrap items-end justify-between gap-8 p-8 ${formState.cover_image ? 'bg-cover bg-center' : ''} ${!canAccessSettings(currentUser) && 'min-h-[30vmin]'}`} 
                         style={{
                             backgroundImage: formState.cover_image ? `url(${formState.cover_image})` : 'none'
                         }}>
-                        <div className='flex w-full max-w-[620px] flex-col gap-5 px-8 md:max-w-[auto] md:flex-row md:items-center'>
-                            <div>
-                                <ImageUpload
-                                    deleteButtonClassName='md:invisible absolute pr-3 -right-2 -top-2 flex h-8 w-10 cursor-pointer items-center justify-end rounded-full bg-[rgba(0,0,0,0.75)] text-white group-hover:!visible'
-                                    deleteButtonContent={<Icon colorClass='text-white' name='trash' size='sm' />}
-                                    editButtonClassName='md:invisible absolute right-[22px] -top-2 flex h-8 w-8 cursor-pointer items-center justify-center text-white group-hover:!visible z-20'
-                                    fileUploadClassName='rounded-full bg-black flex items-center justify-center opacity-80 transition hover:opacity-100 -ml-2 cursor-pointer h-[80px] w-[80px]'
-                                    fileUploadProps={{dragIndicatorClassName: 'rounded-full'}}
-                                    id='avatar'
-                                    imageClassName='w-full h-full object-cover rounded-full shrink-0'
-                                    imageContainerClassName='relative group bg-cover bg-center -ml-2 h-16 w-16 shrink-0'
-                                    imageURL={formState.profile_image ?? undefined}
-                                    pintura={
-                                        {
-                                            isEnabled: editor.isEnabled,
-                                            openEditor: async () => editor.openEditor({
-                                                image: formState.profile_image || '',
-                                                handleSave: async (file:File) => {
-                                                    handleImageUpload('profile_image', file);
-                                                }
-                                            })
-                                        }
-                                    }
-                                    unstyled={true}
-                                    width='80px'
-                                    onDelete={() => {
-                                        handleImageDelete('profile_image');
-                                    }}
-                                    onUpload={(file: File) => {
-                                        handleImageUpload('profile_image', file);
-                                    }}
-                                >
-                                    <Icon colorClass='text-white' name='user-add' size='lg' />
-                                </ImageUpload>
-                            </div>
-                            <div>
-                                <Heading level={3} styles='break-words md:break-normal text-white'>{user.name}{suspendedText}</Heading>
-                                <span className='text-md font-medium capitalize text-white'>{user.roles[0].name.toLowerCase()}</span>
-                            </div>
-                        </div>
-                        <div className='flex flex-nowrap items-end gap-4 px-8'>
-                            <ImageUpload
-                                buttonContainerClassName='flex items-end gap-4 justify-end flex-nowrap'
-                                deleteButtonClassName={deleteButtonClasses}
-                                deleteButtonContent='Delete cover image'
-                                editButtonClassName={editButtonClasses}
-                                fileUploadClassName={fileUploadButtonClasses}
-                                id='cover-image'
-                                imageClassName='hidden'
-                                imageURL={formState.cover_image || ''}
-                                pintura={
-                                    {
-                                        isEnabled: editor.isEnabled,
-                                        openEditor: async () => editor.openEditor({
-                                            image: formState.cover_image || '',
-                                            handleSave: async (file:File) => {
-                                                handleImageUpload('cover_image', file);
+                        <div className='flex w-full flex-col gap-2'>
+                            <div className='flex flex-nowrap items-start justify-between gap-3'>
+                                <div>
+                                    <ImageUpload
+                                        deleteButtonClassName='md:invisible absolute pr-3 -right-2 -top-2 flex h-8 w-10 cursor-pointer items-center justify-end rounded-full bg-[rgba(0,0,0,0.75)] text-white group-hover:!visible'
+                                        deleteButtonContent={<Icon colorClass='text-white' name='trash' size='sm' />}
+                                        editButtonClassName='md:invisible absolute right-[22px] -top-2 flex h-8 w-8 cursor-pointer items-center justify-center text-white group-hover:!visible z-20'
+                                        fileUploadClassName='rounded-full bg-black flex items-center justify-center opacity-80 transition hover:opacity-100 -ml-2 cursor-pointer h-[80px] w-[80px]'
+                                        fileUploadProps={{dragIndicatorClassName: 'rounded-full'}}
+                                        id='avatar'
+                                        imageClassName='w-full h-full object-cover rounded-full shrink-0'
+                                        imageContainerClassName='relative group bg-cover bg-center -ml-1 h-16 w-16 md:h-18 md:w-18 shrink-0'
+                                        imageURL={formState.profile_image ?? undefined}
+                                        pintura={
+                                            {
+                                                isEnabled: editor.isEnabled,
+                                                openEditor: async () => editor.openEditor({
+                                                    image: formState.profile_image || '',
+                                                    handleSave: async (file:File) => {
+                                                        handleImageUpload('profile_image', file);
+                                                    }
+                                                })
                                             }
-                                        })
-                                    }
-                                }
-                                unstyled
-                                onDelete={() => {
-                                    handleImageDelete('cover_image');
-                                }}
-                                onUpload={(file: File) => {
-                                    handleImageUpload('cover_image', file);
-                                }}
-                            >Upload cover image</ImageUpload>
-                            {showMenu && <div className="z-10">
-                                <Menu items={menuItems} position='end' trigger={UserMenuTrigger} />
-                            </div>}
+                                        }
+                                        unstyled={true}
+                                        width='80px'
+                                        onDelete={() => {
+                                            handleImageDelete('profile_image');
+                                        }}
+                                        onUpload={(file: File) => {
+                                            handleImageUpload('profile_image', file);
+                                        }}
+                                    >
+                                        <Icon colorClass='black' name='user-add' size='lg' />
+                                    </ImageUpload>
+                                </div>
+                                <div className='flex flex-nowrap items-start gap-3'>
+                                    <ImageUpload
+                                        buttonContainerClassName='flex items-end gap-4 justify-end flex-nowrap'
+                                        deleteButtonClassName={coverButtonClasses}
+                                        deleteButtonContent='Delete cover image'
+                                        editButtonClassName={coverButtonClasses}
+                                        fileUploadClassName={noCoverButtonClasses}
+                                        id='cover-image'
+                                        imageClassName='hidden'
+                                        imageURL={formState.cover_image || ''}
+                                        pintura={
+                                            {
+                                                isEnabled: editor.isEnabled,
+                                                openEditor: async () => editor.openEditor({
+                                                    image: formState.cover_image || '',
+                                                    handleSave: async (file:File) => {
+                                                        handleImageUpload('cover_image', file);
+                                                    }
+                                                })
+                                            }
+                                        }
+                                        unstyled
+                                        onDelete={() => {
+                                            handleImageDelete('cover_image');
+                                        }}
+                                        onUpload={(file: File) => {
+                                            handleImageUpload('cover_image', file);
+                                        }}
+                                    >Upload cover image</ImageUpload>
+                                    {showMenu && <div className="z-10">
+                                        <Menu
+                                            items={menuItems}
+                                            position='end'
+                                            trigger={
+                                                <button
+                                                    className={clsx(
+                                                        'flex h-8 cursor-pointer items-center justify-center rounded px-3',
+                                                        formState.cover_image
+                                                            ? 'bg-[rgba(0,0,0,0.75)] opacity-80 hover:opacity-100'
+                                                            : 'border border-grey-300 bg-transparent text-black dark:border-grey-800 dark:text-white'
+                                                    )}
+                                                    type='button'
+                                                >
+                                                    <span className='sr-only'>Actions</span>
+                                                    <Icon
+                                                        colorClass={formState.cover_image ? 'text-white' : undefined}
+                                                        name='ellipsis'
+                                                        size='md'
+                                                    />
+                                                </button>
+                                            }
+                                        />
+                                    </div>}
+                                </div>
+                            </div>
+                            <div>
+                                <Heading level={3} styles={clsx('break-words md:break-normal', formState.cover_image ? 'text-white' : 'text-black dark:text-white')}>{user.name}{suspendedText}</Heading>
+                                <span className={clsx('text-md font-medium capitalize', formState.cover_image ? 'text-white' : 'text-black dark:text-white')}>{user.roles[0].name.toLowerCase()}</span>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div className={`${!canAccessSettings(currentUser) && 'mx-auto max-w-[536px]'} mt-10 flex flex-col`}>
+                <div className={`${!canAccessSettings(currentUser) && 'mx-auto max-w-[536px]'} mt-6 flex flex-col`}>
                     <TabView
                         selectedTab={selectedTab}
                         tabs={[
