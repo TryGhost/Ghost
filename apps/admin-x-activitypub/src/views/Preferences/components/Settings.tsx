@@ -2,7 +2,7 @@ import EditProfile from './EditProfile';
 import React, {useState} from 'react';
 import {Account} from '@src/api/activitypub';
 import {Button, Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, H4, LucideIcon, cn} from '@tryghost/shade';
-import {Link} from '@tryghost/admin-x-framework';
+import {Link, useNavigate} from '@tryghost/admin-x-framework';
 
 interface SettingsProps {
     account?: Account;
@@ -11,6 +11,7 @@ interface SettingsProps {
 
 const Settings: React.FC<SettingsProps> = ({account, className = ''}) => {
     const [isEditingProfile, setIsEditingProfile] = useState(false);
+    const navigate = useNavigate();
 
     return (
         <div className={`flex flex-col ${className}`}>
@@ -32,14 +33,14 @@ const Settings: React.FC<SettingsProps> = ({account, className = ''}) => {
                     </DialogContent>
                 </Dialog>
             </SettingItem>
-            <SettingItem withHover>
+            <SettingItem withHover onClick={() => navigate('/preferences/threads-sharing', {state: {account}})}>
                 <SettingHeader>
                     <SettingTitle>Threads sharing</SettingTitle>
                     <SettingDescription>Share content directly on Threads</SettingDescription>
                 </SettingHeader>
                 <SettingAction><LucideIcon.ChevronRight size={20} /></SettingAction>
             </SettingItem>
-            <SettingItem withHover>
+            <SettingItem withHover onClick={() => navigate('/preferences/bluesky-sharing', {state: {account}})}>
                 <SettingHeader>
                     <SettingTitle>Bluesky sharing</SettingTitle>
                     <SettingDescription>Share content directly on Bluesky</SettingDescription>
