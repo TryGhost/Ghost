@@ -104,7 +104,7 @@ const Sources:React.FC = () => {
                 <Card className='-mb-5' variant='plain'>
                     <CardHeader className='border-none'>
                         <CardTitle>Top sources</CardTitle>
-                        <CardDescription>How readers are found your site {getPeriodText(range)}</CardDescription>
+                        <CardDescription>How readers found your site {getPeriodText(range)}</CardDescription>
                     </CardHeader>
                     <CardContent className='border-none text-gray-500 [&_.recharts-pie-label-line]:stroke-gray-300'>
                         <ChartContainer
