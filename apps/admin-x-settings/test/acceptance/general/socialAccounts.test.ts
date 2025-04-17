@@ -18,16 +18,16 @@ test.describe('Social account settings', async () => {
 
         // Check initial values in input fields
         await expect(section.getByLabel(`URL of your publication's Facebook Page`)).toHaveValue('https://www.facebook.com/ghost');
-        await expect(section.getByLabel('URL of your X (formerly Twitter) profile')).toHaveValue('https://x.com/ghost');
+        await expect(section.getByLabel('URL of your X profile')).toHaveValue('https://x.com/ghost');
 
         await section.getByLabel(`URL of your publication's Facebook Page`).fill('https://www.facebook.com/fb');
-        await section.getByLabel('URL of your X (formerly Twitter) profile').fill('https://x.com/tw');
+        await section.getByLabel('URL of your X profile').fill('https://x.com/tw');
 
         await section.getByRole('button', {name: 'Save'}).click();
 
         // Check updated values in input fields
         await expect(section.getByLabel(`URL of your publication's Facebook Page`)).toHaveValue('https://www.facebook.com/fb');
-        await expect(section.getByLabel('URL of your X (formerly Twitter) profile')).toHaveValue('https://x.com/tw');
+        await expect(section.getByLabel('URL of your X profile')).toHaveValue('https://x.com/tw');
 
         expect(lastApiRequests.editSettings?.body).toEqual({
             settings: [
@@ -106,7 +106,7 @@ test.describe('Social account settings', async () => {
             'The URL must be in a format like https://www.facebook.com/yourPage'
         );
 
-        const twitterInput = section.getByLabel('URL of your X (formerly Twitter) profile');
+        const twitterInput = section.getByLabel('URL of your X profile');
 
         await testUrlValidation(
             twitterInput,

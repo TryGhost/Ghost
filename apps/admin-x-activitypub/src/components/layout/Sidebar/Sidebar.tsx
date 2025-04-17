@@ -1,7 +1,6 @@
 import * as React from 'react';
 import FeedbackBox from './FeedbackBox';
-import NewPostModal from '@views/Feed/components/NewPostModal';
-import NiceModal from '@ebay/nice-modal-react';
+import NewNoteModal from '@src/components/modals/NewNoteModal';
 import Recommendations from './Recommendations';
 import Search from '@src/components/modals/Search';
 import SearchInput from '../Header/SearchInput';
@@ -10,7 +9,7 @@ import {Button, Dialog, DialogContent, DialogTrigger, LucideIcon} from '@tryghos
 import {useFeatureFlags} from '@src/lib/feature-flags';
 
 const Sidebar: React.FC = () => {
-    const {allFlags, flags} = useFeatureFlags();
+    const {allFlags, flags, isEnabled} = useFeatureFlags();
     const [isSearchOpen, setIsSearchOpen] = React.useState(false);
     const [searchQuery, setSearchQuery] = React.useState('');
 
@@ -49,11 +48,19 @@ const Sidebar: React.FC = () => {
                             <LucideIcon.User size={18} strokeWidth={1.5} />
                             Profile
                         </SidebarMenuLink>
+                        {isEnabled('settings') &&
+                            <SidebarMenuLink to='/preferences'>
+                                <LucideIcon.Settings2 size={18} strokeWidth={1.5} />
+                                Preferences
+                            </SidebarMenuLink>
+                        }
                     </div>
-                    <Button className='h-9 rounded-full bg-purple-500 px-3 text-md text-white dark:hover:bg-purple-500' onClick={() => NiceModal.show(NewPostModal)}>
-                        <LucideIcon.FilePen />
-                        New note
-                    </Button>
+                    <NewNoteModal>
+                        <Button className='h-9 rounded-full bg-purple-500 px-3 text-md text-white dark:hover:bg-purple-500'>
+                            <LucideIcon.FilePen />
+                            New note
+                        </Button>
+                    </NewNoteModal>
 
                     <Recommendations />
 

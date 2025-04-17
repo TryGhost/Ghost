@@ -1,7 +1,7 @@
+import moment from 'moment-timezone';
+
 /**
  * Calculates Y-axis ticks based on the data values
- * @param data Array of data points with numeric values
- * @returns Array of tick values
  */
 export const getYTicks = (data: { value: number }[]): number[] => {
     if (!data?.length) {
@@ -20,9 +20,6 @@ export const getYTicks = (data: { value: number }[]): number[] => {
 
 /**
  * Calculates the width needed for the Y-axis based on the formatted tick values
- * @param ticks Array of numeric tick values
- * @param formatter Function to format the tick values
- * @returns Width in pixels needed for the Y-axis
  */
 export const calculateYAxisWidth = (ticks: number[], formatter: (value: number) => string): number => {
     if (!ticks.length) {
@@ -37,3 +34,24 @@ export const calculateYAxisWidth = (ticks: number[], formatter: (value: number) 
     const width = Math.max(20, maxFormattedLength * 8 + 8);
     return width;
 };
+
+/**
+ * Return today and startdate for charts
+ */
+export const getRangeDates = (range: number) => {
+    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const endDate = moment().tz(timezone).endOf('day');
+    const startDate = moment().tz(timezone).subtract(range - 1, 'days').startOf('day');
+    return {startDate, endDate, timezone};
+};
+
+/**
+ * Converts a country code to corresponding flag emoji
+ */
+export function getCountryFlag(countryCode:string) {
+    if (!countryCode || countryCode === null || countryCode.toUpperCase() === 'ᴺᵁᴸᴸ') {
+        return '🏳️';
+    }
+    return countryCode.toUpperCase().replace(/./g, char => String.fromCodePoint(char.charCodeAt(0) + 127397)
+    );
+}

@@ -271,7 +271,7 @@ module.exports = function createSessionService({
             siteLogo: siteLogo,
             token: token,
             deviceDetails: await getDeviceDetails(session.user_agent, session.ip),
-            is2FARequired: this.isVerificationRequired()
+            is2FARequired: isVerificationRequired()
         });
 
         try {
@@ -320,7 +320,7 @@ module.exports = function createSessionService({
     async function removeUserForSession(req, res) {
         const session = await getSession(req, res);
 
-        if (this.isVerificationRequired()) {
+        if (isVerificationRequired()) {
             session.verified = undefined;
         }
 

@@ -1,5 +1,7 @@
-export const formatQueryDate = (date: Date) => {
-    return date.toISOString().split('T')[0];
+import {Moment} from 'moment-timezone';
+
+export const formatQueryDate = (date: Moment) => {
+    return date.format('YYYY-MM-DD');
 };
 
 export const formatDisplayDate = (dateString: string): string => {
@@ -36,7 +38,7 @@ export const formatDuration = (seconds: number): string => {
         return `${minutes}m ${remainingSeconds}s`;
     }
 
-    return `${hours}:${minutes}:${remainingSeconds}`;
+    return `${hours}h ${minutes}m ${remainingSeconds}s`;
 };
 
 export const formatPercentage = (value: number) => {

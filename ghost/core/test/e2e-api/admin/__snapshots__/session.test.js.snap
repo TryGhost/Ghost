@@ -4,8 +4,8 @@ exports[`Sessions API Staff 2FA can verify a session with 2FA code 1: [body] 1`]
 Object {
   "errors": Array [
     Object {
-      "code": "2FA_TOKEN_REQUIRED",
-      "context": null,
+      "code": "2FA_NEW_DEVICE_DETECTED",
+      "context": "A 6-digit sign-in verification code has been sent to your email to keep your account safe.",
       "details": null,
       "ghostErrorCode": null,
       "help": null,
@@ -22,7 +22,7 @@ exports[`Sessions API Staff 2FA can verify a session with 2FA code 2: [headers] 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "236",
+  "content-length": "329",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -38,8 +38,8 @@ exports[`Sessions API Staff 2FA sends verification email if labs flag enabled 1:
 Object {
   "errors": Array [
     Object {
-      "code": "2FA_TOKEN_REQUIRED",
-      "context": null,
+      "code": "2FA_NEW_DEVICE_DETECTED",
+      "context": "A 6-digit sign-in verification code has been sent to your email to keep your account safe.",
       "details": null,
       "ghostErrorCode": null,
       "help": null,
@@ -56,7 +56,7 @@ exports[`Sessions API Staff 2FA sends verification email if labs flag enabled 2:
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "236",
+  "content-length": "329",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -102,6 +102,7 @@ exports[`Sessions API can read session now the owner is logged in 1: [body] 1`] 
 Object {
   "accessibility": null,
   "bio": "bio",
+  "bluesky": null,
   "comment_notifications": true,
   "cover_image": null,
   "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -111,9 +112,12 @@ Object {
   "facebook": null,
   "free_member_signup_notification": true,
   "id": "1",
+  "instagram": null,
   "last_seen": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+  "linkedin": null,
   "locale": null,
   "location": "location",
+  "mastodon": null,
   "mention_notifications": true,
   "meta_description": null,
   "meta_title": null,
@@ -125,12 +129,15 @@ Object {
   "recommendation_notifications": true,
   "slug": "joe-bloggs",
   "status": "active",
+  "threads": null,
+  "tiktok": null,
   "tour": null,
   "twitter": null,
   "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
   "updated_by": "1",
   "visibility": "public",
   "website": null,
+  "youtube": null,
 }
 `;
 
@@ -138,7 +145,7 @@ exports[`Sessions API can read session now the owner is logged in 2: [headers] 1
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "802",
+  "content-length": "910",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,

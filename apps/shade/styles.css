@@ -49,11 +49,16 @@
         --destructive-foreground: 0 0% 100%;
         --ring: 215 13% 63%;
         --radius: 9px;
-        --chart-1: 264 100% 70%;
-        --chart-2: 240 100% 74%;
-        --chart-3: 219 100% 85%;
-        --chart-4: 199 69% 90%;
-        --chart-5: 180 78% 96%;
+        --chart-1: 201 100% 50%;
+        --chart-2: 201 88% 70%;
+        --chart-3: 201 85% 80%;
+        --chart-4: 201 82% 90%;
+        --chart-5: 201 87% 94%;
+        /* --chart-1: 221.2 83.2% 53.3%;
+        --chart-2: 212 95% 68%;
+        --chart-3: 216 92% 60%;
+        --chart-4: 210 98% 78%;
+        --chart-5: 212 97% 87%; */
         --sidebar-background: 0 0% 100%;
         --sidebar-foreground: 216 11% 9%;
         --sidebar-primary: 216 11% 9%;
@@ -84,11 +89,11 @@
         --destructive: 354 81% 31%;
         --destructive-foreground: 240 11% 98%;
         --ring: 210 11% 25%;
-        --chart-1: 264 100% 70%;
-        --chart-2: 240 100% 74%;
-        --chart-3: 219 100% 85%;
-        --chart-4: 199 69% 90%;
-        --chart-5: 180 78% 96%;
+        --chart-1: 201 100% 50%;
+        --chart-2: 201 88% 70%;
+        --chart-3: 201 85% 80%;
+        --chart-4: 201 82% 90%;
+        --chart-5: 201 87% 94%;
         --sidebar-background: 216 11% 9%;
         --sidebar-foreground: 200 12% 96%;
         --sidebar-primary: 210 11% 25%;

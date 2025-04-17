@@ -22,9 +22,9 @@ describe('ghost-stats.js', function () {
             referrer: 'https://google.com/',
             stringifyPayload: true
         };
-    
+
         const config = {...defaults, ...options};
-    
+
         // Create environment
         const testEnv = createBrowserEnvironment({
             url: config.url,
@@ -33,28 +33,29 @@ describe('ghost-stats.js', function () {
             runScripts: true,
             storage: {type: 'localStorage'}
         });
-    
+
         // Create script element with attributes
         const scriptElement = testEnv.document.createElement('script');
-        scriptElement.setAttribute('data-storage', 'localStorage');
-    
+
         if (config.stringifyPayload === false) {
             scriptElement.setAttribute('data-stringify-payload', 'false');
         }
-    
+
         testEnv.document.body.appendChild(scriptElement);
-    
+
         // Load the script with appropriate attributes
         const dataAttributes = {
-            storage: 'localStorage'
+            storage: 'localStorage',
+            host: 'https://e.ghost.org/tb/web_analytics',
+            token: 'tb_token'
         };
-    
+
         if (config.stringifyPayload === false) {
-            dataAttributes['stringify-payload'] = 'false'; 
+            dataAttributes['stringify-payload'] = 'false';
         }
-    
+
         loadScript(testEnv, scriptContent, {dataAttributes});
-    
+
         return testEnv;
     }
 
@@ -64,7 +65,7 @@ describe('ghost-stats.js', function () {
         testEnv.window.setTimeout = function (cb) {
             cb();
         };
-    
+
         try {
             callback();
         } finally {
@@ -77,16 +78,16 @@ describe('ghost-stats.js', function () {
         withImmediateTimeout(testEnv, () => {
             // Call tracking function
             testEnv.window.Tinybird._trackPageHit();
-      
+
             // Check request
             const xhr = testEnv.lastXHR();
             expect(xhr).to.exist;
             expect(xhr.method).to.equal('POST');
-      
+
             // Parse and check payload
             const requestData = JSON.parse(xhr._data);
             expect(requestData.action).to.equal('page_hit');
-      
+
             if (assertions) {
                 const payloadObj = JSON.parse(requestData.payload);
                 assertions(payloadObj, requestData);
@@ -114,7 +115,7 @@ describe('ghost-stats.js', function () {
             // Check that a session ID was stored in localStorage
             const sessionId = env.localStorage.getItem('session-id');
             expect(sessionId).to.exist;
-      
+
             // Parse the session ID from localStorage
             const sessionData = JSON.parse(sessionId);
             expect(sessionData.value).to.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
@@ -124,37 +125,39 @@ describe('ghost-stats.js', function () {
             // Call trackEvent twice
             env.window.Tinybird.trackEvent('test_event1', {test: 'data1'});
             const sessionId1 = env.localStorage.getItem('session-id');
-      
+            const sessionData1 = JSON.parse(sessionId1);
+
             env.window.Tinybird.trackEvent('test_event2', {test: 'data2'});
             const sessionId2 = env.localStorage.getItem('session-id');
-      
+            const sessionData2 = JSON.parse(sessionId2);
+
             // Check that the same session ID was used
-            expect(sessionId1).to.equal(sessionId2);
+            expect(sessionData1.value).to.equal(sessionData2.value);
         });
 
         it('should handle session ID expiration', function () {
             // Call trackEvent to generate a session ID
             env.window.Tinybird.trackEvent('test_event', {test: 'data'});
-      
+
             // Get the session ID
             const sessionId = env.localStorage.getItem('session-id');
             expect(sessionId).to.exist;
-      
+
             // Parse the session ID and modify its expiry to be in the past
             const sessionData = JSON.parse(sessionId);
             sessionData.expiry = new Date().getTime() - 1000; // 1 second ago
             env.localStorage.setItem('session-id', JSON.stringify(sessionData));
-      
+
             // Call trackEvent again
             env.window.Tinybird.trackEvent('test_event2', {test: 'data2'});
-      
+
             // Get the new session ID
             const newSessionId = env.localStorage.getItem('session-id');
             expect(newSessionId).to.exist;
-      
+
             // Parse the new session ID
             const newSessionData = JSON.parse(newSessionId);
-      
+
             // Check that a new session ID was generated
             expect(newSessionData.value).to.not.equal(sessionData.value);
         });
@@ -170,7 +173,7 @@ describe('ghost-stats.js', function () {
             expect(xhrInstance).to.exist;
             expect(xhrInstance.method).to.equal('POST');
             expect(xhrInstance.url).to.include('e.ghost.org');
-      
+
             // Check that the request data contains the event name and data
             const requestData = JSON.parse(xhrInstance._data);
             expect(requestData.action).to.equal('test_event');
@@ -183,11 +186,11 @@ describe('ghost-stats.js', function () {
 
             // Get the session ID from localStorage
             const sessionId = JSON.parse(env.localStorage.getItem('session-id')).value;
-      
+
             // Check that an XMLHttpRequest was made
             const xhrInstance = env.lastXHR();
             expect(xhrInstance).to.exist;
-      
+
             // Check that the request data contains the session ID
             const requestData = JSON.parse(xhrInstance._data);
             expect(requestData.session_id).to.equal(sessionId);
@@ -200,11 +203,11 @@ describe('ghost-stats.js', function () {
             // Check that an XMLHttpRequest was made
             const xhrInstance = env.lastXHR();
             expect(xhrInstance).to.exist;
-      
+
             // Check that the request data contains a timestamp
             const requestData = JSON.parse(xhrInstance._data);
             expect(requestData.timestamp).to.exist;
-      
+
             // Check that the timestamp is a valid ISO string
             const timestamp = new Date(requestData.timestamp);
             expect(timestamp.toString()).to.not.equal('Invalid Date');
@@ -220,7 +223,7 @@ describe('ghost-stats.js', function () {
 
         it('should mask sensitive data in events', function () {
             // Call trackEvent with sensitive data
-            env.window.Tinybird.trackEvent('test_event', { 
+            env.window.Tinybird.trackEvent('test_event', {
                 email: 'test@example.com',
                 password: 'secretpassword',
                 token: 'sensitive-token'
@@ -229,7 +232,7 @@ describe('ghost-stats.js', function () {
             // Check that an XMLHttpRequest was made
             const xhrInstance = env.lastXHR();
             expect(xhrInstance).to.exist;
-      
+
             // Check that the sensitive data was masked
             const requestData = JSON.parse(xhrInstance._data);
             expectMaskedData(requestData.payload, ['email', 'password', 'token']);
@@ -237,7 +240,7 @@ describe('ghost-stats.js', function () {
 
         it('should mask nested sensitive data', function () {
             // Call trackEvent with nested sensitive data
-            env.window.Tinybird.trackEvent('test_event', { 
+            env.window.Tinybird.trackEvent('test_event', {
                 user: {
                     email: 'test@example.com',
                     password: 'secretpassword'
@@ -253,7 +256,7 @@ describe('ghost-stats.js', function () {
             // Check that an XMLHttpRequest was made
             const xhrInstance = env.lastXHR();
             expect(xhrInstance).to.exist;
-      
+
             // Check that the nested sensitive data was masked
             const requestData = JSON.parse(xhrInstance._data);
             expectMaskedData(requestData.payload, ['email', 'password', 'credit_card']);
@@ -263,7 +266,7 @@ describe('ghost-stats.js', function () {
     describe('Referrer handling', function () {
         it('should use document.referrer when no query params are present', function () {
             const envWithReferrer = createTestEnvironment();
-      
+
             trackPageHitAndAssert(envWithReferrer, (payloadObj) => {
                 expect(payloadObj.referrer).to.equal('https://google.com/');
             });
@@ -273,7 +276,7 @@ describe('ghost-stats.js', function () {
             const envWithRef = createTestEnvironment({
                 url: 'https://example.com/blog?ref=newsletter'
             });
-      
+
             trackPageHitAndAssert(envWithRef, (payloadObj) => {
                 expect(payloadObj.referrer).to.equal('newsletter');
             });
@@ -283,7 +286,7 @@ describe('ghost-stats.js', function () {
             const envWithSource = createTestEnvironment({
                 url: 'https://example.com/blog?source=blog&utm_source=social'
             });
-      
+
             trackPageHitAndAssert(envWithSource, (payloadObj) => {
                 expect(payloadObj.referrer).to.equal('blog');
             });
@@ -293,7 +296,7 @@ describe('ghost-stats.js', function () {
             const envWithUtm = createTestEnvironment({
                 url: 'https://example.com/blog?utm_source=social'
             });
-      
+
             trackPageHitAndAssert(envWithUtm, (payloadObj) => {
                 expect(payloadObj.referrer).to.equal('social');
             });
@@ -303,7 +306,7 @@ describe('ghost-stats.js', function () {
             const envWithHash = createTestEnvironment({
                 url: 'https://example.com/#/portal/signup?ref=newsletter'
             });
-      
+
             trackPageHitAndAssert(envWithHash, (payloadObj) => {
                 expect(payloadObj.referrer).to.equal('newsletter');
             });
@@ -317,7 +320,7 @@ describe('ghost-stats.js', function () {
                 value: 'Mozilla/5.0 (Test Browser)',
                 configurable: true
             });
-      
+
             trackPageHitAndAssert(env, (payloadObj) => {
                 expect(payloadObj['user-agent']).to.equal('Mozilla/5.0 (Test Browser)');
                 expect(payloadObj.pathname).to.equal('/');
@@ -329,11 +332,11 @@ describe('ghost-stats.js', function () {
         it('should not track page hits in test environments', function () {
             // Set up test environment flags
             env.window.__nightmare = true;
-      
+
             withImmediateTimeout(env, () => {
                 // Call _trackPageHit
                 env.window.Tinybird._trackPageHit();
-        
+
                 // Check that no XMLHttpRequest was made
                 const xhrInstance = env.lastXHR();
                 expect(xhrInstance).to.not.exist;
@@ -348,17 +351,17 @@ describe('ghost-stats.js', function () {
                 value: 'Mozilla/5.0 (Test Browser)',
                 configurable: true
             });
-      
+
             withImmediateTimeout(env, () => {
                 // Trigger a hashchange event
                 const event = new env.window.Event('hashchange');
                 env.window.dispatchEvent(event);
-        
+
                 // Check that an XMLHttpRequest was made
                 const xhrInstance = env.lastXHR();
                 expect(xhrInstance).to.exist;
                 expect(xhrInstance.method).to.equal('POST');
-        
+
                 // Check that the request data contains page hit data
                 const requestData = JSON.parse(xhrInstance._data);
                 expect(requestData.action).to.equal('page_hit');
@@ -371,16 +374,16 @@ describe('ghost-stats.js', function () {
                 value: 'Mozilla/5.0 (Test Browser)',
                 configurable: true
             });
-      
+
             withImmediateTimeout(env, () => {
                 // Execute the modified pushState function directly
                 env.window.history.pushState({}, '', '/new-path');
-        
+
                 // Check that an XMLHttpRequest was made
                 const xhrInstance = env.lastXHR();
                 expect(xhrInstance).to.exist;
                 expect(xhrInstance.method).to.equal('POST');
-        
+
                 // Check that the request data contains page hit data
                 const requestData = JSON.parse(xhrInstance._data);
                 expect(requestData.action).to.equal('page_hit');
@@ -399,7 +402,7 @@ describe('ghost-stats.js', function () {
                 url: 'https://example.com/page2',
                 referrer: 'https://example.com/page1'
             });
-      
+
             trackPageHitAndAssert(envWithMatchingHostname, (payloadObj) => {
                 expect(payloadObj.referrer).to.be.null;
             });
@@ -411,19 +414,19 @@ describe('ghost-stats.js', function () {
             const envWithoutStringify = createTestEnvironment({
                 stringifyPayload: false
             });
-      
+
             withImmediateTimeout(envWithoutStringify, () => {
                 // Test with sensitive data
-                envWithoutStringify.window.Tinybird.trackEvent('test_event', { 
+                envWithoutStringify.window.Tinybird.trackEvent('test_event', {
                     email: 'test@example.com',
                     password: 'secretpassword'
                 });
-        
+
                 // Check that an XMLHttpRequest was made
                 const xhrInstance = envWithoutStringify.lastXHR();
                 expect(xhrInstance).to.exist;
-        
-                // Simply check that the sensitive data is masked in the raw request 
+
+                // Simply check that the sensitive data is masked in the raw request
                 const rawData = xhrInstance._data;
                 expect(rawData).to.include('********');
                 expect(rawData).to.not.include('test@example.com');
@@ -431,4 +434,4 @@ describe('ghost-stats.js', function () {
             });
         });
     });
-}); 
+});

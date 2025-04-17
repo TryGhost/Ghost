@@ -1453,11 +1453,16 @@ describe('{{ghost_head}} helper', function () {
             configUtils.set({
                 tinybird: {
                     tracker: {
-                        scriptUrl: 'https://unpkg.com/@tinybirdco/flock.js',
-                        endpoint: 'https://api.tinybird.co',
+                        endpoint: 'https://e.ghost.org/tb/web_analytics',
                         token: 'tinybird_token',
                         id: 'tb_test_site_uuid',
-                        datasource: 'analytics_events_json_v1'
+                        datasource: 'analytics_events',
+                        local: {
+                            enabled: false,
+                            endpoint: 'http://localhost:7181/v0/events',
+                            token: 'tinybird_local_token',
+                            datasource: 'analytics_events'
+                        }
                     }
                 }
             });
@@ -1560,7 +1565,7 @@ describe('{{ghost_head}} helper', function () {
                 }
             }));
 
-            rendered.should.match(/data-datasource="analytics_events_json_v1"/);
+            rendered.should.match(/data-datasource="analytics_events"/);
         }); 
 
         it('does not include tracker script when preview is set', async function () {
@@ -1571,6 +1576,32 @@ describe('{{ghost_head}} helper', function () {
             }));
 
             rendered.should.not.match(/script defer src="\/public\/ghost-stats\.js"/);
+        });
+
+        it('uses the provided host/endpoint from config', async function () {
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+
+            rendered.should.match(/data-host="https:\/\/e.ghost.org\/tb\/web_analytics"/);
+        });
+
+        it('includes local tracker script when local is set', async function () {
+            configUtils.set('tinybird:tracker:local:enabled', true);
+
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+
+            rendered.should.match(/data-host="http:\/\/localhost:7181\/v0\/events"/);
         });
     });
     describe('respects values from excludes: ', function () {

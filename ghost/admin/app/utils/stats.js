@@ -52,6 +52,12 @@ export const STATS_LABEL_MAPPINGS = {
     'duckduckgo.com': 'DuckDuckGo'
 };
 
+/**
+ * Converts a hex color to RGBA format
+ * @param {string} hex - Hexadecimal color code (e.g. "#FF5500")
+ * @param {number} [alpha=1] - Alpha transparency value between 0 and 1
+ * @returns {string} RGBA color string (e.g. "rgba(255, 85, 0, 1)")
+ */
 export function hexToRgba(hex, alpha = 1) {
     const r = parseInt(hex.slice(1, 3), 16);
     const g = parseInt(hex.slice(3, 5), 16);
@@ -59,6 +65,12 @@ export function hexToRgba(hex, alpha = 1) {
     return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
+/**
+ * Generates a monochrome color palette based on a base color
+ * @param {string} baseColor - Base hexadecimal color to generate palette from
+ * @param {number} [count=10] - Number of colors to generate in the palette
+ * @returns {string[]} Array of hexadecimal color codes in the palette
+ */
 export function generateMonochromePalette(baseColor, count = 10) {
     // Convert hex to RGB
     let r = parseInt(baseColor.slice(1, 3), 16);
@@ -135,14 +147,24 @@ export const statsStaticColors = [
     '#A568FF', '#7B7BFF', '#B3CEFF', '#D4ECF7', '#EFFDFD', '#F7F7F7'
 ];
 
-export const getCountryFlag = (countryCode) => {
+/**
+ * Converts a country code to corresponding flag emoji
+ * @param {string} countryCode - Two-letter ISO country code
+ * @returns {string} Flag emoji for the specified country code
+ */
+export function getCountryFlag(countryCode) {
     if (!countryCode || countryCode === null || countryCode.toUpperCase() === 'ᴺᵁᴸᴸ') {
         return '🏳️';
     }
     return countryCode.toUpperCase().replace(/./g, char => String.fromCodePoint(char.charCodeAt(0) + 127397)
     );
-};
+}
 
+/**
+ * Gets the date range for stats based on the chart range
+ * @param {number} chartRange - Number of days to include in the range
+ * @returns {Object} Object containing startDate, endDate, and timezone
+ */
 export function getDateRange(chartRange) {
     const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
     const endDate = moment().tz(timezone).endOf('day');
@@ -150,6 +172,11 @@ export function getDateRange(chartRange) {
     return {startDate, endDate, timezone};
 }
 
+/**
+ * Formats a duration in hours and minutes
+ * @param {number} duration - Duration in seconds
+ * @returns {string} Formatted duration string (e.g. "2h 30m")
+ */
 export function formatVisitDuration(duration) {
     if (duration === null || duration === 0) {
         return '0s';
@@ -173,13 +200,20 @@ export function formatVisitDuration(duration) {
     return `${hours}h ${remainingMinutes}m`;
 }
 
+/**
+ * Gets stats query parameters based on filters
+ * @param {Object} config - Ghost config object
+ * @param {Object} props - Filter properties
+ * @param {Object} [additionalParams] - Additional query parameters to include
+ * @returns {Object} Query parameters object
+ */
 export function getStatsParams(config, props, additionalParams = {}) {
     const {chartRange, audience, device, browser, location, source, pathname, os} = props;
     const {startDate, endDate, timezone} = getDateRange(chartRange);
 
     const params = {
         site_uuid: props.mockData ? 'mock_site_uuid' : config.stats.id,
-        date_from: startDate.format('YYYY-MM-DD'),
+        date_from: startDate.format('YYYY-MM-DD'), 
         date_to: endDate.format('YYYY-MM-DD'),
         ...additionalParams
     };
@@ -217,4 +251,26 @@ export function getStatsParams(config, props, additionalParams = {}) {
     }
 
     return params;
+}
+
+/**
+ * Gets the appropriate token for stats API requests
+ * @param {Object} config - Ghost config object
+ * @returns {string} Stats API token
+ */
+export function getToken(config) {
+    return config?.stats?.local?.enabled ? config?.stats?.local?.token : config?.stats?.token;
+}
+
+/**
+ * Builds the full endpoint URL for stats API requests
+ * @param {Object} config - Ghost config object
+ * @param {string} endpoint - API endpoint name
+ * @param {string} [params] - URL query parameters
+ * @returns {string} Full endpoint URL
+ */
+export function getEndpointUrl(config, endpoint, params = '') {
+    return config?.stats?.local?.enabled ? 
+        `${config?.stats?.local?.endpoint}/v0/pipes/${endpoint}.json?${params}` : 
+        `${config?.stats?.endpoint}/v0/pipes/${endpoint}__v${TB_VERSION}.json?${params}`;
 }
