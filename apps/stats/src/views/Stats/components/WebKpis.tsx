@@ -127,7 +127,7 @@ const WebKpis:React.FC = ({}) => {
                     <KpiTabValue label="Avg. visit duration" value={kpiValues.duration} />
                 </KpiTabTrigger>
             </TabsList>
-            <div className='my-4 min-h-[15vw]'>
+            <div className='my-4 min-h-[15vw]  [&_.recharts-cartesian-axis-tick-value]:fill-gray-500'>
                 {isLoading ? 'Loading' :
                     <ChartContainer className='-mb-3 max-h-[15vw] min-h-[260px] w-full' config={chartConfig}>
                         <Recharts.LineChart
