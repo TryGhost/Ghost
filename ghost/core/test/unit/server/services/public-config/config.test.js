@@ -21,7 +21,8 @@ const allowedKeys = [
     'hostSettings',
     'tenor',
     'pintura',
-    'signupForm'
+    'signupForm',
+    'security'
 ];
 
 describe('Public-config Service', function () {
