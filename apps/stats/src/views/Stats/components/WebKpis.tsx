@@ -121,11 +121,6 @@ const WebKpis:React.FC = ({}) => {
                 }}>
                     <KpiTabValue label="Total views" value={kpiValues.views} />
                 </KpiTabTrigger>
-                <KpiTabTrigger value="visit-duration" onClick={() => {
-                    setCurrentTab('visit-duration');
-                }}>
-                    <KpiTabValue label="Avg. visit duration" value={kpiValues.duration} />
-                </KpiTabTrigger>
             </TabsList>
             <div className='my-4 [&_.recharts-cartesian-axis-tick-value]:fill-gray-500'>
                 {isLoading ? 'Loading' :
