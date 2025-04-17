@@ -1,5 +1,5 @@
 import * as assert from 'assert/strict';
-import {mastodonHandleToUrl, mastodonUrlToHandle, validateMastodonUrl} from '../../../src/utils/socialUrls/index';
+import {mastodonHandleToUrl, mastodonUrlToHandle, validateMastodonUrl, sanitiseMastodonUrl} from '../../../src/utils/socialUrls/index';
 
 describe('Mastodon URL validation', () => {
     it('should return empty string when input is empty', () => {
@@ -72,5 +72,10 @@ describe('URL to Mastodon handle extraction', () => {
         assert.equal(mastodonUrlToHandle('mastodon.social/johnsmith'), null);
         assert.equal(mastodonUrlToHandle('invalid/@johnsmith'), null);
         assert.equal(mastodonUrlToHandle('@johnsmith'), null);
+    });
+
+    it('should sanitise Mastodon URLs', () => {
+        assert.equal(sanitiseMastodonUrl('https://mastodon.xyz/@Flipboard@flipboard.social'), 'mastodon.xyz/@Flipboard@flipboard.social');
+        assert.equal(sanitiseMastodonUrl('https://mastodon.social/@user@other.instance'), 'mastodon.social/@user@other.instance');
     });
 });
