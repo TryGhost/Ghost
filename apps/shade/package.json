@@ -99,7 +99,7 @@
         "tailwind-merge": "2.6.0",
         "tailwindcss": "3.4.14",
         "tailwindcss-animate": "1.0.7",
-        "zod": "3.24.2"
+        "zod": "3.24.3"
     },
     "peerDependencies": {
         "react": "^18.2.0",
