@@ -11,7 +11,7 @@ import {
     linkedinHandleToUrl,
     linkedinUrlToHandle,
     mastodonHandleToUrl,
-    mastodonUrlToHandle,
+    sanitiseMastodonUrl,
     threadsHandleToUrl,
     threadsUrlToHandle,
     tiktokHandleToUrl,
@@ -168,7 +168,7 @@ export const DetailsInputs: React.FC<UserDetailProps> = ({errors, clearError, va
                         if (validateField('mastodon', e.target.value)) {
                             const url = validateMastodonUrl(e.target.value);
                             setMastodonUrl(url);
-                            setUserData({...user, mastodon: mastodonUrlToHandle(url)});
+                            setUserData({...user, mastodon: sanitiseMastodonUrl(url)});
                         }
                     }}
                     onChange={(e) => {

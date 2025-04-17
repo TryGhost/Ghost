@@ -1,7 +1,9 @@
 import React, {ChangeEvent, useEffect, useRef, useState} from 'react';
 import {Account} from '@src/api/activitypub';
 import {Button, DialogClose, DialogFooter, Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage, Input, LucideIcon, Textarea} from '@tryghost/shade';
+import {uploadFile} from '@hooks/use-activity-pub-queries';
 import {useForm} from 'react-hook-form';
+import {useUpdateAccountMutationForUser} from '@hooks/use-activity-pub-queries';
 import {z} from 'zod';
 import {zodResolver} from '@hookform/resolvers/zod';
 
@@ -18,24 +20,27 @@ const FormSchema = z.object({
 });
 
 type EditProfileProps = {
-    account?: Account
+    account: Account,
+    setIsEditingProfile: (value: boolean) => void;
 }
 
-const EditProfile: React.FC<EditProfileProps> = ({account}) => {
-    const [profileImagePreview, setProfileImagePreview] = useState<string | null>(account?.avatarUrl || null);
+const EditProfile: React.FC<EditProfileProps> = ({account, setIsEditingProfile}) => {
+    const [profileImagePreview, setProfileImagePreview] = useState<string | null>(account.avatarUrl || null);
     const profileImageInputRef = useRef<HTMLInputElement>(null);
-    const [coverImagePreview, setCoverImagePreview] = useState<string | null>(account?.bannerImageUrl || null);
+    const [coverImagePreview, setCoverImagePreview] = useState<string | null>(account.bannerImageUrl || null);
     const coverImageInputRef = useRef<HTMLInputElement>(null);
     const [handleDomain, setHandleDomain] = useState<string>('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const {mutate: updateAccount} = useUpdateAccountMutationForUser(account?.handle || '');
 
     const form = useForm<z.infer<typeof FormSchema>>({
         resolver: zodResolver(FormSchema),
         defaultValues: {
-            profileImage: account?.avatarUrl,
-            coverImage: account?.bannerImageUrl || '',
-            name: account?.name,
+            profileImage: account.avatarUrl,
+            coverImage: account.bannerImageUrl || '',
+            name: account.name,
             handle: '',
-            bio: account?.bio
+            bio: account.bio
         }
     });
 
@@ -43,14 +48,14 @@ const EditProfile: React.FC<EditProfileProps> = ({account}) => {
     const hasHandleError = !!form.formState.errors.handle;
 
     useEffect(() => {
-        if (account?.handle) {
+        if (account.handle) {
             const match = account.handle.match(/@([^@]+)@(.+)/);
             if (match) {
                 form.setValue('handle', match[1]);
                 setHandleDomain(match[2]);
             }
         }
-    }, [account?.handle, form]);
+    }, [account.handle, form]);
 
     const triggerProfileImageInput = () => {
         profileImageInputRef.current?.click();
@@ -58,20 +63,7 @@ const EditProfile: React.FC<EditProfileProps> = ({account}) => {
 
     const handleProfileImageUpload = async (file: File) => {
         try {
-            // eslint-disable-next-line no-console
-            console.log('Uploading profile image:', file);
-
-            // Simulating the upload process
-            await new Promise((resolve) => {
-                setTimeout(resolve, 2000);
-            });
-
-            // This should be replaced with actual image upload logic
-            const uploadedImageUrl = URL.createObjectURL(file);
-
-            // eslint-disable-next-line no-console
-            console.log('Profile image upload complete!');
-
+            const uploadedImageUrl = await uploadFile(file);
             return uploadedImageUrl;
         } catch (error) {
             // eslint-disable-next-line no-console
@@ -99,20 +91,7 @@ const EditProfile: React.FC<EditProfileProps> = ({account}) => {
 
     const handleCoverImageUpload = async (file: File) => {
         try {
-            // eslint-disable-next-line no-console
-            console.log('Uploading cover image:', file);
-
-            // Simulating the upload process
-            await new Promise((resolve) => {
-                setTimeout(resolve, 2000);
-            });
-
-            // This should be replaced with actual image upload logic
-            const uploadedImageUrl = URL.createObjectURL(file);
-
-            // eslint-disable-next-line no-console
-            console.log('Cover image upload complete!');
-
+            const uploadedImageUrl = await uploadFile(file);
             return uploadedImageUrl;
         } catch (error) {
             // eslint-disable-next-line no-console
@@ -135,14 +114,33 @@ const EditProfile: React.FC<EditProfileProps> = ({account}) => {
     };
 
     function onSubmit(data: z.infer<typeof FormSchema>) {
-        const submitData = {...data};
+        setIsSubmitting(true);
 
-        if (handleDomain) {
-            submitData.handle = `@${data.handle}@${handleDomain}`;
+        if (
+            data.name === account.name &&
+            data.handle === account.handle.split('@')[1] &&
+            data.bio === account.bio &&
+            data.profileImage === account.avatarUrl &&
+            data.coverImage === account.bannerImageUrl
+        ) {
+            setIsSubmitting(false);
+            setIsEditingProfile(false);
+
+            return;
         }
 
-        // eslint-disable-next-line no-console
-        console.log('Submitted:', submitData);
+        updateAccount({
+            name: data.name || account.name,
+            username: data.handle || account.handle,
+            bio: data.bio || account.bio,
+            avatarUrl: data.profileImage || account.avatarUrl,
+            bannerImageUrl: data.coverImage || account.bannerImageUrl || ''
+        }, {
+            onSettled() {
+                setIsSubmitting(false);
+                setIsEditingProfile(false);
+            }
+        });
     }
 
     return (
@@ -269,7 +267,7 @@ const EditProfile: React.FC<EditProfileProps> = ({account}) => {
                     <DialogClose>
                         <Button variant='outline'>Cancel</Button>
                     </DialogClose>
-                    <Button type="submit">Save</Button>
+                    <Button disabled={isSubmitting} type="submit">Save</Button>
                 </DialogFooter>
             </form>
         </Form>
