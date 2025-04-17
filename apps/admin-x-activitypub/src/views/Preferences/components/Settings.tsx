@@ -48,26 +48,30 @@ const Settings: React.FC<SettingsProps> = ({account, className = ''}) => {
                     </DialogContent>
                 </Dialog>
             </SettingItem>
-            <SettingItem withHover onClick={() => navigate('/preferences/threads-sharing', {state: {account, threadsAccount: threadsData?.accounts[0], isEnabled: threadsEnabled}})}>
-                <SettingHeader>
-                    <SettingTitle>Threads sharing</SettingTitle>
-                    <SettingDescription>Share content directly on Threads</SettingDescription>
-                </SettingHeader>
-                <SettingAction className='flex items-center gap-2'>
-                    {threadsIsFetching ? <LoadingIndicator size='sm' /> : threadsEnabled ? <span className='font-medium text-black'>On</span> : <span>Off</span>}
-                    <LucideIcon.ChevronRight size={20} />
-                </SettingAction>
-            </SettingItem>
-            <SettingItem withHover onClick={() => navigate('/preferences/bluesky-sharing', {state: {account, blueskyAccount: blueskyData?.accounts[0], isEnabled: blueskyEnabled}})}>
-                <SettingHeader>
-                    <SettingTitle>Bluesky sharing</SettingTitle>
-                    <SettingDescription>Share content directly on Bluesky</SettingDescription>
-                </SettingHeader>
-                <SettingAction className='flex items-center gap-2'>
-                    {blueskyIsFetching ? <LoadingIndicator size='sm' /> : blueskyEnabled ? <span className='font-medium text-black'>On</span> : <span>Off</span>}
-                    <LucideIcon.ChevronRight size={20} />
-                </SettingAction>
-            </SettingItem>
+            {isEnabled('settings-full') && (
+                <>
+                    <SettingItem withHover onClick={() => navigate('/preferences/threads-sharing', {state: {account, threadsAccount: threadsData?.accounts[0], isEnabled: threadsEnabled}})}>
+                        <SettingHeader>
+                            <SettingTitle>Threads sharing</SettingTitle>
+                            <SettingDescription>Share content directly on Threads</SettingDescription>
+                        </SettingHeader>
+                        <SettingAction className='flex items-center gap-2'>
+                            {threadsIsFetching ? <LoadingIndicator size='sm' /> : threadsEnabled ? <span className='font-medium text-black'>On</span> : <span>Off</span>}
+                            <LucideIcon.ChevronRight size={20} />
+                        </SettingAction>
+                    </SettingItem>
+                    <SettingItem withHover onClick={() => navigate('/preferences/bluesky-sharing', {state: {account, blueskyAccount: blueskyData?.accounts[0], isEnabled: blueskyEnabled}})}>
+                        <SettingHeader>
+                            <SettingTitle>Bluesky sharing</SettingTitle>
+                            <SettingDescription>Share content directly on Bluesky</SettingDescription>
+                        </SettingHeader>
+                        <SettingAction className='flex items-center gap-2'>
+                            {blueskyIsFetching ? <LoadingIndicator size='sm' /> : blueskyEnabled ? <span className='font-medium text-black'>On</span> : <span>Off</span>}
+                            <LucideIcon.ChevronRight size={20} />
+                        </SettingAction>
+                    </SettingItem>
+                </>
+            )}
             <SettingSeparator />
             <SettingItem href='https://ghost.org/help/social-web/' withHover>
                 <SettingHeader>
