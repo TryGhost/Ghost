@@ -1,5 +1,5 @@
 const {MemberCreatedEvent, SubscriptionCancelledEvent, SubscriptionActivatedEvent} = require('@tryghost/member-events');
-const {MilestoneCreatedEvent} = require('@tryghost/milestones');
+const MilestoneCreatedEvent = require('../milestones/MilestoneCreatedEvent');
 
 // @NOTE: 'StaffService' is a vague name that does not describe what it's actually doing.
 //         Possibly, "StaffNotificationService" or "StaffEventNotificationService" would be a more accurate name
