@@ -59,7 +59,7 @@ const ThreadsSharing: React.FC = () => {
                         </Button>
                     </div> :
                     <>
-                        <p className='mt-3 text-base'>Your content is now being shared to Threads. To view your Threads profile, you&apos;ll need to enable the Fediverse beta feature in your Threads account. Please note that Thread&apos;s Fediverse features are not available for users in the EU.</p>
+                        <p className='mt-3 text-base'>Your content is now being shared to Threads. To view your Threads profile, you&apos;ll need to enable the <a className='text-purple' href="https://www.threads.net/settings/fediverse" rel="noreferrer" target="_blank">Fediverse beta</a> feature in your Threads account. Please note that Thread&apos;s Fediverse features are not available for users in the EU.</p>
                         <div className='mt-6 flex flex-col items-center gap-4 rounded-lg bg-gray-150 p-8'>
                             <div className='relative'>
                                 <APAvatar
