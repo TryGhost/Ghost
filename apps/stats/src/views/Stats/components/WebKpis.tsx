@@ -18,7 +18,7 @@ type KpiMetric = {
 const KPI_METRICS: Record<string, KpiMetric> = {
     visits: {
         dataKey: 'visits',
-        label: 'Visits',
+        label: 'Visitors',
         formatter: formatNumber
     },
     views: {

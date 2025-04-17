@@ -13,4 +13,9 @@
     stroke-width: 1;
     stroke-linecap: round;
     stroke-linejoin: round;
+    outline: none !important;
+}
+
+.svg-map-container .svg-map path {
+    outline: none !important;
 }

@@ -11,7 +11,7 @@ import {Header, HeaderActions} from '@src/components/layout/Header';
 import {STATS_LABEL_MAPPINGS} from '@src/utils/constants';
 import {SVGMap} from 'react-svg-map';
 import {formatNumber, formatQueryDate} from '@src/utils/data-formatters';
-import {getCountryFlag, getRangeDates} from '@src/utils/chart-helpers';
+import {getCountryFlag, getPeriodText, getRangeDates} from '@src/utils/chart-helpers';
 import {getStatEndpointUrl} from '@src/config/stats-config';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useQuery} from '@tinybirdco/charts';
@@ -201,8 +201,8 @@ const Locations:React.FC = () => {
                 </Card>
                 <Card variant='plain'>
                     <CardHeader>
-                        <CardTitle>All locations</CardTitle>
-                        <CardDescription>A breakdown of where your audience is located</CardDescription>
+                        <CardTitle>Top locations</CardTitle>
+                        <CardDescription>A geographic breakdown of your audience {getPeriodText(range)}</CardDescription>
                     </CardHeader>
                     <CardContent>
                         {isLoading ? 'Loading' :
@@ -210,7 +210,7 @@ const Locations:React.FC = () => {
                                 <TableHeader>
                                     <TableRow>
                                         <TableHead className='w-[80%]'>Country</TableHead>
-                                        <TableHead className='w-[20%]'>Visitors</TableHead>
+                                        <TableHead className='w-[20%] text-right'>Visitors</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -221,7 +221,7 @@ const Locations:React.FC = () => {
                                                 <TableCell className="font-medium">
                                                     <span title={countryName || 'Unknown'}>{getCountryFlag(`${row.location}`)} {countryName}</span>
                                                 </TableCell>
-                                                <TableCell>{formatNumber(Number(row.visits))}</TableCell>
+                                                <TableCell className='text-right font-mono text-sm'>{formatNumber(Number(row.visits))}</TableCell>
                                             </TableRow>
                                         );
                                     })}
