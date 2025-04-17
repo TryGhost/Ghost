@@ -141,7 +141,7 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
                                         onUnfollow={noop}
                                     />
                                 }
-                                {isCurrentUser && isEnabled('settings') && !isLoadingAccount &&
+                                {isCurrentUser && !isLoadingAccount &&
                                     <Dialog open={isEditingProfile} onOpenChange={setIsEditingProfile}>
                                         <DialogTrigger>
                                             <SettingAction><Button variant='secondary'>{isEnabled('settings-full') ? 'Edit profile' : 'Edit handle'}</Button></SettingAction>
