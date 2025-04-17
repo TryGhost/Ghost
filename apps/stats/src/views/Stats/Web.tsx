@@ -65,7 +65,7 @@ const Web:React.FC = () => {
                                 {data?.map((row) => {
                                     return (
                                         <TableRow key={row.pathname}>
-                                            <TableCell className="font-medium">{row.pathname}</TableCell>
+                                            <TableCell className="font-medium"><a className='-mx-2 inline-block px-2 hover:underline' href={`${row.pathname}`} rel="noreferrer" target='_blank'>{row.pathname}</a></TableCell>
                                             <TableCell className='text-right font-mono text-sm'>{formatNumber(Number(row.visits))}</TableCell>
                                         </TableRow>
                                     );
