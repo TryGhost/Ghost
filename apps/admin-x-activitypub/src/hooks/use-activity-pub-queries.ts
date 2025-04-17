@@ -1633,3 +1633,27 @@ export function usePostForUser(handle: string, id: string | null) {
         }
     });
 }
+
+export function useUpdateAccountMutationForUser(handle: string) {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        async mutationFn(data: {
+            name: string;
+            username: string;
+            bio: string;
+            avatarUrl: string;
+            bannerImageUrl: string;
+        }) {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI(handle, siteUrl);
+
+            return api.updateAccount(data);
+        },
+        onSuccess() {
+            queryClient.invalidateQueries({
+                queryKey: QUERY_KEYS.account('index')
+            });
+        }
+    });
+}

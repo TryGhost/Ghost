@@ -1367,4 +1367,42 @@ describe('ActivityPubAPI', function () {
             expect(actual).toEqual(expected);
         });
     });
+
+    describe('updateAccount', function () {
+        test('It updates an account', async function () {
+            const data = {
+                name: 'Foo Bar Baz',
+                username: 'foo-bar-baz',
+                bio: 'Just a foo bar baz',
+                avatarUrl: 'https://example.com/avatar.png',
+                bannerImageUrl: 'https://example.com/banner.png'
+            };
+
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                [`https://activitypub.api/.ghost/activitypub/account`]: {
+                    async assert(_resource, init) {
+                        expect(init?.method).toEqual('PUT');
+                        expect(init?.body).toEqual(JSON.stringify(data));
+                    },
+                    response: JSONResponse({})
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            await api.updateAccount(data);
+        });
+    });
 });
