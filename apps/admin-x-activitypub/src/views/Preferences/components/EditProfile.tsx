@@ -1,6 +1,7 @@
 import React, {ChangeEvent, useEffect, useRef, useState} from 'react';
 import {Account} from '@src/api/activitypub';
 import {Button, DialogClose, DialogFooter, Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage, Input, LucideIcon, Textarea} from '@tryghost/shade';
+import {uploadFile} from '@hooks/use-activity-pub-queries';
 import {useForm} from 'react-hook-form';
 import {useUpdateAccountMutationForUser} from '@hooks/use-activity-pub-queries';
 import {z} from 'zod';
@@ -30,7 +31,7 @@ const EditProfile: React.FC<EditProfileProps> = ({account, setIsEditingProfile})
     const coverImageInputRef = useRef<HTMLInputElement>(null);
     const [handleDomain, setHandleDomain] = useState<string>('');
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const {mutate: updateAccount} = useUpdateAccountMutationForUser(account.handle || '');
+    const {mutate: updateAccount} = useUpdateAccountMutationForUser(account?.handle || '');
 
     const form = useForm<z.infer<typeof FormSchema>>({
         resolver: zodResolver(FormSchema),
@@ -62,20 +63,7 @@ const EditProfile: React.FC<EditProfileProps> = ({account, setIsEditingProfile})
 
     const handleProfileImageUpload = async (file: File) => {
         try {
-            // eslint-disable-next-line no-console
-            console.log('Uploading profile image:', file);
-
-            // Simulating the upload process
-            await new Promise((resolve) => {
-                setTimeout(resolve, 2000);
-            });
-
-            // This should be replaced with actual image upload logic
-            const uploadedImageUrl = URL.createObjectURL(file);
-
-            // eslint-disable-next-line no-console
-            console.log('Profile image upload complete!');
-
+            const uploadedImageUrl = await uploadFile(file);
             return uploadedImageUrl;
         } catch (error) {
             // eslint-disable-next-line no-console
@@ -103,20 +91,7 @@ const EditProfile: React.FC<EditProfileProps> = ({account, setIsEditingProfile})
 
     const handleCoverImageUpload = async (file: File) => {
         try {
-            // eslint-disable-next-line no-console
-            console.log('Uploading cover image:', file);
-
-            // Simulating the upload process
-            await new Promise((resolve) => {
-                setTimeout(resolve, 2000);
-            });
-
-            // This should be replaced with actual image upload logic
-            const uploadedImageUrl = URL.createObjectURL(file);
-
-            // eslint-disable-next-line no-console
-            console.log('Cover image upload complete!');
-
+            const uploadedImageUrl = await uploadFile(file);
             return uploadedImageUrl;
         } catch (error) {
             // eslint-disable-next-line no-console

@@ -1657,3 +1657,9 @@ export function useUpdateAccountMutationForUser(handle: string) {
         }
     });
 }
+
+export async function uploadFile(file: File) {
+    const siteUrl = await getSiteUrl();
+    const api = createActivityPubAPI('index', siteUrl);
+    return api.upload(file);
+}

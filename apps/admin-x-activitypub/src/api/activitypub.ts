@@ -413,4 +413,26 @@ export class ActivityPubAPI {
             bannerImageUrl
         });
     }
+    
+    async upload(file: File): Promise<string> {
+        const url = new URL('.ghost/activitypub/upload/image', this.apiUrl);
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const token = await this.getToken();
+        const response = await this.fetch(url, {
+            method: 'POST',
+            headers: {
+                Authorization: `Bearer ${token}`
+            },
+            body: formData
+        });
+
+        if (!response.ok) {
+            throw new Error('Upload failed');
+        }
+
+        const json = await response.json();
+        return json.fileUrl;
+    }
 }
