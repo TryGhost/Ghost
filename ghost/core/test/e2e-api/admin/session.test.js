@@ -1,4 +1,4 @@
-const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
+const {agentProvider, fixtureManager, matchers, configUtils} = require('../../utils/e2e-framework');
 const {mockLabsEnabled, mockLabsDisabled, mockMail, assert, restore} = require('../../utils/e2e-framework-mock-manager');
 const {anyContentVersion, anyEtag, anyErrorId, stringMatching, anyISODateTime, anyUuid} = matchers;
 
@@ -79,7 +79,7 @@ describe('Sessions API', function () {
         let mail;
 
         beforeEach(async function () {
-            mockLabsEnabled('staff2fa');
+            configUtils.set('security.staffDeviceVerification', true);
             mail = mockMail();
 
             // Setup the agent & fixtures again, to ensure no cookies are set
@@ -88,7 +88,7 @@ describe('Sessions API', function () {
         });
 
         afterEach(async function () {
-            mockLabsDisabled('staff2fa');
+            configUtils.set('security.staffDeviceVerification', false);
             restore();
         });
 

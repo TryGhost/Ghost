@@ -8,6 +8,9 @@
         "useNullAsDefault": true,
         "debug": false
     },
+    "security": {
+        "staffDeviceVerification": false
+    },
     "server": {
         "port": 2369
     },
