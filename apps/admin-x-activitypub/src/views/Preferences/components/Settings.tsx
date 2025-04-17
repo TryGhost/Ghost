@@ -1,5 +1,5 @@
 import EditProfile from './EditProfile';
-import React, {useEffect, useState} from 'react';
+import React, {useState} from 'react';
 import {Account} from '@src/api/activitypub';
 import {Button, Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, H4, LucideIcon, cn} from '@tryghost/shade';
 import {Link, useNavigate} from '@tryghost/admin-x-framework';
@@ -13,8 +13,6 @@ interface SettingsProps {
 
 const Settings: React.FC<SettingsProps> = ({account, className = ''}) => {
     const [isEditingProfile, setIsEditingProfile] = useState(false);
-    const [threadsEnabled, setThreadsEnabled] = useState(false);
-    const [blueskyEnabled, setBlueskyEnabled] = useState(false);
     const navigate = useNavigate();
 
     const {searchQuery: threadsSearchQuery} = useSearchForUser('index', '@ghost@threads.net');
@@ -23,19 +21,8 @@ const Settings: React.FC<SettingsProps> = ({account, className = ''}) => {
     const {searchQuery: blueskySearchQuery} = useSearchForUser('index', '@bsky.brid.gy@bsky.brid.gy');
     const {data: blueskyData, isFetching: blueskyIsFetching} = blueskySearchQuery;
 
-    useEffect(() => {
-        const results = threadsData?.accounts || [];
-        if (results.length > 0 && results[0].followedByMe) {
-            setThreadsEnabled(true);
-        }
-    }, [threadsData?.accounts]);
-
-    useEffect(() => {
-        const results = blueskyData?.accounts || [];
-        if (results.length > 0 && results[0].followedByMe) {
-            setBlueskyEnabled(true);
-        }
-    }, [blueskyData?.accounts]);
+    const threadsEnabled = threadsData?.accounts[0]?.followedByMe;
+    const blueskyEnabled = blueskyData?.accounts[0]?.followedByMe;
 
     return (
         <div className={`flex flex-col ${className}`}>
@@ -57,7 +44,7 @@ const Settings: React.FC<SettingsProps> = ({account, className = ''}) => {
                     </DialogContent>
                 </Dialog>
             </SettingItem>
-            <SettingItem withHover onClick={() => navigate('/preferences/threads-sharing', {state: {account, isEnabled: threadsEnabled}})}>
+            <SettingItem withHover onClick={() => navigate('/preferences/threads-sharing', {state: {account, threadsAccount: threadsData?.accounts[0], isEnabled: threadsEnabled}})}>
                 <SettingHeader>
                     <SettingTitle>Threads sharing</SettingTitle>
                     <SettingDescription>Share content directly on Threads</SettingDescription>
@@ -67,7 +54,7 @@ const Settings: React.FC<SettingsProps> = ({account, className = ''}) => {
                     <LucideIcon.ChevronRight size={20} />
                 </SettingAction>
             </SettingItem>
-            <SettingItem withHover onClick={() => navigate('/preferences/bluesky-sharing', {state: {account, isEnabled: blueskyEnabled}})}>
+            <SettingItem withHover onClick={() => navigate('/preferences/bluesky-sharing', {state: {account, blueskyAccount: blueskyData?.accounts[0], isEnabled: blueskyEnabled}})}>
                 <SettingHeader>
                     <SettingTitle>Bluesky sharing</SettingTitle>
                     <SettingDescription>Share content directly on Bluesky</SettingDescription>

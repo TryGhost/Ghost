@@ -3,14 +3,15 @@ import Layout from '@src/components/layout';
 import React, {useState} from 'react';
 import {Button, H2, H3, LucideIcon} from '@tryghost/shade';
 import {LoadingIndicator} from '@tryghost/admin-x-design-system';
-import {useFollowMutationForUser} from '@hooks/use-activity-pub-queries';
+import {useFollowMutationForUser, useSearchForUser} from '@hooks/use-activity-pub-queries';
 import {useLocation} from '@tryghost/admin-x-framework';
 
 const ThreadsSharing: React.FC = () => {
-    const {state: {account, isEnabled}} = useLocation();
+    const {state: {account, threadsAccount, isEnabled}} = useLocation();
     const [enabled, setEnabled] = useState(isEnabled);
     const [loading, setLoading] = useState(false);
     const [copied, setCopied] = useState(false);
+    const {updateAccountSearchResult} = useSearchForUser('index', threadsAccount.handle);
 
     const handleCopy = async () => {
         setCopied(true);
@@ -22,10 +23,12 @@ const ThreadsSharing: React.FC = () => {
         () => {
             setEnabled(true);
             setLoading(false);
+            updateAccountSearchResult(threadsAccount.id, {followedByMe: true});
         },
         () => {
             setEnabled(false);
             setLoading(false);
+            updateAccountSearchResult(threadsAccount.id, {followedByMe: false});
         }
     );
 

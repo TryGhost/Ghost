@@ -3,14 +3,15 @@ import Layout from '@src/components/layout';
 import React, {useState} from 'react';
 import {Button, H2, H3, LucideIcon} from '@tryghost/shade';
 import {LoadingIndicator} from '@tryghost/admin-x-design-system';
-import {useFollowMutationForUser} from '@hooks/use-activity-pub-queries';
+import {useFollowMutationForUser, useSearchForUser} from '@hooks/use-activity-pub-queries';
 import {useLocation} from '@tryghost/admin-x-framework';
 
 const BlueskySharing: React.FC = () => {
-    const {state: {account, isEnabled}} = useLocation();
+    const {state: {account, blueskyAccount, isEnabled}} = useLocation();
     const [enabled, setEnabled] = useState(isEnabled);
     const [loading, setLoading] = useState(false);
     const [copied, setCopied] = useState(false);
+    const {updateAccountSearchResult} = useSearchForUser('index', blueskyAccount.handle);
 
     const handleCopy = async () => {
         setCopied(true);
@@ -22,10 +23,12 @@ const BlueskySharing: React.FC = () => {
         () => {
             setEnabled(true);
             setLoading(false);
+            updateAccountSearchResult(blueskyAccount.id, {followedByMe: true});
         },
         () => {
             setEnabled(false);
             setLoading(false);
+            updateAccountSearchResult(blueskyAccount.id, {followedByMe: false});
         }
     );
 
