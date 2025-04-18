@@ -5,7 +5,7 @@ describe('search index', function () {
     test('initializes search index', async () => {
         const adminUrl = 'http://localhost:3000';
         const apiKey = '69010382388f9de5869ad6e558';
-        const searchIndex = new SearchIndex({adminUrl, apiKey, storage: localStorage});
+        const searchIndex = new SearchIndex({adminUrl, apiKey, storage: localStorage, locale: 'en'});
 
         const scope = nock('http://localhost:3000/ghost/api/content')
             .get('/posts/?key=69010382388f9de5869ad6e558&limit=10000&fields=id%2Cslug%2Ctitle%2Cexcerpt%2Curl%2Cupdated_at%2Cvisibility&order=updated_at%20DESC')
@@ -35,7 +35,7 @@ describe('search index', function () {
     test('allows to search for indexed posts and authors', async () => {
         const adminUrl = 'http://localhost:3000';
         const apiKey = '69010382388f9de5869ad6e558';
-        const searchIndex = new SearchIndex({adminUrl, apiKey, storage: localStorage});
+        const searchIndex = new SearchIndex({adminUrl, apiKey, storage: localStorage, locale: 'en'});
 
         nock('http://localhost:3000/ghost/api/content')
             .get('/posts/?key=69010382388f9de5869ad6e558&limit=10000&fields=id%2Cslug%2Ctitle%2Cexcerpt%2Curl%2Cupdated_at%2Cvisibility&order=updated_at%20DESC')
@@ -43,7 +43,7 @@ describe('search index', function () {
                 posts: [{
                     id: 'sounique',
                     title: 'Awesome Barcelona Life',
-                    excerpt: 'We are sitting by the pool and smashing out search features. Barcelona life is great!',
+                    excerpt: 'We are sitting by the pool and smashing out search features. Barcelona life at 59 is great!',
                     url: 'http://localhost/ghost/awesome-barcelona-life/'
                 }]
             })
@@ -94,6 +94,13 @@ describe('search index', function () {
         expect(searchResults.authors.length).toEqual(0);
         expect(searchResults.tags.length).toEqual(0);
 
+        searchResults = searchIndex.search('59');
+        expect(searchResults.posts.length).toEqual(1);
+        expect(searchResults.posts[0].title).toEqual('Awesome Barcelona Life');
+
+        searchResults = searchIndex.search('12');
+        expect(searchResults.posts.length).toEqual(0);
+
         // confirms that search works in the forward direction for ltr languages:
         let searchWithStartResults = searchIndex.search('Barce');
         expect(searchWithStartResults.posts.length).toEqual(1);
@@ -105,7 +112,7 @@ describe('search index', function () {
     test('searching works when dir = rtl also', async () => {
         const adminUrl = 'http://localhost:3000';
         const apiKey = '69010382388f9de5869ad6e558';
-        const searchIndex = new SearchIndex({adminUrl, apiKey, dir: 'ltr', storage: localStorage});
+        const searchIndex = new SearchIndex({adminUrl, apiKey, dir: 'ltr', storage: localStorage, locale: 'en'});
 
         nock('http://localhost:3000/ghost/api/content')
             .get('/posts/?key=69010382388f9de5869ad6e558&limit=10000&fields=id%2Cslug%2Ctitle%2Cexcerpt%2Curl%2Cupdated_at%2Cvisibility&order=updated_at%20DESC')
@@ -181,7 +188,7 @@ describe('search index', function () {
     test('searching handles CJK characters correctly', async () => {
         const adminUrl = 'http://localhost:3000';
         const apiKey = '69010382388f9de5869ad6e558';
-        const searchIndex = new SearchIndex({adminUrl, apiKey, dir: 'ltr', storage: localStorage});
+        const searchIndex = new SearchIndex({adminUrl, apiKey, dir: 'ltr', storage: localStorage, locale: 'en'});
 
         nock('http://localhost:3000/ghost/api/content')
             .get('/posts/?key=69010382388f9de5869ad6e558&limit=10000&fields=id%2Cslug%2Ctitle%2Cexcerpt%2Curl%2Cupdated_at%2Cvisibility&order=updated_at%20DESC')
@@ -203,7 +210,20 @@ describe('search index', function () {
                     title: '毅力和运气',
                     excerpt: '凭借运气和毅力，Cathy 将通过所有测试。',
                     url: 'http://localhost/ghost/a-post-in-chinese/'
-                }]
+                },
+                {
+                    id: 'sounique4',
+                    title: 'This is an expecially informational post',
+                    excerpt: 'This is an expecially informational post.',
+                    url: 'http://localhost/ghost/a-post-in-english/'
+                },
+                {
+                    id: 'sounique5',
+                    title: 'This is an expecially informative post',
+                    excerpt: 'This is an expecially informative post.',
+                    url: 'http://localhost/ghost/a-post-in-english2/'
+                }
+                ]
             })
             .get('/authors/?key=69010382388f9de5869ad6e558&limit=10000&fields=id,slug,name,url,profile_image&order=updated_at%20DESC')
             .reply(200, {
@@ -237,6 +257,11 @@ describe('search index', function () {
         expect(searchResults.posts.length).toEqual(1);
         expect(searchResults.posts[0].url).toEqual('http://localhost/ghost/visting-china-as-a-polyglot/');
 
+        // search without accents (for a term with them)
+        searchResults = searchIndex.search('Regisztralj');
+        expect(searchResults.posts.length).toEqual(1);
+        expect(searchResults.posts[0].url).toEqual('http://localhost/ghost/visting-china-as-a-polyglot/');      
+
         searchResults = searchIndex.search('Nothing like this');
         expect(searchResults.posts.length).toEqual(0);
 
@@ -252,6 +277,22 @@ describe('search index', function () {
         // out of order English:
         searchResults = searchIndex.search('glenish');
         expect(searchResults.posts.length).toEqual(0);
+
+        // check stemming (note that locale is not set above, so it defaults to en)
+        searchResults = searchIndex.search('inform');
+        expect(searchResults.posts.length).toEqual(2);
+        expect(searchResults.posts[0].url).toEqual('http://localhost/ghost/a-post-in-english/');
+        expect(searchResults.posts[1].url).toEqual('http://localhost/ghost/a-post-in-english2/');
+
+        searchResults = searchIndex.search('informative');
+        expect(searchResults.posts.length).toEqual(2);
+        expect(searchResults.posts[0].url).toEqual('http://localhost/ghost/a-post-in-english/');
+        expect(searchResults.posts[1].url).toEqual('http://localhost/ghost/a-post-in-english2/');
+
+        searchResults = searchIndex.search('informational');
+        expect(searchResults.posts.length).toEqual(2);
+        expect(searchResults.posts[0].url).toEqual('http://localhost/ghost/a-post-in-english/');
+        expect(searchResults.posts[1].url).toEqual('http://localhost/ghost/a-post-in-english2/');
     });
 
     test('searching handles hebrew characters correctly', async () => {
@@ -300,7 +341,11 @@ describe('search index', function () {
         searchResults = searchIndex.search('קונסקט');
         expect(searchResults.posts.length).toEqual(1);
         expect(searchResults.posts[0].url).toEqual('http://localhost/ghost/khdshvt-nyv-yvrq/');
-         
+        
+        // check that stemming doesn't happen from the wrong end of the word also.
+        searchResults = searchIndex.search('קטורר');
+        expect(searchResults.posts.length).toEqual(0);
+
         searchResults = searchIndex.search('סופר');
         expect(searchResults.authors.length).toEqual(1);
         expect(searchResults.authors[0].url).toEqual('http://localhost/ghost/authors/svpr/');
