@@ -79,7 +79,7 @@ const AudienceSelect: React.FC = () => {
             <DropdownMenuTrigger asChild>
                 <Button variant="dropdown"><LucideIcon.User2 /><span className='lowercase first-letter:capitalize'>{getAudienceLabel()}</span></Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align='end' className="w-56">
+            <DropdownMenuContent align='end' className="w-full min-w-48">
                 <DropdownMenuCheckboxItem
                     checked={isAudienceSelected(AUDIENCE_BITS.PUBLIC)}
                     onSelect={e => handleSelect(e, AUDIENCE_BITS.PUBLIC)}

@@ -11,7 +11,7 @@ import {
     linkedinHandleToUrl,
     linkedinUrlToHandle,
     mastodonHandleToUrl,
-    mastodonUrlToHandle,
+    sanitiseMastodonUrl,
     threadsHandleToUrl,
     threadsUrlToHandle,
     tiktokHandleToUrl,
@@ -123,7 +123,7 @@ export const DetailsInputs: React.FC<UserDetailProps> = ({errors, clearError, va
                     error={!!errors?.bluesky}
                     hint={errors?.bluesky}
                     maxLength={2000}
-                    placeholder='https://bsky.social/username'
+                    placeholder='https://bsky.app/profile/username'
                     title="Bluesky"
                     value={blueskyUrl}
                     onBlur={(e) => {
@@ -168,7 +168,7 @@ export const DetailsInputs: React.FC<UserDetailProps> = ({errors, clearError, va
                         if (validateField('mastodon', e.target.value)) {
                             const url = validateMastodonUrl(e.target.value);
                             setMastodonUrl(url);
-                            setUserData({...user, mastodon: mastodonUrlToHandle(url)});
+                            setUserData({...user, mastodon: sanitiseMastodonUrl(url)});
                         }
                     }}
                     onChange={(e) => {
@@ -199,7 +199,7 @@ export const DetailsInputs: React.FC<UserDetailProps> = ({errors, clearError, va
                     error={!!errors?.youtube}
                     hint={errors?.youtube}
                     maxLength={2000}
-                    placeholder='https://www.youtube.com/username'
+                    placeholder='https://www.youtube.com/@channel'
                     title="YouTube"
                     value={youtubeUrl}
                     onBlur={(e) => {

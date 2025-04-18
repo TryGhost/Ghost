@@ -25,7 +25,7 @@ test.describe('Admin', () => {
             //Reset Password
             await sharedPage.goto(`/ghost/reset/${resetToken}/`);
             await expect(sharedPage.locator(`text=Reset your password.`)).toBeVisible();
-            
+
             await sharedPage.locator('[data-test-nav="newPassword"]').fill('HiHello@123..');
             await sharedPage.locator('[data-test-nav="newPassword2"]').fill('HiHello@123..');
             await sharedPage.getByRole('button', {name: 'Save new password'}).click();
@@ -40,24 +40,6 @@ test.describe('Admin', () => {
                 await sharedPage.goto('/ghost');
                 await sharedPage.locator('[data-test-nav="settings"]').click();
                 await sharedPage.waitForLoadState('networkidle');
-
-                // Make an API call to get settings
-                const adminUrl = new URL(sharedPage.url()).origin + '/ghost';
-                const settingsResponse = await sharedPage.request.get(`${adminUrl}/api/admin/settings/`);
-                const settingsData = await settingsResponse.json();
-                // Add staff2fa flag to labs settings
-                const settings = settingsData.settings;
-                const labsSetting = settings.find(s => s.key === 'labs');
-                const labsValue = JSON.parse(labsSetting.value);
-                labsValue.staff2fa = true;
-                labsSetting.value = JSON.stringify(labsValue);
-
-                // Update settings
-                await sharedPage.request.put(`${adminUrl}/api/admin/settings/`, {
-                    data: {
-                        settings
-                    }
-                });
 
                 // Logout
                 const context = await sharedPage.context();
@@ -77,7 +59,7 @@ test.describe('Admin', () => {
                 //Reset Password
                 await sharedPage.goto(`/ghost/reset/${resetToken}/`);
                 await expect(sharedPage.locator(`text=Reset your password.`)).toBeVisible();
-                
+
                 await sharedPage.locator('[data-test-nav="newPassword"]').fill('HiHello@123..');
                 await sharedPage.locator('[data-test-nav="newPassword2"]').fill('HiHello@123..');
                 await sharedPage.getByRole('button', {name: 'Save new password'}).click();

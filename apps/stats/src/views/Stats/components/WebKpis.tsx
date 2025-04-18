@@ -18,7 +18,7 @@ type KpiMetric = {
 const KPI_METRICS: Record<string, KpiMetric> = {
     visits: {
         dataKey: 'visits',
-        label: 'Visits',
+        label: 'Visitors',
         formatter: formatNumber
     },
     views: {
@@ -121,15 +121,10 @@ const WebKpis:React.FC = ({}) => {
                 }}>
                     <KpiTabValue label="Total views" value={kpiValues.views} />
                 </KpiTabTrigger>
-                <KpiTabTrigger value="visit-duration" onClick={() => {
-                    setCurrentTab('visit-duration');
-                }}>
-                    <KpiTabValue label="Avg. visit duration" value={kpiValues.duration} />
-                </KpiTabTrigger>
             </TabsList>
-            <div className='my-4 min-h-[15vw]'>
+            <div className='my-4 [&_.recharts-cartesian-axis-tick-value]:fill-gray-500'>
                 {isLoading ? 'Loading' :
-                    <ChartContainer className='-mb-3 max-h-[15vw] min-h-[260px] w-full' config={chartConfig}>
+                    <ChartContainer className='-mb-3 h-[16vw] max-h-[320px] w-full' config={chartConfig}>
                         <Recharts.LineChart
                             data={chartData}
                             margin={{
