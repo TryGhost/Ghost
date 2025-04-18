@@ -266,7 +266,7 @@ const EditProfile: React.FC<EditProfileProps> = ({account, setIsEditingProfile})
                                 <div className='relative flex items-center justify-stretch gap-1 rounded-md bg-gray-150 px-3 dark:bg-gray-900'>
                                     <LucideIcon.AtSign className='w-4 min-w-4 text-gray-700' size={16} />
                                     <Input className='w-auto grow !border-none bg-transparent px-0 !shadow-none !outline-none' placeholder="index" {...field} />
-                                    <span className='max-w-[320px] truncate whitespace-nowrap text-right text-gray-700' title={`@${handleDomain}`}>@{handleDomain}</span>
+                                    <span className='max-w-[260px] truncate whitespace-nowrap text-right text-gray-700' title={`@${handleDomain}`}>@{handleDomain}</span>
                                 </div>
                             </FormControl>
                             {!hasHandleError && (
