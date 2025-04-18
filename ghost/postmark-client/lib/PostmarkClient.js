@@ -94,16 +94,18 @@ module.exports = class PostmarkClient {
 
             startTime = Date.now();
             const response = await postmarkInstance.sendEmailBatch(emailMessages);
+            logging.info(JSON.stringify(response));
 
-            if (response[0].ErrorCode) {
+            const successCount = response.filter(r => r.ErrorCode === 0).length;
+            if (successCount === 0) {
                 throw new errors.EmailError({
                     response,
                     code: 'BULK_EMAIL_SEND_FAILED',
                     message: `Error sending email`,
-                    context: response[0].Message
+                    context: response
                 });
             }
-            logging.info(JSON.stringify(response));
+            logging.info(`[POSTMARK] Sent ${successCount} emails to ${Object.keys(recipientData).length} recipients`);
 
             metrics.metric('postmark-send-mail', {
                 value: Date.now() - startTime,
