@@ -1,13 +1,17 @@
-import ContentView from '@views/Feed/components/ContentView';
+import BlueskySharing from '@views/Preferences/components/BlueskySharing';
 import Error from '@components/layout/Error';
 import Explore from '@views/Explore';
+import Feed from './views/Feed/Feed';
 import Inbox from '@views/Inbox';
+import Note from './views/Feed/Note';
 import Notifications from '@views/Notifications';
 import Onboarding from '@components/layout/Onboarding';
 import OnboardingStep1 from '@components/layout/Onboarding/Step1';
 import OnboardingStep2 from '@components/layout/Onboarding/Step2';
 import OnboardingStep3 from '@components/layout/Onboarding/Step3';
+import Preferences from '@views/Preferences';
 import Profile from '@views/Profile';
+import ThreadsSharing from '@views/Preferences/components/ThreadsSharing';
 import {Navigate, RouteObject} from '@tryghost/admin-x-framework';
 
 export const APP_ROUTE_PREFIX = '/activitypub';
@@ -15,6 +19,7 @@ export const APP_ROUTE_PREFIX = '/activitypub';
 export type CustomRouteObject = RouteObject & {
     pageTitle?: string;
     children?: CustomRouteObject[];
+    showBackButton?: boolean;
 };
 
 export const routes: CustomRouteObject[] = [
@@ -25,7 +30,7 @@ export const routes: CustomRouteObject[] = [
         children: [
             {
                 index: true,
-                element: <Navigate to="inbox" replace />
+                element: <Navigate to="inbox" />
             },
             {
                 path: 'inbox',
@@ -33,14 +38,19 @@ export const routes: CustomRouteObject[] = [
                 pageTitle: 'Inbox'
             },
             {
-                path: 'feed',
+                path: 'inbox/:postId',
                 element: <Inbox />,
+                pageTitle: 'Inbox'
+            },
+            {
+                path: 'feed',
+                element: <Feed />,
                 pageTitle: 'Feed'
             },
             {
-                path: 'feed/:encodedId',
-                element: <ContentView />,
-                pageTitle: ''
+                path: 'feed/:postId',
+                element: <Note />,
+                pageTitle: 'Note'
             },
             {
                 path: 'notifications',
@@ -56,6 +66,26 @@ export const routes: CustomRouteObject[] = [
                 path: 'profile',
                 element: <Profile />,
                 pageTitle: 'Profile'
+            },
+            {
+                path: 'profile/:handle',
+                element: <Profile />,
+                pageTitle: 'Profile'
+            },
+            {
+                path: 'preferences',
+                element: <Preferences />,
+                pageTitle: 'Preferences'
+            },
+            {
+                path: 'preferences/threads-sharing',
+                element: <ThreadsSharing />,
+                showBackButton: true
+            },
+            {
+                path: 'preferences/bluesky-sharing',
+                element: <BlueskySharing />,
+                showBackButton: true
             },
             {
                 path: 'welcome',

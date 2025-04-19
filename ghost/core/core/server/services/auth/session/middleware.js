@@ -15,7 +15,8 @@ function SessionMiddleware({sessionService}) {
             } else {
                 await sessionService.sendAuthCodeToUser(req, res);
                 throw new errors.NoPermissionError({
-                    code: '2FA_TOKEN_REQUIRED',
+                    code: sessionService.isVerificationRequired() ? '2FA_TOKEN_REQUIRED' : '2FA_NEW_DEVICE_DETECTED',
+                    context: 'A 6-digit sign-in verification code has been sent to your email to keep your account safe.',
                     errorType: 'Needs2FAError',
                     message: 'User must verify session to login.'
                 });

@@ -1,6 +1,6 @@
-const Minifier = require('@tryghost/minifier');
 const path = require('path');
 const config = require('../../../shared/config');
+const Minifier = require('./Minifier');
 const AssetsMinificationBase = require('./AssetsMinificationBase');
 
 module.exports = class CommentCountsAssets extends AssetsMinificationBase {

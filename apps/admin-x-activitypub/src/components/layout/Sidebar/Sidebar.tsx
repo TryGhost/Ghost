@@ -1,19 +1,32 @@
 import * as React from 'react';
 import FeedbackBox from './FeedbackBox';
-import NewPostModal from '@views/Feed/components/NewPostModal';
-import NiceModal from '@ebay/nice-modal-react';
+import NewNoteModal from '@src/components/modals/NewNoteModal';
 import Recommendations from './Recommendations';
+import Search from '@src/components/modals/Search';
+import SearchInput from '../Header/SearchInput';
 import SidebarMenuLink from './SidebarMenuLink';
-import {Button, LucideIcon} from '@tryghost/shade';
+import {Button, Dialog, DialogContent, DialogTrigger, LucideIcon} from '@tryghost/shade';
 import {useFeatureFlags} from '@src/lib/feature-flags';
 
 const Sidebar: React.FC = () => {
-    const {allFlags, flags} = useFeatureFlags();
+    const {allFlags, flags, isEnabled} = useFeatureFlags();
+    const [isSearchOpen, setIsSearchOpen] = React.useState(false);
+    const [searchQuery, setSearchQuery] = React.useState('');
 
     return (
-        <div className='sticky top-[102px] flex min-h-[calc(100vh-102px-32px)] w-[294px] flex-col border-l border-gray-200 dark:border-gray-950'>
+        <div className='sticky top-0 flex min-h-screen w-[320px] flex-col border-l border-gray-200 pr-8 dark:border-gray-950'>
             <div className='flex grow flex-col justify-between'>
-                <div className='isolate flex w-full flex-col items-start gap-6 pl-4 pt-4'>
+                <div className='isolate flex w-full flex-col items-start gap-6 pl-6 pt-6'>
+                    <div className='flex h-[52px] w-full items-center'>
+                        <Dialog open={isSearchOpen} onOpenChange={setIsSearchOpen}>
+                            <DialogTrigger className='w-full'>
+                                <SearchInput />
+                            </DialogTrigger>
+                            <DialogContent>
+                                <Search query={searchQuery} setQuery={setSearchQuery} onOpenChange={setIsSearchOpen} />
+                            </DialogContent>
+                        </Dialog>
+                    </div>
                     <div className='flex w-full flex-col gap-px'>
                         <SidebarMenuLink to='/inbox'>
                             <LucideIcon.Inbox size={18} strokeWidth={1.5} />
@@ -35,11 +48,19 @@ const Sidebar: React.FC = () => {
                             <LucideIcon.User size={18} strokeWidth={1.5} />
                             Profile
                         </SidebarMenuLink>
+                        {isEnabled('settings-full') &&
+                            <SidebarMenuLink to='/preferences'>
+                                <LucideIcon.Settings2 size={18} strokeWidth={1.5} />
+                                Preferences
+                            </SidebarMenuLink>
+                        }
                     </div>
-                    <Button className='h-9 rounded-full bg-purple-500 px-3 text-md text-white dark:hover:bg-purple-500' onClick={() => NiceModal.show(NewPostModal)}>
-                        <LucideIcon.FilePen />
-                        New note
-                    </Button>
+                    <NewNoteModal>
+                        <Button className='h-9 rounded-full bg-purple-500 px-3 text-md text-white dark:hover:bg-purple-500'>
+                            <LucideIcon.FilePen />
+                            New note
+                        </Button>
+                    </NewNoteModal>
 
                     <Recommendations />
 
@@ -57,7 +78,7 @@ const Sidebar: React.FC = () => {
                         return (<></>);
                     })}
                 </div>
-                <div className='sticky bottom-0 -mb-4 flex items-center gap-2 bg-white pb-4 pl-4 dark:bg-black'>
+                <div className='sticky bottom-0 flex items-center gap-2 bg-white pb-4 pl-4 dark:bg-black'>
                     <FeedbackBox />
                 </div>
             </div>

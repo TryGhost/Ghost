@@ -67,15 +67,15 @@ const FeedItemStats: React.FC<FeedItemStatsProps> = ({
         onLikeClick();
     };
 
-    const buttonClassName = `transition-color flex p-2 ap-action-button items-center justify-center rounded-md bg-white text-gray-900 leading-none hover:bg-gray-100 dark:bg-black dark:hover:bg-gray-950 dark:text-gray-600`;
+    const buttonClassName = `transition-color flex p-2 ap-action-button items-center justify-center rounded-md text-gray-900 leading-none hover:bg-black/[3%] dark:bg-black dark:hover:bg-gray-950 dark:text-gray-600`;
 
     return (<div className={`flex ${layout !== 'inbox' && 'gap-1'}`}>
         <Button
-            className={`${buttonClassName} ${isLiked ? 'text-red-600' : 'text-gray-900'}`}
+            className={`${buttonClassName} ${isLiked ? 'text-pink-500' : 'text-gray-900'}`}
             disabled={disabled}
             hideLabel={true}
             icon='heart'
-            iconColorClass={`w-[18px] h-[18px] ${isLiked && 'ap-red-heart text-red-600 *:!fill-red-600 hover:text-red-600'}`}
+            iconColorClass={`w-[18px] h-[18px] ${isLiked && 'ap-red-heart text-pink-500 *:!fill-pink-500 hover:text-pink-500'}`}
             id='like'
             label={new Intl.NumberFormat().format(likeCount)}
             size='md'

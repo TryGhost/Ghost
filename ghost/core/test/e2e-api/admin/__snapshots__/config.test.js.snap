@@ -29,6 +29,7 @@ Object {
       "mailEvents": true,
       "members": true,
       "postsX": true,
+      "socialLinks": true,
       "statsX": true,
       "stripeAutomaticTax": true,
       "superEditors": true,
@@ -38,6 +39,9 @@ Object {
     },
     "mail": "",
     "mailgunIsConfigured": false,
+    "security": Object {
+      "staffDeviceVerification": false,
+    },
     "signupForm": Object {
       "url": "https://cdn.jsdelivr.net/ghost/signup-form@~{version}/umd/signup-form.min.js",
       "version": "0.2",

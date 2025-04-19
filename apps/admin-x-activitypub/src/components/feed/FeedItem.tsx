@@ -10,10 +10,11 @@ import FeedItemStats from './FeedItemStats';
 import clsx from 'clsx';
 import getReadingTime from '../../utils/get-reading-time';
 import getUsername from '../../utils/get-username';
-import {handleProfileClick} from '../../utils/handle-profile-click';
+import {handleProfileClickRR} from '../../utils/handle-profile-click';
 import {openLinksInNewTab, stripHtml} from '../../utils/content-formatters';
 import {renderTimestamp} from '../../utils/render-timestamp';
 import {useDeleteMutationForUser} from '../../hooks/use-activity-pub-queries';
+import {useNavigate} from '@tryghost/admin-x-framework';
 
 function getAttachment(object: ObjectProperties) {
     let attachment;
@@ -64,7 +65,7 @@ export function renderFeedAttachment(object: ObjectProperties) {
         return (
             <div className={`attachment-gallery mt-3 grid ${gridClass} gap-2`}>
                 {attachment.map((item, index) => (
-                    <img key={item.url} alt={item.name || `Image-${index}`} className={`h-full w-full rounded-md object-cover outline outline-1 -outline-offset-1 outline-black/10 ${attachmentCount === 3 && index === 0 ? 'row-span-2' : ''}`} src={item.url} />
+                    <img key={item.url} alt={item.name || `Image-${index}`} className={`size-full rounded-md object-cover outline outline-1 -outline-offset-1 outline-black/10 ${attachmentCount === 3 && index === 0 ? 'row-span-2' : ''}`} src={item.url} />
                 ))}
             </div>
         );
@@ -261,27 +262,35 @@ const FeedItem: React.FC<FeedItemProps> = ({
     }
 
     const UserMenuTrigger = (
-        <Button className={`relative z-10 h-[34px] w-[34px] rounded-md ${layout === 'inbox' || layout === 'modal' ? 'text-gray-900 hover:text-gray-900 dark:text-gray-600 dark:hover:text-gray-600' : 'text-gray-500 hover:text-gray-500'} dark:bg-black dark:hover:bg-gray-950 [&_svg]:size-5`} variant='ghost'>
+        <Button className={`relative z-10 size-[34px] rounded-md ${layout === 'inbox' || layout === 'modal' ? 'text-gray-900 hover:text-gray-900 dark:text-gray-600 dark:hover:text-gray-600' : 'text-gray-500 hover:text-gray-500'} dark:bg-black dark:hover:bg-gray-950 [&_svg]:size-5`} variant='ghost'>
             <LucideIcon.Ellipsis />
         </Button>
     );
+
+    const navigate = useNavigate();
 
     if (layout === 'feed') {
         return (
             <>
                 {object && (
-                    <div className={`group/article relative -mx-4 -my-px ${!isPending ? 'cursor-pointer' : 'pointer-events-none'} rounded-lg p-6 px-8 pb-[18px]`} data-layout='feed' data-object-id={object.id} onClick={onClick}>
+                    <div className={`group/article relative -mx-4 ${!isPending ? 'cursor-pointer' : 'pointer-events-none'} rounded-lg p-6 px-4 pb-[18px]`} data-layout='feed' data-object-id={object.id} onClick={onClick}>
                         {(type === 'Announce') && <div className='z-10 mb-2 flex items-center gap-2 text-gray-700 dark:text-gray-600'>
                             <Icon colorClass='text-gray-700 shrink-0 dark:text-gray-600' name='reload' size={'sm'} />
                             <div className='flex min-w-0 items-center gap-1 text-sm'>
-                                <span className='truncate break-all hover:underline' title={getUsername(actor)} onClick={e => handleProfileClick(actor, e)}>{actor.name}</span>
+                                <span className='truncate break-all hover:underline' title={getUsername(actor)} onClick={(e) => {
+                                    handleProfileClickRR(actor, navigate, e);
+                                }}>{actor.name}</span>
                                 reposted
                             </div>
                         </div>}
                         <div className={`border-1 flex flex-col gap-2.5`} data-test-activity>
                             <div className='flex min-w-0 items-center gap-3'>
                                 <APAvatar author={author} disabled={isPending} />
-                                <div className='flex min-w-0 grow flex-col gap-0.5' onClick={e => !isPending && handleProfileClick(author, e)}>
+                                <div className='flex min-w-0 grow flex-col gap-0.5' onClick={(e) => {
+                                    if (!isPending) {
+                                        handleProfileClickRR(author, navigate, e);
+                                    }
+                                }}>
                                     <span className={`min-w-0 truncate break-all font-semibold leading-[normal] ${!isPending ? 'hover-underline' : ''} dark:text-white`}
                                         data-test-activity-heading
                                     >
@@ -305,14 +314,14 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                     onDelete={handleDelete}
                                 />
                             </div>
-                            <div className={`relative col-start-2 col-end-3 w-full gap-4`}>
+                            <div className='relative col-start-2 col-end-3 w-full gap-4 pl-[52px]'>
                                 <div className='flex flex-col'>
                                     <div className=''>
                                         {(object.type === 'Article') ? <div className='rounded-md border border-gray-150 transition-colors hover:bg-gray-75 dark:border-gray-950 dark:hover:bg-gray-950'>
                                             {renderFeedAttachment(object)}
-                                            <div className='p-4'>
-                                                <Heading className='mb-1 text-pretty leading-tight' level={5} data-test-activity-heading>{object.name}</Heading>
-                                                <div className='line-clamp-3 leading-tight'>{object.preview?.content}</div>
+                                            <div className='p-5'>
+                                                <div className='mb-1 text-pretty text-lg font-semibold leading-tight tracking-tight' data-test-activity-heading>{object.name}</div>
+                                                <div className='line-clamp-3 leading-[1.4em]'>{object.preview?.content}</div>
                                             </div>
                                         </div> :
                                             <div className='relative'>
@@ -373,13 +382,19 @@ const FeedItem: React.FC<FeedItemProps> = ({
                             <div className={`z-10 -my-1 grid grid-cols-[auto_1fr] grid-rows-[auto_1fr] gap-3 pb-3 pt-4`} data-test-activity>
                                 {(type === 'Announce') && <div className='z-10 col-span-2 mb-2 flex items-center gap-2 text-gray-700 dark:text-gray-600'>
                                     <div><Icon colorClass='text-gray-700 shrink-0 dark:text-gray-600' name='reload' size={'sm'}></Icon></div>
-                                    <span className='flex min-w-0 items-center gap-1'><span className='truncate break-all hover:underline' title={getUsername(actor)} onClick={e => handleProfileClick(actor, e)}>{actor.name}</span> reposted</span>
+                                    <span className='flex min-w-0 items-center gap-1'><span className='truncate break-all hover:underline' title={getUsername(actor)} onClick={(e) => {
+                                        handleProfileClickRR(actor, navigate, e);
+                                    }}>{actor.name}</span> reposted</span>
                                 </div>}
                                 {(showHeader) && <>
                                     <div className='relative z-10 pt-[3px]'>
                                         <APAvatar author={author}/>
                                     </div>
-                                    <div className='relative z-10 flex w-full min-w-0 cursor-pointer flex-col overflow-visible text-[1.5rem]' onClick={e => !isPending && handleProfileClick(author, e)}>
+                                    <div className='relative z-10 flex w-full min-w-0 cursor-pointer flex-col overflow-visible text-[1.5rem]' onClick={(e) => {
+                                        if (!isPending) {
+                                            handleProfileClickRR(author, navigate, e);
+                                        }
+                                    }}>
                                         <div className='flex w-full'>
                                             <span className='min-w-0 truncate whitespace-nowrap font-semibold after:mx-1 after:font-normal after:text-gray-700 after:content-["·"] after:dark:text-gray-600' data-test-activity-heading>{author.name}</span>
                                             <div>{renderTimestamp(object, !object.authored)}</div>
@@ -427,9 +442,13 @@ const FeedItem: React.FC<FeedItemProps> = ({
                             </div>
                             <div className='flex w-full min-w-0 flex-col gap-2'>
                                 <div className='flex w-full items-center justify-between'>
-                                    <div className='relative z-10 flex w-full min-w-0 flex-col overflow-visible' onClick={e => !isPending && handleProfileClick(author, e)}>
+                                    <div className='relative z-10 flex w-full min-w-0 flex-col overflow-visible' onClick={(e) => {
+                                        if (!isPending) {
+                                            handleProfileClickRR(author, navigate, e);
+                                        }
+                                    }}>
                                         <div className='flex'>
-                                            <span className='min-w-0 truncate whitespace-nowrap font-semibold after:mx-1 after:font-normal after:text-gray-700 after:content-["·"]' data-test-activity-heading>{author.name}</span>
+                                            <span className='min-w-0 truncate whitespace-nowrap font-semibold text-black after:mx-1 after:font-normal after:text-gray-700 after:content-["·"] dark:text-white' data-test-activity-heading>{author.name}</span>
                                             <div>{renderTimestamp(object, (isPending === false && !object.authored))}</div>
                                         </div>
                                         <div className='flex'>
@@ -494,10 +513,14 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                         <span className='min-w-0 truncate break-all font-semibold text-gray-900 hover:underline dark:text-gray-600'
                                             title={getUsername(author)}
                                             data-test-activity-heading
-                                            onClick={e => handleProfileClick(author, e)}
+                                            onClick={(e) => {
+                                                handleProfileClickRR(author, navigate, e);
+                                            }}
                                         >{author.name}
                                         </span>
-                                        {(type === 'Announce') && <span className='z-10 flex items-center gap-1 text-gray-700 dark:text-gray-600'><Icon colorClass='text-gray-700 shrink-0 dark:text-gray-600' name='reload' size={'sm'}></Icon><span className='hover:underline' title={getUsername(actor)} onClick={e => handleProfileClick(actor, e)}>{actor.name}</span> reposted</span>}
+                                        {(type === 'Announce') && <span className='z-10 flex items-center gap-1 text-gray-700 dark:text-gray-600'><Icon colorClass='text-gray-700 shrink-0 dark:text-gray-600' name='reload' size={'sm'}></Icon><span className='hover:underline' title={getUsername(actor)} onClick={(e) => {
+                                            handleProfileClickRR(actor, navigate, e);
+                                        }}>{actor.name}</span> reposted</span>}
                                         <span className='shrink-0 whitespace-nowrap text-gray-600 before:mr-1 before:content-["·"]' title={`${timestamp}`}>{renderTimestamp(object, !object.authored)}</span>
                                     </> :
                                     <Skeleton className='w-24' />

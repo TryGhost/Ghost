@@ -164,6 +164,12 @@
     border: 1px solid var(--whitegrey);
 }
 
+.gh-contentfilter-divider {
+    width: 1px;
+    height: 16px;
+    background: var(--lightgrey);
+}
+
 
 /* Content List
 /* ---------------------------------------------------------- */

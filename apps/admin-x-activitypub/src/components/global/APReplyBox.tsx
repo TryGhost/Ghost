@@ -38,6 +38,11 @@ export const useFocusedState = (initialValue: boolean) => {
     return [state, setState] as const;
 };
 
+const adjustTextareaHeight = (textarea: HTMLTextAreaElement) => {
+    textarea.style.height = 'auto';
+    textarea.style.height = `${textarea.scrollHeight + 2}px`;
+};
+
 const APReplyBox: React.FC<APTextAreaProps> = ({
     title,
     value,
@@ -85,14 +90,26 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
         onReply?.();
     }
 
-    function handleChange(event: React.ChangeEvent<HTMLTextAreaElement>) {
-        setTextValue(event.target.value); // Update the state on every change
-    }
-
     const [isFocused, setFocused] = useState(false);
+
+    useEffect(() => {
+        if (textareaRef.current) {
+            adjustTextareaHeight(textareaRef.current);
+        }
+    }, [textValue]);
+
+    function handleChange(event: React.ChangeEvent<HTMLTextAreaElement>) {
+        setTextValue(event.target.value);
+        if (event.target) {
+            adjustTextareaHeight(event.target);
+        }
+    }
 
     function handleBlur() {
         setFocused(false);
+        if (textareaRef.current && !textValue?.trim()) {
+            textareaRef.current.style.height = '';
+        }
     }
 
     function handleFocus() {
@@ -100,7 +117,9 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
     }
 
     const styles = clsx(
-        `ap-textarea order-2 w-full resize-none rounded-lg border bg-transparent py-2 pr-3 text-[1.5rem] transition-all dark:text-white ${isFocused && 'pb-12'}`,
+        'ap-textarea order-2 w-full resize-none break-words rounded-lg border bg-transparent py-2 pr-3 text-[1.5rem] transition-all dark:text-white',
+        isFocused ? 'min-h-[20px]' : 'min-h-[41px]',
+        (textValue || isFocused) && 'mb-10',
         error ? 'border-red' : 'border-transparent placeholder:text-gray-500 dark:placeholder:text-gray-800',
         title && 'mt-1.5',
         className
@@ -129,7 +148,7 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
                                     id={id}
                                     maxLength={maxLength}
                                     placeholder={placeholder}
-                                    rows={isFocused ? 3 : rows}
+                                    rows={rows}
                                     value={textValue}
                                     onBlur={handleBlur}
                                     onChange={handleChange}

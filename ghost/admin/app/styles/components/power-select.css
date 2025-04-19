@@ -93,6 +93,10 @@
     background: transparent;
 }
 
+.ember-power-select-option[aria-selected="true"]:hover {
+    background: color-mod(var(--whitegrey) a(60%) s(-12%));
+}
+
 .ember-power-select-options:not([role="group"]) {
     max-height: 50vh;
     width: 100%;

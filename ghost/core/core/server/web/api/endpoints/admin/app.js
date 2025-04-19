@@ -2,15 +2,13 @@ const debug = require('@tryghost/debug')('web:endpoints:admin:app');
 const boolParser = require('express-query-boolean');
 const bodyParser = require('body-parser');
 const errorHandler = require('@tryghost/mw-error-handler');
-const versionMatch = require('@tryghost/mw-version-match');
 
-const labs = require('../../../../../shared/labs');
+const versionMatch = require('../../middleware/version-match');
 const shared = require('../../../shared');
 const express = require('../../../../../shared/express');
 const sentry = require('../../../../../shared/sentry');
 const routes = require('./routes');
 const APIVersionCompatibilityService = require('../../../../services/api-version-compatibility');
-const GhostNestApp = require('@tryghost/ghost');
 
 /**
  * @returns {import('express').Application}
@@ -37,24 +35,6 @@ module.exports = function setupApiApp() {
 
     // Routing
     apiApp.use(routes());
-
-    apiApp.use(async function nestApp(req, res, next) {
-        if (process.env.GHOST_ENABLE_NEST_FRAMEWORK && labs.isSet('NestPlayground')) {
-            const originalExpressApp = req.app;
-            const app = await GhostNestApp.getApp();
-
-            const instance = app.getHttpAdapter().getInstance();
-            instance(Object.assign({}, req, {
-                url: req.originalUrl,
-                baseUrl: ''
-            }), res, function (err) {
-                req.app = originalExpressApp;
-                next(err);
-            });
-            return;
-        }
-        return next();
-    });
 
     // API error handling
     apiApp.use(errorHandler.resourceNotFound);

@@ -23,6 +23,19 @@ function isJSONContentType(header) {
     return header.indexOf(JSON_CONTENT_TYPE) === 0;
 }
 
+function getJSONPayload(payload) {
+    // ember-simple-auth prevents ember-ajax parsing response as JSON but
+    // we need a JSON object to test against
+    if (typeof payload === 'string') {
+        try {
+            payload = JSON.parse(payload);
+        } catch (e) {
+            // do nothing
+        }
+    }
+    return payload;
+}
+
 /* Version mismatch error */
 
 export class VersionMismatchError extends AjaxError {
@@ -181,31 +194,21 @@ export function isEmailError(errorOrStatus, payload) {
 /* 2FA required error */
 export class TwoFactorTokenRequiredError extends AjaxError {
     constructor(payload) {
+        payload = getJSONPayload(payload);
         super(payload, '2nd factor verification is required to sign in.');
     }
 }
 
 export function isTwoFactorTokenRequiredError(errorOrStatus, payload) {
-    const tokenRequiredCode = '2FA_TOKEN_REQUIRED';
-
-    // ember-simple-auth prevents ember-ajax parsing response as JSON but
-    // we need a JSON object to test against
-    if (typeof payload === 'string') {
-        try {
-            payload = JSON.parse(payload);
-        } catch (e) {
-            // do nothing
-        }
-    }
+    const twoFactorAuthCodes = ['2FA_TOKEN_REQUIRED', '2FA_NEW_DEVICE_DETECTED'];
 
     if (isAjaxError(errorOrStatus)) {
-        return errorOrStatus instanceof TwoFactorTokenRequiredError || getErrorCode(errorOrStatus) === tokenRequiredCode;
+        return errorOrStatus instanceof TwoFactorTokenRequiredError || twoFactorAuthCodes.includes(getErrorCode(errorOrStatus));
     } else {
-        return get(payload || {}, 'errors.firstObject.code') === tokenRequiredCode;
+        payload = getJSONPayload(payload);
+        return twoFactorAuthCodes.includes(get(payload || {}, 'errors.firstObject.code'));
     }
 }
-
-/* end: custom error types */
 
 export class AcceptedResponse {
     constructor(data) {

@@ -57,7 +57,7 @@
                 </li>
                 {{#if (and (gh-user-can-admin this.session.user) this.config.stats)}}
                     <li class="relative">
-                        <LinkTo @route="stats">{{svg-jar "stats-outline"}}Stats</LinkTo>
+                        <LinkTo @route="stats-x">{{svg-jar "stats-outline"}}Stats</LinkTo>
                     </li>
                 {{/if}}
                 {{#if (gh-user-can-admin this.session.user)}}
@@ -174,11 +174,6 @@
                 <li>
                     <LinkTo @route="posts-x" @current-when="posts-x">{{svg-jar "chart"}}Post analytics</LinkTo>
                 </li>
-                {{/if}}
-                {{#if (and (gh-user-can-admin this.session.user) this.config.stats (feature "statsX"))}}
-                    <li class="relative">
-                        <LinkTo @route="stats-x">{{svg-jar "stats-outline"}}Stats X</LinkTo>
-                    </li>
                 {{/if}}
             </ul>
 

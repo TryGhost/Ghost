@@ -123,6 +123,9 @@ jobs:
             tinybird:
               - 'ghost/web-analytics/**'
               - '!ghost/web-analytics/**/*.md'
+            tinybird-forward:
+              - 'ghost/core/core/server/data/tinybird/**'
+              - '!ghost/core/core/server/data/tinybird/**/*.md'
             any-code:
               - '!**/*.md'
 
@@ -197,6 +200,7 @@ jobs:
       changed_signup_form: ${{ steps.changed.outputs.signup-form }}
       changed_sodo_search: ${{ steps.changed.outputs.sodo-search }}
       changed_tinybird: ${{ steps.changed.outputs.tinybird }}
+      changed_tinybird_forward: ${{ steps.changed.outputs.tinybird-forward }}
       changed_any_code: ${{ steps.changed.outputs.any-code }}
       changed_new_package: ${{ steps.added.outputs.new-package }}
       base_commit: ${{ env.BASE_COMMIT }}
@@ -520,6 +524,13 @@ jobs:
         run: sudo service mysql stop
         if: matrix.env.DB == 'mysql8'
 
+      - name: Login to Docker Hub
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
       - uses: tryghost/mysql-action@main
         if: matrix.env.DB == 'mysql8'
         timeout-minutes: 3
@@ -841,9 +852,39 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
+  job_tinybird_forward:
+    name: Tinybird Tests (Forward)
+    runs-on: ubuntu-latest
+    needs: [job_setup]
+    if: needs.job_setup.outputs.changed_tinybird_forward == 'true'
+    env:
+      TINYBIRD_HOST: ${{ secrets.TINYBIRD_HOST }}
+      TINYBIRD_TOKEN: ${{ secrets.TINYBIRD_TOKEN }}
+    defaults:
+        run:
+          working-directory: ghost/core/core/server/data/tinybird
+    services:
+      tinybird:
+        image: tinybirdco/tinybird-local:latest
+        ports:
+          - 7181:7181
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Tinybird CLI
+        run: curl -fsSL https://tinybird.co/install.sh | sh
+      - name: Build project
+        run: tb build
+      - name: Test project
+        run: tb test run
+      - name: Deployment check
+        run: tb --cloud --host ${{ env.TINYBIRD_HOST }} --token ${{ env.TINYBIRD_TOKEN }} deploy --check
+
+  # Tinyird Tests (Classic) — This test suite is deprecated and will be removed very soon.
   job_tinybird:
     name: Tinybird Tests (Web Analytics)
     runs-on: ubuntu-latest
+    env:
+      TB_VERSION_WARNING: 0
     needs: [
       job_setup
     ]
@@ -873,6 +914,9 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 300
+      - name: Lint datasources and pipes
+        run: |
+          ./scripts/lint.sh
       - name: Check secrets
         if: github.event_name == 'pull_request'
         env:
@@ -944,6 +988,7 @@ jobs:
           fi
       - name: Custom deployment to the test Branch
         run: |
+          source .tinyenv
           DEPLOY_FILE=./deploy/${VERSION}/deploy.sh
           if [ -f "$DEPLOY_FILE" ]; then
               echo "$DEPLOY_FILE found"
@@ -1133,6 +1178,7 @@ jobs:
         job_admin_x_settings,
         job_comments_ui,
         job_signup_form,
+        job_tinybird_forward,
         job_tinybird
       ]
     if: always()
@@ -1286,8 +1332,36 @@ jobs:
         uses: gacts/purge-jsdelivr-cache@v1
         with:
           url: ${{ steps.cdn_paths.outputs.cdn_paths }}
+
+  deploy_tinybird_forward:
+    name: Deploy Tinybird Forward
+    runs-on: ubuntu-latest
+    needs: [
+      job_setup,
+      job_tinybird_forward
+    ]
+    if: always() && needs.job_setup.outputs.changed_tinybird_forward == 'true' && needs.job_setup.result == 'success' && needs.job_tinybird_forward.result == 'success' && needs.job_setup.outputs.is_main == 'true'
+    env:
+      TINYBIRD_HOST: ${{ secrets.TINYBIRD_HOST }}
+      TINYBIRD_TOKEN: ${{ secrets.TINYBIRD_TOKEN }}
+    defaults:
+      run:
+        working-directory: ghost/core/core/server/data/tinybird
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install Tinybird CLI
+        run: curl -fsSL https://tinybird.co/install.sh | sh
+      - name: Check the deployment
+        run: tb --cloud --host ${{ env.TINYBIRD_HOST }} --token ${{ env.TINYBIRD_TOKEN }} deployment create --check
+      - name: Create a staging deployment
+        run: tb --cloud --host ${{ env.TINYBIRD_HOST }} --token ${{ env.TINYBIRD_TOKEN }} deployment create --wait
+
+  ## Tinybird Tests (Classic) — This job is deprecated and will be removed very soon.
   deploy_tinybird:
     runs-on: ubuntu-latest
+    env:
+      TB_VERSION_WARNING: 0
     needs: [
       job_setup,
       job_tinybird
@@ -1328,6 +1402,7 @@ jobs:
         run: tb --host=${{ secrets.TB_HOST }} --token=${{ secrets.TB_ADMIN_TOKEN_PRODUCTION }} auth info
       - name: Deploy changes to the main Workspace
         run: |
+          source .tinyenv
           DEPLOY_FILE=./deploy/${VERSION}/deploy.sh
           if [ ! -f "$DEPLOY_FILE" ]; then
             echo "$DEPLOY_FILE not found, running default tb push command"
@@ -1336,6 +1411,7 @@ jobs:
           fi
       - name: Custom deployment to the main Workspace
         run: |
+            source .tinyenv
             DEPLOY_FILE=./deploy/${VERSION}/deploy.sh
             if [ -f "$DEPLOY_FILE" ]; then
               echo "$DEPLOY_FILE found"

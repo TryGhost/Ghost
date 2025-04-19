@@ -1,15 +1,74 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Get the directory where this script is located
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+
+# Record start time
+start_time=$(date +%s)
+
+# Set locale environment variables to avoid Perl warnings
+export LC_ALL=C.UTF-8
+export LANG=C.UTF-8
+
+# Check if GNU Parallel is available
+if ! command -v parallel >/dev/null 2>&1; then
+    echo "GNU Parallel is required but not installed. Please install it first."
+    echo "On Ubuntu/Debian: sudo apt-get install parallel"
+    echo "On macOS: brew install parallel"
+    exit 1
+fi
+
+# Parse command line options
+jobs=""
+test_name=""
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -j|--jobs)
+            if [[ -z "${2:-}" || "$2" == -* ]]; then
+                echo "Error: -j|--jobs requires a number argument"
+                exit 1
+            fi
+            jobs="$2"
+            shift 2
+            ;;
+        -n|--name)
+            if [[ -z "${2:-}" || "$2" == -* ]]; then
+                echo "Error: -n|--name requires a <test_name> argument"
+                exit 1
+            fi
+            test_name="$2"
+            shift 2
+            ;;
+        *)
+            # Store the test name if provided
+            # test_name="$1"
+            # shift
+            echo "Error: Unknown option: $1"
+            exit 1
+            ;;
+    esac
+done
+# Set and export the TB_VERSION variable from .tinyenv file
+source "$SCRIPT_DIR/../.tinyenv"
+export TB_VERSION
+echo "Using TB_VERSION: $TB_VERSION"
 export TB_VERSION_WARNING=0
 
-# Default version if not provided
-export TB_VERSION=${TB_VERSION:-7}
-
-echo "TB_VERSION: $TB_VERSION"
 # Get the expected count once, outside of any function
 ndjson_file="./tests/fixtures/analytics_events.ndjson"
 export expected_count=$(grep -c '^' "$ndjson_file" || echo "0")
+
+# Get number of CPU cores if not overridden
+if [[ -z "$jobs" ]]; then
+    if [[ "$(uname)" == "Darwin" ]]; then
+        jobs=$(( $(sysctl -n hw.ncpu) * 2 ))
+    else
+        jobs=$(( $(nproc) * 2 ))
+    fi
+fi
+
+echo "Using $jobs parallel jobs for test execution"
 
 check_sum() {
     local file=$1
@@ -99,8 +158,7 @@ export -f check_sum
 fail=0
 
 # Check if a test name was provided as an argument
-if [ $# -eq 1 ]; then
-    test_name=$1
+if [[ -n "${test_name:-}" ]]; then
     # Find the test file that matches the provided name
     test_file=$(find ./tests -name "${test_name}*.test")
     if [ -n "$test_file" ]; then
@@ -110,11 +168,29 @@ if [ $# -eq 1 ]; then
         fail=1
     fi
 else
-    # If no test name provided, run all tests
-    find ./tests -name "*.test" -print0 | xargs -0 -I {} bash -c 'run_test "$@"' _ {} || fail=1
+    # If no test name provided, run all tests in parallel
+    echo "Running tests in parallel using $jobs workers"
+    # Use parallel to run the tests, maintaining output order
+    output_file=$(mktemp)
+    find ./tests -name "*.test" -print0 | \
+        parallel -0 --jobs "$jobs" --keep-order --line-buffer \
+        'run_test {} || echo "PARALLEL_TEST_FAILED"' | tee "$output_file"
+    if grep -q "PARALLEL_TEST_FAILED" "$output_file"; then
+        rm "$output_file"
+        fail=1
+    else
+        rm "$output_file"
+    fi
 fi
 
 if [ $fail == 1 ]; then
     echo "🚨 ERROR: Some tests failed"
     exit 1
 fi
+
+# Calculate and display duration
+end_time=$(date +%s)
+duration=$((end_time - start_time))
+minutes=$((duration / 60))
+seconds=$((duration % 60))
+echo "✨ Test suite completed in ${minutes}m ${seconds}s"

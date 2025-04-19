@@ -1,5 +1,5 @@
-import React, {useCallback, useMemo} from 'react';
-import {createHashRouter, RouteObject, RouterProvider as ReactRouterProvider, NavigateOptions as ReactRouterNavigateOptions, useNavigate as useReactRouterNavigate} from 'react-router';
+import React, {useCallback, useMemo, useRef, useEffect, createContext, useContext} from 'react';
+import {createHashRouter, RouteObject, RouterProvider as ReactRouterProvider, NavigateOptions as ReactRouterNavigateOptions, useNavigate as useReactRouterNavigate, useLocation, useParams} from 'react-router';
 import {useFramework} from './FrameworkProvider';
 import {NavigationStackProvider} from './NavigationStackProvider';
 import {ErrorPage} from '@tryghost/shade';
@@ -22,6 +22,80 @@ export interface RouterProviderProps {
     // Custom routing props
     errorElement?: React.ReactNode;
     children?: React.ReactNode;
+}
+
+// Store scroll positions globally
+const scrollPositions = new Map<string, number>();
+
+interface ScrollRestorationContextType {
+    saveScrollPosition: (pathname: string, position: number) => void;
+    getScrollPosition: (pathname: string) => number | undefined;
+    resetScrollPosition: (pathname: string) => void;
+}
+
+const ScrollRestorationContext = createContext<ScrollRestorationContextType>({
+    saveScrollPosition: () => {},
+    getScrollPosition: () => undefined,
+    resetScrollPosition: () => {}
+});
+
+export function useScrollRestoration() {
+    return useContext(ScrollRestorationContext);
+}
+
+export function resetScrollPosition(location: string) {
+    scrollPositions.delete(location);
+}
+
+interface ScrollRestorationProps {
+    containerRef: React.RefObject<HTMLDivElement>;
+}
+
+export function ScrollRestoration({containerRef}: ScrollRestorationProps) {
+    const location = useLocation();
+    const previousPathRef = useRef<string | null>(null);
+    const lastScrollPositionRef = useRef<number | null>(null);
+
+    // Save scroll position when user scrolls
+    useEffect(() => {
+        const container = containerRef.current;
+        if (!container) {
+            return;
+        }
+
+        const handleScroll = () => {
+            const currentPosition = container.scrollTop;
+            scrollPositions.set(location.pathname, currentPosition);
+            lastScrollPositionRef.current = currentPosition;
+        };
+
+        container.addEventListener('scroll', handleScroll);
+        return () => container.removeEventListener('scroll', handleScroll);
+    }, [location.pathname, containerRef]);
+
+    // Restore scroll position when pathname changes
+    useEffect(() => {
+        const container = containerRef.current;
+        if (!container) {
+            return;
+        }
+
+        const savedPosition = scrollPositions.get(location.pathname);
+        if (savedPosition !== undefined && previousPathRef.current !== location.pathname) {
+            // Only restore if the saved position is significantly different
+            // This helps prevent small scroll adjustments
+            if (Math.abs(savedPosition - container.scrollTop) > 5) {
+                container.scrollTop = savedPosition;
+            }
+        }
+    }, [location.pathname, containerRef]);
+
+    // Update previous path
+    useEffect(() => {
+        previousPathRef.current = location.pathname;
+    }, [location.pathname]);
+
+    return null;
 }
 
 export function RouterProvider({
@@ -88,4 +162,14 @@ export function useNavigate() {
 
         navigate(to, options);
     }, [navigate, externalNavigate]);
+}
+
+export function useBaseRoute() {
+    const location = useLocation();
+    return location.pathname.split('/')[1];
+}
+
+export function useRouteHasParams() {
+    const params = useParams();
+    return params && Object.keys(params).length > 0;
 }

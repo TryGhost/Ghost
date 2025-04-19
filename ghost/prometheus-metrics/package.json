@@ -26,12 +26,12 @@
     "@types/stoppable": "1.1.0",
     "c8": "10.1.2",
     "knex": "2.4.2",
-    "mocha": "10.7.3",
+    "mocha": "10.8.2",
     "nock": "13.5.6",
-    "sinon": "19.0.2",
+    "sinon": "19.0.5",
     "supertest": "7.0.0",
     "ts-node": "10.9.2",
-    "typescript": "5.6.2"
+    "typescript": "5.8.2"
   },
   "dependencies": {
     "@tryghost/logging": "2.4.21",

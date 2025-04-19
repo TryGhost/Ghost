@@ -1,19 +1,17 @@
 import * as React from 'react';
 import APAvatar from '@components/global/APAvatar';
 import ActivityItem from '@components/activities/ActivityItem';
-import getName from '@utils/get-name';
-import getUsername from '@utils/get-username';
 import {Button, H4, LucideIcon, Skeleton} from '@tryghost/shade';
-import {handleProfileClick} from '@utils/handle-profile-click';
-import {useNavigate} from '@tryghost/admin-x-framework';
+import {handleProfileClickRR} from '@utils/handle-profile-click';
+import {useNavigate, useNavigationStack} from '@tryghost/admin-x-framework';
 import {useSuggestedProfilesForUser} from '@hooks/use-activity-pub-queries';
 
 const Recommendations: React.FC = () => {
     const {suggestedProfilesQuery} = useSuggestedProfilesForUser('index', 3);
     const {data: suggestedData, isLoading: isLoadingSuggested} = suggestedProfilesQuery;
-    const suggested = suggestedData || Array(3).fill({actor: {}});
+    const suggested = isLoadingSuggested ? Array(3).fill(null) : (suggestedData || []);
     const navigate = useNavigate();
-    let i = 0;
+    const {resetStack} = useNavigationStack();
 
     const hideClassName = '[@media(max-height:740px)]:hidden';
 
@@ -29,10 +27,14 @@ const Recommendations: React.FC = () => {
                 </span>
             </div>
             <ul className='grow'>
-                {suggested.map((profile) => {
-                    const actor = profile.actor;
+                {suggested.map((profile, index) => {
+                    const actorId = profile?.id || `loading-${index}`;
+                    const actorName = profile?.name || '';
+                    const actorHandle = profile?.handle || '';
+                    const actorAvatarUrl = profile?.avatarUrl || '';
+
                     let className;
-                    switch (i) {
+                    switch (index) {
                     case 0:
                         className = '[@media(max-height:740px)]:hidden';
                         break;
@@ -43,18 +45,27 @@ const Recommendations: React.FC = () => {
                         className = '[@media(max-height:860px)]:hidden';
                         break;
                     }
-                    i = i + 1;
 
                     return (
-                        <React.Fragment key={actor.id}>
-                            <li key={actor.id} className={className}>
-                                <ActivityItem
-                                    onClick={() => handleProfileClick(actor)}
-                                >
-                                    {!isLoadingSuggested ? <APAvatar author={actor} /> : <Skeleton className='z-10 h-10 w-10' />}
+                        <React.Fragment key={actorId}>
+                            <li key={actorId} className={className}>
+                                <ActivityItem onClick={() => {
+                                    if (!isLoadingSuggested && profile) {
+                                        handleProfileClickRR(profile, navigate);
+                                    }
+                                }}>
+                                    {!isLoadingSuggested ? <APAvatar author={
+                                        {
+                                            icon: {
+                                                url: actorAvatarUrl
+                                            },
+                                            name: actorName,
+                                            handle: actorHandle
+                                        }
+                                    } /> : <Skeleton className='z-10 size-10' />}
                                     <div className='flex min-w-0  flex-col'>
-                                        <span className='block max-w-[190px] truncate font-semibold text-black dark:text-white'>{!isLoadingSuggested ? getName(actor) : <Skeleton className='w-24' />}</span>
-                                        <span className='block max-w-[190px] truncate text-sm text-gray-600'>{!isLoadingSuggested ? getUsername(actor) : <Skeleton className='w-40' />}</span>
+                                        <span className='block max-w-[190px] truncate font-semibold text-black dark:text-white'>{!isLoadingSuggested ? actorName : <Skeleton className='w-24' />}</span>
+                                        <span className='block max-w-[190px] truncate text-sm text-gray-600'>{!isLoadingSuggested ? actorHandle : <Skeleton className='w-40' />}</span>
                                     </div>
                                 </ActivityItem>
                             </li>
@@ -63,6 +74,7 @@ const Recommendations: React.FC = () => {
                 })}
             </ul>
             <Button className='p-0 font-medium text-purple' variant='link' onClick={() => {
+                resetStack();
                 navigate('/explore');
             }}>Find more &rarr;</Button>
         </div>

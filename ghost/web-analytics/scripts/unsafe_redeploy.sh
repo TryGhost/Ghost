@@ -7,14 +7,15 @@ if [[ "$@" == *"--force"* ]]; then
     force=true
 fi
 
-# Get version from TB_VERSION environment variable or prompt
-version=${TB_VERSION:-0}
-if [ "$version" = "0" ]; then
-    read -p "Enter version number to cleanup (default: 0): " input_version
-    if [ ! -z "$input_version" ]; then
-        version=$input_version
-    fi
-fi
+# Get the directory where the script is located
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+
+# Set the TB_VERSION variable from .tinyenv file
+source "$SCRIPT_DIR/../.tinyenv"
+export TB_VERSION
+echo "Using TB_VERSION: $TB_VERSION"
+version=$TB_VERSION
 
 # Get current branch info
 branch_info=$(tb branch current)
@@ -42,7 +43,8 @@ materialized_views=(
 )
 
 data_pipes=(
-    "mv_hits"
+    "mv_hits",
+    "filtered_sessions"
 )
 
 endpoint_pipes=(
@@ -60,7 +62,7 @@ safe_remove() {
     local type=$1
     local name=$2
     local version=$3
-    
+
     if [ "$type" == "pipe" ]; then
         if echo "$pipes" | grep -q "${name}"; then
             echo "Removing pipe: ${name}__v${version}"
@@ -82,7 +84,7 @@ safe_remove() {
 update_file_versions() {
     local new_version=$1
     echo "Updating version to ${new_version} in all files..."
-    
+
     # Update pipe files
     for pipe in "${endpoint_pipes[@]}" "${data_pipes[@]}"; do
         pipe_file="pipes/${pipe}.pipe"
@@ -91,7 +93,7 @@ update_file_versions() {
             sed -i "1s/^VERSION .*$/VERSION ${new_version}/" "$pipe_file"
         fi
     done
-    
+
     # Update datasource files
     for mv in "${materialized_views[@]}"; do
         ds_file="datasources/${mv}.datasource"

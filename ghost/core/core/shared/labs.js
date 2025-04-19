@@ -25,7 +25,9 @@ const GA_FEATURES = [
     'i18n',
     'themeErrorsNotification',
     'announcementBar',
-    'customFonts'
+    'customFonts',
+    'contentVisibility',
+    'socialLinks'
 ];
 
 // NOTE: this allowlist is meant to be used to filter out any unexpected
@@ -37,8 +39,6 @@ const BETA_FEATURES = [
     'editorExcerpt',
     'ActivityPub',
     'importMemberTier',
-    'staff2fa',
-    'contentVisibility',
     'superEditors'
 ];
 

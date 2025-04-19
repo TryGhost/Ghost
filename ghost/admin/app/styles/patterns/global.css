@@ -65,6 +65,7 @@
     --grey-600: #95A1AD;
     --grey-700: #7C8B9A;
     --grey-800: #626D79;
+    --grey-850: #444c55;
     --grey-900: #394047;
     --grey-925: #2E3338;
     --grey-950: #222427;
@@ -191,7 +192,7 @@
     --font-family-mono: Consolas, "Liberation Mono", Menlo, Courier, monospace;
 
     /* Shadows */
-    --shadow-1: 0 0 1px rgba(0,0,0,.12), 0 1px 6px rgba(0,0,0,0.03), 0 6px 10px -8px rgba(0,0,0,.1);
+    --shadow-1: 0 0 1px rgba(0,0,0,.14), 0 1px 6px rgba(0,0,0,0.05), 0 6px 10px -8px rgba(0,0,0,.14);
     --shadow-2: 0 0 1px rgba(0,0,0,.05), 0 5px 18px rgba(0,0,0,.08);
     --shadow-3: 0 0 1px rgba(0,0,0,.05), 0 8px 28px rgba(0,0,0,.12);
 
