@@ -28,13 +28,14 @@ export const setupGhostApi = ({siteUrl}: {siteUrl: string}) => {
 
             return response.text();
         },
-        sendMagicLink: async ({email, integrityToken, labels}: {email: string, labels: string[], integrityToken: string}) => {
+        sendMagicLink: async ({email, integrityToken, labels, newsletters}: {email: string, labels: string[], integrityToken: string, newsletters: string[]}) => {
             const url = endpointFor({type: 'members', resource: 'send-magic-link'});
 
             const payload = JSON.stringify({
                 email,
                 emailType: 'signup',
                 labels,
+                newsletters,
                 urlHistory: getUrlHistory({siteUrl}),
                 integrityToken
             });
