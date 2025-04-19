@@ -64,7 +64,9 @@ We aim to merge any straightforward, well-understood bug fixes or improvements i
 
 Please provide plenty of context and reasoning around your changes, to help us merge quickly. Closing an already open issue is our preferred workflow. If your PR gets out of date, we may ask you to rebase as you are more familiar with your changes than we will be.
 
+### Sharing feedback on Documentation
 
+While the Docs are no longer Open Source, we welcome revisions and ideas on the forum! Please create a Post with your questions or suggestions in the [Contributing to Ghost Category](https://forum.ghost.org/c/contributing/27). Thank you for helping us keep the Docs relevant and up-to-date.
 
 ---
 
