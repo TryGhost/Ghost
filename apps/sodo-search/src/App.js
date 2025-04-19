@@ -25,13 +25,17 @@ export default class App extends React.Component {
             indexStarted: false,
             indexComplete: false,
             t: i18n.t,
-            dir: dir
+            dir: dir,
+            scrollbarWidth: 0
         };
 
         this.inputRef = React.createRef();
     }
 
     componentDidMount() {
+        const scrollbarWidth = this.getScrollbarWidth();
+        this.setState({scrollbarWidth});
+
         this.initSetup();
     }
 
@@ -42,10 +46,19 @@ export default class App extends React.Component {
                 if (this.state.showPopup) {
                     /** When modal is opened, store current overflow and set as hidden */
                     this.bodyScroll = window.document?.body?.style?.overflow;
+                    this.bodyMargin = window.getComputedStyle(document.body).getPropertyValue('margin-right');
                     window.document.body.style.overflow = 'hidden';
+                    if (this.state.scrollbarWidth && document.body.scrollHeight > window.innerHeight) {
+                        window.document.body.style.marginRight = `calc(${this.bodyMargin} + ${this.state.scrollbarWidth}px)`;
+                    }
                 } else {
                     /** When the modal is hidden, reset overflow property for body */
                     window.document.body.style.overflow = this.bodyScroll || '';
+                    if (!this.bodyMargin || this.bodyMargin === '0px') {
+                        window.document.body.style.marginRight = '';
+                    } else {
+                        window.document.body.style.marginRight = this.bodyMargin;
+                    }
                 }
             } catch (e) {
                 /** Ignore any errors for scroll handling */
@@ -88,6 +101,23 @@ export default class App extends React.Component {
             this.handleSearchUrl();
         };
         window.addEventListener('hashchange', this.hashHandler, false);
+    }
+
+    // User for adding trailing margin to prevent layout shift when popup appears
+    getScrollbarWidth() {
+        // Create a temporary div
+        const div = document.createElement('div');
+        div.style.visibility = 'hidden';
+        div.style.overflow = 'scroll'; // forcing scrollbar to appear
+        document.body.appendChild(div);
+
+        // Calculate the width difference
+        const scrollbarWidth = div.offsetWidth - div.clientWidth;
+
+        // Clean up
+        document.body.removeChild(div);
+
+        return scrollbarWidth;
     }
 
     /** Setup custom trigger buttons handling on page */
