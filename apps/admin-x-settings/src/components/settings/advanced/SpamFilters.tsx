@@ -1,8 +1,9 @@
 import React from 'react';
 import TopLevelGroup from '../../TopLevelGroup';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {Separator, SettingGroupContent, TextArea, Toggle, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {Separator, SettingGroupContent, TextArea, TextField, Toggle, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {getSettingValue, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
+import {useGlobalData} from '../../providers/GlobalDataProvider';
 
 const SpamFilters: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {
@@ -21,13 +22,26 @@ const SpamFilters: React.FC<{ keywords: string[] }> = ({keywords}) => {
         }
     });
 
+    const {config} = useGlobalData();
+
     const [initialBlockedEmailDomainsJSON] = getSettingValues(localSettings, ['blocked_email_domains']) as string[];
     const initialBlockedEmailDomains = JSON.parse(initialBlockedEmailDomainsJSON || '[]') as string[];
     const [blockedEmailDomains, setBlockedEmailDomains] = React.useState(initialBlockedEmailDomains.join('\n'));
 
     const [captchaEnabled] = getSettingValues(localSettings, ['captcha_enabled']) as boolean[];
+    const [captchaSitekey, captchaSecret] = getSettingValues(localSettings, ['captcha_sitekey', 'captcha_secret']) as string[];
     const handleToggleChange = (key: string, e: React.ChangeEvent<HTMLInputElement>) => {
         updateSetting(key, e.target.checked);
+        handleEditingChange(true);
+    };
+
+    const handleSitekeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        updateSetting('captcha_sitekey', e.target.value);
+        handleEditingChange(true);
+    };
+
+    const handleSecretChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        updateSetting('captcha_secret', e.target.value);
         handleEditingChange(true);
     };
 
@@ -95,11 +109,31 @@ const SpamFilters: React.FC<{ keywords: string[] }> = ({keywords}) => {
                         gap='gap-0'
                         hint={captchaHint}
                         label='Enable strict signup security'
-                        labelClasses='block text-sm font-medium tracking-normal text-grey-900 w-full mt-[-10px]'
+                        labelClasses='block text-sm font-medium tracking-normal text-grey-900 dark:text-grey-500 w-full mt-[-10px]'
                         onChange={(e) => {
                             handleToggleChange('captcha_enabled', e);
                         }}
                     />
+                    {/* Sitekey / secret are only modifiable in self-hoster setups */}
+                    {config?.hostSettings?.captcha || (<>
+                        <SettingGroupContent>
+                            <TextField
+                                hint="TODO Change: Unique identifier for your site"
+                                maxLength={36} // UUIDv4 format
+                                placeholder="hCaptcha sitekey"
+                                title="hCaptcha sitekey"
+                                value={captchaSitekey}
+                                onChange={handleSitekeyChange}
+                            />
+                            <TextField
+                                hint="TODO Change:Private secret key used to verify hCaptcha responses"
+                                maxLength={100}
+                                placeholder="hCaptcha secret"
+                                title="hCaptcha secret"
+                                value={captchaSecret}
+                                onChange={handleSecretChange} />
+                        </SettingGroupContent>
+                    </>)}
                 </>)}
             </SettingGroupContent>
         </TopLevelGroup>
