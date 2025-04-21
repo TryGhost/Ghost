@@ -1,6 +1,17 @@
 import React from 'react';
 import {H1} from '@tryghost/shade';
 
+interface HeaderActionsProps extends React.HTMLAttributes<HTMLElement> {
+}
+
+const HeaderActions:React.FC<HeaderActionsProps> = ({children}) => {
+    return (
+        <div className='flex items-center gap-2'>
+            {children}
+        </div>
+    );
+};
+
 interface HeaderProps extends React.HTMLAttributes<HTMLElement> {
 }
 
@@ -17,4 +28,4 @@ const Header:React.FC<HeaderProps> = ({children}) => {
     );
 };
 
-export default Header;
+export {Header, HeaderActions};

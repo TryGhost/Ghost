@@ -38,7 +38,6 @@ const BETA_FEATURES = [
     'editorExcerpt',
     'ActivityPub',
     'importMemberTier',
-    'staff2fa',
     'superEditors'
 ];
 
@@ -54,8 +53,7 @@ const ALPHA_FEATURES = [
     'statsX',
     'captcha',
     'contentVisibilityAlpha',
-    'explore',
-    'socialLinks'
+    'explore'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

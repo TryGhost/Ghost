@@ -1,6 +1,6 @@
+import {chooseOptionInSelect, meWithRole, mockApi, responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
 import {expect, test} from '@playwright/test';
 import {globalDataRequests} from '../../../utils/acceptance';
-import {meWithRole, mockApi, responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
 
 test.describe('User roles', async () => {
     test('Shows users under their role', async ({page}) => {
@@ -67,7 +67,7 @@ test.describe('User roles', async () => {
 
         const modal = page.getByTestId('user-detail-modal');
 
-        await modal.locator('button[value=editor]').click();
+        await chooseOptionInSelect(modal.getByTestId('role-select'), 'Editor');
 
         await modal.getByRole('button', {name: 'Save'}).click();
 

@@ -9,7 +9,7 @@ import {Button, Dialog, DialogContent, DialogTrigger, LucideIcon} from '@tryghos
 import {useFeatureFlags} from '@src/lib/feature-flags';
 
 const Sidebar: React.FC = () => {
-    const {allFlags, flags} = useFeatureFlags();
+    const {allFlags, flags, isEnabled} = useFeatureFlags();
     const [isSearchOpen, setIsSearchOpen] = React.useState(false);
     const [searchQuery, setSearchQuery] = React.useState('');
 
@@ -48,6 +48,12 @@ const Sidebar: React.FC = () => {
                             <LucideIcon.User size={18} strokeWidth={1.5} />
                             Profile
                         </SidebarMenuLink>
+                        {isEnabled('settings-full') &&
+                            <SidebarMenuLink to='/preferences'>
+                                <LucideIcon.Settings2 size={18} strokeWidth={1.5} />
+                                Preferences
+                            </SidebarMenuLink>
+                        }
                     </div>
                     <NewNoteModal>
                         <Button className='h-9 rounded-full bg-purple-500 px-3 text-md text-white dark:hover:bg-purple-500'>
