@@ -12,7 +12,7 @@ import {STATS_LABEL_MAPPINGS} from '@src/utils/constants';
 import {SVGMap} from 'react-svg-map';
 import {formatNumber, formatQueryDate} from '@src/utils/data-formatters';
 import {getCountryFlag, getPeriodText, getRangeDates} from '@src/utils/chart-helpers';
-import {getStatEndpointUrl} from '@src/config/stats-config';
+import {getStatEndpointUrl, getToken} from '@src/config/stats-config';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useQuery} from '@tinybirdco/charts';
 
@@ -30,13 +30,13 @@ interface TooltipData {
 }
 
 const Locations:React.FC = () => {
-    const {data: configData, isLoading: isConfigLoading} = useGlobalData();
+    const {statsConfig, isLoading: isConfigLoading} = useGlobalData();
     const {range, audience} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
     const [tooltipData, setTooltipData] = useState<TooltipData | null>(null);
 
     const params = {
-        site_uuid: configData?.config.stats?.id || '',
+        site_uuid: statsConfig?.id || '',
         date_from: formatQueryDate(startDate),
         date_to: formatQueryDate(endDate),
         timezone: timezone,
@@ -44,8 +44,8 @@ const Locations:React.FC = () => {
     };
 
     const {data, loading} = useQuery({
-        endpoint: getStatEndpointUrl(configData?.config.stats?.endpoint, 'api_top_locations'),
-        token: configData?.config.stats?.token || '',
+        endpoint: getStatEndpointUrl(statsConfig, 'api_top_locations'),
+        token: getToken(statsConfig),
         params
     });
 
