@@ -5,7 +5,7 @@ import {KpiTabTrigger, KpiTabValue} from './KpiTab';
 import {calculateYAxisWidth, getRangeDates, getYTicks} from '@src/utils/chart-helpers';
 import {formatDisplayDate, formatDuration, formatNumber, formatPercentage, formatQueryDate} from '@src/utils/data-formatters';
 import {getAudienceQueryParam} from './AudienceSelect';
-import {getStatEndpointUrl} from '@src/config/stats-config';
+import {getStatEndpointUrl, getToken} from '@src/config/stats-config';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useQuery} from '@tinybirdco/charts';
 
@@ -54,7 +54,7 @@ const WebKpis:React.FC = ({}) => {
 
     const {data, loading} = useQuery({
         endpoint: getStatEndpointUrl(statsConfig, 'api_kpis'),
-        token: statsConfig?.token || '',
+        token: getToken(statsConfig),
         params
     });
 

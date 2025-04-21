@@ -8,7 +8,7 @@ import {Card, CardContent, CardDescription, CardHeader, CardTitle, Table, TableB
 import {Header, HeaderActions} from '@src/components/layout/Header';
 import {formatNumber, formatQueryDate} from '@src/utils/data-formatters';
 import {getPeriodText, getRangeDates} from '@src/utils/chart-helpers';
-import {getStatEndpointUrl} from '@src/config/stats-config';
+import {getStatEndpointUrl, getToken} from '@src/config/stats-config';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useQuery} from '@tinybirdco/charts';
 
@@ -27,7 +27,7 @@ const Web:React.FC = () => {
 
     const {data, loading} = useQuery({
         endpoint: getStatEndpointUrl(statsConfig, 'api_top_pages'),
-        token: statsConfig?.token || '',
+        token: getToken(statsConfig),
         params
     });
 

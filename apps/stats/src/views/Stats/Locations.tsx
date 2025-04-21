@@ -12,7 +12,7 @@ import {STATS_LABEL_MAPPINGS} from '@src/utils/constants';
 import {SVGMap} from 'react-svg-map';
 import {formatNumber, formatQueryDate} from '@src/utils/data-formatters';
 import {getCountryFlag, getPeriodText, getRangeDates} from '@src/utils/chart-helpers';
-import {getStatEndpointUrl} from '@src/config/stats-config';
+import {getStatEndpointUrl, getToken} from '@src/config/stats-config';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useQuery} from '@tinybirdco/charts';
 
@@ -45,7 +45,7 @@ const Locations:React.FC = () => {
 
     const {data, loading} = useQuery({
         endpoint: getStatEndpointUrl(statsConfig, 'api_top_locations'),
-        token: statsConfig?.token || '',
+        token: getToken(statsConfig),
         params
     });
 

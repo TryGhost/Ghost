@@ -11,3 +11,7 @@ export const getStatEndpointUrl = (config?: StatsConfig | null, endpoint?: strin
         `${config.local?.endpoint || ''}/v0/pipes/${endpoint}.json?${params}` : 
         `${config.endpoint || ''}/v0/pipes/${endpoint}__v${TB_VERSION}.json?${params}`;
 };
+
+export const getToken = (config?: StatsConfig) => {
+    return config?.local?.enabled ? config?.local?.token : config?.token;
+};

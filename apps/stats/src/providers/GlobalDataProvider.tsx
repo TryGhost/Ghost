@@ -10,6 +10,7 @@ export interface StatsConfig {
     local?: {
         enabled?: boolean;
         endpoint?: string;
+        token?: string;
     };
 }
 
