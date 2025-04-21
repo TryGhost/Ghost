@@ -1,4 +1,3 @@
-import BehindFeatureFlag from '../../../BehindFeatureFlag';
 import {SettingGroup, SettingGroupContent, TextField} from '@tryghost/admin-x-design-system';
 import {UserDetailProps} from '../UserDetailModal';
 import {
