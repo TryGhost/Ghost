@@ -2513,7 +2513,7 @@
     "@embroider/shared-internals" "^0.50.2"
     semver "^7.3.5"
 
-"@embroider/addon-shim@^1.8.3", "@embroider/addon-shim@^1.8.4", "@embroider/addon-shim@^1.8.7", "@embroider/addon-shim@^1.8.9":
+"@embroider/addon-shim@^1.8.4", "@embroider/addon-shim@^1.8.7", "@embroider/addon-shim@^1.8.9":
   version "1.9.0"
   resolved "https://registry.yarnpkg.com/@embroider/addon-shim/-/addon-shim-1.9.0.tgz#f729cfaf0f2d5f3c178808a546251743335c62f4"
   integrity sha512-fMzayl/licUL8VRAy4qXROKcYvHwUbV8aTh4m97L5/MRuVpxbcAy92DGGTqx5OBKCSQN3gMg+sUKeE6AviefpQ==
@@ -27798,10 +27798,10 @@ react-error-boundary@^3.1.0:
   dependencies:
     "@babel/runtime" "^7.12.5"
 
-react-hook-form@7.55.0:
-  version "7.55.0"
-  resolved "https://registry.yarnpkg.com/react-hook-form/-/react-hook-form-7.55.0.tgz#df3c80a20a68f6811f49bec3406defaefb6dce80"
-  integrity sha512-XRnjsH3GVMQz1moZTW53MxfoWN7aDpUg/GpVNc4A3eXRVNdGXfbzJ4vM4aLQ8g6XCUh1nIbx70aaNCl7kxnjog==
+react-hook-form@7.56.0:
+  version "7.56.0"
+  resolved "https://registry.yarnpkg.com/react-hook-form/-/react-hook-form-7.56.0.tgz#2ab5911a959f0173f4194849615d73a4fff39390"
+  integrity sha512-U2QQgx5z2Y8Z0qlXv3W19hWHJgfKdWMz0O/osuY+o+CYq568V2R/JhzC6OAXfR8k24rIN0Muan2Qliaq9eKs/g==
 
 react-hot-toast@2.5.2:
   version "2.5.2"
@@ -31297,12 +31297,13 @@ tr46@~0.0.3:
   resolved "https://registry.yarnpkg.com/tr46/-/tr46-0.0.3.tgz#8184fd347dac9cdc185992f3a6622e14b9d9ab6a"
   integrity sha512-N3WMsuqV66lT30CrXNbEjx4GEwlow3v6rr4mCcv6prnfwhS01rkgyFdjPNBYd9br7LpXV1+Emh01fHnq2Gdgrw==
 
-tracked-built-ins@3.3.0:
-  version "3.3.0"
-  resolved "https://registry.yarnpkg.com/tracked-built-ins/-/tracked-built-ins-3.3.0.tgz#3c8d780550658fe180d0ec32754f1eef1966f2d9"
-  integrity sha512-ewKFrW/AQs05oLPM5isOUb/1aOwBRfHfmF408CCzTk21FLAhKrKVOP5Q5ebX+zCT4kvg81PGBGwrBiEGND1nWA==
+tracked-built-ins@3.4.0:
+  version "3.4.0"
+  resolved "https://registry.yarnpkg.com/tracked-built-ins/-/tracked-built-ins-3.4.0.tgz#116a719ebecde05c6785ce023bd3f0dd99fa4051"
+  integrity sha512-aRwWQXC3VkY50oYxS7wKZiavkjf3uaN+UYUH30D5gxUqbxDN2LnNsfWyDfckmxHUGw4gJDH5lpRS0jX/tim0vw==
   dependencies:
-    "@embroider/addon-shim" "^1.8.3"
+    "@embroider/addon-shim" "^1.8.7"
+    decorator-transforms "^2.0.0"
     ember-tracked-storage-polyfill "^1.0.0"
 
 tree-kill@^1.2.2:
