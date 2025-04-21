@@ -29,7 +29,6 @@ Object {
       "mailEvents": true,
       "members": true,
       "postsX": true,
-      "socialLinks": true,
       "statsX": true,
       "stripeAutomaticTax": true,
       "superEditors": true,

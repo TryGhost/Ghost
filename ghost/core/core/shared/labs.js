@@ -26,8 +26,7 @@ const GA_FEATURES = [
     'themeErrorsNotification',
     'announcementBar',
     'customFonts',
-    'contentVisibility',
-    'socialLinks'
+    'contentVisibility'
 ];
 
 // NOTE: this allowlist is meant to be used to filter out any unexpected

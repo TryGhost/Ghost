@@ -1,7 +1,7 @@
 import {StaffTokenResponseType} from '@tryghost/admin-x-framework/api/staffToken';
 import {expect, test} from '@playwright/test';
 import {globalDataRequests} from '../../../utils/acceptance';
-import {mockApi, responseFixtures, settingsWithStripe, testUrlValidation, toggleLabsFlag} from '@tryghost/admin-x-framework/test/acceptance';
+import {mockApi, responseFixtures, settingsWithStripe, testUrlValidation} from '@tryghost/admin-x-framework/test/acceptance';
 
 test.describe('User profile', async () => {
     test('Validates basic profile fields', async ({page}) => {
@@ -510,8 +510,6 @@ test.describe('User profile', async () => {
     test.describe('Social links', () => {
         test('Validates Threads URL', async ({page}) => {
             const userToEdit = responseFixtures.users.users.find(user => user.email === 'administrator@test.com')!;
-            // activate social links feature flag
-            toggleLabsFlag('socialLinks', true);
 
             const {lastApiRequests} = await mockApi({page, requests: {
                 ...globalDataRequests,
@@ -556,8 +554,6 @@ test.describe('User profile', async () => {
 
         test('Validates Bluesky URL', async ({page}) => {
             const userToEdit = responseFixtures.users.users.find(user => user.email === 'administrator@test.com')!;
-            // activate social links feature flag
-            toggleLabsFlag('socialLinks', true);
             
             const {lastApiRequests} = await mockApi({page, requests: {
                 ...globalDataRequests,
@@ -602,8 +598,6 @@ test.describe('User profile', async () => {
 
         test('Validates Linkedin URL', async ({page}) => {
             const userToEdit = responseFixtures.users.users.find(user => user.email === 'administrator@test.com')!;
-            // activate social links feature flag
-            toggleLabsFlag('socialLinks', true);
 
             const {lastApiRequests} = await mockApi({page, requests: {
                 ...globalDataRequests,
@@ -648,9 +642,7 @@ test.describe('User profile', async () => {
 
         test('Validates Instagram URL', async ({page}) => {
             const userToEdit = responseFixtures.users.users.find(user => user.email === 'administrator@test.com')!;
-            // activate social links feature flag
-            toggleLabsFlag('socialLinks', true);
-            
+
             const {lastApiRequests} = await mockApi({page, requests: {
                 ...globalDataRequests,
                 browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
@@ -694,9 +686,6 @@ test.describe('User profile', async () => {
 
         test('Validates YouTube URL', async ({page}) => {
             const userToEdit = responseFixtures.users.users.find(user => user.email === 'administrator@test.com')!;
-            // activate social links feature flag
-            toggleLabsFlag('socialLinks', true);
-
             const {lastApiRequests} = await mockApi({page, requests: {
                 ...globalDataRequests,
                 browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
@@ -740,8 +729,6 @@ test.describe('User profile', async () => {
 
         test('Validates TikTok URL', async ({page}) => {
             const userToEdit = responseFixtures.users.users.find(user => user.email === 'administrator@test.com')!;
-            // activate social links feature flag
-            toggleLabsFlag('socialLinks', true);
 
             const {lastApiRequests} = await mockApi({page, requests: {
                 ...globalDataRequests,
@@ -786,9 +773,6 @@ test.describe('User profile', async () => {
 
         test('Validates Mastodon URL', async ({page}) => {
             const userToEdit = responseFixtures.users.users.find(user => user.email === 'administrator@test.com')!;
-            // activate social links feature flag
-            toggleLabsFlag('socialLinks', true);
-            
             const {lastApiRequests} = await mockApi({page, requests: {
                 ...globalDataRequests,
                 browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
