@@ -2,11 +2,11 @@ import {DialogContent, DialogDescription, DialogHeader, DialogTitle} from '@tryg
 
 const ShareModal = () => {
     return (
-        <DialogContent className='max-w-2xl'>
+        <DialogContent>
             <DialogHeader>
                 <DialogTitle>Share</DialogTitle>
                 <DialogDescription>
-                    This is a dialog opened with router and with a custom width.
+                    A custom share dialog.
                 </DialogDescription>
             </DialogHeader>
         </DialogContent>

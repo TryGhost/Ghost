@@ -165,11 +165,6 @@
                 </li>
 
                 {{/if}}
-                {{#if (feature "postsX")}}
-                <li>
-                    <LinkTo @route="posts-x" @current-when="posts-x">{{svg-jar "chart"}}Post analytics</LinkTo>
-                </li>
-                {{/if}}
             </ul>
 
             {{#if this.session.user.isOwnerOnly}}
