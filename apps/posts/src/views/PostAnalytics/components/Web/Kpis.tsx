@@ -120,11 +120,6 @@ const Kpis:React.FC<KpisProps> = ({queryParams}) => {
                                         }}>
                                             <KpiTabValue label="Total views" value={kpiValues.views} />
                                         </KpiTabTrigger>
-                                        <KpiTabTrigger value="duration" onClick={() => {
-                                            setCurrentTab('duration');
-                                        }}>
-                                            <KpiTabValue label="Time on page" value={kpiValues.duration} />
-                                        </KpiTabTrigger>
                                     </TabsList>
                                     <div className='my-4 [&_.recharts-cartesian-axis-tick-value]:fill-gray-500'>
                                         <ChartContainer className='-mb-3 h-[16vw] max-h-[320px] w-full' config={chartConfig}>
