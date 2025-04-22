@@ -151,6 +151,7 @@
     "date-fns": "2.30.0",
     "dompurify": "3.2.5",
     "downsize": "0.0.8",
+    "esbuild": "^0.25.2",
     "express": "4.21.2",
     "express-brute": "1.0.1",
     "express-hbs": "2.5.0",
