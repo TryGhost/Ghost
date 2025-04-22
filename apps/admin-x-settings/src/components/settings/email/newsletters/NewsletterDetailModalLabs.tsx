@@ -3,7 +3,7 @@ import NiceModal from '@ebay/nice-modal-react';
 import React, {useCallback, useEffect, useState} from 'react';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
 import validator from 'validator';
-import {Button, ButtonGroup, ConfirmationModal, Form, Heading, Hint, HtmlField, Icon, ImageUpload, LimitModal, PreviewModalContent, Select, SelectOption, Separator, Tab, TabView, TextArea, TextField, Toggle, ToggleGroup, showToast} from '@tryghost/admin-x-design-system';
+import {Button, ButtonGroup, ColorPickerField, ConfirmationModal, Form, Heading, Hint, HtmlField, Icon, ImageUpload, LimitModal, PreviewModalContent, Select, SelectOption, Separator, Tab, TabView, TextArea, TextField, Toggle, ToggleGroup, showToast} from '@tryghost/admin-x-design-system';
 import {ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {HostLimitError, useLimiter} from '../../../../hooks/useLimiter';
 import {Newsletter, useBrowseNewsletters, useEditNewsletter} from '@tryghost/admin-x-framework/api/newsletters';
@@ -69,7 +69,7 @@ const Sidebar: React.FC<{
     const {updateRoute} = useRouting();
     const {mutateAsync: editNewsletter} = useEditNewsletter();
     const limiter = useLimiter();
-    const {settings, config} = useGlobalData();
+    const {settings, siteData, config} = useGlobalData();
     const [icon, defaultEmailAddress] = getSettingValues<string>(settings, ['icon', 'default_email_address', 'support_email_address']);
     const {mutateAsync: uploadImage} = useUploadImage();
     const [selectedTab, setSelectedTab] = useState('generalSettings');
@@ -91,6 +91,21 @@ const Sidebar: React.FC<{
         {value: 'serif', label: 'Elegant serif', className: 'font-serif'},
         {value: 'sans_serif', label: 'Clean sans-serif'}
     ];
+
+    const fontWeightOptions: SelectOption[] = [
+        {value: 'normal', label: 'Normal'},
+        {value: 'bold', label: 'Bold'}
+    ];
+
+    const backgroundColorIsDark = () => {
+        if (newsletter.background_color === 'dark') {
+            return true;
+        }
+        if (newsletter.background_color === 'light') {
+            return false;
+        }
+        return textColorForBackgroundColor(newsletter.background_color).hex().toLowerCase() === '#ffffff';
+    };
 
     const confirmStatusChange = async () => {
         if (newsletter.status === 'active') {
@@ -225,8 +240,8 @@ const Sidebar: React.FC<{
             </>
         },
         {
-            id: 'design',
-            title: 'Design',
+            id: 'layout',
+            title: 'Layout',
             contents:
             <>
                 <Form className='mt-6' gap='sm' margins='lg' title='Header'>
@@ -279,73 +294,52 @@ const Sidebar: React.FC<{
                     </ToggleGroup>
                 </Form>
 
-                <Form className='mt-6' gap='sm' margins='lg' title='Body'>
+                <Form className='mt-6' gap='xs' margins='lg' title='Title section'>
                     <Toggle
                         checked={newsletter.show_post_title_section}
                         direction="rtl"
                         label='Post title'
-                        labelStyle='heading'
                         onChange={e => updateNewsletter({show_post_title_section: e.target.checked})}
                     />
-                    <div className={newsletter.show_post_title_section ? 'mt-[-16px] flex items-end' : 'hidden'}>
-                        <div className="w-full pr-4">
-                            <Select
-                                disabled={!newsletter.show_post_title_section}
-                                options={fontOptions}
-                                selectedOption={fontOptions.find(option => option.value === newsletter.title_font_category)}
-                                onSelect={option => updateNewsletter({title_font_category: option?.value})}
-                            />
-                        </div>
-                        <ButtonGroup buttons={[
+                    {newsletter.show_post_title_section &&
+                        <Toggle
+                            checked={newsletter.show_excerpt}
+                            direction="rtl"
+                            label="Post excerpt"
+                            onChange={e => updateNewsletter({show_excerpt: e.target.checked})}
+                        />
+                    }
+                    <Toggle
+                        checked={newsletter.show_feature_image}
+                        direction="rtl"
+                        label='Feature image'
+                        onChange={e => updateNewsletter({show_feature_image: e.target.checked})}
+                    />
+                    <div className='flex w-full justify-between'>
+                        <div>Alignment</div>
+                        <ButtonGroup activeKey={newsletter.title_alignment} buttons={[
                             {
+                                key: 'left',
                                 icon: 'align-left',
                                 label: 'Align left',
                                 hideLabel: true,
                                 link: false,
                                 size: 'sm',
-                                color: newsletter.title_alignment === 'left' ? 'clear' : 'clear',
-                                iconColorClass: newsletter.title_alignment === 'left' ? 'text-grey-900' : 'text-grey-500',
                                 onClick: () => updateNewsletter({title_alignment: 'left'}),
                                 disabled: !newsletter.show_post_title_section
                             },
                             {
+                                key: 'center',
                                 icon: 'align-center',
                                 label: 'Align center',
                                 hideLabel: true,
                                 link: false,
                                 size: 'sm',
-                                color: newsletter.title_alignment === 'center' ? 'clear' : 'clear',
-                                iconColorClass: newsletter.title_alignment === 'center' ? 'text-grey-900' : 'text-grey-500',
                                 onClick: () => updateNewsletter({title_alignment: 'center'}),
                                 disabled: !newsletter.show_post_title_section
                             }
-                        ]}
-                        className="mb-1 !gap-0"
-                        />
+                        ]} clearBg={false} />
                     </div>
-                    <ToggleGroup gap='lg'>
-                        {newsletter.show_post_title_section &&
-                            <Toggle
-                                checked={newsletter.show_excerpt}
-                                direction="rtl"
-                                label="Post excerpt"
-                                onChange={e => updateNewsletter({show_excerpt: e.target.checked})}
-                            />
-                        }
-                        <Toggle
-                            checked={newsletter.show_feature_image}
-                            direction="rtl"
-                            label='Feature image'
-                            onChange={e => updateNewsletter({show_feature_image: e.target.checked})}
-                        />
-                    </ToggleGroup>
-                    <Select
-                        options={fontOptions}
-                        selectedOption={fontOptions.find(option => option.value === newsletter.body_font_category)}
-                        testId='body-font-select'
-                        title='Body style'
-                        onSelect={option => updateNewsletter({body_font_category: option?.value})}
-                    />
                 </Form>
 
                 <Form className='mt-6' gap='sm' margins='lg' title='Footer'>
@@ -396,7 +390,7 @@ const Sidebar: React.FC<{
                             label={
                                 <div className='flex flex-col gap-0.5'>
                                     <span className='text-sm md:text-base'>Promote independent publishing</span>
-                                    <span className='text-[11px] leading-tight text-grey-700 md:text-xs md:leading-tight'>Show you’re a part of the indie publishing movement with a small badge in the footer</span>
+                                    <span className='text-[11px] leading-tight text-grey-700 md:text-xs md:leading-tight'>Show you&apos;re a part of the indie publishing movement with a small badge in the footer</span>
                                 </div>
                             }
                             labelStyle='value'
@@ -404,6 +398,126 @@ const Sidebar: React.FC<{
                         />
                     </Form>
                 </div>
+            </>
+        },
+        {
+            id: 'styles',
+            title: 'Styles',
+            contents:
+            <>
+                <Form className='mt-6' gap='xs' margins='lg' title='Typography'>
+                    <div className="w-full">
+                        <Select
+                            disabled={!newsletter.show_post_title_section}
+                            options={fontOptions}
+                            selectedOption={fontOptions.find(option => option.value === newsletter.title_font_category)}
+                            title='Heading font'
+                            onSelect={option => updateNewsletter({title_font_category: option?.value})}
+                        />
+                    </div>
+                    <div className='w-full'>
+                        <Select
+                            disabled={!newsletter.show_post_title_section}
+                            options={fontWeightOptions}
+                            selectedOption={fontWeightOptions.find(option => option.value === newsletter.title_font_weight)}
+                            title='Heading weight'
+                            onSelect={option => updateNewsletter({title_font_weight: option?.value})}
+                        />
+                    </div>
+                    <Select
+                        options={fontOptions}
+                        selectedOption={fontOptions.find(option => option.value === newsletter.body_font_category)}
+                        testId='body-font-select'
+                        title='Body font'
+                        onSelect={option => updateNewsletter({body_font_category: option?.value})}
+                    />
+                </Form>
+                <Form className='mt-6' gap='xs' margins='lg' title='Colors'>
+                    <ColorPickerField
+                        direction='rtl'
+                        swatches={[
+                            {
+                                value: null,
+                                title: 'Auto',
+                                hex: backgroundColorIsDark() ? '#ffffff' : '#000000'
+                            },
+                            {
+                                value: 'accent',
+                                title: 'Accent',
+                                hex: siteData.accent_color
+                            }
+                        ]}
+                        title='Heading color'
+                        value={newsletter.title_color}
+                        onChange={color => updateNewsletter({title_color: color})}
+                    />
+                    <ColorPickerField
+                        direction='rtl'
+                        swatches={[
+                            {
+                                value: null,
+                                title: 'Auto',
+                                hex: '#e0e7eb'
+                            },
+                            {
+                                value: 'accent',
+                                title: 'Accent',
+                                hex: siteData.accent_color
+                            }
+                        ]}
+                        title='Divider color'
+                        value={newsletter.divider_color}
+                        onChange={color => updateNewsletter({divider_color: color})}
+                    />
+                    {/* <ColorPickerField
+                        direction='rtl'
+                        swatches={[
+                            {
+                                hex: '#f0f0f0',
+                                title: 'Light grey'
+                            },
+                            {
+                                hex: '#ffffff',
+                                value: 'light',
+                                title: 'White'
+                            }
+                        ]}
+                        title='Background color'
+                        value={newsletter.background_color || 'light'}
+                        onChange={color => updateNewsletter({background_color: color!})}
+                    />
+                    <ColorPickerField
+                        clearButtonValue={null}
+                        direction='rtl'
+                        swatches={[
+                            {
+                                hex: siteData.accent_color,
+                                value: 'accent',
+                                title: 'Accent'
+                            },
+                            {
+                                hex: backgroundColorIsDark() ? '#ffffff' : '#000000',
+                                value: 'auto',
+                                title: 'Auto'
+                            },
+                            {
+                                value: null,
+                                title: 'Transparent',
+                                hex: '#00000000'
+                            }
+                        ]}
+                        title='Border color'
+                        value={newsletter.border_color}
+                        onChange={color => updateNewsletter({border_color: color})}
+                    /> */}
+                </Form>
+
+                <Form className='mt-6' gap='xs' margins='lg' title='Elements'>
+                    <div>Button style</div>
+                    <div>Button corners</div>
+                    <div>Link style</div>
+                    <div>Divider style</div>
+                </Form>
             </>
         }
     ];
@@ -502,7 +616,7 @@ const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter; onlyOne: b
     />;
 };
 
-const NewsletterDetailModal: React.FC<RoutingModalProps> = ({params}) => {
+const NewsletterDetailModalLabs: React.FC<RoutingModalProps> = ({params}) => {
     const {data: {newsletters, isEnd} = {}, fetchNextPage} = useBrowseNewsletters();
     const newsletter = newsletters?.find(({id}) => id === params?.id);
 
@@ -519,4 +633,4 @@ const NewsletterDetailModal: React.FC<RoutingModalProps> = ({params}) => {
     }
 };
 
-export default NiceModal.create(NewsletterDetailModal);
+export default NiceModal.create(NewsletterDetailModalLabs);
