@@ -37,8 +37,8 @@ const BETA_FEATURES = [
     'webmentions',
     'editorExcerpt',
     'ActivityPub',
+    'trafficAnalytics',
     'importMemberTier',
-    'staff2fa',
     'superEditors'
 ];
 

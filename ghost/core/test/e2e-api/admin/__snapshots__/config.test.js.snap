@@ -33,11 +33,15 @@ Object {
       "stripeAutomaticTax": true,
       "superEditors": true,
       "themeErrorsNotification": true,
+      "trafficAnalytics": true,
       "urlCache": true,
       "webmentions": true,
     },
     "mail": "",
     "mailgunIsConfigured": false,
+    "security": Object {
+      "staffDeviceVerification": false,
+    },
     "signupForm": Object {
       "url": "https://cdn.jsdelivr.net/ghost/signup-form@~{version}/umd/signup-form.min.js",
       "version": "0.2",

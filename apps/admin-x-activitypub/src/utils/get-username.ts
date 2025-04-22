@@ -3,7 +3,7 @@ function getUsername(actor: {preferredUsername: string; id: string|null;}) {
         return '@unknown@unknown';
     }
     try {
-        return `@${actor.preferredUsername}@${(new URL(actor.id)).hostname}`;
+        return `@${actor.preferredUsername}@${(new URL(actor.id)).hostname.replace(/^www\./, '')}`;
     } catch (err) {
         return '@unknown@unknown';
     }

@@ -1,6 +1,6 @@
 {
   "name": "ghost-admin",
-  "version": "5.116.2",
+  "version": "5.118.0",
   "description": "Ember.js admin client for Ghost",
   "author": "Ghost Foundation",
   "homepage": "http://ghost.org",
@@ -149,7 +149,7 @@
     "sentry-testkit": "5.0.10",
     "sinon-chai": "4.0.0",
     "testem": "3.15.2",
-    "tracked-built-ins": "3.3.0",
+    "tracked-built-ins": "3.4.0",
     "util": "0.12.5",
     "validator": "7.2.0",
     "walk-sync": "3.0.0"
@@ -178,7 +178,7 @@
     "i18n-iso-countries": "7.14.0",
     "jose": "4.15.9",
     "path-browserify": "1.0.1",
-    "webpack": "5.99.4"
+    "webpack": "5.99.6"
   },
   "nx": {
     "targets": {

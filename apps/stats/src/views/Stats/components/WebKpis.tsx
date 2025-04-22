@@ -4,7 +4,8 @@ import {ChartConfig, ChartContainer, ChartTooltip, Recharts, Tabs, TabsList} fro
 import {KpiTabTrigger, KpiTabValue} from './KpiTab';
 import {calculateYAxisWidth, getRangeDates, getYTicks} from '@src/utils/chart-helpers';
 import {formatDisplayDate, formatDuration, formatNumber, formatPercentage, formatQueryDate} from '@src/utils/data-formatters';
-import {getStatEndpointUrl} from '@src/config/stats-config';
+import {getAudienceQueryParam} from './AudienceSelect';
+import {getStatEndpointUrl, getToken} from '@src/config/stats-config';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useQuery} from '@tinybirdco/charts';
 
@@ -17,7 +18,7 @@ type KpiMetric = {
 const KPI_METRICS: Record<string, KpiMetric> = {
     visits: {
         dataKey: 'visits',
-        label: 'Visits',
+        label: 'Visitors',
         formatter: formatNumber
     },
     views: {
@@ -37,24 +38,23 @@ const KPI_METRICS: Record<string, KpiMetric> = {
     }
 };
 
-interface WebKpisProps {
-    range: number;
-}
-
-const WebKpis:React.FC<WebKpisProps> = ({range}) => {
-    const {data: configData, isLoading: isConfigLoading} = useGlobalData();
+const WebKpis:React.FC = ({}) => {
+    const {statsConfig, isLoading: isConfigLoading} = useGlobalData();
     const [currentTab, setCurrentTab] = useState('visits');
-    const {today, startDate} = getRangeDates(range);
+    const {range, audience} = useGlobalData();
+    const {startDate, endDate, timezone} = getRangeDates(range);
 
     const params = {
-        site_uuid: configData?.config.stats?.id || '',
+        site_uuid: statsConfig?.id || '',
         date_from: formatQueryDate(startDate),
-        date_to: formatQueryDate(today)
+        date_to: formatQueryDate(endDate),
+        timezone: timezone,
+        member_status: getAudienceQueryParam(audience)
     };
 
     const {data, loading} = useQuery({
-        endpoint: getStatEndpointUrl(configData?.config.stats?.endpoint, 'api_kpis'),
-        token: configData?.config.stats?.token || '',
+        endpoint: getStatEndpointUrl(statsConfig, 'api_kpis'),
+        token: getToken(statsConfig),
         params
     });
 
@@ -78,10 +78,19 @@ const WebKpis:React.FC<WebKpisProps> = ({range}) => {
             return {visits: 0, views: 0, bounceRate: 0, duration: 0};
         }
 
+        // Sum total KPI value from the trend, ponderating using sessions
+        const _ponderatedKPIsTotal = (kpi: keyof typeof data[0]) => {
+            return data.reduce((prev, curr) => {
+                const currValue = Number(curr[kpi] ?? 0);
+                const currVisits = Number(curr.visits);
+                return prev + (currValue * currVisits / totalVisits);
+            }, 0);
+        };
+
         const totalVisits = data.reduce((sum, item) => sum + Number(item.visits), 0);
         const totalViews = data.reduce((sum, item) => sum + Number(item.pageviews), 0);
-        const avgBounceRate = data.reduce((sum, item) => sum + Number(item.bounce_rate), 0) / data.length;
-        const avgDuration = data.reduce((sum, item) => sum + Number(item.avg_session_sec), 0) / data.length;
+        const avgBounceRate = _ponderatedKPIsTotal('bounce_rate');
+        const avgDuration = _ponderatedKPIsTotal('avg_session_sec');
 
         return {
             visits: formatNumber(totalVisits),
@@ -112,15 +121,10 @@ const WebKpis:React.FC<WebKpisProps> = ({range}) => {
                 }}>
                     <KpiTabValue label="Total views" value={kpiValues.views} />
                 </KpiTabTrigger>
-                <KpiTabTrigger value="visit-duration" onClick={() => {
-                    setCurrentTab('visit-duration');
-                }}>
-                    <KpiTabValue label="Avg. visit duration" value={kpiValues.duration} />
-                </KpiTabTrigger>
             </TabsList>
-            <div className='my-4 min-h-[15vw]'>
+            <div className='my-4 [&_.recharts-cartesian-axis-tick-value]:fill-gray-500'>
                 {isLoading ? 'Loading' :
-                    <ChartContainer className='-mb-3 max-h-[15vw] min-h-[260px] w-full' config={chartConfig}>
+                    <ChartContainer className='-mb-3 h-[16vw] max-h-[320px] w-full' config={chartConfig}>
                         <Recharts.LineChart
                             data={chartData}
                             margin={{
