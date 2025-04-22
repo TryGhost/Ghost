@@ -1,7 +1,6 @@
 const should = require('should');
 const sinon = require('sinon');
 const {JSDOM} = require('jsdom');
-const path = require('path');
 
 // Use path relative to test file
 const {
