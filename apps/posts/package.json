@@ -26,6 +26,7 @@
     },
     "devDependencies": {
         "@testing-library/react": "14.3.1",
+        "@tinybirdco/charts": "^0.2.4",
         "@tryghost/admin-x-framework": "0.0.0",
         "@tryghost/shade": "0.0.0",
         "@types/react": "18.3.20",
