@@ -30,11 +30,6 @@ export class ActivityPubService {
             target_url: new URL('.ghost/activitypub/webhooks/post/published', this.siteUrl),
             api_version: 'v5.100.0',
             secret
-        }, {
-            event: 'site.changed',
-            target_url: new URL('.ghost/activitypub/webhooks/site/changed', this.siteUrl),
-            api_version: 'v5.100.0',
-            secret
         }];
     }
 

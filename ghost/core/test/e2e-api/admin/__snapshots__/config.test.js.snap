@@ -33,6 +33,7 @@ Object {
       "stripeAutomaticTax": true,
       "superEditors": true,
       "themeErrorsNotification": true,
+      "trafficAnalytics": true,
       "urlCache": true,
       "webmentions": true,
     },
