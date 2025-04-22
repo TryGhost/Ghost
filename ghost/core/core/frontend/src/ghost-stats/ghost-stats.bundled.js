@@ -455,56 +455,91 @@
   // core/frontend/src/ghost-stats/ghost-stats.js
   (function() {
     const STORAGE_KEY = "session-id";
-    let DATASOURCE = "analytics_events";
+    const DEFAULT_DATASOURCE = "analytics_events";
     const storageMethods = {
       localStorage: "localStorage",
       sessionStorage: "sessionStorage"
     };
-    let STORAGE_METHOD = storageMethods.localStorage;
-    let globalAttributes = {};
-    let stringifyPayload = true;
-    let token, host, domain;
-    if (document.currentScript) {
-      host = document.currentScript.getAttribute("data-host");
-      token = document.currentScript.getAttribute("data-token");
-      domain = document.currentScript.getAttribute("data-domain");
-      DATASOURCE = document.currentScript.getAttribute("data-datasource") || DATASOURCE;
-      STORAGE_METHOD = document.currentScript.getAttribute("data-storage") || STORAGE_METHOD;
-      stringifyPayload = document.currentScript.getAttribute("data-stringify-payload") !== "false";
+    let config = {
+      host: null,
+      token: null,
+      domain: null,
+      datasource: DEFAULT_DATASOURCE,
+      storageMethod: storageMethods.localStorage,
+      stringifyPayload: true,
+      globalAttributes: {}
+    };
+    const isTestEnv = !!(typeof window !== "undefined" && (window.__nightmare || window.navigator.webdriver || window.Cypress));
+    function _initConfig() {
+      if (!document.currentScript) {
+        return false;
+      }
+      config.host = document.currentScript.getAttribute("data-host");
+      config.token = document.currentScript.getAttribute("data-token");
+      config.domain = document.currentScript.getAttribute("data-domain");
+      config.datasource = document.currentScript.getAttribute("data-datasource") || config.datasource;
+      config.storageMethod = document.currentScript.getAttribute("data-storage") || config.storageMethod;
+      config.stringifyPayload = document.currentScript.getAttribute("data-stringify-payload") !== "false";
       for (const attr of document.currentScript.attributes) {
         if (attr.name.startsWith("tb_")) {
-          globalAttributes[attr.name.slice(3)] = attr.value;
+          config.globalAttributes[attr.name.slice(3)] = attr.value;
         }
       }
+      return !!(config.host && config.token);
     }
     async function _sendEvent(name, payload) {
-      setSessionId(STORAGE_KEY, getStorageObject(STORAGE_METHOD));
-      const url = `${host}?name=${DATASOURCE}&token=${token}`;
-      const processedPayload = processPayload(payload, globalAttributes, stringifyPayload);
-      const session_id = getSessionId(STORAGE_KEY, getStorageObject(STORAGE_METHOD)) || v4_default();
-      const request = new XMLHttpRequest();
-      request.open("POST", url, true);
-      request.setRequestHeader("Content-Type", "application/json");
-      request.send(
-        JSON.stringify({
+      try {
+        if (!config.host || !config.token) {
+          throw new Error("Missing required configuration (host or token)");
+        }
+        setSessionId(STORAGE_KEY, getStorageObject(config.storageMethod));
+        const url = `${config.host}?name=${config.datasource}&token=${config.token}`;
+        const processedPayload = processPayload(payload, config.globalAttributes, config.stringifyPayload);
+        const session_id = getSessionId(STORAGE_KEY, getStorageObject(config.storageMethod)) || v4_default();
+        const data = {
           timestamp: (/* @__PURE__ */ new Date()).toISOString(),
           action: name,
           version: "1",
           session_id,
           payload: processedPayload
-        })
-      );
+        };
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5e3);
+        const response = await fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(data),
+          signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response;
+      } catch (error) {
+        if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+          console.error("Ghost Stats error:", error);
+        }
+        return null;
+      }
     }
-    function _trackPageHit() {
-      if (window.__nightmare || window.navigator.webdriver || window.Cypress)
-        return;
-      let country, locale;
+    function _getLocationInfo() {
       try {
         const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-        country = timezoneData[timezone];
-        locale = navigator.languages && navigator.languages.length ? navigator.languages[0] : navigator.userLanguage || navigator.language || navigator.browserLanguage || "en";
+        const country = timezone ? timezoneData[timezone] : null;
+        const locale = navigator.languages?.[0] || navigator.language || "en";
+        return { country, locale };
       } catch (error) {
+        return { country: null, locale: "en" };
       }
+    }
+    function _trackPageHit() {
+      if (isTestEnv) {
+        return;
+      }
+      const { country, locale } = _getLocationInfo();
       setTimeout(() => {
         _sendEvent("page_hit", {
           "user-agent": window.navigator.userAgent,
@@ -516,30 +551,40 @@
         });
       }, 300);
     }
-    window.Tinybird = {
-      trackEvent: _sendEvent,
-      _trackPageHit
-    };
-    window.addEventListener("hashchange", _trackPageHit);
-    const his = window.history;
-    if (his.pushState) {
-      const originalPushState = his["pushState"];
-      his.pushState = function() {
-        originalPushState.apply(this, arguments);
-        _trackPageHit();
-      };
-      window.addEventListener("popstate", _trackPageHit);
-    }
-    let lastPage;
-    function handleVisibilityChange() {
-      if (!lastPage && document.visibilityState === "visible") {
-        _trackPageHit();
+    function _init() {
+      if (isTestEnv) {
+        return false;
       }
+      const configInitialized = _initConfig();
+      if (!configInitialized) {
+        console.warn("Ghost Stats: Missing required configuration");
+        return false;
+      }
+      window.Tinybird = {
+        trackEvent: _sendEvent,
+        _trackPageHit
+      };
+      window.addEventListener("hashchange", _trackPageHit);
+      const originalPushState = window.history.pushState;
+      if (originalPushState) {
+        window.history.pushState = function() {
+          originalPushState.apply(this, arguments);
+          _trackPageHit();
+        };
+        window.addEventListener("popstate", _trackPageHit);
+      }
+      if (document.visibilityState !== "hidden") {
+        _trackPageHit();
+      } else {
+        document.addEventListener("visibilitychange", function onVisibilityChange() {
+          if (document.visibilityState === "visible") {
+            _trackPageHit();
+            document.removeEventListener("visibilitychange", onVisibilityChange);
+          }
+        });
+      }
+      return true;
     }
-    if (document.visibilityState === "prerender") {
-      document.addEventListener("visibilitychange", handleVisibilityChange);
-    } else {
-      _trackPageHit();
-    }
+    _init();
   })();
 })();
