@@ -35,7 +35,9 @@ Router.map(function () {
     });
 
     this.route('posts');
-    this.route('posts.analytics', {path: '/posts/analytics/:post_id'});
+    this.route('posts.analytics', {path: '/posts/analytics/:post_id'}, function () {
+        this.route('posts-x', {path: '/web', templateName: 'posts-x', componentName: 'posts-x'});
+    });
     this.route('posts.mentions', {path: '/posts/analytics/:post_id/mentions'});
     this.route('posts.debug', {path: '/posts/analytics/:post_id/debug'});
 
@@ -54,10 +56,6 @@ Router.map(function () {
 
     this.route('demo-x', function () {
         this.route('demo-x', {path: '/*sub'});
-    });
-
-    this.route('posts-x', function () {
-        this.route('posts-x', {path: '/*sub'});
     });
 
     this.route('settings-x', {path: '/settings'}, function () {

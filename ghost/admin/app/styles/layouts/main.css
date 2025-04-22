@@ -1225,7 +1225,7 @@ body:not(.gh-body-fullscreen) .gh-viewport {
     flex-shrink: 0;
     height: 34px;
     color: var(--midgrey-l2);
-    font-size: 1.35rem;
+    font-size: 1.3rem;
     font-weight: 500;
     line-height: 34px;
     letter-spacing: .2px;
@@ -1246,7 +1246,7 @@ body:not(.gh-body-fullscreen) .gh-viewport {
     display: block;
     width: 9px;
     height: 9px;
-    margin: 1px 6px 0;
+    margin: 1px 10px 0;
 }
 
 .gh-canvas-header .gh-canvas-breadcrumb svg path {
