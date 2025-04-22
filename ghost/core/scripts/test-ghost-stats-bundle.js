@@ -1,20 +1,23 @@
 #!/usr/bin/env node
 
 /**
- * This script tests the ghost-stats bundling process
+ * This script tests the asset bundling process
  * Run it with: `node scripts/test-ghost-stats-bundle.js`
  */
 
-const bundleGhostStats = require('../core/frontend/services/ghost-stats-bundle');
+const path = require('path');
 const fs = require('fs').promises;
 const logging = require('@tryghost/logging');
+const {bundleAsset} = require('../core/frontend/services/assets-bundling/bundle-asset');
 
 async function testBundle() {
     try {
-        logging.info('Testing ghost-stats bundling...');
+        logging.info('Testing asset bundling...');
         
-        // Run the bundler
-        const bundledFile = await bundleGhostStats();
+        // Run the bundler for ghost-stats
+        const bundledFile = await bundleAsset({
+            srcFile: path.join('ghost-stats', 'ghost-stats.js')
+        });
         logging.info(`Successfully bundled: ${bundledFile}`);
         
         // Verify the file exists
@@ -28,6 +31,26 @@ async function testBundle() {
             process.exit(1);
         } else {
             logging.info('Bundle properly resolved imports');
+        }
+        
+        // Test member-attribution bundling
+        logging.info('Testing member-attribution bundling...');
+        const memberAttributionFile = await bundleAsset({
+            srcFile: path.join('member-attribution', 'member-attribution.js')
+        });
+        logging.info(`Successfully bundled: ${memberAttributionFile}`);
+        
+        // Verify the file exists
+        await fs.access(memberAttributionFile);
+        logging.info('Member attribution bundled file is accessible');
+        
+        // Read file to verify it looks like bundled JS
+        const memberAttributionContent = await fs.readFile(memberAttributionFile, 'utf8');
+        if (memberAttributionContent.includes('import')) {
+            logging.error('Member attribution bundle still contains import statements!');
+            process.exit(1);
+        } else {
+            logging.info('Member attribution bundle properly resolved imports');
         }
         
         logging.info('All tests passed! 🎉');
