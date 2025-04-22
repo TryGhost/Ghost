@@ -20,7 +20,7 @@ module.exports = class GhostStatsAssets extends AssetsMinificationBase {
      */
     generateGlobs() {
         return {
-            'ghost-stats.min.js': '*.js'
+            'ghost-stats.min.js': 'ghost-stats.js'
         };
     }
 
