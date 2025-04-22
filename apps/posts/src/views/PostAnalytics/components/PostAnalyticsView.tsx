@@ -1,8 +1,8 @@
 import EmptyStatView from './EmptyStatView';
+import PostAnalyticsContent from './PostAnalyticsContent';
 import React from 'react';
-import StatsContent from './PostAnalyticsContent';
 
-interface StatsViewProps<T> {
+interface PostAnalyticsViewProps<T> {
     isLoading?: boolean;
     data?: T[] | null;
     children?: React.ReactNode;
@@ -16,9 +16,9 @@ const PostAnalyticsView = <T,>({
     children,
     loadingComponent = <>Loading...</>,
     emptyComponent = <EmptyStatView />
-}: StatsViewProps<T>) => {
+}: PostAnalyticsViewProps<T>) => {
     return (
-        <StatsContent>
+        <PostAnalyticsContent>
             {isLoading ? (
                 loadingComponent
             ) : !data || data.length === 0 ? (
@@ -26,7 +26,7 @@ const PostAnalyticsView = <T,>({
             ) : (
                 children
             )}
-        </StatsContent>
+        </PostAnalyticsContent>
     );
 };
 
