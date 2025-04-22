@@ -1,4 +1,4 @@
-import {formatDisplayDate} from '@src/utils/data-formatters';
+import {formatDisplayDate} from '@tryghost/shade';
 
 interface TooltipPayload {
     value: number;
