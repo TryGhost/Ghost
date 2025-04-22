@@ -72,5 +72,7 @@ module.exports.forPost = (options, model, attrs) => {
 };
 
 module.exports.forAuthor = (options, model, attrs) => {
-    attrs.x = attrs.twitter || null;
+    if ('twitter' in attrs) {
+        attrs.x = attrs.twitter;
+    }
 };
