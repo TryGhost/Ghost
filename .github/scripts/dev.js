@@ -137,7 +137,7 @@ const COMMAND_TYPESCRIPT = {
     env: {}
 };
 
-const adminXApps = '@tryghost/admin-x-demo,@tryghost/admin-x-settings,@tryghost/admin-x-activitypub,@tryghost/posts,@tryghost/stats';
+const adminXApps = '@tryghost/admin-x-settings,@tryghost/admin-x-activitypub,@tryghost/posts,@tryghost/stats';
 
 const COMMANDS_ADMINX = [{
     name: 'adminXDeps',

@@ -62,7 +62,6 @@ services:
       - node_modules_ghost_tiers:/home/ghost/ghost/tiers/node_modules:delegated
       - node_modules_ghost_webmentions:/home/ghost/ghost/webmentions/node_modules:delegated
       - node_modules_apps_admin-x-activitypub:/home/ghost/apps/admin-x-activitypub/node_modules:delegated
-      - node_modules_apps_admin-x-demo:/home/ghost/apps/admin-x-demo/node_modules:delegated
       - node_modules_apps_admin-x-design-system:/home/ghost/apps/admin-x-design-system/node_modules:delegated
       - node_modules_apps_admin-x-framework:/home/ghost/apps/admin-x-framework/node_modules:delegated
       - node_modules_apps_admin-x-settings:/home/ghost/apps/admin-x-settings/node_modules:delegated
@@ -186,7 +185,6 @@ volumes:
   node_modules_ghost_tiers: {}
   node_modules_ghost_webmentions: {}
   node_modules_apps_admin-x-activitypub: {}
-  node_modules_apps_admin-x-demo: {}
   node_modules_apps_admin-x-design-system: {}
   node_modules_apps_admin-x-framework: {}
   node_modules_apps_admin-x-settings: {}
