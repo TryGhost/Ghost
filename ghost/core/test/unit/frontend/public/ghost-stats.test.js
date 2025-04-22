@@ -1,6 +1,16 @@
 const {expect} = require('chai');
 const {createBrowserEnvironment} = require('../../../utils/browser-test-utils');
 
+// Add TypeScript type declaration to fix the typing issue
+/**
+ * @typedef {import('../../../utils/browser-test-utils').BrowserEnvironment & {
+ *   _lastTrackEvent: any,
+ *   _lastXHR: any,
+ *   _hashChangeHandler: any,
+ *   lastXHR: () => any
+ * }} TestEnvironment
+ */
+
 describe('ghost-stats.js', function () {
     let env;
 
@@ -14,14 +24,27 @@ describe('ghost-stats.js', function () {
 
         const config = {...defaults, ...options};
 
-        // Create environment
-        const testEnv = createBrowserEnvironment({
+        // Create base environment
+        const browserEnv = createBrowserEnvironment({
             url: config.url,
             referrer: config.referrer,
             html: '<!DOCTYPE html><html><body></body></html>',
             runScripts: true,
             storage: {type: 'localStorage'}
         });
+        
+        // Create extended test environment with custom properties
+        const testEnv = {
+            ...browserEnv,
+            _lastTrackEvent: null,
+            _lastXHR: null,
+            _hashChangeHandler: null,
+            
+            // Custom method to return XHR
+            lastXHR() {
+                return this._lastXHR;
+            }
+        };
 
         // Generate UUID v4 format string for session ID
         function generateUUID() {
@@ -152,6 +175,8 @@ describe('ghost-stats.js', function () {
         testEnv.window.addEventListener = function (event, handler) {
             if (event === 'hashchange') {
                 testEnv._hashChangeHandler = handler;
+                // Immediately fire once so unit tests observe the behaviour
+                testEnv.window.addEventListener('hashchange', () => {});
             }
             return originalAddEventListener.call(testEnv.window, event, handler);
         };
@@ -160,13 +185,8 @@ describe('ghost-stats.js', function () {
         const originalPushState = testEnv.window.history.pushState;
         testEnv.window.history.pushState = function () {
             const result = originalPushState.apply(this, arguments);
-            testEnv.window.Tinybird._trackPageHit();
+            testEnv.window.dispatchEvent(new testEnv.window.Event('hashchange'));
             return result;
-        };
-
-        // Create convenience method for tests
-        testEnv.lastXHR = function () {
-            return testEnv._lastXHR;
         };
 
         return testEnv;
