@@ -80,7 +80,7 @@ module.exports = function setupSiteApp(routerConfig) {
     // Comment counts
     siteApp.use(commentCountsAssets.serveMiddleware(), mw.servePublicFile('built', 'public/comment-counts.min.js', 'application/javascript', config.get('caching:publicAssets:maxAge')));
 
-    // Member attribution
+    // Member Attribution
     siteApp.use(memberAttributionAssets.serveMiddleware(), mw.servePublicFile('built', 'public/member-attribution.min.js', 'application/javascript', config.get('caching:publicAssets:maxAge')));
 
     // Serve site images using the storage adapter
