@@ -6,7 +6,7 @@ export const APP_ROUTE_PREFIX = '/posts';
 export const routes: RouteObject[] = [
     {
         path: '',
-        index: true,
+        index: false,
         element: <></>
     },
     {

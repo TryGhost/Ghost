@@ -1,10 +1,10 @@
 import React from 'react';
-import {H1} from '@tryghost/shade';
+import {H1} from './heading';
 
-interface HeaderActionsProps extends React.HTMLAttributes<HTMLElement> {
+interface ViewHeaderActionsProps extends React.HTMLAttributes<HTMLElement> {
 }
 
-const HeaderActions:React.FC<HeaderActionsProps> = ({children}) => {
+const ViewHeaderActions:React.FC<ViewHeaderActionsProps> = ({children}) => {
     return (
         <div className='flex items-center gap-2'>
             {children}
@@ -12,10 +12,10 @@ const HeaderActions:React.FC<HeaderActionsProps> = ({children}) => {
     );
 };
 
-interface HeaderProps extends React.HTMLAttributes<HTMLElement> {
+interface ViewHeaderProps extends React.HTMLAttributes<HTMLElement> {
 }
 
-const Header:React.FC<HeaderProps> = ({children}) => {
+const ViewHeader:React.FC<ViewHeaderProps> = ({children}) => {
     const [firstChild, secondChild] = React.Children.toArray(children);
 
     return (
@@ -28,4 +28,4 @@ const Header:React.FC<HeaderProps> = ({children}) => {
     );
 };
 
-export {Header, HeaderActions};
+export {ViewHeader, ViewHeaderActions};

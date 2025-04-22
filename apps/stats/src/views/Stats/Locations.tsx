@@ -6,8 +6,7 @@ import StatsView from './layout/StatsView';
 import World from '@svg-maps/world';
 import countries from 'i18n-iso-countries';
 import enLocale from 'i18n-iso-countries/langs/en.json';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, cn} from '@tryghost/shade';
-import {Header, HeaderActions} from '@src/components/layout/Header';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, ViewHeader, ViewHeaderActions, cn} from '@tryghost/shade';
 import {STATS_LABEL_MAPPINGS} from '@src/utils/constants';
 import {SVGMap} from 'react-svg-map';
 import {formatNumber, formatQueryDate} from '@src/utils/data-formatters';
@@ -160,13 +159,13 @@ const Locations:React.FC = () => {
 
     return (
         <StatsLayout>
-            <Header>
+            <ViewHeader>
                 Locations
-                <HeaderActions>
+                <ViewHeaderActions>
                     <AudienceSelect />
                     <DateRangeSelect />
-                </HeaderActions>
-            </Header>
+                </ViewHeaderActions>
+            </ViewHeader>
             <StatsView data={data} isLoading={isLoading}>
                 <Card variant='plain'>
                     <CardContent className='-mb-5 border-none pt-8'>
