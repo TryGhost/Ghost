@@ -2,6 +2,8 @@ const path = require('path');
 const config = require('../../../shared/config');
 const Minifier = require('./Minifier');
 const AssetsMinificationBase = require('./AssetsMinificationBase');
+const {bundleAsset} = require('../assets-bundling/bundle-asset');
+const debug = require('@tryghost/debug')('member-attribution-assets');
 
 module.exports = class MemberAttributionAssets extends AssetsMinificationBase {
     constructor(options = {}) {
@@ -20,7 +22,7 @@ module.exports = class MemberAttributionAssets extends AssetsMinificationBase {
      */
     generateGlobs() {
         return {
-            'member-attribution.min.js': '*.js'
+            'member-attribution.min.js': 'member-attribution.bundled.js'
         };
     }
 
@@ -38,8 +40,21 @@ module.exports = class MemberAttributionAssets extends AssetsMinificationBase {
      * @returns {Promise<void>}
      */
     async load() {
-        const globs = this.generateGlobs();
-        const replacements = this.generateReplacements();
-        await this.minify(globs, {replacements});
+        try {
+            // Step 1: Bundle the file to resolve imports
+            debug('Bundling member-attribution.js');
+            await bundleAsset({
+                srcFile: path.join('member-attribution', 'member-attribution.js')
+            });
+            
+            // Step 2: Minify the bundled file
+            debug('Minifying bundled member-attribution.js');
+            const globs = this.generateGlobs();
+            const replacements = this.generateReplacements();
+            await this.minify(globs, {replacements});
+        } catch (error) {
+            debug('Error loading member-attribution assets:', error);
+            throw error;
+        }
     }
 };
