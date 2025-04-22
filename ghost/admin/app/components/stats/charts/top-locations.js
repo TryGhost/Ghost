@@ -6,7 +6,7 @@ import React from 'react';
 import countries from 'i18n-iso-countries';
 import enLocale from 'i18n-iso-countries/langs/en.json';
 import {BarList, useQuery} from '@tinybirdco/charts';
-import {TB_VERSION, barListColor, getCountryFlag, getStatsParams} from 'ghost-admin/utils/stats';
+import {STATS_LABEL_MAPPINGS, barListColor, getCountryFlag, getEndpointUrl, getStatsParams, getToken} from 'ghost-admin/utils/stats';
 import {action} from '@ember/object';
 import {formatNumber} from 'ghost-admin/helpers/format-number';
 import {inject} from 'ghost-admin/decorators/inject';
@@ -21,6 +21,7 @@ export default class TopLocations extends Component {
     @inject config;
     @service modals;
     @service router;
+    @service settings;
 
     @tracked showSeeAll = true;
 
@@ -40,7 +41,7 @@ export default class TopLocations extends Component {
 
     updateQueryParams(params) {
         const currentRoute = this.router.currentRoute;
-        const newQueryParams = {...currentRoute.queryParams, ...params};
+        const newQueryParams = {...currentRoute.queryParams, ...params, timezone: this.settings.timezone};
 
         this.router.transitionTo({queryParams: newQueryParams});
     }
@@ -50,7 +51,7 @@ export default class TopLocations extends Component {
     }
 
     getCountryName = (label) => {
-        return countries.getName(label, 'en') || 'Unknown';
+        return STATS_LABEL_MAPPINGS[label] || countries.getName(label, 'en') || 'Unknown';
     };
 
     ReactComponent = (props) => {
@@ -61,8 +62,8 @@ export default class TopLocations extends Component {
         );
 
         const {data, meta, error, loading} = useQuery({
-            endpoint: `${this.config.stats.endpoint}/v0/pipes/top_locations__v${TB_VERSION}.json`,
-            token: this.config.stats.token,
+            endpoint: getEndpointUrl(this.config, 'api_top_locations'),
+            token: getToken(this.config),
             params
         });
 
@@ -85,7 +86,7 @@ export default class TopLocations extends Component {
                                     e.preventDefault();
                                     this.navigateToFilter(label || 'Unknown');
                                 }}
-                                className="gh-stats-domain"
+                                className="gh-stats-bar-text"
                             >
                                 <span title={this.getCountryName(label) || 'Unknown'}>{getCountryFlag(label)} {this.getCountryName(label) || 'Unknown' || 'Unknown'}</span>
                             </a>

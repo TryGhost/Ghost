@@ -92,6 +92,7 @@ export default [
     setting('email', 'email_track_opens', true),
     setting('email', 'email_track_clicks', true),
     setting('email', 'email_verification_required', false),
+    setting('email', 'default_email_address', 'noreply@example.com'),
 
     // ANALYTICS
     setting('email', 'outbound_link_tagging', true),

@@ -18,10 +18,13 @@
     "**/dist/**": true,
     "**/ghost.map": true,
     "**/node_modules": true,
-    "ghost/core/core/built/**": true
+    "ghost/core/core/built/**": true,
+    "ghost/web-analytics/.diff_tmp/**": true
   },
   "tailwindCSS.experimental.classRegex": [
     ["clsx\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"]
   ],
-  "git.detectSubmodules": false
+  "git.detectSubmodules": false,
+  "tinybird.dataProjectSubdir": "ghost/web-analytics",
+  "tinybird.venv": ".venv"
 }

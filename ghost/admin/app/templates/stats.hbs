@@ -2,28 +2,43 @@
     <GhCanvasHeader class="gh-canvas-header gh-stats-header sticky break tablet post-header">
         <GhCustomViewTitle @title="Stats" />
         <div class="view-actions">
-            <Stats::Parts::AudienceFilter
-                @excludedAudiences={{this.excludedAudiences}}
-                @onChange={{this.onAudienceChange}}
-            />
+            {{#if this.config.enableDeveloperExperiments}}
+                <button
+                    type="button"
+                    class="gh-btn {{if this.mockData "gh-btn-green"}}"
+                    data-test-button="toggle-data-mode"
+                    {{on "click" this.toggleMockData}}
+                >
+                    <span>{{if this.mockData "Using Test Data" "Using Live Data"}}</span>
+                </button>
+            {{/if}}
 
-            <PowerSelect
-                @selected={{this.selectedRangeOption}}
-                @options={{this.rangeOptions}}
-                @searchEnabled={{false}}
-                @onChange={{this.onRangeChange}}
-                @triggerComponent={{component "gh-power-select/trigger"}}
-                @triggerClass="gh-btn"
-                @dropdownClass="gh-contentfilter-menu-dropdown is-narrow"
-                @matchTriggerWidth={{false}}
-                @horizontalPosition="right"
-                as |option|
-            >
-                {{#if option.name}}{{option.name}}{{else}}<span class="red">Unknown option</span>{{/if}}
-            </PowerSelect>
+            <div>
+                <Stats::Parts::AudienceFilter
+                    @excludedAudiences={{this.excludedAudiences}}
+                    @onChange={{this.onAudienceChange}}
+                />
+            </div>
+
+            <div>
+                <PowerSelect
+                    @selected={{this.selectedRangeOption}}
+                    @options={{this.rangeOptions}}
+                    @searchEnabled={{false}}
+                    @onChange={{this.onRangeChange}}
+                    @triggerComponent={{component "gh-power-select/trigger"}}
+                    @triggerClass="gh-btn"
+                    @dropdownClass="gh-contentfilter-menu-dropdown is-narrow"
+                    @matchTriggerWidth={{false}}
+                    @horizontalPosition="right"
+                    as |option|
+                >
+                    {{#if option.name}}{{option.name}}{{else}}<span class="red">Unknown option</span>{{/if}}
+                </PowerSelect>
+            </div>
         </div>
 
-        {{#if (or this.device this.browser this.location this.source this.pathname)}}
+        {{#if (or this.device this.browser this.location this.source this.pathname this.os)}}
         <div class="gh-stats-filters">
             {{#if this.pathname}}
                 <div class="gh-stats-filter-pill">
@@ -33,25 +48,31 @@
 
             {{#if this.source}}
                 <div class="gh-stats-filter-pill">
-                    <div>Source is <span class="value">{{this.source}}</span></div>
+                    <div>Source is <span class="value">{{this.formattedSource}}</span></div>
                 </div>
             {{/if}}
 
             {{#if this.location}}
                 <div class="gh-stats-filter-pill">
-                    <div>Location is <span class="value">{{this.humanReadableLocation}}</span></div>
+                    <div>Location is <span class="value">{{this.formattedLocation}}</span></div>
                 </div>
             {{/if}}
 
             {{#if this.device}}
                 <div class="gh-stats-filter-pill">
-                    <div>Device is <span class="value">{{this.device}}</span></div>
+                    <div>Device is <span class="value">{{this.formattedDevice}}</span></div>
                 </div>
             {{/if}}
 
             {{#if this.browser}}
                 <div class="gh-stats-filter-pill">
                     <div>Browser is <span class="value">{{this.browser}}</span></div>
+                </div>
+            {{/if}}
+
+            {{#if this.os}}
+                <div class="gh-stats-filter-pill">
+                    <div>OS is <span class="value">{{this.formattedOs}}</span></div>
                 </div>
             {{/if}}
 
@@ -71,7 +92,11 @@
                 @browser={{this.browser}}
                 @location={{this.location}}
                 @source={{this.source}}
-                @pathname={{this.pathname}}/>
+                @pathname={{this.pathname}}
+                @os={{this.os}}
+                @mockData={{this.mockData}}
+                @onTotalsChange={{this.onTotalsChange}}
+            />
         </section>
 
         <section class="gh-stats-grid cols-2">
@@ -84,6 +109,8 @@
                     @location={{this.location}}
                     @source={{this.source}}
                     @pathname={{this.pathname}}
+                    @os={{this.os}}
+                    @mockData={{this.mockData}}
                 />
             </div>
             <div class="gh-stats-container">
@@ -95,6 +122,8 @@
                     @location={{this.location}}
                     @source={{this.source}}
                     @pathname={{this.pathname}}
+                    @os={{this.os}}
+                    @mockData={{this.mockData}}
                 />
             </div>
         </section>
@@ -109,6 +138,8 @@
                     @location={{this.location}}
                     @source={{this.source}}
                     @pathname={{this.pathname}}
+                    @os={{this.os}}
+                    @mockData={{this.mockData}}
                 />
             </div>
             <div class="gh-stats-container">
@@ -120,6 +151,8 @@
                         @location={{this.location}}
                         @source={{this.source}}
                         @pathname={{this.pathname}}
+                        @os={{this.os}}
+                        @mockData={{this.mockData}}
                     />
             </div>
         </section>
@@ -133,7 +166,6 @@
                 </button>
             </div>
         </div>
-        No audience selected
         {{/if}}
 
     </section>

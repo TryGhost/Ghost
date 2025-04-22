@@ -18,10 +18,7 @@ lib-cov
 
 # Coverage directory used by tools like istanbul
 coverage
-coverage-e2e
-coverage-integration
-coverage-regression
-coverage_*
+coverage*
 
 # nyc test coverage
 .nyc_output
@@ -122,6 +119,8 @@ test/functional/*.png
 # Built asset files
 /ghost/core/core/built
 /ghost/core/core/frontend/public/ghost.min.css
+/ghost/core/core/frontend/src/ghost-stats/ghost-stats.bundled.js
+/ghost/core/core/frontend/src/member-attribution/member-attribution.bundled.js
 
 # Caddyfile - for local development with ssl + caddy
 Caddyfile
@@ -175,6 +174,7 @@ tsconfig.tsbuildinfo
 .tinyb
 .venv
 .diff_tmp
+temp*.sql
 
 # Docker Yarn Cache
 .yarncache

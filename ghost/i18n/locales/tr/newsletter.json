@@ -1,4 +1,6 @@
 {
+    "{date}": "{date}",
+    "Become a paid member of {site} to get access to all premium content.": "Tüm premium içeriklere erişebilmek için {site} ücretli üyesi olun.",
     "By {authors}": "Ekleyen {authors}",
     "Comment": "Yorum",
     "complimentary": "",
@@ -14,6 +16,8 @@
     "Subscription details": "Abonelik detayları",
     "trialing": "deneme",
     "Unsubscribe": "Abonelikten çık",
+    "Upgrade": "Yükselt",
+    "Upgrade to continue reading.": "Okumaya devam etmek için yükseltin.",
     "View in browser": "Tarayıcıda görüntüle",
     "You are receiving this because you are a <strong>%%{status}%% subscriber</strong> to {site}.": "Bu mesajı, {site} sitesine <strong>%%{status}%% abonesi</strong> olduğunuz için alıyorsunuz.",
     "Your free trial ends on {date}, at which time you will be charged the regular price. You can always cancel before then.": "Ücretsiz denemeniz {date} tarihinde sona eriyor, bu tarihten sonra düzenli fiyat uygulanacaktır. O zamana kadar her zaman iptal edebilirsiniz.",

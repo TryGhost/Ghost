@@ -6,7 +6,8 @@ module.exports = {
     corePlugins: {
         preflight: false // we're providing our own scoped CSS reset
     },
-    darkMode: ['class', 'class'],
+    // darkMode: 'selector',
+    darkMode: ['variant', [':is(.dark &):not(.light &)']],
     theme: {
         screens: {
             sm: '480px',
@@ -83,7 +84,7 @@ module.exports = {
                 100: '#EDE0FF',
                 400: '#A366FF',
                 500: '#8E42FF',
-                600: '7B1FFF',
+                600: '#7B1FFF',
                 DEFAULT: '#8E42FF'
             },
             pink: {
@@ -140,7 +141,7 @@ module.exports = {
         },
         letterSpacing: {
             tightest: '-.05em',
-            tighter: '-.025em',
+            tighter: '-.02em',
             tight: '-.01em',
             normal: '0',
             wide: '.01em',
@@ -341,7 +342,7 @@ module.exports = {
                 lg: '1.5rem',
                 xl: '1.7rem',
                 '2xl': '2.2rem',
-                '3xl': '2.7rem',
+                '3xl': '2.8rem',
                 '4xl': '3.2rem',
                 '5xl': [
                     '4.0rem',

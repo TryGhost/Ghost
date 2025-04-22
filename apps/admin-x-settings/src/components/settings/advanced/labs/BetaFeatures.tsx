@@ -4,6 +4,7 @@ import React, {useState} from 'react';
 import {Button, FileUpload, List, showToast} from '@tryghost/admin-x-design-system';
 import {downloadRedirects, useUploadRedirects} from '@tryghost/admin-x-framework/api/redirects';
 import {downloadRoutes, useUploadRoutes} from '@tryghost/admin-x-framework/api/routes';
+import {useGlobalData} from '../../../providers/GlobalDataProvider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 
 const BetaFeatures: React.FC = () => {
@@ -12,9 +13,21 @@ const BetaFeatures: React.FC = () => {
     const handleError = useHandleError();
     const [redirectsUploading, setRedirectsUploading] = useState(false);
     const [routesUploading, setRoutesUploading] = useState(false);
+    const {config} = useGlobalData();
+    const isPro = !!config.hostSettings?.siteId;
 
     return (
         <List titleSeparator={false}>
+            { isPro && (
+                <LabItem
+                    action={<FeatureToggle flag="ActivityPub" />}
+                    detail={<>Federate your site with ActivityPub to join the world&apos;s largest open network. <a className='text-green' href="https://ghost.org/help/social-web/" rel="noopener noreferrer" target="_blank">Learn more &rarr;</a></>}
+                    title='Social web (beta)' />
+            )}
+            <LabItem
+                action={<FeatureToggle flag="superEditors" />}
+                detail={<>Allows newly-assigned editors to manage members and comments in addition to regular roles.</>}
+                title='Enhanced Editor role (beta)' />
             <LabItem
                 action={<FeatureToggle flag="editorExcerpt" />}
                 detail={<>Adds the excerpt input below the post title in the editor</>}

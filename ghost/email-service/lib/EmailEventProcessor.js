@@ -1,5 +1,11 @@
-const {EmailDeliveredEvent, EmailOpenedEvent, EmailBouncedEvent, SpamComplaintEvent, EmailUnsubscribedEvent, EmailTemporaryBouncedEvent} = require('@tryghost/email-events');
 const logging = require('@tryghost/logging');
+
+const EmailDeliveredEvent = require('./events/EmailDeliveredEvent');
+const EmailOpenedEvent = require('./events/EmailOpenedEvent');
+const EmailBouncedEvent = require('./events/EmailBouncedEvent');
+const EmailTemporaryBouncedEvent = require('./events/EmailTemporaryBouncedEvent');
+const EmailUnsubscribedEvent = require('./events/EmailUnsubscribedEvent');
+const SpamComplaintEvent = require('./events/SpamComplaintEvent');
 
 async function waitForEvent() {
     return new Promise((resolve) => {

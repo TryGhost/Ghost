@@ -20,7 +20,8 @@ module.exports = function getConfigProperties() {
         hostSettings: config.get('hostSettings'),
         tenor: config.get('tenor'),
         pintura: config.get('pintura'),
-        signupForm: config.get('signupForm')
+        signupForm: config.get('signupForm'),
+        security: config.get('security')
     };
 
     // WIP tinybird stats feature - it's entirely config driven instead of using an alpha flag for now

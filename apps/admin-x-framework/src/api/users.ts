@@ -18,6 +18,13 @@ export type User = {
     location: string|null;
     facebook: string|null;
     twitter: string|null;
+    threads: string|null;
+    bluesky: string|null;
+    mastodon: string|null;
+    tiktok: string|null;
+    youtube: string|null;
+    instagram: string|null;
+    linkedin: string|null;
     accessibility: string|null;
     status: string;
     meta_title: string|null;
@@ -148,7 +155,9 @@ export function isAdminUser(user: User) {
 }
 
 export function isEditorUser(user: User) {
-    return user.roles.some(role => role.name === 'Editor');
+    const isAnyEditor = user.roles.some(role => role.name === 'Editor') 
+        || user.roles.some(role => role.name === 'Super Editor');
+    return isAnyEditor;
 }
 
 export function isAuthorUser(user: User) {

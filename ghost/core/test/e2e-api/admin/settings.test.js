@@ -42,7 +42,7 @@ const matchSettingsArray = (length) => {
 
 describe('Settings API', function () {
     let agent;
-
+    let emailMockReceiver;
     before(async function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init();
@@ -50,7 +50,7 @@ describe('Settings API', function () {
     });
 
     beforeEach(function () {
-        mockManager.mockMail();
+        emailMockReceiver = mockManager.mockMail();
     });
 
     afterEach(function () {
@@ -191,11 +191,12 @@ describe('Settings API', function () {
                     settings: matchSettingsArray(CURRENT_SETTINGS_COUNT)
                 })
                 .matchHeaderSnapshot({
+                    'content-length': anyContentLength,
                     'content-version': anyContentVersion,
                     etag: anyEtag
                 });
 
-            mockManager.assert.sentEmailCount(0);
+            emailMockReceiver.assertSentEmailCount(0);
         });
 
         it('removes image size prefixes when setting the icon', async function () {
@@ -230,7 +231,7 @@ describe('Settings API', function () {
             const afterValue = settingsCache.get('icon');
             assert.equal(afterValue, 'http://127.0.0.1:2369/content/images/2019/07/icon.png');
 
-            mockManager.assert.sentEmailCount(0);
+            emailMockReceiver.assertSentEmailCount(0);
         });
 
         it('cannot edit uneditable settings', async function () {
@@ -252,7 +253,7 @@ describe('Settings API', function () {
                     const emailVerificationRequired = body.settings.find(setting => setting.key === 'email_verification_required');
                     assert.equal(emailVerificationRequired.value, false);
                 });
-            mockManager.assert.sentEmailCount(0);
+            emailMockReceiver.assertSentEmailCount(0);
         });
 
         it('does not trigger email verification flow if members_support_address remains the same', async function () {
@@ -282,7 +283,7 @@ describe('Settings API', function () {
                     assert.deepEqual(body.meta, {});
                 });
 
-            mockManager.assert.sentEmailCount(0);
+            emailMockReceiver.assertSentEmailCount(0);
         });
 
         it('fails to edit setting with unsupported announcement_visibility value', async function () {
@@ -371,7 +372,7 @@ describe('Settings API', function () {
                     assert.equal(membersSupportAddress.value, 'support@example.com');
                 });
 
-            mockManager.assert.sentEmailCount(0);
+            emailMockReceiver.assertSentEmailCount(0);
         });
 
         it('cannot update invalid keys via token', async function () {
@@ -502,7 +503,7 @@ describe('Settings API', function () {
                     });
                 });
 
-            mockManager.assert.sentEmailCount(1);
+            emailMockReceiver.assertSentEmailCount(1);
             mockManager.assert.sentEmail({
                 subject: 'Verify email address',
                 to: 'othersupport@example.com'
@@ -525,7 +526,7 @@ describe('Settings API', function () {
                     'content-version': anyContentVersion
                 });
 
-            mockManager.assert.sentEmailCount(0);
+            emailMockReceiver.assertSentEmailCount(0);
         });
     });
 
@@ -563,7 +564,7 @@ describe('Settings API', function () {
                     });
                 });
 
-            mockManager.assert.sentEmailCount(1);
+            emailMockReceiver.assertSentEmailCount(1);
             mockManager.assert.sentEmail({
                 subject: 'Verify email address',
                 to: 'othersupport@example.com'
@@ -589,7 +590,7 @@ describe('Settings API', function () {
                     'content-version': anyContentVersion
                 });
 
-            mockManager.assert.sentEmailCount(0);
+            emailMockReceiver.assertSentEmailCount(0);
         });
 
         it('editing members_support_address equaling default does not trigger verification flow', async function () {
@@ -608,7 +609,7 @@ describe('Settings API', function () {
                     'content-version': anyContentVersion
                 });
 
-            mockManager.assert.sentEmailCount(0);
+            emailMockReceiver.assertSentEmailCount(0);
         });
     });
 
@@ -637,7 +638,7 @@ describe('Settings API', function () {
                     'content-version': anyContentVersion
                 });
 
-            mockManager.assert.sentEmailCount(0);
+            emailMockReceiver.assertSentEmailCount(0);
         });
 
         it('editing members_support_address equaling default does not trigger verification flow', async function () {
@@ -656,7 +657,7 @@ describe('Settings API', function () {
                     'content-version': anyContentVersion
                 });
 
-            mockManager.assert.sentEmailCount(0);
+            emailMockReceiver.assertSentEmailCount(0);
         });
     });
 
@@ -702,4 +703,3 @@ describe('Settings API', function () {
         });
     });
 });
-

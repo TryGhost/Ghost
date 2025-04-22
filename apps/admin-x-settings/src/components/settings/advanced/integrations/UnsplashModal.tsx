@@ -58,7 +58,7 @@ const UnsplashModal = NiceModal.create(() => {
         >
             <IntegrationHeader
                 detail='Beautiful, free photos'
-                icon={<Icon className='h-12 w-12' />}
+                icon={<Icon className='size-12' />}
                 title='Unsplash'
             />
             <div className='mt-7'>

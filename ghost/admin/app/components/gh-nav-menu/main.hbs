@@ -26,16 +26,22 @@
         {{#unless this.session.user.isContributor}}
         <div class="gh-nav-top">
             <ul class="gh-nav-list gh-nav-main">
-                {{#if (feature "ActivityPub")}}
-                <li>
-                    <LinkTo @route="activitypub-x" @current-when="activitypub-x">{{svg-jar "star"}}ActivityPub</LinkTo>
-                </li>
+                {{#if (and (feature "ActivityPub") this.session.user.isAdmin)}}
+                    <li>
+                        <LinkTo @route="activitypub-x" @current-when="activitypub-x">{{svg-jar "house"}}Home</LinkTo>
+                    </li>
                 {{/if}}
                 {{#if (gh-user-can-admin this.session.user)}}
-                <li class="relative gh-nav-list-home">
-                    <LinkTo @route="dashboard" @alt="Dashboard" title="Dashboard" data-test-nav="dashboard">{{svg-jar
-                        "house"}} Dashboard</LinkTo>
-                </li>
+                    <li class="relative gh-nav-list-home">
+                        <LinkTo @route="dashboard" @alt="Dashboard" data-test-nav="dashboard">
+                            {{#if (and (feature "ActivityPub") this.session.user.isAdmin)}}
+                                {{svg-jar "gauge"}}
+                            {{else}}
+                                {{svg-jar "house"}}
+                            {{/if}}
+                            Dashboard
+                        </LinkTo>
+                    </li>
                 {{/if}}
                 <li class="relative">
                     <span {{action "transitionToOrRefreshSite" on="click" }} class="{{if this.isOnSite "active"}}">
@@ -50,17 +56,19 @@
                     </a>
                 </li>
                 {{#if (and (gh-user-can-admin this.session.user) this.config.stats)}}
-                <li class="relative">
-                    <LinkTo @route="stats">{{svg-jar "stats-outline"}}Stats</LinkTo>
-                </li>
+                    <li class="relative">
+                        <LinkTo @route="stats-x">{{svg-jar "stats-outline"}}Stats</LinkTo>
+                    </li>
                 {{/if}}
                 {{#if (gh-user-can-admin this.session.user)}}
-                <li class="relative">
-                    <a href="javascript:void(0)" class={{if this.explore.exploreWindowOpen "active" }} {{on "click" (fn
-                        this.toggleExploreWindow "" )}} data-test-nav="explore">
-                        {{svg-jar "globe-simple"}} Explore
-                    </a>
-                </li>
+                    {{#if (not (and (feature "ActivityPub") this.session.user.isAdmin))}}
+                        <li class="relative">
+                            <a href="javascript:void(0)" class={{if this.explore.exploreWindowOpen "active" }} {{on "click" (fn
+                                this.toggleExploreWindow "" )}} data-test-nav="explore">
+                                {{svg-jar "globe-simple"}} Explore
+                            </a>
+                        </li>
+                    {{/if}}
                 {{/if}}
             </ul>
             <ul class="gh-nav-list gh-nav-manage">
@@ -132,7 +140,7 @@
                     </LinkTo>
                 </li>
                 {{/if}}
-                {{#if (gh-user-can-admin this.session.user)}}
+                {{#if (gh-user-can-manage-members this.session.user)}}
                 <li class="relative">
                     {{#if (eq this.router.currentRouteName "members.index")}}
                     <LinkTo @route="members" @current-when="members member member.new"
@@ -156,16 +164,6 @@
                     {{/if}}
                 </li>
 
-                {{/if}}
-                {{#if (feature "adminXDemo")}}
-                <li>
-                    <LinkTo @route="demo-x" @current-when="demo-x">{{svg-jar "star"}}AdminX Demo</LinkTo>
-                </li>
-                {{/if}}
-                {{#if (feature "postsX")}}
-                <li>
-                    <LinkTo @route="posts-x" @current-when="posts-x">{{svg-jar "chart"}}Post analytics</LinkTo>
-                </li>
                 {{/if}}
             </ul>
 

@@ -1,8 +1,8 @@
 import React, {useEffect, useState} from 'react';
 import {Button} from '@tryghost/admin-x-design-system';
 import {ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
-import {useAnimatedCounter} from '../../hooks/useAnimatedCounter';
-import {useDerepostMutationForUser, useLikeMutationForUser, useRepostMutationForUser, useUnlikeMutationForUser} from '../../hooks/useActivityPubQueries';
+import {useAnimatedCounter} from '@hooks/use-animated-counter';
+import {useDerepostMutationForUser, useLikeMutationForUser, useRepostMutationForUser, useUnlikeMutationForUser} from '@hooks/use-activity-pub-queries';
 
 interface FeedItemStatsProps {
     object: ObjectProperties;
@@ -10,6 +10,7 @@ interface FeedItemStatsProps {
     commentCount: number;
     repostCount: number;
     layout: string;
+    disabled?: boolean;
     onLikeClick: () => void;
     onCommentClick: () => void;
 }
@@ -20,6 +21,7 @@ const FeedItemStats: React.FC<FeedItemStatsProps> = ({
     commentCount,
     repostCount: initialRepostCount,
     layout,
+    disabled = false,
     onLikeClick,
     onCommentClick
 }) => {
@@ -65,14 +67,15 @@ const FeedItemStats: React.FC<FeedItemStatsProps> = ({
         onLikeClick();
     };
 
-    const buttonClassName = `transition-color flex p-2 ap-action-button items-center justify-center rounded-full bg-white leading-none hover:bg-gray-100`;
+    const buttonClassName = `transition-color flex p-2 ap-action-button items-center justify-center rounded-md text-gray-900 leading-none hover:bg-black/[3%] dark:bg-black dark:hover:bg-gray-950 dark:text-gray-600`;
 
-    return (<div className={`flex ${(layout === 'inbox') ? 'flex-col' : 'gap-1'}`}>
+    return (<div className={`flex ${layout !== 'inbox' && 'gap-1'}`}>
         <Button
-            className={`${buttonClassName} ${isLiked ? 'text-red-600' : 'text-gray-900'}`}
+            className={`${buttonClassName} ${isLiked ? 'text-pink-500' : 'text-gray-900'}`}
+            disabled={disabled}
             hideLabel={true}
             icon='heart'
-            iconColorClass={`w-[18px] h-[18px] ${isLiked && 'ap-red-heart text-red-600 *:!fill-red-600 hover:text-red-600'}`}
+            iconColorClass={`w-[18px] h-[18px] ${isLiked && 'ap-red-heart text-pink-500 *:!fill-pink-500 hover:text-pink-500'}`}
             id='like'
             label={new Intl.NumberFormat().format(likeCount)}
             size='md'
@@ -87,6 +90,7 @@ const FeedItemStats: React.FC<FeedItemStatsProps> = ({
         />
         <Button
             className={buttonClassName}
+            disabled={disabled}
             hideLabel={commentCount === 0 || (layout === 'inbox')}
             icon='comment'
             iconColorClass='w-[18px] h-[18px]'
@@ -102,6 +106,7 @@ const FeedItemStats: React.FC<FeedItemStatsProps> = ({
         />
         <Button
             className={`${buttonClassName} ${isReposted ? 'text-green-500' : 'text-gray-900'}`}
+            disabled={disabled}
             hideLabel={(initialRepostCount === 0 && !isReposted) || repostCount === 0 || (layout === 'inbox')}
             icon='reload'
             iconColorClass={`w-[18px] h-[18px] ${isReposted && 'text-green-500'}`}

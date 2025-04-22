@@ -28,18 +28,6 @@ const features = [{
     description: 'Enables tier to be specified when importing members',
     flag: 'importMemberTier'
 },{
-    title: 'AdminX Demo',
-    description: 'Adds a navigation link to the AdminX demo app',
-    flag: 'adminXDemo'
-},{
-    title: 'NestJS Playground',
-    description: 'Wires up the Ghost NestJS App to the Admin API (also needs GHOST_ENABLE_NEST_FRAMEWORK=1 env var)',
-    flag: 'NestPlayground'
-},{
-    title: 'ActivityPub',
-    description: '(Highly) Experimental support for ActivityPub.',
-    flag: 'ActivityPub'
-},{
     title: 'Content Visibility (Beta)',
     description: 'Enables content visibility in Emails - Changes already released to beta testers',
     flag: 'contentVisibility'
@@ -51,10 +39,18 @@ const features = [{
     title: 'Post analytics redesign',
     description: 'Enables redesigned Post analytics page',
     flag: 'postsX'
+},{
+    title: 'Stats redesign',
+    description: 'Enables redesigned Stats page',
+    flag: 'statsX'
 }, {
     title: 'Sign-up CAPTCHA',
     description: 'Enable CAPTCHA for member sign-up and sign-in',
     flag: 'captcha'
+}, {
+    title: 'Explore',
+    description: 'Enables keeping in touch with the new Explore API',
+    flag: 'explore'
 }];
 
 const AlphaFeatures: React.FC = () => {

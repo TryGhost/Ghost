@@ -4,15 +4,15 @@ const {promisify} = require('util');
 const {spawn, exec} = require('child_process');
 const {setupGhost, setupMailgun, enableLabs, setupStripe, getStripeAccountId, generateStripeIntegrationToken} = require('../utils/e2e-browser-utils');
 const {allowStripe, mockMail, mockGeojs, assert} = require('../../utils/e2e-framework-mock-manager');
-const MailgunClient = require('@tryghost/mailgun-client');
 const sinon = require('sinon');
 const ObjectID = require('bson-objectid').default;
 const Stripe = require('stripe').Stripe;
 const configUtils = require('../../utils/configUtils');
+const MailgunClient = require('../../../core/server/services/lib/MailgunClient');
 
 const startWebhookServer = (port) => {
     const isCI = process.env.CI;
-    const isDocker = process.env.COMPOSE_PROFILES === 'full';
+    const isDocker = process.env.GHOST_DEV_IS_DOCKER === 'true';
     const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
     const command = `stripe listen --forward-connect-to http://127.0.0.1:${port}/members/webhooks/stripe/ ${isDocker || isCI ? `--api-key ${stripeSecretKey}` : ''}`.trim();
     const webhookServer = spawn(command.split(' ')[0], command.split(' ').slice(1));
@@ -26,7 +26,7 @@ const startWebhookServer = (port) => {
 
 const getWebhookSecret = async () => {
     const isCI = process.env.CI;
-    const isDocker = process.env.COMPOSE_PROFILES === 'full';
+    const isDocker = process.env.GHOST_DEV_IS_DOCKER === 'true';
     const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
     const command = `stripe listen --print-secret ${isDocker || isCI ? `--api-key ${stripeSecretKey}` : ''}`.trim();
     const webhookSecret = (await promisify(exec)(command)).stdout;
@@ -115,7 +115,7 @@ module.exports = base.test.extend({
         const stripeAccountId = await getStripeAccountId();
         const stripeIntegrationToken = await generateStripeIntegrationToken(stripeAccountId);
 
-        const WebhookManager = require('../../../../stripe/lib/WebhookManager');
+        const WebhookManager = require('../../../core/server/services/stripe/WebhookManager');
         const originalParseWebhook = WebhookManager.prototype.parseWebhook;
         const sandbox = sinon.createSandbox();
         sandbox.stub(WebhookManager.prototype, 'parseWebhook').callsFake(function (body, signature) {
@@ -129,7 +129,7 @@ module.exports = base.test.extend({
             }
         });
 
-        const StripeAPI = require('../../../../stripe/lib/StripeAPI');
+        const StripeAPI = require('../../../core/server/services/stripe/StripeAPI');
         const originalStripeConfigure = StripeAPI.prototype.configure;
         sandbox.stub(StripeAPI.prototype, 'configure').callsFake(function (stripeConfig) {
             originalStripeConfigure.call(this, stripeConfig);

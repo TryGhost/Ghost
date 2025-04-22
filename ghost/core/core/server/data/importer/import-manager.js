@@ -11,12 +11,12 @@ const debug = require('@tryghost/debug')('import-manager');
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
 const ImageHandler = require('./handlers/image');
-const ImporterContentFileHandler = require('@tryghost/importer-handler-content-files');
+const ImporterContentFileHandler = require('./handlers/ImporterContentFileHandler');
 const RevueHandler = require('./handlers/revue');
 const JSONHandler = require('./handlers/json');
 const MarkdownHandler = require('./handlers/markdown');
 const ContentFileImporter = require('./importers/ContentFileImporter');
-const RevueImporter = require('@tryghost/importer-revue');
+const RevueImporter = require('./importers/importer-revue');
 const DataImporter = require('./importers/data');
 const urlUtils = require('../../../shared/url-utils');
 const {GhostMailer} = require('../../services/mail');
@@ -225,7 +225,7 @@ class ImportManager {
 
         try {
             await extract(filePath, tmpDir);
-            
+
             // Set permissions for all extracted files
             const files = glob.sync('**/*', {cwd: tmpDir, nodir: true});
             await Promise.all(files.map(file => fs.chmod(path.join(tmpDir, file), 0o644)));

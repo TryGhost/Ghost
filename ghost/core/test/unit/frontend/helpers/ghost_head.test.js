@@ -1453,14 +1453,47 @@ describe('{{ghost_head}} helper', function () {
             configUtils.set({
                 tinybird: {
                     tracker: {
-                        scriptUrl: 'https://unpkg.com/@tinybirdco/flock.js',
-                        endpoint: 'https://api.tinybird.co',
+                        endpoint: 'https://e.ghost.org/tb/web_analytics',
                         token: 'tinybird_token',
-                        id: 'tb_test_site_uuid'
+                        id: 'tb_test_site_uuid',
+                        datasource: 'analytics_events',
+                        local: {
+                            enabled: false,
+                            endpoint: 'http://localhost:7181/v0/events',
+                            token: 'tinybird_local_token',
+                            datasource: 'analytics_events'
+                        }
                     }
                 }
             });
         });
+
+        it('includes tracker script', async function () {
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+
+            rendered.should.match(/script defer src="\/public\/ghost-stats\.min\.js/);
+        });
+
+        it('includes tracker script with subdir', async function () {
+            configUtils.set('url', 'http://localhost:2388/blog/');
+
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+
+            rendered.should.match(/script defer src="\/blog\/public\/ghost-stats\.min\.js/);
+        });
+
         it('with all tb_variables set to undefined on logged out home page', async function () {
             await testGhostHead(testUtils.createHbsResponse({
                 locals: {
@@ -1521,6 +1554,54 @@ describe('{{ghost_head}} helper', function () {
                     safeVersion: '4.3'
                 }
             }));
+        });
+
+        it('includes datasource when set', async function () {
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+
+            rendered.should.match(/data-datasource="analytics_events"/);
+        }); 
+
+        it('does not include tracker script when preview is set', async function () {
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    context: ['preview', 'post']
+                }
+            }));
+
+            rendered.should.not.match(/script defer src="\/public\/ghost-stats\.min\.js"/);
+        });
+
+        it('uses the provided host/endpoint from config', async function () {
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+
+            rendered.should.match(/data-host="https:\/\/e.ghost.org\/tb\/web_analytics"/);
+        });
+
+        it('includes local tracker script when local is set', async function () {
+            configUtils.set('tinybird:tracker:local:enabled', true);
+
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+
+            rendered.should.match(/data-host="http:\/\/localhost:7181\/v0\/events"/);
         });
     });
     describe('respects values from excludes: ', function () {

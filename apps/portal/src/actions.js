@@ -1,6 +1,6 @@
 import setupGhostApi from './utils/api';
 import {chooseBestErrorMessage} from './utils/errors';
-import {createPopupNotification, getMemberEmail, getMemberName, getProductCadenceFromPrice, removePortalLinkFromUrl, getRefDomain} from './utils/helpers';
+import {createPopupNotification, getMemberEmail, getMemberName, getProductCadenceFromPrice, removePortalLinkFromUrl, getRefDomain, hasCaptchaEnabled} from './utils/helpers';
 
 function switchPage({data, state}) {
     return {
@@ -79,8 +79,14 @@ async function signout({api, state}) {
 }
 
 async function signin({data, api, state}) {
-    const {t} = state;
+    const {captchaRef, site, t} = state;
+
     try {
+        if (hasCaptchaEnabled({site})) {
+            const {response} = await captchaRef.current.execute({async: true});
+            data.token = response;
+        }
+
         const integrityToken = await api.member.getIntegrityToken();
         await api.member.sendMagicLink({...data, emailType: 'signin', integrityToken});
         return {
@@ -100,6 +106,12 @@ async function signin({data, api, state}) {
 
 async function signup({data, state, api}) {
     try {
+        if (hasCaptchaEnabled({site: state.site})) {
+            const {captchaRef} = state;
+            const {response} = await captchaRef.current.execute({async: true});
+            data.token = response;
+        }
+
         let {plan, tierId, cadence, email, name, newsletters, offerId} = data;
 
         if (plan.toLowerCase() === 'free') {
@@ -446,8 +458,8 @@ async function updateProfile({data, state, api}) {
                 })
             };
         }
-        const message = !dataUpdate.success ? t('Failed to update account data') : t('Failed to send verification email');
 
+        const message = !dataUpdate.success ? t('Failed to update account data') : t('Failed to send verification email');
         return {
             action: 'updateProfile:failed',
             ...(dataUpdate.success ? {member: dataUpdate.member} : {}),
@@ -470,7 +482,14 @@ async function updateProfile({data, state, api}) {
     } else if (emailUpdate) {
         const action = emailUpdate.success ? 'updateProfile:success' : 'updateProfile:failed';
         const status = emailUpdate.success ? 'success' : 'error';
-        const message = !emailUpdate.success ? t('Failed to send verification email') : t('Check your inbox to verify email update');
+        let message = '';
+
+        if (emailUpdate.error) {
+            message = chooseBestErrorMessage(emailUpdate.error, t('Failed to send verification email'), t);
+        } else {
+            message = t('Check your inbox to verify email update');
+        }
+
         return {
             action,
             ...(emailUpdate.success ? {page: 'accountHome'} : {}),

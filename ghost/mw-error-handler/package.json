@@ -19,7 +19,7 @@
   ],
   "devDependencies": {
     "c8": "8.0.1",
-    "mocha": "10.2.0",
+    "mocha": "10.8.2",
     "sinon": "15.2.0"
   },
   "dependencies": {
@@ -28,6 +28,6 @@
     "@tryghost/http-cache-utils": "0.1.17",
     "@tryghost/tpl": "0.1.32",
     "lodash": "4.17.21",
-    "semver": "7.6.3"
+    "semver": "7.7.1"
   }
 }

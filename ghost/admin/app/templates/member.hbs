@@ -38,7 +38,7 @@
         </div>
 
         <section class="view-actions">
-            {{#if this.session.user.isAdmin}}
+            {{#if this.session.user.canManageMembers}}
                 {{#unless this.member.isNew}}
                     <span class="dropdown">
                         <GhDropdownButton
