@@ -38,7 +38,8 @@ const BETA_FEATURES = [
     'editorExcerpt',
     'ActivityPub',
     'importMemberTier',
-    'superEditors'
+    'superEditors',
+    'trafficAnalytics'
 ];
 
 const ALPHA_FEATURES = [
