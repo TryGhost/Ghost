@@ -36,7 +36,7 @@ const ButtonSelect: React.FC<{type: OfferType, checked: boolean, onClick: () => 
     return (
         <button className='text-left' type='button' onClick={onClick}>
             <div className='flex gap-3'>
-                <div className={`mt-0.5 flex h-4 w-4 items-center justify-center rounded-full ${checkboxClass}`}>
+                <div className={`mt-0.5 flex size-4 items-center justify-center rounded-full ${checkboxClass}`}>
                     {checked ? <Icon className='w-[7px] stroke-[4]' name='check' size='custom' /> : null}
                 </div>
                 <div className='flex flex-col'>

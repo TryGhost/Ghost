@@ -210,7 +210,7 @@ const Sidebar: React.FC = () => {
                 <a className='w-100 mb-10 mt-1 flex h-[38px] cursor-pointer items-center rounded-lg px-3 py-2 text-left text-[14px] font-medium text-grey-800 transition-all hover:bg-grey-200 focus:bg-grey-100 dark:text-grey-600 dark:hover:bg-grey-950 dark:focus:bg-grey-925' onClick={() => {
                     updateRoute('about');
                 }}>
-                    <img alt='Ghost Logo' className='mr-[7px] h-[18px] w-[18px]' src={GhostLogo} />
+                    <img alt='Ghost Logo' className='mr-[7px] size-[18px]' src={GhostLogo} />
                     About Ghost
                 </a>
                 }

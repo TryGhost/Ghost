@@ -93,7 +93,7 @@ const LookAndFeel: React.FC<{
 
                     {defaultButtonIcons.map(icon => (
                         <button className={clsx('border p-3', currentIcon === icon.value ? 'border-green' : 'border-transparent')} type="button" onClick={() => updateSetting('portal_button_icon', icon.value)}>
-                            <icon.Component className={`h-5 w-5 ${currentIcon === icon.value ? 'text-green' : 'text-black opacity-70 transition-all hover:opacity-100 dark:text-white'}`} />
+                            <icon.Component className={`size-5 ${currentIcon === icon.value ? 'text-green' : 'text-black opacity-70 transition-all hover:opacity-100 dark:text-white'}`} />
                         </button>
                     ))}
                     <div className={clsx('relative w-[46px] border', currentIcon === uploadedIcon ? 'border-green' : 'border-transparent')}>

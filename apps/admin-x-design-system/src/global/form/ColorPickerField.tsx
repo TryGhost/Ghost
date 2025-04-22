@@ -117,7 +117,7 @@ const ColorPickerField: React.FC<ColorPickerFieldProps> = ({testId, title, direc
     const selectedSwatch = swatches.find(swatch => swatch.value === localValue);
 
     return (
-        <div className="mt-2 flex-col" data-testid={testId} onClick={event => event.stopPropagation()}>
+        <div className="flex-col" data-testid={testId} onClick={event => event.stopPropagation()}>
             {content}
             {(alwaysOpen || isExpanded) && <ColorPicker clearButtonValue={clearButtonValue} eyedropper={eyedropper} hexValue={selectedSwatch?.hex || localValue || undefined} onChange={handleChange} />}
         </div>

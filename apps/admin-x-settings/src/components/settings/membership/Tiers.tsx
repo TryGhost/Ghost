@@ -15,7 +15,7 @@ const StripeConnectedButton: React.FC<{className?: string; onClick: () => void;}
     );
     return (
         <button className={className} data-testid='stripe-connected' type='button' onClick={onClick}>
-            <span className="inline-flex h-2 w-2 rounded-full bg-green transition-all group-hover:bg-[#625BF6]"></span>
+            <span className="inline-flex size-2 rounded-full bg-green transition-all group-hover:bg-[#625BF6]"></span>
             <span className='ml-2'>Connected to Stripe</span>
         </button>
     );

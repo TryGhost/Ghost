@@ -35,7 +35,7 @@ const SearchEnginePreview: React.FC<SearchEnginePreviewProps> = ({
                         </div>
                     </div>
                     <div className='mt-4 flex items-center gap-2 border-t border-grey-200 pt-4 dark:border-grey-900'>
-                        <div className='flex h-7 w-7 items-center justify-center rounded-full bg-grey-200 dark:bg-grey-700' style={{
+                        <div className='flex size-7 items-center justify-center rounded-full bg-grey-200 dark:bg-grey-700' style={{
                             backgroundImage: icon ? `url(${icon})` : 'none',
                             backgroundSize: 'contain'
                         }}>
