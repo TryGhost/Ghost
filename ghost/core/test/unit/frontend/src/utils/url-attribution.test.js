@@ -1,9 +1,7 @@
 const should = require('should');
 const sinon = require('sinon');
-
-// Save original globals to restore later
-const originalURL = global.URL;
-const originalWindow = global.window;
+const {JSDOM} = require('jsdom');
+const path = require('path');
 
 // Use path relative to test file
 const {
@@ -14,76 +12,39 @@ const {
 } = require('../../../../../core/frontend/src/utils/url-attribution');
 
 describe('URL Attribution Utils', function () {
+    let dom;
+    let originalWindow;
+    let originalURL;
+
     beforeEach(function () {
-        // Set up window mock with only what's needed
-        global.window = {
-            location: {
-                hostname: 'example.com',
-                href: 'https://example.com/path'
-            },
-            document: {
-                referrer: 'https://external-site.com'
-            }
-        };
+        // Save original globals
+        originalWindow = global.window;
+        originalURL = global.URL;
         
-        // Create a custom URL constructor that handles query params
-        global.URL = function (url) {
-            // Parse the URL to extract parts
-            const urlParts = {};
-            urlParts.href = url;
-            
-            // Extract hostname
-            const urlMatch = url.match(/^https?:\/\/([^/]+)/);
-            urlParts.hostname = urlMatch ? urlMatch[1] : '';
-            
-            // Extract pathname
-            const pathnameMatch = url.match(/^https?:\/\/[^/]+(\/[^?#]*)/);
-            urlParts.pathname = pathnameMatch ? pathnameMatch[1] : '/';
-            
-            // Parse hash
-            urlParts.hash = '';
-            if (url.includes('#')) {
-                urlParts.hash = '#' + url.split('#')[1];
-            }
-            
-            // Parse query params
-            urlParts.searchParams = new URLSearchParams('');
-            if (url.includes('?')) {
-                const queryString = url.split('?')[1].split('#')[0];
-                urlParts.searchParams = new URLSearchParams(queryString);
-            }
-            
-            // Special case for portal hash URLs
-            if (url.includes('#/portal')) {
-                const portalHashParts = url.split('#/portal')[1] || '';
-                
-                // If portal hash contains query params
-                if (portalHashParts.includes('?')) {
-                    const portalParams = new URLSearchParams(portalHashParts.split('?')[1]);
-                    
-                    // Create a getter that checks both URL params and portal hash params
-                    const originalGet = urlParts.searchParams.get;
-                    urlParts.searchParams.get = function (param) {
-                        // First check regular query params
-                        const regularValue = originalGet.call(this, param);
-                        if (regularValue) {
-                            return regularValue;
-                        }
-                        // Then check portal hash params
-                        return portalParams.get(param);
-                    };
-                }
-            }
-            
-            return urlParts;
-        };
+        // Set up JSDOM environment
+        dom = new JSDOM('<!DOCTYPE html><html><body></body></html>', {
+            url: 'https://example.com/path',
+            referrer: 'https://external-site.com',
+            contentType: 'text/html',
+            includeNodeLocations: true
+        });
+        
+        // Set global window and URL
+        global.window = dom.window;
+        global.URL = dom.window.URL;
+        global.document = dom.window.document;
     });
     
     afterEach(function () {
         sinon.restore();
+        
+        // Clean up JSDOM
+        dom.window.close();
+        
         // Restore globals
-        global.URL = originalURL;
         global.window = originalWindow;
+        global.URL = originalURL;
+        global.document = undefined;
     });
     
     describe('parseReferrer', function () {
@@ -114,7 +75,7 @@ describe('URL Attribution Utils', function () {
         it('should return document.referrer when no source params are present', function () {
             const result = parseReferrer('https://example.com/');
             should.exist(result);
-            should.equal(result.url, 'https://external-site.com');
+            should.equal(result.url, 'https://external-site.com/');
         });
     });
     
