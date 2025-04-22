@@ -86,7 +86,7 @@ import { processPayload } from '../utils/privacy';
 
             // Set or update session ID
             setSessionId(STORAGE_KEY, getStorageObject(config.storageMethod));
-            const url = `${config.host}?name=${config.datasource}&token=${config.token}`;
+            const url = `${config.host}?name=${encodeURIComponent(config.datasource)}&token=${encodeURIComponent(config.token)}`;
 
             // Process the payload, masking sensitive data
             const processedPayload = processPayload(payload, config.globalAttributes, config.stringifyPayload);
