@@ -52,7 +52,8 @@
     "lint:code": "yarn lint:server && yarn lint:shared && yarn lint:frontend",
     "lint:types": "eslint --ignore-path .eslintignore '**/*.ts' --cache && tsc --noEmit",
     "lint": "yarn lint:server && yarn lint:shared && yarn lint:frontend && yarn lint:test && yarn lint:types",
-    "prepack": "node monobundle.js"
+    "prepack": "node monobundle.js",
+    "test:bundle-stats": "node scripts/test-ghost-stats-bundle.js"
   },
   "engines": {
     "node": "^18.12.1 || ^20.11.1 || ^22.13.1",
@@ -120,6 +121,7 @@
     "@tryghost/social-urls": "0.1.46",
     "@tryghost/string": "0.2.12",
     "@tryghost/tiers": "0.0.0",
+    "@tryghost/timezone-data": "^0.4.5",
     "@tryghost/tpl": "0.1.32",
     "@tryghost/url-utils": "4.4.8",
     "@tryghost/validator": "0.2.14",
@@ -149,6 +151,7 @@
     "date-fns": "2.30.0",
     "dompurify": "3.2.5",
     "downsize": "0.0.8",
+    "esbuild": "^0.25.2",
     "express": "4.21.2",
     "express-brute": "1.0.1",
     "express-hbs": "2.5.0",
@@ -242,6 +245,7 @@
     "cssnano": "7.0.4",
     "detect-indent": "6.1.0",
     "detect-newline": "3.1.0",
+    "esbuild": "0.19.11",
     "expect": "29.7.0",
     "find-root": "1.1.0",
     "form-data": "4.0.0",
