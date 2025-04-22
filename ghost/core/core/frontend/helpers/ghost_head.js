@@ -364,7 +364,7 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
                 head.push(tagCodeInjection);
             }
 
-            if (config.get('tinybird') && config.get('tinybird:tracker')) {
+            if (labs.isSet('trafficAnalytics') && config.get('tinybird:tracker')) {
                 head.push(getTinybirdTrackerScript(dataRoot));
             }
 

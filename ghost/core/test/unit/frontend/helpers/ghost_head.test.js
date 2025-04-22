@@ -1466,6 +1466,11 @@ describe('{{ghost_head}} helper', function () {
                     }
                 }
             });
+            sinon.stub(labs, 'isSet').withArgs('trafficAnalytics').returns(true);
+        });
+
+        afterEach(function () {
+            sinon.restore();
         });
 
         it('includes tracker script', async function () {
@@ -1566,7 +1571,7 @@ describe('{{ghost_head}} helper', function () {
             }));
 
             rendered.should.match(/data-datasource="analytics_events"/);
-        }); 
+        });
 
         it('does not include tracker script when preview is set', async function () {
             const rendered = await testGhostHead(testUtils.createHbsResponse({
