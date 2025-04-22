@@ -28,10 +28,6 @@ const features = [{
     description: 'Enables tier to be specified when importing members',
     flag: 'importMemberTier'
 },{
-    title: 'AdminX Demo',
-    description: 'Adds a navigation link to the AdminX demo app',
-    flag: 'adminXDemo'
-},{
     title: 'Content Visibility (Beta)',
     description: 'Enables content visibility in Emails - Changes already released to beta testers',
     flag: 'contentVisibility'
