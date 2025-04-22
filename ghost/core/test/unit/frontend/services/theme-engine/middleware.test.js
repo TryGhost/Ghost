@@ -199,6 +199,26 @@ describe('Themes middleware', function () {
                 }
             });
         });
+
+        it('adds x property when twitter exists in site data', function (done) {
+            // Add twitter to the fake site data
+            fakeSiteData.twitter = '@ghost';
+
+            executeMiddleware(middleware, req, res, function next() {
+                try {
+                    const templateOptions = hbs.updateTemplateOptions.firstCall.args[0];
+                    const data = templateOptions.data;
+
+                    should.exist(data.site.x);
+                    data.site.x.should.equal('@ghost');
+                    data.site.twitter.should.equal('@ghost');
+
+                    done();
+                } catch (error) {
+                    done(error);
+                }
+            });
+        });
     });
 
     describe('Preview Mode', function () {
