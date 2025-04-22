@@ -1,9 +1,9 @@
 import CustomTooltipContent from '@src/components/chart/CustomTooltipContent';
+import EmptyStatView from '../EmptyStatView';
 import React, {useState} from 'react';
-import {ChartConfig, ChartContainer, ChartTooltip, Recharts, Tabs, TabsList, formatDisplayDate, formatDuration, formatNumber, formatPercentage, formatQueryDate} from '@tryghost/shade';
+import {Card, CardContent, ChartConfig, ChartContainer, ChartTooltip, Recharts, Tabs, TabsList, formatDisplayDate, formatDuration, formatNumber, formatPercentage} from '@tryghost/shade';
 import {KpiTabTrigger, KpiTabValue} from '../KpiTab';
-import {calculateYAxisWidth, getRangeDates, getYTicks} from '@src/utils/chart-helpers';
-import {getAudienceQueryParam} from '../AudienceSelect';
+import {calculateYAxisWidth, getYTicks} from '@src/utils/chart-helpers';
 import {getStatEndpointUrl, getToken} from '@src/config/stats-config';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useQuery} from '@tinybirdco/charts';
@@ -37,24 +37,18 @@ const KPI_METRICS: Record<string, KpiMetric> = {
     }
 };
 
-const Kpis:React.FC = ({}) => {
+interface KpisProps {
+    queryParams: Record<string, string | number>
+}
+
+const Kpis:React.FC<KpisProps> = ({queryParams}) => {
     const {statsConfig, isLoading: isConfigLoading} = useGlobalData();
     const [currentTab, setCurrentTab] = useState('visits');
-    const {range, audience} = useGlobalData();
-    const {startDate, endDate, timezone} = getRangeDates(range);
-
-    const params = {
-        site_uuid: statsConfig?.id || '',
-        date_from: formatQueryDate(startDate),
-        date_to: formatQueryDate(endDate),
-        timezone: timezone,
-        member_status: getAudienceQueryParam(audience)
-    };
 
     const {data, loading} = useQuery({
         endpoint: getStatEndpointUrl(statsConfig, 'api_kpis'),
         token: getToken(statsConfig),
-        params
+        params: queryParams
     });
 
     const isLoading = isConfigLoading || loading;
@@ -108,82 +102,96 @@ const Kpis:React.FC = ({}) => {
     } satisfies ChartConfig;
 
     return (
-        <Tabs defaultValue="visits" variant='underline'>
-            <TabsList className="grid grid-cols-4 gap-5">
-                <KpiTabTrigger value="visits" onClick={() => {
-                    setCurrentTab('visits');
-                }}>
-                    <KpiTabValue label="Unique visitors" value={kpiValues.visits} />
-                </KpiTabTrigger>
-                <KpiTabTrigger value="views" onClick={() => {
-                    setCurrentTab('views');
-                }}>
-                    <KpiTabValue label="Total views" value={kpiValues.views} />
-                </KpiTabTrigger>
-                <KpiTabTrigger value="duration" onClick={() => {
-                    setCurrentTab('duration');
-                }}>
-                    <KpiTabValue label="Time on page" value={kpiValues.duration} />
-                </KpiTabTrigger>
-            </TabsList>
-            <div className='my-4 [&_.recharts-cartesian-axis-tick-value]:fill-gray-500'>
-                {isLoading ? 'Loading' :
-                    <ChartContainer className='-mb-3 h-[16vw] max-h-[320px] w-full' config={chartConfig}>
-                        <Recharts.LineChart
-                            data={chartData}
-                            margin={{
-                                left: 0,
-                                right: 20,
-                                top: 12
-                            }}
-                            accessibilityLayer
-                        >
-                            <Recharts.CartesianGrid horizontal={false} vertical={false} />
-                            <Recharts.XAxis
-                                axisLine={false}
-                                dataKey="date"
-                                interval={0}
-                                tickFormatter={formatDisplayDate}
-                                tickLine={false}
-                                tickMargin={8}
-                                ticks={chartData && chartData.length > 0 ? [chartData[0].date, chartData[chartData.length - 1].date] : []}
-                            />
-                            <Recharts.YAxis
-                                axisLine={false}
-                                tickFormatter={(value) => {
-                                    switch (currentTab) {
-                                    case 'bounce-rate':
-                                        return formatPercentage(value);
-                                    case 'duration':
-                                        return formatDuration(value);
-                                    case 'visits':
-                                    case 'views':
-                                        return formatNumber(value);
-                                    default:
-                                        return value.toLocaleString();
-                                    }
-                                }}
-                                tickLine={false}
-                                ticks={getYTicks(chartData || [])}
-                                width={calculateYAxisWidth(getYTicks(chartData || []), currentMetric.formatter)}
-                            />
-                            <ChartTooltip
-                                content={<CustomTooltipContent />}
-                                cursor={true}
-                            />
-                            <Recharts.Line
-                                dataKey="value"
-                                dot={false}
-                                isAnimationActive={false}
-                                stroke="hsl(var(--chart-1))"
-                                strokeWidth={2}
-                                type='bump'
-                            />
-                        </Recharts.LineChart>
-                    </ChartContainer>
-                }
-            </div>
-        </Tabs>
+        <>
+            {isLoading ? 'Loading' :
+                <>
+                    {(data && data.length !== 0 && kpiValues.visits !== '0') ?
+                        <Card>
+                            <CardContent>
+                                <Tabs defaultValue="visits" variant='underline'>
+                                    <TabsList className="grid grid-cols-4 gap-5">
+                                        <KpiTabTrigger value="visits" onClick={() => {
+                                            setCurrentTab('visits');
+                                        }}>
+                                            <KpiTabValue label="Unique visitors" value={kpiValues.visits} />
+                                        </KpiTabTrigger>
+                                        <KpiTabTrigger value="views" onClick={() => {
+                                            setCurrentTab('views');
+                                        }}>
+                                            <KpiTabValue label="Total views" value={kpiValues.views} />
+                                        </KpiTabTrigger>
+                                        <KpiTabTrigger value="duration" onClick={() => {
+                                            setCurrentTab('duration');
+                                        }}>
+                                            <KpiTabValue label="Time on page" value={kpiValues.duration} />
+                                        </KpiTabTrigger>
+                                    </TabsList>
+                                    <div className='my-4 [&_.recharts-cartesian-axis-tick-value]:fill-gray-500'>
+                                        <ChartContainer className='-mb-3 h-[16vw] max-h-[320px] w-full' config={chartConfig}>
+                                            <Recharts.LineChart
+                                                data={chartData}
+                                                margin={{
+                                                    left: 0,
+                                                    right: 20,
+                                                    top: 12
+                                                }}
+                                                accessibilityLayer
+                                            >
+                                                <Recharts.CartesianGrid horizontal={false} vertical={false} />
+                                                <Recharts.XAxis
+                                                    axisLine={false}
+                                                    dataKey="date"
+                                                    interval={0}
+                                                    tickFormatter={formatDisplayDate}
+                                                    tickLine={false}
+                                                    tickMargin={8}
+                                                    ticks={chartData && chartData.length > 0 ? [chartData[0].date, chartData[chartData.length - 1].date] : []}
+                                                />
+                                                <Recharts.YAxis
+                                                    axisLine={false}
+                                                    tickFormatter={(value) => {
+                                                        switch (currentTab) {
+                                                        case 'bounce-rate':
+                                                            return formatPercentage(value);
+                                                        case 'duration':
+                                                            return formatDuration(value);
+                                                        case 'visits':
+                                                        case 'views':
+                                                            return formatNumber(value);
+                                                        default:
+                                                            return value.toLocaleString();
+                                                        }
+                                                    }}
+                                                    tickLine={false}
+                                                    ticks={getYTicks(chartData || [])}
+                                                    width={calculateYAxisWidth(getYTicks(chartData || []), currentMetric.formatter)}
+                                                />
+                                                <ChartTooltip
+                                                    content={<CustomTooltipContent />}
+                                                    cursor={true}
+                                                />
+                                                <Recharts.Line
+                                                    dataKey="value"
+                                                    dot={false}
+                                                    isAnimationActive={false}
+                                                    stroke="hsl(var(--chart-1))"
+                                                    strokeWidth={2}
+                                                    type='bump'
+                                                />
+                                            </Recharts.LineChart>
+                                        </ChartContainer>
+                                    </div>
+                                </Tabs>
+                            </CardContent>
+                        </Card>
+                        :
+                        <div className='mt-10'>
+                            <EmptyStatView />
+                        </div>
+                    }
+                </>
+            }
+        </>
     );
 };
 

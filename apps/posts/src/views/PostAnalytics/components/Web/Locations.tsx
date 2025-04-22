@@ -1,10 +1,9 @@
 import React from 'react';
 import countries from 'i18n-iso-countries';
 import enLocale from 'i18n-iso-countries/langs/en.json';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, formatNumber} from '@tryghost/shade';
 import {STATS_LABEL_MAPPINGS} from '@src/utils/constants';
-import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow, formatNumber, formatQueryDate} from '@tryghost/shade';
-import {getAudienceQueryParam} from '../AudienceSelect';
-import {getCountryFlag, getRangeDates} from '@src/utils/chart-helpers';
+import {getCountryFlag} from '@src/utils/chart-helpers';
 import {getStatEndpointUrl, getToken} from '@src/config/stats-config';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useQuery} from '@tinybirdco/charts';
@@ -14,51 +13,57 @@ const getCountryName = (label: string) => {
     return STATS_LABEL_MAPPINGS[label as keyof typeof STATS_LABEL_MAPPINGS] || countries.getName(label, 'en') || 'Unknown';
 };
 
-const Locations:React.FC = () => {
-    const {statsConfig, isLoading: isConfigLoading} = useGlobalData();
-    const {range, audience} = useGlobalData();
-    const {startDate, endDate, timezone} = getRangeDates(range);
+interface LocationsProps {
+    queryParams: Record<string, string | number>
+}
 
-    const params = {
-        site_uuid: statsConfig?.id || '',
-        date_from: formatQueryDate(startDate),
-        date_to: formatQueryDate(endDate),
-        timezone: timezone,
-        member_status: getAudienceQueryParam(audience)
-    };
+const Locations:React.FC<LocationsProps> = ({queryParams}) => {
+    const {statsConfig, isLoading: isConfigLoading} = useGlobalData();
 
     const {data, loading} = useQuery({
         endpoint: getStatEndpointUrl(statsConfig, 'api_top_locations'),
         token: getToken(statsConfig),
-        params
+        params: queryParams
     });
 
     const isLoading = isConfigLoading || loading;
 
     return (
         <>
-            {isLoading ? 'Loading' :
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead className='w-[80%]'>Country</TableHead>
-                            <TableHead className='w-[20%] text-right'>Visitors</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {data?.map((row) => {
-                            const countryName = getCountryName(`${row.location}`) || 'Unknown';
-                            return (
-                                <TableRow key={row.location || 'unknown'}>
-                                    <TableCell className="font-medium">
-                                        <span title={countryName || 'Unknown'}>{getCountryFlag(`${row.location}`)} {countryName}</span>
-                                    </TableCell>
-                                    <TableCell className='text-right font-mono text-sm'>{formatNumber(Number(row.visits))}</TableCell>
+            {isLoading ? '' :
+                <>
+                    {(data && data.length > 0) &&
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Locations</CardTitle>
+                        <CardDescription>Where are the readers of this post</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead className='w-[80%]'>Country</TableHead>
+                                    <TableHead className='w-[20%] text-right'>Visitors</TableHead>
                                 </TableRow>
-                            );
-                        })}
-                    </TableBody>
-                </Table>
+                            </TableHeader>
+                            <TableBody>
+                                {data?.map((row) => {
+                                    const countryName = getCountryName(`${row.location}`) || 'Unknown';
+                                    return (
+                                        <TableRow key={row.location || 'unknown'}>
+                                            <TableCell className="font-medium">
+                                                <span title={countryName || 'Unknown'}>{getCountryFlag(`${row.location}`)} {countryName}</span>
+                                            </TableCell>
+                                            <TableCell className='text-right font-mono text-sm'>{formatNumber(Number(row.visits))}</TableCell>
+                                        </TableRow>
+                                    );
+                                })}
+                            </TableBody>
+                        </Table>
+                    </CardContent>
+                </Card>
+                    }
+                </>
             }
         </>
     );
