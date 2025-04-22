@@ -185,7 +185,7 @@ describe('ghost-stats.js', function () {
         const originalPushState = testEnv.window.history.pushState;
         testEnv.window.history.pushState = function () {
             const result = originalPushState.apply(this, arguments);
-            testEnv.window.dispatchEvent(new testEnv.window.Event('hashchange'));
+            testEnv.window.Tinybird._trackPageHit();
             return result;
         };
 
