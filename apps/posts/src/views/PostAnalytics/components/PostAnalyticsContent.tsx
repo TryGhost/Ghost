@@ -1,5 +1,5 @@
 import React from 'react';
-import Sidebar from './Sidebar';
+// import Sidebar from './Sidebar';
 import {cn} from '@tryghost/shade';
 
 const PostAnalyticsContent: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({children, className, ...props}) => {
@@ -8,7 +8,7 @@ const PostAnalyticsContent: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({c
             <div className='flex size-full flex-col gap-8'>
                 {children}
             </div>
-            <Sidebar />
+            {/* <Sidebar /> */}
         </section>
     );
 };

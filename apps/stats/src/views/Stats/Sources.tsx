@@ -3,7 +3,7 @@ import DateRangeSelect from './components/DateRangeSelect';
 import React from 'react';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, Recharts, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, ViewHeader, ViewHeaderActions} from '@tryghost/shade';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, H1, Recharts, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, ViewHeader, ViewHeaderActions} from '@tryghost/shade';
 import {STATS_DEFAULT_SOURCE_ICON_URL} from '@src/utils/constants';
 import {formatNumber, formatQueryDate} from '@src/utils/data-formatters';
 import {getPeriodText, getRangeDates} from '@src/utils/chart-helpers';
@@ -93,7 +93,7 @@ const Sources:React.FC = () => {
     return (
         <StatsLayout>
             <ViewHeader>
-                Sources
+                <H1>Sources</H1>
                 <ViewHeaderActions>
                     <AudienceSelect />
                     <DateRangeSelect />

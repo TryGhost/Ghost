@@ -4,7 +4,7 @@ import React from 'react';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
 import WebKpis from './components/WebKpis';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, ViewHeader, ViewHeaderActions} from '@tryghost/shade';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle, H1, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, ViewHeader, ViewHeaderActions} from '@tryghost/shade';
 import {formatNumber, formatQueryDate} from '@src/utils/data-formatters';
 import {getPeriodText, getRangeDates} from '@src/utils/chart-helpers';
 import {getStatEndpointUrl, getToken} from '@src/config/stats-config';
@@ -35,7 +35,7 @@ const Web:React.FC = () => {
     return (
         <StatsLayout>
             <ViewHeader>
-                Web
+                <H1>Web</H1>
                 <ViewHeaderActions>
                     <AudienceSelect />
                     <DateRangeSelect />
