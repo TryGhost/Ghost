@@ -37,9 +37,9 @@ const BETA_FEATURES = [
     'webmentions',
     'editorExcerpt',
     'ActivityPub',
+    'trafficAnalytics',
     'importMemberTier',
     'superEditors',
-    'trafficAnalytics'
 ];
 
 const ALPHA_FEATURES = [
