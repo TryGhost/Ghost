@@ -68,9 +68,6 @@ const author = (attrs, frame) => {
         if (attrs.location === '') {
             attrs.location = null;
         }
-
-        // if a twitter username is provided, use it as the x username to ensure backwards compatibility
-        attrs.x = attrs.twitter || null;
     }
 
     // @NOTE: unused fields

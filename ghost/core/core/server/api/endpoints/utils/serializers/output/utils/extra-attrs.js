@@ -70,3 +70,7 @@ module.exports.forPost = (options, model, attrs) => {
         }
     }
 };
+
+module.exports.forAuthor = (options, model, attrs) => {
+    attrs.x = attrs.twitter || null;
+};

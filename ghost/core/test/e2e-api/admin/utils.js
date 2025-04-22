@@ -139,6 +139,7 @@ const expectedProperties = {
         .without('password')
         .without('locale')
         .concat('url')
+        .concat('x')
     ,
     tag: _(schema.tags)
         .keys()
