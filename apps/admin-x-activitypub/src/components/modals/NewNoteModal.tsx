@@ -6,12 +6,14 @@ import {ChangeEvent, useEffect, useRef, useState} from 'react';
 import {ComponentPropsWithoutRef, ReactNode} from 'react';
 import {useAccountForUser, useNoteMutationForUser, useUserDataForUser} from '@hooks/use-activity-pub-queries';
 import {useNavigate} from '@tryghost/admin-x-framework';
+import {useFeatureFlags} from '@src/lib/feature-flags';
 
 interface NewNoteModalProps extends ComponentPropsWithoutRef<typeof Dialog> {
     children?: ReactNode;
 }
 
 const NewNoteModal: React.FC<NewNoteModalProps> = ({children, ...props}) => {
+    const {isEnabled} = useFeatureFlags();
     const {data: user} = useUserDataForUser('index');
     const noteMutation = useNoteMutationForUser('index', user);
     const {data: account, isLoading: isLoadingAccount} = useAccountForUser('index', 'me');
@@ -133,7 +135,9 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, ...props}) => {
                     </div>
                 }
                 <DialogFooter>
-                    <Button className='mr-auto w-[34px] !min-w-0' variant='outline' onClick={() => imageInputRef.current?.click()}><LucideIcon.Image /></Button>
+                    {isEnabled('note-image') &&
+                        <Button className='mr-auto w-[34px] !min-w-0' variant='outline' onClick={() => imageInputRef.current?.click()}><LucideIcon.Image /></Button>
+                    }
                     <DialogClose>
                         <Button className='min-w-16' variant='outline'>Cancel</Button>
                     </DialogClose>
