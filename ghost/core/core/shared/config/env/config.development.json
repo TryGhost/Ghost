@@ -1,5 +1,5 @@
 {
-    "url": "https://princis-macbook-pro-2.tail5da2a.ts.net/",
+    "url": "http://localhost:2368",
     "mail": {
         "from": "test@example.com",
         "transport": "SMTP",
@@ -13,14 +13,11 @@
         }
     },
     "database": {
-        "client": "mysql2",
+        "client": "sqlite3",
         "connection": {
-            "host": "127.0.0.1",
-            "port": 3306,
-            "user": "root",
-            "password": "hello@123",
-            "database": "ghostNew"
-        }
+            "filename": "content/data/ghost-dev.db"
+        },
+        "debug": false
     },
     "paths": {
         "contentPath": "content/"
