@@ -2,7 +2,7 @@ const path = require('path');
 const config = require('../../../shared/config');
 const Minifier = require('./Minifier');
 const AssetsMinificationBase = require('./AssetsMinificationBase');
-const {bundleAsset} = require('../assets-bundling/bundle-asset');
+const bundleGhostStats = require('../ghost-stats-bundle');
 const debug = require('@tryghost/debug')('ghost-stats-assets');
 
 module.exports = class GhostStatsAssets extends AssetsMinificationBase {
@@ -27,6 +27,13 @@ module.exports = class GhostStatsAssets extends AssetsMinificationBase {
     }
 
     /**
+     * @private
+     */
+    generateReplacements() {
+        return {};
+    }
+
+    /**
      * Minify, move into the destination directory, and clear existing asset files.
      *
      * @override
@@ -36,14 +43,13 @@ module.exports = class GhostStatsAssets extends AssetsMinificationBase {
         try {
             // Step 1: Bundle the file to resolve imports
             debug('Bundling ghost-stats.js');
-            await bundleAsset({
-                srcFile: path.join('ghost-stats', 'ghost-stats.js')
-            });
+            await bundleGhostStats();
             
             // Step 2: Minify the bundled file
             debug('Minifying bundled ghost-stats.js');
             const globs = this.generateGlobs();
-            await this.minify(globs);
+            const replacements = this.generateReplacements();
+            await this.minify(globs, {replacements});
         } catch (error) {
             debug('Error loading ghost-stats assets:', error);
             throw error;
