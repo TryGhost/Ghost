@@ -93,6 +93,14 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
         });
 
         setTextValue('');
+        setImagePreview(null);
+        setUploadedImageUrl(null);
+        if (imagePreview) {
+            URL.revokeObjectURL(imagePreview);
+        }
+        if (imageInputRef.current) {
+            imageInputRef.current.value = '';
+        }
 
         onReply?.();
     }
