@@ -107,6 +107,14 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, ...props}) => {
         <Dialog open={isOpen} onOpenChange={(open) => {
             if (open) {
                 setContent('');
+                setImagePreview(null);
+                setUploadedImageUrl(null);
+                if (imagePreview) {
+                    URL.revokeObjectURL(imagePreview);
+                }
+                if (imageInputRef.current) {
+                    imageInputRef.current.value = '';
+                }
             }
             setIsOpen(open);
         }} {...props}>
