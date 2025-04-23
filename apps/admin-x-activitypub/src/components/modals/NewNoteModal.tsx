@@ -5,8 +5,8 @@ import {Button, Dialog, DialogClose, DialogContent, DialogDescription, DialogFoo
 import {ChangeEvent, useEffect, useRef, useState} from 'react';
 import {ComponentPropsWithoutRef, ReactNode} from 'react';
 import {useAccountForUser, useNoteMutationForUser, useUserDataForUser} from '@hooks/use-activity-pub-queries';
-import {useNavigate} from '@tryghost/admin-x-framework';
 import {useFeatureFlags} from '@src/lib/feature-flags';
+import {useNavigate} from '@tryghost/admin-x-framework';
 
 interface NewNoteModalProps extends ComponentPropsWithoutRef<typeof Dialog> {
     children?: ReactNode;
@@ -64,19 +64,32 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, ...props}) => {
             const previewUrl = URL.createObjectURL(file);
             setImagePreview(previewUrl);
 
-            // the upload logic here
-            // const uploadedUrl = await handleImageUpload(file);
+            // TODO: Implement actual image upload once backend API is ready
+            // For now, we're just setting the preview URL for UI testing
+            // e.g. const uploadedUrl = await handleImageUpload(file);
         }
     };
 
     const handleClearImage = (e: React.MouseEvent) => {
         e.stopPropagation();
         setImagePreview(null);
+        if (imagePreview) {
+            URL.revokeObjectURL(imagePreview);
+        }
 
         if (imageInputRef.current) {
             imageInputRef.current.value = '';
         }
     };
+
+    useEffect(() => {
+        // Cleanup function to revoke object URLs when component unmounts
+        return () => {
+            if (imagePreview) {
+                URL.revokeObjectURL(imagePreview);
+            }
+        };
+    }, [imagePreview]);
 
     return (
         <Dialog open={isOpen} onOpenChange={(open) => {
@@ -130,7 +143,7 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, ...props}) => {
                 </div>
                 {imagePreview &&
                     <div className='group relative w-fit grow'>
-                        <img className='max-h-[420px] rounded-sm outline outline-1 -outline-offset-1 outline-black/10' src={imagePreview} />
+                        <img alt='Image attachment preview' className='max-h-[420px] rounded-sm outline outline-1 -outline-offset-1 outline-black/10' src={imagePreview} />
                         <Button className='absolute right-3 top-3 size-8 bg-black/60 opacity-0 hover:bg-black/80 group-hover:opacity-100' onClick={handleClearImage}><LucideIcon.Trash2 /></Button>
                     </div>
                 }
