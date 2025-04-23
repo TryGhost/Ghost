@@ -6,8 +6,8 @@ import clsx from 'clsx';
 import getUsername from '../../utils/get-username';
 import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, LucideIcon} from '@tryghost/shade';
+import {uploadFile, useReplyMutationForUser, useUserDataForUser} from '@hooks/use-activity-pub-queries';
 import {useFeatureFlags} from '@src/lib/feature-flags';
-import {useReplyMutationForUser, useUserDataForUser} from '@hooks/use-activity-pub-queries';
 
 export interface APTextAreaProps extends HTMLProps<HTMLTextAreaElement> {
     title?: string;
@@ -61,6 +61,7 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
     const {isEnabled} = useFeatureFlags();
     const id = useId();
     const [textValue, setTextValue] = useState(value); // Manage the textarea value with state
+    const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
 
     const {data: user} = useUserDataForUser('index');
     const replyMutation = useReplyMutationForUser('index', user);
@@ -83,7 +84,8 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
 
         replyMutation.mutate({
             inReplyTo: object.id,
-            content: textValue
+            content: textValue,
+            imageUrl: uploadedImageUrl || undefined
         }, {
             onError() {
                 onReplyError?.();
@@ -110,6 +112,18 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
         }
     }
 
+    const handleImageUpload = async (file: File) => {
+        try {
+            const imageUrl = await uploadFile(file);
+            setUploadedImageUrl(imageUrl);
+        } catch (err) {
+            // Todo: Show error message to the user when upload fails
+
+            // eslint-disable-next-line no-console
+            console.error('Upload failed:', err);
+        }
+    };
+
     const handleImageChange = async (e: ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files;
 
@@ -119,15 +133,14 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
             const previewUrl = URL.createObjectURL(file);
             setImagePreview(previewUrl);
 
-            // TODO: Implement actual image upload once backend API is ready
-            // For now, we're just setting the preview URL for UI testing
-            // e.g. const uploadedUrl = await handleImageUpload(file);
+            await handleImageUpload(file);
         }
     };
 
     const handleClearImage = (e: React.MouseEvent) => {
         e.stopPropagation();
         setImagePreview(null);
+        setUploadedImageUrl(null);
         if (imagePreview) {
             URL.revokeObjectURL(imagePreview);
         }
