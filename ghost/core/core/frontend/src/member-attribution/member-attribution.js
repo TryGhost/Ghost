@@ -1,3 +1,8 @@
+/* global window */
+/* eslint-disable no-console */
+// Use CommonJS require syntax instead of ES import
+const {parseReferrer} = require('../utils/url-attribution');
+
 // Location where we want to store the history in localStorage
 const STORAGE_KEY = 'ghost-history';
 
@@ -38,7 +43,7 @@ const LIMIT = 15;
             try {
                 history = JSON.parse(historyString);
             } catch (error) {
-                // Ignore invalid JSON, ans clear history
+                // Ignore invalid JSON, and clear history
                 console.warn('[Member Attribution] Error while parsing history', error);
             }
         }
@@ -71,39 +76,17 @@ const LIMIT = 15;
             history = [];
         }
 
-        // Fetch referrer data from query params
-        let refParam;
-        let sourceParam;
-        let utmSourceParam;
-        let utmMediumParam;
-        let referrerSource;
-
+        // Fetch referrer data using the utility
+        let referrerData = {};
         try {
-            // Fetch source/medium from query param
-            const url = new URL(window.location.href);
-            refParam = url.searchParams.get('ref');
-            sourceParam = url.searchParams.get('source');
-            utmSourceParam = url.searchParams.get('utm_source');
-            utmMediumParam = url.searchParams.get('utm_medium');
-
-            referrerSource = refParam || sourceParam || utmSourceParam || null;
-
-            // if referrerSource is not set, check to see if the url contains a hash like ghost.org/#/portal/signup?ref=ghost and pull the ref from the hash
-            if (!referrerSource && url.hash && url.hash.includes('#/portal')) {
-                const hashUrl = new URL(window.location.href.replace('/#/portal', ''));
-                refParam = hashUrl.searchParams.get('ref');
-                sourceParam = hashUrl.searchParams.get('source');
-                utmSourceParam = hashUrl.searchParams.get('utm_source');
-                utmMediumParam = hashUrl.searchParams.get('utm_medium');
-    
-                referrerSource = refParam || sourceParam || utmSourceParam || null;
-            }
+            referrerData = parseReferrer(window.location.href);
         } catch (e) {
-            console.error('[Member Attribution] Parsing referrer from querystring failed', e);
+            console.error('[Member Attribution] Parsing referrer failed', e);
         }
 
-        const referrerMedium = utmMediumParam || null;
-        const referrerUrl = window.document.referrer || null;
+        const referrerSource = referrerData.source || null;
+        const referrerMedium = referrerData.medium || null;
+        const referrerUrl = referrerData.url || null;
 
         // Do we have attributions in the query string?
         try {

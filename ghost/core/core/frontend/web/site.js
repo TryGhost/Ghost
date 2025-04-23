@@ -16,7 +16,7 @@ const membersService = require('../../server/services/members');
 const offersService = require('../../server/services/offers');
 const customRedirects = require('../../server/services/custom-redirects');
 const linkRedirects = require('../../server/services/link-redirection');
-const {cardAssets, commentCountsAssets, memberAttributionAssets} = require('../services/assets-minification');
+const {cardAssets, commentCountsAssets, memberAttributionAssets, ghostStatsAssets} = require('../services/assets-minification');
 const siteRoutes = require('./routes');
 const shared = require('../../server/web/shared');
 const errorHandler = require('@tryghost/mw-error-handler');
@@ -71,7 +71,7 @@ module.exports = function setupSiteApp(routerConfig) {
     // Serve stylesheets for default templates
     siteApp.use(mw.servePublicFile('static', 'public/ghost.css', 'text/css', config.get('caching:publicAssets:maxAge')));
     siteApp.use(mw.servePublicFile('static', 'public/ghost.min.css', 'text/css', config.get('caching:publicAssets:maxAge')));
-    siteApp.use(mw.servePublicFile('static', 'public/ghost-stats.js', 'application/javascript', config.get('caching:publicAssets:maxAge')));
+    siteApp.use(ghostStatsAssets.serveMiddleware(), mw.servePublicFile('built', 'public/ghost-stats.min.js', 'application/javascript', config.get('caching:publicAssets:maxAge')));
 
     // Card assets
     siteApp.use(cardAssets.serveMiddleware(), mw.servePublicFile('built', 'public/cards.min.css', 'text/css', config.get('caching:publicAssets:maxAge')));
@@ -80,7 +80,7 @@ module.exports = function setupSiteApp(routerConfig) {
     // Comment counts
     siteApp.use(commentCountsAssets.serveMiddleware(), mw.servePublicFile('built', 'public/comment-counts.min.js', 'application/javascript', config.get('caching:publicAssets:maxAge')));
 
-    // Member attribution
+    // Member Attribution
     siteApp.use(memberAttributionAssets.serveMiddleware(), mw.servePublicFile('built', 'public/member-attribution.min.js', 'application/javascript', config.get('caching:publicAssets:maxAge')));
 
     // Serve site images using the storage adapter

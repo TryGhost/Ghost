@@ -76,7 +76,7 @@ const TiersList: React.FC<TiersListProps> = ({
                 <button className={`${cardContainerClasses} group cursor-pointer`} type='button' onClick={() => {
                     openTierModal();
                 }}>
-                    <div className='flex h-full w-full flex-col items-center justify-center'>
+                    <div className='flex size-full flex-col items-center justify-center'>
                         <div className='flex flex-col items-center justify-center'>
                             <div className='translate-y-[15px] transition-all group-hover:translate-y-0'><Icon colorClass='text-green' name='add' /></div>
                             <div className='mt-2 translate-y-[-10px] text-sm font-semibold text-green opacity-0 transition-all group-hover:translate-y-0 group-hover:opacity-100'>Add tier</div>

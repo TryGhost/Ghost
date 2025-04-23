@@ -141,7 +141,7 @@ module.exports = {
         },
         letterSpacing: {
             tightest: '-.05em',
-            tighter: '-.025em',
+            tighter: '-.02em',
             tight: '-.01em',
             normal: '0',
             wide: '.01em',
@@ -342,7 +342,7 @@ module.exports = {
                 lg: '1.5rem',
                 xl: '1.7rem',
                 '2xl': '2.2rem',
-                '3xl': '2.7rem',
+                '3xl': '2.8rem',
                 '4xl': '3.2rem',
                 '5xl': [
                     '4.0rem',
