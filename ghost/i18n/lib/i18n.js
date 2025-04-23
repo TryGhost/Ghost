@@ -110,9 +110,9 @@ module.exports = (lng = 'en', ns = 'portal') => {
 
         // do not load a fallback
         fallbackLng: {
-            'no': ['nb', 'en'],
-            'default': ['en']
-            },
+            no: ['nb', 'en'],
+            default: ['en']
+        },
 
         ns: ns,
         defaultNS: ns,
