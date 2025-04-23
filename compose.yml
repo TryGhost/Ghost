@@ -152,6 +152,14 @@ services:
     container_name: ghost-pushgateway
     ports:
       - 9091:9091
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: ghost-mailhog
+    profiles: [ ghost ]
+    ports:
+      - "1025:1025" # SMTP server
+      - "8025:8025" # Web interface
+    restart: always
 volumes:
   mysql-data: {}
   redis-data: {}
