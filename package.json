@@ -75,9 +75,6 @@
   },
   "devDependencies": {
     "@actions/core": "1.11.1",
-    "@babel/core": "^7.26.10",
-    "@babel/preset-env": "^7.26.9",
-    "@babel/register": "^7.25.9",
     "chalk": "4.1.2",
     "concurrently": "8.2.2",
     "eslint": "8.57.1",

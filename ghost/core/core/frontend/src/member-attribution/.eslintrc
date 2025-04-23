@@ -1,0 +1,10 @@
+{
+    "extends": "../../../../.eslintrc.js",
+    "env": {
+        "browser": true,
+        "node": false
+    },
+    "rules": {
+        "no-console": "off"
+    }
+}
