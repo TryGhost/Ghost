@@ -105,7 +105,7 @@ describe('i18n', function () {
         describe('Norwegian bokmål', function () {
             let t;
             before(function () {
-                t = i18n('no', 'portal').t;
+                t = i18n('nb', 'portal').t;
             });
             it('Norwegian bokmål used when "nb" is chosen', function () {
                 assert.equal(t('Yearly'), 'Årlig');
