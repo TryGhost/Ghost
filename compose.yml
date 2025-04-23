@@ -62,7 +62,6 @@ services:
       - node_modules_ghost_tiers:/home/ghost/ghost/tiers/node_modules:delegated
       - node_modules_ghost_webmentions:/home/ghost/ghost/webmentions/node_modules:delegated
       - node_modules_apps_admin-x-activitypub:/home/ghost/apps/admin-x-activitypub/node_modules:delegated
-      - node_modules_apps_admin-x-demo:/home/ghost/apps/admin-x-demo/node_modules:delegated
       - node_modules_apps_admin-x-design-system:/home/ghost/apps/admin-x-design-system/node_modules:delegated
       - node_modules_apps_admin-x-framework:/home/ghost/apps/admin-x-framework/node_modules:delegated
       - node_modules_apps_admin-x-settings:/home/ghost/apps/admin-x-settings/node_modules:delegated
@@ -83,6 +82,7 @@ services:
     environment:
       - DEBUG=${DEBUG:-}
       - SSH_AUTH_SOCK=/ssh-agent
+      - NX_DAEMON=${NX_DAEMON:-true}
       - GHOST_DEV_IS_DOCKER=true
       - GHOST_DEV_APP_FLAGS=${GHOST_DEV_APP_FLAGS:-}
       - GHOST_UPSTREAM=${GHOST_UPSTREAM:-}
@@ -152,6 +152,14 @@ services:
     container_name: ghost-pushgateway
     ports:
       - 9091:9091
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: ghost-mailhog
+    profiles: [ ghost ]
+    ports:
+      - "1025:1025" # SMTP server
+      - "8025:8025" # Web interface
+    restart: always
 volumes:
   mysql-data: {}
   redis-data: {}
@@ -186,7 +194,6 @@ volumes:
   node_modules_ghost_tiers: {}
   node_modules_ghost_webmentions: {}
   node_modules_apps_admin-x-activitypub: {}
-  node_modules_apps_admin-x-demo: {}
   node_modules_apps_admin-x-design-system: {}
   node_modules_apps_admin-x-framework: {}
   node_modules_apps_admin-x-settings: {}

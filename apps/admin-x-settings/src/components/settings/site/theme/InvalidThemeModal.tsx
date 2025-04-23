@@ -21,7 +21,7 @@ export const ThemeProblemView = ({problem}:{problem: ThemeProblem}) => {
     return <ListItem
         title={
             <>
-                <div className={`${problem.level === 'error' ? 'before:bg-red' : 'before:bg-yellow'} relative px-4 text-sm before:absolute before:left-0 before:top-1.5 before:block before:h-2 before:w-2 before:rounded-full before:content-['']`}>
+                <div className={`${problem.level === 'error' ? 'before:bg-red' : 'before:bg-yellow'} relative px-4 text-sm before:absolute before:left-0 before:top-1.5 before:block before:size-2 before:rounded-full before:content-['']`}>
                     {
                         problem?.fatal ?
                             <strong>Fatal: </strong>

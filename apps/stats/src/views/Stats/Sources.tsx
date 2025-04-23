@@ -3,8 +3,7 @@ import DateRangeSelect from './components/DateRangeSelect';
 import React from 'react';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, Recharts, Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@tryghost/shade';
-import {Header, HeaderActions} from '@src/components/layout/Header';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, H1, Recharts, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, ViewHeader, ViewHeaderActions} from '@tryghost/shade';
 import {STATS_DEFAULT_SOURCE_ICON_URL} from '@src/utils/constants';
 import {formatNumber, formatQueryDate} from '@src/utils/data-formatters';
 import {getPeriodText, getRangeDates} from '@src/utils/chart-helpers';
@@ -93,13 +92,13 @@ const Sources:React.FC = () => {
 
     return (
         <StatsLayout>
-            <Header>
-                Sources
-                <HeaderActions>
+            <ViewHeader>
+                <H1>Sources</H1>
+                <ViewHeaderActions>
                     <AudienceSelect />
                     <DateRangeSelect />
-                </HeaderActions>
-            </Header>
+                </ViewHeaderActions>
+            </ViewHeader>
             <StatsView data={data} isLoading={isLoading}>
                 <Card className='-mb-5' variant='plain'>
                     <CardHeader className='border-none'>

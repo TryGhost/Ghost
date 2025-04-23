@@ -43,13 +43,11 @@ const BETA_FEATURES = [
 ];
 
 const ALPHA_FEATURES = [
-    'NestPlayground',
     'urlCache',
     'emailCustomization',
     'mailEvents',
     'collectionsCard',
     'lexicalIndicators',
-    'adminXDemo',
     'postsX',
     'statsX',
     'captcha',
