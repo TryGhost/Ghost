@@ -2,8 +2,6 @@ const path = require('path');
 const config = require('../../../shared/config');
 const Minifier = require('./Minifier');
 const AssetsMinificationBase = require('./AssetsMinificationBase');
-const bundleGhostStats = require('../ghost-stats-bundle');
-const debug = require('@tryghost/debug')('ghost-stats-assets');
 
 module.exports = class GhostStatsAssets extends AssetsMinificationBase {
     constructor(options = {}) {
@@ -22,7 +20,7 @@ module.exports = class GhostStatsAssets extends AssetsMinificationBase {
      */
     generateGlobs() {
         return {
-            'ghost-stats.min.js': 'ghost-stats.bundled.js'
+            'ghost-stats.min.js': 'ghost-stats.js'
         };
     }
 
@@ -40,19 +38,8 @@ module.exports = class GhostStatsAssets extends AssetsMinificationBase {
      * @returns {Promise<void>}
      */
     async load() {
-        try {
-            // Step 1: Bundle the file to resolve imports
-            debug('Bundling ghost-stats.js');
-            await bundleGhostStats();
-            
-            // Step 2: Minify the bundled file
-            debug('Minifying bundled ghost-stats.js');
-            const globs = this.generateGlobs();
-            const replacements = this.generateReplacements();
-            await this.minify(globs, {replacements});
-        } catch (error) {
-            debug('Error loading ghost-stats assets:', error);
-            throw error;
-        }
+        const globs = this.generateGlobs();
+        const replacements = this.generateReplacements();
+        await this.minify(globs, {replacements});
     }
 }; 
