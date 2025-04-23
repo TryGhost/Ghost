@@ -13,19 +13,47 @@
 
 /* eslint-disable no-console */
 const esbuild = require('esbuild');
+const path = require('path');
+const fs = require('fs');
+
+// Determine the root directory by checking for common project files
+function findProjectRoot() {
+    let currentDir = process.cwd();
+    
+    // Check if we're already in ghost/core
+    if (currentDir.endsWith('ghost/core') || currentDir.endsWith('ghost\\core')) {
+        return currentDir;
+    }
+    
+    // Look for ghost/core directory
+    const ghostCorePath = path.join(currentDir, 'ghost', 'core');
+    if (fs.existsSync(ghostCorePath)) {
+        return ghostCorePath;
+    }
+    
+    return currentDir;
+}
+
+const projectRoot = findProjectRoot();
+console.log(`Resolving paths from: ${projectRoot}`);
+
+// Helper to resolve paths relative to project root
+function resolvePath(filePath) {
+    return path.join(projectRoot, filePath);
+}
 
 // Define files to minify with their specific configuration
 const filesToMinify = [
     {
-        src: 'ghost/core/core/frontend/src/comment-counts/comment-counts.js',
-        dest: 'ghost/core/core/frontend/public/comment-counts.min.js',
+        src: 'core/frontend/src/comment-counts/comment-counts.js',
+        dest: 'core/frontend/public/comment-counts.min.js',
         options: {
             bundle: false
         }
     },
     {
-        src: 'ghost/core/core/frontend/src/ghost-stats/ghost-stats.js',
-        dest: 'ghost/core/core/frontend/public/ghost-stats.min.js',
+        src: 'core/frontend/src/ghost-stats/ghost-stats.js',
+        dest: 'core/frontend/public/ghost-stats.min.js',
         options: {
             bundle: true,
             format: 'iife',
@@ -33,15 +61,15 @@ const filesToMinify = [
         }
     },
     {
-        src: 'ghost/core/core/frontend/src/member-attribution/member-attribution.js',
-        dest: 'ghost/core/core/frontend/public/member-attribution.min.js',
+        src: 'core/frontend/src/member-attribution/member-attribution.js',
+        dest: 'core/frontend/public/member-attribution.min.js',
         options: {
             bundle: false
         }
     },
     {
-        src: 'ghost/core/core/frontend/src/admin-auth/message-handler.js',
-        dest: 'ghost/core/core/frontend/public/admin-auth/admin-auth.min.js',
+        src: 'core/frontend/src/admin-auth/message-handler.js',
+        dest: 'core/frontend/public/admin-auth/admin-auth.min.js',
         options: {
             bundle: false
         }
@@ -54,10 +82,19 @@ const filesToMinify = [
     
     for (const file of filesToMinify) {
         try {
+            const srcPath = resolvePath(file.src);
+            const destPath = resolvePath(file.dest);
+            
+            // Ensure the destination directory exists
+            const destDir = path.dirname(destPath);
+            if (!fs.existsSync(destDir)) {
+                fs.mkdirSync(destDir, {recursive: true});
+            }
+            
             // Create build configuration by merging default options with file-specific options
             const buildConfig = {
-                entryPoints: [file.src],
-                outfile: file.dest,
+                entryPoints: [srcPath],
+                outfile: destPath,
                 minify: true,
                 platform: 'browser',
                 // Apply file-specific options, with defaults
