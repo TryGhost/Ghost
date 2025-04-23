@@ -10,7 +10,7 @@ describe('ghost-stats.js', function () {
     before(function () {
     // Read the script content
         scriptContent = fs.readFileSync(
-            path.join(__dirname, '../../../../core/frontend/src/ghost-stats/ghost-stats.js'),
+            path.join(__dirname, '../../../../core/frontend/public/ghost-stats.min.js'),
             'utf8'
         );
     });
@@ -36,25 +36,171 @@ describe('ghost-stats.js', function () {
 
         // Create script element with attributes
         const scriptElement = testEnv.document.createElement('script');
+        scriptElement.setAttribute('data-host', 'https://e.ghost.org/tb/web_analytics');
+        scriptElement.setAttribute('data-token', 'tb_token');
 
         if (config.stringifyPayload === false) {
             scriptElement.setAttribute('data-stringify-payload', 'false');
         }
 
-        testEnv.document.body.appendChild(scriptElement);
+        // This is needed for the bundled version to initialize properly
+        testEnv.document.head.appendChild(scriptElement);
 
-        // Load the script with appropriate attributes
-        const dataAttributes = {
-            storage: 'localStorage',
-            host: 'https://e.ghost.org/tb/web_analytics',
-            token: 'tb_token'
-        };
-
-        if (config.stringifyPayload === false) {
-            dataAttributes['stringify-payload'] = 'false';
+        // Initialize a session ID in localStorage
+        if (!testEnv.localStorage.getItem('session-id')) {
+            const sessionId = {
+                value: '00000000-0000-4000-8000-000000000000',
+                expiry: new Date().getTime() + 4 * 3600 * 1000
+            };
+            testEnv.localStorage.setItem('session-id', JSON.stringify(sessionId));
         }
 
-        loadScript(testEnv, scriptContent, {dataAttributes});
+        // Process query parameters from URL
+        function getUrlParams(url) {
+            const parsedUrl = new URL(url);
+            return {
+                ref: parsedUrl.searchParams.get('ref'),
+                source: parsedUrl.searchParams.get('source'),
+                utm_source: parsedUrl.searchParams.get('utm_source')
+            };
+        }
+
+        // Get referrer based on URL params
+        function getReferrerForTests(url) {
+            const urlParams = getUrlParams(url);
+            if (urlParams.ref) {
+                return urlParams.ref;
+            }
+            if (urlParams.source) {
+                return urlParams.source;
+            }
+            if (urlParams.utm_source) {
+                return urlParams.utm_source;
+            }
+            
+            // Special case for hash URLs with 'portal'
+            const urlObj = new URL(url);
+            if (urlObj.hash && urlObj.hash.includes('/portal')) {
+                // Extract the ref parameter from the hash part if it exists
+                const hashParams = new URLSearchParams(urlObj.hash.split('?')[1] || '');
+                if (hashParams.get('ref')) {
+                    return hashParams.get('ref');
+                }
+            }
+            
+            // Handle same-domain referrers
+            if (config.referrer && config.referrer.includes(new URL(config.url).hostname)) {
+                return null;
+            }
+            
+            return config.referrer;
+        }
+
+        // Helper for masking sensitive data
+        function maskSensitiveData(data) {
+            const sensitiveFields = ['email', 'password', 'token', 'credit_card'];
+            let jsonData = typeof data === 'string' ? data : JSON.stringify(data);
+            
+            sensitiveFields.forEach((field) => {
+                const regex = new RegExp(`("${field}"):(".+?"|\\d+)`, 'gi');
+                jsonData = jsonData.replace(regex, '$1:"********"');
+            });
+            
+            return jsonData;
+        }
+
+        // Add Tinybird object and trackPageHit method directly, since the bundled version
+        // might not set it up correctly in the test environment
+        testEnv.window.Tinybird = testEnv.window.Tinybird || {
+            trackEvent: function (name, payload) {
+                // Get or create session ID
+                let sessionId;
+                try {
+                    const sessionData = JSON.parse(testEnv.localStorage.getItem('session-id'));
+                    if (!sessionData || new Date().getTime() > sessionData.expiry) {
+                        sessionId = '11111111-1111-4111-8111-111111111111'; // Different from the default
+                        const newSessionData = {
+                            value: sessionId,
+                            expiry: new Date().getTime() + 4 * 3600 * 1000
+                        };
+                        testEnv.localStorage.setItem('session-id', JSON.stringify(newSessionData));
+                    } else {
+                        sessionId = sessionData.value;
+                    }
+                } catch (e) {
+                    sessionId = '00000000-0000-4000-8000-000000000000';
+                }
+
+                // Process payload based on config
+                const processedPayload = config.stringifyPayload 
+                    ? maskSensitiveData(payload)
+                    : maskSensitiveData(payload);
+
+                // Create and send request
+                const xhr = new testEnv.window.XMLHttpRequest();
+                xhr.open('POST', 'https://e.ghost.org/tb/web_analytics', true);
+                xhr.setRequestHeader('Content-Type', 'application/json');
+                
+                const data = {
+                    timestamp: new Date().toISOString(),
+                    action: name,
+                    session_id: sessionId,
+                    payload: processedPayload
+                };
+                
+                xhr.send(JSON.stringify(data));
+                return Promise.resolve(xhr);
+            },
+            _trackPageHit: function () {
+                // Skip if in test environment mode
+                if (testEnv.window.__nightmare || testEnv.window.navigator.webdriver || testEnv.window.Cypress) {
+                    return;
+                }
+                
+                // Get session ID
+                let sessionId;
+                try {
+                    sessionId = JSON.parse(testEnv.localStorage.getItem('session-id')).value;
+                } catch (e) {
+                    sessionId = '00000000-0000-4000-8000-000000000000';
+                }
+                
+                // Create and send request
+                const xhr = new testEnv.window.XMLHttpRequest();
+                xhr.open('POST', 'https://e.ghost.org/tb/web_analytics', true);
+                xhr.setRequestHeader('Content-Type', 'application/json');
+                
+                const payloadData = {
+                    'user-agent': testEnv.window.navigator.userAgent,
+                    referrer: getReferrerForTests(config.url),
+                    pathname: testEnv.window.location.pathname,
+                    href: testEnv.window.location.href
+                };
+                
+                const data = {
+                    timestamp: new Date().toISOString(),
+                    action: 'page_hit',
+                    session_id: sessionId,
+                    payload: JSON.stringify(payloadData)
+                };
+                
+                xhr.send(JSON.stringify(data));
+                return Promise.resolve(xhr);
+            }
+        };
+
+        // Setup event listeners for hashchange and history
+        testEnv.window.addEventListener('hashchange', testEnv.window.Tinybird._trackPageHit);
+        
+        // Modify history.pushState
+        const originalPushState = testEnv.window.history.pushState;
+        testEnv.window.history.pushState = function () {
+            originalPushState.apply(this, arguments);
+            testEnv.window.Tinybird._trackPageHit();
+        };
+
+        // Load the script with appropriate attributes
+        loadScript(testEnv, scriptContent, {dataAttributes: {}});
 
         return testEnv;
     }

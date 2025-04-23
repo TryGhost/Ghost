@@ -312,7 +312,8 @@
       },
       "test:unit": {
         "dependsOn": [
-          "^build:ts"
+          "^build:ts",
+          "build:assets"
         ]
       },
       "test:integration": {

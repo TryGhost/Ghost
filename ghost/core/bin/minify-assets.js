@@ -17,29 +17,31 @@ const esbuild = require('esbuild');
 // Define files to minify with their specific configuration
 const filesToMinify = [
     {
-        src: 'core/frontend/src/comment-counts/comment-counts.js',
-        dest: 'core/frontend/public/comment-counts.min.js',
+        src: 'ghost/core/core/frontend/src/comment-counts/comment-counts.js',
+        dest: 'ghost/core/core/frontend/public/comment-counts.min.js',
         options: {
             bundle: false
         }
     },
     {
-        src: 'core/frontend/src/ghost-stats/ghost-stats.js',
-        dest: 'core/frontend/public/ghost-stats.min.js',
+        src: 'ghost/core/core/frontend/src/ghost-stats/ghost-stats.js',
+        dest: 'ghost/core/core/frontend/public/ghost-stats.min.js',
+        options: {
+            bundle: true,
+            format: 'iife',
+            target: ['es2020']
+        }
+    },
+    {
+        src: 'ghost/core/core/frontend/src/member-attribution/member-attribution.js',
+        dest: 'ghost/core/core/frontend/public/member-attribution.min.js',
         options: {
             bundle: false
         }
     },
     {
-        src: 'core/frontend/src/member-attribution/member-attribution.js',
-        dest: 'core/frontend/public/member-attribution.min.js',
-        options: {
-            bundle: false
-        }
-    },
-    {
-        src: 'core/frontend/src/admin-auth/message-handler.js',
-        dest: 'core/frontend/public/admin-auth/admin-auth.min.js',
+        src: 'ghost/core/core/frontend/src/admin-auth/message-handler.js',
+        dest: 'ghost/core/core/frontend/public/admin-auth/admin-auth.min.js',
         options: {
             bundle: false
         }
