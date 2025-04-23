@@ -10,7 +10,7 @@ describe('ghost-stats.js', function () {
     before(function () {
     // Read the script content
         scriptContent = fs.readFileSync(
-            path.join(__dirname, '../../../../core/frontend/public/ghost-stats.js'),
+            path.join(__dirname, '../../../../core/frontend/src/ghost-stats/ghost-stats.js'),
             'utf8'
         );
     });
