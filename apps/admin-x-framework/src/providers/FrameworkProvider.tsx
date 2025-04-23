@@ -4,6 +4,18 @@ import {ReactNode, createContext, useContext} from 'react';
 import queryClient from '../utils/queryClient';
 import {ExternalLink} from './RoutingProvider';
 
+// Stats-specific configuration
+export interface StatsConfig {
+    endpoint?: string;
+    id?: string;
+    token?: string;
+    local?: {
+        enabled?: boolean;
+        endpoint?: string;
+        token?: string;
+    };
+}
+
 export interface FrameworkProviderProps {
     ghostVersion: string;
     externalNavigate: (link: ExternalLink) => void;

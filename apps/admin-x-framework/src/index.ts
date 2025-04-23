@@ -1,5 +1,5 @@
 // Framework
-export type {FrameworkContextType, FrameworkProviderProps, TopLevelFrameworkProps} from './providers/FrameworkProvider';
+export type {StatsConfig, FrameworkContextType, FrameworkProviderProps, TopLevelFrameworkProps} from './providers/FrameworkProvider';
 export {FrameworkProvider, useFramework} from './providers/FrameworkProvider';
 
 // Routing
