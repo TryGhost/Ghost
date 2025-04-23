@@ -87,27 +87,13 @@ function getReferrer(url, referrerValue) {
 describe('ghost-stats.js', function () {
     let env;
     let scriptContent;
-    let originalConsoleLog;
-    let originalConsoleError;
 
     before(function () {
-        // Suppress console output
-        originalConsoleLog = console.log;
-        originalConsoleError = console.error;
-        console.log = function () {};
-        console.error = function () {};
-
         // Read the script content
         scriptContent = fs.readFileSync(
             path.join(__dirname, '../../../../core/frontend/public/ghost-stats.min.js'),
             'utf8'
         );
-    });
-
-    after(function () {
-        // Restore console output
-        console.log = originalConsoleLog;
-        console.error = originalConsoleError;
     });
 
     // Helper function to create a test environment with various options
@@ -133,7 +119,8 @@ describe('ghost-stats.js', function () {
         const scriptElement = testEnv.document.createElement('script');
         scriptElement.setAttribute('data-host', 'https://e.ghost.org/tb/web_analytics');
         scriptElement.setAttribute('data-token', 'tb_token');
-
+        scriptElement.setAttribute('data-domain', 'example.com');
+        
         if (config.stringifyPayload === false) {
             scriptElement.setAttribute('data-stringify-payload', 'false');
         }
@@ -237,8 +224,24 @@ describe('ghost-stats.js', function () {
             testEnv.window.Tinybird._trackPageHit();
         };
 
+        // Add a stub for console.warn to silence Ghost Stats initialization warnings
+        const originalWarn = testEnv.window.console.warn;
+        testEnv.window.console.warn = function (message) {
+            if (message && message.includes('Ghost Stats')) {
+                // Suppress Ghost Stats warnings
+                return;
+            }
+            originalWarn.apply(console, arguments);
+        };
+
         // Load the script with appropriate attributes
-        loadScript(testEnv, scriptContent, {dataAttributes: {}});
+        loadScript(testEnv, scriptContent, {
+            dataAttributes: {
+                'data-host': 'https://e.ghost.org/tb/web_analytics',
+                'data-token': 'tb_token',
+                'data-domain': 'example.com'
+            }
+        });
 
         return testEnv;
     }
