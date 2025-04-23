@@ -7,19 +7,13 @@ const activeTheme = require('../active');
 
 function getSiteData() {
     let siteData = settingsCache.getPublic();
+
     // theme-only computed property added to @site
     if (settingsCache.get('members_signup_access') === 'none') {
         const escapedUrl = encodeURIComponent(urlUtils.urlFor({relativeUrl: '/rss/'}, true));
         siteData.signup_url = `https://feedly.com/i/subscription/feed/${escapedUrl}`;
     } else {
         siteData.signup_url = '#/portal';
-    }
-
-    // theme only property added to @site
-    // allow theme to use twitter or x
-    if (Object.prototype.hasOwnProperty.call(siteData, 'twitter')) {
-        // @ts-ignore
-        siteData.x = siteData.twitter;
     }
 
     return siteData;
