@@ -126,7 +126,7 @@
     // Deep copy
     let _payload = JSON.stringify(payload)
     attributesToMask.forEach(attr => {
-      _payload = _payload.replace(
+      _payload = _payload.replaceAll(
         new RegExp(`("${attr}"):(".+?"|\\d+)`, 'mgi'),
         '$1:"********"'
       )
@@ -294,4 +294,4 @@
   } else {
     _trackPageHit()
   }
-})(); 
+})()
