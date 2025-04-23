@@ -62,7 +62,6 @@ describe('Admin App', function () {
             });
         });
 
-
         describe('serveAuthFrameFile', function () {
             let config;
             let urlUtils;
