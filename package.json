@@ -37,7 +37,7 @@
     "docker": "COMPOSE_PROFILES=${COMPOSE_PROFILES:-ghost} docker compose run --rm -it ghost",
     "docker:dev": "COMPOSE_PROFILES=${COMPOSE_PROFILES:-ghost} docker compose up --attach=ghost --force-recreate --no-log-prefix",
     "docker:build": "yarn docker:clean && COMPOSE_PROFILES=${COMPOSE_PROFILES:-ghost} docker compose build",
-    "docker:clean": "echo \"Deleting node_modules volumes...\" && COMPOSE_PROFILES=${COMPOSE_PROFILES:-ghost} docker compose down --remove-orphans && docker volume ls -q -f name=ghost_node_modules | xargs -r docker volume rm",
+    "docker:clean": "echo \"Deleting node_modules volumes...\" && COMPOSE_PROFILES=${COMPOSE_PROFILES:-ghost} docker compose down --remove-orphans && docker volume ls -q -f name=ghost_node_modules | xargs -I{} docker volume rm {}",
     "docker:shell": "COMPOSE_PROFILES=${COMPOSE_PROFILES:-ghost} docker compose run --rm -it ghost /bin/bash",
     "docker:sleep": "COMPOSE_PROFILES=${COMPOSE_PROFILES:-ghost} docker compose run -d --name ghost-devcontainer --rm -it ghost /bin/bash -c 'sleep infinity'",
     "docker:sleep:stop": "docker stop ghost-devcontainer",
