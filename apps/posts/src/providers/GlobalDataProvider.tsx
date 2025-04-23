@@ -24,8 +24,9 @@ export const useGlobalData = () => {
 };
 
 const GlobalDataProvider = ({children}: { children: ReactNode }) => {
-    const config = useBrowseConfig() as unknown as { data: Config & { config: { stats?: StatsConfig } } | null, isLoading: boolean, error: Error | null };
+    const config = useBrowseConfig();
     const [range, setRange] = useState(STATS_RANGE_OPTIONS[STATS_DEFAULT_RANGE_KEY].value);
+
     // Initialize with all audiences selected (binary 111 = 7)
     const [audience, setAudience] = useState(7);
 
@@ -38,8 +39,8 @@ const GlobalDataProvider = ({children}: { children: ReactNode }) => {
     }
 
     return <GlobalDataContext.Provider value={{
-        data: config.data ?? undefined,
-        statsConfig: config.data?.config?.stats,
+        data: config.data as Config | undefined,
+        statsConfig: config.data?.config?.stats as StatsConfig | undefined,
         isLoading,
         range,
         setRange,

@@ -7757,7 +7757,7 @@
     echarts "^5.5.0"
     swr "^2.2.5"
 
-"@tinybirdco/charts@0.2.4":
+"@tinybirdco/charts@0.2.4", "@tinybirdco/charts@^0.2.4":
   version "0.2.4"
   resolved "https://registry.yarnpkg.com/@tinybirdco/charts/-/charts-0.2.4.tgz#4dbfefd5acdc11a8f016e89b94ea377da0172dc8"
   integrity sha512-0N8fYPY8uxO5KcBkW5Dgmapj4AqcWgyCmWnZBYsugXnnbx4/yg//f3/9oMWnM3RZ6ltt9moltYIzF/95NO2zNg==
