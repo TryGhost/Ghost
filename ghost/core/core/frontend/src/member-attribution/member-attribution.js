@@ -1,3 +1,6 @@
+/* eslint-env browser */
+/* eslint-disable no-console */
+
 // Location where we want to store the history in localStorage
 const STORAGE_KEY = 'ghost-history';
 
