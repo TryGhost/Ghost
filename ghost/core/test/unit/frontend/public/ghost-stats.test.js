@@ -2,17 +2,112 @@ const fs = require('fs');
 const path = require('path');
 const {expect} = require('chai');
 const {createBrowserEnvironment, loadScript} = require('../../../utils/browser-test-utils');
+const {SENSITIVE_ATTRIBUTES, maskSensitiveData} = require('../../../../core/frontend/src/utils/privacy');
+
+/**
+ * Test-adapted version of getSessionId from session-storage.js
+ */
+function getSessionId(key, storage) {
+    const serializedItem = storage.getItem(key);
+    
+    if (!serializedItem) {
+        return null;
+    }
+    
+    let item = null;
+    try {
+        item = JSON.parse(serializedItem);
+    } catch (error) {
+        return null;
+    }
+    
+    if (typeof item !== 'object' || item === null) {
+        return null;
+    }
+    
+    const now = new Date();
+    if (now.getTime() > item.expiry) {
+        storage.removeItem(key);
+        return null;
+    }
+    
+    return item.value;
+}
+
+/**
+ * Test-adapted version of getReferrer which works with our test environment
+ */
+function getReferrer(url, referrerValue) {
+    const urlObj = new URL(url);
+    
+    // Check for special url parameters
+    const ref = urlObj.searchParams.get('ref');
+    if (ref) {
+        return ref;
+    }
+    
+    const source = urlObj.searchParams.get('source');
+    if (source) {
+        return source;
+    }
+    
+    const utmSource = urlObj.searchParams.get('utm_source');
+    if (utmSource) {
+        return utmSource;
+    }
+    
+    // Special case for portal hash URLs
+    if (urlObj.hash && urlObj.hash.includes('/portal')) {
+        const hashParts = urlObj.hash.split('?');
+        if (hashParts.length > 1) {
+            const hashParams = new URLSearchParams(hashParts[1]);
+            const hashRef = hashParams.get('ref');
+            if (hashRef) {
+                return hashRef;
+            }
+        }
+    }
+    
+    // Handle same-domain referrer case
+    if (referrerValue) {
+        try {
+            const referrerHost = new URL(referrerValue).hostname;
+            const currentHost = urlObj.hostname;
+            if (referrerHost === currentHost) {
+                return null;
+            }
+        } catch (e) {
+            // If URL parsing fails, just return the referrer
+        }
+    }
+    
+    return referrerValue;
+}
 
 describe('ghost-stats.js', function () {
     let env;
     let scriptContent;
+    let originalConsoleLog;
+    let originalConsoleError;
 
     before(function () {
-    // Read the script content
+        // Suppress console output
+        originalConsoleLog = console.log;
+        originalConsoleError = console.error;
+        console.log = function () {};
+        console.error = function () {};
+
+        // Read the script content
         scriptContent = fs.readFileSync(
             path.join(__dirname, '../../../../core/frontend/public/ghost-stats.min.js'),
             'utf8'
         );
+    });
+
+    after(function () {
+        // Restore console output
+        console.log = originalConsoleLog;
+        console.error = originalConsoleError;
     });
 
     // Helper function to create a test environment with various options
@@ -55,86 +150,29 @@ describe('ghost-stats.js', function () {
             testEnv.localStorage.setItem('session-id', JSON.stringify(sessionId));
         }
 
-        // Process query parameters from URL
-        function getUrlParams(url) {
-            const parsedUrl = new URL(url);
-            return {
-                ref: parsedUrl.searchParams.get('ref'),
-                source: parsedUrl.searchParams.get('source'),
-                utm_source: parsedUrl.searchParams.get('utm_source')
-            };
-        }
-
-        // Get referrer based on URL params
-        function getReferrerForTests(url) {
-            const urlParams = getUrlParams(url);
-            if (urlParams.ref) {
-                return urlParams.ref;
-            }
-            if (urlParams.source) {
-                return urlParams.source;
-            }
-            if (urlParams.utm_source) {
-                return urlParams.utm_source;
-            }
-            
-            // Special case for hash URLs with 'portal'
-            const urlObj = new URL(url);
-            if (urlObj.hash && urlObj.hash.includes('/portal')) {
-                // Extract the ref parameter from the hash part if it exists
-                const hashParams = new URLSearchParams(urlObj.hash.split('?')[1] || '');
-                if (hashParams.get('ref')) {
-                    return hashParams.get('ref');
-                }
-            }
-            
-            // Handle same-domain referrers
-            if (config.referrer && config.referrer.includes(new URL(config.url).hostname)) {
-                return null;
-            }
-            
-            return config.referrer;
-        }
-
-        // Helper for masking sensitive data
-        function maskSensitiveData(data) {
-            const sensitiveFields = ['email', 'password', 'token', 'credit_card'];
-            let jsonData = typeof data === 'string' ? data : JSON.stringify(data);
-            
-            sensitiveFields.forEach((field) => {
-                const regex = new RegExp(`("${field}"):(".+?"|\\d+)`, 'gi');
-                jsonData = jsonData.replace(regex, '$1:"********"');
-            });
-            
-            return jsonData;
-        }
-
-        // Add Tinybird object and trackPageHit method directly, since the bundled version
-        // might not set it up correctly in the test environment
+        // Add Tinybird object and trackPageHit method directly
         testEnv.window.Tinybird = testEnv.window.Tinybird || {
             trackEvent: function (name, payload) {
-                // Get or create session ID
+                // Get or create session ID using our adapted utility
                 let sessionId;
                 try {
-                    const sessionData = JSON.parse(testEnv.localStorage.getItem('session-id'));
-                    if (!sessionData || new Date().getTime() > sessionData.expiry) {
+                    sessionId = getSessionId('session-id', testEnv.localStorage);
+                    if (!sessionId) {
                         sessionId = '11111111-1111-4111-8111-111111111111'; // Different from the default
                         const newSessionData = {
                             value: sessionId,
                             expiry: new Date().getTime() + 4 * 3600 * 1000
                         };
                         testEnv.localStorage.setItem('session-id', JSON.stringify(newSessionData));
-                    } else {
-                        sessionId = sessionData.value;
                     }
                 } catch (e) {
                     sessionId = '00000000-0000-4000-8000-000000000000';
                 }
 
-                // Process payload based on config
+                // Process payload using our adapted utility
                 const processedPayload = config.stringifyPayload 
-                    ? maskSensitiveData(payload)
-                    : maskSensitiveData(payload);
+                    ? maskSensitiveData(payload, SENSITIVE_ATTRIBUTES)
+                    : maskSensitiveData(payload, SENSITIVE_ATTRIBUTES);
 
                 // Create and send request
                 const xhr = new testEnv.window.XMLHttpRequest();
@@ -157,10 +195,10 @@ describe('ghost-stats.js', function () {
                     return;
                 }
                 
-                // Get session ID
+                // Get session ID using our adapted utility
                 let sessionId;
                 try {
-                    sessionId = JSON.parse(testEnv.localStorage.getItem('session-id')).value;
+                    sessionId = getSessionId('session-id', testEnv.localStorage);
                 } catch (e) {
                     sessionId = '00000000-0000-4000-8000-000000000000';
                 }
@@ -172,7 +210,7 @@ describe('ghost-stats.js', function () {
                 
                 const payloadData = {
                     'user-agent': testEnv.window.navigator.userAgent,
-                    referrer: getReferrerForTests(config.url),
+                    referrer: getReferrer(config.url, config.referrer),
                     pathname: testEnv.window.location.pathname,
                     href: testEnv.window.location.href
                 };
