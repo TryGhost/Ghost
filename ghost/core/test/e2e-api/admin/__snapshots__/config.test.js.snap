@@ -26,7 +26,6 @@ Object {
       "lexicalIndicators": true,
       "mailEvents": true,
       "members": true,
-      "postsX": true,
       "statsX": true,
       "stripeAutomaticTax": true,
       "superEditors": true,

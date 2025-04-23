@@ -1,18 +1,100 @@
+const fs = require('fs');
+const path = require('path');
 const {expect} = require('chai');
-const {createBrowserEnvironment} = require('../../../utils/browser-test-utils');
+const {createBrowserEnvironment, loadScript} = require('../../../utils/browser-test-utils');
+const {SENSITIVE_ATTRIBUTES, maskSensitiveData} = require('../../../../core/frontend/src/utils/privacy');
 
-// Add TypeScript type declaration to fix the typing issue
 /**
- * @typedef {import('../../../utils/browser-test-utils').BrowserEnvironment & {
- *   _lastTrackEvent: any,
- *   _lastXHR: any,
- *   _hashChangeHandler: any,
- *   lastXHR: () => any
- * }} TestEnvironment
+ * Test-adapted version of getSessionId from session-storage.js
  */
+function getSessionId(key, storage) {
+    const serializedItem = storage.getItem(key);
+    
+    if (!serializedItem) {
+        return null;
+    }
+    
+    let item = null;
+    try {
+        item = JSON.parse(serializedItem);
+    } catch (error) {
+        return null;
+    }
+    
+    if (typeof item !== 'object' || item === null) {
+        return null;
+    }
+    
+    const now = new Date();
+    if (now.getTime() > item.expiry) {
+        storage.removeItem(key);
+        return null;
+    }
+    
+    return item.value;
+}
+
+/**
+ * Test-adapted version of getReferrer which works with our test environment
+ */
+function getReferrer(url, referrerValue) {
+    const urlObj = new URL(url);
+    
+    // Check for special url parameters
+    const ref = urlObj.searchParams.get('ref');
+    if (ref) {
+        return ref;
+    }
+    
+    const source = urlObj.searchParams.get('source');
+    if (source) {
+        return source;
+    }
+    
+    const utmSource = urlObj.searchParams.get('utm_source');
+    if (utmSource) {
+        return utmSource;
+    }
+    
+    // Special case for portal hash URLs
+    if (urlObj.hash && urlObj.hash.includes('/portal')) {
+        const hashParts = urlObj.hash.split('?');
+        if (hashParts.length > 1) {
+            const hashParams = new URLSearchParams(hashParts[1]);
+            const hashRef = hashParams.get('ref');
+            if (hashRef) {
+                return hashRef;
+            }
+        }
+    }
+    
+    // Handle same-domain referrer case
+    if (referrerValue) {
+        try {
+            const referrerHost = new URL(referrerValue).hostname;
+            const currentHost = urlObj.hostname;
+            if (referrerHost === currentHost) {
+                return null;
+            }
+        } catch (e) {
+            // If URL parsing fails, just return the referrer
+        }
+    }
+    
+    return referrerValue;
+}
 
 describe('ghost-stats.js', function () {
     let env;
+    let scriptContent;
+
+    before(function () {
+        // Read the script content
+        scriptContent = fs.readFileSync(
+            path.join(__dirname, '../../../../core/frontend/public/ghost-stats.min.js'),
+            'utf8'
+        );
+    });
 
     // Helper function to create a test environment with various options
     function createTestEnvironment(options = {}) {
@@ -24,170 +106,142 @@ describe('ghost-stats.js', function () {
 
         const config = {...defaults, ...options};
 
-        // Create base environment
-        const browserEnv = createBrowserEnvironment({
+        // Create environment
+        const testEnv = createBrowserEnvironment({
             url: config.url,
             referrer: config.referrer,
             html: '<!DOCTYPE html><html><body></body></html>',
             runScripts: true,
             storage: {type: 'localStorage'}
         });
-        
-        // Create extended test environment with custom properties
-        const testEnv = {
-            ...browserEnv,
-            _lastTrackEvent: null,
-            _lastXHR: null,
-            _hashChangeHandler: null,
-            
-            // Custom method to return XHR
-            lastXHR() {
-                return this._lastXHR;
-            }
-        };
 
-        // Generate UUID v4 format string for session ID
-        function generateUUID() {
-            return 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'.replace(/[x]/g, function () {
-                const r = Math.random() * 16 | 0;
-                return r.toString(16);
-            });
-        }
+        // Create script element with attributes
+        const scriptElement = testEnv.document.createElement('script');
+        scriptElement.setAttribute('data-host', 'https://e.ghost.org/tb/web_analytics');
+        scriptElement.setAttribute('data-token', 'tb_token');
+        scriptElement.setAttribute('data-domain', 'example.com');
         
-        // Function to mask sensitive data
-        function maskSensitiveData(data) {
-            const sensitiveFields = ['email', 'password', 'token', 'credit_card'];
-            
-            if (typeof data !== 'object' || data === null) {
-                return data;
-            }
-            
-            const maskedData = Array.isArray(data) ? [...data] : {...data};
-            
-            for (const key in maskedData) {
-                if (sensitiveFields.includes(key)) {
-                    maskedData[key] = '********';
-                } else if (typeof maskedData[key] === 'object' && maskedData[key] !== null) {
-                    maskedData[key] = maskSensitiveData(maskedData[key]);
-                }
-            }
-            
-            return maskedData;
+        if (config.stringifyPayload === false) {
+            scriptElement.setAttribute('data-stringify-payload', 'false');
         }
 
-        // Mock the Tinybird object that would be created by ghost-stats.js
-        testEnv.window.Tinybird = {
-            trackEvent: function (action, data) {
-                // Mask sensitive data
-                const maskedData = maskSensitiveData(data);
-                
-                // Store the last track event for assertions
-                testEnv._lastTrackEvent = {
-                    action,
-                    data: maskedData,
-                    timestamp: new Date().toISOString()
-                };
-                
-                // Generate and store session ID if not present or expired
+        // This is needed for the bundled version to initialize properly
+        testEnv.document.head.appendChild(scriptElement);
+
+        // Initialize a session ID in localStorage
+        if (!testEnv.localStorage.getItem('session-id')) {
+            const sessionId = {
+                value: '00000000-0000-4000-8000-000000000000',
+                expiry: new Date().getTime() + 4 * 3600 * 1000
+            };
+            testEnv.localStorage.setItem('session-id', JSON.stringify(sessionId));
+        }
+
+        // Add Tinybird object and trackPageHit method directly
+        testEnv.window.Tinybird = testEnv.window.Tinybird || {
+            trackEvent: function (name, payload) {
+                // Get or create session ID using our adapted utility
                 let sessionId;
-                const sessionIdJson = testEnv.localStorage.getItem('session-id');
-                if (sessionIdJson) {
-                    const parsedSessionId = JSON.parse(sessionIdJson);
-                    if (parsedSessionId.expiry > new Date().getTime()) {
-                        sessionId = parsedSessionId;
+                try {
+                    sessionId = getSessionId('session-id', testEnv.localStorage);
+                    if (!sessionId) {
+                        sessionId = '11111111-1111-4111-8111-111111111111'; // Different from the default
+                        const newSessionData = {
+                            value: sessionId,
+                            expiry: new Date().getTime() + 4 * 3600 * 1000
+                        };
+                        testEnv.localStorage.setItem('session-id', JSON.stringify(newSessionData));
                     }
-                }
-                
-                if (!sessionId) {
-                    sessionId = {
-                        value: generateUUID(),
-                        expiry: new Date().getTime() + (24 * 60 * 60 * 1000) // 24 hours
-                    };
-                    testEnv.localStorage.setItem('session-id', JSON.stringify(sessionId));
+                } catch (e) {
+                    sessionId = '00000000-0000-4000-8000-000000000000';
                 }
 
-                // Mock XHR request
-                const payload = config.stringifyPayload === false 
-                    ? maskedData 
-                    : JSON.stringify(maskedData);
-                    
-                const xhr = {
-                    method: 'POST',
-                    url: 'https://e.ghost.org/tb/web_analytics',
-                    _data: JSON.stringify({
-                        action,
-                        payload,
-                        session_id: sessionId.value,
-                        timestamp: new Date().toISOString()
-                    })
+                // Process payload using our adapted utility
+                const processedPayload = config.stringifyPayload 
+                    ? maskSensitiveData(payload, SENSITIVE_ATTRIBUTES)
+                    : maskSensitiveData(payload, SENSITIVE_ATTRIBUTES);
+
+                // Create and send request
+                const xhr = new testEnv.window.XMLHttpRequest();
+                xhr.open('POST', 'https://e.ghost.org/tb/web_analytics', true);
+                xhr.setRequestHeader('Content-Type', 'application/json');
+                
+                const data = {
+                    timestamp: new Date().toISOString(),
+                    action: name,
+                    session_id: sessionId,
+                    payload: processedPayload
                 };
                 
-                testEnv._lastXHR = xhr;
+                xhr.send(JSON.stringify(data));
+                return Promise.resolve(xhr);
             },
-            
             _trackPageHit: function () {
-                // Skip in test environments
-                if (testEnv.window.__nightmare) {
+                // Skip if in test environment mode
+                if (testEnv.window.__nightmare || testEnv.window.navigator.webdriver || testEnv.window.Cypress) {
                     return;
                 }
                 
-                const payload = {
+                // Get session ID using our adapted utility
+                let sessionId;
+                try {
+                    sessionId = getSessionId('session-id', testEnv.localStorage);
+                } catch (e) {
+                    sessionId = '00000000-0000-4000-8000-000000000000';
+                }
+                
+                // Create and send request
+                const xhr = new testEnv.window.XMLHttpRequest();
+                xhr.open('POST', 'https://e.ghost.org/tb/web_analytics', true);
+                xhr.setRequestHeader('Content-Type', 'application/json');
+                
+                const payloadData = {
                     'user-agent': testEnv.window.navigator.userAgent,
-                    pathname: new URL(testEnv.window.location.href).pathname,
-                    href: testEnv.window.location.href,
-                    referrer: null
+                    referrer: getReferrer(config.url, config.referrer),
+                    pathname: testEnv.window.location.pathname,
+                    href: testEnv.window.location.href
                 };
                 
-                // Handle referrer logic similar to the actual implementation
-                const url = new URL(testEnv.window.location.href);
-                let ref = url.searchParams.get('ref');
+                const data = {
+                    timestamp: new Date().toISOString(),
+                    action: 'page_hit',
+                    session_id: sessionId,
+                    payload: JSON.stringify(payloadData)
+                };
                 
-                // Handle hash URLs
-                if (!ref && url.hash && url.hash.includes('?')) {
-                    const hashParams = new URLSearchParams(url.hash.split('?')[1]);
-                    ref = hashParams.get('ref');
-                }
-                
-                let source = url.searchParams.get('source');
-                let utm_source = url.searchParams.get('utm_source');
-                
-                if (ref) {
-                    payload.referrer = ref;
-                } else if (source) {
-                    payload.referrer = source;
-                } else if (utm_source) {
-                    payload.referrer = utm_source;
-                } else if (testEnv.window.document.referrer) {
-                    const referrerUrl = new URL(testEnv.window.document.referrer);
-                    const currentUrl = new URL(testEnv.window.location.href);
-                    
-                    if (referrerUrl.hostname !== currentUrl.hostname) {
-                        payload.referrer = testEnv.window.document.referrer;
-                    }
-                }
-                
-                this.trackEvent('page_hit', payload);
+                xhr.send(JSON.stringify(data));
+                return Promise.resolve(xhr);
             }
         };
 
-        // Mock event listeners
-        const originalAddEventListener = testEnv.window.addEventListener;
-        testEnv.window.addEventListener = function (event, handler) {
-            if (event === 'hashchange') {
-                testEnv._hashChangeHandler = handler;
-                // Immediately fire once so unit tests observe the behaviour
-                testEnv.window.addEventListener('hashchange', () => {});
-            }
-            return originalAddEventListener.call(testEnv.window, event, handler);
-        };
+        // Setup event listeners for hashchange and history
+        testEnv.window.addEventListener('hashchange', testEnv.window.Tinybird._trackPageHit);
         
-        // Mock history pushState
+        // Modify history.pushState
         const originalPushState = testEnv.window.history.pushState;
         testEnv.window.history.pushState = function () {
-            const result = originalPushState.apply(this, arguments);
+            originalPushState.apply(this, arguments);
             testEnv.window.Tinybird._trackPageHit();
-            return result;
         };
+
+        // Add a stub for console.warn to silence Ghost Stats initialization warnings
+        const originalWarn = testEnv.window.console.warn;
+        testEnv.window.console.warn = function (message) {
+            if (message && message.includes('Ghost Stats')) {
+                // Suppress Ghost Stats warnings
+                return;
+            }
+            originalWarn.apply(console, arguments);
+        };
+
+        // Load the script with appropriate attributes
+        loadScript(testEnv, scriptContent, {
+            dataAttributes: {
+                'data-host': 'https://e.ghost.org/tb/web_analytics',
+                'data-token': 'tb_token',
+                'data-domain': 'example.com'
+            }
+        });
 
         return testEnv;
     }
@@ -229,7 +283,7 @@ describe('ghost-stats.js', function () {
     }
 
     beforeEach(function () {
-        // Create default test environment
+    // Create default test environment
         env = createTestEnvironment();
     });
 
@@ -479,9 +533,16 @@ describe('ghost-stats.js', function () {
 
     describe('Event-triggered page hit tracking', function () {
         it('should track page hits on hashchange event', function () {
+            // Set up navigator
+            Object.defineProperty(env.window.navigator, 'userAgent', {
+                value: 'Mozilla/5.0 (Test Browser)',
+                configurable: true
+            });
+
             withImmediateTimeout(env, () => {
-                // Manually trigger the Tinybird trackPageHit function
-                env.window.Tinybird._trackPageHit();
+                // Trigger a hashchange event
+                const event = new env.window.Event('hashchange');
+                env.window.dispatchEvent(event);
 
                 // Check that an XMLHttpRequest was made
                 const xhrInstance = env.lastXHR();
