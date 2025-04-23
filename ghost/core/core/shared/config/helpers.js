@@ -1,5 +1,3 @@
-const crypto = require('crypto');
-const os = require('os');
 const path = require('path');
 const {URL} = require('url');
 
