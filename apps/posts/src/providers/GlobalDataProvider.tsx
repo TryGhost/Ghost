@@ -24,7 +24,12 @@ export const useGlobalData = () => {
 };
 
 const GlobalDataProvider = ({children}: { children: ReactNode }) => {
-    const config = useBrowseConfig() as unknown as { data: Config & { config: { stats?: StatsConfig } } | null, isLoading: boolean, error: Error | null };
+    type ConfigResponse = {
+      data: (Config & { config: { stats?: StatsConfig } }) | null;
+      isLoading: boolean;
+      error: Error | null;
+    };
+    const config = useBrowseConfig() as ConfigResponse;
     const [range, setRange] = useState(STATS_RANGE_OPTIONS[STATS_DEFAULT_RANGE_KEY].value);
 
     // Initialize with all audiences selected (binary 111 = 7)
