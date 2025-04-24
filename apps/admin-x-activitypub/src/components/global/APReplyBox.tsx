@@ -6,6 +6,7 @@ import clsx from 'clsx';
 import getUsername from '../../utils/get-username';
 import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, LucideIcon} from '@tryghost/shade';
+import {showToast} from '@tryghost/admin-x-design-system';
 import {uploadFile, useReplyMutationForUser, useUserDataForUser} from '@hooks/use-activity-pub-queries';
 import {useFeatureFlags} from '@src/lib/feature-flags';
 
@@ -69,6 +70,7 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const imageInputRef = useRef<HTMLInputElement>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const [isImageUploading, setIsImageUploading] = useState(false);
     const imageButtonRef = useRef<HTMLButtonElement>(null);
 
     useEffect(() => {
@@ -122,13 +124,17 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
 
     const handleImageUpload = async (file: File) => {
         try {
+            setIsImageUploading(true);
             const imageUrl = await uploadFile(file);
             setUploadedImageUrl(imageUrl);
         } catch (err) {
-            // Todo: Show error message to the user when upload fails
-
-            // eslint-disable-next-line no-console
-            console.error('Upload failed:', err);
+            setImagePreview(null);
+            showToast({
+                message: 'Failed to upload image. Try again.',
+                type: 'error'
+            });
+        } finally {
+            setIsImageUploading(false);
         }
     };
 
@@ -223,7 +229,7 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
                 </FormPrimitive.Root>
                 {imagePreview &&
                     <div className='group relative -mt-6 w-fit grow'>
-                        <img alt='Image attachment preview' className='max-h-[420px] rounded-sm outline outline-1 -outline-offset-1 outline-black/10' src={imagePreview} />
+                        <img alt='Image attachment preview' className={`max-h-[420px] w-full rounded-sm object-cover outline outline-1 -outline-offset-1 outline-black/10 ${isImageUploading && 'animate-pulse'}`} src={imagePreview} />
                         <Button className='absolute right-3 top-3 size-8 bg-black/60 opacity-0 hover:bg-black/80 group-hover:opacity-100' onClick={handleClearImage}><LucideIcon.Trash2 /></Button>
                     </div>
                 }
@@ -231,7 +237,7 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
                     {isEnabled('note-image') &&
                         <Button ref={imageButtonRef} className='w-[34px] !min-w-0' variant='outline' onClick={() => imageInputRef.current?.click()}><LucideIcon.Image /></Button>
                     }
-                    <Button className='min-w-20' color='black' disabled={buttonDisabled} id='post' onClick={handleClick}>Post</Button>
+                    <Button className='min-w-20' color='black' disabled={buttonDisabled || isImageUploading} id='post' onClick={handleClick}>Post</Button>
                 </div>
             </div>
         </div>
