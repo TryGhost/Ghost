@@ -4,6 +4,7 @@ import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, LucideIcon, Skeleton} from '@tryghost/shade';
 import {ChangeEvent, useEffect, useRef, useState} from 'react';
 import {ComponentPropsWithoutRef, ReactNode} from 'react';
+import {showToast} from '@tryghost/admin-x-design-system';
 import {uploadFile, useAccountForUser, useNoteMutationForUser, useUserDataForUser} from '@hooks/use-activity-pub-queries';
 import {useFeatureFlags} from '@src/lib/feature-flags';
 import {useNavigate} from '@tryghost/admin-x-framework';
@@ -20,6 +21,7 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, ...props}) => {
     const [isOpen, setIsOpen] = useState(false);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const [isImageUploading, setIsImageUploading] = useState(false);
     const imageInputRef = useRef<HTMLInputElement>(null);
 
     const [content, setContent] = useState('');
@@ -58,13 +60,17 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, ...props}) => {
 
     const handleImageUpload = async (file: File) => {
         try {
+            setIsImageUploading(true);
             const imageUrl = await uploadFile(file);
             setUploadedImageUrl(imageUrl);
         } catch (error) {
-            // Todo: Show error message to the user when upload fails
-
-            // eslint-disable-next-line no-console
-            console.error('Upload failed:', error);
+            setImagePreview(null);
+            showToast({
+                message: 'Failed to upload image. Try again.',
+                type: 'error'
+            });
+        } finally {
+            setIsImageUploading(false);
         }
     };
 
@@ -163,7 +169,7 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, ...props}) => {
                 </div>
                 {imagePreview &&
                     <div className='group relative w-fit grow'>
-                        <img alt='Image attachment preview' className='max-h-[420px] rounded-sm outline outline-1 -outline-offset-1 outline-black/10' src={imagePreview} />
+                        <img alt='Image attachment preview' className={`max-h-[420px] w-full rounded-sm object-cover outline outline-1 -outline-offset-1 outline-black/10 ${isImageUploading && 'animate-pulse'}`} src={imagePreview} />
                         <Button className='absolute right-3 top-3 size-8 bg-black/60 opacity-0 hover:bg-black/80 group-hover:opacity-100' onClick={handleClearImage}><LucideIcon.Trash2 /></Button>
                     </div>
                 }
@@ -174,7 +180,7 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, ...props}) => {
                     <DialogClose>
                         <Button className='min-w-16' variant='outline'>Cancel</Button>
                     </DialogClose>
-                    <Button className='min-w-16' disabled={isDisabled} onClick={handlePost}>Post</Button>
+                    <Button className='min-w-16' disabled={isDisabled || isImageUploading} onClick={handlePost}>Post</Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
