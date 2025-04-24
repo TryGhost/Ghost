@@ -1,9 +1,10 @@
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
 import {inject} from 'ghost-admin/decorators/inject';
 import {pluralize} from 'ember-inflector';
-
+import {inject as service} from '@ember/service';
 export default class Analytics extends AuthenticatedRoute {
     @inject config;
+    @service feature;
 
     model(params) {
         let {post_id: id} = params;
@@ -56,7 +57,7 @@ export default class Analytics extends AuthenticatedRoute {
             }
 
             // This ensures that we don't load this page if the stats config is not set
-            if (!this.config.stats) {
+            if (!(this.config.stats && this.feature.trafficAnalytics)) {
                 return this.transitionTo('home');
             }
         }
