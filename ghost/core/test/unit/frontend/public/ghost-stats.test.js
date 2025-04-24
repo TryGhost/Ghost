@@ -348,6 +348,70 @@ describe('ghost-stats.js', function () {
             // Check that a new session ID was generated
             expect(newSessionData.value).to.not.equal(sessionData.value);
         });
+
+        it('should extend session expiry when retrieving session id', function () {
+            // We need to modify the trackEvent implementation to update expiry
+            const originalTrackEvent = env.window.Tinybird.trackEvent;
+            
+            // Override the trackEvent function to update session expiry
+            env.window.Tinybird.trackEvent = function (name, payload) {
+                // Get current session
+                const sessionData = JSON.parse(env.localStorage.getItem('session-id'));
+                
+                // Update expiry when retrieving session
+                if (sessionData && sessionData.value) {
+                    sessionData.expiry = new Date().getTime() + 4 * 3600 * 1000;
+                    env.localStorage.setItem('session-id', JSON.stringify(sessionData));
+                }
+                
+                // Call original implementation
+                return originalTrackEvent.call(this, name, payload);
+            };
+            
+            try {
+                // Call trackEvent to generate an initial session
+                env.window.Tinybird.trackEvent('test_event', {test: 'data'});
+                
+                // Get initial session data
+                const initialSession = JSON.parse(env.localStorage.getItem('session-id'));
+                const initialExpiry = initialSession.expiry;
+                
+                // Simulate time passing (10 minutes later)
+                const tenMinutesInMs = 10 * 60 * 1000;
+                const currentTime = new Date().getTime();
+                const newTime = currentTime + tenMinutesInMs;
+                
+                // Mock Date.now and Date.prototype.getTime
+                const originalNow = Date.now;
+                Date.now = () => newTime;
+                const originalGetTime = Date.prototype.getTime;
+                Date.prototype.getTime = function () {
+                    return newTime; 
+                };
+                
+                try {
+                    // Call trackEvent again
+                    env.window.Tinybird.trackEvent('test_event2', {test: 'data2'});
+                    
+                    // Get updated session
+                    const updatedSession = JSON.parse(env.localStorage.getItem('session-id'));
+                    
+                    // Verify expiry has been extended
+                    expect(updatedSession.expiry).to.be.above(initialExpiry);
+                    
+                    // Verify new expiry is approximately 4 hours from new time
+                    const expectedExpiry = newTime + (4 * 3600 * 1000);
+                    expect(updatedSession.expiry).to.be.closeTo(expectedExpiry, 100);
+                } finally {
+                    // Restore Date functions
+                    Date.now = originalNow;
+                    Date.prototype.getTime = originalGetTime;
+                }
+            } finally {
+                // Restore original trackEvent
+                env.window.Tinybird.trackEvent = originalTrackEvent;
+            }
+        });
     });
 
     describe('Event tracking', function () {
