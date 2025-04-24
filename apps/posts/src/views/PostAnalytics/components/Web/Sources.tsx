@@ -46,8 +46,8 @@ const Sources:React.FC<SourcesProps> = ({queryParams}) => {
                     {data!.length > 0 &&
                         <Card>
                             <CardHeader>
-                                <CardTitle>Top sources</CardTitle>
-                                <CardDescription>How did people find this post</CardDescription>
+                                <CardTitle>Top Sources</CardTitle>
+                                <CardDescription>How readers found your post</CardDescription>
                             </CardHeader>
                             <CardContent>
                                 <Table>
