@@ -243,8 +243,8 @@ const EditProfile: React.FC<EditProfileProps> = ({account, setIsEditingProfile})
             name: data.name || account.name,
             username: data.handle || account.handle,
             bio: data.bio || account.bio,
-            avatarUrl: data.profileImage || account.avatarUrl,
-            bannerImageUrl: data.coverImage || account.bannerImageUrl || ''
+            avatarUrl: data.profileImage || '',
+            bannerImageUrl: data.coverImage || ''
         }, {
             onSettled() {
                 setIsSubmitting(false);
