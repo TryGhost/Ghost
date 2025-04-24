@@ -1451,6 +1451,7 @@ describe('{{ghost_head}} helper', function () {
     describe('includes tinybird tracker script when config is set', function () {
         beforeEach(function () {
             configUtils.set({
+                site_uuid: 'tb_test_site_uuid',
                 tinybird: {
                     tracker: {
                         endpoint: 'https://e.ghost.org/tb/web_analytics',
@@ -1566,7 +1567,7 @@ describe('{{ghost_head}} helper', function () {
             }));
 
             rendered.should.match(/data-datasource="analytics_events"/);
-        }); 
+        });
 
         it('does not include tracker script when preview is set', async function () {
             const rendered = await testGhostHead(testUtils.createHbsResponse({

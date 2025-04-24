@@ -167,7 +167,7 @@ function getTinybirdTrackerScript(dataRoot) {
     const datasource = localEnabled ? localConfig.datasource : statsConfig.datasource;
 
     const tbParams = _.map({
-        site_uuid: config.get('tinybird:tracker:id'),
+        site_uuid: config.get('site_uuid'),
         post_uuid: dataRoot.post?.uuid,
         member_uuid: dataRoot.member?.uuid,
         member_status: dataRoot.member?.status
@@ -364,7 +364,7 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
                 head.push(tagCodeInjection);
             }
 
-            if (config.get('tinybird') && config.get('tinybird:tracker')) {
+            if (config.get('tinybird') && config.get('tinybird:tracker') && config.get('site_uuid')) {
                 head.push(getTinybirdTrackerScript(dataRoot));
             }
 
