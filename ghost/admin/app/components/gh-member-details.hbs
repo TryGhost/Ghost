@@ -14,15 +14,15 @@
             {{/if}}
             <div>
                 <h3>
-                    {{or (trim @member.name) @member.email}}
-                    {{#unless (or (trim @member.name) @member.email)}}
+                    {{or @member.name @member.email}}
+                    {{#unless (or @member.name @member.email)}}
                         {{#if @member.isNew}}
                         <span class="midgrey">New member</span>
                         {{/if}}
                     {{/unless}}
                 </h3>
                 <p>
-                    {{#if (and (trim @member.name) @member.email)}}
+                    {{#if (and @member.name @member.email)}}
                         <a href="mailto:{{@member.email}}">{{@member.email}}</a>
                     {{/if}}
                 </p>
