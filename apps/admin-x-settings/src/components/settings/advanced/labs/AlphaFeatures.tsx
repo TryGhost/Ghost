@@ -38,7 +38,7 @@ const features = [{
 },{
     title: 'Stats redesign',
     description: 'Enables redesigned Stats page',
-    flag: 'statsX'
+    flag: 'trafficAnalyticsAlpha'
 }, {
     title: 'Sign-up CAPTCHA',
     description: 'Enable CAPTCHA for member sign-up and sign-in',
