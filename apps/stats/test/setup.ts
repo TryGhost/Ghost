@@ -13,12 +13,20 @@ const originalConsoleError = console.error;
 // eslint-disable-next-line no-console
 console.error = (...args) => {
     // Suppress defaultProps warning from react-svg-map
+    // This is in a third-party library and can't be fixed by us
     if (args[0]?.includes('Support for defaultProps will be removed')) {
         return;
     }
     
     // Suppress key warning from table component
+    // This should eventually be fixed in the component code
     if (args[0]?.includes('Encountered two children with the same key')) {
+        return;
+    }
+
+    // Suppress chart dimension warnings
+    // These are expected in a headless testing environment
+    if (args[0]?.includes('The width(0) and height(0) of chart should be greater than 0')) {
         return;
     }
     
@@ -36,7 +44,7 @@ class ResizeObserverMock {
 global.ResizeObserver = ResizeObserverMock;
 
 // Mock getBoundingClientRect to return non-zero dimensions
-// This prevents the "width(0) and height(0) of chart" warnings
+// This prevents many chart warnings by providing fake dimensions for DOM elements
 Element.prototype.getBoundingClientRect = vi.fn(() => ({
     width: 500,
     height: 500,
