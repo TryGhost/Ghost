@@ -14,9 +14,13 @@ import {zodResolver} from '@hookform/resolvers/zod';
 const FormSchema = z.object({
     profileImage: z.string().optional(),
     coverImage: z.string().optional(),
-    name: z.string().nonempty({
-        message: 'Name is required.'
-    }),
+    name: z.string()
+        .nonempty({
+            message: 'Display name is required.'
+        })
+        .max(64, {
+            message: 'Display name must be less than 64 characters.'
+        }),
     handle: z.string()
         .min(2, {
             message: 'Handle must be at least 2 characters.'
@@ -27,7 +31,11 @@ const FormSchema = z.object({
         .regex(/^[a-zA-Z0-9_]+$/, {
             message: 'Handle must contain only letters, numbers, and underscores.'
         }),
-    bio: z.string().optional()
+    bio: z.string()
+        .max(250, {
+            message: 'Bio must be less than 250 characters.'
+        })
+        .optional()
 });
 
 type EditProfileProps = {
@@ -242,7 +250,7 @@ const EditProfile: React.FC<EditProfileProps> = ({account, setIsEditingProfile})
         updateAccount({
             name: data.name || account.name,
             username: data.handle || account.handle,
-            bio: data.bio || account.bio,
+            bio: data.bio || '',
             avatarUrl: data.profileImage || '',
             bannerImageUrl: data.coverImage || ''
         }, {
