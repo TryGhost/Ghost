@@ -143,7 +143,7 @@
     "Signups from this email domain are currently restricted.": "Энэхүү имэйл домэйнээс бүртгүүлэх нь хязгаарлагдсан байна.",
     "Something went wrong, please try again later.": "Ямар нэг алдаа гарлаа, дараа дахин оролдоно уу.",
     "Sorry, no recommendations are available right now.": "Уучлаарай, одоогоор санал болгох зүйл алга байна.",
-    "Sorry, that didn't work.": "Уучлаарай, амжилтгүй боллоо.",
+    "Sorry, that didn’t work.": "",
     "Spam complaints": "Спамын гомдлууд",
     "Start {{amount}}-day free trial": "{{amount}} өдрийн үнэгүй туршилтыг эхлүүлэх",
     "Starting {{startDate}}": "{{startDate}}-с эхэлнэ",
