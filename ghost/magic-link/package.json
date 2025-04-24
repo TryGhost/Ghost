@@ -26,7 +26,7 @@
     "sinon": "15.2.0"
   },
   "dependencies": {
-    "@tryghost/errors": "1.3.5",
+    "@tryghost/errors": "1.3.7",
     "@tryghost/tpl": "0.1.32",
     "@tryghost/validator": "0.2.14",
     "jsonwebtoken": "8.5.1"
