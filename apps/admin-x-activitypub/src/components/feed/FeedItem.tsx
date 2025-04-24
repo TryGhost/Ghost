@@ -498,7 +498,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                     />
                                 </div>
                                 <div className={`relative z-10 col-start-2 col-end-3 w-full gap-4`}>
-                                    <div className='flex flex-col'>
+                                    <div className='flex flex-col items-start'>
                                         {(object.type === 'Article') && renderFeedAttachment(object, openLightbox)}
                                         {object.name && <Heading className='my-1 text-pretty leading-tight' level={5} data-test-activity-heading>{object.name}</Heading>}
                                         {(object.preview && object.type === 'Article') ? <div className='line-clamp-3 leading-tight'>{object.preview.content}</div> : <div dangerouslySetInnerHTML={({__html: openLinksInNewTab(object.content || '') ?? ''})} className='ap-note-content text-pretty tracking-[-0.006em] text-gray-900 dark:text-gray-600 [&_p+p]:mt-3'></div>}
