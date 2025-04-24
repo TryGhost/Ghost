@@ -1,18 +1,7 @@
 import {Config, useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
 import {ReactNode, createContext, useContext, useState} from 'react';
 import {STATS_DEFAULT_RANGE_KEY, STATS_RANGE_OPTIONS} from '@src/utils/constants';
-
-// Stats-specific configuration
-export interface StatsConfig {
-    endpoint?: string;
-    id?: string;
-    token?: string;
-    local?: {
-        enabled?: boolean;
-        endpoint?: string;
-        token?: string;
-    };
-}
+import {StatsConfig} from '@tryghost/admin-x-framework';
 
 type GlobalDataContextType = {
     data: Config | undefined;

@@ -4,7 +4,8 @@ import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, LucideIcon, Skeleton} from '@tryghost/shade';
 import {ChangeEvent, useEffect, useRef, useState} from 'react';
 import {ComponentPropsWithoutRef, ReactNode} from 'react';
-import {useAccountForUser, useNoteMutationForUser, useUserDataForUser} from '@hooks/use-activity-pub-queries';
+import {showToast} from '@tryghost/admin-x-design-system';
+import {uploadFile, useAccountForUser, useNoteMutationForUser, useUserDataForUser} from '@hooks/use-activity-pub-queries';
 import {useFeatureFlags} from '@src/lib/feature-flags';
 import {useNavigate} from '@tryghost/admin-x-framework';
 
@@ -20,9 +21,11 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, ...props}) => {
     const [isOpen, setIsOpen] = useState(false);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const [isImageUploading, setIsImageUploading] = useState(false);
     const imageInputRef = useRef<HTMLInputElement>(null);
 
     const [content, setContent] = useState('');
+    const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
     const navigate = useNavigate();
 
     const isDisabled = !content.trim() || !user;
@@ -35,7 +38,7 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, ...props}) => {
         }
 
         try {
-            await noteMutation.mutateAsync(trimmedContent);
+            await noteMutation.mutateAsync({content: trimmedContent, imageUrl: uploadedImageUrl || undefined});
             navigate('/feed');
             setIsOpen(false);
         } catch (error) {
@@ -55,6 +58,22 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, ...props}) => {
         }
     }, [content]);
 
+    const handleImageUpload = async (file: File) => {
+        try {
+            setIsImageUploading(true);
+            const imageUrl = await uploadFile(file);
+            setUploadedImageUrl(imageUrl);
+        } catch (error) {
+            setImagePreview(null);
+            showToast({
+                message: 'Failed to upload image. Try again.',
+                type: 'error'
+            });
+        } finally {
+            setIsImageUploading(false);
+        }
+    };
+
     const handleImageChange = async (e: ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files;
 
@@ -64,15 +83,14 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, ...props}) => {
             const previewUrl = URL.createObjectURL(file);
             setImagePreview(previewUrl);
 
-            // TODO: Implement actual image upload once backend API is ready
-            // For now, we're just setting the preview URL for UI testing
-            // e.g. const uploadedUrl = await handleImageUpload(file);
+            await handleImageUpload(file);
         }
     };
 
     const handleClearImage = (e: React.MouseEvent) => {
         e.stopPropagation();
         setImagePreview(null);
+        setUploadedImageUrl(null);
         if (imagePreview) {
             URL.revokeObjectURL(imagePreview);
         }
@@ -95,6 +113,14 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, ...props}) => {
         <Dialog open={isOpen} onOpenChange={(open) => {
             if (open) {
                 setContent('');
+                setImagePreview(null);
+                setUploadedImageUrl(null);
+                if (imagePreview) {
+                    URL.revokeObjectURL(imagePreview);
+                }
+                if (imageInputRef.current) {
+                    imageInputRef.current.value = '';
+                }
             }
             setIsOpen(open);
         }} {...props}>
@@ -143,7 +169,7 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, ...props}) => {
                 </div>
                 {imagePreview &&
                     <div className='group relative w-fit grow'>
-                        <img alt='Image attachment preview' className='max-h-[420px] rounded-sm outline outline-1 -outline-offset-1 outline-black/10' src={imagePreview} />
+                        <img alt='Image attachment preview' className={`max-h-[420px] w-full rounded-sm object-cover outline outline-1 -outline-offset-1 outline-black/10 ${isImageUploading && 'animate-pulse'}`} src={imagePreview} />
                         <Button className='absolute right-3 top-3 size-8 bg-black/60 opacity-0 hover:bg-black/80 group-hover:opacity-100' onClick={handleClearImage}><LucideIcon.Trash2 /></Button>
                     </div>
                 }
@@ -154,7 +180,7 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, ...props}) => {
                     <DialogClose>
                         <Button className='min-w-16' variant='outline'>Cancel</Button>
                     </DialogClose>
-                    <Button className='min-w-16' disabled={isDisabled} onClick={handlePost}>Post</Button>
+                    <Button className='min-w-16' disabled={isDisabled || isImageUploading} onClick={handlePost}>Post</Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

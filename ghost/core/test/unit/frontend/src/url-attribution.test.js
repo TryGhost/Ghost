@@ -8,7 +8,7 @@ const {
     parsePortalHash,
     getFinalReferrer,
     getReferrer
-} = require('../../../../../core/frontend/src/utils/url-attribution');
+} = require('../../../../core/frontend/src/utils/url-attribution');
 
 describe('URL Attribution Utils', function () {
     let dom;

@@ -1,9 +1,11 @@
 import React, {ChangeEvent, useEffect, useRef, useState} from 'react';
 import {Account} from '@src/api/activitypub';
 import {Button, DialogClose, DialogFooter, Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage, Input, LucideIcon, Textarea} from '@tryghost/shade';
+import {showToast} from '@tryghost/admin-x-design-system';
 import {uploadFile} from '@hooks/use-activity-pub-queries';
 import {useFeatureFlags} from '@src/lib/feature-flags';
 import {useForm} from 'react-hook-form';
+import {useNavigate} from '@tryghost/admin-x-framework';
 import {useUpdateAccountMutationForUser} from '@hooks/use-activity-pub-queries';
 import {z} from 'zod';
 import {zodResolver} from '@hookform/resolvers/zod';
@@ -35,12 +37,15 @@ type EditProfileProps = {
 const EditProfile: React.FC<EditProfileProps> = ({account, setIsEditingProfile}) => {
     const [profileImagePreview, setProfileImagePreview] = useState<string | null>(account.avatarUrl || null);
     const profileImageInputRef = useRef<HTMLInputElement>(null);
+    const [isProfileImageUploading, setIsProfileImageUploading] = useState(false);
     const [coverImagePreview, setCoverImagePreview] = useState<string | null>(account.bannerImageUrl || null);
     const coverImageInputRef = useRef<HTMLInputElement>(null);
+    const [isCoverImageUploading, setIsCoverImageUploading] = useState(false);
     const [handleDomain, setHandleDomain] = useState<string>('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const {mutate: updateAccount} = useUpdateAccountMutationForUser(account?.handle || '');
     const {isEnabled} = useFeatureFlags();
+    const navigate = useNavigate();
 
     const form = useForm<z.infer<typeof FormSchema>>({
         resolver: zodResolver(FormSchema),
@@ -72,11 +77,18 @@ const EditProfile: React.FC<EditProfileProps> = ({account, setIsEditingProfile})
 
     const handleProfileImageUpload = async (file: File) => {
         try {
+            setIsProfileImageUploading(true);
             const uploadedImageUrl = await uploadFile(file);
             return uploadedImageUrl;
         } catch (error) {
-            // eslint-disable-next-line no-console
-            console.error('Upload failed:', error);
+            setProfileImagePreview(null);
+            form.setValue('profileImage', '');
+            showToast({
+                message: 'Failed to upload image. Try again.',
+                type: 'error'
+            });
+        } finally {
+            setIsProfileImageUploading(false);
         }
     };
 
@@ -100,11 +112,18 @@ const EditProfile: React.FC<EditProfileProps> = ({account, setIsEditingProfile})
 
     const handleCoverImageUpload = async (file: File) => {
         try {
+            setIsCoverImageUploading(true);
             const uploadedImageUrl = await uploadFile(file);
             return uploadedImageUrl;
         } catch (error) {
-            // eslint-disable-next-line no-console
-            console.error('Upload failed:', error);
+            setCoverImagePreview(null);
+            form.setValue('coverImage', '');
+            showToast({
+                message: 'Failed to upload image. Try again.',
+                type: 'error'
+            });
+        } finally {
+            setIsCoverImageUploading(false);
         }
     };
 
@@ -134,6 +153,7 @@ const EditProfile: React.FC<EditProfileProps> = ({account, setIsEditingProfile})
         ) {
             setIsSubmitting(false);
             setIsEditingProfile(false);
+            navigate('/profile');
 
             return;
         }
@@ -148,6 +168,7 @@ const EditProfile: React.FC<EditProfileProps> = ({account, setIsEditingProfile})
             onSettled() {
                 setIsSubmitting(false);
                 setIsEditingProfile(false);
+                navigate('/profile');
             }
         });
     }
@@ -169,7 +190,7 @@ const EditProfile: React.FC<EditProfileProps> = ({account, setIsEditingProfile})
                         <div className='group relative h-[180px] cursor-pointer bg-gray-100' onClick={triggerCoverImageInput}>
                             {coverImagePreview ?
                                 <>
-                                    <img className='size-full object-cover' src={coverImagePreview} />
+                                    <img className={`size-full object-cover ${isCoverImageUploading && 'animate-pulse'}`} src={coverImagePreview} />
                                     <Button className='absolute right-3 top-3 size-8 bg-black/60 opacity-0 hover:bg-black/80 group-hover:opacity-100' onClick={(e) => {
                                         e.stopPropagation();
                                         setCoverImagePreview(null);
@@ -182,7 +203,7 @@ const EditProfile: React.FC<EditProfileProps> = ({account, setIsEditingProfile})
                         <div className='group absolute -bottom-10 left-4 flex size-20 cursor-pointer items-center justify-center rounded-full border-2 border-white bg-gray-100' onClick={triggerProfileImageInput}>
                             {profileImagePreview ?
                                 <>
-                                    <img className='size-full rounded-full object-cover' src={profileImagePreview} />
+                                    <img className={`size-full rounded-full object-cover ${isProfileImageUploading && 'animate-pulse'}`} src={profileImagePreview} />
                                     <Button className='absolute -right-2 -top-2 h-8 w-10 rounded-full bg-black/80 opacity-0 hover:bg-black/90 group-hover:opacity-100' onClick={(e) => {
                                         e.stopPropagation();
                                         setProfileImagePreview(null);
@@ -297,7 +318,7 @@ const EditProfile: React.FC<EditProfileProps> = ({account, setIsEditingProfile})
                     <DialogClose>
                         <Button variant='outline'>Cancel</Button>
                     </DialogClose>
-                    <Button disabled={isSubmitting} type="submit">Save</Button>
+                    <Button disabled={isSubmitting || isProfileImageUploading || isCoverImageUploading} type="submit">Save</Button>
                 </DialogFooter>
             </form>
         </Form>

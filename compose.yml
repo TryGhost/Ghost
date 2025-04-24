@@ -82,6 +82,7 @@ services:
     environment:
       - DEBUG=${DEBUG:-}
       - SSH_AUTH_SOCK=/ssh-agent
+      - NX_DAEMON=${NX_DAEMON:-true}
       - GHOST_DEV_IS_DOCKER=true
       - GHOST_DEV_APP_FLAGS=${GHOST_DEV_APP_FLAGS:-}
       - GHOST_UPSTREAM=${GHOST_UPSTREAM:-}
@@ -151,6 +152,14 @@ services:
     container_name: ghost-pushgateway
     ports:
       - 9091:9091
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: ghost-mailhog
+    profiles: [ ghost ]
+    ports:
+      - "1025:1025" # SMTP server
+      - "8025:8025" # Web interface
+    restart: always
 volumes:
   mysql-data: {}
   redis-data: {}
