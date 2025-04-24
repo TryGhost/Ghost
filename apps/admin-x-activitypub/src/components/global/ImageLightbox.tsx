@@ -165,11 +165,12 @@ const ImageLightbox: React.FC<ImageLightboxProps> = ({
                 }
             }}
         >
-            <DialogContent className="top-[50%] h-[100vh] max-h-[100vh] w-[100vw] max-w-[100vw] translate-y-[-50%] items-center border-none bg-transparent p-0 shadow-none data-[state=closed]:zoom-out-100 data-[state=open]:zoom-in-100 data-[state=closed]:slide-out-to-top-[50%] data-[state=open]:slide-in-from-top-[50%]">
+            <DialogContent className="top-[50%] h-[100vh] max-h-[100vh] w-[100vw] max-w-[100vw] translate-y-[-50%] items-center border-none bg-transparent p-0 shadow-none data-[state=closed]:zoom-out-100 data-[state=open]:zoom-in-100 data-[state=closed]:slide-out-to-top-[50%] data-[state=open]:slide-in-from-top-[50%]" onClick={() => onClose()}>
                 <img
                     alt={images[currentIndex].alt}
                     className="mx-auto max-h-[90vh] max-w-[90vw] object-contain"
                     src={images[currentIndex].url}
+                    onClick={e => e.stopPropagation()}
                 />
 
                 {images.length > 1 && (
