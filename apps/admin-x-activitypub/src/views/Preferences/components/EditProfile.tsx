@@ -4,7 +4,6 @@ import {Button, DialogClose, DialogFooter, Form, FormControl, FormDescription, F
 import {COVER_MAX_DIMENSIONS, FILE_SIZE_ERROR_MESSAGE, MAX_FILE_SIZE, PROFILE_MAX_DIMENSIONS, checkImageDimensions, getDimensionErrorMessage} from '@utils/image';
 import {showToast} from '@tryghost/admin-x-design-system';
 import {uploadFile} from '@hooks/use-activity-pub-queries';
-import {useFeatureFlags} from '@src/lib/feature-flags';
 import {useForm} from 'react-hook-form';
 import {useNavigate} from '@tryghost/admin-x-framework';
 import {useUpdateAccountMutationForUser} from '@hooks/use-activity-pub-queries';
@@ -53,7 +52,6 @@ const EditProfile: React.FC<EditProfileProps> = ({account, setIsEditingProfile})
     const [handleDomain, setHandleDomain] = useState<string>('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const {mutate: updateAccount} = useUpdateAccountMutationForUser(account?.handle || '');
-    const {isEnabled} = useFeatureFlags();
     const navigate = useNavigate();
 
     const form = useForm<z.infer<typeof FormSchema>>({
@@ -274,104 +272,94 @@ const EditProfile: React.FC<EditProfileProps> = ({account, setIsEditingProfile})
                 }}
                 onSubmit={form.handleSubmit(onSubmit)}
             >
-                {isEnabled('settings-full') && (
-                    <div className='relative mb-2'>
-                        <div className='group relative h-[180px] cursor-pointer bg-gray-100' onClick={triggerCoverImageInput}>
-                            {coverImagePreview ?
-                                <>
-                                    <img className={`size-full object-cover ${isCoverImageUploading && 'animate-pulse'}`} src={coverImagePreview} />
-                                    <Button className='absolute right-3 top-3 size-8 bg-black/60 opacity-0 hover:bg-black/80 group-hover:opacity-100' onClick={(e) => {
-                                        e.stopPropagation();
-                                        setCoverImagePreview(null);
-                                        form.setValue('coverImage', '');
-                                    }}><LucideIcon.Trash2 /></Button>
-                                </> :
-                                <Button className='pointer-events-none absolute bottom-3 right-3 bg-gray-250 group-hover:bg-gray-300' variant='secondary'>Upload cover image</Button>
-                            }
-                        </div>
-                        <div className='group absolute -bottom-10 left-4 flex size-20 cursor-pointer items-center justify-center rounded-full border-2 border-white bg-gray-100' onClick={triggerProfileImageInput}>
-                            {profileImagePreview ?
-                                <>
-                                    <img className={`size-full rounded-full object-cover ${isProfileImageUploading && 'animate-pulse'}`} src={profileImagePreview} />
-                                    <Button className='absolute -right-2 -top-2 h-8 w-10 rounded-full bg-black/80 opacity-0 hover:bg-black/90 group-hover:opacity-100' onClick={(e) => {
-                                        e.stopPropagation();
-                                        setProfileImagePreview(null);
-                                        form.setValue('profileImage', '');
-                                    }}><LucideIcon.Trash2 /></Button>
-                                </> :
-                                <LucideIcon.UserRoundPlus size={32} strokeWidth={1.5} />
-                            }
-                        </div>
+
+                <div className='relative mb-2'>
+                    <div className='group relative h-[180px] cursor-pointer bg-gray-100' onClick={triggerCoverImageInput}>
+                        {coverImagePreview ?
+                            <>
+                                <img className={`size-full object-cover ${isCoverImageUploading && 'animate-pulse'}`} src={coverImagePreview} />
+                                <Button className='absolute right-3 top-3 size-8 bg-black/60 opacity-0 hover:bg-black/80 group-hover:opacity-100' onClick={(e) => {
+                                    e.stopPropagation();
+                                    setCoverImagePreview(null);
+                                    form.setValue('coverImage', '');
+                                }}><LucideIcon.Trash2 /></Button>
+                            </> :
+                            <Button className='pointer-events-none absolute bottom-3 right-3 bg-gray-250 group-hover:bg-gray-300' variant='secondary'>Upload cover image</Button>
+                        }
                     </div>
-                )}
-                {isEnabled('settings-full') && (
-                    <FormField
-                        control={form.control}
-                        name="profileImage"
-                        render={() => (
-                            <FormItem>
-                                <FormControl>
-                                    <Input
-                                        ref={profileImageInputRef}
-                                        accept="image/*"
-                                        className='hidden'
-                                        type="file"
-                                        onChange={handleProfileImageChange}
-                                    />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                )}
-                {isEnabled('settings-full') && (
-                    <FormField
-                        control={form.control}
-                        name="coverImage"
-                        render={() => (
-                            <FormItem>
-                                <FormControl>
-                                    <Input
-                                        ref={coverImageInputRef}
-                                        accept="image/*"
-                                        className='hidden'
-                                        type="file"
-                                        onChange={handleCoverImageChange}
-                                    />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                )}
-                {isEnabled('settings-full') && (
-                    <FormField
-                        control={form.control}
-                        name="name"
-                        render={({field}) => (
-                            <FormItem>
-                                <FormLabel>Display name</FormLabel>
-                                <FormControl>
-                                    <Input placeholder="Jamie Larson" {...field} />
-                                </FormControl>
-                                {!hasNameError && (
-                                    <FormDescription>
-                                        The name shown to your followers in the Inbox and Feed
-                                    </FormDescription>
-                                )}
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                )}
+                    <div className='group absolute -bottom-10 left-4 flex size-20 cursor-pointer items-center justify-center rounded-full border-2 border-white bg-gray-100' onClick={triggerProfileImageInput}>
+                        {profileImagePreview ?
+                            <>
+                                <img className={`size-full rounded-full object-cover ${isProfileImageUploading && 'animate-pulse'}`} src={profileImagePreview} />
+                                <Button className='absolute -right-2 -top-2 h-8 w-10 rounded-full bg-black/80 opacity-0 hover:bg-black/90 group-hover:opacity-100' onClick={(e) => {
+                                    e.stopPropagation();
+                                    setProfileImagePreview(null);
+                                    form.setValue('profileImage', '');
+                                }}><LucideIcon.Trash2 /></Button>
+                            </> :
+                            <LucideIcon.UserRoundPlus size={32} strokeWidth={1.5} />
+                        }
+                    </div>
+                </div>
+                <FormField
+                    control={form.control}
+                    name="profileImage"
+                    render={() => (
+                        <FormItem>
+                            <FormControl>
+                                <Input
+                                    ref={profileImageInputRef}
+                                    accept="image/*"
+                                    className='hidden'
+                                    type="file"
+                                    onChange={handleProfileImageChange}
+                                />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="coverImage"
+                    render={() => (
+                        <FormItem>
+                            <FormControl>
+                                <Input
+                                    ref={coverImageInputRef}
+                                    accept="image/*"
+                                    className='hidden'
+                                    type="file"
+                                    onChange={handleCoverImageChange}
+                                />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="name"
+                    render={({field}) => (
+                        <FormItem>
+                            <FormLabel>Display name</FormLabel>
+                            <FormControl>
+                                <Input placeholder="Jamie Larson" {...field} />
+                            </FormControl>
+                            {!hasNameError && (
+                                <FormDescription>
+                                    The name shown to your followers in the Inbox and Feed
+                                </FormDescription>
+                            )}
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
                 <FormField
                     control={form.control}
                     name="handle"
                     render={({field}) => (
                         <FormItem>
-                            {isEnabled('settings-full') && (
-                                <FormLabel>Handle</FormLabel>
-                            )}
                             <FormControl>
                                 <div className='relative flex items-center justify-stretch gap-1 rounded-md bg-gray-150 px-3 dark:bg-gray-900'>
                                     <LucideIcon.AtSign className='w-4 min-w-4 text-gray-700' size={16} />
@@ -388,21 +376,19 @@ const EditProfile: React.FC<EditProfileProps> = ({account, setIsEditingProfile})
                         </FormItem>
                     )}
                 />
-                {isEnabled('settings-full') && (
-                    <FormField
-                        control={form.control}
-                        name="bio"
-                        render={({field}) => (
-                            <FormItem>
-                                <FormLabel>Bio</FormLabel>
-                                <FormControl>
-                                    <Textarea {...field} />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                )}
+                <FormField
+                    control={form.control}
+                    name="bio"
+                    render={({field}) => (
+                        <FormItem>
+                            <FormLabel>Bio</FormLabel>
+                            <FormControl>
+                                <Textarea {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
                 <DialogFooter>
                     <DialogClose>
                         <Button variant='outline'>Cancel</Button>

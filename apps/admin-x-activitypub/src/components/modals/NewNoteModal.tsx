@@ -7,7 +7,6 @@ import {ComponentPropsWithoutRef, ReactNode} from 'react';
 import {FILE_SIZE_ERROR_MESSAGE, COVER_MAX_DIMENSIONS as IMAGE_MAX_DIMENSIONS, MAX_FILE_SIZE, checkImageDimensions, getDimensionErrorMessage} from '@utils/image';
 import {showToast} from '@tryghost/admin-x-design-system';
 import {uploadFile, useAccountForUser, useNoteMutationForUser, useUserDataForUser} from '@hooks/use-activity-pub-queries';
-import {useFeatureFlags} from '@src/lib/feature-flags';
 import {useNavigate} from '@tryghost/admin-x-framework';
 
 interface NewNoteModalProps extends ComponentPropsWithoutRef<typeof Dialog> {
@@ -15,7 +14,6 @@ interface NewNoteModalProps extends ComponentPropsWithoutRef<typeof Dialog> {
 }
 
 const NewNoteModal: React.FC<NewNoteModalProps> = ({children, ...props}) => {
-    const {isEnabled} = useFeatureFlags();
     const {data: user} = useUserDataForUser('index');
     const noteMutation = useNoteMutationForUser('index', user);
     const {data: account, isLoading: isLoadingAccount} = useAccountForUser('index', 'me');
@@ -215,9 +213,7 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, ...props}) => {
                     </div>
                 }
                 <DialogFooter>
-                    {isEnabled('note-image') &&
-                        <Button className='mr-auto w-[34px] !min-w-0' variant='outline' onClick={() => imageInputRef.current?.click()}><LucideIcon.Image /></Button>
-                    }
+                    <Button className='mr-auto w-[34px] !min-w-0' variant='outline' onClick={() => imageInputRef.current?.click()}><LucideIcon.Image /></Button>
                     <DialogClose>
                         <Button className='min-w-16' variant='outline'>Cancel</Button>
                     </DialogClose>
