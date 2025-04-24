@@ -308,7 +308,8 @@
       },
       "test:all": {
         "dependsOn": [
-          "^build:ts"
+          "^build:ts",
+          "build:assets"
         ]
       },
       "test:unit": {
@@ -330,18 +331,21 @@
       "test:browser": {
         "dependsOn": [
           "^build:ts",
+          "build:assets",
           "ghost-admin:build"
         ]
       },
       "test:browser:admin": {
         "dependsOn": [
           "^build:ts",
+          "build:assets",
           "ghost-admin:build"
         ]
       },
       "test:browser:portal": {
         "dependsOn": [
           "^build:ts",
+          "build:assets",
           "ghost-admin:build"
         ]
       },
