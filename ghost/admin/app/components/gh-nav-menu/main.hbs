@@ -55,7 +55,7 @@
                         <span>{{svg-jar "external"}}</span>
                     </a>
                 </li>
-                {{#if (and (gh-user-can-admin this.session.user) this.config.stats)}}
+                {{#if (and (gh-user-can-admin this.session.user) this.config.stats (feature "trafficAnalytics"))}}
                     <li class="relative">
                         <LinkTo @route="stats-x">{{svg-jar "stats-outline"}}Stats</LinkTo>
                     </li>

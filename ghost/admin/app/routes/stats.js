@@ -1,8 +1,9 @@
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
 import {inject} from 'ghost-admin/decorators/inject';
-
+import {inject as service} from '@ember/service';
 export default class StatsRoute extends AuthenticatedRoute {
     @inject config;
+    @service feature;
 
     queryParams = {
         device: {refreshModel: true},
@@ -24,7 +25,7 @@ export default class StatsRoute extends AuthenticatedRoute {
         }
 
         // This ensures that we don't load this page if the stats config is not set
-        if (!this.config.stats) {
+        if (!(this.config.stats && this.feature.trafficAnalytics)) {
             return this.transitionTo('home');
         }
     }
