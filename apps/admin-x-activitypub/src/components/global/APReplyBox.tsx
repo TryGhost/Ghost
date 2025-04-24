@@ -129,8 +129,23 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
             setUploadedImageUrl(imageUrl);
         } catch (err) {
             setImagePreview(null);
+
+            let errorMessage = 'Failed to upload image. Try again.';
+
+            if (err && typeof err === 'object' && 'statusCode' in err) {
+                switch (err.statusCode) {
+                case 413:
+                    errorMessage = 'Image size exceeds limit.';
+                    break;
+                case 415:
+                    errorMessage = 'The file type is not supported.';
+                    break;
+                default:
+                    errorMessage = errorMessage;
+                }
+            }
             showToast({
-                message: 'Failed to upload image. Try again.',
+                message: errorMessage,
                 type: 'error'
             });
         } finally {

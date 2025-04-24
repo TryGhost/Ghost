@@ -83,8 +83,23 @@ const EditProfile: React.FC<EditProfileProps> = ({account, setIsEditingProfile})
         } catch (error) {
             setProfileImagePreview(null);
             form.setValue('profileImage', '');
+
+            let errorMessage = 'Failed to upload image. Try again.';
+
+            if (error && typeof error === 'object' && 'statusCode' in error) {
+                switch (error.statusCode) {
+                case 413:
+                    errorMessage = 'Image size exceeds limit.';
+                    break;
+                case 415:
+                    errorMessage = 'The file type is not supported.';
+                    break;
+                default:
+                    errorMessage = errorMessage;
+                }
+            }
             showToast({
-                message: 'Failed to upload image. Try again.',
+                message: errorMessage,
                 type: 'error'
             });
         } finally {
@@ -118,8 +133,23 @@ const EditProfile: React.FC<EditProfileProps> = ({account, setIsEditingProfile})
         } catch (error) {
             setCoverImagePreview(null);
             form.setValue('coverImage', '');
+
+            let errorMessage = 'Failed to upload image. Try again.';
+
+            if (error && typeof error === 'object' && 'statusCode' in error) {
+                switch (error.statusCode) {
+                case 413:
+                    errorMessage = 'Image size exceeds limit.';
+                    break;
+                case 415:
+                    errorMessage = 'The file type is not supported.';
+                    break;
+                default:
+                    errorMessage = errorMessage;
+                }
+            }
             showToast({
-                message: 'Failed to upload image. Try again.',
+                message: errorMessage,
                 type: 'error'
             });
         } finally {
