@@ -37,13 +37,38 @@ fi
 # Check third line format
 if [ ! -z "$third_line" ]; then
     if [[ "$third_line" =~ ^(refs|ref:) ]]; then
-        echo -e "${red}Error: Third line should not start with 'refs' or 'ref:'${no_color}"
-        echo -e "Use 'ref <issue link>', 'fixes <issue link>', or 'closes <issue link>' instead"
-        exit 1
+        echo -e "${red}Error: Third line should not start with 'refs' or 'ref:'${no_color}" >&2
+        echo -e "Use 'ref <issue link>', 'fixes <issue link>', or 'closes <issue link>' instead" >&2
+        echo -e "${yellow}Press Enter to edit the message...${no_color}" >&2
+        read < /dev/tty # Wait for Enter key press from the terminal
+
+        # Get the configured Git editor
+        editor=$(git var GIT_EDITOR)
+        if [ -z "$editor" ]; then
+            editor=${VISUAL:-${EDITOR:-vi}} # Fallback logic similar to Git
+        fi
+
+        # Re-open the editor on the commit message file, connected to the terminal
+        $editor "$commit_msg_file" < /dev/tty
+
+        # Re-read the potentially modified commit message after editing
+        commit_msg=$(cat "$commit_msg_file")
+        # Need to update related variables as well
+        subject=$(echo "$commit_msg" | head -n1)
+        second_line=$(echo "$commit_msg" | sed -n '2p')
+        third_line=$(echo "$commit_msg" | sed -n '3p')
+        body=$(echo "$commit_msg" | tail -n +4)
+
+        # Re-check the third line *again* after editing
+        if [[ "$third_line" =~ ^(refs|ref:) ]]; then
+             echo -e "${red}Error: Third line still starts with 'refs' or 'ref:'. Commit aborted.${no_color}" >&2
+             exit 1 # Abort commit if still invalid
+        fi
+        # If fixed, the script will continue to the next checks
     fi
 
     if ! [[ "$third_line" =~ ^(ref|fixes|closes)\ .*$ ]]; then
-        echo -e "${yellow}Warning: Third line should start with 'ref', 'fixes', or 'closes' followed by an issue link${no_color}"
+        echo -e "${yellow}Warning: Third line should start with 'ref', 'fixes', or 'closes' followed by an issue link${no_color}" >&2
     fi
 fi
 
