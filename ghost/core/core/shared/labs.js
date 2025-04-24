@@ -37,20 +37,18 @@ const BETA_FEATURES = [
     'webmentions',
     'editorExcerpt',
     'ActivityPub',
+    'trafficAnalytics',
     'importMemberTier',
     'superEditors'
 ];
 
 const ALPHA_FEATURES = [
-    'NestPlayground',
     'urlCache',
     'emailCustomization',
     'mailEvents',
     'collectionsCard',
     'lexicalIndicators',
-    'adminXDemo',
-    'postsX',
-    'statsX',
+    'trafficAnalyticsAlpha',
     'captcha',
     'contentVisibilityAlpha',
     'explore'

@@ -6,11 +6,9 @@ import StatsView from './layout/StatsView';
 import World from '@svg-maps/world';
 import countries from 'i18n-iso-countries';
 import enLocale from 'i18n-iso-countries/langs/en.json';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, cn} from '@tryghost/shade';
-import {Header, HeaderActions} from '@src/components/layout/Header';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle, H1, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, ViewHeader, ViewHeaderActions, cn, formatNumber, formatQueryDate} from '@tryghost/shade';
 import {STATS_LABEL_MAPPINGS} from '@src/utils/constants';
 import {SVGMap} from 'react-svg-map';
-import {formatNumber, formatQueryDate} from '@src/utils/data-formatters';
 import {getCountryFlag, getPeriodText, getRangeDates} from '@src/utils/chart-helpers';
 import {getStatEndpointUrl, getToken} from '@src/config/stats-config';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
@@ -160,13 +158,13 @@ const Locations:React.FC = () => {
 
     return (
         <StatsLayout>
-            <Header>
-                Locations
-                <HeaderActions>
+            <ViewHeader>
+                <H1>Locations</H1>
+                <ViewHeaderActions>
                     <AudienceSelect />
                     <DateRangeSelect />
-                </HeaderActions>
-            </Header>
+                </ViewHeaderActions>
+            </ViewHeader>
             <StatsView data={data} isLoading={isLoading}>
                 <Card variant='plain'>
                     <CardContent className='-mb-5 border-none pt-8'>
@@ -201,8 +199,8 @@ const Locations:React.FC = () => {
                 </Card>
                 <Card variant='plain'>
                     <CardHeader>
-                        <CardTitle>Top locations</CardTitle>
-                        <CardDescription>A geographic breakdown of your audience {getPeriodText(range)}</CardDescription>
+                        <CardTitle>Top Locations</CardTitle>
+                        <CardDescription>A geographic breakdown of your readers {getPeriodText(range)}</CardDescription>
                     </CardHeader>
                     <CardContent>
                         {isLoading ? 'Loading' :
