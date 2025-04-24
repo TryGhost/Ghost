@@ -49,7 +49,7 @@ const Settings: React.FC<SettingsProps> = ({account, className = ''}) => {
                 </Dialog>
             </SettingItem>
 
-            <SettingItem withHover onClick={() => navigate('/preferences/threads-sharing', {state: {account, threadsAccount: threadsData?.accounts[0], isEnabled: threadsEnabled}})}>
+            <SettingItem withHover onClick={() => !threadsIsFetching && navigate('/preferences/threads-sharing', {state: {account, threadsAccount: threadsData?.accounts[0], isEnabled: threadsEnabled}})}>
                 <SettingHeader>
                     <SettingTitle>Threads sharing</SettingTitle>
                     <SettingDescription>Share content directly on Threads</SettingDescription>
@@ -59,7 +59,7 @@ const Settings: React.FC<SettingsProps> = ({account, className = ''}) => {
                     <LucideIcon.ChevronRight size={20} />
                 </SettingAction>
             </SettingItem>
-            <SettingItem withHover onClick={() => navigate('/preferences/bluesky-sharing', {state: {account, blueskyAccount: blueskyData?.accounts[0], isEnabled: blueskyEnabled}})}>
+            <SettingItem withHover onClick={() => !blueskyIsFetching && navigate('/preferences/bluesky-sharing', {state: {account, blueskyAccount: blueskyData?.accounts[0], isEnabled: blueskyEnabled}})}>
                 <SettingHeader>
                     <SettingTitle>Bluesky sharing</SettingTitle>
                     <SettingDescription>Share content directly on Bluesky</SettingDescription>
