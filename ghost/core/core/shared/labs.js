@@ -48,7 +48,7 @@ const ALPHA_FEATURES = [
     'mailEvents',
     'collectionsCard',
     'lexicalIndicators',
-    'statsX',
+    'trafficAnalyticsAlpha',
     'captcha',
     'contentVisibilityAlpha',
     'explore'

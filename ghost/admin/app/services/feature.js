@@ -75,7 +75,7 @@ export default class FeatureService extends Service {
     @feature('contentVisibility') contentVisibility;
     @feature('contentVisibilityAlpha') contentVisibilityAlpha;
     @feature('postsX') postsX;
-    @feature('statsX') statsX;
+    @feature('trafficAnalyticsAlpha') trafficAnalyticsAlpha;
 
     _user = null;
 
