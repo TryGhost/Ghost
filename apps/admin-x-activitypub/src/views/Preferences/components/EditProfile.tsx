@@ -242,7 +242,7 @@ const EditProfile: React.FC<EditProfileProps> = ({account, setIsEditingProfile})
         updateAccount({
             name: data.name || account.name,
             username: data.handle || account.handle,
-            bio: data.bio || account.bio,
+            bio: data.bio || '',
             avatarUrl: data.profileImage || '',
             bannerImageUrl: data.coverImage || ''
         }, {
