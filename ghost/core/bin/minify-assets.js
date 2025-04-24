@@ -65,7 +65,9 @@ const filesToMinify = [
         src: 'core/frontend/src/member-attribution/member-attribution.js',
         dest: 'core/frontend/public/member-attribution.min.js',
         options: {
-            bundle: false
+            bundle: true,
+            format: 'iife',
+            target: ['es2020']
         }
     },
     {
