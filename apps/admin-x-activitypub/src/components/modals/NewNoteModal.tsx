@@ -4,10 +4,16 @@ import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, LucideIcon, Skeleton} from '@tryghost/shade';
 import {ChangeEvent, useEffect, useRef, useState} from 'react';
 import {ComponentPropsWithoutRef, ReactNode} from 'react';
+import {checkImageDimensions, getDimensionErrorMessage} from '@utils/image';
 import {showToast} from '@tryghost/admin-x-design-system';
 import {uploadFile, useAccountForUser, useNoteMutationForUser, useUserDataForUser} from '@hooks/use-activity-pub-queries';
 import {useFeatureFlags} from '@src/lib/feature-flags';
 import {useNavigate} from '@tryghost/admin-x-framework';
+
+const MAX_FILE_SIZE = 1 * 1024 * 1024; // 1MB limit
+const FILE_SIZE_ERROR_MESSAGE = 'Image must be less than 1MB in size.';
+
+const IMAGE_MAX_DIMENSIONS = {width: 3000, height: 2000};
 
 interface NewNoteModalProps extends ComponentPropsWithoutRef<typeof Dialog> {
     children?: ReactNode;
@@ -94,6 +100,31 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, ...props}) => {
 
         if (files && files.length > 0) {
             const file = files[0];
+
+            if (file.size > MAX_FILE_SIZE) {
+                showToast({
+                    message: FILE_SIZE_ERROR_MESSAGE,
+                    type: 'error'
+                });
+                e.target.value = '';
+                return;
+            }
+
+            const withinMaxDimensions = await checkImageDimensions(
+                file,
+                IMAGE_MAX_DIMENSIONS.width,
+                IMAGE_MAX_DIMENSIONS.height
+            );
+            if (!withinMaxDimensions) {
+                showToast({
+                    message: getDimensionErrorMessage(
+                        IMAGE_MAX_DIMENSIONS.width,
+                        IMAGE_MAX_DIMENSIONS.height
+                    ),
+                    type: 'error'
+                });
+                return;
+            }
 
             const previewUrl = URL.createObjectURL(file);
             setImagePreview(previewUrl);
