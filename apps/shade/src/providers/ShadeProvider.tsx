@@ -1,6 +1,7 @@
 import NiceModal from '@ebay/nice-modal-react';
-import React, {createContext, useContext, useState} from 'react';
+import React, {createContext, useContext, useEffect, useState} from 'react';
 import {Toaster} from 'react-hot-toast';
+import {createPortal} from 'react-dom';
 // import {FetchKoenigLexical} from '../global/form/HtmlEditor';
 import {GlobalDirtyStateProvider} from '../hooks/use-global-dirty-state';
 
@@ -28,6 +29,24 @@ export const useFocusContext = () => {
     return context;
 };
 
+const ToasterPortal = () => {
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+        return () => setMounted(false);
+    }, []);
+
+    return mounted
+        ? createPortal(
+            <div className='shade'>
+                <Toaster />
+            </div>,
+            document.body
+        )
+        : null;
+};
+
 interface ShadeProviderProps {
     // fetchKoenigLexical: FetchKoenigLexical;
     darkMode: boolean;
@@ -44,7 +63,7 @@ const ShadeProvider: React.FC<ShadeProviderProps> = ({darkMode, children}) => {
     return (
         <ShadeContext.Provider value={{isAnyTextFieldFocused, setFocusState, darkMode}}>
             <GlobalDirtyStateProvider>
-                <Toaster />
+                <ToasterPortal />
                 <NiceModal.Provider>
                     {children}
                 </NiceModal.Provider>
