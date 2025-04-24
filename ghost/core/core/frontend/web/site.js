@@ -16,7 +16,7 @@ const membersService = require('../../server/services/members');
 const offersService = require('../../server/services/offers');
 const customRedirects = require('../../server/services/custom-redirects');
 const linkRedirects = require('../../server/services/link-redirection');
-const {cardAssets, commentCountsAssets, memberAttributionAssets} = require('../services/assets-minification');
+const {cardAssets} = require('../services/assets-minification');
 const siteRoutes = require('./routes');
 const shared = require('../../server/web/shared');
 const errorHandler = require('@tryghost/mw-error-handler');
@@ -71,17 +71,37 @@ module.exports = function setupSiteApp(routerConfig) {
     // Serve stylesheets for default templates
     siteApp.use(mw.servePublicFile('static', 'public/ghost.css', 'text/css', config.get('caching:publicAssets:maxAge')));
     siteApp.use(mw.servePublicFile('static', 'public/ghost.min.css', 'text/css', config.get('caching:publicAssets:maxAge')));
-    siteApp.use(mw.servePublicFile('static', 'public/ghost-stats.js', 'application/javascript', config.get('caching:publicAssets:maxAge')));
+
+    // Traffic analytics tracking script
+    siteApp.use(mw.servePublicFile('static', 'public/ghost-stats.min.js', 'application/javascript', config.get('caching:publicAssets:maxAge')));
 
     // Card assets
-    siteApp.use(cardAssets.serveMiddleware(), mw.servePublicFile('built', 'public/cards.min.css', 'text/css', config.get('caching:publicAssets:maxAge')));
-    siteApp.use(cardAssets.serveMiddleware(), mw.servePublicFile('built', 'public/cards.min.js', 'application/javascript', config.get('caching:publicAssets:maxAge')));
+    const cardAssetsCSSPath = 'public/cards.min.css';
+    const cardAssetsJSPath = 'public/cards.min.js';
+    siteApp.use(
+        function serveCardAssetsCssMiddleware(req, res, next) {
+            if (req.path === `/${cardAssetsCSSPath}`) {
+                return cardAssets.serveMiddleware()(req, res, next);
+            }
+            next();
+        },
+        mw.servePublicFile('built', cardAssetsCSSPath, 'text/css', config.get('caching:publicAssets:maxAge'))
+    );
+    siteApp.use(
+        function serveCardAssetsJsMiddleware(req, res, next) {
+            if (req.path === `/${cardAssetsJSPath}`) {
+                return cardAssets.serveMiddleware()(req, res, next);
+            }
+            next();
+        },
+        mw.servePublicFile('built', cardAssetsJSPath, 'application/javascript', config.get('caching:publicAssets:maxAge'))
+    );
 
     // Comment counts
-    siteApp.use(commentCountsAssets.serveMiddleware(), mw.servePublicFile('built', 'public/comment-counts.min.js', 'application/javascript', config.get('caching:publicAssets:maxAge')));
+    siteApp.use(mw.servePublicFile('static', 'public/comment-counts.min.js', 'application/javascript', config.get('caching:publicAssets:maxAge')));
 
     // Member attribution
-    siteApp.use(memberAttributionAssets.serveMiddleware(), mw.servePublicFile('built', 'public/member-attribution.min.js', 'application/javascript', config.get('caching:publicAssets:maxAge')));
+    siteApp.use(mw.servePublicFile('static', 'public/member-attribution.min.js', 'application/javascript', config.get('caching:publicAssets:maxAge')));
 
     // Serve site images using the storage adapter
     siteApp.use(STATIC_IMAGE_URL_PREFIX, mw.handleImageSizes, storage.getStorage('images').serve());

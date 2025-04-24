@@ -64,7 +64,7 @@ const Facebook: React.FC<{ keywords: string[] }> = ({keywords}) => {
         <div className="md:mx-[52px]">
             <div className="mb-4 flex items-center gap-2">
                 <div>
-                    <FacebookLogo className='h-10 w-10' />
+                    <FacebookLogo className='size-10' />
                 </div>
                 <div>
                     <div className="mb-1 font-semibold leading-none text-grey-900 dark:text-grey-300">{siteTitle}</div>

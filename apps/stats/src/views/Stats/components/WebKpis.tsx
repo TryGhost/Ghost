@@ -1,11 +1,10 @@
 import CustomTooltipContent from '@src/components/chart/CustomTooltipContent';
 import React, {useState} from 'react';
-import {ChartConfig, ChartContainer, ChartTooltip, Recharts, Tabs, TabsList} from '@tryghost/shade';
+import {ChartConfig, ChartContainer, ChartTooltip, Recharts, Tabs, TabsList, formatDisplayDate, formatDuration, formatNumber, formatPercentage, formatQueryDate} from '@tryghost/shade';
 import {KpiTabTrigger, KpiTabValue} from './KpiTab';
 import {calculateYAxisWidth, getRangeDates, getYTicks} from '@src/utils/chart-helpers';
-import {formatDisplayDate, formatDuration, formatNumber, formatPercentage, formatQueryDate} from '@src/utils/data-formatters';
 import {getAudienceQueryParam} from './AudienceSelect';
-import {getStatEndpointUrl} from '@src/config/stats-config';
+import {getStatEndpointUrl, getToken} from '@src/config/stats-config';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useQuery} from '@tinybirdco/charts';
 
@@ -39,13 +38,13 @@ const KPI_METRICS: Record<string, KpiMetric> = {
 };
 
 const WebKpis:React.FC = ({}) => {
-    const {data: configData, isLoading: isConfigLoading} = useGlobalData();
+    const {statsConfig, isLoading: isConfigLoading} = useGlobalData();
     const [currentTab, setCurrentTab] = useState('visits');
     const {range, audience} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
 
     const params = {
-        site_uuid: configData?.config.stats?.id || '',
+        site_uuid: statsConfig?.id || '',
         date_from: formatQueryDate(startDate),
         date_to: formatQueryDate(endDate),
         timezone: timezone,
@@ -53,8 +52,8 @@ const WebKpis:React.FC = ({}) => {
     };
 
     const {data, loading} = useQuery({
-        endpoint: getStatEndpointUrl(configData?.config.stats?.endpoint, 'api_kpis'),
-        token: configData?.config.stats?.token || '',
+        endpoint: getStatEndpointUrl(statsConfig, 'api_kpis'),
+        token: getToken(statsConfig),
         params
     });
 

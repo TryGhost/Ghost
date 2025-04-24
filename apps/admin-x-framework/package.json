@@ -69,7 +69,7 @@
     ],
     "devDependencies": {
         "@testing-library/react": "14.3.1",
-        "@types/mocha": "10.0.1",
+        "@types/mocha": "10.0.10",
         "c8": "8.0.1",
         "eslint-plugin-react-hooks": "4.6.2",
         "eslint-plugin-react-refresh": "0.4.19",
@@ -79,20 +79,20 @@
         "react-dom": "18.3.1",
         "sinon": "17.0.1",
         "ts-node": "10.9.2",
-        "typescript": "5.8.2"
+        "typescript": "5.8.3"
     },
     "dependencies": {
         "@sentry/react": "7.120.3",
         "@tanstack/react-query": "4.36.1",
         "@tryghost/admin-x-design-system": "0.0.0",
         "@tryghost/shade": "0.0.0",
-        "@types/react": "18.3.3",
-        "@types/react-dom": "18.3.0",
+        "@types/react": "18.3.20",
+        "@types/react-dom": "18.3.6",
         "@vitejs/plugin-react": "4.2.1",
         "react": "18.3.1",
         "react-dom": "18.3.1",
         "react-router": "7.5.1",
-        "vite": "4.5.3",
+        "vite": "4.5.6",
         "vite-plugin-css-injected-by-js": "^3.3.0",
         "vite-plugin-svgr": "3.3.0",
         "vitest": "0.34.3"

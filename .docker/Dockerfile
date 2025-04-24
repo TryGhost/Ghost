@@ -56,7 +56,6 @@ COPY package.json yarn.lock ./
 # Copy all package.json files
 COPY apps/stats/package.json apps/stats/package.json
 COPY apps/admin-x-activitypub/package.json apps/admin-x-activitypub/package.json
-COPY apps/admin-x-demo/package.json apps/admin-x-demo/package.json
 COPY apps/admin-x-design-system/package.json apps/admin-x-design-system/package.json
 COPY apps/admin-x-framework/package.json apps/admin-x-framework/package.json
 COPY apps/admin-x-settings/package.json apps/admin-x-settings/package.json

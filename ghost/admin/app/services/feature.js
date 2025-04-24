@@ -70,7 +70,6 @@ export default class FeatureService extends Service {
     @feature('collectionsCard') collectionsCard;
     @feature('importMemberTier') importMemberTier;
     @feature('lexicalIndicators') lexicalIndicators;
-    @feature('adminXDemo') adminXDemo;
     @feature('ActivityPub') ActivityPub;
     @feature('editorExcerpt') editorExcerpt;
     @feature('contentVisibility') contentVisibility;

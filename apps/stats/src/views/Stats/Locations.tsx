@@ -6,13 +6,11 @@ import StatsView from './layout/StatsView';
 import World from '@svg-maps/world';
 import countries from 'i18n-iso-countries';
 import enLocale from 'i18n-iso-countries/langs/en.json';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, cn} from '@tryghost/shade';
-import {Header, HeaderActions} from '@src/components/layout/Header';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle, H1, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, ViewHeader, ViewHeaderActions, cn, formatNumber, formatQueryDate} from '@tryghost/shade';
 import {STATS_LABEL_MAPPINGS} from '@src/utils/constants';
 import {SVGMap} from 'react-svg-map';
-import {formatNumber, formatQueryDate} from '@src/utils/data-formatters';
 import {getCountryFlag, getPeriodText, getRangeDates} from '@src/utils/chart-helpers';
-import {getStatEndpointUrl} from '@src/config/stats-config';
+import {getStatEndpointUrl, getToken} from '@src/config/stats-config';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useQuery} from '@tinybirdco/charts';
 
@@ -30,13 +28,13 @@ interface TooltipData {
 }
 
 const Locations:React.FC = () => {
-    const {data: configData, isLoading: isConfigLoading} = useGlobalData();
+    const {statsConfig, isLoading: isConfigLoading} = useGlobalData();
     const {range, audience} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
     const [tooltipData, setTooltipData] = useState<TooltipData | null>(null);
 
     const params = {
-        site_uuid: configData?.config.stats?.id || '',
+        site_uuid: statsConfig?.id || '',
         date_from: formatQueryDate(startDate),
         date_to: formatQueryDate(endDate),
         timezone: timezone,
@@ -44,8 +42,8 @@ const Locations:React.FC = () => {
     };
 
     const {data, loading} = useQuery({
-        endpoint: getStatEndpointUrl(configData?.config.stats?.endpoint, 'api_top_locations'),
-        token: configData?.config.stats?.token || '',
+        endpoint: getStatEndpointUrl(statsConfig, 'api_top_locations'),
+        token: getToken(statsConfig),
         params
     });
 
@@ -160,13 +158,13 @@ const Locations:React.FC = () => {
 
     return (
         <StatsLayout>
-            <Header>
-                Locations
-                <HeaderActions>
+            <ViewHeader>
+                <H1>Locations</H1>
+                <ViewHeaderActions>
                     <AudienceSelect />
                     <DateRangeSelect />
-                </HeaderActions>
-            </Header>
+                </ViewHeaderActions>
+            </ViewHeader>
             <StatsView data={data} isLoading={isLoading}>
                 <Card variant='plain'>
                     <CardContent className='-mb-5 border-none pt-8'>
@@ -201,8 +199,8 @@ const Locations:React.FC = () => {
                 </Card>
                 <Card variant='plain'>
                     <CardHeader>
-                        <CardTitle>Top locations</CardTitle>
-                        <CardDescription>A geographic breakdown of your audience {getPeriodText(range)}</CardDescription>
+                        <CardTitle>Top Locations</CardTitle>
+                        <CardDescription>A geographic breakdown of your readers {getPeriodText(range)}</CardDescription>
                     </CardHeader>
                     <CardContent>
                         {isLoading ? 'Loading' :
