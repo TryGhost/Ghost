@@ -1,5 +1,4 @@
 import CustomTooltipContent from '@src/components/chart/CustomTooltipContent';
-import React from 'react';
 import {describe, expect, it, vi} from 'vitest';
 import {render, screen} from '@testing-library/react';
 
