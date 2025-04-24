@@ -101,7 +101,7 @@ const Sources:React.FC = () => {
             <StatsView data={data} isLoading={isLoading}>
                 <Card className='-mb-5' variant='plain'>
                     <CardHeader className='border-none'>
-                        <CardTitle>Top sources</CardTitle>
+                        <CardTitle>Top Sources</CardTitle>
                         <CardDescription>How readers found your site {getPeriodText(range)}</CardDescription>
                     </CardHeader>
                     <CardContent className='border-none text-gray-500 [&_.recharts-pie-label-line]:stroke-gray-300'>
