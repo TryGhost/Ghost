@@ -27,7 +27,11 @@ const FormSchema = z.object({
         .regex(/^[a-zA-Z0-9_]+$/, {
             message: 'Handle must contain only letters, numbers, and underscores.'
         }),
-    bio: z.string().optional()
+    bio: z.string()
+        .max(250, {
+            message: 'Bio must be less than 250 characters.'
+        })
+        .optional()
 });
 
 type EditProfileProps = {
