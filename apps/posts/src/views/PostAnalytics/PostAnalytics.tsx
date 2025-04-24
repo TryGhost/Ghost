@@ -5,14 +5,19 @@ import Locations from './components/Web/Locations';
 import PostAnalyticsContent from './components/PostAnalyticsContent';
 import PostAnalyticsLayout from './layout/PostAnalyticsLayout';
 import Sources from './components/Web/Sources';
+import moment from 'moment-timezone';
 import {Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, H1, ViewHeader, ViewHeaderActions, formatQueryDate} from '@tryghost/shade';
+import {Post, useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
 import {getRangeDates} from '@src/utils/chart-helpers';
-import {useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useMemo} from 'react';
 import {useNavigate, useParams} from '@tryghost/admin-x-framework';
 
-interface postAnalyticsProps {};
+interface postAnalyticsProps {}
+
+interface PostWithPublishedAt extends Post {
+    published_at?: string;
+}
 
 const PostAnalytics: React.FC<postAnalyticsProps> = () => {
     const {statsConfig, isLoading: isConfigLoading} = useGlobalData();
@@ -24,9 +29,12 @@ const PostAnalytics: React.FC<postAnalyticsProps> = () => {
     const {data: {posts: [post]} = {posts: []}, isLoading: isPostLoading} = useBrowsePosts({
         searchParams: {
             filter: `id:${postId}`,
-            fields: 'title,slug'
+            fields: 'title,slug,published_at'
         }
     });
+
+    // Type assertion for post
+    const typedPost = post as PostWithPublishedAt;
 
     const params = useMemo(() => {
         const baseParams = {
@@ -78,6 +86,11 @@ const PostAnalytics: React.FC<postAnalyticsProps> = () => {
                     <H1 className='mt-0.5 min-h-[35px] indent-0'>
                         {post && post.title}
                     </H1>
+                    {typedPost && typedPost.published_at && (
+                        <div className='mt-1 text-sm text-grey-600'>
+                            Published on your site on {moment.utc(typedPost.published_at).format('D MMM YYYY')} at {moment.utc(typedPost.published_at).format('HH:mm')}
+                        </div>
+                    )}
                 </div>
                 <ViewHeaderActions className='mb-2'>
                     <AudienceSelect />
