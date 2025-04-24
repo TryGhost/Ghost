@@ -9,7 +9,6 @@ import {Button, LucideIcon} from '@tryghost/shade';
 import {FILE_SIZE_ERROR_MESSAGE, COVER_MAX_DIMENSIONS as IMAGE_MAX_DIMENSIONS, MAX_FILE_SIZE, checkImageDimensions, getDimensionErrorMessage} from '@utils/image';
 import {showToast} from '@tryghost/admin-x-design-system';
 import {uploadFile, useReplyMutationForUser, useUserDataForUser} from '@hooks/use-activity-pub-queries';
-import {useFeatureFlags} from '@src/lib/feature-flags';
 
 export interface APTextAreaProps extends HTMLProps<HTMLTextAreaElement> {
     title?: string;
@@ -60,7 +59,6 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
     onReplyError,
     ...props
 }) => {
-    const {isEnabled} = useFeatureFlags();
     const id = useId();
     const [textValue, setTextValue] = useState(value); // Manage the textarea value with state
     const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
@@ -275,9 +273,7 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
                     </div>
                 }
                 <div className={`${imagePreview ? 'mt-4' : 'absolute'} bottom-[3px] right-0 flex justify-end space-x-3 transition-[opacity] duration-150`}>
-                    {isEnabled('note-image') &&
-                        <Button ref={imageButtonRef} className='w-[34px] !min-w-0' variant='outline' onClick={() => imageInputRef.current?.click()}><LucideIcon.Image /></Button>
-                    }
+                    <Button ref={imageButtonRef} className='w-[34px] !min-w-0' variant='outline' onClick={() => imageInputRef.current?.click()}><LucideIcon.Image /></Button>
                     <Button className='min-w-20' color='black' disabled={buttonDisabled || isImageUploading} id='post' onClick={handleClick}>Post</Button>
                 </div>
             </div>
