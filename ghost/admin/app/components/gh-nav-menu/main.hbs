@@ -55,12 +55,12 @@
                         <span>{{svg-jar "external"}}</span>
                     </a>
                 </li>
-                {{#if (and (gh-user-can-admin this.session.user) this.config.stats)}}
-                    <li class="relative">
-                        <LinkTo @route="stats-x">{{svg-jar "stats-outline"}}Stats</LinkTo>
-                    </li>
-                {{/if}}
-                {{#if (gh-user-can-admin this.session.user)}}
+                    {{#if (and (gh-user-can-admin this.session.user) this.config.stats (feature "trafficAnalytics"))}}
+                        <li class="relative">
+                            <LinkTo @route="stats-x">{{svg-jar "stats-outline"}}Stats</LinkTo>
+                        </li>
+                    {{/if}}
+              {{#if (gh-user-can-admin this.session.user)}}
                     {{#if (not (and (feature "ActivityPub") this.session.user.isAdmin))}}
                         <li class="relative">
                             <a href="javascript:void(0)" class={{if this.explore.exploreWindowOpen "active" }} {{on "click" (fn
