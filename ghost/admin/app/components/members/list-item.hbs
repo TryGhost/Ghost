@@ -3,8 +3,8 @@
         <div class="flex items-center gh-members-list-name-container">
             <GhMemberAvatar @member={{@member}} @containerClass="w9 h9 mr3 flex-shrink-0" />
             <div class="w-80">
-                <h3 class="ma0 pa0 gh-members-list-name {{unless @member.name "gh-members-name-noname"}}">{{or @member.name @member.email}}</h3>
-                {{#if @member.name}}
+                <h3 class="ma0 pa0 gh-members-list-name {{unless (trim @member.name) "gh-members-name-noname"}}">{{or (trim @member.name) @member.email}}</h3>
+                {{#if (trim @member.name)}}
                     <p class="ma0 pa0 middarkgrey f8 gh-members-list-email">{{@member.email}}</p>
                 {{/if}}
             </div>

@@ -15,7 +15,8 @@ export default class GhMemberAvatarComponent extends Component {
     get memberName() {
         let {member, name} = this.args;
 
-        return member?.name || member?.email || name || 'NM';
+        const memberName = member?.name?.trim() || member?.email || name?.trim() || 'NM';
+        return memberName;
     }
 
     get avatarImage() {
