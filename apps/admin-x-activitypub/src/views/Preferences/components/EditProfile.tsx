@@ -1,7 +1,7 @@
 import React, {ChangeEvent, useEffect, useRef, useState} from 'react';
 import {Account} from '@src/api/activitypub';
 import {Button, DialogClose, DialogFooter, Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage, Input, LucideIcon, Textarea} from '@tryghost/shade';
-import {checkImageDimensions, getDimensionErrorMessage} from '@utils/image';
+import {COVER_MAX_DIMENSIONS, FILE_SIZE_ERROR_MESSAGE, MAX_FILE_SIZE, PROFILE_MAX_DIMENSIONS, checkImageDimensions, getDimensionErrorMessage} from '@utils/image';
 import {showToast} from '@tryghost/admin-x-design-system';
 import {uploadFile} from '@hooks/use-activity-pub-queries';
 import {useFeatureFlags} from '@src/lib/feature-flags';
@@ -10,12 +10,6 @@ import {useNavigate} from '@tryghost/admin-x-framework';
 import {useUpdateAccountMutationForUser} from '@hooks/use-activity-pub-queries';
 import {z} from 'zod';
 import {zodResolver} from '@hookform/resolvers/zod';
-
-const MAX_FILE_SIZE = 1 * 1024 * 1024; // 1MB limit
-const FILE_SIZE_ERROR_MESSAGE = 'Image must be less than 1MB in size.';
-
-const PROFILE_MAX_DIMENSIONS = {width: 400, height: 400};
-const COVER_MAX_DIMENSIONS = {width: 3000, height: 2000};
 
 const FormSchema = z.object({
     profileImage: z.string().optional(),

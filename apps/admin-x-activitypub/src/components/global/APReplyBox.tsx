@@ -6,15 +6,10 @@ import clsx from 'clsx';
 import getUsername from '../../utils/get-username';
 import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, LucideIcon} from '@tryghost/shade';
-import {checkImageDimensions, getDimensionErrorMessage} from '@utils/image';
+import {FILE_SIZE_ERROR_MESSAGE, COVER_MAX_DIMENSIONS as IMAGE_MAX_DIMENSIONS, MAX_FILE_SIZE, checkImageDimensions, getDimensionErrorMessage} from '@utils/image';
 import {showToast} from '@tryghost/admin-x-design-system';
 import {uploadFile, useReplyMutationForUser, useUserDataForUser} from '@hooks/use-activity-pub-queries';
 import {useFeatureFlags} from '@src/lib/feature-flags';
-
-const MAX_FILE_SIZE = 1 * 1024 * 1024; // 1MB limit
-const FILE_SIZE_ERROR_MESSAGE = 'Image must be less than 1MB in size.';
-
-const IMAGE_MAX_DIMENSIONS = {width: 3000, height: 2000};
 
 export interface APTextAreaProps extends HTMLProps<HTMLTextAreaElement> {
     title?: string;
