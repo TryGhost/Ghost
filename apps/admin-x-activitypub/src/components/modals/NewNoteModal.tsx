@@ -65,8 +65,23 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, ...props}) => {
             setUploadedImageUrl(imageUrl);
         } catch (error) {
             setImagePreview(null);
+
+            let errorMessage = 'Failed to upload image. Try again.';
+
+            if (error && typeof error === 'object' && 'statusCode' in error) {
+                switch (error.statusCode) {
+                case 413:
+                    errorMessage = 'Image size exceeds limit.';
+                    break;
+                case 415:
+                    errorMessage = 'The file type is not supported.';
+                    break;
+                default:
+                    // Use the default error message
+                }
+            }
             showToast({
-                message: 'Failed to upload image. Try again.',
+                message: errorMessage,
                 type: 'error'
             });
         } finally {

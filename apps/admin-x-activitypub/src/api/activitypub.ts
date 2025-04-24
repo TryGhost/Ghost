@@ -413,7 +413,7 @@ export class ActivityPubAPI {
             bannerImageUrl
         });
     }
-    
+
     async upload(file: File): Promise<string> {
         const url = new URL('.ghost/activitypub/upload/image', this.apiUrl);
         const formData = new FormData();
@@ -429,7 +429,10 @@ export class ActivityPubAPI {
         });
 
         if (!response.ok) {
-            throw new Error('Upload failed');
+            throw {
+                message: 'Upload failed',
+                statusCode: response.status
+            };
         }
 
         const json = await response.json();
