@@ -84,7 +84,7 @@ const EditProfile: React.FC<EditProfileProps> = ({account, setIsEditingProfile})
             setProfileImagePreview(null);
             form.setValue('profileImage', '');
             showToast({
-                message: 'Failed to upload image. Please try again.',
+                message: 'Failed to upload image. Try again.',
                 type: 'error'
             });
         } finally {
@@ -119,7 +119,7 @@ const EditProfile: React.FC<EditProfileProps> = ({account, setIsEditingProfile})
             setCoverImagePreview(null);
             form.setValue('coverImage', '');
             showToast({
-                message: 'Failed to upload image. Please try again.',
+                message: 'Failed to upload image. Try again.',
                 type: 'error'
             });
         } finally {
