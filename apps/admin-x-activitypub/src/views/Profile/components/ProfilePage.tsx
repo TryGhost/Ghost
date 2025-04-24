@@ -9,7 +9,6 @@ import {ProfileTab} from '../Profile';
 import {SettingAction} from '@src/views/Preferences/components/Settings';
 import {useAccountForUser} from '@src/hooks/use-activity-pub-queries';
 import {useEffect, useRef, useState} from 'react';
-import {useFeatureFlags} from '@src/lib/feature-flags';
 import {useNavigationStack, useParams} from '@tryghost/admin-x-framework';
 
 const noop = () => {};
@@ -83,7 +82,6 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
 
     const contentRef = useRef<HTMLDivElement | null>(null);
     const [isOverflowing, setIsOverflowing] = useState(false);
-    const {isEnabled} = useFeatureFlags();
 
     useEffect(() => {
         if (contentRef.current) {
@@ -144,11 +142,11 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
                                 {isCurrentUser && !isLoadingAccount &&
                                     <Dialog open={isEditingProfile} onOpenChange={setIsEditingProfile}>
                                         <DialogTrigger>
-                                            <SettingAction><Button variant='secondary'>{isEnabled('settings-full') ? 'Edit profile' : 'Edit handle'}</Button></SettingAction>
+                                            <SettingAction><Button variant='secondary'>Edit profile</Button></SettingAction>
                                         </DialogTrigger>
                                         <DialogContent className='w-full max-w-[520px]' onOpenAutoFocus={e => e.preventDefault()}>
                                             <DialogHeader>
-                                                <DialogTitle>{isEnabled('settings-full') ? 'Profile settings' : 'Edit handle'}</DialogTitle>
+                                                <DialogTitle>Profile settings</DialogTitle>
                                             </DialogHeader>
                                             {account && <EditProfile account={account} setIsEditingProfile={setIsEditingProfile} />}
                                         </DialogContent>
