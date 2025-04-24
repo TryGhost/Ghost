@@ -222,15 +222,15 @@ export class ActivityPubAPI {
         await this.fetchJSON(url, 'POST');
     }
 
-    async reply(id: string, content: string): Promise<Activity> {
+    async reply(id: string, content: string, imageUrl?: string): Promise<Activity> {
         const url = new URL(`.ghost/activitypub/actions/reply/${encodeURIComponent(id)}`, this.apiUrl);
-        const response = await this.fetchJSON(url, 'POST', {content});
+        const response = await this.fetchJSON(url, 'POST', {content, imageUrl});
         return response;
     }
 
-    async note(content: string): Promise<Activity> {
+    async note(content: string, imageUrl?: string): Promise<Activity> {
         const url = new URL('.ghost/activitypub/actions/note', this.apiUrl);
-        const response = await this.fetchJSON(url, 'POST', {content});
+        const response = await this.fetchJSON(url, 'POST', {content, imageUrl});
         return response;
     }
 

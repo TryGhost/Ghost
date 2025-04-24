@@ -4,7 +4,7 @@ import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, LucideIcon, Skeleton} from '@tryghost/shade';
 import {ChangeEvent, useEffect, useRef, useState} from 'react';
 import {ComponentPropsWithoutRef, ReactNode} from 'react';
-import {useAccountForUser, useNoteMutationForUser, useUserDataForUser} from '@hooks/use-activity-pub-queries';
+import {uploadFile, useAccountForUser, useNoteMutationForUser, useUserDataForUser} from '@hooks/use-activity-pub-queries';
 import {useFeatureFlags} from '@src/lib/feature-flags';
 import {useNavigate} from '@tryghost/admin-x-framework';
 
@@ -23,6 +23,7 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, ...props}) => {
     const imageInputRef = useRef<HTMLInputElement>(null);
 
     const [content, setContent] = useState('');
+    const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
     const navigate = useNavigate();
 
     const isDisabled = !content.trim() || !user;
@@ -35,7 +36,7 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, ...props}) => {
         }
 
         try {
-            await noteMutation.mutateAsync(trimmedContent);
+            await noteMutation.mutateAsync({content: trimmedContent, imageUrl: uploadedImageUrl || undefined});
             navigate('/feed');
             setIsOpen(false);
         } catch (error) {
@@ -55,6 +56,18 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, ...props}) => {
         }
     }, [content]);
 
+    const handleImageUpload = async (file: File) => {
+        try {
+            const imageUrl = await uploadFile(file);
+            setUploadedImageUrl(imageUrl);
+        } catch (error) {
+            // Todo: Show error message to the user when upload fails
+
+            // eslint-disable-next-line no-console
+            console.error('Upload failed:', error);
+        }
+    };
+
     const handleImageChange = async (e: ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files;
 
@@ -64,15 +77,14 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, ...props}) => {
             const previewUrl = URL.createObjectURL(file);
             setImagePreview(previewUrl);
 
-            // TODO: Implement actual image upload once backend API is ready
-            // For now, we're just setting the preview URL for UI testing
-            // e.g. const uploadedUrl = await handleImageUpload(file);
+            await handleImageUpload(file);
         }
     };
 
     const handleClearImage = (e: React.MouseEvent) => {
         e.stopPropagation();
         setImagePreview(null);
+        setUploadedImageUrl(null);
         if (imagePreview) {
             URL.revokeObjectURL(imagePreview);
         }
@@ -95,6 +107,14 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, ...props}) => {
         <Dialog open={isOpen} onOpenChange={(open) => {
             if (open) {
                 setContent('');
+                setImagePreview(null);
+                setUploadedImageUrl(null);
+                if (imagePreview) {
+                    URL.revokeObjectURL(imagePreview);
+                }
+                if (imageInputRef.current) {
+                    imageInputRef.current.value = '';
+                }
             }
             setIsOpen(open);
         }} {...props}>

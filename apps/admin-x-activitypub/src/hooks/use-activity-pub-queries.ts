@@ -993,13 +993,13 @@ export function useReplyMutationForUser(handle: string, actorProps?: ActorProper
     const queryClient = useQueryClient();
 
     return useMutation({
-        async mutationFn({inReplyTo, content}: {inReplyTo: string, content: string}) {
+        async mutationFn({inReplyTo, content, imageUrl}: {inReplyTo: string, content: string, imageUrl?: string}) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
 
-            return api.reply(inReplyTo, content);
+            return api.reply(inReplyTo, content, imageUrl);
         },
-        onMutate: ({inReplyTo, content}) => {
+        onMutate: ({inReplyTo, content, imageUrl}) => {
             if (!actorProps) {
                 throw new Error('Cannot create reply without actor props');
             }
@@ -1007,7 +1007,7 @@ export function useReplyMutationForUser(handle: string, actorProps?: ActorProper
             const formattedContent = formatPendingActivityContent(content);
 
             const id = generatePendingActivityId();
-            const activity = generatePendingActivity(actorProps, id, formattedContent);
+            const activity = generatePendingActivity(actorProps, id, formattedContent, imageUrl);
 
             // Add pending activity to the thread after the inReplyTo post
             addActivityToCollection(queryClient, QUERY_KEYS.thread(inReplyTo), 'posts', activity, inReplyTo);
@@ -1057,13 +1057,13 @@ export function useNoteMutationForUser(handle: string, actorProps?: ActorPropert
     const queryKeyPostsByAccount = QUERY_KEYS.profilePosts('index');
 
     return useMutation({
-        async mutationFn(content: string) {
+        async mutationFn({content, imageUrl}: {content: string, imageUrl?: string}) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
 
-            return api.note(content);
+            return api.note(content, imageUrl);
         },
-        onMutate: (content: string) => {
+        onMutate: ({content, imageUrl}) => {
             if (!actorProps) {
                 throw new Error('Cannot create note without actor props');
             }
@@ -1071,7 +1071,7 @@ export function useNoteMutationForUser(handle: string, actorProps?: ActorPropert
             const formattedContent = formatPendingActivityContent(content);
 
             const id = generatePendingActivityId();
-            const activity = generatePendingActivity(actorProps, id, formattedContent);
+            const activity = generatePendingActivity(actorProps, id, formattedContent, imageUrl);
 
             prependActivityToPaginatedCollection(queryClient, queryKeyFeed, 'posts', activity);
             prependActivityToPaginatedCollection(queryClient, queryKeyOutbox, 'data', activity);
