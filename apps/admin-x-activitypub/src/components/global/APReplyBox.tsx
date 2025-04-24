@@ -141,7 +141,7 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
                     errorMessage = 'The file type is not supported.';
                     break;
                 default:
-                    errorMessage = errorMessage;
+                    // Use the default error message
                 }
             }
             showToast({
