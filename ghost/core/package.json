@@ -84,7 +84,7 @@
     "@tryghost/email-mock-receiver": "0.3.8",
     "@tryghost/email-service": "0.0.0",
     "@tryghost/email-suppression-list": "0.0.0",
-    "@tryghost/errors": "1.3.5",
+    "@tryghost/errors": "1.3.7",
     "@tryghost/helpers": "1.1.90",
     "@tryghost/html-to-plaintext": "0.0.0",
     "@tryghost/http-cache-utils": "0.1.17",
@@ -269,7 +269,7 @@
     "typescript": "5.8.3"
   },
   "resolutions": {
-    "@tryghost/errors": "1.3.5",
+    "@tryghost/errors": "1.3.7",
     "@tryghost/logging": "2.4.21",
     "jackspeak": "2.1.1",
     "moment": "2.24.0",

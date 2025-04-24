@@ -64,7 +64,7 @@
     "tbf": "tb local start && cd ghost/core/core/server/data/tinybird && tb dev"
   },
   "resolutions": {
-    "@tryghost/errors": "1.3.5",
+    "@tryghost/errors": "^1.3.7",
     "@tryghost/logging": "2.4.21",
     "jackspeak": "2.1.1",
     "moment": "2.24.0",
