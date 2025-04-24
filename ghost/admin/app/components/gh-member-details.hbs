@@ -15,11 +15,11 @@
             <div>
                 <h3>
                     {{or (trim @member.name) @member.email}}
-                    {{#unless (or (trim @member.name) @member.email)}}
+                    {{#if (and (not (trim @member.name)) (not @member.email))}}
                         {{#if @member.isNew}}
                         <span class="midgrey">New member</span>
                         {{/if}}
-                    {{/unless}}
+                    {{/if}}
                 </h3>
                 <p>
                     {{#if (and (trim @member.name) @member.email)}}
