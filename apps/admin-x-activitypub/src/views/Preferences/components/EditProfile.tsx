@@ -1,6 +1,7 @@
 import React, {ChangeEvent, useEffect, useRef, useState} from 'react';
 import {Account} from '@src/api/activitypub';
 import {Button, DialogClose, DialogFooter, Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage, Input, LucideIcon, Textarea} from '@tryghost/shade';
+import {checkImageDimensions, getDimensionErrorMessage} from '@utils/image';
 import {showToast} from '@tryghost/admin-x-design-system';
 import {uploadFile} from '@hooks/use-activity-pub-queries';
 import {useFeatureFlags} from '@src/lib/feature-flags';
@@ -9,6 +10,12 @@ import {useNavigate} from '@tryghost/admin-x-framework';
 import {useUpdateAccountMutationForUser} from '@hooks/use-activity-pub-queries';
 import {z} from 'zod';
 import {zodResolver} from '@hookform/resolvers/zod';
+
+const MAX_FILE_SIZE = 1 * 1024 * 1024; // 1MB limit
+const FILE_SIZE_ERROR_MESSAGE = 'Image must be less than 1MB in size.';
+
+const PROFILE_MAX_DIMENSIONS = {width: 400, height: 400};
+const COVER_MAX_DIMENSIONS = {width: 3000, height: 2000};
 
 const FormSchema = z.object({
     profileImage: z.string().optional(),
@@ -113,6 +120,31 @@ const EditProfile: React.FC<EditProfileProps> = ({account, setIsEditingProfile})
         if (files && files.length > 0) {
             const file = files[0];
 
+            if (file.size > MAX_FILE_SIZE) {
+                showToast({
+                    message: FILE_SIZE_ERROR_MESSAGE,
+                    type: 'error'
+                });
+                e.target.value = '';
+                return;
+            }
+
+            const withinMaxDimensions = await checkImageDimensions(
+                file,
+                PROFILE_MAX_DIMENSIONS.width,
+                PROFILE_MAX_DIMENSIONS.height
+            );
+            if (!withinMaxDimensions) {
+                showToast({
+                    message: getDimensionErrorMessage(
+                        PROFILE_MAX_DIMENSIONS.width,
+                        PROFILE_MAX_DIMENSIONS.height
+                    ),
+                    type: 'error'
+                });
+                return;
+            }
+
             const previewUrl = URL.createObjectURL(file);
             setProfileImagePreview(previewUrl);
 
@@ -162,6 +194,31 @@ const EditProfile: React.FC<EditProfileProps> = ({account, setIsEditingProfile})
 
         if (files && files.length > 0) {
             const file = files[0];
+
+            if (file.size > MAX_FILE_SIZE) {
+                showToast({
+                    message: FILE_SIZE_ERROR_MESSAGE,
+                    type: 'error'
+                });
+                e.target.value = '';
+                return;
+            }
+
+            const withinMaxDimensions = await checkImageDimensions(
+                file,
+                COVER_MAX_DIMENSIONS.width,
+                COVER_MAX_DIMENSIONS.height
+            );
+            if (!withinMaxDimensions) {
+                showToast({
+                    message: getDimensionErrorMessage(
+                        COVER_MAX_DIMENSIONS.width,
+                        COVER_MAX_DIMENSIONS.height
+                    ),
+                    type: 'error'
+                });
+                return;
+            }
 
             const previewUrl = URL.createObjectURL(file);
             setCoverImagePreview(previewUrl);
