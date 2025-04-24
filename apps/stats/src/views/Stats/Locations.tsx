@@ -199,8 +199,8 @@ const Locations:React.FC = () => {
                 </Card>
                 <Card variant='plain'>
                     <CardHeader>
-                        <CardTitle>Top locations</CardTitle>
-                        <CardDescription>A geographic breakdown of your audience {getPeriodText(range)}</CardDescription>
+                        <CardTitle>Top Locations</CardTitle>
+                        <CardDescription>A geographic breakdown of your readers {getPeriodText(range)}</CardDescription>
                     </CardHeader>
                     <CardContent>
                         {isLoading ? 'Loading' :
