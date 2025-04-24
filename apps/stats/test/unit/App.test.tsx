@@ -21,7 +21,11 @@ vi.mock('@tryghost/admin-x-framework', () => ({
 }));
 
 vi.mock('@tryghost/shade', () => ({
-    ShadeApp: ({children}: {children: React.ReactNode}) => <div data-testid="shade-app">{children}</div>
+    ShadeApp: ({children}: {children: React.ReactNode}) => <div data-testid="shade-app">{children}</div>,
+    formatNumber: (value: number) => `${value}`,
+    formatDisplayDate: (date: string) => date,
+    formatPercentage: (value: number) => `${Math.round(value * 100)}%`,
+    formatDuration: (seconds: number) => `${seconds}s`
 }));
 
 vi.mock('../../src/providers/GlobalDataProvider', () => ({
