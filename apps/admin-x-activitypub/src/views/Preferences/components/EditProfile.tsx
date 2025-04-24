@@ -14,9 +14,13 @@ import {zodResolver} from '@hookform/resolvers/zod';
 const FormSchema = z.object({
     profileImage: z.string().optional(),
     coverImage: z.string().optional(),
-    name: z.string().nonempty({
-        message: 'Name is required.'
-    }),
+    name: z.string()
+        .nonempty({
+            message: 'Display name is required.'
+        })
+        .max(64, {
+            message: 'Display name must be less than 64 characters.'
+        }),
     handle: z.string()
         .min(2, {
             message: 'Handle must be at least 2 characters.'
