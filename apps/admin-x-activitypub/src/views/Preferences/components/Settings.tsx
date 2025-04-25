@@ -4,7 +4,6 @@ import {Account} from '@src/api/activitypub';
 import {Button, Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, H4, LucideIcon, cn} from '@tryghost/shade';
 import {Link, useNavigate} from '@tryghost/admin-x-framework';
 import {LoadingIndicator} from '@tryghost/admin-x-design-system';
-import {useFeatureFlags} from '@src/lib/feature-flags';
 import {useSearchForUser} from '@hooks/use-activity-pub-queries';
 
 interface SettingsProps {
@@ -24,7 +23,6 @@ const Settings: React.FC<SettingsProps> = ({account, className = ''}) => {
 
     const threadsEnabled = threadsData?.accounts[0]?.followedByMe;
     const blueskyEnabled = blueskyData?.accounts[0]?.followedByMe;
-    const {isEnabled} = useFeatureFlags();
 
     return (
         <div className={`flex flex-col ${className}`}>
@@ -33,23 +31,23 @@ const Settings: React.FC<SettingsProps> = ({account, className = ''}) => {
                 <SettingHeader>
                     <SettingTitle>Account</SettingTitle>
                     <SettingDescription>
-                        {isEnabled('settings-full') ? 'Edit your profile information and account details' : 'Edit your social web handle'}
+                        Edit your profile information and account details
                     </SettingDescription>
                 </SettingHeader>
                 <Dialog open={isEditingProfile} onOpenChange={setIsEditingProfile}>
                     <DialogTrigger>
-                        <SettingAction><Button variant='secondary'>{isEnabled('settings-full') ? 'Edit profile' : 'Edit handle'}</Button></SettingAction>
+                        <SettingAction><Button variant='secondary'>Edit profile</Button></SettingAction>
                     </DialogTrigger>
                     <DialogContent onOpenAutoFocus={e => e.preventDefault()}>
                         <DialogHeader>
-                            <DialogTitle>{isEnabled('settings-full') ? 'Profile settings' : 'Handle'}</DialogTitle>
+                            <DialogTitle>Profile settings</DialogTitle>
                         </DialogHeader>
                         {account && <EditProfile account={account} setIsEditingProfile={setIsEditingProfile} />}
                     </DialogContent>
                 </Dialog>
             </SettingItem>
 
-            <SettingItem withHover onClick={() => navigate('/preferences/threads-sharing', {state: {account, threadsAccount: threadsData?.accounts[0], isEnabled: threadsEnabled}})}>
+            <SettingItem withHover onClick={() => !threadsIsFetching && navigate('/preferences/threads-sharing', {state: {account, threadsAccount: threadsData?.accounts[0], isEnabled: threadsEnabled}})}>
                 <SettingHeader>
                     <SettingTitle>Threads sharing</SettingTitle>
                     <SettingDescription>Share content directly on Threads</SettingDescription>
@@ -59,7 +57,7 @@ const Settings: React.FC<SettingsProps> = ({account, className = ''}) => {
                     <LucideIcon.ChevronRight size={20} />
                 </SettingAction>
             </SettingItem>
-            <SettingItem withHover onClick={() => navigate('/preferences/bluesky-sharing', {state: {account, blueskyAccount: blueskyData?.accounts[0], isEnabled: blueskyEnabled}})}>
+            <SettingItem withHover onClick={() => !blueskyIsFetching && navigate('/preferences/bluesky-sharing', {state: {account, blueskyAccount: blueskyData?.accounts[0], isEnabled: blueskyEnabled}})}>
                 <SettingHeader>
                     <SettingTitle>Bluesky sharing</SettingTitle>
                     <SettingDescription>Share content directly on Bluesky</SettingDescription>
