@@ -77,6 +77,53 @@ describe('i18n', function () {
             });
         });
     });
+    describe('Fallback when no language is chosen will be english', function () {
+        describe('English fallback', function () {
+            let t;
+            before(function () {
+                t = i18n().t;
+            });
+            it('can translate with english when no language selected', function () {
+                assert.equal(t('Back'), 'Back');
+            });
+        });
+    });
+
+    describe('Fallback will be nb when no is chosen', function () {
+        describe('Norwegian bokmål fallback', function () {
+            let t;
+            before(function () {
+                t = i18n('no', 'portal').t;
+            });
+            it('Norwegian bokmål used when no is chosen', function () {
+                assert.equal(t('Yearly'), 'Årlig');
+            });
+        });
+    });
+
+    describe('Language will be nb when nb is chosen', function () {
+        describe('Norwegian bokmål', function () {
+            let t;
+            before(function () {
+                t = i18n('nb', 'portal').t;
+            });
+            it('Norwegian bokmål used when "nb" is chosen', function () {
+                assert.equal(t('Yearly'), 'Årlig');
+            });
+        });
+    });
+    describe('Language is properly "nn" when "nn" is chosen', function () {
+        describe('Norwegian Nynorsk', function () {
+            let t;
+            before(function () {
+                t = i18n('nn', 'portal').t;
+            });
+            it('Norwegian Nynorsk used when selected', function () {
+                assert.equal(t('Yearly'), 'Årleg');
+            });
+        });
+    });
+
     describe('directories and locales in i18n.js will match', function () {
         it('should have a key for each directory in the locales directory', async function () {
             const locales = await fs.readdir(path.join(__dirname, '../locales'));
