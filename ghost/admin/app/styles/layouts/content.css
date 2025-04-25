@@ -164,6 +164,12 @@
     border: 1px solid var(--whitegrey);
 }
 
+.gh-contentfilter-divider {
+    width: 1px;
+    height: 16px;
+    background: var(--lightgrey);
+}
+
 
 /* Content List
 /* ---------------------------------------------------------- */
@@ -845,7 +851,7 @@
 
 .gh-post-analytics-meta-text {
     color: var(--midgrey-l2);
-    font-size: 1.35rem;
+    font-size: 1.3rem;
     display: flex;
     align-items: center;
     justify-content: flex-start;

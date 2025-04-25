@@ -1,4 +1,4 @@
-# Data Source created from Pipe 'mv_hits'
+VERSION 8
 
 SCHEMA >
     `site_uuid` LowCardinality(String),

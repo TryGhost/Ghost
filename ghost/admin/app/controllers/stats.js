@@ -13,7 +13,7 @@ countries.registerLocale(enLocale);
 export default class StatsController extends Controller {
     @inject config;
 
-    queryParams = ['device', 'browser', 'location', 'source', 'pathname', 'os'];
+    queryParams = ['device', 'browser', 'location', 'source', 'pathname', 'os', 'timezone'];
 
     @tracked device = null;
     @tracked browser = null;
@@ -38,6 +38,14 @@ export default class StatsController extends Controller {
     @tracked audience = [];
     @tracked excludedAudiences = '';
     @tracked showStats = true;
+    @tracked totals = null;
+
+    @action
+    onTotalsChange(totals) {
+        this.totals = totals;
+        const hasNoViews = totals?.visits === '0' && totals?.pageviews === '0';
+        this.showStats = !hasNoViews;
+    }
 
     @action
     onRangeChange(selected) {
@@ -65,11 +73,14 @@ export default class StatsController extends Controller {
         this.excludedAudiences = '';
         this.audience = this.audienceOptions.map(a => a.value);
         this.showStats = true;
+        this.clearFilters();
     }
 
     @action
     toggleMockData() {
         this.mockData = !this.mockData;
+        this.showStats = true;
+        this.totals = null;
     }
 
     @action

@@ -147,6 +147,26 @@ const fixtures = {
             });
     },
 
+    insertGatedPosts: async function insertGatedPosts() {
+        const owner = await models.User.getOwnerUser(context.internal);
+
+        const gatedPosts = [{
+            id: '618ba1ffbe2896088840a6ef',
+            title: 'This has a paywall',
+            slug: 'paywall',
+            lexical: '',
+            status: 'draft',
+            uuid: 'd52c42ae-2755-455c-80ec-70b2ec55c905',
+            mobiledoc: DataGenerator.markdownToMobiledoc('Before paywall\n\n<!--members-only-->\n\nAfter paywall'),
+            visibility: 'paid',
+            authors: [owner.toJSON()]
+        }];
+
+        for (const post of gatedPosts) {
+            await models.Post.add(post, context.internal);
+        }
+    },
+
     insertTags: function insertTags() {
         return Promise.all(DataGenerator.forKnex.tags.map((tag) => {
             return models.Tag.add(tag, context.internal);
@@ -724,8 +744,6 @@ const fixtures = {
 
     async enableAllLabsFeatures() {
         const labsValue = Object.fromEntries(labsService.WRITABLE_KEYS_ALLOWLIST
-            // TODO: should test with 2fa enabled
-            .filter(key => key !== 'staff2fa')
             .map(key => [key, true]));
         const labsSetting = DataGenerator.forKnex.createSetting({
             key: 'labs',

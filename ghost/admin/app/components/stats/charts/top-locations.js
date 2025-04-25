@@ -6,8 +6,7 @@ import React from 'react';
 import countries from 'i18n-iso-countries';
 import enLocale from 'i18n-iso-countries/langs/en.json';
 import {BarList, useQuery} from '@tinybirdco/charts';
-import {STATS_LABEL_MAPPINGS} from '../../../utils/stats';
-import {TB_VERSION, barListColor, getCountryFlag, getStatsParams} from 'ghost-admin/utils/stats';
+import {STATS_LABEL_MAPPINGS, barListColor, getCountryFlag, getEndpointUrl, getStatsParams, getToken} from 'ghost-admin/utils/stats';
 import {action} from '@ember/object';
 import {formatNumber} from 'ghost-admin/helpers/format-number';
 import {inject} from 'ghost-admin/decorators/inject';
@@ -22,6 +21,7 @@ export default class TopLocations extends Component {
     @inject config;
     @service modals;
     @service router;
+    @service settings;
 
     @tracked showSeeAll = true;
 
@@ -41,7 +41,7 @@ export default class TopLocations extends Component {
 
     updateQueryParams(params) {
         const currentRoute = this.router.currentRoute;
-        const newQueryParams = {...currentRoute.queryParams, ...params};
+        const newQueryParams = {...currentRoute.queryParams, ...params, timezone: this.settings.timezone};
 
         this.router.transitionTo({queryParams: newQueryParams});
     }
@@ -62,8 +62,8 @@ export default class TopLocations extends Component {
         );
 
         const {data, meta, error, loading} = useQuery({
-            endpoint: `${this.config.stats.endpoint}/v0/pipes/api_top_locations__v${TB_VERSION}.json`,
-            token: this.config.stats.token,
+            endpoint: getEndpointUrl(this.config, 'api_top_locations'),
+            token: getToken(this.config),
             params
         });
 

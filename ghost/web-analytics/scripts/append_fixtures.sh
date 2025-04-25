@@ -1,9 +1,8 @@
-
 #!/usr/bin/env bash
 set -euxo pipefail
 
-directory="datasources/fixtures"
-extensions=("csv" "ndjson")
+directory="tests/fixtures"
+extensions=("ndjson")
 
 absolute_directory=$(realpath "$directory")
 
@@ -14,7 +13,7 @@ for extension in "${extensions[@]}"; do
     file_name=$(basename "$file_path")
     file_name_without_extension="${file_name%.*}"
 
-    command="tb datasource append $file_name_without_extension datasources/fixtures/$file_name"
+    command="tb datasource append $file_name_without_extension tests/fixtures/$file_name"
     echo $command
     $command
   done

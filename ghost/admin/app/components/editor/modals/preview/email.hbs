@@ -1,105 +1,101 @@
-<div class="gh-post-preview-container gh-post-preview-email-container {{unless @skipAnimation "fade-in"}}">
-    <div class="gh-post-preview-email-mockup">
-        <div class="gh-post-preview-email-header">
-            <div class="gh-post-preview-email-columns">
-                <div class="gh-post-preview-email-group">
-                    <div class="gh-email-preview-newsletter-select" data-test-email-preview-newsletter-select-section>
-                        <p>From:</p>
-                        {{#if (gt this.newslettersList.length 1)}}
-                            <PowerSelect
-                                @selected={{this.newsletter}}
-                                @options={{this.newslettersList}}
-                                @onChange={{this.setNewsletter}}
-                                @triggerComponent={{component "gh-power-select/trigger"}}
-                                @triggerClass="gh-preview-newsletter-trigger"
-                                @dropdownClass="gh-publish-newsletter-dropdown gh-preview-newsletter-dropdown"
-                                @extra={{concat "<" (sender-email-address this.newsletter.senderEmail) ">"}}
-                                @selectedItemComponent={{component "editor/modals/preview/selected-newsletter-label"}}
-                                data-test-email-preview-newsletter-select
-                                as |option|
+<div class="gh-post-preview-container gh-post-preview-email-container {{if @mobile "gh-pe-mobile-container"}} {{unless @skipAnimation "fade-in"}}">
+    <div class="gh-post-preview-email {{if @mobile "gh-pe-mobile-bezel"}}">
+        <div class="gh-post-preview-email-mockup {{if @mobile "gh-post-preview-email-mockup-mobile gh-pe-mobile-screen"}}">
+            <div class="gh-post-preview-email-header {{if (gt this.newslettersList.length 1) "gh-post-preview-multiple-newsletters"}}">
+                <div class="gh-post-preview-email-columns">
+                    <div class="gh-post-preview-email-group">
+                        <form class="gh-email-preview-newsletter-select" data-test-email-preview-newsletter-select-section>
+                            <label for="email-preview-newsletter-select">From</label>
+                            {{#if (gt this.newslettersList.length 1)}}
+                                <PowerSelect
+                                    @selected={{this.newsletter}}
+                                    @options={{this.newslettersList}}
+                                    @onChange={{this.setNewsletter}}
+                                    @triggerComponent={{component "gh-power-select/trigger"}}
+                                    @triggerClass="gh-preview-newsletter-trigger gh-input-x"
+                                    @dropdownClass="gh-dropdown-x gh-publish-newsletter-dropdown gh-preview-newsletter-dropdown"
+                                    @selectedItemComponent={{component "editor/modals/preview/selected-newsletter-label"}}
+                                    @matchTriggerWidth={{false}}
+                                    data-test-email-preview-newsletter-select
+                                    as |option|
+                                >
+                                    <span>{{option.name}} {{concat "<" (sender-email-address option.senderEmail) ">"}}</span>
+                                </PowerSelect>
+                            {{else}}
+                                <p class="gh-preview-newsletter-name" data-test-text="newsletter-from">
+                                    {{this.newsletter.name}}
+                                    <span class="gh-preview-email-address">&lt;{{sender-email-address this.newsletter.senderEmail}}&gt;</span>
+                                </p>
+                            {{/if}}
+                        </form>
+                        <div class="gh-post-test-email-group">
+                            <GhDropdownButton
+                                @dropdownName="post-preview-test-email"
+                                @classNames="gh-btn gh-btn-icon gh-post-preview-email-trigger"
+                                data-test-button="post-preview-test-email"
                             >
-                                <span>{{option.name}}</span>
-                            </PowerSelect>
-                        {{else}}
-                            <p class="gh-preview-newsletter-name">{{this.newsletter.name}} <span
-                                class="gh-preview-email-address">&lt;{{sender-email-address this.newsletter.senderEmail}}&gt;</span></p>
-                        {{/if}}
-                    </div>
-                    <div class="gh-email-preview-newsletter-select" data-test-email-preview-segment-select-section>
-                        <p>To:</p>
-                        {{#if this.paidMembersEnabled}}
-                            <PowerSelect
-                                @selected={{this.selectedSegment}}
-                                @options={{this.segments}}
-                                @onChange={{this.setSegment}}
-                                @triggerComponent={{component "gh-power-select/trigger"}}
-                                @triggerClass="gh-preview-newsletter-trigger"
-                                @dropdownClass="gh-publish-newsletter-dropdown gh-preview-newsletter-dropdown"
-                                data-test-email-preview-segment-select
-                                as |option|
+                                <span>{{svg-jar "send-email"}}Test</span>
+                            </GhDropdownButton>
+                            <GhDropdown
+                                @name="post-preview-test-email"
+                                @classNames="dropdown-menu gh-post-preview-email-test-dropdown"
+                                @onOpen={{this.focusInput}}
                             >
-                                <span>{{option.name}}</span>
-                            </PowerSelect>
-                        {{else}}
-                            <p class="gh-preview-newsletter-name">Jamie Larson <span class="gh-preview-email-address">&lt;jamie@example.com&gt;</span>
-                            </p>
-                        {{/if}}
-                    </div>
-                </div>
+                                <div class="gh-post-preview-email-test">
+                                    <form class="form-group">
+                                        <label for="post-preview-email-input">Send test email</label>
+                                        <Input
+                                            @value={{this.previewEmailAddress}}
+                                            class="gh-input gh-input-x gh-post-preview-email-input"
+                                            placeholder="you@yoursite.com"
+                                            aria-label="Email address to receive preview"
+                                            aria-invalid={{if this.sendPreviewEmailError "true"}}
+                                            aria-describedby={{if this.sendPreviewEmailError "sendError"}}
+                                            data-post-preview-email-input
+                                            {{autofocus}}
+                                            {{on-key "Enter" (perform this.sendPreviewEmailTask)}}
+                                        />
+                                        <p class="description">You'll receive this as a {{@memberSegment}} member.</p>
+                                        <GhTaskButton
+                                            @task={{this.sendPreviewEmailTask}}
+                                            @buttonText="Send"
+                                            @successText="Sent"
+                                            @runningText="Sending..."
+                                            @class="gh-btn gh-btn-icon gh-btn-primary"
+                                            data-test-button="send-test-email"
+                                        />
+                                    </form>
+                                </div>
 
-                <div class="gh-post-test-email-group">
-                    <GhDropdownButton
-                        @dropdownName="post-preview-test-email"
-                        @classNames="gh-btn gh-btn-text gh-btn-icon gh-post-preview-email-trigger"
-                        data-test-button="post-preview-test-email"
-                    >
-                        <span>Send test email {{svg-jar "arrow-down-small"}}</span>
-                    </GhDropdownButton>
-
-                    <GhDropdown
-                        @name="post-preview-test-email"
-                        @classNames="dropdown-menu dropdown-align-right gh-post-preview-email-test-dropdown"
-                    >
-                        <div class="gh-post-preview-email-test">
-                            <Input
-                                @value={{this.previewEmailAddress}}
-                                class="gh-input gh-post-preview-email-input"
-                                placeholder="you@yoursite.com"
-                                aria-label="Email address to receive preview"
-                                aria-invalid={{if this.sendPreviewEmailError "true"}}
-                                aria-describedby={{if this.sendPreviewEmailError "sendError"}}
-                                data-post-preview-email-input
-                                {{on-key "Enter" (perform this.sendPreviewEmailTask)}}
-                            />
-
-                            <GhTaskButton
-                                @task={{this.sendPreviewEmailTask}}
-                                @buttonText="Send"
-                                @successText="Sent"
-                                @runningText="Sending..."
-                                @class="gh-btn gh-btn-icon gh-btn-primary"
-                                data-test-button="send-test-email"
-                            />
+                                {{#if this.sendPreviewEmailError}}
+                                    <div class="gh-post-preview-email-error">
+                                        <span class="response" id="sendError">{{this.sendPreviewEmailError}}</span>
+                                    </div>
+                                {{/if}}
+                            </GhDropdown>
                         </div>
-
-                        {{#if this.sendPreviewEmailError}}
-                            <div class="gh-post-preview-email-error">
-                                <span class="response" id="sendError">{{this.sendPreviewEmailError}}</span>
-                            </div>
-                        {{/if}}
-                    </GhDropdown>
+                    </div>
                 </div>
-            </div>
 
-            <div class="gh-email-preview-newsletter-select" data-test-email-preview-segment-select-section>
-                <p>Subject:</p>
-                <Editor::Modals::Preview::Email::EmailSubject
-                    @post={{@post}}
-                    @savePostTask={{@savePostTask}}
-                />
+                <hr>
+
+                <form class="gh-email-preview-newsletter-select">
+                    <label for="email-preview-newsletter-select">Subject</label>
+                    <Editor::Modals::Preview::Email::EmailSubject
+                        @post={{@post}}
+                        @savePostTask={{@savePostTask}}
+                        @mobile={{@mobile}}
+                    />
+                </form>
             </div>
+            <iframe
+                class="gh-pe-iframe"
+                title="Email preview"
+                sandbox="allow-same-origin allow-popups allow-popups-to-escape-sandbox"
+                {{did-insert this.renderEmailPreview}}
+                {{did-update this.renderEmailPreview @memberSegment}}
+                {{close-dropdowns-on-click}}
+            ></iframe>
         </div>
-        <iframe class="gh-pe-iframe" {{did-insert this.renderEmailPreview}} title="Email preview"
-                sandbox="allow-same-origin allow-popups allow-popups-to-escape-sandbox"></iframe>
     </div>
 </div>

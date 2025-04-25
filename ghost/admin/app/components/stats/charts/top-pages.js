@@ -4,7 +4,7 @@ import AllStatsModal from '../modal-stats-all';
 import Component from '@glimmer/component';
 import React from 'react';
 import {BarList, useQuery} from '@tinybirdco/charts';
-import {CONTENT_OPTIONS, TB_VERSION, barListColor, getStatsParams} from 'ghost-admin/utils/stats';
+import {CONTENT_OPTIONS, barListColor, getEndpointUrl, getStatsParams, getToken} from 'ghost-admin/utils/stats';
 import {action} from '@ember/object';
 import {formatNumber} from 'ghost-admin/helpers/format-number';
 import {inject} from 'ghost-admin/decorators/inject';
@@ -17,6 +17,7 @@ export default class TopPages extends Component {
     @inject config;
     @service modals;
     @service router;
+    @service settings;
 
     @tracked contentOption = CONTENT_OPTIONS[0];
     @tracked contentOptions = CONTENT_OPTIONS;
@@ -43,7 +44,7 @@ export default class TopPages extends Component {
 
     updateQueryParams(params) {
         const currentRoute = this.router.currentRoute;
-        const newQueryParams = {...currentRoute.queryParams, ...params};
+        const newQueryParams = {...currentRoute.queryParams, ...params, timezone: this.settings.timezone};
 
         this.router.transitionTo({queryParams: newQueryParams});
     }
@@ -60,8 +61,8 @@ export default class TopPages extends Component {
         );
 
         const {data, meta, error, loading} = useQuery({
-            endpoint: `${this.config.stats.endpoint}/v0/pipes/api_top_pages__v${TB_VERSION}.json`,
-            token: this.config.stats.token,
+            endpoint: getEndpointUrl(this.config, 'api_top_pages'),
+            token: getToken(this.config),
             params
         });
 

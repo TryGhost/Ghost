@@ -5,18 +5,21 @@ const LastSeenAtUpdater = require('../../../../../core/server/services/members-e
 const DomainEvents = require('@tryghost/domain-events');
 const {MemberPageViewEvent, MemberCommentEvent, MemberSubscribeEvent, MemberLinkClickEvent} = require('@tryghost/member-events');
 const moment = require('moment');
-const {EmailOpenedEvent} = require('@tryghost/email-events');
+const {EmailOpenedEvent} = require('@tryghost/email-service');
 const EventEmitter = require('events');
 const logging = require('@tryghost/logging');
-
-sinon.stub(logging, 'error');
 
 describe('LastSeenAtUpdater', function () {
     let events;
 
     beforeEach(function () {
+        sinon.stub(logging, 'error');
         events = new EventEmitter();
         DomainEvents.ee.removeAllListeners();
+    });
+
+    afterEach(function () {
+        sinon.restore();
     });
 
     describe('constructor', function () {

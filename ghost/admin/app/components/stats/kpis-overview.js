@@ -1,15 +1,17 @@
 import Component from '@glimmer/component';
 import fetch from 'fetch';
-import {TB_VERSION, getStatsParams} from 'ghost-admin/utils/stats';
 import {action} from '@ember/object';
 import {formatNumber} from 'ghost-admin/helpers/format-number';
 import {formatVisitDuration} from '../../utils/stats';
+import {getEndpointUrl, getStatsParams, getToken} from 'ghost-admin/utils/stats';
 import {inject} from 'ghost-admin/decorators/inject';
+import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
 export default class KpisOverview extends Component {
     @inject config;
+    @service settings;
     @tracked selected = 'unique_visits';
     @tracked totals = null;
     @tracked showGranularity = true;
@@ -60,13 +62,13 @@ export default class KpisOverview extends Component {
                 args
             ));
 
-            const endpoint = `${this.config.stats.endpoint}/v0/pipes/api_kpis__v${TB_VERSION}.json?${params}`;
-
+            const endpoint = getEndpointUrl(this.config, 'api_kpis', params);
+            const token = getToken(this.config);
             const response = yield fetch(endpoint, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
-                    Authorization: `Bearer ${this.config.stats.token}`
+                    Authorization: `Bearer ${token}`
                 }
             });
 
@@ -99,12 +101,22 @@ export default class KpisOverview extends Component {
         const formattedVisitDurations = formatVisitDuration(_ponderatedKPIsTotal('avg_session_sec'));
         const formattedBouceRate = (_ponderatedKPIsTotal('bounce_rate') * 100).toFixed(0);
 
-        return {
+        const totals = {
             avg_session_sec: isNaN(_ponderatedKPIsTotal('avg_session_sec')) ? '0m' : formattedVisitDurations,
             pageviews: formatNumber(_KPITotal('pageviews')) || '0',
             visits: formatNumber(totalVisits) || '0',
             bounce_rate: isNaN(formattedBouceRate) ? '0' : formattedBouceRate
         };
+
+        this.totals = totals;
+        this.args.onTotalsChange?.(totals);
+
+        return totals;
+    }
+
+    get hasNoViews() {
+        const hasNoViews = this.totals?.visits === '0' || this.totals?.pageviews === '0';
+        return hasNoViews;
     }
 
     willDestroy() {

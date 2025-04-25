@@ -1,2 +1,4 @@
-"pathname","visits","pageviews"
-"/about/",2,2
+"pathname","visits"
+"/about/",2
+"/",1
+"/blog/hello-world/",1

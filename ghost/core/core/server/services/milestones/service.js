@@ -23,7 +23,7 @@ const getStripeLiveEnabled = () => {
 };
 
 module.exports = {
-    /** @type {import('@tryghost/milestones/lib/MilestonesService')} */
+    /** @type {import('./MilestonesService')} */
     api: null,
 
     /**
@@ -34,7 +34,7 @@ module.exports = {
             const db = require('../../data/db');
             const MilestoneQueries = require('./MilestoneQueries');
 
-            const {MilestonesService} = require('@tryghost/milestones');
+            const MilestonesService = require('./MilestonesService');
             const config = require('../../../shared/config');
             const milestonesConfig = config.get('milestones');
 

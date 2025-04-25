@@ -1,107 +1,81 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useRef} from 'react';
 import {LucideIcon, Skeleton} from '@tryghost/shade';
 
-import NiceModal from '@ebay/nice-modal-react';
-import {Activity, ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
+import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, LoadingIndicator} from '@tryghost/admin-x-design-system';
 
 import APAvatar from '@components/global/APAvatar';
-import ArticleModal from '@components/feed/ArticleModal';
 import NotificationItem from '@components/activities/NotificationItem';
 import Separator from '@components/global/Separator';
 
 import Layout from '@components/layout';
-import getUsername from '@utils/get-username';
 import truncate from '@utils/truncate';
 import {EmptyViewIcon, EmptyViewIndicator} from '@src/components/global/EmptyViewIndicator';
-import {
-    GET_ACTIVITIES_QUERY_KEY_NOTIFICATIONS,
-    useActivitiesForUser,
-    useUserDataForUser
-} from '@hooks/use-activity-pub-queries';
-import {type NotificationType} from '@components/activities/NotificationIcon';
-import {handleProfileClick} from '@utils/handle-profile-click';
+import {Notification} from '@src/api/activitypub';
+import {handleProfileClickRR} from '@utils/handle-profile-click';
 import {stripHtml} from '@src/utils/content-formatters';
+import {useNavigate} from '@tryghost/admin-x-framework';
+import {useNotificationsForUser} from '@hooks/use-activity-pub-queries';
 
-interface NotificationsProps {}
-
-enum ACTIVITY_TYPE {
-    CREATE = 'Create',
-    LIKE = 'Like',
-    FOLLOW = 'Follow',
-    REPOST = 'Announce'
-}
-
-interface GroupedActivity {
-    type: ACTIVITY_TYPE;
-    actors: ActorProperties[];
-    object: ObjectProperties;
-    id?: string;
+interface NotificationGroup {
+    id: string;
+    type: Notification['type'];
+    actors: Notification['actor'][];
+    post: Notification['post'];
+    inReplyTo: Notification['inReplyTo'];
 }
 
 interface NotificationGroupDescriptionProps {
-    group: GroupedActivity;
+    group: NotificationGroup;
 }
 
-const getActivityBadge = (activity: GroupedActivity): NotificationType => {
-    switch (activity.type) {
-    case ACTIVITY_TYPE.CREATE:
-        return 'reply';
-    case ACTIVITY_TYPE.FOLLOW:
-        return 'follow';
-    case ACTIVITY_TYPE.LIKE:
-        return 'like';
-    case ACTIVITY_TYPE.REPOST:
-        return 'repost';
-    }
-};
+function groupNotifications(notifications: Notification[]): NotificationGroup[] {
+    const groups: {
+        [key: string]: NotificationGroup
+    } = {};
 
-const groupActivities = (activities: Activity[]): GroupedActivity[] => {
-    const groups: {[key: string]: GroupedActivity} = {};
-
-    // Activities are already sorted by time from the API
-    activities.forEach((activity) => {
+    notifications.forEach((notification) => {
         let groupKey = '';
 
-        switch (activity.type) {
-        case ACTIVITY_TYPE.FOLLOW:
-            // Group follows that are next to each other in the array
-            groupKey = `follow_${activity.type}`;
-            break;
-        case ACTIVITY_TYPE.LIKE:
-            if (activity.object?.id) {
+        switch (notification.type) {
+        case 'like':
+            if (notification.post?.id) {
                 // Group likes by the target object
-                groupKey = `like_${activity.object.id}`;
+                groupKey = `like_${notification.post.id}`;
             }
             break;
-        case ACTIVITY_TYPE.REPOST:
-            if (activity.object?.id) {
+        case 'reply':
+            // Don't group replies
+            groupKey = `reply_${notification.id}`;
+            break;
+        case 'repost':
+            if (notification.post?.id) {
                 // Group reposts by the target object
-                groupKey = `announce_${activity.object.id}`;
+                groupKey = `repost_${notification.post.id}`;
             }
             break;
-        case ACTIVITY_TYPE.CREATE:
-            // Don't group creates/replies
-            groupKey = `create_${activity.id}`;
+        case 'follow':
+            // Group follows that are next to each other in the array
+            groupKey = `follow_${notification.type}`;
             break;
         }
 
         if (!groups[groupKey]) {
             groups[groupKey] = {
-                type: activity.type as ACTIVITY_TYPE,
+                id: notification.id,
+                type: notification.type,
                 actors: [],
-                object: activity.object,
-                id: activity.id
+                post: notification.post,
+                inReplyTo: notification.inReplyTo
             };
         }
 
         // Add actor if not already in the group
-        if (!groups[groupKey].actors.find(a => a.id === activity.actor.id)) {
-            groups[groupKey].actors.push(activity.actor);
+        if (!groups[groupKey].actors.find(a => a.id === notification.actor.id)) {
+            groups[groupKey].actors.push(notification.actor);
         }
     });
 
-    // Return in same order as original activities
     return Object.values(groups);
 };
 
@@ -111,19 +85,31 @@ const NotificationGroupDescription: React.FC<NotificationGroupDescriptionProps> 
 
     const actorClass = 'cursor-pointer font-semibold hover:underline';
 
+    const navigate = useNavigate();
+
     const actorText = (
         <>
             <span
                 className={actorClass}
-                onClick={e => handleProfileClick(firstActor, e)}
-            >{firstActor.name}</span>
+                onClick={(e) => {
+                    e?.stopPropagation();
+                    handleProfileClickRR(firstActor.handle, navigate);
+                }}
+            >
+                {firstActor.name}
+            </span>
             {secondActor && (
                 <>
                     {hasOthers ? ', ' : ' and '}
                     <span
                         className={actorClass}
-                        onClick={e => handleProfileClick(secondActor, e)}
-                    >{secondActor.name}</span>
+                        onClick={(e) => {
+                            e?.stopPropagation();
+                            handleProfileClickRR(secondActor.handle, navigate);
+                        }}
+                    >
+                        {secondActor.name}
+                    </span>
                 </>
             )}
             {hasOthers && ' and others'}
@@ -131,32 +117,31 @@ const NotificationGroupDescription: React.FC<NotificationGroupDescriptionProps> 
     );
 
     switch (group.type) {
-    case ACTIVITY_TYPE.FOLLOW:
+    case 'follow':
         return <>{actorText} started following you</>;
-    case ACTIVITY_TYPE.LIKE:
-        return <>{actorText} liked your {group.object?.type === 'Article' ? 'post' : 'note'} <span className='font-semibold'>{group.object?.name || ''}</span></>;
-    case ACTIVITY_TYPE.REPOST:
-        return <>{actorText} reposted your {group.object?.type === 'Article' ? 'post' : 'note'} <span className='font-semibold'>{group.object?.name || ''}</span></>;
-    case ACTIVITY_TYPE.CREATE:
-        if (group.object?.inReplyTo && typeof group.object?.inReplyTo !== 'string') {
-            let content = stripHtml(group.object.inReplyTo.content || '');
+    case 'like':
+        return <>{actorText} liked your {group.post?.type === 'article' ? 'post' : 'note'} <span className='font-semibold'>{group.post?.title || ''}</span></>;
+    case 'repost':
+        return <>{actorText} reposted your {group.post?.type === 'article' ? 'post' : 'note'} <span className='font-semibold'>{group.post?.title || ''}</span></>;
+    case 'reply':
+        if (group.inReplyTo && typeof group.inReplyTo !== 'string') {
+            let content = stripHtml(group.inReplyTo.content || '');
 
-            // If the post has a name, use that instead of the content (short
-            // form posts do not have a name)
-            if (group.object.inReplyTo.name) {
-                content = stripHtml(group.object.inReplyTo.name);
+            // If the post has a title, use that instead of the content (notes do not have a title)
+            if (group.inReplyTo.title) {
+                content = stripHtml(group.inReplyTo.title);
             }
 
-            return <>{actorText} replied to your post <span className='font-semibold'>{truncate(content, 80)}</span></>;
+            return <>{actorText} replied to your {group.post?.type === 'article' ? 'post' : 'note'} <span className='font-semibold'>{truncate(content, 80)}</span></>;
         }
     }
+
     return <></>;
 };
 
-const Notifications: React.FC<NotificationsProps> = () => {
-    const user = 'index';
-
+const Notifications: React.FC = () => {
     const [openStates, setOpenStates] = React.useState<{[key: string]: boolean}>({});
+    const navigate = useNavigate();
 
     const toggleOpen = (groupId: string) => {
         setOpenStates(prev => ({
@@ -167,78 +152,14 @@ const Notifications: React.FC<NotificationsProps> = () => {
 
     const maxAvatars = 5;
 
-    const {data: userProfile, isLoading: isLoadingProfile} = useUserDataForUser(user) as {data: ActorProperties | null, isLoading: boolean};
+    const {data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading} = useNotificationsForUser('index');
 
-    const {getActivitiesQuery} = useActivitiesForUser({
-        handle: user,
-        includeOwn: true,
-        includeReplies: true,
-        filter: {
-            type: ['Follow', 'Like', `Create:Note`, `Announce:Note`, `Announce:Article`]
-        },
-        limit: 120,
-        key: GET_ACTIVITIES_QUERY_KEY_NOTIFICATIONS
-    });
-
-    const {data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading: isLoadingActivities} = getActivitiesQuery;
-
-    const isLoading = isLoadingProfile === true || isLoadingActivities === true;
-
-    const groupedActivities = (data?.pages.flatMap((page) => {
-        const filtered = page.data
-            // Remove duplicates
-            .filter(
-                (activity, index, self) => index === self.findIndex(a => a.id === activity.id)
-            )
-            // Remove our own likes
-            .filter((activity) => {
-                if (activity.type === ACTIVITY_TYPE.LIKE && activity.actor?.id === userProfile?.id) {
-                    return false;
-                }
-
-                return true;
-            })
-            // Remove follower likes if they are not for our own posts
-            .filter((activity) => {
-                if (activity.type === ACTIVITY_TYPE.LIKE && activity.object?.attributedTo?.id !== userProfile?.id) {
-                    return false;
-                }
-
-                return true;
-            })
-            // Remove reposts that are not for our own posts
-            .filter((activity) => {
-                if (activity.type === ACTIVITY_TYPE.REPOST && activity.object?.attributedTo?.id !== userProfile?.id) {
-                    return false;
-                }
-
-                return true;
-            })
-            // Remove create activities that are not replies to our own posts
-            .filter((activity) => {
-                if (
-                    activity.type === ACTIVITY_TYPE.CREATE &&
-                    activity.object?.inReplyTo?.attributedTo?.id !== userProfile?.id
-                ) {
-                    return false;
-                }
-
-                return true;
-            })
-            // Remove our own create activities
-            .filter((activity) => {
-                if (
-                    activity.type === ACTIVITY_TYPE.CREATE &&
-                    activity.actor?.id === userProfile?.id
-                ) {
-                    return false;
-                }
-
-                return true;
-            });
-
-        return groupActivities(filtered);
-    }) ?? Array(5).fill({actors: [{}]}));
+    const notificationGroups = (
+        data?.pages.flatMap((page) => {
+            return groupNotifications(page.notifications);
+        })
+        // If no notifications, return 5 empty groups for the loading state
+        ?? Array(5).fill({actors: [{}]}));
 
     const observerRef = useRef<IntersectionObserver | null>(null);
     const loadMoreRef = useRef<HTMLDivElement | null>(null);
@@ -265,72 +186,38 @@ const Notifications: React.FC<NotificationsProps> = () => {
         };
     }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-    const [showLoadingMessage, setShowLoadingMessage] = useState(false);
-
-    useEffect(() => {
-        let timeoutID: number;
-
-        if (isLoading) {
-            timeoutID = setTimeout(() => {
-                setShowLoadingMessage(true);
-            }, 3000);
-        } else {
-            setShowLoadingMessage(false);
-        }
-
-        return () => {
-            clearTimeout(timeoutID);
-        };
-    }, [isLoading]);
-
-    const handleActivityClick = (group: GroupedActivity, index: number) => {
+    const handleNotificationClick = (group: NotificationGroup, index: number) => {
         switch (group.type) {
-        case ACTIVITY_TYPE.CREATE:
-            NiceModal.show(ArticleModal, {
-                activityId: group.object.id,
-                object: group.object,
-                actor: group.actors[0],
-                focusReplies: true,
-                width: typeof group.object?.inReplyTo === 'object' && group.object?.inReplyTo?.type === 'Article' ? 'wide' : 'narrow'
-            });
+        case 'like':
+            if (group.post) {
+                navigate(`/${group.post.type === 'article' ? 'inbox' : 'feed'}/${encodeURIComponent(group.post.id)}`);
+            }
             break;
-        case ACTIVITY_TYPE.LIKE:
-            NiceModal.show(ArticleModal, {
-                activityId: group.id,
-                object: group.object,
-                actor: group.object.attributedTo as ActorProperties,
-                width: group.object?.type === 'Article' ? 'wide' : 'narrow'
-            });
+        case 'reply':
+            if (group.post && group.inReplyTo) {
+                navigate(`/${group.inReplyTo.type === 'article' ? 'inbox' : 'feed'}/${encodeURIComponent(group.post.id)}`);
+            }
             break;
-        case ACTIVITY_TYPE.FOLLOW:
+        case 'repost':
+            if (group.post) {
+                navigate(`/${group.post.type === 'article' ? 'inbox' : 'feed'}/${encodeURIComponent(group.post.id)}`);
+            }
+            break;
+        case 'follow':
             if (group.actors.length > 1) {
                 toggleOpen(group.id || `${group.type}_${index}`);
             } else {
-                handleProfileClick(group.actors[0]);
+                handleProfileClickRR(group.actors[0].handle, navigate);
             }
-            break;
-        case ACTIVITY_TYPE.REPOST:
-            NiceModal.show(ArticleModal, {
-                activityId: group.id,
-                object: group.object,
-                actor: group.object.attributedTo as ActorProperties,
-                width: group.object?.type === 'Article' ? 'wide' : 'narrow'
-            });
             break;
         }
     };
 
     return (
         <Layout>
-            {isLoading && showLoadingMessage && (
-                <div className='absolute bottom-8 left-8 right-[calc(292px+64px)] flex animate-fade-in items-start justify-center rounded-md bg-grey-100 px-3 py-2 font-medium backdrop-blur-md'>
-                    <LucideIcon.Gauge className='mr-1.5 min-w-5 text-purple' size={20} strokeWidth={1.5} />
-                    Notifications are a little slow at the moment, we&apos;re working on improving the performance.
-                </div>
-            )}
             <div className='z-0 flex w-full flex-col items-center'>
                 {
-                    isLoading === false && groupedActivities.length === 0 && (
+                    isLoading === false && notificationGroups.length === 0 && (
                         <EmptyViewIndicator>
                             <EmptyViewIcon><LucideIcon.Bell /></EmptyViewIcon>
                             Quiet for now, but not for long! When someone likes, boosts, or replies to you, you&apos;ll find it here.
@@ -338,24 +225,32 @@ const Notifications: React.FC<NotificationsProps> = () => {
                     )
                 }
                 {
-                    (groupedActivities.length > 0) && (
+                    (notificationGroups.length > 0) && (
                         <>
                             <div className='my-8 flex w-full max-w-[620px] flex-col'>
-                                {groupedActivities.map((group, index) => (
+                                {notificationGroups.map((group, index) => (
                                     <React.Fragment key={group.id || `${group.type}_${index}`}>
                                         <NotificationItem
                                             className='hover:bg-gray-75 dark:hover:bg-gray-950'
-                                            onClick={() => handleActivityClick(group, index)}
+                                            onClick={() => handleNotificationClick(group, index)}
                                         >
-                                            {!isLoading ? <NotificationItem.Icon type={getActivityBadge(group)} /> : <Skeleton className='rounded-full' containerClassName='flex h-10 w-10' />}
+                                            {isLoading ?
+                                                <Skeleton className='rounded-full' containerClassName='flex h-10 w-10' /> :
+                                                <NotificationItem.Icon type={group.type} />
+                                            }
                                             <NotificationItem.Avatars>
                                                 <div className='flex flex-col'>
                                                     <div className='mt-0.5 flex items-center gap-1.5'>
                                                         {!openStates[group.id || `${group.type}_${index}`] && group.actors.slice(0, maxAvatars).map((actor: ActorProperties) => (
                                                             <APAvatar
                                                                 key={actor.id}
-                                                                author={actor}
-                                                                isLoading={isLoading}
+                                                                author={{
+                                                                    icon: {
+                                                                        url: actor.avatarUrl || ''
+                                                                    },
+                                                                    name: actor.name,
+                                                                    handle: actor.handle
+                                                                }}
                                                                 size='notification'
                                                             />
                                                         ))}
@@ -388,11 +283,20 @@ const Notifications: React.FC<NotificationsProps> = () => {
                                                                     <div
                                                                         key={actor.id}
                                                                         className='flex items-center hover:opacity-80'
-                                                                        onClick={e => handleProfileClick(actor, e)}
+                                                                        onClick={(e) => {
+                                                                            e?.stopPropagation();
+                                                                            handleProfileClickRR(actor.handle, navigate);
+                                                                        }}
                                                                     >
-                                                                        <APAvatar author={actor} size='xs' />
+                                                                        <APAvatar author={{
+                                                                            icon: {
+                                                                                url: actor.avatarUrl || ''
+                                                                            },
+                                                                            name: actor.name,
+                                                                            handle: actor.handle
+                                                                        }} size='xs' />
                                                                         <span className='ml-2 text-base font-semibold dark:text-white'>{actor.name}</span>
-                                                                        <span className='ml-1 text-base text-gray-700 dark:text-gray-600'>{getUsername(actor)}</span>
+                                                                        <span className='ml-1 text-base text-gray-700 dark:text-gray-600'>{actor.handle}</span>
                                                                     </div>
                                                                 ))}
                                                             </div>
@@ -402,27 +306,27 @@ const Notifications: React.FC<NotificationsProps> = () => {
                                             </NotificationItem.Avatars>
                                             <NotificationItem.Content>
                                                 <div className='line-clamp-2 text-pretty text-black dark:text-white'>
-                                                    {!isLoading ?
-                                                        <NotificationGroupDescription group={group} /> :
+                                                    {isLoading ?
                                                         <>
                                                             <Skeleton />
                                                             <Skeleton className='w-full max-w-60' />
-                                                        </>
+                                                        </> :
+                                                        <NotificationGroupDescription group={group} />
                                                     }
                                                 </div>
                                                 {(
-                                                    (group.type === ACTIVITY_TYPE.CREATE && group.object?.inReplyTo) ||
-                                                    (group.type === ACTIVITY_TYPE.LIKE && !group.object?.name && group.object?.content) ||
-                                                    (group.type === ACTIVITY_TYPE.REPOST && !group.object?.name && group.object?.content)
+                                                    (group.type === 'reply' && group.inReplyTo) ||
+                                                    (group.type === 'like' && !group.post?.name && group.post?.content) ||
+                                                    (group.type === 'repost' && !group.post?.name && group.post?.content)
                                                 ) && (
                                                     <div
-                                                        dangerouslySetInnerHTML={{__html: stripHtml(group.object?.content || '')}}
+                                                        dangerouslySetInnerHTML={{__html: stripHtml(group.post?.content || '')}}
                                                         className='ap-note-content mt-1 line-clamp-2 text-pretty text-gray-700 dark:text-gray-600'
                                                     />
                                                 )}
                                             </NotificationItem.Content>
                                         </NotificationItem>
-                                        {index < groupedActivities.length - 1 && <Separator />}
+                                        {index < notificationGroups.length - 1 && <Separator />}
                                     </React.Fragment>
                                 ))}
                             </div>

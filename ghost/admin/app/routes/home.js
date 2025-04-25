@@ -14,7 +14,7 @@ export default class HomeRoute extends Route {
             return this.router.transitionTo('setup.done');
         }
 
-        if (this.feature.ActivityPub && this.session.user.isOwnerOnly) {
+        if (this.feature.ActivityPub && this.session.user.isAdmin) {
             this.router.transitionTo('activitypub-x');
         } else {
             this.router.transitionTo('dashboard');

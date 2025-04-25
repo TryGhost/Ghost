@@ -1,7 +1,7 @@
 import React, {createContext, useContext, useEffect, useState} from 'react';
 import {useLocation} from '@tryghost/admin-x-framework';
 
-// Define all available feature flags here
+// Define all available feature flags as string here, e.g. ['flag-1', 'flag-2']
 export const FEATURE_FLAGS = [] as const;
 
 // ---

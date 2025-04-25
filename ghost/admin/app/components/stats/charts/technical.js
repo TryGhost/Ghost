@@ -3,7 +3,7 @@
 import Component from '@glimmer/component';
 import React from 'react';
 import {DonutChart, useQuery} from '@tinybirdco/charts';
-import {STATS_LABEL_MAPPINGS, TB_VERSION, getStatsParams, statsStaticColors} from 'ghost-admin/utils/stats';
+import {STATS_LABEL_MAPPINGS, getEndpointUrl, getStatsParams, getToken, statsStaticColors} from 'ghost-admin/utils/stats';
 import {action} from '@ember/object';
 import {capitalizeFirstLetter} from '../../../helpers/capitalize-first-letter';
 import {formatNumber} from 'ghost-admin/helpers/format-number';
@@ -12,6 +12,7 @@ import {inject as service} from '@ember/service';
 
 export default class TechnicalComponent extends Component {
     @service router;
+    @service settings;
     @inject config;
 
     @action
@@ -22,7 +23,7 @@ export default class TechnicalComponent extends Component {
     @action
     updateQueryParams(params) {
         const currentRoute = this.router.currentRoute;
-        const newQueryParams = {...currentRoute.queryParams, ...params};
+        const newQueryParams = {...currentRoute.queryParams, ...params, timezone: this.settings.timezone};
         this.router.transitionTo({queryParams: newQueryParams});
     }
 
@@ -46,24 +47,24 @@ export default class TechnicalComponent extends Component {
 
         switch (effectiveSelected) {
         case 'browsers':
-            endpoint = `${this.config.stats.endpoint}/v0/pipes/api_top_browsers__v${TB_VERSION}.json`;
+            endpoint = getEndpointUrl(this.config, 'api_top_browsers');
             indexBy = 'browser';
             tableHead = 'Browser';
             break;
         case 'os':
-            endpoint = `${this.config.stats.endpoint}/v0/pipes/api_top_os__v${TB_VERSION}.json`;
+            endpoint = getEndpointUrl(this.config, 'api_top_os');
             indexBy = 'os';
             tableHead = 'OS';
             break;
         default:
-            endpoint = `${this.config.stats.endpoint}/v0/pipes/api_top_devices__v${TB_VERSION}.json`;
+            endpoint = getEndpointUrl(this.config, 'api_top_devices');
             indexBy = 'device';
             tableHead = 'Device';
         }
 
         const {data, meta, error, loading} = useQuery({
             endpoint: endpoint,
-            token: this.config.stats.token,
+            token: getToken(this.config),
             params
         });
 

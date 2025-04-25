@@ -7,16 +7,15 @@ if [[ "$@" == *"--force"* ]]; then
     force=true
 fi
 
-# Get version from arguments or prompt
-version=0
-if [[ "$@" =~ --version=([0-9]+) ]]; then
-    version="${BASH_REMATCH[1]}"
-else
-    read -p "Enter version number to cleanup (default: 0): " input_version
-    if [ ! -z "$input_version" ]; then
-        version=$input_version
-    fi
-fi
+# Get the directory where the script is located
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+
+# Set the TB_VERSION variable from .tinyenv file
+source "$SCRIPT_DIR/../.tinyenv"
+export TB_VERSION
+echo "Using TB_VERSION: $TB_VERSION"
+version=$TB_VERSION
 
 # Get current branch info
 branch_info=$(tb branch current)
@@ -40,15 +39,12 @@ pipes=$(tb pipe ls)
 
 # Define arrays for each type of resource
 materialized_views=(
-    "_mv_pages"
-    "_mv_sessions"
-    "_mv_sources"
+    "_mv_hits"
 )
 
 data_pipes=(
-    "mv_pages"
-    "mv_sessions"
-    "mv_sources"
+    "mv_hits",
+    "filtered_sessions"
 )
 
 endpoint_pipes=(
@@ -61,17 +57,12 @@ endpoint_pipes=(
     "api_top_sources"
 )
 
-include_files=(
-    "_hits"
-    "_parsed_hits"
-)
-
 # Function to safely remove a resource
 safe_remove() {
     local type=$1
     local name=$2
     local version=$3
-    
+
     if [ "$type" == "pipe" ]; then
         if echo "$pipes" | grep -q "${name}"; then
             echo "Removing pipe: ${name}__v${version}"
@@ -86,13 +77,6 @@ safe_remove() {
         else
             echo "Datasource not found: ${name}__v${version}"
         fi
-    elif [ "$type" == "include" ]; then
-        if echo "$pipes" | grep -q "${name}"; then
-            echo "Removing include: ${name}__v${version}"
-            tb pipe rm "${name}__v${version}" --yes || true
-        else
-            echo "Include not found: ${name}__v${version}"
-        fi
     fi
 }
 
@@ -100,7 +84,7 @@ safe_remove() {
 update_file_versions() {
     local new_version=$1
     echo "Updating version to ${new_version} in all files..."
-    
+
     # Update pipe files
     for pipe in "${endpoint_pipes[@]}" "${data_pipes[@]}"; do
         pipe_file="pipes/${pipe}.pipe"
@@ -109,7 +93,7 @@ update_file_versions() {
             sed -i "1s/^VERSION .*$/VERSION ${new_version}/" "$pipe_file"
         fi
     done
-    
+
     # Update datasource files
     for mv in "${materialized_views[@]}"; do
         ds_file="datasources/${mv}.datasource"
@@ -142,11 +126,6 @@ done
 # Remove data pipes
 for pipe in "${data_pipes[@]}"; do
     safe_remove "pipe" "$pipe" "$version"
-done
-
-# Remove include files
-for inc in "${include_files[@]}"; do
-    safe_remove "include" "$inc" "$version"
 done
 
 # Update version in all files to the specified version

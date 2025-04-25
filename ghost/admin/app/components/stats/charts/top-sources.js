@@ -4,7 +4,7 @@ import AllStatsModal from '../modal-stats-all';
 import Component from '@glimmer/component';
 import React from 'react';
 import {BarList, useQuery} from '@tinybirdco/charts';
-import {CAMPAIGN_OPTIONS, TB_VERSION, barListColor, getStatsParams} from 'ghost-admin/utils/stats';
+import {CAMPAIGN_OPTIONS, barListColor, getEndpointUrl, getStatsParams, getToken} from 'ghost-admin/utils/stats';
 import {STATS_LABEL_MAPPINGS} from '../../../utils/stats';
 import {action} from '@ember/object';
 import {formatNumber} from 'ghost-admin/helpers/format-number';
@@ -19,6 +19,7 @@ export default class TopSources extends Component {
     @inject config;
     @service modals;
     @service router;
+    @service settings;
 
     @tracked campaignOption = CAMPAIGN_OPTIONS[0];
     @tracked campaignOptions = CAMPAIGN_OPTIONS;
@@ -45,7 +46,7 @@ export default class TopSources extends Component {
 
     updateQueryParams(params) {
         const currentRoute = this.router.currentRoute;
-        const newQueryParams = {...currentRoute.queryParams, ...params};
+        const newQueryParams = {...currentRoute.queryParams, ...params, timezone: this.settings.timezone};
 
         this.router.transitionTo({queryParams: newQueryParams});
     }
@@ -56,8 +57,8 @@ export default class TopSources extends Component {
 
     ReactComponent = (props) => {
         const {data, meta, error, loading} = useQuery({
-            endpoint: `${this.config.stats.endpoint}/v0/pipes/api_top_sources__v${TB_VERSION}.json`,
-            token: this.config.stats.token,
+            endpoint: getEndpointUrl(this.config, 'api_top_sources'),
+            token: getToken(this.config),
             params: getStatsParams(
                 this.config,
                 props,
@@ -80,6 +81,7 @@ export default class TopSources extends Component {
                         <span className="gh-stats-data-label">
                             <a
                                 href="#"
+                                style={{cursor: 'default'}}
                                 onClick={(e) => {
                                     e.preventDefault();
                                     this.navigateToFilter(label || 'direct');

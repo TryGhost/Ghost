@@ -6,7 +6,7 @@ const recommendationsService = require('../../../core/server/services/recommenda
 let agent;
 const DomainEvents = require('@tryghost/domain-events');
 const {Mention} = require('@tryghost/webmentions');
-const {Recommendation} = require('@tryghost/recommendations');
+const {Recommendation} = require('../../../core/server/services/recommendations/service');
 
 describe('Incoming Recommendation Emails', function () {
     let emailMockReceiver;
