@@ -7747,14 +7747,6 @@
   resolved "https://registry.yarnpkg.com/@testing-library/user-event/-/user-event-14.6.1.tgz#13e09a32d7a8b7060fe38304788ebf4197cd2149"
   integrity sha512-vq7fv0rnt+QTXgPxr5Hjc210p6YKq2kmdziLgnsZGgLJ9e6VAShx1pACLuRjd/AS/sr7phAR58OIIpf0LlmQNw==
 
-"@tinybirdco/charts@0.2.1":
-  version "0.2.1"
-  resolved "https://registry.yarnpkg.com/@tinybirdco/charts/-/charts-0.2.1.tgz#60894995f2901ece3d7cd11d329a571ebd591acd"
-  integrity sha512-kTzQU3yB9eFATw2DUZR2R+mDYeCO/IkwncgOTcf8Un0v1aSKnG2B9N0vZ9B1zTe3DE7rNd9ChLOyfRtsUAkRGw==
-  dependencies:
-    echarts "^5.5.0"
-    swr "^2.2.5"
-
 "@tinybirdco/charts@0.2.4":
   version "0.2.4"
   resolved "https://registry.yarnpkg.com/@tinybirdco/charts/-/charts-0.2.4.tgz#4dbfefd5acdc11a8f016e89b94ea377da0172dc8"
