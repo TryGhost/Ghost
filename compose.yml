@@ -134,7 +134,7 @@ services:
       - ./.docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
   grafana:
     profiles: [ monitoring ]
-    image: grafana/grafana:8.3.0
+    image: grafana/grafana:8.5.27
     container_name: ghost-grafana
     ports:
       - 3000:3000
