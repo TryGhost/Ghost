@@ -64,8 +64,8 @@
     "@testing-library/react": "12.1.5",
     "@testing-library/user-event": "14.6.1",
     "@tryghost/i18n": "0.0.0",
-    "@vitejs/plugin-react": "4.2.1",
-    "@vitest/coverage-v8": "0.34.3",
+    "@vitejs/plugin-react": "4.4.1",
+    "@vitest/coverage-v8": "0.34.6",
     "autoprefixer": "10.4.19",
     "bson-objectid": "2.0.4",
     "concurrently": "8.2.2",
@@ -78,8 +78,8 @@
     "postcss": "8.4.39",
     "tailwindcss": "3.4.17",
     "vite": "4.5.6",
-    "vite-plugin-css-injected-by-js": "3.3.0",
+    "vite-plugin-css-injected-by-js": "3.5.2",
     "vite-plugin-svgr": "3.3.0",
-    "vitest": "0.34.3"
+    "vitest": "0.34.6"
   }
 }

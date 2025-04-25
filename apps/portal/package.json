@@ -84,9 +84,9 @@
     "@testing-library/jest-dom": "5.17.0",
     "@testing-library/react": "12.1.5",
     "@tryghost/i18n": "0.0.0",
-    "@vitejs/plugin-react": "4.2.1",
-    "@vitest/coverage-v8": "0.34.3",
-    "@vitest/ui": "0.34.3",
+    "@vitejs/plugin-react": "4.4.1",
+    "@vitest/coverage-v8": "0.34.6",
+    "@vitest/ui": "0.34.7",
     "concurrently": "8.2.2",
     "cross-fetch": "4.1.0",
     "eslint-plugin-i18next": "6.1.1",
@@ -94,9 +94,9 @@
     "react": "17.0.2",
     "react-dom": "17.0.2",
     "vite": "4.5.6",
-    "vite-plugin-css-injected-by-js": "3.3.0",
+    "vite-plugin-css-injected-by-js": "3.5.2",
     "vite-plugin-svgr": "3.3.0",
-    "vitest": "0.34.3"
+    "vitest": "0.34.6"
   },
   "dependencies": {
     "@hcaptcha/react-hcaptcha": "1.12.0"
