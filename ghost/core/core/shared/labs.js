@@ -60,12 +60,6 @@ module.exports.WRITABLE_KEYS_ALLOWLIST = [...BETA_FEATURES, ...ALPHA_FEATURES];
 module.exports.getAll = () => {
     const labs = _.cloneDeep(settingsCache.get('labs')) || {};
 
-    ALPHA_FEATURES.forEach((alphaKey) => {
-        if (labs[alphaKey] && !(config.get('enableDeveloperExperiments') || process.env.NODE_ENV.startsWith('test'))) {
-            delete labs[alphaKey];
-        }
-    });
-
     GA_FEATURES.forEach((gaKey) => {
         labs[gaKey] = true;
     });
