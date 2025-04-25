@@ -35,6 +35,11 @@ const features = [{
     title: 'Content Visibility (Alpha)',
     description: 'Enables content visibility in Emails - Additional changes for internal testing. NOTE: requires `contentVisibility` to also be enabled',
     flag: 'contentVisibilityAlpha'
+},
+{
+    title: 'Traffic Analytics',
+    description: 'Enables traffic analytics',
+    flag: 'trafficAnalytics'
 },{
     title: 'Stats redesign',
     description: 'Enables redesigned Stats page',
