@@ -125,7 +125,7 @@ services:
       retries: 120
   prometheus:
     profiles: [ monitoring ]
-    image: prom/prometheus:v2.30.3
+    image: prom/prometheus:v2.55.1
     container_name: ghost-prometheus
     ports:
       - 9090:9090
