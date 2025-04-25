@@ -29,20 +29,21 @@ const GA_FEATURES = [
     'contentVisibility'
 ];
 
-// NOTE: this allowlist is meant to be used to filter out any unexpected
-//       input for the "labs" setting value
-const BETA_FEATURES = [
-    'additionalPaymentMethods',
-    'stripeAutomaticTax',
-    'webmentions',
-    'editorExcerpt',
+// These features are considered publicly available and can be enabled/disabled by users
+const PUBLIC_BETA_FEATURES = [
     'ActivityPub',
-    'trafficAnalytics',
-    'importMemberTier',
-    'superEditors'
+    'superEditors',
+    'editorExcerpt',
+    'additionalPaymentMethods'
 ];
 
-const ALPHA_FEATURES = [
+// These features are considered private they live in the private tab of the labs settings page
+// Which is only visible if the developer experiments flag is enabled
+const PRIVATE_FEATURES = [
+    'stripeAutomaticTax',
+    'webmentions',
+    'trafficAnalytics',
+    'importMemberTier',
     'urlCache',
     'emailCustomization',
     'mailEvents',
@@ -55,7 +56,7 @@ const ALPHA_FEATURES = [
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
-module.exports.WRITABLE_KEYS_ALLOWLIST = [...BETA_FEATURES, ...ALPHA_FEATURES];
+module.exports.WRITABLE_KEYS_ALLOWLIST = [...PUBLIC_BETA_FEATURES, ...PRIVATE_FEATURES];
 
 module.exports.getAll = () => {
     const labs = _.cloneDeep(settingsCache.get('labs')) || {};
@@ -75,7 +76,7 @@ module.exports.getAll = () => {
 };
 
 module.exports.getAllFlags = function () {
-    return [...GA_FEATURES, ...BETA_FEATURES, ...ALPHA_FEATURES];
+    return [...GA_FEATURES, ...PUBLIC_BETA_FEATURES, ...PRIVATE_FEATURES];
 };
 
 /**
