@@ -6,7 +6,7 @@ const {
     getSessionId,
     setSessionId,
     getStorageObject
-} = require('../../../../../core/frontend/src/utils/session-storage');
+} = require('../../../../core/frontend/src/utils/session-storage');
 
 describe('Session Storage Utils', function () {
     let mockStorage;

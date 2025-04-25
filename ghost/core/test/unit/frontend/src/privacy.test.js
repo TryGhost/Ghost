@@ -4,7 +4,7 @@ const should = require('should');
 const {
     processPayload,
     maskSensitiveData
-} = require('../../../../../core/frontend/src/utils/privacy');
+} = require('../../../../core/frontend/src/utils/privacy');
 
 describe('Privacy Utils', function () {
     describe('maskSensitiveData', function () {

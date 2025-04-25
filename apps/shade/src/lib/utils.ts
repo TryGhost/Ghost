@@ -1,6 +1,7 @@
 import {clsx, type ClassValue} from 'clsx';
 import isEmail from 'validator/es/lib/isEmail';
 import {twMerge} from 'tailwind-merge';
+import {Moment} from 'moment-timezone';
 
 // Helper to merge Tailwind classes
 export function cn(...inputs: ClassValue[]) {
@@ -139,4 +140,54 @@ const displayFromBase = (url: string, baseUrl: string) => {
     }
 
     return new URL(url, baseUrl).toString();
+};
+
+// Format date for stats query
+export const formatQueryDate = (date: Moment) => {
+    return date.format('YYYY-MM-DD');
+};
+
+// Format date for UI, result is in the formate of `12 Jun 2025`
+export const formatDisplayDate = (dateString: string): string => {
+    const date = new Date(dateString);
+    const today = new Date();
+    const isToday = date.toDateString() === today.toDateString();
+    const isCurrentYear = date.getFullYear() === today.getFullYear();
+
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const day = date.getDate();
+    const month = months[date.getMonth()];
+    const year = date.getFullYear();
+
+    if (isToday) {
+        return `${day} ${month}`;
+    }
+
+    return isCurrentYear ? `${day} ${month}` : `${day} ${month} ${year}`;
+};
+
+// Add thousands indicator to numbers
+export const formatNumber = (value: number): string => {
+    return new Intl.NumberFormat('en-US').format(Math.round(value));
+};
+
+// Format time duration
+export const formatDuration = (seconds: number): string => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const remainingSeconds = Math.floor(seconds % 60);
+
+    if (hours <= 0) {
+        if (minutes <= 0) {
+            return `${remainingSeconds}s`;
+        }
+        return `${minutes}m ${remainingSeconds}s`;
+    }
+
+    return `${hours}h ${minutes}m ${remainingSeconds}s`;
+};
+
+// Format a fraction to percentage
+export const formatPercentage = (value: number) => {
+    return `${Math.round(value * 100)}%`;
 };

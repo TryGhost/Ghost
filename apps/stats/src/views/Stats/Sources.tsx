@@ -3,9 +3,8 @@ import DateRangeSelect from './components/DateRangeSelect';
 import React from 'react';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, H1, Recharts, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, ViewHeader, ViewHeaderActions} from '@tryghost/shade';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, H1, Recharts, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, ViewHeader, ViewHeaderActions, formatNumber, formatQueryDate} from '@tryghost/shade';
 import {STATS_DEFAULT_SOURCE_ICON_URL} from '@src/utils/constants';
-import {formatNumber, formatQueryDate} from '@src/utils/data-formatters';
 import {getPeriodText, getRangeDates} from '@src/utils/chart-helpers';
 import {getStatEndpointUrl, getToken} from '@src/config/stats-config';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
@@ -102,7 +101,7 @@ const Sources:React.FC = () => {
             <StatsView data={data} isLoading={isLoading}>
                 <Card className='-mb-5' variant='plain'>
                     <CardHeader className='border-none'>
-                        <CardTitle>Top sources</CardTitle>
+                        <CardTitle>Top Sources</CardTitle>
                         <CardDescription>How readers found your site {getPeriodText(range)}</CardDescription>
                     </CardHeader>
                     <CardContent className='border-none text-gray-500 [&_.recharts-pie-label-line]:stroke-gray-300'>

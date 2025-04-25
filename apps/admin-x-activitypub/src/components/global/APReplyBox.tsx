@@ -1,12 +1,14 @@
-import React, {HTMLProps, useEffect, useId, useRef, useState} from 'react';
+import React, {ChangeEvent, HTMLProps, useEffect, useId, useRef, useState} from 'react';
 
 import * as FormPrimitive from '@radix-ui/react-form';
 import APAvatar from './APAvatar';
 import clsx from 'clsx';
 import getUsername from '../../utils/get-username';
 import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
-import {Button} from '@tryghost/admin-x-design-system';
-import {useReplyMutationForUser, useUserDataForUser} from '@hooks/use-activity-pub-queries';
+import {Button, LucideIcon} from '@tryghost/shade';
+import {FILE_SIZE_ERROR_MESSAGE, COVER_MAX_DIMENSIONS as IMAGE_MAX_DIMENSIONS, MAX_FILE_SIZE, checkImageDimensions, getDimensionErrorMessage} from '@utils/image';
+import {showToast} from '@tryghost/admin-x-design-system';
+import {uploadFile, useReplyMutationForUser, useUserDataForUser} from '@hooks/use-activity-pub-queries';
 
 export interface APTextAreaProps extends HTMLProps<HTMLTextAreaElement> {
     title?: string;
@@ -59,11 +61,16 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
 }) => {
     const id = useId();
     const [textValue, setTextValue] = useState(value); // Manage the textarea value with state
+    const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
 
     const {data: user} = useUserDataForUser('index');
     const replyMutation = useReplyMutationForUser('index', user);
 
     const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const imageInputRef = useRef<HTMLInputElement>(null);
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const [isImageUploading, setIsImageUploading] = useState(false);
+    const imageButtonRef = useRef<HTMLButtonElement>(null);
 
     useEffect(() => {
         if (textareaRef.current && focused) {
@@ -78,7 +85,8 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
 
         replyMutation.mutate({
             inReplyTo: object.id,
-            content: textValue
+            content: textValue,
+            imageUrl: uploadedImageUrl || undefined
         }, {
             onError() {
                 onReplyError?.();
@@ -86,11 +94,19 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
         });
 
         setTextValue('');
+        setImagePreview(null);
+        setUploadedImageUrl(null);
+        if (imagePreview) {
+            URL.revokeObjectURL(imagePreview);
+        }
+        if (imageInputRef.current) {
+            imageInputRef.current.value = '';
+        }
 
         onReply?.();
     }
 
-    const [isFocused, setFocused] = useState(false);
+    const [isFocused] = useState(true);
 
     useEffect(() => {
         if (textareaRef.current) {
@@ -105,16 +121,96 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
         }
     }
 
-    function handleBlur() {
-        setFocused(false);
-        if (textareaRef.current && !textValue?.trim()) {
-            textareaRef.current.style.height = '';
-        }
-    }
+    const handleImageUpload = async (file: File) => {
+        try {
+            setIsImageUploading(true);
+            const imageUrl = await uploadFile(file);
+            setUploadedImageUrl(imageUrl);
+        } catch (err) {
+            setImagePreview(null);
 
-    function handleFocus() {
-        setFocused(true);
-    }
+            let errorMessage = 'Failed to upload image. Try again.';
+
+            if (err && typeof err === 'object' && 'statusCode' in err) {
+                switch (err.statusCode) {
+                case 413:
+                    errorMessage = 'Image size exceeds limit.';
+                    break;
+                case 415:
+                    errorMessage = 'The file type is not supported.';
+                    break;
+                default:
+                    // Use the default error message
+                }
+            }
+            showToast({
+                message: errorMessage,
+                type: 'error'
+            });
+        } finally {
+            setIsImageUploading(false);
+        }
+    };
+
+    const handleImageChange = async (e: ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files;
+
+        if (files && files.length > 0) {
+            const file = files[0];
+
+            if (file.size > MAX_FILE_SIZE) {
+                showToast({
+                    message: FILE_SIZE_ERROR_MESSAGE,
+                    type: 'error'
+                });
+                e.target.value = '';
+                return;
+            }
+
+            const withinMaxDimensions = await checkImageDimensions(
+                file,
+                IMAGE_MAX_DIMENSIONS.width,
+                IMAGE_MAX_DIMENSIONS.height
+            );
+            if (!withinMaxDimensions) {
+                showToast({
+                    message: getDimensionErrorMessage(
+                        IMAGE_MAX_DIMENSIONS.width,
+                        IMAGE_MAX_DIMENSIONS.height
+                    ),
+                    type: 'error'
+                });
+                return;
+            }
+
+            const previewUrl = URL.createObjectURL(file);
+            setImagePreview(previewUrl);
+
+            await handleImageUpload(file);
+        }
+    };
+
+    const handleClearImage = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        setImagePreview(null);
+        setUploadedImageUrl(null);
+        if (imagePreview) {
+            URL.revokeObjectURL(imagePreview);
+        }
+
+        if (imageInputRef.current) {
+            imageInputRef.current.value = '';
+        }
+    };
+
+    useEffect(() => {
+        // Cleanup function to revoke object URLs when component unmounts
+        return () => {
+            if (imagePreview) {
+                URL.revokeObjectURL(imagePreview);
+            }
+        };
+    }, [imagePreview]);
 
     const styles = clsx(
         'ap-textarea order-2 w-full resize-none break-words rounded-lg border bg-transparent py-2 pr-3 text-[1.5rem] transition-all dark:text-white',
@@ -150,19 +246,35 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
                                     placeholder={placeholder}
                                     rows={rows}
                                     value={textValue}
-                                    onBlur={handleBlur}
                                     onChange={handleChange}
-                                    onFocus={handleFocus}
                                     {...props}>
                                 </textarea>
+                            </FormPrimitive.Control>
+                        </FormPrimitive.Field>
+                        <FormPrimitive.Field name='image' asChild>
+                            <FormPrimitive.Control asChild>
+                                <input
+                                    ref={imageInputRef}
+                                    accept="image/jpeg,image/png,image/webp"
+                                    className='hidden'
+                                    type="file"
+                                    onChange={handleImageChange}
+                                />
                             </FormPrimitive.Control>
                         </FormPrimitive.Field>
                         {title}
                         {hint}
                     </div>
                 </FormPrimitive.Root>
-                <div className='absolute bottom-[3px] right-0 flex space-x-4 transition-[opacity] duration-150'>
-                    <Button color='black' disabled={buttonDisabled} id='post' label='Post' size='md' onMouseDown={handleClick} />
+                {imagePreview &&
+                    <div className='group relative -mt-6 w-fit grow'>
+                        <img alt='Image attachment preview' className={`max-h-[420px] w-full rounded-sm object-cover outline outline-1 -outline-offset-1 outline-black/10 ${isImageUploading && 'animate-pulse'}`} src={imagePreview} />
+                        <Button className='absolute right-3 top-3 size-8 bg-black/60 opacity-0 hover:bg-black/80 group-hover:opacity-100' onClick={handleClearImage}><LucideIcon.Trash2 /></Button>
+                    </div>
+                }
+                <div className={`${imagePreview ? 'mt-4' : 'absolute'} bottom-[3px] right-0 flex justify-end space-x-3 transition-[opacity] duration-150`}>
+                    <Button ref={imageButtonRef} className='w-[34px] !min-w-0' variant='outline' onClick={() => imageInputRef.current?.click()}><LucideIcon.Image /></Button>
+                    <Button className='min-w-20' color='black' disabled={buttonDisabled || isImageUploading} id='post' onClick={handleClick}>Post</Button>
                 </div>
             </div>
         </div>
