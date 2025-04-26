@@ -19232,10 +19232,10 @@ getpass@^0.1.1:
   dependencies:
     assert-plus "^1.0.0"
 
-ghost-storage-base@1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/ghost-storage-base/-/ghost-storage-base-1.0.0.tgz#931289d310ad59fc80e2be01a81235cc3a76e75a"
-  integrity sha512-qIW6pny/wWKjrbRmXVNis9i7856AMR5/NZmnLTrKbA0KIEnA9K/fhkj7ISnSyTYfBv17sFsC23eJfvj6dDgZrQ==
+ghost-storage-base@1.1.1:
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/ghost-storage-base/-/ghost-storage-base-1.1.1.tgz#63caec4af9cb2f5cd0271cc87bf85cbadd135de8"
+  integrity sha512-MRokcZctPKO/Oonn2W55dYNZRPn75lBoSdoOc1BtwL7wm/Sq/Qx7ovx1H5seZhCReFs8QOeUXvX9dXuguBSnnQ==
   dependencies:
     moment "2.27.0"
 

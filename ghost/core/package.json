@@ -163,7 +163,7 @@
     "file-type": "16.5.4",
     "form-data": "4.0.2",
     "fs-extra": "11.3.0",
-    "ghost-storage-base": "1.0.0",
+    "ghost-storage-base": "1.1.1",
     "glob": "8.1.0",
     "got": "11.8.6",
     "gscan": "4.48.0",
