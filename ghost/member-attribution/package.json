@@ -22,6 +22,6 @@
   "dependencies": {
     "@tryghost/domain-events": "0.0.0",
     "@tryghost/member-events": "0.0.0",
-    "@tryghost/string": "0.2.12"
+    "@tryghost/string": "0.2.13"
   }
 }
