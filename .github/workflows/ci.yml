@@ -41,9 +41,12 @@ jobs:
           fetch-depth: 2
 
       - name: Output GitHub context
-        run: echo "$GITHUB_CONTEXT"
+        run: |
+          echo "GITHUB_EVENT_NAME: $GITHUB_EVENT_NAME"
+          echo "GITHUB_CONTEXT: $GITHUB_CONTEXT"
         env:
-          GITHUB_CONTEXT: ${{ toJson(github) }}
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+          GITHUB_CONTEXT: ${{ toJson(github.event) }}
 
       - name: Get metadata (push)
         if: github.event_name == 'push'
