@@ -23,8 +23,8 @@
   },
   "dependencies": {
     "@tryghost/errors": "1.3.7",
-    "@tryghost/string": "0.2.12",
-    "@tryghost/tpl": "0.1.32",
+    "@tryghost/string": "0.2.13",
+    "@tryghost/tpl": "0.1.34",
     "bson-objectid": "2.0.4"
   }
 }
