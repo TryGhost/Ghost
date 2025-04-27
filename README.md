@@ -31,6 +31,7 @@ Follow the instructions for the top-level repo.
 - `yarn lint` run just eslint
 - `yarn test` run lint and tests
 
+If the image output changes, one way to compare the output is with [git diff image](https://github.com/ewanmellor/git-diff-image)
 
 
 
