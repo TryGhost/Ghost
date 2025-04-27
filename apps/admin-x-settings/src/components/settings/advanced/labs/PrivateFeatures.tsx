@@ -4,10 +4,6 @@ import React from 'react';
 import {List} from '@tryghost/admin-x-design-system';
 
 const features = [{
-    title: 'Webmentions',
-    description: 'Allows viewing received mentions on the dashboard.',
-    flag: 'webmentions'
-},{
     title: 'Stripe Automatic Tax (private beta)',
     description: 'Use Stripe Automatic Tax at Stripe Checkout. Needs to be enabled in Stripe',
     flag: 'stripeAutomaticTax'
