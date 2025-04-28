@@ -160,4 +160,42 @@ describe('Acceptance: Members activity', function () {
             expect(donationEventWithoutAttribution.textContent).to.not.include('–');
         });
     });
+
+    describe('Edge cases', function () {
+        beforeEach(async function () {
+            const role = this.server.create('role', {name: 'Administrator'});
+            await this.server.create('user', {roles: [role]});
+
+            await authenticateSession();
+        });
+
+        it('displays member with blank string name in list item correctly', async function () {
+            // create 1 member with id 1
+            this.server.create('member', {id: 1, name: ' ', email: 'blank@example.com', status: 'free'});
+
+            // create an event for member 1
+            this.server.create('member-activity-event', {memberId: 1, createdAt: moment('2024-08-18 08:18:08').format('YYYY-MM-DD HH:mm:ss'), type: 'payment_event'});
+            await visit('/members-activity');
+            expect(findAll('.gh-members-activity-event').length).to.equal(1);
+
+            // gh-members-list-name
+            const memberWithBlankName = find('.gh-members-list-name');
+
+            expect(memberWithBlankName.textContent).to.equal('blank@example.com');
+        });
+
+        it('displays member with full name in list item correctly', async function () {
+            this.server.create('member', {id: 2, name: 'Malcolm', email: 'full@example.com', status: 'free'});
+            this.server.create('member-activity-event', {memberId: 2, createdAt: moment('2024-08-18 08:18:08').format('YYYY-MM-DD HH:mm:ss'), type: 'payment_event'});
+            await visit('/members-activity');
+
+            const memberName = find('.gh-members-list-name');
+
+            expect(memberName.textContent).to.equal('Malcolm');
+
+            const memberEmail = find('.gh-members-list-email');
+
+            expect(memberEmail.textContent).to.equal('full@example.com');
+        });
+    });
 });
