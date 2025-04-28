@@ -14,7 +14,7 @@ const SourceRow: React.FC<SourceRowProps> = ({className, source}) => {
     return (
         <>
             <img
-                className="gh-stats-favicon"
+                className="size-4"
                 src={`https://www.faviconextractor.com/favicon/${source || 'direct'}?larger=true`}
                 onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
                     e.currentTarget.src = STATS_DEFAULT_SOURCE_ICON_URL;
