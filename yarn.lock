@@ -7885,10 +7885,10 @@
   resolved "https://registry.yarnpkg.com/@tryghost/promise/-/promise-0.3.8.tgz#3134a044e187f6d61393267c680c6cc75235aa96"
   integrity sha512-ppcnLBWczpbo4sQcGWtjEA82kdZMv4NFF2MvZRi1MBP4lSOSgh9A636eUxlB1/FpIG+D5ixq84xlY4QJMqW2kA==
 
-"@tryghost/referrer-parser@0.0.2":
-  version "0.0.2"
-  resolved "https://registry.yarnpkg.com/@tryghost/referrer-parser/-/referrer-parser-0.0.2.tgz#5470533aee59f0d68290152026ded52d0ecb2b0c"
-  integrity sha512-8LdG5BIsIAsKPJ4IGb6ATS2ivyI20YqhigsdJcrvkmlIKBt30sLfmX5E0Rh2sino4xDERTY9y9GUFfnHRQUO+Q==
+"@tryghost/referrer-parser@0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/referrer-parser/-/referrer-parser-0.1.0.tgz#4019aab00e0f1b6ce05c5868a18425f0eed9e5fa"
+  integrity sha512-c8DaQgHQdy7gF3W5DVqucaoz46GCnutAv/XdyGbOW+FK/EpgQyTxZZGyuEEx9L5nk6IC3geLc0NkahRYBQG+Kg==
 
 "@tryghost/request@1.0.10", "@tryghost/request@^1.0.10":
   version "1.0.10"
