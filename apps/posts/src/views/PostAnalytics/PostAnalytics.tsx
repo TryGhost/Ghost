@@ -29,7 +29,7 @@ const PostAnalytics: React.FC<postAnalyticsProps> = () => {
     const {data: {posts: [post]} = {posts: []}, isLoading: isPostLoading} = useBrowsePosts({
         searchParams: {
             filter: `id:${postId}`,
-            fields: 'title,slug,published_at'
+            fields: 'title,slug,published_at,uuid'
         }
     });
 
@@ -49,7 +49,7 @@ const PostAnalytics: React.FC<postAnalyticsProps> = () => {
         if (!isPostLoading && post?.slug) {
             return {
                 ...baseParams,
-                pathname: `/${post.slug}/`
+                post_uuid: post.uuid
             };
         }
 
