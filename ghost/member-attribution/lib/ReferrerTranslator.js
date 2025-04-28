@@ -46,8 +46,8 @@ class ReferrerTranslator {
                 // Ignore stripe, because second try payments should not be attributed to Stripe
                 continue;
             }
-
-            const {referrerSource, referrerMedium, referrerUrl} = this.parser.parse(item.referrerUrl, item.referrerSource);
+            // Use the parser to check against known referrers
+            const {referrerSource, referrerMedium, referrerUrl} = this.parser.parse(item.referrerUrl, item.referrerSource, item.referrerMedium);
             // Keep searching history if there's no match
             if (referrerSource || referrerMedium || referrerUrl) {
                 return {
