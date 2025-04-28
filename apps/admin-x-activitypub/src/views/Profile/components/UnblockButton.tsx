@@ -1,4 +1,5 @@
 import React, {useState} from 'react';
+import {Account} from '@src/api/activitypub';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -13,11 +14,13 @@ import {
 } from '@tryghost/shade';
 
 interface UnblockButtonProps {
+    account: Account,
     onUnblock: () => void;
     className?: string;
 }
 
 const UnblockButton: React.FC<UnblockButtonProps> = ({
+    account,
     onUnblock,
     className = ''
 }) => {
@@ -41,7 +44,10 @@ const UnblockButton: React.FC<UnblockButtonProps> = ({
             </AlertDialogTrigger>
             <AlertDialogContent>
                 <AlertDialogHeader>
-                    <AlertDialogTitle>Unblock this user?</AlertDialogTitle>
+                    <AlertDialogTitle className='flex flex-col gap-0.5'>
+                        Unblock this user?
+                        <span className='text-base font-normal tracking-normal'>{account.handle}</span>
+                    </AlertDialogTitle>
                     <AlertDialogDescription>
                         They will be able to follow you and engage with your public posts.
                     </AlertDialogDescription>

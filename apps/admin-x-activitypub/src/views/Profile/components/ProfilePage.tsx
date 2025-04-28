@@ -52,11 +52,27 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
     const {data: currentUser} = params.handle ? currentAccountQuery : {data: undefined};
     const isCurrentUser = params.handle === currentUser?.handle || !params.handle;
 
+    // TODO: Wire up the block state
+    const [isBlocked, setIsBlocked] = useState(false);
+
+    // TODO: Wire up the block functionality
+    const handleBlock = () => {
+        setIsBlocked(!isBlocked);
+    };
+
+    const handleCopy = async () => {
+        await navigator.clipboard.writeText(account.handle);
+        showToast({
+            title: 'Handle copied',
+            type: 'success'
+        });
+    };
+
     const tabs = [
         {
             id: 'posts',
             title: 'Posts',
-            contents: postsTab
+            contents: !isBlocked ? postsTab : <div className="text-center">Blocked</div>
         },
         !params.handle && {
             id: 'likes',
@@ -93,22 +109,6 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
             setIsOverflowing(contentRef.current.scrollHeight > 160); // Compare content height to max height
         }
     }, [isExpanded]);
-
-    // TODO: Wire up the block state
-    const [isBlocked, setIsBlocked] = useState(false);
-
-    // TODO: Wire up the block functionality
-    const handleBlock = () => {
-        setIsBlocked(!isBlocked);
-    };
-
-    const handleCopy = async () => {
-        await navigator.clipboard.writeText(account.handle);
-        showToast({
-            title: 'Handle copied',
-            type: 'success'
-        });
-    };
 
     return (
         <Layout>
@@ -161,10 +161,11 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
                                                 onFollow={noop}
                                                 onUnfollow={noop}
                                             /> :
-                                            <UnblockButton onUnblock={handleBlock} />
+                                            <UnblockButton account={account} onUnblock={handleBlock} />
                                         }
                                         {isEnabled('block') &&
                                             <ProfileMenu
+                                                account={account}
                                                 isBlocked={isBlocked}
                                                 trigger={<Button aria-label='Open profile menu' variant='outline'><LucideIcon.Ellipsis /></Button>}
                                                 onBlockAccount={handleBlock}

@@ -1,3 +1,4 @@
+import {Account} from '@src/api/activitypub';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -17,6 +18,7 @@ import {
 } from '@tryghost/shade';
 
 interface ProfileMenuProps {
+    account: Account,
     trigger: React.ReactNode;
     onCopyHandle: () => void;
     onBlockAccount: () => void;
@@ -25,6 +27,7 @@ interface ProfileMenuProps {
 }
 
 const ProfileMenu: React.FC<ProfileMenuProps> = ({
+    account,
     trigger,
     onCopyHandle,
     onBlockAccount,
@@ -70,7 +73,10 @@ const ProfileMenu: React.FC<ProfileMenuProps> = ({
             </Popover>
             <AlertDialogContent onClick={e => e.stopPropagation()}>
                 <AlertDialogHeader>
-                    <AlertDialogTitle>{isBlocked ? 'Unblock this user?' : 'Block this user?'}</AlertDialogTitle>
+                    <AlertDialogTitle className='flex flex-col gap-0.5'>
+                        {isBlocked ? 'Unblock this user?' : 'Block this user?'}
+                        <span className='text-base font-normal tracking-normal'>{account.handle}</span>
+                    </AlertDialogTitle>
                     <AlertDialogDescription>
                         {isBlocked
                             ? 'They will be able to follow you and engage with your public posts.'
