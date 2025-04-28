@@ -60,7 +60,6 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, ...props}) => {
     const handleImageUpload = async (file: File) => {
         try {
             setIsImageUploading(true);
-            await new Promise(resolve => setTimeout(resolve, 2000));
             const imageUrl = await uploadFile(file);
             setUploadedImageUrl(imageUrl);
         } catch (error) {

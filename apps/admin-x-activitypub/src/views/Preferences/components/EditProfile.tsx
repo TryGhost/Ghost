@@ -85,7 +85,6 @@ const EditProfile: React.FC<EditProfileProps> = ({account, setIsEditingProfile})
     const handleProfileImageUpload = async (file: File) => {
         try {
             setIsProfileImageUploading(true);
-            await new Promise(resolve => setTimeout(resolve, 2000));
             const uploadedImageUrl = await uploadFile(file);
             return uploadedImageUrl;
         } catch (error) {
@@ -155,7 +154,6 @@ const EditProfile: React.FC<EditProfileProps> = ({account, setIsEditingProfile})
     const handleCoverImageUpload = async (file: File) => {
         try {
             setIsCoverImageUploading(true);
-            await new Promise(resolve => setTimeout(resolve, 2000));
             const uploadedImageUrl = await uploadFile(file);
             return uploadedImageUrl;
         } catch (error) {
