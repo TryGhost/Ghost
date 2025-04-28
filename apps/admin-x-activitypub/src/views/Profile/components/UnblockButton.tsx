@@ -44,7 +44,7 @@ const UnblockButton: React.FC<UnblockButtonProps> = ({
             </AlertDialogTrigger>
             <AlertDialogContent>
                 <AlertDialogHeader>
-                    <AlertDialogTitle className='flex flex-col gap-0.5'>
+                    <AlertDialogTitle className='mb-1 flex flex-col gap-1'>
                         Unblock this user?
                         <span className='text-base font-normal tracking-normal'>{account.handle}</span>
                     </AlertDialogTitle>

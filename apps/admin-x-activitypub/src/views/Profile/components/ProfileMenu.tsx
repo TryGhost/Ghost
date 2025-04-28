@@ -73,7 +73,7 @@ const ProfileMenu: React.FC<ProfileMenuProps> = ({
             </Popover>
             <AlertDialogContent onClick={e => e.stopPropagation()}>
                 <AlertDialogHeader>
-                    <AlertDialogTitle className='flex flex-col gap-0.5'>
+                    <AlertDialogTitle className='mb-1 flex flex-col gap-1'>
                         {isBlocked ? 'Unblock this user?' : 'Block this user?'}
                         <span className='text-base font-normal tracking-normal'>{account.handle}</span>
                     </AlertDialogTitle>

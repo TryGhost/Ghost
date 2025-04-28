@@ -72,7 +72,9 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
         {
             id: 'posts',
             title: 'Posts',
-            contents: !isBlocked ? postsTab : <div className="text-center">Blocked</div>
+            contents: !isBlocked ? postsTab : <NoValueLabel icon='block'>
+                {account.name} is blocked
+            </NoValueLabel>
         },
         !params.handle && {
             id: 'likes',
