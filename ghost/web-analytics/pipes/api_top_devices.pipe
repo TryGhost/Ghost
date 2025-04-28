@@ -45,8 +45,7 @@ SQL >
             {% if defined(source) %} and source = {{ String(source, description="Source to filter on", required=False) }} {% end %}
             {% if defined(location) %} and location = {{ String(location, description="Location to filter on", required=False) }} {% end %}
             {% if defined(pathname) %} and pathname = {{ String(pathname, description="Pathname to filter on", required=False) }} {% end %}
+            {% if defined(post_uuid) %} and post_uuid = {{ String(post_uuid, description="Post UUID to filter on", required=False) }} {% end %}
         group by device
         order by visits desc
         limit {{ Int32(skip, 0) }},{{ Int32(limit, 50) }}
-
-
