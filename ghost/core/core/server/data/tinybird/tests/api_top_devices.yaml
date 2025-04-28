@@ -37,6 +37,12 @@
   expected_result: |
     {"device":"desktop","visits":8}
 
+- name: Filtered by post_uuid - 06b1b0c9-fb53-4a15-a060-3db3fde7b1fc (/about/)
+  description: Filtered by post_uuid - 06b1b0c9-fb53-4a15-a060-3db3fde7b1fc (/about/)
+  parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&post_uuid=06b1b0c9-fb53-4a15-a060-3db3fde7b1fc
+  expected_result: |
+    {"device":"desktop","visits":8}
+
 - name: Filtered by source - bing.com
   description: Filtered by source - bing.com
   parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&source=bing.com
