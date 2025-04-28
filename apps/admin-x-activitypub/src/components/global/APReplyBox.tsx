@@ -6,8 +6,8 @@ import clsx from 'clsx';
 import getUsername from '../../utils/get-username';
 import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, LucideIcon} from '@tryghost/shade';
-import {FILE_SIZE_ERROR_MESSAGE, COVER_MAX_DIMENSIONS as IMAGE_MAX_DIMENSIONS, MAX_FILE_SIZE, checkImageDimensions, getDimensionErrorMessage} from '@utils/image';
-import {showToast} from '@tryghost/admin-x-design-system';
+import {FILE_SIZE_ERROR_MESSAGE, MAX_FILE_SIZE} from '@utils/image';
+import {LoadingIndicator, showToast} from '@tryghost/admin-x-design-system';
 import {uploadFile, useReplyMutationForUser, useUserDataForUser} from '@hooks/use-activity-pub-queries';
 
 export interface APTextAreaProps extends HTMLProps<HTMLTextAreaElement> {
@@ -167,22 +167,6 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
                 return;
             }
 
-            const withinMaxDimensions = await checkImageDimensions(
-                file,
-                IMAGE_MAX_DIMENSIONS.width,
-                IMAGE_MAX_DIMENSIONS.height
-            );
-            if (!withinMaxDimensions) {
-                showToast({
-                    message: getDimensionErrorMessage(
-                        IMAGE_MAX_DIMENSIONS.width,
-                        IMAGE_MAX_DIMENSIONS.height
-                    ),
-                    type: 'error'
-                });
-                return;
-            }
-
             const previewUrl = URL.createObjectURL(file);
             setImagePreview(previewUrl);
 
@@ -267,8 +251,13 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
                     </div>
                 </FormPrimitive.Root>
                 {imagePreview &&
-                    <div className='group relative -mt-6 w-fit grow'>
-                        <img alt='Image attachment preview' className={`max-h-[420px] w-full rounded-sm object-cover outline outline-1 -outline-offset-1 outline-black/10 ${isImageUploading && 'animate-pulse'}`} src={imagePreview} />
+                    <div className='group relative -mt-6 flex w-fit grow items-center justify-center'>
+                        <img alt='Image attachment preview' className={`max-h-[420px] w-full rounded-sm object-cover outline outline-1 -outline-offset-1 outline-black/10 ${isImageUploading && 'opacity-10'}`} src={imagePreview} />
+                        {isImageUploading &&
+                            <div className='absolute leading-[0]'>
+                                <LoadingIndicator size='md' />
+                            </div>
+                        }
                         <Button className='absolute right-3 top-3 size-8 bg-black/60 opacity-0 hover:bg-black/80 group-hover:opacity-100' onClick={handleClearImage}><LucideIcon.Trash2 /></Button>
                     </div>
                 }
