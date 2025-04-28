@@ -1,6 +1,6 @@
 import Content from './content/Content';
 import Loading from './content/Loading';
-import React, {useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {ROOT_DIV_ID} from '../utils/constants';
 import {useAppContext} from '../AppContext';
 
@@ -25,12 +25,13 @@ const ContentBox: React.FC<Props> = ({done}) => {
     };
     const {accentColor, colorScheme} = useAppContext();
 
-    const darkMode = () => {
+    const darkMode = useCallback(() => {
         if (colorScheme === 'light') {
             return false;
         } else if (colorScheme === 'dark') {
             return true;
         } else {
+            // Always fall back to container color detection
             const el = document.getElementById(ROOT_DIV_ID);
             if (!el || !el.parentElement) {
                 return false;
@@ -44,9 +45,17 @@ const ContentBox: React.FC<Props> = ({done}) => {
 
             return contrast([255, 255, 255], [red, green, blue]) < 5;
         }
-    };
+    }, [colorScheme, contrast]);
+
+    const [containerClass, setContainerClass] = useState(darkMode() ? 'dark' : '');
 
     useEffect(() => {
+        // Update class when colorScheme changes
+        setContainerClass(darkMode() ? 'dark' : '');
+    }, [colorScheme, darkMode]);
+
+    useEffect(() => {
+        // Handle container style/class changes
         const el = document.getElementById(ROOT_DIV_ID);
         if (el?.parentElement) {
             const observer = new MutationObserver(() => {
@@ -60,9 +69,7 @@ const ContentBox: React.FC<Props> = ({done}) => {
                 observer.disconnect();
             };
         }
-    }, []);
-
-    const [containerClass, setContainerClass] = useState(darkMode() ? 'dark' : '');
+    }, [darkMode]);
 
     const style = {
         '--gh-accent-color': accentColor ?? 'black',
