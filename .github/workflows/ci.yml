@@ -101,6 +101,7 @@ jobs:
               - 'ghost/**'
               - '!ghost/admin/**'
               - '!ghost/web-analytics/**'
+              - '!ghost/core/core/server/data/tinybird/**'
             admin:
               - *shared
               - 'ghost/admin/**'
