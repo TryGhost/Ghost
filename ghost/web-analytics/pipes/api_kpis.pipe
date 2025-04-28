@@ -153,9 +153,9 @@ SQL >
             select
                 a.date as date,
                 coalesce(b.visits, 0) as visits,
-                {% if defined(pathname) || defined(post_uuid) %}coalesce(c.pageviews, 0){% else %}coalesce(b.pageviews, 0){% end %} as pageviews,
+                {% if defined(pathname) or defined(post_uuid) %}coalesce(c.pageviews, 0){% else %}coalesce(b.pageviews, 0){% end %} as pageviews,
                 coalesce(b.bounce_rate, 0) as bounce_rate,
                 coalesce(b.avg_session_sec, 0) as avg_session_sec
             from timeseries a
             left join data b on a.date = b.date
-            {% if defined(pathname) || defined(post_uuid) %}left join pathname_pageviews c on a.date = c.date{% end %}
+            {% if defined(pathname) or defined(post_uuid) %}left join pathname_pageviews c on a.date = c.date{% end %}
