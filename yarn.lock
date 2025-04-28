@@ -756,7 +756,7 @@
   resolved "https://registry.yarnpkg.com/@babel/compat-data/-/compat-data-7.26.8.tgz#821c1d35641c355284d4a870b8a4a7b0c141e367"
   integrity sha512-oH5UPLMWR3L2wEFLnFJ1TZXqHufiTKAiLfqw5zkhS4dKXLJ10yVztfil/twG8EDTA4F/tvVNw9nOl4ZMslB8rQ==
 
-"@babel/core@^7.0.0", "@babel/core@^7.1.6", "@babel/core@^7.11.6", "@babel/core@^7.12.0", "@babel/core@^7.12.3", "@babel/core@^7.12.9", "@babel/core@^7.13.10", "@babel/core@^7.16.7", "@babel/core@^7.18.9", "@babel/core@^7.20.12", "@babel/core@^7.21.3", "@babel/core@^7.23.0", "@babel/core@^7.23.2", "@babel/core@^7.23.5", "@babel/core@^7.23.9", "@babel/core@^7.26.10", "@babel/core@^7.3.4":
+"@babel/core@^7.0.0", "@babel/core@^7.1.6", "@babel/core@^7.11.6", "@babel/core@^7.12.0", "@babel/core@^7.12.3", "@babel/core@^7.12.9", "@babel/core@^7.13.10", "@babel/core@^7.16.7", "@babel/core@^7.18.9", "@babel/core@^7.20.12", "@babel/core@^7.21.3", "@babel/core@^7.23.0", "@babel/core@^7.23.2", "@babel/core@^7.23.9", "@babel/core@^7.26.10", "@babel/core@^7.3.4":
   version "7.26.10"
   resolved "https://registry.yarnpkg.com/@babel/core/-/core-7.26.10.tgz#5c876f83c8c4dcb233ee4b670c0606f2ac3000f9"
   integrity sha512-vMqyb7XCDMPvJFFOaT9kxtiRh42GwlZEg1/uIgtZshS5a/8OaduUfCi7kynKgc3Tw/6Uo2D+db9qBttghhmxwQ==
@@ -1580,14 +1580,14 @@
   dependencies:
     "@babel/helper-plugin-utils" "^7.22.5"
 
-"@babel/plugin-transform-react-jsx-self@^7.18.6", "@babel/plugin-transform-react-jsx-self@^7.23.3", "@babel/plugin-transform-react-jsx-self@^7.25.9":
+"@babel/plugin-transform-react-jsx-self@^7.18.6", "@babel/plugin-transform-react-jsx-self@^7.25.9":
   version "7.25.9"
   resolved "https://registry.yarnpkg.com/@babel/plugin-transform-react-jsx-self/-/plugin-transform-react-jsx-self-7.25.9.tgz#c0b6cae9c1b73967f7f9eb2fca9536ba2fad2858"
   integrity sha512-y8quW6p0WHkEhmErnfe58r7x0A70uKphQm8Sp8cV7tjNQwK56sNVK0M73LK3WuYmsuyrftut4xAkjjgU0twaMg==
   dependencies:
     "@babel/helper-plugin-utils" "^7.25.9"
 
-"@babel/plugin-transform-react-jsx-source@^7.19.6", "@babel/plugin-transform-react-jsx-source@^7.23.3", "@babel/plugin-transform-react-jsx-source@^7.25.9":
+"@babel/plugin-transform-react-jsx-source@^7.19.6", "@babel/plugin-transform-react-jsx-source@^7.25.9":
   version "7.25.9"
   resolved "https://registry.yarnpkg.com/@babel/plugin-transform-react-jsx-source/-/plugin-transform-react-jsx-source-7.25.9.tgz#4c6b8daa520b5f155b5fb55547d7c9fa91417503"
   integrity sha512-+iqjT8xmXhhYv4/uiYd8FNQsraMFZIfxVSqxxVSZP0WbbSAWvBXAul0m/zu+7Vv4O/3WtApy9pmaTMiumEZgfg==
@@ -8882,16 +8882,27 @@
   resolved "https://registry.yarnpkg.com/@ungap/structured-clone/-/structured-clone-1.2.0.tgz#756641adb587851b5ccb3e095daf27ae581c8406"
   integrity sha512-zuVdFrMJiuCDQUMCzQaD6KL28MjnqqN8XnAqiEq9PNm/hCPTSGfrXCOfwj1ow4LFb/tNymJPwsNbVePc1xFqrQ==
 
-"@vitejs/plugin-react@4.2.1":
-  version "4.2.1"
-  resolved "https://registry.yarnpkg.com/@vitejs/plugin-react/-/plugin-react-4.2.1.tgz#744d8e4fcb120fc3dbaa471dadd3483f5a304bb9"
-  integrity sha512-oojO9IDc4nCUUi8qIR11KoQm0XFFLIwsRBwHRR4d/88IWghn1y6ckz/bJ8GHDCsYEJee8mDzqtJxh15/cisJNQ==
+"@vitejs/plugin-react@4.4.1", "@vitejs/plugin-react@^4.4.1":
+  version "4.4.1"
+  resolved "https://registry.yarnpkg.com/@vitejs/plugin-react/-/plugin-react-4.4.1.tgz#d7d1e9c9616d7536b0953637edfee7c6cbe2fe0f"
+  integrity sha512-IpEm5ZmeXAP/osiBXVVP5KjFMzbWOonMs0NaQQl+xYnUAcq4oHUBsF2+p4MgKWG4YMmFYJU8A6sxRPuowllm6w==
   dependencies:
-    "@babel/core" "^7.23.5"
-    "@babel/plugin-transform-react-jsx-self" "^7.23.3"
-    "@babel/plugin-transform-react-jsx-source" "^7.23.3"
+    "@babel/core" "^7.26.10"
+    "@babel/plugin-transform-react-jsx-self" "^7.25.9"
+    "@babel/plugin-transform-react-jsx-source" "^7.25.9"
     "@types/babel__core" "^7.20.5"
-    react-refresh "^0.14.0"
+    react-refresh "^0.17.0"
+
+"@vitejs/plugin-react@4.4.1":
+  version "4.4.1"
+  resolved "https://registry.yarnpkg.com/@vitejs/plugin-react/-/plugin-react-4.4.1.tgz#d7d1e9c9616d7536b0953637edfee7c6cbe2fe0f"
+  integrity sha512-IpEm5ZmeXAP/osiBXVVP5KjFMzbWOonMs0NaQQl+xYnUAcq4oHUBsF2+p4MgKWG4YMmFYJU8A6sxRPuowllm6w==
+  dependencies:
+    "@babel/core" "^7.26.10"
+    "@babel/plugin-transform-react-jsx-self" "^7.25.9"
+    "@babel/plugin-transform-react-jsx-source" "^7.25.9"
+    "@types/babel__core" "^7.20.5"
+    react-refresh "^0.17.0"
 
 "@vitejs/plugin-react@^3.0.1":
   version "3.1.0"
@@ -8903,17 +8914,6 @@
     "@babel/plugin-transform-react-jsx-source" "^7.19.6"
     magic-string "^0.27.0"
     react-refresh "^0.14.0"
-
-"@vitejs/plugin-react@^4.4.1":
-  version "4.4.1"
-  resolved "https://registry.yarnpkg.com/@vitejs/plugin-react/-/plugin-react-4.4.1.tgz#d7d1e9c9616d7536b0953637edfee7c6cbe2fe0f"
-  integrity sha512-IpEm5ZmeXAP/osiBXVVP5KjFMzbWOonMs0NaQQl+xYnUAcq4oHUBsF2+p4MgKWG4YMmFYJU8A6sxRPuowllm6w==
-  dependencies:
-    "@babel/core" "^7.26.10"
-    "@babel/plugin-transform-react-jsx-self" "^7.25.9"
-    "@babel/plugin-transform-react-jsx-source" "^7.25.9"
-    "@types/babel__core" "^7.20.5"
-    react-refresh "^0.17.0"
 
 "@vitest/coverage-v8@0.34.3":
   version "0.34.3"
@@ -31762,7 +31762,7 @@ vite-node@0.34.3:
     picocolors "^1.0.0"
     vite "^3.0.0 || ^4.0.0"
 
-vite-plugin-css-injected-by-js@3.5.2, vite-plugin-css-injected-by-js@^3.3.0:
+vite-plugin-css-injected-by-js@3.5.2:
   version "3.5.2"
   resolved "https://registry.yarnpkg.com/vite-plugin-css-injected-by-js/-/vite-plugin-css-injected-by-js-3.5.2.tgz#1f75d16ad5c05b6b49bf18018099a189ec2e46ad"
   integrity sha512-2MpU/Y+SCZyWUB6ua3HbJCrgnF0KACAsmzOQt1UvRVJCGF6S8xdA3ZUhWcWdM9ivG4I5az8PnQmwwrkC2CAQrQ==
