@@ -4,8 +4,8 @@ import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, LucideIcon, Skeleton} from '@tryghost/shade';
 import {ChangeEvent, useEffect, useRef, useState} from 'react';
 import {ComponentPropsWithoutRef, ReactNode} from 'react';
-import {FILE_SIZE_ERROR_MESSAGE, COVER_MAX_DIMENSIONS as IMAGE_MAX_DIMENSIONS, MAX_FILE_SIZE, checkImageDimensions, getDimensionErrorMessage} from '@utils/image';
-import {showToast} from '@tryghost/admin-x-design-system';
+import {FILE_SIZE_ERROR_MESSAGE, MAX_FILE_SIZE} from '@utils/image';
+import {LoadingIndicator, showToast} from '@tryghost/admin-x-design-system';
 import {uploadFile, useAccountForUser, useNoteMutationForUser, useUserDataForUser} from '@hooks/use-activity-pub-queries';
 import {useNavigate} from '@tryghost/admin-x-framework';
 
@@ -103,22 +103,6 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, ...props}) => {
                 return;
             }
 
-            const withinMaxDimensions = await checkImageDimensions(
-                file,
-                IMAGE_MAX_DIMENSIONS.width,
-                IMAGE_MAX_DIMENSIONS.height
-            );
-            if (!withinMaxDimensions) {
-                showToast({
-                    message: getDimensionErrorMessage(
-                        IMAGE_MAX_DIMENSIONS.width,
-                        IMAGE_MAX_DIMENSIONS.height
-                    ),
-                    type: 'error'
-                });
-                return;
-            }
-
             const previewUrl = URL.createObjectURL(file);
             setImagePreview(previewUrl);
 
@@ -207,8 +191,13 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, ...props}) => {
                     </FormPrimitive.Root>
                 </div>
                 {imagePreview &&
-                    <div className='group relative w-fit grow'>
-                        <img alt='Image attachment preview' className={`max-h-[420px] w-full rounded-sm object-cover outline outline-1 -outline-offset-1 outline-black/10 ${isImageUploading && 'animate-pulse'}`} src={imagePreview} />
+                    <div className='group relative flex w-fit grow items-center justify-center'>
+                        <img alt='Image attachment preview' className={`max-h-[420px] w-full rounded-sm object-cover outline outline-1 -outline-offset-1 outline-black/10 ${isImageUploading && 'opacity-10'}`} src={imagePreview} />
+                        {isImageUploading &&
+                            <div className='absolute leading-[0]'>
+                                <LoadingIndicator size='md' />
+                            </div>
+                        }
                         <Button className='absolute right-3 top-3 size-8 bg-black/60 opacity-0 hover:bg-black/80 group-hover:opacity-100' onClick={handleClearImage}><LucideIcon.Trash2 /></Button>
                     </div>
                 }

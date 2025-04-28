@@ -1,8 +1,8 @@
 import React, {ChangeEvent, useEffect, useRef, useState} from 'react';
 import {Account} from '@src/api/activitypub';
 import {Button, DialogClose, DialogFooter, Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage, Input, LucideIcon, Textarea} from '@tryghost/shade';
-import {COVER_MAX_DIMENSIONS, FILE_SIZE_ERROR_MESSAGE, MAX_FILE_SIZE, PROFILE_MAX_DIMENSIONS, checkImageDimensions, getDimensionErrorMessage} from '@utils/image';
-import {showToast} from '@tryghost/admin-x-design-system';
+import {FILE_SIZE_ERROR_MESSAGE, MAX_FILE_SIZE, SQUARE_IMAGE_ERROR_MESSAGE, isSquareImage} from '@utils/image';
+import {LoadingIndicator, showToast} from '@tryghost/admin-x-design-system';
 import {uploadFile} from '@hooks/use-activity-pub-queries';
 import {useForm} from 'react-hook-form';
 import {useNavigate} from '@tryghost/admin-x-framework';
@@ -129,19 +129,13 @@ const EditProfile: React.FC<EditProfileProps> = ({account, setIsEditingProfile})
                 return;
             }
 
-            const withinMaxDimensions = await checkImageDimensions(
-                file,
-                PROFILE_MAX_DIMENSIONS.width,
-                PROFILE_MAX_DIMENSIONS.height
-            );
-            if (!withinMaxDimensions) {
+            const isSquare = await isSquareImage(file);
+            if (!isSquare) {
                 showToast({
-                    message: getDimensionErrorMessage(
-                        PROFILE_MAX_DIMENSIONS.width,
-                        PROFILE_MAX_DIMENSIONS.height
-                    ),
+                    message: SQUARE_IMAGE_ERROR_MESSAGE,
                     type: 'error'
                 });
+                e.target.value = '';
                 return;
             }
 
@@ -204,22 +198,6 @@ const EditProfile: React.FC<EditProfileProps> = ({account, setIsEditingProfile})
                 return;
             }
 
-            const withinMaxDimensions = await checkImageDimensions(
-                file,
-                COVER_MAX_DIMENSIONS.width,
-                COVER_MAX_DIMENSIONS.height
-            );
-            if (!withinMaxDimensions) {
-                showToast({
-                    message: getDimensionErrorMessage(
-                        COVER_MAX_DIMENSIONS.width,
-                        COVER_MAX_DIMENSIONS.height
-                    ),
-                    type: 'error'
-                });
-                return;
-            }
-
             const previewUrl = URL.createObjectURL(file);
             setCoverImagePreview(previewUrl);
 
@@ -274,10 +252,15 @@ const EditProfile: React.FC<EditProfileProps> = ({account, setIsEditingProfile})
             >
 
                 <div className='relative mb-2'>
-                    <div className='group relative h-[180px] cursor-pointer bg-gray-100' onClick={triggerCoverImageInput}>
+                    <div className='group relative flex h-[180px] cursor-pointer items-center justify-center bg-gray-100' onClick={triggerCoverImageInput}>
                         {coverImagePreview ?
                             <>
-                                <img className={`size-full object-cover ${isCoverImageUploading && 'animate-pulse'}`} src={coverImagePreview} />
+                                <img className={`size-full object-cover ${isCoverImageUploading && 'opacity-10'}`} src={coverImagePreview} />
+                                {isCoverImageUploading &&
+                                    <div className='absolute leading-[0]'>
+                                        <LoadingIndicator size='md' />
+                                    </div>
+                                }
                                 <Button className='absolute right-3 top-3 size-8 bg-black/60 opacity-0 hover:bg-black/80 group-hover:opacity-100' onClick={(e) => {
                                     e.stopPropagation();
                                     setCoverImagePreview(null);
@@ -290,7 +273,12 @@ const EditProfile: React.FC<EditProfileProps> = ({account, setIsEditingProfile})
                     <div className='group absolute -bottom-10 left-4 flex size-20 cursor-pointer items-center justify-center rounded-full border-2 border-white bg-gray-100' onClick={triggerProfileImageInput}>
                         {profileImagePreview ?
                             <>
-                                <img className={`size-full rounded-full object-cover ${isProfileImageUploading && 'animate-pulse'}`} src={profileImagePreview} />
+                                <img className={`size-full rounded-full object-cover ${isProfileImageUploading && 'opacity-10'}`} src={profileImagePreview} />
+                                {isProfileImageUploading &&
+                                    <div className='absolute leading-[0]'>
+                                        <LoadingIndicator size='md' />
+                                    </div>
+                                }
                                 <Button className='absolute -right-2 -top-2 h-8 w-10 rounded-full bg-black/80 opacity-0 hover:bg-black/90 group-hover:opacity-100' onClick={(e) => {
                                     e.stopPropagation();
                                     setProfileImagePreview(null);
