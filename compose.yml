@@ -18,6 +18,7 @@ services:
       - "6174:6174" # Signup form
       - "7173:7173" # Comments
       - "7174:7174" # Comments HTTPS
+      - "6006:6006" # Storybook
     profiles: [ ghost ]
     volumes:
       # Mount the source code
