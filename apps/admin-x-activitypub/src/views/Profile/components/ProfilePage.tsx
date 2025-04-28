@@ -94,8 +94,10 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
         }
     }, [isExpanded]);
 
+    // TODO: Wire up the block state
     const [isBlocked, setIsBlocked] = useState(false);
 
+    // TODO: Wire up the block functionality
     const handleBlock = () => {
         setIsBlocked(!isBlocked);
     };

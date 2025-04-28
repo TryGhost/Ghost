@@ -41,9 +41,9 @@ const UnblockButton: React.FC<UnblockButtonProps> = ({
             </AlertDialogTrigger>
             <AlertDialogContent>
                 <AlertDialogHeader>
-                    <AlertDialogTitle>Unblock this account?</AlertDialogTitle>
+                    <AlertDialogTitle>Unblock this user?</AlertDialogTitle>
                     <AlertDialogDescription>
-                        Unblocking will allow this account to interact with your posts and you will see their content again.
+                        They will be able to follow you and engage with your public posts.
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
