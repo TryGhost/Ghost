@@ -53,7 +53,7 @@ export default class MigrateService extends Service {
                     kid: id
                 })
                 .setIssuedAt()
-                .setExpirationTime('5m')
+                .setExpirationTime('15m')
                 .setAudience('/admin/')
                 .sign(encodedSecret);
 

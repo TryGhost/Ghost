@@ -107,7 +107,7 @@ const ZapierModal = NiceModal.create(() => {
                     },
                     {label: 'API URL', text: window.location.origin + getGhostPaths().subdir}
                 ]} /></div>}
-                icon={<ZapierIcon className='h-14 w-14' />}
+                icon={<ZapierIcon className='size-14' />}
                 title='Zapier'
             />
 
@@ -120,9 +120,9 @@ const ZapierModal = NiceModal.create(() => {
                         title={
                             <div className='flex flex-col gap-4 md:flex-row md:items-center'>
                                 <div className='flex shrink-0 flex-nowrap items-center gap-2'>
-                                    <img className='h-8 w-8 object-contain dark:invert' role='presentation' src={resolveAsset(template.ghostImage, adminRoot)} />
+                                    <img className='size-8 object-contain dark:invert' role='presentation' src={resolveAsset(template.ghostImage, adminRoot)} />
                                     <Icon name="arrow-right" size="xs" />
-                                    <img className='h-8 w-8 object-contain' role='presentation' src={resolveAsset(template.appImage, adminRoot)} />
+                                    <img className='size-8 object-contain' role='presentation' src={resolveAsset(template.appImage, adminRoot)} />
                                 </div>
                                 <span className='text-sm'>{template.title}</span>
                             </div>

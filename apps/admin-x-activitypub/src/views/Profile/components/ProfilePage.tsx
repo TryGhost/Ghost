@@ -1,12 +1,17 @@
 import APAvatar from '@src/components/global/APAvatar';
+import EditProfile from '@src/views/Preferences/components/EditProfile';
 import FollowButton from '@src/components/global/FollowButton';
 import Layout from '@src/components/layout';
+import ProfileMenu from './ProfileMenu';
+import UnblockButton from './UnblockButton';
 import {Account} from '@src/api/activitypub';
-import {Button, Heading, Icon, NoValueLabel, Tab, TabView} from '@tryghost/admin-x-design-system';
+import {Button, Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, LucideIcon, Skeleton} from '@tryghost/shade';
+import {Heading, Icon, NoValueLabel, Button as OldButton, Tab, TabView, showToast} from '@tryghost/admin-x-design-system';
 import {ProfileTab} from '../Profile';
-import {Skeleton} from '@tryghost/shade';
+import {SettingAction} from '@src/views/Preferences/components/Settings';
 import {useAccountForUser} from '@src/hooks/use-activity-pub-queries';
 import {useEffect, useRef, useState} from 'react';
+import {useFeatureFlags} from '@src/lib/feature-flags';
 import {useNavigationStack, useParams} from '@tryghost/admin-x-framework';
 
 const noop = () => {};
@@ -33,6 +38,8 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
     followingTab,
     followersTab
 }) => {
+    const {isEnabled} = useFeatureFlags();
+
     const [selectedTab, setSelectedTab] = useState<ProfileTab>('posts');
     const params = useParams();
     const {canGoBack} = useNavigationStack();
@@ -45,11 +52,29 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
     const {data: currentUser} = params.handle ? currentAccountQuery : {data: undefined};
     const isCurrentUser = params.handle === currentUser?.handle || !params.handle;
 
+    // TODO: Wire up the block state
+    const [isBlocked, setIsBlocked] = useState(false);
+
+    // TODO: Wire up the block functionality
+    const handleBlock = () => {
+        setIsBlocked(!isBlocked);
+    };
+
+    const handleCopy = async () => {
+        await navigator.clipboard.writeText(account.handle);
+        showToast({
+            title: 'Handle copied',
+            type: 'success'
+        });
+    };
+
     const tabs = [
         {
             id: 'posts',
             title: 'Posts',
-            contents: postsTab
+            contents: !isBlocked ? postsTab : <NoValueLabel icon='block'>
+                {account.name} is blocked
+            </NoValueLabel>
         },
         !params.handle && {
             id: 'likes',
@@ -72,6 +97,7 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
     ].filter(Boolean) as Tab<ProfileTab>[];
 
     const [isExpanded, setisExpanded] = useState(false);
+    const [isEditingProfile, setIsEditingProfile] = useState(false);
 
     const toggleExpand = () => {
         setisExpanded(!isExpanded);
@@ -128,17 +154,44 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
                                     }
                                 </div>
                                 {!isCurrentUser && !isLoadingAccount &&
-                                    <FollowButton
-                                        following={account?.followedByMe}
-                                        handle={account?.handle}
-                                        type='primary'
-                                        onFollow={noop}
-                                        onUnfollow={noop}
-                                    />
+                                    <div className='flex gap-2'>
+                                        {!isEnabled('block') || !isBlocked ?
+                                            <FollowButton
+                                                following={account?.followedByMe}
+                                                handle={account?.handle}
+                                                type='primary'
+                                                onFollow={noop}
+                                                onUnfollow={noop}
+                                            /> :
+                                            <UnblockButton account={account} onUnblock={handleBlock} />
+                                        }
+                                        {isEnabled('block') &&
+                                            <ProfileMenu
+                                                account={account}
+                                                isBlocked={isBlocked}
+                                                trigger={<Button aria-label='Open profile menu' variant='outline'><LucideIcon.Ellipsis /></Button>}
+                                                onBlockAccount={handleBlock}
+                                                onCopyHandle={handleCopy}
+                                            />
+                                        }
+                                    </div>
+                                }
+                                {isCurrentUser && !isLoadingAccount &&
+                                    <Dialog open={isEditingProfile} onOpenChange={setIsEditingProfile}>
+                                        <DialogTrigger>
+                                            <SettingAction><Button variant='secondary'>Edit profile</Button></SettingAction>
+                                        </DialogTrigger>
+                                        <DialogContent className='w-full max-w-[520px]' onOpenAutoFocus={e => e.preventDefault()}>
+                                            <DialogHeader>
+                                                <DialogTitle>Profile settings</DialogTitle>
+                                            </DialogHeader>
+                                            {account && <EditProfile account={account} setIsEditingProfile={setIsEditingProfile} />}
+                                        </DialogContent>
+                                    </Dialog>
                                 }
                             </div>
                             <Heading className='mt-4' level={3}>{!isLoadingAccount ? account?.name : <Skeleton className='w-32' />}</Heading>
-                            <a className='group/handle mt-1 flex items-center gap-1 text-[1.5rem] text-gray-800 hover:text-gray-900' href={account?.url} rel='noopener noreferrer' target='_blank'>
+                            <a className='group/handle mb-4 inline-flex items-center gap-1 text-[1.5rem] text-gray-800 hover:text-gray-900' href={account?.url} rel='noopener noreferrer' target='_blank'>
                                 <span>{!isLoadingAccount ? account?.handle : <Skeleton className='w-full max-w-56' />}</span>
                                 <Icon className='opacity-0 transition-opacity group-hover/handle:opacity-100' name='arrow-top-right' size='xs'/>
                             </a>
@@ -159,7 +212,7 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
                                 {!isExpanded && isOverflowing && (
                                     <div className='absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-white via-white/90 via-60% to-transparent' />
                                 )}
-                                {isOverflowing && <Button
+                                {isOverflowing && <OldButton
                                     className='absolute bottom-0'
                                     label={isExpanded ? 'Show less' : 'Show all'}
                                     link={true}

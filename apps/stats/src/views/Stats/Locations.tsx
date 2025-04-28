@@ -1,18 +1,16 @@
 import AudienceSelect, {getAudienceQueryParam} from './components/AudienceSelect';
 import DateRangeSelect from './components/DateRangeSelect';
 import React, {useState} from 'react';
-import StatsContent from './layout/StatsContent';
 import StatsLayout from './layout/StatsLayout';
+import StatsView from './layout/StatsView';
 import World from '@svg-maps/world';
 import countries from 'i18n-iso-countries';
 import enLocale from 'i18n-iso-countries/langs/en.json';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, cn} from '@tryghost/shade';
-import {Header, HeaderActions} from '@src/components/layout/Header';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle, H1, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, ViewHeader, ViewHeaderActions, cn, formatNumber, formatQueryDate} from '@tryghost/shade';
 import {STATS_LABEL_MAPPINGS} from '@src/utils/constants';
 import {SVGMap} from 'react-svg-map';
-import {formatNumber, formatQueryDate} from '@src/utils/data-formatters';
-import {getCountryFlag, getRangeDates} from '@src/utils/chart-helpers';
-import {getStatEndpointUrl} from '@src/config/stats-config';
+import {getCountryFlag, getPeriodText, getRangeDates} from '@src/utils/chart-helpers';
+import {getStatEndpointUrl, getToken} from '@src/config/stats-config';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useQuery} from '@tinybirdco/charts';
 
@@ -30,13 +28,13 @@ interface TooltipData {
 }
 
 const Locations:React.FC = () => {
-    const {data: configData, isLoading: isConfigLoading} = useGlobalData();
+    const {statsConfig, isLoading: isConfigLoading} = useGlobalData();
     const {range, audience} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
     const [tooltipData, setTooltipData] = useState<TooltipData | null>(null);
 
     const params = {
-        site_uuid: configData?.config.stats?.id || '',
+        site_uuid: statsConfig?.id || '',
         date_from: formatQueryDate(startDate),
         date_to: formatQueryDate(endDate),
         timezone: timezone,
@@ -44,8 +42,8 @@ const Locations:React.FC = () => {
     };
 
     const {data, loading} = useQuery({
-        endpoint: getStatEndpointUrl(configData?.config.stats?.endpoint, 'api_top_locations'),
-        token: configData?.config.stats?.token || '',
+        endpoint: getStatEndpointUrl(statsConfig, 'api_top_locations'),
+        token: getToken(statsConfig),
         params
     });
 
@@ -132,7 +130,7 @@ const Locations:React.FC = () => {
             return cn('fill-[hsl(var(--chart-1))]', opacity);
         }
 
-        return 'fill-gray-300';
+        return 'fill-gray-300 dark:fill-gray-900/75';
     };
 
     const handleLocationMouseOver = (e: React.MouseEvent<SVGPathElement>) => {
@@ -160,17 +158,17 @@ const Locations:React.FC = () => {
 
     return (
         <StatsLayout>
-            <Header>
-                Locations
-                <HeaderActions>
+            <ViewHeader>
+                <H1>Locations</H1>
+                <ViewHeaderActions>
                     <AudienceSelect />
                     <DateRangeSelect />
-                </HeaderActions>
-            </Header>
-            <StatsContent>
+                </ViewHeaderActions>
+            </ViewHeader>
+            <StatsView data={data} isLoading={isLoading}>
                 <Card variant='plain'>
                     <CardContent className='-mb-5 border-none pt-8'>
-                        <div className='svg-map-container relative mx-auto max-w-[680px]'>
+                        <div className='svg-map-container relative mx-auto max-w-[680px] [&_.svg-map]:stroke-background'>
                             <SVGMap
                                 locationClassName={getLocationClassName}
                                 map={World}
@@ -179,7 +177,7 @@ const Locations:React.FC = () => {
                             />
                             {tooltipData && (
                                 <div
-                                    className="pointer-events-none fixed z-50 min-w-[120px] rounded-lg border bg-white px-3 py-2 text-sm shadow-lg transition-all duration-150 ease-in-out"
+                                    className="pointer-events-none fixed z-50 min-w-[120px] rounded-lg border bg-background px-3 py-2 text-sm text-foreground shadow-lg transition-all duration-150 ease-in-out"
                                     style={{
                                         left: tooltipData.x + 10,
                                         top: tooltipData.y + 10,
@@ -191,7 +189,7 @@ const Locations:React.FC = () => {
                                         <span className="font-medium">{tooltipData.countryName}</span>
                                     </div>
                                     <div className='flex grow items-center justify-between gap-3'>
-                                        <div className="text-sm text-gray-800">Visitors</div>
+                                        <div className="text-sm text-muted-foreground">Visitors</div>
                                         <div className="font-mono font-medium">{formatNumber(tooltipData.visits)}</div>
                                     </div>
                                 </div>
@@ -201,8 +199,8 @@ const Locations:React.FC = () => {
                 </Card>
                 <Card variant='plain'>
                     <CardHeader>
-                        <CardTitle>All locations</CardTitle>
-                        <CardDescription>A breakdown of where your audience is located</CardDescription>
+                        <CardTitle>Top Locations</CardTitle>
+                        <CardDescription>A geographic breakdown of your readers {getPeriodText(range)}</CardDescription>
                     </CardHeader>
                     <CardContent>
                         {isLoading ? 'Loading' :
@@ -210,7 +208,7 @@ const Locations:React.FC = () => {
                                 <TableHeader>
                                     <TableRow>
                                         <TableHead className='w-[80%]'>Country</TableHead>
-                                        <TableHead className='w-[20%]'>Visitors</TableHead>
+                                        <TableHead className='w-[20%] text-right'>Visitors</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -221,7 +219,7 @@ const Locations:React.FC = () => {
                                                 <TableCell className="font-medium">
                                                     <span title={countryName || 'Unknown'}>{getCountryFlag(`${row.location}`)} {countryName}</span>
                                                 </TableCell>
-                                                <TableCell>{formatNumber(Number(row.visits))}</TableCell>
+                                                <TableCell className='text-right font-mono text-sm'>{formatNumber(Number(row.visits))}</TableCell>
                                             </TableRow>
                                         );
                                     })}
@@ -230,7 +228,7 @@ const Locations:React.FC = () => {
                         }
                     </CardContent>
                 </Card>
-            </StatsContent>
+            </StatsView>
         </StatsLayout>
     );
 };

@@ -2,7 +2,7 @@
 const base = require('@playwright/test');
 const {promisify} = require('util');
 const {spawn, exec} = require('child_process');
-const {setupGhost, setupMailgun, enableLabs, setupStripe, getStripeAccountId, generateStripeIntegrationToken} = require('../utils/e2e-browser-utils');
+const {setupGhost, setupMailgun, setupStripe, getStripeAccountId, generateStripeIntegrationToken} = require('../utils/e2e-browser-utils');
 const {allowStripe, mockMail, mockGeojs, assert} = require('../../utils/e2e-framework-mock-manager');
 const sinon = require('sinon');
 const ObjectID = require('bson-objectid').default;
@@ -178,7 +178,6 @@ module.exports = base.test.extend({
         await setupGhost(page);
         await setupStripe(page, stripeIntegrationToken);
         await setupMailgun(page);
-        await enableLabs(page);
         const state = await page.context().storageState();
 
         await page.close();

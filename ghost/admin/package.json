@@ -1,6 +1,6 @@
 {
   "name": "ghost-admin",
-  "version": "5.117.0",
+  "version": "5.118.1",
   "description": "Ember.js admin client for Ghost",
   "author": "Ghost Foundation",
   "homepage": "http://ghost.org",
@@ -44,19 +44,18 @@
     "@sentry/ember": "7.120.3",
     "@sentry/integrations": "7.114.0",
     "@sentry/replay": "7.116.0",
-    "@tinybirdco/charts": "0.2.1",
-    "@tryghost/color-utils": "0.2.2",
+    "@tryghost/color-utils": "0.2.3",
     "@tryghost/ember-promise-modals": "2.0.1",
-    "@tryghost/helpers": "1.1.90",
+    "@tryghost/helpers": "1.1.91",
     "@tryghost/kg-clean-basic-html": "4.2.0",
     "@tryghost/kg-converters": "1.1.0",
     "@tryghost/koenig-lexical": "1.6.9",
-    "@tryghost/limit-service": "1.2.14",
+    "@tryghost/limit-service": "1.2.15",
     "@tryghost/members-csv": "0.0.0",
     "@tryghost/nql": "0.12.7",
     "@tryghost/nql-lang": "0.6.3",
-    "@tryghost/string": "0.2.12",
-    "@tryghost/timezone-data": "0.4.4",
+    "@tryghost/string": "0.2.13",
+    "@tryghost/timezone-data": "0.4.5",
     "animejs": "3.2.2",
     "autoprefixer": "9.8.6",
     "babel-plugin-transform-class-properties": "6.24.1",
@@ -149,7 +148,7 @@
     "sentry-testkit": "5.0.10",
     "sinon-chai": "4.0.0",
     "testem": "3.15.2",
-    "tracked-built-ins": "3.3.0",
+    "tracked-built-ins": "3.4.0",
     "util": "0.12.5",
     "validator": "7.2.0",
     "walk-sync": "3.0.0"
@@ -177,8 +176,9 @@
   "dependencies": {
     "i18n-iso-countries": "7.14.0",
     "jose": "4.15.9",
+    "lru-cache": "6.0.0",
     "path-browserify": "1.0.1",
-    "webpack": "5.99.4"
+    "webpack": "5.99.7"
   },
   "nx": {
     "targets": {
@@ -187,7 +187,6 @@
           "build:dev",
           {
             "projects": [
-              "@tryghost/admin-x-demo",
               "@tryghost/admin-x-settings",
               "@tryghost/admin-x-activitypub",
               "@tryghost/posts",
@@ -206,7 +205,6 @@
           "build",
           {
             "projects": [
-              "@tryghost/admin-x-demo",
               "@tryghost/admin-x-settings",
               "@tryghost/admin-x-activitypub",
               "@tryghost/posts",
