@@ -2,8 +2,8 @@ import ContentBox from './ContentBox';
 import React from 'react';
 import {AppContext} from '../AppContext';
 import {ROOT_DIV_ID} from '../utils/constants';
-import {render, screen} from '@testing-library/react';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
+import {render, screen} from '@testing-library/react';
 
 // Mock the Content and Loading components
 vi.mock('./content/Content', () => ({
