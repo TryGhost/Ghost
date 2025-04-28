@@ -5,7 +5,7 @@ import {Button, Dialog, DialogClose, DialogContent, DialogDescription, DialogFoo
 import {ChangeEvent, useEffect, useRef, useState} from 'react';
 import {ComponentPropsWithoutRef, ReactNode} from 'react';
 import {FILE_SIZE_ERROR_MESSAGE, MAX_FILE_SIZE} from '@utils/image';
-import {showToast} from '@tryghost/admin-x-design-system';
+import {LoadingIndicator, showToast} from '@tryghost/admin-x-design-system';
 import {uploadFile, useAccountForUser, useNoteMutationForUser, useUserDataForUser} from '@hooks/use-activity-pub-queries';
 import {useNavigate} from '@tryghost/admin-x-framework';
 
@@ -60,6 +60,7 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, ...props}) => {
     const handleImageUpload = async (file: File) => {
         try {
             setIsImageUploading(true);
+            await new Promise(resolve => setTimeout(resolve, 2000));
             const imageUrl = await uploadFile(file);
             setUploadedImageUrl(imageUrl);
         } catch (error) {
@@ -191,8 +192,13 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, ...props}) => {
                     </FormPrimitive.Root>
                 </div>
                 {imagePreview &&
-                    <div className='group relative w-fit grow'>
-                        <img alt='Image attachment preview' className={`max-h-[420px] w-full rounded-sm object-cover outline outline-1 -outline-offset-1 outline-black/10 ${isImageUploading && 'animate-pulse'}`} src={imagePreview} />
+                    <div className='group relative flex w-fit grow items-center justify-center'>
+                        <img alt='Image attachment preview' className={`max-h-[420px] w-full rounded-sm object-cover outline outline-1 -outline-offset-1 outline-black/10 ${isImageUploading && 'opacity-10'}`} src={imagePreview} />
+                        {isImageUploading &&
+                            <div className='absolute leading-[0]'>
+                                <LoadingIndicator size='md' />
+                            </div>
+                        }
                         <Button className='absolute right-3 top-3 size-8 bg-black/60 opacity-0 hover:bg-black/80 group-hover:opacity-100' onClick={handleClearImage}><LucideIcon.Trash2 /></Button>
                     </div>
                 }
