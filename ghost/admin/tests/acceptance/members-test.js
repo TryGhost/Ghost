@@ -94,6 +94,37 @@ describe('Acceptance: Members Test', function () {
             expect(currentURL(), 'currentURL').to.equal('/members');
         });
 
+        it('displays member correctly with blank string name in list item', async function () {
+            this.server.create('member', {
+                name: ' ',
+                email: 'blank@example.com',
+                createdAt: moment.utc().subtract(1, 'day').format('YYYY-MM-DD HH:mm:ss')
+            });
+
+            await visit('/members');
+
+            // it lists the member
+            expect(findAll('[data-test-list="members-list-item"]').length, 'members list count')
+                .to.equal(1);
+
+            let member = find('[data-test-list="members-list-item"]');
+            expect(member.querySelector('h3').textContent.trim(), 'member list item shows email in h3')
+                .to.equal('blank@example.com');
+        });
+
+        it('displays member correctly with blank string name in member details', async function () {
+            let member = this.server.create('member', {
+                name: ' ',
+                email: 'blank@example.com',
+                createdAt: moment.utc().subtract(1, 'day').format('YYYY-MM-DD HH:mm:ss')
+            });
+
+            await visit(`/members/${member.id}`);
+            // check that the email is in an h3 tag
+            expect(find('h3').textContent.trim(), 'member details title shows email')
+                .to.equal('blank@example.com');
+        });
+
         it('can create a new member', async function () {
             this.server.create('member', {createdAt: moment.utc().subtract(1, 'day').format('YYYY-MM-DD HH:mm:ss')});
 
