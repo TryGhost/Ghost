@@ -41,7 +41,6 @@ class ReferrerTranslator {
         }
 
         for (const item of history) {
-            console.log('item', item);
             let refUrl = this.getUrlFromStr(item.referrerUrl);
             if (refUrl?.hostname === 'checkout.stripe.com') {
                 // Ignore stripe, because second try payments should not be attributed to Stripe
@@ -49,14 +48,16 @@ class ReferrerTranslator {
             }
 
             const {referrerSource, referrerMedium, referrerUrl} = this.parser.parse(item.referrerUrl, item.referrerSource);
-
-            return {
-                referrerSource,
-                referrerMedium,
-                referrerUrl
-            };
+            // Keep searching history if there's no match
+            if (referrerSource || referrerMedium || referrerUrl) {
+                return {
+                    referrerSource,
+                    referrerMedium,
+                    referrerUrl
+                };
+            }
         }
-
+        // Fall back to Direct if no matches in any history entry
         return {
             referrerSource: 'Direct',
             referrerMedium: null,
