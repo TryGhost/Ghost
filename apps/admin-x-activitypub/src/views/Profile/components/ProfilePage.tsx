@@ -2,13 +2,16 @@ import APAvatar from '@src/components/global/APAvatar';
 import EditProfile from '@src/views/Preferences/components/EditProfile';
 import FollowButton from '@src/components/global/FollowButton';
 import Layout from '@src/components/layout';
+import ProfileMenu from './ProfileMenu';
+import UnblockButton from './UnblockButton';
 import {Account} from '@src/api/activitypub';
-import {Button, Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Skeleton} from '@tryghost/shade';
-import {Heading, Icon, NoValueLabel, Button as OldButton, Tab, TabView} from '@tryghost/admin-x-design-system';
+import {Button, Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, LucideIcon, Skeleton} from '@tryghost/shade';
+import {Heading, Icon, NoValueLabel, Button as OldButton, Tab, TabView, showToast} from '@tryghost/admin-x-design-system';
 import {ProfileTab} from '../Profile';
 import {SettingAction} from '@src/views/Preferences/components/Settings';
 import {useAccountForUser} from '@src/hooks/use-activity-pub-queries';
 import {useEffect, useRef, useState} from 'react';
+import {useFeatureFlags} from '@src/lib/feature-flags';
 import {useNavigationStack, useParams} from '@tryghost/admin-x-framework';
 
 const noop = () => {};
@@ -35,6 +38,8 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
     followingTab,
     followersTab
 }) => {
+    const {isEnabled} = useFeatureFlags();
+
     const [selectedTab, setSelectedTab] = useState<ProfileTab>('posts');
     const params = useParams();
     const {canGoBack} = useNavigationStack();
@@ -47,11 +52,29 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
     const {data: currentUser} = params.handle ? currentAccountQuery : {data: undefined};
     const isCurrentUser = params.handle === currentUser?.handle || !params.handle;
 
+    // TODO: Wire up the block state
+    const [isBlocked, setIsBlocked] = useState(false);
+
+    // TODO: Wire up the block functionality
+    const handleBlock = () => {
+        setIsBlocked(!isBlocked);
+    };
+
+    const handleCopy = async () => {
+        await navigator.clipboard.writeText(account.handle);
+        showToast({
+            title: 'Handle copied',
+            type: 'success'
+        });
+    };
+
     const tabs = [
         {
             id: 'posts',
             title: 'Posts',
-            contents: postsTab
+            contents: !isBlocked ? postsTab : <NoValueLabel icon='block'>
+                {account.name} is blocked
+            </NoValueLabel>
         },
         !params.handle && {
             id: 'likes',
@@ -131,13 +154,27 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
                                     }
                                 </div>
                                 {!isCurrentUser && !isLoadingAccount &&
-                                    <FollowButton
-                                        following={account?.followedByMe}
-                                        handle={account?.handle}
-                                        type='primary'
-                                        onFollow={noop}
-                                        onUnfollow={noop}
-                                    />
+                                    <div className='flex gap-2'>
+                                        {!isEnabled('block') || !isBlocked ?
+                                            <FollowButton
+                                                following={account?.followedByMe}
+                                                handle={account?.handle}
+                                                type='primary'
+                                                onFollow={noop}
+                                                onUnfollow={noop}
+                                            /> :
+                                            <UnblockButton account={account} onUnblock={handleBlock} />
+                                        }
+                                        {isEnabled('block') &&
+                                            <ProfileMenu
+                                                account={account}
+                                                isBlocked={isBlocked}
+                                                trigger={<Button aria-label='Open profile menu' variant='outline'><LucideIcon.Ellipsis /></Button>}
+                                                onBlockAccount={handleBlock}
+                                                onCopyHandle={handleCopy}
+                                            />
+                                        }
+                                    </div>
                                 }
                                 {isCurrentUser && !isLoadingAccount &&
                                     <Dialog open={isEditingProfile} onOpenChange={setIsEditingProfile}>
