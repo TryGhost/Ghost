@@ -1,7 +1,7 @@
 import React, {ChangeEvent, useEffect, useRef, useState} from 'react';
 import {Account} from '@src/api/activitypub';
 import {Button, DialogClose, DialogFooter, Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage, Input, LucideIcon, Textarea} from '@tryghost/shade';
-import {COVER_MAX_DIMENSIONS, FILE_SIZE_ERROR_MESSAGE, MAX_FILE_SIZE, PROFILE_MAX_DIMENSIONS, checkImageDimensions, getDimensionErrorMessage} from '@utils/image';
+import {FILE_SIZE_ERROR_MESSAGE, MAX_FILE_SIZE, SQUARE_IMAGE_ERROR_MESSAGE, isSquareImage} from '@utils/image';
 import {showToast} from '@tryghost/admin-x-design-system';
 import {uploadFile} from '@hooks/use-activity-pub-queries';
 import {useForm} from 'react-hook-form';
@@ -129,19 +129,13 @@ const EditProfile: React.FC<EditProfileProps> = ({account, setIsEditingProfile})
                 return;
             }
 
-            const withinMaxDimensions = await checkImageDimensions(
-                file,
-                PROFILE_MAX_DIMENSIONS.width,
-                PROFILE_MAX_DIMENSIONS.height
-            );
-            if (!withinMaxDimensions) {
+            const isSquare = await isSquareImage(file);
+            if (!isSquare) {
                 showToast({
-                    message: getDimensionErrorMessage(
-                        PROFILE_MAX_DIMENSIONS.width,
-                        PROFILE_MAX_DIMENSIONS.height
-                    ),
+                    message: SQUARE_IMAGE_ERROR_MESSAGE,
                     type: 'error'
                 });
+                e.target.value = '';
                 return;
             }
 
@@ -201,22 +195,6 @@ const EditProfile: React.FC<EditProfileProps> = ({account, setIsEditingProfile})
                     type: 'error'
                 });
                 e.target.value = '';
-                return;
-            }
-
-            const withinMaxDimensions = await checkImageDimensions(
-                file,
-                COVER_MAX_DIMENSIONS.width,
-                COVER_MAX_DIMENSIONS.height
-            );
-            if (!withinMaxDimensions) {
-                showToast({
-                    message: getDimensionErrorMessage(
-                        COVER_MAX_DIMENSIONS.width,
-                        COVER_MAX_DIMENSIONS.height
-                    ),
-                    type: 'error'
-                });
                 return;
             }
 

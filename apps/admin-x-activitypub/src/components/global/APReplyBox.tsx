@@ -6,7 +6,7 @@ import clsx from 'clsx';
 import getUsername from '../../utils/get-username';
 import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, LucideIcon} from '@tryghost/shade';
-import {FILE_SIZE_ERROR_MESSAGE, COVER_MAX_DIMENSIONS as IMAGE_MAX_DIMENSIONS, MAX_FILE_SIZE, checkImageDimensions, getDimensionErrorMessage} from '@utils/image';
+import {FILE_SIZE_ERROR_MESSAGE, MAX_FILE_SIZE} from '@utils/image';
 import {showToast} from '@tryghost/admin-x-design-system';
 import {uploadFile, useReplyMutationForUser, useUserDataForUser} from '@hooks/use-activity-pub-queries';
 
@@ -164,22 +164,6 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
                     type: 'error'
                 });
                 e.target.value = '';
-                return;
-            }
-
-            const withinMaxDimensions = await checkImageDimensions(
-                file,
-                IMAGE_MAX_DIMENSIONS.width,
-                IMAGE_MAX_DIMENSIONS.height
-            );
-            if (!withinMaxDimensions) {
-                showToast({
-                    message: getDimensionErrorMessage(
-                        IMAGE_MAX_DIMENSIONS.width,
-                        IMAGE_MAX_DIMENSIONS.height
-                    ),
-                    type: 'error'
-                });
                 return;
             }
 
