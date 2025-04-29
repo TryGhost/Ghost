@@ -273,7 +273,7 @@ const NewsletterPreviewContent: React.FC<{
                                     <h3 className="mb-4 mt-2 pb-1 text-[1.2rem] font-semibold uppercase tracking-wide">Keep reading</h3>
                                     <div className="flex justify-between gap-4 py-2">
                                         <div>
-                                            <h4 className="mb-1 mt-0.5 text-[1.9rem]" style={{color: textColor}}>The three latest posts published on your site</h4>
+                                            <h4 className={clsx('mt-0.5 text-[1.9rem]', titleFontCategory === 'serif' ? 'font-serif' : '', titleFontWeight === 'normal' ? 'font-normal' : 'font-bold')} style={{color: textColor}}>The three latest posts published on your site</h4>
                                             <p className="m-0 text-base text-grey-700" style={{color: secondaryTextColor}}>Posts sent as an email only will never be shown here.</p>
                                         </div>
                                         <div className="aspect-square h-auto w-full max-w-[100px] bg-grey-200 bg-cover bg-no-repeat">
@@ -282,7 +282,7 @@ const NewsletterPreviewContent: React.FC<{
                                     </div>
                                     <div className="flex justify-between gap-4 py-2">
                                         <div>
-                                            <h4 className="mb-1 mt-0.5 text-[1.9rem]" style={{color: textColor}}>Displayed at the bottom of each newsletter</h4>
+                                            <h4 className={clsx('mt-0.5 text-[1.9rem]', titleFontCategory === 'serif' ? 'font-serif' : '', titleFontWeight === 'normal' ? 'font-normal' : 'font-bold')} style={{color: textColor}}>Displayed at the bottom of each newsletter</h4>
                                             <p className="m-0 text-base text-grey-700" style={{color: secondaryTextColor}}>Giving your readers one more place to discover your stories.</p>
                                         </div>
                                         <div className="aspect-square h-auto w-full max-w-[100px] bg-grey-200 bg-cover bg-no-repeat">
@@ -291,7 +291,7 @@ const NewsletterPreviewContent: React.FC<{
                                     </div>
                                     <div className="flex justify-between gap-4 py-2">
                                         <div>
-                                            <h4 className="mb-1 mt-0.5 text-[1.9rem]" style={{color: textColor}}>To keep your work front and center</h4>
+                                            <h4 className={clsx('mt-0.5 text-[1.9rem]', titleFontCategory === 'serif' ? 'font-serif' : '', titleFontWeight === 'normal' ? 'font-normal' : 'font-bold')} style={{color: textColor}}>To keep your work front and center</h4>
                                             <p className="m-0 text-base text-grey-700" style={{color: secondaryTextColor}}>Making sure that your audience stays engaged.</p>
                                         </div>
                                         <div className="aspect-square h-auto w-full max-w-[100px] bg-grey-200 bg-cover bg-no-repeat">
