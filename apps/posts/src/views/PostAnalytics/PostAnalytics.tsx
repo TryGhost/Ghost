@@ -42,7 +42,8 @@ const PostAnalytics: React.FC<postAnalyticsProps> = () => {
             date_from: formatQueryDate(startDate),
             date_to: formatQueryDate(endDate),
             timezone: timezone,
-            member_status: getAudienceQueryParam(audience)
+            member_status: getAudienceQueryParam(audience),
+            post_uuid: ''
         };
 
         if (!isPostLoading && post?.uuid) {
