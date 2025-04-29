@@ -1,5 +1,6 @@
 const path = require('path');
 const fs = require('fs');
+const jsonc = require('jsonc-parser');
 
 /**
  * transform all relative paths to absolute paths
@@ -74,9 +75,24 @@ const sanitizeDatabaseProperties = function sanitizeDatabaseProperties(nconf) {
     }
 };
 
+const getNodeEnv = () => {
+    return process.env.NODE_ENV || 'development';
+};
+
+const jsoncFormat = {
+    parse: function (text) {
+        return jsonc.parse(text);
+    },
+    stringify: function (obj, replacer, spacing) {
+        return JSON.stringify(obj, replacer, spacing);
+    }
+};
+
 module.exports = {
     makePathsAbsolute,
     doesContentPathExist,
     checkUrlProtocol,
-    sanitizeDatabaseProperties
+    sanitizeDatabaseProperties,
+    getNodeEnv,
+    jsoncFormat
 };
