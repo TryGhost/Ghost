@@ -27,7 +27,7 @@ function isCJK(codePoint) {
     );
 }
   
-function tokenizeCjkByCodePoint(text) {
+export function tokenizeCjkByCodePoint(text) {
     const result = [];
     let buffer = '';
 

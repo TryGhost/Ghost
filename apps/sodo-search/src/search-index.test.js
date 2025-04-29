@@ -1,4 +1,4 @@
-import SearchIndex from './search-index';
+import SearchIndex, {tokenizeCjkByCodePoint}  from './search-index';
 import nock from 'nock';
 
 describe('search index', function () {
@@ -327,5 +327,100 @@ describe('search index', function () {
         expect(searchResults.tags.length).toEqual(1);
         expect(searchResults.tags[0].name).toEqual('חדשות');
         expect(searchResults.tags[0].url).toEqual('http://localhost/ghost/tags/khdshvt/');
+    });
+    test('unit tests for cjkEncoderPresetCodepoint', () => {
+        expect(tokenizeCjkByCodePoint('')).toEqual([]);
+        expect(tokenizeCjkByCodePoint('a')).toEqual(['a']);
+        expect(tokenizeCjkByCodePoint('abc')).toEqual(['abc']);
+        // I've left an accent in the test set, but it would be stripped by the default.charset process.
+        expect(tokenizeCjkByCodePoint('renée')).toEqual(['renée']);
+        expect(tokenizeCjkByCodePoint('ורם')).toEqual(['ורם']);
+        expect(tokenizeCjkByCodePoint('将通过所有测试。')).toEqual(['将', '通', '过', '所', '有', '测', '试', '。']);
+        expect(tokenizeCjkByCodePoint('您好English您好')).toEqual(['您', '好', 'English', '您', '好']);
+    });
+    test('additional special characters & punctuation', async () => {
+        const adminUrl = 'http://localhost:3000';
+        const apiKey = '69010382388f9de5869ad6e558';
+        const searchIndex = new SearchIndex({adminUrl, apiKey, dir: 'ltr', storage: localStorage});
+
+        nock('http://localhost:3000/ghost/api/content')
+            .get('/posts/?key=69010382388f9de5869ad6e558&limit=10000&fields=id%2Cslug%2Ctitle%2Cexcerpt%2Curl%2Cupdated_at%2Cvisibility&order=updated_at%20DESC')
+            .reply(200, {
+                posts: [{
+                    id: 'sounique',
+                    title: 'All about #metoo and other hashtags',
+                    excerpt: 'What is this hash tag thing, anyway?',
+                    url: 'http://localhost/ghost/have-a-hash-tag/'
+                },
+                {
+                    id: 'sounique2',
+                    title: 'All about metoo and other hashtags without actual hashes',
+                    excerpt: 'sitting on the porch, drinking a Dr. Pepper',
+                    url: 'http://localhost/ghost/no-hashes-here/'
+                },
+                {
+                    id: 'sounique3',
+                    title: 'Why would you want to search for #something anyway?',
+                    excerpt: 'Being lazy and drinking a dr pepper',
+                    url: 'http://localhost/ghost/some-other-hash/'
+                }]
+            })
+            .get('/authors/?key=69010382388f9de5869ad6e558&limit=10000&fields=id,slug,name,url,profile_image&order=updated_at%20DESC')
+            .reply(200, {
+                authors: [{
+                    id: 'different_uniq',
+                    slug: 'barcelona-author',
+                    name: 'Barcelona Author',
+                    profile_image: 'https://url_to_avatar/barcelona.png',
+                    url: 'http://localhost/ghost/authors/barcelona-author/'
+                }, {
+                    id: 'different_uniq_2',
+                    slug: 'bob',
+                    name: 'Bob',
+                    profile_image: 'https://url_to_avatar/barcelona.png',
+                    url: 'http://localhost/ghost/authors/bob/'
+                }]
+            })
+            .get('/tags/?key=69010382388f9de5869ad6e558&&limit=10000&fields=id,slug,name,url&order=updated_at%20DESC&filter=visibility%3Apublic')
+            .reply(200, {
+                tags: [{
+                    id: 'uniq_tag',
+                    slug: 'barcelona-tag',
+                    name: 'Barcelona Tag',
+                    url: 'http://localhost/ghost/tags/barcelona-tag/'
+                }]
+            });
+            
+        await searchIndex.init();
+
+        // # doesn't matter
+        let searchResults = searchIndex.search('metoo');
+        expect(searchResults.posts.length).toEqual(2);
+        expect(searchResults.posts[0].url).toEqual('http://localhost/ghost/have-a-hash-tag/');
+        expect(searchResults.posts[1].url).toEqual('http://localhost/ghost/no-hashes-here/');
+
+        searchResults = searchIndex.search('#metoo');
+        expect(searchResults.posts.length).toEqual(2);
+        expect(searchResults.posts[0].url).toEqual('http://localhost/ghost/have-a-hash-tag/');
+        expect(searchResults.posts[1].url).toEqual('http://localhost/ghost/no-hashes-here/');
+
+        // # is stripped during normalization, so cannot be found by searching for it alone.
+        searchResults = searchIndex.search('#');
+        expect(searchResults.posts.length).toEqual(0);
+
+        // periods don't matter
+        searchResults = searchIndex.search('Dr. Pepper');
+        expect(searchResults.posts.length).toEqual(2);
+
+        searchResults = searchIndex.search('Dr Pepper');
+        expect(searchResults.posts.length).toEqual(2);
+
+        // accents don't matter
+        searchResults = searchIndex.search('Dr. Peppér');
+        expect(searchResults.posts.length).toEqual(2);
+
+        // normalization is funny but we don't really need to test for it
+        // searchResults = searchIndex.search('dr peper');
+        // expect(searchResults.posts.length).toEqual(2);
     });
 });
