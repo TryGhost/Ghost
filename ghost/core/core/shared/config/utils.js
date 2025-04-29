@@ -86,8 +86,7 @@ const jsoncFormat = {
     stringify: function (obj, replacer, spacing) {
         return JSON.stringify(obj, replacer, spacing);
     }
-}
-
+};
 
 module.exports = {
     makePathsAbsolute,
