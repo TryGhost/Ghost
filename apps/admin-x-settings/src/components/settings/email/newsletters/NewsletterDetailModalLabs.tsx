@@ -240,8 +240,8 @@ const Sidebar: React.FC<{
             </>
         },
         {
-            id: 'layout',
-            title: 'Layout',
+            id: 'content',
+            title: 'Content',
             contents:
             <>
                 <Form className='mt-6' gap='sm' margins='lg' title='Header'>
@@ -401,8 +401,8 @@ const Sidebar: React.FC<{
             </>
         },
         {
-            id: 'styles',
-            title: 'Styles',
+            id: 'design',
+            title: 'Design',
             contents:
             <>
                 <Form className='mt-6' gap='xs' margins='lg' title='Typography'>
@@ -469,13 +469,9 @@ const Sidebar: React.FC<{
                         value={newsletter.divider_color}
                         onChange={color => updateNewsletter({divider_color: color})}
                     />
-                    {/* <ColorPickerField
+                    <ColorPickerField
                         direction='rtl'
                         swatches={[
-                            {
-                                hex: '#f0f0f0',
-                                title: 'Light grey'
-                            },
                             {
                                 hex: '#ffffff',
                                 value: 'light',
@@ -486,7 +482,7 @@ const Sidebar: React.FC<{
                         value={newsletter.background_color || 'light'}
                         onChange={color => updateNewsletter({background_color: color!})}
                     />
-                    <ColorPickerField
+                    {/* <ColorPickerField
                         clearButtonValue={null}
                         direction='rtl'
                         swatches={[
