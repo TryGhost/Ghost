@@ -232,8 +232,45 @@ const ArticleBody: React.FC<{
             }
         };
 
+        // Add event listener for Escape key in iframe
+        const handleIframeKeyDown = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') {
+                // Prevent default and stop propagation of the original event
+                event.preventDefault();
+                event.stopPropagation();
+
+                // Create and dispatch a new keyboard event to the parent window
+                const newEvent = new KeyboardEvent('keydown', {
+                    key: 'Escape',
+                    code: 'Escape',
+                    keyCode: 27,
+                    which: 27,
+                    bubbles: true,
+                    cancelable: true
+                });
+                document.dispatchEvent(newEvent);
+            }
+        };
+
+        // Wait for iframe to load before adding event listener
+        const handleIframeLoad = () => {
+            const iframeWindow = iframe.contentWindow;
+            if (iframeWindow) {
+                iframeWindow.addEventListener('keydown', handleIframeKeyDown);
+            }
+        };
+
+        iframe.addEventListener('load', handleIframeLoad);
         window.addEventListener('message', handleMessage);
-        return () => window.removeEventListener('message', handleMessage);
+
+        return () => {
+            window.removeEventListener('message', handleMessage);
+            iframe.removeEventListener('load', handleIframeLoad);
+            const iframeWindow = iframe.contentWindow;
+            if (iframeWindow) {
+                iframeWindow.removeEventListener('keydown', handleIframeKeyDown);
+            }
+        };
     }, [htmlContent]);
 
     // Separate effect for style updates
