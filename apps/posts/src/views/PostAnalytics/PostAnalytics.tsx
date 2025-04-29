@@ -45,7 +45,7 @@ const PostAnalytics: React.FC<postAnalyticsProps> = () => {
             member_status: getAudienceQueryParam(audience)
         };
 
-        if (!isPostLoading && post?.slug) {
+        if (!isPostLoading && post?.uuid) {
             return {
                 ...baseParams,
                 post_uuid: post.uuid
