@@ -42,6 +42,8 @@ const NewsletterPreviewContent: React.FC<{
     secondaryTextColor?: string;
     titleColor?: string;
     dividerColor?: string;
+    buttonColor?: string;
+    linkColor?: string;
 }> = ({
     senderName,
     senderEmail,
@@ -73,7 +75,9 @@ const NewsletterPreviewContent: React.FC<{
     textColor,
     secondaryTextColor,
     titleColor,
-    dividerColor
+    dividerColor,
+    buttonColor,
+    linkColor
 }) => {
     const showHeader = headerIcon || headerTitle;
     const {config} = useGlobalData();
@@ -212,11 +216,11 @@ const NewsletterPreviewContent: React.FC<{
                             )} style={{borderColor: dividerColor}}>
                                 {hasEmailCustomization ? (
                                     <>
-                                        <p className="mb-6" style={{color: textColor}}>The promise of delivery apps is simple: tap a button, and your favorite meal arrives at your door within minutes. But behind the scenes, these platforms are <a className="underline" href="#" style={{color: accentColor}}>reshaping local economies</a> in ways few people realize.</p>
+                                        <p className="mb-6" style={{color: textColor}}>The promise of delivery apps is simple: tap a button, and your favorite meal arrives at your door within minutes. But behind the scenes, these platforms are <a className="underline" href="#" style={{color: linkColor || accentColor}}>reshaping local economies</a> in ways few people realize.</p>
                                         <p className="mb-6" style={{color: textColor}}>Across the country, small restaurants are grappling with rising fees—sometimes up to 30% per order—cutting into already-thin profit margins. In some cases, beloved neighborhood spots have had to shut their doors, unable to keep up with the financial strain. Meanwhile, delivery workers, the backbone of these services, often face unpredictable wages and challenging working conditions.</p>
                                         <hr className="my-6 border-[#e0e7eb]" style={{borderColor: dividerColor}} />
-                                        <p className="mb-6" style={{color: textColor}}>If you enjoy this piece and want more deep dives like it, consider upgrading your membership. Paid subscribers get <a className="underline" href="#" style={{color: accentColor}}>exclusive reports</a>, early access to new features, and a behind-the-scenes look at how we put these stories together. Your support helps us continue delivering thoughtful, in-depth journalism straight to you.</p>
-                                        <button className="rounded-[6px] px-[18px] py-2 font-sans text-[15px] text-white" style={{backgroundColor: accentColor}} type="button">Upgrade now</button>
+                                        <p className="mb-6" style={{color: textColor}}>If you enjoy this piece and want more deep dives like it, consider upgrading your membership. Paid subscribers get <a className="underline" href="#" style={{color: linkColor || accentColor}}>exclusive reports</a>, early access to new features, and a behind-the-scenes look at how we put these stories together. Your support helps us continue delivering thoughtful, in-depth journalism straight to you.</p>
+                                        <button className="rounded-[6px] px-[18px] py-2 font-sans text-[15px] text-white" style={{backgroundColor: buttonColor || accentColor}} type="button">Upgrade now</button>
                                         <hr className="my-6 border-[#e0e7eb]" style={{borderColor: dividerColor}} />
                                         <p className="mb-6" style={{color: textColor}}>Yet, the convenience factor keeps us coming back. The ease of one-click ordering means fewer people are dining in, changing the social fabric of our communities. Restaurants designed for shared experiences are evolving into ghost kitchens, optimized for delivery rather than connection.</p>
                                         <h3 className={`mb-[13px] mt-[39px] text-[2.6rem] leading-supertight ${titleFontCategory === 'serif' ? 'font-serif' : ''} ${titleFontWeight === 'normal' ? 'font-normal' : 'font-bold'}`} style={{color: titleColor}}>When Convenience Comes at a Cost</h3>
@@ -270,10 +274,10 @@ const NewsletterPreviewContent: React.FC<{
                             {/* Latest posts */}
                             {showLatestPosts && (
                                 <div className="border-b border-grey-200 py-6" style={{borderColor: dividerColor}}>
-                                    <h3 className="mb-4 mt-2 pb-1 text-[1.2rem] font-semibold uppercase tracking-wide">Keep reading</h3>
+                                    <h3 className="mb-4 mt-2 pb-1 text-[1.2rem] font-semibold uppercase tracking-wide text-black">Keep reading</h3>
                                     <div className="flex justify-between gap-4 py-2">
                                         <div>
-                                            <h4 className={clsx('mt-0.5 text-[1.9rem]', titleFontCategory === 'serif' ? 'font-serif' : '', titleFontWeight === 'normal' ? 'font-normal' : 'font-bold')} style={{color: textColor}}>The three latest posts published on your site</h4>
+                                            <h4 className={clsx('mt-0.5 text-[1.9rem] text-black', titleFontCategory === 'serif' ? 'font-serif' : '', titleFontWeight === 'normal' ? 'font-normal' : 'font-bold')} style={{color: textColor}}>The three latest posts published on your site</h4>
                                             <p className="m-0 text-base text-grey-700" style={{color: secondaryTextColor}}>Posts sent as an email only will never be shown here.</p>
                                         </div>
                                         <div className="aspect-square h-auto w-full max-w-[100px] bg-grey-200 bg-cover bg-no-repeat">
@@ -282,7 +286,7 @@ const NewsletterPreviewContent: React.FC<{
                                     </div>
                                     <div className="flex justify-between gap-4 py-2">
                                         <div>
-                                            <h4 className={clsx('mt-0.5 text-[1.9rem]', titleFontCategory === 'serif' ? 'font-serif' : '', titleFontWeight === 'normal' ? 'font-normal' : 'font-bold')} style={{color: textColor}}>Displayed at the bottom of each newsletter</h4>
+                                            <h4 className={clsx('mt-0.5 text-[1.9rem] text-black', titleFontCategory === 'serif' ? 'font-serif' : '', titleFontWeight === 'normal' ? 'font-normal' : 'font-bold')} style={{color: textColor}}>Displayed at the bottom of each newsletter</h4>
                                             <p className="m-0 text-base text-grey-700" style={{color: secondaryTextColor}}>Giving your readers one more place to discover your stories.</p>
                                         </div>
                                         <div className="aspect-square h-auto w-full max-w-[100px] bg-grey-200 bg-cover bg-no-repeat">
@@ -291,7 +295,7 @@ const NewsletterPreviewContent: React.FC<{
                                     </div>
                                     <div className="flex justify-between gap-4 py-2">
                                         <div>
-                                            <h4 className={clsx('mt-0.5 text-[1.9rem]', titleFontCategory === 'serif' ? 'font-serif' : '', titleFontWeight === 'normal' ? 'font-normal' : 'font-bold')} style={{color: textColor}}>To keep your work front and center</h4>
+                                            <h4 className={clsx('mt-0.5 text-[1.9rem] text-black', titleFontCategory === 'serif' ? 'font-serif' : '', titleFontWeight === 'normal' ? 'font-normal' : 'font-bold')} style={{color: textColor}}>To keep your work front and center</h4>
                                             <p className="m-0 text-base text-grey-700" style={{color: secondaryTextColor}}>Making sure that your audience stays engaged.</p>
                                         </div>
                                         <div className="aspect-square h-auto w-full max-w-[100px] bg-grey-200 bg-cover bg-no-repeat">
@@ -304,7 +308,7 @@ const NewsletterPreviewContent: React.FC<{
                             {/* Subscription details */}
                             {showSubscriptionDetails && (
                                 <div className="border-b border-grey-200 py-8" style={{borderColor: dividerColor}}>
-                                    <h4 className="mb-3 text-[1.2rem] uppercase tracking-wide">Subscription details</h4>
+                                    <h4 className="mb-3 text-[1.2rem] uppercase tracking-wide text-black">Subscription details</h4>
                                     <p className="m-0 mb-4 text-base" style={{color: textColor}}>You are receiving this because you are a paid subscriber to {siteTitle}. Your subscription will renew on 17 Jul 2024.</p>
                                     <div className="flex">
                                         <div className="shrink-0 text-base">
@@ -312,8 +316,8 @@ const NewsletterPreviewContent: React.FC<{
                                             <p style={{color: textColor}}>Email: jamie@example.com</p>
                                             <p style={{color: textColor}}>Member since: 17 July 2023</p>
                                         </div>
-                                        <span className={clsx('w-full self-end whitespace-nowrap text-right text-base font-semibold', backgroundColorIsDark && 'text-white underline')} style={{color: accentColor}}>
-                                            Manage subscription →
+                                        <span className={clsx('w-full self-end whitespace-nowrap text-right text-base text-grey-700 underline', backgroundColorIsDark && 'text-white')}>
+                                            Manage subscription
                                         </span>
                                     </div>
                                 </div>
