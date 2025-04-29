@@ -361,7 +361,7 @@ describe('search index', function () {
                 {
                     id: 'sounique3',
                     title: 'Why would you want to search for #something anyway?',
-                    excerpt: 'Being lazy and drinking a dr pepper',
+                    excerpt: 'Being lazy and drinking a dr pepper and eating Μπακλαβάς',
                     url: 'http://localhost/ghost/some-other-hash/'
                 }]
             })
@@ -422,5 +422,11 @@ describe('search index', function () {
         // normalization is funny but we don't really need to test for it
         // searchResults = searchIndex.search('dr peper');
         // expect(searchResults.posts.length).toEqual(2);
+
+        searchResults = searchIndex.search('Μπακλαβάς');
+        expect(searchResults.posts.length).toEqual(1);
+        expect(searchResults.posts[0].url).toEqual('http://localhost/ghost/some-other-hash/');
+        searchResults = searchIndex.search('Baklava');
+        expect(searchResults.posts.length).toEqual(0); // because search isn't magic
     });
 });
