@@ -27,6 +27,12 @@ const Sidebar:React.FC = () => {
                     <LucideIcon.Earth size={16} strokeWidth={1.25} />
                 Locations
                 </RightSidebarMenuLink>
+                <RightSidebarMenuLink active={location.pathname === '/growth/'} onClick={() => {
+                    navigate('/growth/');
+                }}>
+                    <LucideIcon.Sprout size={16} strokeWidth={1.25} />
+                Growth
+                </RightSidebarMenuLink>
             </RightSidebarMenu>
         </div>
     );
