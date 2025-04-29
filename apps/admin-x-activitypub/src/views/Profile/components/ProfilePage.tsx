@@ -5,7 +5,7 @@ import Layout from '@src/components/layout';
 import ProfileMenu from './ProfileMenu';
 import UnblockButton from './UnblockButton';
 import {Account} from '@src/api/activitypub';
-import {Button, Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, LucideIcon, Skeleton} from '@tryghost/shade';
+import {Button, Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, H4, LucideIcon, Skeleton} from '@tryghost/shade';
 import {Heading, Icon, NoValueLabel, Button as OldButton, Tab, TabView, showToast} from '@tryghost/admin-x-design-system';
 import {ProfileTab} from '../Profile';
 import {SettingAction} from '@src/views/Preferences/components/Settings';
@@ -54,10 +54,12 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
 
     // TODO: Wire up the block state
     const [isBlocked, setIsBlocked] = useState(false);
+    const [viewBlockedPosts, setViewBlockedPosts] = useState(false);
 
     // TODO: Wire up the block functionality
     const handleBlock = () => {
         setIsBlocked(!isBlocked);
+        setViewBlockedPosts(false);
     };
 
     const handleCopy = async () => {
@@ -72,8 +74,12 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
         {
             id: 'posts',
             title: 'Posts',
-            contents: !isBlocked ? postsTab : <NoValueLabel icon='block'>
-                {account.name} is blocked
+            contents: (!isBlocked || viewBlockedPosts) ? postsTab : <NoValueLabel icon='block'>
+                <div className='mt-2 flex flex-col items-center gap-0.5'>
+                    <H4>{account.name} is blocked</H4>
+                    <p>You can view the posts, but it won&apos;t unblock the user.</p>
+                    <Button className='mt-4' variant='secondary' onClick={() => setViewBlockedPosts(true)}>View posts</Button>
+                </div>
             </NoValueLabel>
         },
         !params.handle && {
