@@ -437,6 +437,19 @@ const Sidebar: React.FC<{
                         direction='rtl'
                         swatches={[
                             {
+                                hex: '#ffffff',
+                                value: 'light',
+                                title: 'White'
+                            }
+                        ]}
+                        title='Background color'
+                        value={newsletter.background_color || 'light'}
+                        onChange={color => updateNewsletter({background_color: color!})}
+                    />
+                    <ColorPickerField
+                        direction='rtl'
+                        swatches={[
+                            {
                                 value: null,
                                 title: 'Auto',
                                 hex: backgroundColorIsDark() ? '#ffffff' : '#000000'
@@ -455,8 +468,8 @@ const Sidebar: React.FC<{
                         direction='rtl'
                         swatches={[
                             {
-                                value: null,
-                                title: 'Auto',
+                                value: 'light',
+                                title: 'Light',
                                 hex: '#e0e7eb'
                             },
                             {
@@ -466,21 +479,44 @@ const Sidebar: React.FC<{
                             }
                         ]}
                         title='Divider color'
-                        value={newsletter.divider_color}
+                        value={newsletter.divider_color || 'light'}
                         onChange={color => updateNewsletter({divider_color: color})}
                     />
                     <ColorPickerField
                         direction='rtl'
                         swatches={[
                             {
-                                hex: '#ffffff',
-                                value: 'light',
-                                title: 'White'
+                                value: 'accent',
+                                title: 'Accent',
+                                hex: siteData.accent_color
+                            },
+                            {
+                                value: null,
+                                title: 'Auto',
+                                hex: backgroundColorIsDark() ? '#ffffff' : '#000000'
                             }
                         ]}
-                        title='Background color'
-                        value={newsletter.background_color || 'light'}
-                        onChange={color => updateNewsletter({background_color: color!})}
+                        title='Button color'
+                        value={newsletter.button_color}
+                        onChange={color => updateNewsletter({button_color: color})}
+                    />
+                    <ColorPickerField
+                        direction='rtl'
+                        swatches={[
+                            {
+                                value: 'accent',
+                                title: 'Accent',
+                                hex: siteData.accent_color
+                            },
+                            {
+                                value: null,
+                                title: 'Auto',
+                                hex: backgroundColorIsDark() ? '#ffffff' : '#000000'
+                            }
+                        ]}
+                        title='Link color'
+                        value={newsletter.link_color}
+                        onChange={color => updateNewsletter({link_color: color})}
                     />
                     {/* <ColorPickerField
                         clearButtonValue={null}

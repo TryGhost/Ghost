@@ -42,7 +42,7 @@ const ButtonGroup: React.FC<ButtonGroupProps> = ({size = 'md', buttons, link, li
 
                     if (key === activeKey) {
                         buttonProps.color = 'white';
-                        buttonProps.className = clsx(buttonProps.className, 'border-grey-300 shadow-xs');
+                        buttonProps.className = clsx(buttonProps.className, 'border-grey-300 shadow-xs dark:border-grey-800');
                     } else {
                         buttonProps.className = clsx(buttonProps.className, 'border-transparent');
                     }
