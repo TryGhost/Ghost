@@ -62,7 +62,6 @@ services:
       - node_modules_ghost_tiers:/home/ghost/ghost/tiers/node_modules:delegated
       - node_modules_ghost_webmentions:/home/ghost/ghost/webmentions/node_modules:delegated
       - node_modules_apps_admin-x-activitypub:/home/ghost/apps/admin-x-activitypub/node_modules:delegated
-      - node_modules_apps_admin-x-demo:/home/ghost/apps/admin-x-demo/node_modules:delegated
       - node_modules_apps_admin-x-design-system:/home/ghost/apps/admin-x-design-system/node_modules:delegated
       - node_modules_apps_admin-x-framework:/home/ghost/apps/admin-x-framework/node_modules:delegated
       - node_modules_apps_admin-x-settings:/home/ghost/apps/admin-x-settings/node_modules:delegated
@@ -83,6 +82,7 @@ services:
     environment:
       - DEBUG=${DEBUG:-}
       - SSH_AUTH_SOCK=/ssh-agent
+      - NX_DAEMON=${NX_DAEMON:-true}
       - GHOST_DEV_IS_DOCKER=true
       - GHOST_DEV_APP_FLAGS=${GHOST_DEV_APP_FLAGS:-}
       - GHOST_UPSTREAM=${GHOST_UPSTREAM:-}
@@ -90,7 +90,7 @@ services:
       - STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY:-}
       - STRIPE_ACCOUNT_ID=${STRIPE_ACCOUNT_ID:-}
   mysql:
-    image: mysql:8.0.35
+    image: mysql:8.4.5
     container_name: ghost-mysql
     command: --innodb-buffer-pool-size=1G --innodb-log-buffer-size=500M --innodb-change-buffer-max-size=50 --innodb-flush-log-at-trx_commit=0 --innodb-flush-method=O_DIRECT
     ports:
@@ -125,7 +125,7 @@ services:
       retries: 120
   prometheus:
     profiles: [ monitoring ]
-    image: prom/prometheus:v2.30.3
+    image: prom/prometheus:v2.55.1
     container_name: ghost-prometheus
     ports:
       - 9090:9090
@@ -134,7 +134,7 @@ services:
       - ./.docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
   grafana:
     profiles: [ monitoring ]
-    image: grafana/grafana:8.3.0
+    image: grafana/grafana:8.5.27
     container_name: ghost-grafana
     ports:
       - 3000:3000
@@ -148,10 +148,18 @@ services:
       - ./.docker/grafana/dashboards:/var/lib/grafana/dashboards
   pushgateway:
     profiles: [ monitoring ]
-    image: prom/pushgateway:v1.6.0
+    image: prom/pushgateway:v1.11.1
     container_name: ghost-pushgateway
     ports:
       - 9091:9091
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: ghost-mailhog
+    profiles: [ ghost ]
+    ports:
+      - "1025:1025" # SMTP server
+      - "8025:8025" # Web interface
+    restart: always
 volumes:
   mysql-data: {}
   redis-data: {}
@@ -186,7 +194,6 @@ volumes:
   node_modules_ghost_tiers: {}
   node_modules_ghost_webmentions: {}
   node_modules_apps_admin-x-activitypub: {}
-  node_modules_apps_admin-x-demo: {}
   node_modules_apps_admin-x-design-system: {}
   node_modules_apps_admin-x-framework: {}
   node_modules_apps_admin-x-settings: {}

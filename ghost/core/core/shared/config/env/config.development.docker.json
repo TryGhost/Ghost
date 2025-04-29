@@ -8,6 +8,14 @@
             "database": "ghost"
         }
     },
+    "mail": {
+        "from": "test@example.com",
+        "transport": "SMTP",
+        "options": {
+            "host": "mailhog",
+            "port": 1025
+        }
+    },
     "adapters": {
         "Redis": {
             "host": "redis",

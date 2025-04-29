@@ -1,0 +1,1 @@
+tb pipe data api_kpis__v${TB_VERSION:-0} --date_from 2100-01-01 --date_to 2100-01-07 --site_uuid mock_site_uuid --format CSV --post_uuid 06b1b0c9-fb53-4a15-a060-3db3fde7b1fc

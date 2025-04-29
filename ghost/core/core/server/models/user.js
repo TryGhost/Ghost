@@ -75,6 +75,10 @@ User = ghostBookshelf.Model.extend({
         };
     },
 
+    x: function () {
+        return this.get('twitter');
+    },
+
     format(options) {
         if (options.website && 
             !validator.isURL(options.website, {
@@ -291,6 +295,9 @@ User = ghostBookshelf.Model.extend({
 
         // remove password hash for security reasons
         delete attrs.password;
+
+        // Add x property that maps to twitter
+        attrs.x = attrs.twitter;
 
         return attrs;
     },

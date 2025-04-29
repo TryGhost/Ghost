@@ -70,9 +70,3 @@ module.exports.forPost = (options, model, attrs) => {
         }
     }
 };
-
-module.exports.forAuthor = (options, model, attrs) => {
-    if (Object.prototype.hasOwnProperty.call(attrs, 'twitter')) {
-        attrs.x = attrs.twitter;
-    }
-};

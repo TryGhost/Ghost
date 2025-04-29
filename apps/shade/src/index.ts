@@ -9,7 +9,6 @@ export * from './components/ui/chart';
 export * from './components/ui/dialog';
 export * from './components/ui/dropdown-menu';
 export * from './components/ui/form';
-export type {DropdownMenuCheckboxItemProps as DropdownMenuCheckboxItemProps} from '@radix-ui/react-dropdown-menu';
 export * from './components/ui/input';
 export * from './components/ui/label';
 export * from './components/ui/popover';
@@ -24,10 +23,13 @@ export * from './components/ui/tabs';
 export * from './components/ui/textarea';
 export * from './components/ui/tooltip';
 
+export type {DropdownMenuCheckboxItemProps as DropdownMenuCheckboxItemProps} from '@radix-ui/react-dropdown-menu';
+
 // Layout components
 export * from './components/layout/page';
 export {ErrorPage} from './components/layout/error-page';
 export * from './components/layout/heading';
+export * from './components/layout/view-header';
 
 // Third party components
 export * as Recharts from 'recharts';
@@ -47,7 +49,7 @@ export {default as useGlobalDirtyState} from './hooks/use-global-dirty-state';
 
 // Utils
 export * from '@/lib/utils';
-export {cn, debounce, kebabToPascalCase, formatUrl} from '@/lib/utils';
+export {cn, debounce, kebabToPascalCase, formatUrl, formatQueryDate, formatNumber, formatDuration, formatPercentage, formatDisplayDate} from '@/lib/utils';
 
 export {default as ShadeApp} from './ShadeApp';
 export type {ShadeAppProps} from './ShadeApp';

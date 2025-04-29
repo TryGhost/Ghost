@@ -165,7 +165,7 @@ const ThemePreview: React.FC<{
                 {previewMode === 'desktop' ?
                     <DesktopChrome>
                         <iframe
-                            className='h-full w-full'
+                            className='size-full'
                             src={previewUrl}
                             title='Theme preview'
                         />
@@ -173,7 +173,7 @@ const ThemePreview: React.FC<{
                     :
                     <MobileChrome>
                         <iframe
-                            className='h-full w-full'
+                            className='size-full'
                             src={previewUrl}
                             title='Theme preview'
                         />
