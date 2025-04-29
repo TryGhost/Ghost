@@ -196,12 +196,12 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
                                     </Dialog>
                                 }
                             </div>
-                            <Heading className='mt-4' level={3}>{!isLoadingAccount ? account?.name : <Skeleton className='w-32' />}</Heading>
-                            <a className='group/handle mb-4 inline-flex items-center gap-1 text-[1.5rem] text-gray-800 hover:text-gray-900' href={account?.url} rel='noopener noreferrer' target='_blank'>
-                                <span>{!isLoadingAccount ? account?.handle : <Skeleton className='w-full max-w-56' />}</span>
+                            <Heading className='mt-4 truncate break-anywhere' level={3}>{!isLoadingAccount ? account?.name : <Skeleton className='w-32' />}</Heading>
+                            <a className='group/handle mb-4 inline-flex max-w-full items-center gap-1 text-[1.5rem] text-gray-800 break-anywhere hover:text-gray-900' href={account?.url} rel='noopener noreferrer' target='_blank'>
+                                <span className='truncate'>{!isLoadingAccount ? account?.handle : <Skeleton className='w-full max-w-56' />}</span>
                                 <Icon className='opacity-0 transition-opacity group-hover/handle:opacity-100' name='arrow-top-right' size='xs'/>
                             </a>
-                            {(account?.bio || customFields?.length > 0) && (<div ref={contentRef} className={`ap-profile-content transition-max-height relative text-[1.5rem] duration-300 ease-in-out [&>p]:mb-3 ${isExpanded ? 'max-h-none pb-7' : 'max-h-[160px] overflow-hidden'} relative`}>
+                            {(account?.bio || customFields?.length > 0) && (<div ref={contentRef} className={`ap-profile-content transition-max-height relative text-[1.5rem] duration-300 ease-in-out break-anywhere [&>p]:mb-3 ${isExpanded ? 'max-h-none pb-7' : 'max-h-[160px] overflow-hidden'} relative`}>
                                 {!isLoadingAccount ?
                                     <div dangerouslySetInnerHTML={{__html: account?.bio ?? ''}} /> :
                                     <>

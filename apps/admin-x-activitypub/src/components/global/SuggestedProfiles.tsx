@@ -48,9 +48,9 @@ export const SuggestedProfile: React.FC<SuggestedProfileProps & {
                     handle: profile.handle
                 }
             } onClick={() => onOpenChange?.(false)} />
-            <div className='flex grow flex-col'>
-                <span className='font-semibold text-black dark:text-white'>{!isLoading ? profile.name : <Skeleton className='w-full max-w-64' />}</span>
-                <span className='text-sm text-gray-700 dark:text-gray-600'>{!isLoading ? profile.handle : <Skeleton className='w-24' />}</span>
+            <div className='flex grow flex-col break-anywhere'>
+                <span className='line-clamp-1 font-semibold text-black dark:text-white'>{!isLoading ? profile.name : <Skeleton className='w-full max-w-64' />}</span>
+                <span className='line-clamp-1 text-sm text-gray-700 dark:text-gray-600'>{!isLoading ? profile.handle : <Skeleton className='w-24' />}</span>
             </div>
             {!isLoading ?
                 <FollowButton
