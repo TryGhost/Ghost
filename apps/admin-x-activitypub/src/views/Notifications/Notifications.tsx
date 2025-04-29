@@ -282,7 +282,7 @@ const Notifications: React.FC = () => {
                                                                 {group.actors.map((actor: ActorProperties) => (
                                                                     <div
                                                                         key={actor.id}
-                                                                        className='flex items-center hover:opacity-80'
+                                                                        className='flex items-center break-anywhere hover:opacity-80'
                                                                         onClick={(e) => {
                                                                             e?.stopPropagation();
                                                                             handleProfileClickRR(actor.handle, navigate);
@@ -295,8 +295,8 @@ const Notifications: React.FC = () => {
                                                                             name: actor.name,
                                                                             handle: actor.handle
                                                                         }} size='xs' />
-                                                                        <span className='ml-2 text-base font-semibold dark:text-white'>{actor.name}</span>
-                                                                        <span className='ml-1 text-base text-gray-700 dark:text-gray-600'>{actor.handle}</span>
+                                                                        <span className='ml-2 line-clamp-1 text-base font-semibold dark:text-white'>{actor.name}</span>
+                                                                        <span className='ml-1 line-clamp-1 text-base text-gray-700 dark:text-gray-600'>{actor.handle}</span>
                                                                     </div>
                                                                 ))}
                                                             </div>
