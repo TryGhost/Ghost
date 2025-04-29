@@ -315,31 +315,6 @@ const Sidebar: React.FC<{
                         label='Feature image'
                         onChange={e => updateNewsletter({show_feature_image: e.target.checked})}
                     />
-                    <div className='flex w-full justify-between'>
-                        <div>Alignment</div>
-                        <ButtonGroup activeKey={newsletter.title_alignment} buttons={[
-                            {
-                                key: 'left',
-                                icon: 'align-left',
-                                label: 'Align left',
-                                hideLabel: true,
-                                link: false,
-                                size: 'sm',
-                                onClick: () => updateNewsletter({title_alignment: 'left'}),
-                                disabled: !newsletter.show_post_title_section
-                            },
-                            {
-                                key: 'center',
-                                icon: 'align-center',
-                                label: 'Align center',
-                                hideLabel: true,
-                                link: false,
-                                size: 'sm',
-                                onClick: () => updateNewsletter({title_alignment: 'center'}),
-                                disabled: !newsletter.show_post_title_section
-                            }
-                        ]} clearBg={false} />
-                    </div>
                 </Form>
 
                 <Form className='mt-6' gap='sm' margins='lg' title='Footer'>
@@ -545,8 +520,86 @@ const Sidebar: React.FC<{
                 </Form>
 
                 <Form className='mt-6' gap='xs' margins='lg' title='Elements'>
-                    <div>Button style</div>
-                    <div>Button corners</div>
+                    <div className='flex w-full justify-between'>
+                        <div>Title alignment</div>
+                        <ButtonGroup activeKey={newsletter.title_alignment} buttons={[
+                            {
+                                key: 'left',
+                                icon: 'align-left',
+                                label: 'Align left',
+                                hideLabel: true,
+                                link: false,
+                                size: 'sm',
+                                onClick: () => updateNewsletter({title_alignment: 'left'}),
+                                disabled: !newsletter.show_post_title_section
+                            },
+                            {
+                                key: 'center',
+                                icon: 'align-center',
+                                label: 'Align center',
+                                hideLabel: true,
+                                link: false,
+                                size: 'sm',
+                                onClick: () => updateNewsletter({title_alignment: 'center'}),
+                                disabled: !newsletter.show_post_title_section
+                            }
+                        ]} clearBg={false} />
+                    </div>
+                    <div className='flex w-full justify-between'>
+                        <div>Button style</div>
+                        <ButtonGroup activeKey={newsletter.button_style || 'fill'} buttons={[
+                            {
+                                key: 'fill',
+                                icon: 'squircle-fill',
+                                label: 'Fill',
+                                hideLabel: true,
+                                link: false,
+                                size: 'sm',
+                                onClick: () => updateNewsletter({button_style: 'fill'})
+                            },
+                            {
+                                key: 'outline',
+                                icon: 'squircle',
+                                label: 'Outline',
+                                hideLabel: true,
+                                link: false,
+                                size: 'sm',
+                                onClick: () => updateNewsletter({button_style: 'outline'})
+                            }
+                        ]} clearBg={false} />
+                    </div>
+                    <div className='flex w-full justify-between'>
+                        <div>Button corners</div>
+                        <ButtonGroup activeKey={newsletter.button_corners || 'squircle'} buttons={[
+                            {
+                                key: 'square',
+                                icon: 'square',
+                                label: 'Square',
+                                hideLabel: true,
+                                link: false,
+                                size: 'sm',
+                                onClick: () => updateNewsletter({button_corners: 'square'})
+                            },
+                            {
+                                key: 'squircle',
+                                icon: 'squircle',
+                                label: 'Squircle',
+                                hideLabel: true,
+                                link: false,
+                                size: 'sm',
+                                onClick: () => updateNewsletter({button_corners: 'squircle'})
+                            },
+                            {
+                                key: 'rounded',
+                                icon: 'circle',
+                                label: 'Rounded',
+                                hideLabel: true,
+                                link: false,
+                                size: 'sm',
+                                onClick: () => updateNewsletter({button_corners: 'rounded'})
+                            }
+                        ]} clearBg={false} />
+                    </div>
                     <div>Link style</div>
                     <div>Divider style</div>
                 </Form>

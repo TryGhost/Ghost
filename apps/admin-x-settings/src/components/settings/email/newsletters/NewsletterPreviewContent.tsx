@@ -44,6 +44,8 @@ const NewsletterPreviewContent: React.FC<{
     dividerColor?: string;
     buttonColor?: string;
     linkColor?: string;
+    buttonStyle?: string;
+    buttonCorners?: string;
 }> = ({
     senderName,
     senderEmail,
@@ -77,7 +79,9 @@ const NewsletterPreviewContent: React.FC<{
     titleColor,
     dividerColor,
     buttonColor,
-    linkColor
+    linkColor,
+    buttonCorners,
+    buttonStyle
 }) => {
     const showHeader = headerIcon || headerTitle;
     const {config} = useGlobalData();
@@ -220,7 +224,30 @@ const NewsletterPreviewContent: React.FC<{
                                         <p className="mb-6" style={{color: textColor}}>Across the country, small restaurants are grappling with rising fees—sometimes up to 30% per order—cutting into already-thin profit margins. In some cases, beloved neighborhood spots have had to shut their doors, unable to keep up with the financial strain. Meanwhile, delivery workers, the backbone of these services, often face unpredictable wages and challenging working conditions.</p>
                                         <hr className="my-6 border-[#e0e7eb]" style={{borderColor: dividerColor}} />
                                         <p className="mb-6" style={{color: textColor}}>If you enjoy this piece and want more deep dives like it, consider upgrading your membership. Paid subscribers get <a className="underline" href="#" style={{color: linkColor || accentColor}}>exclusive reports</a>, early access to new features, and a behind-the-scenes look at how we put these stories together. Your support helps us continue delivering thoughtful, in-depth journalism straight to you.</p>
-                                        <button className="rounded-[6px] px-[18px] py-2 font-sans text-[15px] text-white" style={{backgroundColor: buttonColor || accentColor}} type="button">Upgrade now</button>
+                                        <button
+                                            className={clsx(
+                                                'px-[18px] py-2 font-sans text-[15px]',
+                                                buttonCorners === 'squircle' && 'rounded-[6px]',
+                                                buttonCorners === 'rounded' && 'rounded-full',
+                                                buttonCorners === 'square' && 'rounded-none',
+                                                buttonStyle === 'outline'
+                                                    ? 'border bg-transparent'
+                                                    : 'text-white'
+                                            )}
+                                            style={
+                                                buttonStyle === 'outline'
+                                                    ? {
+                                                        borderColor: buttonColor || accentColor,
+                                                        color: buttonColor || accentColor
+                                                    }
+                                                    : {
+                                                        backgroundColor: buttonColor || accentColor
+                                                    }
+                                            }
+                                            type="button"
+                                        >
+                                            Upgrade now
+                                        </button>
                                         <hr className="my-6 border-[#e0e7eb]" style={{borderColor: dividerColor}} />
                                         <p className="mb-6" style={{color: textColor}}>Yet, the convenience factor keeps us coming back. The ease of one-click ordering means fewer people are dining in, changing the social fabric of our communities. Restaurants designed for shared experiences are evolving into ghost kitchens, optimized for delivery rather than connection.</p>
                                         <h3 className={`mb-[13px] mt-[39px] text-[2.6rem] leading-supertight ${titleFontCategory === 'serif' ? 'font-serif' : ''} ${titleFontWeight === 'normal' ? 'font-normal' : 'font-bold'}`} style={{color: titleColor}}>When Convenience Comes at a Cost</h3>
