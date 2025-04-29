@@ -1,4 +1,4 @@
-import SearchIndex, {tokenizeCjkByCodePoint}  from './search-index';
+import SearchIndex, {tokenizeCjkByCodePoint} from './search-index';
 import nock from 'nock';
 
 describe('search index', function () {
