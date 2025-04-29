@@ -60,34 +60,34 @@ const PostAnalytics: React.FC<postAnalyticsProps> = () => {
 
     return (
         <PostAnalyticsLayout>
-            <ViewHeader className='items-end pb-4 before:hidden'>
+            <ViewHeader className='items-end pb-4'>
                 <div className='flex w-full max-w-[700px] grow flex-col'>
                     <Breadcrumb>
                         <BreadcrumbList>
                             <BreadcrumbItem>
-                                <BreadcrumbLink className='cursor-pointer' onClick={() => navigate('/posts/', {crossApp: true})}>
+                                <BreadcrumbLink className='cursor-pointer leading-[24px]' onClick={() => navigate('/posts/', {crossApp: true})}>
                                 Posts
                                 </BreadcrumbLink>
                             </BreadcrumbItem>
                             <BreadcrumbSeparator />
                             <BreadcrumbItem>
-                                <BreadcrumbLink className='cursor-pointer' onClick={() => navigate(`/posts/analytics/${postId}`, {crossApp: true})}>
+                                <BreadcrumbLink className='cursor-pointer leading-[24px]' onClick={() => navigate(`/posts/analytics/${postId}`, {crossApp: true})}>
                                 Analytics
                                 </BreadcrumbLink>
                             </BreadcrumbItem>
                             <BreadcrumbSeparator />
                             <BreadcrumbItem>
-                                <BreadcrumbPage>
+                                <BreadcrumbPage className='leading-[24px]'>
                                 Web
                                 </BreadcrumbPage>
                             </BreadcrumbItem>
                         </BreadcrumbList>
                     </Breadcrumb>
-                    <H1 className='mt-0.5 min-h-[35px] indent-0'>
+                    <H1 className='min-h-[35px] indent-0 leading-[1.2em]'>
                         {post && post.title}
                     </H1>
                     {typedPost && typedPost.published_at && (
-                        <div className='mt-1 text-sm text-grey-600'>
+                        <div className='flex h-9 items-center justify-start text-sm leading-[1.65em] text-grey-600'>
                             Published on your site on {moment.utc(typedPost.published_at).format('D MMM YYYY')} at {moment.utc(typedPost.published_at).format('HH:mm')}
                         </div>
                     )}
