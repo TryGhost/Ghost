@@ -5,41 +5,25 @@ import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, H1, Recharts, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, ViewHeader, ViewHeaderActions, formatDisplayDate, formatDuration, formatNumber, formatPercentage} from '@tryghost/shade';
 import {KpiTabTrigger, KpiTabValue} from './components/KpiTab';
+import {Navigate} from '@tryghost/admin-x-framework';
 import {calculateYAxisWidth, getYTicks} from '@src/utils/chart-helpers';
-
-// const KPI_METRICS: Record<string, KpiMetric> = {
-//     'total-members': {
-//         dataKey: 'total-members',
-//         label: 'Total members',
-//         formatter: formatNumber
-//     },
-//     'free-members': {
-//         dataKey: 'free-members',
-//         label: 'Free members',
-//         formatter: formatNumber
-//     },
-//     'paid-members': {
-//         dataKey: 'paid-members',
-//         label: 'Paid members',
-//         formatter: formatNumber
-//     },
-//     mrr: {
-//         dataKey: 'mrr',
-//         label: 'MRR',
-//         formatter: formatNumber
-//     }
-// };
+import {getSettingValue} from '@tryghost/admin-x-framework/api/settings';
+import {useGlobalData} from '@src/providers/GlobalDataProvider';
 
 const GrowthKPIs:React.FC = ({}) => {
     const [currentTab, setCurrentTab] = useState('free-members');
+    const {settings} = useGlobalData();
+    const labs = JSON.parse(getSettingValue<string>(settings, 'labs') || '{}');
+
+    if (!labs.trafficAnalyticsAlpha) {
+        return <Navigate to='/' />;
+    }
 
     const chartConfig = {
         value: {
-            label: 'Total members' // currentMetric.label
+            label: 'Total members'
         }
     } satisfies ChartConfig;
-
-    // const currentMetric = KPI_METRICS[currentTab];
 
     const chartData = [
         {
@@ -316,22 +300,7 @@ const GrowthKPIs:React.FC = ({}) => {
 
 const Growth:React.FC = () => {
     // const {statsConfig, isLoading: isConfigLoading} = useGlobalData();
-    // const {range, audience} = useGlobalData();
     // const {startDate, endDate, timezone} = getRangeDates(range);
-
-    // const params = {
-    //     site_uuid: statsConfig?.id || '',
-    //     date_from: formatQueryDate(startDate),
-    //     date_to: formatQueryDate(endDate),
-    //     timezone: timezone,
-    //     member_status: getAudienceQueryParam(audience)
-    // };
-
-    // const {data, loading} = useQuery({
-    //     endpoint: getStatEndpointUrl(statsConfig, 'api_top_pages'),
-    //     token: getToken(statsConfig),
-    //     params
-    // });
 
     // const isLoading = isConfigLoading || loading;
 
