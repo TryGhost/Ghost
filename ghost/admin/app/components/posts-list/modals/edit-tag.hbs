@@ -1,6 +1,6 @@
-<div class="modal-content" data-test-modal="add-tags">
+<div class="modal-content" data-test-modal="edit-tags">
     <header class="modal-header">
-        <h1>Add tags</h1>
+        <h1>Edit tags</h1>
     </header>
     <button type="button" class="close" title="Close" {{on "click" (fn @close false)}} data-test-button="close">{{svg-jar "close"}}<span class="hidden">Close</span></button>
 
@@ -29,12 +29,13 @@
         <button class="gh-btn" data-test-button="cancel" type="button" {{on "click" (fn @close false)}}><span>Cancel</span></button>
 
          <GhTaskButton
-            @buttonText="Add"
-            @runningText="Adding"
+            @buttonText="Update"
+            @runningText="Updating"
             @showSuccess={{false}}
             @task={{this.confirm}}
             @class="gh-btn gh-btn-primary gh-btn-icon"
             data-test-button="confirm"
+            disabled={{this.disabled}}
         />
 
     </div>
