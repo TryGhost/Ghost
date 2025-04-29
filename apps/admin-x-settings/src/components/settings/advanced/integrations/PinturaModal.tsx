@@ -108,7 +108,7 @@ const PinturaModal = NiceModal.create(() => {
         >
             <IntegrationHeader
                 detail='Advanced image editing'
-                icon={<Icon className='h-12 w-12' />}
+                icon={<Icon className='size-12' />}
                 title='Pintura'
             />
             <div className='mt-7'>

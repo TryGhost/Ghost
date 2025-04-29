@@ -17,7 +17,7 @@ export default AuthenticatedRoute.extend({
     },
 
     setupController(controller, model, transition) {
-        if (transition.from?.name === 'posts.analytics' && transition.to?.name !== 'lexical-editor.new') {
+        if (transition.from?.name === 'posts.analytics.index' && transition.to?.name !== 'lexical-editor.new') {
             controller.fromAnalytics = true;
         }
     },

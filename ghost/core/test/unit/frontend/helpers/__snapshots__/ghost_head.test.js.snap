@@ -1729,7 +1729,7 @@ Object {
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" data-locale=\\"en\\" crossorigin=\\"anonymous\\"></script>
     
     <link href=\\"http://127.0.0.1:2369/webmentions/receive/\\" rel=\\"webmention\\">
-    <script defer src=\\"/public/ghost-stats.js?v=asset-hash\\" data-stringify-payload=\\"false\\" data-datasource=\\"analytics_events\\" data-storage=\\"localStorage\\" data-host=\\"https://e.ghost.org/tb/web_analytics\\" data-token=\\"tinybird_token\\" tb_site_uuid=\\"tb_test_site_uuid\\" tb_post_uuid=\\"post_uuid\\" tb_member_uuid=\\"undefined\\" tb_member_status=\\"undefined\\"></script>",
+    <script defer src=\\"/public/ghost-stats.min.js?v=asset-hash\\" data-stringify-payload=\\"false\\" data-datasource=\\"analytics_events\\" data-storage=\\"localStorage\\" data-host=\\"https://e.ghost.org/tb/web_analytics\\" data-token=\\"tinybird_token\\" tb_site_uuid=\\"tb_test_site_uuid\\" tb_post_uuid=\\"post_uuid\\" tb_member_uuid=\\"undefined\\" tb_member_status=\\"undefined\\"></script>",
 }
 `;
 
@@ -1751,6 +1751,57 @@ Object {
     <meta name=\\"twitter:image\\" content=\\"http://127.0.0.1:2369/content/images/site-cover.png\\">
     
     <meta name=\\"generator\\" content=\\"Ghost \\">
+    <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\">
+    
+    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" data-locale=\\"en\\" crossorigin=\\"anonymous\\"></script>
+    
+    <link href=\\"http://127.0.0.1:2369/webmentions/receive/\\" rel=\\"webmention\\">",
+}
+`;
+
+exports[`{{ghost_head}} helper includes tinybird tracker script when config is set does not include tracker script when trafficAnalytics is not set 1 1`] = `
+Object {
+  "rendered": "<meta name=\\"description\\" content=\\"site description\\">
+    <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/\\">
+    <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
+    
+    <meta property=\\"og:site_name\\" content=\\"Ghost\\">
+    <meta property=\\"og:type\\" content=\\"website\\">
+    <meta property=\\"og:title\\" content=\\"Ghost\\">
+    <meta property=\\"og:description\\" content=\\"site description\\">
+    <meta property=\\"og:url\\" content=\\"http://127.0.0.1:2369/\\">
+    <meta property=\\"og:image\\" content=\\"http://127.0.0.1:2369/content/images/site-cover.png\\">
+    <meta name=\\"twitter:card\\" content=\\"summary_large_image\\">
+    <meta name=\\"twitter:title\\" content=\\"Ghost\\">
+    <meta name=\\"twitter:description\\" content=\\"site description\\">
+    <meta name=\\"twitter:url\\" content=\\"http://127.0.0.1:2369/\\">
+    <meta name=\\"twitter:image\\" content=\\"http://127.0.0.1:2369/content/images/site-cover.png\\">
+    
+    <script type=\\"application/ld+json\\">
+{
+    \\"@context\\": \\"https://schema.org\\",
+    \\"@type\\": \\"WebSite\\",
+    \\"publisher\\": {
+        \\"@type\\": \\"Organization\\",
+        \\"name\\": \\"Ghost\\",
+        \\"url\\": \\"http://127.0.0.1:2369/\\",
+        \\"logo\\": {
+            \\"@type\\": \\"ImageObject\\",
+            \\"url\\": \\"http://127.0.0.1:2369/favicon.ico\\"
+        }
+    },
+    \\"url\\": \\"http://127.0.0.1:2369/\\",
+    \\"name\\": \\"Ghost\\",
+    \\"image\\": {
+        \\"@type\\": \\"ImageObject\\",
+        \\"url\\": \\"http://127.0.0.1:2369/content/images/site-cover.png\\"
+    },
+    \\"mainEntityOfPage\\": \\"http://127.0.0.1:2369/\\",
+    \\"description\\": \\"site description\\"
+}
+    </script>
+
+    <meta name=\\"generator\\" content=\\"Ghost 4.3\\">
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\">
     
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" data-locale=\\"en\\" crossorigin=\\"anonymous\\"></script>
@@ -1807,7 +1858,7 @@ Object {
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" data-locale=\\"en\\" crossorigin=\\"anonymous\\"></script>
     
     <link href=\\"http://127.0.0.1:2369/webmentions/receive/\\" rel=\\"webmention\\">
-    <script defer src=\\"/public/ghost-stats.js?v=asset-hash\\" data-stringify-payload=\\"false\\" data-datasource=\\"analytics_events\\" data-storage=\\"localStorage\\" data-host=\\"https://e.ghost.org/tb/web_analytics\\" data-token=\\"tinybird_token\\" tb_site_uuid=\\"tb_test_site_uuid\\" tb_post_uuid=\\"undefined\\" tb_member_uuid=\\"undefined\\" tb_member_status=\\"undefined\\"></script>",
+    <script defer src=\\"/public/ghost-stats.min.js?v=asset-hash\\" data-stringify-payload=\\"false\\" data-datasource=\\"analytics_events\\" data-storage=\\"localStorage\\" data-host=\\"https://e.ghost.org/tb/web_analytics\\" data-token=\\"tinybird_token\\" tb_site_uuid=\\"tb_test_site_uuid\\" tb_post_uuid=\\"undefined\\" tb_member_uuid=\\"undefined\\" tb_member_status=\\"undefined\\"></script>",
 }
 `;
 
@@ -1859,7 +1910,7 @@ Object {
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" data-locale=\\"en\\" crossorigin=\\"anonymous\\"></script>
     
     <link href=\\"http://127.0.0.1:2369/webmentions/receive/\\" rel=\\"webmention\\">
-    <script defer src=\\"/public/ghost-stats.js?v=asset-hash\\" data-stringify-payload=\\"false\\" data-datasource=\\"analytics_events\\" data-storage=\\"localStorage\\" data-host=\\"http://localhost:7181/v0/events\\" data-token=\\"tinybird_local_token\\" tb_site_uuid=\\"tb_test_site_uuid\\" tb_post_uuid=\\"undefined\\" tb_member_uuid=\\"undefined\\" tb_member_status=\\"undefined\\"></script>",
+    <script defer src=\\"/public/ghost-stats.min.js?v=asset-hash\\" data-stringify-payload=\\"false\\" data-datasource=\\"analytics_events\\" data-storage=\\"localStorage\\" data-host=\\"http://localhost:7181/v0/events\\" data-token=\\"tinybird_local_token\\" tb_site_uuid=\\"tb_test_site_uuid\\" tb_post_uuid=\\"undefined\\" tb_member_uuid=\\"undefined\\" tb_member_status=\\"undefined\\"></script>",
 }
 `;
 
@@ -1911,7 +1962,7 @@ Object {
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" data-locale=\\"en\\" crossorigin=\\"anonymous\\"></script>
     
     <link href=\\"http://127.0.0.1:2369/webmentions/receive/\\" rel=\\"webmention\\">
-    <script defer src=\\"/public/ghost-stats.js?v=asset-hash\\" data-stringify-payload=\\"false\\" data-datasource=\\"analytics_events\\" data-storage=\\"localStorage\\" data-host=\\"https://e.ghost.org/tb/web_analytics\\" data-token=\\"tinybird_token\\" tb_site_uuid=\\"tb_test_site_uuid\\" tb_post_uuid=\\"undefined\\" tb_member_uuid=\\"undefined\\" tb_member_status=\\"undefined\\"></script>",
+    <script defer src=\\"/public/ghost-stats.min.js?v=asset-hash\\" data-stringify-payload=\\"false\\" data-datasource=\\"analytics_events\\" data-storage=\\"localStorage\\" data-host=\\"https://e.ghost.org/tb/web_analytics\\" data-token=\\"tinybird_token\\" tb_site_uuid=\\"tb_test_site_uuid\\" tb_post_uuid=\\"undefined\\" tb_member_uuid=\\"undefined\\" tb_member_status=\\"undefined\\"></script>",
 }
 `;
 
@@ -1963,7 +2014,7 @@ Object {
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:2388/blog/\\" data-locale=\\"en\\" crossorigin=\\"anonymous\\"></script>
     
     <link href=\\"http://localhost:2388/blog/webmentions/receive/\\" rel=\\"webmention\\">
-    <script defer src=\\"/blog/public/ghost-stats.js?v=asset-hash\\" data-stringify-payload=\\"false\\" data-datasource=\\"analytics_events\\" data-storage=\\"localStorage\\" data-host=\\"https://e.ghost.org/tb/web_analytics\\" data-token=\\"tinybird_token\\" tb_site_uuid=\\"tb_test_site_uuid\\" tb_post_uuid=\\"undefined\\" tb_member_uuid=\\"undefined\\" tb_member_status=\\"undefined\\"></script>",
+    <script defer src=\\"/blog/public/ghost-stats.min.js?v=asset-hash\\" data-stringify-payload=\\"false\\" data-datasource=\\"analytics_events\\" data-storage=\\"localStorage\\" data-host=\\"https://e.ghost.org/tb/web_analytics\\" data-token=\\"tinybird_token\\" tb_site_uuid=\\"tb_test_site_uuid\\" tb_post_uuid=\\"undefined\\" tb_member_uuid=\\"undefined\\" tb_member_status=\\"undefined\\"></script>",
 }
 `;
 
@@ -2033,7 +2084,7 @@ Object {
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" data-locale=\\"en\\" crossorigin=\\"anonymous\\"></script>
     
     <link href=\\"http://127.0.0.1:2369/webmentions/receive/\\" rel=\\"webmention\\">
-    <script defer src=\\"/public/ghost-stats.js?v=asset-hash\\" data-stringify-payload=\\"false\\" data-datasource=\\"analytics_events\\" data-storage=\\"localStorage\\" data-host=\\"https://e.ghost.org/tb/web_analytics\\" data-token=\\"tinybird_token\\" tb_site_uuid=\\"tb_test_site_uuid\\" tb_post_uuid=\\"post_uuid\\" tb_member_uuid=\\"member_uuid\\" tb_member_status=\\"free\\"></script>",
+    <script defer src=\\"/public/ghost-stats.min.js?v=asset-hash\\" data-stringify-payload=\\"false\\" data-datasource=\\"analytics_events\\" data-storage=\\"localStorage\\" data-host=\\"https://e.ghost.org/tb/web_analytics\\" data-token=\\"tinybird_token\\" tb_site_uuid=\\"tb_test_site_uuid\\" tb_post_uuid=\\"post_uuid\\" tb_member_uuid=\\"member_uuid\\" tb_member_status=\\"free\\"></script>",
 }
 `;
 
@@ -2085,7 +2136,7 @@ Object {
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" data-locale=\\"en\\" crossorigin=\\"anonymous\\"></script>
     
     <link href=\\"http://127.0.0.1:2369/webmentions/receive/\\" rel=\\"webmention\\">
-    <script defer src=\\"/public/ghost-stats.js?v=asset-hash\\" data-stringify-payload=\\"false\\" data-datasource=\\"analytics_events\\" data-storage=\\"localStorage\\" data-host=\\"https://e.ghost.org/tb/web_analytics\\" data-token=\\"tinybird_token\\" tb_site_uuid=\\"tb_test_site_uuid\\" tb_post_uuid=\\"undefined\\" tb_member_uuid=\\"member_uuid\\" tb_member_status=\\"paid\\"></script>",
+    <script defer src=\\"/public/ghost-stats.min.js?v=asset-hash\\" data-stringify-payload=\\"false\\" data-datasource=\\"analytics_events\\" data-storage=\\"localStorage\\" data-host=\\"https://e.ghost.org/tb/web_analytics\\" data-token=\\"tinybird_token\\" tb_site_uuid=\\"tb_test_site_uuid\\" tb_post_uuid=\\"undefined\\" tb_member_uuid=\\"member_uuid\\" tb_member_status=\\"paid\\"></script>",
 }
 `;
 
@@ -2189,7 +2240,7 @@ Object {
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" data-locale=\\"en\\" crossorigin=\\"anonymous\\"></script>
     
     <link href=\\"http://127.0.0.1:2369/webmentions/receive/\\" rel=\\"webmention\\">
-    <script defer src=\\"/public/ghost-stats.js?v=asset-hash\\" data-stringify-payload=\\"false\\" data-datasource=\\"analytics_events\\" data-storage=\\"localStorage\\" data-host=\\"https://e.ghost.org/tb/web_analytics\\" data-token=\\"tinybird_token\\" tb_site_uuid=\\"tb_test_site_uuid\\" tb_post_uuid=\\"undefined\\" tb_member_uuid=\\"undefined\\" tb_member_status=\\"undefined\\"></script>",
+    <script defer src=\\"/public/ghost-stats.min.js?v=asset-hash\\" data-stringify-payload=\\"false\\" data-datasource=\\"analytics_events\\" data-storage=\\"localStorage\\" data-host=\\"https://e.ghost.org/tb/web_analytics\\" data-token=\\"tinybird_token\\" tb_site_uuid=\\"tb_test_site_uuid\\" tb_post_uuid=\\"undefined\\" tb_member_uuid=\\"undefined\\" tb_member_status=\\"undefined\\"></script>",
 }
 `;
 
@@ -2241,7 +2292,7 @@ Object {
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" data-locale=\\"en\\" crossorigin=\\"anonymous\\"></script>
     
     <link href=\\"http://127.0.0.1:2369/webmentions/receive/\\" rel=\\"webmention\\">
-    <script defer src=\\"/public/ghost-stats.js?v=asset-hash\\" data-stringify-payload=\\"false\\" data-datasource=\\"analytics_events\\" data-storage=\\"localStorage\\" data-host=\\"https://e.ghost.org/tb/web_analytics\\" data-token=\\"tinybird_token\\" tb_site_uuid=\\"tb_test_site_uuid\\" tb_post_uuid=\\"undefined\\" tb_member_uuid=\\"undefined\\" tb_member_status=\\"undefined\\"></script>",
+    <script defer src=\\"/public/ghost-stats.min.js?v=asset-hash\\" data-stringify-payload=\\"false\\" data-datasource=\\"analytics_events\\" data-storage=\\"localStorage\\" data-host=\\"https://e.ghost.org/tb/web_analytics\\" data-token=\\"tinybird_token\\" tb_site_uuid=\\"tb_test_site_uuid\\" tb_post_uuid=\\"undefined\\" tb_member_uuid=\\"undefined\\" tb_member_status=\\"undefined\\"></script>",
 }
 `;
 

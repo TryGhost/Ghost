@@ -9,14 +9,17 @@ const {EmailOpenedEvent} = require('@tryghost/email-service');
 const EventEmitter = require('events');
 const logging = require('@tryghost/logging');
 
-sinon.stub(logging, 'error');
-
 describe('LastSeenAtUpdater', function () {
     let events;
 
     beforeEach(function () {
+        sinon.stub(logging, 'error');
         events = new EventEmitter();
         DomainEvents.ee.removeAllListeners();
+    });
+
+    afterEach(function () {
+        sinon.restore();
     });
 
     describe('constructor', function () {
