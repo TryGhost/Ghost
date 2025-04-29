@@ -126,7 +126,7 @@ export default class EditorPostPreviewModal extends Component {
 
     @task
     *copyPreviewUrlTask() {
-        copyTextToClipboard(this.args.data.publishOptions.post.previewUrl);
+        copyTextToClipboard(this.browserPreviewUrl);
         return yield true;
     }
 }
