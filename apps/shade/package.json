@@ -17,7 +17,7 @@
         "lint:code": "eslint --ext .js,.ts,.cjs,.tsx src/ --cache",
         "lint": "yarn lint:code && yarn lint:test",
         "lint:test": "eslint -c test/.eslintrc.cjs --ext .js,.ts,.cjs,.tsx test/ --cache",
-        "storybook": "storybook dev -p 6006",
+        "storybook": "storybook dev -p 6006 -h 0.0.0.0",
         "build-storybook": "storybook build"
     },
     "files": [
