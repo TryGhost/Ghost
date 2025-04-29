@@ -152,6 +152,8 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
         authorPlaceholder={currentUser.name || currentUser.email}
         backgroundColor={colors.backgroundColor || '#ffffff'}
         bodyFontCategory={newsletter.body_font_category}
+        buttonCorners={newsletter.button_corners || 'squircle'}
+        buttonStyle={newsletter.button_style || 'fill'}
         footerContent={newsletter.footer_content}
         headerIcon={newsletter.show_header_icon ? icon : undefined}
         headerImage={newsletter.header_image}

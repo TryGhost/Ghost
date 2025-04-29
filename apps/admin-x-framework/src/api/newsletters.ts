@@ -38,6 +38,8 @@ export type Newsletter = {
     link_color: string | null;
     title_color: string | null;
     divider_color: string | null;
+    button_corners: string | null;
+    button_style: string | null;
     created_at: string;
     updated_at: string;
     count?: {
