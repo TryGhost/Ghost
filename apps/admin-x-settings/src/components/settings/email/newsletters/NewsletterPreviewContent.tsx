@@ -37,7 +37,6 @@ const NewsletterPreviewContent: React.FC<{
 
     backgroundColor?: string;
     borderColor?: string;
-    secondaryBorderColor?: string;
     accentColor?: string;
     textColor?: string;
     secondaryTextColor?: string;
@@ -70,8 +69,6 @@ const NewsletterPreviewContent: React.FC<{
     showBadge,
 
     backgroundColor,
-    borderColor,
-    secondaryBorderColor,
     accentColor,
     textColor,
     secondaryTextColor,
@@ -137,14 +134,14 @@ const NewsletterPreviewContent: React.FC<{
 
                     {/* Email content */}
                     <div className="overflow-y-auto p-4 text-sm" style={{backgroundColor}}>
-                        <div className="border border-transparent px-[5.4rem]" style={{borderColor}}>
+                        <div className="border border-transparent px-[5.4rem]">
                             {headerImage && (
                                 <div>
                                     <img alt="" className="mb-4 mt-6 block" src={headerImage} />
                                 </div>
                             )}
                             {showHeader && (
-                                <div className="py-3" style={{borderColor: secondaryBorderColor}}>
+                                <div className="py-3">
                                     {headerIcon && <img alt="" className="mx-auto mb-2 size-10" role="presentation" src={headerIcon} />}
                                     {headerTitle && <h4 className="mb-1 text-center text-[1.6rem] font-bold uppercase leading-tight tracking-tight text-grey-900" style={{color: textColor}}>{headerTitle}</h4>}
                                     {headerSubtitle && <h5 className="mb-1 text-center text-[1.3rem] font-normal text-grey-700" style={{color: secondaryTextColor}}>{headerSubtitle}</h5>}
@@ -164,7 +161,7 @@ const NewsletterPreviewContent: React.FC<{
                                                 Delivery Apps Are Changing Your Neighbourhood
                                             </h2>
                                             {showExcerpt && (
-                                                <p className={excerptClasses}>Delivery apps are thriving—local restaurants and workers are paying the price.</p>
+                                                <p className={excerptClasses} style={{color: textColor}}>Delivery apps are thriving—local restaurants and workers are paying the price.</p>
                                             )}
                                         </>
                                     ) : (
@@ -212,18 +209,18 @@ const NewsletterPreviewContent: React.FC<{
                                 'max-w-[600px] border-b border-grey-200 pb-5 leading-[27.2px] text-black',
                                 bodyFontCategory === 'serif' ? 'font-serif text-[1.8rem]' : 'text-[1.7rem] tracking-tight',
                                 (showFeatureImage || showPostTitleSection) ? '' : 'pt-8'
-                            )} style={{borderColor: secondaryBorderColor}}>
+                            )} style={{borderColor: dividerColor}}>
                                 {hasEmailCustomization ? (
                                     <>
-                                        <p className="mb-6" style={{color: textColor}}>The promise of delivery apps is simple: tap a button, and your favorite meal arrives at your door within minutes. But behind the scenes, these platforms are reshaping local economies in ways few people realize.</p>
+                                        <p className="mb-6" style={{color: textColor}}>The promise of delivery apps is simple: tap a button, and your favorite meal arrives at your door within minutes. But behind the scenes, these platforms are <a className="underline" href="#" style={{color: accentColor}}>reshaping local economies</a> in ways few people realize.</p>
                                         <p className="mb-6" style={{color: textColor}}>Across the country, small restaurants are grappling with rising fees—sometimes up to 30% per order—cutting into already-thin profit margins. In some cases, beloved neighborhood spots have had to shut their doors, unable to keep up with the financial strain. Meanwhile, delivery workers, the backbone of these services, often face unpredictable wages and challenging working conditions.</p>
-                                        <h3 className={`mb-[13px] mt-[39px] text-[2.6rem] leading-supertight ${titleFontCategory === 'serif' ? 'font-serif' : ''} ${titleFontWeight === 'normal' ? 'font-normal' : 'font-bold'}`} style={{color: titleColor}}>When Convenience Comes at a Cost</h3>
-                                        <p className="mb-6" style={{color: textColor}}>Yet, the convenience factor keeps us coming back. The ease of one-click ordering means fewer people are dining in, changing the social fabric of our communities. Restaurants designed for shared experiences are <a className="underline" href="#" style={{color: accentColor}}>evolving into ghost kitchens</a>, optimized for delivery rather than connection.</p>
-                                        <p className="mb-6" style={{color: textColor}}>So, what’s the future of food culture in an on-demand world? Can these platforms adapt to better support small businesses and workers? Or will we wake up one day to find that the places we once loved have vanished?</p>
                                         <hr className="my-6 border-[#e0e7eb]" style={{borderColor: dividerColor}} />
                                         <p className="mb-6" style={{color: textColor}}>If you enjoy this piece and want more deep dives like it, consider upgrading your membership. Paid subscribers get <a className="underline" href="#" style={{color: accentColor}}>exclusive reports</a>, early access to new features, and a behind-the-scenes look at how we put these stories together. Your support helps us continue delivering thoughtful, in-depth journalism straight to you.</p>
                                         <button className="rounded-[6px] px-[18px] py-2 font-sans text-[15px] text-white" style={{backgroundColor: accentColor}} type="button">Upgrade now</button>
                                         <hr className="my-6 border-[#e0e7eb]" style={{borderColor: dividerColor}} />
+                                        <p className="mb-6" style={{color: textColor}}>Yet, the convenience factor keeps us coming back. The ease of one-click ordering means fewer people are dining in, changing the social fabric of our communities. Restaurants designed for shared experiences are evolving into ghost kitchens, optimized for delivery rather than connection.</p>
+                                        <h3 className={`mb-[13px] mt-[39px] text-[2.6rem] leading-supertight ${titleFontCategory === 'serif' ? 'font-serif' : ''} ${titleFontWeight === 'normal' ? 'font-normal' : 'font-bold'}`} style={{color: titleColor}}>When Convenience Comes at a Cost</h3>
+                                        <p className="mb-6" style={{color: textColor}}>So, what’s the future of food culture in an on-demand world? Can these platforms adapt to better support small businesses and workers? Or will we wake up one day to find that the places we once loved have vanished?</p>
                                         <p className="mb-6" style={{color: textColor}}>Some cities are beginning to push back. In San Francisco, legislation has been proposed to cap delivery app fees and ensure a fairer share of profits for restaurants. Other local governments are exploring ways to offer support to brick-and-mortar establishments, whether through grants, tax relief, or public campaigns that encourage residents to dine in more often.</p>
                                         <h3 className={`mb-[13px] mt-[39px] text-[2.6rem] leading-supertight ${titleFontCategory === 'serif' ? 'font-serif' : ''} ${titleFontWeight === 'normal' ? 'font-normal' : 'font-bold'}`} style={{color: titleColor}}>Reimagining How We Eat</h3>
                                         <p className="mb-6" style={{color: textColor}}>Consumers are also starting to pay more attention. There&apos;s a growing movement toward mindful eating—not just in terms of ingredients, but in how we support the systems that bring food to our tables. Choosing to pick up instead of ordering in, tipping delivery drivers fairly, or subscribing to local restaurant coalitions can all make a difference.</p>
@@ -240,7 +237,7 @@ const NewsletterPreviewContent: React.FC<{
 
                             {/* Feedback */}
                             {(showFeedback || showCommentCta) && (
-                                <div className="grid gap-5 border-b border-grey-200 px-6 py-5" style={{borderColor: secondaryBorderColor}}>
+                                <div className="grid gap-5 border-b border-grey-200 px-6 py-5" style={{borderColor: dividerColor}}>
                                     <div className="flex justify-center gap-3">
                                         {showFeedback && (
                                             <>
@@ -272,8 +269,8 @@ const NewsletterPreviewContent: React.FC<{
 
                             {/* Latest posts */}
                             {showLatestPosts && (
-                                <div className="border-b border-grey-200 py-6" style={{borderColor: secondaryBorderColor}}>
-                                    <h3 className="mb-4 mt-2 pb-1 text-[1.2rem] font-semibold uppercase tracking-wide" style={{color: titleColor}}>Keep reading</h3>
+                                <div className="border-b border-grey-200 py-6" style={{borderColor: dividerColor}}>
+                                    <h3 className="mb-4 mt-2 pb-1 text-[1.2rem] font-semibold uppercase tracking-wide">Keep reading</h3>
                                     <div className="flex justify-between gap-4 py-2">
                                         <div>
                                             <h4 className="mb-1 mt-0.5 text-[1.9rem]" style={{color: textColor}}>The three latest posts published on your site</h4>
@@ -306,8 +303,8 @@ const NewsletterPreviewContent: React.FC<{
 
                             {/* Subscription details */}
                             {showSubscriptionDetails && (
-                                <div className="border-b border-grey-200 py-8" style={{borderColor: secondaryBorderColor}}>
-                                    <h4 className="mb-3 text-[1.2rem] uppercase tracking-wide" style={{color: titleColor}}>Subscription details</h4>
+                                <div className="border-b border-grey-200 py-8" style={{borderColor: dividerColor}}>
+                                    <h4 className="mb-3 text-[1.2rem] uppercase tracking-wide">Subscription details</h4>
                                     <p className="m-0 mb-4 text-base" style={{color: textColor}}>You are receiving this because you are a paid subscriber to {siteTitle}. Your subscription will renew on 17 Jul 2024.</p>
                                     <div className="flex">
                                         <div className="shrink-0 text-base">
