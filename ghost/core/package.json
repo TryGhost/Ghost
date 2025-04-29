@@ -271,7 +271,7 @@
   "resolutions": {
     "@tryghost/errors": "1.3.7",
     "@tryghost/logging": "2.4.21",
-    "jackspeak": "2.1.1",
+    "jackspeak": "2.3.6",
     "moment": "2.24.0",
     "moment-timezone": "0.5.45"
   },
