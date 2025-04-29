@@ -28,8 +28,8 @@ const KpiTabValue: React.FC<KpiTabValueProps> = ({label, value, diffDirection, d
     );
     return (
         <div className='flex w-full flex-col items-start'>
-            <span className='text-[1.5rem] tracking-tight'>{label}</span>
-            <div className='flex items-baseline gap-3'>
+            <span className='font-semibold tracking-tight'>{label}</span>
+            <div className='-mt-0.5 flex items-baseline gap-3'>
                 <span className='text-[2.3rem] tracking-[-0.04em]'>{value}</span>
                 {diffValue &&
                     <>
