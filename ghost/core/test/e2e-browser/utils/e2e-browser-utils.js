@@ -128,22 +128,6 @@ const setupMailgun = async (page) => {
 };
 
 /**
- * Enable experimental labs features
- * @param {import('@playwright/test').Page} page
- */
-const enableLabs = async (page) => {
-    await page.locator('.gh-nav a[href="#/settings/"]').click();
-
-    const section = page.getByTestId('labs');
-    await section.getByRole('button', {name: 'Open'}).click();
-
-    await section.getByRole('tab', {name: 'Alpha features'}).click();
-    await section.getByLabel('Webmentions').click();
-
-    await page.getByTestId('exit-settings').click();
-};
-
-/**
  * Delete all members, 1 by 1, using the UI
  * @param {import('@playwright/test').Page} page
  */
@@ -539,7 +523,6 @@ module.exports = {
     setupGhost,
     setupStripe,
     disconnectStripe,
-    enableLabs,
     getStripeAccountId,
     generateStripeIntegrationToken,
     setupMailgun,

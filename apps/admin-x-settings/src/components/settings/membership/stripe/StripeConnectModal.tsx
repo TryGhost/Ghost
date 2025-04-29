@@ -184,8 +184,8 @@ const Connected: React.FC<{onClose?: () => void}> = ({onClose}) => {
             </div>
             <div className='my-20 flex flex-col items-center'>
                 <div className='relative h-20 w-[200px]'>
-                    <img alt='Ghost Logo' className='absolute left-10 h-16 w-16' src={GhostLogo} />
-                    <img alt='Stripe Logo' className='absolute right-10 h-16 w-16 rounded-2xl shadow-[-1.5px_0_0_1.5px_#fff] dark:shadow-[-1.5px_0_0_1.5px_black]' src={StripeLogo} />
+                    <img alt='Ghost Logo' className='absolute left-10 size-16' src={GhostLogo} />
+                    <img alt='Stripe Logo' className='absolute right-10 size-16 rounded-2xl shadow-[-1.5px_0_0_1.5px_#fff] dark:shadow-[-1.5px_0_0_1.5px_black]' src={StripeLogo} />
                 </div>
                 <Heading className='text-center' level={3}>You are connected with Stripe!{stripeConnectLivemode ? null : ' (Test mode)'}</Heading>
                 <div className='mt-1'>Connected to <strong>{stripeConnectAccountName ? stripeConnectAccountName : 'Test mode'}</strong></div>
@@ -197,7 +197,7 @@ const Connected: React.FC<{onClose?: () => void}> = ({onClose}) => {
                         <div className='font-bold'>How to setup and manage your Stripe account</div>
                         <div className='mt-1 text-sm text-grey-800 dark:text-grey-500'>Learn how to configure your Stripe account to work with Ghost, from custom branding to payment receipt emails.</div>
                         <div className='mt-3 flex items-center gap-1 text-sm text-grey-800 dark:text-grey-500'>
-                            <img alt='Ghost Logo' className='h-4 w-4' src={GhostLogoPink} />
+                            <img alt='Ghost Logo' className='size-4' src={GhostLogoPink} />
                             <strong>Ghost Resources</strong>
                             <span>&middot;</span>
                             <span>by Kym Ellis</span>

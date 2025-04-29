@@ -3,6 +3,7 @@ import LatestPosts1 from '../../../../assets/images/latest-posts-1.png';
 import LatestPosts2 from '../../../../assets/images/latest-posts-2.png';
 import LatestPosts3 from '../../../../assets/images/latest-posts-3.png';
 import clsx from 'clsx';
+import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import {GhostOrb, Icon} from '@tryghost/admin-x-design-system';
 import {isManagedEmail} from '@tryghost/admin-x-framework/api/config';
 import {textColorForBackgroundColor} from '@tryghost/color-utils';
@@ -20,6 +21,7 @@ const NewsletterPreviewContent: React.FC<{
     showExcerpt: boolean;
     titleAlignment?: string;
     titleFontCategory?: string;
+    titleFontWeight?: string;
     bodyFontCategory?: string;
     authorPlaceholder?: string;
 
@@ -35,11 +37,11 @@ const NewsletterPreviewContent: React.FC<{
 
     backgroundColor?: string;
     borderColor?: string;
-    secondaryBorderColor?: string;
     accentColor?: string;
     textColor?: string;
     secondaryTextColor?: string;
     titleColor?: string;
+    dividerColor?: string;
 }> = ({
     senderName,
     senderEmail,
@@ -52,6 +54,7 @@ const NewsletterPreviewContent: React.FC<{
     showExcerpt,
     titleAlignment,
     titleFontCategory,
+    titleFontWeight,
     bodyFontCategory,
     authorPlaceholder,
 
@@ -66,15 +69,15 @@ const NewsletterPreviewContent: React.FC<{
     showBadge,
 
     backgroundColor,
-    borderColor,
-    secondaryBorderColor,
     accentColor,
     textColor,
     secondaryTextColor,
-    titleColor
+    titleColor,
+    dividerColor
 }) => {
     const showHeader = headerIcon || headerTitle;
     const {config} = useGlobalData();
+    const hasEmailCustomization = useFeatureFlag('emailCustomization');
 
     const currentDate = new Date().toLocaleDateString('default', {
         year: 'numeric',
@@ -131,14 +134,14 @@ const NewsletterPreviewContent: React.FC<{
 
                     {/* Email content */}
                     <div className="overflow-y-auto p-4 text-sm" style={{backgroundColor}}>
-                        <div className="border border-transparent px-16" style={{borderColor}}>
+                        <div className="border border-transparent px-[5.4rem]">
                             {headerImage && (
                                 <div>
                                     <img alt="" className="mb-4 mt-6 block" src={headerImage} />
                                 </div>
                             )}
                             {showHeader && (
-                                <div className="py-3" style={{borderColor: secondaryBorderColor}}>
+                                <div className="py-3">
                                     {headerIcon && <img alt="" className="mx-auto mb-2 size-10" role="presentation" src={headerIcon} />}
                                     {headerTitle && <h4 className="mb-1 text-center text-[1.6rem] font-bold uppercase leading-tight tracking-tight text-grey-900" style={{color: textColor}}>{headerTitle}</h4>}
                                     {headerSubtitle && <h5 className="mb-1 text-center text-[1.3rem] font-normal text-grey-700" style={{color: secondaryTextColor}}>{headerSubtitle}</h5>}
@@ -146,16 +149,35 @@ const NewsletterPreviewContent: React.FC<{
                             )}
                             {showPostTitleSection && (
                                 <div className={clsx('flex flex-col py-8', titleAlignment === 'center' ? 'items-center' : 'items-start')}>
-                                    <h2 className={clsx(
-                                        'text-4xl font-bold leading-supertight text-black',
-                                        titleFontCategory === 'serif' && 'font-serif',
-                                        titleAlignment === 'center' ? 'text-center' : 'text-left',
-                                        showExcerpt ? 'mb-2' : 'mb-8'
-                                    )} style={{color: titleColor}}>
-                                        Your email newsletter
-                                    </h2>
-                                    {showExcerpt && (
-                                        <p className={excerptClasses}>A subtitle to highlight key points and engage your readers</p>
+                                    {hasEmailCustomization ? (
+                                        <>
+                                            <h2 className={clsx(
+                                                'text-4xl font-bold leading-supertight text-black',
+                                                titleFontCategory === 'serif' && 'font-serif',
+                                                titleFontWeight === 'normal' ? 'font-normal' : 'font-bold',
+                                                titleAlignment === 'center' ? 'text-center' : 'text-left',
+                                                showExcerpt ? 'mb-2' : 'mb-8'
+                                            )} style={{color: titleColor}}>
+                                                Delivery Apps Are Changing Your Neighbourhood
+                                            </h2>
+                                            {showExcerpt && (
+                                                <p className={excerptClasses} style={{color: textColor}}>Delivery apps are thriving—local restaurants and workers are paying the price.</p>
+                                            )}
+                                        </>
+                                    ) : (
+                                        <>
+                                            <h2 className={clsx(
+                                                'text-4xl font-bold leading-supertight text-black',
+                                                titleFontCategory === 'serif' && 'font-serif',
+                                                titleAlignment === 'center' ? 'text-center' : 'text-left',
+                                                showExcerpt ? 'mb-2' : 'mb-8'
+                                            )} style={{color: titleColor}}>
+                                                Your email newsletter
+                                            </h2>
+                                            {showExcerpt && (
+                                                <p className={excerptClasses}>A subtitle to highlight key points and engage your readers</p>
+                                            )}
+                                        </>
                                     )}
                                     <div className={clsx(
                                         'flex w-full justify-between text-center text-md leading-none text-grey-700',
@@ -184,18 +206,38 @@ const NewsletterPreviewContent: React.FC<{
                             )}
 
                             <div className={clsx(
-                                'max-w-[600px] border-b border-grey-200 pb-5 leading-[1.7] text-black',
+                                'max-w-[600px] border-b border-grey-200 pb-5 leading-[27.2px] text-black',
                                 bodyFontCategory === 'serif' ? 'font-serif text-[1.8rem]' : 'text-[1.7rem] tracking-tight',
                                 (showFeatureImage || showPostTitleSection) ? '' : 'pt-8'
-                            )} style={{borderColor: secondaryBorderColor}}>
-                                <p className="mb-5" style={{color: textColor}}>This is what your content will look like when you send one of your posts as an email newsletter to your subscribers.</p>
-                                <p className="mb-5" style={{color: textColor}}>Over there on the right you&apos;ll see some settings that allow you to customize the look and feel of this template to make it perfectly suited to your brand. Email templates are exceptionally finnicky to make, but we&apos;ve spent a long time optimising this one to make it work beautifully across devices, email clients and content types.</p>
-                                <p className="mb-5" style={{color: textColor}}>So, you can trust that every email you send with Ghost will look great and work well. Just like the rest of your site.</p>
+                            )} style={{borderColor: dividerColor}}>
+                                {hasEmailCustomization ? (
+                                    <>
+                                        <p className="mb-6" style={{color: textColor}}>The promise of delivery apps is simple: tap a button, and your favorite meal arrives at your door within minutes. But behind the scenes, these platforms are <a className="underline" href="#" style={{color: accentColor}}>reshaping local economies</a> in ways few people realize.</p>
+                                        <p className="mb-6" style={{color: textColor}}>Across the country, small restaurants are grappling with rising fees—sometimes up to 30% per order—cutting into already-thin profit margins. In some cases, beloved neighborhood spots have had to shut their doors, unable to keep up with the financial strain. Meanwhile, delivery workers, the backbone of these services, often face unpredictable wages and challenging working conditions.</p>
+                                        <hr className="my-6 border-[#e0e7eb]" style={{borderColor: dividerColor}} />
+                                        <p className="mb-6" style={{color: textColor}}>If you enjoy this piece and want more deep dives like it, consider upgrading your membership. Paid subscribers get <a className="underline" href="#" style={{color: accentColor}}>exclusive reports</a>, early access to new features, and a behind-the-scenes look at how we put these stories together. Your support helps us continue delivering thoughtful, in-depth journalism straight to you.</p>
+                                        <button className="rounded-[6px] px-[18px] py-2 font-sans text-[15px] text-white" style={{backgroundColor: accentColor}} type="button">Upgrade now</button>
+                                        <hr className="my-6 border-[#e0e7eb]" style={{borderColor: dividerColor}} />
+                                        <p className="mb-6" style={{color: textColor}}>Yet, the convenience factor keeps us coming back. The ease of one-click ordering means fewer people are dining in, changing the social fabric of our communities. Restaurants designed for shared experiences are evolving into ghost kitchens, optimized for delivery rather than connection.</p>
+                                        <h3 className={`mb-[13px] mt-[39px] text-[2.6rem] leading-supertight ${titleFontCategory === 'serif' ? 'font-serif' : ''} ${titleFontWeight === 'normal' ? 'font-normal' : 'font-bold'}`} style={{color: titleColor}}>When Convenience Comes at a Cost</h3>
+                                        <p className="mb-6" style={{color: textColor}}>So, what’s the future of food culture in an on-demand world? Can these platforms adapt to better support small businesses and workers? Or will we wake up one day to find that the places we once loved have vanished?</p>
+                                        <p className="mb-6" style={{color: textColor}}>Some cities are beginning to push back. In San Francisco, legislation has been proposed to cap delivery app fees and ensure a fairer share of profits for restaurants. Other local governments are exploring ways to offer support to brick-and-mortar establishments, whether through grants, tax relief, or public campaigns that encourage residents to dine in more often.</p>
+                                        <h3 className={`mb-[13px] mt-[39px] text-[2.6rem] leading-supertight ${titleFontCategory === 'serif' ? 'font-serif' : ''} ${titleFontWeight === 'normal' ? 'font-normal' : 'font-bold'}`} style={{color: titleColor}}>Reimagining How We Eat</h3>
+                                        <p className="mb-6" style={{color: textColor}}>Consumers are also starting to pay more attention. There&apos;s a growing movement toward mindful eating—not just in terms of ingredients, but in how we support the systems that bring food to our tables. Choosing to pick up instead of ordering in, tipping delivery drivers fairly, or subscribing to local restaurant coalitions can all make a difference.</p>
+                                        <p className="mb-6" style={{color: textColor}}>Ultimately, the story of delivery apps isn’t just about technology or convenience—it’s about the kind of communities we want to live in. And that future depends, in part, on the choices we make every day.</p>
+                                    </>
+                                ) : (
+                                    <>
+                                        <p className="mb-6" style={{color: textColor}}>This is what your content will look like when you send one of your posts as an email newsletter to your subscribers.</p>
+                                        <p className="mb-6" style={{color: textColor}}>Over there on the right you&apos;ll see some settings that allow you to customize the look and feel of this template to make it perfectly suited to your brand. Email templates are exceptionally finnicky to make, but we&apos;ve spent a long time optimising this one to make it work beautifully across devices, email clients and content types.</p>
+                                        <p className="mb-6" style={{color: textColor}}>So, you can trust that every email you send with Ghost will look great and work well. Just like the rest of your site.</p>
+                                    </>
+                                )}
                             </div>
 
                             {/* Feedback */}
                             {(showFeedback || showCommentCta) && (
-                                <div className="grid gap-5 border-b border-grey-200 px-6 py-5" style={{borderColor: secondaryBorderColor}}>
+                                <div className="grid gap-5 border-b border-grey-200 px-6 py-5" style={{borderColor: dividerColor}}>
                                     <div className="flex justify-center gap-3">
                                         {showFeedback && (
                                             <>
@@ -227,11 +269,11 @@ const NewsletterPreviewContent: React.FC<{
 
                             {/* Latest posts */}
                             {showLatestPosts && (
-                                <div className="border-b border-grey-200 py-6" style={{borderColor: secondaryBorderColor}}>
-                                    <h3 className="mb-4 mt-2 pb-1 text-[1.2rem] font-semibold uppercase tracking-wide" style={{color: titleColor}}>Keep reading</h3>
+                                <div className="border-b border-grey-200 py-6" style={{borderColor: dividerColor}}>
+                                    <h3 className="mb-4 mt-2 pb-1 text-[1.2rem] font-semibold uppercase tracking-wide">Keep reading</h3>
                                     <div className="flex justify-between gap-4 py-2">
                                         <div>
-                                            <h4 className="mb-1 mt-0.5 text-[1.9rem]" style={{color: textColor}}>The three latest posts published on your site</h4>
+                                            <h4 className={clsx('mt-0.5 text-[1.9rem]', titleFontCategory === 'serif' ? 'font-serif' : '', titleFontWeight === 'normal' ? 'font-normal' : 'font-bold')} style={{color: textColor}}>The three latest posts published on your site</h4>
                                             <p className="m-0 text-base text-grey-700" style={{color: secondaryTextColor}}>Posts sent as an email only will never be shown here.</p>
                                         </div>
                                         <div className="aspect-square h-auto w-full max-w-[100px] bg-grey-200 bg-cover bg-no-repeat">
@@ -240,7 +282,7 @@ const NewsletterPreviewContent: React.FC<{
                                     </div>
                                     <div className="flex justify-between gap-4 py-2">
                                         <div>
-                                            <h4 className="mb-1 mt-0.5 text-[1.9rem]" style={{color: textColor}}>Displayed at the bottom of each newsletter</h4>
+                                            <h4 className={clsx('mt-0.5 text-[1.9rem]', titleFontCategory === 'serif' ? 'font-serif' : '', titleFontWeight === 'normal' ? 'font-normal' : 'font-bold')} style={{color: textColor}}>Displayed at the bottom of each newsletter</h4>
                                             <p className="m-0 text-base text-grey-700" style={{color: secondaryTextColor}}>Giving your readers one more place to discover your stories.</p>
                                         </div>
                                         <div className="aspect-square h-auto w-full max-w-[100px] bg-grey-200 bg-cover bg-no-repeat">
@@ -249,7 +291,7 @@ const NewsletterPreviewContent: React.FC<{
                                     </div>
                                     <div className="flex justify-between gap-4 py-2">
                                         <div>
-                                            <h4 className="mb-1 mt-0.5 text-[1.9rem]" style={{color: textColor}}>To keep your work front and center</h4>
+                                            <h4 className={clsx('mt-0.5 text-[1.9rem]', titleFontCategory === 'serif' ? 'font-serif' : '', titleFontWeight === 'normal' ? 'font-normal' : 'font-bold')} style={{color: textColor}}>To keep your work front and center</h4>
                                             <p className="m-0 text-base text-grey-700" style={{color: secondaryTextColor}}>Making sure that your audience stays engaged.</p>
                                         </div>
                                         <div className="aspect-square h-auto w-full max-w-[100px] bg-grey-200 bg-cover bg-no-repeat">
@@ -261,8 +303,8 @@ const NewsletterPreviewContent: React.FC<{
 
                             {/* Subscription details */}
                             {showSubscriptionDetails && (
-                                <div className="border-b border-grey-200 py-8" style={{borderColor: secondaryBorderColor}}>
-                                    <h4 className="mb-3 text-[1.2rem] uppercase tracking-wide" style={{color: titleColor}}>Subscription details</h4>
+                                <div className="border-b border-grey-200 py-8" style={{borderColor: dividerColor}}>
+                                    <h4 className="mb-3 text-[1.2rem] uppercase tracking-wide">Subscription details</h4>
                                     <p className="m-0 mb-4 text-base" style={{color: textColor}}>You are receiving this because you are a paid subscriber to {siteTitle}. Your subscription will renew on 17 Jul 2024.</p>
                                     <div className="flex">
                                         <div className="shrink-0 text-base">

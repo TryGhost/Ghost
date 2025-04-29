@@ -20,6 +20,7 @@ export type Newsletter = {
     show_header_icon: boolean;
     show_header_title: boolean;
     title_font_category: string;
+    title_font_weight: string;
     title_alignment: string;
     show_excerpt: boolean;
     show_feature_image: boolean;
@@ -34,6 +35,7 @@ export type Newsletter = {
     background_color: string;
     border_color: string | null;
     title_color: string | null;
+    divider_color: string | null;
     created_at: string;
     updated_at: string;
     count?: {

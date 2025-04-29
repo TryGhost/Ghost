@@ -57,9 +57,9 @@ totp.options = {
  * @param {(key: 'require_email_mfa' | 'admin_session_secret' | 'title') => boolean | string} deps.getSettingsCache
  * @param {() => string} deps.getBlogLogo
  * @param {import('../../core/core/server/services/mail').GhostMailer} deps.mailer
- * @param {import('../../core/core/shared/labs')} deps.labs
  * @param {import('../../core/core/server/services/i18n').t} deps.t
  * @param {import('../../core/core/shared/url-utils')} deps.urlUtils
+ * @param {() => boolean} deps.isStaffDeviceVerificationDisabled
  * @returns {SessionService}
  */
 
@@ -71,7 +71,7 @@ module.exports = function createSessionService({
     getBlogLogo,
     mailer,
     urlUtils,
-    labs,
+    isStaffDeviceVerificationDisabled,
     t
 }) {
     /**
@@ -128,7 +128,7 @@ module.exports = function createSessionService({
         session.user_agent = req.get('user-agent');
         session.ip = req.ip;
 
-        if (!labs.isSet('staff2fa')) {
+        if (isStaffDeviceVerificationDisabled()) {
             session.verified = true;
         }
     }
@@ -260,7 +260,7 @@ module.exports = function createSessionService({
         const siteTitle = getSettingsCache('title');
         const siteLogo = getBlogLogo();
         const siteUrl = urlUtils.urlFor('home', true);
-        const domain = urlUtils.urlFor('home', true).match(new RegExp('^https?://([^/:?#]+)(?:[/:?#]|$)', 'i'));
+        const domain = urlUtils.urlFor('home', true).match(new RegExp('^https?://([^/:?#]+)(?:[/:?#]|$)','i'));
         const siteDomain = (domain && domain[1]);
         const email = emailTemplate({
             t,
@@ -271,7 +271,7 @@ module.exports = function createSessionService({
             siteLogo: siteLogo,
             token: token,
             deviceDetails: await getDeviceDetails(session.user_agent, session.ip),
-            is2FARequired: this.isVerificationRequired()
+            is2FARequired: isVerificationRequired()
         });
 
         try {
@@ -320,7 +320,7 @@ module.exports = function createSessionService({
     async function removeUserForSession(req, res) {
         const session = await getSession(req, res);
 
-        if (this.isVerificationRequired()) {
+        if (isVerificationRequired()) {
             session.verified = undefined;
         }
 
@@ -370,5 +370,6 @@ module.exports = function createSessionService({
         verifyAuthCodeForUser,
         generateAuthCodeForUser,
         isVerificationRequired
+
     };
 };

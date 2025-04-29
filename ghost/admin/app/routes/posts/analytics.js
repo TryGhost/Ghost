@@ -1,23 +1,27 @@
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
+import {inject} from 'ghost-admin/decorators/inject';
 import {pluralize} from 'ember-inflector';
-
+import {inject as service} from '@ember/service';
 export default class Analytics extends AuthenticatedRoute {
+    @inject config;
+    @service feature;
+
     model(params) {
         let {post_id: id} = params;
 
         let query = {
             id,
             include: [
-                'tags', 
-                'authors', 
-                'authors.roles', 
-                'email', 
-                'tiers', 
-                'newsletter', 
-                'count.conversions', 
-                'count.clicks', 
-                'sentiment', 
-                'count.positive_feedback', 
+                'tags',
+                'authors',
+                'authors.roles',
+                'email',
+                'tiers',
+                'newsletter',
+                'count.conversions',
+                'count.clicks',
+                'sentiment',
+                'count.positive_feedback',
                 'count.negative_feedback'
             ].join(',')
         };
@@ -42,6 +46,20 @@ export default class Analytics extends AuthenticatedRoute {
         // If the post is not a draft and user is contributor, redirect to index
         if (user.isContributor && !post.isDraft) {
             return this.replaceWith(returnRoute);
+        }
+
+        if (this.routeName === 'posts.analytics.posts-x') {
+            // This is based on the logic for the dashboard
+            if (this.session.user.isContributor) {
+                return this.transitionTo('posts');
+            } else if (!this.session.user.isAdmin) {
+                return this.transitionTo('site');
+            }
+
+            // This ensures that we don't load this page if the stats config is not set
+            if (!(this.config.stats && this.feature.trafficAnalytics)) {
+                return this.transitionTo('home');
+            }
         }
     }
 

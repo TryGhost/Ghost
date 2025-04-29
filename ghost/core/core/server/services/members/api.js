@@ -1,7 +1,7 @@
 const stripeService = require('../stripe');
 const settingsCache = require('../../../shared/settings-cache');
 const settingsHelpers = require('../../services/settings-helpers');
-const MembersApi = require('@tryghost/members-api');
+const MembersApi = require('./members-api/members-api');
 const logging = require('@tryghost/logging');
 const mail = require('../mail');
 const models = require('../../models');
@@ -25,7 +25,7 @@ const sharedConfig = require('../../../shared/config');
 
 const MAGIC_LINK_TOKEN_VALIDITY = 24 * 60 * 60 * 1000;
 const MAGIC_LINK_TOKEN_VALIDITY_AFTER_USAGE = 10 * 60 * 1000;
-const MAGIC_LINK_TOKEN_MAX_USAGE_COUNT = 3;
+const MAGIC_LINK_TOKEN_MAX_USAGE_COUNT = 7;
 
 const ghostMailer = new mail.GhostMailer();
 

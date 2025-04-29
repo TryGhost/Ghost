@@ -1,12 +1,12 @@
-import AlphaFeatures from './labs/AlphaFeatures';
 import BetaFeatures from './labs/BetaFeatures';
 import LabsBubbles from '../../../assets/images/labs-bg.svg';
+import PrivateFeatures from './labs/PrivateFeatures';
 import React, {useState} from 'react';
 import TopLevelGroup from '../../TopLevelGroup';
 import {Button, SettingGroupHeader, Tab, TabView, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
 
-type LabsTab = 'labs-alpha-features' | 'labs-beta-features';
+type LabsTab = 'labs-private-features' | 'labs-beta-features';
 
 const Labs: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const [selectedTab, setSelectedTab] = useState<LabsTab>('labs-beta-features');
@@ -20,9 +20,9 @@ const Labs: React.FC<{ keywords: string[] }> = ({keywords}) => {
             contents: <BetaFeatures />
         },
         config.enableDeveloperExperiments && ({
-            id: 'labs-alpha-features',
-            title: 'Alpha features',
-            contents: <AlphaFeatures />
+            id: 'labs-private-features',
+            title: 'Private features',
+            contents: <PrivateFeatures />
         })
     ].filter(Boolean) as Tab<LabsTab>[];
 
@@ -48,7 +48,7 @@ const Labs: React.FC<{ keywords: string[] }> = ({keywords}) => {
             testId='labs'
         >
             {isOpen ?
-                <TabView<'labs-alpha-features' | 'labs-beta-features'> selectedTab={selectedTab} tabs={tabs} onTabChange={setSelectedTab} />
+                <TabView<'labs-private-features' | 'labs-beta-features'> selectedTab={selectedTab} tabs={tabs} onTabChange={setSelectedTab} />
                 :
                 <div className='absolute inset-0 z-0 overflow-hidden opacity-70'>
                     <img className='absolute -right-6 -top-6 dark:opacity-10' src={LabsBubbles} />

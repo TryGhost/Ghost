@@ -78,6 +78,22 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
         return textColorForBackgroundColor(backgroundColor()).hex();
     };
 
+    const dividerColor = () => {
+        const value = newsletter.divider_color;
+
+        const validHex = /#([0-9a-f]{3}){1,2}$/i;
+
+        if (validHex.test(value || '')) {
+            return value;
+        }
+
+        if (value === 'accent') {
+            return siteData.accent_color;
+        }
+
+        return '#e0e7eb';
+    };
+
     const textColor = textColorForBackgroundColor(backgroundColor()).hex();
 
     const secondaryTextColor = textColorForBackgroundColor(backgroundColor()).alpha(0.5).toString();
@@ -87,6 +103,7 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
         borderColor: borderColor() || undefined,
         secondaryBorderColor,
         titleColor: titleColor() || undefined,
+        dividerColor: dividerColor() || undefined,
         textColor,
         secondaryTextColor
     } : {};
@@ -115,6 +132,7 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
         siteTitle={title}
         titleAlignment={newsletter.title_alignment}
         titleFontCategory={newsletter.title_font_category}
+        titleFontWeight={newsletter.title_font_weight}
         {...colors}
     />;
 };

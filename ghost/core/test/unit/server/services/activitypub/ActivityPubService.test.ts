@@ -108,7 +108,7 @@ describe('ActivityPubService', function () {
 
         const webhooks = await knexInstance.select('*').from('webhooks');
 
-        const expectedWebhookCount = 2;
+        const expectedWebhookCount = 1;
         const expectedWebhookSecret = 'webhook_secret_baby!!';
         const expectedWebhookIntegrationId = 'integration_id';
 
@@ -154,7 +154,7 @@ describe('ActivityPubService', function () {
 
         const webhooks = await knexInstance.select('*').from('webhooks');
 
-        const expectedWebhookCount = 2;
+        const expectedWebhookCount = 1;
         const expectedWebhookSecret = 'webhook_secret_baby!!';
         const expectedWebhookIntegrationId = 'integration_id';
 
@@ -213,7 +213,7 @@ describe('ActivityPubService', function () {
 
         const webhooks = await knexInstance.select('*').from('webhooks');
 
-        const expectedWebhookCount = 2;
+        const expectedWebhookCount = 1;
         const expectedWebhookSecret = 'webhook_secret_baby!!';
         const expectedWebhookIntegrationId = 'integration_id';
 
