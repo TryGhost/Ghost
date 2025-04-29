@@ -29,7 +29,7 @@ const PostAnalytics: React.FC<postAnalyticsProps> = () => {
     const {data: {posts: [post]} = {posts: []}, isLoading: isPostLoading} = useBrowsePosts({
         searchParams: {
             filter: `id:${postId}`,
-            fields: 'title,slug,published_at'
+            fields: 'title,slug,published_at,uuid'
         }
     });
 
@@ -43,13 +43,13 @@ const PostAnalytics: React.FC<postAnalyticsProps> = () => {
             date_to: formatQueryDate(endDate),
             timezone: timezone,
             member_status: getAudienceQueryParam(audience),
-            pathname: ''
+            post_uuid: ''
         };
 
-        if (!isPostLoading && post?.slug) {
+        if (!isPostLoading && post?.uuid) {
             return {
                 ...baseParams,
-                pathname: `/${post.slug}/`
+                post_uuid: post.uuid
             };
         }
 
