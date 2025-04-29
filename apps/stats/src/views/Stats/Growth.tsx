@@ -3,7 +3,7 @@ import DateRangeSelect from './components/DateRangeSelect';
 import React, {useState} from 'react';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, H1, Recharts, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, ViewHeader, ViewHeaderActions, formatDisplayDate, formatDuration, formatNumber} from '@tryghost/shade';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, H1, Recharts, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, ViewHeader, ViewHeaderActions, formatDisplayDate, formatNumber} from '@tryghost/shade';
 import {KpiTabTrigger, KpiTabValue} from './components/KpiTab';
 import {Navigate} from '@tryghost/admin-x-framework';
 import {calculateYAxisWidth, getYTicks} from '@src/utils/chart-helpers';
