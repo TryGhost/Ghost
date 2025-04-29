@@ -5,6 +5,7 @@ const social_url = require('../../../../core/frontend/helpers/social_url');
 const socialData = {
     facebook: 'testuser-fb',
     twitter: 'testuser-tw',
+    x: 'testuser-tw',
     linkedin: 'testuser-li',
     threads: 'testuser-th',
     bluesky: 'testuser.bsky.social', // Example Bluesky handle
@@ -38,7 +39,8 @@ describe('{{social_url}} helper', function () {
                 site: {
                     // @TODO: add all social platforms here if we add them to general settings
                     twitter: socialData.twitter,
-                    facebook: socialData.facebook
+                    facebook: socialData.facebook,
+                    x: socialData.x
                 }
             }
         };
@@ -47,6 +49,7 @@ describe('{{social_url}} helper', function () {
     const platforms = [
         {name: 'facebook', expectedUrl: 'https://www.facebook.com/testuser-fb'},
         {name: 'twitter', expectedUrl: 'https://x.com/testuser-tw'},
+        {name: 'x', expectedUrl: 'https://x.com/testuser-tw'},
         {name: 'linkedin', expectedUrl: 'https://www.linkedin.com/in/testuser-li'}, // Assuming /in/ structure
         {name: 'threads', expectedUrl: 'https://www.threads.net/@testuser-th'},
         {name: 'bluesky', expectedUrl: 'https://bsky.app/profile/testuser.bsky.social'}, // Assuming profile URL structure
@@ -78,6 +81,13 @@ describe('{{social_url}} helper', function () {
             .should.equal('');
     });
 
+    it('should return the x url when "x" is provided as the type hash parameter', function () {
+        const templateString = `{{social_url type="x"}}`;
+        compile(templateString)
+            .with(socialData)
+            .should.equal('https://x.com/testuser-tw');
+    });
+
     it('should return empty string if the user does not have a new platform set in their profile', function () {
         const templateString = `{{social_url type="instagram"}}`;
         compile(templateString)
@@ -91,6 +101,10 @@ describe('{{social_url}} helper', function () {
             .should.equal('https://www.facebook.com/testuser-fb');
 
         compile(`{{social_url type="twitter"}}`)
+            .with({})
+            .should.equal('https://x.com/testuser-tw');
+
+        compile(`{{social_url type="x"}}`)
             .with({})
             .should.equal('https://x.com/testuser-tw');
     });
