@@ -103,6 +103,33 @@ const controller = {
         async query() {
             return await statsService.api.getReferrersHistory();
         }
+    },
+    topPages: {
+        headers: {
+            cacheInvalidate: false
+        },
+        options: [
+            'siteUuid',
+            'dateFrom',
+            'dateTo',
+            'timezone',
+            'memberStatus',
+            'tbVersion'
+        ],
+        permissions: {
+            docName: 'posts',
+            method: 'browse'
+        },
+        cache: statsService.cache,
+        generateCacheKeyData(frame) {
+            return {
+                method: 'topPages',
+                options: frame.options
+            };
+        },
+        async query(frame) {
+            return await statsService.api.getTopPages(frame.options);
+        }
     }
 };
 

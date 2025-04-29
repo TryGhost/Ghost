@@ -2,6 +2,7 @@ const MRRService = require('./MrrStatsService');
 const MembersService = require('./MembersStatsService');
 const SubscriptionStatsService = require('./SubscriptionStatsService');
 const ReferrersStatsService = require('./ReferrersStatsService');
+const TopPagesStatsService = require('./TopPagesStatsService');
 
 class StatsService {
     /**
@@ -10,12 +11,16 @@ class StatsService {
      * @param {MembersService} deps.members
      * @param {SubscriptionStatsService} deps.subscriptions
      * @param {ReferrersStatsService} deps.referrers
+     * @param {TopPagesStatsService} deps.topPages
+     * @param {import('knex').Knex} deps.knex
      **/
     constructor(deps) {
         this.mrr = deps.mrr;
         this.members = deps.members;
         this.subscriptions = deps.subscriptions;
         this.referrers = deps.referrers;
+        this.topPages = deps.topPages;
+        this.knex = deps.knex;
     }
 
     async getMRRHistory() {
@@ -43,6 +48,13 @@ class StatsService {
             meta: {}
         };
     }
+    
+    /**
+     * @param {Object} options
+     */
+    async getTopPages(options = {}) {
+        return await this.topPages.getTopPages(options);
+    }
 
     /**
      * @param {object} deps
@@ -55,7 +67,9 @@ class StatsService {
             mrr: new MRRService(deps),
             members: new MembersService(deps),
             subscriptions: new SubscriptionStatsService(deps),
-            referrers: new ReferrersStatsService(deps)
+            referrers: new ReferrersStatsService(deps),
+            topPages: new TopPagesStatsService(deps),
+            knex: deps.knex
         });
     }
 }
