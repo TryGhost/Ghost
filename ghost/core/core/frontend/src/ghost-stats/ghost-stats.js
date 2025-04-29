@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import timezoneData from '@tryghost/timezone-data';
-import { getReferrer } from '../utils/url-attribution';
+import { getReferrer, parseReferrer } from '../utils/url-attribution';
 import { getSessionId, setSessionId, getStorageObject } from '../utils/session-storage';
 import { processPayload } from '../utils/privacy';
 
@@ -168,7 +168,8 @@ import { processPayload } from '../utils/privacy';
                 'user-agent': window.navigator.userAgent,
                 locale,
                 location: country,
-                referrer: getReferrer(),
+                referrer: getReferrer(window.location.href),
+                parsedReferrer: parseReferrer(window.location.href),
                 pathname: window.location.pathname,
                 href: window.location.href,
             });
