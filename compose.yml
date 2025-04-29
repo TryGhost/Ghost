@@ -3,6 +3,7 @@ name: ghost
 # This is the base configuration for the Ghost container
 # Multiple services can re-use this configuration
 # Any parameters defined on the service itself will override the base configuration
+# Ref: https://docs.docker.com/reference/compose-file/fragments/
 x-ghost-base: &ghost-base
   image: ghost-dev:latest
   pull_policy: never
