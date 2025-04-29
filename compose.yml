@@ -1,26 +1,13 @@
 name: ghost
-services:
-  ghost:
-    build:
-      context: .
-      dockerfile: ./.docker/Dockerfile
-      target: development
-    entrypoint: [ "/home/ghost/.docker/development.entrypoint.sh" ]
-    command: [ "yarn", "dev" ]
-    ports:
-      - "2368:2368" # Ghost
-      - "4200:4200" # Admin
-      - "4201:4201" # Admin tests
-      - "4175:4175" # Portal
-      - "4176:4176" # Portal HTTPS
-      - "4177:4177" # Announcement bar
-      - "4178:4178" # Search
-      - "6174:6174" # Signup form
-      - "7173:7173" # Comments
-      - "7174:7174" # Comments HTTPS
-      - "6006:6006" # Storybook
-    profiles: [ ghost ]
-    volumes:
+
+# This is the base configuration for the Ghost container
+# Multiple services can re-use this configuration
+# Any parameters defined on the service itself will override the base configuration
+x-ghost-base: &ghost-base
+  image: ghost-dev:latest
+  pull_policy: never
+  entrypoint: [ "/home/ghost/.docker/development.entrypoint.sh" ]
+  volumes:
       # Mount the source code
       - .:/home/ghost
 
@@ -74,22 +61,52 @@ services:
       - node_modules_apps_signup-form:/home/ghost/apps/signup-form/node_modules:delegated
       - node_modules_apps_sodo-search:/home/ghost/apps/sodo-search/node_modules:delegated
       - node_modules_apps_stats:/home/ghost/apps/stats/node_modules:delegated
-    tty: true
+  tty: true
+  environment:
+    - DEBUG=${DEBUG:-}
+    - SSH_AUTH_SOCK=/ssh-agent
+    - NX_DAEMON=${NX_DAEMON:-true}
+    - GHOST_DEV_IS_DOCKER=true
+    - GHOST_DEV_APP_FLAGS=${GHOST_DEV_APP_FLAGS:-}
+    - GHOST_UPSTREAM=${GHOST_UPSTREAM:-}
+    - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY:-}
+    - STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY:-}
+    - STRIPE_ACCOUNT_ID=${STRIPE_ACCOUNT_ID:-}
+
+services:
+  ghost:
+    <<: *ghost-base # Merge the base configuration
+    build:
+      context: .
+      dockerfile: ./.docker/Dockerfile
+      target: development
+    command: [ "yarn", "dev" ]
+    ports:
+      - "2368:2368" # Ghost
+      - "4200:4200" # Admin
+      - "4201:4201" # Admin tests
+      - "4175:4175" # Portal
+      - "4176:4176" # Portal HTTPS
+      - "4177:4177" # Announcement bar
+      - "4178:4178" # Search
+      - "6174:6174" # Signup form
+      - "7173:7173" # Comments
+      - "7174:7174" # Comments HTTPS
+    profiles: [ ghost ]
     depends_on:
       mysql:
         condition: service_healthy
       redis:
         condition: service_healthy
+  storybook:
+    <<: *ghost-base
+    command: [ "yarn", "storybook" ]
+    working_dir: /home/ghost/apps/shade
+    profiles: [ storybook ]
+    ports:
+      - "6006:6006" # Storybook
     environment:
-      - DEBUG=${DEBUG:-}
-      - SSH_AUTH_SOCK=/ssh-agent
-      - NX_DAEMON=${NX_DAEMON:-true}
-      - GHOST_DEV_IS_DOCKER=true
-      - GHOST_DEV_APP_FLAGS=${GHOST_DEV_APP_FLAGS:-}
-      - GHOST_UPSTREAM=${GHOST_UPSTREAM:-}
-      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY:-}
-      - STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY:-}
-      - STRIPE_ACCOUNT_ID=${STRIPE_ACCOUNT_ID:-}
+      - NX_DAEMON=false
   mysql:
     image: mysql:8.4.5
     container_name: ghost-mysql
