@@ -87,7 +87,11 @@ const PostAnalytics: React.FC<postAnalyticsProps> = () => {
                         {post && post.title}
                     </H1>
                     {typedPost && typedPost.published_at && (
+<<<<<<< Updated upstream
                         <div className='text-grey-600 flex h-9 items-center justify-start text-sm leading-[1.65em]'>
+=======
+                        <div className='text-grey-600 mt-1 text-sm'>
+>>>>>>> Stashed changes
                             Published on your site on {moment.utc(typedPost.published_at).format('D MMM YYYY')} at {moment.utc(typedPost.published_at).format('HH:mm')}
                         </div>
                     )}
