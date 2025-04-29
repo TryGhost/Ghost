@@ -103,8 +103,11 @@ describe('{{social_url}} helper', function () {
         compile(`{{social_url type="twitter"}}`)
             .with({})
             .should.equal('https://x.com/testuser-tw');
+    });
 
-        compile(`{{social_url type="x"}}`)
+    it('should return the x url when "x" is provided as the global site', function () {
+        const templateString = `{{#if @site.x}}{{social_url type="x"}}{{/if}}`;
+        compile(templateString)
             .with({})
             .should.equal('https://x.com/testuser-tw');
     });
