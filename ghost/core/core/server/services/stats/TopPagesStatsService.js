@@ -193,8 +193,6 @@ class TopPagesStatsService {
                 };
             });
 
-            console.log('enrichedData', enrichedData);
-
             logging.info('Data enriched with titles/pathnames, sample:', enrichedData[0]);
 
             return {data: enrichedData};

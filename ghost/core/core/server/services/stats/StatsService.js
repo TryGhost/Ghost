@@ -12,7 +12,6 @@ class StatsService {
      * @param {SubscriptionStatsService} deps.subscriptions
      * @param {ReferrersStatsService} deps.referrers
      * @param {TopPagesStatsService} deps.topPages
-     * @param {import('knex').Knex} deps.knex
      **/
     constructor(deps) {
         this.mrr = deps.mrr;
@@ -20,7 +19,6 @@ class StatsService {
         this.subscriptions = deps.subscriptions;
         this.referrers = deps.referrers;
         this.topPages = deps.topPages;
-        this.knex = deps.knex;
     }
 
     async getMRRHistory() {
@@ -58,7 +56,6 @@ class StatsService {
 
     /**
      * @param {object} deps
-     * @param {import('knex').Knex} deps.knex
      *
      * @returns {StatsService}
      **/
@@ -68,8 +65,7 @@ class StatsService {
             members: new MembersService(deps),
             subscriptions: new SubscriptionStatsService(deps),
             referrers: new ReferrersStatsService(deps),
-            topPages: new TopPagesStatsService(deps),
-            knex: deps.knex
+            topPages: new TopPagesStatsService(deps)
         });
     }
 }
