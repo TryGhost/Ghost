@@ -3,14 +3,14 @@ import DateRangeSelect from './components/DateRangeSelect';
 import React, {useState} from 'react';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, H1, Recharts, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, ViewHeader, ViewHeaderActions, formatDisplayDate, formatDuration, formatNumber, formatPercentage} from '@tryghost/shade';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, H1, Recharts, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, ViewHeader, ViewHeaderActions, formatDisplayDate, formatDuration, formatNumber} from '@tryghost/shade';
 import {KpiTabTrigger, KpiTabValue} from './components/KpiTab';
 import {Navigate} from '@tryghost/admin-x-framework';
 import {calculateYAxisWidth, getYTicks} from '@src/utils/chart-helpers';
 import {getSettingValue} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 
-const GrowthKPIs:React.FC = ({}) => {
+const GrowthKPIs:React.FC = () => {
     const [currentTab, setCurrentTab] = useState('free-members');
     const {settings} = useGlobalData();
     const labs = JSON.parse(getSettingValue<string>(settings, 'labs') || '{}');
@@ -264,13 +264,12 @@ const GrowthKPIs:React.FC = ({}) => {
                             axisLine={false}
                             tickFormatter={(value) => {
                                 switch (currentTab) {
-                                case 'bounce-rate':
-                                    return formatPercentage(value);
-                                case 'visit-duration':
-                                    return formatDuration(value);
-                                case 'visits':
-                                case 'views':
+                                case 'total-members':
+                                case 'free-members':
+                                case 'paid-members':
                                     return formatNumber(value);
+                                case 'mrr':
+                                    return value;
                                 default:
                                     return value.toLocaleString();
                                 }
