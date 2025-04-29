@@ -7615,10 +7615,10 @@
   resolved "https://registry.yarnpkg.com/@tryghost/promise/-/promise-0.3.8.tgz#3134a044e187f6d61393267c680c6cc75235aa96"
   integrity sha512-ppcnLBWczpbo4sQcGWtjEA82kdZMv4NFF2MvZRi1MBP4lSOSgh9A636eUxlB1/FpIG+D5ixq84xlY4QJMqW2kA==
 
-"@tryghost/referrer-parser@0.1.0":
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/referrer-parser/-/referrer-parser-0.1.0.tgz#4019aab00e0f1b6ce05c5868a18425f0eed9e5fa"
-  integrity sha512-c8DaQgHQdy7gF3W5DVqucaoz46GCnutAv/XdyGbOW+FK/EpgQyTxZZGyuEEx9L5nk6IC3geLc0NkahRYBQG+Kg==
+"@tryghost/referrer-parser@0.1.1":
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/referrer-parser/-/referrer-parser-0.1.1.tgz#4bed14c75cec8c91ea08638cace9dcc3b21f6f6d"
+  integrity sha512-WDRvW92J9bM7ABmbdq212NaHHNrUBuCkdsGt68zquC8eKnCqJX0KBl/tUCgNCdaj1iXWNVbf4m0UUGmXnJxtaQ==
 
 "@tryghost/request@1.0.10", "@tryghost/request@^1.0.10":
   version "1.0.10"
