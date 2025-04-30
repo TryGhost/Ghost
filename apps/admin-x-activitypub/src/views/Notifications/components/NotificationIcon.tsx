@@ -1,44 +1,44 @@
 import React from 'react';
-import {Icon} from '@tryghost/admin-x-design-system';
+import {LucideIcon} from '@tryghost/shade';
 
 export type NotificationType = 'like' | 'follow' | 'reply' | 'repost';
+export type NotificationIconSize = 'sm' | 'lg';
 
 interface NotificationIconProps {
     notificationType: NotificationType;
+    size?: NotificationIconSize;
     className?: string;
 }
 
-const NotificationIcon: React.FC<NotificationIconProps> = ({notificationType, className}) => {
-    let icon = '';
-    let iconColor = '';
+const NotificationIcon: React.FC<NotificationIconProps> = ({notificationType, size = 'lg', className}) => {
+    let icon;
     let badgeColor = '';
+    const iconColor = 'white';
+    const iconSize = size === 'sm' ? 15 : 24;
+    const strokeWidth = size === 'sm' ? 2.5 : 2;
 
     switch (notificationType) {
     case 'follow':
-        icon = 'user';
-        iconColor = 'text-blue-500';
-        badgeColor = 'bg-blue-100/50 dark:bg-blue-100/10';
+        icon = <LucideIcon.UserRoundCheck className='-mr-0.5 -mt-0.5' color={iconColor} size={iconSize} strokeWidth={strokeWidth} />;
+        badgeColor = 'bg-blue-700';
         break;
     case 'like':
-        icon = 'heart';
-        iconColor = 'text-red-500';
-        badgeColor = 'bg-red-100/50 dark:bg-red-100/10';
+        icon = <LucideIcon.Heart className={`${size === 'sm' ? 'size-[11px]' : 'mt-px size-6'} fill-white`} color={iconColor} />;
+        badgeColor = 'bg-pink-600';
         break;
     case 'reply':
-        icon = 'comment';
-        iconColor = 'text-purple-500';
-        badgeColor = 'bg-purple-100/50 dark:bg-purple-100/10';
+        icon = <LucideIcon.Reply className='mb-px mr-px' color={iconColor} size={iconSize} strokeWidth={strokeWidth} />;
+        badgeColor = 'bg-purple-600';
         break;
     case 'repost':
-        icon = 'reload';
-        iconColor = 'text-green-500';
-        badgeColor = 'bg-green-100/50 dark:bg-green-100/10';
+        icon = <LucideIcon.Repeat2 color={iconColor} size={iconSize} strokeWidth={strokeWidth} />;
+        badgeColor = 'bg-green-600';
         break;
     }
 
     return (
-        <div className={`flex size-10 items-center justify-center rounded-full ${badgeColor} ${className && className}`}>
-            <Icon colorClass={iconColor} name={icon} size='sm' />
+        <div className={`flex ${size === 'sm' ? 'size-6' : 'size-10'} items-center justify-center rounded-full ${badgeColor} ${className && className}`}>
+            {icon}
         </div>
     );
 };
