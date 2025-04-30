@@ -2,33 +2,12 @@
 
 echo "hello from daemon"
 
-yarn nx reset
-
-# Dynamically discover TypeScript packages
-# This replicates the logic from .github/scripts/dev.js
+# Dynamically discover TypeScript packages using nx show projects
 echo "Discovering TypeScript packages..."
-tsPackagesList=""
-for dir in /home/ghost/ghost/*/; do
-  packageJsonPath="${dir}package.json"
-  if [ -f "$packageJsonPath" ]; then
-    # Check if package.json has a build:ts script
-    if grep -q '"build:ts"' "$packageJsonPath"; then
-      packageName=$(basename "$dir")
-      if [ -n "$tsPackagesList" ]; then
-        tsPackagesList="${tsPackagesList},@tryghost/${packageName}"
-      else
-        tsPackagesList="@tryghost/${packageName}"
-      fi
-    fi
-  fi
-done
+# Get all projects with the 'build' target
+tsPackagesList=$(yarn --silent nx show projects --with-target=build | tr '\n' ',' | sed 's/,$//')
 
-echo "Discovered packages: $tsPackagesList"
-
-# Allow override through environment variable
-: "${tsPackages:=$tsPackagesList}"
-
-echo "Watching packages: $tsPackages"
+echo "Watching packages: $tsPackagesList"
 
 # Function to handle cleanup when receiving a signal
 cleanup() {
@@ -46,7 +25,7 @@ cleanup() {
 trap cleanup SIGTERM SIGINT SIGQUIT
 
 # Run the nx watch command in the background
-yarn nx -- watch --projects=${tsPackages} -- nx run \$NX_PROJECT_NAME:build:ts &
+yarn nx -- watch --projects=${tsPackagesList} -- nx run \$NX_PROJECT_NAME:build &
 
 # Store the PID of the background process
 child_pid=$!
