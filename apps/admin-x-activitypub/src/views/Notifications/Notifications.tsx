@@ -132,7 +132,7 @@ const NotificationGroupDescription: React.FC<NotificationGroupDescriptionProps> 
                 content = stripHtml(group.inReplyTo.title);
             }
 
-            return <>{actorText} replied to your {group.post?.type === 'article' ? 'post' : 'note'} <span className='font-semibold'>{truncate(content, 80)}</span></>;
+            return <>{actorText} replied to your {group.inReplyTo?.type === 'article' ? 'post' : 'note'} <span className='font-semibold'>{truncate(content, 80)}</span></>;
         }
     }
 
@@ -195,7 +195,7 @@ const Notifications: React.FC = () => {
             break;
         case 'reply':
             if (group.post && group.inReplyTo) {
-                navigate(`/${group.inReplyTo.type === 'article' ? 'inbox' : 'feed'}/${encodeURIComponent(group.post.id)}`);
+                navigate(`/feed/${encodeURIComponent(group.post.id)}`);
             }
             break;
         case 'repost':
