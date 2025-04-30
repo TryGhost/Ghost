@@ -4,7 +4,7 @@ import DateRangeSelect from './components/DateRangeSelect';
 import React, {useState} from 'react';
 import StatsLayout from './layout/StatsLayout';
 import StatsView from './layout/StatsView';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, H1, Recharts, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, ViewHeader, ViewHeaderActions, formatDisplayDate, formatDuration, formatNumber, formatPercentage, formatQueryDate} from '@tryghost/shade';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, H1, LucideIcon, Recharts, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, ViewHeader, ViewHeaderActions, formatDisplayDate, formatDuration, formatNumber, formatPercentage, formatQueryDate} from '@tryghost/shade';
 import {KpiMetric} from '@src/types/kpi';
 import {KpiTabTrigger, KpiTabValue} from './components/KpiTab';
 import {TB_VERSION} from '@src/config/stats-config';
@@ -19,6 +19,8 @@ interface TopContentData {
     pathname: string;
     visits: number;
     title?: string;
+    post_uuid?: string;
+    post_id?: string;
 }
 
 const KPI_METRICS: Record<string, KpiMetric> = {
@@ -243,8 +245,9 @@ const Web:React.FC = () => {
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead className='w-[80%]'>Content</TableHead>
+                                    <TableHead className='w-[75%]'>Content</TableHead>
                                     <TableHead className='w-[20%] text-right'>Visitors</TableHead>
+                                    <TableHead className='w-[5%]'></TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -253,6 +256,17 @@ const Web:React.FC = () => {
                                         <TableRow key={row.pathname}>
                                             <TableCell className="font-medium"><a className='-mx-2 inline-block px-2 hover:underline' href={`${row.pathname}`} rel="noreferrer" target='_blank'>{row.title || row.pathname}</a></TableCell>
                                             <TableCell className='text-right font-mono text-sm'>{formatNumber(Number(row.visits))}</TableCell>
+                                            <TableCell className='text-center'>
+                                                {row.post_id && (
+                                                    <a 
+                                                        className="text-gray-500 hover:text-gray-900"
+                                                        href={`/ghost/#/posts/analytics/${row.post_id}/web`}
+                                                        title="View post analytics" 
+                                                    >
+                                                        <LucideIcon.BarChart2 className="h-4 w-4" />
+                                                    </a>
+                                                )}
+                                            </TableCell>
                                         </TableRow>
                                     );
                                 })}
