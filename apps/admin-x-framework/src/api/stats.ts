@@ -6,6 +6,8 @@ export type TopContentItem = {
     pathname: string;
     visits: number;
     title?: string;
+    post_uuid?: string;
+    post_id?: string;
 }
 
 export type TopContentResponseType = {

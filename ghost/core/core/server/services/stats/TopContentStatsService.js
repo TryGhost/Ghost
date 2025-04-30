@@ -5,6 +5,7 @@ const logging = require('@tryghost/logging');
  * @property {string} pathname - Page path
  * @property {number} visits - Number of visits
  * @property {string} [post_uuid] - Associated post UUID if available
+ * @property {string} [post_id] - Associated post ID if available
  * @property {string} [title] - Page title
  */
 
@@ -98,12 +99,15 @@ class TopContentStatsService {
             return {};
         }
         
-        const posts = await this.knex.select('uuid', 'title')
+        const posts = await this.knex.select('uuid', 'title', 'id')
             .from('posts')
             .whereIn('uuid', uuids);
             
         return posts.reduce((map, post) => {
-            map[post.uuid] = post.title;
+            map[post.uuid] = {
+                title: post.title,
+                id: post.id
+            };
             return map;
         }, {});
     }
@@ -164,7 +168,8 @@ class TopContentStatsService {
             if (item.post_uuid && titleMap[item.post_uuid]) {
                 return {
                     ...item,
-                    title: titleMap[item.post_uuid]
+                    title: titleMap[item.post_uuid].title,
+                    post_id: titleMap[item.post_uuid].id
                 };
             }
             
