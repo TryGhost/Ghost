@@ -154,11 +154,13 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
         bodyFontCategory={newsletter.body_font_category}
         buttonCorners={newsletter.button_corners || 'squircle'}
         buttonStyle={newsletter.button_style || 'fill'}
+        dividerStyle={newsletter.divider_style || 'solid'}
         footerContent={newsletter.footer_content}
         headerIcon={newsletter.show_header_icon ? icon : undefined}
         headerImage={newsletter.header_image}
         headerSubtitle={headerSubtitle}
         headerTitle={headerTitle}
+        linkStyle={newsletter.link_style || 'underline'}
         senderEmail={renderSenderEmail(newsletter, config, defaultEmailAddress)}
         senderName={newsletter.sender_name || title}
         senderReplyTo={renderReplyToEmail(newsletter, config, supportEmailAddress, defaultEmailAddress)}
