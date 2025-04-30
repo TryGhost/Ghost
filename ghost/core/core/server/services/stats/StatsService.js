@@ -3,6 +3,7 @@ const MembersService = require('./MembersStatsService');
 const SubscriptionStatsService = require('./SubscriptionStatsService');
 const ReferrersStatsService = require('./ReferrersStatsService');
 const TopPagesStatsService = require('./TopPagesStatsService');
+const tinybird = require('./utils/tinybird');
 
 class StatsService {
     /**
@@ -60,12 +61,31 @@ class StatsService {
      * @returns {StatsService}
      **/
     static create(deps) {
+        // Create the Tinybird client if config exists
+        let tinybirdClient = null;
+        const config = deps.config || require('../../../shared/config');
+        const request = deps.request || require('../../lib/request-external');
+        
+        // Only create the client if Tinybird is configured
+        if (config.get('tinybird') && config.get('tinybird:stats')) {
+            tinybirdClient = tinybird.create({
+                config, 
+                request
+            });
+        }
+        
+        // Add the Tinybird client to the dependencies
+        const depsWithTinybird = {
+            ...deps,
+            tinybirdClient
+        };
+
         return new StatsService({
             mrr: new MRRService(deps),
             members: new MembersService(deps),
             subscriptions: new SubscriptionStatsService(deps),
             referrers: new ReferrersStatsService(deps),
-            topPages: new TopPagesStatsService(deps)
+            topPages: new TopPagesStatsService(depsWithTinybird)
         });
     }
 }
