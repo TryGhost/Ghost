@@ -2,8 +2,31 @@
 
 echo "hello from daemon"
 
-# Default value for tsPackages if not provided as an environment variable
-: "${tsPackages:=@tryghost/post-revisions,@tryghost/post-events}"
+yarn nx reset
+
+# Dynamically discover TypeScript packages
+# This replicates the logic from .github/scripts/dev.js
+echo "Discovering TypeScript packages..."
+tsPackagesList=""
+for dir in /home/ghost/ghost/*/; do
+  packageJsonPath="${dir}package.json"
+  if [ -f "$packageJsonPath" ]; then
+    # Check if package.json has a build:ts script
+    if grep -q '"build:ts"' "$packageJsonPath"; then
+      packageName=$(basename "$dir")
+      if [ -n "$tsPackagesList" ]; then
+        tsPackagesList="${tsPackagesList},@tryghost/${packageName}"
+      else
+        tsPackagesList="@tryghost/${packageName}"
+      fi
+    fi
+  fi
+done
+
+echo "Discovered packages: $tsPackagesList"
+
+# Allow override through environment variable
+: "${tsPackages:=$tsPackagesList}"
 
 echo "Watching packages: $tsPackages"
 
