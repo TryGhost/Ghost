@@ -1,12 +1,17 @@
 import React from 'react';
 import Button, {ButtonSize} from './Button';
+import Tooltip from './Tooltip';
 
 import {ButtonProps} from './Button';
 import clsx from 'clsx';
 
+export interface ButtonGroupButtonProps extends ButtonProps {
+    tooltip?: string | React.ReactNode;
+}
+
 export interface ButtonGroupProps {
     size?: ButtonSize;
-    buttons: Array<ButtonProps>;
+    buttons: Array<ButtonGroupButtonProps>;
     link?: boolean;
     linkWithPadding?: boolean;
     clearBg?: boolean;
@@ -49,7 +54,12 @@ const ButtonGroup: React.FC<ButtonGroupProps> = ({size = 'md', buttons, link, li
                 }
 
                 return (
-                    <Button key={key} link={link} linkWithPadding={linkWithPadding} size={size} {...buttonProps} />
+                    (props.tooltip ? 
+                        <Tooltip key={key} content={props.tooltip}>
+                            <Button key={`btn-${key}`} link={link} linkWithPadding={linkWithPadding} size={size} {...buttonProps} />
+                        </Tooltip> :
+                        <Button key={key} link={link} linkWithPadding={linkWithPadding} size={size} {...buttonProps} />
+                    )
                 );
             })}
         </div>
