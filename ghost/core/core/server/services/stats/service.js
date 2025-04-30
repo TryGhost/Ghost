@@ -12,8 +12,12 @@ class StatsServiceWrapper {
 
         const StatsService = require('./StatsService');
         const db = require('../../data/db');
+        const urlService = require('../url');
 
-        this.api = StatsService.create({knex: db.knex});
+        this.api = StatsService.create({
+            knex: db.knex,
+            urlService
+        });
 
         const adapterManager = require('../adapter-manager');
         const config = require('../../../shared/config');
