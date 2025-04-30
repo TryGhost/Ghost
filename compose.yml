@@ -6,6 +6,8 @@ x-service-template: &service-template
   image: ghost-monorepo:latest
   pull_policy: never
   entrypoint: [ "/home/ghost/.docker/development.entrypoint.sh" ]
+  environment:
+    - NX_DAEMON=false
   volumes:
       # Mount source code
       - .:/home/ghost
@@ -73,7 +75,6 @@ services:
     environment:
       - DEBUG=${DEBUG:-}
       - SSH_AUTH_SOCK=/ssh-agent
-      - NX_DAEMON=false
       - GHOST_DEV_IS_DOCKER=true
       - GHOST_DEV_APP_FLAGS=${GHOST_DEV_APP_FLAGS:-}
       - GHOST_UPSTREAM=${GHOST_UPSTREAM:-}
@@ -88,8 +89,6 @@ services:
     ports:
       - "4200:4200"
       - "4201:4201"
-    environment:
-      - NX_DAEMON=false
     profiles: [ split ]
     depends_on:
       server:
@@ -111,8 +110,6 @@ services:
     ports:
       - "4175:4175"
       - "4176:4176"
-    environment:
-      - NX_DAEMON=false
     profiles: [ portal ]
 
 
@@ -122,8 +119,6 @@ services:
     command: [ "yarn", "dev" ]
     ports:
       - "6174:6174"
-    environment:
-      - NX_DAEMON=false
     profiles: [ signup-form ]
 
   announcement-bar:
@@ -132,8 +127,6 @@ services:
     command: [ "yarn", "dev" ]
     ports:
       - "4177:4177"
-    environment:
-      - NX_DAEMON=false
     profiles: [ announcement-bar ]
 
 
@@ -143,18 +136,14 @@ services:
     command: [ "yarn", "dev" ]
     ports:
       - "4178:4178"
-    environment:
-      - NX_DAEMON=false
     profiles: [ sodo-search ]
 
   comments-ui:
-    <<: *ghost-base
+    <<: *service-template
     working_dir: /home/ghost/apps/comments-ui
     command: [ "yarn", "dev" ]
     ports:
       - "7173:7173"
-    environment:
-      - NX_DAEMON=false
     profiles: [ comments-ui ]
 
   ghost:
@@ -205,6 +194,7 @@ services:
       - "6006:6006" # Storybook
     environment:
       - NX_DAEMON=false
+
 
   mysql:
     image: mysql:8.4.5
