@@ -9,28 +9,28 @@ class TopPagesStatsService {
     constructor(deps) {
         this.knex = deps.knex;
         this.urlService = deps.urlService;
+        this.config = require('../../../shared/config');
+        this.statsConfig = this.config.get('tinybird:stats');
     }
 
     /**
      * Fetches top pages data from Tinybird and enriches it with post titles from the database
      * @param {Object} options
-     * @param {string} [options.siteUuid] - The site UUID 
      * @param {string} [options.dateFrom] - Start date in YYYY-MM-DD format
      * @param {string} [options.dateTo] - End date in YYYY-MM-DD format
      * @param {string} [options.timezone] - Timezone for the query
-     * @param {string} [options.memberStatus] - Member status filter
+     * @param {string} [options.memberStatus] - Member status filter (defaults to 'all')
      * @param {string} [options.tbVersion] - Tinybird version for API URL
+     * @param {string} [options.siteUuid] - The site UUID (optional, will use site config if not provided)
      * @returns {Promise<Object>} The enriched top pages data
      */
     async getTopPages(options = {}) {
         // First fetch data from Tinybird
-        const config = require('../../../shared/config');
         const externalRequest = require('../../lib/request-external');
         
-        const statsConfig = config.get('tinybird:stats');
-        const localEnabled = statsConfig?.local?.enabled ?? false;
-        const endpoint = localEnabled ? statsConfig.local.endpoint : statsConfig.endpoint;
-        const token = localEnabled ? statsConfig.local.token : statsConfig.token;
+        const localEnabled = this.statsConfig?.local?.enabled ?? false;
+        const endpoint = localEnabled ? this.statsConfig.local.endpoint : this.statsConfig.endpoint;
+        const token = localEnabled ? this.statsConfig.local.token : this.statsConfig.token;
 
         // Use tbVersion if provided for constructing the URL
         const pipeUrl = (options.tbVersion && !localEnabled) ? 
@@ -40,10 +40,10 @@ class TopPagesStatsService {
         const tinybirdUrl = `${endpoint}${pipeUrl}`;
 
         const searchParams = {
-            site_uuid: options.siteUuid || statsConfig.id,
+            site_uuid: options.siteUuid || this.statsConfig.id,
             date_from: options.dateFrom,
             date_to: options.dateTo,
-            timezone: options.timezone,
+            timezone: options.timezone || this.config.get('timezone'),
             member_status: options.memberStatus || 'all'
         };
         

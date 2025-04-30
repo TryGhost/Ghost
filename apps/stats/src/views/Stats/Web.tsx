@@ -191,21 +191,25 @@ const WebKPIs:React.FC = ({}) => {
 };
 
 const Web:React.FC = () => {
-    const {statsConfig, isLoading: isConfigLoading} = useGlobalData();
+    const {isLoading: isConfigLoading} = useGlobalData();
     const {range, audience} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
 
-    // Prepare parameters for the admin-x-framework hook
-    const queryParams = {
-        siteUuid: statsConfig?.id || '',
+    // Include essential query parameters that change frequently
+    // Server will use defaults for other values
+    const queryParams: Record<string, string> = {
         dateFrom: formatQueryDate(startDate),
         dateTo: formatQueryDate(endDate),
-        timezone: timezone,
         memberStatus: getAudienceQueryParam(audience),
         tbVersion: TB_VERSION?.toString()
     };
 
-    // Use the admin-x-framework hook instead of our custom hook
+    // Add timezone only if it differs from default
+    if (timezone) {
+        queryParams.timezone = timezone;
+    }
+
+    // Use the admin-x-framework hook
     const {data, isLoading: isDataLoading} = useTopPages({
         searchParams: queryParams
     });
