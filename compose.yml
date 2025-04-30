@@ -83,10 +83,6 @@ services:
 
   admin:
     <<: *ghost-base
-    build:
-      context: .
-      dockerfile: ./.docker/Dockerfile
-      target: development
     working_dir: /home/ghost/ghost/admin
     command: [ "yarn", "dev" ]
     ports:
@@ -102,10 +98,6 @@ services:
 
   daemon:
     <<: *ghost-base
-    build:
-      context: .
-      dockerfile: ./.docker/Dockerfile
-      target: development
     profiles: [ split, daemon ]
     entrypoint: [ "/home/ghost/.docker/daemon.entrypoint.sh" ]
     environment:
@@ -114,10 +106,6 @@ services:
 
   portal:
     <<: *ghost-base
-    build:
-      context: .
-      dockerfile: ./.docker/Dockerfile
-      target: development
     working_dir: /home/ghost/apps/portal
     command: [ "yarn", "dev" ]
     ports:
@@ -130,10 +118,6 @@ services:
 
   signup-form:
     <<: *ghost-base
-    build:
-      context: .
-      dockerfile: ./.docker/Dockerfile
-      target: development
     working_dir: /home/ghost/apps/signup-form
     command: [ "yarn", "dev" ]
     ports:
@@ -144,10 +128,6 @@ services:
 
   announcement-bar:
     <<: *ghost-base
-    build:
-      context: .
-      dockerfile: ./.docker/Dockerfile
-      target: development
     working_dir: /home/ghost/apps/announcement-bar
     command: [ "yarn", "dev" ]
     ports:

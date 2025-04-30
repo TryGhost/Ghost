@@ -1,14 +1,5 @@
 #!/bin/bash
 
-yarn nx reset
-
-# Dynamically discover TypeScript packages using nx show projects
-echo "Discovering TypeScript packages..."
-# Get all projects with the 'build' target
-tsPackagesList=$(yarn --silent nx show projects --with-target=build | tr '\n' ',' | sed 's/,$//')
-
-echo "Watching packages: $tsPackagesList"
-
 # Function to handle cleanup when receiving a signal
 cleanup() {
   echo "Received signal to terminate, shutting down gracefully..."
@@ -23,6 +14,18 @@ cleanup() {
 
 # Set up traps for signals
 trap cleanup SIGTERM SIGINT SIGQUIT
+
+yarn nx daemon --stop
+
+# Dynamically discover TypeScript packages using nx show projects
+echo "Discovering TypeScript packages..."
+# Get all projects with the 'build' target
+tsPackagesList=$(yarn --silent nx show projects --with-target=build | tr '\n' ',' | sed 's/,$//')
+
+# Build all packages
+yarn nx run-many --target=build --all
+
+yarn nx daemon --start
 
 # Run the nx watch command in the background
 yarn nx -- watch --projects=${tsPackagesList} -- nx run --disableNxCache \$NX_PROJECT_NAME:build &
